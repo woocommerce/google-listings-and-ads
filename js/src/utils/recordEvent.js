@@ -106,23 +106,6 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  */
 
 /**
- * Records `gla_datepicker_update` tracking event, with data that comes from
- * `DateRangeFilterPicker`'s `onRangeSelect` callback.
- *
- * @param {Object} data Report name plus the data given by `DateRangeFilterPicker`'s `onRangeSelect` callback.
- * @param {string} data.report Name of the report.
- * @param {string} data.compare
- * @param {string} data.period
- * @param {string} data.after
- * @param {string} data.before
- *
- * @fires gla_datepicker_update
- */
-export const recordDatepickerUpdateEvent = ( data ) => {
-	recordEvent( 'gla_datepicker_update', data );
-};
-
-/**
  * Triggered when changing products & variations filter.
  *
  * @event gla_filter

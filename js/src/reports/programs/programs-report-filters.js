@@ -7,6 +7,7 @@ import {
 	getDateParamsFromQuery,
 	isoDateFormat,
 } from '@woocommerce/date';
+import { recordEvent } from '@woocommerce/tracks';
 // We are waiting for the release of the following fixes:
 // https://github.com/woocommerce/woocommerce-admin/issues/6890
 // https://github.com/woocommerce/woocommerce-admin/issues/6062
@@ -18,10 +19,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 /**
  * Internal dependencies
  */
-import {
-	recordDatepickerUpdateEvent,
-	recordFilterEvent,
-} from '.~/utils/recordEvent';
+import { recordFilterEvent } from '.~/utils/recordEvent';
 import { createProgramsFilterConfig } from './filter-config';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
@@ -69,7 +67,7 @@ const ProgramsReportFilters = ( props ) => {
 	 * @param {Object} data Data to be forwarded from ReportFilters' date picker.
 	 */
 	const onDateSelect = ( data ) =>
-		recordDatepickerUpdateEvent( {
+		recordEvent( 'gla_datepicker_update', {
 			report: trackEventId,
 			...omitBy( data, isUndefined ),
 		} );

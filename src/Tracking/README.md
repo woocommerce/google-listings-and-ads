@@ -177,10 +177,9 @@ Triggered when datepicker (date ranger picker) is updated,
 `before` | `string` | Value selected in datepicker.
 `after` | `string` | Value selected in datepicker.
 #### Emitters
-- [`AppDateRangeFilterPicker`](js/src/dashboard/app-date-range-filter-picker/index.js#L27)
-- [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L44)
-- [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L46)
-- [`recordDatepickerUpdateEvent`](js/src/utils/recordEvent.js#L121)
+- [`AppDateRangeFilterPicker`](js/src/dashboard/app-date-range-filter-picker/index.js#L27) with `report: props.trackEventReportId` and `data` given by `DateRangeFilterPicker`'s `onRangeSelect` callback.
+- [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L42)
+- [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L44)
 
 ### [`gla_disconnected_accounts`](js/src/settings/disconnect-accounts/index.js#L28)
 Accounts are disconnected from the Setting page
@@ -252,7 +251,7 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 #### Emitters
 - [`exports`](js/src/components/contact-information/store-address-card.js#L39) Whenever "Edit in WooCommerce Settings" button is clicked.
 
-### [`gla_filter`](js/src/utils/recordEvent.js#L125)
+### [`gla_filter`](js/src/utils/recordEvent.js#L108)
 Triggered when changing products & variations filter.
 #### Properties
 |   |   |   |
@@ -261,9 +260,9 @@ Triggered when changing products & variations filter.
 `filter` | `string` | Value of the filter (e.g. `"all" \| "single-product" \| "compare-products"`)
 `variationFilter` | `string \| undefined` | Value of the variation filter (e.g. `undefined \| "single-variation" \| "compare-variations"`)
 #### Emitters
-- [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L44)
-- [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L46)
-- [`recordFilterEvent`](js/src/utils/recordEvent.js#L145)
+- [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L42)
+- [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L44)
+- [`recordFilterEvent`](js/src/utils/recordEvent.js#L128)
 
 ### [`gla_free_ad_credit_country_click`](js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L16)
 Clicking on the link to view free ad credit value by country.
@@ -301,7 +300,7 @@ Clicking on a text link within the notice on the Get Started page.
 - [`UnsupportedLanguage`](js/src/get-started-page/unsupported-notices/index.js#L38) with `{ context: "get-started", link_id: "supported-languages" }`
 - [`UnsupportedCountry`](js/src/get-started-page/unsupported-notices/index.js#L84) with `{ context: "get-started", link_id: "supported-countries" }`
 
-### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L229)
+### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L212)
 Clicking on the button to connect Google account.
 #### Properties
 |   |   |   |
@@ -329,7 +328,7 @@ Clicking on a Google Ads account text link.
 #### Emitters
 - [`BillingSavedCard`](js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
 
-### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L239)
+### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L222)
 Clicking on a Google Merchant Center link.
 #### Properties
 |   |   |   |
@@ -349,7 +348,7 @@ Clicking on a Google Merchant Center link.
 #### Emitters
 - [`HelpIconButton`](js/src/components/help-icon-button.js#L30)
 
-### [`gla_launch_paid_campaign_button_click`](js/src/utils/recordEvent.js#L204)
+### [`gla_launch_paid_campaign_button_click`](js/src/utils/recordEvent.js#L187)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
 #### Properties
 |   |   |   |
@@ -359,7 +358,7 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 #### Emitters
 - [`CreatePaidAdsCampaignForm`](js/src/pages/create-paid-ads-campaign/create-paid-ads-campaign-form.js#L28) on submit
 - [`SetupAdsForm`](js/src/setup-ads/setup-ads-form.js#L24) on submit
-- [`recordLaunchPaidCampaignClickEvent`](js/src/utils/recordEvent.js#L220)
+- [`recordLaunchPaidCampaignClickEvent`](js/src/utils/recordEvent.js#L203)
 
 ### [`gla_mc_account_connect_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L25)
 Clicking on the button to connect an existing Google Merchant Center account.
@@ -421,7 +420,7 @@ Clicking on the Merchant Center phone number edit button.
 #### Emitters
 - [`exports`](js/src/components/contact-information/phone-number-card/phone-number-card.js#L111)
 
-### [`gla_modal_closed`](js/src/utils/recordEvent.js#L247)
+### [`gla_modal_closed`](js/src/utils/recordEvent.js#L230)
 A modal is closed.
 #### Properties
 |   |   |   |
@@ -451,7 +450,7 @@ A modal is opend
 #### Emitters
 - [`exports`](js/src/product-feed/submission-success-guide/index.js#L160) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
-### [`gla_setup_ads`](js/src/utils/recordEvent.js#L184)
+### [`gla_setup_ads`](js/src/utils/recordEvent.js#L167)
 Triggered on events during ads setup and editing
 #### Properties
 |   |   |   |
@@ -460,7 +459,7 @@ Triggered on events during ads setup and editing
 `trigger` | `string` | Action (e.g. `click`)
 #### Emitters
 - [`SetupAdsTopBar`](js/src/setup-ads/top-bar/index.js#L17) with given `{ target: 'back', trigger: 'click' }` when back button is clicked.
-- [`recordSetupAdsEvent`](js/src/utils/recordEvent.js#L197) with given `{ target, trigger }`.
+- [`recordSetupAdsEvent`](js/src/utils/recordEvent.js#L180) with given `{ target, trigger }`.
 
 ### [`gla_setup_ads_faq`](js/src/components/paid-ads/faqs-section.js#L13)
 Clicking on faq items to collapse or expand it in the Setup Ads page
@@ -472,7 +471,7 @@ Clicking on faq items to collapse or expand it in the Setup Ads page
 #### Emitters
 - [`FaqsSection`](js/src/components/paid-ads/faqs-section.js#L24)
 
-### [`gla_setup_mc`](js/src/utils/recordEvent.js#L160)
+### [`gla_setup_mc`](js/src/utils/recordEvent.js#L143)
 Setup Merchant Center
 #### Properties
 |   |   |   |
@@ -483,7 +482,7 @@ Setup Merchant Center
 - [`GetStartedCard`](js/src/get-started-page/get-started-card/index.js#L27) with `{ target: 'set_up_free_listings', trigger: 'click' }`.
 - [`SavedSetupStepper`](js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L25) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
 - [`SetupMCTopBar`](js/src/setup-mc/top-bar/index.js#L17) with `{ target: 'back', trigger: 'click' }`.
-- [`recordSetupMCEvent`](js/src/utils/recordEvent.js#L173) with the given `{ target trigger }`.
+- [`recordSetupMCEvent`](js/src/utils/recordEvent.js#L156) with the given `{ target trigger }`.
 
 ### [`gla_setup_mc_faq`](js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L62)
 Clicking on faq items to collapse or expand it in the Setup Merchant Center page
