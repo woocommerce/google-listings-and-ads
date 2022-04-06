@@ -21,7 +21,7 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 
 	private $products = [];
 
-	public function setUp() {
+	public function setUp(): void {
 
 		parent::setUp();
 

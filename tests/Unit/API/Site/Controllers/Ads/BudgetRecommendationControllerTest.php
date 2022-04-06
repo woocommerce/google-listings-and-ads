@@ -24,7 +24,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 	protected const ROUTE_BUDGET_RECOMMENDATION  = '/wc/gla/ads/campaigns/budget-recommendation';
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->budget_recommendation_query = $this->createMock( BudgetRecommendationQuery::class );

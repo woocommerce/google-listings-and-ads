@@ -41,7 +41,7 @@ class MerchantMetricsTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->shopping_client          = $this->createMock( ShoppingContent::class );
 		$this->ads_client               = $this->createMock( GoogleAdsClient::class );
