@@ -125,26 +125,6 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  */
 
 /**
- * Triggered on events during ads setup and editing
- *
- * @event gla_setup_ads
- * @property {string} target Button ID
- * @property {string} trigger Action (e.g. `click`)
- */
-
-/**
- * @param {string} target Target Button ID
- * @param {string} trigger The action trigger
- * @fires gla_setup_ads with given `{ target, trigger }`.
- */
-export const recordSetupAdsEvent = ( target, trigger = 'click' ) => {
-	recordEvent( 'gla_setup_ads', {
-		target,
-		trigger,
-	} );
-};
-
-/**
  * Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
  *
  * @event gla_launch_paid_campaign_button_click
