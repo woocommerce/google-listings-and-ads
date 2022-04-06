@@ -13,7 +13,7 @@ import './index.scss';
 
 /**
  * @param {Object} props React props
- * @param {string} props.id The Popover’s ID 
+ * @param {string} props.id The Popover’s ID
  * @param {Array<JSX.Element>} props.children The Popover’s content
  * @fires gla_tooltip_viewed with the given `id`.
  */

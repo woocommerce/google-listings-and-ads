@@ -20,7 +20,7 @@ import './index.scss';
 
 /**
  * @param {Object} props React props.
- * @param { { name: string, domain:string } } props.existingAccount Account name and domain 
+ * @param { { name: string, domain:string } } props.existingAccount Account name and domain
  * @param {Function} [props.onContinue] Callback function when confirming the modal
  * @param {Function} [props.onRequestClose] Callback function when closing the modal
  *

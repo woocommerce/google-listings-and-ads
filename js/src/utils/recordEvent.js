@@ -20,7 +20,7 @@ import { recordEvent } from '@woocommerce/tracks';
  *
  * @param {string} report The report's name
  * @param {string} column Column that was toggled
- * @param {string} status (`on`|`off`) Indicates if the column was toggled on or off. 
+ * @param {string} status (`on`|`off`) Indicates if the column was toggled on or off.
  * @fires gla_table_header_toggle
  */
 export const recordTableHeaderToggleEvent = ( report, column, status ) => {

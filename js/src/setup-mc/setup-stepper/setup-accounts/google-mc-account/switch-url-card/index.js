@@ -31,7 +31,7 @@ import './index.scss';
 /**
  * @param {Object} props React props.
  * @param {string} props.id Google Account ID
- * @param {string} props.claimedUrl The claimed URL 
+ * @param {string} props.claimedUrl The claimed URL
  * @param {string} props.newUrl The new URL to be associated to the Google Account
  * @param {Function} [props.onSelectAnotherAccount] Callback when a different account is selected
  * @fires gla_mc_account_switch_account_button_click with `context: 'switch-url'`

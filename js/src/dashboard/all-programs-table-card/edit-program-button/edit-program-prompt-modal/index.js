@@ -25,8 +25,8 @@ import { getEditFreeListingsUrl, getEditCampaignUrl } from '.~/utils/urls';
 /**
  * @fires gla_dashboard_edit_program_click when "Continue to edit" is clicked.
  * @param {Object} props React props.
- * @param {string} props.programId The program's identifier 
- * @param {Function} props.onRequestClose Callback function when closing the modal. 
+ * @param {string} props.programId The program's identifier
+ * @param {Function} props.onRequestClose Callback function when closing the modal.
  * @return {JSX.Element} `AppModal` with content.
  */
 const EditProgramPromptModal = ( { programId, onRequestClose } ) => {
