@@ -24,7 +24,6 @@ import './store-address-card.scss';
  * "Edit WC store address" Tracking event
  *
  * @event gla_edit_wc_store_address
- * @type {Object} TrackingEvent
  * @property {string} path A page from which the link was clicked.
  * @property {string|undefined} [subpath] A subpage from which the link was clicked.
  */
@@ -125,7 +124,6 @@ export default function StoreAddressCard() {
  * "Edit MC store address" Tracking event
  *
  * @event gla_edit_mc_store_address
- * @type {Object} TrackingEvent
  * @property {string} path A page from which the link was clicked.
  * @property {string|undefined} [subpath] A subpage from which the link was clicked.
  */

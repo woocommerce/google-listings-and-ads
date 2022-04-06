@@ -311,7 +311,7 @@ CES prompt snackbar open
 #### Emitters
 - [`CustomerEffortScorePrompt`](js/src/components/customer-effort-score-prompt/index.js#L49) whenever the CES snackbar (notice) is open
 
-### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L124)
+### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L123)
 "Edit MC store address" Tracking event
 #### Properties
 |   |   |   |
@@ -319,7 +319,7 @@ CES prompt snackbar open
 `path` | `string` | A page from which the link was clicked.
 `subpath` | `string\|undefined` | A subpage from which the link was clicked.
 #### Emitters
-- [`StoreAddressCardPreview`](js/src/components/contact-information/store-address-card.js#L144) Whenever "Edit" is clicked.
+- [`StoreAddressCardPreview`](js/src/components/contact-information/store-address-card.js#L142) Whenever "Edit" is clicked.
 
 ### [`gla_edit_wc_store_address`](js/src/components/contact-information/store-address-card.js#L23)
 "Edit WC store address" Tracking event
@@ -329,7 +329,7 @@ CES prompt snackbar open
 `path` | `string` | A page from which the link was clicked.
 `subpath` | `string\|undefined` | A subpage from which the link was clicked.
 #### Emitters
-- [`exports`](js/src/components/contact-information/store-address-card.js#L39) Whenever "Edit in WooCommerce Settings" button is clicked.
+- [`exports`](js/src/components/contact-information/store-address-card.js#L38) Whenever "Edit in WooCommerce Settings" button is clicked.
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
