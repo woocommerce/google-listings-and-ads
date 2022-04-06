@@ -132,7 +132,9 @@ class Settings {
 	 * @return bool
 	 */
 	protected function should_sync_shipping(): bool {
-		return in_array( $this->get_settings()['shipping_rate'], [ 'flat', 'automatic' ], true ) && 'flat' === $this->get_settings()['shipping_time'];
+		$shipping_rate = $this->get_settings()['shipping_rate'] ?? '';
+		$shipping_time = $this->get_settings()['shipping_time'] ?? '';
+		return in_array( $shipping_rate, [ 'flat', 'automatic' ], true ) && 'flat' === $shipping_time;
 	}
 
 	/**
@@ -143,7 +145,7 @@ class Settings {
 	 * @since 1.12.0
 	 */
 	protected function should_get_shipping_rates_from_woocommerce(): bool {
-		return 'automatic' === $this->get_settings()['shipping_rate'];
+		return 'automatic' === ( $this->get_settings()['shipping_rate'] ?? '' );
 	}
 
 	/**
