@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import MinimumOrderInputControlLabelText from './minimum-order-input-control-label-text';
-import EditMinimumOrderModal from './edit-minimum-order-modal';
+import EditMinimumOrderFormModal from './edit-minimum-order-form-modal';
 import './minimum-order-input-control.scss';
 
 const MinimumOrderInputControl = ( props ) => {
@@ -47,7 +47,7 @@ const MinimumOrderInputControl = ( props ) => {
 							</Button>
 						}
 						modal={
-							<EditMinimumOrderModal
+							<EditMinimumOrderFormModal
 								countryOptions={ countryOptions }
 								initialValues={ value }
 								onSubmit={ onChange }

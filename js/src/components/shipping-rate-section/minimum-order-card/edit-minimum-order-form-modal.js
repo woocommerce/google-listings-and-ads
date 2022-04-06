@@ -21,7 +21,7 @@ import AppCountrySelect from '.~/components/app-country-select';
  * @param {string} props.initialValues.currency Selected currency.
  * @param {number} props.initialValues.threshold Threshold value.
  */
-const EditMinimumOrderModal = ( props ) => {
+const EditMinimumOrderFormModal = ( props ) => {
 	const { countryOptions, initialValues, onSubmit, onRequestClose } = props;
 
 	const handleDeleteClick = () => {
@@ -139,4 +139,4 @@ const EditMinimumOrderModal = ( props ) => {
 	);
 };
 
-export default EditMinimumOrderModal;
+export default EditMinimumOrderFormModal;
