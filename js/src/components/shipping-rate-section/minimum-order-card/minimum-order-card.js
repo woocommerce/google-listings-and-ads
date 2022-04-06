@@ -62,7 +62,7 @@ const MinimumOrderCard = ( props ) => {
 		onChange( newValue );
 	};
 
-	const handleAddChange = ( newGroup ) => {
+	const handleAddSubmit = ( newGroup ) => {
 		const newValue = value.map( ( shippingRate ) => {
 			const newShippingRate = {
 				...shippingRate,
@@ -145,8 +145,8 @@ const MinimumOrderCard = ( props ) => {
 									countryOptions={
 										emptyThresholdGroup.countries
 									}
-									value={ emptyThresholdGroup }
-									onChange={ handleAddChange }
+									initialValues={ emptyThresholdGroup }
+									onSubmit={ handleAddSubmit }
 								/>
 							}
 						/>

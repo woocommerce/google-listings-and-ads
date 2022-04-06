@@ -14,8 +14,29 @@ import AppInputPriceControl from '.~/components/app-input-price-control/index.js
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
 
+/**
+ * Display the add minimum order modal that is wrapped in a Form.
+ *
+ * When users submit the form, `props.onRequestClose` will be called first, and then followed by `props.onSubmit`.
+ * If we were to call `props.onSubmit` first, it may cause some state change in the parent component and causing this component not to be rendered,
+ * and when `props.onRequestClose` is called later, there would be a runtime React error because the component is no longer there.
+ *
+ * @param {Object} props Props.
+ * @param {Array<string>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
+ * @param {Object} props.initialValues Initial values for the form.
+ * @param {Array<string>} props.initialValues.countries Array of selected country codes.
+ * @param {string} props.initialValues.currency Selected currency.
+ * @param {number} props.initialValues.threshold Threshold value.
+ * @param {number} props.onRequestClose Callback to close the modal.
+ * @param {number} props.onSubmit Callback when the form is submitted.
+ */
 const AddMinimumOrderFormModal = ( props ) => {
-	const { countryOptions, value, onChange = noop, onRequestClose } = props;
+	const {
+		countryOptions,
+		initialValues,
+		onSubmit = noop,
+		onRequestClose = noop,
+	} = props;
 
 	const handleValidate = ( values ) => {
 		const errors = {};
@@ -39,16 +60,12 @@ const AddMinimumOrderFormModal = ( props ) => {
 
 	const handleSubmitCallback = ( newValue ) => {
 		onRequestClose();
-		onChange( newValue );
+		onSubmit( newValue );
 	};
 
 	return (
 		<Form
-			initialValues={ {
-				countries: value.countries,
-				threshold: value.threshold,
-				currency: value.currency,
-			} }
+			initialValues={ initialValues }
 			validate={ handleValidate }
 			onSubmit={ handleSubmitCallback }
 		>
