@@ -20,9 +20,9 @@ import './index.scss';
  * Clicking on a Google Ads account text link.
  *
  * @event gla_google_ads_account_link_click
- * @property {string} context indicate which page / module the link is in
- * @property {string} href where the user is redirected
- * @property {string} link_id a unique ID for the link within the page / module
+ * @property {string} context Indicates which page / module the link is in
+ * @property {string} href Where the user is redirected
+ * @property {string} link_id A unique ID for the link within the page / module
  */
 
 /**

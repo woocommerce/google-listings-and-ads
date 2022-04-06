@@ -31,9 +31,9 @@ import AppInputLinkControl from '.~/components/app-input-link-control';
 
 /**
  * @param {Object} props React props
- * @param {string} props.id
- * @param {string} props.websiteUrl
- * @param {Function} [props.onSwitchAccount]
+ * @param {string} props.id Google Account ID
+ * @param {string} props.websiteUrl Website's URL
+ * @param {Function} [props.onSwitchAccount] Callback when clicking on Switch Account
  * @fires gla_mc_account_reclaim_url_button_click
  * @fires gla_mc_account_switch_account_button_click with `context: 'reclaim-url'`
  */

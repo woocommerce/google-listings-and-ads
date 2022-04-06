@@ -41,8 +41,8 @@ const toVisibilityEventProp = ( visible ) =>
  * Triggered when the product feed "bulk edit" functionality is being used
  *
  * @event gla_bulk_edit_click
- * @property {string} context name of the table
- * @property {number} number_of_items edit how many items
+ * @property {string} context Name of the table
+ * @property {number} number_of_items Edit how many items
  * @property {string} visibility_to `("sync_and_show" | "dont_sync_and_show")`
  */
 

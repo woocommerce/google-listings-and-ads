@@ -27,7 +27,7 @@ import { useAppDispatch } from '.~/data';
 /**
  * @fires gla_mc_account_connect_different_account_button_click
  * @param {Object} props React props
- * @param {Object} props.googleMCAccount
+ * @param {Object} props.googleMCAccount Connected Google Merchant Center Account
  */
 const ConnectedCard = ( { googleMCAccount } ) => {
 	const { createNotice, removeNotice } = useDispatchCoreNotices();

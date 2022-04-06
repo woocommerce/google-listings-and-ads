@@ -13,7 +13,7 @@ import AppIconButton from '.~/components/app-icon-button';
  * "Help" button is clicked.
  *
  * @event gla_help_click
- * @property {string} context indicate the place where the button is located, e.g. `setup-ads`.
+ * @property {string} context Indicates the place where the button is located, e.g. `setup-ads`.
  */
 
 /**

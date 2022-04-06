@@ -145,7 +145,7 @@ const handleGuideFinish = ( e ) => {
  * A modal is opend
  *
  * @event gla_modal_open
- * @property {string} context indicate which modal is opened
+ * @property {string} context Indicates which modal is opened
  */
 
 /**

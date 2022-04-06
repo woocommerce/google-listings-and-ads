@@ -17,9 +17,9 @@ import './index.scss';
 import stepNameKeyMap from './stepNameKeyMap';
 
 /**
- * @param {Object} props
- * @param {string} [props.savedStep]
- * @param {Function} [props.onRefetchSavedStep]
+ * @param {Object} props React props
+ * @param {string} [props.savedStep] A saved step overriding the current step
+ * @param {Function} [props.onRefetchSavedStep] Callback when Saved Step is updated
  * @fires gla_setup_mc with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
  */
 const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {

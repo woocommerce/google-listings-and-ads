@@ -84,8 +84,8 @@ const actions = (
  * Triggered when edit links are clicked from Issues to resolve table.
  *
  * @event gla_edit_product_issue_click
- * @property {string} code issue code returned from Google
- * @property {string} issue issue description returned from Google
+ * @property {string} code Issue code returned from Google
+ * @property {string} issue Issue description returned from Google
  */
 
 /**

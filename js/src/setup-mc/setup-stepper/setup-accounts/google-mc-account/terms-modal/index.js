@@ -21,8 +21,8 @@ import './index.scss';
 
 /**
  * @param {Object} props React props
- * @param {Function} [props.onCreateAccount]
- * @param {Function} [props.onRequestClose]
+ * @param {Function} [props.onCreateAccount] Callback function when the account is created
+ * @param {Function} [props.onRequestClose] Callback function when the modal is closed
  * @fires gla_mc_account_create_button_click
  */
 const TermsModal = ( {

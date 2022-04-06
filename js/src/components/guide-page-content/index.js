@@ -29,8 +29,8 @@ export default function GuidePageContent( { title, children } ) {
  * Clicking on a text link within the modal content
  *
  * @event gla_modal_content_link_click
- * @property {string} context indicate which link is clicked
- * @property {string} href link's URL
+ * @property {string} context Indicates which link is clicked
+ * @property {string} href Link's URL
  */
 
 /**

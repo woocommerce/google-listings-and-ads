@@ -24,8 +24,8 @@ import './index.scss';
  *
  * @fires gla_ads_account_create_button_click When agreed by clicking "Create account".
  * @param {Object} props React props
- * @param {Function} [props.onCreateAccount]
- * @param {Function} [props.onRequestClose]
+ * @param {Function} [props.onCreateAccount] Callback function when account is created
+ * @param {Function} [props.onRequestClose] Callback function when the modal is closed
  */
 const TermsModal = ( {
 	onCreateAccount = () => {},

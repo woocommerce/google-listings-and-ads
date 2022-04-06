@@ -10,7 +10,7 @@ import { recordEvent } from '@woocommerce/tracks';
  * @property {string} id (tooltip identifier)
  */
 /**
- * @param {string} id
+ * @param {string} id The tooltip’s identifier
  * @fires gla_tooltip_viewed with the given `id`.
  */
 const recordTooltipViewedEvent = ( id ) => {

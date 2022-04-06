@@ -20,9 +20,9 @@ import './index.scss';
 
 /**
  * @param {Object} props React props.
- * @param { { name: string, domain:string } } props.existingAccount
- * @param {Function} [props.onContinue]
- * @param {Function} [props.onRequestClose]
+ * @param { { name: string, domain:string } } props.existingAccount Account name and domain 
+ * @param {Function} [props.onContinue] Callback function when confirming the modal
+ * @param {Function} [props.onRequestClose] Callback function when closing the modal
  *
  * @fires gla_mc_account_warning_modal_confirm_button_click
  */

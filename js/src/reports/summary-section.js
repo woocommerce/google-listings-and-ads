@@ -21,8 +21,8 @@ const noValidData = {
  * Triggered when a chart tab is clicked
  *
  * @event gla_chart_tab_click
- * @property {string} report name of the report (e.g. `"reports-programs" | "reports-products"`)
- * @property {string} context metric key of the clicked tab (e.g. `"sales" | "conversions" | "clicks" | "impressions" | "spend"`).
+ * @property {string} report Name of the report (e.g. `"reports-programs" | "reports-products"`)
+ * @property {string} context Metric key of the clicked tab (e.g. `"sales" | "conversions" | "clicks" | "impressions" | "spend"`).
  */
 
 /**
