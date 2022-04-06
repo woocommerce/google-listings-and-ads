@@ -124,10 +124,6 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @property {string} trigger Action (e.g. `click`)
  */
 
-export const recordPreLaunchChecklistCompleteEvent = () => {
-	recordEvent( 'gla_pre_launch_checklist_complete' );
-};
-
 /**
  * Triggered on events during ads setup and editing
  *
