@@ -15,7 +15,7 @@ import './index.scss';
  *
  * @param {Object} props
  * @param {string} props.title Title to indicate where the user is at.
- * @param {import(".~/components/app-button")} props.helpButton Help button
+ * @param {import(".~/components/app-button").default} props.helpButton Help button
  * @param {string} props.backHref Href for the back button.
  * @param {Function} props.onBackButtonClick
  */
