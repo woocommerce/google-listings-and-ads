@@ -17,5 +17,6 @@ module.exports = {
 				additionalHooks: 'useSelect',
 			},
 		],
+		'eol-last': 2,
 	},
 };
