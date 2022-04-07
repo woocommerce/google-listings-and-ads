@@ -19,6 +19,7 @@ import './request-full-access-google-account-card.scss';
  *
  * @param {Object} props React props.
  * @param {string} props.additionalScopeEmail Specify the email to be requested additional permission scopes to Google.
+ * @fires gla_google_account_connect_button_click with `{ action: 'scope', context: 'reconnect' | 'setup-mc' }`
  */
 export default function RequestFullAccessGoogleAccountCard( {
 	additionalScopeEmail,

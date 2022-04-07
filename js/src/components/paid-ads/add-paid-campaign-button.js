@@ -13,6 +13,14 @@ import recordEvent from '.~/utils/recordEvent';
 import { getCreateCampaignUrl } from '.~/utils/urls';
 
 /**
+ * "Add paid campaign" button is clicked.
+ *
+ * @event gla_add_paid_campaign_clicked
+ * @property {string} context Indicate the place where the button is located.
+ * @property {string} href Indicate the destination where the users is directed to, e.g. `'/google/setup-ads'`.
+ */
+
+/**
  * Renders an AppButton with the text "Add Paid Campaign".
  * Clicking on the button will call `recordEvent` and
  * redirect to Setup MC or Create New Campaign depending on
@@ -23,6 +31,8 @@ import { getCreateCampaignUrl } from '.~/utils/urls';
  * You can provide `eventProps` and it will be merged with the default eventProps.
  *
  * You should specify the context where this button is used, e.g. `eventProps={ { context: 'programs-table-card' } }`.
+ *
+ * @fires gla_add_paid_campaign_clicked with given props, when clicked.
  *
  * @param {Object} props Props
  * @param {string} [props.eventName='gla_add_paid_campaign_clicked'] eventName to be used when calling `recordEvent`.
