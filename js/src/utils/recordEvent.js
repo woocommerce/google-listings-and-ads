@@ -8,30 +8,6 @@ import { recordEvent } from '@woocommerce/tracks';
  */
 
 /**
- * Toggling display of table columns
- *
- * @event gla_table_header_toggle
- * @property {string} report Name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
- * @property {string} column Name of the column
- * @property {string} status (`on`|`off`)
- */
-
-/**
- *
- * @param {string} report The report's name
- * @param {string} column Column that was toggled
- * @param {string} status (`on`|`off`) Indicates if the column was toggled on or off.
- * @fires gla_table_header_toggle
- */
-export const recordTableHeaderToggleEvent = ( report, column, status ) => {
-	recordEvent( 'gla_table_header_toggle', {
-		report,
-		column,
-		status,
-	} );
-};
-
-/**
  * Sorting table
  *
  * @event gla_table_sort
