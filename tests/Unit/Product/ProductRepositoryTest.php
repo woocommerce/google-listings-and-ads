@@ -204,7 +204,7 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		);
 		$this->assertEquals(
 			array_merge( [ $simple_product->get_id() ], $variable_product->get_children() ),
-			$this->product_repository->find_sync_ready_product_ids()->get()
+			$this->product_repository->find_sync_ready_product()->get_product_ids()
 		);
 	}
 
@@ -300,11 +300,27 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 			$this->product_repository->find_all_synced_google_ids()
 		);
 	}
+	public function test_find_delete_product_ids() {
+		$product_1 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
+
+		// A synced product with 5 failed delete attempts.
+		$product_2 = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
+		$this->product_meta->update_failed_delete_attempts( $product_2, 5 );
+
+		$ids = [ $product_1->get_id(), $product_2->get_id() ];
+
+		$this->assertEquals(
+			[ $product_1->get_id() ],
+			$this->product_repository->find_delete_product_ids( $ids )
+		);
+	}
 
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->product_meta       = $this->container->get( ProductMetaHandler::class );
 		$this->product_helper     = $this->container->get( ProductHelper::class );

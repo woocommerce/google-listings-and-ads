@@ -7,7 +7,6 @@ import { Spinner } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import SummaryCard from './summary-card';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 
@@ -20,7 +19,7 @@ const PromotionContent = ( { adsAccount } ) => {
 			<p>
 				{ showFreeCredit
 					? __(
-							'Create your first campaign and get up to $150* free',
+							'Create your first campaign and get $500 in ad credit*',
 							'google-listings-and-ads'
 					  )
 					: __(
@@ -35,19 +34,17 @@ const PromotionContent = ( { adsAccount } ) => {
 	);
 };
 
-function PaidCampaignPromotionCard( { title } ) {
+function PaidCampaignPromotionCard() {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 
 	return (
-		<SummaryCard title={ title }>
-			<div className="gla-summary-card__body">
-				{ googleAdsAccount ? (
-					<PromotionContent adsAccount={ googleAdsAccount } />
-				) : (
-					<Spinner />
-				) }
-			</div>
-		</SummaryCard>
+		<div className="gla-summary-card__body">
+			{ googleAdsAccount ? (
+				<PromotionContent adsAccount={ googleAdsAccount } />
+			) : (
+				<Spinner />
+			) }
+		</div>
 	);
 }
 

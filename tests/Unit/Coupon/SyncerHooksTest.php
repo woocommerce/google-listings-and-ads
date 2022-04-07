@@ -79,7 +79,9 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
             ['US' => 'google_id'] );
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
-            ->with( $this->equalTo( [$expected_coupon_entry] ) );
+            ->with( $this->callback( function ( $entries ) use ( $expected_coupon_entry ) {
+                return $entries[0]->get_wc_coupon_id() === $expected_coupon_entry->get_wc_coupon_id();
+            } ) );
 
         wp_trash_post( $coupon->get_id() );
     }
@@ -95,7 +97,9 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
             ['US' => 'google_id'] );
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
-            ->with( $this->equalTo( [$expected_coupon_entry] ) );
+            ->with( $this->callback( function ( $entries ) use ( $expected_coupon_entry ) {
+                return $entries[0]->get_wc_coupon_id() === $expected_coupon_entry->get_wc_coupon_id();
+            } ) );
 
         // force delete post
         wp_delete_post( $coupon->get_id(), true );
@@ -131,7 +135,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
     /**
      * Runs before each test is executed.
      */
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
 
         $this->login_as_administrator();

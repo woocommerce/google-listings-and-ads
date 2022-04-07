@@ -13,9 +13,15 @@ const getMatchingDomainAccount = ( existingAccounts = [] ) => {
 	 * before doing the comparison.
 	 */
 	const homeUrl = new URL( getSetting( 'homeUrl' ) ).toString();
-	return existingAccounts.find(
-		( el ) => new URL( el.domain ).toString() === homeUrl
-	);
+
+	return existingAccounts.find( ( el ) => {
+		try {
+			const domainUrl = new URL( el.domain );
+			return domainUrl.toString() === homeUrl;
+		} catch ( e ) {
+			return false;
+		}
+	} );
 };
 
 export default getMatchingDomainAccount;

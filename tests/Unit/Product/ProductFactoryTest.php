@@ -107,7 +107,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->attribute_manager = $this->createMock( AttributeManager::class );
 		$this->wc                = $this->container->get( WC::class );

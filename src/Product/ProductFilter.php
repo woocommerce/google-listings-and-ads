@@ -34,30 +34,25 @@ class ProductFilter implements Service {
 	 * Filters and returns a list of products that are ready to be submitted to Google Merchant Center.
 	 *
 	 * @param WC_Product[] $products
-	 * @param bool         $return_ids
 	 *
 	 * @return FilteredProductList
 	 */
-	public function filter_sync_ready_products( array $products, bool $return_ids = false ): FilteredProductList {
+	public function filter_sync_ready_products( array $products ): FilteredProductList {
 		$unfiltered_count = count( $products );
-
 		/**
 		 * Filters the list of products ready to be synced (before applying filters to check failures and sync-ready status).
 		 *
 		 * @param WC_Product[] $products Sync-ready WooCommerce products
 		 */
 		$products = apply_filters( 'woocommerce_gla_get_sync_ready_products_pre_filter', $products );
-
-		$results = [];
-		foreach ( $products as $product ) {
-			// skip if it's not sync ready or if syncing has recently failed
-			if ( ! $this->product_helper->is_sync_ready( $product ) || $this->product_helper->is_sync_failed_recently( $product ) ) {
-				continue;
-			}
-
-			$results[] = $return_ids ? $product->get_id() : $product;
-		}
-
+		$results  = array_values(
+			array_filter(
+				$products,
+				function ( $product ) {
+					return $this->product_helper->is_sync_ready( $product ) && ! $this->product_helper->is_sync_failed_recently( $product );
+				}
+			)
+		);
 		/**
 		 * Filters the list of products ready to be synced (after applying filters to check failures and sync-ready status).
 		 *
@@ -66,5 +61,27 @@ class ProductFilter implements Service {
 		$results = apply_filters( 'woocommerce_gla_get_sync_ready_products_filter', $results );
 
 		return new FilteredProductList( $results, $unfiltered_count );
+	}
+
+	/**
+	 * Filter and return a list of products that can be deleted.
+	 *
+	 * @since 1.12.0
+	 *
+	 * @param WC_Product[] $products
+	 *
+	 * @return FilteredProductList
+	 */
+	public function filter_products_for_delete( array $products ): FilteredProductList {
+		$results = array_values(
+			array_filter(
+				$products,
+				function ( $product ) {
+					return ! $this->product_helper->is_delete_failed_threshold_reached( $product );
+				}
+			)
+		);
+
+		return new FilteredProductList( $results, count( $products ) );
 	}
 }

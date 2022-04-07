@@ -237,6 +237,7 @@ abstract class Query implements QueryInterface {
 			case 'IN':
 			case 'NOT IN':
 			case 'BETWEEN':
+			case 'IS NOT NULL':
 				// These are all valid.
 				return;
 
@@ -333,6 +334,8 @@ abstract class Query implements QueryInterface {
 				);
 			} elseif ( 'BETWEEN' === $compare ) {
 				$value = "'{$this->escape( $where['value'][0] )}' AND '{$this->escape( $where['value'][1] )}'";
+			} elseif ( 'IS NOT NULL' === $compare ) {
+				$value = '';
 			} else {
 				$value = "'{$this->escape( $where['value'] )}'";
 			}

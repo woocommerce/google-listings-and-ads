@@ -154,9 +154,12 @@ class WCCouponAdapterTest extends UnitTest {
 	        );
 	    $adapted_coupon->disable_promotion( $coupon );
 
-	    $this->assertEquals(
-	        "$postdate/$postdate",
-	        $adapted_coupon->getPromotionEffectiveDates() );
+	    $dates = explode( '/', $adapted_coupon->getPromotionEffectiveDates() );
+	    $now = date(DATE_ATOM);
+
+	    $this->assertEquals( $postdate, $dates[0] );
+	    $this->assertGreaterThanOrEqual( $postdate, $dates[1] );
+	    $this->assertLessThanOrEqual( $now, $dates[1] );
 	}
 
 	public function test_product_id_restrictions() {
@@ -212,7 +215,7 @@ class WCCouponAdapterTest extends UnitTest {
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'couponValueType' ) );
 	}
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		update_option( 'woocommerce_currency', 'USD' );
 	}

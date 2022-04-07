@@ -39,6 +39,7 @@ abstract class RequirementValidator implements RequirementValidatorInterface {
 	 * @param RuntimeException $e
 	 */
 	protected function add_admin_notice( RuntimeException $e ) {
+		// Display notice error message.
 		add_action(
 			'admin_notices',
 			function() use ( $e ) {

@@ -1,10 +1,10 @@
 === Google Listings & Ads ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
-Requires at least: 5.5
+Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.10.0
+Stable tag: 1.12.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -21,7 +21,7 @@ Sync your store with Google to list products for free, run paid ads, and track p
 With Google Listings & Ads:
 - **Connect your store seamlessly** with Google Merchant Center.
 - **Reach online shoppers** with free listings.
-- **Boost store traffic and sales** with Smart Shopping Campaigns.
+- **Boost store traffic and sales** with Performance Max Campaigns.
 
 = Connect your store seamlessly =
 
@@ -39,30 +39,21 @@ Your products can also appear on Google Search, Google Images, and Gmail if you�
 
 = Boost store traffic and sales with Google Ads =
 
-Grow your business with Smart Shopping campaigns. Create an ad campaign to promote your products across Google Search, Shopping, YouTube, Gmail, and the Display Network.
+Grow your business with Performance Max campaigns. Create an ad campaign to promote your products across Google Search, Shopping, YouTube, Gmail, and the Display Network.
 
 Connect your Google Ads account, choose a budget, and launch your campaign straight from your WooCommerce dashboard. You can also review campaign analytics and access automated reports to easily see how your ads are performing.
 
-*Learn more about supported countries and currencies for Smart Shopping campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).*
+*Learn more about supported countries and currencies for Performance Max campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).*
 
-= Get started with up to $150 in ad credit when you create a Google Ads account =
+= Get $500 in Google Ads credit when you spend your first $500! =
 
-Get up to  $150\* in ad credit to help you get started on Smart Shopping Campaigns. The promotional code will be applied when you start spending and serve your first ad impression, and whatever you spend over the next 30 days, up to $150, will be added back to your account.
-
-*\*Ad credit amounts vary by country and region.*
-
-= The eligibility criteria: =
-- The account has no other promotions applied.
-- The account is billed to a country where Google Partners promotions are offered.
-- The account served its first ad impression within the last 14 days.
-
-*Review the static terms [here](http://www.google.com/ads/coupons/terms.html).*
+Create a new Google Ads account through Google Listings & Ads and a promotional code will be automatically applied to your account. You’ll have 60 days to spend $500 to qualify for the $500 ads credit. See full terms and conditions [here](https://www.google.com/ads/coupons/terms/).
 
 == Installation ==
 
 = Minimum Requirements =
 
-* WordPress 5.6 or greater
+* WordPress 5.7 or greater
 * WooCommerce 5.8 or greater
 * PHP version 7.3 or greater (PHP 7.4 or greater is recommended)
 * MySQL version 5.6 or greater
@@ -97,70 +88,38 @@ The Google Merchant Center helps you sync your store and product data with Googl
 = Which countries are available for Google Listings & Ads? =
 Learn more about supported countries for Google free listings [here](https://support.google.com/merchants/answer/10033607?hl=en).
 
-Learn more about supported countries and currencies for Smart Shopping campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).
+Learn more about supported countries and currencies for Performance Max campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).
 
 = Where will my products appear? =
 If you’re selling in the US, then eligible free listings can appear in search results across Google Search, Google Images, and the Google Shopping tab. If you're selling outside the US, free listings will appear on the Shopping tab.
 
-If you’re running a Smart Shopping campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.
+If you’re running a Performance Max campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.
 
 = Will my deals and promotions display on Google? =
 To show your coupons and promotions on Google Shopping listings, make sure you’re using the latest version of Google Listings & Ads.  When you create or update a coupon in your WordPress dashboard under Marketing > Coupons, you’ll see a Channel Visibility settings box on the right: select “Show coupon on Google” to enable. This is currently available in the US only.
 
-= What are Smart Shopping campaigns? =
-Smart Shopping campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.
+= What are Performance Max campaigns? =
+Performance Max campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.
 
-= How much do Smart Shopping campaigns cost? =
-Smart Shopping campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google Listings & Ads but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.
+= How much do Performance Max campaigns cost? =
+Performance Max campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google Listings & Ads but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.
 
-= Can I run both free listings and Smart Shopping campaigns at the same time? =
-Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Smart Shopping campaign.
+= Can I run both free listings and Performance Max campaigns at the same time? =
+Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.
 
 == Changelog ==
 
-= 1.10.0 - 2022-01-13 =
-* Add - Bulk update channel visibility for coupons.
-* Add - CES prompts for initial setup and campaign creation.
-* Add - Pre-fill shipping rates during free listing configuration wizard.
-* Add - Pre-fill shipping rates in Setup Merchant Center flow based on store's shipping settings.
-* Add - Sync products' shipping label/class to Merchant Center.
-* Fix - Drop WC 5.7 support.
-* Fix - Fatal error when creating Ads account without Site Title.
-* Fix - Fix/1078 shipping values flash during onboarding setup.
-* Fix - Fixing coupon test issue.
-* Fix - Group shipping rate by price and currency, and display the right currency in shipping rate input.
-* Fix - MC address validation.
-* Fix - Remove WC's `is_ajax` (deprecated in 6.1) in favor of proxied WP `wp_doing_ajax`.
-* Fix - Removed state/region address validation .
-* Fix - Replace `cloneDeep` within `.~/data/reducer.js` with functions that would not mutate other references of the state tree.
-* Tweak - WC 6.1 compatibility.
+= 1.12.4 - 2022-04-06 =
+* Fix - Prevent fatal errors when migrating or syncing merchant settings.
 
-= 1.9.0 - 2021-12-15 =
-* Add - Pre-fill target audience countries during onboarding using WooCommerce shipping zones. #1131
-* Add - Pre-fill target audience countries with suggestions based on WooCommerce settings. #1145
-* Fix -  Fatal error on plugin deactivation. #1142
-* Fix - Fix UI loading flicker in Setup MC Step 2 "Choose your audience" page. #1146
-* Fix - Fix e2e test after copy update. #1134
-* Tweak - Display help cursor for tooltip. #1130
-* Tweak - Update product channel visibility's styling to match that of coupons channel visibility. #1135
-* Tweak - Updated `@wordpress/scripts@17.1.0`. #1132
-* Tweak - WC 6.0 compatibility.
-* Tweak - WP 5.9 compatibility.
-* Update - min. WC version to 5.7. #1110
+= 1.12.3 - 2022-04-05 =
+* Fix - Shipping times section not showing up and unable to proceed through the Setup Merchant Center flow.
 
-= 1.8.0 - 2021-11-30 =
-* Update - UX improvements on account connections in Setup Merchant Center flow.
-
-= 1.7.0 - 2021-11-24 =
-* Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.
-* Add - Accept login_hint when generating OAuth URL.
-* Add - Review request inbox notification after 10 conversions and 100 free listing clicks
-* Update – Add support for retrieving the name and domain from the Google API
-* Fix - Add support for Norwegian language, nb and nn
-* Fix - Report tabs lose active state when changing chart.
-* Tweak - Update `in_stock` and `out_of_stock` availability enums
-* Tweak - Retry async jobs on timeout
-* Tweak - Reduce the bundle size of the index.js file.
-* Tweak - refactored legacy WC menu highlighting effect.
+= 1.12.2 - 2022-04-05 =
+* Add - Unit test for AdsConversionAction.
+* Add - Unit test for AdsReport.
+* Fix - Prevent uncaught exception when Merchant account is not connected and we send a tracker snapshot.
+* Tweak - DB migration for shipping rates.
+* Update - Create all new campaigns as PMax campaigns.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

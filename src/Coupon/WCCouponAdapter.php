@@ -132,7 +132,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 		$coupon_amount = $wc_coupon->get_amount();
 		if ( $wc_coupon->is_type( self::WC_DISCOUNT_TYPE_PERCENT ) ) {
 			$this->setCouponValueType( self::COUPON_VALUE_TYPE_PERCENT_OFF );
-			$percent_off = round( $coupon_amount );
+			$percent_off = round( floatval( $coupon_amount ) );
 			$this->setPercentOff( $percent_off );
 			$this->setLongtitle( sprintf( '%d%% off', $percent_off ) );
 		} elseif ( $wc_coupon->is_type(
