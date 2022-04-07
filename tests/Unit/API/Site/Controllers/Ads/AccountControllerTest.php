@@ -58,7 +58,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		'billing_url' => self::TEST_BILLING_URL,
 	];
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->account    = $this->createMock( AccountService::class );

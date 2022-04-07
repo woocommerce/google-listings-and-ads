@@ -64,7 +64,7 @@ const EditProgramPromptModal = ( { programId, onRequestClose } ) => {
 		>
 			<p>
 				{ __(
-					'Results typically improve with time with Google’s Free Listing and Smart Shopping campaigns.',
+					'Results typically improve with time with Google’s Free Listing and paid ad campaigns.',
 					'google-listings-and-ads'
 				) }
 			</p>

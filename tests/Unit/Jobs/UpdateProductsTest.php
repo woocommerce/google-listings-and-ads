@@ -38,7 +38,7 @@ class UpdateProductsTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->action_scheduler     = $this->createMock( ActionScheduler::class );

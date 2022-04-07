@@ -44,7 +44,7 @@ class ISOUtilityTest extends ContainerAwareUnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->iso_utility = $this->container->get( ISOUtility::class );
 	}

@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.12.1
+Stable tag: 1.12.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -21,7 +21,7 @@ Sync your store with Google to list products for free, run paid ads, and track p
 With Google Listings & Ads:
 - **Connect your store seamlessly** with Google Merchant Center.
 - **Reach online shoppers** with free listings.
-- **Boost store traffic and sales** with Smart Shopping Campaigns.
+- **Boost store traffic and sales** with Performance Max Campaigns.
 
 = Connect your store seamlessly =
 
@@ -39,11 +39,11 @@ Your products can also appear on Google Search, Google Images, and Gmail if you�
 
 = Boost store traffic and sales with Google Ads =
 
-Grow your business with Smart Shopping campaigns. Create an ad campaign to promote your products across Google Search, Shopping, YouTube, Gmail, and the Display Network.
+Grow your business with Performance Max campaigns. Create an ad campaign to promote your products across Google Search, Shopping, YouTube, Gmail, and the Display Network.
 
 Connect your Google Ads account, choose a budget, and launch your campaign straight from your WooCommerce dashboard. You can also review campaign analytics and access automated reports to easily see how your ads are performing.
 
-*Learn more about supported countries and currencies for Smart Shopping campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).*
+*Learn more about supported countries and currencies for Performance Max campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).*
 
 = Get $500 in Google Ads credit when you spend your first $500! =
 
@@ -88,55 +88,38 @@ The Google Merchant Center helps you sync your store and product data with Googl
 = Which countries are available for Google Listings & Ads? =
 Learn more about supported countries for Google free listings [here](https://support.google.com/merchants/answer/10033607?hl=en).
 
-Learn more about supported countries and currencies for Smart Shopping campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).
+Learn more about supported countries and currencies for Performance Max campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).
 
 = Where will my products appear? =
 If you’re selling in the US, then eligible free listings can appear in search results across Google Search, Google Images, and the Google Shopping tab. If you're selling outside the US, free listings will appear on the Shopping tab.
 
-If you’re running a Smart Shopping campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.
+If you’re running a Performance Max campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.
 
 = Will my deals and promotions display on Google? =
 To show your coupons and promotions on Google Shopping listings, make sure you’re using the latest version of Google Listings & Ads.  When you create or update a coupon in your WordPress dashboard under Marketing > Coupons, you’ll see a Channel Visibility settings box on the right: select “Show coupon on Google” to enable. This is currently available in the US only.
 
-= What are Smart Shopping campaigns? =
-Smart Shopping campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.
+= What are Performance Max campaigns? =
+Performance Max campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.
 
-= How much do Smart Shopping campaigns cost? =
-Smart Shopping campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google Listings & Ads but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.
+= How much do Performance Max campaigns cost? =
+Performance Max campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google Listings & Ads but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.
 
-= Can I run both free listings and Smart Shopping campaigns at the same time? =
-Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Smart Shopping campaign.
+= Can I run both free listings and Performance Max campaigns at the same time? =
+Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.
 
 == Changelog ==
 
-= 1.12.1 - 2022-04-01 =
-* Fix - Change shipping time options based on shipping rate options, to address missing shipping times data when shipping rates option is set to automatic or simple flat option, and shipping times option is set to complex manual option.
-* Fix - Do not sync shipping rates if the shipping time setting is set to complex.
+= 1.12.4 - 2022-04-06 =
+* Fix - Prevent fatal errors when migrating or syncing merchant settings.
 
-= 1.12.0 - 2022-03-29 =
-* Add - Additional data points for tracker snapshot.
-* Add - Enables merchants to select multiple countries as their audience when creating a Google Ads campaign (Smart Shopping Campaign).
-* Add - Google Listings And Ads product attributes icon.
-* Add - Integration with WooCommerce Shipping Zone to automatically sync shipping settings to Merchant Center.
-* FIx - Show right link and message in Paid Campaigns report when there is no data available.
-* Fix - Cleanup synced products locally when disconnecting Merchant Center account.
-* Fix - Combine duplicate account issues per country.
-* Fix - Fatal error when the plugin is activated before WooCommerce.
-* Fix - Fix incorrect HTTP status code when campaign creation and edit APIs call fails.
-* Fix - Limit failed delete retries to 5 and schedule again after one minute.
-* Fix - Performance issue related with NoteInitializer class.
-* Tweak - Add message to advise users to only connect Google Ads child account, not manager account.
-* Tweak - Catch errors related to invalid top-level domains specifically, and throw an error when the site's URL ends with an invalid top-level domain.
-* Tweak - Improve Ads error messages returned by the API.
-* Tweak - Simplify the format processing of number and amount values for all report metrics.
-* Update - Budget recommendation API supports for multiple countries.
-* Update - Campaigns APIs support for multiple countries.
-* Update - Change Campaign operations to batch requests.
-* Update - Refactor the Middleware class.
-* Update - Remove delete operations for campaign budget and ads group.
-* Update - WP-CLI dev dependencies.
+= 1.12.3 - 2022-04-05 =
+* Fix - Shipping times section not showing up and unable to proceed through the Setup Merchant Center flow.
 
-= 1.11.1 - 2022-02-10 =
-* Fix - Prevent a fatal error in case an existing Merchant Center account has an invalid domain.
+= 1.12.2 - 2022-04-05 =
+* Add - Unit test for AdsConversionAction.
+* Add - Unit test for AdsReport.
+* Fix - Prevent uncaught exception when Merchant account is not connected and we send a tracker snapshot.
+* Tweak - DB migration for shipping rates.
+* Update - Create all new campaigns as PMax campaigns.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

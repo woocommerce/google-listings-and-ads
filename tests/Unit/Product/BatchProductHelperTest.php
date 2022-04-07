@@ -356,7 +356,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->target_audience      = $this->createMock( TargetAudience::class );
 		$this->validator            = $this->createMock( ValidatorInterface::class );
