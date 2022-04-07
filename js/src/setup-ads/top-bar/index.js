@@ -11,6 +11,9 @@ import { recordSetupAdsEvent } from '.~/utils/recordEvent';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 
+/**
+ * @fires gla_setup_ads with given `{ target: 'back', trigger: 'click' }` when back button is clicked.
+ */
 const SetupAdsTopBar = () => {
 	// We record the intent to go back or to help - clicking buttons.
 	// Those events are fired before the actual navigation happens.

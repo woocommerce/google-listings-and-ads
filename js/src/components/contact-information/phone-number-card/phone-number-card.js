@@ -86,6 +86,13 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberVerified } ) {
 }
 
 /**
+ * Clicking on the Merchant Center phone number edit button.
+ *
+ * @event gla_mc_phone_number_edit_button_click
+ * @property {string} view which view the edit button is in. Possible values: `setup-mc`, `settings`.
+ */
+
+/**
  * Renders phone number data in Card UI and is able to edit.
  *
  * @param {Object} props React props.
@@ -98,6 +105,8 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberVerified } ) {
  * @param {Function} [props.onEditClick] Called when clicking on "Edit" button.
  *     If this callback is omitted, it will enter edit mode when clicking on "Edit" button.
  * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified in edit mode.
+ *
+ * @fires gla_mc_phone_number_edit_button_click
  */
 export default function PhoneNumberCard( {
 	view,

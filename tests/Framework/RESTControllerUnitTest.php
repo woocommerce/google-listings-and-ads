@@ -51,7 +51,7 @@ abstract class RESTControllerUnitTest extends UnitTest {
 	/**
 	 * Setup our test server.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		global $wp_rest_server;
@@ -63,7 +63,7 @@ abstract class RESTControllerUnitTest extends UnitTest {
 	/**
 	 * Unset the server.
 	 */
-	public function tearDown() {
+	public function tearDown(): void {
 		parent::tearDown();
 		global $wp_rest_server;
 		$wp_rest_server = null;
@@ -81,7 +81,15 @@ abstract class RESTControllerUnitTest extends UnitTest {
 	 */
 	protected function do_request( string $endpoint, string $type = 'GET', array $params = [] ): object {
 		$request = new Request( $type, $endpoint );
-		'GET' === $type ? $request->set_query_params( $params ) : $request->set_body_params( $params );
+
+		if ( 'GET' === $type ) {
+			$request->set_query_params( $params );
+		} else {
+			// Set the body as JSON encoded data.
+			$request->set_header( 'content-type', 'application/json' );
+			$request->set_body( wp_json_encode( $params ) );
+		}
+
 		return $this->server->dispatch_request( $request );
 	}
 

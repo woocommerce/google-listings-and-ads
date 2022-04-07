@@ -10,9 +10,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use DateTime;
-use Google\Ads\GoogleAds\V8\Common\Metrics as AdMetrics;
-use Google\Ads\GoogleAds\V8\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V8\Services\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V9\Common\Metrics as AdMetrics;
+use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V9\Services\GoogleAdsServiceClient;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
 use Google\Service\ShoppingContent;
@@ -41,7 +41,7 @@ class MerchantMetricsTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->shopping_client          = $this->createMock( ShoppingContent::class );
 		$this->ads_client               = $this->createMock( GoogleAdsClient::class );

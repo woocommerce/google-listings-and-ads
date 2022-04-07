@@ -11,7 +11,6 @@ import { getChartTypeForQuery } from '@woocommerce/date';
  */
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
-import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 
 const emptyMessage = __(
 	'No data for the selected date range',
@@ -28,8 +27,7 @@ const emptyMessage = __(
  */
 export default function ChartSection( { metrics, loaded, intervals } ) {
 	const query = useUrlQuery();
-	const currency = useStoreCurrency();
-	const { formatAmount } = useCurrencyFactory();
+	const storeCurrencyConfig = useStoreCurrency();
 
 	const { selectedMetric } = query;
 	let visibleMetric = {};
@@ -40,11 +38,16 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			metrics[ 0 ];
 	}
 
-	const { key, label, isCurrency = false } = visibleMetric;
+	const { key, label, isCurrency = false, formatFn } = visibleMetric;
+
+	// Preferably we would use the currency of the selected metric to be used on y axis.
+	// But due to https://github.com/woocommerce/woocommerce-admin/issues/7694 Chart will not react on changes.
+	// Therefore, we will use sotre's one without the symbol, to slightly reduce the merchants confusion.
+	const visibleCurrency = { ...storeCurrencyConfig, symbol: '' };
 
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
-	const tooltipValueFormat = isCurrency ? formatAmount : ',';
+	const localizedFormatFn = formatFn.bind( visibleMetric );
 
 	const chartData = useMemo( () => {
 		if ( ! loaded ) {
@@ -67,10 +70,10 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			data={ chartData }
 			title={ label }
 			query={ query }
-			currency={ currency }
+			currency={ visibleCurrency }
 			chartType={ chartType }
 			valueType={ valueType }
-			tooltipValueFormat={ tooltipValueFormat }
+			tooltipValueFormat={ localizedFormatFn }
 			isRequesting={ ! loaded }
 			emptyMessage={ emptyMessage }
 			layout="time-comparison"

@@ -6,11 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
-use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
@@ -37,17 +34,16 @@ defined( 'ABSPATH' ) || exit;
  * - MerchantAccountState
  * - MerchantStatuses
  * - Settings
- * - ShippingRateTable
- * - ShippingTimeTable
  * - WC
  * - WP
+ * - TargetAudience
+ * - GoogleHelper
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
 class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInterface, Service {
 
 	use ContainerAwareTrait;
-	use GoogleHelper;
 	use OptionsAwareTrait;
 	use PluginHelper;
 
@@ -102,7 +98,10 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	public function is_store_country_supported(): bool {
 		$country = $this->container->get( WC::class )->get_base_country();
 
-		return $this->is_country_supported( $country );
+		/** @var GoogleHelper $google_helper */
+		$google_helper = $this->container->get( GoogleHelper::class );
+
+		return $google_helper->is_country_supported( $country );
 	}
 
 	/**
@@ -117,9 +116,12 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			$language = substr( $this->container->get( WP::class )->get_locale(), 0, 2 );
 		}
 
+		/** @var GoogleHelper $google_helper */
+		$google_helper = $this->container->get( GoogleHelper::class );
+
 		return array_key_exists(
 			strtolower( $language ),
-			$this->get_mc_supported_languages()
+			$google_helper->get_mc_supported_languages()
 		);
 	}
 
@@ -146,42 +148,6 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
-	 * @return string[] List of target countries specified in options. Defaults to WooCommerce store base country.
-	 */
-	public function get_target_countries(): array {
-		$target_countries = [ $this->container->get( WC::class )->get_base_country() ];
-
-		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
-		if ( empty( $target_audience['location'] ) && empty( $target_audience['countries'] ) ) {
-			return $target_countries;
-		}
-
-		$location = strtolower( $target_audience['location'] );
-		if ( 'all' === $location ) {
-			$target_countries = $this->get_mc_supported_countries();
-		} elseif ( 'selected' === $location && ! empty( $target_audience['countries'] ) ) {
-			$target_countries = $target_audience['countries'];
-		}
-
-		return $target_countries;
-	}
-
-	/**
-	 * Return the main target country (default Store country).
-	 * If the store country is not included then use the first target country.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return string
-	 */
-	public function get_main_target_country(): string {
-		$target_countries = $this->get_target_countries();
-		$shop_country     = $this->container->get( WC::class )->get_base_country();
-
-		return in_array( $shop_country, $target_countries, true ) ? $shop_country : $target_countries[0];
-	}
-
-	/**
 	 * Return if the given country is supported to have promotions on Google.
 	 *
 	 * @param string $country
@@ -194,28 +160,10 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			$country = $this->container->get( WC::class )->get_base_country();
 		}
 
-		return in_array( $country, $this->get_mc_promotion_supported_countries(), true );
-	}
+		/** @var GoogleHelper $google_helper */
+		$google_helper = $this->container->get( GoogleHelper::class );
 
-	/**
-	 * Get the connected merchant account.
-	 *
-	 * @return array
-	 */
-	public function get_connected_status(): array {
-		$id     = $this->options->get_merchant_id();
-		$status = [
-			'id'     => $id,
-			'status' => $id ? 'connected' : 'disconnected',
-		];
-
-		$incomplete = $this->container->get( MerchantAccountState::class )->last_incomplete_step();
-		if ( ! empty( $incomplete ) ) {
-			$status['status'] = 'incomplete';
-			$status['step']   = $incomplete;
-		}
-
-		return $status;
+		return in_array( $country, $google_helper->get_mc_promotion_supported_countries(), true );
 	}
 
 	/**
@@ -245,25 +193,6 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			'status' => 'incomplete',
 			'step'   => $step,
 		];
-	}
-
-	/**
-	 * Disconnect Merchant Center account
-	 */
-	public function disconnect() {
-		$this->options->delete( OptionsInterface::CONTACT_INFO_SETUP );
-		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
-		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
-		$this->options->delete( OptionsInterface::MERCHANT_CENTER );
-		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
-		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
-		$this->options->delete( OptionsInterface::MERCHANT_ID );
-
-		$this->container->get( MerchantStatuses::class )->delete();
-
-		$this->container->get( MerchantIssueTable::class )->truncate();
-		$this->container->get( ShippingRateTable::class )->truncate();
-		$this->container->get( ShippingTimeTable::class )->truncate();
 	}
 
 	/**
@@ -372,33 +301,74 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 */
 	protected function saved_shipping_and_tax_options(): bool {
 		$merchant_center_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-		$target_countries         = $this->get_target_countries();
+		$target_countries         = $this->container->get( TargetAudience::class )->get_target_countries();
 
 		// Tax options saved if: not US (no taxes) or tax_rate has been set
 		if ( in_array( 'US', $target_countries, true ) && empty( $merchant_center_settings['tax_rate'] ) ) {
 			return false;
 		}
 
-		// Free shipping saved if: not offered, OR offered and threshold not null
-		if ( ! empty( $merchant_center_settings['offers_free_shipping'] ) && ! isset( $merchant_center_settings['free_shipping_threshold'] ) ) {
-			return false;
-		}
-
-		// Shipping options saved if: 'manual' OR records for all countries
+		// Shipping time saved if: 'manual' OR records for all countries
 		if ( isset( $merchant_center_settings['shipping_time'] ) && 'manual' === $merchant_center_settings['shipping_time'] ) {
 			$saved_shipping_time = true;
 		} else {
-			$shipping_time_rows  = $this->container->get( ShippingTimeQuery::class )->get_count();
-			$saved_shipping_time = $shipping_time_rows === count( $target_countries );
+			$shipping_time_rows = $this->container->get( ShippingTimeQuery::class )->get_results();
+
+			// Get the name of countries that have saved shipping times.
+			$saved_time_countries = array_column( $shipping_time_rows, 'country' );
+
+			// Check if all target countries have a shipping time.
+			$saved_shipping_time = count( $shipping_time_rows ) === count( $target_countries ) &&
+								   empty( array_diff( $target_countries, $saved_time_countries ) );
 		}
 
-		if ( isset( $merchant_center_settings['shipping_rate'] ) && 'manual' === $merchant_center_settings['shipping_rate'] ) {
+		// Shipping rates saved if: 'manual', 'automatic', OR there are records for all countries
+		if (
+			isset( $merchant_center_settings['shipping_rate'] ) &&
+			in_array( $merchant_center_settings['shipping_rate'], [ 'manual', 'automatic' ], true )
+		) {
 			$saved_shipping_rate = true;
 		} else {
-			$shipping_rate_rows  = $this->container->get( ShippingRateQuery::class )->get_count();
-			$saved_shipping_rate = $shipping_rate_rows === count( $target_countries );
+			// Get the list of saved shipping rates grouped by country.
+			/**
+			 * @var ShippingRateQuery $shipping_rate_query
+			 */
+			$shipping_rate_query = $this->container->get( ShippingRateQuery::class );
+			$shipping_rate_query->group_by( 'country' );
+			$shipping_rate_rows = $shipping_rate_query->get_results();
+
+			// Get the name of countries that have saved shipping rates.
+			$saved_rates_countries = array_column( $shipping_rate_rows, 'country' );
+
+			// Check if all target countries have a shipping rate.
+			$saved_shipping_rate = count( $shipping_rate_rows ) === count( $target_countries ) &&
+								   empty( array_diff( $target_countries, $saved_rates_countries ) );
 		}
 
 		return $saved_shipping_rate && $saved_shipping_time;
+	}
+
+	/**
+	 * Determine whether there are any account-level issues.
+	 *
+	 * @since 1.11.0
+	 * @return bool
+	 */
+	public function has_account_issues(): bool {
+		$issues = $this->container->get( MerchantStatuses::class )->get_issues( MerchantStatuses::TYPE_ACCOUNT );
+
+		return isset( $issues['issues'] ) && count( $issues['issues'] ) >= 1;
+	}
+
+	/**
+	 * Determine whether there is at least one synced product.
+	 *
+	 * @since 1.11.0
+	 * @return bool
+	 */
+	public function has_at_least_one_synced_product(): bool {
+		$statuses = $this->container->get( MerchantStatuses::class )->get_product_statistics();
+
+		return $statuses['statistics']['active'] >= 1;
 	}
 }

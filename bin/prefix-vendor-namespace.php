@@ -37,7 +37,6 @@ $direct_replacements = [
 		'GuzzleHttp\Message\ResponseInterface)',
 		'GuzzleHttp\Promise\promise_for',
 		'GuzzleHttp\Psr7\Message::bodySummary',
-		'GuzzleHttp\Psr7\str',
 		'GuzzleHttp\Psr7\Utils::streamFor',
 		'GuzzleHttp\Psr7\Utils::tryFopen',
 	],

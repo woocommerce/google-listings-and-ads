@@ -44,6 +44,20 @@ const actions = (
 );
 
 /**
+ * Triggered when edit links are clicked from Issues to resolve table.
+ *
+ * @event gla_edit_product_issue_click
+ * @property {string} code Issue code returned from Google
+ * @property {string} issue Issue description returned from Google
+ */
+
+/**
+ * @fires gla_edit_product_issue_click
+ * @fires gla_table_go_to_page with `context: 'issues-to-resolve'`
+ * @fires gla_table_page_click with `context: 'issues-to-resolve'`
+ */
+
+/**
  * The card rendering the Merchant Center Issues in the Product feed. It doesn't render if there is no issues.
  * It uses useMCIssuesTotals for getting the total of issues.
  *

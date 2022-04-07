@@ -14,6 +14,7 @@ import {
 	REPORT_SOURCE_DEFAULT,
 } from '.~/constants';
 import useProductsReport from './useProductsReport';
+import useMetricsWithFormatter from '../useMetricsWithFormatter';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
 import DifferentCurrencyNotice from '.~/components/different-currency-notice';
@@ -27,7 +28,7 @@ import ReportsNavigation from '../reports-navigation';
 /**
  * Available metrics and their human-readable labels.
  *
- * @type {Array<Metric>}
+ * @type {Array<import('../index.js').MetricSchema>}
  */
 const freeMetrics = [
 	{
@@ -73,7 +74,10 @@ const ProductsReport = ( { hasPaidSource } ) => {
 
 	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
-	const metrics = type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics;
+	const metrics = useMetricsWithFormatter(
+		type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics
+	);
+
 	const {
 		loaded,
 		data: { totals, intervals, products },
@@ -130,7 +134,3 @@ const ProductsReportPage = () => {
 };
 
 export default ProductsReportPage;
-
-/**
- * @typedef {import("../index.js").Metric} Metric
- */

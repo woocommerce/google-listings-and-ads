@@ -271,7 +271,21 @@ class ProductSyncer implements Service {
 	 * @param BatchInvalidProductEntry[] $invalid_products
 	 */
 	protected function handle_update_errors( array $invalid_products ) {
-		$error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
+		$error_products = [];
+		foreach ( $invalid_products as $invalid_product ) {
+			if ( $invalid_product->has_error( GoogleProductService::INTERNAL_ERROR_REASON ) ) {
+				$wc_product_id = $invalid_product->get_wc_product_id();
+				$wc_product    = $this->wc->maybe_get_product( $wc_product_id );
+				// Only schedule for retry if the failure threshold has not been reached.
+				if (
+					$wc_product instanceof WC_Product &&
+					! $this->product_helper->is_update_failed_threshold_reached( $wc_product )
+				) {
+					$error_products[ $wc_product_id ] = $wc_product_id;
+				}
+			}
+		}
+
 		if ( ! empty( $error_products ) && apply_filters( 'woocommerce_gla_products_update_retry_on_failure', true, $invalid_products ) ) {
 			do_action( 'woocommerce_gla_batch_retry_update_products', $error_products );
 
@@ -313,7 +327,12 @@ class ProductSyncer implements Service {
 
 			// internal error
 			if ( $invalid_product->has_error( GoogleProductService::INTERNAL_ERROR_REASON ) ) {
-				$internal_error_ids[ $google_product_id ] = $wc_product_id;
+				$this->product_helper->increment_failed_delete_attempt( $wc_product );
+
+				// Only schedule for retry if the failure threshold has not been reached.
+				if ( ! $this->product_helper->is_delete_failed_threshold_reached( $wc_product ) ) {
+					$internal_error_ids[ $google_product_id ] = $wc_product_id;
+				}
 			}
 		}
 

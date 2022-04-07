@@ -15,16 +15,21 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import { useAppDispatch } from '.~/data';
 import CreateCampaignFormContent from '.~/components/paid-ads/create-campaign-form-content';
 import validateForm from '.~/utils/paid-ads/validateForm';
 import { getDashboardUrl } from '.~/utils/urls';
 import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 
+/**
+ * @fires gla_launch_paid_campaign_button_click on submit
+ */
 const CreatePaidAdsCampaignForm = () => {
 	const [ loading, setLoading ] = useState( false );
 	const { createAdsCampaign } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
+	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
 
 	const handleValidate = ( values ) => {
 		return validateForm( values );
@@ -34,12 +39,11 @@ const CreatePaidAdsCampaignForm = () => {
 		setLoading( true );
 
 		try {
-			const { amount, country: countryArr } = values;
-			const country = countryArr && countryArr[ 0 ];
+			const { amount, countryCodes } = values;
 
-			recordLaunchPaidCampaignClickEvent( amount, country );
+			recordLaunchPaidCampaignClickEvent( amount, countryCodes );
 
-			await createAdsCampaign( amount, country );
+			await createAdsCampaign( amount, countryCodes );
 
 			createNotice(
 				'success',
@@ -56,11 +60,15 @@ const CreatePaidAdsCampaignForm = () => {
 		getHistory().push( getDashboardUrl() );
 	};
 
+	if ( ! targetAudience ) {
+		return null;
+	}
+
 	return (
 		<Form
 			initialValues={ {
 				amount: 0,
-				country: [],
+				countryCodes: targetAudience,
 			} }
 			validate={ handleValidate }
 			onSubmit={ handleSubmit }
@@ -80,7 +88,7 @@ const CreatePaidAdsCampaignForm = () => {
 							) }
 							description={ createInterpolateElement(
 								__(
-									'Paid Smart Shopping campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
+									'Paid Performance Max campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
 									'google-listings-and-ads'
 								),
 								{

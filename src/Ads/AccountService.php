@@ -7,7 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -29,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
  * - Merchant
  * - Middleware
  *
- * @since x.x.x
+ * @since 1.11.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Ads
  */
 class AccountService implements OptionsAwareInterface, Service {
@@ -63,7 +63,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @throws Exception When an API error occurs.
 	 */
 	public function get_account_ids(): array {
-		return $this->container->get( Middleware::class )->get_ads_account_ids();
+		return $this->container->get( Ads::class )->get_ads_account_ids();
 	}
 
 	/**
@@ -72,7 +72,24 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @return array
 	 */
 	public function get_connected_account(): array {
-		return $this->container->get( Middleware::class )->get_connected_ads_account();
+		$id = $this->options->get_ads_id();
+
+		$status = [
+			'id'       => $id,
+			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
+			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) ),
+			'status'   => $id ? 'connected' : 'disconnected',
+		];
+
+		$incomplete = $this->state->last_incomplete_step();
+		if ( ! empty( $incomplete ) ) {
+			$status['status'] = 'incomplete';
+			$status['step']   = $incomplete;
+		}
+
+		$status += $this->state->get_step_data( 'set_id' );
+
+		return $status;
 	}
 
 	/**

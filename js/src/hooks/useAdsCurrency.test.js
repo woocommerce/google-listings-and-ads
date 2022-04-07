@@ -2,121 +2,132 @@
  * External dependencies
  */
 import { renderHook } from '@testing-library/react-hooks';
-import { apiFetch } from '@wordpress/data-controls';
 
 /**
  * Internal dependencies
  */
 import useAdsCurrency from './useAdsCurrency';
 import useStoreCurrency from './useStoreCurrency';
+import useGoogleAdsAccount from './useGoogleAdsAccount';
 
-// Force real timers, make sure all timers are actually ticking.
-jest.useRealTimers();
+const storeCurrencyConfig = {
+	code: 'EUR',
+	precision: 3,
+	symbol: '€',
+	symbolPosition: 'right_space',
+	decimalSeparator: ';',
+	thousandSeparator: '|',
+	priceFormat: '%2$s %1$s',
+};
 
-jest.mock( '@wordpress/data-controls', () => ( {
-	apiFetch: jest.fn().mockName( 'apiFetch mock' ),
-} ) );
-jest.mock( './useStoreCurrency', () => ( {
-	__esModule: true,
-	default: jest.fn().mockName( 'useStoreCurrency' ).mockReturnValue( {
-		code: 'EUR',
-		precision: 3,
-		symbol: '€',
-		symbolPosition: 'right_space',
-		decimalSeparator: ';',
-		thousandSeparator: '|',
-		priceFormat: '%2$s %1$s',
-	} ),
-} ) );
+jest.mock( './useStoreCurrency', () =>
+	jest
+		.fn()
+		.mockName( 'useStoreCurrency' )
+		.mockReturnValue( storeCurrencyConfig )
+);
+
+jest.mock( './useGoogleAdsAccount', () =>
+	jest.fn().mockName( 'useGoogleAdsAccount' ).mockReturnValue( {} )
+);
 
 describe( 'useAdsCurrency', () => {
-	test( 'initially should return `{ currency: Object, hasFinishedResolution: undefined }`', () => {
+	test( 'initially should return `{ adsCurrencyConfig: Object, formatAmount: Function }`', () => {
 		const { result } = renderHook( () => useAdsCurrency() );
 
 		// assert initial state
-		expect( result.current ).toHaveProperty(
-			'hasFinishedResolution',
-			undefined
-		);
-		expect( result.current ).toHaveProperty( 'currency' );
-		expect( result.current.currency ).toEqual(
+		expect( result.current ).toHaveProperty( 'adsCurrencyConfig' );
+		expect( result.current ).toMatchObject( {
+			formatAmount: expect.any( Function ),
+		} );
+		expect( result.current.adsCurrencyConfig ).toEqual(
 			expect.objectContaining( {
-				formatAmount: expect.any( Function ),
-				getCurrencyConfig: expect.any( Function ),
+				code: expect.any( String ),
+				precision: expect.any( Number ),
+				symbol: expect.any( String ),
+				symbolPosition: expect.any( String ),
+				decimalSeparator: expect.any( String ),
+				thousandSeparator: expect.any( String ),
+				priceFormat: expect.any( String ),
 			} )
 		);
 	} );
 
-	test( "initially should return store's currency w/ `code` and `symbol` set to empty", () => {
+	test( "initially should return store's currency config w/ `code` and `symbol` set to empty", () => {
 		const { result } = renderHook( () => useAdsCurrency() );
 		const {
-			result: { current: storesCurrency },
+			result: { current: storesCurrencyConfig },
 		} = renderHook( () => useStoreCurrency() );
 
 		// assert initial state
-		expect( result.current ).toHaveProperty( 'currency.getCurrencyConfig' );
-		expect( result.current.currency.getCurrencyConfig() ).toEqual( {
-			...storesCurrency,
+		expect( result.current ).toHaveProperty( 'adsCurrencyConfig' );
+		expect( result.current.adsCurrencyConfig ).toEqual( {
+			...storesCurrencyConfig,
 			code: '',
 			symbol: '',
 		} );
 	} );
 
-	describe( 'eventually', () => {
-		let adsAccountData;
+	describe( 'after Google Ads Account status is fetched', () => {
+		let connectedAdsAccount;
+		let unconnectedAdsAccount;
+
 		beforeEach( () => {
-			adsAccountData = {
+			connectedAdsAccount = {
 				id: 777777,
 				currency: 'PLN',
-				symbol: 'z\u0142',
+				symbol: 'zł',
 				status: 'connected',
 			};
-			apiFetch
-				// Mock /wp-json/wc/gla/jetpack/connected
-				.mockReturnValueOnce( {
-					active: 'yes',
-					owner: 'yes',
-					displayName: 'username',
-					email: 'tomalec.gla1.test@gmail.com',
-				} )
-				// Mock /wp-json/wc/gla/google/connected
-				.mockReturnValueOnce( {
-					active: 'yes',
-					email: 'gla1.test@example.com',
-				} )
-				.mockReturnValueOnce(
-					// Mock /wp-json/wc/gla/ads/connection
-					adsAccountData
-				);
-		} );
-		test( 'should finish resolution', async () => {
-			const { result, waitFor } = renderHook( () => useAdsCurrency() );
-
-			// assert initial state
-			expect( result.current.hasFinishedResolution ).toEqual( undefined );
-			// assert eventual state
-			await waitFor( () =>
-				expect( result.current.hasFinishedResolution ).toEqual( true )
-			);
+			unconnectedAdsAccount = {
+				id: 0,
+				currency: null,
+				symbol: null,
+				status: 'disconnected',
+			};
 		} );
 
-		test( 'should return Ads account currency', async () => {
-			const { result, waitFor } = renderHook( () => useAdsCurrency() );
+		test( 'should return currency config with Ads account code and symbol', async () => {
+			useGoogleAdsAccount.mockReturnValue( {
+				googleAdsAccount: connectedAdsAccount,
+			} );
 
-			// assert initial state
-			// expect( result.current.hasFinishedResolution ).toEqual( undefined );
-			// Unfortunately, tests are not atomic, as the state is perserved between them.
+			const { result } = renderHook( () => useAdsCurrency() );
 
-			const initialConfig = result.current.currency.getCurrencyConfig();
+			expect( result.current.adsCurrencyConfig ).toEqual( {
+				...storeCurrencyConfig,
+				code: connectedAdsAccount.currency,
+				symbol: connectedAdsAccount.symbol,
+			} );
+		} );
 
-			// Assert eventual value.
-			await waitFor( () =>
-				expect( result.current.currency.getCurrencyConfig() ).toEqual( {
-					...initialConfig,
-					code: adsAccountData.currency,
-					symbol: adsAccountData.symbol,
-				} )
-			);
+		test( 'should be able to format value according to currency config', () => {
+			useGoogleAdsAccount.mockReturnValue( {
+				googleAdsAccount: connectedAdsAccount,
+			} );
+
+			const { result } = renderHook( () => useAdsCurrency() );
+			const { formatAmount } = result.current;
+			const value = 1234.5678;
+
+			expect( formatAmount( value ) ).toBe( '1|234;568\xA0zł' );
+			expect( formatAmount( value, true ) ).toBe( '1|234;568\xA0PLN' );
+		} );
+
+		test( 'when Ads account is not connected, it should return the code/symbol of currency config with fallback value', async () => {
+			useGoogleAdsAccount.mockReturnValue( {
+				googleAdsAccount: unconnectedAdsAccount,
+			} );
+
+			const { result } = renderHook( () => useAdsCurrency() );
+
+			const { adsCurrencyConfig, formatAmount } = result.current;
+			const value = 1234.5678;
+
+			expect( adsCurrencyConfig.code ).toBe( '' );
+			expect( adsCurrencyConfig.symbol ).toBe( '' );
+			expect( formatAmount( value ) ).toBe( '1|234;568\xA0' );
+			expect( formatAmount( value, true ) ).toBe( '1|234;568\xA0' );
 		} );
 	} );
 } );

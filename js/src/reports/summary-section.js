@@ -18,6 +18,14 @@ const noValidData = {
 };
 
 /**
+ * Triggered when a chart tab is clicked
+ *
+ * @event gla_chart_tab_click
+ * @property {string} report Name of the report (e.g. `"reports-programs" | "reports-products"`)
+ * @property {string} context Metric key of the clicked tab (e.g. `"sales" | "conversions" | "clicks" | "impressions" | "spend"`).
+ */
+
+/**
  * Renders a section composed with SummaryList and MetricNumber.
  *
  * @param {Object} props React props.
@@ -26,6 +34,7 @@ const noValidData = {
  * @param {number} [props.expectedLength=metrics.length] Expected metrics to display, for example when the metrics array is not yet resolved.
  * @param {PerformanceData} props.totals Report's performance data.
  * @param {string} props.trackEventId Report ID used in tracking events.
+ * @fires gla_chart_tab_click
  */
 export default function SummarySection( {
 	loaded,
@@ -51,16 +60,16 @@ export default function SummarySection( {
 	return (
 		<SummaryList>
 			{ () =>
-				metrics.map( ( { key, label, isCurrency = false } ) => {
+				metrics.map( ( metric ) => {
+					const { key } = metric;
 					const selected = selectedMetric === key;
 					const href = getNewPath( { selectedMetric: key } );
 					return (
 						<MetricNumber
 							key={ key }
-							label={ label }
+							metric={ metric }
 							href={ href }
 							selected={ selected }
-							isCurrency={ isCurrency }
 							data={ totals[ key ] || noValidData }
 							onLinkClickCallback={ () => trackClickEvent( key ) }
 						/>

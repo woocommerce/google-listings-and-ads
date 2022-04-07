@@ -66,6 +66,10 @@ class SettingsController extends BaseOptionsController {
 		return function( Request $request ) {
 			$schema  = $this->get_schema_properties();
 			$options = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+			if ( ! is_array( $options ) ) {
+				$options = [];
+			}
+
 			foreach ( $schema as $key => $property ) {
 				$options[ $key ] = $request->get_param( $key ) ?? $options[ $key ] ?? $property['default'] ?? null;
 			}
@@ -96,25 +100,10 @@ class SettingsController extends BaseOptionsController {
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'enum'              => [
+					'automatic',
 					'flat',
 					'manual',
 				],
-			],
-			'offers_free_shipping'    => [
-				'type'              => 'boolean',
-				'description'       => __(
-					'Whether free shipping over a certain price is allowed .',
-					'google-listings-and-ads'
-				),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'default'           => false,
-			],
-			'free_shipping_threshold' => [
-				'type'              => 'integer',
-				'description'       => __( 'Minimum price eligible for free shipping.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'shipping_time'           => [
 				'type'              => 'string',
