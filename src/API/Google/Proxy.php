@@ -682,4 +682,41 @@ class Proxy implements OptionsAwareInterface {
 
 		return $datetime_util->maybe_convert_tz_string( $timezone );
 	}
+
+	/**
+	 * Get Account Review Status
+	 */
+	public function get_account_review_status() {
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->get(
+				$this->get_manager_url( 'account-review-status/' . $this->get_merchant_id() ),
+			);
+
+
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+
+			if ( 200 === $result->getStatusCode() && isset( $response['freeListingsProgram'] ) && isset( $response['shoppingAdsProgram'] ) ) {
+				do_action( 'woocommerce_gla_request_review_response', $response );
+
+				return $response;
+			}
+
+			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
+			do_action( 'woocommerce_gla_request_review_error', $response );
+
+			$error = $response['message'] ?? __( 'Invalid response getting account review status', 'google-listings-and-ads' );
+			throw new Exception( $error, $result->getStatusCode() );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_account_review_failure', $e );
+
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error getting account review status', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
+		}
+	}
 }

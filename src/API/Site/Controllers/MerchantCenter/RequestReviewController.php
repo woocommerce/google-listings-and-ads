@@ -3,8 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 
@@ -15,16 +17,20 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class AccountReviewController extends BaseOptionsController {
+class RequestReviewController extends BaseOptionsController {
+
+	protected $middleware;
+	protected $request_review_statuses;
 
 
 	/**
-	 * AccountReviewController constructor.
+	 * RequestReviewController constructor.
 	 *
-	 * @param RESTServer $server
 	 */
-	public function __construct( RESTServer $server ) {
+	public function __construct( RESTServer $server, Middleware $middleware, RequestReviewStatuses $request_review_statuses ) {
 		parent::__construct( $server );
+		$this->middleware              = $middleware;
+		$this->request_review_statuses = $request_review_statuses;
 	}
 
 	/**
@@ -54,21 +60,10 @@ class AccountReviewController extends BaseOptionsController {
 	 */
 	protected function get_review_read_callback(): callable {
 		return function ( Request $request ) {
-			// TODO: Temporary. Implement this after Google finishes new API implementation.
-			// Statuses: APPROVED, UNDER_REVIEW, DISAPPROVED, WARNING, BLOCKED
-			$response = [
-				'status' => 'DISAPPROVED',
-				'issues' => [
-					'#1 Issue one',
-					'#2 Issue two',
-					'#3 Issue three',
-					'#4 Issue four',
-					'#5 Issue five',
-					'#6 Issue six',
-				],
-			];
+			$response      = $this->middleware->get_account_review_status();
+			$review_status = $this->request_review_statuses->get_statuses_from_response( $response );
 
-			return $this->prepare_item_for_response( $response, $request );
+			return $this->prepare_item_for_response( $review_status, $request );
 		};
 	}
 
@@ -79,13 +74,19 @@ class AccountReviewController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'status'      => [
+			'status'        => [
 				'type'        => 'string',
 				'description' => __( 'The status of the last review.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'issues'      => [
+			'reviewAllowed' => [
+				'type'        => 'boolean',
+				'description' => __( 'Indicates if the user can request a new review.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'issues'        => [
 				'type'        => 'array',
 				'description' => __( 'The issues related to the Merchant Center to be reviewed and addressed before approval.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],

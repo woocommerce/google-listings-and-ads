@@ -34,6 +34,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
@@ -348,5 +349,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( DeprecatedFilters::class );
 
 		$this->share_with_tags( ShippingZone::class, WC::class );
+		$this->share_with_tags( RequestReviewStatuses::class );
+
 	}
 }

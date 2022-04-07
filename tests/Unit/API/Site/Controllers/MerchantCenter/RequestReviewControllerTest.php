@@ -2,23 +2,23 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountReviewController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\RequestReviewController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 
 /**
- * Test suit for AccountReviewController
+ * Test suit for RequestReviewController
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
  * @group RequestReview
  */
-class AccountReviewControllerTest extends RESTControllerUnitTest {
+class RequestReviewControllerTest extends RESTControllerUnitTest {
 
 	protected const ROUTE_GET_REQUEST = '/wc/gla/mc/review';
 
 	public function setUp() {
 		parent::setUp();
 
-		$this->controller     = new AccountReviewController( $this->server );
+		$this->controller     = new RequestReviewController( $this->server );
 		$this->controller->register();
 	}
 
