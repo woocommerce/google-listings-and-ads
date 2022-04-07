@@ -8,26 +8,6 @@ import { recordEvent } from '@woocommerce/tracks';
  */
 
 /**
- * Sorting table
- *
- * @event gla_table_sort
- * @property {string} report Name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
- * @property {string} column Name of the column
- * @property {string} direction (`asc`|`desc`)
- */
-
-/**
- *
- * @param {string} report The report's name
- * @param {string} column Column that was sorted
- * @param {string} direction (`asc`|`desc`) Indicates if it was sorted in ascending or descending order
- * @fires gla_table_sort with given props.
- */
-export const recordTableSortEvent = ( report, column, direction ) => {
-	recordEvent( 'gla_table_sort', { report, column, direction } );
-};
-
-/**
  * When table pagination is changed by entering page via "Go to page" input.
  *
  * @event gla_table_go_to_page
