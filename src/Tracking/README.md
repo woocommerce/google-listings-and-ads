@@ -109,7 +109,7 @@ Clicking on the button to create a new Google Ads account, after agreeing to the
 #### Emitters
 - [`SetupCard`](js/src/setup-ads/ads-stepper/setup-billing/setup-card/index.js#L34) with `{ context: 'setup-ads', link_id: 'set-up-billing',	href: billingUrl }`
 
-### [`gla_bulk_edit_click`](js/src/product-feed/product-feed-table-card/index.js#L40)
+### [`gla_bulk_edit_click`](js/src/product-feed/product-feed-table-card/index.js#L41)
 Triggered when the product feed "bulk edit" functionality is being used
 #### Properties
 |   |   |   |
@@ -118,7 +118,7 @@ Triggered when the product feed "bulk edit" functionality is being used
 `number_of_items` | `number` | Edit how many items
 `visibility_to` | `string` | `("sync_and_show" \| "dont_sync_and_show")`
 #### Emitters
-- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
+- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L66) with `context: 'product-feed'`
 
 ### [`gla_ces_feedback`](js/src/components/customer-effort-score-prompt/index.js#L29)
 CES feedback recorded
@@ -220,7 +220,7 @@ Trigger when store address edit button is clicked.
 #### Emitters
 - [`StoreAddressCardPreview`](js/src/components/contact-information/store-address-card.js#L144) Whenever "Edit" is clicked.
 
-### [`gla_edit_product_click`](js/src/product-feed/product-feed-table-card/index.js#L49)
+### [`gla_edit_product_click`](js/src/product-feed/product-feed-table-card/index.js#L50)
 Triggered when edit links are clicked from product feed table.
 #### Properties
 |   |   |   |
@@ -228,7 +228,7 @@ Triggered when edit links are clicked from product feed table.
 `status` | `string` | `("approved" \| "partially_approved" \| "expiring" \| "pending" \| "disapproved" \| "not_synced")`
 `visibility` | `string` | `("sync_and_show" \| "dont_sync_and_show")`
 #### Emitters
-- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L65)
+- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L66)
 
 ### [`gla_edit_product_issue_click`](js/src/product-feed/issues-table-card/index.js#L83)
 Triggered when edit links are clicked from Issues to resolve table.
@@ -301,7 +301,7 @@ Clicking on a text link within the notice on the Get Started page.
 - [`UnsupportedLanguage`](js/src/get-started-page/unsupported-notices/index.js#L38) with `{ context: "get-started", link_id: "supported-languages" }`
 - [`UnsupportedCountry`](js/src/get-started-page/unsupported-notices/index.js#L84) with `{ context: "get-started", link_id: "supported-countries" }`
 
-### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L137)
+### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L135)
 Clicking on the button to connect Google account.
 #### Properties
 |   |   |   |
@@ -329,7 +329,7 @@ Clicking on a Google Ads account text link.
 #### Emitters
 - [`BillingSavedCard`](js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
 
-### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L147)
+### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L145)
 Clicking on a Google Merchant Center link.
 #### Properties
 |   |   |   |
@@ -400,7 +400,7 @@ Clicking on the "Yes, I want a new account" button in the warning modal for crea
 #### Emitters
 - [`WarningModal`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/warning-modal/index.js#L29)
 
-### [`gla_mc_phone_number_check`](js/src/components/contact-information/usePhoneNumberCheckTrackEventEffect.js#L12)
+### [`gla_mc_phone_number_check`](js/src/components/contact-information/usePhoneNumberCheckTrackEventEffect.js#L8)
 Check for whether the phone number for Merchant Center exists or not.
 #### Properties
 |   |   |   |
@@ -409,7 +409,7 @@ Check for whether the phone number for Merchant Center exists or not.
 `exist` | `string` | whether the phone number exists or not.
 `isValid` | `string` | whether the phone number is valid or not.
 #### Emitters
-- [`usePhoneNumberCheckTrackEventEffect`](js/src/components/contact-information/usePhoneNumberCheckTrackEventEffect.js#L25)
+- [`usePhoneNumberCheckTrackEventEffect`](js/src/components/contact-information/usePhoneNumberCheckTrackEventEffect.js#L21)
 
 ### [`gla_mc_phone_number_edit_button_click`](js/src/components/contact-information/phone-number-card/phone-number-card.js#L88)
 Clicking on the Merchant Center phone number edit button.
@@ -420,7 +420,7 @@ Clicking on the Merchant Center phone number edit button.
 #### Emitters
 - [`exports`](js/src/components/contact-information/phone-number-card/phone-number-card.js#L111)
 
-### [`gla_modal_closed`](js/src/utils/recordEvent.js#L155)
+### [`gla_modal_closed`](js/src/utils/recordEvent.js#L153)
 A modal is closed.
 #### Properties
 |   |   |   |
@@ -501,7 +501,7 @@ When table pagination is changed by entering page via "Go to page" input.
 `page` | `string` | Page number (starting at 1)
 #### Emitters
 - [`IssuesTableCard`](js/src/product-feed/issues-table-card/index.js#L96) with `context: 'issues-to-resolve'`
-- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
+- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L66) with `context: 'product-feed'`
 - [`recordTablePageEvent`](js/src/utils/recordEvent.js#L82) with the given `{ context, page }`.
 
 ### [`gla_table_header_toggle`](js/src/utils/recordEvent.js#L10)
@@ -526,7 +526,7 @@ When table pagination is clicked
 `direction` | `string` | Direction of page to be changed. `("next" \| "previous")`
 #### Emitters
 - [`IssuesTableCard`](js/src/product-feed/issues-table-card/index.js#L96) with `context: 'issues-to-resolve'`
-- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
+- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L66) with `context: 'product-feed'`
 - [`recordTablePageEvent`](js/src/utils/recordEvent.js#L82) with the given `{ context, direction }`.
 
 ### [`gla_table_sort`](js/src/utils/recordEvent.js#L34)
