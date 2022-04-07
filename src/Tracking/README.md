@@ -540,15 +540,14 @@ Sorting table
 - [`AppTableCard`](js/src/components/app-table-card/index.js#L28) upon sorting table by column
 - [`recordTableSortEvent`](js/src/utils/recordEvent.js#L26) with given props.
 
-### [`gla_tooltip_viewed`](js/src/components/help-popover/recordTooltipViewedEvent.js#L6)
+### [`gla_tooltip_viewed`](js/src/components/help-popover/index.js#L14)
 Viewing tooltip
 #### Properties
 |   |   |   |
 |---|---|---|
-`id` | `string` | (tooltip identifier)
+`id` | `string` | Tooltip identifier.
 #### Emitters
-- [`HelpPopover`](js/src/components/help-popover/index.js#L20) with the given `id`.
-- [`recordTooltipViewedEvent`](js/src/components/help-popover/recordTooltipViewedEvent.js#L16) with the given `id`.
+- [`HelpPopover`](js/src/components/help-popover/index.js#L27) with the given `id`.
 
 ### [`gla_wordpress_account_connect_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/wordpressdotcom-account/connect-wpcom-account-card.js#L14)
 Clicking on the button to connect WordPress.com account.
