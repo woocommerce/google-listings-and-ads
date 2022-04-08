@@ -48,7 +48,6 @@
 		"@testing-library/user-event": "^13.5.0",
 		"@types/jest": "^27.4.0",
 		"@types/puppeteer": "^5.4.4",
-		"@woocommerce/api": "^0.2.0",
 		"@woocommerce/e2e-environment": "^0.2.3",
 		"@woocommerce/e2e-utils": "^0.1.6",
 		"@woocommerce/eslint-plugin": "^1.2.0",
