@@ -189,11 +189,17 @@ class AccountController extends BaseOptionsController {
 
 	/**
 	 * Determine whether Jetpack is connected.
+	 * Check if manager is active and we have a valid token.
 	 *
 	 * @return bool
 	 */
 	protected function is_jetpack_connected(): bool {
-		return $this->manager->is_active();
+		if ( ! $this->manager->is_active() ) {
+			return false;
+		}
+
+		$token = $this->manager->get_tokens()->get_access_token( false, false, false );
+		return $token && ! is_wp_error( $token );
 	}
 
 	/**
