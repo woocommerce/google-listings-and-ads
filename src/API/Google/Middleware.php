@@ -524,7 +524,7 @@ class Middleware implements OptionsAwareInterface {
 	/**
 	 * Get Account Review Status
 	 *
-	 * @throws Exception When there is an invalid response
+	 * @throws Exception When there is an invalid response.
 	 */
 	public function get_account_review_status() {
 		try {
