@@ -543,13 +543,10 @@ class Middleware implements OptionsAwareInterface {
 			}
 
 			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
-			do_action( 'woocommerce_gla_request_review_error', $response );
-
 			$error = $response['message'] ?? __( 'Invalid response getting account review status', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-			do_action( 'woocommerce_gla_account_review_failure', $e );
 
 			throw new Exception(
 				$this->client_exception_message( $e, __( 'Error getting account review status', 'google-listings-and-ads' ) ),

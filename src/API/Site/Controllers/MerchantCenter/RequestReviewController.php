@@ -3,12 +3,14 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
+use WP_REST_Response as Response;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,8 +21,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class RequestReviewController extends BaseOptionsController {
 
-	protected $middleware;
-	protected $request_review_statuses;
+	protected Middleware $middleware;
+	protected RequestReviewStatuses $request_review_statuses;
 
 
 	/**
@@ -60,10 +62,15 @@ class RequestReviewController extends BaseOptionsController {
 	 */
 	protected function get_review_read_callback(): callable {
 		return function ( Request $request ) {
-			$response      = $this->middleware->get_account_review_status();
-			$review_status = $this->request_review_statuses->get_statuses_from_response( $response );
+			try {
+				$response      = $this->middleware->get_account_review_status();
+				$review_status = $this->request_review_statuses->get_statuses_from_response( $response );
 
-			return $this->prepare_item_for_response( $review_status, $request );
+				return $this->prepare_item_for_response( $review_status, $request );
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
+
 		};
 	}
 
