@@ -523,6 +523,8 @@ class Middleware implements OptionsAwareInterface {
 
 	/**
 	 * Get Account Review Status
+	 *
+	 * @throws Exception
 	 */
 	public function get_account_review_status() {
 		try {
@@ -532,13 +534,10 @@ class Middleware implements OptionsAwareInterface {
 				$this->get_manager_url( 'account-review-status/' . $this->options->get_merchant_id() ),
 			);
 
-
 			$response = json_decode( $result->getBody()->getContents(), true );
-
 
 			if ( 200 === $result->getStatusCode() && isset( $response['freeListingsProgram'] ) && isset( $response['shoppingAdsProgram'] ) ) {
 				do_action( 'woocommerce_gla_request_review_response', $response );
-
 				return $response;
 			}
 

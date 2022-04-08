@@ -22,12 +22,12 @@ defined( 'ABSPATH' ) || exit;
 class RequestReviewController extends BaseOptionsController {
 
 	/**
-	 * @var Middleware Middleware class for using WCS proxy
+	 * @var Middleware
 	 */
 	protected Middleware $middleware;
 
 	/**
-	 * @var RequestReviewStatuses Helper to manage the Region Statuses in the response
+	 * @var RequestReviewStatuses
 	 */
 	protected RequestReviewStatuses $request_review_statuses;
 
