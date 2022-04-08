@@ -4,26 +4,35 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
+/**
+ * Helper class for Account request Review feature
+ */
 class RequestReviewStatuses implements Service {
 
-	const DISAPPROVED = 'DISAPPROVED';
-	const WARNING = 'WARNING';
-	const ELIGIBLE = 'ELIGIBLE';
-	const UNDER_REVIEW = 'UNDER_REVIEW';
-	const PENDING_REVIEW = 'PENDING_REVIEW';
-	const ONBOARDING = 'ONBOARDING';
+	public const DISAPPROVED    = 'DISAPPROVED';
+	public const WARNING        = 'WARNING';
+	public const ELIGIBLE       = 'ELIGIBLE';
+	public const UNDER_REVIEW   = 'UNDER_REVIEW';
+	public const PENDING_REVIEW = 'PENDING_REVIEW';
+	public const ONBOARDING     = 'ONBOARDING';
 
+	/**
+	 * Merges the different program statuses based on priority
+	 *
+	 * @param array $response
+	 *
+	 * @return array
+	 */
 	public function get_statuses_from_response( array $response ) {
-
-		$issues        = [];
-		$reviewAllowed = false;
-		$status        = 'APPROVED';
+		$issues         = [];
+		$review_allowed = false;
+		$status         = 'APPROVED';
 
 		foreach ( $response as $program_type ) {
 			foreach ( $program_type['data']['regionStatuses'] as $region_status ) {
 
 				if ( $region_status['reviewEligibilityStatus'] === $this::ELIGIBLE ) {
-					$reviewAllowed = true;
+					$review_allowed = true;
 				}
 
 				if ( $region_status['eligibilityStatus'] === $this::DISAPPROVED || $region_status['eligibilityStatus'] === $this::WARNING ) {
@@ -60,7 +69,11 @@ class RequestReviewStatuses implements Service {
 			}
 		}
 
-		return [ 'issues' => array_unique( $issues ), 'reviewAllowed' => $reviewAllowed, 'status' => $status ];
+		return [
+			'issues'        => array_unique( $issues ),
+			'reviewAllowed' => $review_allowed,
+			'status'        => $status,
+		];
 	}
 
 }

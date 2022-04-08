@@ -21,13 +21,23 @@ defined( 'ABSPATH' ) || exit;
  */
 class RequestReviewController extends BaseOptionsController {
 
+	/**
+	 * @var Middleware Middleware class for using WCS proxy
+	 */
 	protected Middleware $middleware;
+
+	/**
+	 * @var RequestReviewStatuses Helper to manage the Region Statuses in the response
+	 */
 	protected RequestReviewStatuses $request_review_statuses;
 
 
 	/**
 	 * RequestReviewController constructor.
 	 *
+	 * @param RESTServer            $server
+	 * @param Middleware            $middleware
+	 * @param RequestReviewStatuses $request_review_statuses
 	 */
 	public function __construct( RESTServer $server, Middleware $middleware, RequestReviewStatuses $request_review_statuses ) {
 		parent::__construct( $server );
