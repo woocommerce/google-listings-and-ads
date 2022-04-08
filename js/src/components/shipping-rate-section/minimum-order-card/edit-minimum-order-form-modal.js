@@ -15,6 +15,10 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
 
 /**
+ * @typedef { import("./typedefs.js").MinimumOrderGroup } MinimumOrderGroup
+ */
+
+/**
  * Display the edit minimum order modal that is wrapped in a Form.
  *
  * When users submit the form, `props.onRequestClose` will be called first, and then followed by `props.onSubmit`.
@@ -23,21 +27,16 @@ import AppCountrySelect from '.~/components/app-country-select';
  *
  * @param {Object} props Props.
  * @param {Array<string>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
- * @param {Object} props.initialValues Initial values for the form.
- * @param {Array<string>} props.initialValues.countries Array of selected country codes.
- * @param {string} props.initialValues.currency Selected currency.
- * @param {number} props.initialValues.threshold Threshold value.
+ * @param {MinimumOrderGroup} props.initialValues Initial values for the form.
  * @param {function()} props.onRequestClose Callback to close the modal.
  * @param {function(Object)} props.onSubmit Callback when the form is submitted, with the form value.
  */
-const EditMinimumOrderFormModal = ( props ) => {
-	const {
-		countryOptions,
-		initialValues,
-		onRequestClose = noop,
-		onSubmit = noop,
-	} = props;
-
+const EditMinimumOrderFormModal = ( {
+	countryOptions,
+	initialValues,
+	onRequestClose = noop,
+	onSubmit = noop,
+} ) => {
 	const handleDeleteClick = () => {
 		onRequestClose();
 		onSubmit( {
