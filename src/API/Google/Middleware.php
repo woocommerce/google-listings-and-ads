@@ -529,7 +529,7 @@ class Middleware implements OptionsAwareInterface {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->get(
-				$this->get_manager_url( 'account-review-status/' . $this->get_merchant_id() ),
+				$this->get_manager_url( 'account-review-status/' . $this->options->get_merchant_id() ),
 			);
 
 
