@@ -65,7 +65,7 @@ class ReconnectWordPress extends AbstractNote {
 		$note->add_action(
 			'reconnect-wordpress',
 			__( 'Go to Google Listings & Ads', 'google-listings-and-ads' ),
-			$this->get_settings_url()
+			add_query_arg( 'subpath', '/reconnect-wpcom-account', $this->get_settings_url() )
 		);
 
 		return $note;
