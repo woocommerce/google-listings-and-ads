@@ -492,7 +492,7 @@ class Middleware implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Generate a default account name based on the date.
+	 * Generate a default account name based on the date./var/www/html/wp-content/plugins/google-listings-and-ads/src/Options/OptionsInterface.php
 	 *
 	 * @return string
 	 */

@@ -21,16 +21,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class RequestReviewController extends BaseOptionsController {
 
-	/**
-	 * @var Middleware
-	 */
-	protected Middleware $middleware;
-
-	/**
-	 * @var RequestReviewStatuses
-	 */
-	protected RequestReviewStatuses $request_review_statuses;
-
 
 	/**
 	 * RequestReviewController constructor.
