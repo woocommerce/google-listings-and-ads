@@ -3,6 +3,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Jetpack;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\Jetpack\Connection\Tokens;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack\AccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -18,6 +19,7 @@ use WP_Error;
  * @property Manager|MockObject    $manager
  * @property Middleware|MockObject $middleware
  * @property Options|MockObject    $options
+ * @property Tokens|MockObject     $tokens
  * @property AccountController     $controller
  */
 class AccountControllerTest extends RESTControllerUnitTest {
@@ -31,6 +33,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->manager    = $this->createMock( Manager::class );
 		$this->middleware = $this->createMock( Middleware::class );
 		$this->options    = $this->createMock( OptionsInterface::class );
+		$this->tokens     = $this->createMock( Tokens::class );
 
 		$this->controller = new AccountController( $this->server, $this->manager, $this->middleware );
 		$this->controller->register();
@@ -103,8 +106,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			'email'        => $email,
 		];
 
+		$this->tokens->method( 'get_access_token' )->willReturn( 'abcd' );
 		$this->manager->method( 'is_active' )->willReturn( true );
 		$this->manager->method( 'is_connection_owner' )->willReturn( true );
+		$this->manager->method( 'get_tokens' )->willReturn( $this->tokens );
 
 		// Confirm the WP TOS is marked as accepted for the current user.
 		$this->middleware->expects( $this->once() )
@@ -123,6 +128,26 @@ class AccountControllerTest extends RESTControllerUnitTest {
 				'owner'       => 'yes',
 				'displayName' => $name,
 				'email'       => $email,
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_connected_invalid_token() {
+		$this->tokens->method( 'get_access_token' )->willReturn( new WP_Error( 'invalid token' ) );
+		$this->manager->method( 'is_active' )->willReturn( true );
+		$this->manager->method( 'is_connection_owner' )->willReturn( true );
+		$this->manager->method( 'get_tokens' )->willReturn( $this->tokens );
+
+		$response = $this->do_request( self::ROUTE_CONNECTED, 'GET' );
+
+		$this->assertEquals(
+			[
+				'active'      => 'no',
+				'owner'       => 'yes',
+				'displayName' => '',
+				'email'       => '',
 			],
 			$response->get_data()
 		);
