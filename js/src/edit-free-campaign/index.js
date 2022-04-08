@@ -183,10 +183,14 @@ export default function EditFreeCampaign() {
 
 		/**
 		 * If users removed a target audience country,
+		 * or changed the target audience location from 'all' to 'selected',
 		 * we remove the country from shipping rates and shipping times.
 		 */
 		if (
-			newTargetAudience.countries.length < targetAudience.countries.length
+			newTargetAudience.countries.length <
+				targetAudience.countries.length ||
+			( newTargetAudience.location === 'selected' &&
+				targetAudience.location === 'all' )
 		) {
 			const newShippingRates = loadedShippingRates.filter(
 				( shippingRate ) => {
