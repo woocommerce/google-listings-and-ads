@@ -510,8 +510,8 @@ class ProductHelper implements Service {
 	 *
 	 * @return array
 	 */
-	public function get_categories( WC_Product $product): array {
+	public function get_categories( WC_Product $product ): array {
 		$terms = get_the_terms( $product->get_id(), 'product_cat' );
-		return ( empty( $terms ) || is_wp_error( $terms ))? [] : wp_list_pluck($terms, 'categories');
+		return ( empty( $terms ) || is_wp_error( $terms ) ) ? [] : wp_list_pluck( $terms, 'name' );
 	}
 }
