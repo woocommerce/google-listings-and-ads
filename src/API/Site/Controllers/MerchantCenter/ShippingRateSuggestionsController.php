@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  *
- * @since x.x.x
+ * @since 1.12.0
  */
 class ShippingRateSuggestionsController extends BaseController implements ISO3166AwareInterface {
 
@@ -64,7 +64,7 @@ class ShippingRateSuggestionsController extends BaseController implements ISO316
 							'description'       => __( 'Array of country codes in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 							'context'           => [ 'edit' ],
 							'sanitize_callback' => $this->get_country_code_sanitize_callback(),
-							'validate_callback' => $this->get_country_codes_array_validate_callback(),
+							'validate_callback' => $this->get_country_code_validate_callback(),
 							'minItems'          => 1,
 							'required'          => true,
 							'uniqueItems'       => true,

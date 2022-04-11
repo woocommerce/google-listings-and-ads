@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  * reconnected during the job it will stop processing, since the
  * ProductSyncer will take over and update all the products.
  *
- * @since x.x.x
+ * @since 1.12.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */

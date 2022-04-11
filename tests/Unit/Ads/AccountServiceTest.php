@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -39,10 +39,15 @@ class AccountServiceTest extends UnitTest {
 	protected const TEST_OLD_ACCOUNT_ID    = 2345678901;
 	protected const TEST_MERCHANT_ID       = 78123456;
 	protected const TEST_BILLING_URL       = 'https://domain.test/billing/setup/';
+	protected const TEST_CURRENCY          = 'EUR';
 	protected const TEST_ACCOUNT_IDS       = [
 		self::TEST_ACCOUNT_ID,
 		self::TEST_OLD_ACCOUNT_ID,
 		3456789012,
+	];
+	protected const TEST_STEP_DATA         = [
+		'sub_account'       => true,
+		'created_timestamp' => 1643833342,
 	];
 	protected const TEST_CONNECTED_DATA    = [
 		'id'       => SELF::TEST_ACCOUNT_ID,
@@ -50,10 +55,17 @@ class AccountServiceTest extends UnitTest {
 		'symbol'   => '€',
 		'status'   => 'connected',
 	];
+	protected const TEST_INCOMPLETE_DATA   = [
+		'id'       => SELF::TEST_ACCOUNT_ID,
+		'currency' => 'EUR',
+		'symbol'   => '€',
+		'status'   => 'incomplete',
+		'step'     => 'billing'
+	];
 	protected const TEST_DISCONNECTED_DATA = [
 		'id'       => 0,
 		'currency' => null,
-		'symbol'   => '€',
+		'symbol'   => '$',
 		'status'   => 'disconnected',
 	];
 	protected const TEST_CONVERSION_ACTION = [
@@ -64,7 +76,7 @@ class AccountServiceTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->ads               = $this->createMock( Ads::class );
 		$this->conversion_action = $this->createMock( AdsConversionAction::class );
@@ -85,7 +97,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_get_accounts() {
-		$this->middleware->expects( $this->once() )
+		$this->ads->expects( $this->once() )
 			->method( 'get_ads_account_ids' )
 			->willReturn( self::TEST_ACCOUNT_IDS );
 
@@ -93,7 +105,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_get_accounts_with_api_exception() {
-		$this->middleware->expects( $this->once() )
+		$this->ads->expects( $this->once() )
 			->method( 'get_ads_account_ids' )
 			->willThrowException( new Exception( 'error' ) );
 
@@ -103,17 +115,46 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_get_connected_account() {
-		$this->middleware->expects( $this->once() )
-			->method( 'get_connected_ads_account' )
-			->willReturn( self::TEST_CONNECTED_DATA );
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_ACCOUNT_CURRENCY )
+			->willReturn( self::TEST_CURRENCY );
 
 		$this->assertEquals( self::TEST_CONNECTED_DATA, $this->account->get_connected_account() );
 	}
 
+	public function test_get_connected_account_incomplete() {
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_ACCOUNT_CURRENCY )
+			->willReturn( self::TEST_CURRENCY );
+
+		$this->state->expects( $this->once() )
+			->method( 'last_incomplete_step' )
+			->willReturn( 'billing' );
+
+		$this->state->expects( $this->once() )
+			->method( 'get_step_data' )
+			->with( 'set_id' )
+			->willReturn( self::TEST_STEP_DATA );
+
+		$this->assertEquals(
+			self::TEST_INCOMPLETE_DATA +
+			self::TEST_STEP_DATA,
+			$this->account->get_connected_account()
+		);
+	}
+
 	public function test_get_disconnected_account() {
-		$this->middleware->expects( $this->once() )
-			->method( 'get_connected_ads_account' )
-			->willReturn( self::TEST_DISCONNECTED_DATA );
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( 0 );
 
 		$this->assertEquals( self::TEST_DISCONNECTED_DATA, $this->account->get_connected_account() );
 	}

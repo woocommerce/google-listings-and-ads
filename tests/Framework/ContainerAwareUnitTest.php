@@ -16,7 +16,7 @@ abstract class ContainerAwareUnitTest extends UnitTest {
 	 */
 	protected $container;
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->container = woogle_get_container();

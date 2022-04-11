@@ -4,14 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
@@ -19,19 +15,25 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use DateTime;
 use Exception;
-use Google\Ads\GoogleAds\Util\V9\ResourceNames;
-use Google\ApiCore\ApiException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Proxy
+ * Class Middleware
+ *
+ * Container used for:
+ * - Ads
+ * - Client
+ * - DateTimeUtility
+ * - GoogleHelper
+ * - Merchant
+ * - WP
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Proxy implements OptionsAwareInterface {
+class Middleware implements OptionsAwareInterface {
 
 	use ApiExceptionTrait;
 	use OptionsAwareTrait;
@@ -43,7 +45,7 @@ class Proxy implements OptionsAwareInterface {
 	protected $container;
 
 	/**
-	 * Proxy constructor.
+	 * Middleware constructor.
 	 *
 	 * @param ContainerInterface $container
 	 */
@@ -82,15 +84,6 @@ class Proxy implements OptionsAwareInterface {
 				$e->getCode()
 			);
 		}
-	}
-
-	/**
-	 * Get merchant IDs associated with the connected Merchant Center account.
-	 *
-	 * @return int[]
-	 */
-	public function get_merchant_ids(): array {
-		return array_column( $this->get_merchant_accounts(), 'id' );
 	}
 
 	/**
@@ -160,7 +153,7 @@ class Proxy implements OptionsAwareInterface {
 
 			if ( 200 === $result->getStatusCode() && isset( $response['id'] ) ) {
 				$id = absint( $response['id'] );
-				$this->update_merchant_id( $id );
+				$this->container->get( Merchant::class )->update_merchant_id( $id );
 				return $id;
 			}
 
@@ -196,7 +189,7 @@ class Proxy implements OptionsAwareInterface {
 	 * @return int
 	 */
 	public function link_merchant_account( int $id ): int {
-		$this->update_merchant_id( $id );
+		$this->container->get( Merchant::class )->update_merchant_id( $id );
 
 		return $id;
 	}
@@ -216,7 +209,7 @@ class Proxy implements OptionsAwareInterface {
 				[
 					'body' => json_encode(
 						[
-							'accountId' => $this->get_merchant_id(),
+							'accountId' => $this->options->get_merchant_id(),
 						]
 					),
 				]
@@ -258,7 +251,7 @@ class Proxy implements OptionsAwareInterface {
 				[
 					'body' => json_encode(
 						[
-							'accountId' => $this->get_merchant_id(),
+							'accountId' => $this->options->get_merchant_id(),
 							'overwrite' => $overwrite,
 						]
 					),
@@ -284,46 +277,6 @@ class Proxy implements OptionsAwareInterface {
 			throw new Exception(
 				$this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) ),
 				$e->getCode()
-			);
-		}
-	}
-
-
-	/**
-	 * Get Ads IDs associated with the connected Google account.
-	 *
-	 * @return int[]
-	 * @throws ExceptionWithResponseData When an ApiException is caught.
-	 */
-	public function get_ads_account_ids(): array {
-		try {
-			/** @var GoogleAdsClient $client */
-			$client    = $this->container->get( GoogleAdsClient::class );
-			$customers = $client->getCustomerServiceClient()->listAccessibleCustomers();
-			$ids       = [];
-
-			foreach ( $customers->getResourceNames() as $name ) {
-				/** @var string $name */
-				$ids[] = $this->parse_ads_id( $name );
-			}
-
-			return $ids;
-		} catch ( ApiException $e ) {
-			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-
-			$errors = $this->get_api_exception_errors( $e );
-
-			// Return an empty list if the user has not signed up to ads yet.
-			if ( isset( $errors['NOT_ADS_USER'] ) ) {
-				return [];
-			}
-
-			throw new ExceptionWithResponseData(
-				/* translators: %s Error message */
-				sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), reset( $errors ) ),
-				$this->map_grpc_code_to_http_status_code( $e ),
-				null,
-				[ 'errors' => $errors ]
 			);
 		}
 	}
@@ -368,12 +321,15 @@ class Proxy implements OptionsAwareInterface {
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) ) {
-				$id = $this->parse_ads_id( $response['resourceName'] );
-				$this->update_ads_id( $id );
-				$this->use_store_currency();
+				/** @var Ads $ads */
+				$ads = $this->container->get( Ads::class );
+
+				$id = $ads->parse_ads_id( $response['resourceName'] );
+				$ads->update_ads_id( $id );
+				$ads->use_store_currency();
 
 				$billing_url = $response['invitationLink'] ?? '';
-				$this->update_billing_url( $billing_url );
+				$ads->update_billing_url( $billing_url );
 
 				return [
 					'id'          => $id,
@@ -422,8 +378,12 @@ class Proxy implements OptionsAwareInterface {
 			$name     = "customers/{$id}";
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) && 0 === strpos( $response['resourceName'], $name ) ) {
-				$this->update_ads_id( $id );
-				$this->request_ads_currency();
+				/** @var Ads $ads */
+				$ads = $this->container->get( Ads::class );
+
+				$ads->update_ads_id( $id );
+				$ads->request_ads_currency();
+
 				return [ 'id' => $id ];
 			}
 
@@ -442,57 +402,6 @@ class Proxy implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get the connected ads account.
-	 *
-	 * @return array
-	 */
-	public function get_connected_ads_account(): array {
-		$id = $this->options->get( OptionsInterface::ADS_ID );
-
-		$status = [
-			'id'       => $id,
-			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
-			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) ),
-			'status'   => $id ? 'connected' : 'disconnected',
-		];
-
-		/** @var AdsAccountState $state */
-		$state      = $this->container->get( AdsAccountState::class );
-		$incomplete = $state->last_incomplete_step();
-		if ( ! empty( $incomplete ) ) {
-			$status['status'] = 'incomplete';
-			$status['step']   = $incomplete;
-		}
-
-		$status += $state->get_step_data( 'set_id' );
-
-		return $status;
-	}
-
-	/**
-	 * Disconnect the connected ads account.
-	 */
-	public function disconnect_ads_account() {
-		$this->update_ads_id( 0 );
-	}
-
-	/**
-	 * Get the ads account currency.
-	 *
-	 * @since 1.4.1
-	 *
-	 * @return string
-	 */
-	public function get_ads_currency(): string {
-		// Retrieve account currency from the API if we haven't done so previously.
-		if ( $this->options->get( OptionsInterface::ADS_ID ) && ! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) {
-			$this->request_ads_currency();
-		}
-
-		return strtoupper( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ?? get_woocommerce_currency() );
-	}
-
-	/**
 	 * Determine whether the TOS have been accepted.
 	 *
 	 * @param string $service Name of service.
@@ -500,7 +409,6 @@ class Proxy implements OptionsAwareInterface {
 	 * @return TosAccepted
 	 */
 	public function check_tos_accepted( string $service ): TosAccepted {
-		// todo: see about using the WooCommerce Services code here
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -523,7 +431,6 @@ class Proxy implements OptionsAwareInterface {
 	 * @return TosAccepted
 	 */
 	public function mark_tos_accepted( string $service, string $email ): TosAccepted {
-		// todo: see about using WooCommerce Services code here.
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -571,92 +478,6 @@ class Proxy implements OptionsAwareInterface {
 	protected function get_manager_url( string $name = '' ): string {
 		$url = $this->container->get( 'connect_server_root' ) . 'google/manager';
 		return $name ? trailingslashit( $url ) . $name : $url;
-	}
-
-	/**
-	 * Convert ads ID from a resource name to an int.
-	 *
-	 * @param string $name Resource name containing ID number.
-	 *
-	 * @return int
-	 */
-	protected function parse_ads_id( string $name ): int {
-		return absint( str_replace( 'customers/', '', $name ) );
-	}
-
-	/**
-	 * Get the Merchant Center ID.
-	 *
-	 * @return int
-	 */
-	protected function get_merchant_id(): int {
-		return $this->options->get( OptionsInterface::MERCHANT_ID );
-	}
-
-	/**
-	 * Update the Merchant Center ID to use for requests.
-	 *
-	 * @param int $id  Merchant ID number.
-	 *
-	 * @return bool
-	 */
-	protected function update_merchant_id( int $id ): bool {
-		return $this->options->update( OptionsInterface::MERCHANT_ID, $id );
-	}
-
-	/**
-	 * Update the Ads ID to use for requests.
-	 *
-	 * @param int $id Ads ID number.
-	 *
-	 * @return bool
-	 */
-	protected function update_ads_id( int $id ): bool {
-		return $this->options->update( OptionsInterface::ADS_ID, $id );
-	}
-
-	/**
-	 * Save the Ads account currency to the same value as the Store currency.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return boolean
-	 */
-	protected function use_store_currency(): bool {
-		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, get_woocommerce_currency() );
-	}
-
-	/**
-	 * Request the Ads Account currency, and cache it as an option.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return boolean
-	 */
-	protected function request_ads_currency(): bool {
-		try {
-			/** @var GoogleAdsClient $client */
-			$client   = $this->container->get( GoogleAdsClient::class );
-			$resource = ResourceNames::forCustomer( $this->options->get( OptionsInterface::ADS_ID ) );
-			$customer = $client->getCustomerServiceClient()->getCustomer( $resource );
-			$currency = $customer->getCurrencyCode();
-		} catch ( ApiException $e ) {
-			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-			$currency = null;
-		}
-
-		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, $currency );
-	}
-
-	/**
-	 * Update the billing flow URL so we can retrieve it again later.
-	 *
-	 * @param string $url Billing flow URL.
-	 *
-	 * @return bool
-	 */
-	protected function update_billing_url( string $url ): bool {
-		return $this->options->update( OptionsInterface::ADS_BILLING_URL, $url );
 	}
 
 	/**

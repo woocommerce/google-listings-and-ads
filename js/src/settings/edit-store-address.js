@@ -26,9 +26,16 @@ const learnMoreUrl =
 	'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information';
 
 /**
+ * Triggered when the save button in contact information page is clicked.
+ *
+ * @event gla_contact_information_save_button_click
+ */
+
+/**
  * Renders the store address settings page.
  *
  * @see StoreAddressCard
+ * @fires gla_contact_information_save_button_click
  */
 export default function EditStoreAddress() {
 	useLayout( 'full-content' );

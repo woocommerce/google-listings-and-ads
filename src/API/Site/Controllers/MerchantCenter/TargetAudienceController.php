@@ -250,7 +250,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 				),
 				'context'           => [ 'edit', 'view' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
-				'validate_callback' => $this->get_country_codes_array_validate_callback(),
+				'validate_callback' => $this->get_country_code_validate_callback(),
 			],
 		];
 	}

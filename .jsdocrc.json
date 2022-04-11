@@ -1,0 +1,20 @@
+{
+  "opts": {
+    "recurse": true
+  },
+  "plugins": [
+    "woo-tracking-jsdoc/tilde-alias.js",
+    "woo-tracking-jsdoc/fires-description.js",
+    "jsdoc-plugin-typescript",
+    "jsdoc-advanced-types-plugin",
+    "jsdoc-plugin-intersection"
+  ],
+  "typescript": {
+    "moduleRoot": "js/src"
+  },
+  "templates": {
+    "woo-tracking-jsdoc": {
+      "path": "src/Tracking/README.md"
+    }
+  }
+}

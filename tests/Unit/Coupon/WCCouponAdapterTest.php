@@ -215,7 +215,7 @@ class WCCouponAdapterTest extends UnitTest {
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'couponValueType' ) );
 	}
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		update_option( 'woocommerce_currency', 'USD' );
 	}

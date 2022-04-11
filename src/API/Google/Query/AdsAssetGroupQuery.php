@@ -6,17 +6,19 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class AdsGroupQuery
+ * Class AdsAssetGroupQuery
+ *
+ * @since 1.12.2
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
-class AdsGroupQuery extends AdsQuery {
+class AdsAssetGroupQuery extends AdsQuery {
 
 	/**
 	 * Query constructor.
 	 */
 	public function __construct() {
-		parent::__construct( 'ad_group' );
-		$this->columns( [ 'ad_group.resource_name' ] );
+		parent::__construct( 'asset_group' );
+		$this->columns( [ 'asset_group.resource_name' ] );
 	}
 }

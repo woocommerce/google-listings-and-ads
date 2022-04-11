@@ -43,7 +43,7 @@ class MerchantTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->service           = $this->createMock( ShoppingContent::class );
 		$this->service->accounts = $this->createMock( Accounts::class );
@@ -115,15 +115,16 @@ class MerchantTest extends UnitTest {
 				)
 			);
 
-		$this->service->products->expects( $this->at( 0 ) )
+		$this->service->products->expects( $this->exactly( 2 ) )
 			->method( 'listProducts' )
-			->with( $this->merchant_id )
-			->willReturn( $list_response );
-
-		$this->service->products->expects( $this->at( 1 ) )
-			->method( 'listProducts' )
-			->with( $this->merchant_id, [ 'pageToken' => $token ] )
-			->willReturn( $list_response );
+			->withConsecutive(
+				[ $this->merchant_id ],
+				[ $this->merchant_id, [ 'pageToken' => $token ] ]
+			)
+			->willReturnOnConsecutiveCalls(
+				$list_response,
+				$list_response
+			);
 
 		$products = $this->merchant->get_products();
 		$this->assertCount( count( $product_list ) * 2, $products );
@@ -422,6 +423,14 @@ class MerchantTest extends UnitTest {
 		$this->assertFalse(
 			$this->merchant->has_access( $email )
 		);
+	}
+
+	public function test_update_merchant_id() {
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::MERCHANT_ID, $this->merchant_id )
+			->willReturn( true );
+		$this->assertTrue( $this->merchant->update_merchant_id( $this->merchant_id ) );
 	}
 
 }

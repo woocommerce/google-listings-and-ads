@@ -11,6 +11,14 @@ import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import ContactInformationPreviewCard from '../contact-information-preview-card';
 
 /**
+ * Triggered when phone number edit button is clicked.
+ *
+ * @event gla_edit_mc_phone_number
+ * @property {string} path The path used in the page, e.g. `"/google/settings"`.
+ * @property {string} subpath The subpath used in the page, or `undefined` when there is no subpath.
+ */
+
+/**
  * Renders a component with the MC's phone number.
  * In preview mode, meaning there will be no editing features, just the number and edit link.
  *

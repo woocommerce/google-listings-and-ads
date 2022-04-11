@@ -235,7 +235,7 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->product_meta_handler = new ProductMetaHandler();
 	}

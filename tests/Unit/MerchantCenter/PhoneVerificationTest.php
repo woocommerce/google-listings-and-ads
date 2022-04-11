@@ -112,7 +112,7 @@ class PhoneVerificationTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->merchant           = $this->createMock( Merchant::class );
 		$this->wp                 = $this->createMock( WP::class );

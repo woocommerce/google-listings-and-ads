@@ -1,7 +1,9 @@
 .wcdl-select-control {
 	&__input,
 	&__helper-text {
-		margin-bottom: calc(var(--main-gap) / 3);
+		&:not(:last-child) {
+			margin-bottom: calc(var(--main-gap) / 3);
+		}
 	}
 
 	&__label {
@@ -40,6 +42,21 @@
 			// Remove the hard coded height 57px that is causing the dropdown list
 			// not below the input box when there are multiple rows inside the input box.
 			top: unset;
+		}
+
+		// Workaround the problem that the tags' remove buttons are still displayed when disabled,
+		// no matter the `inlineTags` are true or false.
+		.is-disabled {
+			.woocommerce-select-control__tags,
+			+ .woocommerce-select-control__tags {
+				.woocommerce-tag__remove {
+					display: none;
+				}
+				.woocommerce-tag__text {
+					padding: 0 $grid-unit-10;
+					border-radius: 12px;
+				}
+			}
 		}
 	}
 }

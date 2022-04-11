@@ -44,6 +44,21 @@ const headers = [
 	{ key: 'actions', label: '', required: true },
 ];
 
+function CountryColumn( { countryCodes, countryNameMap } ) {
+	const [ first ] = countryCodes;
+	return (
+		<span>
+			{ countryNameMap[ first ] }
+			{ countryCodes.length >= 2 &&
+				sprintf(
+					// translators: %d: number of countries, with minimum value of 1.
+					__( ' + %d more', 'google-listings-and-ads' ),
+					countryCodes.length - 1
+				) }
+		</span>
+	);
+}
+
 /**
  * All programs table.
  *
@@ -72,15 +87,10 @@ const AllProgramsTableCard = ( props ) => {
 			title: __( 'Free listings', 'google-listings-and-ads' ),
 			dailyBudget: __( 'Free', 'google-listings-and-ads' ),
 			country: (
-				<span>
-					{ map[ finalCountryCodesData[ 0 ] ] }
-					{ finalCountryCodesData.length >= 2 &&
-						sprintf(
-							// translators: %s: number of campaigns, with minimum value of 1.
-							__( ' + %s more', 'google-listings-and-ads' ),
-							finalCountryCodesData.length - 1
-						) }
-				</span>
+				<CountryColumn
+					countryCodes={ finalCountryCodesData }
+					countryNameMap={ map }
+				/>
 			),
 			active: true,
 		},
@@ -89,7 +99,12 @@ const AllProgramsTableCard = ( props ) => {
 				id: el.id,
 				title: el.name,
 				dailyBudget: formatAmount( el.amount, true ),
-				country: map[ el.country ],
+				country: (
+					<CountryColumn
+						countryCodes={ el.displayCountries }
+						countryNameMap={ map }
+					/>
+				),
 				active: el.status === 'enabled',
 			};
 		} ),

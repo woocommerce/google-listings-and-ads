@@ -64,7 +64,7 @@ VIEW;
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->view_factory = new PHPViewFactory();
 	}

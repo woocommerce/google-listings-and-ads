@@ -27,9 +27,9 @@ export function getIdsFromQuery( queryString = '' ) {
 }
 
 /**
- * @typedef {import(".").IntervalsData} IntervalsData
- * @typedef {import('.').PerformanceData} PerformanceData
- * @typedef {import(".").TotalsData} TotalsData
+ * @typedef {import("./index").IntervalsData} IntervalsData
+ * @typedef {import('./index').PerformanceData} PerformanceData
+ * @typedef {import("./index").TotalsData} TotalsData
  */
 
 /**

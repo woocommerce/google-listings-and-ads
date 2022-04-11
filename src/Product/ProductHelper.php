@@ -364,7 +364,7 @@ class ProductHelper implements Service {
 	/**
 	 * Increment failed delete attempts.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 *
 	 * @param WC_Product $product
 	 */
@@ -376,7 +376,7 @@ class ProductHelper implements Service {
 	/**
 	 * Whether deleting has failed more times than the specified threshold.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 *
 	 * @param WC_Product $product
 	 *
@@ -384,6 +384,32 @@ class ProductHelper implements Service {
 	 */
 	public function is_delete_failed_threshold_reached( WC_Product $product ): bool {
 		$failed_attempts = $this->meta_handler->get_failed_delete_attempts( $product ) ?? 0;
+		return $failed_attempts >= ProductSyncer::FAILURE_THRESHOLD;
+	}
+
+	/**
+	 * Increment failed delete attempts.
+	 *
+	 * @since 1.12.2
+	 *
+	 * @param WC_Product $product
+	 */
+	public function increment_failed_update_attempt( WC_Product $product ) {
+		$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product ) ?? 0;
+		$this->meta_handler->update_failed_sync_attempts( $product, $failed_attempts + 1 );
+	}
+
+	/**
+	 * Whether deleting has failed more times than the specified threshold.
+	 *
+	 * @since 1.12.2
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return boolean
+	 */
+	public function is_update_failed_threshold_reached( WC_Product $product ): bool {
+		$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product ) ?? 0;
 		return $failed_attempts >= ProductSyncer::FAILURE_THRESHOLD;
 	}
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ $# -lt 3 ]; then
-  echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [skip-database-creation]"
+  echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [wc-version] [skip-database-creation]"
   exit 1
 fi
 
@@ -10,7 +10,8 @@ DB_USER=$2
 DB_PASS=$3
 DB_HOST=${4-localhost}
 WP_VERSION=${5-latest}
-SKIP_DB_CREATE=${6-false}
+WC_VERSION=${6-latest}
+SKIP_DB_CREATE=${7-false}
 
 TMPDIR=${TMPDIR-/tmp}
 TMPDIR=$(echo $TMPDIR | sed -e "s/\/$//")
@@ -20,7 +21,6 @@ WP_CORE_DIR=${WP_CORE_DIR-$TMPDIR/wordpress}
 # Plugin variables.
 PLUGINS_DIR="${WP_CORE_DIR}/wp-content/plugins"
 WC_DIR="${PLUGINS_DIR}/woocommerce"
-WC_VERSION=trunk
 
 download() {
   if [ $(which curl) ]; then
@@ -47,15 +47,27 @@ elif [[ $WP_VERSION == 'nightly' || $WP_VERSION == 'trunk' ]]; then
   WP_TESTS_TAG="trunk"
 else
   # http serves a single offer, whereas https serves multiple. we only want one
-  download http://api.wordpress.org/core/version-check/1.7/ /tmp/wp-latest.json
-  grep '[0-9]+\.[0-9]+(\.[0-9]+)?' /tmp/wp-latest.json
-  LATEST_VERSION=$(grep -o '"version":"[^"]*' /tmp/wp-latest.json | sed 's/"version":"//')
+  download http://api.wordpress.org/core/version-check/1.7/ "${TMPDIR}/wp-latest.json"
+  grep '[0-9]+\.[0-9]+(\.[0-9]+)?' "${TMPDIR}/wp-latest.json"
+  LATEST_VERSION=$(grep -o '"version":"[^"]*' "${TMPDIR}/wp-latest.json" | sed 's/"version":"//')
   if [[ -z "$LATEST_VERSION" ]]; then
     echo "Latest WordPress version could not be found"
     exit 1
   fi
   WP_TESTS_TAG="tags/$LATEST_VERSION"
 fi
+
+# Get latest WC version
+if [[ $WC_VERSION == 'latest' ]]; then
+  download https://api.wordpress.org/plugins/info/1.0/woocommerce.json "${TMPDIR}/wc-latest.json"
+  WC_LATEST_VERSION=$(grep -o '"version":"[^"]*' "${TMPDIR}/wc-latest.json" | sed 's/"version":"//')
+  if [[ -z "$WC_LATEST_VERSION" ]]; then
+    echo "Latest WooCommerce version could not be found"
+    exit 1
+  fi
+  WC_VERSION=$WC_LATEST_VERSION
+fi
+
 set -ex
 
 install_wp() {
@@ -180,19 +192,18 @@ install_db() {
 }
 
 install_wc() {
-  if [ ! -d "$WC_DIR" ]; then
+  WC_VERSION_FILE="${WC_DIR}/version-"$(echo $WC_VERSION | sed -e "s/\//-/")
+  if [ ! -f "$WC_VERSION_FILE" ]; then
     # set up testing suite
+    rm -rf "$WC_DIR"
     mkdir -p "$WC_DIR"
     echo "Installing WooCommerce ($WC_VERSION)."
     # Grab the necessary plugins.
-    if [ $WC_VERSION == 'trunk' ]; then
-      rm -rf "$TMPDIR"/woocommerce-trunk
-      git clone --quiet --depth=1 --branch="${WC_VERSION}" https://github.com/woocommerce/woocommerce.git "${TMPDIR}/woocommerce-trunk"
-      mv "$TMPDIR"/woocommerce-trunk/plugins/woocommerce/* "$WC_DIR"
-    else
-      echo "Test with specified WooCommerce version ${WC_VERSION} is not yet supported."
-      exit 1
-    fi
+    WC_TMPDIR="${TMPDIR}/woocommerce-${WC_VERSION}"
+    rm -rf "${WC_TMPDIR}"
+    git clone --quiet --depth=1 --branch="${WC_VERSION}" https://github.com/woocommerce/woocommerce.git "${WC_TMPDIR}"
+    mv "${WC_TMPDIR}"/plugins/woocommerce/* "$WC_DIR"
+	touch "$WC_VERSION_FILE"
 
     # Install composer for WooCommerce
     cd "${WC_DIR}"
