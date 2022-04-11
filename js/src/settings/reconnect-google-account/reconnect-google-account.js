@@ -16,6 +16,10 @@ import Section from '.~/wcdl/section';
 import AppSpinner from '.~/components/app-spinner';
 import GoogleAccountCard from '.~/components/google-account-card';
 import DisconnectGoogleAccountCard from './disconnect-google-account-card';
+import {
+	lockInReconnection,
+	unlockFromReconnection,
+} from '../reconnectionLock';
 
 export default function ReconnectGoogleAccount() {
 	const { data } = useAppSelectDispatch( 'getGoogleAccountAccess' );
@@ -34,6 +38,9 @@ export default function ReconnectGoogleAccount() {
 	useEffect( () => {
 		if ( isCompletedReconnection ) {
 			getHistory().replace( getDashboardUrl() );
+			unlockFromReconnection();
+		} else {
+			lockInReconnection();
 		}
 	}, [ isCompletedReconnection ] );
 
