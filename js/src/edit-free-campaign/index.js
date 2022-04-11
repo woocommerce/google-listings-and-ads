@@ -26,6 +26,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import HelpIconButton from '.~/components/help-icon-button';
 import hasUnsavedShippingRates from './hasUnsavedShippingRates';
 import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
+import useSaveShippingTimes from '.~/hooks/useSaveShippingTimes';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -50,33 +51,6 @@ function isNotOurStep( location ) {
  */
 
 /**
- * Due to the lack of a single API for updating shipping data altogether,
- * we need to send upserts separately for each price/time.
- * Deletes are not needed, as we validate the form not to miss any available country.
- *
- * @param {(groupedCountrySetting: ShippingRate) => Promise} batchUpsertAction
- * @param {Array<ShippingRate>} newData
- * @param {Function} getGroupKey A callback function to ask for a unique key for each shipping group.
- */
-function saveShippingData( batchUpsertAction, newData, getGroupKey ) {
-	const groupMap = new Map();
-	newData.forEach( ( item ) => {
-		const key = getGroupKey( item );
-		const { countryCode, ...rest } = item;
-		let group = groupMap.get( key );
-
-		if ( ! group ) {
-			group = { ...rest, countryCodes: [] };
-			groupMap.set( key, group );
-		}
-
-		group.countryCodes.push( countryCode );
-	} );
-
-	return Array.from( groupMap.values() ).map( batchUpsertAction );
-}
-
-/**
  * Page Component to edit free campaigns.
  * Provides two steps:
  *  - Choose your audience
@@ -93,12 +67,9 @@ export default function EditFreeCampaign() {
 	} = useTargetAudienceFinalCountryCodes();
 
 	const { settings: savedSettings } = useSettings();
-	const {
-		saveTargetAudience,
-		saveSettings,
-		upsertShippingTimes,
-	} = useAppDispatch();
+	const { saveTargetAudience, saveSettings } = useAppDispatch();
 	const { saveShippingRates } = useSaveShippingRates();
+	const { saveShippingTimes } = useSaveShippingTimes();
 
 	const [ targetAudience, updateTargetAudience ] = useState(
 		savedTargetAudience
@@ -223,11 +194,7 @@ export default function EditFreeCampaign() {
 				saveTargetAudience( targetAudience ),
 				saveSettings( settings ),
 				saveShippingRates( shippingRates ),
-				...saveShippingData(
-					upsertShippingTimes,
-					shippingTimes,
-					( item ) => item.time
-				),
+				saveShippingTimes( shippingTimes ),
 			] );
 
 			// Sync data once our changes are saved, even partially succesfully.
