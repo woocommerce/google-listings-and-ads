@@ -1,0 +1,24 @@
+// The workaround for making the GLA menu links of WC Navigation appear as disabled
+// except for the last link - GLA Settings page.
+.gla-reconnection-lock {
+	.woocommerce-navigation {
+		ul[aria-labelledby$="google-listings-and-ads-category"] {
+			.components-navigation__item:not(:last-child) {
+				.components-button {
+					cursor: not-allowed;
+
+					&:focus {
+						box-shadow: none;
+					}
+				}
+
+				&,
+				&:hover {
+					.components-button {
+						color: $gray-600;
+					}
+				}
+			}
+		}
+	}
+}
