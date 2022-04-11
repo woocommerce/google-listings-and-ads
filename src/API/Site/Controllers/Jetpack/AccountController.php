@@ -198,8 +198,7 @@ class AccountController extends BaseOptionsController {
 			return false;
 		}
 
-		$token = $this->manager->get_tokens()->get_access_token( false, false, false );
-		return $token && ! is_wp_error( $token );
+		return false !== $this->manager->get_tokens()->get_access_token();
 	}
 
 	/**

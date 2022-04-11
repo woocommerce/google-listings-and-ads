@@ -135,7 +135,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_connected_invalid_token() {
-		$this->tokens->method( 'get_access_token' )->willReturn( new WP_Error( 'invalid token' ) );
+		$this->tokens->method( 'get_access_token' )->willReturn( false );
 		$this->manager->method( 'is_active' )->willReturn( true );
 		$this->manager->method( 'is_connection_owner' )->willReturn( true );
 		$this->manager->method( 'get_tokens' )->willReturn( $this->tokens );
