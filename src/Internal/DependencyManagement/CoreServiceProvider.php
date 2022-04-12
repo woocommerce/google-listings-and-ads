@@ -45,7 +45,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ComponentTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
@@ -128,7 +127,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ContactInformationNote::class => true,
 		CompleteSetup::class          => true,
 		CompleteSetupNote::class      => true,
-		ComponentTest::class          => true,
 		CouponBulkEdit::class         => true,
 		CouponHelper::class           => true,
 		CouponMetaHandler::class      => true,
@@ -261,7 +259,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
-		$this->conditionally_share_with_tags( ComponentTest::class );
 		$this->conditionally_share_with_tags( Dashboard::class );
 		$this->conditionally_share_with_tags( Reports::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
