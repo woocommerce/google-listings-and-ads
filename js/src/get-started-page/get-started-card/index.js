@@ -21,6 +21,9 @@ import motivationImageURL from './image.svg';
 import './index.scss';
 import AppButton from '.~/components/app-button';
 
+/**
+ * @fires gla_setup_mc with `{ target: 'set_up_free_listings', trigger: 'click' }`.
+ */
 const GetStartedCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;
 

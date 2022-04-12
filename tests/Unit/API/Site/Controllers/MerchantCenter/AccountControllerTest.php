@@ -57,7 +57,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		'status' => 'complete',
 	];
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->account    = $this->createMock( AccountService::class );

@@ -9,11 +9,23 @@ import { getPath } from '@woocommerce/navigation';
  */
 import recordEvent from '.~/utils/recordEvent';
 
-const usePhoneNumberCheckTrackEventEffect = ( phone ) => {
-	const {
-		loaded,
-		data: { display, isValid },
-	} = phone;
+/**
+ * Check for whether the phone number for Merchant Center exists or not.
+ *
+ * @event gla_mc_phone_number_check
+ * @property {string} path the path where the check is in.
+ * @property {string} exist whether the phone number exists or not.
+ * @property {string} isValid whether the phone number is valid or not.
+ */
+
+/**
+ * @param {import(".~/hooks/useGoogleMCPhoneNumber").PhoneNumberData} phone
+ * @fires gla_mc_phone_number_check
+ */
+const usePhoneNumberCheckTrackEventEffect = ( {
+	loaded,
+	data: { display, isValid },
+} ) => {
 	const exist = !! display;
 	const path = getPath();
 

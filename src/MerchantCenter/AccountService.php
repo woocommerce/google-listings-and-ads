@@ -39,7 +39,7 @@ defined( 'ABSPATH' ) || exit;
  * - ShippingRateTable
  * - ShippingTimeTable
  *
- * @since x.x.x
+ * @since 1.12.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
 class AccountService implements OptionsAwareInterface, Service {

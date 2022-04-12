@@ -12,11 +12,6 @@ global $gla_dir;
 global $wp_plugins_dir;
 global $wc_dir;
 
-if ( PHP_MAJOR_VERSION >= 8 ) {
-	echo "The scaffolded tests cannot currently be run on PHP 8.0+. See https://github.com/wp-cli/scaffold-command/issues/285" . PHP_EOL; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-	exit( 1 );
-}
-
 $wp_tests_dir = getenv( 'WP_TESTS_DIR' ) ?: path_join( sys_get_temp_dir(), '/wordpress-tests-lib' );
 validate_file_exits( "{$wp_tests_dir}/includes/functions.php" );
 
@@ -58,7 +53,7 @@ $wc_tests_dir = $wc_dir . '/tests';
 if ( file_exists( $wc_dir . '/tests/legacy/bootstrap.php' ) ) {
 	$wc_tests_dir .= '/legacy';
 }
-require_once $wc_tests_dir . '/includes/wp-http-testcase.php';
+
 require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-product.php';
 require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-shipping.php';
 require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-customer.php';

@@ -12,28 +12,33 @@ import useAdsCurrency from '.~/hooks/useAdsCurrency';
 import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
 import usePerformance from './usePerformance';
 import PerformanceCard from './performance-card';
+import SummaryCard from './summary-card';
 import PaidCampaignPromotionCard from './paid-campaign-promotion-card';
 
-const paidPerformanceTitle = __(
-	'Performance (Paid Campaigns)',
-	'google-listings-and-ads'
-);
-
 const numberFormatSetting = { precision: 0 };
-
+/**
+ * @fires gla_google_mc_link_click with `{ context: 'dashboard' }`
+ */
 const FreePerformanceCard = () => {
 	const formatNumber = useCurrencyFormat( numberFormatSetting );
 	const { data, loaded } = usePerformance( REPORT_SOURCE_FREE );
 
 	return (
 		<PerformanceCard
-			title={ __(
-				'Performance (Free Listing)',
-				'google-listings-and-ads'
-			) }
 			loaded={ loaded }
 			data={ data }
-			campaignType={ REPORT_SOURCE_FREE }
+			noDataMessage={ {
+				body: __(
+					"We're having trouble loading this data. Try again later, or track your performance in Google Merchant Center.",
+					'google-listings-and-ads'
+				),
+				link: 'https://merchants.google.com/mc/reporting/dashboard',
+				eventName: 'gla_google_mc_link_click',
+				buttonLabel: __(
+					'Open Google Merchant Center',
+					'google-listings-and-ads'
+				),
+			} }
 		>
 			{ ( loadedData ) => [
 				<SummaryNumber
@@ -62,10 +67,17 @@ const PaidPerformanceCard = () => {
 
 	return (
 		<PerformanceCard
-			title={ paidPerformanceTitle }
 			loaded={ loaded }
 			data={ data }
-			campaignType={ REPORT_SOURCE_PAID }
+			noDataMessage={ {
+				body: __(
+					"We're having trouble loading this data. Try again later, or track your performance in Google Ads.",
+					'google-listings-and-ads'
+				),
+				link: 'https://ads.google.com/',
+				eventName: 'gla_google_ads_link_click',
+				buttonLabel: __( 'Open Google Ads', 'google-listings-and-ads' ),
+			} }
 		>
 			{ ( loadedData ) => [
 				<SummaryNumber
@@ -98,12 +110,26 @@ export default function SummarySection() {
 
 	return (
 		<>
-			<FreePerformanceCard />
-			{ adsSetupComplete ? (
-				<PaidPerformanceCard />
-			) : (
-				<PaidCampaignPromotionCard title={ paidPerformanceTitle } />
-			) }
+			<SummaryCard
+				title={ __(
+					'Performance (Free Listing)',
+					'google-listings-and-ads'
+				) }
+			>
+				<FreePerformanceCard />
+			</SummaryCard>
+			<SummaryCard
+				title={ __(
+					'Performance (Paid Campaigns)',
+					'google-listings-and-ads'
+				) }
+			>
+				{ adsSetupComplete ? (
+					<PaidPerformanceCard />
+				) : (
+					<PaidCampaignPromotionCard />
+				) }
+			</SummaryCard>
 		</>
 	);
 }

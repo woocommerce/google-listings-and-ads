@@ -18,6 +18,9 @@ import useSetupCompleteCallback from './useSetupCompleteCallback';
 import validateForm from '.~/utils/paid-ads/validateForm';
 import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 
+/**
+ * @fires gla_launch_paid_campaign_button_click on submit
+ */
 const SetupAdsForm = () => {
 	const [ didFormChanged, setFormChanged ] = useState( false );
 	const [ isSubmitted, setSubmitted ] = useState( false );

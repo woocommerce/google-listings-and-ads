@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 /**
  * Class TargetAudience.
  *
- * @since x.x.x
+ * @since 1.12.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */

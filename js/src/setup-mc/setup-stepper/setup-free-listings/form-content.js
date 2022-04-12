@@ -28,6 +28,7 @@ const FormContent = ( props ) => {
 	} = values;
 	const { data: audienceCountries } = useTargetAudienceFinalCountryCodes();
 	const shouldDisplayTaxRate = useDisplayTaxRate( audienceCountries );
+	const shouldDisplayShippingTime = values.shipping_time === 'flat';
 
 	useAutoSaveSettingsEffect( settingsValue );
 	useAutoSaveShippingRatesEffect( shippingRatesValue );
@@ -38,7 +39,9 @@ const FormContent = ( props ) => {
 				formProps={ formProps }
 				audienceCountries={ audienceCountries }
 			/>
-			<ShippingTimeSection formProps={ formProps } />
+			{ shouldDisplayShippingTime && (
+				<ShippingTimeSection formProps={ formProps } />
+			) }
 			<ConditionalSection show={ shouldDisplayTaxRate }>
 				<TaxRate formProps={ formProps } />
 			</ConditionalSection>

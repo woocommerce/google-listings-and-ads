@@ -139,7 +139,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	/**
 	 * @return callable
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 */
 	protected function get_update_rate_callback(): callable {
 		return function ( Request $request ) {

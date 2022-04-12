@@ -934,6 +934,33 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertTrue( $this->product_helper->is_delete_failed_threshold_reached( $product ) );
 	}
 
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @dataProvider return_test_products
+	 */
+	public function test_increment_failed_update_attempt( WC_Product $product ) {
+		$this->product_meta->update_failed_sync_attempts( $product, 99 );
+
+		$this->product_helper->increment_failed_update_attempt( $product );
+
+		$this->assertEquals( 100, $this->product_meta->get_failed_sync_attempts( $product ) );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @dataProvider return_test_products
+	 */
+	public function test_is_update_failed_threshold_reached( WC_Product $product ) {
+		$this->product_meta->update_failed_sync_attempts( $product, 4 );
+		$this->assertFalse( $this->product_helper->is_update_failed_threshold_reached( $product ) );
+
+		$this->product_helper->increment_failed_update_attempt( $product );
+		$this->assertTrue( $this->product_helper->is_update_failed_threshold_reached( $product ) );
+	}
+
 	/**
 	 * @return array
 	 */
@@ -945,7 +972,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		];
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		parent::tearDown();
 
 		delete_option( 'woocommerce_hide_out_of_stock_items' );
@@ -955,7 +982,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->product_meta    = $this->container->get( ProductMetaHandler::class );
 		$this->wc              = $this->container->get( WC::class );

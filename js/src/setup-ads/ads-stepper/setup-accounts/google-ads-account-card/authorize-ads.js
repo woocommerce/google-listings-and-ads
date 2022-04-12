@@ -13,6 +13,11 @@ import AppButton from '.~/components/app-button';
 
 const pageName = 'setup-ads';
 
+/**
+ * @param {Object} props React props
+ * @param {string} props.additionalScopeEmail
+ * @fires gla_google_account_connect_button_click with `{ action: 'scope', context: 'setup-ads' }`
+ */
 export default function AuthorizeAds( { additionalScopeEmail } ) {
 	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchGoogleConnect, { loading, data } ] = useGoogleAuthorization(

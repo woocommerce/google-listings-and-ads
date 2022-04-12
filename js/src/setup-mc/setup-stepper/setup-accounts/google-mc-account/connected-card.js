@@ -18,8 +18,18 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 
-const ConnectedCard = ( props ) => {
-	const { googleMCAccount } = props;
+/**
+ * Clicking on the "connect to a different Google Merchant Center account" button.
+ *
+ * @event gla_mc_account_connect_different_account_button_click
+ */
+
+/**
+ * @fires gla_mc_account_connect_different_account_button_click
+ * @param {Object} props React props
+ * @param {Object} props.googleMCAccount Connected Google Merchant Center Account
+ */
+const ConnectedCard = ( { googleMCAccount } ) => {
 	const { createNotice, removeNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 

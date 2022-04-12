@@ -20,7 +20,7 @@ class ShippingRateControllerTest extends RESTControllerUnitTest {
 
 	protected const ROUTE_RATES = '/wc/gla/mc/shipping/rates';
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->shipping_rate_query = $this->createMock( ShippingRateQuery::class );

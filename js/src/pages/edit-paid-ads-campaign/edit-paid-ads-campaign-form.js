@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement, useState } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
 import { getHistory } from '@woocommerce/navigation';
 
@@ -61,21 +61,25 @@ const EditPaidAdsCampaignForm = ( props ) => {
 								'Edit your paid campaign',
 								'google-listings-and-ads'
 							) }
-							description={ createInterpolateElement(
-								__(
-									'Paid Smart Shopping campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
-									'google-listings-and-ads'
-								),
-								{
-									link: (
-										<AppDocumentationLink
-											context="edit-ads"
-											linkId="see-what-ads-look-like"
-											href="https://support.google.com/google-ads/answer/6275294"
-										/>
-									),
-								}
-							) }
+							description={
+								<>
+									{ __(
+										'Paid ad campaigns are automatically optimized for you by Google.',
+										'google-listings-and-ads'
+									) }
+									<br />
+									<AppDocumentationLink
+										context="edit-ads"
+										linkId="see-what-ads-look-like"
+										href="https://support.google.com/google-ads/answer/6275294"
+									>
+										{ __(
+											'See what your ads will look like.',
+											'google-listings-and-ads'
+										) }
+									</AppDocumentationLink>
+								</>
+							}
 						/>
 						<EditPaidAdsCampaignFormContent
 							formProps={ formProps }
