@@ -22,8 +22,27 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppInputLinkControl from '.~/components/app-input-link-control';
 import './index.scss';
 
-const SwitchUrlCard = ( props ) => {
-	const { id, claimedUrl, newUrl, onSelectAnotherAccount = () => {} } = props;
+/**
+ * Clicking on the button to switch URL for a Google Merchant Center account.
+ *
+ * @event gla_mc_account_switch_url_button_click
+ */
+
+/**
+ * @param {Object} props React props.
+ * @param {string} props.id Google Account ID
+ * @param {string} props.claimedUrl The claimed URL
+ * @param {string} props.newUrl The new URL to be associated to the Google Account
+ * @param {Function} [props.onSelectAnotherAccount] Callback when a different account is selected
+ * @fires gla_mc_account_switch_account_button_click with `context: 'switch-url'`
+ * @fires gla_mc_account_switch_url_button_click
+ */
+const SwitchUrlCard = ( {
+	id,
+	claimedUrl,
+	newUrl,
+	onSelectAnotherAccount = () => {},
+} ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [

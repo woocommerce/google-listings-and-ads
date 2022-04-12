@@ -26,7 +26,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	protected const TEST_EMAIL        = 'john@doe.email';
 	protected const TEST_SCOPE        = [ 'https://www.googleapis.com/auth/content' ];
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->connection = $this->createMock( Connection::class );

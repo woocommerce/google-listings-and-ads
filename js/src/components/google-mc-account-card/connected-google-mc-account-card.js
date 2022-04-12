@@ -19,9 +19,16 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 
 /**
+ * Clicking on the "connect to a different Google Merchant Center account" button.
+ *
+ * @event gla_mc_account_connect_different_account_button_click
+ */
+
+/**
  * Renders a Google Merchant Center account card UI with connected account information.
  * It also provides a switch button that lets user connect with another account.
  *
+ * @fires gla_mc_account_connect_different_account_button_click
  * @param {Object} props React props.
  * @param {{ id: number }} props.googleMCAccount A data payload object containing the user's Google Merchant Center account ID.
  * @param {boolean} [props.hideAccountSwitch=false] Indicate whether hide the account switch block at the card footer.

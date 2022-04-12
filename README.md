@@ -7,7 +7,7 @@
 [![E2E Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/e2e-tests.yml)
 [![Bundle Size](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml)
 
-A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
+A native integration with Google offering free listings and Performance Max ads to WooCommerce merchants.
 
 -   [WooCommerce.com product page](https://woocommerce.com/products/google-listings-and-ads/)
 -   [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)
@@ -130,7 +130,16 @@ The tests will execute and you'll be presented with a summary.
 
 ### Unit Tests and PHP 8
 
-We currently do not support running unit tests on PHP 8..
+We support running unit tests on PHP 8.
+
+In order to have tests running, please, execute the following line just before the `phpunit` call:
+```
+composer require phpunit/phpunit "^9.5" --dev --update-with-all-dependencies
+```
+
+The above will update PHPUnit to version 9 including all of its dependencies.
+
+**NOTE!** Do not commit the changes made, committing `phpunit/phpunit: ^9.5` dependency changes to `composer.json` file will break the CI. 
 
 ## E2E Testing
 

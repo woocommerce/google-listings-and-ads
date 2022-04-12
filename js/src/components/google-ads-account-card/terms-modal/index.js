@@ -13,8 +13,24 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import './index.scss';
 
-const TermsModal = ( props ) => {
-	const { onCreateAccount = () => {}, onRequestClose = () => {} } = props;
+/**
+ * Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
+ *
+ * @event gla_ads_account_create_button_click
+ */
+
+/**
+ * Terms and conditions agreement modal.
+ *
+ * @fires gla_ads_account_create_button_click When agreed by clicking "Create account".
+ * @param {Object} props React props
+ * @param {Function} [props.onCreateAccount] Callback function when account is created
+ * @param {Function} [props.onRequestClose] Callback function when the modal is closed
+ */
+const TermsModal = ( {
+	onCreateAccount = () => {},
+	onRequestClose = () => {},
+} ) => {
 	const [ agree, setAgree ] = useState( false );
 
 	const handleCreateAccountClick = () => {

@@ -25,6 +25,16 @@ import Section from '.~/wcdl/section';
 import LinkedAccountsSectionWrapper from './linked-accounts-section-wrapper';
 import DisconnectModal, { ALL_ACCOUNTS, ADS_ACCOUNT } from './disconnect-modal';
 
+/**
+ * Accounts are disconnected from the Setting page
+ *
+ * @event gla_disconnected_accounts
+ * @property {string} context (`all-accounts`|`ads-account`) - indicate which accounts have been disconnected.
+ */
+
+/**
+ * @fires disconnected_accounts
+ */
 export default function LinkedAccounts() {
 	const adminUrl = useAdminUrl();
 	const { jetpack } = useJetpackAccount();

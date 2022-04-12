@@ -115,7 +115,7 @@ const SetupFreeListings = ( props ) => {
 			<Form
 				initialValues={ {
 					shipping_rate: settings.shipping_rate || 'automatic',
-					shipping_time: settings.shipping_time,
+					shipping_time: settings.shipping_time || 'flat',
 					tax_rate: settings.tax_rate,
 					shipping_country_rates: dataShippingRates,
 					offer_free_shipping: getOfferFreeShippingInitialValue(

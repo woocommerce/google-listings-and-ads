@@ -27,7 +27,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_CONNECT   = '/wc/gla/jetpack/connect';
 	protected const ROUTE_CONNECTED = '/wc/gla/jetpack/connected';
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->manager    = $this->createMock( Manager::class );

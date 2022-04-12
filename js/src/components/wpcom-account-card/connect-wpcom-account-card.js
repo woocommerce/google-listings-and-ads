@@ -14,6 +14,16 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 
+/**
+ * Clicking on the button to connect WordPress.com account.
+ *
+ * @event gla_wordpress_account_connect_button_click
+ * @property {string} context (`setup-mc`|`reconnect`) - indicates from which page the button was clicked.
+ */
+
+/**
+ * @fires gla_wordpress_account_connect_button_click
+ */
 const ConnectWPComAccountCard = () => {
 	const { createNotice } = useDispatchCoreNotices();
 

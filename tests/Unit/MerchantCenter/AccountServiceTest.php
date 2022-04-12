@@ -72,7 +72,7 @@ class AccountServiceTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->cleanup_synced    = $this->createMock( CleanupSyncedProducts::class );

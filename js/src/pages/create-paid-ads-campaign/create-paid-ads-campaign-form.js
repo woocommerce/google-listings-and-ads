@@ -22,6 +22,9 @@ import validateForm from '.~/utils/paid-ads/validateForm';
 import { getDashboardUrl } from '.~/utils/urls';
 import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 
+/**
+ * @fires gla_launch_paid_campaign_button_click on submit
+ */
 const CreatePaidAdsCampaignForm = () => {
 	const [ loading, setLoading ] = useState( false );
 	const { createAdsCampaign } = useAppDispatch();
@@ -85,7 +88,7 @@ const CreatePaidAdsCampaignForm = () => {
 							) }
 							description={ createInterpolateElement(
 								__(
-									'Paid Smart Shopping campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
+									'Paid Performance Max campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
 									'google-listings-and-ads'
 								),
 								{
