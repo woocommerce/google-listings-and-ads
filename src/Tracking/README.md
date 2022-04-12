@@ -88,15 +88,15 @@ Do not edit it manually!
 #### Emitters
 - [`AddPaidCampaignButton`](js/src/components/paid-ads/add-paid-campaign-button.js#L46) with given props, when clicked.
 
-### [`gla_ads_account_connect_button_click`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/connect-ads/index.js#L24)
+### [`gla_ads_account_connect_button_click`](js/src/components/google-ads-account-card/connect-ads/index.js#L24)
 Clicking on the button to connect an existing Google Ads account.
 #### Emitters
-- [`ConnectAds`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/connect-ads/index.js#L35) when "Connect" button is clicked.
+- [`ConnectAds`](js/src/components/google-ads-account-card/connect-ads/index.js#L35) when "Connect" button is clicked.
 
-### [`gla_ads_account_create_button_click`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/terms-modal/index.js#L16)
+### [`gla_ads_account_create_button_click`](js/src/components/google-ads-account-card/terms-modal/index.js#L16)
 Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
 #### Emitters
-- [`TermsModal`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/terms-modal/index.js#L30) When agreed by clicking "Create account".
+- [`TermsModal`](js/src/components/google-ads-account-card/terms-modal/index.js#L30) When agreed by clicking "Create account".
 
 ### [`gla_ads_set_up_billing_click`](js/src/setup-ads/ads-stepper/setup-billing/setup-card/index.js#L18)
 "Set up billing" button for Google Ads account is clicked.
@@ -182,7 +182,7 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L46)
 - [`recordDatepickerUpdateEvent`](js/src/utils/recordEvent.js#L121)
 
-### [`gla_disconnected_accounts`](js/src/settings/disconnect-accounts/index.js#L28)
+### [`gla_disconnected_accounts`](js/src/settings/linked-accounts.js#L28)
 Accounts are disconnected from the Setting page
 #### Properties
 |   |   |   |
@@ -311,7 +311,7 @@ Clicking on the button to connect Google account.
 #### Emitters
 - [`exports`](js/src/components/google-account-card/connect-google-account-card.js#L21) with `{ action: 'authorization', context: 'reconnect' | 'setup-mc' }`
 - [`exports`](js/src/components/google-account-card/request-full-access-google-account-card.js#L24) with `{ action: 'scope', context: 'reconnect' | 'setup-mc' }`
-- [`exports`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/authorize-ads.js#L21) with `{ action: 'scope', context: 'setup-ads' }`
+- [`exports`](js/src/components/google-ads-account-card/authorize-ads.js#L21) with `{ action: 'scope', context: 'setup-ads' }`
 
 ### [`gla_google_account_connect_different_account_button_click`](js/src/components/google-account-card/connected-google-account-card.js#L15)
 Clicking on the "connect to a different Google account" button.
@@ -361,45 +361,45 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 - [`SetupAdsForm`](js/src/setup-ads/setup-ads-form.js#L24) on submit
 - [`recordLaunchPaidCampaignClickEvent`](js/src/utils/recordEvent.js#L220)
 
-### [`gla_mc_account_connect_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L25)
+### [`gla_mc_account_connect_button_click`](js/src/components/google-mc-account-card/connect-mc/index.js#L25)
 Clicking on the button to connect an existing Google Merchant Center account.
 #### Emitters
-- [`ConnectMC`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L41)
+- [`ConnectMC`](js/src/components/google-mc-account-card/connect-mc/index.js#L41)
 
-### [`gla_mc_account_connect_different_account_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connected-card.js#L21)
+### [`gla_mc_account_connect_different_account_button_click`](js/src/components/google-mc-account-card/connected-google-mc-account-card.js#L21)
 Clicking on the "connect to a different Google Merchant Center account" button.
 #### Emitters
-- [`ConnectedCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connected-card.js#L32)
+- [`exports`](js/src/components/google-mc-account-card/connected-google-mc-account-card.js#L36)
 
-### [`gla_mc_account_create_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/terms-modal/index.js#L16)
+### [`gla_mc_account_create_button_click`](js/src/components/google-mc-account-card/terms-modal/index.js#L16)
 Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
 #### Emitters
-- [`TermsModal`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/terms-modal/index.js#L28)
+- [`TermsModal`](js/src/components/google-mc-account-card/terms-modal/index.js#L28)
 
-### [`gla_mc_account_reclaim_url_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/reclaim-url-card/index.js#L26)
+### [`gla_mc_account_reclaim_url_button_click`](js/src/components/google-mc-account-card/reclaim-url-card/index.js#L26)
 Clicking on the button to reclaim URL for a Google Merchant Center account.
 #### Emitters
-- [`ReclaimUrlCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/reclaim-url-card/index.js#L40)
+- [`ReclaimUrlCard`](js/src/components/google-mc-account-card/reclaim-url-card/index.js#L40)
 
-### [`gla_mc_account_switch_account_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L31)
+### [`gla_mc_account_switch_account_button_click`](js/src/components/google-mc-account-card/connect-mc/index.js#L31)
 Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
 #### Properties
 |   |   |   |
 |---|---|---|
 `context` | `string` | (`switch-url`\|`reclaim-url`) - indicate the button is clicked from which step.
 #### Emitters
-- [`ReclaimUrlCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/reclaim-url-card/index.js#L40) with `context: 'reclaim-url'`
-- [`SwitchUrlCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/switch-url-card/index.js#L40) with `context: 'switch-url'`
+- [`ReclaimUrlCard`](js/src/components/google-mc-account-card/reclaim-url-card/index.js#L40) with `context: 'reclaim-url'`
+- [`SwitchUrlCard`](js/src/components/google-mc-account-card/switch-url-card/index.js#L40) with `context: 'switch-url'`
 
-### [`gla_mc_account_switch_url_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/switch-url-card/index.js#L25)
+### [`gla_mc_account_switch_url_button_click`](js/src/components/google-mc-account-card/switch-url-card/index.js#L25)
 Clicking on the button to switch URL for a Google Merchant Center account.
 #### Emitters
-- [`SwitchUrlCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/switch-url-card/index.js#L40)
+- [`SwitchUrlCard`](js/src/components/google-mc-account-card/switch-url-card/index.js#L40)
 
-### [`gla_mc_account_warning_modal_confirm_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/warning-modal/index.js#L15)
+### [`gla_mc_account_warning_modal_confirm_button_click`](js/src/components/google-mc-account-card/warning-modal/index.js#L15)
 Clicking on the "Yes, I want a new account" button in the warning modal for creating a new Google Merchant Center account.
 #### Emitters
-- [`WarningModal`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/warning-modal/index.js#L29)
+- [`WarningModal`](js/src/components/google-mc-account-card/warning-modal/index.js#L29)
 
 ### [`gla_mc_phone_number_check`](js/src/components/contact-information/usePhoneNumberCheckTrackEventEffect.js#L12)
 Check for whether the phone number for Merchant Center exists or not.
@@ -554,10 +554,14 @@ Viewing tooltip
 - [`HelpPopover`](js/src/components/help-popover/index.js#L20) with the given `id`.
 - [`recordTooltipViewedEvent`](js/src/components/help-popover/recordTooltipViewedEvent.js#L16) with the given `id`.
 
-### [`gla_wordpress_account_connect_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/wordpressdotcom-account/connect-wpcom-account-card.js#L14)
+### [`gla_wordpress_account_connect_button_click`](js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L17)
 Clicking on the button to connect WordPress.com account.
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | (`setup-mc`\|`reconnect`) - indicates from which page the button was clicked.
 #### Emitters
-- [`ConnectWPComAccountCard`](js/src/setup-mc/setup-stepper/setup-accounts/wordpressdotcom-account/connect-wpcom-account-card.js#L23)
+- [`ConnectWPComAccountCard`](js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L27)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.

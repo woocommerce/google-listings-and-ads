@@ -67,4 +67,15 @@ trait Utilities {
 
 		return ( ( time() - $gla_completed_setup ) >= $seconds );
 	}
+
+	/**
+	 * Is Jetpack connected?
+	 *
+	 * @since x.x.x
+	 *
+	 * @return boolean
+	 */
+	protected function is_jetpack_connected(): bool {
+		return boolval( $this->options->get( OptionsInterface::JETPACK_CONNECTED, false ) );
+	}
 }

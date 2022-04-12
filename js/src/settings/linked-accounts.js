@@ -3,27 +3,27 @@
  */
 import { recordEvent, queueRecordEvent } from '@woocommerce/tracks';
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
+import { Flex, Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
-import toAccountText from '.~/utils/toAccountText';
-import getConnectedJetpackInfo from '.~/utils/getConnectedJetpackInfo';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useJetpackAccount from '.~/hooks/useJetpackAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import SpinnerCard from '.~/components/spinner-card';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import { ConnectedWPComAccountCard } from '.~/components/wpcom-account-card';
+import { ConnectedGoogleAccountCard } from '.~/components/google-account-card';
+import { ConnectedGoogleMCAccountCard } from '.~/components/google-mc-account-card';
+import { ConnectedGoogleAdsAccountCard } from '.~/components/google-ads-account-card';
 import Section from '.~/wcdl/section';
-import AccountSubsection from './account-subsection';
-import DisconnectModal, {
-	ALL_ACCOUNTS,
-	ADS_ACCOUNT,
-} from '../disconnect-modal';
+import LinkedAccountsSectionWrapper from './linked-accounts-section-wrapper';
+import DisconnectModal, { ALL_ACCOUNTS, ADS_ACCOUNT } from './disconnect-modal';
 
 /**
  * Accounts are disconnected from the Setting page
@@ -35,7 +35,7 @@ import DisconnectModal, {
 /**
  * @fires disconnected_accounts
  */
-export default function DisconnectAccounts() {
+export default function LinkedAccounts() {
 	const adminUrl = useAdminUrl();
 	const { jetpack } = useJetpackAccount();
 	const { google } = useGoogleAccount();
@@ -76,16 +76,8 @@ export default function DisconnectAccounts() {
 		}
 	};
 
-	const requiredText = __( 'Required', 'google-listings-and-ads' );
-
 	return (
-		<Section
-			title={ __( 'Linked accounts', 'google-listings-and-ads' ) }
-			description={ __(
-				'A WordPress.com account, Google account, and Google Merchant Center account are required to use this extension in WooCommerce.',
-				'google-listings-and-ads'
-			) }
-		>
+		<LinkedAccountsSectionWrapper>
 			{ openedModal && (
 				<DisconnectModal
 					onRequestClose={ dismissModal }
@@ -96,66 +88,48 @@ export default function DisconnectAccounts() {
 			{ isLoading ? (
 				<SpinnerCard />
 			) : (
-				<Section.Card>
-					<Section.Card.Body>
-						<AccountSubsection
-							title={ __(
-								'WordPress.com',
-								'google-listings-and-ads'
-							) }
-							info={ getConnectedJetpackInfo( jetpack ) }
-							helperContent={ requiredText }
-						/>
-						<AccountSubsection
-							title={ __( 'Google', 'google-listings-and-ads' ) }
-							info={ google.email }
-							helperContent={ requiredText }
-						/>
-						<AccountSubsection
-							title={ __(
-								'Google Merchant Center',
-								'google-listings-and-ads'
-							) }
-							info={ toAccountText( googleMCAccount.id ) }
-							helperContent={ requiredText }
-						/>
-						{ hasAdsAccount && (
-							<AccountSubsection
-								title={ __(
-									'Google Ads',
-									'google-listings-and-ads'
-								) }
-								info={ toAccountText( googleAdsAccount.id ) }
-								helperContent={
-									<Button
-										isDestructive
-										isLink
-										onClick={
-											openDisconnectAdsAccountModal
-										}
-									>
-										{ __(
-											'Disconnect Google Ads account only',
-											'google-listings-and-ads'
-										) }
-									</Button>
-								}
-							/>
-						) }
-					</Section.Card.Body>
-					<Section.Card.Footer>
+				<VerticalGapLayout size="large">
+					<ConnectedWPComAccountCard jetpack={ jetpack } />
+					<ConnectedGoogleAccountCard
+						googleAccount={ google }
+						hideAccountSwitch
+					/>
+					<ConnectedGoogleMCAccountCard
+						googleMCAccount={ googleMCAccount }
+						hideAccountSwitch
+					/>
+					{ hasAdsAccount && (
+						<ConnectedGoogleAdsAccountCard
+							googleAdsAccount={ googleAdsAccount }
+						>
+							<Section.Card.Footer>
+								<Button
+									isDestructive
+									isLink
+									onClick={ openDisconnectAdsAccountModal }
+								>
+									{ __(
+										'Disconnect Google Ads account only',
+										'google-listings-and-ads'
+									) }
+								</Button>
+							</Section.Card.Footer>
+						</ConnectedGoogleAdsAccountCard>
+					) }
+					<Flex justify="flex-end">
 						<Button
+							isPrimary
 							isDestructive
 							onClick={ openDisconnectAllAccountsModal }
 						>
 							{ __(
-								'Disconnect all accounts',
+								'Disconnect from all accounts',
 								'google-listings-and-ads'
 							) }
 						</Button>
-					</Section.Card.Footer>
-				</Section.Card>
+					</Flex>
+				</VerticalGapLayout>
 			) }
-		</Section>
+		</LinkedAccountsSectionWrapper>
 	);
 }

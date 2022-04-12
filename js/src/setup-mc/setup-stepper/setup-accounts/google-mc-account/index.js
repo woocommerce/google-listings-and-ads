@@ -10,7 +10,7 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import Section from '.~/wcdl/section';
 import AppTooltip from '.~/components/app-tooltip';
-import SectionContent from './section-content';
+import GoogleMCAccountCard from '.~/components/google-mc-account-card';
 import './index.scss';
 
 const GoogleMCAccount = () => {
@@ -39,7 +39,7 @@ const GoogleMCAccount = () => {
 					</Tip>
 				}
 			>
-				<SectionContent />
+				<GoogleMCAccountCard />
 			</Section>
 		</div>
 	);

@@ -15,9 +15,13 @@ import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import Section from '.~/wcdl/section';
 import AppSpinner from '.~/components/app-spinner';
 import GoogleAccountCard from '.~/components/google-account-card';
-import DisconnectAccountCard from './disconnect-account-card';
+import DisconnectGoogleAccountCard from './disconnect-google-account-card';
+import {
+	lockInReconnection,
+	unlockFromReconnection,
+} from '../reconnectionLock';
 
-export default function ReconnectAccounts() {
+export default function ReconnectGoogleAccount() {
 	const { data } = useAppSelectDispatch( 'getGoogleAccountAccess' );
 	const scope = toScopeState( glaData.adsSetupComplete, data?.scope );
 
@@ -34,6 +38,9 @@ export default function ReconnectAccounts() {
 	useEffect( () => {
 		if ( isCompletedReconnection ) {
 			getHistory().replace( getDashboardUrl() );
+			unlockFromReconnection();
+		} else {
+			lockInReconnection();
 		}
 	}, [ isCompletedReconnection ] );
 
@@ -51,7 +58,7 @@ export default function ReconnectAccounts() {
 		 * if not yet connected or no required permission scopes.
 		 */
 		const card = noAccess ? (
-			<DisconnectAccountCard email={ data.email } />
+			<DisconnectGoogleAccountCard email={ data.email } />
 		) : (
 			<GoogleAccountCard />
 		);

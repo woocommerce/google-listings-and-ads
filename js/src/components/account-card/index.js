@@ -13,6 +13,7 @@ import { Icon, store as storeIcon } from '@wordpress/icons';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import googleLogoURL from './gogole-g-logo.svg';
+import wpLogoURL from './wp-logo.svg';
 import './index.scss';
 
 /**
@@ -22,6 +23,7 @@ import './index.scss';
  */
 export const APPEARANCE = {
 	EMPTY: 'empty',
+	WPCOM: 'wpcom',
 	GOOGLE: 'google',
 	GOOGLE_MERCHANT_CENTER: 'google_merchant_center',
 	GOOGLE_ADS: 'google_ads',
@@ -38,11 +40,24 @@ const googleLogo = (
 	/>
 );
 
+const wpLogo = (
+	<img
+		src={ wpLogoURL }
+		alt={ __( 'WordPress.com Logo', 'google-listings-and-ads' ) }
+		width="40"
+		height="40"
+	/>
+);
+
 const appearanceDict = {
 	[ APPEARANCE.EMPTY ]: {},
+	[ APPEARANCE.WPCOM ]: {
+		icon: wpLogo,
+		title: 'WordPress.com',
+	},
 	[ APPEARANCE.GOOGLE ]: {
 		icon: googleLogo,
-		title: __( 'Google account', 'google-listings-and-ads' ),
+		title: __( 'Google', 'google-listings-and-ads' ),
 	},
 	[ APPEARANCE.GOOGLE_MERCHANT_CENTER ]: {
 		icon: googleLogo,
@@ -94,6 +109,7 @@ const alignStyleName = {
  * @param {'center'|'top'} [props.alignIcon='center'] Specify the vertical alignment of leading icon.
  * @param {'center'|'top'} [props.alignIndicator='center'] Specify the vertical alignment of `indicator`.
  * @param {Array<JSX.Element>} [props.children] Children to be rendered if needs more content within the card.
+ * @param {Object} [props.restProps] Props to be forwarded to Section.Card.
  */
 export default function AccountCard( {
 	className,
@@ -107,6 +123,7 @@ export default function AccountCard( {
 	indicator,
 	alignIndicator = 'center',
 	children,
+	...restProps
 } ) {
 	const cardClassName = classnames(
 		'gla-account-card',
@@ -125,7 +142,7 @@ export default function AccountCard( {
 	);
 
 	return (
-		<Section.Card className={ cardClassName }>
+		<Section.Card className={ cardClassName } { ...restProps }>
 			<Section.Card.Body>
 				<Flex gap={ 4 }>
 					{ icon && (
