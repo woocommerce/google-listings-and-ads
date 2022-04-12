@@ -25,7 +25,7 @@ use Google\Ads\GoogleAds\V9\Services\MutateOperation;
  * Used for the Performance Max Campaigns
  * https://developers.google.com/google-ads/api/docs/performance-max/asset-groups
  *
- * @since x.x.x
+ * @since 1.12.2
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */

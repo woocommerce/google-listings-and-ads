@@ -134,7 +134,7 @@ class CouponMetaHandlerTest extends WP_UnitTestCase {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->coupon_meta_handler = new CouponMetaHandler();
 	}

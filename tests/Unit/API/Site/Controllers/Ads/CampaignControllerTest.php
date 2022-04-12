@@ -26,7 +26,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_CAMPAIGN   = '/wc/gla/ads/campaigns/' . self::TEST_CAMPAIGN_ID;
 	protected const BASE_COUNTRY     = 'US';
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->ads_campaign = $this->createMock( AdsCampaign::class );

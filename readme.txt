@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.12.1
+Stable tag: 1.12.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,34 +109,17 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 1.12.1 - 2022-04-01 =
-* Fix - Change shipping time options based on shipping rate options, to address missing shipping times data when shipping rates option is set to automatic or simple flat option, and shipping times option is set to complex manual option.
-* Fix - Do not sync shipping rates if the shipping time setting is set to complex.
+= 1.12.4 - 2022-04-06 =
+* Fix - Prevent fatal errors when migrating or syncing merchant settings.
 
-= 1.12.0 - 2022-03-29 =
-* Add - Additional data points for tracker snapshot.
-* Add - Enables merchants to select multiple countries as their audience when creating a Google Ads campaign (Smart Shopping Campaign).
-* Add - Google Listings And Ads product attributes icon.
-* Add - Integration with WooCommerce Shipping Zone to automatically sync shipping settings to Merchant Center.
-* FIx - Show right link and message in Paid Campaigns report when there is no data available.
-* Fix - Cleanup synced products locally when disconnecting Merchant Center account.
-* Fix - Combine duplicate account issues per country.
-* Fix - Fatal error when the plugin is activated before WooCommerce.
-* Fix - Fix incorrect HTTP status code when campaign creation and edit APIs call fails.
-* Fix - Limit failed delete retries to 5 and schedule again after one minute.
-* Fix - Performance issue related with NoteInitializer class.
-* Tweak - Add message to advise users to only connect Google Ads child account, not manager account.
-* Tweak - Catch errors related to invalid top-level domains specifically, and throw an error when the site's URL ends with an invalid top-level domain.
-* Tweak - Improve Ads error messages returned by the API.
-* Tweak - Simplify the format processing of number and amount values for all report metrics.
-* Update - Budget recommendation API supports for multiple countries.
-* Update - Campaigns APIs support for multiple countries.
-* Update - Change Campaign operations to batch requests.
-* Update - Refactor the Middleware class.
-* Update - Remove delete operations for campaign budget and ads group.
-* Update - WP-CLI dev dependencies.
+= 1.12.3 - 2022-04-05 =
+* Fix - Shipping times section not showing up and unable to proceed through the Setup Merchant Center flow.
 
-= 1.11.1 - 2022-02-10 =
-* Fix - Prevent a fatal error in case an existing Merchant Center account has an invalid domain.
+= 1.12.2 - 2022-04-05 =
+* Add - Unit test for AdsConversionAction.
+* Add - Unit test for AdsReport.
+* Fix - Prevent uncaught exception when Merchant account is not connected and we send a tracker snapshot.
+* Tweak - DB migration for shipping rates.
+* Update - Create all new campaigns as PMax campaigns.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

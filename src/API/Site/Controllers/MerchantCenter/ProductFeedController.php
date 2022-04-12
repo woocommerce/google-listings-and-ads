@@ -67,7 +67,7 @@ class ProductFeedController extends BaseController {
 					'page'     => $request['per_page'] > 0 && $request['page'] > 0 ? $request['page'] : 1,
 				];
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}

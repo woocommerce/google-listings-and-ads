@@ -27,7 +27,7 @@ class ValidateAddressTest extends ContainerAwareUnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->container_interface = $this->createMock( ContainerInterface::class );
 		$this->google_settings     = new Settings ( $this->container_interface );

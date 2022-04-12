@@ -18,12 +18,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -36,7 +38,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\Requ
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
-use Exception;
 use Google\Client;
 use Google\Service\ShoppingContent;
 use Google\Service\SiteVerification as SiteVerificationService;
@@ -174,7 +175,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Custom error handler which sets the Google disconnected status.
+	 * Custom error handler to detect and handle a disconnected status.
 	 *
 	 * @return callable
 	 */
@@ -189,7 +190,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 						}
 
 						if ( 401 === $code ) {
-							$this->set_google_disconnected();
+							$this->handle_unauthorized_error( $request, $response );
 						}
 
 						throw RequestException::create( $request, $response );
@@ -200,6 +201,31 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
+	 * Handle a 401 unauthorized error.
+	 * Marks either the Jetpack or the Google account as disconnected.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param RequestInterface  $request
+	 * @param ResponseInterface $response
+	 *
+	 * @throws AccountReconnect When an account must be reconnected.
+	 */
+	protected function handle_unauthorized_error( RequestInterface $request, ResponseInterface $response ) {
+		// Log original exception before throwing reconnect exception.
+		do_action( 'woocommerce_gla_exception', RequestException::create( $request, $response ), __METHOD__ );
+
+		$auth_header = $response->getHeader( 'www-authenticate' )[0] ?? '';
+		if ( 0 === strpos( $auth_header, 'X_JP_Auth' ) ) {
+			$this->set_jetpack_connected( false );
+			throw AccountReconnect::jetpack_disconnected();
+		}
+
+		$this->set_google_disconnected();
+		throw AccountReconnect::google_disconnected();
+	}
+
+	/**
 	 * @return callable
 	 */
 	protected function add_auth_header(): callable {
@@ -207,9 +233,14 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			return function( RequestInterface $request, array $options ) use ( $handler ) {
 				try {
 					$request = $request->withHeader( 'Authorization', $this->generate_auth_header() );
+
+					// Getting a valid authorization token, indicates Jetpack is connected.
+					$this->set_jetpack_connected( true );
 				} catch ( WPError $error ) {
 					do_action( 'woocommerce_gla_guzzle_client_exception', $error, __METHOD__ . ' in add_auth_header()' );
-					throw new Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
+
+					$this->set_jetpack_connected( false );
+					throw AccountReconnect::jetpack_disconnected();
 				}
 
 				return $handler( $request, $options );
@@ -302,5 +333,44 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		/** @var Options $options */
 		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
 		$options->update( OptionsInterface::GOOGLE_CONNECTED, false );
+	}
+
+	/**
+	 * Set the Jetpack account connection.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param bool $connected Is connected or disconnected?
+	 */
+	protected function set_jetpack_connected( bool $connected ) {
+		/** @var Options $options */
+		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
+
+		// Save previous connected status before updating.
+		$previous_connected = boolval( $options->get( OptionsInterface::JETPACK_CONNECTED ) );
+
+		$options->update( OptionsInterface::JETPACK_CONNECTED, $connected );
+
+		if ( $previous_connected !== $connected ) {
+			$this->jetpack_connected_change( $connected );
+		}
+	}
+
+	/**
+	 * Handle the reconnect notification when the Jetpack connection status changes.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param boolean $connected
+	 */
+	protected function jetpack_connected_change( bool $connected ) {
+		/** @var ReconnectWordPress $note */
+		$note = $this->getLeagueContainer()->get( ReconnectWordPress::class );
+
+		if ( $connected ) {
+			$note->delete();
+		} else {
+			$note->get_entry()->save();
+		}
 	}
 }
