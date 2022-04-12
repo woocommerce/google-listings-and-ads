@@ -109,6 +109,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.12.5 - 2022-04-12 =
+* Fix - Cache Yoast SEO values per product, to ensure unique values.
+* Fix - Feature/tree select control component.
+* Fix - Prompt to reconnect when a Jetpack disconnect is detected.
+* Tweak - Automatically generate Tracking events docs from JSDoc.
+* Tweak - Move Tracking events docs to JSDoc.
+
 = 1.12.4 - 2022-04-06 =
 * Fix - Prevent fatal errors when migrating or syncing merchant settings.
 
