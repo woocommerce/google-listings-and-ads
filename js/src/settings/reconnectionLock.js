@@ -29,7 +29,7 @@ let unlockCallback = null;
  * and uses the current link as the locked link. When clicking on the Settings link,
  * it will redirect to the locked link.
  */
-function lockInReconnection() {
+export function lockInReconnection() {
 	if ( unlockCallback ) {
 		return;
 	}
@@ -86,11 +86,9 @@ function lockInReconnection() {
  * Enables the GLA menu links of WC Navigation that are locked by
  * the `lockInReconnection` function.
  */
-function unlockFromReconnection() {
+export function unlockFromReconnection() {
 	if ( unlockCallback ) {
 		unlockCallback();
 		unlockCallback = null;
 	}
 }
-
-export { lockInReconnection, unlockFromReconnection };
