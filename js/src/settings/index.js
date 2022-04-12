@@ -20,13 +20,14 @@ import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
 import './index.scss';
 
+const pageClassName = 'gla-settings';
+
 const Settings = () => {
 	const { subpath } = getQuery();
 	// Make the component highlight GLA entry in the WC legacy menu.
 	useLegacyMenuEffect();
 
 	const { google } = useGoogleAccount();
-	const isReconnectWPComPage = subpath === subpaths.reconnectWPComAccount;
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
 
 	// This page wouldn't get any 401 response when losing Google account access,
@@ -41,6 +42,12 @@ const Settings = () => {
 
 	// Navigate to subpath is any.
 	switch ( subpath ) {
+		case subpaths.reconnectWPComAccount:
+			return (
+				<div className={ pageClassName }>
+					<ReconnectWPComAccount />
+				</div>
+			);
 		case subpaths.reconnectGoogleAccount:
 			return <ReconnectGoogleAccount />;
 		case subpaths.editPhoneNumber:
@@ -51,16 +58,10 @@ const Settings = () => {
 	}
 
 	return (
-		<div className="gla-settings">
+		<div className={ pageClassName }>
 			<NavigationClassic />
-			{ isReconnectWPComPage ? (
-				<ReconnectWPComAccount />
-			) : (
-				<>
-					<ContactInformationPreview />
-					<LinkedAccounts />
-				</>
-			) }
+			<ContactInformationPreview />
+			<LinkedAccounts />
 		</div>
 	);
 };

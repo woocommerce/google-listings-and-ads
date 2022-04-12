@@ -16,6 +16,10 @@ import AccountCard from '.~/components/account-card';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import { ConnectWPComAccountCard } from '.~/components/wpcom-account-card';
 import LinkedAccountsSectionWrapper from '../linked-accounts-section-wrapper';
+import {
+	lockInReconnection,
+	unlockFromReconnection,
+} from '../reconnectionLock';
 import './reconnect-wpcom-account.scss';
 
 export default function ReconnectWPComAccount() {
@@ -25,6 +29,9 @@ export default function ReconnectWPComAccount() {
 	useEffect( () => {
 		if ( isConnected ) {
 			getHistory().replace( getSettingsUrl() );
+			unlockFromReconnection();
+		} else {
+			lockInReconnection();
 		}
 	}, [ isConnected ] );
 

@@ -8,9 +8,15 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import { API_RESPONSE_CODES } from '.~/constants';
 
-const getStartedUrl = '/google/start';
-const dashboardPath = '/google/dashboard';
-const settingsPath = '/google/settings';
+export const pagePaths = {
+	getStarted: '/google/start',
+	setupMC: '/google/setup-mc',
+	setupAds: '/google/setup-ads',
+	dashboard: '/google/dashboard',
+	reports: '/google/reports',
+	productFeed: '/google/product-feed',
+	settings: '/google/settings',
+};
 
 export const subpaths = {
 	editFreeListings: '/free-listings/edit',
@@ -21,6 +27,10 @@ export const subpaths = {
 	reconnectWPComAccount: '/reconnect-wpcom-account',
 	reconnectGoogleAccount: '/reconnect-google-account',
 };
+
+const getStartedPath = pagePaths.getStarted;
+const dashboardPath = pagePaths.dashboard;
+const settingsPath = pagePaths.settings;
 
 export const getEditFreeListingsUrl = () => {
 	return getNewPath( { subpath: subpaths.editFreeListings }, dashboardPath );
@@ -38,7 +48,7 @@ export const getCreateCampaignUrl = () => {
 };
 
 export const getGetStartedUrl = () => {
-	return getNewPath( null, getStartedUrl, null );
+	return getNewPath( null, getStartedPath, null );
 };
 
 export const getDashboardUrl = () => {
