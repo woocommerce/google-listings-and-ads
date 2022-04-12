@@ -36,6 +36,8 @@ const googleMCReportingDashboardURL =
  * @param {import('.~/data/utils').PerformanceMetrics} props.data Data as get from API.
  *
  * @return {SummaryNumber} Filled SummaryNumber.
+ *
+ * @fires gla_google_mc_link_click with `{ context: 'reports' }`
  */
 const MetricNumber = ( {
 	href,

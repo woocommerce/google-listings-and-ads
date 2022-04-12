@@ -13,6 +13,11 @@ import AppButton from '.~/components/app-button';
 import readMoreLink from './read-more-link';
 import useGoogleConnectFlow from './use-google-connect-flow';
 
+/**
+ * @param {Object} props React props
+ * @param {boolean} props.disabled
+ * @fires gla_google_account_connect_button_click with `{ action: 'authorization', context: 'reconnect' | 'setup-mc' }`
+ */
 export default function ConnectGoogleAccountCard( { disabled } ) {
 	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
 	const [ handleConnect, { loading, data } ] = useGoogleConnectFlow(

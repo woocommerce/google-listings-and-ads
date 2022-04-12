@@ -13,6 +13,16 @@ import './index.scss';
 import TrackableLink from '.~/components/trackable-link';
 import CountryModal from './country-modal';
 
+/**
+ * Clicking on the link to view free ad credit value by country.
+ *
+ * @event gla_free_ad_credit_country_click
+ * @property {string} context Indicates which page the link is in.
+ */
+
+/**
+ * @fires gla_free_ad_credit_country_click
+ */
 const FreeAdCredit = () => {
 	const [ showModal, setShowModal ] = useState( false );
 

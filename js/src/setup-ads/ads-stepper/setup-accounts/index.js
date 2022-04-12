@@ -12,7 +12,7 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import { ConnectedGoogleAccountCard } from '.~/components/google-account-card';
-import GoogleAdsAccountCard from './google-ads-account-card';
+import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
 import FreeAdCredit from './free-ad-credit';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';

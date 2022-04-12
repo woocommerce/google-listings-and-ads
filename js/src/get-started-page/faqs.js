@@ -216,6 +216,17 @@ const faqItems = [
 	},
 ];
 
+/**
+ * Clicking on getting started page faq item to collapse or expand it.
+ *
+ * @event gla_get_started_faq
+ * @property {string} id FAQ identifier
+ * @property {string} action (`expand`|`collapse`)
+ */
+
+/**
+ * @fires gla_get_started_faq
+ */
 const Faqs = () => {
 	return <FaqsPanel trackName="gla_get_started_faq" faqItems={ faqItems } />;
 };
