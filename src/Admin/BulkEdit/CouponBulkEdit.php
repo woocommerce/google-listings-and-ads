@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\ViewHelperTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Coupon;
 
@@ -38,14 +39,21 @@ class CouponBulkEdit implements BulkEditInterface, Registerable {
 	protected $merchant_center;
 
 	/**
+	 * @var TargetAudience
+	 */
+	protected $target_audience;
+
+	/**
 	 * AbstractMetaBox constructor.
 	 *
 	 * @param CouponMetaHandler     $meta_handler
 	 * @param MerchantCenterService $merchant_center
+	 * @param TargetAudience        $target_audience
 	 */
-	public function __construct( CouponMetaHandler $meta_handler, MerchantCenterService $merchant_center ) {
+	public function __construct( CouponMetaHandler $meta_handler, MerchantCenterService $merchant_center, TargetAudience $target_audience ) {
 		$this->meta_handler    = $meta_handler;
 		$this->merchant_center = $merchant_center;
+		$this->target_audience = $target_audience;
 	}
 
 	/**
@@ -80,7 +88,7 @@ class CouponBulkEdit implements BulkEditInterface, Registerable {
 			return;
 		}
 
-		$target_country = $this->merchant_center->get_main_target_country();
+		$target_country = $this->target_audience->get_main_target_country();
 		if ( ! $this->merchant_center->is_promotion_supported_country( $target_country ) ) {
 			return;
 		}

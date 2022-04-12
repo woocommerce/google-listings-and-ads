@@ -45,13 +45,13 @@ const PauseProgramModal = ( props ) => {
 		>
 			<p>
 				{ __(
-					'Results typically improve with time with Google’s Smart Shopping campaigns. If you pause, your products won’t be shown to people looking for what you offer.',
+					'Results typically improve with time with Google’s paid ad campaigns. If you pause, your products won’t be shown to people looking for what you offer.',
 					'google-listings-and-ads'
 				) }
 			</p>
 			<p>
 				{ __(
-					'Pausing a Smart Shopping campaign will result in the loss of any optimisations learned from those campaigns.',
+					'Pausing a paid ad campaign will result in the loss of any optimisations learned from those campaigns.',
 					'google-listings-and-ads'
 				) }
 			</p>

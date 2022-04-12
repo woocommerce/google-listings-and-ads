@@ -37,7 +37,7 @@ class PhoneVerificationControllerTest extends RESTControllerUnitTest {
 		'verification_method' => 'SMS',
 	];
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->phone_verification = $this->createMock( PhoneVerification::class );

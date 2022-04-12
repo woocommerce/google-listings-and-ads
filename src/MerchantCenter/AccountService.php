@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ApiNotReady;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -27,6 +28,7 @@ defined( 'ABSPATH' ) || exit;
  * Class AccountService
  *
  * Container used to access:
+ * - CleanupSyncedProducts
  * - Merchant
  * - MerchantAccountState
  * - MerchantCenterService
@@ -37,7 +39,7 @@ defined( 'ABSPATH' ) || exit;
  * - ShippingRateTable
  * - ShippingTimeTable
  *
- * @since x.x.x
+ * @since 1.12.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
 class AccountService implements OptionsAwareInterface, Service {
@@ -254,6 +256,8 @@ class AccountService implements OptionsAwareInterface, Service {
 		$this->container->get( MerchantIssueTable::class )->truncate();
 		$this->container->get( ShippingRateTable::class )->truncate();
 		$this->container->get( ShippingTimeTable::class )->truncate();
+
+		$this->container->get( CleanupSyncedProducts::class )->schedule();
 	}
 
 	/**

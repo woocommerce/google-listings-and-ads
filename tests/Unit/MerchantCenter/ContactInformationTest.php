@@ -28,7 +28,7 @@ class ContactInformationTest extends ContainerAwareUnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->merchant            = $this->createMock( Merchant::class );
 		$this->google_settings     = $this->createMock( Settings::class );
