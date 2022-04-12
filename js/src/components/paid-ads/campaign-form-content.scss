@@ -1,0 +1,29 @@
+.gla-campaign-form-content {
+	// Adjust <SelectControl> and <InputControl> imported from @wordpress/components.
+	// Repeat selector to make it higher priority.
+	.components-input-control__container.components-input-control__container {
+		.components-select-control__input,
+		.components-input-control__input {
+			min-height: 36px;
+			padding-left: $grid-unit-20;
+		}
+	}
+	.components-input-control__suffix {
+		margin-right: $grid-unit-20;
+	}
+
+	// Adjust labels of <SelectControl> and <InputControl> imported from @wordpress/components.
+	// Repeat selector to make it higher priority.
+	.components-input-control.components-input-control,
+	.components-base-control .components-select-control {
+		.components-input-control__label {
+			padding-bottom: 0;
+			margin-bottom: $grid-unit-10;
+		}
+	}
+
+	// Adjust help text of <SelectControl> imported from @wordpress/components.
+	.components-base-control__help {
+		margin: 0;
+	}
+}

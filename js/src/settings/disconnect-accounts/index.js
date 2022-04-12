@@ -25,6 +25,16 @@ import DisconnectModal, {
 	ADS_ACCOUNT,
 } from '../disconnect-modal';
 
+/**
+ * Accounts are disconnected from the Setting page
+ *
+ * @event gla_disconnected_accounts
+ * @property {string} context (`all-accounts`|`ads-account`) - indicate which accounts have been disconnected.
+ */
+
+/**
+ * @fires disconnected_accounts
+ */
 export default function DisconnectAccounts() {
 	const adminUrl = useAdminUrl();
 	const { jetpack } = useJetpackAccount();

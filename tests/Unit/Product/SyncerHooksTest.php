@@ -251,7 +251,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->login_as_administrator();

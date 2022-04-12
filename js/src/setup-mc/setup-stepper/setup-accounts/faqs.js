@@ -59,6 +59,17 @@ const faqItems = [
 	},
 ];
 
+/**
+ * Clicking on faq items to collapse or expand it in the Setup Merchant Center page
+ *
+ * @event gla_setup_mc_faq
+ * @property {string} id FAQ identifier
+ * @property {string} action (`expand`|`collapse`)
+ */
+
+/**
+ * @fires gla_setup_mc_faq
+ */
 export default function Faqs() {
 	return (
 		<Section>

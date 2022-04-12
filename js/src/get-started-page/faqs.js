@@ -90,14 +90,14 @@ const faqItems = [
 				<p>
 					{ createInterpolateElement(
 						__(
-							'Learn more about supported countries and currencies for Smart Shopping campaigns <link>here</link>.',
+							'Learn more about supported countries and currencies for Performance Max campaigns <link>here</link>.',
 							'google-listings-and-ads'
 						),
 						{
 							link: (
 								<AppDocumentationLink
 									context="faqs"
-									linkId="supported-countries-and-currencies-for-smart-shopping-campaigns"
+									linkId="supported-countries-and-currencies-for-performance-max-campaigns"
 									href="https://support.google.com/merchants/answer/160637#countrytable"
 								/>
 							),
@@ -123,7 +123,7 @@ const faqItems = [
 				</p>
 				<p>
 					{ __(
-						'If you’re running a Smart Shopping campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.',
+						'If you’re running a Performance Max campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.',
 						'google-listings-and-ads'
 					) }
 				</p>
@@ -148,35 +148,35 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'what-are-smart-shopping-campaigns',
+		trackId: 'what-are-performance-max-campaigns',
 		question: __(
-			'What are Smart Shopping campaigns?',
+			'What are Performance Max campaigns?',
 			'google-listings-and-ads'
 		),
 		answer: __(
-			'Smart Shopping campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.',
+			'Performance Max campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.',
 			'google-listings-and-ads'
 		),
 	},
 	{
-		trackId: 'how-much-do-smart-shopping-campaigns-cost',
+		trackId: 'how-much-do-performance-max-campaigns-cost',
 		question: __(
-			'How much do Smart Shopping campaigns cost?',
+			'How much do Performance Max campaigns cost?',
 			'google-listings-and-ads'
 		),
 		answer: __(
-			'Smart Shopping campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google Listings & Ads but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.',
+			'Performance Max campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google Listings & Ads but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.',
 			'google-listings-and-ads'
 		),
 	},
 	{
-		trackId: 'can-i-run-both-free-listings-and-smart-shopping-campaigns',
+		trackId: 'can-i-run-both-free-listings-and-performance-max-campaigns',
 		question: __(
-			'Can I run both free listings and Smart Shopping campaigns at the same time?',
+			'Can I run both free listings and Performance Max campaigns at the same time?',
 			'google-listings-and-ads'
 		),
 		answer: __(
-			'Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Smart Shopping campaign.',
+			'Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.',
 			'google-listings-and-ads'
 		),
 	},
@@ -216,6 +216,17 @@ const faqItems = [
 	},
 ];
 
+/**
+ * Clicking on getting started page faq item to collapse or expand it.
+ *
+ * @event gla_get_started_faq
+ * @property {string} id FAQ identifier
+ * @property {string} action (`expand`|`collapse`)
+ */
+
+/**
+ * @fires gla_get_started_faq
+ */
 const Faqs = () => {
 	return <FaqsPanel trackName="gla_get_started_faq" faqItems={ faqItems } />;
 };

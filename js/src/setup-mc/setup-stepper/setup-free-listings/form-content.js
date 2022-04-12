@@ -3,12 +3,14 @@
  */
 import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
-import CombinedShipping from './combined-shipping';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
 import useAutoSaveSettingsEffect from './useAutoSaveSettingsEffect';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import ConditionalSection from '.~/components/conditional-section';
+import ShippingRateSection from '.~/components/shipping-rate-section';
+import ShippingTimeSection from './shipping-time-section';
+import useAutoSaveShippingRatesEffect from './useAutoSaveShippingRatesEffect';
 
 /**
  * Form to configure free listings.
@@ -20,14 +22,26 @@ import ConditionalSection from '.~/components/conditional-section';
 const FormContent = ( props ) => {
 	const { formProps, submitButton } = props;
 	const { values } = formProps;
+	const {
+		shipping_country_rates: shippingRatesValue,
+		...settingsValue
+	} = values;
 	const { data: audienceCountries } = useTargetAudienceFinalCountryCodes();
 	const shouldDisplayTaxRate = useDisplayTaxRate( audienceCountries );
+	const shouldDisplayShippingTime = values.shipping_time === 'flat';
 
-	useAutoSaveSettingsEffect( values );
+	useAutoSaveSettingsEffect( settingsValue );
+	useAutoSaveShippingRatesEffect( shippingRatesValue );
 
 	return (
 		<StepContent>
-			<CombinedShipping formProps={ formProps } />
+			<ShippingRateSection
+				formProps={ formProps }
+				audienceCountries={ audienceCountries }
+			/>
+			{ shouldDisplayShippingTime && (
+				<ShippingTimeSection formProps={ formProps } />
+			) }
 			<ConditionalSection show={ shouldDisplayTaxRate }>
 				<TaxRate formProps={ formProps } />
 			</ConditionalSection>

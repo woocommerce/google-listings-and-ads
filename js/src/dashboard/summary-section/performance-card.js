@@ -5,38 +5,45 @@ import { SummaryList, SummaryListPlaceholder } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import SummaryCard from './summary-card';
-import PerformanceCardNoData from '.~/dashboard/summary-section/performance-card-no-data';
+import AppButton from '.~/components/app-button';
 
 /**
  * @typedef {import('@woocommerce/components').SummaryNumber} SummaryNumber
  */
 
 /**
- * Returns a Card with performance matrics according to the given data.
+ * Returns a Card's content with performance matrics according to the given data.
  *
  * @param {Object} props React props
- * @param {string} props.title Card titile.
  * @param {boolean} props.loaded Was the data loaded?
  * @param {Object | null} props.data Data to be forwarded to `children` once available.
  * @param {(availableData: Object) => Array<SummaryNumber>} props.children Data to be forwarded to `children` once available.
- * @param {number} [props.numberOfItems=2] Number of expected SummaryNumbers.
- * @param {string} props.campaignType The Campaign type (free|paid) used to define text an links when no data
- * @return {SummaryCard} SummaryCard with Metrics data, preloader or error message.
+ * @param {{body: string, buttonLabel: string, eventName: string, link: string}} props.noDataMessage Content of the message to be shown if there is no data loaded.
+ * @return {JSX.Element} Metrics data, preloader or error message.
  */
-const PerformanceCard = ( {
-	title,
-	loaded,
-	data,
-	children,
-	numberOfItems = 2,
-	campaignType,
-} ) => {
+const PerformanceCard = ( { loaded, data, children, noDataMessage } ) => {
 	let content;
 	if ( ! loaded ) {
-		content = <SummaryListPlaceholder numberOfItems={ numberOfItems } />;
+		content = <SummaryListPlaceholder numberOfItems={ 2 } />;
 	} else if ( ! data ) {
-		content = <PerformanceCardNoData campaignType={ campaignType } />;
+		content = (
+			<div className="gla-summary-card__body">
+				<p>{ noDataMessage.body }</p>
+				<AppButton
+					eventName={ noDataMessage.eventName }
+					eventProps={ {
+						context: 'dashboard',
+						href: noDataMessage.link,
+					} }
+					href={ noDataMessage.link }
+					target="_blank"
+					isSmall
+					isSecondary
+				>
+					{ noDataMessage.buttonLabel }
+				</AppButton>
+			</div>
+		);
 	} else {
 		content = (
 			<SummaryList>
@@ -47,7 +54,7 @@ const PerformanceCard = ( {
 		);
 	}
 
-	return <SummaryCard title={ title }>{ content }</SummaryCard>;
+	return content;
 };
 
 export default PerformanceCard;

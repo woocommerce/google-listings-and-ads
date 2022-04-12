@@ -14,9 +14,22 @@ import recordEvent from '.~/utils/recordEvent';
 import './index.scss';
 import { getEditFreeListingsUrl, getEditCampaignUrl } from '.~/utils/urls';
 
-const EditProgramPromptModal = ( props ) => {
-	const { programId, onRequestClose } = props;
+/**
+ * Triggered when "continue" to edit program button is clicked.
+ *
+ * @event gla_dashboard_edit_program_click
+ * @property {string} programId program id
+ * @property {string} url url (free or paid)
+ */
 
+/**
+ * @fires gla_dashboard_edit_program_click when "Continue to edit" is clicked.
+ * @param {Object} props React props.
+ * @param {string} props.programId The program's identifier
+ * @param {Function} props.onRequestClose Callback function when closing the modal.
+ * @return {JSX.Element} `AppModal` with content.
+ */
+const EditProgramPromptModal = ( { programId, onRequestClose } ) => {
 	const handleDontEditClick = () => {
 		onRequestClose();
 	};
@@ -51,7 +64,7 @@ const EditProgramPromptModal = ( props ) => {
 		>
 			<p>
 				{ __(
-					'Results typically improve with time with Google’s Free Listing and Smart Shopping campaigns.',
+					'Results typically improve with time with Google’s Free Listing and paid ad campaigns.',
 					'google-listings-and-ads'
 				) }
 			</p>
