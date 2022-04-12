@@ -112,7 +112,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		);
 
 		add_filter(
-			'wc_add_to_cart_message_html',
+			'woocommerce_add_to_cart_button_html',
 			function ( $message, $products ) {
 				return $this->custom_action_add_to_cart( $message, $products );
 			},
@@ -205,7 +205,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $order->get_id() ),
 		);
 
-		// Get the item infor in the order
+		// Get the item info in the order
 		$item_info = '';
 		foreach ( $order->get_items() as $item_id => $item ) {
 			$product_id   = $item->get_product_id();
@@ -235,9 +235,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		if ( 'en_US' === $language ) {
 			$language = 'English';
 		}
-		printf(
-			'<script>
-            gtag("event", "purchase",
+		$purchase_page_gtag =
+		sprintf(
+			'gtag("event", "purchase",
 				{
                     "developer_id.%s": "true",
                     "ecomm_pagetype": "purchase",
@@ -252,7 +252,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
                     "delivery_postal_code": "%s",
                     "aw_feed_country": "%s",   
                     "aw_feed_language": "%s",                 
-                    items: [' . $item_info . ']}); </script>',
+                    items: [' . $item_info . ']});',
 			esc_js( self::DEVELOPER_ID ),
 			esc_js( $order->get_id() ),
 			esc_js( $order->get_currency() ),
@@ -265,6 +265,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $this->wc->get_base_country() ),
 			esc_js( $language ),
 		);
+		wp_print_inline_script_tag( $purchase_page_gtag );
 	}
 
 	/**
@@ -275,10 +276,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		if ( ! is_product() ) {
 			return;
 		}
-		$product = wc_get_product( get_the_ID() );
-		printf(
-			'<script>
-                gtag("event", "view_item", {
+		$product        = wc_get_product( get_the_ID() );
+		$view_item_gtag = sprintf(
+			'gtag("event", "view_item", {
                     "send_to": "GLA",
                     "developer_id.%s": "true",
                     "ecomm_pagetype": "product",
@@ -289,8 +289,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
                     "google_business_vertical": "retail",
                     "name":"%s",
                     "category":"%s",
-                    }]});
-			</script>',
+                    }]});',
 			esc_js( self::DEVELOPER_ID ),
 			esc_js( (string) $product->get_price() ),
 			esc_js( $product->get_id() ),
@@ -298,21 +297,22 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $product->get_name() ),
 			esc_js( join( '& ', $this->product_helper->get_categories( $product ) ) ),
 		);
+		wp_print_inline_script_tag( $view_item_gtag );
 	}
 
 	/**
 	 * Display the JavaScript code to track all pages.
 	 */
 	private function display_page_view_event_snippet(): void {
-		printf(
-			'<script>
-                gtag(
+		$page_view_gtag =
+		sprintf(
+			'gtag(
                     "event", "page_view", {
                     "send_to": "GLA",
-                    "developer_id.%s": "true",});
-			</script>',
+                    "developer_id.%s": "true",});',
 			esc_js( self::DEVELOPER_ID )
 		);
+		wp_print_inline_script_tag( $page_view_gtag );
 	}
 
 	/**
@@ -378,9 +378,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			add_action(
 				'wp_footer',
 				function () use ( $product ) {
-					printf(
-						'<script>
-                        gtag("event", "add_to_cart", {
+					$add_to_cart_gtag = sprintf(
+						'gtag("event", "add_to_cart", {
                             "send_to": "GLA",
                             "developer_id.%s": "true",
                             "ecomm_pagetype": "cart",
@@ -391,8 +390,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
                             "google_business_vertical": "retail",
                             "name":"%s",
                             "category":"%s",
-                            }]});
-                            </script>',
+                            }]});',
 						esc_js( self::DEVELOPER_ID ),
 						esc_js( (string) $product->get_price() ),
 						esc_js( $product->get_id() ),
@@ -400,6 +398,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 						esc_js( $product->get_name() ),
 						esc_js( join( '& ', $this->product_helper->get_categories( $product ) ) ),
 					);
+					wp_print_inline_script_tag( $add_to_cart_gtag );
 				}
 			);
 
