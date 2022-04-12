@@ -4,27 +4,35 @@
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control/index.js';
-import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
+
+/**
+ * @typedef { import("./typedefs.js").ShippingRateGroup } ShippingRateGroup
+ */
 
 /**
  * Form to add a new rate for selected country(-ies).
  *
  * @param {Object} props
- * @param {Array<CountryCode>} props.countries A list of country codes to choose from.
- * @param {Function} props.onRequestClose
+ * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
+ * @param {ShippingRateGroup} props.initialValues Initial values for the form.
+ * @param {function()} props.onRequestClose
  * @param {function(AggregatedShippingRate): void} props.onSubmit Called with submitted value.
  */
-const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
-	const { code } = useStoreCurrency();
-
+const AddRateModal = ( {
+	countryOptions,
+	initialValues,
+	onSubmit = noop,
+	onRequestClose = noop,
+} ) => {
 	const handleValidate = ( values ) => {
 		const errors = {};
 
@@ -52,16 +60,17 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 
 	return (
 		<Form
-			initialValues={ {
-				countries,
-				currency: code,
-				rate: 0,
-			} }
+			initialValues={ initialValues }
 			validate={ handleValidate }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, isValidForm, handleSubmit } = formProps;
+				const {
+					getInputProps,
+					values,
+					isValidForm,
+					handleSubmit,
+				} = formProps;
 
 				return (
 					<AppModal
@@ -91,7 +100,7 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 									'If customer is in',
 									'google-listings-and-ads'
 								) }
-								options={ countries }
+								options={ countryOptions }
 								multiple
 								{ ...getInputProps( 'countries' ) }
 							/>
@@ -100,7 +109,7 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 									'Then the estimated shipping rate displayed in the product listing is',
 									'google-listings-and-ads'
 								) }
-								suffix={ code }
+								suffix={ values.currency }
 								{ ...getInputProps( 'rate' ) }
 							/>
 						</VerticalGapLayout>

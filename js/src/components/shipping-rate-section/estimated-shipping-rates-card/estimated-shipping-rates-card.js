@@ -154,7 +154,12 @@ export default function EstimatedShippingRatesCard( {
 								}
 								modal={
 									<AddRateModal
-										countries={ remainingCountries }
+										countryOptions={ remainingCountries }
+										initialValues={ {
+											countries: remainingCountries,
+											currency: currencyCode,
+											rate: 0,
+										} }
 										onSubmit={ handleAdd }
 									/>
 								}
