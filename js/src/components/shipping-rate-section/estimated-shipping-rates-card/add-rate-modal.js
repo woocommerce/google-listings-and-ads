@@ -15,6 +15,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
 
 /**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  * @typedef { import("./typedefs.js").ShippingRateGroup } ShippingRateGroup
  */
 
@@ -24,8 +25,8 @@ import AppCountrySelect from '.~/components/app-country-select';
  * @param {Object} props
  * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
  * @param {ShippingRateGroup} props.initialValues Initial values for the form.
- * @param {function()} props.onRequestClose
- * @param {function(AggregatedShippingRate): void} props.onSubmit Called with submitted value.
+ * @param {() => void} props.onRequestClose Callback to close the modal.
+ * @param {(values: ShippingRateGroup) => void} props.onSubmit Called with submitted value.
  */
 const AddRateModal = ( {
 	countryOptions,
@@ -121,7 +122,3 @@ const AddRateModal = ( {
 };
 
 export default AddRateModal;
-/**
- * @typedef {import("./estimated-shipping-rates-card.js").AggregatedShippingRate} AggregatedShippingRate
- * @typedef { import(".~/data/actions").CountryCode } CountryCode
- */
