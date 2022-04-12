@@ -71,7 +71,7 @@ trait Utilities {
 	/**
 	 * Is Jetpack connected?
 	 *
-	 * @since x.x.x
+	 * @since 1.12.5
 	 *
 	 * @return boolean
 	 */

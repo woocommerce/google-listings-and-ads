@@ -204,7 +204,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * Handle a 401 unauthorized error.
 	 * Marks either the Jetpack or the Google account as disconnected.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.5
 	 *
 	 * @param RequestInterface  $request
 	 * @param ResponseInterface $response
@@ -338,7 +338,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	/**
 	 * Set the Jetpack account connection.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.5
 	 *
 	 * @param bool $connected Is connected or disconnected?
 	 */
@@ -359,7 +359,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	/**
 	 * Handle the reconnect notification when the Jetpack connection status changes.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.5
 	 *
 	 * @param boolean $connected
 	 */
