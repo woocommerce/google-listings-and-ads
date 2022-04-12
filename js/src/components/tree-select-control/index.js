@@ -12,7 +12,6 @@ import {
 	useCallback,
 } from '@wordpress/element';
 import classnames from 'classnames';
-// eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
 import {
 	__experimentalUseFocusOutside as useFocusOutside,
 	useInstanceId,
