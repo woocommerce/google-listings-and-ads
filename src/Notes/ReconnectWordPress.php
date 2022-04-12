@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ReconnectWordPress
  *
- * @since x.x.x
+ * @since 1.12.5
  *
  * Note for prompting to reconnect the WordPress.com account.
  *

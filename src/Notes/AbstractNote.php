@@ -21,7 +21,7 @@ abstract class AbstractNote implements Note, OptionsAwareInterface {
 	/**
 	 * Remove the note from the datastore.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.5
 	 */
 	public function delete() {
 		if ( class_exists( Notes::class ) ) {
