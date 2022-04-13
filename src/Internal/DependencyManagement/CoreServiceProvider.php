@@ -91,6 +91,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRatesProcessor;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneMethodsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
@@ -377,5 +378,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ZoneLocationsParser::class, WC::class, GoogleHelper::class );
 		$this->share_with_tags( ZoneMethodsParser::class, WC::class );
 		$this->share_with_tags( ShippingZone::class, WC::class, ZoneLocationsParser::class, ZoneMethodsParser::class, LocationRatesProcessor::class );
+		$this->share_with_tags( ShippingSuggestionService::class, ShippingZone::class, WC::class );
 	}
 }
