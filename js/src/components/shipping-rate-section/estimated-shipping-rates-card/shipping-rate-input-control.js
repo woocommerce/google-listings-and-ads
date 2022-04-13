@@ -10,7 +10,7 @@ import { Pill } from '@woocommerce/components';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import AppButton from '.~/components/app-button';
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import EditRateModal from './edit-rate-modal';
+import EditRateFormModal from './edit-rate-form-modal';
 import './shipping-rate-input-control.scss';
 import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
 
@@ -63,7 +63,7 @@ const ShippingRateInputControl = ( {
 								</AppButton>
 							}
 							modal={
-								<EditRateModal
+								<EditRateFormModal
 									audienceCountries={ audienceCountries }
 									rate={ value }
 									onSubmit={ onChange }

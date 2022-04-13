@@ -23,7 +23,7 @@ import AppCountrySelect from '.~/components/app-country-select';
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
  */
-const EditRateModal = ( {
+const EditRateFormModal = ( {
 	audienceCountries,
 	rate,
 	onDelete,
@@ -144,7 +144,7 @@ const EditRateModal = ( {
 	);
 };
 
-export default EditRateModal;
+export default EditRateFormModal;
 
 /**
  * @typedef {import("./estimated-shipping-rates-card.js").AggregatedShippingRate} AggregatedShippingRate

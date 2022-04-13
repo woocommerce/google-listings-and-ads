@@ -28,7 +28,7 @@ import AppCountrySelect from '.~/components/app-country-select';
  * @param {() => void} props.onRequestClose Callback to close the modal.
  * @param {(values: ShippingRateGroup) => void} props.onSubmit Called with submitted value.
  */
-const AddRateModal = ( {
+const AddRateFormModal = ( {
 	countryOptions,
 	initialValues,
 	onSubmit = noop,
@@ -120,4 +120,4 @@ const AddRateModal = ( {
 	);
 };
 
-export default AddRateModal;
+export default AddRateFormModal;
