@@ -23,15 +23,6 @@ import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */
 
-/**
- * Aggregated shipping rate.
- *
- * @typedef {Object} AggregatedShippingRate
- * @property {Array<CountryCode>} countries Array of destination country codes.
- * @property {string} currency Currency of the price.
- * @property {number} price Shipping price.
- */
-
 const defaultShippingRate = {
 	method: SHIPPING_RATE_METHOD.FLAT_RATE,
 	options: {},
