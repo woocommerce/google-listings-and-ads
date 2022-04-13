@@ -74,6 +74,7 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @param {string} [props.id] Component id
  * @param {string} [props.label] Label for the component
  * @param {string | false} [props.selectAllLabel] Label for the Select All root element. False for disable.
+ * @param {string} [props.help] Help text under the select input.
  * @param {string} [props.placeholder] Placeholder for the search control input
  * @param {string} [props.className] The class name for this component
  * @param {boolean} [props.disabled] Disables the component
@@ -87,6 +88,7 @@ const TreeSelectControl = ( {
 	id,
 	label,
 	selectAllLabel = __( 'All', 'google-listings-and-ads' ),
+	help,
 	placeholder,
 	className,
 	disabled,
@@ -588,6 +590,11 @@ const TreeSelectControl = ( {
 				onTagsChange={ handleTagsChange }
 				onInputChange={ handleOnInputChange }
 			/>
+			{ help && (
+				<div className="woocommerce-tree-select-control__help">
+					{ help }
+				</div>
+			) }
 			{ showTree && (
 				<div
 					className="woocommerce-tree-select-control__tree"
