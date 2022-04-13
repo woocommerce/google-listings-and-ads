@@ -75,7 +75,6 @@ const AddRateModal = ( {
 
 				return (
 					<AppModal
-						className="gla-edit-rate-modal"
 						title={ __(
 							'Estimate a shipping rate',
 							'google-listings-and-ads'
