@@ -44,27 +44,9 @@ export default function EstimatedShippingRatesCard( {
 	onChange,
 } ) {
 	const { code: currencyCode } = useStoreCurrency();
-	const actualCountryCount = shippingRates.length;
-	const actualCountries = new Map(
-		shippingRates.map( ( rate ) => [ rate.country, rate ] )
-	);
-	const remainingCountries = audienceCountries.filter(
-		( el ) => ! actualCountries.has( el )
-	);
-	const remainingCount = remainingCountries.length;
 
-	// Group countries with the same rate.
+	// Group countries with the same method, currency and rate.
 	const groups = groupShippingRatesByMethodCurrencyRate( shippingRates );
-
-	// Prefill to-be-added group.
-	if ( groups.length === 0 ) {
-		groups.push( {
-			countries: audienceCountries,
-			method: SHIPPING_RATE_METHOD.FLAT_RATE,
-			currency: currencyCode,
-			rate: null,
-		} );
-	}
 
 	/**
 	 * Event handler for adding new shipping rate group.
@@ -158,6 +140,89 @@ export default function EstimatedShippingRatesCard( {
 		onChange( newValue );
 	};
 
+	const renderGroups = () => {
+		/*
+		 * If there is no group, we render a `ShippingRateInputControl`
+		 * with a temporary pre-filled group, so that users can staight away
+		 * key in shipping rate for all countries immediately.
+		 */
+		if ( groups.length === 0 ) {
+			const tempGroup = {
+				countries: audienceCountries,
+				method: SHIPPING_RATE_METHOD.FLAT_RATE,
+				currency: currencyCode,
+				rate: null,
+			};
+			return (
+				<ShippingRateInputControl
+					countryOptions={ audienceCountries }
+					value={ tempGroup }
+					onChange={ getChangeHandler( tempGroup ) }
+					onDelete={ getDeleteHandler( tempGroup ) }
+				/>
+			);
+		}
+
+		/*
+		 * If there are groups, we render `ShippingRateInputControl` for each group,
+		 * and render an "Add rate button" for the remaining countries.
+		 */
+		const remainingCountries = audienceCountries.filter( ( country ) => {
+			const exist = shippingRates.some(
+				( shippingRate ) =>
+					shippingRate.country === country &&
+					shippingRate.method === SHIPPING_RATE_METHOD.FLAT_RATE
+			);
+
+			return ! exist;
+		} );
+
+		return (
+			<>
+				{ groups.map( ( group ) => {
+					return (
+						<ShippingRateInputControl
+							key={ group.countries.join( '-' ) }
+							countryOptions={ audienceCountries }
+							value={ group }
+							onChange={ getChangeHandler( group ) }
+							onDelete={ getDeleteHandler( group ) }
+						/>
+					);
+				} ) }
+				{ remainingCountries.length >= 1 && (
+					<div>
+						<AppButtonModalTrigger
+							button={
+								<Button
+									isSecondary
+									icon={ <GridiconPlusSmall /> }
+								>
+									{ __(
+										'Add another rate',
+										'google-listings-and-ads'
+									) }
+								</Button>
+							}
+							modal={
+								<AddRateFormModal
+									countryOptions={ remainingCountries }
+									initialValues={ {
+										countries: remainingCountries,
+										method: SHIPPING_RATE_METHOD.FLAT_RATE,
+										currency: currencyCode,
+										rate: 0,
+									} }
+									onSubmit={ handleAddSubmit }
+								/>
+							}
+						/>
+					</div>
+				) }
+			</>
+		);
+	};
+
 	return (
 		<Section.Card>
 			<Section.Card.Body>
@@ -168,48 +233,7 @@ export default function EstimatedShippingRatesCard( {
 					) }
 				</Section.Card.Title>
 				<VerticalGapLayout size="large">
-					{ groups.map( ( group ) => {
-						return (
-							<div key={ group.countries.join( '-' ) }>
-								<ShippingRateInputControl
-									countryOptions={ audienceCountries }
-									value={ group }
-									onChange={ getChangeHandler( group ) }
-									onDelete={ getDeleteHandler( group ) }
-								/>
-							</div>
-						);
-					} ) }
-					{ actualCountryCount >= 1 && remainingCount >= 1 && (
-						<div>
-							<AppButtonModalTrigger
-								button={
-									<Button
-										isSecondary
-										icon={ <GridiconPlusSmall /> }
-									>
-										{ __(
-											'Add another rate',
-											'google-listings-and-ads'
-										) }
-									</Button>
-								}
-								modal={
-									<AddRateFormModal
-										countryOptions={ remainingCountries }
-										initialValues={ {
-											countries: remainingCountries,
-											method:
-												SHIPPING_RATE_METHOD.FLAT_RATE,
-											currency: currencyCode,
-											rate: 0,
-										} }
-										onSubmit={ handleAddSubmit }
-									/>
-								}
-							/>
-						</div>
-					) }
+					{ renderGroups() }
 				</VerticalGapLayout>
 			</Section.Card.Body>
 		</Section.Card>
