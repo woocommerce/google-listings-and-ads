@@ -85,7 +85,6 @@ const AddTimeModal = ( props ) => {
 									) }
 								</div>
 								<AudienceCountrySelect
-									multiple
 									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>

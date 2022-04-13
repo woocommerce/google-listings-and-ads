@@ -11,7 +11,7 @@ import { Form } from '@woocommerce/components';
 import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AppCountrySelect from '.~/components/app-country-select';
+import SupportedCountrySelect from '.~/components/supported-country-select';
 
 const EditMinimumOrderModal = ( props ) => {
 	const { countryOptions, value, onChange, onRequestClose } = props;
@@ -99,13 +99,12 @@ const EditMinimumOrderModal = ( props ) => {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<AppCountrySelect
+							<SupportedCountrySelect
 								label={ __(
 									'If customer is in',
 									'google-listings-and-ads'
 								) }
-								options={ countryOptions }
-								multiple
+								countryCodes={ countryOptions }
 								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputPriceControl
