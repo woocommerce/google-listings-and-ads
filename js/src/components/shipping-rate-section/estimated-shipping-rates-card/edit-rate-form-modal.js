@@ -4,6 +4,7 @@
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -26,14 +27,14 @@ import AppCountrySelect from '.~/components/app-country-select';
  * @param {ShippingRateGroup} props.initialValues Initial values for the form.
  * @param {(newRate: ShippingRateGroup, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the rate is submitted.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
- * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
+ * @param {() => void} props.onRequestClose Callback to close the modal.
  */
 const EditRateFormModal = ( {
 	countryOptions,
 	initialValues,
-	onDelete,
-	onSubmit,
-	onRequestClose,
+	onDelete = noop,
+	onSubmit = noop,
+	onRequestClose = noop,
 } ) => {
 	const handleDeleteClick = () => {
 		onRequestClose();
