@@ -138,14 +138,19 @@ export default function EstimatedShippingRatesCard( {
 		onChange( newValue );
 	};
 
+	/**
+	 * Function to render the groups.
+	 *
+	 * If there is no group, we render a `ShippingRateInputControl`
+	 * with a pre-filled group, so that users can straight away
+	 * key in shipping rate for all countries immediately.
+	 *
+	 * If there are groups, we render `ShippingRateInputControl` for each group,
+	 * and render an "Add rate button" if there are remaining countries.
+	 */
 	const renderGroups = () => {
-		/*
-		 * If there is no group, we render a `ShippingRateInputControl`
-		 * with a temporary pre-filled group, so that users can staight away
-		 * key in shipping rate for all countries immediately.
-		 */
 		if ( groups.length === 0 ) {
-			const tempGroup = {
+			const prefilledGroup = {
 				countries: audienceCountries,
 				method: SHIPPING_RATE_METHOD.FLAT_RATE,
 				currency: currencyCode,
@@ -154,16 +159,15 @@ export default function EstimatedShippingRatesCard( {
 			return (
 				<ShippingRateInputControl
 					countryOptions={ audienceCountries }
-					value={ tempGroup }
-					onChange={ getChangeHandler( tempGroup ) }
-					onDelete={ getDeleteHandler( tempGroup ) }
+					value={ prefilledGroup }
+					onChange={ getChangeHandler( prefilledGroup ) }
+					onDelete={ getDeleteHandler( prefilledGroup ) }
 				/>
 			);
 		}
 
-		/*
-		 * If there are groups, we render `ShippingRateInputControl` for each group,
-		 * and render an "Add rate button" for the remaining countries.
+		/**
+		 * The remaining countries that do not have a shipping rate value yet.
 		 */
 		const remainingCountries = audienceCountries.filter( ( country ) => {
 			const exist = value.some(
