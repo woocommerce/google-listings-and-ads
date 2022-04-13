@@ -36,7 +36,7 @@ const defaultShippingRate = {
  * @param {Object} props
  * @param {Array<ShippingRate>} props.value Array of individual shipping rates to be used as the initial values of the form.
  * @param {Array<CountryCode>} props.audienceCountries Array of country codes of all audience countries.
- * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping rates are changed.
+ * @param {(newValue: Array<ShippingRate>) => void} props.onChange Callback called with new data once shipping rates are changed.
  */
 export default function EstimatedShippingRatesCard( {
 	value: shippingRates,
@@ -79,17 +79,25 @@ export default function EstimatedShippingRatesCard( {
 		onChange( newValue );
 	};
 
-	function handleAdd( { countries, currency, rate } ) {
-		// Split aggregated rate, to individial rates per country.
-		const addedIndividualRates = countries.map( ( country ) => ( {
+	/**
+	 * Event handler for adding new shipping rate group.
+	 *
+	 * Shipping rate group will be converted into shipping rates, and propagate up via `onChange`.
+	 *
+	 * @param {ShippingRateGroup} newGroup Shipping rate group.
+	 */
+	const handleAddSubmit = ( { countries, method, currency, rate } ) => {
+		const newShippingRates = countries.map( ( country ) => ( {
 			...defaultShippingRate,
 			country,
+			method,
 			currency,
-			rate, // TODO: unify that
+			rate,
 		} ) );
 
-		onChange( shippingRates.concat( addedIndividualRates ) );
-	}
+		onChange( shippingRates.concat( newShippingRates ) );
+	};
+
 	function handleChange(
 		{ countries, currency, rate },
 		deletedCountries = []
@@ -163,10 +171,12 @@ export default function EstimatedShippingRatesCard( {
 										countryOptions={ remainingCountries }
 										initialValues={ {
 											countries: remainingCountries,
+											method:
+												SHIPPING_RATE_METHOD.FLAT_RATE,
 											currency: currencyCode,
 											rate: 0,
 										} }
-										onSubmit={ handleAdd }
+										onSubmit={ handleAddSubmit }
 									/>
 								}
 							/>
