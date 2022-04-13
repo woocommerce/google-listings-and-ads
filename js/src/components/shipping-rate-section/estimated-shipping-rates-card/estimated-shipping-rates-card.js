@@ -62,17 +62,15 @@ export default function EstimatedShippingRatesCard( {
 	const remainingCount = remainingCountries.length;
 
 	// Group countries with the same rate.
-	const countriesPriceArray = groupShippingRatesByMethodCurrencyRate(
-		shippingRates
-	);
+	const groups = groupShippingRatesByMethodCurrencyRate( shippingRates );
 
-	// Prefill to-be-added price.
-	if ( countriesPriceArray.length === 0 ) {
-		countriesPriceArray.push( {
+	// Prefill to-be-added group.
+	if ( groups.length === 0 ) {
+		groups.push( {
 			countries: audienceCountries,
 			method: SHIPPING_RATE_METHOD.FLAT_RATE,
-			price: null,
 			currency: currencyCode,
+			rate: null,
 		} );
 	}
 
@@ -99,7 +97,7 @@ export default function EstimatedShippingRatesCard( {
 		onChange( shippingRates.concat( addedIndividualRates ) );
 	}
 	function handleChange(
-		{ countries, currency, price },
+		{ countries, currency, rate },
 		deletedCountries = []
 	) {
 		deletedCountries.forEach( ( country ) =>
@@ -114,7 +112,7 @@ export default function EstimatedShippingRatesCard( {
 				...oldShippingRate,
 				country,
 				currency,
-				rate: price, // TODO: unify that
+				rate,
 			};
 
 			/*
@@ -140,7 +138,7 @@ export default function EstimatedShippingRatesCard( {
 					) }
 				</Section.Card.Title>
 				<VerticalGapLayout size="large">
-					{ countriesPriceArray.map( ( el ) => {
+					{ groups.map( ( el ) => {
 						return (
 							<div key={ el.countries.join( '-' ) }>
 								<ShippingRateInputControl

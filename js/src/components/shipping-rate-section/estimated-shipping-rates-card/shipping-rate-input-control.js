@@ -15,14 +15,19 @@ import './shipping-rate-input-control.scss';
 import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
 
 /**
+ * @typedef { import("./typedefs").ShippingRateGroup } ShippingRateGroup
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ */
+
+/**
  * Input control to edit a shipping rate.
  * Consists of a simple input field to adjust the rate
  * and with a modal with a more advanced form to select countries.
  *
  * @param {Object} props
- * @param {AggregatedShippingRate} props.value Aggregate, rat: Array object to be used as the initial value.
+ * @param {ShippingRateGroup} props.value Aggregate, rat: Array object to be used as the initial value.
  * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
- * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when rate changes.
+ * @param {(newRate: ShippingRateGroup, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when rate changes.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
 const ShippingRateInputControl = ( {
@@ -31,17 +36,16 @@ const ShippingRateInputControl = ( {
 	onChange,
 	onDelete,
 } ) => {
-	const { countries, currency, price } = value;
+	const { countries, currency, rate } = value;
 
 	const handleBlur = ( event, numberValue ) => {
-		if ( price === numberValue ) {
+		if ( rate === numberValue ) {
 			return;
 		}
 
 		onChange( {
-			countries,
-			currency,
-			price: numberValue,
+			...value,
+			rate: numberValue,
 		} );
 	};
 
@@ -74,10 +78,10 @@ const ShippingRateInputControl = ( {
 					</div>
 				}
 				suffix={ currency }
-				value={ price }
+				value={ rate }
 				onBlur={ handleBlur }
 			/>
-			{ price === 0 && (
+			{ rate === 0 && (
 				<div className="gla-input-pill-div">
 					<Pill>
 						{ __(
@@ -92,8 +96,3 @@ const ShippingRateInputControl = ( {
 };
 
 export default ShippingRateInputControl;
-
-/**
- * @typedef {import("./estimated-shipping-rates-card.js").AggregatedShippingRate} AggregatedShippingRate
- * @typedef { import(".~/data/actions").CountryCode } CountryCode
- */

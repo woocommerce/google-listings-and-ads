@@ -14,12 +14,17 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
 
 /**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ * @typedef { import("./typedefs.js").ShippingRateGroup } ShippingRateGroup
+ */
+
+/**
  * Form to edit rate for selected country(-ies).
  *
  * @param {Object} props
  * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
- * @param {AggregatedShippingRate} props.rate
- * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the rate is submitted.
+ * @param {ShippingRateGroup} props.rate
+ * @param {(newRate: ShippingRateGroup, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the rate is submitted.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
  */
@@ -45,8 +50,8 @@ const EditRateFormModal = ( {
 			);
 		}
 
-		if ( values.price < 0 ) {
-			errors.price = __(
+		if ( values.rate < 0 ) {
+			errors.rate = __(
 				'The estimated shipping rate cannot be less than 0.',
 				'google-listings-and-ads'
 			);
@@ -71,7 +76,7 @@ const EditRateFormModal = ( {
 			initialValues={ {
 				countries: rate.countries,
 				currency: rate.currency,
-				price: rate.price,
+				rate: rate.rate,
 			} }
 			validate={ handleValidate }
 			onSubmit={ handleSubmitCallback }
@@ -129,7 +134,7 @@ const EditRateFormModal = ( {
 									'google-listings-and-ads'
 								) }
 								suffix={ values.currency }
-								{ ...getInputProps( 'price' ) }
+								{ ...getInputProps( 'rate' ) }
 							/>
 						</VerticalGapLayout>
 					</AppModal>
@@ -140,8 +145,3 @@ const EditRateFormModal = ( {
 };
 
 export default EditRateFormModal;
-
-/**
- * @typedef {import("./estimated-shipping-rates-card.js").AggregatedShippingRate} AggregatedShippingRate
- * @typedef { import(".~/data/actions").CountryCode } CountryCode
- */
