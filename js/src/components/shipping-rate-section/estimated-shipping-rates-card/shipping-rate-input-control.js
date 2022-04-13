@@ -21,13 +21,13 @@ import ShippingRateInputControlLabelText from './shipping-rate-input-control-lab
  *
  * @param {Object} props
  * @param {AggregatedShippingRate} props.value Aggregate, rat: Array object to be used as the initial value.
- * @param {Array<CountryCode>} props.audienceCountries List of all audience countries.
+ * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
  * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when rate changes.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
 const ShippingRateInputControl = ( {
+	countryOptions,
 	value,
-	audienceCountries,
 	onChange,
 	onDelete,
 } ) => {
@@ -64,7 +64,7 @@ const ShippingRateInputControl = ( {
 							}
 							modal={
 								<EditRateFormModal
-									audienceCountries={ audienceCountries }
+									countryOptions={ countryOptions }
 									rate={ value }
 									onSubmit={ onChange }
 									onDelete={ onDelete }

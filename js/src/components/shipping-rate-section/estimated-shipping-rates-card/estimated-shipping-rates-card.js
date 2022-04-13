@@ -130,8 +130,8 @@ export default function EstimatedShippingRatesCard( {
 						return (
 							<div key={ el.countries.join( '-' ) }>
 								<ShippingRateInputControl
+									countryOptions={ audienceCountries }
 									value={ el }
-									audienceCountries={ audienceCountries }
 									onChange={ handleChange }
 									onDelete={ handleDelete }
 								/>

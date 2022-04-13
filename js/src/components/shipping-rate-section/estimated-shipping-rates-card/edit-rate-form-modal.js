@@ -17,24 +17,19 @@ import AppCountrySelect from '.~/components/app-country-select';
  * Form to edit rate for selected country(-ies).
  *
  * @param {Object} props
- * @param {Array<CountryCode>} props.audienceCountries List of all audience countries.
+ * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
  * @param {AggregatedShippingRate} props.rate
  * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the rate is submitted.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
  */
 const EditRateFormModal = ( {
-	audienceCountries,
+	countryOptions,
 	rate,
 	onDelete,
 	onSubmit,
 	onRequestClose,
 } ) => {
-	// We actually may have rates for more countries than the audience ones.
-	const availableCountries = Array.from(
-		new Set( [ ...rate.countries, ...audienceCountries ] )
-	);
-
 	const handleDeleteClick = () => {
 		onRequestClose();
 		onDelete( rate.countries );
@@ -124,7 +119,7 @@ const EditRateFormModal = ( {
 									'If customer is in',
 									'google-listings-and-ads'
 								) }
-								options={ availableCountries }
+								options={ countryOptions }
 								multiple
 								{ ...getInputProps( 'countries' ) }
 							/>
