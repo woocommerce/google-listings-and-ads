@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Pill } from '@woocommerce/components';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -20,20 +21,20 @@ import ShippingRateInputControlLabelText from './shipping-rate-input-control-lab
  */
 
 /**
- * Input control to edit a shipping rate.
+ * Input control to edit a shipping rate group.
  * Consists of a simple input field to adjust the rate
  * and with a modal with a more advanced form to select countries.
  *
  * @param {Object} props
  * @param {ShippingRateGroup} props.value Aggregate, rat: Array object to be used as the initial value.
  * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
- * @param {(newRate: ShippingRateGroup, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when rate changes.
+ * @param {(newGroup: ShippingRateGroup) => void} props.onChange Called when shipping rate group changes.
  * @param {() => void} props.onDelete Called when users clicked on the Delete button.
  */
 const ShippingRateInputControl = ( {
 	countryOptions,
 	value,
-	onChange,
+	onChange = noop,
 	onDelete,
 } ) => {
 	const { countries, currency, rate } = value;

@@ -67,19 +67,6 @@ export default function EstimatedShippingRatesCard( {
 	}
 
 	/**
-	 * Get the `onDelete` event handler for shipping rate group.
-	 *
-	 * @param {ShippingRateGroup} oldGroup Shipping rate group.
-	 */
-	const getDeleteHandler = ( oldGroup ) => () => {
-		const newValue = shippingRates.filter(
-			( shippingRate ) =>
-				! oldGroup.countries.includes( shippingRate.country )
-		);
-		onChange( newValue );
-	};
-
-	/**
 	 * Event handler for adding new shipping rate group.
 	 *
 	 * Shipping rate group will be converted into shipping rates, and propagate up via `onChange`.
@@ -98,37 +85,78 @@ export default function EstimatedShippingRatesCard( {
 		onChange( shippingRates.concat( newShippingRates ) );
 	};
 
-	function handleChange(
-		{ countries, currency, rate },
-		deletedCountries = []
-	) {
-		deletedCountries.forEach( ( country ) =>
-			actualCountries.delete( country )
-		);
-
-		// Upsert rates.
-		countries.forEach( ( country ) => {
-			const oldShippingRate = actualCountries.get( country );
-			const newShippingRate = {
-				...defaultShippingRate,
-				...oldShippingRate,
-				country,
-				currency,
-				rate,
-			};
+	/**
+	 * Get the `onChange` event handler for shipping rate group.
+	 *
+	 * @param {ShippingRateGroup} oldGroup Old shipping rate group.
+	 */
+	const getChangeHandler = ( oldGroup ) => {
+		/**
+		 * @param {ShippingRateGroup} newGroup New shipping rate group from `onChange` event.
+		 */
+		const handleChange = ( newGroup ) => {
+			/*
+			 * Create new shipping rates value by filtering out deleted countries first.
+			 *
+			 * A country is deleted when it exists in `oldGroup` and not exists in `newGroup`.
+			 */
+			const newValue = shippingRates.filter( ( shippingRate ) => {
+				const isDeleted =
+					oldGroup.countries.includes( shippingRate.country ) &&
+					! newGroup.countries.includes( shippingRate.country );
+				return ! isDeleted;
+			} );
 
 			/*
-			 * If the shipping rate is free,
-			 * we remove the free_shipping_threshold.
+			 * Upsert shipping rates in `newValue` by looping through `newGroup.countries`.
 			 */
-			if ( ! isNonFreeFlatShippingRate( newShippingRate ) ) {
-				newShippingRate.options.free_shipping_threshold = undefined;
-			}
+			newGroup.countries.forEach( ( country ) => {
+				const existingIndex = newValue.findIndex(
+					( shippingRate ) => shippingRate.country === country
+				);
+				const oldShippingRate = newValue[ existingIndex ];
+				const newShippingRate = {
+					...defaultShippingRate,
+					...oldShippingRate,
+					country,
+					method: newGroup.method,
+					currency: newGroup.currency,
+					rate: newGroup.rate,
+				};
 
-			actualCountries.set( country, newShippingRate );
-		} );
-		onChange( Array.from( actualCountries.values() ) );
-	}
+				/*
+				 * If the shipping rate is free,
+				 * we remove the free_shipping_threshold.
+				 */
+				if ( ! isNonFreeFlatShippingRate( newShippingRate ) ) {
+					newShippingRate.options.free_shipping_threshold = undefined;
+				}
+
+				if ( existingIndex >= 0 ) {
+					newValue[ existingIndex ] = newShippingRate;
+				} else {
+					newValue.push( newShippingRate );
+				}
+			} );
+
+			onChange( newValue );
+		};
+
+		return handleChange;
+	};
+
+	/**
+	 * Get the `onDelete` event handler for shipping rate group.
+	 *
+	 * @param {ShippingRateGroup} oldGroup Shipping rate group.
+	 */
+	const getDeleteHandler = ( oldGroup ) => () => {
+		const newValue = shippingRates.filter(
+			( shippingRate ) =>
+				! oldGroup.countries.includes( shippingRate.country )
+		);
+		onChange( newValue );
+	};
 
 	return (
 		<Section.Card>
@@ -146,7 +174,7 @@ export default function EstimatedShippingRatesCard( {
 								<ShippingRateInputControl
 									countryOptions={ audienceCountries }
 									value={ group }
-									onChange={ handleChange }
+									onChange={ getChangeHandler( group ) }
 									onDelete={ getDeleteHandler( group ) }
 								/>
 							</div>

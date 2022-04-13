@@ -20,12 +20,12 @@ import AppCountrySelect from '.~/components/app-country-select';
  */
 
 /**
- * Form to edit rate for selected country(-ies).
+ * Form modal to edit or delete shipping rate group.
  *
  * @param {Object} props
  * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
  * @param {ShippingRateGroup} props.initialValues Initial values for the form.
- * @param {(newRate: ShippingRateGroup, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the rate is submitted.
+ * @param {(newGroup: ShippingRateGroup) => void} props.onSubmit Called when the shipping rate group is submitted.
  * @param {() => void} props.onDelete Called when users clicked on the Delete button.
  * @param {() => void} props.onRequestClose Callback to close the modal.
  */
@@ -41,6 +41,9 @@ const EditRateFormModal = ( {
 		onDelete();
 	};
 
+	/**
+	 * @param {ShippingRateGroup} values
+	 */
 	const handleValidate = ( values ) => {
 		const errors = {};
 
@@ -61,15 +64,12 @@ const EditRateFormModal = ( {
 		return errors;
 	};
 
-	const handleSubmitCallback = ( newAggregatedRate ) => {
+	/**
+	 * @param {ShippingRateGroup} newGroup
+	 */
+	const handleSubmitCallback = ( newGroup ) => {
 		onRequestClose();
-
-		const remainingCountries = new Set( newAggregatedRate.countries );
-		const removedCountries = initialValues.countries.filter(
-			( el ) => ! remainingCountries.has( el )
-		);
-
-		onSubmit( newAggregatedRate, removedCountries );
+		onSubmit( newGroup );
 	};
 
 	return (
