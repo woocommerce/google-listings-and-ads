@@ -69,7 +69,7 @@ const ShippingRateInputControl = ( {
 							modal={
 								<EditRateFormModal
 									countryOptions={ countryOptions }
-									rate={ value }
+									initialValues={ value }
 									onSubmit={ onChange }
 									onDelete={ onDelete }
 								/>

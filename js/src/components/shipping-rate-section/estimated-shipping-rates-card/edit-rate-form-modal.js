@@ -23,21 +23,21 @@ import AppCountrySelect from '.~/components/app-country-select';
  *
  * @param {Object} props
  * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
- * @param {ShippingRateGroup} props.rate
+ * @param {ShippingRateGroup} props.initialValues Initial values for the form.
  * @param {(newRate: ShippingRateGroup, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the rate is submitted.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
  */
 const EditRateFormModal = ( {
 	countryOptions,
-	rate,
+	initialValues,
 	onDelete,
 	onSubmit,
 	onRequestClose,
 } ) => {
 	const handleDeleteClick = () => {
 		onRequestClose();
-		onDelete( rate.countries );
+		onDelete( initialValues.countries );
 	};
 
 	const handleValidate = ( values ) => {
@@ -64,7 +64,7 @@ const EditRateFormModal = ( {
 		onRequestClose();
 
 		const remainingCountries = new Set( newAggregatedRate.countries );
-		const removedCountries = rate.countries.filter(
+		const removedCountries = initialValues.countries.filter(
 			( el ) => ! remainingCountries.has( el )
 		);
 
@@ -73,11 +73,7 @@ const EditRateFormModal = ( {
 
 	return (
 		<Form
-			initialValues={ {
-				countries: rate.countries,
-				currency: rate.currency,
-				rate: rate.rate,
-			} }
+			initialValues={ initialValues }
 			validate={ handleValidate }
 			onSubmit={ handleSubmitCallback }
 		>
