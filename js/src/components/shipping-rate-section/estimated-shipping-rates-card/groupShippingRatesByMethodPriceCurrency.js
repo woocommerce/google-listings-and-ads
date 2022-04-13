@@ -1,4 +1,10 @@
 /**
+ * @typedef { import(".~/data/actions").ShippingRate } ShippingRate
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ * @typedef { import("./typedefs").ShippingRateGroup } ShippingRateGroup
+ */
+
+/**
  * Groups shipping rates based on price and currency.
  *
  * Usage example:
@@ -46,40 +52,41 @@
  * //     {
  * //         countries: ['US', 'AU'],
  * //         method: "flat_rate",
- * //         price: 20,
  * //         currency: 'USD',
+ * //         rate: 20,
  * //     },
  * //     {
  * //         countries: ['CN'],
  * //         method: "flat_rate",
- * //         price: 25,
  * //         currency: 'USD',
+ * //         rate: 25,
  * //     },
  * //     {
  * //         countries: ['BR'],
  * //         method: "flat_rate",
- * //         price: 20,
  * //         currency: 'BRL',
+ * //         rate: 20,
  * //     },
  * // ]
  * ```
  *
- * @param {Array<Object>} shippingRates Array of shipping rates in the format of `{ country, rate, currency }`.
+ * @param {Array<ShippingRate>} shippingRates Array of shipping rates.
+ * @return {Array<ShippingRateGroup>} Array of shipping rate groups.
  */
 const groupShippingRatesByMethodPriceCurrency = ( shippingRates ) => {
 	const rateGroupMap = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
-		const { country, method, rate, currency } = shippingRate;
-		const methodPriceCurrency = `${ method } ${ rate } ${ currency }`;
-		const group = rateGroupMap.get( methodPriceCurrency ) || {
+		const { country, method, currency, rate } = shippingRate;
+		const methodCurrencyRate = `${ method } ${ currency } ${ rate } `;
+		const group = rateGroupMap.get( methodCurrencyRate ) || {
 			countries: [],
 			method,
-			price: rate,
 			currency,
+			rate,
 		};
 		group.countries.push( country );
-		rateGroupMap.set( methodPriceCurrency, group );
+		rateGroupMap.set( methodCurrencyRate, group );
 	} );
 
 	return Array.from( rateGroupMap.values() );
