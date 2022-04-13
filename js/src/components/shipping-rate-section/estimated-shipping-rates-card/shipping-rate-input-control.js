@@ -28,7 +28,7 @@ import ShippingRateInputControlLabelText from './shipping-rate-input-control-lab
  * @param {ShippingRateGroup} props.value Aggregate, rat: Array object to be used as the initial value.
  * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
  * @param {(newRate: ShippingRateGroup, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when rate changes.
- * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
+ * @param {() => void} props.onDelete Called when users clicked on the Delete button.
  */
 const ShippingRateInputControl = ( {
 	countryOptions,

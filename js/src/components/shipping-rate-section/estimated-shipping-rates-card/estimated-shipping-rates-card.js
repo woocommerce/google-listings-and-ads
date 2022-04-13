@@ -21,6 +21,7 @@ import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 /**
  * @typedef { import(".~/data/actions").ShippingRate } ShippingRate
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ * @typedef { import("./typedefs").ShippingRateGroup } ShippingRateGroup
  */
 
 const defaultShippingRate = {
@@ -65,17 +66,19 @@ export default function EstimatedShippingRatesCard( {
 		} );
 	}
 
-	// Given the limitations of `<Form>` component we can communicate up only onChange.
-	// Therefore we loose the infromation whether it was add, change, delete.
-	// In autosave/setup MC case, we would have to either re-calculate to deduct that information,
-	// or fix that in `<Form>` component.
-	function handleDelete( deletedCountries ) {
-		onChange(
-			shippingRates.filter(
-				( rate ) => ! deletedCountries.includes( rate.country )
-			)
+	/**
+	 * Get the `onDelete` event handler for shipping rate group.
+	 *
+	 * @param {ShippingRateGroup} oldGroup Shipping rate group.
+	 */
+	const getDeleteHandler = ( oldGroup ) => () => {
+		const newValue = shippingRates.filter(
+			( shippingRate ) =>
+				! oldGroup.countries.includes( shippingRate.country )
 		);
-	}
+		onChange( newValue );
+	};
+
 	function handleAdd( { countries, currency, rate } ) {
 		// Split aggregated rate, to individial rates per country.
 		const addedIndividualRates = countries.map( ( country ) => ( {
@@ -129,14 +132,14 @@ export default function EstimatedShippingRatesCard( {
 					) }
 				</Section.Card.Title>
 				<VerticalGapLayout size="large">
-					{ groups.map( ( el ) => {
+					{ groups.map( ( group ) => {
 						return (
-							<div key={ el.countries.join( '-' ) }>
+							<div key={ group.countries.join( '-' ) }>
 								<ShippingRateInputControl
 									countryOptions={ audienceCountries }
-									value={ el }
+									value={ group }
 									onChange={ handleChange }
-									onDelete={ handleDelete }
+									onDelete={ getDeleteHandler( group ) }
 								/>
 							</div>
 						);

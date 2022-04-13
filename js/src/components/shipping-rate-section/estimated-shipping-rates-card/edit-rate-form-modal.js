@@ -26,7 +26,7 @@ import AppCountrySelect from '.~/components/app-country-select';
  * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
  * @param {ShippingRateGroup} props.initialValues Initial values for the form.
  * @param {(newRate: ShippingRateGroup, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the rate is submitted.
- * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
+ * @param {() => void} props.onDelete Called when users clicked on the Delete button.
  * @param {() => void} props.onRequestClose Callback to close the modal.
  */
 const EditRateFormModal = ( {
@@ -38,7 +38,7 @@ const EditRateFormModal = ( {
 } ) => {
 	const handleDeleteClick = () => {
 		onRequestClose();
-		onDelete( initialValues.countries );
+		onDelete();
 	};
 
 	const handleValidate = ( values ) => {
