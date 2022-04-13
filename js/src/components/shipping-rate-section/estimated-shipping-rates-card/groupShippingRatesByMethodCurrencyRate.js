@@ -5,7 +5,7 @@
  */
 
 /**
- * Groups shipping rates based on price and currency.
+ * Groups shipping rates based on method, currency and rate.
  *
  * Usage example:
  *
@@ -45,7 +45,7 @@
  *     },
  * ]
  *
- * const result = groupShippingRatesByMethodPriceCurrency( shippingRates );
+ * const result = groupShippingRatesByMethodCurrencyRate( shippingRates );
  *
  * // result:
  * // [
@@ -73,7 +73,7 @@
  * @param {Array<ShippingRate>} shippingRates Array of shipping rates.
  * @return {Array<ShippingRateGroup>} Array of shipping rate groups.
  */
-const groupShippingRatesByMethodPriceCurrency = ( shippingRates ) => {
+const groupShippingRatesByMethodCurrencyRate = ( shippingRates ) => {
 	const rateGroupMap = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
@@ -92,4 +92,4 @@ const groupShippingRatesByMethodPriceCurrency = ( shippingRates ) => {
 	return Array.from( rateGroupMap.values() );
 };
 
-export default groupShippingRatesByMethodPriceCurrency;
+export default groupShippingRatesByMethodCurrencyRate;

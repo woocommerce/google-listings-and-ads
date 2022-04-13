@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import groupShippingRatesByMethodPriceCurrency from './groupShippingRatesByMethodPriceCurrency';
+import groupShippingRatesByMethodCurrencyRate from './groupShippingRatesByMethodCurrencyRate';
 
 describe( 'groupShippingRatesByMethodPriceCurrency', () => {
 	it( 'should group the shipping rates based on method, price and currency', () => {
@@ -40,7 +40,7 @@ describe( 'groupShippingRatesByMethodPriceCurrency', () => {
 			},
 		];
 
-		const result = groupShippingRatesByMethodPriceCurrency( shippingRates );
+		const result = groupShippingRatesByMethodCurrencyRate( shippingRates );
 
 		expect( result.length ).toEqual( 3 );
 		expect( result[ 0 ] ).toStrictEqual( {
