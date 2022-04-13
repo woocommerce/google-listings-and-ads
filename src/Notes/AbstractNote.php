@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
+use Automattic\WooCommerce\Admin\Notes\Notes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use WC_Data_Store;
 
@@ -16,6 +17,17 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
 abstract class AbstractNote implements Note, OptionsAwareInterface {
+
+	/**
+	 * Remove the note from the datastore.
+	 *
+	 * @since 1.12.5
+	 */
+	public function delete() {
+		if ( class_exists( Notes::class ) ) {
+			Notes::delete_notes_with_name( $this->get_name() );
+		}
+	}
 
 	/**
 	 * Get note data store.

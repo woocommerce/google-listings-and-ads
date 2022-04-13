@@ -21,6 +21,11 @@ export const LOCAL_STORAGE_KEYS = {
 		'gla-can-onboarding-setup-ces-prompt-open',
 };
 
+export const API_RESPONSE_CODES = {
+	WPCOM_DISCONNECTED: 'JETPACK_DISCONNECTED',
+	GOOGLE_DISCONNECTED: 'GOOGLE_DISCONNECTED',
+};
+
 export const SHIPPING_RATE_METHOD = {
 	FLAT_RATE: 'flat_rate',
 };
