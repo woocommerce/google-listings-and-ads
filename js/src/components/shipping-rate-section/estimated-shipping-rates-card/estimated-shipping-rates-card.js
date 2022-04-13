@@ -18,6 +18,20 @@ import AddRateFormModal from './add-rate-form-modal';
 import { SHIPPING_RATE_METHOD } from '.~/constants';
 import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 
+/**
+ * @typedef { import(".~/data/actions").ShippingRate } ShippingRate
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ */
+
+/**
+ * Aggregated shipping rate.
+ *
+ * @typedef {Object} AggregatedShippingRate
+ * @property {Array<CountryCode>} countries Array of destination country codes.
+ * @property {string} currency Currency of the price.
+ * @property {number} price Shipping price.
+ */
+
 const defaultShippingRate = {
 	method: SHIPPING_RATE_METHOD.FLAT_RATE,
 	options: {},
@@ -28,7 +42,7 @@ const defaultShippingRate = {
  * with an UI, that allows to aggregate countries with the same rate.
  *
  * @param {Object} props
- * @param {Array<ShippingRateFromServerSide>} props.value Array of individual shipping rates to be used as the initial values of the form.
+ * @param {Array<ShippingRate>} props.value Array of individual shipping rates to be used as the initial values of the form.
  * @param {Array<CountryCode>} props.audienceCountries Array of country codes of all audience countries.
  * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping rates are changed.
  */
@@ -171,26 +185,3 @@ export default function EstimatedShippingRatesCard( {
 		</Section.Card>
 	);
 }
-
-/**
- * Individual shipping rate.
- *
- * @typedef {Object} ShippingRate
- * @property {CountryCode} country Destination country code.
- * @property {string} currency Currency of the price.
- * @property {number} price Shipping price.
- */
-
-/**
- * Aggregated shipping rate.
- *
- * @typedef {Object} AggregatedShippingRate
- * @property {Array<CountryCode>} countries Array of destination country codes.
- * @property {string} currency Currency of the price.
- * @property {number} price Shipping price.
- */
-
-/**
- * @typedef { import(".~/data/actions").ShippingRate } ShippingRateFromServerSide
- * @typedef { import(".~/data/actions").CountryCode } CountryCode
- */
