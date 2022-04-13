@@ -39,14 +39,12 @@ const defaultShippingRate = {
  * @param {(newValue: Array<ShippingRate>) => void} props.onChange Callback called with new data once shipping rates are changed.
  */
 export default function EstimatedShippingRatesCard( {
-	value: shippingRates,
 	audienceCountries,
+	value,
 	onChange,
 } ) {
 	const { code: currencyCode } = useStoreCurrency();
-
-	// Group countries with the same method, currency and rate.
-	const groups = groupShippingRatesByMethodCurrencyRate( shippingRates );
+	const groups = groupShippingRatesByMethodCurrencyRate( value );
 
 	/**
 	 * Event handler for adding new shipping rate group.
@@ -64,7 +62,7 @@ export default function EstimatedShippingRatesCard( {
 			rate,
 		} ) );
 
-		onChange( shippingRates.concat( newShippingRates ) );
+		onChange( value.concat( newShippingRates ) );
 	};
 
 	/**
@@ -82,7 +80,7 @@ export default function EstimatedShippingRatesCard( {
 			 *
 			 * A country is deleted when it exists in `oldGroup` and not exists in `newGroup`.
 			 */
-			const newValue = shippingRates.filter( ( shippingRate ) => {
+			const newValue = value.filter( ( shippingRate ) => {
 				const isDeleted =
 					oldGroup.countries.includes( shippingRate.country ) &&
 					! newGroup.countries.includes( shippingRate.country );
@@ -133,7 +131,7 @@ export default function EstimatedShippingRatesCard( {
 	 * @param {ShippingRateGroup} oldGroup Shipping rate group.
 	 */
 	const getDeleteHandler = ( oldGroup ) => () => {
-		const newValue = shippingRates.filter(
+		const newValue = value.filter(
 			( shippingRate ) =>
 				! oldGroup.countries.includes( shippingRate.country )
 		);
@@ -168,7 +166,7 @@ export default function EstimatedShippingRatesCard( {
 		 * and render an "Add rate button" for the remaining countries.
 		 */
 		const remainingCountries = audienceCountries.filter( ( country ) => {
-			const exist = shippingRates.some(
+			const exist = value.some(
 				( shippingRate ) =>
 					shippingRate.country === country &&
 					shippingRate.method === SHIPPING_RATE_METHOD.FLAT_RATE
