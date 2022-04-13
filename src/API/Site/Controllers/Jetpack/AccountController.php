@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
@@ -29,6 +30,18 @@ class AccountController extends BaseOptionsController {
 	 * @var Middleware
 	 */
 	protected $middleware;
+
+	/**
+	 * Mapping between the client page name and its path.
+	 * The first value is also used as a default,
+	 * and changing the order of keys/values may affect things below.
+	 *
+	 * @var string[]
+	 */
+	private const NEXT_PATH_MAPPING = [
+		'setup-mc'  => '/google/setup-mc',
+		'reconnect' => '/google/settings&subpath=/reconnect-wpcom-account',
+	];
 
 	/**
 	 * BaseController constructor.
@@ -54,6 +67,7 @@ class AccountController extends BaseOptionsController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_connect_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_connect_params(),
 				],
 				[
 					'methods'             => TransportMethods::DELETABLE,
@@ -82,7 +96,7 @@ class AccountController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_connect_callback(): callable {
-		return function() {
+		return function( Request $request ) {
 			// Mark the plugin connection as enabled, in case it was disabled earlier.
 			$this->manager->enable_plugin();
 
@@ -102,7 +116,9 @@ class AccountController extends BaseOptionsController {
 			}
 
 			// Get an authorization URL which will redirect back to our page.
-			$redirect = admin_url( 'admin.php?page=wc-admin&path=/google/setup-mc' );
+			$next     = $request->get_param( 'next_page_name' );
+			$path     = self::NEXT_PATH_MAPPING[ $next ];
+			$redirect = admin_url( "admin.php?page=wc-admin&path={$path}" );
 			$auth_url = $this->manager->get_authorization_url( null, $redirect );
 
 			// Payments flow allows redirect back to the site without showing plans.
@@ -115,6 +131,24 @@ class AccountController extends BaseOptionsController {
 	}
 
 	/**
+	 * Get the query params for the connection request.
+	 *
+	 * @return array
+	 */
+	protected function get_connect_params(): array {
+		return [
+			'context'        => $this->get_context_param( [ 'default' => 'view' ] ),
+			'next_page_name' => [
+				'description'       => __( 'Indicates the next page name mapped to the redirect URL when back from Jetpack authorization.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'default'           => array_key_first( self::NEXT_PATH_MAPPING ),
+				'enum'              => array_keys( self::NEXT_PATH_MAPPING ),
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
+	}
+
+	/**
 	 * Get the callback function for the disconnection request.
 	 *
 	 * @return callable
@@ -123,6 +157,7 @@ class AccountController extends BaseOptionsController {
 		return function() {
 			$this->manager->remove_connection();
 			$this->options->delete( OptionsInterface::WP_TOS_ACCEPTED );
+			$this->options->delete( OptionsInterface::JETPACK_CONNECTED );
 
 			return [
 				'status'  => 'success',
@@ -154,11 +189,16 @@ class AccountController extends BaseOptionsController {
 
 	/**
 	 * Determine whether Jetpack is connected.
+	 * Check if manager is active and we have a valid token.
 	 *
 	 * @return bool
 	 */
 	protected function is_jetpack_connected(): bool {
-		return $this->manager->is_active();
+		if ( ! $this->manager->is_active() ) {
+			return false;
+		}
+
+		return false !== $this->manager->get_tokens()->get_access_token();
 	}
 
 	/**

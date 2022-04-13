@@ -16,7 +16,7 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import Section from '.~/wcdl/section';
 import DisconnectModal, { ALL_ACCOUNTS } from '../disconnect-modal';
 
-export default function DisconnectAccountCard( { email } ) {
+export default function DisconnectGoogleAccountCard( { email } ) {
 	const adminUrl = useAdminUrl();
 	const [ openedModal, setOpenedModal ] = useState( null );
 	const handleAllDisconnected = () => {

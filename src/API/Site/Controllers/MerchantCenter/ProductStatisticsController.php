@@ -114,7 +114,7 @@ class ProductStatisticsController extends BaseOptionsController {
 
 			return $this->prepare_item_for_response( $response, $request );
 		} catch ( Exception $e ) {
-			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			return $this->response_from_exception( $e );
 		}
 	}
 

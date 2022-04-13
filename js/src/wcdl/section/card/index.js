@@ -10,8 +10,8 @@ import Body from './body';
 import Footer from './footer';
 import Title from './title';
 
-const Card = ( props ) => {
-	return <WPCard { ...props } size="none" />;
+const Card = ( { size = '', ...props } ) => {
+	return <WPCard { ...props } size={ size } />;
 };
 
 Card.Body = Body;
