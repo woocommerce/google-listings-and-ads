@@ -22,30 +22,50 @@ class LocationRatesProcessor {
 	 * @return LocationRate[] Array of processed location rates.
 	 */
 	public function process( array $location_rates ): array {
+		// Return empty if there are no rates or the only shipping rate has a minimum order amount.
+		if ( empty( $location_rates ) || $this->has_only_rates_with_min_order_amount( $location_rates ) ) {
+			return [];
+		}
+
 		/** @var LocationRate[] $grouped_rates */
 		$grouped_rates = [];
-
-		// Group the rates by shipping method.
 		foreach ( $location_rates as $location_rate ) {
 			$shipping_rate = $location_rate->get_shipping_rate();
 
-			$method = $shipping_rate::get_method();
-			if ( ! isset( $grouped_rates[ $method ] ) || $this->should_rate_be_replaced( $shipping_rate, $grouped_rates[ $method ]->get_shipping_rate() ) ) {
-				$grouped_rates[ $method ] = $location_rate;
-			}
-		}
+			$type = $shipping_rate->get_method();
+			if ( $shipping_rate->is_free() ) {
+				$type = 'free';
 
-		// If there is an unconditional free shipping rate available, ignore all other shipping rates and return only the free rate.
-		if ( isset( $grouped_rates[ ShippingRateFree::get_method() ] ) ) {
-			$free_shipping = $grouped_rates[ ShippingRateFree::get_method() ];
-			if ( null === $free_shipping->get_shipping_rate()->get_threshold() ) {
-				return [ $free_shipping ];
+				// If there is an unconditional free shipping rate available, ignore all other shipping rates and return only the free rate.
+				if ( ! $shipping_rate->has_min_order_amount() ) {
+					return [ $location_rate ];
+				}
+			}
+
+			if ( ! isset( $grouped_rates[ $type ] ) || $this->should_rate_be_replaced( $shipping_rate, $grouped_rates[ $type ]->get_shipping_rate() ) ) {
+				$grouped_rates[ $type ] = $location_rate;
 			}
 		}
 
 		return array_values( $grouped_rates );
 	}
 
+	/**
+	 * Returns true if the only available location rates have minimum order amounts.
+	 *
+	 * @param LocationRate[] $location_rates
+	 *
+	 * @return bool
+	 */
+	protected function has_only_rates_with_min_order_amount( array $location_rates ): bool {
+		foreach ( $location_rates as $location_rate ) {
+			if ( ! $location_rate->get_shipping_rate()->has_min_order_amount() ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 	/**
 	 * Checks whether the existing shipping rate should be replaced with a more suitable one. Used when grouping the rates.
@@ -56,21 +76,8 @@ class LocationRatesProcessor {
 	 * @return bool
 	 */
 	protected function should_rate_be_replaced( ShippingRate $new_rate, ShippingRate $existing_rate ): bool {
-		$replace = false;
-
-		if ( $new_rate instanceof ShippingRateFlat &&
-			 $existing_rate instanceof ShippingRateFlat &&
-			 $new_rate->get_rate() > $existing_rate->get_rate()
-		) {
-			$replace = true;
-		} elseif ( $new_rate instanceof ShippingRateFree &&
-				   $existing_rate instanceof ShippingRateFree &&
-				   (float) $new_rate->get_threshold() > (float) $existing_rate->get_threshold()
-		) {
-			$replace = true;
-		}
-
-		return $replace;
+		return $new_rate->get_rate() > $existing_rate->get_rate() ||
+			   (float) $new_rate->get_min_order_amount() > (float) $existing_rate->get_min_order_amount();
 	}
 
 }

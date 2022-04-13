@@ -6,8 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\Location;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRatesProcessor;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRateFlat;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRateFree;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneMethodsParser;
@@ -38,7 +37,7 @@ class ShippingZoneTest extends UnitTest {
 							 );
 		$this->methods_parser->expects( $this->once() )
 							 ->method( 'parse' )
-							 ->willReturn( [ new ShippingRateFree() ] );
+							 ->willReturn( [ new ShippingRate( 0 ) ] );
 
 		$this->assertEqualSets(
 			[
@@ -60,18 +59,18 @@ class ShippingZoneTest extends UnitTest {
 							 );
 		$this->methods_parser->expects( $this->once() )
 							 ->method( 'parse' )
-							 ->willReturn( [ new ShippingRateFree() ] );
+							 ->willReturn( [ new ShippingRate( 0 ) ] );
 
 		$location_rates = $this->shipping_zone->get_shipping_rates_for_country( 'US' );
 		$this->assertCount( 1, $location_rates );
-		$this->assertInstanceOf( ShippingRateFree::class, $location_rates[0]->get_shipping_rate() );
+		$this->assertEquals( 0, $location_rates[0]->get_shipping_rate()->get_rate() );
 		$this->assertEquals( 'US', $location_rates[0]->get_location()->get_country() );
 		$this->assertEquals( 'CA', $location_rates[0]->get_location()->get_state() );
 		$this->assertEqualSets( [ '12345', '67890' ], $location_rates[0]->get_location()->get_postcodes() );
 
 		$location_rates = $this->shipping_zone->get_shipping_rates_for_country( 'CA' );
 		$this->assertCount( 1, $location_rates );
-		$this->assertInstanceOf( ShippingRateFree::class, $location_rates[0]->get_shipping_rate() );
+		$this->assertEquals( 0, $location_rates[0]->get_shipping_rate()->get_rate() );
 		$this->assertEquals( 'CA', $location_rates[0]->get_location()->get_country() );
 		$this->assertEquals( 'BC', $location_rates[0]->get_location()->get_state() );
 		$this->assertEqualSets( [ '12345', '67890' ], $location_rates[0]->get_location()->get_postcodes() );
@@ -94,15 +93,15 @@ class ShippingZoneTest extends UnitTest {
 							 ->method( 'parse' )
 							 ->willReturn(
 								 [
-									 new ShippingRateFree(),
-									 new ShippingRateFlat( 10 ),
+									 new ShippingRate( 0 ),
+									 new ShippingRate( 10 ),
 								 ]
 							 );
 
 		$location_rates = $this->shipping_zone->get_shipping_rates_grouped_by_country( 'US' );
 		$this->assertCount( 2, $location_rates );
 		foreach ( $location_rates as $location_rate ) {
-			if ( ! $location_rate->get_shipping_rate() instanceof ShippingRateFree && ! $location_rate->get_shipping_rate() instanceof ShippingRateFlat ) {
+			if ( ! in_array( $location_rate->get_shipping_rate()->get_rate(), [ 0.0, 10.0 ], true ) ) {
 				$this->fail( 'Expected only free shipping and flat rate shipping rates' );
 			}
 		}
@@ -125,7 +124,7 @@ class ShippingZoneTest extends UnitTest {
 							 ->willReturn( [] );
 		$this->methods_parser->expects( $this->once() )
 							 ->method( 'parse' )
-							 ->willReturn( [ new ShippingRateFree() ] );
+							 ->willReturn( [ new ShippingRate( 0 ) ] );
 
 		$this->assertEmpty( $this->shipping_zone->get_shipping_countries() );
 	}

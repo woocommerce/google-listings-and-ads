@@ -68,16 +68,17 @@ class ZoneMethodsParser implements Service {
 					return null;
 				}
 
-				$shipping_rate = new ShippingRateFlat( $flat_rate, $shipping_class_rates );
+				$shipping_rate = new ShippingRate( $flat_rate );
+				$shipping_rate->set_shipping_class_rates( $shipping_class_rates );
 
 				break;
 			case self::METHOD_FREE:
-				$shipping_rate = new ShippingRateFree();
+				$shipping_rate = new ShippingRate( 0 );
 
 				// Check if free shipping requires a minimum order amount.
 				$requires = $method->get_option( 'requires' );
 				if ( in_array( $requires, [ 'min_amount', 'either' ], true ) ) {
-					$shipping_rate->set_threshold( (float) $method->get_option( 'min_amount' ) );
+					$shipping_rate->set_min_order_amount( (float) $method->get_option( 'min_amount' ) );
 				} elseif ( in_array( $requires, [ 'coupon', 'both' ], true ) ) {
 					// We can't sync this method if free shipping requires a coupon.
 					return null;
