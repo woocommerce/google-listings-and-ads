@@ -73,6 +73,11 @@ function getSyncResult( {
 	};
 }
 
+/**
+ * Renders status information for the Product Sync
+ *
+ * @return {JSX.Element} The status for the Product Sync
+ */
 function SyncStatus() {
 	const { data } = useAppSelectDispatch( 'getMCProductStatistics' );
 	const { Icon, status, description } = getSyncResult( data );
