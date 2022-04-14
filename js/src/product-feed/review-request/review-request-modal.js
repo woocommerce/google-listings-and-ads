@@ -50,7 +50,7 @@ const ReviewRequestModal = ( {
 				<AppButton
 					key="primary"
 					isPrimary
-					disabled={ ! checkBoxChecked }
+					disabled={ ! checkBoxChecked && issues.length }
 					onClick={ onSendRequest }
 				>
 					{ __(
@@ -87,15 +87,17 @@ const ReviewRequestModal = ( {
 				</p>
 			</Notice>
 			<ReviewRequestIssues issues={ issues } />
-			<CheckboxControl
-				className="gla-review-request-modal__checkbox"
-				label={ __(
-					'I have resolved all the issue(s) listed above.',
-					'google-listings-and-ads'
-				) }
-				checked={ checkBoxChecked }
-				onChange={ handleCheckboxChange }
-			/>
+			{ issues.length > 0 && (
+				<CheckboxControl
+					className="gla-review-request-modal__checkbox"
+					label={ __(
+						'I have resolved all the issue(s) listed above.',
+						'google-listings-and-ads'
+					) }
+					checked={ checkBoxChecked }
+					onChange={ handleCheckboxChange }
+				/>
+			) }
 		</AppModal>
 	);
 };

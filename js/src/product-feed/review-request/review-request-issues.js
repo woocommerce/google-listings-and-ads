@@ -10,6 +10,7 @@ const COLLAPSED_ISSUES_SIZE = 5;
 
 const ReviewRequestIssues = ( { issues = [] } ) => {
 	const [ expanded, setExpanded ] = useState( false );
+	if ( ! issues.length ) return null;
 
 	const toggleExpanded = () => {
 		recordEvent( 'gla_request_review_issue_list_toggle_click', {
