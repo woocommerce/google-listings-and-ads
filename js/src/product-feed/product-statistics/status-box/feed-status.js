@@ -10,6 +10,12 @@ import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
 import Status from '.~/product-feed/product-statistics/status-box/status';
 import SuccessIcon from '.~/components/success-icon';
 
+/**
+ * Returns the translatable text for total number of issues, solved and unsolved
+ *
+ * @param {number|undefined} totalUnsolvedIssues The total number of unsolved issues
+ * @return {string} Translation for the number of issues
+ */
 function getUnsolvedStatusText( totalUnsolvedIssues ) {
 	if ( ! Number.isInteger( totalUnsolvedIssues ) ) {
 		return '';
@@ -31,6 +37,11 @@ function getUnsolvedStatusText( totalUnsolvedIssues ) {
 	);
 }
 
+/**
+ * Renders the status for the Product Feed Setup
+ *
+ * @return {JSX.Element} The component with the Feed status
+ */
 function FeedStatus() {
 	const { total } = useMCIssuesTotals();
 	const description = getUnsolvedStatusText( total );
