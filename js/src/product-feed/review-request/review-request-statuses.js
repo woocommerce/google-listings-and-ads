@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -11,7 +10,6 @@ import ErrorIcon from '.~/components/error-icon';
 import WarningIcon from '.~/components/warning-icon';
 import SuccessIcon from '.~/components/success-icon';
 import SyncIcon from '.~/components/sync-icon';
-import AppDocumentationLink from '.~/components/app-documentation-link';
 
 const DISAPPROVED = {
 	status: (
@@ -47,28 +45,6 @@ const WARNING = {
 	icon: <WarningIcon size={ 24 } />,
 };
 
-const BLOCKED = {
-	...DISAPPROVED,
-	body: createInterpolateElement(
-		__(
-			'Fix all account suspension issues listed below. You can request a new review approximately 7 days after a disapproval. <Link>Learn more</Link>',
-			'google-listings-and-ads'
-		),
-		{
-			Link: (
-				<AppDocumentationLink
-					href="https://support.google.com/merchants/answer/2948694"
-					context="request-review"
-					linkId="request-review-learn-more"
-				/>
-			),
-		}
-	),
-	requestButton: {
-		disabled: true,
-	},
-};
-
 const PENDING_REVIEW = {
 	status: __( 'Pending review', 'google-listing-and-ads' ),
 	statusDescription: __(
@@ -86,7 +62,7 @@ const PENDING_REVIEW = {
 const UNDER_REVIEW = {
 	status: __( 'Under review', 'google-listing-and-ads' ),
 	statusDescription: __(
-		'Review requests take at least 7 days. ',
+		'Review requests take at least 7 days.',
 		'google-listing-and-ads'
 	),
 	title: __( 'Account review in progress.', 'google-listing-and-ads' ),
@@ -111,11 +87,10 @@ const APPROVED = {
 };
 
 const REVIEW_STATUSES = {
-	PENDING_REVIEW,
 	UNDER_REVIEW,
+	PENDING_REVIEW,
 	DISAPPROVED,
 	WARNING,
-	BLOCKED,
 	APPROVED,
 };
 
