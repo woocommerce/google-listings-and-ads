@@ -46,11 +46,6 @@ function isNotOurStep( location ) {
 }
 
 /**
- * @typedef {import('.~/data/actions').ShippingRate} ShippingRate
- * @typedef {import('.~/data/actions').CountryCode} CountryCode
- */
-
-/**
  * Page Component to edit free campaigns.
  * Provides two steps:
  *  - Choose your audience
