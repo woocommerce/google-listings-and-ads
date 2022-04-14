@@ -32,7 +32,7 @@ const ReviewRequestIssues = ( { issues = [] } ) => {
 			</Text>
 			<ul className="gla-review-request-modal__issue-list">
 				{ issuesToRender.map( ( issue ) => (
-					<li key={ issue }>{ issue }</li>
+					<li key={ issue.code }>{ issue.issue }</li>
 				) ) }
 			</ul>
 			{ issues.length > COLLAPSED_ISSUES_SIZE && (

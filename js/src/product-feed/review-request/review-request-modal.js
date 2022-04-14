@@ -22,7 +22,7 @@ const ReviewRequestModal = ( {
 } ) => {
 	const [ checkBoxChecked, setCheckBoxChecked ] = useState( false );
 
-	if ( ! issues.length || ! isActive ) {
+	if ( ! isActive ) {
 		return null;
 	}
 

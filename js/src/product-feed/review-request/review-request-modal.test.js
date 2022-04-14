@@ -14,10 +14,19 @@ import { recordEvent } from '@woocommerce/tracks';
  */
 import ReviewRequestModal from '.~/product-feed/review-request/review-request-modal';
 
+const issues = [
+	{ code: '#1', issue: '#1' },
+	{ code: '#2', issue: '#2' },
+	{ code: '#3', issue: '#3' },
+	{ code: '#4', issue: '#4' },
+	{ code: '#5', issue: '#5' },
+	{ code: '#6', issue: '#6' },
+];
+
 describe( 'Request Review Modal', () => {
 	it( 'Renders when is active and there are issues', () => {
 		const { queryByRole } = render(
-			<ReviewRequestModal issues={ [ '#1', '#2' ] } isActive={ true } />
+			<ReviewRequestModal issues={ issues } isActive={ true } />
 		);
 
 		expect( queryByRole( 'dialog' ) ).toBeTruthy();
@@ -25,15 +34,7 @@ describe( 'Request Review Modal', () => {
 
 	it( "Doesn't render if its not active", () => {
 		const { queryByRole } = render(
-			<ReviewRequestModal issues={ [ '#1', '#2' ] } isActive={ false } />
-		);
-
-		expect( queryByRole( 'dialog' ) ).toBeFalsy();
-	} );
-
-	it( "Doesn't render when no issues", () => {
-		const { queryByRole } = render(
-			<ReviewRequestModal issues={ [] } isActive={ true } />
+			<ReviewRequestModal issues={ issues } isActive={ false } />
 		);
 
 		expect( queryByRole( 'dialog' ) ).toBeFalsy();
@@ -41,10 +42,7 @@ describe( 'Request Review Modal', () => {
 
 	it( 'Shows maximum 5 issues and can expand the list of issues', () => {
 		const { queryByText } = render(
-			<ReviewRequestModal
-				issues={ [ '#1', '#2', '#3', '#4', '#5', '#6' ] }
-				isActive={ true }
-			/>
+			<ReviewRequestModal issues={ issues } isActive={ true } />
 		);
 
 		expect( queryByText( '#1' ) ).toBeTruthy();
@@ -82,7 +80,7 @@ describe( 'Request Review Modal', () => {
 		const onClose = jest.fn().mockName( 'onClose' );
 		const { queryByText } = render(
 			<ReviewRequestModal
-				issues={ [ '#1', '#2', '#3', '#4', '#5', '#6' ] }
+				issues={ issues }
 				isActive={ true }
 				onClose={ onClose }
 			/>
@@ -98,7 +96,7 @@ describe( 'Request Review Modal', () => {
 		const onSendRequest = jest.fn().mockName( 'onSendRequest' );
 		const { queryByRole } = render(
 			<ReviewRequestModal
-				issues={ [ '#1', '#2', '#3', '#4', '#5', '#6' ] }
+				issues={ issues }
 				isActive={ true }
 				onSendRequest={ onSendRequest }
 			/>
