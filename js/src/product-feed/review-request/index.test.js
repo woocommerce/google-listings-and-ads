@@ -18,7 +18,7 @@ import useActiveIssueType from '.~/hooks/useActiveIssueType';
 import ReviewRequest from '.~/product-feed/review-request/index';
 
 describe( 'Request Review Component', () => {
-	it.each( [ 'DISAPPROVED', 'WARNING', 'BLOCKED', 'UNDER_REVIEW' ] )(
+	it.each( [ 'DISAPPROVED', 'WARNING', 'PENDING_REVIEW', 'UNDER_REVIEW' ] )(
 		'Status %s renders the component on account issues',
 		( status ) => {
 			useActiveIssueType.mockReturnValue( 'account' );
