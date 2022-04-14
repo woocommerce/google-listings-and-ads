@@ -3,8 +3,6 @@
  */
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { format as formatDate } from '@wordpress/date';
-import GridiconSync from 'gridicons/dist/sync';
-import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
 
 /**
  * Internal dependencies
@@ -12,6 +10,8 @@ import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import Status from '.~/product-feed/product-statistics/status-box/status';
 import { glaData } from '.~/constants';
+import SyncIcon from '.~/components/sync-icon';
+import SuccessIcon from '.~/components/success-icon';
 
 function getSyncResult( {
 	scheduled_sync: scheduledSync,
@@ -20,7 +20,7 @@ function getSyncResult( {
 } ) {
 	if ( scheduledSync !== 0 ) {
 		return {
-			Icon: GridiconSync,
+			Icon: SyncIcon,
 			status: __( 'Sync in progress', 'google-listings-and-ads' ),
 			description: null,
 		};
@@ -37,7 +37,7 @@ function getSyncResult( {
 	);
 
 	return {
-		Icon: GridiconCheckmarkCircle,
+		Icon: SuccessIcon,
 		status: __(
 			'Automatically synced to Google',
 			'google-listings-and-ads'
@@ -70,8 +70,8 @@ function SyncStatus() {
 	return (
 		<Status
 			title={ __( 'Sync with Google:', 'google-listings-and-ads' ) }
-			icon={ <Icon /> }
-			status={ status }
+			icon={ <Icon size={ 24 } /> }
+			label={ <span className="gla-status-success">{ status }</span> }
 			description={ description }
 		/>
 	);

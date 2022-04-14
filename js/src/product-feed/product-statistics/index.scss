@@ -35,25 +35,41 @@
 			}
 		}
 
+		.components-flex {
+			align-items: flex-start;
+		}
+
 		.components-flex + .components-flex {
 			margin-top: $grid-unit-10;
 		}
 
 		.components-flex__item {
 			color: $gray-900;
+			padding-top: $grid-unit-05 / 2;
 
 			&:first-child {
 				min-width: 130px;
 			}
 
-			&:nth-child(2) {
-				display: inline-flex;
-				align-items: center;
-				fill: currentColor;
-				color: #008a20;
+			&.gla-status-icon {
+				min-width: 30px;
+				padding-top: 0;
 			}
 
-			&:last-child {
+
+			.gla-status-label {
+				color: $black;
+
+				.gla-status-error {
+					color: #d94f4f;
+				}
+
+				.gla-status-success {
+					color: #008a20;
+				}
+			}
+
+			.gla-status-description {
 				color: $gray-700;
 
 				&:not(:empty)::before {
@@ -62,6 +78,7 @@
 					margin: 0 $grid-unit-10;
 				}
 			}
+
 		}
 
 		.gridicon {
@@ -71,5 +88,8 @@
 		.gridicons-sync {
 			transform: rotateZ(90deg);
 		}
+
 	}
+
+
 }

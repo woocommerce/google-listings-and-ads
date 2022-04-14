@@ -29,6 +29,7 @@ import useMCProductStatistics from '.~/hooks/useMCProductStatistics';
 import ProductStatusHelpPopover from './product-status-help-popover';
 import SyncStatus from '.~/product-feed/product-statistics/status-box/sync-status';
 import FeedStatus from '.~/product-feed/product-statistics/status-box/feed-status';
+import AccountStatus from '.~/product-feed/product-statistics/status-box/account-status';
 import './index.scss';
 
 const ProductStatistics = () => {
@@ -101,6 +102,7 @@ const ProductStatistics = () => {
 			<CardFooter gap={ 0 }>
 				<FeedStatus />
 				<SyncStatus />
+				<AccountStatus />
 			</CardFooter>
 		</Card>
 	);

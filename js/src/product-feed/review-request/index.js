@@ -15,7 +15,7 @@ import REVIEW_STATUSES from './review-request-statuses';
 import './index.scss';
 
 const showNotice = ( status ) =>
-	Object.keys( REVIEW_STATUSES ).includes( status );
+	Object.keys( REVIEW_STATUSES ).includes( status ) && status !== 'APPROVED';
 
 const ReviewRequest = ( { account = {} } ) => {
 	const [ modalActive, setModalActive ] = useState( false );
