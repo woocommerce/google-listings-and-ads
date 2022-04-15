@@ -32,7 +32,7 @@ class LocationRatesProcessor {
 		foreach ( $location_rates as $location_rate ) {
 			$shipping_rate = $location_rate->get_shipping_rate();
 
-			$type = $shipping_rate->get_method();
+			$type = 'flat_rate';
 			if ( $shipping_rate->is_free() ) {
 				$type = 'free';
 
