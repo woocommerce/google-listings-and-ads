@@ -23,6 +23,15 @@
 				margin-bottom: $grid-unit-40;
 				padding: 0 $grid-unit-10;
 			}
+
+			.button {
+				display: flex;
+				justify-content: center;
+				width: 188px;
+				height: 50px;
+				font-size: 14px;
+				margin-bottom: $grid-unit-10;
+			}
 		}
 	}
 }

@@ -8,14 +8,19 @@ import {
 	__experimentalText as Text,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
-import './index.scss';
+import { glaData } from '.~/constants';
+import AppButton from '.~/components/app-button';
 import WistiaVideo from '.~/components/wistia-video';
+import './index.scss';
 
 const GetStartedWithVideoCard = () => {
+	const disableNextStep = ! glaData.mcSupportedLanguage;
+
 	return (
 		<Card
 			className="woocommerce-marketing-google-get-started-with-video-card"
@@ -42,6 +47,22 @@ const GetStartedWithVideoCard = () => {
 							'google-listings-and-ads'
 						) }
 					</Text>
+					<AppButton
+						className="button"
+						isPrimary
+						disabled={ disableNextStep }
+						href={ getNewPath( {}, '/google/setup-mc' ) }
+						eventName="gla_setup_mc"
+						eventProps={ {
+							target: 'set_up_free_listings',
+							trigger: 'click',
+						} }
+					>
+						{ __(
+							'Start listing products →',
+							'google-listings-and-ads'
+						) }
+					</AppButton>
 				</FlexBlock>
 			</Flex>
 		</Card>
