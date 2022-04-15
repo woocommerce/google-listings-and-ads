@@ -36,6 +36,12 @@ const GetStartedWithVideoCard = () => {
 							'google-listings-and-ads'
 						) }
 					</Text>
+					<Text variant="body" className="description">
+						{ __(
+							'Sync your products directly to Google, manage your product feed, and create Google Ad campaigns–without leaving your WooCommerce dashboard. The official extension, built in collaboration with Google.',
+							'google-listings-and-ads'
+						) }
+					</Text>
 				</FlexBlock>
 			</Flex>
 		</Card>
