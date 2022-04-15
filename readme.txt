@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.12.4
+Stable tag: 1.12.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,17 +109,17 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.12.5 - 2022-04-12 =
+* Fix - Cache Yoast SEO values per product, to ensure unique values.
+* Fix - Feature/tree select control component.
+* Fix - Prompt to reconnect when a Jetpack disconnect is detected.
+* Tweak - Automatically generate Tracking events docs from JSDoc.
+* Tweak - Move Tracking events docs to JSDoc.
+
 = 1.12.4 - 2022-04-06 =
 * Fix - Prevent fatal errors when migrating or syncing merchant settings.
 
 = 1.12.3 - 2022-04-05 =
 * Fix - Shipping times section not showing up and unable to proceed through the Setup Merchant Center flow.
-
-= 1.12.2 - 2022-04-05 =
-* Add - Unit test for AdsConversionAction.
-* Add - Unit test for AdsReport.
-* Fix - Prevent uncaught exception when Merchant account is not connected and we send a tracker snapshot.
-* Tweak - DB migration for shipping rates.
-* Update - Create all new campaigns as PMax campaigns.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

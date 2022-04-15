@@ -16,7 +16,7 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import WordPressDotComAccount from './wordpressdotcom-account';
+import WPComAccountCard from '.~/components/wpcom-account-card';
 import GoogleAccountCard from '.~/components/google-account-card';
 import GoogleMCAccount from './google-mc-account';
 import Faqs from './faqs';
@@ -69,7 +69,7 @@ const SetupAccounts = ( props ) => {
 				) }
 			>
 				<VerticalGapLayout size="large">
-					<WordPressDotComAccount jetpack={ jetpack } />
+					<WPComAccountCard jetpack={ jetpack } />
 					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
 				</VerticalGapLayout>
 			</Section>

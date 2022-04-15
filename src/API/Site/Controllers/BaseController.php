@@ -18,7 +18,7 @@ use WP_REST_Response as Response;
  */
 abstract class BaseController extends WC_REST_Controller implements Registerable {
 
-	use PluginHelper, PermissionsTrait;
+	use PluginHelper, PermissionsTrait, ResponseFromExceptionTrait;
 
 	/**
 	 * @var RESTServer
