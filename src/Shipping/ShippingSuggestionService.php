@@ -47,7 +47,6 @@ class ShippingSuggestionService implements Service {
 	 *     Array of shipping rate suggestion arguments.
 	 *
 	 *     @type string $country  The shipping country.
-	 *     @type string $method   The shipping method (e.g. 'flat_rate').
 	 *     @type string $currency The suggested rate currency (this is the same as the store's currency).
 	 *     @type float  $rate     The cost of the shipping method.
 	 *     @type array  $options  Array of options for the shipping method.

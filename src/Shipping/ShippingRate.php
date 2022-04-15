@@ -16,17 +16,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class ShippingRate implements JsonSerializable {
 
-	public const METHOD_FLAT_RATE = 'flat_rate';
-
 	/**
 	 * @var float
 	 */
 	protected $rate;
-
-	/**
-	 * @var string
-	 */
-	protected $method;
 
 	/**
 	 * @var float|null
@@ -41,30 +34,10 @@ class ShippingRate implements JsonSerializable {
 	/**
 	 * ShippingRate constructor.
 	 *
-	 * @param float  $rate   The shipping cost in store currency.
-	 * @param string $method The shipping method.
+	 * @param float $rate The shipping cost in store currency.
 	 */
-	public function __construct( float $rate, string $method = self::METHOD_FLAT_RATE ) {
-		$this->rate   = $rate;
-		$this->method = $method;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function get_method(): string {
-		return $this->method;
-	}
-
-	/**
-	 * @param string $method
-	 *
-	 * @return ShippingRate
-	 */
-	public function set_method( string $method ): ShippingRate {
-		$this->method = $method;
-
-		return $this;
+	public function __construct( float $rate ) {
+		$this->rate = $rate;
 	}
 
 	/**
@@ -145,7 +118,6 @@ class ShippingRate implements JsonSerializable {
 	 */
 	public function jsonSerialize() {
 		return [
-			'method' => $this->get_method(),
 			'rate'   => $this->get_rate(),
 		];
 	}

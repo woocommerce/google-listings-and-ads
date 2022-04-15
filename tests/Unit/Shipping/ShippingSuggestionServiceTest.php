@@ -39,7 +39,6 @@ class ShippingSuggestionServiceTest extends UnitTest {
 		$this->assertEqualSets(
 			[
 				'country'  => 'US',
-				'method'   => 'flat_rate',
 				'currency' => 'USD',
 				'rate'     => 200.0,
 			],

@@ -37,16 +37,6 @@ trait ShippingRateSchemaTrait {
 				'validate_callback' => $this->get_country_code_validate_callback(),
 				'required'          => true,
 			],
-			'method'   => [
-				'type'              => 'string',
-				'description'       => __( 'The shipping method.', 'google-listings-and-ads' ),
-				'enum'              => [
-					ShippingRate::METHOD_FLAT_RATE,
-				],
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
-			],
 			'currency' => [
 				'type'              => 'string',
 				'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
