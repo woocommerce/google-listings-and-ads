@@ -26,7 +26,7 @@ class LocationRatesProcessorTest extends UnitTest {
 			new LocationRate( $location, new ShippingRate( 200 ) ),
 		];
 		$processed      = $this->rates_processor->process( $location_rates );
-		$this->assertEquals( 1, count( $processed ) );
+		$this->assertCount( 1, $processed );
 		$this->assertEquals( 200, $processed[0]->get_shipping_rate()->get_rate() );
 	}
 
@@ -49,7 +49,7 @@ class LocationRatesProcessorTest extends UnitTest {
 			new LocationRate( $location, $free_rate_4 ),
 		];
 		$processed      = $this->rates_processor->process( $location_rates );
-		$this->assertEquals( 2, count( $processed ) );
+		$this->assertCount( 2, $processed );
 		foreach ( $processed as $location_rate ) {
 			if ( $location_rate->get_shipping_rate()->is_free() ) {
 				$this->assertEquals( 200, $location_rate->get_shipping_rate()->get_min_order_amount() );
@@ -57,15 +57,15 @@ class LocationRatesProcessorTest extends UnitTest {
 		}
 	}
 
-	public function test_process_returns_only_free_rate_if_it_has_no_min_order_amount() {
+	public function test_process_returns_most_expensive_rate_even_if_free_rate_exists_with_no_min_order_amount() {
 		$location       = new Location( 'US', 'CA' );
 		$location_rates = [
 			new LocationRate( $location, new ShippingRate( 0 ) ),
 			new LocationRate( $location, new ShippingRate( 200 ) ),
 		];
 		$processed      = $this->rates_processor->process( $location_rates );
-		$this->assertEquals( 1, count( $processed ) );
-		$this->assertEquals( 0, $processed[0]->get_shipping_rate()->get_rate() );
+		$this->assertCount( 1, $processed );
+		$this->assertEquals( 200, $processed[0]->get_shipping_rate()->get_rate() );
 	}
 
 	public function test_process_returns_both_free_rate_and_flat_rate_if_free_rate_has_min_order_amount() {
@@ -80,7 +80,7 @@ class LocationRatesProcessorTest extends UnitTest {
 			new LocationRate( $location, new ShippingRate( 200 ) ),
 		];
 		$processed      = $this->rates_processor->process( $location_rates );
-		$this->assertEquals( 2, count( $processed ) );
+		$this->assertCount( 2, $processed );
 		foreach ( $processed as $location_rate ) {
 			if ( $location_rate->get_shipping_rate()->is_free() ) {
 				$this->assertEquals( 50, $location_rate->get_shipping_rate()->get_min_order_amount() );

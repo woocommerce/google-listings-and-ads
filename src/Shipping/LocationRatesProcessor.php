@@ -33,13 +33,9 @@ class LocationRatesProcessor {
 			$shipping_rate = $location_rate->get_shipping_rate();
 
 			$type = 'flat_rate';
-			if ( $shipping_rate->is_free() ) {
-				$type = 'free';
-
-				// If there is an unconditional free shipping rate available, ignore all other shipping rates and return only the free rate.
-				if ( ! $shipping_rate->has_min_order_amount() ) {
-					return [ $location_rate ];
-				}
+			// If there are conditional free shipping rates, we need to group them together.
+			if ( $shipping_rate->is_free() && $shipping_rate->has_min_order_amount() ) {
+				$type = 'conditional_free';
 			}
 
 			if ( ! isset( $grouped_rates[ $type ] ) || $this->should_rate_be_replaced( $shipping_rate, $grouped_rates[ $type ]->get_shipping_rate() ) ) {
