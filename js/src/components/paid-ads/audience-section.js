@@ -44,6 +44,7 @@ const AudienceSection = ( props ) => {
 			help={ countrySelectHelperText }
 			disabled={ disabled }
 			value={ inputProps.value }
+			additionalCountryCodes={ disabled ? inputProps.value : undefined }
 			onChange={ inputProps.onChange }
 		/>
 	) : (
