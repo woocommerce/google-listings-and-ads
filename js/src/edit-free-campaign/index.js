@@ -155,37 +155,26 @@ export default function EditFreeCampaign() {
 	/**
 	 * Update shipping rates and times after users are done
 	 * with the changes in Choose Audience step.
+	 *
+	 * Shipping rates and shipping times that do not have
+	 * a corresponding country in target audience will be removed.
 	 */
 	const updateShippingAfterChooseAudienceStep = () => {
-		/**
-		 * If users removed a target audience country,
-		 * or changed the target audience location from 'all' to 'selected',
-		 * we remove the country from shipping rates and shipping times.
-		 */
-		if (
-			targetAudience.countries.length <
-				savedTargetAudience.countries.length ||
-			( targetAudience.location === 'selected' &&
-				savedTargetAudience.location === 'all' )
-		) {
-			const newShippingRates = loadedShippingRates.filter(
-				( shippingRate ) => {
-					return targetAudience.countries.includes(
-						shippingRate.country
-					);
-				}
-			);
-			updateShippingRates( newShippingRates );
+		const finalCountries = getFinalCountries( targetAudience );
 
-			const newShippingTimes = loadedShippingTimes.filter(
-				( shippingTime ) => {
-					return targetAudience.countries.includes(
-						shippingTime.countryCode
-					);
-				}
-			);
-			updateShippingTimes( newShippingTimes );
-		}
+		const newShippingRates = loadedShippingRates.filter(
+			( shippingRate ) => {
+				return finalCountries.includes( shippingRate.country );
+			}
+		);
+		updateShippingRates( newShippingRates );
+
+		const newShippingTimes = loadedShippingTimes.filter(
+			( shippingTime ) => {
+				return finalCountries.includes( shippingTime.countryCode );
+			}
+		);
+		updateShippingTimes( newShippingTimes );
 	};
 
 	const handleChooseAudienceChange = ( change, newTargetAudience ) => {
