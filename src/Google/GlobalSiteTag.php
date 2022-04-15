@@ -112,7 +112,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		);
 
 		add_filter(
-			'woocommerce_add_to_cart_button_html',
+			'woocommerce_add_to_cart_message_html',
 			function ( $message, $products ) {
 				return $this->custom_action_add_to_cart( $message, $products );
 			},
@@ -427,7 +427,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	private static function is_first_time_customer( $customer_email ): bool {
 		$query = new \WC_Order_Query(
-			[
+			[ 
+				'limit' => 2,
 				'return' => 'ids',
 			]
 		);
