@@ -32,6 +32,12 @@
 				font-size: 14px;
 				margin-bottom: $grid-unit-10;
 			}
+
+			.hint {
+				font-size: $helptext-font-size;
+				color: #a7aaad;
+				margin-bottom: $grid-unit-40;
+			}
 		}
 	}
 }

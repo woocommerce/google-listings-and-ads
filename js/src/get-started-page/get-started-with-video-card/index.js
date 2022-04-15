@@ -63,6 +63,12 @@ const GetStartedWithVideoCard = () => {
 							'google-listings-and-ads'
 						) }
 					</AppButton>
+					<Text className="hint">
+						{ __(
+							'Estimated setup time: 15 min ',
+							'google-listings-and-ads'
+						) }
+					</Text>
 				</FlexBlock>
 			</Flex>
 		</Card>
