@@ -40,6 +40,13 @@
 			}
 		}
 	}
+
+	.components-flex &__terms-notice {
+		font-size: $helptext-font-size;
+		a {
+			text-decoration: none;
+		}
+	}
 }
 
 @media (max-width: $break-small) {

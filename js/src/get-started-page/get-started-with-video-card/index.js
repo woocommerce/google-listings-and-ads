@@ -7,6 +7,7 @@ import {
 	FlexBlock,
 	__experimentalText as Text,
 } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { getNewPath } from '@woocommerce/navigation';
 
@@ -15,6 +16,7 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import WistiaVideo from '.~/components/wistia-video';
 import './index.scss';
 
@@ -67,6 +69,26 @@ const GetStartedWithVideoCard = () => {
 						{ __(
 							'Estimated setup time: 15 min ',
 							'google-listings-and-ads'
+						) }
+					</Text>
+					<Text
+						className="woocommerce-marketing-google-get-started-with-video-card__terms-notice"
+						variant="body"
+					>
+						{ createInterpolateElement(
+							__(
+								'By clicking ‘Start listing products’, you agree to our <link>Terms of Service.</link>',
+								'google-listings-and-ads'
+							),
+							{
+								link: (
+									<AppDocumentationLink
+										context="get-started"
+										linkId="wp-terms-of-service"
+										href="https://wordpress.com/tos/"
+									/>
+								),
+							}
 						) }
 					</Text>
 				</FlexBlock>
