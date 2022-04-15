@@ -3,6 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useEffect, useState } from '@wordpress/element';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -76,7 +77,12 @@ const WistiaVideo = ( props ) => {
 	};
 
 	return (
-		<div className="wistia-responsive-padding">
+		<div
+			className={ classNames(
+				'wistia-responsive-padding',
+				isPlaying ? 'is-playing' : ''
+			) }
+		>
 			<div className="wistia-responsive-wrapper">
 				<iframe
 					src={ src }
