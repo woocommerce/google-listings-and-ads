@@ -152,23 +152,25 @@ export default function EditFreeCampaign() {
 		'/google/dashboard'
 	);
 
-	const handleChooseAudienceChange = ( change, newTargetAudience ) => {
-		updateTargetAudience( newTargetAudience );
-
+	/**
+	 * Update shipping rates and times after users are done
+	 * with the changes in Choose Audience step.
+	 */
+	const updateShippingAfterChooseAudienceStep = () => {
 		/**
 		 * If users removed a target audience country,
 		 * or changed the target audience location from 'all' to 'selected',
 		 * we remove the country from shipping rates and shipping times.
 		 */
 		if (
-			newTargetAudience.countries.length <
-				targetAudience.countries.length ||
-			( newTargetAudience.location === 'selected' &&
-				targetAudience.location === 'all' )
+			targetAudience.countries.length <
+				savedTargetAudience.countries.length ||
+			( targetAudience.location === 'selected' &&
+				savedTargetAudience.location === 'all' )
 		) {
 			const newShippingRates = loadedShippingRates.filter(
 				( shippingRate ) => {
-					return newTargetAudience.countries.includes(
+					return targetAudience.countries.includes(
 						shippingRate.country
 					);
 				}
@@ -177,7 +179,7 @@ export default function EditFreeCampaign() {
 
 			const newShippingTimes = loadedShippingTimes.filter(
 				( shippingTime ) => {
-					return newTargetAudience.countries.includes(
+					return targetAudience.countries.includes(
 						shippingTime.countryCode
 					);
 				}
@@ -186,7 +188,12 @@ export default function EditFreeCampaign() {
 		}
 	};
 
+	const handleChooseAudienceChange = ( change, newTargetAudience ) => {
+		updateTargetAudience( newTargetAudience );
+	};
+
 	const handleChooseAudienceContinue = () => {
+		updateShippingAfterChooseAudienceStep();
 		getHistory().push( getNewPath( { pageStep: '2' } ) );
 	};
 
@@ -223,6 +230,14 @@ export default function EditFreeCampaign() {
 	};
 
 	const handleStepClick = ( key ) => {
+		/**
+		 * When users move from Step 1 Choose Audience to Step 2 Configure listings,
+		 * we update shipping rates and shipping times based on the changes in Choose Audience.
+		 */
+		if ( key === '2' ) {
+			updateShippingAfterChooseAudienceStep();
+		}
+
 		getHistory().push( getNewPath( { pageStep: key } ) );
 	};
 
