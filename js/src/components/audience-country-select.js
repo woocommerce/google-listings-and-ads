@@ -15,9 +15,9 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  *
  * This component is for selecting countries under the merchant selected targeting audiences.
  *
- * @param {Object} props React props to be forwarded to SupportedCountrySelect.
+ * @param {Object} props React props.
  * @param {Array<CountryCode>} [props.additionalCountryCodes] Additional countries that are not in the target audience countries and need to be selectable.
- * @param {Object} props.restProps Props to be forwarded to TreeSelectControl.
+ * @param {Object} props.restProps Props to be forwarded to SupportedCountrySelect.
  */
 const AudienceCountrySelect = ( { additionalCountryCodes, ...restProps } ) => {
 	let { data: countryCodes } = useTargetAudienceFinalCountryCodes();
