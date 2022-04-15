@@ -91,7 +91,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		add_action(
 			'woocommerce_before_thankyou',
 			function ( $order_id ) use ( $ads_conversion_id, $ads_conversion_label ) {
-				$this->maybe_display_event_snippet( $ads_conversion_id, $ads_conversion_label, $order_id );
+				$this->maybe_display_conversion_and_purchase_event_snippets( $ads_conversion_id, $ads_conversion_label, $order_id );
 			},
 			1000000
 		);
@@ -112,7 +112,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		);
 
 		add_filter(
-			'woocommerce_add_to_cart_message_html',
+			'wc_add_to_cart_message_html',
 			function ( $message, $products ) {
 				return $this->custom_action_add_to_cart( $message, $products );
 			},
@@ -175,7 +175,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_label Google Ads conversion label.
 	 * @param int    $order_id The order id.
 	 */
-	public function maybe_display_event_snippet( string $ads_conversion_id, string $ads_conversion_label, int $order_id ): void {
+	public function maybe_display_conversion_and_purchase_event_snippets( string $ads_conversion_id, string $ads_conversion_label, int $order_id ): void {
 		// Only display on the order confirmation page.
 		if ( ! is_order_received_page() ) {
 			return;
@@ -191,19 +191,19 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
 		$order->save_meta_data();
 
-		printf(
-			'<script>
-            gtag("event", "conversion", 
+    $conversion_gtag_info =
+		sprintf(
+			'gtag("event", "conversion",
                 {"send_to": "%s",
                  "value": "%s",
                  "currency": "%s",
-                 "transaction_id": "%s"});
-            </script>',
+                 "transaction_id": "%s"});',
 			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
 			esc_js( $order->get_total() ),
 			esc_js( $order->get_currency() ),
 			esc_js( $order->get_id() ),
 		);
+    wp_print_inline_script_tag($conversion_gtag_info);
 
 		// Get the item info in the order
 		$item_info = '';
@@ -250,8 +250,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
                     "tax": "%s",
                     "shipping": "%s",
                     "delivery_postal_code": "%s",
-                    "aw_feed_country": "%s",   
-                    "aw_feed_language": "%s",                 
+                    "aw_feed_country": "%s",
+                    "aw_feed_language": "%s",
                     items: [' . $item_info . ']});',
 			esc_js( self::DEVELOPER_ID ),
 			esc_js( $order->get_id() ),
@@ -364,10 +364,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
+   * TODO : Track "add to cart button" on single pages, archive pages, and
+   * through various shortcodes and blocks with a compatible solution.
+   *
 	 * Display the JavaScript code to track the add to cart button.
 	 *
 	 * @param string $message Add to cart messages.
 	 * @param array  $products Product ID list.
+   *
 	 */
 	private function custom_action_add_to_cart( $message, $products ) {
 		// Only display this tag info after click the add to cart button .
@@ -402,10 +406,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				}
 			);
 
-			do_action(
-				'wp_footer'
-			);
-
 			return $message;
 		}
 	}
@@ -427,7 +427,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	private static function is_first_time_customer( $customer_email ): bool {
 		$query = new \WC_Order_Query(
-			[ 
+			[
 				'limit' => 2,
 				'return' => 'ids',
 			]
