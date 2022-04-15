@@ -114,7 +114,6 @@ const EditTimeModal = ( props ) => {
 									) }
 								</div>
 								<AudienceCountrySelect
-									multiple
 									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>

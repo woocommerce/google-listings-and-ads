@@ -1,11 +1,15 @@
 .app-modal {
 	overflow: inherit;
 
+	@include break-large {
+		width: 600px;
+	}
+
 	.app-modal__footer {
 		display: flex;
 		flex-direction: column-reverse;
 		gap: calc(var(--main-gap) / 2);
-		margin-top: calc(var(--main-gap));
+		margin-top: var(--large-gap);
 
 		@include break-mobile() {
 			flex-direction: row;

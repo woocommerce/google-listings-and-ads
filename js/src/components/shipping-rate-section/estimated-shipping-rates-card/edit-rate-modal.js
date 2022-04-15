@@ -11,7 +11,7 @@ import { Form } from '@woocommerce/components';
 import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AppCountrySelect from '.~/components/app-country-select';
+import SupportedCountrySelect from '.~/components/supported-country-select';
 
 /**
  * Form to edit rate for selected country(-ies).
@@ -120,13 +120,12 @@ const EditRateModal = ( {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<AppCountrySelect
+							<SupportedCountrySelect
 								label={ __(
 									'If customer is in',
 									'google-listings-and-ads'
 								) }
-								options={ availableCountries }
-								multiple
+								countryCodes={ availableCountries }
 								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputPriceControl

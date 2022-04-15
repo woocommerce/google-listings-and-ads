@@ -11,7 +11,7 @@ import { Form } from '@woocommerce/components';
 import AppModal from '.~/components/app-modal';
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AppCountrySelect from '.~/components/app-country-select';
+import SupportedCountrySelect from '.~/components/supported-country-select';
 import './index.scss';
 
 /**
@@ -112,19 +112,14 @@ const EditTimeModal = ( {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<div>
-								<div className="label">
-									{ __(
-										'If customer is in',
-										'google-listings-and-ads'
-									) }
-								</div>
-								<AppCountrySelect
-									options={ availableCountries }
-									multiple
-									{ ...getInputProps( 'countries' ) }
-								/>
-							</div>
+							<SupportedCountrySelect
+								label={ __(
+									'If customer is in',
+									'google-listings-and-ads'
+								) }
+								countryCodes={ availableCountries }
+								{ ...getInputProps( 'countries' ) }
+							/>
 							<AppInputNumberControl
 								label={ __(
 									'Then the estimated shipping time displayed in the product listing is',

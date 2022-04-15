@@ -12,7 +12,7 @@ import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control/index.js';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AppCountrySelect from '.~/components/app-country-select';
+import SupportedCountrySelect from '.~/components/supported-country-select';
 
 /**
  * Form to add a new rate for selected country(-ies).
@@ -86,13 +86,12 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<AppCountrySelect
+							<SupportedCountrySelect
 								label={ __(
 									'If customer is in',
 									'google-listings-and-ads'
 								) }
-								options={ countries }
-								multiple
+								countryCodes={ countries }
 								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputPriceControl
