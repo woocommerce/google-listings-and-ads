@@ -85,7 +85,7 @@ class IssuesController extends BaseOptionsController {
 				$results         = $this->merchant_statuses->get_issues( $type_filter, $per_page, $page );
 				$results['page'] = $page;
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 
 			// Replace variation IDs with parent ID (for Edit links).

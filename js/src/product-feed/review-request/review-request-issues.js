@@ -10,6 +10,7 @@ const COLLAPSED_ISSUES_SIZE = 5;
 
 const ReviewRequestIssues = ( { issues = [] } ) => {
 	const [ expanded, setExpanded ] = useState( false );
+	if ( ! issues.length ) return null;
 
 	const toggleExpanded = () => {
 		recordEvent( 'gla_request_review_issue_list_toggle_click', {
@@ -32,7 +33,7 @@ const ReviewRequestIssues = ( { issues = [] } ) => {
 			</Text>
 			<ul className="gla-review-request-modal__issue-list">
 				{ issuesToRender.map( ( issue ) => (
-					<li key={ issue }>{ issue }</li>
+					<li key={ issue.code }>{ issue.issue }</li>
 				) ) }
 			</ul>
 			{ issues.length > COLLAPSED_ISSUES_SIZE && (

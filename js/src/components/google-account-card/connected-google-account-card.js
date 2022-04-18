@@ -23,7 +23,7 @@ import useSwitchGoogleAccount from './useSwitchGoogleAccount';
  * It also provides a switch button that lets user connect with another Google account.
  *
  * @param {Object} props React props.
- * @param {{ email: string }} props.googleAccount A data payload object contains user's Google account email.
+ * @param {{ email: string }} props.googleAccount A data payload object containing the user's Google account email.
  * @param {JSX.Element} [props.helper] Helper content below the Google account email.
  * @param {boolean} [props.hideAccountSwitch=false] Indicate whether hide the account switch block at the card footer.
  *
