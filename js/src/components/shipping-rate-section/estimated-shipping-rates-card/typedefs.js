@@ -7,7 +7,7 @@
  * @property {Array<CountryCode>} countries Array of selected country codes.
  * @property {string} method Shipping method, e.g. "flat_rate".
  * @property {string} currency Currency.
- * @property {number} rate Rate value.
+ * @property {number|undefined} rate Rate value.
  */
 
 export default {};

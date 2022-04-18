@@ -154,7 +154,7 @@ export default function EstimatedShippingRatesCard( {
 				countries: audienceCountries,
 				method: SHIPPING_RATE_METHOD.FLAT_RATE,
 				currency: currencyCode,
-				rate: null,
+				rate: undefined,
 			};
 			return (
 				<ShippingRateInputControl
