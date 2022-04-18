@@ -72,6 +72,7 @@ const EditRateFormModal = ( {
 								) }
 							</Button>,
 						] }
+						onRequestClose={ onRequestClose }
 					/>
 				);
 			} }

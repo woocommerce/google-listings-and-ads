@@ -56,6 +56,7 @@ const AddRateFormModal = ( {
 								) }
 							</Button>,
 						] }
+						onRequestClose={ onRequestClose }
 					/>
 				);
 			} }
