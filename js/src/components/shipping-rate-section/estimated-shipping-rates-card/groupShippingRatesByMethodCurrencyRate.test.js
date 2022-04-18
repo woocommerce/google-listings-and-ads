@@ -3,8 +3,8 @@
  */
 import groupShippingRatesByMethodCurrencyRate from './groupShippingRatesByMethodCurrencyRate';
 
-describe( 'groupShippingRatesByMethodPriceCurrency', () => {
-	it( 'should group the shipping rates based on method, price and currency', () => {
+describe( 'groupShippingRatesByMethodCurrencyRate', () => {
+	it( 'should group the shipping rates based on method, currency and rate', () => {
 		const shippingRates = [
 			{
 				id: '1',
