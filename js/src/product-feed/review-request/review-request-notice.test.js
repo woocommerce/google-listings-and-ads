@@ -36,12 +36,4 @@ describe( 'Request Review Notice', () => {
 			expect( onRequestReviewClick ).toBeCalledTimes( 1 );
 		}
 	);
-
-	it( "Status UNDER_REVIEW doesn't have Request button", () => {
-		const { queryByText, queryByRole } = render(
-			<ReviewRequestNotice account={ { status: 'UNDER_REVIEW' } } />
-		);
-		expect( queryByText( 'Account review in progress.' ) ).toBeTruthy();
-		expect( queryByRole( 'button' ) ).toBeFalsy();
-	} );
 } );
