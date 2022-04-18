@@ -18,7 +18,8 @@ import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import WistiaVideo from '.~/components/wistia-video';
-import footerImageURL from './image.svg';
+import footerImageURL from './footer.svg';
+import googleImageURL from './google.svg';
 import './index.scss';
 
 const GetStartedWithVideoCard = () => {
@@ -30,6 +31,17 @@ const GetStartedWithVideoCard = () => {
 			isBorderless
 		>
 			<Flex>
+				<FlexBlock className="header">
+					<Text variant="body" className="title">
+						{ __(
+							'The official extension for WooCommerce, built in collaboration with',
+							'google-listings-and-ads'
+						) }
+					</Text>
+					<div id="google-img">
+						<img src={ googleImageURL } alt="Google" />
+					</div>
+				</FlexBlock>
 				<FlexBlock className="motivation-video">
 					<WistiaVideo
 						id="lpvgtsjwrg"

@@ -2,6 +2,27 @@
 	.components-flex {
 		flex-direction: column;
 
+		.header {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: flex-end;
+			min-width: 100%;
+			min-height: 64px;
+			padding: 20px;
+			margin: 0;
+			text-align: center;
+
+			.title {
+				font-size: $helptext-font-size;
+				color: $gray-600;
+			}
+
+			#google-img {
+				margin-left: $grid-unit-10;
+			}
+		}
+
 		.motivation-video {
 			min-width: 100%;
 			margin: 0;
@@ -68,6 +89,19 @@
 @media (max-width: $break-small) {
 	.woocommerce-marketing-google-get-started-with-video-card {
 		.components-flex {
+			.header {
+				justify-content: center;
+				padding: $grid-unit-20;
+
+				.title::after {
+					content: ' Google'
+				}
+
+				#google-img {
+					display: none;
+				}
+			}
+
 			.motivation-text {
 				margin: 24px;
 
