@@ -1,3 +1,14 @@
+jest.mock( '.~/hooks/useMCIssuesTypeFilter', () => ( {
+	__esModule: true,
+	default: jest
+		.fn()
+		.mockName( 'useMCIssuesTypeFilter' )
+		.mockReturnValue( {
+			data: { issues: [] },
+			hasFinishedResolution: true,
+		} ),
+} ) );
+
 jest.mock( '.~/hooks/useActiveIssueType' );
 jest.mock( '@woocommerce/tracks', () => {
 	return {

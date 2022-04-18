@@ -14,6 +14,16 @@ import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import ReviewRequestIssues from './review-request-issues';
 
+/**
+ * Render a modal showing the issues list and a notice with a remind for
+ * the user to review those issues before requesting the review.
+ *
+ * @param {Object} props Component props
+ * @param {Object[]} [props.issues=[]] Array with issues
+ * @param {boolean} [props.isActive=false] True if the Modal is visible, false otherwise
+ * @param {Function} [props.onClose] Callback function when closing the modal
+ * @param {Function} [props.onSendRequest] Callback function when the user request the review
+ */
 const ReviewRequestModal = ( {
 	issues = [],
 	isActive = false,
@@ -22,7 +32,7 @@ const ReviewRequestModal = ( {
 } ) => {
 	const [ checkBoxChecked, setCheckBoxChecked ] = useState( false );
 
-	if ( ! issues.length || ! isActive ) {
+	if ( ! isActive ) {
 		return null;
 	}
 
@@ -50,7 +60,7 @@ const ReviewRequestModal = ( {
 				<AppButton
 					key="primary"
 					isPrimary
-					disabled={ ! checkBoxChecked }
+					disabled={ ! checkBoxChecked && issues.length }
 					onClick={ onSendRequest }
 				>
 					{ __(
@@ -87,15 +97,17 @@ const ReviewRequestModal = ( {
 				</p>
 			</Notice>
 			<ReviewRequestIssues issues={ issues } />
-			<CheckboxControl
-				className="gla-review-request-modal__checkbox"
-				label={ __(
-					'I have resolved all the issue(s) listed above.',
-					'google-listings-and-ads'
-				) }
-				checked={ checkBoxChecked }
-				onChange={ handleCheckboxChange }
-			/>
+			{ issues.length > 0 && (
+				<CheckboxControl
+					className="gla-review-request-modal__checkbox"
+					label={ __(
+						'I have resolved all the issue(s) listed above.',
+						'google-listings-and-ads'
+					) }
+					checked={ checkBoxChecked }
+					onChange={ handleCheckboxChange }
+				/>
+			) }
 		</AppModal>
 	);
 };
