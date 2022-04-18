@@ -23,7 +23,7 @@ import AppCountrySelect from '.~/components/app-country-select';
  * Form to add a new rate for selected country(-ies).
  *
  * @param {Object} props
- * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
+ * @param {Array<CountryCode>} props.countryOptions Array of country codes, to be used as options in AppCountrySelect.
  * @param {ShippingRateGroup} props.initialValues Initial values for the form.
  * @param {() => void} props.onRequestClose Callback to close the modal.
  * @param {(values: ShippingRateGroup) => void} props.onSubmit Called with submitted value.
