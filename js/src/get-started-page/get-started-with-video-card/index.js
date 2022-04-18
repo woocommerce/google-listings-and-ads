@@ -18,6 +18,7 @@ import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import WistiaVideo from '.~/components/wistia-video';
+import footerImageURL from './image.svg';
 import './index.scss';
 
 const GetStartedWithVideoCard = () => {
@@ -89,6 +90,15 @@ const GetStartedWithVideoCard = () => {
 									/>
 								),
 							}
+						) }
+					</Text>
+				</FlexBlock>
+				<FlexBlock className="footer">
+					<img src={ footerImageURL } alt="" />
+					<Text variant="body" className="hint">
+						{ __(
+							'If you’re already using another extension to manage your product feed with Google, make sure to deactivate or uninstall it first to prevent duplicate product feeds.',
+							'google-listings-and-ads'
 						) }
 					</Text>
 				</FlexBlock>

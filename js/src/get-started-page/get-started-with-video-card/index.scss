@@ -39,6 +39,22 @@
 				margin-bottom: $grid-unit-40;
 			}
 		}
+
+		.footer {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+			border-top: 1px solid $gray-300;
+			padding: $grid-unit-20 $grid-unit-10;
+			margin: $grid-unit-20 $grid-unit-50;
+
+			.hint {
+				font-size: $helptext-font-size;
+				margin-left: $grid-unit-15;
+				color: $gray-600;
+			}
+		}
 	}
 
 	.components-flex &__terms-notice {
@@ -60,6 +76,10 @@
 					font-size: 20px;
 					line-height: 28px;
 				}
+			}
+
+			.footer {
+				margin: $grid-unit-30;
 			}
 		}
 	}
