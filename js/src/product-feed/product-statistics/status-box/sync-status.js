@@ -47,7 +47,7 @@ function getSyncResult( {
 	);
 
 	return {
-		Icon: SuccessIcon,
+		Icon: SyncIcon,
 		status: __(
 			'Automatically synced to Google',
 			'google-listings-and-ads'
@@ -85,8 +85,8 @@ function SyncStatus() {
 	return (
 		<Status
 			title={ __( 'Sync with Google:', 'google-listings-and-ads' ) }
-			icon={ <Icon size={ 24 } /> }
-			label={ <span className="gla-status-success">{ status }</span> }
+			icon={ <Icon className="gla-success" size={ 24 } /> }
+			label={ <span className="gla-success">{ status }</span> }
 			description={ description }
 		/>
 	);

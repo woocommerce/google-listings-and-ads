@@ -51,7 +51,7 @@ function FeedStatus() {
 			title={ __( 'Feed setup:', 'google-listings-and-ads' ) }
 			icon={ <SuccessIcon size={ 24 } /> }
 			label={
-				<span className="gla-status-success">
+				<span className="gla-success">
 					{ __(
 						'Standard free listings setup completed',
 						'google-listings-and-ads'

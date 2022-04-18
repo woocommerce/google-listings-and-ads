@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { default as IconSync } from 'gridicons/dist/sync';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
@@ -19,9 +20,15 @@ import './index.scss';
  *
  * @param {Object} props React props.
  * @param {number} [props.size=18] Icon size.
+ * @param {string} [props.className] Icon custom class name
  */
-const SyncIcon = ( { size = 18 } ) => {
-	return <IconSync className="gla-sync-icon" size={ size } />;
+const SyncIcon = ( { size = 18, className } ) => {
+	return (
+		<IconSync
+			className={ classnames( 'gla-sync-icon', className ) }
+			size={ size }
+		/>
+	);
 };
 
 export default SyncIcon;

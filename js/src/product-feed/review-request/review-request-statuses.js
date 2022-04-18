@@ -13,7 +13,7 @@ import SyncIcon from '.~/components/sync-icon';
 
 const DISAPPROVED = {
 	status: (
-		<span className="gla-status-error">
+		<span className="gla-error">
 			{ __( 'Disapproved', 'google-listing-and-ads' ) }
 		</span>
 	),
@@ -75,7 +75,7 @@ const UNDER_REVIEW = {
 
 const APPROVED = {
 	status: (
-		<span className="gla-status-success">
+		<span className="gla-success">
 			{ __( 'Approved', 'google-listing-and-ads' ) }
 		</span>
 	),
