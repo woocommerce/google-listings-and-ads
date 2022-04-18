@@ -11,10 +11,10 @@ import Status from '.~/product-feed/product-statistics/status-box/status';
 import SuccessIcon from '.~/components/success-icon';
 
 /**
- * Returns the translatable text for total number of issues, solved and unsolved
+ * Returns the total number of issues to resolve
  *
  * @param {number|undefined} totalUnsolvedIssues The total number of unsolved issues
- * @return {string} Translation for the number of issues
+ * @return {string} The number of issues to resolve
  */
 function getUnsolvedStatusText( totalUnsolvedIssues ) {
 	if ( ! Number.isInteger( totalUnsolvedIssues ) ) {
