@@ -31,40 +31,40 @@ class RequestReviewStatuses implements Service {
 		foreach ( $response as $program_type ) {
 			foreach ( $program_type['data']['regionStatuses'] as $region_status ) {
 
-				if ( $region_status['reviewEligibilityStatus'] === $this::ELIGIBLE ) {
+				if ( $region_status['reviewEligibilityStatus'] === self::ELIGIBLE ) {
 					$review_allowed = true;
 				}
 
-				if ( $region_status['eligibilityStatus'] === $this::DISAPPROVED || $region_status['eligibilityStatus'] === $this::WARNING ) {
-					if ( $status !== $this::DISAPPROVED ) {
+				if ( $region_status['eligibilityStatus'] === self::DISAPPROVED || $region_status['eligibilityStatus'] === self::WARNING ) {
+					if ( $status !== self::DISAPPROVED ) {
 						$status = $region_status['eligibilityStatus'];
 					}
 
 					$issues = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
 				}
 
-				if ( $status === $this::DISAPPROVED ) {
+				if ( $status === self::DISAPPROVED ) {
 					continue;
 				}
 
-				if ( $region_status['eligibilityStatus'] === $this::UNDER_REVIEW ) {
-					$status = $this::UNDER_REVIEW;
+				if ( $region_status['eligibilityStatus'] === self::UNDER_REVIEW ) {
+					$status = self::UNDER_REVIEW;
 				}
 
-				if ( $status === $this::UNDER_REVIEW ) {
+				if ( $status === self::UNDER_REVIEW ) {
 					continue;
 				}
 
-				if ( $region_status['eligibilityStatus'] === $this::PENDING_REVIEW ) {
-					$status = $this::PENDING_REVIEW;
+				if ( $region_status['eligibilityStatus'] === self::PENDING_REVIEW ) {
+					$status = self::PENDING_REVIEW;
 				}
 
-				if ( $status === $this::PENDING_REVIEW ) {
+				if ( $status === self::PENDING_REVIEW ) {
 					continue;
 				}
 
-				if ( $region_status['eligibilityStatus'] === $this::ONBOARDING ) {
-					$status = $this::ONBOARDING;
+				if ( $region_status['eligibilityStatus'] === self::ONBOARDING ) {
+					$status = self::ONBOARDING;
 				}
 			}
 		}
