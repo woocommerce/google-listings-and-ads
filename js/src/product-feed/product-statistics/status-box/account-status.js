@@ -11,7 +11,8 @@ import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import REVIEW_STATUSES from '.~/product-feed/review-request/review-request-statuses';
 
 /**
- * Shows the user's Google Account status
+ * Shows the user's Google Account status. That is the account status in the Free Listing program and AdsProgram.
+ * Can have the next statuses: Disapproved, Warning, Under review, Pending Review, Onboarding or Approved.
  *
  * @return {JSX.Element|null} The component with the status
  */
