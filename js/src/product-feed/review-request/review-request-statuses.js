@@ -48,12 +48,7 @@ const WARNING = {
 const PENDING_REVIEW = {
 	status: __( 'Pending review', 'google-listing-and-ads' ),
 	statusDescription: __(
-		'This may take up to 3 days.If approved, your products will show on Google once it’s completed.',
-		'google-listing-and-ads'
-	),
-	title: __( 'Account pending for review.', 'google-listing-and-ads' ),
-	body: __(
-		'This may take up to 3 days. You will receive an email notification once the review has been completed.',
+		'This may take up to 3 days. If approved, your products will show on Google once it’s completed.',
 		'google-listing-and-ads'
 	),
 	icon: <SyncIcon size={ 24 } />,
@@ -63,11 +58,6 @@ const UNDER_REVIEW = {
 	status: __( 'Under review', 'google-listing-and-ads' ),
 	statusDescription: __(
 		'Review requests take at least 7 days.',
-		'google-listing-and-ads'
-	),
-	title: __( 'Account review in progress.', 'google-listing-and-ads' ),
-	body: __(
-		'Review requests can take up to 7 days. You will receive an email notification once the review has been completed.',
 		'google-listing-and-ads'
 	),
 	icon: <SyncIcon size={ 24 } />,

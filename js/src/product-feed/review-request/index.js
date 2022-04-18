@@ -14,8 +14,7 @@ import { ISSUE_TYPE_ACCOUNT, REQUEST_REVIEW } from '.~/constants';
 import REVIEW_STATUSES from './review-request-statuses';
 import './index.scss';
 
-const showNotice = ( status ) =>
-	Object.keys( REVIEW_STATUSES ).includes( status ) && status !== 'APPROVED';
+const showNotice = ( status ) => !! REVIEW_STATUSES[ status ]?.title;
 
 const ReviewRequest = ( { account = {} } ) => {
 	const [ modalActive, setModalActive ] = useState( false );
