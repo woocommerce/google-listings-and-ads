@@ -22,7 +22,7 @@ import './index.scss';
  */
 const SuccessIcon = ( { size = 18 } ) => {
 	return (
-		<GridiconCheckmarkCircle className="app-success-icon" size={ size } />
+		<GridiconCheckmarkCircle className="gla-success-icon" size={ size } />
 	);
 };
 

@@ -21,7 +21,7 @@ import './index.scss';
  * @param {number} [props.size=18] Icon size.
  */
 const SyncIcon = ( { size = 18 } ) => {
-	return <IconSync className="app-sync-icon" size={ size } />;
+	return <IconSync className="gla-sync-icon" size={ size } />;
 };
 
 export default SyncIcon;
