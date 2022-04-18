@@ -103,6 +103,22 @@ class LocationRatesProcessorTest extends UnitTest {
 		$this->assertEmpty( $processed );
 	}
 
+	public function test_process_returns_free_rate_if_there_is_both_unconditional_free_rate_and_a_free_rate_with_min_order_amount() {
+		$location = new Location( 'US', 'CA' );
+
+		$free_rate_1 = new ShippingRate( 0 );
+		$free_rate_1->set_min_order_amount( 50 );
+
+		$location_rates = [
+			new LocationRate( $location, new ShippingRate( 0 ) ),
+			new LocationRate( $location, $free_rate_1 ),
+		];
+		$processed      = $this->rates_processor->process( $location_rates );
+		$this->assertCount( 1, $processed );
+		$this->assertEquals( 0, $processed[0]->get_shipping_rate()->get_rate() );
+		$this->assertNull( $processed[0]->get_shipping_rate()->get_min_order_amount() );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */

@@ -22,18 +22,13 @@ class LocationRatesProcessor {
 	 * @return LocationRate[] Array of processed location rates.
 	 */
 	public function process( array $location_rates ): array {
-		// Return empty if there are no rates or the only shipping rate has a minimum order amount.
-		if ( empty( $location_rates ) || $this->has_only_rates_with_min_order_amount( $location_rates ) ) {
-			return [];
-		}
-
 		/** @var LocationRate[] $grouped_rates */
 		$grouped_rates = [];
 		foreach ( $location_rates as $location_rate ) {
 			$shipping_rate = $location_rate->get_shipping_rate();
 
 			$type = 'flat_rate';
-			// If there are conditional free shipping rates, we need to group them together.
+			// If there are conditional free shipping rates, we need to group and compare them together.
 			if ( $shipping_rate->is_free() && $shipping_rate->has_min_order_amount() ) {
 				$type = 'conditional_free';
 			}
@@ -43,24 +38,12 @@ class LocationRatesProcessor {
 			}
 		}
 
-		return array_values( $grouped_rates );
-	}
-
-	/**
-	 * Returns true if the only available location rates have minimum order amounts.
-	 *
-	 * @param LocationRate[] $location_rates
-	 *
-	 * @return bool
-	 */
-	protected function has_only_rates_with_min_order_amount( array $location_rates ): bool {
-		foreach ( $location_rates as $location_rate ) {
-			if ( ! $location_rate->get_shipping_rate()->has_min_order_amount() ) {
-				return false;
-			}
+		// Ignore the conditional free rate if there are no flat rate or if the existing flat rate is free.
+		if ( ! isset( $grouped_rates['flat_rate'] ) || $grouped_rates['flat_rate']->get_shipping_rate()->is_free() ) {
+			unset( $grouped_rates['conditional_free'] );
 		}
 
-		return true;
+		return array_values( $grouped_rates );
 	}
 
 	/**
