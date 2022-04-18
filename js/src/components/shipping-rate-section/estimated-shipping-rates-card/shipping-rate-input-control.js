@@ -21,8 +21,9 @@ import './shipping-rate-input-control.scss';
 
 /**
  * Input control to edit a shipping rate group.
- * Consists of a simple input field to adjust the rate
- * and with a modal with a more advanced form to select countries.
+ *
+ * The input control label contains an edit button.
+ * Upon clicking on the edit button, it will display the `editRateFormModal`.
  *
  * @param {Object} props
  * @param {JSX.Element} props.editRateFormModal EditRateFormModal to be displayed when the Edit button is clicked.
