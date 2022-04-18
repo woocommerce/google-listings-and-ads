@@ -8,7 +8,8 @@ import { noop } from 'lodash';
 /**
  * Internal dependencies
  */
-import RateFormModal from './rate-form-modal.js';
+import RateForm from './rate-form.js';
+import RateModal from './rate-modal.js';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -25,32 +26,56 @@ import RateFormModal from './rate-form-modal.js';
  * @param {() => void} props.onDelete Called when users clicked on the Delete button.
  * @param {() => void} props.onRequestClose Callback to close the modal.
  */
-const EditRateFormModal = ( props ) => {
-	const { onDelete = noop, onRequestClose = noop } = props;
-
+const EditRateFormModal = ( {
+	countryOptions,
+	initialValues,
+	onSubmit,
+	onRequestClose = noop,
+	onDelete = noop,
+} ) => {
 	const handleDeleteClick = () => {
 		onRequestClose();
 		onDelete();
 	};
 
 	return (
-		<RateFormModal
-			{ ...props }
-			additionalButtons={ [
-				<Button
-					key="delete"
-					isTertiary
-					isDestructive
-					onClick={ handleDeleteClick }
-				>
-					{ __( 'Delete', 'google-listings-and-ads' ) }
-				</Button>,
-			] }
-			submitButtonChildren={ __(
-				'Update shipping rate',
-				'google-listings-and-ads'
-			) }
-		/>
+		<RateForm
+			initialValues={ initialValues }
+			onSubmit={ onSubmit }
+			onRequestClose={ onRequestClose }
+		>
+			{ ( formProps ) => {
+				const { isValidForm, handleSubmit } = formProps;
+
+				return (
+					<RateModal
+						formProps={ formProps }
+						countryOptions={ countryOptions }
+						buttons={ [
+							<Button
+								key="delete"
+								isTertiary
+								isDestructive
+								onClick={ handleDeleteClick }
+							>
+								{ __( 'Delete', 'google-listings-and-ads' ) }
+							</Button>,
+							<Button
+								key="submit"
+								isPrimary
+								disabled={ ! isValidForm }
+								onClick={ handleSubmit }
+							>
+								{ __(
+									'Update shipping rate',
+									'google-listings-and-ads'
+								) }
+							</Button>,
+						] }
+					/>
+				);
+			} }
+		</RateForm>
 	);
 };
 
