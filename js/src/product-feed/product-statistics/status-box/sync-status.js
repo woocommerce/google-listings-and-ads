@@ -47,7 +47,7 @@ function getSyncResult( {
 	);
 
 	return {
-		Icon: SyncIcon,
+		Icon: SuccessIcon,
 		status: __(
 			'Automatically synced to Google',
 			'google-listings-and-ads'
