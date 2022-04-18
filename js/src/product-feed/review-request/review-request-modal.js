@@ -14,6 +14,16 @@ import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import ReviewRequestIssues from './review-request-issues';
 
+/**
+ * Render a modal showing the issues list and a notice with a remind for
+ * the user to review those issues before requesting the review.
+ *
+ * @param {Object} props Component props
+ * @param {Object[]} [props.issues=[]] Array with issues
+ * @param {boolean} [props.isActive=false] True if the Modal is visible, false otherwise
+ * @param {Function} [props.onClose] Callback function when closing the modal
+ * @param {Function} [props.onSendRequest] Callback function when the user request the review
+ */
 const ReviewRequestModal = ( {
 	issues = [],
 	isActive = false,
