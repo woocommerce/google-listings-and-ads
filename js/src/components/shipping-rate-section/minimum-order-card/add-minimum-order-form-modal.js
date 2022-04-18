@@ -48,7 +48,7 @@ const AddMinimumOrderFormModal = ( {
 		}
 
 		if ( ! ( values.threshold > 0 ) ) {
-			errors.price = __(
+			errors.threshold = __(
 				'The minimum order amount must be greater than 0.',
 				'google-listings-and-ads'
 			);
