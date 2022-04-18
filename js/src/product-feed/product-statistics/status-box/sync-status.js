@@ -14,14 +14,14 @@ import SyncIcon from '.~/components/sync-icon';
 import SuccessIcon from '.~/components/success-icon';
 
 /**
- * Returns the translatable text as well as the icon an description for the Sync Status
+ * Returns the text as well as the icon an description for the Sync Status
  * based on the `scheduled_sync` value as the synced number of products.
  *
  * @param {Object} data Data with the sync information
  * @param {number} data.scheduled_sync Amount of scheduled jobs which will sync products to Google.
  * @param {Object} data.statistics Merchant Center product status statistics information.
  * @param {number} data.timestamp Timestamp reflecting when the product status statistics were last generated.
- * @return {string} Translation for the number of issues
+ * @return {Object} The icon, status and description of the sync process.
  */
 function getSyncResult( {
 	scheduled_sync: scheduledSync,
