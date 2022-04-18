@@ -15,6 +15,7 @@ import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import groupShippingRatesByMethodCurrencyRate from './groupShippingRatesByMethodCurrencyRate';
 import ShippingRateInputControl from './shipping-rate-input-control';
 import AddRateFormModal from './add-rate-form-modal';
+import EditRateFormModal from './edit-rate-form-modal';
 import { SHIPPING_RATE_METHOD } from '.~/constants';
 import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 
@@ -158,10 +159,16 @@ export default function EstimatedShippingRatesCard( {
 			};
 			return (
 				<ShippingRateInputControl
-					countryOptions={ audienceCountries }
+					editRateFormModal={
+						<EditRateFormModal
+							countryOptions={ audienceCountries }
+							initialValues={ prefilledGroup }
+							onSubmit={ getChangeHandler( prefilledGroup ) }
+							onDelete={ getDeleteHandler( prefilledGroup ) }
+						/>
+					}
 					value={ prefilledGroup }
 					onChange={ getChangeHandler( prefilledGroup ) }
-					onDelete={ getDeleteHandler( prefilledGroup ) }
 				/>
 			);
 		}
@@ -185,10 +192,16 @@ export default function EstimatedShippingRatesCard( {
 					return (
 						<ShippingRateInputControl
 							key={ group.countries.join( '-' ) }
-							countryOptions={ audienceCountries }
+							editRateFormModal={
+								<EditRateFormModal
+									countryOptions={ audienceCountries }
+									initialValues={ group }
+									onSubmit={ getChangeHandler( group ) }
+									onDelete={ getDeleteHandler( group ) }
+								/>
+							}
 							value={ group }
 							onChange={ getChangeHandler( group ) }
-							onDelete={ getDeleteHandler( group ) }
 						/>
 					);
 				} ) }

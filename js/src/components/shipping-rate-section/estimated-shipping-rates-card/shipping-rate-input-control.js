@@ -11,9 +11,8 @@ import { noop } from 'lodash';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import AppButton from '.~/components/app-button';
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import EditRateFormModal from './edit-rate-form-modal';
-import './shipping-rate-input-control.scss';
 import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
+import './shipping-rate-input-control.scss';
 
 /**
  * @typedef { import("./typedefs").ShippingRateGroup } ShippingRateGroup
@@ -26,16 +25,14 @@ import ShippingRateInputControlLabelText from './shipping-rate-input-control-lab
  * and with a modal with a more advanced form to select countries.
  *
  * @param {Object} props
+ * @param {JSX.Element} props.editRateFormModal EditRateFormModal to be displayed when the Edit button is clicked.
  * @param {ShippingRateGroup} props.value Aggregate, rat: Array object to be used as the initial value.
- * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
  * @param {(newGroup: ShippingRateGroup) => void} props.onChange Called when shipping rate group changes.
- * @param {() => void} props.onDelete Called when users clicked on the Delete button.
  */
 const ShippingRateInputControl = ( {
-	countryOptions,
+	editRateFormModal,
 	value,
 	onChange = noop,
-	onDelete,
 } ) => {
 	const { countries, currency, rate } = value;
 
@@ -67,14 +64,7 @@ const ShippingRateInputControl = ( {
 									{ __( 'Edit', 'google-listings-and-ads' ) }
 								</AppButton>
 							}
-							modal={
-								<EditRateFormModal
-									countryOptions={ countryOptions }
-									initialValues={ value }
-									onSubmit={ onChange }
-									onDelete={ onDelete }
-								/>
-							}
+							modal={ editRateFormModal }
 						/>
 					</div>
 				}
