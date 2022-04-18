@@ -26,6 +26,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import HelpIconButton from '.~/components/help-icon-button';
 import hasUnsavedShippingRates from './hasUnsavedShippingRates';
 import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
+import useSaveShippingTimes from '.~/hooks/useSaveShippingTimes';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -42,38 +43,6 @@ function isNotOurStep( location ) {
 	// TODO: Explore if we can make thich check cleaner given `history`'s API.
 	const destination = location.pathname + location.search;
 	return ! allowList.has( destination );
-}
-
-/**
- * @typedef {import('.~/data/actions').ShippingRate} ShippingRate
- * @typedef {import('.~/data/actions').CountryCode} CountryCode
- */
-
-/**
- * Due to the lack of a single API for updating shipping data altogether,
- * we need to send upserts separately for each price/time.
- * Deletes are not needed, as we validate the form not to miss any available country.
- *
- * @param {(groupedCountrySetting: ShippingRate) => Promise} batchUpsertAction
- * @param {Array<ShippingRate>} newData
- * @param {Function} getGroupKey A callback function to ask for a unique key for each shipping group.
- */
-function saveShippingData( batchUpsertAction, newData, getGroupKey ) {
-	const groupMap = new Map();
-	newData.forEach( ( item ) => {
-		const key = getGroupKey( item );
-		const { countryCode, ...rest } = item;
-		let group = groupMap.get( key );
-
-		if ( ! group ) {
-			group = { ...rest, countryCodes: [] };
-			groupMap.set( key, group );
-		}
-
-		group.countryCodes.push( countryCode );
-	} );
-
-	return Array.from( groupMap.values() ).map( batchUpsertAction );
 }
 
 /**
@@ -101,12 +70,9 @@ export default function EditFreeCampaign() {
 	} = useTargetAudienceFinalCountryCodes();
 
 	const { settings: savedSettings } = useSettings();
-	const {
-		saveTargetAudience,
-		saveSettings,
-		upsertShippingTimes,
-	} = useAppDispatch();
+	const { saveTargetAudience, saveSettings } = useAppDispatch();
 	const { saveShippingRates } = useSaveShippingRates();
+	const { saveShippingTimes } = useSaveShippingTimes();
 
 	const [ targetAudience, updateTargetAudience ] = useState(
 		savedTargetAudience
@@ -186,7 +152,37 @@ export default function EditFreeCampaign() {
 		'/google/dashboard'
 	);
 
+	/**
+	 * Update shipping rates and times after users are done
+	 * with the changes in Choose Audience step.
+	 *
+	 * Shipping rates and shipping times that do not have
+	 * a corresponding country in target audience will be removed.
+	 */
+	const updateShippingAfterChooseAudienceStep = () => {
+		const finalCountries = getFinalCountries( targetAudience );
+
+		const newShippingRates = loadedShippingRates.filter(
+			( shippingRate ) => {
+				return finalCountries.includes( shippingRate.country );
+			}
+		);
+		updateShippingRates( newShippingRates );
+
+		const newShippingTimes = loadedShippingTimes.filter(
+			( shippingTime ) => {
+				return finalCountries.includes( shippingTime.countryCode );
+			}
+		);
+		updateShippingTimes( newShippingTimes );
+	};
+
+	const handleChooseAudienceChange = ( change, newTargetAudience ) => {
+		updateTargetAudience( newTargetAudience );
+	};
+
 	const handleChooseAudienceContinue = () => {
+		updateShippingAfterChooseAudienceStep();
 		getHistory().push( getNewPath( { pageStep: '2' } ) );
 	};
 
@@ -197,11 +193,7 @@ export default function EditFreeCampaign() {
 				saveTargetAudience( targetAudience ),
 				saveSettings( settings ),
 				saveShippingRates( shippingRates ),
-				...saveShippingData(
-					upsertShippingTimes,
-					shippingTimes,
-					( item ) => item.time
-				),
+				saveShippingTimes( shippingTimes ),
 			] );
 
 			// Sync data once our changes are saved, even partially succesfully.
@@ -227,6 +219,14 @@ export default function EditFreeCampaign() {
 	};
 
 	const handleStepClick = ( key ) => {
+		/**
+		 * When users move from Step 1 Choose Audience to Step 2 Configure listings,
+		 * we update shipping rates and shipping times based on the changes in Choose Audience.
+		 */
+		if ( key === '2' ) {
+			updateShippingAfterChooseAudienceStep();
+		}
+
 		getHistory().push( getNewPath( { pageStep: key } ) );
 	};
 
@@ -252,9 +252,7 @@ export default function EditFreeCampaign() {
 						content: (
 							<ChooseAudience
 								initialData={ targetAudience }
-								onChange={ ( change, newTargetAudience ) =>
-									updateTargetAudience( newTargetAudience )
-								}
+								onChange={ handleChooseAudienceChange }
 								onContinue={ handleChooseAudienceContinue }
 							/>
 						),
