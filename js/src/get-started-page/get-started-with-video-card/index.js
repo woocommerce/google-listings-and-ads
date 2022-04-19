@@ -88,7 +88,7 @@ const GetStartedWithVideoCard = () => {
 					</AppButton>
 					<Text className="hint">
 						{ __(
-							'Estimated setup time: 15 min ',
+							'Estimated setup time: 15 min',
 							'google-listings-and-ads'
 						) }
 					</Text>
