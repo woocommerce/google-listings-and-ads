@@ -13,13 +13,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 interface OptionsInterface {
 
 
-	public const ADS_ACCOUNT_CURRENCY      = 'ads_account_currency';
-	public const ADS_ACCOUNT_STATE         = 'ads_account_state';
-	public const ADS_BILLING_URL           = 'ads_billing_url';
-	public const ADS_ID                    = 'ads_id';
-	public const ADS_CONVERSION_ACTION     = 'ads_conversion_action';
-	public const ADS_SETUP_COMPLETED_AT    = 'ads_setup_completed_at';
-	public const CONTACT_INFO_SETUP        = 'contact_info_setup';
+	public const ADS_ACCOUNT_CURRENCY   = 'ads_account_currency';
+	public const ADS_ACCOUNT_STATE      = 'ads_account_state';
+	public const ADS_BILLING_URL        = 'ads_billing_url';
+	public const ADS_ID                 = 'ads_id';
+	public const ADS_CONVERSION_ACTION  = 'ads_conversion_action';
+	public const ADS_SETUP_COMPLETED_AT = 'ads_setup_completed_at';
+	public const CONTACT_INFO_SETUP     = 'contact_info_setup';
 	public const DELAYED_ACTIVATE       = 'delayed_activate';
 	public const DB_VERSION             = 'db_version';
 	public const FILE_VERSION           = 'file_version';
@@ -55,12 +55,12 @@ interface OptionsInterface {
 		self::MERCHANT_CENTER        => true,
 		self::MERCHANT_ID            => true,
 		self::DELAYED_ACTIVATE       => true,
-		self::SHIPPING_RATES            => true,
-		self::SHIPPING_TIMES            => true,
-		self::REDIRECT_TO_ONBOARDING    => true,
-		self::SITE_VERIFICATION         => true,
-		self::TARGET_AUDIENCE           => true,
-		self::WP_TOS_ACCEPTED           => true,
+		self::SHIPPING_RATES         => true,
+		self::SHIPPING_TIMES         => true,
+		self::REDIRECT_TO_ONBOARDING => true,
+		self::SITE_VERIFICATION      => true,
+		self::TARGET_AUDIENCE        => true,
+		self::WP_TOS_ACCEPTED        => true,
 	];
 
 	public const OPTION_TYPES = [

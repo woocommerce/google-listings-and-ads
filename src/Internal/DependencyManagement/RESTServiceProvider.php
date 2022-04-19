@@ -19,7 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectC
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\AccountController as GoogleAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack\AccountController as JetpackAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountController as MerchantCenterAccountController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountReviewController as MerchantCenterAccountReviewController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\RequestReviewController as MerchantCenterRequestReviewController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ConnectionController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ContactInformationController as MerchantCenterContactInformationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\IssuesController as MerchantCenterIssuesController;
@@ -41,6 +41,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as MerchantAccountService;
@@ -98,7 +99,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( AdsBudgetRecommendationController::class, BudgetRecommendationQuery::class, Ads::class );
 		$this->share( PhoneVerificationController::class, PhoneVerification::class );
 		$this->share( MerchantCenterAccountController::class, MerchantAccountService::class );
-		$this->share( MerchantCenterAccountReviewController::class );
+		$this->share( MerchantCenterRequestReviewController::class, Middleware::class, RequestReviewStatuses::class );
 		$this->share_with_container( MerchantCenterReportsController::class );
 		$this->share( ShippingRateBatchController::class, ShippingRateQuery::class );
 		$this->share( ShippingRateController::class, ShippingRateQuery::class );
