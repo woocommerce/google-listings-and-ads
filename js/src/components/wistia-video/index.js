@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useCallback } from '@wordpress/element';
 import classNames from 'classnames';
 
 /**
@@ -43,7 +43,7 @@ const WistiaVideo = ( props ) => {
 	const { id, src, title, iframeProps = {} } = props;
 	const [ isPlaying, setPlaying ] = useState( false );
 
-	useScript( WISTIA_API_SCRIPT_URL, () => {
+	const handleScriptLoaded = useCallback( () => {
 		if ( window._wq ) {
 			window._wq.push( {
 				id,
@@ -52,7 +52,9 @@ const WistiaVideo = ( props ) => {
 				},
 			} );
 		}
-	} );
+	}, [ id, setPlaying ] );
+
+	useScript( WISTIA_API_SCRIPT_URL, handleScriptLoaded );
 
 	const getIframeTitle = () => {
 		if ( ! title ) {
