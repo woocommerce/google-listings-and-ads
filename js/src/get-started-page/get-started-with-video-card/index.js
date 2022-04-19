@@ -26,10 +26,7 @@ const GetStartedWithVideoCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;
 
 	return (
-		<Card
-			className="woocommerce-marketing-google-get-started-with-video-card"
-			isBorderless
-		>
+		<Card className="gla-get-started-with-video-card" isBorderless>
 			<Flex>
 				<FlexBlock className="header">
 					<Text variant="body" className="title">
@@ -93,7 +90,7 @@ const GetStartedWithVideoCard = () => {
 						) }
 					</Text>
 					<Text
-						className="woocommerce-marketing-google-get-started-with-video-card__terms-notice"
+						className="gla-get-started-with-video-card__terms-notice"
 						variant="body"
 					>
 						{ createInterpolateElement(
