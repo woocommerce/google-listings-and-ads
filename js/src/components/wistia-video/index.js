@@ -70,11 +70,11 @@ const WistiaVideo = ( props ) => {
 	return (
 		<div
 			className={ classNames(
-				'wistia-responsive-padding',
+				'gla-wistia-video',
 				isPlaying ? 'is-playing' : ''
 			) }
 		>
-			<div className="wistia-responsive-wrapper">
+			<div className="gla-wistia-video__container">
 				<iframe
 					src={ src }
 					title={ getIframeTitle() }
