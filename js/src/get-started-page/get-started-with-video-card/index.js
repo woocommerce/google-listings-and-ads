@@ -19,7 +19,7 @@ import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import WistiaVideo from '.~/components/wistia-video';
 import footerImageURL from './footer.svg';
-import googleImageURL from './google.svg';
+import googleLogoURL from '.~/images/google-logo.svg';
 import './index.scss';
 
 const GetStartedWithVideoCard = () => {
@@ -39,7 +39,15 @@ const GetStartedWithVideoCard = () => {
 						) }
 					</Text>
 					<div id="google-img">
-						<img src={ googleImageURL } alt="Google" />
+						<img
+							src={ googleLogoURL }
+							alt={ __(
+								'Google Logo',
+								'google-listings-and-ads'
+							) }
+							width="71"
+							height="24"
+						/>
 					</div>
 				</FlexBlock>
 				<FlexBlock className="motivation-video">
