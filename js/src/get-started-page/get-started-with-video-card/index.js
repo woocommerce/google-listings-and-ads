@@ -10,7 +10,6 @@ import {
 } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -20,6 +19,7 @@ import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import WistiaVideo from '.~/components/wistia-video';
 import googleLogoURL from '.~/images/google-logo.svg';
+import { getSetupMCUrl } from '.~/utils/urls';
 import './index.scss';
 
 const GetStartedWithVideoCard = () => {
@@ -71,7 +71,7 @@ const GetStartedWithVideoCard = () => {
 						className="button"
 						isPrimary
 						disabled={ disableNextStep }
-						href={ getNewPath( {}, '/google/setup-mc' ) }
+						href={ getSetupMCUrl() }
 						eventName="gla_setup_mc"
 						eventProps={ {
 							target: 'set_up_free_listings',
