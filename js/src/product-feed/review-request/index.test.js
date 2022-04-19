@@ -29,7 +29,7 @@ import useActiveIssueType from '.~/hooks/useActiveIssueType';
 import ReviewRequest from '.~/product-feed/review-request/index';
 
 describe( 'Request Review Component', () => {
-	it.each( [ 'DISAPPROVED', 'WARNING', 'BLOCKED', 'UNDER_REVIEW' ] )(
+	it.each( [ 'DISAPPROVED', 'WARNING' ] )(
 		'Status %s renders the component on account issues',
 		( status ) => {
 			useActiveIssueType.mockReturnValue( 'account' );
@@ -76,13 +76,16 @@ describe( 'Request Review Component', () => {
 	);
 
 	// eslint-disable-next-line jest/expect-expect
-	it( "Doesn't render on Status APPROVED", () => {
-		useActiveIssueType.mockReturnValue( 'account' );
-		isNotRendering( {
-			hasFinishedResolution: true,
-			data: { status: 'APPROVED' },
-		} );
-	} );
+	it.each( [ 'APPROVED', 'DISAPPROVED', 'WARNING' ] )(
+		'Status %s not rendering the notice',
+		( status ) => {
+			useActiveIssueType.mockReturnValue( status );
+			isNotRendering( {
+				hasFinishedResolution: true,
+				data: { status },
+			} );
+		}
+	);
 
 	// eslint-disable-next-line jest/expect-expect
 	it( "Doesn't render if it is resolving", () => {

@@ -15,8 +15,7 @@ import REVIEW_STATUSES from './review-request-statuses';
 import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
 import './index.scss';
 
-const showNotice = ( status ) =>
-	Object.keys( REVIEW_STATUSES ).includes( status );
+const showNotice = ( status ) => !! REVIEW_STATUSES[ status ]?.title;
 
 const ReviewRequest = ( { account = {} } ) => {
 	const [ modalActive, setModalActive ] = useState( false );
