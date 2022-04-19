@@ -1,84 +1,90 @@
 .gla-get-started-with-video-card {
-	.components-flex {
-		flex-direction: column;
+	flex-direction: column;
 
-		.header {
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			justify-content: flex-end;
-			min-width: 100%;
-			min-height: 64px;
-			padding: 20px;
-			margin: 0;
-			text-align: center;
+	.components-card__header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		min-width: 100%;
+		max-height: 64px;
+		padding: $grid-unit-20;
+		margin: 0;
+		text-align: center;
 
-			.title {
-				font-size: $helptext-font-size;
-				color: $gray-600;
-			}
-
-			#google-img {
-				margin-left: $grid-unit-10;
-			}
+		& > p {
+			font-size: $helptext-font-size;
+			color: $gray-600;
 		}
 
-		.motivation-video {
-			min-width: 100%;
-			margin: 0;
-		}
+		@media (max-width: $break-small) {
+			justify-content: center;
 
-		.motivation-text {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			text-align: center;
-			margin: calc(var(--main-gap) * 1.67) calc(var(--main-gap) * 4.67);
-
-			.title {
-				padding: 0 $grid-unit-30;
-				margin-bottom: $grid-unit-15;
+			& > p::after {
+				content: " Google";
 			}
 
-			.description {
-				margin-bottom: $grid-unit-40;
-				padding: 0 $grid-unit-10;
-			}
-
-			.button {
-				display: flex;
-				justify-content: center;
-				width: 188px;
-				height: 50px;
-				font-size: 14px;
-				margin-bottom: $grid-unit-10;
-			}
-
-			.hint {
-				font-size: $helptext-font-size;
-				color: $gray-400;
-				margin-bottom: $grid-unit-40;
-			}
-		}
-
-		.components-tip {
-			border-top: 1px solid $gray-300;
-			padding: $grid-unit-20 $grid-unit-15 0;
-			margin: 0 $grid-unit-50 $grid-unit-30;
-
-			& svg {
-				fill: $gray-900;
-				margin-right: $grid-unit-15;
-			}
-
-			& p {
-				font-size: $helptext-font-size;
-				color: $gray-600;
+			& > img {
+				display: none;
 			}
 		}
 	}
 
-	.components-flex &__terms-notice {
+	.motivation-video {
+		min-width: 100%;
+		margin: 0;
+	}
+
+	.motivation-text {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		margin: calc(var(--main-gap) * 1.67) calc(var(--main-gap) * 4.67);
+
+		.title {
+			padding: 0 $grid-unit-30;
+			margin-bottom: $grid-unit-15;
+		}
+
+		.description {
+			margin-bottom: $grid-unit-40;
+			padding: 0 $grid-unit-10;
+		}
+
+		.button {
+			display: flex;
+			justify-content: center;
+			width: 188px;
+			height: 50px;
+			font-size: 14px;
+			margin-bottom: $grid-unit-10;
+		}
+
+		.hint {
+			font-size: $helptext-font-size;
+			color: $gray-400;
+			margin-bottom: $grid-unit-40;
+		}
+	}
+
+	.components-tip {
+		border-top: 1px solid $gray-300;
+		padding: $grid-unit-30 $grid-unit-15;
+		margin: 0 $grid-unit-50;
+
+		& svg {
+			fill: $gray-900;
+			margin-right: $grid-unit-15;
+		}
+
+		& p {
+			font-size: $helptext-font-size;
+			color: $gray-600;
+		}
+	}
+
+	&__terms-notice {
 		font-size: $helptext-font-size;
 		a {
 			text-decoration: none;
@@ -88,37 +94,25 @@
 
 @media (max-width: $break-small) {
 	.gla-get-started-with-video-card {
-		.components-flex {
-			.header {
-				justify-content: center;
-				padding: $grid-unit-20;
+		.motivation-text {
+			margin: $grid-unit-30;
 
-				.title::after {
-					content: " Google";
-				}
-
-				#google-img {
-					display: none;
-				}
+			.title {
+				font-size: 20px;
+				line-height: $default-line-height;
 			}
 
-			.motivation-text {
-				margin: $grid-unit-30;
-
-				.title {
-					padding: 0;
-					font-size: 20px;
-					line-height: $default-line-height;
-				}
+			.description {
+				padding: 0 $grid-unit-15;
 			}
+		}
 
-			.components-tip {
-				padding: $grid-unit-20 $grid-unit-05 0;
-				margin: 0 $grid-unit-30 $grid-unit-30;
+		.components-tip {
+			padding: $grid-unit-30 $grid-unit-05;
+			margin: 0 $grid-unit-30;
 
-				& svg {
-					align-self: flex-start;
-				}
+			& svg {
+				align-self: flex-start;
 			}
 		}
 	}
