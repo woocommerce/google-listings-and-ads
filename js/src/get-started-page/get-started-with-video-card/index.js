@@ -22,6 +22,9 @@ import googleLogoURL from '.~/images/google-logo.svg';
 import { getSetupMCUrl } from '.~/utils/urls';
 import './index.scss';
 
+/**
+ * @fires gla_setup_mc with `{ target: 'set_up_free_listings', trigger: 'click' }`.
+ */
 const GetStartedWithVideoCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;
 
