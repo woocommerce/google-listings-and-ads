@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { useEffect, useState } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import classNames from 'classnames';
 
 /**
@@ -29,18 +29,18 @@ const WISTIA_API_SCRIPT_URL = 'https://fast.wistia.com/assets/external/E-v1.js';
  * The embedded video has the height of 270px at the beginning, it will be expanded
  * to the original video height after the video is being played.
  *
- * Uses Wistia's JavaScript Player API to get the video state to decide when to expand the video.
+ * Uses Wistia's JavaScript Player API to bind the video's "play" event in order to expand the video.
  * https://wistia.com/support/developers/player-api#with-iframe-embeds
+ * https://wistia.com/support/developers/player-api#bind-eventtype-callbackfn
  *
  * @param {Object} props               React props.
  * @param {string} props.id            The Wistia's video ID.
  * @param {string} props.src           The Wistia's embedded video url.
  * @param {string} props.title         The Wistia's embedded video title.
- * @param {Object} [props.iframeProps] The properties of <ifram>.
+ * @param {Object} [props.iframeProps] The properties of <iframe>.
  */
 const WistiaVideo = ( props ) => {
 	const { id, src, title, iframeProps = {} } = props;
-	const [ wistiaVideoHandle, setWistaVideoHandle ] = useState( null );
 	const [ isPlaying, setPlaying ] = useState( false );
 
 	useScript( WISTIA_API_SCRIPT_URL, () => {
@@ -48,22 +48,11 @@ const WistiaVideo = ( props ) => {
 			window._wq.push( {
 				id,
 				onReady: ( video ) => {
-					setWistaVideoHandle( video );
+					video.bind( 'play', () => setPlaying( true ) );
 				},
 			} );
 		}
 	} );
-
-	useEffect( () => {
-		if ( wistiaVideoHandle ) {
-			const intervalId = setInterval( () => {
-				if ( wistiaVideoHandle.state() === 'playing' ) {
-					setPlaying( true );
-					clearInterval( intervalId );
-				}
-			}, 100 );
-		}
-	}, [ wistiaVideoHandle ] );
 
 	const getIframeTitle = () => {
 		if ( ! title ) {
