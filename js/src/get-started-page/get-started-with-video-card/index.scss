@@ -61,18 +61,18 @@
 			}
 		}
 
-		.footer {
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			justify-content: center;
+		.components-tip {
 			border-top: 1px solid $gray-300;
-			padding: $grid-unit-20 $grid-unit-10;
-			margin: $grid-unit-20 $grid-unit-50;
+			padding: $grid-unit-20 $grid-unit-15 0;
+			margin: 0 $grid-unit-50 $grid-unit-30;
 
-			.hint {
+			& svg {
+				fill: $gray-900;
+				margin-right: $grid-unit-15;
+			}
+
+			& p {
 				font-size: $helptext-font-size;
-				margin-left: $grid-unit-15;
 				color: $gray-600;
 			}
 		}
@@ -112,8 +112,9 @@
 				}
 			}
 
-			.footer {
-				margin: $grid-unit-20;
+			.components-tip {
+				padding: $grid-unit-20 $grid-unit-05 0;
+				margin: 0 $grid-unit-30 $grid-unit-30;
 			}
 		}
 	}
