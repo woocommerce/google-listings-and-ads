@@ -2,15 +2,13 @@
  * External dependencies
  */
 import { Button } from '@wordpress/components';
-import { Form } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
-import RateModal from './rate-modal.js';
-import validate from './validate.js';
+import RateFormModal from './rate-form-modal.js';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -40,12 +38,10 @@ const EditRateFormModal = ( {
 	};
 
 	return (
-		<Form
+		<RateFormModal
+			countryOptions={ countryOptions }
 			initialValues={ initialValues }
-			validate={ validate }
-			onSubmit={ onSubmit }
-		>
-			{ ( formProps ) => {
+			renderButtons={ ( formProps ) => {
 				const { isValidForm, handleSubmit } = formProps;
 
 				const handleUpdateClick = () => {
@@ -53,36 +49,31 @@ const EditRateFormModal = ( {
 					handleSubmit();
 				};
 
-				return (
-					<RateModal
-						formProps={ formProps }
-						countryOptions={ countryOptions }
-						buttons={ [
-							<Button
-								key="delete"
-								isTertiary
-								isDestructive
-								onClick={ handleDeleteClick }
-							>
-								{ __( 'Delete', 'google-listings-and-ads' ) }
-							</Button>,
-							<Button
-								key="submit"
-								isPrimary
-								disabled={ ! isValidForm }
-								onClick={ handleUpdateClick }
-							>
-								{ __(
-									'Update shipping rate',
-									'google-listings-and-ads'
-								) }
-							</Button>,
-						] }
-						onRequestClose={ onRequestClose }
-					/>
-				);
+				return [
+					<Button
+						key="delete"
+						isTertiary
+						isDestructive
+						onClick={ handleDeleteClick }
+					>
+						{ __( 'Delete', 'google-listings-and-ads' ) }
+					</Button>,
+					<Button
+						key="submit"
+						isPrimary
+						disabled={ ! isValidForm }
+						onClick={ handleUpdateClick }
+					>
+						{ __(
+							'Update shipping rate',
+							'google-listings-and-ads'
+						) }
+					</Button>,
+				];
 			} }
-		</Form>
+			onSubmit={ onSubmit }
+			onRequestClose={ onRequestClose }
+		/>
 	);
 };
 

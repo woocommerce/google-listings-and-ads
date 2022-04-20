@@ -2,14 +2,12 @@
  * External dependencies
  */
 import { Button } from '@wordpress/components';
-import { Form } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import RateModal from './rate-modal.js';
-import validate from './validate.js';
+import RateFormModal from './rate-form-modal.js';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -32,12 +30,10 @@ const AddRateFormModal = ( {
 	onRequestClose,
 } ) => {
 	return (
-		<Form
+		<RateFormModal
+			countryOptions={ countryOptions }
 			initialValues={ initialValues }
-			validate={ validate }
-			onSubmit={ onSubmit }
-		>
-			{ ( formProps ) => {
+			renderButtons={ ( formProps ) => {
 				const { isValidForm, handleSubmit } = formProps;
 
 				const handleAddClick = () => {
@@ -45,28 +41,20 @@ const AddRateFormModal = ( {
 					handleSubmit();
 				};
 
-				return (
-					<RateModal
-						formProps={ formProps }
-						countryOptions={ countryOptions }
-						buttons={ [
-							<Button
-								key="submit"
-								isPrimary
-								disabled={ ! isValidForm }
-								onClick={ handleAddClick }
-							>
-								{ __(
-									'Add shipping rate',
-									'google-listings-and-ads'
-								) }
-							</Button>,
-						] }
-						onRequestClose={ onRequestClose }
-					/>
-				);
+				return [
+					<Button
+						key="submit"
+						isPrimary
+						disabled={ ! isValidForm }
+						onClick={ handleAddClick }
+					>
+						{ __( 'Add shipping rate', 'google-listings-and-ads' ) }
+					</Button>,
+				];
 			} }
-		</Form>
+			onSubmit={ onSubmit }
+			onRequestClose={ onRequestClose }
+		/>
 	);
 };
 
