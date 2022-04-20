@@ -50,9 +50,9 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_GET_REQUEST );
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [
-			'status'        => 'WARNING',
-			'issues'        => [ 'one', 'two' ],
-			'reviewAllowed' => false
+			'status'   => 'WARNING',
+			'issues'   => [ 'one', 'two' ],
+			'cooldown' => ""
 		], $response->get_data() );
 	}
 
@@ -105,18 +105,63 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_GET_REQUEST );
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [
-			'status'        => 'DISAPPROVED',
-			'issues'        => [ 'one', 'two' ],
-			'reviewAllowed' => true
+			'status'   => 'DISAPPROVED',
+			'issues'   => [ 'one', 'two' ],
+			'cooldown' => ""
 		], $response->get_data() );
 	}
 
+	public function test_cooldown() {
+
+		$this->middleware->expects( $this->once() )
+		                 ->method( 'get_account_review_status' )
+		                 ->willReturn(
+			                 [
+				                 'freeListingsProgram' => [
+					                 'status' => 200,
+					                 'data'   => [
+						                 'regionStatuses' => [
+							                 [
+								                 'regionCodes'                      => [ 'US' ],
+								                 'eligibilityStatus'                => 'DISAPPROVED',
+								                 'reviewEligibilityStatus'          => 'INELIGIBLE',
+								                 'reviewIneligibilityReasonDetails' => [
+									                 'cooldownTime' => "1651047106000" // 27/04/2022
+								                 ]
+							                 ],
+							                 [
+								                 'regionCodes'                      => [ 'NL' ],
+								                 'eligibilityStatus'                => 'DISAPPROVED',
+								                 'reviewEligibilityStatus'          => 'INELIGIBLE',
+								                 'reviewIneligibilityReasonDetails' => [
+									                 'cooldownTime' => "1650875865000" // 25/04/2022
+								                 ]
+							                 ],
+							                 [
+								                 'regionCodes'             => [ 'IT' ],
+								                 'eligibilityStatus'       => 'DISAPPROVED',
+								                 'reviewEligibilityStatus' => 'ELIGIBLE',
+							                 ],
+						                 ]
+					                 ]
+				                 ]
+			                 ]
+		                 );
+
+		$response = $this->do_request( self::ROUTE_GET_REQUEST );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [
+			'status'   => 'DISAPPROVED',
+			'issues'   => [],
+			'cooldown' => '1651047106000' // 27/04/2022
+		], $response->get_data() );
+	}
 
 	public function test_exception_in_route() {
 
 		$this->middleware->expects( $this->once() )
 		                 ->method( 'get_account_review_status' )
-			->willThrowException( new Exception( 'error', 401 ) );
+		                 ->willThrowException( new Exception( 'error', 401 ) );
 
 
 		$response = $this->do_request( self::ROUTE_GET_REQUEST );

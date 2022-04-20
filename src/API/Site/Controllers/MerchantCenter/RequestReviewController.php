@@ -87,9 +87,9 @@ class RequestReviewController extends BaseOptionsController {
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'reviewAllowed' => [
-				'type'        => 'boolean',
-				'description' => __( 'Indicates if the user can request a new review.', 'google-listings-and-ads' ),
+			'cooldown' => [
+				'type'        => 'string',
+				'description' => __( 'Timestamp indicating if the user is in cool down period.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],

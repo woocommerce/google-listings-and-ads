@@ -24,15 +24,22 @@ class RequestReviewStatuses implements Service {
 	 * @return array
 	 */
 	public function get_statuses_from_response( array $response ) {
-		$issues         = [];
-		$review_allowed = false;
-		$status         = 'APPROVED';
+		$issues   = [];
+		$cooldown = "";
+		$status   = 'APPROVED';
 
 		foreach ( $response as $program_type ) {
 			foreach ( $program_type['data']['regionStatuses'] as $region_status ) {
 
-				if ( $region_status['reviewEligibilityStatus'] === self::ELIGIBLE ) {
-					$review_allowed = true;
+
+				if (
+					isset( $region_status['reviewIneligibilityReasonDetails'] ) &&
+					isset( $region_status['reviewIneligibilityReasonDetails']['cooldownTime'] )
+				) {
+					$regionCooldown = $region_status['reviewIneligibilityReasonDetails']['cooldownTime'];
+					if ( ! $cooldown || $regionCooldown > $cooldown ) {
+						$cooldown = $regionCooldown;
+					}
 				}
 
 				if ( $region_status['eligibilityStatus'] === self::DISAPPROVED || $region_status['eligibilityStatus'] === self::WARNING ) {
@@ -70,9 +77,9 @@ class RequestReviewStatuses implements Service {
 		}
 
 		return [
-			'issues'        => array_unique( $issues ),
-			'reviewAllowed' => $review_allowed,
-			'status'        => $status,
+			'issues'   =>  array_map( 'strtolower', array_unique( $issues ) ),
+			'cooldown' => $cooldown,
+			'status'   => $status,
 		];
 	}
 

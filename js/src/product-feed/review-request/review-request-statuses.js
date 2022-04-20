@@ -29,9 +29,7 @@ const DISAPPROVED = {
 		'Fix all account suspension issues listed below to request a review of your account.',
 		'google-listing-and-ads'
 	),
-	requestButton: {
-		disabled: false,
-	},
+	requestButton: true,
 	icon: <ErrorIcon size={ 24 } />,
 };
 
