@@ -36,8 +36,8 @@ const RateFormModal = ( {
 	countryOptions,
 	initialValues,
 	renderButtons = noop,
-	onSubmit = noop,
-	onRequestClose = noop,
+	onSubmit,
+	onRequestClose,
 } ) => {
 	return (
 		<Form

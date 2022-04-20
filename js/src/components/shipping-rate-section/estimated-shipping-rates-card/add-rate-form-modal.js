@@ -3,6 +3,7 @@
  */
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -27,7 +28,7 @@ const AddRateFormModal = ( {
 	countryOptions,
 	initialValues,
 	onSubmit,
-	onRequestClose,
+	onRequestClose = noop,
 } ) => {
 	return (
 		<RateFormModal
