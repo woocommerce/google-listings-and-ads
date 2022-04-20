@@ -105,9 +105,8 @@ const webpackConfig = {
 		} ),
 		new DependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
-			externalizedReport: hasReactFastRefresh
-				? false
-				: '../../.externalized.json',
+			externalizedReport:
+				! hasReactFastRefresh && '../../.externalized.json',
 			requestToExternal,
 			requestToHandle,
 		} ),
