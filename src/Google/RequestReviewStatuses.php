@@ -25,20 +25,19 @@ class RequestReviewStatuses implements Service {
 	 */
 	public function get_statuses_from_response( array $response ) {
 		$issues   = [];
-		$cooldown = "";
+		$cooldown = '';
 		$status   = 'APPROVED';
 
 		foreach ( $response as $program_type ) {
 			foreach ( $program_type['data']['regionStatuses'] as $region_status ) {
 
-
 				if (
 					isset( $region_status['reviewIneligibilityReasonDetails'] ) &&
 					isset( $region_status['reviewIneligibilityReasonDetails']['cooldownTime'] )
 				) {
-					$regionCooldown = $region_status['reviewIneligibilityReasonDetails']['cooldownTime'];
-					if ( ! $cooldown || $regionCooldown > $cooldown ) {
-						$cooldown = $regionCooldown;
+					$region_cooldown = $region_status['reviewIneligibilityReasonDetails']['cooldownTime'];
+					if ( ! $cooldown || $region_cooldown > $cooldown ) {
+						$cooldown = $region_cooldown;
 					}
 				}
 
@@ -77,7 +76,7 @@ class RequestReviewStatuses implements Service {
 		}
 
 		return [
-			'issues'   =>  array_map( 'strtolower', array_unique( $issues ) ),
+			'issues'   => array_map( 'strtolower', array_unique( $issues ) ),
 			'cooldown' => $cooldown,
 			'status'   => $status,
 		];
