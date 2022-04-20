@@ -124,15 +124,7 @@ const webpackConfig = {
 		new webpack.ProvidePlugin( {
 			process: 'process/browser',
 		} ),
-		/**
-		 * If the development environment uses HTTPS,
-		 * it will fail when first connecting to webpack dev server,
-		 * so turn off the `overlay` option here.
-		 * Ref: https://github.com/pmmmwh/react-refresh-webpack-plugin/blob/v0.5.4/docs/TROUBLESHOOTING.md#component-not-updating-with-bundle-splitting-techniques
-		 */
-		hasReactFastRefresh &&
-			new ReactRefreshWebpackPlugin( { overlay: false } ),
-	].filter( Boolean ),
+	],
 	entry: {
 		index: path.resolve( process.cwd(), 'js/src', 'index.js' ),
 		'task-complete-setup': path.resolve(
@@ -158,6 +150,16 @@ const webpackConfig = {
 };
 
 if ( hasReactFastRefresh ) {
+	/**
+	 * If the development environment uses HTTPS,
+	 * it will fail when first connecting to webpack dev server,
+	 * so turn off the `overlay` option here.
+	 * Ref: https://github.com/pmmmwh/react-refresh-webpack-plugin/blob/v0.5.4/docs/TROUBLESHOOTING.md#component-not-updating-with-bundle-splitting-techniques
+	 */
+	webpackConfig.plugins.push(
+		new ReactRefreshWebpackPlugin( { overlay: false } )
+	);
+
 	webpackConfig.optimization = {
 		...webpackConfig.optimization,
 		// With multiple entries, it will need a webpack runtime to be shared
