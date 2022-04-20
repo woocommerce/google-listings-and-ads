@@ -12,7 +12,7 @@ import RateFormModal from './rate-form-modal.js';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
- * @typedef { import("./typedefs.js").ShippingRateGroup } ShippingRateGroup
+ * @typedef { import("../typedefs.js").ShippingRateGroup } ShippingRateGroup
  */
 
 /**

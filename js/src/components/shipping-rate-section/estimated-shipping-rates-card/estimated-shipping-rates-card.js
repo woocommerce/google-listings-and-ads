@@ -14,8 +14,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import groupShippingRatesByMethodCurrencyRate from './groupShippingRatesByMethodCurrencyRate';
 import ShippingRateInputControl from './shipping-rate-input-control';
-import AddRateFormModal from './add-rate-form-modal';
-import EditRateFormModal from './edit-rate-form-modal';
+import { AddRateFormModal, EditRateFormModal } from './rate-form-modals';
 import { SHIPPING_RATE_METHOD } from '.~/constants';
 import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 
