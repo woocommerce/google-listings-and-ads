@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
-import { noop } from 'lodash';
 
 /**
  * @typedef { import("./typedefs.js").ShippingRateGroup } ShippingRateGroup
@@ -17,15 +16,9 @@ import { noop } from 'lodash';
  * @param {Object} props
  * @param {(formProps: Object) => JSX.Element} props.children Form children.
  * @param {ShippingRateGroup} props.initialValues Initial values for the form.
- * @param {() => void} props.onRequestClose Callback to close the modal.
  * @param {(values: ShippingRateGroup) => void} props.onSubmit Called with submitted value.
  */
-const RateForm = ( {
-	children,
-	initialValues,
-	onSubmit = noop,
-	onRequestClose = noop,
-} ) => {
+const RateForm = ( { children, initialValues, onSubmit } ) => {
 	/**
 	 * @param {ShippingRateGroup} values
 	 */
@@ -49,19 +42,11 @@ const RateForm = ( {
 		return errors;
 	};
 
-	/**
-	 * @param {ShippingRateGroup} values
-	 */
-	const handleSubmitCallback = ( values ) => {
-		onRequestClose();
-		onSubmit( values );
-	};
-
 	return (
 		<Form
 			initialValues={ initialValues }
 			validate={ handleValidate }
-			onSubmit={ handleSubmitCallback }
+			onSubmit={ onSubmit }
 		>
 			{ children }
 		</Form>
