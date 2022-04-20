@@ -23,15 +23,15 @@ import './shipping-rate-input-control.scss';
  * Input control to edit a shipping rate group.
  *
  * The input control label contains an edit button.
- * Upon clicking on the edit button, it will display the `editRateFormModal`.
+ * Upon clicking on the edit button, it will display the modal passed in via `editButtonModal` prop.
  *
  * @param {Object} props
- * @param {JSX.Element} props.editRateFormModal EditRateFormModal to be displayed when the Edit button is clicked.
+ * @param {JSX.Element} props.editButtonModal Modal to be displayed when the Edit button is clicked.
  * @param {ShippingRateGroup} props.value Aggregate, rat: Array object to be used as the initial value.
  * @param {(newGroup: ShippingRateGroup) => void} props.onChange Called when shipping rate group changes.
  */
 const ShippingRateInputControl = ( {
-	editRateFormModal,
+	editButtonModal,
 	value,
 	onChange = noop,
 } ) => {
@@ -65,7 +65,7 @@ const ShippingRateInputControl = ( {
 									{ __( 'Edit', 'google-listings-and-ads' ) }
 								</AppButton>
 							}
-							modal={ editRateFormModal }
+							modal={ editButtonModal }
 						/>
 					</div>
 				}

@@ -160,7 +160,7 @@ export default function EstimatedShippingRatesCard( {
 			};
 			return (
 				<ShippingRateInputControl
-					editRateFormModal={
+					editButtonModal={
 						<EditRateFormModal
 							countryOptions={ audienceCountries }
 							initialValues={ prefilledGroup }
@@ -193,7 +193,7 @@ export default function EstimatedShippingRatesCard( {
 					return (
 						<ShippingRateInputControl
 							key={ group.countries.join( '-' ) }
-							editRateFormModal={
+							editButtonModal={
 								<EditRateFormModal
 									countryOptions={ audienceCountries }
 									initialValues={ group }
