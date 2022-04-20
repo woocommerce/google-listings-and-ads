@@ -45,7 +45,6 @@ export default function EstimatedShippingRatesCard( {
 	onChange,
 } ) {
 	const { code: currencyCode } = useStoreCurrency();
-	const groups = groupShippingRatesByMethodCurrencyRate( value );
 
 	/**
 	 * Event handler for adding new shipping rate group.
@@ -140,7 +139,7 @@ export default function EstimatedShippingRatesCard( {
 	};
 
 	/**
-	 * Function to render the groups.
+	 * Function to render the shipping rate groups from `value`.
 	 *
 	 * If there is no group, we render a `ShippingRateInputControl`
 	 * with a pre-filled group, so that users can straight away
@@ -150,6 +149,8 @@ export default function EstimatedShippingRatesCard( {
 	 * and render an "Add rate button" if there are remaining countries.
 	 */
 	const renderGroups = () => {
+		const groups = groupShippingRatesByMethodCurrencyRate( value );
+
 		if ( groups.length === 0 ) {
 			const prefilledGroup = {
 				countries: audienceCountries,
