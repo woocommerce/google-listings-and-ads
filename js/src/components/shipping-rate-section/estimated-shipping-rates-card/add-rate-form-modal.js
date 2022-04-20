@@ -40,6 +40,11 @@ const AddRateFormModal = ( {
 			{ ( formProps ) => {
 				const { isValidForm, handleSubmit } = formProps;
 
+				const handleAddClick = () => {
+					onRequestClose();
+					handleSubmit();
+				};
+
 				return (
 					<RateModal
 						formProps={ formProps }
@@ -49,10 +54,7 @@ const AddRateFormModal = ( {
 								key="submit"
 								isPrimary
 								disabled={ ! isValidForm }
-								onClick={ () => {
-									onRequestClose();
-									handleSubmit();
-								} }
+								onClick={ handleAddClick }
 							>
 								{ __(
 									'Add shipping rate',

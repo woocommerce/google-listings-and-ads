@@ -48,6 +48,11 @@ const EditRateFormModal = ( {
 			{ ( formProps ) => {
 				const { isValidForm, handleSubmit } = formProps;
 
+				const handleUpdateClick = () => {
+					onRequestClose();
+					handleSubmit();
+				};
+
 				return (
 					<RateModal
 						formProps={ formProps }
@@ -65,10 +70,7 @@ const EditRateFormModal = ( {
 								key="submit"
 								isPrimary
 								disabled={ ! isValidForm }
-								onClick={ () => {
-									onRequestClose();
-									handleSubmit();
-								} }
+								onClick={ handleUpdateClick }
 							>
 								{ __(
 									'Update shipping rate',
