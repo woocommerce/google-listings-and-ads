@@ -2,14 +2,15 @@
  * External dependencies
  */
 import { Button } from '@wordpress/components';
+import { Form } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
-import RateForm from './rate-form.js';
 import RateModal from './rate-modal.js';
+import validate from './validate.js';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -39,7 +40,11 @@ const EditRateFormModal = ( {
 	};
 
 	return (
-		<RateForm initialValues={ initialValues } onSubmit={ onSubmit }>
+		<Form
+			initialValues={ initialValues }
+			validate={ validate }
+			onSubmit={ onSubmit }
+		>
 			{ ( formProps ) => {
 				const { isValidForm, handleSubmit } = formProps;
 
@@ -75,7 +80,7 @@ const EditRateFormModal = ( {
 					/>
 				);
 			} }
-		</RateForm>
+		</Form>
 	);
 };
 
