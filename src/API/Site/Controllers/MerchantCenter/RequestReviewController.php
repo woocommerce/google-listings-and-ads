@@ -81,7 +81,7 @@ class RequestReviewController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'status'        => [
+			'status'   => [
 				'type'        => 'string',
 				'description' => __( 'The status of the last review.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
@@ -93,7 +93,7 @@ class RequestReviewController extends BaseOptionsController {
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'issues'        => [
+			'issues'   => [
 				'type'        => 'array',
 				'description' => __( 'The issues related to the Merchant Center to be reviewed and addressed before approval.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
