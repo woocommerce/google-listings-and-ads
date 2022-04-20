@@ -4,6 +4,7 @@
 import {
 	Card,
 	CardHeader,
+	CardBody,
 	FlexBlock,
 	Tip,
 	__experimentalText as Text,
@@ -51,21 +52,27 @@ const GetStartedWithVideoCard = () => {
 					title="WooCommerce-Google-Listings-Ads"
 				/>
 			</FlexBlock>
-			<FlexBlock className="motivation-text">
-				<Text variant="title.medium" className="title">
+			<CardBody>
+				<Text
+					variant="title.medium"
+					className="gla-get-started-with-video-card__title"
+				>
 					{ __(
 						'Reach new customers across Google with free product listings and paid ads',
 						'google-listings-and-ads'
 					) }
 				</Text>
-				<Text variant="body" className="description">
+				<Text
+					variant="body"
+					className="gla-get-started-with-video-card__description"
+				>
 					{ __(
 						'Sync your products directly to Google, manage your product feed, and create Google Ad campaigns–without leaving your WooCommerce dashboard. The official extension, built in collaboration with Google.',
 						'google-listings-and-ads'
 					) }
 				</Text>
 				<AppButton
-					className="button"
+					className="gla-get-started-with-video-card__button"
 					isPrimary
 					disabled={ disableNextStep }
 					href={ getSetupMCUrl() }
@@ -80,7 +87,7 @@ const GetStartedWithVideoCard = () => {
 						'google-listings-and-ads'
 					) }
 				</AppButton>
-				<Text className="hint">
+				<Text className="gla-get-started-with-video-card__hint">
 					{ __(
 						'Estimated setup time: 15 min',
 						'google-listings-and-ads'
@@ -106,7 +113,7 @@ const GetStartedWithVideoCard = () => {
 						}
 					) }
 				</Text>
-			</FlexBlock>
+			</CardBody>
 			<Tip>
 				{ __(
 					'If you’re already using another extension to manage your product feed with Google, make sure to deactivate or uninstall it first to prevent duplicate product feeds.',

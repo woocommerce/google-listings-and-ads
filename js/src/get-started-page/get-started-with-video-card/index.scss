@@ -1,6 +1,7 @@
 .gla-get-started-with-video-card {
 	flex-direction: column;
 
+	// Adjust <CardHeader> imported from @wordpress/components.
 	.components-card__header {
 		display: flex;
 		flex-direction: row;
@@ -35,36 +36,55 @@
 		margin: 0;
 	}
 
-	.motivation-text {
+	// Adjust <CardBody> imported from @wordpress/components.
+	// Repeat selector to make it higher priority.
+	.components-card__body.components-card__body {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
 		margin: calc(var(--main-gap) * 1.67) calc(var(--main-gap) * 4.67);
+		padding: 0;
 
-		.title {
-			padding: 0 $grid-unit-30;
-			margin-bottom: $grid-unit-15;
+		@media (max-width: $break-small) {
+			margin: $grid-unit-30;
 		}
+	}
 
-		.description {
-			margin-bottom: $grid-unit-40;
-			padding: 0 $grid-unit-10;
-		}
+	// Repeat selector to make it higher priority.
+	& &__title {
+		padding: 0 $grid-unit-30;
+		margin-bottom: $grid-unit-15;
+	}
 
-		.button {
-			display: flex;
-			justify-content: center;
-			width: 188px;
-			height: 50px;
-			font-size: 14px;
-			margin-bottom: $grid-unit-10;
-		}
+	// Repeat selector to make it higher priority.
+	& &__description {
+		margin-bottom: $grid-unit-40;
+		padding: 0 $grid-unit-10;
+	}
 
-		.hint {
-			font-size: $helptext-font-size;
-			color: $gray-400;
-			margin-bottom: $grid-unit-40;
+	// Repeat selector to make it higher priority.
+	& &__button {
+		display: flex;
+		justify-content: center;
+		width: 188px;
+		height: 36px;
+		font-size: 14px;
+		margin-bottom: $grid-unit-10;
+	}
+
+	// Repeat selector to make it higher priority.
+	& &__hint {
+		font-size: $helptext-font-size;
+		color: $gray-400;
+		margin-bottom: $grid-unit-40;
+	}
+
+	// Repeat selector to make it higher priority.
+	& &__terms-notice {
+		font-size: $helptext-font-size;
+		a {
+			text-decoration: none;
 		}
 	}
 
@@ -84,27 +104,14 @@
 		}
 	}
 
-	&__terms-notice {
-		font-size: $helptext-font-size;
-		a {
-			text-decoration: none;
+	@media (max-width: $break-small) {
+		& &__title {
+			font-size: 20px;
+			line-height: $default-line-height;
 		}
-	}
-}
 
-@media (max-width: $break-small) {
-	.gla-get-started-with-video-card {
-		.motivation-text {
-			margin: $grid-unit-30;
-
-			.title {
-				font-size: 20px;
-				line-height: $default-line-height;
-			}
-
-			.description {
-				padding: 0 $grid-unit-15;
-			}
+		& &__description {
+			padding: 0 $grid-unit-15;
 		}
 
 		.components-tip {
