@@ -12,7 +12,7 @@ import {
 /**
  * Internal dependencies
  */
-import benefitsImageURL from './image.svg';
+import benefitsImageURL from './image.png';
 import './index.scss';
 
 const BenefitsCard = () => {

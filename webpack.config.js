@@ -49,8 +49,9 @@ const requestToHandle = ( request ) => {
 
 	return wcHandleMap[ request ];
 };
-const exceptSVGRule = ( rule ) => {
-	return ! rule.test.toString().match( /svg/i );
+
+const exceptSVGAndPNGRule = ( rule ) => {
+	return ! rule.test.toString().match( /svg|png/i );
 };
 
 const webpackConfig = {
@@ -61,7 +62,7 @@ const webpackConfig = {
 		// In Webpack 5 we would use Asset Modules and `asset/resource`
 		rules: [
 			// Remove `@wordpress/` rules for SVGs.
-			...defaultConfig.module.rules.filter( exceptSVGRule ),
+			...defaultConfig.module.rules.filter( exceptSVGAndPNGRule ),
 			{
 				test: /\.(svg|png|jpe?g|gif)$/i,
 				use: {

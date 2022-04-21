@@ -39,6 +39,7 @@
 			&__hint {
 				font-size: $helptext-font-size;
 				color: $gray-600;
+				line-height: 16px;
 			}
 
 			@media (max-width: $break-small) {
