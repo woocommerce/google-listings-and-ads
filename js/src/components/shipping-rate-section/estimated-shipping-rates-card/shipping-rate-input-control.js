@@ -8,8 +8,6 @@ import { noop } from 'lodash';
 /**
  * Internal dependencies
  */
-import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
-import AppButton from '.~/components/app-button';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
 import './shipping-rate-input-control.scss';
@@ -22,16 +20,16 @@ import './shipping-rate-input-control.scss';
 /**
  * Input control to edit a shipping rate group.
  *
- * The input control label contains an edit button.
- * Upon clicking on the edit button, it will display the modal passed in via `editButtonModal` prop.
+ * The input control label contains a placeholder area for `button`, after the label text.
+ * This is meant to display an "Edit" button.
  *
  * @param {Object} props
- * @param {JSX.Element} props.editButtonModal Modal to be displayed when the Edit button is clicked.
- * @param {ShippingRateGroup} props.value Aggregate, rat: Array object to be used as the initial value.
+ * @param {JSX.Element} props.labelButton Button to be displayed after the label text.
+ * @param {ShippingRateGroup} props.value Shipping rate group value.
  * @param {(newGroup: ShippingRateGroup) => void} props.onChange Called when shipping rate group changes.
  */
 const ShippingRateInputControl = ( {
-	editButtonModal,
+	labelButton,
 	value,
 	onChange = noop,
 } ) => {
@@ -56,17 +54,7 @@ const ShippingRateInputControl = ( {
 						<ShippingRateInputControlLabelText
 							countries={ countries }
 						/>
-						<AppButtonModalTrigger
-							button={
-								<AppButton
-									className="gla-shipping-rate-input-control__edit-button"
-									isTertiary
-								>
-									{ __( 'Edit', 'google-listings-and-ads' ) }
-								</AppButton>
-							}
-							modal={ editButtonModal }
-						/>
+						{ labelButton }
 					</div>
 				}
 				suffix={ currency }

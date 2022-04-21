@@ -138,6 +138,33 @@ export default function EstimatedShippingRatesCard( {
 	};
 
 	/**
+	 * An Edit button that displays EditRateFormModal to edit shipping rate group upon clicking on the Edit button.
+	 *
+	 * @param {Object} props Props.
+	 * @param {Array<CountryCode>} props.countryOptions Country options to be passed to EditRateFormModal.
+	 * @param {ShippingRateGroup} props.group Shipping rate group to be edited.
+	 */
+	const GroupEditModalButton = ( { countryOptions, group } ) => {
+		return (
+			<AppButtonModalTrigger
+				button={
+					<Button isTertiary>
+						{ __( 'Edit', 'google-listings-and-ads' ) }
+					</Button>
+				}
+				modal={
+					<EditRateFormModal
+						countryOptions={ countryOptions }
+						initialValues={ group }
+						onSubmit={ getChangeHandler( group ) }
+						onDelete={ getDeleteHandler( group ) }
+					/>
+				}
+			/>
+		);
+	};
+
+	/**
 	 * Function to render the shipping rate groups from `value`.
 	 *
 	 * If there is no group, we render a `ShippingRateInputControl`
@@ -157,14 +184,13 @@ export default function EstimatedShippingRatesCard( {
 				currency: currencyCode,
 				rate: undefined,
 			};
+
 			return (
 				<ShippingRateInputControl
-					editButtonModal={
-						<EditRateFormModal
+					labelButton={
+						<GroupEditModalButton
 							countryOptions={ audienceCountries }
-							initialValues={ prefilledGroup }
-							onSubmit={ getChangeHandler( prefilledGroup ) }
-							onDelete={ getDeleteHandler( prefilledGroup ) }
+							group={ prefilledGroup }
 						/>
 					}
 					value={ prefilledGroup }
@@ -192,12 +218,10 @@ export default function EstimatedShippingRatesCard( {
 					return (
 						<ShippingRateInputControl
 							key={ group.countries.join( '-' ) }
-							editButtonModal={
-								<EditRateFormModal
+							labelButton={
+								<GroupEditModalButton
 									countryOptions={ audienceCountries }
-									initialValues={ group }
-									onSubmit={ getChangeHandler( group ) }
-									onDelete={ getDeleteHandler( group ) }
+									group={ group }
 								/>
 							}
 							value={ group }
