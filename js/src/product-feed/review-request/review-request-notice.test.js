@@ -44,13 +44,13 @@ describe( 'Request Review Notice', () => {
 
 		const { queryByText, queryByRole } = render(
 			<ReviewRequestNotice
-				account={ { status: 'DISAPPROVED', cooldown: '1651047106000' } }
+				account={ { status: 'DISAPPROVED', cooldown: 1651047106000 } }
 				onRequestReviewClick={ onRequestReviewClick }
 			/>
 		);
 		expect(
 			queryByText(
-				'Your account is under cool down period. You can request a new review on 2022-04-27.'
+				'Your account is under cool down period. You can request a new review on April 27, 2022.'
 			)
 		).toBeTruthy();
 

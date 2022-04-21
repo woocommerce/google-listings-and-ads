@@ -88,7 +88,7 @@ class RequestReviewController extends BaseOptionsController {
 				'readonly'    => true,
 			],
 			'cooldown' => [
-				'type'        => 'string',
+				'type'        => 'integer',
 				'description' => __( 'Timestamp indicating if the user is in cool down period.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,

@@ -52,7 +52,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( [
 			'status'   => 'WARNING',
 			'issues'   => [ 'one', 'two' ],
-			'cooldown' => ""
+			'cooldown' => 0
 		], $response->get_data() );
 	}
 
@@ -107,7 +107,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( [
 			'status'   => 'DISAPPROVED',
 			'issues'   => [ 'one', 'two' ],
-			'cooldown' => ""
+			'cooldown' => 0
 		], $response->get_data() );
 	}
 
@@ -153,7 +153,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( [
 			'status'   => 'DISAPPROVED',
 			'issues'   => [],
-			'cooldown' => '1651047106000' // 27/04/2022
+			'cooldown' => 1651047106000 // 27/04/2022
 		], $response->get_data() );
 	}
 
