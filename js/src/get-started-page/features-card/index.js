@@ -12,9 +12,9 @@ import {
 /**
  * Internal dependencies
  */
-import connectionImageURL from './img-connection.svg';
 import freeListingsImageURL from './img-free-listings.svg';
 import googleAdsImageURL from './img-google-ads.svg';
+import dashboardImageURL from './img-dashboard.svg';
 import './index.scss';
 
 const FeaturesCard = () => {
@@ -23,7 +23,7 @@ const FeaturesCard = () => {
 			<Flex>
 				<FlexBlock>
 					<img
-						src={ connectionImageURL }
+						src={ dashboardImageURL }
 						alt={ __(
 							'Drawing of jigsaw puzzles connecting together',
 							'google-listings-and-ads'
