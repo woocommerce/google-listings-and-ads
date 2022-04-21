@@ -16,7 +16,7 @@ import groupShippingRatesByMethodCurrencyRate from './groupShippingRatesByMethod
 import ShippingRateInputControl from './shipping-rate-input-control';
 import { AddRateFormModal, EditRateFormModal } from './rate-form-modals';
 import { SHIPPING_RATE_METHOD } from '.~/constants';
-import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
+import getHandlers from './getHandlers';
 
 /**
  * @typedef { import(".~/data/actions").ShippingRate } ShippingRate
@@ -24,13 +24,8 @@ import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
  * @typedef { import("./typedefs").ShippingRateGroup } ShippingRateGroup
  */
 
-const defaultShippingRate = {
-	method: SHIPPING_RATE_METHOD.FLAT_RATE,
-	options: {},
-};
-
 /**
- * Partial form to provide shipping rates for individual countries,
+ * The "Estimated shipping rates" card to provide shipping rates for individual countries,
  * with an UI, that allows to aggregate countries with the same rate.
  *
  * @param {Object} props
@@ -44,98 +39,11 @@ export default function EstimatedShippingRatesCard( {
 	onChange,
 } ) {
 	const { code: currencyCode } = useStoreCurrency();
-
-	/**
-	 * Event handler for adding new shipping rate group.
-	 *
-	 * Shipping rate group will be converted into shipping rates, and propagate up via `onChange`.
-	 *
-	 * @param {ShippingRateGroup} newGroup Shipping rate group.
-	 */
-	const handleAddSubmit = ( { countries, method, currency, rate } ) => {
-		const newShippingRates = countries.map( ( country ) => ( {
-			...defaultShippingRate,
-			country,
-			method,
-			currency,
-			rate,
-		} ) );
-
-		onChange( value.concat( newShippingRates ) );
-	};
-
-	/**
-	 * Get the `onChange` event handler for shipping rate group.
-	 *
-	 * @param {ShippingRateGroup} oldGroup Old shipping rate group.
-	 */
-	const getChangeHandler = ( oldGroup ) => {
-		/**
-		 * @param {ShippingRateGroup} newGroup New shipping rate group from `onChange` event.
-		 */
-		const handleChange = ( newGroup ) => {
-			/*
-			 * Create new shipping rates value by filtering out deleted countries first.
-			 *
-			 * A country is deleted when it exists in `oldGroup` and not exists in `newGroup`.
-			 */
-			const newValue = value.filter( ( shippingRate ) => {
-				const isDeleted =
-					oldGroup.countries.includes( shippingRate.country ) &&
-					! newGroup.countries.includes( shippingRate.country );
-				return ! isDeleted;
-			} );
-
-			/*
-			 * Upsert shipping rates in `newValue` by looping through `newGroup.countries`.
-			 */
-			newGroup.countries.forEach( ( country ) => {
-				const existingIndex = newValue.findIndex(
-					( shippingRate ) => shippingRate.country === country
-				);
-				const oldShippingRate = newValue[ existingIndex ];
-				const newShippingRate = {
-					...defaultShippingRate,
-					...oldShippingRate,
-					country,
-					method: newGroup.method,
-					currency: newGroup.currency,
-					rate: newGroup.rate,
-				};
-
-				/*
-				 * If the shipping rate is free,
-				 * we remove the free_shipping_threshold.
-				 */
-				if ( ! isNonFreeFlatShippingRate( newShippingRate ) ) {
-					newShippingRate.options.free_shipping_threshold = undefined;
-				}
-
-				if ( existingIndex >= 0 ) {
-					newValue[ existingIndex ] = newShippingRate;
-				} else {
-					newValue.push( newShippingRate );
-				}
-			} );
-
-			onChange( newValue );
-		};
-
-		return handleChange;
-	};
-
-	/**
-	 * Get the `onDelete` event handler for shipping rate group.
-	 *
-	 * @param {ShippingRateGroup} oldGroup Shipping rate group.
-	 */
-	const getDeleteHandler = ( oldGroup ) => () => {
-		const newValue = value.filter(
-			( shippingRate ) =>
-				! oldGroup.countries.includes( shippingRate.country )
-		);
-		onChange( newValue );
-	};
+	const {
+		handleAddSubmit,
+		getChangeHandler,
+		getDeleteHandler,
+	} = getHandlers( { value, onChange } );
 
 	/**
 	 * An Edit button that displays EditRateFormModal to edit shipping rate group upon clicking on the Edit button.
