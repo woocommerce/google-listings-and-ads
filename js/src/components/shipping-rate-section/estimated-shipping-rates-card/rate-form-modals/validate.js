@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 
 /**
- * @typedef { import("./typedefs.js").ShippingRateGroup } ShippingRateGroup
+ * @typedef { import("../typedefs.js").ShippingRateGroup } ShippingRateGroup
  */
 
 /**

@@ -17,7 +17,7 @@ import AppCountrySelect from '.~/components/app-country-select';
 /**
  * @typedef { import("@wordpress/components").Button } Button
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
- * @typedef { import("./typedefs.js").ShippingRateGroup } ShippingRateGroup
+ * @typedef { import("../typedefs.js").ShippingRateGroup } ShippingRateGroup
  */
 
 /**
