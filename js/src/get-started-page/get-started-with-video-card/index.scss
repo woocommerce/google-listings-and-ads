@@ -2,24 +2,22 @@
 	flex-direction: column;
 
 	// Adjust <CardHeader> imported from @wordpress/components.
-	.components-card__header {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
+	// Repeat selector to make it higher priority.
+	.components-card__header.components-card__header {
 		justify-content: flex-end;
-		min-width: 100%;
-		max-height: 64px;
-		padding: $grid-unit-20;
-		margin: 0;
-		text-align: center;
+		padding: $grid-unit * 2.5;
 
 		& > p {
+			margin: 0 1em;
+			line-height: 16px;
 			font-size: $helptext-font-size;
 			color: $gray-600;
 		}
 
 		@media (max-width: $break-small) {
 			justify-content: center;
+			text-align: center;
+			padding: $grid-unit-20;
 
 			& > p::after {
 				content: " Google";
@@ -51,19 +49,19 @@
 		}
 	}
 
-	// Repeat selector to make it higher priority.
+	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__title {
 		padding: 0 $grid-unit-30;
 		margin-bottom: $grid-unit-15;
 	}
 
-	// Repeat selector to make it higher priority.
+	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__description {
 		margin-bottom: $grid-unit-40;
 		padding: 0 $grid-unit-10;
 	}
 
-	// Repeat selector to make it higher priority.
+	// Use more specific rules to make it higher priority to override <AppButton> component.
 	& &__button {
 		display: flex;
 		justify-content: center;
@@ -73,14 +71,14 @@
 		margin-bottom: $grid-unit-10;
 	}
 
-	// Repeat selector to make it higher priority.
+	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__hint {
 		font-size: $helptext-font-size;
 		color: $gray-400;
 		margin-bottom: $grid-unit-40;
 	}
 
-	// Repeat selector to make it higher priority.
+	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__terms-notice {
 		font-size: $helptext-font-size;
 		a {
