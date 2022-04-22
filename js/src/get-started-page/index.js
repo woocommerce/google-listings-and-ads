@@ -2,9 +2,10 @@
  * Internal dependencies
  */
 import './index.scss';
-import UnsupportedNotices from './unsupported-notices';
 import BenefitsCard from './benefits-card';
+import FeaturesCard from './features-card';
 import GetStartedWithVideoCard from './get-started-with-video-card';
+import UnsupportedNotices from './unsupported-notices';
 
 const GetStartedPage = () => {
 	return (
@@ -12,6 +13,7 @@ const GetStartedPage = () => {
 			<UnsupportedNotices />
 			<GetStartedWithVideoCard />
 			<BenefitsCard />
+			<FeaturesCard />
 		</div>
 	);
 };
