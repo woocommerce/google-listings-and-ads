@@ -44,12 +44,12 @@ const FeaturesCard = () => {
 			<Flex>
 				<FlexBlock>
 					<img
-						src={ dashboardImageURL }
+						src={ freeListingsImageURL }
 						alt={ __(
 							'Drawing of jigsaw puzzles connecting together',
 							'google-listings-and-ads'
 						) }
-						width="117"
+						width="183"
 						height="100"
 					/>
 					<Text
@@ -57,7 +57,7 @@ const FeaturesCard = () => {
 						variant="label"
 					>
 						{ __(
-							'Connect your store seamlessly',
+							'Show products automatically on Google for free',
 							'google-listings-and-ads'
 						) }
 					</Text>
@@ -66,36 +66,7 @@ const FeaturesCard = () => {
 						variant="body"
 					>
 						{ __(
-							'Sync your WooCommerce store data with Google Merchant Center to easily list your products across Google.',
-							'google-listings-and-ads'
-						) }
-					</Text>
-				</FlexBlock>
-				<FlexBlock>
-					<img
-						src={ freeListingsImageURL }
-						alt={ __(
-							'Drawing of a person looking at their mobile',
-							'google-listings-and-ads'
-						) }
-						width="100"
-						height="100"
-					/>
-					<Text
-						className="gla-get-started-features-card__label"
-						variant="label"
-					>
-						{ __(
-							'Reach online shoppers with free listings',
-							'google-listings-and-ads'
-						) }
-					</Text>
-					<Text
-						className="gla-get-started-features-card__content"
-						variant="body"
-					>
-						{ __(
-							`Showcase eligible products to shoppers looking for what you offer and drive traffic to your store with Google's free listings.`,
+							'When your products are added and approved, they’ll be eligible for free listings, reaching shoppers across Google’s network.',
 							'google-listings-and-ads'
 						) }
 					</Text>
@@ -104,10 +75,10 @@ const FeaturesCard = () => {
 					<img
 						src={ googleAdsImageURL }
 						alt={ __(
-							'Drawing of a bar and line charts heading up',
+							'Drawing of a person looking at their mobile',
 							'google-listings-and-ads'
 						) }
-						width="104"
+						width="183"
 						height="100"
 					/>
 					<Text
@@ -115,7 +86,7 @@ const FeaturesCard = () => {
 						variant="label"
 					>
 						{ __(
-							'Boost store traffic and sales with Google Ads',
+							'Promote products and drive more sales with paid ads',
 							'google-listings-and-ads'
 						) }
 					</Text>
@@ -124,7 +95,36 @@ const FeaturesCard = () => {
 						variant="body"
 					>
 						{ __(
-							'Create a Performance Max campaign to promote products across Google Search, Shopping, Gmail, YouTube, and the Display Network.',
+							'Connect your Google Ads account, choose a budget, and Google will optimize your ads so they appear at the right time and place. ',
+							'google-listings-and-ads'
+						) }
+					</Text>
+				</FlexBlock>
+				<FlexBlock>
+					<img
+						src={ dashboardImageURL }
+						alt={ __(
+							'Drawing of a bar and line charts heading up',
+							'google-listings-and-ads'
+						) }
+						width="183"
+						height="100"
+					/>
+					<Text
+						className="gla-get-started-features-card__label"
+						variant="label"
+					>
+						{ __(
+							'Track performance straight from your store dashboard',
+							'google-listings-and-ads'
+						) }
+					</Text>
+					<Text
+						className="gla-get-started-features-card__content"
+						variant="body"
+					>
+						{ __(
+							'Real-time reporting all within your WooCommerce dashboard means you know how your campaigns are performing at all times.',
 							'google-listings-and-ads'
 						) }
 					</Text>

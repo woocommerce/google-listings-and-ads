@@ -14,19 +14,25 @@
 	}
 
 	.components-flex {
-		justify-content: space-around;
-
-		@media (max-width: $break-small) {
-			flex-direction: column;
-		}
+		gap: 50px;
+		padding: 0 $grid-unit * 11 $grid-unit-60;
 
 		&__block {
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			max-width: 195px;
-			margin: calc(var(--large-gap) / 4 * 5) 0;
 			text-align: center;
+
+			> p {
+				font-size: 14px;
+				line-height: 18px;
+			}
+		}
+
+		@media (max-width: $break-small) {
+			flex-direction: column;
+			gap: 40px;
+			padding: 0 55px $grid-unit-30;
 		}
 	}
 
@@ -36,13 +42,10 @@
 		line-height: 18px;
 	}
 
+	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__label {
-		margin: $grid-unit-40 0 $grid-unit-20;
-		font-size: $default-font-size;
-	}
-
-	& &__content {
-		line-height: 16px;
+		margin: $grid-unit-30 0 $grid-unit-20;
+		font-weight: bold;
 	}
 
 	@media (max-width: $break-small) {
@@ -52,5 +55,9 @@
 			line-height: 28px;
 		}
 
+		// Use more specific rules to make it higher priority to override <Text> component.
+		& &__label {
+			margin: $grid-unit * 2.5 0 $grid-unit-20;
+		}
 	}
 }
