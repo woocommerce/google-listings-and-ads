@@ -8,6 +8,7 @@ import {
 	FlexItem,
 	__experimentalText as Text,
 } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -33,9 +34,12 @@ const BenefitsCard = () => {
 						variant="title.medium"
 						className="components-flex__item__title"
 					>
-						{ __(
-							'Increase clicks by',
-							'google-listings-and-ads'
+						{ createInterpolateElement(
+							__(
+								'Increase clicks by <strong>50%</strong>',
+								'google-listings-and-ads'
+							),
+							{ strong: <strong /> }
 						) }
 					</Text>
 					<Text
