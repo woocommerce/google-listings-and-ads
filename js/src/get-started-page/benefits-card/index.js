@@ -32,7 +32,7 @@ const BenefitsCard = () => {
 				<FlexItem>
 					<Text
 						variant="title.medium"
-						className="components-flex__item__title"
+						className="gla-get-started-benefits-card__title"
 					>
 						{ createInterpolateElement(
 							__(
@@ -44,14 +44,14 @@ const BenefitsCard = () => {
 					</Text>
 					<Text
 						variant="body"
-						className="components-flex__item__description"
+						className="gla-get-started-benefits-card__description"
 					>
 						{ __(
 							'Using free listings and ads together increased clicks by 50% and doubled impressions. Small-to-medium merchants saw the largest share of the increases.',
 							'google-listings-and-ads'
 						) }
 					</Text>
-					<Text className="components-flex__item__hint">
+					<Text className="gla-get-started-benefits-card__hint">
 						{ __(
 							'Source: Google Internal Data, July 2020',
 							'google-listings-and-ads'
