@@ -14,17 +14,9 @@
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
+			gap: $grid-unit-20;
 			padding: $grid-unit-50;
 			max-width: 51.5%;
-
-			> p {
-				margin-bottom: $grid-unit-20;
-				padding: 0 $grid-unit-10;
-
-				&:last-child {
-					margin-bottom: unset;
-				}
-			}
 
 			&__description {
 				font-size: 14px;
