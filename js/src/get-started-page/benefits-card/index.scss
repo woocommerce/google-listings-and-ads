@@ -16,12 +16,10 @@
 		justify-content: center;
 		gap: $grid-unit-20;
 		padding: $grid-unit-50;
-		max-width: 51.5%;
 
 		@media (max-width: $break-small) {
 			padding: $grid-unit-30;
 			text-align: center;
-			max-width: unset;
 		}
 	}
 
