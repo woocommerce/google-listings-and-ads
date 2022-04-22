@@ -22,11 +22,6 @@
 			flex-direction: column;
 			align-items: center;
 			text-align: center;
-
-			> p {
-				font-size: 14px;
-				line-height: 18px;
-			}
 		}
 
 		@media (max-width: $break-small) {
@@ -46,6 +41,26 @@
 	& &__label {
 		margin: $grid-unit-30 0 $grid-unit-20;
 		font-weight: bold;
+		font-size: 14px;
+		line-height: 18px;
+	}
+
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__content {
+		font-size: 14px;
+		line-height: 18px;
+	}
+
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__learn-more {
+		margin-top: $grid-unit;
+		font-weight: 500;
+		font-size: 14px;
+		line-height: 16.71px;
+
+		a {
+			text-decoration: none;
+		}
 	}
 
 	@media (max-width: $break-small) {

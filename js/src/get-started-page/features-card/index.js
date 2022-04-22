@@ -9,14 +9,38 @@ import {
 	FlexBlock,
 	__experimentalText as Text,
 } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import freeListingsImageURL from './img-free-listings.svg';
 import googleAdsImageURL from './img-google-ads.svg';
 import dashboardImageURL from './img-dashboard.svg';
 import './index.scss';
+
+const LearnMoreLink = ( { linkId, href } ) => {
+	return (
+		<Text
+			className="gla-get-started-features-card__learn-more"
+			variant="body"
+		>
+			{ createInterpolateElement(
+				__( '<link>Learn More →</link>', 'google-listings-and-ads' ),
+				{
+					link: (
+						<AppDocumentationLink
+							context="get-started"
+							linkId={ linkId }
+							href={ href }
+						/>
+					),
+				}
+			) }
+		</Text>
+	);
+};
 
 const FeaturesCard = () => {
 	return (
@@ -46,7 +70,7 @@ const FeaturesCard = () => {
 					<img
 						src={ freeListingsImageURL }
 						alt={ __(
-							'Drawing of jigsaw puzzles connecting together',
+							'Drawing of WooCommerce and Google',
 							'google-listings-and-ads'
 						) }
 						width="183"
@@ -70,12 +94,16 @@ const FeaturesCard = () => {
 							'google-listings-and-ads'
 						) }
 					</Text>
+					<LearnMoreLink
+						linkId="get-started-features-free-listing-learn-more"
+						href="https://woocommerce.com/document/google-listings-and-ads/#google-smart-shopping-campaigns"
+					/>
 				</FlexBlock>
 				<FlexBlock>
 					<img
 						src={ googleAdsImageURL }
 						alt={ __(
-							'Drawing of a person looking at their mobile',
+							'Drawing of a mobile and product ads',
 							'google-listings-and-ads'
 						) }
 						width="183"
@@ -99,6 +127,10 @@ const FeaturesCard = () => {
 							'google-listings-and-ads'
 						) }
 					</Text>
+					<LearnMoreLink
+						linkId="get-started-features-google-ads-learn-more"
+						href="https://woocommerce.com/document/google-listings-and-ads/#google-smart-shopping-campaigns"
+					/>
 				</FlexBlock>
 				<FlexBlock>
 					<img
@@ -128,6 +160,10 @@ const FeaturesCard = () => {
 							'google-listings-and-ads'
 						) }
 					</Text>
+					<LearnMoreLink
+						linkId="get-started-features-dashboard-learn-more"
+						href="https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics"
+					/>
 				</FlexBlock>
 			</Flex>
 		</Card>
