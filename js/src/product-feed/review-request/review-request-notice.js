@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { format as formatDate } from '@wordpress/date';
 import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalText as Text,
@@ -14,12 +15,24 @@ import {
  */
 import AppButton from '.~/components/app-button';
 import REVIEW_STATUSES from './review-request-statuses';
+import { glaData } from '.~/constants';
 
 const ReviewRequestNotice = ( {
 	account,
 	onRequestReviewClick = () => {},
 } ) => {
 	const accountReviewStatus = REVIEW_STATUSES[ account.status ];
+
+	const cooldown =
+		account.cooldown &&
+		sprintf(
+			// translators: %s: Cool down period date.
+			__(
+				'Your account is under cool down period. You can request a new review on %s.',
+				'google-listings-and-ads'
+			),
+			formatDate( glaData.dateFormat, new Date( account.cooldown ) )
+		);
 
 	return (
 		<Flex
@@ -40,7 +53,7 @@ const ReviewRequestNotice = ( {
 							className="gla-review-request-notice__text-body"
 							variant="body"
 						>
-							{ accountReviewStatus.body }
+							{ cooldown || accountReviewStatus.body }
 						</Text>
 					</FlexItem>
 				</Flex>
@@ -50,7 +63,7 @@ const ReviewRequestNotice = ( {
 					<AppButton
 						isPrimary
 						onClick={ onRequestReviewClick }
-						disabled={ accountReviewStatus.requestButton.disabled }
+						disabled={ !! account.cooldown }
 						text={ __(
 							'Request review',
 							'google-listings-and-ads'

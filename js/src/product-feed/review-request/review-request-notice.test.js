@@ -36,4 +36,29 @@ describe( 'Request Review Notice', () => {
 			expect( onRequestReviewClick ).toBeCalledTimes( 1 );
 		}
 	);
+
+	it( 'Renders date on cool down period', () => {
+		const onRequestReviewClick = jest
+			.fn()
+			.mockName( 'onRequestReviewClick' );
+
+		const { queryByText, queryByRole } = render(
+			<ReviewRequestNotice
+				account={ { status: 'DISAPPROVED', cooldown: 1651047106000 } }
+				onRequestReviewClick={ onRequestReviewClick }
+			/>
+		);
+		expect(
+			queryByText(
+				'Your account is under cool down period. You can request a new review on April 27, 2022.'
+			)
+		).toBeTruthy();
+
+		const button = queryByRole( 'button' );
+
+		expect( button ).toBeTruthy();
+
+		fireEvent.click( button );
+		expect( onRequestReviewClick ).not.toBeCalled();
+	} );
 } );

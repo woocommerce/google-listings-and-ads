@@ -81,19 +81,19 @@ class RequestReviewController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'status'        => [
+			'status'   => [
 				'type'        => 'string',
 				'description' => __( 'The status of the last review.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'reviewAllowed' => [
-				'type'        => 'boolean',
-				'description' => __( 'Indicates if the user can request a new review.', 'google-listings-and-ads' ),
+			'cooldown' => [
+				'type'        => 'integer',
+				'description' => __( 'Timestamp indicating if the user is in cool down period.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'issues'        => [
+			'issues'   => [
 				'type'        => 'array',
 				'description' => __( 'The issues related to the Merchant Center to be reviewed and addressed before approval.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
