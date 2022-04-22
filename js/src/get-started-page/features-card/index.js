@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import {
 	Card,
+	CardHeader,
 	Flex,
 	FlexBlock,
 	__experimentalText as Text,
@@ -19,7 +20,27 @@ import './index.scss';
 
 const FeaturesCard = () => {
 	return (
-		<Card className="gla-get-started-features-card">
+		<Card className="gla-get-started-features-card" isBorderless>
+			<CardHeader>
+				<Text
+					className="gla-get-started-features-card__title"
+					variant="title.medium"
+				>
+					{ __(
+						'49% of shoppers surveyed say they use Google to discover or find a new item or product',
+						'google-listings-and-ads'
+					) }
+				</Text>
+				<Text
+					className="gla-get-started-features-card__description"
+					variant="body"
+				>
+					{ __(
+						'With Google Listings & Ads, connect with the right shoppers at the right moment when they’re looking to buy products like yours.',
+						'google-listings-and-ads'
+					) }
+				</Text>
+			</CardHeader>
 			<Flex>
 				<FlexBlock>
 					<img

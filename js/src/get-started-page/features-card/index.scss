@@ -1,4 +1,18 @@
 .gla-get-started-features-card {
+	// Adjust <CardHeader> imported from @wordpress/components.
+	// Repeat selector to make it higher priority.
+	.components-card__header.components-card__header {
+		flex-direction: column;
+		gap: $grid-unit-10;
+		padding: $grid-unit-60 $grid-unit * 14.125 $grid-unit-50;
+		text-align: center;
+
+		@media (max-width: $break-small) {
+			padding: $grid-unit-30 $grid-unit-30 $grid-unit-20;
+			gap: $grid-unit-20;
+		}
+	}
+
 	.components-flex {
 		justify-content: space-around;
 
@@ -16,6 +30,12 @@
 		}
 	}
 
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__description {
+		font-size: 14px;
+		line-height: 18px;
+	}
+
 	& &__label {
 		margin: $grid-unit-40 0 $grid-unit-20;
 		font-size: $default-font-size;
@@ -23,5 +43,14 @@
 
 	& &__content {
 		line-height: 16px;
+	}
+
+	@media (max-width: $break-small) {
+		// Use more specific rules to make it higher priority to override <Text> component.
+		& &__title {
+			font-size: 20px;
+			line-height: 28px;
+		}
+
 	}
 }
