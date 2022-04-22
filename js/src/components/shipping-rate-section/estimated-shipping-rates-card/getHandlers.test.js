@@ -23,7 +23,9 @@ describe( 'getHandlers', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
-				options: {},
+				options: {
+					free_shipping_threshold: 50,
+				},
 			},
 			{
 				id: '3',
@@ -31,7 +33,9 @@ describe( 'getHandlers', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
-				options: {},
+				options: {
+					free_shipping_threshold: 50,
+				},
 			},
 		];
 
@@ -70,7 +74,9 @@ describe( 'getHandlers', () => {
 					method: 'flat_rate',
 					currency: 'USD',
 					rate: 20,
-					options: {},
+					options: {
+						free_shipping_threshold: 50,
+					},
 				},
 				{
 					id: '3',
@@ -78,7 +84,9 @@ describe( 'getHandlers', () => {
 					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
-					options: {},
+					options: {
+						free_shipping_threshold: 50,
+					},
 				},
 				{
 					country: 'MY',
@@ -130,7 +138,9 @@ describe( 'getHandlers', () => {
 					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
-					options: {},
+					options: {
+						free_shipping_threshold: 50,
+					},
 				},
 				{
 					id: '3',
@@ -138,7 +148,59 @@ describe( 'getHandlers', () => {
 					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
-					options: {},
+					options: {
+						free_shipping_threshold: 50,
+					},
+				},
+			] );
+		} );
+
+		it( 'returns value with no free_shipping_threshold if the group rate is updated to 0', () => {
+			const oldGroup = {
+				countries: [ 'US', 'AU' ],
+				method: 'flat_rate',
+				currency: 'USD',
+				rate: 20,
+			};
+			const newGroup = {
+				...oldGroup,
+				rate: 0,
+			};
+
+			const { getChangeHandler } = handlers;
+			getChangeHandler( oldGroup )( newGroup );
+
+			expect( mockOnChange.mock.calls.length ).toBe( 1 );
+			expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
+				{
+					id: '1',
+					country: 'US',
+					method: 'flat_rate',
+					currency: 'USD',
+					rate: 0,
+					options: {
+						free_shipping_threshold: undefined,
+					},
+				},
+				{
+					id: '2',
+					country: 'AU',
+					method: 'flat_rate',
+					currency: 'USD',
+					rate: 0,
+					options: {
+						free_shipping_threshold: undefined,
+					},
+				},
+				{
+					id: '3',
+					country: 'CN',
+					method: 'flat_rate',
+					currency: 'USD',
+					rate: 25,
+					options: {
+						free_shipping_threshold: 50,
+					},
 				},
 			] );
 		} );
@@ -175,7 +237,9 @@ describe( 'getHandlers', () => {
 					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
-					options: {},
+					options: {
+						free_shipping_threshold: 50,
+					},
 				},
 				{
 					country: 'LK',
@@ -212,7 +276,9 @@ describe( 'getHandlers', () => {
 					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
-					options: {},
+					options: {
+						free_shipping_threshold: 50,
+					},
 				},
 				{
 					country: 'VN',
@@ -252,7 +318,9 @@ describe( 'getHandlers', () => {
 					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
-					options: {},
+					options: {
+						free_shipping_threshold: 50,
+					},
 				},
 			] );
 		} );
