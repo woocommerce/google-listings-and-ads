@@ -3,7 +3,6 @@
 	// Repeat selector to make it higher priority.
 	.components-card__body.components-card__body {
 		display: flex;
-		flex-direction: row;
 		padding: 0;
 
 		@media (max-width: $break-small) {
