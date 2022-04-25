@@ -6,6 +6,10 @@ import GridiconPlusSmall from 'gridicons/dist/plus-small';
 import { noop } from 'lodash';
 
 /**
+ * @typedef { import("./typedefs").MinimumOrderGroup } MinimumOrderGroup
+ */
+
+/**
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
@@ -82,6 +86,30 @@ const MinimumOrderCard = ( props ) => {
 		onChange( newValue );
 	};
 
+	/**
+	 * Get the `onDelete` event handler for minimum order group.
+	 *
+	 * @param {MinimumOrderGroup} oldGroup The old minimum order group.
+	 */
+	const getDeleteHandler = ( oldGroup ) => () => {
+		const newValue = value.map( ( shippingRate ) => {
+			const newShippingRate = {
+				...shippingRate,
+				options: {
+					...shippingRate.options,
+				},
+			};
+
+			if ( oldGroup.countries.includes( newShippingRate.country ) ) {
+				newShippingRate.options.free_shipping_threshold = undefined;
+			}
+
+			return newShippingRate;
+		} );
+
+		onChange( newValue );
+	};
+
 	const renderGroups = () => {
 		/**
 		 * If group length is 1, we render the group,
@@ -93,6 +121,7 @@ const MinimumOrderCard = ( props ) => {
 					countryOptions={ countryOptions }
 					value={ groups[ 0 ] }
 					onChange={ handleEditChange( groups[ 0 ] ) }
+					onDelete={ getDeleteHandler( groups[ 0 ] ) }
 				/>
 			);
 		}
@@ -123,6 +152,7 @@ const MinimumOrderCard = ( props ) => {
 							countryOptions={ countryOptions }
 							value={ group }
 							onChange={ handleEditChange( group ) }
+							onDelete={ getDeleteHandler( group ) }
 						/>
 					);
 				} ) }

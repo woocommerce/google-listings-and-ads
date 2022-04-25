@@ -16,6 +16,7 @@ import AppCountrySelect from '.~/components/app-country-select';
 import validateMinimumOrder from './validateMinimumOrder';
 
 /**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  * @typedef { import("./typedefs.js").MinimumOrderGroup } MinimumOrderGroup
  */
 
@@ -27,24 +28,22 @@ import validateMinimumOrder from './validateMinimumOrder';
  * and when `props.onRequestClose` is called later, there would be a runtime React error because the component is no longer there.
  *
  * @param {Object} props Props.
- * @param {Array<string>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
+ * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
  * @param {MinimumOrderGroup} props.initialValues Initial values for the form.
- * @param {function()} props.onRequestClose Callback to close the modal.
- * @param {function(Object)} props.onSubmit Callback when the form is submitted, with the form value.
+ * @param {() => void} props.onRequestClose Callback to close the modal.
+ * @param {(values: MinimumOrderGroup) => void} props.onSubmit Callback when the form is submitted, with the form value.
+ * @param {() => void} props.onDelete Callback when delete button is clicked.
  */
 const EditMinimumOrderFormModal = ( {
 	countryOptions,
 	initialValues,
 	onRequestClose = noop,
 	onSubmit = noop,
+	onDelete = noop,
 } ) => {
 	const handleDeleteClick = () => {
 		onRequestClose();
-		onSubmit( {
-			countries: [],
-			currency: undefined,
-			threshold: undefined,
-		} );
+		onDelete();
 	};
 
 	const handleSubmitCallback = ( newValue ) => {

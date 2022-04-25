@@ -14,7 +14,7 @@ import EditMinimumOrderFormModal from './edit-minimum-order-form-modal';
 import './minimum-order-input-control.scss';
 
 const MinimumOrderInputControl = ( props ) => {
-	const { countryOptions, value, onChange } = props;
+	const { countryOptions, value, onChange, onDelete } = props;
 	const { countries, threshold, currency } = value;
 
 	const handleBlur = ( event, numberValue ) => {
@@ -51,6 +51,7 @@ const MinimumOrderInputControl = ( props ) => {
 								countryOptions={ countryOptions }
 								initialValues={ value }
 								onSubmit={ onChange }
+								onDelete={ onDelete }
 							/>
 						}
 					/>
