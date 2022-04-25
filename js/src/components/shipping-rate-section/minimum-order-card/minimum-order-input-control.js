@@ -1,20 +1,27 @@
 /**
- * External dependencies
- */
-import { Button } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
-
-/**
  * Internal dependencies
  */
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import MinimumOrderInputControlLabelText from './minimum-order-input-control-label-text';
-import EditMinimumOrderFormModal from './edit-minimum-order-form-modal';
 import './minimum-order-input-control.scss';
 
+/**
+ * @typedef { import("./typedefs").MinimumOrderGroup } MinimumOrderGroup
+ */
+
+/**
+ * Input control to edit a minimum order group.
+ *
+ * The input control label contains a placeholder area for `button`, after the label text.
+ * This is meant to display an "Edit" button.
+ *
+ * @param {Object} props
+ * @param {JSX.Element} props.labelButton Button to be displayed after the label text.
+ * @param {MinimumOrderGroup} props.value Minimum order group value.
+ * @param {(newGroup: MinimumOrderGroup) => void} props.onChange Called when minimum order group changes.
+ */
 const MinimumOrderInputControl = ( props ) => {
-	const { countryOptions, value, onChange, onDelete } = props;
+	const { labelButton, value, onChange } = props;
 	const { countries, threshold, currency } = value;
 
 	const handleBlur = ( event, numberValue ) => {
@@ -33,28 +40,11 @@ const MinimumOrderInputControl = ( props ) => {
 		<AppInputPriceControl
 			className="gla-minimum-order-input-control"
 			label={
-				<div className="gla-minimum-order-input-control__label">
+				<div className="label">
 					<MinimumOrderInputControlLabelText
 						countries={ countries }
 					/>
-					<AppButtonModalTrigger
-						button={
-							<Button
-								className="gla-minimum-order-input-control__edit-button"
-								isTertiary
-							>
-								{ __( 'Edit', 'google-listings-and-ads' ) }
-							</Button>
-						}
-						modal={
-							<EditMinimumOrderFormModal
-								countryOptions={ countryOptions }
-								initialValues={ value }
-								onSubmit={ onChange }
-								onDelete={ onDelete }
-							/>
-						}
-					/>
+					{ labelButton }
 				</div>
 			}
 			suffix={ currency }

@@ -6,6 +6,7 @@ import GridiconPlusSmall from 'gridicons/dist/plus-small';
 import { noop } from 'lodash';
 
 /**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  * @typedef { import("./typedefs").MinimumOrderGroup } MinimumOrderGroup
  */
 
@@ -19,6 +20,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 import MinimumOrderInputControl from './minimum-order-input-control';
 import AddMinimumOrderFormModal from './add-minimum-order-form-modal';
+import EditMinimumOrderFormModal from './edit-minimum-order-form-modal';
 import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
 import getMinimumOrderHandlers from './getMinimumOrderHandlers';
 import './minimum-order-card.scss';
@@ -30,6 +32,33 @@ const MinimumOrderCard = ( props ) => {
 		getChangeHandler,
 		getDeleteHandler,
 	} = getMinimumOrderHandlers( { value, onChange } );
+
+	/**
+	 * Render an Edit button that displays EditMinimumOrderFormModal upon click.
+	 *
+	 * @param {Object} props Props.
+	 * @param {Array<CountryCode>} props.countryOptions Country options to be passed to EditMinimumOrderFormModal.
+	 * @param {MinimumOrderGroup} props.group Minimum order group to be edited.
+	 */
+	const renderGroupEditModalButton = ( { countryOptions, group } ) => {
+		return (
+			<AppButtonModalTrigger
+				button={
+					<AppButton isTertiary>
+						{ __( 'Edit', 'google-listings-and-ads' ) }
+					</AppButton>
+				}
+				modal={
+					<EditMinimumOrderFormModal
+						countryOptions={ countryOptions }
+						initialValues={ group }
+						onSubmit={ getChangeHandler( group ) }
+						onDelete={ getDeleteHandler( group ) }
+					/>
+				}
+			/>
+		);
+	};
 
 	const renderGroups = () => {
 		const nonZeroShippingRates = value.filter( isNonFreeFlatShippingRate );
@@ -47,10 +76,12 @@ const MinimumOrderCard = ( props ) => {
 		if ( groups.length === 1 ) {
 			return (
 				<MinimumOrderInputControl
-					countryOptions={ countryOptions }
+					labelButton={ renderGroupEditModalButton( {
+						countryOptions,
+						group: groups[ 0 ],
+					} ) }
 					value={ groups[ 0 ] }
 					onChange={ getChangeHandler( groups[ 0 ] ) }
-					onDelete={ getDeleteHandler( groups[ 0 ] ) }
 				/>
 			);
 		}
@@ -78,10 +109,12 @@ const MinimumOrderCard = ( props ) => {
 					return (
 						<MinimumOrderInputControl
 							key={ group.countries.join( '-' ) }
-							countryOptions={ countryOptions }
+							labelButton={ renderGroupEditModalButton( {
+								countryOptions,
+								group,
+							} ) }
 							value={ group }
 							onChange={ getChangeHandler( group ) }
-							onDelete={ getDeleteHandler( group ) }
 						/>
 					);
 				} ) }
