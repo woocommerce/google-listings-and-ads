@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 
 /**
- * @typedef { import("./typedefs.js").MinimumOrderGroup } MinimumOrderGroup
+ * @typedef { import("../typedefs.js").MinimumOrderGroup } MinimumOrderGroup
  */
 
 /**

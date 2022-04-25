@@ -19,8 +19,10 @@ import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 import MinimumOrderInputControl from './minimum-order-input-control';
-import AddMinimumOrderFormModal from './add-minimum-order-form-modal';
-import EditMinimumOrderFormModal from './edit-minimum-order-form-modal';
+import {
+	AddMinimumOrderFormModal,
+	EditMinimumOrderFormModal,
+} from './minimum-order-form-modals';
 import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
 import getMinimumOrderHandlers from './getMinimumOrderHandlers';
 import './minimum-order-card.scss';

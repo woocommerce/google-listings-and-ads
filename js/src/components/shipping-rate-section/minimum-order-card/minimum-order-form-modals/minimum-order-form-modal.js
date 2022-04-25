@@ -18,7 +18,7 @@ import validateMinimumOrder from './validateMinimumOrder';
 /**
  * @typedef { import("@wordpress/components").Button } Button
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
- * @typedef { import("./typedefs.js").MinimumOrderGroup } MinimumOrderGroup
+ * @typedef { import("../typedefs.js").MinimumOrderGroup } MinimumOrderGroup
  */
 
 /**
