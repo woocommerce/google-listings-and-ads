@@ -3,45 +3,46 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Pill } from '@woocommerce/components';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
-import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
-import AppButton from '.~/components/app-button';
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import EditRateModal from './edit-rate-modal';
-import './shipping-rate-input-control.scss';
 import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
+import './shipping-rate-input-control.scss';
 
 /**
- * Input control to edit a shipping rate.
- * Consists of a simple input field to adjust the rate
- * and with a modal with a more advanced form to select countries.
+ * @typedef { import("./typedefs").ShippingRateGroup } ShippingRateGroup
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ */
+
+/**
+ * Input control to edit a shipping rate group.
+ *
+ * The input control label contains a placeholder area for `button`, after the label text.
+ * This is meant to display an "Edit" button.
  *
  * @param {Object} props
- * @param {AggregatedShippingRate} props.value Aggregate, rat: Array object to be used as the initial value.
- * @param {Array<CountryCode>} props.audienceCountries List of all audience countries.
- * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when rate changes.
- * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
+ * @param {JSX.Element} props.labelButton Button to be displayed after the label text.
+ * @param {ShippingRateGroup} props.value Shipping rate group value.
+ * @param {(newGroup: ShippingRateGroup) => void} props.onChange Called when shipping rate group changes.
  */
 const ShippingRateInputControl = ( {
+	labelButton,
 	value,
-	audienceCountries,
-	onChange,
-	onDelete,
+	onChange = noop,
 } ) => {
-	const { countries, currency, price } = value;
+	const { countries, currency, rate } = value;
 
 	const handleBlur = ( event, numberValue ) => {
-		if ( price === numberValue ) {
+		if ( rate === numberValue ) {
 			return;
 		}
 
 		onChange( {
-			countries,
-			currency,
-			price: numberValue,
+			...value,
+			rate: numberValue,
 		} );
 	};
 
@@ -53,31 +54,14 @@ const ShippingRateInputControl = ( {
 						<ShippingRateInputControlLabelText
 							countries={ countries }
 						/>
-						<AppButtonModalTrigger
-							button={
-								<AppButton
-									className="gla-shipping-rate-input-control__edit-button"
-									isTertiary
-								>
-									{ __( 'Edit', 'google-listings-and-ads' ) }
-								</AppButton>
-							}
-							modal={
-								<EditRateModal
-									audienceCountries={ audienceCountries }
-									rate={ value }
-									onSubmit={ onChange }
-									onDelete={ onDelete }
-								/>
-							}
-						/>
+						{ labelButton }
 					</div>
 				}
 				suffix={ currency }
-				value={ price }
+				value={ rate }
 				onBlur={ handleBlur }
 			/>
-			{ price === 0 && (
+			{ rate === 0 && (
 				<div className="gla-input-pill-div">
 					<Pill>
 						{ __(
@@ -92,8 +76,3 @@ const ShippingRateInputControl = ( {
 };
 
 export default ShippingRateInputControl;
-
-/**
- * @typedef {import("./estimated-shipping-rates-card.js").AggregatedShippingRate} AggregatedShippingRate
- * @typedef { import(".~/data/actions").CountryCode } CountryCode
- */
