@@ -20,4 +20,12 @@
 			justify-content: center;
 		}
 	}
+
+	&__styled--overflow-y-auto {
+		overflow-y: auto;
+	}
+
+	&__styled--overflow-y-visible {
+		overflow-y: visible;
+	}
 }
