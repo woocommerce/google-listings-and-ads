@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
@@ -30,6 +31,8 @@ const EditTimeModal = ( {
 	onSubmit,
 	onRequestClose,
 } ) => {
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
+
 	// We actually may have times for more countries than the audience ones.
 	const availableCountries = Array.from(
 		new Set( [ ...time.countries, ...audienceCountries ] )
@@ -83,6 +86,8 @@ const EditTimeModal = ( {
 				return (
 					<AppModal
 						overflowY="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'
@@ -117,6 +122,9 @@ const EditTimeModal = ( {
 									'google-listings-and-ads'
 								) }
 								countryCodes={ availableCountries }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
 								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputNumberControl

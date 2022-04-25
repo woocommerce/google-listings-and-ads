@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
@@ -15,6 +16,7 @@ import SupportedCountrySelect from '.~/components/supported-country-select';
 
 const EditMinimumOrderModal = ( props ) => {
 	const { countryOptions, value, onChange, onRequestClose } = props;
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const handleDeleteClick = () => {
 		onRequestClose();
@@ -72,6 +74,8 @@ const EditMinimumOrderModal = ( props ) => {
 				return (
 					<AppModal
 						overflowY="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Minimum order to qualify for free shipping',
 							'google-listings-and-ads'
@@ -106,6 +110,9 @@ const EditMinimumOrderModal = ( props ) => {
 									'google-listings-and-ads'
 								) }
 								countryCodes={ countryOptions }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
 								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputPriceControl

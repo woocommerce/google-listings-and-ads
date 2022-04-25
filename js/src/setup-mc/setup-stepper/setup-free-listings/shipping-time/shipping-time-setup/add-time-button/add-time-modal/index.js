@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
@@ -19,6 +20,7 @@ const AddTimeModal = ( props ) => {
 	const { onRequestClose } = props;
 	const { upsertShippingTimes } = useAppDispatch();
 	const remainingCountryCodes = useGetRemainingCountryCodes();
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const handleValidate = ( values ) => {
 		const errors = {};
@@ -61,6 +63,8 @@ const AddTimeModal = ( props ) => {
 				return (
 					<AppModal
 						overflowY="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'
@@ -86,6 +90,9 @@ const AddTimeModal = ( props ) => {
 									) }
 								</div>
 								<AudienceCountrySelect
+									onDropdownVisibilityChange={
+										setDropdownVisible
+									}
 									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>

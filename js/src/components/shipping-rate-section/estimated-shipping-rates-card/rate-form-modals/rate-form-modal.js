@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
@@ -39,6 +40,8 @@ const RateFormModal = ( {
 	onSubmit,
 	onRequestClose,
 } ) => {
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
+
 	return (
 		<Form
 			initialValues={ initialValues }
@@ -51,6 +54,8 @@ const RateFormModal = ( {
 				return (
 					<AppModal
 						overflowY="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Estimate a shipping rate',
 							'google-listings-and-ads'
@@ -65,6 +70,9 @@ const RateFormModal = ( {
 									'google-listings-and-ads'
 								) }
 								countryCodes={ countryOptions }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
 								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputPriceControl
