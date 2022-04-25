@@ -63,6 +63,7 @@ const AddMinimumOrderModal = ( props ) => {
 
 				return (
 					<AppModal
+						overflowY="visible"
 						title={ __(
 							'Minimum order to qualify for free shipping',
 							'google-listings-and-ads'

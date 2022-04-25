@@ -12,7 +12,6 @@ import AppModal from '.~/components/app-modal';
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import SupportedCountrySelect from '.~/components/supported-country-select';
-import './index.scss';
 
 /**
  *Form to edit time for selected country(-ies).
@@ -83,7 +82,7 @@ const EditTimeModal = ( {
 
 				return (
 					<AppModal
-						className="gla-edit-time-modal"
+						overflowY="visible"
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'

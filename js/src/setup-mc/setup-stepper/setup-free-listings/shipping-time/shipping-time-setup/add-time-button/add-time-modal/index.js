@@ -60,6 +60,7 @@ const AddTimeModal = ( props ) => {
 
 				return (
 					<AppModal
+						overflowY="visible"
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'

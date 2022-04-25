@@ -12,7 +12,6 @@ import AppModal from '.~/components/app-modal';
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
-import './index.scss';
 import { useAppDispatch } from '.~/data';
 
 const EditTimeModal = ( props ) => {
@@ -80,7 +79,7 @@ const EditTimeModal = ( props ) => {
 
 				return (
 					<AppModal
-						className="gla-edit-time-modal"
+						overflowY="visible"
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'

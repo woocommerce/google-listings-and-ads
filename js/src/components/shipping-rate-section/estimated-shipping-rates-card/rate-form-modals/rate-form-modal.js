@@ -50,6 +50,7 @@ const RateFormModal = ( {
 
 				return (
 					<AppModal
+						overflowY="visible"
 						title={ __(
 							'Estimate a shipping rate',
 							'google-listings-and-ads'

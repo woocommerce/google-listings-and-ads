@@ -61,6 +61,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 
 				return (
 					<AppModal
+						overflowY="visible"
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'
