@@ -27,9 +27,14 @@ class RequestReviewStatuses implements Service {
 		$issues   = [];
 		$cooldown = 0;
 		$status   = 'APPROVED';
+		$review_eligible_regions = [];
 
 		foreach ( $response as $program_type ) {
 			foreach ( $program_type['data']['regionStatuses'] as $region_status ) {
+
+				if ( isset( $region_status['reviewEligibilityStatus'] ) && $region_status['reviewEligibilityStatus'] === self::ELIGIBLE ) {
+					array_push( $review_eligible_regions, $region_status['regionCodes'][0] );
+				}
 
 				if (
 					isset( $region_status['reviewIneligibilityReasonDetails'] ) &&
@@ -79,6 +84,7 @@ class RequestReviewStatuses implements Service {
 			'issues'   => array_map( 'strtolower', array_unique( $issues ) ),
 			'cooldown' => $cooldown,
 			'status'   => $status,
+			'reviewEligibleRegions' => array_unique( $review_eligible_regions )
 		];
 	}
 

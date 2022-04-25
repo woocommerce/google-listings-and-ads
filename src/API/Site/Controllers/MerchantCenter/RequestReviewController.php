@@ -53,6 +53,20 @@ class RequestReviewController extends BaseOptionsController {
 				'schema' => $this->get_api_response_schema_callback(),
 			],
 		);
+
+		/**
+		 * POST a request review for the current account
+		 */
+		$this->register_route(
+			'mc/request-review',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->post_review_request_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				]
+			],
+		);
 	}
 
 	/**
@@ -72,6 +86,43 @@ class RequestReviewController extends BaseOptionsController {
 			}
 
 		};
+	}
+
+	/**
+	 * Get the callback function after requesting a review.
+	 *
+	 * @return Response
+	 */
+	protected function post_review_request_callback(): Response {
+		try {
+
+			// getting the current account status
+			$account_review_status = $this->request_review_statuses->get_statuses_from_response( $this->middleware->get_account_review_status() );
+
+			// Abort if it's in cool down period
+			if ( $account_review_status['cooldown'] > 0 ) {
+				do_action( 'woocommerce_gla_request_review_failure', [
+					'error'                 => 'cooldown',
+					'account_review_status' => $account_review_status
+				] );
+				throw new Exception( __( 'Your account is under cool down period and cannot request a new review.', 'google-listings-and-ads' ), 400 );
+			}
+
+			// Abort if there is no eligible region available
+			if ( count( $account_review_status['reviewEligibleRegions'] ) === 0 ) {
+				do_action( 'woocommerce_gla_request_review_failure', [
+					'error'                 => 'ineligible',
+					'account_review_status' => $account_review_status
+				] );
+				throw new Exception( __( 'Your account is not eligible for a new request review.', 'google-listings-and-ads' ), 400 );
+			}
+
+			$response = $this->middleware->account_request_review( $account_review_status['reviewEligibleRegions'] );
+
+			return new Response( $response );
+		} catch ( Exception $e ) {
+			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+		}
 	}
 
 	/**
@@ -102,6 +153,15 @@ class RequestReviewController extends BaseOptionsController {
 					'type' => 'string',
 				],
 			],
+			'reviewEligibleRegions' => [
+				'type'        => 'array',
+				'description' => __( 'The region codes in which is allowed to request a new review.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+				'items'       => [
+					'type' => 'string',
+				],
+			]
 		];
 	}
 

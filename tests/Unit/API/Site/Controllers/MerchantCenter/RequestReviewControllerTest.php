@@ -17,6 +17,7 @@ use Google\Exception;
 class RequestReviewControllerTest extends RESTControllerUnitTest {
 
 	protected const ROUTE_GET_REQUEST = '/wc/gla/mc/review';
+	protected const ROUTE_REQUEST_REVIEW = '/wc/gla/mc/request-review';
 	private $middleware;
 
 	public function setUp(): void {
@@ -26,7 +27,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$this->controller->register();
 	}
 
-	public function test_route() {
+	public function test_get_status_route() {
 
 		$this->middleware->expects( $this->once() )
 		                 ->method( 'get_account_review_status' )
@@ -50,10 +51,88 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_GET_REQUEST );
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [
-			'status'   => 'WARNING',
-			'issues'   => [ 'one', 'two' ],
-			'cooldown' => 0
+			'status'                => 'WARNING',
+			'issues'                => [ 'one', 'two' ],
+			'cooldown'              => 0,
+			'reviewEligibleRegions' => []
 		], $response->get_data() );
+	}
+
+	public function test_request_review_route() {
+
+		$this->middleware->expects( $this->once() )
+		                 ->method( 'account_request_review' )
+		                 ->willReturn(
+			                 [
+				                 'message' => 'A new review has been successfully requested'
+			                 ]
+		                 );
+
+		$response = $this->do_request( self::ROUTE_REQUEST_REVIEW );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [
+			'message' => 'A new review has been successfully requested'
+		], $response->get_data() );
+	}
+
+	public function test_request_review_route_in_cooldown() {
+
+		$this->middleware->expects( $this->once() )
+		                 ->method( 'get_account_review_status' )
+		                 ->willReturn(
+			                 [
+				                 'freeListingsProgram' => [
+					                 'status' => 200,
+					                 'data'   => [
+						                 'regionStatuses' => [
+							                 [
+								                 'regionCodes'                      => [ 'US' ],
+								                 'eligibilityStatus'                => 'DISAPPROVED',
+								                 'reviewEligibilityStatus'          => 'INELIGIBLE',
+								                 'reviewIneligibilityReasonDetails' => [
+									                 'cooldownTime' => "1651047106000" // 27/04/2022
+								                 ]
+							                 ],
+							                 [
+								                 'regionCodes'                      => [ 'MX' ],
+								                 'eligibilityStatus'                => 'DISAPPROVED',
+								                 'reviewEligibilityStatus'          => 'ELIGIBLE'
+							                 ]
+						                 ],
+					                 ]
+				                 ]
+			                 ]
+		                 );
+
+		$response = $this->do_request( self::ROUTE_REQUEST_REVIEW );
+		$this->assertEquals( 'Your account is under cool down period and cannot request a new review.', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_request_review_route_ineligible() {
+
+		$this->middleware->expects( $this->once() )
+		                 ->method( 'get_account_review_status' )
+		                 ->willReturn(
+			                 [
+				                 'freeListingsProgram' => [
+					                 'status' => 200,
+					                 'data'   => [
+						                 'regionStatuses' => [
+							                 [
+								                 'regionCodes'                      => [ 'US' ],
+								                 'eligibilityStatus'                => 'DISAPPROVED',
+								                 'reviewEligibilityStatus'          => 'INELIGIBLE',
+							                 ]
+						                 ]
+					                 ]
+				                 ]
+			                 ]
+		                 );
+
+		$response = $this->do_request( self::ROUTE_REQUEST_REVIEW );
+		$this->assertEquals( 'Your account is not eligible for a new request review.', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_merged_response() {
@@ -71,6 +150,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 								                 'eligibilityStatus'       => 'APPROVED',
 							                 ],
 							                 [
+								                 'regionCodes'             => [ 'US', 'CA' ],
 								                 'reviewEligibilityStatus' => 'ELIGIBLE',
 								                 'eligibilityStatus'       => 'DISAPPROVED',
 								                 'reviewIssues'            => [ 'one' ]
@@ -88,6 +168,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 								                 'reviewIssues'            => [ 'two' ]
 							                 ],
 							                 [
+								                 'regionCodes'             => [ 'US', 'CA' ],
 								                 'reviewEligibilityStatus' => 'ELIGIBLE',
 								                 'eligibilityStatus'       => 'DISAPPROVED',
 								                 'reviewIssues'            => [ 'one' ]
@@ -105,9 +186,10 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_GET_REQUEST );
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [
-			'status'   => 'DISAPPROVED',
-			'issues'   => [ 'one', 'two' ],
-			'cooldown' => 0
+			'status'                => 'DISAPPROVED',
+			'issues'                => [ 'one', 'two' ],
+			'cooldown'              => 0,
+			'reviewEligibleRegions' => [ 'US' ]
 		], $response->get_data() );
 	}
 
@@ -151,26 +233,36 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_GET_REQUEST );
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [
-			'status'   => 'DISAPPROVED',
-			'issues'   => [],
-			'cooldown' => 1651047106000 // 27/04/2022
+			'status'                => 'DISAPPROVED',
+			'issues'                => [],
+			'cooldown'              => 1651047106000, // 27/04/2022
+			'reviewEligibleRegions' => [ 'IT' ]
 		], $response->get_data() );
 	}
 
-	public function test_exception_in_route() {
-
+	public function test_exception_in_routes() {
 		$this->middleware->expects( $this->once() )
 		                 ->method( 'get_account_review_status' )
 		                 ->willThrowException( new Exception( 'error', 401 ) );
 
+		$this->middleware->expects( $this->once() )
+		                 ->method( 'account_request_review' )
+		                 ->willThrowException( new Exception( 'error', 401 ) );
 
-		$response = $this->do_request( self::ROUTE_GET_REQUEST );
-		$this->assertEquals( 'error', $response->get_data()['message'] );
-		$this->assertEquals( 401, $response->get_status() );
+
+		$routes = [ self::ROUTE_GET_REQUEST, self::ROUTE_REQUEST_REVIEW ];
+
+		foreach ( $routes as $route ) {
+			$response = $this->do_request( $route );
+			$this->assertEquals( 'error', $response->get_data()['message'] );
+			$this->assertEquals( 401, $response->get_status() );
+		}
 	}
+
 
 	public function test_register_route() {
 		$this->assertArrayHasKey( self::ROUTE_GET_REQUEST, $this->server->get_routes() );
+		$this->assertArrayHasKey( self::ROUTE_REQUEST_REVIEW, $this->server->get_routes() );
 	}
 
 }
