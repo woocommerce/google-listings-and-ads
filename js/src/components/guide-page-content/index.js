@@ -26,12 +26,22 @@ export default function GuidePageContent( { title, children } ) {
 }
 
 /**
+ * Clicking on a text link within the modal content
+ *
+ * @event gla_modal_content_link_click
+ * @property {string} context Indicates which link is clicked
+ * @property {string} href Link's URL
+ */
+
+/**
  * Renders a TrackableLink component with preset props and additional styling. This link should be a link within the content of GuidePageContent.
  *
  * @param {Object} props Props to be forwarded to TrackableLink.
  * @param {string} props.context Indicate which link is clicked.
  * @param {string} props.href Link's URL and it also be passed to `TrackableLink` component.
  * @param {string} [props.className] Additional CSS class name to be appended.
+ *
+ * @fires gla_modal_content_link_click with given `context, href`
  */
 export function ContentLink( props ) {
 	const { context, href, className, ...restProps } = props;

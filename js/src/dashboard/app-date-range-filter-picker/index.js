@@ -21,6 +21,8 @@ const isoDateFormat = 'YYYY-MM-DD';
  * 												If not given, no track event will be fired.
  *
  * @return {import('@woocommerce/components').DateRangeFilterPicker} Customized DateRangeFilterPicker.
+ *
+ * @fires gla_datepicker_update
  */
 const AppDateRangeFilterPicker = ( props ) => {
 	const { trackEventReportId } = props;

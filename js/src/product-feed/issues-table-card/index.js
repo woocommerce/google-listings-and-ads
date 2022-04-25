@@ -80,6 +80,19 @@ const actions = (
 	</HelpPopover>
 );
 
+/**
+ * Triggered when edit links are clicked from Issues to resolve table.
+ *
+ * @event gla_edit_product_issue_click
+ * @property {string} code Issue code returned from Google
+ * @property {string} issue Issue description returned from Google
+ */
+
+/**
+ * @fires gla_edit_product_issue_click
+ * @fires gla_table_go_to_page with `context: 'issues-to-resolve'`
+ * @fires gla_table_page_click with `context: 'issues-to-resolve'`
+ */
 const IssuesTableCard = () => {
 	const [ page, setPage ] = useState( 1 );
 	const { hasFinishedResolution, data } = useAppSelectDispatch(

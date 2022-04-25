@@ -18,9 +18,9 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	protected const VALUE_KEY = 'yoast_seo';
 
 	/**
-	 * @var array Meta values stored by Yoast WooCommerce SEO plugin.
+	 * @var array Meta values stored by Yoast WooCommerce SEO plugin (per product).
 	 */
-	protected $yoast_global_identifiers;
+	protected $yoast_global_identifiers = [];
 
 	/**
 	 * Returns whether the integration is active or not.
@@ -122,12 +122,14 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	 * @return mixed|null
 	 */
 	protected function get_identifier_value( string $key, WC_Product $product ) {
-		if ( ! isset( $this->yoast_global_identifiers ) ) {
+		$product_id = $product->get_id();
+
+		if ( ! isset( $this->yoast_global_identifiers[ $product_id ] ) ) {
 			$product = $product instanceof WC_Product_Variation ? wc_get_product( $product->get_parent_id() ) : $product;
 
-			$this->yoast_global_identifiers = $product->get_meta( 'wpseo_global_identifier_values', true );
+			$this->yoast_global_identifiers[ $product_id ] = $product->get_meta( 'wpseo_global_identifier_values', true );
 		}
 
-		return ! empty( $this->yoast_global_identifiers[ $key ] ) ? $this->yoast_global_identifiers[ $key ] : null;
+		return ! empty( $this->yoast_global_identifiers[ $product_id ][ $key ] ) ? $this->yoast_global_identifiers[ $product_id ][ $key ] : null;
 	}
 }

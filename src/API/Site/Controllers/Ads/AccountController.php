@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
@@ -98,10 +97,8 @@ class AccountController extends BaseController {
 		return function() {
 			try {
 				return new Response( $this->account->get_account_ids() );
-			} catch ( ExceptionWithResponseData $e ) {
-				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}
@@ -121,10 +118,8 @@ class AccountController extends BaseController {
 
 				$account_data = $this->account->setup_account();
 				return $this->prepare_item_for_response( $account_data, $request );
-			} catch ( ExceptionWithResponseData $e ) {
-				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}

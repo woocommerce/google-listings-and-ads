@@ -7,6 +7,12 @@
 		&:first-child {
 			margin-top: var(--large-gap);
 		}
+
+		header {
+			@include break-small {
+				max-width: 244px;
+			}
+		}
 	}
 
 	.wcdl-subsection-helper-text {

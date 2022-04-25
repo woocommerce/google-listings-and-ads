@@ -22,6 +22,9 @@ import validateForm from '.~/utils/paid-ads/validateForm';
 import { getDashboardUrl } from '.~/utils/urls';
 import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 
+/**
+ * @fires gla_launch_paid_campaign_button_click on submit
+ */
 const CreatePaidAdsCampaignForm = () => {
 	const [ loading, setLoading ] = useState( false );
 	const { createAdsCampaign } = useAppDispatch();
