@@ -20,97 +20,26 @@ import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 import MinimumOrderInputControl from './minimum-order-input-control';
 import AddMinimumOrderFormModal from './add-minimum-order-form-modal';
 import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
+import getMinimumOrderHandlers from './getMinimumOrderHandlers';
 import './minimum-order-card.scss';
 
 const MinimumOrderCard = ( props ) => {
 	const { value = [], onChange = noop } = props;
-	const nonZeroShippingRates = value.filter( isNonFreeFlatShippingRate );
-	const groups = groupShippingRatesByMethodFreeShippingThreshold(
-		nonZeroShippingRates
-	);
-	const countryOptions = nonZeroShippingRates.map(
-		( shippingRate ) => shippingRate.country
-	);
-
-	const handleEditChange = ( oldGroup ) => ( newGroup ) => {
-		const newValue = value.map( ( shippingRate ) => {
-			const newShippingRate = {
-				...shippingRate,
-				options: {
-					...shippingRate.options,
-				},
-			};
-
-			if ( newGroup.countries.includes( newShippingRate.country ) ) {
-				/**
-				 * Shipping rate's country exists in the new value countries,
-				 * so we just assign the new value threshold.
-				 */
-				newShippingRate.options.free_shipping_threshold =
-					newGroup.threshold;
-			} else if (
-				oldGroup.countries.includes( newShippingRate.country )
-			) {
-				/**
-				 * Shipping rate's country does not exist in the new value countries,
-				 * but it exists in the old value countries.
-				 * This means users removed the country in the edit modal,
-				 * so we set the threshold value to undefined.
-				 */
-				newShippingRate.options.free_shipping_threshold = undefined;
-			}
-
-			return newShippingRate;
-		} );
-
-		onChange( newValue );
-	};
-
-	const handleAddSubmit = ( newGroup ) => {
-		const newValue = value.map( ( shippingRate ) => {
-			const newShippingRate = {
-				...shippingRate,
-				options: {
-					...shippingRate.options,
-				},
-			};
-
-			if ( newGroup.countries.includes( newShippingRate.country ) ) {
-				newShippingRate.options.free_shipping_threshold =
-					newGroup.threshold;
-			}
-
-			return newShippingRate;
-		} );
-
-		onChange( newValue );
-	};
-
-	/**
-	 * Get the `onDelete` event handler for minimum order group.
-	 *
-	 * @param {MinimumOrderGroup} oldGroup The old minimum order group.
-	 */
-	const getDeleteHandler = ( oldGroup ) => () => {
-		const newValue = value.map( ( shippingRate ) => {
-			const newShippingRate = {
-				...shippingRate,
-				options: {
-					...shippingRate.options,
-				},
-			};
-
-			if ( oldGroup.countries.includes( newShippingRate.country ) ) {
-				newShippingRate.options.free_shipping_threshold = undefined;
-			}
-
-			return newShippingRate;
-		} );
-
-		onChange( newValue );
-	};
+	const {
+		handleAddSubmit,
+		getChangeHandler,
+		getDeleteHandler,
+	} = getMinimumOrderHandlers( { value, onChange } );
 
 	const renderGroups = () => {
+		const nonZeroShippingRates = value.filter( isNonFreeFlatShippingRate );
+		const groups = groupShippingRatesByMethodFreeShippingThreshold(
+			nonZeroShippingRates
+		);
+		const countryOptions = nonZeroShippingRates.map(
+			( shippingRate ) => shippingRate.country
+		);
+
 		/**
 		 * If group length is 1, we render the group,
 		 * regardless of threshold is defined or not.
@@ -120,7 +49,7 @@ const MinimumOrderCard = ( props ) => {
 				<MinimumOrderInputControl
 					countryOptions={ countryOptions }
 					value={ groups[ 0 ] }
-					onChange={ handleEditChange( groups[ 0 ] ) }
+					onChange={ getChangeHandler( groups[ 0 ] ) }
 					onDelete={ getDeleteHandler( groups[ 0 ] ) }
 				/>
 			);
@@ -151,7 +80,7 @@ const MinimumOrderCard = ( props ) => {
 							key={ group.countries.join( '-' ) }
 							countryOptions={ countryOptions }
 							value={ group }
-							onChange={ handleEditChange( group ) }
+							onChange={ getChangeHandler( group ) }
 							onDelete={ getDeleteHandler( group ) }
 						/>
 					);
