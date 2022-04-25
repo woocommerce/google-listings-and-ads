@@ -3,17 +3,12 @@
  */
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { Form } from '@woocommerce/components';
 import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
-import AppModal from '.~/components/app-modal';
-import AppInputPriceControl from '.~/components/app-input-price-control';
-import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AppCountrySelect from '.~/components/app-country-select';
-import validateMinimumOrder from './validateMinimumOrder';
+import MinimumOrderFormModal from './minimum-order-form-modal';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -30,15 +25,15 @@ import validateMinimumOrder from './validateMinimumOrder';
  * @param {Object} props Props.
  * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
  * @param {MinimumOrderGroup} props.initialValues Initial values for the form.
- * @param {() => void} props.onRequestClose Callback to close the modal.
  * @param {(values: MinimumOrderGroup) => void} props.onSubmit Callback when the form is submitted, with the form value.
  * @param {() => void} props.onDelete Callback when delete button is clicked.
+ * @param {() => void} props.onRequestClose Callback to close the modal.
  */
 const EditMinimumOrderFormModal = ( {
 	countryOptions,
 	initialValues,
+	onSubmit,
 	onRequestClose = noop,
-	onSubmit = noop,
 	onDelete = noop,
 } ) => {
 	const handleDeleteClick = () => {
@@ -46,89 +41,43 @@ const EditMinimumOrderFormModal = ( {
 		onDelete();
 	};
 
-	const handleSubmitCallback = ( newValue ) => {
-		onRequestClose();
-		onSubmit( newValue );
-	};
-
 	return (
-		<Form
+		<MinimumOrderFormModal
+			countryOptions={ countryOptions }
 			initialValues={ initialValues }
-			validate={ validateMinimumOrder }
-			onSubmit={ handleSubmitCallback }
-		>
-			{ ( formProps ) => {
-				const {
-					getInputProps,
-					values,
-					setValue,
-					isValidForm,
-					handleSubmit,
-				} = formProps;
+			renderButtons={ ( formProps ) => {
+				const { isValidForm, handleSubmit } = formProps;
 
-				return (
-					<AppModal
-						title={ __(
-							'Minimum order to qualify for free shipping',
+				const handleUpdateClick = () => {
+					onRequestClose();
+					handleSubmit();
+				};
+
+				return [
+					<Button
+						key="delete"
+						isTertiary
+						isDestructive
+						onClick={ handleDeleteClick }
+					>
+						{ __( 'Delete', 'google-listings-and-ads' ) }
+					</Button>,
+					<Button
+						key="save"
+						isPrimary
+						disabled={ ! isValidForm }
+						onClick={ handleUpdateClick }
+					>
+						{ __(
+							'Update minimum order',
 							'google-listings-and-ads'
 						) }
-						buttons={ [
-							<Button
-								key="delete"
-								isTertiary
-								isDestructive
-								onClick={ handleDeleteClick }
-							>
-								{ __( 'Delete', 'google-listings-and-ads' ) }
-							</Button>,
-							<Button
-								key="save"
-								isPrimary
-								disabled={ ! isValidForm }
-								onClick={ handleSubmit }
-							>
-								{ __(
-									'Update minimum order',
-									'google-listings-and-ads'
-								) }
-							</Button>,
-						] }
-						onRequestClose={ onRequestClose }
-					>
-						<VerticalGapLayout>
-							<AppCountrySelect
-								label={ __(
-									'If customer is in',
-									'google-listings-and-ads'
-								) }
-								options={ countryOptions }
-								multiple
-								{ ...getInputProps( 'countries' ) }
-							/>
-							<AppInputPriceControl
-								label={ __(
-									'Then they qualify for free shipping if their order is over',
-									'google-listings-and-ads'
-								) }
-								suffix={ values.currency }
-								{ ...getInputProps( 'threshold' ) }
-								onBlur={ ( event, numberValue ) => {
-									getInputProps( 'threshold' ).onBlur(
-										event
-									);
-									setValue(
-										'threshold',
-										numberValue > 0
-											? numberValue
-											: undefined
-									);
-								} }
-							/>
-						</VerticalGapLayout>
-					</AppModal>
-				);
+					</Button>,
+				];
 			} }
-		</Form>
+			onSubmit={ onSubmit }
+			onRequestClose={ onRequestClose }
+		/>
 	);
 };
 

@@ -3,19 +3,15 @@
  */
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { Form } from '@woocommerce/components';
 import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
-import AppModal from '.~/components/app-modal';
-import AppInputPriceControl from '.~/components/app-input-price-control/index.js';
-import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AppCountrySelect from '.~/components/app-country-select';
-import validateMinimumOrder from './validateMinimumOrder';
+import MinimumOrderFormModal from './minimum-order-form-modal';
 
 /**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  * @typedef { import("./typedefs.js").MinimumOrderGroup } MinimumOrderGroup
  */
 
@@ -27,92 +23,43 @@ import validateMinimumOrder from './validateMinimumOrder';
  * and when `props.onRequestClose` is called later, there would be a runtime React error because the component is no longer there.
  *
  * @param {Object} props Props.
- * @param {Array<string>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
+ * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
  * @param {MinimumOrderGroup} props.initialValues Initial values for the form.
- * @param {function()} props.onRequestClose Callback to close the modal.
- * @param {function(Object)} props.onSubmit Callback when the form is submitted, with the form value.
+ * @param {(values: MinimumOrderGroup) => void} props.onSubmit Callback when the form is submitted, with the form value.
+ * @param {() => void} props.onRequestClose Callback to close the modal.
  */
 const AddMinimumOrderFormModal = ( {
 	countryOptions,
 	initialValues,
-	onSubmit = noop,
+	onSubmit,
 	onRequestClose = noop,
 } ) => {
-	const handleSubmitCallback = ( newValue ) => {
-		onRequestClose();
-		onSubmit( newValue );
-	};
-
 	return (
-		<Form
+		<MinimumOrderFormModal
+			countryOptions={ countryOptions }
 			initialValues={ initialValues }
-			validate={ validateMinimumOrder }
-			onSubmit={ handleSubmitCallback }
-		>
-			{ ( formProps ) => {
-				const {
-					getInputProps,
-					values,
-					setValue,
-					isValidForm,
-					handleSubmit,
-				} = formProps;
+			renderButtons={ ( formProps ) => {
+				const { isValidForm, handleSubmit } = formProps;
 
-				return (
-					<AppModal
-						title={ __(
-							'Minimum order to qualify for free shipping',
-							'google-listings-and-ads'
-						) }
-						buttons={ [
-							<Button
-								key="save"
-								isPrimary
-								disabled={ ! isValidForm }
-								onClick={ handleSubmit }
-							>
-								{ __(
-									'Add minimum order',
-									'google-listings-and-ads'
-								) }
-							</Button>,
-						] }
-						onRequestClose={ onRequestClose }
+				const handleAddClick = () => {
+					onRequestClose();
+					handleSubmit();
+				};
+
+				return [
+					<Button
+						key="save"
+						isPrimary
+						disabled={ ! isValidForm }
+						onClick={ handleAddClick }
 					>
-						<VerticalGapLayout>
-							<AppCountrySelect
-								label={ __(
-									'If customer is in',
-									'google-listings-and-ads'
-								) }
-								options={ countryOptions }
-								multiple
-								{ ...getInputProps( 'countries' ) }
-							/>
-							<AppInputPriceControl
-								label={ __(
-									'Then they qualify for free shipping if their order is over',
-									'google-listings-and-ads'
-								) }
-								suffix={ values.currency }
-								{ ...getInputProps( 'threshold' ) }
-								onBlur={ ( event, numberValue ) => {
-									getInputProps( 'threshold' ).onBlur(
-										event
-									);
-									setValue(
-										'threshold',
-										numberValue > 0
-											? numberValue
-											: undefined
-									);
-								} }
-							/>
-						</VerticalGapLayout>
-					</AppModal>
-				);
+						{ __( 'Add minimum order', 'google-listings-and-ads' ) }
+					</Button>,
+				];
 			} }
-		</Form>
+			onSubmit={ onSubmit }
+			onRequestClose={ onRequestClose }
+		/>
 	);
 };
 
