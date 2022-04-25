@@ -13,6 +13,7 @@ import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control/index.js';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
+import validateMinimumOrder from './validateMinimumOrder';
 
 /**
  * @typedef { import("./typedefs.js").MinimumOrderGroup } MinimumOrderGroup
@@ -37,26 +38,6 @@ const AddMinimumOrderFormModal = ( {
 	onSubmit = noop,
 	onRequestClose = noop,
 } ) => {
-	const handleValidate = ( values ) => {
-		const errors = {};
-
-		if ( values.countries.length === 0 ) {
-			errors.countries = __(
-				'Please specify at least one country.',
-				'google-listings-and-ads'
-			);
-		}
-
-		if ( ! ( values.threshold > 0 ) ) {
-			errors.threshold = __(
-				'The minimum order amount must be greater than 0.',
-				'google-listings-and-ads'
-			);
-		}
-
-		return errors;
-	};
-
 	const handleSubmitCallback = ( newValue ) => {
 		onRequestClose();
 		onSubmit( newValue );
@@ -65,7 +46,7 @@ const AddMinimumOrderFormModal = ( {
 	return (
 		<Form
 			initialValues={ initialValues }
-			validate={ handleValidate }
+			validate={ validateMinimumOrder }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
