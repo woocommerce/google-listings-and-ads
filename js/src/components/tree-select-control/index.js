@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { cloneDeep } from 'lodash';
+import { cloneDeep, noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import {
 	useEffect,
@@ -82,6 +82,7 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @param {string[]} [props.value] Selected values
  * @param {number} [props.maxVisibleTags] The maximum number of tags to show. Undefined, 0 or less than 0 evaluates to "Show All".
  * @param {Function} [props.onChange] Callback when the selector changes
+ * @param {(visible: boolean) => void} [props.onDropdownVisibilityChange] Callback when the visibility of the dropdown options is changed.
  * @return {JSX.Element} The component
  */
 const TreeSelectControl = ( {
@@ -96,6 +97,7 @@ const TreeSelectControl = ( {
 	value = [],
 	maxVisibleTags,
 	onChange = () => {},
+	onDropdownVisibilityChange = noop,
 } ) => {
 	let instanceId = useInstanceId( TreeSelectControl );
 	instanceId = id ?? instanceId;
@@ -105,6 +107,9 @@ const TreeSelectControl = ( {
 	const [ inputControlValue, setInputControlValue ] = useState( '' );
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
 	const [ focused, setFocused ] = useState( null );
+
+	const onDropdownVisibilityChangeRef = useRef();
+	onDropdownVisibilityChangeRef.current = onDropdownVisibilityChange;
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
 	const filteredOptionsCache = useRef( {} );
@@ -443,6 +448,10 @@ const TreeSelectControl = ( {
 			focused.ref.current.focus();
 		}
 	}, [ focused ] );
+
+	useEffect( () => {
+		onDropdownVisibilityChangeRef.current( showTree );
+	}, [ showTree ] );
 
 	/**
 	 * Get formatted Tags from the selected values.
