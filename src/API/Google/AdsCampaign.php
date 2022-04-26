@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
@@ -336,6 +337,65 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				]
 			);
 		}
+	}
+
+	/**
+	 * Retrieves the status of converting campaigns.
+	 * The status is cached for an hour during unconverted.
+	 *
+	 * - unconverted    - Still need to convert some older campaigns
+	 * - converted      - All campaigns are converted to PMax campaigns
+	 * - not-applicable - User never had any older campaign types
+	 *
+	 * @since x.x.x
+	 *
+	 * @return string
+	 */
+	public function get_campaign_convert_status(): string {
+		$convert_status = $this->options->get( OptionsInterface::CAMPAIGN_CONVERT_STATUS );
+
+		if ( ! is_array( $convert_status ) || empty( $convert_status['status'] ) ) {
+			$convert_status = [ 'status' => 'unconverted' ];
+		}
+
+		// Refetch if status is unconverted and older than an hour.
+		if (
+			'unconverted' === $convert_status['status'] &&
+			( empty( $convert_status['updated'] ) || time() - $convert_status['updated'] > HOUR_IN_SECONDS )
+		) {
+			$old_campaigns         = 0;
+			$old_removed_campaigns = 0;
+
+			try {
+				foreach ( $this->get_campaigns( false, false ) as $campaign ) {
+					if ( CampaignType::PERFORMANCE_MAX !== $campaign['type'] ) {
+						if ( CampaignStatus::REMOVED === $campaign['status'] ) {
+							$old_removed_campaigns++;
+						} else {
+							$old_campaigns++;
+						}
+					}
+				}
+			} catch ( Exception $e ) {
+				// Error when retrieving campaigns, do not handle conversion.
+				$convert_status['status'] = 'not-applicable';
+			}
+
+			// No old campaign types means we don't need to convert.
+			if ( ! $old_removed_campaigns && ! $old_campaigns ) {
+				$convert_status['status'] = 'not-applicable';
+			}
+
+			// All old campaign types have been removed, means we converted.
+			if ( ! $old_campaigns && $old_removed_campaigns > 0 ) {
+				$convert_status['status'] = 'converted';
+			}
+
+			$convert_status['updated'] = time();
+			$this->options->update( OptionsInterface::CAMPAIGN_CONVERT_STATUS, $convert_status );
+		}
+
+		return $convert_status['status'];
 	}
 
 	/**
