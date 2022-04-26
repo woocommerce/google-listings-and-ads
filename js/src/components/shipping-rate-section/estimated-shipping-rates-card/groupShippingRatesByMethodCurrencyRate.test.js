@@ -9,7 +9,6 @@ describe( 'groupShippingRatesByMethodCurrencyRate', () => {
 			{
 				id: '1',
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 				options: {},
@@ -17,7 +16,6 @@ describe( 'groupShippingRatesByMethodCurrencyRate', () => {
 			{
 				id: '2',
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 				options: {},
@@ -25,7 +23,6 @@ describe( 'groupShippingRatesByMethodCurrencyRate', () => {
 			{
 				id: '3',
 				country: 'CN',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {},
@@ -33,7 +30,6 @@ describe( 'groupShippingRatesByMethodCurrencyRate', () => {
 			{
 				id: '4',
 				country: 'BR',
-				method: 'flat_rate',
 				currency: 'BRL',
 				rate: 20,
 				options: {},

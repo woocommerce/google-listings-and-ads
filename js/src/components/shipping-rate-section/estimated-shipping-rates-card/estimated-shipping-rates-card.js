@@ -80,9 +80,7 @@ export default function EstimatedShippingRatesCard( {
 		 */
 		const remainingCountries = audienceCountries.filter( ( country ) => {
 			const exist = value.some(
-				( shippingRate ) =>
-					shippingRate.country === country &&
-					shippingRate.method === SHIPPING_RATE_METHOD.FLAT_RATE
+				( shippingRate ) => shippingRate.country === country
 			);
 
 			return ! exist;
