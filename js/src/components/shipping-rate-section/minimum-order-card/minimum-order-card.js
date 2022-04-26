@@ -16,7 +16,7 @@ import Section from '.~/wcdl/section';
 import AppButton from '.~/components/app-button';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
+import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
 import MinimumOrderInputControl from './minimum-order-input-control';
 import { AddMinimumOrderFormModal } from './minimum-order-form-modals';
 import groupShippingRatesByFreeShippingThreshold from './groupShippingRatesByFreeShippingThreshold';
@@ -27,7 +27,7 @@ const MinimumOrderCard = ( props ) => {
 	const { value = [], onChange } = props;
 
 	const renderGroups = () => {
-		const nonZeroShippingRates = value.filter( isNonFreeFlatShippingRate );
+		const nonZeroShippingRates = value.filter( isNonFreeShippingRate );
 		const groups = groupShippingRatesByFreeShippingThreshold(
 			nonZeroShippingRates
 		);

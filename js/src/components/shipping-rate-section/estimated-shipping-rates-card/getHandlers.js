@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
+import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
 
 /**
  * @typedef { import(".~/data/actions").ShippingRate } ShippingRate
@@ -83,7 +83,7 @@ const getHandlers = ( { value, onChange } ) => {
 				 * If the shipping rate is free,
 				 * we remove the free_shipping_threshold.
 				 */
-				if ( ! isNonFreeFlatShippingRate( newShippingRate ) ) {
+				if ( ! isNonFreeShippingRate( newShippingRate ) ) {
 					newShippingRate.options.free_shipping_threshold = undefined;
 				}
 

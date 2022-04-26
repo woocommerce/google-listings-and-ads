@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
+import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
 import EstimatedShippingRatesCard from './estimated-shipping-rates-card';
 import OfferFreeShippingCard from './offer-free-shipping-card';
 import MinimumOrderCard from './minimum-order-card';
@@ -10,7 +10,7 @@ const FlatShippingRatesInputCards = ( props ) => {
 	const { audienceCountries, formProps } = props;
 	const { getInputProps, values, setValue } = formProps;
 	const displayFreeShippingCards = values.shipping_country_rates.some(
-		isNonFreeFlatShippingRate
+		isNonFreeShippingRate
 	);
 
 	const getShippingRatesChangeHandler = ( onChange ) => (
@@ -22,7 +22,7 @@ const FlatShippingRatesInputCards = ( props ) => {
 		 * so that when users add a non-free shipping rate,
 		 * they would need to choose "yes" / "no" for offer_free_shipping.
 		 */
-		if ( ! newShippingRates.some( isNonFreeFlatShippingRate ) ) {
+		if ( ! newShippingRates.some( isNonFreeShippingRate ) ) {
 			setValue( 'offer_free_shipping', undefined );
 		}
 
