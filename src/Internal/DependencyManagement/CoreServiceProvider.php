@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Variati
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
@@ -62,6 +63,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteS
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\NoteInitializer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress as ReconnectWordPressNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterClicks as ReviewAfterClicksNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterConversions as ReviewAfterConversionsNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
@@ -141,6 +143,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		OptionsInterface::class       => true,
 		TransientsInterface::class    => true,
 		ProductFeed::class            => true,
+		ReconnectWordPressNote::class => true,
 		ReviewAfterClicksNote::class  => true,
 		RESTControllers::class        => true,
 		Service::class                => true,
@@ -278,6 +281,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
 		$this->share_with_tags( CompleteSetupNote::class );
+		$this->share_with_tags( ReconnectWordPressNote::class, GoogleConnection::class );
 		$this->share_with_tags( ReviewAfterClicksNote::class, MerchantMetrics::class, WP::class );
 		$this->share_with_tags( ReviewAfterConversionsNote::class, MerchantMetrics::class, WP::class );
 		$this->share_with_tags( SetupCampaignNote::class, MerchantCenterService::class );
