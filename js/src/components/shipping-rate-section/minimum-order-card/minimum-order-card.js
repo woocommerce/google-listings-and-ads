@@ -19,7 +19,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 import MinimumOrderInputControl from './minimum-order-input-control';
 import { AddMinimumOrderFormModal } from './minimum-order-form-modals';
-import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
+import groupShippingRatesByFreeShippingThreshold from './groupShippingRatesByFreeShippingThreshold';
 import { calculateValueFromGroupChange } from './calculateValueFromGroupChange';
 import './minimum-order-card.scss';
 
@@ -28,7 +28,7 @@ const MinimumOrderCard = ( props ) => {
 
 	const renderGroups = () => {
 		const nonZeroShippingRates = value.filter( isNonFreeFlatShippingRate );
-		const groups = groupShippingRatesByMethodFreeShippingThreshold(
+		const groups = groupShippingRatesByFreeShippingThreshold(
 			nonZeroShippingRates
 		);
 		const countryOptions = nonZeroShippingRates.map(

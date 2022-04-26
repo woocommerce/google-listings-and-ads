@@ -9,7 +9,7 @@
  * @param {Array<ShippingRate>} shippingRates Array of shipping rates.
  * @return {Array<MinimumOrderGroup>} Array of minimum order groups.
  */
-const groupShippingRatesByMethodFreeShippingThreshold = ( shippingRates ) => {
+const groupShippingRatesByFreeShippingThreshold = ( shippingRates ) => {
 	const map = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
@@ -33,4 +33,4 @@ const groupShippingRatesByMethodFreeShippingThreshold = ( shippingRates ) => {
 	return Array.from( map.values() );
 };
 
-export default groupShippingRatesByMethodFreeShippingThreshold;
+export default groupShippingRatesByFreeShippingThreshold;
