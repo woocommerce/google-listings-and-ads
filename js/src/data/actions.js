@@ -38,7 +38,7 @@ export function handleFetchError( error, message ) {
  * @property {CountryCode} country Destination country code.
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
- * @property {Object} options options depending on the shipping method.
+ * @property {Object} options Options, such as `free_shipping_threshold`.
  */
 
 /**
