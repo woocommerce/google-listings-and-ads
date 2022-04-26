@@ -35,7 +35,8 @@ class RequestReviewStatuses implements Service {
 					isset( $region_status['reviewIneligibilityReasonDetails'] ) &&
 					isset( $region_status['reviewIneligibilityReasonDetails']['cooldownTime'] )
 				) {
-					$region_cooldown = intval( $region_status['reviewIneligibilityReasonDetails']['cooldownTime'] );
+					$region_cooldown = intval( strtotime( $region_status['reviewIneligibilityReasonDetails']['cooldownTime'] ) );
+
 					if ( ! $cooldown || $region_cooldown > $cooldown ) {
 						$cooldown = $region_cooldown;
 					}
@@ -77,8 +78,8 @@ class RequestReviewStatuses implements Service {
 
 		return [
 			'issues'   => array_map( 'strtolower', array_unique( $issues ) ),
-			'cooldown' => $cooldown,
-			'status'   => $status,
+			'cooldown' => $cooldown * 1000,
+			'status'   => $status
 		];
 	}
 
