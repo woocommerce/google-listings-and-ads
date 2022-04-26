@@ -1,6 +1,4 @@
 .app-modal {
-	overflow: inherit;
-
 	@include break-large {
 		width: 600px;
 	}
@@ -21,11 +19,26 @@
 		}
 	}
 
+	/**
+	 * Set `auto` as the default overflow to make it stable across newer versions of
+	 * @wordpress/components. More details can be found in the AppModal implementation.
+	 */
+	&,
+	.components-modal__content {
+		overflow: inherit;
+	}
+
 	&__styled--overflow-y-auto {
-		overflow-y: auto;
+		&,
+		.components-modal__content {
+			overflow-y: auto;
+		}
 	}
 
 	&__styled--overflow-y-visible {
-		overflow-y: visible;
+		&,
+		.components-modal__content {
+			overflow-y: visible;
+		}
 	}
 }

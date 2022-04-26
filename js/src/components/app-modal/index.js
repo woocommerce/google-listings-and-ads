@@ -10,6 +10,16 @@ import classnames from 'classnames';
 import './index.scss';
 
 const overflowYStyleName = {
+	/**
+	 * In @wordpress/components 14.2.0, the overflow of Modal container will be
+	 * changed from `auto` to `hidden`, and the change also adds `auto` to Modal body.
+	 * Here using `auto` as the default overflow to make it have a stable overflow style
+	 * across these versions.
+	 *
+	 * References:
+	 * - https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.9/packages/components/src/modal/style.scss#L29
+	 * - https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4014.2.0/packages/components/src/modal/style.scss#L24
+	 */
 	auto: 'app-modal__styled--overflow-y-auto',
 	visible: 'app-modal__styled--overflow-y-visible',
 };
