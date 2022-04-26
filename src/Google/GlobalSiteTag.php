@@ -191,7 +191,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
 		$order->save_meta_data();
 
-    $conversion_gtag_info =
+		$conversion_gtag_info =
 		sprintf(
 			'gtag("event", "conversion",
                 {"send_to": "%s",
@@ -203,7 +203,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $order->get_currency() ),
 			esc_js( $order->get_id() ),
 		);
-    wp_print_inline_script_tag($conversion_gtag_info);
+		wp_print_inline_script_tag( $conversion_gtag_info );
 
 		// Get the item info in the order
 		$item_info = '';
@@ -241,7 +241,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				{
                     "developer_id.%s": "true",
                     "ecomm_pagetype": "purchase",
-                    "send_to": "GLA",
+                    "send_to": "%s",
                     "transaction_id": "%s",
                     "currency": "%s",
                     "country": "%s",
@@ -254,6 +254,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
                     "aw_feed_language": "%s",
                     items: [' . $item_info . ']});',
 			esc_js( self::DEVELOPER_ID ),
+			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
 			esc_js( $order->get_id() ),
 			esc_js( $order->get_currency() ),
 			esc_js( $this->wc->get_base_country() ),
@@ -364,14 +365,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-   * TODO : Track "add to cart button" on single pages, archive pages, and
-   * through various shortcodes and blocks with a compatible solution.
-   *
+	 * TODO : Track "add to cart button" on single pages, archive pages, and
+	 * through various shortcodes and blocks with a compatible solution.
+	 *
 	 * Display the JavaScript code to track the add to cart button.
 	 *
 	 * @param string $message Add to cart messages.
 	 * @param array  $products Product ID list.
-   *
 	 */
 	private function custom_action_add_to_cart( $message, $products ) {
 		// Only display this tag info after click the add to cart button .
@@ -428,7 +428,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	private static function is_first_time_customer( $customer_email ): bool {
 		$query = new \WC_Order_Query(
 			[
-				'limit' => 2,
+				'limit'  => 2,
 				'return' => 'ids',
 			]
 		);
