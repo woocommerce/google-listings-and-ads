@@ -45,19 +45,16 @@ describe( 'groupShippingRatesByMethodCurrencyRate', () => {
 		expect( result.length ).toEqual( 3 );
 		expect( result[ 0 ] ).toStrictEqual( {
 			countries: [ 'US', 'AU' ],
-			method: 'flat_rate',
 			currency: 'USD',
 			rate: 20,
 		} );
 		expect( result[ 1 ] ).toStrictEqual( {
 			countries: [ 'CN' ],
-			method: 'flat_rate',
 			currency: 'USD',
 			rate: 25,
 		} );
 		expect( result[ 2 ] ).toStrictEqual( {
 			countries: [ 'BR' ],
-			method: 'flat_rate',
 			currency: 'BRL',
 			rate: 20,
 		} );

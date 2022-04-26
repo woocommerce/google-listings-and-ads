@@ -51,19 +51,16 @@
  * // [
  * //     {
  * //         countries: ['US', 'AU'],
- * //         method: "flat_rate",
  * //         currency: 'USD',
  * //         rate: 20,
  * //     },
  * //     {
  * //         countries: ['CN'],
- * //         method: "flat_rate",
  * //         currency: 'USD',
  * //         rate: 25,
  * //     },
  * //     {
  * //         countries: ['BR'],
- * //         method: "flat_rate",
  * //         currency: 'BRL',
  * //         rate: 20,
  * //     },
@@ -81,7 +78,6 @@ const groupShippingRatesByMethodCurrencyRate = ( shippingRates ) => {
 		const methodCurrencyRate = `${ method } ${ currency } ${ rate } `;
 		const group = rateGroupMap.get( methodCurrencyRate ) || {
 			countries: [],
-			method,
 			currency,
 			rate,
 		};

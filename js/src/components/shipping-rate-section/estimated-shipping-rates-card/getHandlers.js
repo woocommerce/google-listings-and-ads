@@ -32,11 +32,10 @@ const getHandlers = ( { value, onChange } ) => {
 	 *
 	 * @param {ShippingRateGroup} newGroup Shipping rate group.
 	 */
-	const handleAddSubmit = ( { countries, method, currency, rate } ) => {
+	const handleAddSubmit = ( { countries, currency, rate } ) => {
 		const newShippingRates = countries.map( ( country ) => ( {
 			...defaultShippingRate,
 			country,
-			method,
 			currency,
 			rate,
 		} ) );
@@ -78,7 +77,6 @@ const getHandlers = ( { value, onChange } ) => {
 					...defaultShippingRate,
 					...oldShippingRate,
 					country,
-					method: newGroup.method,
 					currency: newGroup.currency,
 					rate: newGroup.rate,
 				};

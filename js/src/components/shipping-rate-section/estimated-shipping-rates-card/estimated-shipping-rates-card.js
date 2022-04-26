@@ -120,7 +120,6 @@ export default function EstimatedShippingRatesCard( {
 									countryOptions={ remainingCountries }
 									initialValues={ {
 										countries: remainingCountries,
-										method: SHIPPING_RATE_METHOD.FLAT_RATE,
 										currency: currencyCode,
 										rate: 0,
 									} }
