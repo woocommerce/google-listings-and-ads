@@ -55,6 +55,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_campaigns_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_collection_params(),
 				],
 				[
 					'methods'             => TransportMethods::CREATABLE,
@@ -98,12 +99,13 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	protected function get_campaigns_callback(): callable {
 		return function( Request $request ) {
 			try {
+				$exclude_removed = $request->get_param( 'exclude_removed' );
 				return array_map(
 					function( $campaign ) use ( $request ) {
 						$data = $this->prepare_item_for_response( $campaign, $request );
 						return $this->prepare_response_for_collection( $data );
 					},
-					$this->ads_campaign->get_campaigns()
+					$this->ads_campaign->get_campaigns( $exclude_removed )
 				);
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -244,6 +246,22 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 		);
 
 		return $fields;
+	}
+
+	/**
+	 * Get the query params for collections.
+	 *
+	 * @return array
+	 */
+	public function get_collection_params(): array {
+		return [
+			'exclude_removed' => [
+				'description'       => __( 'Exclude removed campaigns.', 'google-listings-and-ads' ),
+				'type'              => 'boolean',
+				'default'           => true,
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
 	}
 
 	/**
