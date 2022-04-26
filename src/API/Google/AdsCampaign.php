@@ -96,15 +96,21 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Returns a list of campaigns with targeted locations retrieved from campaign criterion.
 	 *
+	 * @param bool $exclude_removed Exclude removed campaigns (default true).
+	 * @param bool $fetch_criterion Combine the campaign data with criterion data (default true).
+	 *
 	 * @return array
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_campaigns(): array {
+	public function get_campaigns( bool $exclude_removed = true, bool $fetch_criterion = true ): array {
 		try {
-			$campaign_results = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() )
-				->where( 'campaign.status', 'REMOVED', '!=' )
-				->get_results();
+			$query = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() );
 
+			if ( $exclude_removed ) {
+				$query->where( 'campaign.status', 'REMOVED', '!=' );
+			}
+
+			$campaign_results    = $query->get_results();
 			$converted_campaigns = [];
 
 			foreach ( $campaign_results->iterateAllElements() as $row ) {
@@ -112,8 +118,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$converted_campaigns[ $campaign['id'] ] = $campaign;
 			}
 
-			$combined_results = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
-			return array_values( $combined_results );
+			if ( $fetch_criterion ) {
+				$converted_campaigns = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
+			}
+
+			return array_values( $converted_campaigns );
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
