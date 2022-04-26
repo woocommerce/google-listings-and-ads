@@ -23,6 +23,10 @@ const ReviewRequestNotice = ( {
 } ) => {
 	const accountReviewStatus = REVIEW_STATUSES[ account.status ];
 
+	if ( ! accountReviewStatus ) {
+		return null;
+	}
+
 	const cooldown =
 		account.cooldown &&
 		sprintf(
