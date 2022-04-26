@@ -15,7 +15,6 @@ import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import groupShippingRatesByMethodCurrencyRate from './groupShippingRatesByMethodCurrencyRate';
 import ShippingRateInputControl from './shipping-rate-input-control';
 import { AddRateFormModal } from './rate-form-modals';
-import { SHIPPING_RATE_METHOD } from '.~/constants';
 import getHandlers from './getHandlers';
 
 /**
@@ -60,7 +59,6 @@ export default function EstimatedShippingRatesCard( {
 		if ( groups.length === 0 ) {
 			const prefilledGroup = {
 				countries: audienceCountries,
-				method: SHIPPING_RATE_METHOD.FLAT_RATE,
 				currency: currencyCode,
 				rate: undefined,
 			};

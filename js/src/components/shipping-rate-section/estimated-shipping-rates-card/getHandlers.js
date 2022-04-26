@@ -1,7 +1,6 @@
 /**
  * Internal dependencies
  */
-import { SHIPPING_RATE_METHOD } from '.~/constants';
 import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 
 /**
@@ -11,7 +10,6 @@ import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
  */
 
 const defaultShippingRate = {
-	method: SHIPPING_RATE_METHOD.FLAT_RATE,
 	options: {},
 };
 
