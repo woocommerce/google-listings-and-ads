@@ -40,7 +40,7 @@ const MinimumOrderInputControl = ( props ) => {
 		<AppInputPriceControl
 			className="gla-minimum-order-input-control"
 			label={
-				<div className="label">
+				<div className="gla-minimum-order-input-control__label">
 					<MinimumOrderInputControlLabelText
 						countries={ countries }
 					/>

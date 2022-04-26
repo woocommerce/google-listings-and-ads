@@ -1,5 +1,5 @@
 .gla-minimum-order-input-control {
-	.label {
+	& &__label {
 		display: flex;
 		justify-content: space-between;
 		gap: 4px;
