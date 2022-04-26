@@ -8,7 +8,7 @@
  * Shipping rates are same if:
  *
  * - they have the same defined id; or,
- * - they have the same country and method.
+ * - they have the same country.
  *
  * @param {ShippingRate} a Shipping rate A.
  * @param {ShippingRate} b Shipping rate B.
