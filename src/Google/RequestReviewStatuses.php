@@ -79,7 +79,7 @@ class RequestReviewStatuses implements Service {
 		return [
 			'issues'   => array_map( 'strtolower', array_unique( $issues ) ),
 			'cooldown' => $cooldown * 1000,
-			'status'   => $status
+			'status'   => $status,
 		];
 	}
 

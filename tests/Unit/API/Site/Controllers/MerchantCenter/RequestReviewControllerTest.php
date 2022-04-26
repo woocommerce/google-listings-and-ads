@@ -126,7 +126,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 								                 'eligibilityStatus'                => 'DISAPPROVED',
 								                 'reviewEligibilityStatus'          => 'INELIGIBLE',
 								                 'reviewIneligibilityReasonDetails' => [
-									                 'cooldownTime' => "1651047106000" // 27/04/2022
+									                 'cooldownTime' => "2022-04-27T10:58:51Z" // 27/04/2022
 								                 ]
 							                 ],
 							                 [
@@ -134,7 +134,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 								                 'eligibilityStatus'                => 'DISAPPROVED',
 								                 'reviewEligibilityStatus'          => 'INELIGIBLE',
 								                 'reviewIneligibilityReasonDetails' => [
-									                 'cooldownTime' => "1650875865000" // 25/04/2022
+									                 'cooldownTime' => "2022-04-25T10:58:51Z" // 25/04/2022
 								                 ]
 							                 ],
 							                 [
@@ -153,7 +153,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( [
 			'status'   => 'DISAPPROVED',
 			'issues'   => [],
-			'cooldown' => 1651047106000 // 27/04/2022
+			'cooldown' => 1651057131000 // 27/04/2022
 		], $response->get_data() );
 	}
 
