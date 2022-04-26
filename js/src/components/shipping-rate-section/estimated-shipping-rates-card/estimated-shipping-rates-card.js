@@ -12,7 +12,7 @@ import Section from '.~/wcdl/section';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
-import groupShippingRatesByMethodCurrencyRate from './groupShippingRatesByMethodCurrencyRate';
+import groupShippingRatesByCurrencyRate from './groupShippingRatesByCurrencyRate';
 import ShippingRateInputControl from './shipping-rate-input-control';
 import { AddRateFormModal } from './rate-form-modals';
 import getHandlers from './getHandlers';
@@ -54,7 +54,7 @@ export default function EstimatedShippingRatesCard( {
 	 * and render an "Add rate button" if there are remaining countries.
 	 */
 	const renderGroups = () => {
-		const groups = groupShippingRatesByMethodCurrencyRate( value );
+		const groups = groupShippingRatesByCurrencyRate( value );
 
 		if ( groups.length === 0 ) {
 			const prefilledGroup = {
