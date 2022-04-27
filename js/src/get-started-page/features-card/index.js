@@ -16,7 +16,7 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import freeListingsImageURL from './img-free-listings.svg';
-import googleAdsImageURL from './img-google-ads.svg';
+import productPromotionImageURL from './img-product-promotion.svg';
 import dashboardImageURL from './img-dashboard.svg';
 import './index.scss';
 
@@ -101,7 +101,7 @@ const FeaturesCard = () => {
 				</FlexBlock>
 				<FlexBlock>
 					<img
-						src={ googleAdsImageURL }
+						src={ productPromotionImageURL }
 						alt={ __(
 							'Drawing of a mobile and product ads',
 							'google-listings-and-ads'
