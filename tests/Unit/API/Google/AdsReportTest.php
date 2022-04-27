@@ -611,4 +611,84 @@ class AdsReportTest extends UnitTest {
 		}
 	}
 
+	public function test_get_report_data_converted_campaigns() {
+		$report_type = 'campaigns';
+		$report_args = [
+			'interval' => 'day',
+			'fields'   => [ 'clicks' ],
+		];
+		$report_data = [
+			[
+				'campaign' => [
+					'status' => 'REMOVED',
+					'name'   => 'Test Campaign',
+					'id'     => 1234567890,
+					'type'   => 'SHOPPING',
+				],
+				'metrics'  => [
+					'clicks' => 12,
+				],
+				'segments' => [
+					'date' => '2022-04-01',
+				],
+			],
+			[
+				'campaign' => [
+					'status' => 'ENABLED',
+					'name'   => 'Test Campaign',
+					'id'     => 2345678901,
+					'type'   => 'PERFORMANCE_MAX',
+				],
+				'metrics'  => [
+					'clicks' => 58,
+				],
+				'segments' => [
+					'date' => '2022-04-01',
+				],
+			],
+		];
+
+		$expected = [
+			$report_type => [
+				[
+					'id'        => 1234567890,
+					'name'      => 'Test Campaign (Old)',
+					'status'    => 'removed',
+					'subtotals' => [
+						'clicks' => 12,
+					],
+				],
+				[
+					'id'        => 2345678901,
+					'name'      => 'Test Campaign',
+					'status'    => 'enabled',
+					'subtotals' => [
+						'clicks' => 58,
+					],
+				],
+			],
+			'intervals'  => [
+				[
+					'interval'  => '2022-04-01',
+					'subtotals' => [
+						'clicks' => 70,
+					],
+				],
+			],
+			'totals'     => [
+				'clicks' => 70,
+			],
+		];
+
+		$this->ads_campaign
+			->method( 'get_campaign_convert_status' )
+			->willReturn( 'converted' );
+
+		$this->generate_ads_report_query_mock( $report_data, $report_args );
+		$this->assertEquals(
+			$expected,
+			$this->report->get_report_data( $report_type, $report_args )
+		);
+	}
+
 }
