@@ -3,12 +3,14 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -19,8 +21,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  *
+ * @property MockObject|AdsCampaign      $ads_campaign
  * @property MockObject|OptionsInterface $options
  * @property AdsReport                   $report
+ * @property Container                   $container
  */
 class AdsReportTest extends UnitTest {
 
@@ -35,12 +39,17 @@ class AdsReportTest extends UnitTest {
 		parent::setUp();
 
 		$this->ads_client_setup();
+		$this->ads_campaign = $this->createMock( AdsCampaign::class );
 
 		$this->options = $this->createMock( OptionsInterface::class );
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
 
+		$this->container = new Container();
+		$this->container->share( AdsCampaign::class, $this->ads_campaign );
+
 		$this->report = new AdsReport( $this->client );
 		$this->report->set_options_object( $this->options );
+		$this->report->set_container( $this->container );
 	}
 
 	public function test_get_report_data_campaigns() {
@@ -55,6 +64,7 @@ class AdsReportTest extends UnitTest {
 					'status' => 'ENABLED',
 					'name'   => 'First Campaign',
 					'id'     => 1234567890,
+					'type'   => 'PERFORMANCE_MAX',
 				],
 				'metrics'  => [
 					'clicks'           => 12,
@@ -72,6 +82,7 @@ class AdsReportTest extends UnitTest {
 					'status' => 'ENABLED',
 					'name'   => 'Second Campaign',
 					'id'     => 2345678901,
+					'type'   => 'PERFORMANCE_MAX',
 				],
 				'metrics'  => [
 					'clicks'           => 58,
@@ -89,6 +100,7 @@ class AdsReportTest extends UnitTest {
 					'status' => 'ENABLED',
 					'name'   => 'First Campaign',
 					'id'     => 1234567890,
+					'type'   => 'PERFORMANCE_MAX',
 				],
 				'metrics'  => [
 					'clicks'           => 16,
@@ -519,6 +531,7 @@ class AdsReportTest extends UnitTest {
 					'status' => 'ENABLED',
 					'name'   => 'First Campaign',
 					'id'     => 1234567890,
+					'type'   => 'PERFORMANCE_MAX',
 				],
 				'segments' => [
 					'date' => '2022-04-01',
@@ -529,6 +542,7 @@ class AdsReportTest extends UnitTest {
 					'status' => 'ENABLED',
 					'name'   => 'Second Campaign',
 					'id'     => 2345678901,
+					'type'   => 'PERFORMANCE_MAX',
 				],
 				'segments' => [
 					'date' => '2022-04-01',
