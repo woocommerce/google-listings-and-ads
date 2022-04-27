@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
@@ -22,6 +23,8 @@ import SupportedCountrySelect from '.~/components/supported-country-select';
  * @param {function(AggregatedShippingTime): void} props.onSubmit Called with submitted value.
  */
 const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
+
 	const handleValidate = ( values ) => {
 		const errors = {};
 
@@ -61,6 +64,9 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 
 				return (
 					<AppModal
+						overflow="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'
@@ -87,6 +93,9 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 									'google-listings-and-ads'
 								) }
 								countryCodes={ countries }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
 								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputNumberControl

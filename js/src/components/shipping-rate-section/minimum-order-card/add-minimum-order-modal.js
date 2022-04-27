@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
@@ -16,6 +17,7 @@ import SupportedCountrySelect from '.~/components/supported-country-select';
 
 const AddMinimumOrderModal = ( props ) => {
 	const { countryOptions, value, onChange = noop, onRequestClose } = props;
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const handleValidate = ( values ) => {
 		const errors = {};
@@ -63,6 +65,9 @@ const AddMinimumOrderModal = ( props ) => {
 
 				return (
 					<AppModal
+						overflow="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Minimum order to qualify for free shipping',
 							'google-listings-and-ads'
@@ -88,6 +93,9 @@ const AddMinimumOrderModal = ( props ) => {
 									'If customer is in',
 									'google-listings-and-ads'
 								) }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
 								countryCodes={ countryOptions }
 								{ ...getInputProps( 'countries' ) }
 							/>
