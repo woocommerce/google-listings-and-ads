@@ -4,12 +4,14 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\Admin\API\Reports\TimeInterval;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsProductReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use DateTime;
@@ -20,11 +22,15 @@ use Google\ApiCore\ApiException;
 /**
  * Class AdsReport
  *
+ * ContainerAware used for:
+ * - AdsCampaign
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class AdsReport implements OptionsAwareInterface {
+class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 
 	use ApiExceptionTrait;
+	use ContainerAwareTrait;
 	use MicroTrait;
 	use OptionsAwareTrait;
 	use ReportTrait;
@@ -35,6 +41,13 @@ class AdsReport implements OptionsAwareInterface {
 	 * @var GoogleAdsClient
 	 */
 	protected $client;
+
+	/**
+	 * Have we completed the conversion to PMax campaigns.
+	 *
+	 * @var bool
+	 */
+	protected $has_converted;
 
 	/**
 	 * AdsReport constructor.
@@ -56,6 +69,8 @@ class AdsReport implements OptionsAwareInterface {
 	 */
 	public function get_report_data( string $type, array $args ): array {
 		try {
+			$this->has_converted = 'converted' === $this->container->get( AdsCampaign::class )->get_campaign_convert_status();
+
 			if ( 'products' === $type ) {
 				$query = new AdsProductReportQuery( $args );
 			} else {
@@ -130,13 +145,25 @@ class AdsReport implements OptionsAwareInterface {
 		}
 
 		if ( 'campaigns' === $type && $campaign ) {
-			$campaign_id = $campaign->getId();
+			$campaign_id   = $campaign->getId();
+			$campaign_name = $campaign->getName();
+			$campaign_type = CampaignType::label( $campaign->getAdvertisingChannelType() );
+
+			// Rename (old converted campaigns).
+			if ( $this->has_converted && CampaignType::PERFORMANCE_MAX !== $campaign_type ) {
+				$campaign_name = sprintf(
+					// translators: %s: Original campaign name.
+					__( '%s (old)', 'google-listings-and-ads' ),
+					$campaign_name
+				);
+			}
+
 			$this->increase_report_data(
 				'campaigns',
 				(string) $campaign_id,
 				[
 					'id'        => $campaign_id,
-					'name'      => $campaign->getName(),
+					'name'      => $campaign_name,
 					'status'    => CampaignStatus::label( $campaign->getStatus() ),
 					'subtotals' => $metrics,
 				]
