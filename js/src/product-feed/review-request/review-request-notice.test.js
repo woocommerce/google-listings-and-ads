@@ -7,6 +7,7 @@ import { fireEvent, render } from '@testing-library/react';
  * Internal dependencies
  */
 import ReviewRequestNotice from '.~/product-feed/review-request/review-request-notice';
+import { format as formatDate } from '@wordpress/date';
 
 describe( 'Request Review Notice', () => {
 	it.each( [ 'DISAPPROVED', 'WARNING' ] )(
@@ -38,19 +39,24 @@ describe( 'Request Review Notice', () => {
 	);
 
 	it( 'Renders date on cool down period', () => {
+		const cooldown = 1651047106000;
+
 		const onRequestReviewClick = jest
 			.fn()
 			.mockName( 'onRequestReviewClick' );
 
 		const { queryByText, queryByRole } = render(
 			<ReviewRequestNotice
-				account={ { status: 'DISAPPROVED', cooldown: 1651047106000 } }
+				account={ { status: 'DISAPPROVED', cooldown } }
 				onRequestReviewClick={ onRequestReviewClick }
 			/>
 		);
+
+		const dateFormat = formatDate( `F j, Y, g:i a`, new Date( cooldown ) );
+
 		expect(
 			queryByText(
-				'Your account is under cool down period. You can request a new review on April 27, 2022, 12:11 pm.'
+				`Your account is under cool down period. You can request a new review on ${ dateFormat }.`
 			)
 		).toBeTruthy();
 
