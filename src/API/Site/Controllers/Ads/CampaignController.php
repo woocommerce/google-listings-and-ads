@@ -100,8 +100,18 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 		return function( Request $request ) {
 			try {
 				$exclude_removed = $request->get_param( 'exclude_removed' );
+				$has_converted   = 'converted' === $this->ads_campaign->get_campaign_convert_status();
+
 				return array_map(
-					function( $campaign ) use ( $request ) {
+					function( $campaign ) use ( $request, $has_converted ) {
+						// Rename (old converted campaigns).
+						if ( $has_converted && CampaignType::PERFORMANCE_MAX !== $campaign['type'] ) {
+							$campaign['name'] = sprintf(
+								// translators: %s: Original campaign name.
+								__( '%s (old)', 'google-listings-and-ads' ),
+								$campaign['name']
+							);
+						}
 						$data = $this->prepare_item_for_response( $campaign, $request );
 						return $this->prepare_response_for_collection( $data );
 					},
