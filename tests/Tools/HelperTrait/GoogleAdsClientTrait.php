@@ -161,7 +161,7 @@ trait GoogleAdsClientTrait {
 			$campaign_criterion_row_mock
 		);
 
-		$this->service_client->expects( $this->exactly( 2 ) )
+		$this->service_client
 			->method( 'search' )->willReturn( $list_response );
 	}
 

@@ -464,4 +464,119 @@ class AdsCampaignTest extends UnitTest {
 		}
 	}
 
+	public function test_get_campaign_convert_status_unconverted() {
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Campaign One',
+				'status'  => 'enabled',
+				'type'    => 'shopping',
+				'amount'  => 10,
+				'country' => 'US',
+			],
+			[
+				'id'      => 5678901234,
+				'name'    => 'Campaign Two',
+				'status'  => 'enabled',
+				'type'    => 'performance_max',
+				'amount'  => 20,
+				'country' => 'UK',
+			],
+		];
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
+		$this->assertEquals( 'unconverted', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_get_campaign_convert_status_converted() {
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Test Campaign',
+				'status'  => 'removed',
+				'type'    => 'shopping',
+				'amount'  => 10,
+				'country' => 'US',
+			],
+			[
+				'id'      => 5678901234,
+				'name'    => 'Test Campaign',
+				'status'  => 'enabled',
+				'type'    => 'performance_max',
+				'amount'  => 10,
+				'country' => 'US',
+			],
+		];
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
+		$this->assertEquals( 'converted', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_get_campaign_convert_status_not_applicable() {
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Campaign One',
+				'status'  => 'removed',
+				'type'    => 'performance_max',
+				'amount'  => 10,
+				'country' => 'US',
+			],
+			[
+				'id'      => 5678901234,
+				'name'    => 'Campaign Two',
+				'status'  => 'enabled',
+				'type'    => 'performance_max',
+				'amount'  => 10,
+				'country' => 'US',
+			],
+		];
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
+		$this->assertEquals( 'not-applicable', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_get_campaign_convert_status_exception() {
+		$this->generate_ads_query_mock_exception( new ApiException( 'unavailable', 14, 'UNAVAILABLE' ) );
+		$this->assertEquals( 'not-applicable', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_get_campaign_convert_status_fetch_cached() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::CAMPAIGN_CONVERT_STATUS )
+			->willReturn(
+				[
+					'status'  => 'unconverted',
+					'updated' => time(),
+				]
+			);
+
+		$this->assertEquals( 'unconverted', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_get_campaign_convert_status_refresh_cache() {
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Test Campaign',
+				'status'  => 'enabled',
+				'type'    => 'performance_max',
+				'amount'  => 10,
+				'country' => 'US',
+			],
+		];
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::CAMPAIGN_CONVERT_STATUS )
+			->willReturn(
+				[
+					'status'  => 'unconverted',
+					'updated' => time() - WEEK_IN_SECONDS,
+				]
+			);
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
+		$this->assertEquals( 'not-applicable', $this->campaign->get_campaign_convert_status() );
+	}
+
 }
