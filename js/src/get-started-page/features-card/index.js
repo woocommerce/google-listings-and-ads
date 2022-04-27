@@ -65,7 +65,7 @@ const FeaturesCard = () => {
 					) }
 				</Text>
 			</CardHeader>
-			<Flex>
+			<Flex gap={ 0 }>
 				<FlexBlock>
 					<img
 						src={ freeListingsImageURL }
