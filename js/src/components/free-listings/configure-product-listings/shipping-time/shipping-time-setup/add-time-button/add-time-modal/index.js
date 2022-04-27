@@ -64,7 +64,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 
 				return (
 					<AppModal
-						overflowY="visible"
+						overflow="visible"
 						shouldCloseOnEsc={ ! dropdownVisible }
 						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(

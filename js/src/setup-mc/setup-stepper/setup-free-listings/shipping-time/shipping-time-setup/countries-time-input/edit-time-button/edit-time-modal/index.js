@@ -81,7 +81,7 @@ const EditTimeModal = ( props ) => {
 
 				return (
 					<AppModal
-						overflowY="visible"
+						overflow="visible"
 						shouldCloseOnEsc={ ! dropdownVisible }
 						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(

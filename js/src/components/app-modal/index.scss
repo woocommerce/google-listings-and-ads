@@ -20,25 +20,20 @@
 	}
 
 	/**
-	 * Set `auto` as the default overflow to make it stable across newer versions of
-	 * @wordpress/components. More details can be found in the AppModal implementation.
+	 * Set `hidden` as the default overflow for container and `auto` for body to
+	 * make them stable across newer versions of @wordpress/components.
+	 * More details can be found in the AppModal implementation.
 	 */
-	&,
+	overflow: hidden;
+
 	.components-modal__content {
-		overflow: inherit;
+		overflow: auto;
 	}
 
-	&__styled--overflow-y-auto {
+	&__styled--overflow-visible {
 		&,
 		.components-modal__content {
-			overflow-y: auto;
-		}
-	}
-
-	&__styled--overflow-y-visible {
-		&,
-		.components-modal__content {
-			overflow-y: visible;
+			overflow: visible;
 		}
 	}
 }
