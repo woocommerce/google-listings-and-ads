@@ -108,7 +108,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 						if ( $has_converted && CampaignType::PERFORMANCE_MAX !== $campaign['type'] ) {
 							$campaign['name'] = sprintf(
 								// translators: %s: Original campaign name.
-								__( '%s (old)', 'google-listings-and-ads' ),
+								__( '%s (Old)', 'google-listings-and-ads' ),
 								$campaign['name']
 							);
 						}

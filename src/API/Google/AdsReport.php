@@ -153,7 +153,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 			if ( $this->has_converted && CampaignType::PERFORMANCE_MAX !== $campaign_type ) {
 				$campaign_name = sprintf(
 					// translators: %s: Original campaign name.
-					__( '%s (old)', 'google-listings-and-ads' ),
+					__( '%s (Old)', 'google-listings-and-ads' ),
 					$campaign_name
 				);
 			}
