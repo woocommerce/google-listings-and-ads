@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\JobTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use PHPUnit\Framework\MockObject\MockObject;
+use WC_Product;
 
 /**
  * Class UpdateProductsTest
@@ -60,6 +61,14 @@ class UpdateAllProductsTest extends UnitTest {
 			$this->merchant_center
 		);
 
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
+		$this->merchant_center
+			->method( 'is_connected' )
+			->willReturn( true );
+
 		$this->job->init();
 	}
 
@@ -68,18 +77,8 @@ class UpdateAllProductsTest extends UnitTest {
 	}
 
 	public function test_schedule_schedules_a_single_batched_job_with_items() {
-		$items = array(
-			$this->generate_simple_product_mock(),
-			$this->generate_simple_product_mock(),
-			$this->generate_simple_product_mock(),
-			$this->generate_simple_product_mock(),
-		);
+		$filtered_product_list = new FilteredProductList( $this->generate_simple_products_set( 4 ), 4 );
 
-		$filtered_product_list = new FilteredProductList( $items, count( $items ) );
-
-		$this->action_scheduler
-			->method( 'has_scheduled_action' )
-			->willReturn( false );
 		$this->action_scheduler->expects( $this->exactly( 2 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
@@ -87,17 +86,74 @@ class UpdateAllProductsTest extends UnitTest {
 				array( self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] )
 			);
 
-		$this->merchant_center->expects( $this->once() )
-			->method( 'is_connected' )
-			->willReturn( true );
-
 		$this->product_repository->expects( $this->once() )
 			->method( 'find_sync_ready_products' )
-			->with( [], 100, 0 )
 			->willReturn( $filtered_product_list );
 
 		$this->job->schedule();
 
 		do_action( self::CREATE_BATCH_HOOK, 1 );
+	}
+
+	public function test_schedule_schedules_a_single_batched_job_with_no_items() {
+		$filtered_product_list = new FilteredProductList( [], 0 );
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( self::CREATE_BATCH_HOOK, [ 1 ] );
+		$this->product_repository->expects( $this->once() )
+			->method( 'find_sync_ready_products' )
+			->willReturn( $filtered_product_list );
+
+		$this->job->schedule();
+
+		do_action( self::CREATE_BATCH_HOOK, 1 );
+	}
+
+	public function test_schedule_schedules_two_batches_of_items_and_empty_one() {
+
+		/* adding a filter to make batch smaller for testing */
+		add_filter(
+			'woocommerce_gla_batched_job_size',
+			function ( $batch_count, $job_name ) {
+				if ( self::JOB_NAME === $job_name ) {
+					return 2;
+				}
+				return $batch_count;
+			}, 10, 2 );
+
+		$batch_a = new FilteredProductList( $this->generate_simple_products_set( 2 ), 2 );
+		$batch_b = new FilteredProductList( $this->generate_simple_products_set( 2 ), 2 );
+		$batch_c = new FilteredProductList( [], 0 );
+
+		$this->action_scheduler->expects( $this->exactly( 5 ) )
+			->method( 'schedule_immediate' )
+			->withConsecutive(
+				array( self::CREATE_BATCH_HOOK, [ 1 ] ),
+				array( self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids() ] ),
+				array( self::CREATE_BATCH_HOOK, [ 2 ] ),
+				array( self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids() ] ),
+				array( self::CREATE_BATCH_HOOK, [ 3 ] ),
+			);
+
+		$this->product_repository->expects( $this->exactly( 3 ) )
+			->method( 'find_sync_ready_products' )
+			->withConsecutive( array( [], 2, 0 ), array( [], 2, 2 ), array( [], 2, 4 ) )
+			->willReturnOnConsecutiveCalls( $batch_a, $batch_b, $batch_c );
+
+		$this->job->schedule();
+
+		do_action( self::CREATE_BATCH_HOOK, 1 );
+		do_action( self::CREATE_BATCH_HOOK, 2 );
+		do_action( self::CREATE_BATCH_HOOK, 3 );
+	}
+
+	/**
+	 * Helper function to crate array filled with product mocks for test purposes
+	 *
+	 * @param int $number Number of elements to fill an array with.
+	 * @return WC_Product[]
+	 */
+	private function generate_simple_products_set( int $number ) {
+		return array_fill( 0, 3, $this->generate_simple_product_mock() );
 	}
 }
