@@ -1,27 +1,78 @@
 .gla-get-started-features-card {
-	.components-flex {
-		justify-content: space-around;
+	// Adjust <CardHeader> imported from @wordpress/components.
+	// Repeat selector to make it higher priority.
+	.components-card__header.components-card__header {
+		flex-direction: column;
+		gap: $grid-unit-10;
+		padding: $grid-unit-60 $grid-unit * 14.125 $grid-unit-50;
+		text-align: center;
 
 		@media (max-width: $break-small) {
-			flex-direction: column;
+			padding: $grid-unit-30 $grid-unit-30 $grid-unit-20;
+			gap: $grid-unit-20;
 		}
+	}
+
+	.components-flex {
+		gap: 50px;
+		padding: 0 $grid-unit * 11 $grid-unit-60;
 
 		&__block {
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			max-width: 195px;
-			margin: calc(var(--large-gap) / 4 * 5) 0;
 			text-align: center;
+		}
+
+		@media (max-width: $break-small) {
+			flex-direction: column;
+			gap: 40px;
+			padding: 0 55px 44px;
 		}
 	}
 
-	& &__label {
-		margin: $grid-unit-40 0 $grid-unit-20;
-		font-size: $default-font-size;
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__description {
+		font-size: 14px;
+		line-height: 18px;
 	}
 
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__label {
+		margin: $grid-unit-30 0 $grid-unit-20;
+		font-weight: bold;
+		font-size: 14px;
+		line-height: 18px;
+	}
+
+	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__content {
-		line-height: 16px;
+		font-size: 14px;
+		line-height: 18px;
+	}
+
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__learn-more {
+		margin-top: $grid-unit;
+		font-weight: 500;
+		font-size: 14px;
+		line-height: 16.71px;
+
+		a {
+			text-decoration: none;
+		}
+	}
+
+	@media (max-width: $break-small) {
+		// Use more specific rules to make it higher priority to override <Text> component.
+		& &__title {
+			font-size: 20px;
+			line-height: 28px;
+		}
+
+		// Use more specific rules to make it higher priority to override <Text> component.
+		& &__label {
+			margin: $grid-unit * 2.5 0 $grid-unit-20;
+		}
 	}
 }
