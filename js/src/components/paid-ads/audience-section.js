@@ -38,22 +38,14 @@ const AudienceSection = ( props ) => {
 	const countryNameMap = useCountryKeyNameMap();
 	const inputProps = getInputProps( 'countryCodes' );
 
-	/**
-	 * Hack to prevent tags being removed even when disabled.
-	 * This could be removed after replacing <AudienceCountrySelect> with <TreeSelectControl>.
-	 */
-	if ( disabled ) {
-		inputProps.onChange = undefined;
-	}
-
 	const selector = multiple ? (
 		<AudienceCountrySelect
 			label={ __( 'Select countries', 'google-listings-and-ads' ) }
-			helperText={ countrySelectHelperText }
+			help={ countrySelectHelperText }
 			disabled={ disabled }
-			multiple
-			isSearchable={ ! disabled }
-			{ ...inputProps }
+			value={ inputProps.value }
+			additionalCountryCodes={ disabled ? inputProps.value : undefined }
+			onChange={ inputProps.onChange }
 		/>
 	) : (
 		<SelectControl

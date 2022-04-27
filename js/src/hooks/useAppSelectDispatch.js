@@ -21,11 +21,12 @@ const useAppSelectDispatch = ( selector, ...args ) => {
 
 	return useSelect(
 		( select ) => {
-			const { hasFinishedResolution } = select( STORE_KEY );
+			const { isResolving, hasFinishedResolution } = select( STORE_KEY );
 
 			const data = select( STORE_KEY )[ selector ]( ...argsRefValue );
 
 			return {
+				isResolving: isResolving( selector, argsRefValue ),
 				hasFinishedResolution: hasFinishedResolution(
 					selector,
 					argsRefValue
