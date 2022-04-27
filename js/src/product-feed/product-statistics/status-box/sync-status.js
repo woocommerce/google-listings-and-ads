@@ -2,16 +2,15 @@
  * External dependencies
  */
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { format as formatDate } from '@wordpress/date';
 
 /**
  * Internal dependencies
  */
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import Status from '.~/product-feed/product-statistics/status-box/status';
-import { glaData } from '.~/constants';
 import SyncIcon from '.~/components/sync-icon';
 import SuccessIcon from '.~/components/success-icon';
+import { formatDate } from '.~/utils/date';
 
 /**
  * Returns the text as well as the icon an description for the Sync Status
@@ -60,14 +59,7 @@ function getSyncResult( {
 				totalSynced,
 				'google-listings-and-ads'
 			),
-			formatDate(
-				glaData.dateFormat +
-					( glaData.dateFormat.trim() && glaData.timeFormat.trim()
-						? ', '
-						: '' ) +
-					glaData.timeFormat,
-				new Date( timestamp * 1000 )
-			),
+			formatDate( new Date( timestamp * 1000 ) ),
 			totalSynced
 		),
 	};

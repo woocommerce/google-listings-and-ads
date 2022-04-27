@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { format as formatDate } from '@wordpress/date';
 import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalText as Text,
@@ -15,7 +14,7 @@ import {
  */
 import AppButton from '.~/components/app-button';
 import REVIEW_STATUSES from './review-request-statuses';
-import { glaData } from '.~/constants';
+import { formatDate } from '.~/utils/date';
 
 const ReviewRequestNotice = ( {
 	account,
@@ -35,10 +34,7 @@ const ReviewRequestNotice = ( {
 				'Your account is under cool down period. You can request a new review on %s.',
 				'google-listings-and-ads'
 			),
-			formatDate(
-				`${ glaData.dateFormat }, ${ glaData.timeFormat }`,
-				new Date( account.cooldown )
-			)
+			formatDate( new Date( account.cooldown ) )
 		);
 
 	return (
