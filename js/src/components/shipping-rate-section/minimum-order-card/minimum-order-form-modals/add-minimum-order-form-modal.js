@@ -23,7 +23,7 @@ import MinimumOrderFormModal from './minimum-order-form-modal';
  * and when `props.onRequestClose` is called later, there would be a runtime React error because the component is no longer there.
  *
  * @param {Object} props Props.
- * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
+ * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in SupportedCountrySelect.
  * @param {MinimumOrderGroup} props.initialValues Initial values for the form.
  * @param {(values: MinimumOrderGroup) => void} props.onSubmit Callback when the form is submitted, with the form value.
  * @param {() => void} props.onRequestClose Callback to close the modal.
