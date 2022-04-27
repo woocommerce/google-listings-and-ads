@@ -35,7 +35,10 @@ const ReviewRequestNotice = ( {
 				'Your account is under cool down period. You can request a new review on %s.',
 				'google-listings-and-ads'
 			),
-			formatDate( glaData.dateFormat, new Date( account.cooldown ) )
+			formatDate(
+				`${ glaData.dateFormat }, ${ glaData.timeFormat }`,
+				new Date( account.cooldown )
+			)
 		);
 
 	return (

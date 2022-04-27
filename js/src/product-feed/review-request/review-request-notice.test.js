@@ -50,7 +50,7 @@ describe( 'Request Review Notice', () => {
 		);
 		expect(
 			queryByText(
-				'Your account is under cool down period. You can request a new review on April 27, 2022.'
+				'Your account is under cool down period. You can request a new review on April 27, 2022, 12:11 pm.'
 			)
 		).toBeTruthy();
 
