@@ -22,8 +22,6 @@ use PHPUnit\Framework\MockObject\MockObject;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
  *
- * @property MockObject|FilteredProductList       $filtered_product_list
- *
  * @property MockObject|ActionScheduler           $action_scheduler
  * @property MockObject|ActionSchedulerJobMonitor $monitor
  * @property MockObject|ProductSyncer             $product_syncer
@@ -46,8 +44,6 @@ class UpdateAllProductsTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-
-		$this->filtered_product_list = $this->createMock( FilteredProductList::class );
 
 		$this->action_scheduler      = $this->createMock( ActionSchedulerInterface::class );
 		$this->monitor               = $this->createMock( ActionSchedulerJobMonitor::class );
