@@ -12,109 +12,163 @@ import Section from '.~/wcdl/section';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
-import groupShippingRatesByMethodPriceCurrency from '.~/utils/groupShippingRatesByMethodPriceCurrency';
+import groupShippingRatesByMethodCurrencyRate from './groupShippingRatesByMethodCurrencyRate';
 import ShippingRateInputControl from './shipping-rate-input-control';
-import AddRateModal from './add-rate-modal';
+import { AddRateFormModal, EditRateFormModal } from './rate-form-modals';
 import { SHIPPING_RATE_METHOD } from '.~/constants';
-import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
-
-const defaultShippingRate = {
-	method: SHIPPING_RATE_METHOD.FLAT_RATE,
-	options: {},
-};
+import getHandlers from './getHandlers';
 
 /**
- * Partial form to provide shipping rates for individual countries,
+ * @typedef { import(".~/data/actions").ShippingRate } ShippingRate
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ * @typedef { import("./typedefs").ShippingRateGroup } ShippingRateGroup
+ */
+
+/**
+ * The "Estimated shipping rates" card to provide shipping rates for individual countries,
  * with an UI, that allows to aggregate countries with the same rate.
  *
  * @param {Object} props
- * @param {Array<ShippingRateFromServerSide>} props.value Array of individual shipping rates to be used as the initial values of the form.
+ * @param {Array<ShippingRate>} props.value Array of individual shipping rates to be used as the initial values of the form.
  * @param {Array<CountryCode>} props.audienceCountries Array of country codes of all audience countries.
- * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping rates are changed.
+ * @param {(newValue: Array<ShippingRate>) => void} props.onChange Callback called with new data once shipping rates are changed.
  */
 export default function EstimatedShippingRatesCard( {
-	value: shippingRates,
 	audienceCountries,
+	value,
 	onChange,
 } ) {
 	const { code: currencyCode } = useStoreCurrency();
-	const actualCountryCount = shippingRates.length;
-	const actualCountries = new Map(
-		shippingRates.map( ( rate ) => [ rate.country, rate ] )
-	);
-	const remainingCountries = audienceCountries.filter(
-		( el ) => ! actualCountries.has( el )
-	);
-	const remainingCount = remainingCountries.length;
+	const {
+		handleAddSubmit,
+		getChangeHandler,
+		getDeleteHandler,
+	} = getHandlers( { value, onChange } );
 
-	// Group countries with the same rate.
-	const countriesPriceArray = groupShippingRatesByMethodPriceCurrency(
-		shippingRates
-	);
-
-	// Prefill to-be-added price.
-	if ( countriesPriceArray.length === 0 ) {
-		countriesPriceArray.push( {
-			countries: audienceCountries,
-			method: SHIPPING_RATE_METHOD.FLAT_RATE,
-			price: null,
-			currency: currencyCode,
-		} );
-	}
-
-	// Given the limitations of `<Form>` component we can communicate up only onChange.
-	// Therefore we loose the infromation whether it was add, change, delete.
-	// In autosave/setup MC case, we would have to either re-calculate to deduct that information,
-	// or fix that in `<Form>` component.
-	function handleDelete( deletedCountries ) {
-		onChange(
-			shippingRates.filter(
-				( rate ) => ! deletedCountries.includes( rate.country )
-			)
+	/**
+	 * An Edit button that displays EditRateFormModal to edit shipping rate group upon clicking on the Edit button.
+	 *
+	 * @param {Object} props Props.
+	 * @param {Array<CountryCode>} props.countryOptions Country options to be passed to EditRateFormModal.
+	 * @param {ShippingRateGroup} props.group Shipping rate group to be edited.
+	 */
+	const GroupEditModalButton = ( { countryOptions, group } ) => {
+		return (
+			<AppButtonModalTrigger
+				button={
+					<Button isTertiary>
+						{ __( 'Edit', 'google-listings-and-ads' ) }
+					</Button>
+				}
+				modal={
+					<EditRateFormModal
+						countryOptions={ countryOptions }
+						initialValues={ group }
+						onSubmit={ getChangeHandler( group ) }
+						onDelete={ getDeleteHandler( group ) }
+					/>
+				}
+			/>
 		);
-	}
-	function handleAdd( { countries, currency, rate } ) {
-		// Split aggregated rate, to individial rates per country.
-		const addedIndividualRates = countries.map( ( country ) => ( {
-			...defaultShippingRate,
-			country,
-			currency,
-			rate, // TODO: unify that
-		} ) );
+	};
 
-		onChange( shippingRates.concat( addedIndividualRates ) );
-	}
-	function handleChange(
-		{ countries, currency, price },
-		deletedCountries = []
-	) {
-		deletedCountries.forEach( ( country ) =>
-			actualCountries.delete( country )
-		);
+	/**
+	 * Function to render the shipping rate groups from `value`.
+	 *
+	 * If there is no group, we render a `ShippingRateInputControl`
+	 * with a pre-filled group, so that users can straight away
+	 * key in shipping rate for all countries immediately.
+	 *
+	 * If there are groups, we render `ShippingRateInputControl` for each group,
+	 * and render an "Add rate button" if there are remaining countries.
+	 */
+	const renderGroups = () => {
+		const groups = groupShippingRatesByMethodCurrencyRate( value );
 
-		// Upsert rates.
-		countries.forEach( ( country ) => {
-			const oldShippingRate = actualCountries.get( country );
-			const newShippingRate = {
-				...defaultShippingRate,
-				...oldShippingRate,
-				country,
-				currency,
-				rate: price, // TODO: unify that
+		if ( groups.length === 0 ) {
+			const prefilledGroup = {
+				countries: audienceCountries,
+				method: SHIPPING_RATE_METHOD.FLAT_RATE,
+				currency: currencyCode,
+				rate: undefined,
 			};
 
-			/*
-			 * If the shipping rate is free,
-			 * we remove the free_shipping_threshold.
-			 */
-			if ( ! isNonFreeFlatShippingRate( newShippingRate ) ) {
-				newShippingRate.options.free_shipping_threshold = undefined;
-			}
+			return (
+				<ShippingRateInputControl
+					labelButton={
+						<GroupEditModalButton
+							countryOptions={ audienceCountries }
+							group={ prefilledGroup }
+						/>
+					}
+					value={ prefilledGroup }
+					onChange={ getChangeHandler( prefilledGroup ) }
+				/>
+			);
+		}
 
-			actualCountries.set( country, newShippingRate );
+		/**
+		 * The remaining countries that do not have a shipping rate value yet.
+		 */
+		const remainingCountries = audienceCountries.filter( ( country ) => {
+			const exist = value.some(
+				( shippingRate ) =>
+					shippingRate.country === country &&
+					shippingRate.method === SHIPPING_RATE_METHOD.FLAT_RATE
+			);
+
+			return ! exist;
 		} );
-		onChange( Array.from( actualCountries.values() ) );
-	}
+
+		return (
+			<>
+				{ groups.map( ( group ) => {
+					return (
+						<ShippingRateInputControl
+							key={ group.countries.join( '-' ) }
+							labelButton={
+								<GroupEditModalButton
+									countryOptions={ audienceCountries }
+									group={ group }
+								/>
+							}
+							value={ group }
+							onChange={ getChangeHandler( group ) }
+						/>
+					);
+				} ) }
+				{ remainingCountries.length >= 1 && (
+					<div>
+						<AppButtonModalTrigger
+							button={
+								<Button
+									isSecondary
+									icon={ <GridiconPlusSmall /> }
+								>
+									{ __(
+										'Add another rate',
+										'google-listings-and-ads'
+									) }
+								</Button>
+							}
+							modal={
+								<AddRateFormModal
+									countryOptions={ remainingCountries }
+									initialValues={ {
+										countries: remainingCountries,
+										method: SHIPPING_RATE_METHOD.FLAT_RATE,
+										currency: currencyCode,
+										rate: 0,
+									} }
+									onSubmit={ handleAddSubmit }
+								/>
+							}
+						/>
+					</div>
+				) }
+			</>
+		);
+	};
 
 	return (
 		<Section.Card>
@@ -126,66 +180,9 @@ export default function EstimatedShippingRatesCard( {
 					) }
 				</Section.Card.Title>
 				<VerticalGapLayout size="large">
-					{ countriesPriceArray.map( ( el ) => {
-						return (
-							<div key={ el.countries.join( '-' ) }>
-								<ShippingRateInputControl
-									value={ el }
-									audienceCountries={ audienceCountries }
-									onChange={ handleChange }
-									onDelete={ handleDelete }
-								/>
-							</div>
-						);
-					} ) }
-					{ actualCountryCount >= 1 && remainingCount >= 1 && (
-						<div>
-							<AppButtonModalTrigger
-								button={
-									<Button
-										isSecondary
-										icon={ <GridiconPlusSmall /> }
-									>
-										{ __(
-											'Add another rate',
-											'google-listings-and-ads'
-										) }
-									</Button>
-								}
-								modal={
-									<AddRateModal
-										countries={ remainingCountries }
-										onSubmit={ handleAdd }
-									/>
-								}
-							/>
-						</div>
-					) }
+					{ renderGroups() }
 				</VerticalGapLayout>
 			</Section.Card.Body>
 		</Section.Card>
 	);
 }
-
-/**
- * Individual shipping rate.
- *
- * @typedef {Object} ShippingRate
- * @property {CountryCode} country Destination country code.
- * @property {string} currency Currency of the price.
- * @property {number} price Shipping price.
- */
-
-/**
- * Aggregated shipping rate.
- *
- * @typedef {Object} AggregatedShippingRate
- * @property {Array<CountryCode>} countries Array of destination country codes.
- * @property {string} currency Currency of the price.
- * @property {number} price Shipping price.
- */
-
-/**
- * @typedef { import(".~/data/actions").ShippingRate } ShippingRateFromServerSide
- * @typedef { import(".~/data/actions").CountryCode } CountryCode
- */

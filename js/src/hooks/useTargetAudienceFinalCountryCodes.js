@@ -7,6 +7,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data';
+import useMCCountries from '.~/hooks/useMCCountries';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -14,10 +15,10 @@ import { STORE_KEY } from '.~/data';
 
 /**
  * Gets the final country codes from the Target Audience page.
- * This will call the `getTargetAudience` and `getCountries` selectors.
+ * This will call the `getTargetAudience` selector and `useMCCountries` hook.
  * Returns `{ loading, data, targetAudience, getFinalCountries }`.
  *
- * `loading` is true when both `getTargetAudience` and `getCountries` are still resolving.
+ * `loading` is true when both `getTargetAudience` and `useMCCountries` are still resolving.
  *
  * `data` is:
  * - `undefined` when loading is in progress;
@@ -30,16 +31,15 @@ import { STORE_KEY } from '.~/data';
  *
  */
 const useTargetAudienceFinalCountryCodes = () => {
-	return useSelect( ( select ) => {
-		const { getTargetAudience, getCountries, isResolving } = select(
-			STORE_KEY
-		);
+	const {
+		data: supportedCountries,
+		isResolving: countriesLoading,
+	} = useMCCountries();
 
+	function mapSelect( select ) {
+		const { getTargetAudience, isResolving } = select( STORE_KEY );
 		const storedTargetAudience = getTargetAudience();
-		const supportedCountries = getCountries();
-
 		const targetAudienceLoading = isResolving( 'getTargetAudience' );
-		const countriesLoading = isResolving( 'getCountries' );
 
 		/**
 		 * Flag to indicate that the data is loading.
@@ -77,7 +77,9 @@ const useTargetAudienceFinalCountryCodes = () => {
 			targetAudience: storedTargetAudience,
 			getFinalCountries,
 		};
-	}, [] );
+	}
+
+	return useSelect( mapSelect, [ supportedCountries, countriesLoading ] );
 };
 
 export default useTargetAudienceFinalCountryCodes;
