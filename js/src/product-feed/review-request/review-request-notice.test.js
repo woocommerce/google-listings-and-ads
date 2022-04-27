@@ -2,12 +2,12 @@
  * External dependencies
  */
 import { fireEvent, render } from '@testing-library/react';
+import { format as formatDate } from '@wordpress/date';
 
 /**
  * Internal dependencies
  */
 import ReviewRequestNotice from '.~/product-feed/review-request/review-request-notice';
-import { format as formatDate } from '@wordpress/date';
 
 describe( 'Request Review Notice', () => {
 	it.each( [ 'DISAPPROVED', 'WARNING' ] )(
