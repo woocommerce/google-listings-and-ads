@@ -77,13 +77,9 @@ class UpdateAllProductsTest extends UnitTest {
 
 		$filtered_product_list = new FilteredProductList( $items, count( $items ) );
 
-		$this->action_scheduler->expects( $this->exactly( 2 ) )
+		$this->action_scheduler
 			->method( 'has_scheduled_action' )
-			->withConsecutive(
-				array( self::CREATE_BATCH_HOOK, [ 1 ] ),
-				array( self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] )
-			)
-			->willReturnOnConsecutiveCalls( false, false );
+			->willReturn( false );
 		$this->action_scheduler->expects( $this->exactly( 2 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
