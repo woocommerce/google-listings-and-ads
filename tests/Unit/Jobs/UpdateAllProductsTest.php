@@ -5,6 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -76,7 +78,7 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->assertEquals( self::JOB_NAME, $this->job->get_name() );
 	}
 
-	public function test_schedule_schedules_a_single_batched_job_with_items() {
+	public function test_single_batched_job_with_items() {
 		$filtered_product_list = new FilteredProductList( $this->generate_simple_products_set( 4 ), 4 );
 
 		$this->action_scheduler->expects( $this->exactly( 2 ) )
@@ -95,7 +97,7 @@ class UpdateAllProductsTest extends UnitTest {
 		do_action( self::CREATE_BATCH_HOOK, 1 );
 	}
 
-	public function test_schedule_schedules_a_single_batched_job_with_no_items() {
+	public function test_single_batched_job_with_no_items() {
 		$filtered_product_list = new FilteredProductList( [], 0 );
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
@@ -109,7 +111,7 @@ class UpdateAllProductsTest extends UnitTest {
 		do_action( self::CREATE_BATCH_HOOK, 1 );
 	}
 
-	public function test_schedule_schedules_two_batches_of_items_and_empty_one() {
+	public function test_multiple_batches_of_items_and_empty_one() {
 
 		/* adding a filter to make batch smaller for testing */
 		add_filter(
@@ -145,6 +147,29 @@ class UpdateAllProductsTest extends UnitTest {
 		do_action( self::CREATE_BATCH_HOOK, 1 );
 		do_action( self::CREATE_BATCH_HOOK, 2 );
 		do_action( self::CREATE_BATCH_HOOK, 3 );
+	}
+
+	public function test_process_item() {
+		$filtered_product_list = new FilteredProductList( $this->generate_simple_products_set( 1 ), 1 );
+		$product_id            = $filtered_product_list->get_product_ids()[0];
+		$entry                 = new BatchProductEntry( $product_id );
+		$response              = new BatchProductResponse( array( $entry ), array() );
+
+		$this->product_repository
+			->expects( $this->once() )
+			->method( 'find_by_ids' )
+			->with( $filtered_product_list->get_product_ids() )
+			->willReturn( $filtered_product_list->get() );
+
+		$this->product_syncer
+			->expects( $this->once() )
+			->method( 'update' )
+			->with( $filtered_product_list->get() );
+		$this->product_syncer
+			->method( 'update_by_batch_requests' )
+			->willReturn( $response );
+
+		do_action( self::PROCESS_ITEM_HOOK, $filtered_product_list->get_product_ids() );
 	}
 
 	/**
