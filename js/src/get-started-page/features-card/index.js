@@ -96,7 +96,7 @@ const FeaturesCard = () => {
 					</Text>
 					<LearnMoreLink
 						linkId="get-started-features-free-listing-learn-more"
-						href="https://woocommerce.com/document/google-listings-and-ads/#google-smart-shopping-campaigns"
+						href="https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google"
 					/>
 				</FlexBlock>
 				<FlexBlock>
@@ -129,7 +129,7 @@ const FeaturesCard = () => {
 					</Text>
 					<LearnMoreLink
 						linkId="get-started-features-google-ads-learn-more"
-						href="https://woocommerce.com/document/google-listings-and-ads/#google-smart-shopping-campaigns"
+						href="https://woocommerce.com/document/google-listings-and-ads/#google-performance-max-campaigns"
 					/>
 				</FlexBlock>
 				<FlexBlock>
