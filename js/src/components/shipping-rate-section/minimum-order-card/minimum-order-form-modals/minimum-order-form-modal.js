@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
 import { noop } from 'lodash';
@@ -11,7 +12,7 @@ import { noop } from 'lodash';
 import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AppCountrySelect from '.~/components/app-country-select';
+import SupportedCountrySelect from '.~/components/supported-country-select';
 import validateMinimumOrder from './validateMinimumOrder';
 
 /**
@@ -28,7 +29,7 @@ import validateMinimumOrder from './validateMinimumOrder';
  * allowing the buttons to have access to form's `isValidForm` and `handleSubmit`.
  *
  * @param {Object} props Props.
- * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
+ * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in SupportedCountrySelect.
  * @param {(formProps: Object) => Array<Button>} props.renderButtons Function to render buttons for the modal. `formProps` will be passed into this render function.
  * @param {MinimumOrderGroup} props.initialValues Initial values for the form.
  * @param {(values: MinimumOrderGroup) => void} props.onSubmit Callback when the form is submitted, with the form value.
@@ -41,6 +42,8 @@ const MinimumOrderFormModal = ( {
 	onSubmit,
 	onRequestClose = noop,
 } ) => {
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
+
 	return (
 		<Form
 			initialValues={ initialValues }
@@ -52,6 +55,9 @@ const MinimumOrderFormModal = ( {
 
 				return (
 					<AppModal
+						overflow="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Minimum order to qualify for free shipping',
 							'google-listings-and-ads'
@@ -60,13 +66,15 @@ const MinimumOrderFormModal = ( {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<AppCountrySelect
+							<SupportedCountrySelect
 								label={ __(
 									'If customer is in',
 									'google-listings-and-ads'
 								) }
-								options={ countryOptions }
-								multiple
+								countryCodes={ countryOptions }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
 								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputPriceControl

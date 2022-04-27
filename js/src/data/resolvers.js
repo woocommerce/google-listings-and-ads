@@ -26,7 +26,6 @@ import {
 	fetchGoogleAdsAccountBillingStatus,
 	fetchExistingGoogleAdsAccounts,
 	receiveGoogleMCContactInformation,
-	fetchCountries,
 	fetchTargetAudience,
 	fetchAdsCampaigns,
 	fetchMCSetup,
@@ -128,8 +127,25 @@ getGoogleMCContactInformation.shouldInvalidate = ( action ) => {
 	return action.type === TYPES.VERIFIED_MC_PHONE_NUMBER;
 };
 
-export function* getCountries() {
-	yield fetchCountries();
+export function* getMCCountriesAndContinents() {
+	try {
+		const query = { continents: true };
+		const path = addQueryArgs( `${ API_NAMESPACE }/mc/countries`, query );
+		const data = yield apiFetch( { path } );
+
+		return {
+			type: TYPES.RECEIVE_MC_COUNTRIES_AND_CONTINENTS,
+			data,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading supported country details.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
 export function* getTargetAudience() {

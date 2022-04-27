@@ -46,6 +46,7 @@ class WC {
 		$this->wc_countries = $countries;
 		$this->base_country = $countries->get_base_country() ?? 'US';
 		$this->countries    = $countries->get_countries() ?? [];
+		$this->continents   = $countries->get_continents() ?? [];
 	}
 
 	/**
@@ -64,6 +65,15 @@ class WC {
 	 */
 	public function get_base_country(): string {
 		return $this->base_country;
+	}
+
+	/**
+	 * Get all continents.
+	 *
+	 * @return array
+	 */
+	public function get_continents(): array {
+		return $this->continents;
 	}
 
 	/**

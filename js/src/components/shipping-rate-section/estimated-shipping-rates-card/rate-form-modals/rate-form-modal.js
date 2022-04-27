@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
@@ -12,7 +13,7 @@ import validate from './validate.js';
 import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control/index.js';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AppCountrySelect from '.~/components/app-country-select';
+import SupportedCountrySelect from '.~/components/supported-country-select';
 
 /**
  * @typedef { import("@wordpress/components").Button } Button
@@ -26,7 +27,7 @@ import AppCountrySelect from '.~/components/app-country-select';
  * This is used by AddRateFormModal and EditRateFormModal.
  *
  * @param {Object} props
- * @param {Array<CountryCode>} props.countryOptions Array of country codes, to be used as options in AppCountrySelect.
+ * @param {Array<CountryCode>} props.countryOptions Array of country codes, to be used as options in SupportedCountrySelect.
  * @param {ShippingRateGroup} props.initialValues Initial values for the form.
  * @param {(formProps: Object) => Array<Button>} props.renderButtons Function to render buttons for the modal. `formProps` will be passed into this render function.
  * @param {(values: ShippingRateGroup) => void} props.onSubmit Called with submitted value.
@@ -39,6 +40,8 @@ const RateFormModal = ( {
 	onSubmit,
 	onRequestClose,
 } ) => {
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
+
 	return (
 		<Form
 			initialValues={ initialValues }
@@ -50,6 +53,9 @@ const RateFormModal = ( {
 
 				return (
 					<AppModal
+						overflow="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Estimate a shipping rate',
 							'google-listings-and-ads'
@@ -58,13 +64,15 @@ const RateFormModal = ( {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<AppCountrySelect
+							<SupportedCountrySelect
 								label={ __(
 									'If customer is in',
 									'google-listings-and-ads'
 								) }
-								options={ countryOptions }
-								multiple
+								countryCodes={ countryOptions }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
 								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputPriceControl
