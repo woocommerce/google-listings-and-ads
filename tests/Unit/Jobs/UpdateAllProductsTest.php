@@ -79,40 +79,20 @@ class UpdateAllProductsTest extends UnitTest {
 			$this->generate_simple_product_mock(),
 		);
 
-		$item_ids = array_map(
-			function ( $item ) {
-				return $item->get_id();
-			},
-			$items
-		);
-
-		$this->filtered_product_list->expects( $this->never() )
-			->method( 'get' );
-
-		$this->filtered_product_list->expects( $this->once() )
-			->method( 'get_product_ids' )
-			->willReturn( $item_ids );
-
-		$this->filtered_product_list->expects( $this->once() )
-			->method( 'count' )
-			->willReturn( count( $items ) );
-
-		$this->filtered_product_list->expects( $this->exactly( 2 ) )
-			->method( 'get_unfiltered_count' )
-			->willReturn( count( $items ) );
+		$filtered_product_list = new FilteredProductList( $items, count( $items ) );
 
 		$this->action_scheduler->expects( $this->exactly( 2 ) )
 			->method( 'has_scheduled_action' )
 			->withConsecutive(
 				array( self::CREATE_BATCH_HOOK, [ 1 ] ),
-				array( self::PROCESS_ITEM_HOOK, [ $item_ids ] )
+				array( self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] )
 			)
 			->willReturnOnConsecutiveCalls( false, false );
 		$this->action_scheduler->expects( $this->exactly( 2 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
 				array( self::CREATE_BATCH_HOOK, [ 1 ] ),
-				array( self::PROCESS_ITEM_HOOK, [ $item_ids ] )
+				array( self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] )
 			);
 
 		$this->merchant_center->expects( $this->once() )
@@ -122,7 +102,7 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->product_repository->expects( $this->once() )
 			->method( 'find_sync_ready_products' )
 			->with( [], 100, 0 )
-			->willReturn( $this->filtered_product_list );
+			->willReturn( $filtered_product_list );
 
 		$this->job->schedule();
 
