@@ -5,6 +5,8 @@ import { __ } from '@wordpress/i18n';
 import {
 	Card,
 	CardHeader,
+	Flex,
+	FlexBlock,
 	__experimentalText as Text,
 } from '@wordpress/components';
 
@@ -12,6 +14,29 @@ import {
  * Internal dependencies
  */
 import './index.scss';
+import quoteImageURL from './img-quote.svg';
+
+const ContentBlock = ( { content, name } ) => {
+	return (
+		<FlexBlock>
+			<img
+				src={ quoteImageURL }
+				alt={ __( 'An image of a quote.', 'google-listings-and-ads' ) }
+				width="34"
+				height="34"
+			/>
+			<Text
+				className="gla-get-started-case-studies-card__content"
+				variant="body"
+			>
+				{ content }
+			</Text>
+			<Text className="gla-get-started-case-studies-card__name">
+				{ name }
+			</Text>
+		</FlexBlock>
+	);
+};
 
 const CaseStudiesCard = () => {
 	return (
@@ -27,6 +52,22 @@ const CaseStudiesCard = () => {
 					) }
 				</Text>
 			</CardHeader>
+			<Flex gap={ 0 }>
+				<ContentBlock
+					content={ __(
+						'Thank you Google and WooCommerce for creating this app. It’s so simple to use and connect your products to Merchant Center.',
+						'google-listings-and-ads'
+					) }
+					name={ __( 'joshualukewhite', 'google-listings-and-ads' ) }
+				/>
+				<ContentBlock
+					content={ __(
+						'It does everything smoothly. Perfect and must need add-on from WooCommerce. Some things are just “essentials”.',
+						'google-listings-and-ads'
+					) }
+					name={ __( 'Anonymous', 'google-listings-and-ads' ) }
+				/>
+			</Flex>
 		</Card>
 	);
 };

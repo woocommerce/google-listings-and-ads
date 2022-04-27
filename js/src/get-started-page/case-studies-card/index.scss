@@ -11,6 +11,38 @@
 		}
 	}
 
+	.components-flex {
+		gap: $grid-unit * 3.5;
+		padding: 0 $grid-unit * 7.75 $grid-unit * 5.75;
+
+		&__block {
+			display: flex;
+			flex-direction: column;
+			background-color: #f6f7f7;
+			padding: $grid-unit * 2.5;
+			gap: $grid-unit * 1.25;
+		}
+
+		@media (max-width: $break-small) {
+			flex-direction: column;
+			gap: $grid-unit-30;
+			padding: 0 $grid-unit-30 $grid-unit-30;
+		}
+	}
+
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__content {
+		font-size: 14px;
+		line-height: 20px;
+	}
+
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__name {
+		font-size: $helptext-font-size;
+		color: $gray-600;
+		line-height: 16px;
+	}
+
 	@media (max-width: $break-small) {
 		// Use more specific rules to make it higher priority to override <Text> component.
 		& &__title {
