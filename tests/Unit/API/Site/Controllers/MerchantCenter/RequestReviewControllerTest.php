@@ -35,6 +35,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'programType' => [
 					                 'status' => 200,
 					                 'data'   => [
+						                 "globalState" =>  "ENABLED",
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
@@ -65,6 +66,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'programTypeA' => [
 					                 'status' => 200,
 					                 'data'   => [
+						                 "globalState" =>  "ENABLED",
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
@@ -81,6 +83,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'programTypeB' => [
 					                 'status' => 200,
 					                 'data'   => [
+						                 "globalState" =>  "ENABLED",
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
@@ -111,6 +114,88 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		], $response->get_data() );
 	}
 
+	public function test_no_offers_reponse() {
+
+		$this->middleware->expects( $this->once() )
+		                 ->method( 'get_account_review_status' )
+		                 ->willReturn(
+			                 [
+				                 'programTypeA' => [
+					                 'status' => 200,
+					                 'data'   => [
+						                 "globalState" =>  "ENABLED",
+						                 'regionStatuses' => [
+							                 [
+								                 'reviewEligibilityStatus' => 'INELIGIBLE',
+								                 'eligibilityStatus'       => 'APPROVED',
+							                 ],
+							                 [
+								                 'reviewEligibilityStatus' => 'ELIGIBLE',
+								                 'eligibilityStatus'       => 'DISAPPROVED',
+								                 'reviewIssues'            => [ 'one' ]
+							                 ],
+						                 ]
+					                 ]
+				                 ],
+				                 'programTypeB' => [
+					                 'status' => 200,
+					                 'data'   => [
+						                 "globalState" =>  "NO_OFFERS_UPLOADED"
+					                 ]
+				                 ]
+			                 ]
+		                 );
+
+		$response = $this->do_request( self::ROUTE_GET_REQUEST );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [
+			'status'   => 'ONBOARDING',
+			'issues'   => [],
+			'cooldown' => 0
+		], $response->get_data() );
+	}
+
+	public function test_unexpected_state_reponse() {
+
+		$this->middleware->expects( $this->once() )
+		                 ->method( 'get_account_review_status' )
+		                 ->willReturn(
+			                 [
+				                 'programTypeA' => [
+					                 'status' => 200,
+					                 'data'   => [
+						                 "globalState" =>  "ENABLED",
+						                 'regionStatuses' => [
+							                 [
+								                 'reviewEligibilityStatus' => 'INELIGIBLE',
+								                 'eligibilityStatus'       => 'APPROVED',
+							                 ],
+							                 [
+								                 'reviewEligibilityStatus' => 'ELIGIBLE',
+								                 'eligibilityStatus'       => 'DISAPPROVED',
+								                 'reviewIssues'            => [ 'one' ]
+							                 ],
+						                 ]
+					                 ]
+				                 ],
+				                 'programTypeB' => [
+					                 'status' => 200,
+					                 'data'   => [
+						                 "globalState" =>  "UNKNOWN"
+					                 ]
+				                 ]
+			                 ]
+		                 );
+
+		$response = $this->do_request( self::ROUTE_GET_REQUEST );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [
+			'status'   => null,
+			'issues'   => [],
+			'cooldown' => 0
+		], $response->get_data() );
+	}
+
 	public function test_cooldown() {
 
 		$this->middleware->expects( $this->once() )
@@ -120,6 +205,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'freeListingsProgram' => [
 					                 'status' => 200,
 					                 'data'   => [
+						                 "globalState" =>  "ENABLED",
 						                 'regionStatuses' => [
 							                 [
 								                 'regionCodes'                      => [ 'US' ],
