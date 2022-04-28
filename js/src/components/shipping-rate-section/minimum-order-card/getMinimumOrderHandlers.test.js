@@ -1,14 +1,18 @@
 /**
  * Internal dependencies
  */
-import getMinimumOrderHandlers from './getMinimumOrderHandlers';
+import {
+	handleAdd,
+	handleChange,
+	handleDelete,
+} from './getMinimumOrderHandlers';
 
 describe( 'getMinimumOrderHandlers', () => {
 	let mockOnChange;
-	let handlers;
+	let value;
 
 	beforeEach( () => {
-		const value = [
+		value = [
 			{
 				id: '1',
 				country: 'US',
@@ -39,23 +43,18 @@ describe( 'getMinimumOrderHandlers', () => {
 			},
 		];
 
-		mockOnChange = jest.fn();
-		handlers = getMinimumOrderHandlers( {
-			value,
-			onChange: mockOnChange,
-		} );
+		mockOnChange = jest.fn().mockName( 'onChange' );
 	} );
 
-	describe( 'handleAddSubmit', () => {
-		it( 'returns value with the newly added group', () => {
+	describe( 'handleAdd', () => {
+		it( 'calls `onChange` with the newly added group', () => {
 			const newGroup = {
 				countries: [ 'US' ],
 				currency: 'USD',
 				threshold: 30,
 			};
 
-			const { handleAddSubmit } = handlers;
-			handleAddSubmit( newGroup );
+			handleAdd( value, mockOnChange, newGroup );
 
 			expect( mockOnChange.mock.calls.length ).toBe( 1 );
 			expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
@@ -93,8 +92,8 @@ describe( 'getMinimumOrderHandlers', () => {
 		} );
 	} );
 
-	describe( 'getChangeHandler', () => {
-		it( 'returns value updated based on changed group threshold', () => {
+	describe( 'handleChange', () => {
+		it( 'calls `onChange` with the value updated based on changed group threshold', () => {
 			const oldGroup = {
 				countries: [ 'AU', 'CN' ],
 				currency: 'USD',
@@ -105,8 +104,7 @@ describe( 'getMinimumOrderHandlers', () => {
 				threshold: 80,
 			};
 
-			const { getChangeHandler } = handlers;
-			getChangeHandler( oldGroup )( newGroup );
+			handleChange( value, mockOnChange, oldGroup, newGroup );
 
 			expect( mockOnChange.mock.calls.length ).toBe( 1 );
 			expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
@@ -141,7 +139,7 @@ describe( 'getMinimumOrderHandlers', () => {
 			] );
 		} );
 
-		it( 'returns value updated based on removed and added countries', () => {
+		it( 'calls `onChange` with the value updated based on removed and added countries', () => {
 			const oldGroup = {
 				countries: [ 'AU', 'CN' ],
 				currency: 'USD',
@@ -153,8 +151,7 @@ describe( 'getMinimumOrderHandlers', () => {
 				countries: [ 'CN', 'US' ],
 			};
 
-			const { getChangeHandler } = handlers;
-			getChangeHandler( oldGroup )( newGroup );
+			handleChange( value, mockOnChange, oldGroup, newGroup );
 
 			expect( mockOnChange.mock.calls.length ).toBe( 1 );
 			expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
@@ -191,7 +188,7 @@ describe( 'getMinimumOrderHandlers', () => {
 			] );
 		} );
 
-		it( 'returns value updated based on all changed countries and threshold', () => {
+		it( 'calls `onChange` with the value updated based on all changed countries and threshold', () => {
 			const oldGroup = {
 				countries: [ 'AU', 'CN' ],
 				currency: 'USD',
@@ -204,8 +201,7 @@ describe( 'getMinimumOrderHandlers', () => {
 				threshold: 88,
 			};
 
-			const { getChangeHandler } = handlers;
-			getChangeHandler( oldGroup )( newGroup );
+			handleChange( value, mockOnChange, oldGroup, newGroup );
 
 			expect( mockOnChange.mock.calls.length ).toBe( 1 );
 			expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
@@ -243,16 +239,15 @@ describe( 'getMinimumOrderHandlers', () => {
 		} );
 	} );
 
-	describe( 'getDeleteHandler', () => {
-		it( 'returns value without the deleted group', () => {
+	describe( 'handleDelete', () => {
+		it( 'calls `onChange` with the value without the deleted group', () => {
 			const oldGroup = {
 				countries: [ 'CN', 'AU' ],
 				currency: 'USD',
 				threshold: 50,
 			};
 
-			const { getDeleteHandler } = handlers;
-			getDeleteHandler( oldGroup )();
+			handleDelete( value, mockOnChange, oldGroup );
 
 			expect( mockOnChange.mock.calls.length ).toBe( 1 );
 			expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [

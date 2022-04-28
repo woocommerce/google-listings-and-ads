@@ -20,16 +20,19 @@ import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 import MinimumOrderInputControl from './minimum-order-input-control';
 import { AddMinimumOrderFormModal } from './minimum-order-form-modals';
 import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
-import getMinimumOrderHandlers from './getMinimumOrderHandlers';
+import {
+	handleAdd,
+	handleChange,
+	handleDelete,
+} from './getMinimumOrderHandlers';
 import './minimum-order-card.scss';
 
 const MinimumOrderCard = ( props ) => {
 	const { value = [], onChange = noop } = props;
-	const {
-		handleAddSubmit,
-		getChangeHandler,
-		getDeleteHandler,
-	} = getMinimumOrderHandlers( { value, onChange } );
+
+	// Bind handlers to a local value and onChange callback.
+	const handleValueChange = handleChange.bind( null, value, onChange );
+	const handleValueDelete = handleDelete.bind( null, value, onChange );
 
 	const renderGroups = () => {
 		const nonZeroShippingRates = value.filter( isNonFreeFlatShippingRate );
@@ -49,8 +52,8 @@ const MinimumOrderCard = ( props ) => {
 				<MinimumOrderInputControl
 					countryOptions={ countryOptions }
 					value={ groups[ 0 ] }
-					onChange={ getChangeHandler( groups[ 0 ] ) }
-					onDelete={ getDeleteHandler( groups[ 0 ] ) }
+					onChange={ handleValueChange.bind( null, groups[ 0 ] ) }
+					onDelete={ handleValueDelete.bind( null, groups[ 0 ] ) }
 				/>
 			);
 		}
@@ -80,8 +83,8 @@ const MinimumOrderCard = ( props ) => {
 							key={ group.countries.join( '-' ) }
 							countryOptions={ countryOptions }
 							value={ group }
-							onChange={ getChangeHandler( group ) }
-							onDelete={ getDeleteHandler( group ) }
+							onChange={ handleValueChange.bind( null, group ) }
+							onDelete={ handleValueDelete.bind( null, group ) }
 						/>
 					);
 				} ) }
@@ -105,7 +108,11 @@ const MinimumOrderCard = ( props ) => {
 										emptyThresholdGroup.countries
 									}
 									initialValues={ emptyThresholdGroup }
-									onSubmit={ handleAddSubmit }
+									onSubmit={ handleAdd.bind(
+										null,
+										value,
+										onChange
+									) }
 								/>
 							}
 						/>
