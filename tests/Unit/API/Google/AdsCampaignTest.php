@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -470,7 +471,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => self::TEST_CAMPAIGN_ID,
 				'name'    => 'Campaign One',
 				'status'  => 'enabled',
-				'type'    => 'shopping',
+				'type'    => CampaignType::SHOPPING,
 				'amount'  => 10,
 				'country' => 'US',
 			],
@@ -478,7 +479,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => 5678901234,
 				'name'    => 'Campaign Two',
 				'status'  => 'enabled',
-				'type'    => 'performance_max',
+				'type'    => CampaignType::PERFORMANCE_MAX,
 				'amount'  => 20,
 				'country' => 'UK',
 			],
@@ -494,7 +495,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => self::TEST_CAMPAIGN_ID,
 				'name'    => 'Test Campaign',
 				'status'  => 'removed',
-				'type'    => 'shopping',
+				'type'    => CampaignType::SHOPPING,
 				'amount'  => 10,
 				'country' => 'US',
 			],
@@ -502,7 +503,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => 5678901234,
 				'name'    => 'Test Campaign',
 				'status'  => 'enabled',
-				'type'    => 'performance_max',
+				'type'    => CampaignType::PERFORMANCE_MAX,
 				'amount'  => 10,
 				'country' => 'US',
 			],
@@ -518,7 +519,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => self::TEST_CAMPAIGN_ID,
 				'name'    => 'Campaign One',
 				'status'  => 'removed',
-				'type'    => 'performance_max',
+				'type'    => CampaignType::PERFORMANCE_MAX,
 				'amount'  => 10,
 				'country' => 'US',
 			],
@@ -526,7 +527,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => 5678901234,
 				'name'    => 'Campaign Two',
 				'status'  => 'enabled',
-				'type'    => 'performance_max',
+				'type'    => CampaignType::PERFORMANCE_MAX,
 				'amount'  => 10,
 				'country' => 'US',
 			],
@@ -560,7 +561,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => self::TEST_CAMPAIGN_ID,
 				'name'    => 'Test Campaign',
 				'status'  => 'enabled',
-				'type'    => 'performance_max',
+				'type'    => CampaignType::PERFORMANCE_MAX,
 				'amount'  => 10,
 				'country' => 'US',
 			],
