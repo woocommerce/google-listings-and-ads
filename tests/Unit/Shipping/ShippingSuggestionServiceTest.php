@@ -86,6 +86,26 @@ class ShippingSuggestionServiceTest extends UnitTest {
 		$this->assertEquals( [ 'free_shipping_threshold' => 50 ], $suggestions[0]['options'] );
 	}
 
+	public function test_get_suggestions_ignores_rates_with_shipping_classes() {
+		$location = new ShippingLocation( 21137, 'US', 'CA' );
+
+		$light_class_rate = new ShippingRate( 100 );
+		$light_class_rate->set_applicable_classes( [ 'light' ] );
+
+		$location_rates = [
+			new LocationRate( $location, $light_class_rate ),
+			new LocationRate( $location, new ShippingRate( 200 ) ),
+		];
+
+		$this->shipping_zone->expects( $this->any() )
+							->method( 'get_shipping_rates_grouped_by_country' )
+							->willReturn( $location_rates );
+
+		$suggestions = $this->suggestion_service->get_suggestions( 'US' );
+		$this->assertCount( 1, $suggestions );
+		$this->assertEquals( 200, $suggestions[0]['rate'] );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
