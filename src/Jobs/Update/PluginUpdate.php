@@ -39,8 +39,11 @@ class PluginUpdate implements Service, InstallableInterface {
 	 * @var array
 	 */
 	private $updates = [
-		'1.0.1' => [
+		'1.0.1'  => [
 			CleanupProductTargetCountriesJob::class,
+			UpdateAllProducts::class,
+		],
+		'1.12.6' => [
 			UpdateAllProducts::class,
 		],
 	];
