@@ -119,6 +119,40 @@ class LocationRatesProcessorTest extends UnitTest {
 		$this->assertNull( $processed[0]->get_shipping_rate()->get_min_order_amount() );
 	}
 
+	public function test_process_returns_flat_rates_with_shipping_classes() {
+		$location = new ShippingLocation( 21137, 'US', 'CA' );
+
+		$light_rate = new ShippingRate( 10 );
+		$light_rate->set_applicable_classes( [ 'light' ] );
+		$heavy_rate = new ShippingRate( 20 );
+		$heavy_rate->set_applicable_classes( [ 'heavy' ] );
+
+		$location_rates = [
+			new LocationRate( $location, new ShippingRate( 15 ) ),
+			new LocationRate( $location, $light_rate ),
+			new LocationRate( $location, $heavy_rate ),
+		];
+		$processed      = $this->rates_processor->process( $location_rates );
+		$this->assertCount( 3, $processed );
+	}
+
+	public function test_process_returns_most_expensive_flat_rates_with_shipping_classes() {
+		$location = new ShippingLocation( 21137, 'US', 'CA' );
+
+		$light_rate = new ShippingRate( 10 );
+		$light_rate->set_applicable_classes( [ 'light' ] );
+		$light_rate_2 = new ShippingRate( 20 );
+		$light_rate_2->set_applicable_classes( [ 'light' ] );
+
+		$location_rates = [
+			new LocationRate( $location, $light_rate ),
+			new LocationRate( $location, $light_rate_2 ),
+		];
+		$processed      = $this->rates_processor->process( $location_rates );
+		$this->assertCount( 1, $processed );
+		$this->assertEquals( 20, $processed[0]->get_shipping_rate()->get_rate() );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
