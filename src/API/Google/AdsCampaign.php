@@ -355,16 +355,17 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		$convert_status = $this->options->get( OptionsInterface::CAMPAIGN_CONVERT_STATUS );
 
 		if ( ! is_array( $convert_status ) || empty( $convert_status['status'] ) ) {
-			$convert_status = [ 'status' => 'unconverted' ];
+			$convert_status = [ 'status' => 'unknown' ];
 		}
 
 		// Refetch if status is unconverted and older than an hour.
 		if (
-			'unconverted' === $convert_status['status'] &&
+			in_array( $convert_status['status'], [ 'unconverted', 'unknown' ], true ) &&
 			( empty( $convert_status['updated'] ) || time() - $convert_status['updated'] > HOUR_IN_SECONDS )
 		) {
-			$old_campaigns         = 0;
-			$old_removed_campaigns = 0;
+			$old_campaigns            = 0;
+			$old_removed_campaigns    = 0;
+			$convert_status['status'] = 'unconverted';
 
 			try {
 				foreach ( $this->get_campaigns( false, false ) as $campaign ) {
@@ -376,19 +377,19 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 						}
 					}
 				}
+
+				// No old campaign types means we don't need to convert.
+				if ( ! $old_removed_campaigns && ! $old_campaigns ) {
+					$convert_status['status'] = 'not-applicable';
+				}
+
+				// All old campaign types have been removed, means we converted.
+				if ( ! $old_campaigns && $old_removed_campaigns > 0 ) {
+					$convert_status['status'] = 'converted';
+				}
 			} catch ( Exception $e ) {
 				// Error when retrieving campaigns, do not handle conversion.
-				$convert_status['status'] = 'not-applicable';
-			}
-
-			// No old campaign types means we don't need to convert.
-			if ( ! $old_removed_campaigns && ! $old_campaigns ) {
-				$convert_status['status'] = 'not-applicable';
-			}
-
-			// All old campaign types have been removed, means we converted.
-			if ( ! $old_campaigns && $old_removed_campaigns > 0 ) {
-				$convert_status['status'] = 'converted';
+				$convert_status['status'] = 'unknown';
 			}
 
 			$convert_status['updated'] = time();

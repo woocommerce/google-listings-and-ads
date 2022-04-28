@@ -538,7 +538,7 @@ class AdsCampaignTest extends UnitTest {
 
 	public function test_get_campaign_convert_status_exception() {
 		$this->generate_ads_query_mock_exception( new ApiException( 'unavailable', 14, 'UNAVAILABLE' ) );
-		$this->assertEquals( 'not-applicable', $this->campaign->get_campaign_convert_status() );
+		$this->assertEquals( 'unknown', $this->campaign->get_campaign_convert_status() );
 	}
 
 	public function test_get_campaign_convert_status_fetch_cached() {
@@ -570,7 +570,7 @@ class AdsCampaignTest extends UnitTest {
 			->with( OptionsInterface::CAMPAIGN_CONVERT_STATUS )
 			->willReturn(
 				[
-					'status'  => 'unconverted',
+					'status'  => 'unknown',
 					'updated' => time() - WEEK_IN_SECONDS,
 				]
 			);
