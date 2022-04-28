@@ -40,7 +40,7 @@ const MinimumOrderFormModal = ( {
 	renderButtons = noop,
 	initialValues,
 	onSubmit,
-	onRequestClose = noop,
+	onRequestClose,
 } ) => {
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
