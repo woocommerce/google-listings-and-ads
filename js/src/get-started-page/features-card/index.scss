@@ -1,3 +1,5 @@
+@import "../_shared";
+
 .gla-get-started-features-card {
 	// Adjust <CardHeader> imported from @wordpress/components.
 	// Repeat selector to make it higher priority.
@@ -33,30 +35,30 @@
 
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__description {
-		font-size: 14px;
-		line-height: 18px;
+		font-size: $font-small;
+		line-height: $line-height-small;
 	}
 
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__label {
 		margin: $grid-unit-30 0 $grid-unit-20;
 		font-weight: bold;
-		font-size: 14px;
-		line-height: 18px;
+		font-size: $font-small;
+		line-height: $line-height-small;
 	}
 
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__content {
-		font-size: 14px;
-		line-height: 18px;
+		font-size: $font-small;
+		line-height: $line-height-small;
 	}
 
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__learn-more {
 		margin-top: $grid-unit;
 		font-weight: 500;
-		font-size: 14px;
-		line-height: 16.71px;
+		font-size: $font-small;
+		line-height: $line-height-smaller;
 
 		a {
 			text-decoration: none;
@@ -66,8 +68,8 @@
 	@media (max-width: $break-small) {
 		// Use more specific rules to make it higher priority to override <Text> component.
 		& &__title {
-			font-size: 20px;
-			line-height: 28px;
+			font-size: $font-medium-mobile;
+			line-height: $line-height-large-mobile;
 		}
 
 		// Use more specific rules to make it higher priority to override <Text> component.

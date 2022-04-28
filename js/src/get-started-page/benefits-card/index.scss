@@ -1,3 +1,5 @@
+@import "../_shared";
+
 .gla-get-started-benefits-card {
 	// Adjust <CardBody> imported from @wordpress/components.
 	// Repeat selector to make it higher priority.
@@ -25,21 +27,21 @@
 
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__description {
-		font-size: 14px;
-		line-height: 18px;
+		font-size: $font-small;
+		line-height: $line-height-small;
 	}
 
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__hint {
 		font-size: $helptext-font-size;
 		color: $gray-600;
-		line-height: 16px;
+		line-height: $line-height-smaller;
 	}
 
 	@media (max-width: $break-small) {
 		// Use more specific rules to make it higher priority to override <Text> component.
 		& &__title {
-			font-size: 20px;
+			font-size: $font-medium-mobile;
 		}
 	}
 }

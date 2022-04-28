@@ -1,3 +1,5 @@
+@import "../_shared";
+
 .gla-get-started-with-video-card {
 	flex-direction: column;
 
@@ -9,7 +11,7 @@
 
 		& > p {
 			margin: 0 1em;
-			line-height: 16px;
+			line-height: $line-height-smaller;
 			font-size: $helptext-font-size;
 			color: $gray-600;
 		}
@@ -67,7 +69,7 @@
 		justify-content: center;
 		width: 188px;
 		height: 36px;
-		font-size: 14px;
+		font-size: $font-small;
 		margin-bottom: $grid-unit-10;
 	}
 
@@ -104,8 +106,8 @@
 
 	@media (max-width: $break-small) {
 		& &__title {
-			font-size: 20px;
-			line-height: $default-line-height;
+			font-size: $font-medium-mobile;
+			line-height: $line-height-large-mobile;
 		}
 
 		& &__description {
