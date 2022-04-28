@@ -23,6 +23,7 @@ module.exports = {
 	watchPathIgnorePatterns: [
 		'<rootDir>/.externalized.json',
 		'<rootDir>/js/build/',
+		'<rootDir>/js/build-dev',
 	],
 	globals: {
 		glaData: {

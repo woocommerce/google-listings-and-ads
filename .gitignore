@@ -3,6 +3,7 @@
 node_modules/
 dist
 build
+build-dev
 build-module
 build-style
 languages/*

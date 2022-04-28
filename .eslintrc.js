@@ -29,7 +29,10 @@ module.exports = {
 		jsdoc: {
 			mode: 'typescript',
 		},
-		'import/core-modules': [ 'webpack' ],
+		'import/core-modules': [
+			'webpack',
+			'@pmmmwh/react-refresh-webpack-plugin',
+		],
 		'import/resolver': { webpack: webpackResolver },
 	},
 	rules: {

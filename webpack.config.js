@@ -1,7 +1,12 @@
 const webpack = require( 'webpack' );
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
+const { hasArgInCLI } = require( '@wordpress/scripts/utils' );
 const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
+const ReactRefreshWebpackPlugin = require( '@pmmmwh/react-refresh-webpack-plugin' );
 const path = require( 'path' );
+
+const isProduction = process.env.NODE_ENV === 'production';
+const hasReactFastRefresh = hasArgInCLI( '--hot' ) && ! isProduction;
 
 const requestToExternal = ( request ) => {
 	// Opt-out WordPress packages.
@@ -103,12 +108,14 @@ const webpackConfig = {
 				 * - https://github.com/WordPress/gutenberg/blob/%40wordpress/scripts%4022.1.0/packages/scripts/config/webpack.config.js#L232-L240
 				 */
 				'CopyPlugin',
+				'ReactRefreshPlugin',
 			];
 			return ! filteredPlugins.includes( plugin.constructor.name );
 		} ),
 		new DependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
-			externalizedReport: '../../.externalized.json',
+			externalizedReport:
+				! hasReactFastRefresh && '../../.externalized.json',
 			requestToExternal,
 			requestToHandle,
 		} ),
@@ -150,6 +157,25 @@ const webpackConfig = {
 		path: path.resolve( process.cwd(), 'js/build' ),
 	},
 };
+
+if ( hasReactFastRefresh ) {
+	/**
+	 * If the development environment uses HTTPS,
+	 * it will fail when first connecting to webpack dev server,
+	 * so turn off the `overlay` option here.
+	 * Ref: https://github.com/pmmmwh/react-refresh-webpack-plugin/blob/v0.5.4/docs/TROUBLESHOOTING.md#component-not-updating-with-bundle-splitting-techniques
+	 */
+	webpackConfig.plugins.push(
+		new ReactRefreshWebpackPlugin( { overlay: false } )
+	);
+
+	webpackConfig.optimization = {
+		...webpackConfig.optimization,
+		// With multiple entries, it will need a webpack runtime to be shared
+		// for all generated chunks when enabling Fast Refresh.
+		runtimeChunk: 'single',
+	};
+}
 
 const sassTest = /\.(sc|sa)ss$/;
 const updatedSassOptions = {
