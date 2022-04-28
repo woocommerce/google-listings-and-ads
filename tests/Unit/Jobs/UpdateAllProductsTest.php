@@ -151,9 +151,6 @@ class UpdateAllProductsTest extends UnitTest {
 
 	public function test_process_item() {
 		$filtered_product_list = new FilteredProductList( $this->generate_simple_products_set( 1 ), 1 );
-		$product_id            = $filtered_product_list->get_product_ids()[0];
-		$entry                 = new BatchProductEntry( $product_id );
-		$response              = new BatchProductResponse( array( $entry ), array() );
 
 		$this->product_repository
 			->expects( $this->once() )
@@ -165,9 +162,6 @@ class UpdateAllProductsTest extends UnitTest {
 			->expects( $this->once() )
 			->method( 'update' )
 			->with( $filtered_product_list->get() );
-		$this->product_syncer
-			->method( 'update_by_batch_requests' )
-			->willReturn( $response );
 
 		do_action( self::PROCESS_ITEM_HOOK, $filtered_product_list->get_product_ids() );
 	}
