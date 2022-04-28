@@ -1,23 +1,22 @@
 @import "../_shared";
 
 .gla-get-started-features-card {
-	// Adjust <CardHeader> imported from @wordpress/components.
-	// Repeat selector to make it higher priority.
-	.components-card__header.components-card__header {
-		flex-direction: column;
-		gap: $grid-unit-10;
-		padding: $grid-unit-60 $grid-unit * 14.125 $grid-unit-50;
-		text-align: center;
-
-		@media (max-width: $break-small) {
-			padding: $grid-unit-30 $grid-unit-30 $grid-unit-20;
-			gap: $grid-unit-20;
-		}
-	}
-
 	.components-flex {
 		gap: 50px;
 		padding: 0 $grid-unit * 11 $grid-unit-60;
+
+		// Adjust <CardHeader> imported from @wordpress/components.
+		&.components-card__header {
+			flex-direction: column;
+			gap: $grid-unit-10;
+			padding: $grid-unit-60 $grid-unit * 14.125 $grid-unit-50;
+			text-align: center;
+
+			@media (max-width: $break-small) {
+				padding: $grid-unit-30 $grid-unit-30 $grid-unit-20;
+				gap: $grid-unit-20;
+			}
+		}
 
 		&__block {
 			display: flex;

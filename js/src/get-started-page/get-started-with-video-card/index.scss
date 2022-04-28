@@ -3,30 +3,31 @@
 .gla-get-started-with-video-card {
 	flex-direction: column;
 
-	// Adjust <CardHeader> imported from @wordpress/components.
-	// Repeat selector to make it higher priority.
-	.components-card__header.components-card__header {
-		justify-content: flex-end;
-		padding: $grid-unit * 2.5;
+	.components-flex {
+		// Adjust <CardHeader> imported from @wordpress/components.
+		&.components-card__header {
+			justify-content: flex-end;
+			padding: $grid-unit * 2.5;
 
-		& > p {
-			margin: 0 1em;
-			line-height: $line-height-smaller;
-			font-size: $helptext-font-size;
-			color: $gray-600;
-		}
-
-		@media (max-width: $break-small) {
-			justify-content: center;
-			text-align: center;
-			padding: $grid-unit-20;
-
-			& > p::after {
-				content: " Google";
+			& > p {
+				margin: 0 1em;
+				line-height: $line-height-smaller;
+				font-size: $helptext-font-size;
+				color: $gray-600;
 			}
 
-			& > img {
-				display: none;
+			@media (max-width: $break-small) {
+				justify-content: center;
+				text-align: center;
+				padding: $grid-unit-20;
+
+				& > p::after {
+					content: " Google";
+				}
+
+				& > img {
+					display: none;
+				}
 			}
 		}
 	}
