@@ -49,13 +49,13 @@ class UpdateAllProductsTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->action_scheduler      = $this->createMock( ActionSchedulerInterface::class );
-		$this->monitor               = $this->createMock( ActionSchedulerJobMonitor::class );
-		$this->product_syncer        = $this->createMock( ProductSyncer::class );
-		$this->product_repository    = $this->createMock( ProductRepository::class );
-		$this->product_helper        = $this->createMock( BatchProductHelper::class );
-		$this->merchant_center       = $this->createMock( MerchantCenterService::class );
-		$this->job                   = new UpdateAllProducts(
+		$this->action_scheduler   = $this->createMock( ActionSchedulerInterface::class );
+		$this->monitor            = $this->createMock( ActionSchedulerJobMonitor::class );
+		$this->product_syncer     = $this->createMock( ProductSyncer::class );
+		$this->product_repository = $this->createMock( ProductRepository::class );
+		$this->product_helper     = $this->createMock( BatchProductHelper::class );
+		$this->merchant_center    = $this->createMock( MerchantCenterService::class );
+		$this->job                = new UpdateAllProducts(
 			$this->action_scheduler,
 			$this->monitor,
 			$this->product_syncer,
@@ -80,13 +80,13 @@ class UpdateAllProductsTest extends UnitTest {
 	}
 
 	public function test_single_batched_job_with_items() {
-		$filtered_product_list = new FilteredProductList( $this->generate_simple_products_set( 4 ), 4 );
+		$filtered_product_list = new FilteredProductList( $this->generate_simple_product_mocks_set( 4 ), 4 );
 
 		$this->action_scheduler->expects( $this->exactly( 2 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				array( self::CREATE_BATCH_HOOK, [ 1 ] ),
-				array( self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] )
+				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] ]
 			);
 
 		$this->product_repository->expects( $this->once() )
@@ -124,23 +124,23 @@ class UpdateAllProductsTest extends UnitTest {
 				return $batch_count;
 			}, 10, 2 );
 
-		$batch_a = new FilteredProductList( $this->generate_simple_products_set( 2 ), 2 );
-		$batch_b = new FilteredProductList( $this->generate_simple_products_set( 2 ), 2 );
+		$batch_a = new FilteredProductList( $this->generate_simple_product_mocks_set( 2 ), 2 );
+		$batch_b = new FilteredProductList( $this->generate_simple_product_mocks_set( 2 ), 2 );
 		$batch_c = new FilteredProductList( [], 0 );
 
 		$this->action_scheduler->expects( $this->exactly( 5 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				array( self::CREATE_BATCH_HOOK, [ 1 ] ),
-				array( self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids() ] ),
-				array( self::CREATE_BATCH_HOOK, [ 2 ] ),
-				array( self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids() ] ),
-				array( self::CREATE_BATCH_HOOK, [ 3 ] ),
+				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids() ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2 ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids() ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3 ] ],
 			);
 
 		$this->product_repository->expects( $this->exactly( 3 ) )
 			->method( 'find_sync_ready_products' )
-			->withConsecutive( array( [], 2, 0 ), array( [], 2, 2 ), array( [], 2, 4 ) )
+			->withConsecutive( [ [], 2, 0 ], [ [], 2, 2 ], [ [], 2, 4 ] )
 			->willReturnOnConsecutiveCalls( $batch_a, $batch_b, $batch_c );
 
 		$this->job->schedule();
@@ -151,7 +151,7 @@ class UpdateAllProductsTest extends UnitTest {
 	}
 
 	public function test_process_item() {
-		$filtered_product_list = new FilteredProductList( $this->generate_simple_products_set( 1 ), 1 );
+		$filtered_product_list = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 1 );
 
 		$this->product_repository
 			->expects( $this->once() )
@@ -168,7 +168,7 @@ class UpdateAllProductsTest extends UnitTest {
 	}
 
 	public function test_reschedule_process_item() {
-		$filtered_product_list = new FilteredProductList( $this->generate_simple_products_set( 1 ), 1 );
+		$filtered_product_list = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 1 );
 
 		$this->product_repository
 			->expects( $this->once() )
@@ -185,20 +185,10 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->action_scheduler
 			->expects( $this->once() )
 			->method( 'schedule_immediate' )
-			->with( self::PROCESS_ITEM_HOOK, array( $filtered_product_list->get_product_ids() ) );
+			->with( self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] );
 
 		$this->expectException( ProductSyncerException::class );
 
 		do_action( self::PROCESS_ITEM_HOOK, $filtered_product_list->get_product_ids() );
-	}
-
-	/**
-	 * Helper function to crate array filled with product mocks for test purposes
-	 *
-	 * @param int $number Number of elements to fill an array with.
-	 * @return WC_Product[]
-	 */
-	private function generate_simple_products_set( int $number ) {
-		return array_fill( 0, 3, $this->generate_simple_product_mock() );
 	}
 }
