@@ -76,16 +76,19 @@ describe( 'Request Review Component', () => {
 	);
 
 	// eslint-disable-next-line jest/expect-expect
-	it.each( [ 'APPROVED', 'DISAPPROVED', 'WARNING' ] )(
-		'Status %s not rendering the notice',
-		( status ) => {
-			useActiveIssueType.mockReturnValue( status );
-			isNotRendering( {
-				hasFinishedResolution: true,
-				data: { status },
-			} );
-		}
-	);
+	it.each( [
+		'APPROVED',
+		'ONBOARDING',
+		'UNDER_REVIEW',
+		'PENDING_REVIEW',
+		'UNKNOWN',
+	] )( 'Status %s not rendering the notice', ( status ) => {
+		useActiveIssueType.mockReturnValue( 'account' );
+		isNotRendering( {
+			hasFinishedResolution: true,
+			data: { status },
+		} );
+	} );
 
 	// eslint-disable-next-line jest/expect-expect
 	it( "Doesn't render if it is resolving", () => {

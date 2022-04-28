@@ -29,4 +29,15 @@ describe( 'Account Status', () => {
 			).toBeTruthy();
 		}
 	);
+
+	it( 'Doesnt render unknown statuses', () => {
+		useAppSelectDispatch.mockReturnValue( {
+			hasFinishedResolution: true,
+			data: { status: 'unknown' },
+		} );
+
+		const { queryByText } = render( <AccountStatus /> );
+
+		expect( queryByText( /Account status:/ ) ).toBeFalsy();
+	} );
 } );
