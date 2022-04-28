@@ -43,6 +43,9 @@ class PluginUpdate implements Service, InstallableInterface {
 			CleanupProductTargetCountriesJob::class,
 			UpdateAllProducts::class,
 		],
+		'1.12.6' => [
+			UpdateAllProducts::class,
+		],
 	];
 
 	/**
