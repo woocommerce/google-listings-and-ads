@@ -3,7 +3,6 @@
  */
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -33,8 +32,8 @@ const EditMinimumOrderFormModal = ( {
 	countryOptions,
 	initialValues,
 	onSubmit,
-	onRequestClose = noop,
-	onDelete = noop,
+	onRequestClose,
+	onDelete,
 } ) => {
 	const handleDeleteClick = () => {
 		onRequestClose();

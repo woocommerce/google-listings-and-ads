@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import GridiconPlusSmall from 'gridicons/dist/plus-small';
-import { noop } from 'lodash';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -32,7 +31,7 @@ import {
 import './minimum-order-card.scss';
 
 const MinimumOrderCard = ( props ) => {
-	const { value = [], onChange = noop } = props;
+	const { value = [], onChange } = props;
 
 	/**
 	 * Render an Edit button that displays EditMinimumOrderFormModal upon click.

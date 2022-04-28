@@ -3,7 +3,6 @@
  */
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -32,7 +31,7 @@ const AddMinimumOrderFormModal = ( {
 	countryOptions,
 	initialValues,
 	onSubmit,
-	onRequestClose = noop,
+	onRequestClose,
 } ) => {
 	return (
 		<MinimumOrderFormModal

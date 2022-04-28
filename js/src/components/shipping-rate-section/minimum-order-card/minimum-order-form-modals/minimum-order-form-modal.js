@@ -4,7 +4,6 @@
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
-import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -37,7 +36,7 @@ import validateMinimumOrder from './validateMinimumOrder';
  */
 const MinimumOrderFormModal = ( {
 	countryOptions,
-	renderButtons = noop,
+	renderButtons,
 	initialValues,
 	onSubmit,
 	onRequestClose,
