@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 class LocationRate implements JsonSerializable {
 
 	/**
-	 * @var Location
+	 * @var ShippingLocation
 	 */
 	protected $location;
 
@@ -29,27 +29,27 @@ class LocationRate implements JsonSerializable {
 	/**
 	 * LocationRate constructor.
 	 *
-	 * @param Location     $location
-	 * @param ShippingRate $shipping_rate
+	 * @param ShippingLocation $location
+	 * @param ShippingRate     $shipping_rate
 	 */
-	public function __construct( Location $location, ShippingRate $shipping_rate ) {
+	public function __construct( ShippingLocation $location, ShippingRate $shipping_rate ) {
 		$this->location      = $location;
 		$this->shipping_rate = $shipping_rate;
 	}
 
 	/**
-	 * @return Location
+	 * @return ShippingLocation
 	 */
-	public function get_location(): Location {
+	public function get_location(): ShippingLocation {
 		return $this->location;
 	}
 
 	/**
-	 * @param Location $location
+	 * @param ShippingLocation $location
 	 *
 	 * @return LocationRate
 	 */
-	public function set_location( Location $location ): LocationRate {
+	public function set_location( ShippingLocation $location ): LocationRate {
 		$this->location = $location;
 
 		return $this;

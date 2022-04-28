@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\Location;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
@@ -23,7 +23,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class ShippingSuggestionServiceTest extends UnitTest {
 	public function test_get_suggestions_returns_correct_data() {
-		$location = new Location( 'US', 'CA' );
+		$location = new ShippingLocation( 21137, 'US', 'CA' );
 
 		$location_rates = [
 			new LocationRate( $location, new ShippingRate( 200 ) ),
@@ -47,7 +47,7 @@ class ShippingSuggestionServiceTest extends UnitTest {
 	}
 
 	public function test_get_suggestions_skips_conditional_free_rate() {
-		$location = new Location( 'US', 'CA' );
+		$location = new ShippingLocation( 21137, 'US', 'CA' );
 
 		$free_rate_1 = new ShippingRate( 0 );
 		$free_rate_1->set_min_order_amount( 50 );
@@ -67,7 +67,7 @@ class ShippingSuggestionServiceTest extends UnitTest {
 	}
 
 	public function test_get_suggestions_sets_conditional_free_rate_threshold_on_other_rates() {
-		$location = new Location( 'US', 'CA' );
+		$location = new ShippingLocation( 21137, 'US', 'CA' );
 
 		$free_rate_1 = new ShippingRate( 0 );
 		$free_rate_1->set_min_order_amount( 50 );
