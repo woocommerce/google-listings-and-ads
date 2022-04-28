@@ -16,7 +16,9 @@ import SummaryCard from './summary-card';
 import PaidCampaignPromotionCard from './paid-campaign-promotion-card';
 
 const numberFormatSetting = { precision: 0 };
-
+/**
+ * @fires gla_google_mc_link_click with `{ context: 'dashboard' }`
+ */
 const FreePerformanceCard = () => {
 	const formatNumber = useCurrencyFormat( numberFormatSetting );
 	const { data, loaded } = usePerformance( REPORT_SOURCE_FREE );

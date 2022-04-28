@@ -7,28 +7,36 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Exception;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Common\LocationInfo;
 use Google\Ads\GoogleAds\V9\Common\Metrics;
 use Google\Ads\GoogleAds\V9\Common\Segments;
+use Google\Ads\GoogleAds\V9\Common\TagSnippet;
 use Google\Ads\GoogleAds\V9\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V9\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
+use Google\Ads\GoogleAds\V9\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
+use Google\Ads\GoogleAds\V9\Enums\TrackingCodeTypeEnum\TrackingCodeType;
 use Google\Ads\GoogleAds\V9\Resources\BillingSetup;
 use Google\Ads\GoogleAds\V9\Resources\Campaign;
 use Google\Ads\GoogleAds\V9\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V9\Resources\CampaignCriterion;
 use Google\Ads\GoogleAds\V9\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V9\Resources\ConversionAction;
 use Google\Ads\GoogleAds\V9\Resources\Customer;
 use Google\Ads\GoogleAds\V9\Resources\CustomerUserAccess;
 use Google\Ads\GoogleAds\V9\Resources\MerchantCenterLink;
+use Google\Ads\GoogleAds\V9\Services\ConversionActionServiceClient;
 use Google\Ads\GoogleAds\V9\Services\CustomerServiceClient;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsServiceClient;
 use Google\Ads\GoogleAds\V9\Services\ListAccessibleCustomersResponse;
 use Google\Ads\GoogleAds\V9\Services\ListMerchantCenterLinksResponse;
 use Google\Ads\GoogleAds\V9\Services\MerchantCenterLinkServiceClient;
-use Google\Ads\GoogleAds\V9\Services\MutateGoogleAdsResponse;
 use Google\Ads\GoogleAds\V9\Services\MutateCampaignResult;
+use Google\Ads\GoogleAds\V9\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V9\Services\MutateConversionActionsResponse;
+use Google\Ads\GoogleAds\V9\Services\MutateGoogleAdsResponse;
 use Google\Ads\GoogleAds\V9\Services\MutateOperationResponse;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
@@ -37,10 +45,11 @@ use Google\ApiCore\PagedListResponse;
 /**
  * Trait GoogleAdsClient
  *
- * @property int                               $ads_id
- * @property MockObject|CustomerServiceClient  $customer_service
- * @property MockObject|GoogleAdsClient        $client
- * @property MockObject|GoogleAdsServiceClient $service_client
+ * @property int                                      $ads_id
+ * @property MockObject|ConversionActionServiceClient $conversion_action_service
+ * @property MockObject|CustomerServiceClient         $customer_service
+ * @property MockObject|GoogleAdsClient               $client
+ * @property MockObject|GoogleAdsServiceClient        $service_client
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait
  */
@@ -63,6 +72,9 @@ trait GoogleAdsClientTrait {
 
 		$this->customer_service = $this->createMock( CustomerServiceClient::class );
 		$this->client->method( 'getCustomerServiceClient' )->willReturn( $this->customer_service );
+
+		$this->conversion_action_service = $this->createMock( ConversionActionServiceClient::class );
+		$this->client->method( 'getConversionActionServiceClient' )->willReturn( $this->conversion_action_service );
 	}
 
 	/**
@@ -378,6 +390,79 @@ trait GoogleAdsClientTrait {
 		$this->client->method( 'getMerchantCenterLinkServiceClient' )->willReturn( $mc_link_service );
 
 		$mc_link_service->method( 'listMerchantCenterLinks' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generate a mocked mutate conversion action response.
+	 * Asserts that set of operations contains an operation with the expected type.
+	 *
+	 * @param string $type      Mutation type we are expecting (create/update/remove).
+	 * @param int    $action_id Conversion Action ID.
+	 */
+	protected function generate_conversion_action_mutate_mock( string $type, int $action_id ) {
+		$result = $this->createMock( MutateConversionActionResult::class );
+		$result->method( 'getResourceName' )->willReturn(
+			ResourceNames::forConversionAction( $this->ads_id, $action_id )
+		);
+
+		$response = ( new MutateConversionActionsResponse() )->setResults( [ $result ] );
+
+		$this->conversion_action_service->expects( $this->once() )
+			->method( 'mutateConversionActions' )
+			->willReturnCallback(
+				function( int $ads_id, array $operations ) use ( $type, $response ) {
+
+					// Assert that the operation is the right type.
+					foreach( $operations as $operation ) {
+						if ( 'conversion_action_operation' === $operation->getOperation() ) {
+							$operation = $operation->getConversionActionOperation();
+							$this->assertEquals( $type, $operation->getOperation() );
+						}
+					}
+
+					return $response;
+				}
+			);
+	}
+
+	/**
+	 * Creates a mocked ConversionAction.
+	 *
+	 * @param array $data Conversion Action data.
+	 */
+	protected function generate_conversion_action_mock( array $data ) {
+		$tag = $this->createMock( TagSnippet::class );
+		$tag->method( 'getType' )->willReturn( TrackingCodeType::WEBPAGE );
+		$tag->method( 'getPageFormat' )->willReturn( TrackingCodePageFormat::HTML );
+		$tag->method( 'getEventSnippet' )->willReturn( $data['snippet'] );
+
+		$conversion_action = $this->createMock( ConversionAction::class );
+		$conversion_action->method( 'getId' )->willReturn( $data['id'] );
+		$conversion_action->method( 'getName' )->willReturn( $data['name'] );
+		$conversion_action->method( 'getStatus' )->willReturn( $data['status'] );
+		$conversion_action->method( 'getTagSnippets' )->willReturn( [ $tag ] );
+
+		$this->conversion_action_service->expects( $this->once() )
+			->method( 'getConversionAction' )
+			->willReturn( $conversion_action );
+	}
+
+	/**
+	 * Generates a mocked exception when a ConversionAction is mutated.
+	 *
+	 * @param Exception $exception
+	 */
+	protected function generate_conversion_action_mutate_exception( Exception $exception ) {
+		$this->conversion_action_service->method( 'mutateConversionActions' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generates a mocked exception when a ConversionAction is requested.
+	 *
+	 * @param Exception $exception
+	 */
+	protected function generate_conversion_action_exception( Exception $exception ) {
+		$this->conversion_action_service->method( 'getConversionAction' )->willThrowException( $exception );
 	}
 
 	/**

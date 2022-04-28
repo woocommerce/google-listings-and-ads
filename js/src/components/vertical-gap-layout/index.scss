@@ -4,7 +4,7 @@
 	gap: calc(var(--main-gap) / 2);
 
 	&.gla-vertical-gap-layout__large {
-		gap: calc(var(--large-gap) / 2);
+		gap: var(--main-gap);
 	}
 
 	&.gla-vertical-gap-layout__overlap {

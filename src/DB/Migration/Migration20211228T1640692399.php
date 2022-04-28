@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration
  *
- * @since 1.12.0
+ * @since 1.12.2
  */
 class Migration20211228T1640692399 extends AbstractMigration {
 
@@ -48,7 +48,7 @@ class Migration20211228T1640692399 extends AbstractMigration {
 	 * @return string A version number. For example: 1.4.1
 	 */
 	public function get_applicable_version(): string {
-		return 'x.x.x';
+		return '1.12.2';
 	}
 
 	/**
@@ -63,6 +63,10 @@ class Migration20211228T1640692399 extends AbstractMigration {
 			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->shipping_rate_table->get_name() )}` ALTER COLUMN `method` DROP DEFAULT" );
 
 			$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER );
+			if ( ! is_array( $mc_settings ) ) {
+				return;
+			}
+
 			if ( isset( $mc_settings['offers_free_shipping'] ) && false !== boolval( $mc_settings['offers_free_shipping'] ) && isset( $mc_settings['free_shipping_threshold'] ) ) {
 				// Move the free shipping threshold from the options to the shipping rate table.
 				$options_json = json_encode( [ 'free_shipping_threshold' => (float) $mc_settings['free_shipping_threshold'] ] );

@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ApiNotReady;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
@@ -128,7 +127,7 @@ class AccountController extends BaseController {
 					$this->account->get_accounts()
 				);
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}
@@ -171,8 +170,8 @@ class AccountController extends BaseController {
 				return $this->prepare_item_for_response( $account, $request );
 			} catch ( ApiNotReady $e ) {
 				return $this->get_time_to_wait_response( $e );
-			} catch ( ExceptionWithResponseData $e ) {
-				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
 			}
 		};
 	}

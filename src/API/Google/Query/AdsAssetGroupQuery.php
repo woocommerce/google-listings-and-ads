@@ -8,7 +8,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class AdsAssetGroupQuery
  *
- * @since x.x.x
+ * @since 1.12.2
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */

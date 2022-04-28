@@ -11,6 +11,9 @@ import TopBar from '.~/components/stepper/top-bar';
 import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import HelpIconButton from '.~/components/help-icon-button';
 
+/**
+ * @fires gla_setup_mc with `{ target: 'back', trigger: 'click' }`.
+ */
 const SetupMCTopBar = () => {
 	const handleBackButtonClick = () => {
 		recordSetupMCEvent( 'back' );

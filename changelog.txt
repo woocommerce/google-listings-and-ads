@@ -1,5 +1,25 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 1.12.5 - 2022-04-12 =
+* Fix - Cache Yoast SEO values per product, to ensure unique values.
+* Fix - Feature/tree select control component.
+* Fix - Prompt to reconnect when a Jetpack disconnect is detected.
+* Tweak - Automatically generate Tracking events docs from JSDoc.
+* Tweak - Move Tracking events docs to JSDoc.
+
+= 1.12.4 - 2022-04-06 =
+* Fix - Prevent fatal errors when migrating or syncing merchant settings.
+
+= 1.12.3 - 2022-04-05 =
+* Fix - Shipping times section not showing up and unable to proceed through the Setup Merchant Center flow.
+
+= 1.12.2 - 2022-04-05 =
+* Add - Unit test for AdsConversionAction.
+* Add - Unit test for AdsReport.
+* Fix - Prevent uncaught exception when Merchant account is not connected and we send a tracker snapshot.
+* Tweak - DB migration for shipping rates.
+* Update - Create all new campaigns as PMax campaigns.
+
 = 1.12.1 - 2022-04-01 =
 * Fix - Change shipping time options based on shipping rate options, to address missing shipping times data when shipping rates option is set to automatic or simple flat option, and shipping times option is set to complex manual option.
 * Fix - Do not sync shipping rates if the shipping time setting is set to complex.

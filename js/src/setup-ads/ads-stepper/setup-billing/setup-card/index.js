@@ -15,8 +15,23 @@ import './index.scss';
 import AppButton from '.~/components/app-button';
 import useAutoCheckBillingStatusEffect from './useAutoCheckBillingStatusEffect';
 
-const SetupCard = ( props ) => {
-	const { billingUrl, onSetupComplete } = props;
+/**
+ * "Set up billing" button for Google Ads account is clicked.
+ *
+ * @event gla_ads_set_up_billing_click
+ * @property {string} context Indicates the place where the button is located, e.g. `setup-ads`.
+ * @property {string} link_id A unique ID for the button within the context, e.g. `set-up-billing`.
+ * @property {string} href Indicates the destination where the users is directed to.
+ */
+
+/**
+ * @fires gla_ads_set_up_billing_click with `{ context: 'setup-ads', link_id: 'set-up-billing',	href: billingUrl }`
+ * @param {Object} props React props.
+ * @param {string} props.billingUrl The URL for setting the billing up in Google Ads
+ * @param {Function} props.onSetupComplete Callback function when setup is completed
+ * @return {JSX.Element} Card filled with content or `AppSpinner`.
+ */
+const SetupCard = ( { billingUrl, onSetupComplete } ) => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	useAutoCheckBillingStatusEffect( onSetupComplete );
 

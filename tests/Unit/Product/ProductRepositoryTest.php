@@ -320,7 +320,7 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->product_meta       = $this->container->get( ProductMetaHandler::class );
 		$this->product_helper     = $this->container->get( ProductHelper::class );

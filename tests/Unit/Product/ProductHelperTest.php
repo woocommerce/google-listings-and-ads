@@ -972,7 +972,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		];
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		parent::tearDown();
 
 		delete_option( 'woocommerce_hide_out_of_stock_items' );
@@ -982,7 +982,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->product_meta    = $this->container->get( ProductMetaHandler::class );
 		$this->wc              = $this->container->get( WC::class );

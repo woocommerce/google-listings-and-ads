@@ -140,7 +140,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
     /**
      * Runs before each test is executed.
      */
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
         $this->merchant_center = $this->createMock( MerchantCenterService::class );
         $this->merchant_center->expects( $this->any() )

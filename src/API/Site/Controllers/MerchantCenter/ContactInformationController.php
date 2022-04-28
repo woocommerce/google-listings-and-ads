@@ -5,14 +5,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ResponseFromExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PhoneNumber;
+use Exception;
 use Google\Service\ShoppingContent\AccountAddress;
 use Google\Service\ShoppingContent\AccountBusinessInformation;
 use WP_REST_Request as Request;
@@ -28,8 +27,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class ContactInformationController extends BaseOptionsController {
-
-	use ResponseFromExceptionTrait;
 
 	/**
 	 * @var ContactInformation $contact_information
@@ -96,7 +93,7 @@ class ContactInformationController extends BaseOptionsController {
 					$this->contact_information->get_contact_information(),
 					$request
 				);
-			} catch ( MerchantApiException $e ) {
+			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
 		};
@@ -114,7 +111,7 @@ class ContactInformationController extends BaseOptionsController {
 					$this->contact_information->update_address_based_on_store_settings(),
 					$request
 				);
-			} catch ( MerchantApiException $e ) {
+			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
 		};

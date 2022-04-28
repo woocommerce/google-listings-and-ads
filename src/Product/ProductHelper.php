@@ -390,7 +390,7 @@ class ProductHelper implements Service {
 	/**
 	 * Increment failed delete attempts.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.2
 	 *
 	 * @param WC_Product $product
 	 */
@@ -402,7 +402,7 @@ class ProductHelper implements Service {
 	/**
 	 * Whether deleting has failed more times than the specified threshold.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.2
 	 *
 	 * @param WC_Product $product
 	 *
