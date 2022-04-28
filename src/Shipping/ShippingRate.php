@@ -29,7 +29,7 @@ class ShippingRate implements JsonSerializable {
 	/**
 	 * @var array
 	 */
-	protected $shipping_class_rates;
+	protected $applicable_classes = [];
 
 	/**
 	 * ShippingRate constructor.
@@ -91,24 +91,19 @@ class ShippingRate implements JsonSerializable {
 	}
 
 	/**
-	 * @return array
+	 * @return string[]
 	 */
-	public function get_shipping_class_rates(): array {
-		return $this->shipping_class_rates;
+	public function get_applicable_classes(): array {
+		return $this->applicable_classes;
 	}
 
 	/**
-	 * @param array $shipping_class_rates A multidimensional array of shipping class rates. {
-	 *     Array of shipping class arguments.
-	 *
-	 *     @type string $class The shipping class slug/id.
-	 *     @type float  $rate  The cost of the shipping method for the class in WooCommerce store currency.
-	 * }
+	 * @param string[] $applicable_classes
 	 *
 	 * @return ShippingRate
 	 */
-	public function set_shipping_class_rates( array $shipping_class_rates ): ShippingRate {
-		$this->shipping_class_rates = $shipping_class_rates;
+	public function set_applicable_classes( array $applicable_classes ): ShippingRate {
+		$this->applicable_classes = $applicable_classes;
 
 		return $this;
 	}

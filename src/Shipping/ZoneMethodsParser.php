@@ -44,10 +44,12 @@ class ZoneMethodsParser implements Service {
 	 * @return ShippingRate[] Returns an array of parsed shipping rates, or null if the shipping method is not supported.
 	 */
 	public function parse( WC_Shipping_Zone $zone ): array {
-		$parsed_rates = array_map( [ $this, 'shipping_method_to_rate' ], $zone->get_shipping_methods( true ) );
+		$parsed_rates = [];
+		foreach ( $zone->get_shipping_methods( true ) as $method ) {
+			$parsed_rates = array_merge( $parsed_rates, $this->shipping_method_to_rates( $method ) );
+		}
 
-		// Remove null values (i.e. non-parseable methods) and return the rest.
-		return array_filter( $parsed_rates );
+		return $parsed_rates;
 	}
 
 	/**
@@ -55,9 +57,10 @@ class ZoneMethodsParser implements Service {
 	 *
 	 * @param object|WC_Shipping_Method $method
 	 *
-	 * @return ShippingRate|null Returns an array of parsed shipping rates, or null if the shipping method is not supported.
+	 * @return ShippingRate[] Returns an array of parsed shipping rates, or empty if the shipping method is not supported.
 	 */
-	protected function shipping_method_to_rate( object $method ): ?ShippingRate {
+	protected function shipping_method_to_rates( object $method ): array {
+		$shipping_rates = [];
 		switch ( $method->id ) {
 			case self::METHOD_FLAT_RATE:
 				$flat_rate            = $this->get_flat_rate_method_rate( $method );
@@ -65,11 +68,18 @@ class ZoneMethodsParser implements Service {
 
 				// If the flat-rate method has no rate AND no shipping classes, we don't return it.
 				if ( null === $flat_rate && empty( $shipping_class_rates ) ) {
-					return null;
+					return [];
 				}
 
-				$shipping_rate = new ShippingRate( $flat_rate );
-				$shipping_rate->set_shipping_class_rates( $shipping_class_rates );
+				$shipping_rates[] = new ShippingRate( $flat_rate );
+
+				if ( ! empty( $shipping_class_rates ) ) {
+					foreach ( $shipping_class_rates as ['class' => $class, 'rate' => $rate] ) {
+						$shipping_rate = new ShippingRate( $rate );
+						$shipping_rate->set_applicable_classes( [ $class ] );
+						$shipping_rates[] = $shipping_rate;
+					}
+				}
 
 				break;
 			case self::METHOD_FREE:
@@ -81,15 +91,16 @@ class ZoneMethodsParser implements Service {
 					$shipping_rate->set_min_order_amount( (float) $method->get_option( 'min_amount' ) );
 				} elseif ( in_array( $requires, [ 'coupon', 'both' ], true ) ) {
 					// We can't sync this method if free shipping requires a coupon.
-					return null;
+					return [];
 				}
+				$shipping_rates[] = $shipping_rate;
 				break;
 			default:
 				// We don't support other shipping methods.
-				return null;
+				return [];
 		}
 
-		return $shipping_rate;
+		return $shipping_rates;
 	}
 
 	/**
