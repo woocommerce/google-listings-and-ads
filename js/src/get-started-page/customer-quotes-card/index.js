@@ -26,24 +26,24 @@ const ContentBlock = ( { content, name } ) => {
 				height="34"
 			/>
 			<Text
-				className="gla-get-started-case-studies-card__content"
+				className="gla-get-started-customer-quotes-card__content"
 				variant="body"
 			>
 				{ content }
 			</Text>
-			<Text className="gla-get-started-case-studies-card__name">
+			<Text className="gla-get-started-customer-quotes-card__name">
 				{ name }
 			</Text>
 		</FlexBlock>
 	);
 };
 
-const CaseStudiesCard = () => {
+const CustomerQuotesCard = () => {
 	return (
-		<Card className="gla-get-started-case-studies-card" isBorderless>
+		<Card className="gla-get-started-customer-quotes-card" isBorderless>
 			<CardHeader>
 				<Text
-					className="gla-get-started-case-studies-card__title"
+					className="gla-get-started-customer-quotes-card__title"
 					variant="title.medium"
 				>
 					{ __(
@@ -72,4 +72,4 @@ const CaseStudiesCard = () => {
 	);
 };
 
-export default CaseStudiesCard;
+export default CustomerQuotesCard;

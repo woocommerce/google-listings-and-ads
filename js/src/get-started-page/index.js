@@ -3,7 +3,7 @@
  */
 import './index.scss';
 import BenefitsCard from './benefits-card';
-import CaseStudiesCard from './case-studies-card';
+import CustomerQuotesCard from './customer-quotes-card';
 import FeaturesCard from './features-card';
 import GetStartedWithVideoCard from './get-started-with-video-card';
 import UnsupportedNotices from './unsupported-notices';
@@ -15,7 +15,7 @@ const GetStartedPage = () => {
 			<GetStartedWithVideoCard />
 			<BenefitsCard />
 			<FeaturesCard />
-			<CaseStudiesCard />
+			<CustomerQuotesCard />
 		</div>
 	);
 };
