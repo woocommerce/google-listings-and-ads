@@ -580,4 +580,28 @@ class AdsCampaignTest extends UnitTest {
 		$this->assertEquals( 'not-applicable', $this->campaign->get_campaign_convert_status() );
 	}
 
+	public function test_get_campaign_convert_status_refresh_cache_no_update_time() {
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Test Campaign',
+				'status'  => 'enabled',
+				'type'    => CampaignType::SHOPPING,
+				'amount'  => 10,
+				'country' => 'US',
+			],
+		];
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::CAMPAIGN_CONVERT_STATUS )
+			->willReturn(
+				[
+					'status' => 'unknown',
+				]
+			);
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
+		$this->assertEquals( 'unconverted', $this->campaign->get_campaign_convert_status() );
+	}
+
 }
