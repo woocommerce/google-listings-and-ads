@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\JobTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
@@ -162,6 +163,31 @@ class UpdateAllProductsTest extends UnitTest {
 			->expects( $this->once() )
 			->method( 'update' )
 			->with( $filtered_product_list->get() );
+
+		do_action( self::PROCESS_ITEM_HOOK, $filtered_product_list->get_product_ids() );
+	}
+
+	public function test_reschedule_process_item() {
+		$filtered_product_list = new FilteredProductList( $this->generate_simple_products_set( 1 ), 1 );
+
+		$this->product_repository
+			->expects( $this->once() )
+			->method( 'find_by_ids' )
+			->with( $filtered_product_list->get_product_ids() )
+			->willReturn( $filtered_product_list->get() );
+
+		$this->product_syncer
+			->expects( $this->once() )
+			->method( 'update' )
+			->with( $filtered_product_list->get() )
+			->will( $this->throwException( new ProductSyncerException() ) );
+
+		$this->action_scheduler
+			->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( self::PROCESS_ITEM_HOOK, array( $filtered_product_list->get_product_ids() ) );
+
+		$this->expectException( ProductSyncerException::class );
 
 		do_action( self::PROCESS_ITEM_HOOK, $filtered_product_list->get_product_ids() );
 	}
