@@ -1,19 +1,18 @@
 .gla-get-started-customer-quotes-card {
-	// Adjust <CardHeader> imported from @wordpress/components.
-	// Repeat selector to make it higher priority.
-	.components-card__header.components-card__header {
-		flex-direction: column;
-		padding: $grid-unit * 5.75 $grid-unit * 14 $grid-unit-50;
-		text-align: center;
-
-		@media (max-width: $break-small) {
-			padding: $grid-unit-30;
-		}
-	}
-
 	.components-flex {
 		gap: $grid-unit * 3.5;
 		padding: 0 $grid-unit * 7.75 $grid-unit * 5.75;
+
+		// Adjust <CardHeader> imported from @wordpress/components.
+		&.components-card__header {
+			flex-direction: column;
+			padding: $grid-unit * 5.75 $grid-unit * 14 $grid-unit-50;
+			text-align: center;
+
+			@media (max-width: $break-small) {
+				padding: $grid-unit-30;
+			}
+		}
 
 		&__block {
 			display: flex;
