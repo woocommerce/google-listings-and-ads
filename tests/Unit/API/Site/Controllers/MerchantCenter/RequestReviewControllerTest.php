@@ -173,7 +173,6 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 							                 [
 								                 'reviewEligibilityStatus' => 'ELIGIBLE',
 								                 'eligibilityStatus'       => 'DISAPPROVED',
-								                 'reviewIssues'            => [ 'one' ]
 							                 ],
 						                 ]
 					                 ]
