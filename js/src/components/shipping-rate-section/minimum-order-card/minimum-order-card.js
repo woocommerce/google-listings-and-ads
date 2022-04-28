@@ -24,16 +24,15 @@ import {
 	EditMinimumOrderFormModal,
 } from './minimum-order-form-modals';
 import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
-import getMinimumOrderHandlers from './getMinimumOrderHandlers';
+import {
+	getMinimumOrderAddHandler,
+	getMinimumOrderChangeHandler,
+	getMinimumOrderDeleteHandler,
+} from './handlers';
 import './minimum-order-card.scss';
 
 const MinimumOrderCard = ( props ) => {
 	const { value = [], onChange = noop } = props;
-	const {
-		handleAddSubmit,
-		getChangeHandler,
-		getDeleteHandler,
-	} = getMinimumOrderHandlers( { value, onChange } );
 
 	/**
 	 * Render an Edit button that displays EditMinimumOrderFormModal upon click.
@@ -54,8 +53,14 @@ const MinimumOrderCard = ( props ) => {
 					<EditMinimumOrderFormModal
 						countryOptions={ countryOptions }
 						initialValues={ group }
-						onSubmit={ getChangeHandler( group ) }
-						onDelete={ getDeleteHandler( group ) }
+						onSubmit={ getMinimumOrderChangeHandler(
+							value,
+							onChange
+						)( group ) }
+						onDelete={ getMinimumOrderDeleteHandler(
+							value,
+							onChange
+						)( group ) }
 					/>
 				}
 			/>
@@ -83,7 +88,10 @@ const MinimumOrderCard = ( props ) => {
 						group: groups[ 0 ],
 					} ) }
 					value={ groups[ 0 ] }
-					onChange={ getChangeHandler( groups[ 0 ] ) }
+					onChange={ getMinimumOrderChangeHandler(
+						value,
+						onChange
+					)( groups[ 0 ] ) }
 				/>
 			);
 		}
@@ -116,7 +124,10 @@ const MinimumOrderCard = ( props ) => {
 								group,
 							} ) }
 							value={ group }
-							onChange={ getChangeHandler( group ) }
+							onChange={ getMinimumOrderChangeHandler(
+								value,
+								onChange
+							)( group ) }
 						/>
 					);
 				} ) }
@@ -140,7 +151,10 @@ const MinimumOrderCard = ( props ) => {
 										emptyThresholdGroup.countries
 									}
 									initialValues={ emptyThresholdGroup }
-									onSubmit={ handleAddSubmit }
+									onSubmit={ getMinimumOrderAddHandler(
+										value,
+										onChange
+									) }
 								/>
 							}
 						/>
