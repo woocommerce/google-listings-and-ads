@@ -150,7 +150,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [
 			'status'   => 'ONBOARDING',
-			'issues'   => [],
+			'issues'   => [ 'one' ],
 			'cooldown' => 0
 		], $response->get_data() );
 	}
