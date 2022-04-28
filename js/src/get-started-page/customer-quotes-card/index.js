@@ -16,7 +16,7 @@ import {
 import './index.scss';
 import quoteImageURL from './img-quote.svg';
 
-const ContentBlock = ( { content, name } ) => {
+const Quote = ( { quote, name } ) => {
 	return (
 		<FlexBlock>
 			<img
@@ -29,7 +29,7 @@ const ContentBlock = ( { content, name } ) => {
 				className="gla-get-started-customer-quotes-card__content"
 				variant="body"
 			>
-				{ content }
+				{ quote }
 			</Text>
 			<Text className="gla-get-started-customer-quotes-card__name">
 				{ name }
@@ -53,15 +53,15 @@ const CustomerQuotesCard = () => {
 				</Text>
 			</CardHeader>
 			<Flex gap={ 0 }>
-				<ContentBlock
-					content={ __(
+				<Quote
+					quote={ __(
 						'Thank you Google and WooCommerce for creating this app. It’s so simple to use and connect your products to Merchant Center.',
 						'google-listings-and-ads'
 					) }
 					name={ __( 'joshualukewhite', 'google-listings-and-ads' ) }
 				/>
-				<ContentBlock
-					content={ __(
+				<Quote
+					quote={ __(
 						'It does everything smoothly. Perfect and must need add-on from WooCommerce. Some things are just “essentials”.',
 						'google-listings-and-ads'
 					) }
