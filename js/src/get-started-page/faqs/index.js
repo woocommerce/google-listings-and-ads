@@ -138,14 +138,26 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'what-are-performance-max-campaigns',
+		trackId:
+			'where-to-track-free-listings-and-performance-max-campaign-performance',
 		question: __(
-			'What are Performance Max campaigns?',
+			'Where can I track my free listings and Performance Max campaign performance?',
 			'google-listings-and-ads'
 		),
-		answer: __(
-			'Performance Max campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.',
-			'google-listings-and-ads'
+		answer: createInterpolateElement(
+			__(
+				'Once your free listings and Performance Max campaigns are set up, you will be able to track your performance straight from your WooCommerce dashboard. You can view your reports yearly, quarterly, monthly, weekly, or daily. The following metrics will be visible within your report: conversions, clicks, impressions, total sales and total spend. <link>Learn more.</link>',
+				'google-listings-and-ads'
+			),
+			{
+				link: (
+					<AppDocumentationLink
+						context="faqs"
+						linkId="campaign-analytics"
+						href="https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics"
+					/>
+				),
+			}
 		),
 	},
 	{
