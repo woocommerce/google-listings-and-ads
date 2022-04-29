@@ -13,14 +13,25 @@ import './index.scss';
 
 const faqItems = [
 	{
-		trackId: 'what-is-google-merchant-center',
+		trackId: 'what-do-i-need-to-get-started',
 		question: __(
-			'What is Google Merchant Center?',
+			'What do I need to get started?',
 			'google-listings-and-ads'
 		),
-		answer: __(
-			'The Google Merchant Center helps you sync your store and product data with Google and makes the information available for both free listings on the Shopping tab and Google Shopping Ads. That means everything about your stores and products is available to customers when they search on a Google property.',
-			'google-listings-and-ads'
+		answer: createInterpolateElement(
+			__(
+				'In order to sync your WooCommerce store with Google and begin showcasing your products online, you will need to provide the following during setup; Google account access, target audience, shipping information, tax rate information (required for US only), and ensure your store is running on a compatible PHP version. <link>Learn more.</link>',
+				'google-listings-and-ads'
+			),
+			{
+				link: (
+					<AppDocumentationLink
+						context="faqs"
+						linkId="general-requirements"
+						href="https://woocommerce.com/document/google-listings-and-ads/#general-requirements"
+					/>
+				),
+			}
 		),
 	},
 	{
