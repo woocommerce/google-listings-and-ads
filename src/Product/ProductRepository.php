@@ -168,21 +168,6 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce products ready to be submitted to Google Merchant Center.
-	 *
-	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
-	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int   $offset Amount to offset product results.
-	 *
-	 * @return FilteredProductList List of WooCommerce products after filtering.
-	 */
-	public function find_sync_ready_product( array $args = [], int $limit = - 1, int $offset = 0 ): FilteredProductList {
-		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
-
-		return $this->product_filter->filter_sync_ready_products( $results );
-	}
-
-	/**
 	 * @return array
 	 */
 	protected function get_sync_ready_products_meta_query(): array {
