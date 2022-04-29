@@ -456,7 +456,7 @@ const TreeSelectControl = ( {
 	/**
 	 * Get formatted Tags from the selected values.
 	 *
-	 * @return {{label: {string}, id: {string}}[]} An array of Tags
+	 * @return {Array<{id: string, label: string|undefined}>} An array of Tags
 	 */
 	const getTags = () => {
 		if ( ! options.length ) {
