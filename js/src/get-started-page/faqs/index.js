@@ -37,14 +37,14 @@ const faqItems = [
 	{
 		trackId: 'what-if-i-already-have-free-listings',
 		question: __(
-			'What if I already have free listings set up for my store?',
+			'What if I already have Google listings or ads set up? Will syncing my store replace my current Google listings?',
 			'google-listings-and-ads'
 		),
 		answer: (
 			<>
 				<p>
 					{ __(
-						'If there is an existing claim on your store URL, this WooCommerce integration will reclaim your store URL. This will cause any existing product listings or ads to stop running, and the other verified account will be notified that they have lost their claim.',
+						'Once you link an existing account to connect your store, your Shopping ads and free listings will stop running. You’ll need to re-upload your feed and product data in order to run Shopping ads and show free listings.',
 						'google-listings-and-ads'
 					) }
 				</p>
