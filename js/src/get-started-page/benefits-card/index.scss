@@ -15,6 +15,10 @@
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__image {
 		flex: 100%;
+
+		> img {
+			object-fit: cover;
+		}
 	}
 
 	.components-flex__item {
