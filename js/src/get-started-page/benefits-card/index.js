@@ -20,15 +20,17 @@ const BenefitsCard = () => {
 	return (
 		<Card className="gla-get-started-benefits-card" isBorderless>
 			<CardBody>
-				<img
-					src={ benefitsImageURL }
-					alt={ __(
-						'Google Listings & Ads Benefits',
-						'google-listings-and-ads'
-					) }
-					width="100%"
-					height="100%"
-				/>
+				<div className="gla-get-started-benefits-card__image">
+					<img
+						src={ benefitsImageURL }
+						alt={ __(
+							'Google Listings & Ads Benefits',
+							'google-listings-and-ads'
+						) }
+						width="100%"
+						height="100%"
+					/>
+				</div>
 				<FlexItem>
 					<Text
 						variant="title.medium"

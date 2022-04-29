@@ -12,7 +12,13 @@
 		}
 	}
 
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__image {
+		flex: 100%;
+	}
+
 	.components-flex__item {
+		flex: 100%;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
