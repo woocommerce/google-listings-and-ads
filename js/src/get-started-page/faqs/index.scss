@@ -1,0 +1,14 @@
+.gla-get-started-faqs {
+	.components-panel__header {
+		> h2 {
+			font-weight: 400;
+			font-size: $gla-font-medium;
+			line-height: $gla-line-height-large;
+
+			@media (max-width: $break-small) {
+				font-size: $gla-font-medium-mobile;
+				line-height: $gla-line-height-large-mobile;
+			}
+		}
+	}
+}

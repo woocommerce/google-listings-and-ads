@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
  */
 import FaqsPanel from '.~/components/faqs-panel';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import './index.scss';
 
 const faqItems = [
 	{
@@ -228,7 +229,13 @@ const faqItems = [
  * @fires gla_get_started_faq
  */
 const Faqs = () => {
-	return <FaqsPanel trackName="gla_get_started_faq" faqItems={ faqItems } />;
+	return (
+		<FaqsPanel
+			className="gla-get-started-faqs"
+			trackName="gla_get_started_faq"
+			faqItems={ faqItems }
+		/>
+	);
 };
 
 export default Faqs;
