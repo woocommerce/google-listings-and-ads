@@ -141,10 +141,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$this->maybe_refresh_status_data( $force_refresh );
 
 		// Get only critical issues
-		$critical_issues = $this->fetch_issues( $type, $per_page, $page, self::SEVERITY_ERROR );
+		$severity_error_issues = $this->fetch_issues( $type, $per_page, $page, true );
 
-		// In case there are critical issue we show only those, otherwise we show all the issues.
-		return $critical_issues['total'] > 0 ? $critical_issues : $this->fetch_issues( $type, $per_page, $page );
+		// In case there are error issues we show only those, otherwise we show all the issues.
+		return $severity_error_issues['total'] > 0 ? $severity_error_issues : $this->fetch_issues( $type, $per_page, $page );
 	}
 
 	/**
@@ -252,12 +252,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @param string|null $type To filter by issue type if desired.
 	 * @param int         $per_page The number of issues to return (0 for no limit).
 	 * @param int         $page The page to start on (1-indexed).
-	 * @param string|null $severity Filters the issues by severity level.
+	 * @param bool        $only_errors Filters only the issues with error and critical severity.
 	 *
 	 * @return array The requested issues and the total count of issues.
 	 * @throws InvalidValue If the type filter is invalid.
 	 */
-	protected function fetch_issues( string $type = null, int $per_page = 0, int $page = 1, string $severity = null ): array {
+	protected function fetch_issues( string $type = null, int $per_page = 0, int $page = 1, bool $only_errors = false ): array {
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 
@@ -279,8 +279,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$issue_query->set_offset( $per_page * ( $page - 1 ) );
 		}
 
-		if ( $severity ) {
-			$issue_query->where( 'severity', $severity );
+		if ( $only_errors ) {
+			$issue_query->where( 'severity', [ 'error', 'critical' ], 'IN' );
 		}
 
 		$issues = [];
