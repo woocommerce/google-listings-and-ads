@@ -2,9 +2,12 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\RequestReviewController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Google\Exception;
 
@@ -18,11 +21,15 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 
 	protected const ROUTE_GET_REQUEST = '/wc/gla/mc/review';
 	private $middleware;
+	private $transients;
+	private $request_review_statuses;
 
 	public function setUp(): void {
 		parent::setUp();
 		$this->middleware = $this->createMock( Middleware::class );
-		$this->controller = new RequestReviewController( $this->server, $this->middleware, new RequestReviewStatuses() );
+		$this->transients = $this->createMock( TransientsInterface::class );
+		$this->request_review_statuses = new RequestReviewStatuses();
+		$this->controller = new RequestReviewController( $this->server, $this->middleware, $this->request_review_statuses, $this->transients  );
 		$this->controller->register();
 	}
 
@@ -153,7 +160,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( [
 			'status'   => 'DISAPPROVED',
 			'issues'   => [],
-			'cooldown' => 1651057131000 // 27/04/2022
+			'cooldown' => 1651058331000 // 27/04/2022
 		], $response->get_data() );
 	}
 

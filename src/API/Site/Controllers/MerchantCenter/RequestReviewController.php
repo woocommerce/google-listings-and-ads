@@ -10,7 +10,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 use Exception;
@@ -25,30 +24,18 @@ defined( 'ABSPATH' ) || exit;
 class RequestReviewController extends BaseOptionsController {
 
 	/**
-	 * @var ContainerInterface
-	 */
-	protected $container;
-
-	/**
-	 * @var Middleware
-	 */
-	protected $middleware;
-
-	/**
-	 * @var RequestReviewStatuses
-	 */
-	protected $request_review_statuses;
-
-	/**
 	 * RequestReviewController constructor.
 	 *
-	 * @param ContainerInterface $container
+	 * @param RESTServer            $server
+	 * @param Middleware            $middleware
+	 * @param RequestReviewStatuses $request_review_statuses
+	 * @param TransientsInterface   $transient
 	 */
-	public function __construct( ContainerInterface $container ) {
-		$this->container = $container;
-		parent::__construct( $container->get( RESTServer::class ) );
-		$this->middleware              = $container->get( Middleware::class );
-		$this->request_review_statuses = $container->get( RequestReviewStatuses::class );
+	public function __construct( RESTServer $server, Middleware $middleware, RequestReviewStatuses $request_review_statuses, TransientsInterface $transient ) {
+		parent::__construct( $server );
+		$this->middleware              = $middleware;
+		$this->request_review_statuses = $request_review_statuses;
+		$this->transient = $transient;
 	}
 
 	/**
@@ -144,7 +131,7 @@ class RequestReviewController extends BaseOptionsController {
 	 * @param array $value The Account Review Status data to save in the transient
 	 */
 	private function set_cached_review_status( $value ): void {
-		$this->container->get( TransientsInterface::class )->set(
+		$this->transient->set(
 			Transients::MC_ACCOUNT_REVIEW,
 			$value,
 			$this->request_review_statuses->get_account_review_lifetime()
@@ -157,7 +144,7 @@ class RequestReviewController extends BaseOptionsController {
 	 * @return null|array Returns NULL in case no data is available or an array with the Account Review Status data otherwise.
 	 */
 	private function get_cached_review_status(): ?array {
-		return $this->container->get( TransientsInterface::class )->get(
+		return $this->transient->get(
 			Transients::MC_ACCOUNT_REVIEW,
 		);
 	}
