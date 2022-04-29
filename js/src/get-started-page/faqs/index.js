@@ -161,13 +161,13 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'how-much-do-performance-max-campaigns-cost',
+		trackId: 'how-to-sync-products-to-google-free-listings',
 		question: __(
-			'How much do Performance Max campaigns cost?',
+			'How do I sync my products to Google free listings?',
 			'google-listings-and-ads'
 		),
 		answer: __(
-			'Performance Max campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google Listings & Ads but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.',
+			'The Google Listings and Ads plugin allows you to upload your store and product data to Google. Your products will sync automatically to make relevant information available for free listings, Google Ads, and other Google services. You can create a new Merchant Center account or link an existing account to connect your store and list products across Google.',
 			'google-listings-and-ads'
 		),
 	},
