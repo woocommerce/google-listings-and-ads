@@ -3,12 +3,14 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useViewportMatch } from '@wordpress/compose';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
  */
 import TreeSelectControl from '.~/components/tree-select-control';
 import useMCCountryTreeOptions from './useMCCountryTreeOptions';
+import './supported-country-select.scss';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -22,10 +24,11 @@ import useMCCountryTreeOptions from './useMCCountryTreeOptions';
  *
  * @param {Object} props React props.
  * @param {Array<CountryCode>} [props.countryCodes] Country codes for converting to tree-based option structure. It will use all MC supported countries if not specified.
- * @param {Object} props.restProps Props to be forwarded to TreeSelectControl.
+ * @param {string} props.className Class name. Note that when there is a Form's `{...getInputProps('fieldname')}` being passed into this component, the className might be null.
  */
 export default function SupportedCountrySelect( {
 	countryCodes,
+	className,
 	...restProps
 } ) {
 	const maxVisibleTags = useViewportMatch( 'medium', '<' ) ? 5 : 10;
@@ -33,6 +36,10 @@ export default function SupportedCountrySelect( {
 
 	return (
 		<TreeSelectControl
+			className={ classnames(
+				'gla-supported-country-select',
+				className
+			) }
 			placeholder={ __(
 				'Start typing to filter countries…',
 				'google-listings-and-ads'
