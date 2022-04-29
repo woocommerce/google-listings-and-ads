@@ -3,7 +3,7 @@
 .gla-get-started-card {
 	display: flex;
 	flex-direction: row-reverse;
-	padding: $grid-unit-50 $grid-unit-50 $grid-unit-20 $grid-unit-50;
+	padding: $grid-unit-50 $grid-unit-50 $grid-unit-20;
 
 	@media (max-width: $break-small) {
 		flex-direction: column;
@@ -36,7 +36,6 @@
 
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__terms-notice {
-		// margin-top: $grid-unit-20;
 		font-size: $helptext-font-size;
 		line-height: $line-height-smaller;
 
