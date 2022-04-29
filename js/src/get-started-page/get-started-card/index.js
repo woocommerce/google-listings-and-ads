@@ -35,7 +35,7 @@ const GetStartedCard = () => {
 						'Google Shopping search results example',
 						'google-listings-and-ads'
 					) }
-					width="279.05"
+					width="279"
 					height="185"
 				/>
 			</FlexItem>
