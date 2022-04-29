@@ -35,7 +35,7 @@ class RequestReviewController extends BaseOptionsController {
 		parent::__construct( $server );
 		$this->middleware              = $middleware;
 		$this->request_review_statuses = $request_review_statuses;
-		$this->transient = $transient;
+		$this->transient               = $transient;
 	}
 
 	/**
