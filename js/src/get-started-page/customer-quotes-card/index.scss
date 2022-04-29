@@ -4,6 +4,7 @@
 	.components-flex {
 		gap: $grid-unit * 3.5;
 		padding: 0 $grid-unit * 7.75 $grid-unit * 5.75;
+		align-items: stretch;
 
 		// Adjust <CardHeader> imported from @wordpress/components.
 		&.components-card__header {
