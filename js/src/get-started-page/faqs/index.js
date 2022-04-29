@@ -172,9 +172,9 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'can-i-run-both-free-listings-and-performance-max-campaigns',
+		trackId: 'can-i-run-both-shopping-ads-and-free-listings-campaigns',
 		question: __(
-			'Can I run both free listings and Performance Max campaigns at the same time?',
+			'Can I run both Shopping ads and free listings campaigns at the same time?',
 			'google-listings-and-ads'
 		),
 		answer: __(
