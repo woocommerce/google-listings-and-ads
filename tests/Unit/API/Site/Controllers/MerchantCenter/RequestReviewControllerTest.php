@@ -2,8 +2,6 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\RequestReviewController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
