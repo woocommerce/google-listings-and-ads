@@ -75,48 +75,25 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'which-countries-are-available',
+		trackId: 'is-my-store-ready-to-sync-with-google',
 		question: __(
-			'Which countries are available for Google Listings & Ads?',
+			'Is my store ready to sync with Google?',
 			'google-listings-and-ads'
 		),
-		answer: (
-			<>
-				<p>
-					{ createInterpolateElement(
-						__(
-							'Learn more about supported countries for Google free listings <link>here</link>.',
-							'google-listings-and-ads'
-						),
-						{
-							link: (
-								<AppDocumentationLink
-									context="faqs"
-									linkId="supported-countries-for-google-free-listings"
-									href="https://support.google.com/merchants/answer/10033607"
-								/>
-							),
-						}
-					) }
-				</p>
-				<p>
-					{ createInterpolateElement(
-						__(
-							'Learn more about supported countries and currencies for Performance Max campaigns <link>here</link>.',
-							'google-listings-and-ads'
-						),
-						{
-							link: (
-								<AppDocumentationLink
-									context="faqs"
-									linkId="supported-countries-and-currencies-for-performance-max-campaigns"
-									href="https://support.google.com/merchants/answer/160637#countrytable"
-								/>
-							),
-						}
-					) }
-				</p>
-			</>
+		answer: createInterpolateElement(
+			__(
+				'In order to meet the Google Merchant Center requirements make sure your website has the following; secure checkout process and payment information, refund and return policies, billing terms and conditions, business contact information. <link>Learn more.</link>',
+				'google-listings-and-ads'
+			),
+			{
+				link: (
+					<AppDocumentationLink
+						context="faqs"
+						linkId="google-merchant-center-requirements"
+						href="https://woocommerce.com/document/google-listings-and-ads/#google-merchant-center-requirements"
+					/>
+				),
+			}
 		),
 	},
 	{
