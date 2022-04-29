@@ -21,6 +21,7 @@ class AdsCampaignReportQuery extends AdsReportQuery {
 				'id'     => 'campaign.id',
 				'name'   => 'campaign.name',
 				'status' => 'campaign.status',
+				'type'   => 'campaign.advertising_channel_type',
 			]
 		);
 	}
