@@ -97,26 +97,25 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'where-will-my-products-appear',
+		trackId: 'what-is-a-performance-max-campaign',
 		question: __(
-			'Where will my products appear?',
+			'What is a Performance Max campaign?',
 			'google-listings-and-ads'
 		),
-		answer: (
-			<>
-				<p>
-					{ __(
-						'If you’re selling in the US, then eligible free listings can appear in search results across Google Search, Google Images, and the Google Shopping tab. If you’re selling outside the US, free listings will appear on the Shopping tab.',
-						'google-listings-and-ads'
-					) }
-				</p>
-				<p>
-					{ __(
-						'If you’re running a Performance Max campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.',
-						'google-listings-and-ads'
-					) }
-				</p>
-			</>
+		answer: createInterpolateElement(
+			__(
+				'Performance Max campaigns make it easy to connect your WooCommerce store to Google Shopping ads so you can showcase your products to shoppers across Google Search, Maps, Shopping, YouTube, Gmail, the Display Network and Discover feed to drive traffic and sales for your store. <link>Learn more.</link>',
+				'google-listings-and-ads'
+			),
+			{
+				link: (
+					<AppDocumentationLink
+						context="faqs"
+						linkId="performance-max"
+						href="https://woocommerce.com/document/google-listings-and-ads/#google-performance-max-campaigns"
+					/>
+				),
+			}
 		),
 	},
 	{
