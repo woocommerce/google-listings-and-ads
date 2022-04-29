@@ -119,20 +119,22 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'will-my-deals-and-promotions-display-on-google',
-		question: __(
-			'Will my deals and promotions display on Google?',
-			'google-listings-and-ads'
-		),
-		answer: (
-			<>
-				<p>
-					{ __(
-						'To show your coupons and promotions on Google Shopping listings, make sure you’re using the latest version of Google Listings & Ads. When you create or update a coupon in your WordPress dashboard under Marketing > Coupons, you’ll see a Channel Visibility settings box on the right: select "Show coupon on Google" to enable. This is currently available in the US only.',
-						'google-listings-and-ads'
-					) }
-				</p>
-			</>
+		trackId: 'what-are-free-listings',
+		question: __( 'What are free listings?', 'google-listings-and-ads' ),
+		answer: createInterpolateElement(
+			__(
+				'Google Free Listings allows stores to showcase eligible products to shoppers looking for what you offer and drive traffic to your store with Google’s free listings on the Shopping tab. Your products can also appear on Google Search, Google Images, and Gmail if you’re selling in the United States. <link>Learn more.</link>',
+				'google-listings-and-ads'
+			),
+			{
+				link: (
+					<AppDocumentationLink
+						context="faqs"
+						linkId="free-listings"
+						href="https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google"
+					/>
+				),
+			}
 		),
 	},
 	{
