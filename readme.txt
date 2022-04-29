@@ -109,6 +109,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.12.6 - 2022-04-29 =
+* Fix - Update all products job syncing products
+
 = 1.12.5 - 2022-04-12 =
 * Fix - Cache Yoast SEO values per product, to ensure unique values.
 * Fix - Feature/tree select control component.
