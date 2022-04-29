@@ -140,7 +140,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public function get_issues( string $type = null, int $per_page = 0, int $page = 1, bool $force_refresh = false ): array {
 		$this->maybe_refresh_status_data( $force_refresh );
 
-		// Get only critical issues
+		// Get only error issues
 		$severity_error_issues = $this->fetch_issues( $type, $per_page, $page, true );
 
 		// In case there are error issues we show only those, otherwise we show all the issues.
