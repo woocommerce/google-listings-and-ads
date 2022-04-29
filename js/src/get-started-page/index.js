@@ -5,6 +5,7 @@ import './index.scss';
 import BenefitsCard from './benefits-card';
 import CustomerQuotesCard from './customer-quotes-card';
 import FeaturesCard from './features-card';
+import GetStartedCard from './get-started-card';
 import GetStartedWithVideoCard from './get-started-with-video-card';
 import UnsupportedNotices from './unsupported-notices';
 
@@ -16,6 +17,7 @@ const GetStartedPage = () => {
 			<BenefitsCard />
 			<FeaturesCard />
 			<CustomerQuotesCard />
+			<GetStartedCard />
 		</div>
 	);
 };

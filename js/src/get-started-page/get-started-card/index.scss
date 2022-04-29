@@ -1,41 +1,60 @@
-.woocommerce-marketing-google-get-started-card {
-	.components-flex {
+@import "../_shared";
+
+.gla-get-started-card {
+	display: flex;
+	flex-direction: row-reverse;
+	padding: $grid-unit-50 $grid-unit-50 $grid-unit-20 $grid-unit-50;
+
+	@media (max-width: $break-small) {
 		flex-direction: column;
-		align-items: flex-end;
+		padding: $grid-unit-30;
+	}
 
-		@include break-large() {
-			flex-direction: row;
-			align-items: center;
-		}
+	.motivation-image {
+		min-width: auto;
 
-		.motivation-text {
-			margin: calc(var(--main-gap) * 2.5);
-
-			.title {
-				margin-bottom: $grid-unit-20;
-			}
-
-			.description {
-				margin-bottom: $grid-unit-20;
-			}
-		}
-
-		.motivation-image {
-			text-align: right;
-			margin-bottom: -4px;
-
-			@include break-large() {
-				margin-top: calc(var(--main-gap) * 1.5);
-			}
+		@media (max-width: $break-small) {
+			text-align: center;
 		}
 	}
 
-	.components-flex &__terms-notice {
-		margin-top: $grid-unit-20;
-		font-style: italic;
+	// Adjust <CardBody> imported from @wordpress/components.
+	// Repeat selector to make it higher priority.
+	.components-card__body.components-card__body {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 20px;
+		padding: 0;
+
+		@media (max-width: $break-small) {
+			gap: 16px;
+			text-align: center;
+			align-items: center;
+		}
+	}
+
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__terms-notice {
+		// margin-top: $grid-unit-20;
 		font-size: $helptext-font-size;
+		line-height: $line-height-smaller;
+
 		a {
 			text-decoration: none;
+		}
+	}
+
+	@media (max-width: $break-small) {
+		// Use more specific rules to make it higher priority to override <Text> component.
+		& &__title {
+			font-size: $font-medium-mobile;
+			line-height: $line-height-large-mobile;
+		}
+
+		// Use more specific rules to make it higher priority to override <Text> component.
+		& &__terms-notice {
+			margin-top: $grid-unit-15;
 		}
 	}
 }
