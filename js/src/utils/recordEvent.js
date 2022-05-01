@@ -8,50 +8,6 @@ import { recordEvent } from '@woocommerce/tracks';
  */
 
 /**
- * Toggling display of table columns
- *
- * @event gla_table_header_toggle
- * @property {string} report Name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
- * @property {string} column Name of the column
- * @property {string} status (`on`|`off`)
- */
-
-/**
- *
- * @param {string} report The report's name
- * @param {string} column Column that was toggled
- * @param {string} status (`on`|`off`) Indicates if the column was toggled on or off.
- * @fires gla_table_header_toggle
- */
-export const recordTableHeaderToggleEvent = ( report, column, status ) => {
-	recordEvent( 'gla_table_header_toggle', {
-		report,
-		column,
-		status,
-	} );
-};
-
-/**
- * Sorting table
- *
- * @event gla_table_sort
- * @property {string} report Name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
- * @property {string} column Name of the column
- * @property {string} direction (`asc`|`desc`)
- */
-
-/**
- *
- * @param {string} report The report's name
- * @param {string} column Column that was sorted
- * @param {string} direction (`asc`|`desc`) Indicates if it was sorted in ascending or descending order
- * @fires gla_table_sort with given props.
- */
-export const recordTableSortEvent = ( report, column, direction ) => {
-	recordEvent( 'gla_table_sort', { report, column, direction } );
-};
-
-/**
  * When table pagination is changed by entering page via "Go to page" input.
  *
  * @event gla_table_go_to_page
@@ -106,56 +62,15 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  */
 
 /**
- * Records `gla_datepicker_update` tracking event, with data that comes from
- * `DateRangeFilterPicker`'s `onRangeSelect` callback.
- *
- * @param {Object} data Report name plus the data given by `DateRangeFilterPicker`'s `onRangeSelect` callback.
- * @param {string} data.report Name of the report.
- * @param {string} data.compare
- * @param {string} data.period
- * @param {string} data.after
- * @param {string} data.before
- *
- * @fires gla_datepicker_update
- */
-export const recordDatepickerUpdateEvent = ( data ) => {
-	recordEvent( 'gla_datepicker_update', data );
-};
-
-/**
- * Triggered when changing products & variations filter.
+ * Triggered when changing products & variations filter,
+ * with data that comes from
+ * `FilterPicker`'s `onFilterSelect` callback.
  *
  * @event gla_filter
  * @property {string} report Name of the report (e.g. `"reports-products"`)
  * @property {string} filter Value of the filter (e.g. `"all" | "single-product" | "compare-products"`)
  * @property {string | undefined} variationFilter Value of the variation filter (e.g. `undefined | "single-variation" | "compare-variations"`)
  */
-
-/**
- * Records `gla_filter` tracking event, with data that comes from
- * `FilterPicker`'s `onFilterSelect` callback.
- *
- * @param {Object} data
- * @param {string} data.report Name of the report.
- * @param {string} data.filter Picked value.
- * @param {string} [data.filterVariation] Picked variation value if applicable.
- *
- * @fires gla_filter
- */
-export const recordFilterEvent = ( data ) => {
-	recordEvent( 'gla_filter', data );
-};
-
-/**
- * Records `gla_chart_tab_click` tracking event.
- *
- * @param {Object} data
- * @param {string} data.report Name of the report.
- * @param {string} data.context Metric key of the clicked tab.
- */
-export const recordChartTabClickEvent = ( data ) => {
-	recordEvent( 'gla_chart_tab_click', data );
-};
 
 /**
  * Setup Merchant Center
@@ -166,65 +81,12 @@ export const recordChartTabClickEvent = ( data ) => {
  */
 
 /**
- * @param {string} target Target button ID
- * @param {string} [trigger='click'] The trigger action
- * @fires gla_setup_mc with the given `{ target trigger }`.
- */
-export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
-	recordEvent( 'gla_setup_mc', {
-		target,
-		trigger,
-	} );
-};
-
-export const recordPreLaunchChecklistCompleteEvent = () => {
-	recordEvent( 'gla_pre_launch_checklist_complete' );
-};
-
-/**
- * Triggered on events during ads setup and editing
- *
- * @event gla_setup_ads
- * @property {string} target Button ID
- * @property {string} trigger Action (e.g. `click`)
- */
-
-/**
- * @param {string} target Target Button ID
- * @param {string} trigger The action trigger
- * @fires gla_setup_ads with given `{ target, trigger }`.
- */
-export const recordSetupAdsEvent = ( target, trigger = 'click' ) => {
-	recordEvent( 'gla_setup_ads', {
-		target,
-		trigger,
-	} );
-};
-
-/**
  * Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
  *
  * @event gla_launch_paid_campaign_button_click
  * @property {string} audiences Country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`. This means the campaign is created with the multi-country targeting feature. Before this feature support, it was implemented as 'audience'.
  * @property {string} budget Daily average cost of the paid campaign
  */
-
-/**
- * Records `gla_launch_paid_campaign_button_click` tracking event.
- *
- * @fires gla_launch_paid_campaign_button_click
- *
- * @param {number} budget Daily average cost of the paid campaign.
- * @param {Array<CountryCode>} audiences Country code array of the paid campaign audience country.
- */
-export const recordLaunchPaidCampaignClickEvent = ( budget, audiences ) => {
-	recordEvent( 'gla_launch_paid_campaign_button_click', {
-		audiences: audiences.join( ',' ),
-		budget,
-	} );
-};
-
-export default recordEvent;
 
 /**
  * Clicking on the button to connect Google account.
