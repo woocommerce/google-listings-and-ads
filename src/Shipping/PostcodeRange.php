@@ -43,32 +43,10 @@ class PostcodeRange {
 	}
 
 	/**
-	 * @param string $start_code
-	 *
-	 * @return PostcodeRange
-	 */
-	public function set_start_code( string $start_code ): PostcodeRange {
-		$this->start_code = $start_code;
-
-		return $this;
-	}
-
-	/**
 	 * @return string|null
 	 */
 	public function get_end_code(): ?string {
 		return $this->end_code;
-	}
-
-	/**
-	 * @param string|null $end_code
-	 *
-	 * @return PostcodeRange
-	 */
-	public function set_end_code( ?string $end_code ): PostcodeRange {
-		$this->end_code = $end_code;
-
-		return $this;
 	}
 
 	/**

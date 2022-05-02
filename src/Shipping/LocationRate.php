@@ -15,7 +15,6 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  */
 class LocationRate implements JsonSerializable {
-
 	/**
 	 * @var ShippingLocation
 	 */
@@ -45,32 +44,10 @@ class LocationRate implements JsonSerializable {
 	}
 
 	/**
-	 * @param ShippingLocation $location
-	 *
-	 * @return LocationRate
-	 */
-	public function set_location( ShippingLocation $location ): LocationRate {
-		$this->location = $location;
-
-		return $this;
-	}
-
-	/**
 	 * @return ShippingRate
 	 */
 	public function get_shipping_rate(): ShippingRate {
 		return $this->shipping_rate;
-	}
-
-	/**
-	 * @param ShippingRate $shipping_rate
-	 *
-	 * @return LocationRate
-	 */
-	public function set_shipping_rate( ShippingRate $shipping_rate ): LocationRate {
-		$this->shipping_rate = $shipping_rate;
-
-		return $this;
 	}
 
 	/**
