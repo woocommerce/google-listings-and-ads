@@ -47,4 +47,36 @@
 			flex: 1;
 		}
 	}
+
+	.gla-dashboard__campaign_conversion {
+		gap: var(--main-gap);
+		margin-bottom: var(--main-gap);
+
+		.gla-campaign-conversion-status-notice{
+			margin-left: 0px;
+			margin-right: 0px;
+			padding: $grid-unit-30 $grid-unit-40;
+
+			.components-notice__dismiss{
+				min-width: 1.85rem;
+				width: 1.85rem;
+				height: 1.85rem;
+			}
+
+			.gla-campaign-conversion-status-notice__title {
+				margin-bottom: $grid-unit-10;
+			}
+			
+			.gla-campaign-conversion-status-notice__external_icon{
+				margin-left: 0.2em;
+				vertical-align: middle;		
+				fill: currentColor;
+			}
+
+			.gla-campaign-conversion-status-notice__external_link{
+				margin-bottom: 0px;
+			}
+
+		}
+	}	
 }
