@@ -13,10 +13,9 @@ defined( 'ABSPATH' ) || exit;
  * @since   x.x.x
  */
 class ShippingLocation {
-	public const COUNTRY_AREA          = 'country_area';
-	public const STATE_AREA            = 'state_area';
-	public const COUNTRY_POSTCODE_AREA = 'country_postcode_area';
-	public const STATE_POSTCODE_AREA   = 'state_postcode_area';
+	public const COUNTRY_AREA  = 'country_area';
+	public const STATE_AREA    = 'state_area';
+	public const POSTCODE_AREA = 'postcode_area';
 
 	/**
 	 * @var int
@@ -99,26 +98,20 @@ class ShippingLocation {
 	}
 
 	/**
-	 * Return the applicable shipping area for this shipping location. e.g. whether it applies to a whole country, state, etc.
+	 * Return the applicable shipping area for this shipping location. e.g. whether it applies to a whole country, state, or postcodes.
 	 *
 	 * @return string
 	 */
 	public function get_applicable_area(): string {
-		$state     = $this->get_state();
-		$postcodes = $this->get_postcodes();
-
-		if ( ! empty( $state ) && ! empty( $postcodes ) ) {
-			// ShippingLocation applies to a select postal code ranges of a state/province of a country
-			return self::STATE_POSTCODE_AREA;
-		} elseif ( empty( $state ) && empty( $postcodes ) ) {
-			// ShippingLocation applies to a whole country
-			return self::COUNTRY_AREA;
-		} elseif ( ! empty( $state ) ) {
+		if ( ! empty( $this->get_postcodes() ) ) {
+			// ShippingLocation applies to a select postal code ranges of a country
+			return self::POSTCODE_AREA;
+		} elseif ( ! empty( $this->get_state() ) ) {
 			// ShippingLocation applies to a state/province of a country
 			return self::STATE_AREA;
 		} else {
-			// ShippingLocation applies to a select postal code ranges of a country
-			return self::COUNTRY_POSTCODE_AREA;
+			// ShippingLocation applies to a whole country
+			return self::COUNTRY_AREA;
 		}
 	}
 
@@ -129,17 +122,15 @@ class ShippingLocation {
 	 */
 	public function __toString() {
 		$code = $this->get_country();
-		if ( ! empty( $this->get_state() ) ) {
+		if ( ! empty( $this->get_postcodes() ) ) {
+			// We assume that each postcode is unique within any supported country (a requirement set by Google API).
+			// Therefore, there is no need to include the state name in the location string even if it's provided.
+			$code .= '::' . join( ',', $this->get_postcodes() );
+		} elseif ( ! empty( $this->get_state() ) ) {
 			$code .= '_' . $this->get_state();
 		}
 
-		return join(
-			'::',
-			[
-				$code,
-				! empty( $this->get_postcodes() ) ? join( ',', $this->get_postcodes() ) : '',
-			]
-		);
+		return $code;
 	}
 
 }

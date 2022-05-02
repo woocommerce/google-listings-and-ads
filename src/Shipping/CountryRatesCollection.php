@@ -74,10 +74,6 @@ class CountryRatesCollection extends LocationRatesCollection {
 			if ( ! is_null( $min_order_amount ) ) {
 				$service_key .= $min_order_amount;
 			}
-			// Separate services for the rates affecting a state and different postcodes.
-			if ( ShippingLocation::STATE_POSTCODE_AREA === $shipping_area ) {
-				$service_key .= $location_rate->get_location()->get_postcode_group_name();
-			}
 
 			if ( ! isset( $this->services_groups[ $service_key ] ) ) {
 				$this->services_groups[ $service_key ] = new ServiceRatesCollection(

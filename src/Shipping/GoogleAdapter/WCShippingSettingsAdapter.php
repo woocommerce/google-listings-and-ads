@@ -103,8 +103,8 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 				$country_rate = $location_rates[ array_key_first( $location_rates ) ];
 				$rate_group   = $this->create_single_value_rate_group( $country_rate, $applicable_classes );
 				break;
-			case ShippingLocation::COUNTRY_POSTCODE_AREA:
-				$rate_group = new CountryPostcodesRateGroupAdapter(
+			case ShippingLocation::POSTCODE_AREA:
+				$rate_group = new PostcodesRateGroupAdapter(
 					[
 						'location_rates'           => $location_rates,
 						'currency'                 => $this->currency,
@@ -114,15 +114,6 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 				break;
 			case ShippingLocation::STATE_AREA:
 				$rate_group = new StatesRateGroupAdapter(
-					[
-						'location_rates'           => $location_rates,
-						'currency'                 => $this->currency,
-						'applicableShippingLabels' => $applicable_classes,
-					]
-				);
-				break;
-			case ShippingLocation::STATE_POSTCODE_AREA:
-				$rate_group = new StatesPostcodesRateGroupAdapter(
 					[
 						'location_rates'           => $location_rates,
 						'currency'                 => $this->currency,

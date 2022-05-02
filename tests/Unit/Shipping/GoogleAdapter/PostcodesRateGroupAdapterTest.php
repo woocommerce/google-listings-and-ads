@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping\GoogleAdapter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\CountryPostcodesRateGroupAdapter;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\PostcodesRateGroupAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\PostcodeRange;
@@ -13,11 +13,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Google\Service\ShoppingContent\Row;
 
 /**
- * Class CountryPostcodesRateGroupAdapterTest
+ * Class PostcodesRateGroupAdapterTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping\GoogleAdapter
  */
-class CountryPostcodesRateGroupAdapterTest extends UnitTest {
+class PostcodesRateGroupAdapterTest extends UnitTest {
 
 	public function test_maps_location_rates() {
 		$location_rates = [
@@ -25,7 +25,7 @@ class CountryPostcodesRateGroupAdapterTest extends UnitTest {
 			new LocationRate( new ShippingLocation( 4, 'DE', null, [ new PostcodeRange( '1000', '1001' ) ] ), new ShippingRate( 410 ) ),
 		];
 
-		$rate_group = new CountryPostcodesRateGroupAdapter(
+		$rate_group = new PostcodesRateGroupAdapter(
 			[
 				'location_rates'           => $location_rates,
 				'currency'                 => 'USD'
@@ -66,7 +66,7 @@ class CountryPostcodesRateGroupAdapterTest extends UnitTest {
 	public function test_fails_if_no_rates_provided() {
 		$this->expectException( InvalidValue::class );
 
-		new CountryPostcodesRateGroupAdapter(
+		new PostcodesRateGroupAdapter(
 			[
 				'currency' => 'USD',
 			]
@@ -76,7 +76,7 @@ class CountryPostcodesRateGroupAdapterTest extends UnitTest {
 	public function test_fails_if_no_currency_provided() {
 		$this->expectException( InvalidValue::class );
 
-		new CountryPostcodesRateGroupAdapter(
+		new PostcodesRateGroupAdapter(
 			[
 				'location_rates' => [
 					new LocationRate( new ShippingLocation( 0, 'US', null, [ new PostcodeRange( '4000', '4001' ) ] ), new ShippingRate( 110 ) ),

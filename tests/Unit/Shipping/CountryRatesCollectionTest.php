@@ -53,6 +53,19 @@ class CountryRatesCollectionTest extends UnitTest {
 			new LocationRate( new ShippingLocation( 1, 'US', 'CA' ), new ShippingRate( 0 ) ),
 			// Country post code level
 			new LocationRate( new ShippingLocation( 0, 'US', null, [ new PostcodeRange( '4000', '4001' ) ] ), new ShippingRate( 110 ) ),
+		];
+
+		$collection = new CountryRatesCollection( 'US', $location_rates );
+
+		$groups = $collection->get_rates_grouped_by_service();
+		$this->assertCount( 4, $groups );
+		$this->assertContainsOnlyInstancesOf( ServiceRatesCollection::class, $groups );
+	}
+
+	public function test_returns_rates_applicable_to_both_states_and_postcode_under_same_service_as_country_postcodes() {
+		$location_rates = [
+			// Country post code level
+			new LocationRate( new ShippingLocation( 0, 'US', null, [ new PostcodeRange( '4000', '4001' ) ] ), new ShippingRate( 110 ) ),
 			// State post code level
 			new LocationRate( new ShippingLocation( 1, 'US', 'CA', [ new PostcodeRange( '9000', '9001' ) ] ), new ShippingRate( 10 ) ),
 			new LocationRate( new ShippingLocation( 1, 'US', 'NV', [ new PostcodeRange( '2000', '2001' ) ] ), new ShippingRate( 10 ) ),
@@ -61,8 +74,9 @@ class CountryRatesCollectionTest extends UnitTest {
 		$collection = new CountryRatesCollection( 'US', $location_rates );
 
 		$groups = $collection->get_rates_grouped_by_service();
-		$this->assertCount( 6, $groups );
+		$this->assertCount( 1, $groups );
 		$this->assertContainsOnlyInstancesOf( ServiceRatesCollection::class, $groups );
+		$this->assertCount( 3, $groups[0]->get_location_rates() );
 	}
 
 	public function test_returns_separate_service_for_rates_with_min_order_amount() {

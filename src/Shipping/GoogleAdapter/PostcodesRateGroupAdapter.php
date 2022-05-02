@@ -11,13 +11,13 @@ use Google\Service\ShoppingContent\Table;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class CountryPostcodesRateGroupAdapter
+ * Class PostcodesRateGroupAdapter
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Shipping
  *
  * @since   x.x.x
  */
-class CountryPostcodesRateGroupAdapter extends AbstractRateGroupAdapter {
+class PostcodesRateGroupAdapter extends AbstractRateGroupAdapter {
 	/**
 	 * Map the location rates to the class properties.
 	 *

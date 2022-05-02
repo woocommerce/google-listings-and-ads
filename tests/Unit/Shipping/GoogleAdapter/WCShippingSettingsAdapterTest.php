@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping\Google
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\CountryPostcodesRateGroupAdapter;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\PostcodesRateGroupAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\StatesRateGroupAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter\WCShippingSettingsAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
@@ -42,7 +42,7 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 
 		$this->assertCount( 1, $services );
 		$this->assertCount( 1, $services[0]->getRateGroups() );
-		$this->assertInstanceOf( CountryPostcodesRateGroupAdapter::class, $services[0]->getRateGroups()[0] );
+		$this->assertInstanceOf( PostcodesRateGroupAdapter::class, $services[0]->getRateGroups()[0] );
 	}
 
 	public function test_creates_rate_group_for_state_rates() {
