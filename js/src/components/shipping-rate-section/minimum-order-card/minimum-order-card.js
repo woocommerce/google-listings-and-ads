@@ -54,8 +54,9 @@ const MinimumOrderCard = ( props ) => {
 						initialValues={ group }
 						onSubmit={ getMinimumOrderChangeHandler(
 							value,
-							onChange
-						)( group ) }
+							onChange,
+							group
+						) }
 						onDelete={ getMinimumOrderDeleteHandler(
 							value,
 							onChange,
@@ -90,8 +91,9 @@ const MinimumOrderCard = ( props ) => {
 					value={ groups[ 0 ] }
 					onChange={ getMinimumOrderChangeHandler(
 						value,
-						onChange
-					)( groups[ 0 ] ) }
+						onChange,
+						groups[ 0 ]
+					) }
 				/>
 			);
 		}
@@ -126,8 +128,9 @@ const MinimumOrderCard = ( props ) => {
 							value={ group }
 							onChange={ getMinimumOrderChangeHandler(
 								value,
-								onChange
-							)( group ) }
+								onChange,
+								group
+							) }
 						/>
 					);
 				} ) }

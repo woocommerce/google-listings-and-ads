@@ -3,7 +3,7 @@
  */
 import getMinimumOrderChangeHandler from './getMinimumOrderChangeHandler';
 
-describe( 'getMinimumOrderChangeHandler( value, onChange )( oldGroup )( newGroup )', () => {
+describe( 'getMinimumOrderChangeHandler( value, onChange, oldGroup )( newGroup )', () => {
 	const value = Object.freeze( [
 		{
 			id: '1',
@@ -51,9 +51,12 @@ describe( 'getMinimumOrderChangeHandler( value, onChange )( oldGroup )( newGroup
 			threshold: 80,
 		};
 
-		getMinimumOrderChangeHandler( value, mockOnChange )( oldGroup )(
-			newGroup
+		const handleChange = getMinimumOrderChangeHandler(
+			value,
+			mockOnChange,
+			oldGroup
 		);
+		handleChange( newGroup );
 
 		expect( mockOnChange.mock.calls.length ).toBe( 1 );
 		expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
@@ -100,9 +103,12 @@ describe( 'getMinimumOrderChangeHandler( value, onChange )( oldGroup )( newGroup
 			countries: [ 'CN', 'US' ],
 		};
 
-		getMinimumOrderChangeHandler( value, mockOnChange )( oldGroup )(
-			newGroup
+		const handleChange = getMinimumOrderChangeHandler(
+			value,
+			mockOnChange,
+			oldGroup
 		);
+		handleChange( newGroup );
 
 		expect( mockOnChange.mock.calls.length ).toBe( 1 );
 		expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
@@ -152,9 +158,12 @@ describe( 'getMinimumOrderChangeHandler( value, onChange )( oldGroup )( newGroup
 			threshold: 88,
 		};
 
-		getMinimumOrderChangeHandler( value, mockOnChange )( oldGroup )(
-			newGroup
+		const handleChange = getMinimumOrderChangeHandler(
+			value,
+			mockOnChange,
+			oldGroup
 		);
+		handleChange( newGroup );
 
 		expect( mockOnChange.mock.calls.length ).toBe( 1 );
 		expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
