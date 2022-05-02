@@ -298,8 +298,8 @@ class Settings {
 		$rate_group->setSingleValue( $value );
 
 		$name = sprintf(
-		/* translators: %1 is the shipping method, %2 is the shipping rate, %3 is the currency (e.g. USD) */
-			__( 'Flat rate - %2$s %3$s', 'google-listings-and-ads' ),
+		/* translators: %1 is the shipping rate, %2 is the currency (e.g. USD) */
+			__( 'Flat rate - %1$s %2$s', 'google-listings-and-ads' ),
 			$rate,
 			$currency
 		);
