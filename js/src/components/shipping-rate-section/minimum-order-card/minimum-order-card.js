@@ -58,8 +58,9 @@ const MinimumOrderCard = ( props ) => {
 						)( group ) }
 						onDelete={ getMinimumOrderDeleteHandler(
 							value,
-							onChange
-						)( group ) }
+							onChange,
+							group
+						) }
 					/>
 				}
 			/>

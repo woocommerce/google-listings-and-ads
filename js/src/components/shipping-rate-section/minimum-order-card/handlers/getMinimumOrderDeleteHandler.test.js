@@ -3,7 +3,7 @@
  */
 import getMinimumOrderDeleteHandler from './getMinimumOrderDeleteHandler';
 
-describe( 'getMinimumOrderDeleteHandler( value, onChange )( oldGroup )()', () => {
+describe( 'getMinimumOrderDeleteHandler( value, onChange, oldGroup )()', () => {
 	const value = Object.freeze( [
 		{
 			id: '1',
@@ -47,7 +47,12 @@ describe( 'getMinimumOrderDeleteHandler( value, onChange )( oldGroup )()', () =>
 			threshold: 50,
 		};
 
-		getMinimumOrderDeleteHandler( value, mockOnChange )( oldGroup )();
+		const handleDelete = getMinimumOrderDeleteHandler(
+			value,
+			mockOnChange,
+			oldGroup
+		);
+		handleDelete();
 
 		expect( mockOnChange.mock.calls.length ).toBe( 1 );
 		expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
