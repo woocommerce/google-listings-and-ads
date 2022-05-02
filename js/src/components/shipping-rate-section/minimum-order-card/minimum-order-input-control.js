@@ -1,11 +1,20 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
+import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import AppInputPriceControl from '.~/components/app-input-price-control';
+import { EditMinimumOrderFormModal } from './minimum-order-form-modals';
 import MinimumOrderInputControlLabelText from './minimum-order-input-control-label-text';
 import './minimum-order-input-control.scss';
 
 /**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  * @typedef { import("./typedefs").MinimumOrderGroup } MinimumOrderGroup
  */
 
@@ -16,12 +25,13 @@ import './minimum-order-input-control.scss';
  * This is meant to display an "Edit" button.
  *
  * @param {Object} props
- * @param {JSX.Element} props.labelButton Button to be displayed after the label text.
+ * @param {Array<CountryCode>} props.countryOptions Country options to be passed to EditMinimumOrderFormModal.
  * @param {MinimumOrderGroup} props.value Minimum order group value.
  * @param {(newGroup: MinimumOrderGroup) => void} props.onChange Called when minimum order group changes.
+ * @param {() => void} props.onDelete Called when delete button in EditMinimumOrderFormModal is clicked.
  */
 const MinimumOrderInputControl = ( props ) => {
-	const { labelButton, value, onChange } = props;
+	const { countryOptions, value, onChange, onDelete } = props;
 	const { countries, threshold, currency } = value;
 
 	const handleBlur = ( event, numberValue ) => {
@@ -44,7 +54,21 @@ const MinimumOrderInputControl = ( props ) => {
 					<MinimumOrderInputControlLabelText
 						countries={ countries }
 					/>
-					{ labelButton }
+					<AppButtonModalTrigger
+						button={
+							<AppButton isTertiary>
+								{ __( 'Edit', 'google-listings-and-ads' ) }
+							</AppButton>
+						}
+						modal={
+							<EditMinimumOrderFormModal
+								countryOptions={ countryOptions }
+								initialValues={ value }
+								onSubmit={ onChange }
+								onDelete={ onDelete }
+							/>
+						}
+					/>
 				</div>
 			}
 			suffix={ currency }
