@@ -22,6 +22,8 @@ import './supported-country-select.scss';
  * This component is for selecting countries under Google Merchant Center supported countries.
  * And the selectable countries can be further limited by the `countryCodes` prop.
  *
+ * All other props (except `countryCodes` prop) are forwarded to the underlying TreeSelectControl component.
+ *
  * @param {Object} props React props.
  * @param {Array<CountryCode>} [props.countryCodes] Country codes for converting to tree-based option structure. It will use all MC supported countries if not specified.
  * @param {string} [props.className] Class name. Note that when there is a Form's `{...getInputProps('fieldname')}` being passed into this component, the className might be null.
