@@ -1,6 +1,10 @@
 .gla-supported-country-select {
-	label {
+	.woocommerce-tree-select-control__label {
 		padding-bottom: 4px;
 		font-size: 13px;
+	}
+
+	.woocommerce-tree-select-control__help {
+		font-style: italic;
 	}
 }
