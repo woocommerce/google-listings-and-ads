@@ -23,19 +23,25 @@ defined( 'ABSPATH' ) || exit;
  */
 class RequestReviewController extends BaseOptionsController {
 
+
+	/**
+	 * @var TransientsInterface
+	 */
+	private $transients;
+
 	/**
 	 * RequestReviewController constructor.
 	 *
 	 * @param RESTServer            $server
 	 * @param Middleware            $middleware
 	 * @param RequestReviewStatuses $request_review_statuses
-	 * @param TransientsInterface   $transient
+	 * @param TransientsInterface   $transients
 	 */
-	public function __construct( RESTServer $server, Middleware $middleware, RequestReviewStatuses $request_review_statuses, TransientsInterface $transient ) {
+	public function __construct( RESTServer $server, Middleware $middleware, RequestReviewStatuses $request_review_statuses, TransientsInterface $transients ) {
 		parent::__construct( $server );
 		$this->middleware              = $middleware;
 		$this->request_review_statuses = $request_review_statuses;
-		$this->transient               = $transient;
+		$this->transients               = $transients;
 	}
 
 	/**
@@ -131,7 +137,7 @@ class RequestReviewController extends BaseOptionsController {
 	 * @param array $value The Account Review Status data to save in the transient
 	 */
 	private function set_cached_review_status( $value ): void {
-		$this->transient->set(
+		$this->transients->set(
 			Transients::MC_ACCOUNT_REVIEW,
 			$value,
 			$this->request_review_statuses->get_account_review_lifetime()
@@ -144,7 +150,7 @@ class RequestReviewController extends BaseOptionsController {
 	 * @return null|array Returns NULL in case no data is available or an array with the Account Review Status data otherwise.
 	 */
 	private function get_cached_review_status(): ?array {
-		return $this->transient->get(
+		return $this->transients->get(
 			Transients::MC_ACCOUNT_REVIEW,
 		);
 	}
