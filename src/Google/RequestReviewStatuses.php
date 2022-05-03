@@ -18,6 +18,8 @@ class RequestReviewStatuses implements Service {
 	public const NO_OFFERS      = 'NO_OFFERS_UPLOADED';
 
 
+	public const MC_ACCOUNT_REVIEW_LIFETIME = MINUTE_IN_SECONDS * 20; // 20 minutes
+
 	/**
 	 * Merges the different program statuses, issues and cooldown period date.
 	 *
@@ -55,7 +57,7 @@ class RequestReviewStatuses implements Service {
 
 		return [
 			'issues'   => array_map( 'strtolower', array_values( array_unique( $issues ) ) ),
-			'cooldown' => $cooldown * 1000,
+			'cooldown' => self::get_cooldown( $cooldown ), // add lifetime cache to cooldown time
 			'status'   => $status,
 		];
 	}
@@ -99,5 +101,27 @@ class RequestReviewStatuses implements Service {
 		}
 	}
 
+
+	/**
+	 * Allows a hook to modify the lifetime of the Account review data.
+	 *
+	 * @return int
+	 */
+	public function get_account_review_lifetime(): int {
+		return apply_filters( 'woocommerce_gla_mc_account_review_lifetime', self::MC_ACCOUNT_REVIEW_LIFETIME );
+	}
+
+	/**
+	 * @param int $cooldown The cooldown in PHP format (seconds)
+	 *
+	 * @return int The cooldown in milliseconds and adding the lifetime cache
+	 */
+	private function get_cooldown( int $cooldown ) {
+		if ( $cooldown ) {
+			$cooldown = ( $cooldown + self::get_account_review_lifetime() ) * 1000;
+		}
+
+		return $cooldown;
+	}
 
 }
