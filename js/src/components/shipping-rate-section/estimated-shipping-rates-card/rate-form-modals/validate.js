@@ -20,6 +20,13 @@ const validate = ( values ) => {
 		);
 	}
 
+	if ( values.rate === undefined ) {
+		errors.rate = __(
+			'Please enter the estimated shipping rate.',
+			'google-listings-and-ads'
+		);
+	}
+
 	if ( values.rate < 0 ) {
 		errors.rate = __(
 			'The estimated shipping rate cannot be less than 0.',
