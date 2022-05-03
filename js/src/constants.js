@@ -11,6 +11,11 @@ export const REPORT_SOURCE_DEFAULT = REPORT_SOURCE_PAID;
 // Programs report related
 export const REPORT_PROGRAM_PARAM = 'programs';
 
+export const MINUTE_IN_SECONDS = 60;
+export const HOUR_IN_SECONDS = 60 * MINUTE_IN_SECONDS;
+export const DAY_IN_SECONDS = 24 * HOUR_IN_SECONDS;
+export const MONTH_IN_SECONDS = 30 * DAY_IN_SECONDS;
+
 export const GUIDE_NAMES = {
 	SUBMISSION_SUCCESS: 'submission-success',
 	CAMPAIGN_CREATION_SUCCESS: 'campaign-creation-success',
@@ -19,6 +24,12 @@ export const GUIDE_NAMES = {
 export const LOCAL_STORAGE_KEYS = {
 	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
 		'gla-can-onboarding-setup-ces-prompt-open',
+	IS_BEFORE_MIGRATION_NOTICE_DISMISSED:
+		'gla-is-before-migration-notice-dismissed',
+	IS_AFTER_MIGRATION_NOTICE_DISMISSED:
+		'gla-is-after-migration-notice-dismissed',
+	IS_REPORTS_MIGRATION_NOTICE_DISMISSED:
+		'gla-is-after-migration-notice-dismissed',
 };
 
 export const API_RESPONSE_CODES = {
@@ -28,4 +39,8 @@ export const API_RESPONSE_CODES = {
 
 export const SHIPPING_RATE_METHOD = {
 	FLAT_RATE: 'flat_rate',
+};
+
+export const CAMPAIGN_ADS_MIGRATION = {
+	MAXIMUM_MONTHS_TO_DISPLAY_NOTICE: 1,
 };
