@@ -18,20 +18,24 @@ const faqItems = [
 			'What do I need to get started?',
 			'google-listings-and-ads'
 		),
-		answer: createInterpolateElement(
-			__(
-				'In order to sync your WooCommerce store with Google and begin showcasing your products online, you will need to provide the following during setup; Google account access, target audience, shipping information, tax rate information (required for US only), and ensure your store is running on a compatible PHP version. <link>Learn more.</link>',
-				'google-listings-and-ads'
-			),
-			{
-				link: (
-					<AppDocumentationLink
-						context="faqs"
-						linkId="general-requirements"
-						href="https://woocommerce.com/document/google-listings-and-ads/#general-requirements"
-					/>
-				),
-			}
+		answer: (
+			<p>
+				{ createInterpolateElement(
+					__(
+						'In order to sync your WooCommerce store with Google and begin showcasing your products online, you will need to provide the following during setup; Google account access, target audience, shipping information, tax rate information (required for US only), and ensure your store is running on a compatible PHP version. <link>Learn more.</link>',
+						'google-listings-and-ads'
+					),
+					{
+						link: (
+							<AppDocumentationLink
+								context="faqs"
+								linkId="general-requirements"
+								href="https://woocommerce.com/document/google-listings-and-ads/#general-requirements"
+							/>
+						),
+					}
+				) }
+			</p>
 		),
 	},
 	{
@@ -80,20 +84,24 @@ const faqItems = [
 			'Is my store ready to sync with Google?',
 			'google-listings-and-ads'
 		),
-		answer: createInterpolateElement(
-			__(
-				'In order to meet the Google Merchant Center requirements make sure your website has the following; secure checkout process and payment information, refund and return policies, billing terms and conditions, business contact information. <link>Learn more.</link>',
-				'google-listings-and-ads'
-			),
-			{
-				link: (
-					<AppDocumentationLink
-						context="faqs"
-						linkId="google-merchant-center-requirements"
-						href="https://woocommerce.com/document/google-listings-and-ads/#google-merchant-center-requirements"
-					/>
-				),
-			}
+		answer: (
+			<p>
+				{ createInterpolateElement(
+					__(
+						'In order to meet the Google Merchant Center requirements make sure your website has the following; secure checkout process and payment information, refund and return policies, billing terms and conditions, business contact information. <link>Learn more.</link>',
+						'google-listings-and-ads'
+					),
+					{
+						link: (
+							<AppDocumentationLink
+								context="faqs"
+								linkId="google-merchant-center-requirements"
+								href="https://woocommerce.com/document/google-listings-and-ads/#google-merchant-center-requirements"
+							/>
+						),
+					}
+				) }
+			</p>
 		),
 	},
 	{
@@ -102,39 +110,47 @@ const faqItems = [
 			'What is a Performance Max campaign?',
 			'google-listings-and-ads'
 		),
-		answer: createInterpolateElement(
-			__(
-				'Performance Max campaigns make it easy to connect your WooCommerce store to Google Shopping ads so you can showcase your products to shoppers across Google Search, Maps, Shopping, YouTube, Gmail, the Display Network and Discover feed to drive traffic and sales for your store. <link>Learn more.</link>',
-				'google-listings-and-ads'
-			),
-			{
-				link: (
-					<AppDocumentationLink
-						context="faqs"
-						linkId="performance-max"
-						href="https://woocommerce.com/document/google-listings-and-ads/#google-performance-max-campaigns"
-					/>
-				),
-			}
+		answer: (
+			<p>
+				{ createInterpolateElement(
+					__(
+						'Performance Max campaigns make it easy to connect your WooCommerce store to Google Shopping ads so you can showcase your products to shoppers across Google Search, Maps, Shopping, YouTube, Gmail, the Display Network and Discover feed to drive traffic and sales for your store. <link>Learn more.</link>',
+						'google-listings-and-ads'
+					),
+					{
+						link: (
+							<AppDocumentationLink
+								context="faqs"
+								linkId="performance-max"
+								href="https://woocommerce.com/document/google-listings-and-ads/#google-performance-max-campaigns"
+							/>
+						),
+					}
+				) }
+			</p>
 		),
 	},
 	{
 		trackId: 'what-are-free-listings',
 		question: __( 'What are free listings?', 'google-listings-and-ads' ),
-		answer: createInterpolateElement(
-			__(
-				'Google Free Listings allows stores to showcase eligible products to shoppers looking for what you offer and drive traffic to your store with Google’s free listings on the Shopping tab. Your products can also appear on Google Search, Google Images, and Gmail if you’re selling in the United States. <link>Learn more.</link>',
-				'google-listings-and-ads'
-			),
-			{
-				link: (
-					<AppDocumentationLink
-						context="faqs"
-						linkId="free-listings"
-						href="https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google"
-					/>
-				),
-			}
+		answer: (
+			<p>
+				{ createInterpolateElement(
+					__(
+						'Google Free Listings allows stores to showcase eligible products to shoppers looking for what you offer and drive traffic to your store with Google’s free listings on the Shopping tab. Your products can also appear on Google Search, Google Images, and Gmail if you’re selling in the United States. <link>Learn more.</link>',
+						'google-listings-and-ads'
+					),
+					{
+						link: (
+							<AppDocumentationLink
+								context="faqs"
+								linkId="free-listings"
+								href="https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google"
+							/>
+						),
+					}
+				) }
+			</p>
 		),
 	},
 	{
@@ -144,20 +160,24 @@ const faqItems = [
 			'Where can I track my free listings and Performance Max campaign performance?',
 			'google-listings-and-ads'
 		),
-		answer: createInterpolateElement(
-			__(
-				'Once your free listings and Performance Max campaigns are set up, you will be able to track your performance straight from your WooCommerce dashboard. You can view your reports yearly, quarterly, monthly, weekly, or daily. The following metrics will be visible within your report: conversions, clicks, impressions, total sales and total spend. <link>Learn more.</link>',
-				'google-listings-and-ads'
-			),
-			{
-				link: (
-					<AppDocumentationLink
-						context="faqs"
-						linkId="campaign-analytics"
-						href="https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics"
-					/>
-				),
-			}
+		answer: (
+			<p>
+				{ createInterpolateElement(
+					__(
+						'Once your free listings and Performance Max campaigns are set up, you will be able to track your performance straight from your WooCommerce dashboard. You can view your reports yearly, quarterly, monthly, weekly, or daily. The following metrics will be visible within your report: conversions, clicks, impressions, total sales and total spend. <link>Learn more.</link>',
+						'google-listings-and-ads'
+					),
+					{
+						link: (
+							<AppDocumentationLink
+								context="faqs"
+								linkId="campaign-analytics"
+								href="https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics"
+							/>
+						),
+					}
+				) }
+			</p>
 		),
 	},
 	{
