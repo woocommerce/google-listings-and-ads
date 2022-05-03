@@ -128,7 +128,8 @@ const updatedSassOptions = {
 		'@import "_colors"; ' +
 		'@import "_variables"; ' +
 		'@import "_mixins"; ' +
-		'@import "_breakpoints"; ',
+		'@import "_breakpoints"; ' +
+		'@import "_gla_variables"; ',
 };
 
 // Update sass-loader config to prepend imports automatically
