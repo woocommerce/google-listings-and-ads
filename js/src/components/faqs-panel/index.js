@@ -31,7 +31,7 @@ const getPanelToggleHandler = ( trackName, id ) => ( isOpened ) => {
  * @param {Object} props React props.
  * @param {string} props.trackName The track event name to be recorded when toggling on FAQ items.
  * @param {Array<FaqItem>} props.faqItems FAQ items for rendering.
- * @param {string} props.className The class name for this component.
+ * @param {string} [props.className] The class name for this component.
  */
 export default function FaqsPanel( { trackName, faqItems, className } ) {
 	return (
