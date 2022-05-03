@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * @param {ShippingRateGroup} values
  */
-const validate = ( values ) => {
+const validateShippingRateGroup = ( values ) => {
 	const errors = {};
 
 	if ( values.countries.length === 0 ) {
@@ -37,4 +37,4 @@ const validate = ( values ) => {
 	return errors;
 };
 
-export default validate;
+export default validateShippingRateGroup;

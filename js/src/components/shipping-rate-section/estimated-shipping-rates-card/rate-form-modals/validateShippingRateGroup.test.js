@@ -1,20 +1,20 @@
 /**
  * Internal dependencies
  */
-import validate from './validate';
+import validateShippingRateGroup from './validateShippingRateGroup';
 
 const validValues = {
 	countries: [ 'US' ],
 	rate: 0,
 };
 
-describe( 'validate', () => {
+describe( 'validateShippingRateGroup', () => {
 	it( 'has no errors properties with validValues', () => {
 		const values = {
 			...validValues,
 		};
 
-		const errors = validate( values );
+		const errors = validateShippingRateGroup( values );
 
 		expect( errors ).toEqual( {} );
 	} );
@@ -25,7 +25,7 @@ describe( 'validate', () => {
 			countries: [],
 		};
 
-		const errors = validate( values );
+		const errors = validateShippingRateGroup( values );
 
 		expect( errors ).toHaveProperty( 'countries' );
 	} );
@@ -36,7 +36,7 @@ describe( 'validate', () => {
 			rate: undefined,
 		};
 
-		const errors = validate( values );
+		const errors = validateShippingRateGroup( values );
 
 		expect( errors ).toHaveProperty( 'rate' );
 	} );
@@ -47,7 +47,7 @@ describe( 'validate', () => {
 			rate: -1,
 		};
 
-		const errors = validate( values );
+		const errors = validateShippingRateGroup( values );
 
 		expect( errors ).toHaveProperty( 'rate' );
 	} );
