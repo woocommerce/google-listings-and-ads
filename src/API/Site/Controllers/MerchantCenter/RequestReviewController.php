@@ -26,7 +26,7 @@ class RequestReviewController extends BaseOptionsController {
 	/**
 	 * @var TransientsInterface
 	 */
-	private TransientsInterface $transients;
+	private $transients;
 
 	/**
 	 * RequestReviewController constructor.
