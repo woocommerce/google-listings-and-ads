@@ -29,11 +29,11 @@ const ExternalIcon = () => (
 
 /**
  * Shows Notice {@link Notice}
- * providing information about the conversation status of PMax campaigns
+ * providing information about the conversion status of PMax campaigns
  *
  * @param {Object} props React props.
  * @param {string} props.context Context or page on which the notice is shown, to be forwarded to the link's track event.
- * @return {JSX.Element} {@link Notice} element with the warning message and the link to the documentation.
+ * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
  */
 const CampaignConversionStatusNotice = ( { context } ) => {
 	const conversionStatus = getConversionCampaignStatusNotice(
