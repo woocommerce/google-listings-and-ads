@@ -31,9 +31,11 @@ const ExternalIcon = () => (
  * Shows Notice {@link Notice}
  * providing information about the conversation status of PMax campaigns
  *
+ * @param {Object} props React props.
+ * @param {string} props.context Context or page on which the notice is shown, to be forwarded to the link's track event.
  * @return {JSX.Element} {@link Notice} element with the warning message and the link to the documentation.
  */
-const CampaignConversionStatusNotice = () => {
+const CampaignConversionStatusNotice = ( { context } ) => {
 	const conversionStatus = getConversionCampaignStatusNotice(
 		glaData.adsCampaignConvertStatus
 	);
@@ -69,8 +71,9 @@ const CampaignConversionStatusNotice = () => {
 			<p>{ status.content }</p>
 			<p className="gla-campaign-conversion-status-notice__external_link">
 				<AppDocumentationLink
-					context="campaign-conversion-status"
+					context={ context }
 					linkId="campaign-conversion-status-read-more"
+					eventName="gla_learn_more_campaign_upgrade_link_click"
 					href={ status.externalLink.link }
 				>
 					{ status.externalLink.content }

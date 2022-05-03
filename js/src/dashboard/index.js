@@ -88,7 +88,7 @@ const Dashboard = () => {
 				<DifferentCurrencyNotice context="dashboard" />
 				<NavigationClassic />
 				<div className="gla-dashboard__campaign_conversion">
-					<CampaignConversionStatusNotice />
+					<CampaignConversionStatusNotice context="dashboard" />
 				</div>
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
