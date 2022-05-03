@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Exception;
+use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -34,7 +35,7 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	 *
 	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
 	 *
-	 * @return array
+	 * @return WC_Product[]
 	 */
 	public function get_batch( int $batch_number ): array {
 		return $this->get_filtered_batch( $batch_number )->get();
@@ -52,7 +53,7 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	 * @return FilteredProductList
 	 */
 	protected function get_filtered_batch( int $batch_number ): FilteredProductList {
-		return $this->product_repository->find_sync_ready_product( [], $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
+		return $this->product_repository->find_sync_ready_products( [], $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
 	}
 
 	/**
@@ -87,7 +88,7 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 		} else {
 			// if items, schedule the process action
 			if ( count( $items ) ) {
-				$this->schedule_process_action( $items->get() );
+				$this->schedule_process_action( $items->get_product_ids() );
 			}
 
 			if ( $items->get_unfiltered_count() >= $this->get_batch_size() ) {

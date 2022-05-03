@@ -312,4 +312,14 @@ trait ProductTrait {
 			'adult'      => false,
 		];
 	}
+
+	/**
+	 * Helper function to create an array filled with product mocks for test purposes
+	 *
+	 * @param int $number Number of elements to fill an array with.
+	 * @return WC_Product[]
+	 */
+	protected function generate_simple_product_mocks_set(int $number ) {
+		return array_fill( 0, $number, $this->generate_simple_product_mock() );
+	}
 }

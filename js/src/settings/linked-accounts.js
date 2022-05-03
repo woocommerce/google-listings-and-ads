@@ -1,15 +1,15 @@
 /**
  * External dependencies
  */
-import { recordEvent, queueRecordEvent } from '@woocommerce/tracks';
+import { queueRecordEvent } from '@woocommerce/tracks';
 import { __ } from '@wordpress/i18n';
 import { Flex, Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
-import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import { getGetStartedUrl } from '.~/utils/urls';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useJetpackAccount from '.~/hooks/useJetpackAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
@@ -57,23 +57,18 @@ export default function LinkedAccounts() {
 	const openDisconnectAdsAccountModal = () => setOpenedModal( ADS_ACCOUNT );
 	const dismissModal = () => setOpenedModal( null );
 
-	// The re-fetch of Google ads account will be triggered within the resolvers.
-	// Here only need to handle the all accounts disconnection case.
 	const handleDisconnected = () => {
-		const eventArgs = [
-			'gla_disconnected_accounts',
-			{ context: openedModal },
-		];
+		queueRecordEvent( 'gla_disconnected_accounts', {
+			context: openedModal,
+		} );
 
-		if ( openedModal === ALL_ACCOUNTS ) {
-			queueRecordEvent( ...eventArgs );
+		// Reload WC admin page to update the `glaData` initiated from the static script.
+		const nextPage =
+			openedModal === ALL_ACCOUNTS
+				? adminUrl + getGetStartedUrl()
+				: window.location.href;
 
-			// Force reload WC admin page to initiate the Get Started page.
-			const path = getNewPath( null, '/google/start' );
-			window.location.href = adminUrl + path;
-		} else {
-			recordEvent( ...eventArgs );
-		}
+		window.location.href = nextPage;
 	};
 
 	return (

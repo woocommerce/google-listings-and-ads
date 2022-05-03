@@ -3,11 +3,11 @@
  */
 import { SummaryList, SummaryListPlaceholder } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
-import { recordChartTabClickEvent } from '.~/utils/recordEvent';
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import MetricNumber from './metric-number';
 
@@ -51,7 +51,7 @@ export default function SummarySection( {
 	const { selectedMetric = metrics[ 0 ].key } = query;
 
 	const trackClickEvent = ( context ) => {
-		recordChartTabClickEvent( {
+		recordEvent( 'gla_chart_tab_click', {
 			report: trackEventId,
 			context,
 		} );

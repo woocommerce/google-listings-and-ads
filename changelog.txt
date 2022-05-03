@@ -1,5 +1,8 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 1.12.6 - 2022-04-29 =
+* Fix - Update all products job syncing products
+
 = 1.12.5 - 2022-04-12 =
 * Fix - Cache Yoast SEO values per product, to ensure unique values.
 * Fix - Feature/tree select control component.

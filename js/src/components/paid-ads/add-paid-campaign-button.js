@@ -3,13 +3,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getHistory, getNewPath } from '@woocommerce/navigation';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import AppButton from '.~/components/app-button';
 import { glaData } from '.~/constants';
-import recordEvent from '.~/utils/recordEvent';
 import { getCreateCampaignUrl } from '.~/utils/urls';
 
 /**
