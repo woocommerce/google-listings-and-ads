@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
@@ -138,7 +137,7 @@ class RequestReviewController extends BaseOptionsController {
 	 */
 	private function set_cached_review_status( $value ): void {
 		$this->transients->set(
-			Transients::MC_ACCOUNT_REVIEW,
+			TransientsInterface::MC_ACCOUNT_REVIEW,
 			$value,
 			$this->request_review_statuses->get_account_review_lifetime()
 		);
@@ -151,7 +150,7 @@ class RequestReviewController extends BaseOptionsController {
 	 */
 	private function get_cached_review_status(): ?array {
 		return $this->transients->get(
-			Transients::MC_ACCOUNT_REVIEW,
+			TransientsInterface::MC_ACCOUNT_REVIEW,
 		);
 	}
 }
