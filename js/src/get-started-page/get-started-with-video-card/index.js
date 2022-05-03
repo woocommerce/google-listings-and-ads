@@ -24,7 +24,8 @@ import { getSetupMCUrl } from '.~/utils/urls';
 import './index.scss';
 
 /**
- * @fires gla_setup_mc with `{ target: 'set_up_free_listings', trigger: 'click' }`.
+ * @fires gla_setup_mc with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started-with-video' }`.
+ * @fires gla_documentation_link_click with `{ context: 'get-started-with-video', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
  */
 const GetStartedWithVideoCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;

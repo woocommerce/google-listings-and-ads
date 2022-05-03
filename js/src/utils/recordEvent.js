@@ -163,6 +163,7 @@ export const recordChartTabClickEvent = ( data ) => {
  * @event gla_setup_mc
  * @property {string} target Button ID
  * @property {string} trigger Action (e.g. `click`)
+ * @property {string} context Indicates which CTA is clicked
  */
 
 /**
