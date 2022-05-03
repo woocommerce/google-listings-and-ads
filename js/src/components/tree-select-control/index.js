@@ -599,11 +599,6 @@ const TreeSelectControl = ( {
 				onTagsChange={ handleTagsChange }
 				onInputChange={ handleOnInputChange }
 			/>
-			{ help && (
-				<div className="woocommerce-tree-select-control__help">
-					{ help }
-				</div>
-			) }
 			{ showTree && (
 				<div
 					className="woocommerce-tree-select-control__tree"
@@ -619,6 +614,11 @@ const TreeSelectControl = ( {
 						onNodesExpandedChange={ setNodesExpanded }
 						onOptionFocused={ handleOptionFocused }
 					/>
+				</div>
+			) }
+			{ help && (
+				<div className="woocommerce-tree-select-control__help">
+					{ help }
 				</div>
 			) }
 		</div>
