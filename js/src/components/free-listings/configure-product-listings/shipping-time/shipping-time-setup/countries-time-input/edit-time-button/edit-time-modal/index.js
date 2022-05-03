@@ -13,6 +13,7 @@ import AppModal from '.~/components/app-modal';
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import SupportedCountrySelect from '.~/components/supported-country-select';
+import validateShippingTime from '.~/utils/validateShippingTime';
 
 /**
  *Form to edit time for selected country(-ies).
@@ -42,42 +43,25 @@ const EditTimeModal = ( {
 		onDelete( time.countries );
 	};
 
-	const handleValidate = ( values ) => {
-		const errors = {};
-
-		if ( values.countries.length === 0 ) {
-			errors.countries = __(
-				'Please specify at least one country.',
-				'google-listings-and-ads'
-			);
-		}
-
-		if ( values.time < 0 ) {
-			errors.time = __(
-				'The estimated shipping time cannot be less than 0.',
-				'google-listings-and-ads'
-			);
-		}
-
-		return errors;
-	};
-
-	const handleSubmitCallback = ( newAggregatedTime ) => {
-		const remainingCountries = new Set( newAggregatedTime.countries );
+	const handleSubmitCallback = ( values ) => {
+		const remainingCountries = new Set( values.countryCodes );
 		const removedCountries = time.countries.filter(
 			( el ) => ! remainingCountries.has( el )
 		);
 
-		onSubmit( newAggregatedTime, removedCountries );
+		onSubmit(
+			{ countries: values.countryCodes, time: values.time },
+			removedCountries
+		);
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countries: time.countries,
+				countryCodes: time.countries,
 				time: time.time,
 			} }
-			validate={ handleValidate }
+			validate={ validateShippingTime }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
@@ -125,7 +109,7 @@ const EditTimeModal = ( {
 								onDropdownVisibilityChange={
 									setDropdownVisible
 								}
-								{ ...getInputProps( 'countries' ) }
+								{ ...getInputProps( 'countryCodes' ) }
 							/>
 							<AppInputNumberControl
 								label={ __(

@@ -13,6 +13,7 @@ import AppModal from '.~/components/app-modal';
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import SupportedCountrySelect from '.~/components/supported-country-select';
+import validateShippingTime from '.~/utils/validateShippingTime';
 
 /**
  * Form to add a new time for selected country(-ies).
@@ -25,38 +26,21 @@ import SupportedCountrySelect from '.~/components/supported-country-select';
 const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
-	const handleValidate = ( values ) => {
-		const errors = {};
-
-		if ( values.countries.length === 0 ) {
-			errors.countries = __(
-				'Please specify at least one country.',
-				'google-listings-and-ads'
-			);
-		}
-
-		if ( values.time < 0 ) {
-			errors.time = __(
-				'The estimated shipping time cannot be less than 0.',
-				'google-listings-and-ads'
-			);
-		}
-
-		return errors;
-	};
-
 	const handleSubmitCallback = ( values ) => {
-		onSubmit( values );
+		onSubmit( {
+			countries: values.countryCodes,
+			time: values.time,
+		} );
 		onRequestClose();
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countries,
+				countryCodes: countries,
 				time: 0,
 			} }
-			validate={ handleValidate }
+			validate={ validateShippingTime }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
@@ -96,7 +80,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 								onDropdownVisibilityChange={
 									setDropdownVisible
 								}
-								{ ...getInputProps( 'countries' ) }
+								{ ...getInputProps( 'countryCodes' ) }
 							/>
 							<AppInputNumberControl
 								label={ __(
