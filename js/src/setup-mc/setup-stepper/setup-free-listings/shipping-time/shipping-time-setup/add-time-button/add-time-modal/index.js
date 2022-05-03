@@ -14,6 +14,7 @@ import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
 import { useAppDispatch } from '.~/data';
+import validateShippingTime from '.~/utils/validateShippingTime';
 import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddTimeModal = ( props ) => {
@@ -21,26 +22,6 @@ const AddTimeModal = ( props ) => {
 	const { upsertShippingTimes } = useAppDispatch();
 	const remainingCountryCodes = useGetRemainingCountryCodes();
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
-
-	const handleValidate = ( values ) => {
-		const errors = {};
-
-		if ( values.countryCodes.length === 0 ) {
-			errors.countryCodes = __(
-				'Please specify at least one country.',
-				'google-listings-and-ads'
-			);
-		}
-
-		if ( values.time < 0 ) {
-			errors.time = __(
-				'The estimated shipping time cannot be less than 0.',
-				'google-listings-and-ads'
-			);
-		}
-
-		return errors;
-	};
 
 	const handleSubmitCallback = ( values ) => {
 		upsertShippingTimes( values );
@@ -54,7 +35,7 @@ const AddTimeModal = ( props ) => {
 				countryCodes: remainingCountryCodes,
 				time: 0,
 			} }
-			validate={ handleValidate }
+			validate={ validateShippingTime }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {

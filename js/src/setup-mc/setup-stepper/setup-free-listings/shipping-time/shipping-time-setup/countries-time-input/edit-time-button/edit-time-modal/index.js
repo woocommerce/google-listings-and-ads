@@ -14,6 +14,7 @@ import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
 import { useAppDispatch } from '.~/data';
+import validateShippingTime from '.~/utils/validateShippingTime';
 
 const EditTimeModal = ( props ) => {
 	const { time: groupedTime, onRequestClose } = props;
@@ -24,33 +25,6 @@ const EditTimeModal = ( props ) => {
 		deleteShippingTimes( groupedTime.countries );
 
 		onRequestClose();
-	};
-
-	const handleValidate = ( values ) => {
-		const errors = {};
-
-		if ( values.countryCodes.length === 0 ) {
-			errors.countryCodes = __(
-				'Please specify at least one country.',
-				'google-listings-and-ads'
-			);
-		}
-
-		if ( values.time === null ) {
-			errors.time = __(
-				'Please enter the estimated shipping time.',
-				'google-listings-and-ads'
-			);
-		}
-
-		if ( values.time < 0 ) {
-			errors.time = __(
-				'The estimated shipping time cannot be less than 0.',
-				'google-listings-and-ads'
-			);
-		}
-
-		return errors;
 	};
 
 	const handleSubmitCallback = ( values ) => {
@@ -73,7 +47,7 @@ const EditTimeModal = ( props ) => {
 				countryCodes: groupedTime.countries,
 				time: groupedTime.time,
 			} }
-			validate={ handleValidate }
+			validate={ validateShippingTime }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
