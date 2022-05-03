@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -23,16 +24,23 @@ class RequestReviewController extends BaseOptionsController {
 
 
 	/**
+	 * @var TransientsInterface
+	 */
+	private $transients;
+
+	/**
 	 * RequestReviewController constructor.
 	 *
 	 * @param RESTServer            $server
 	 * @param Middleware            $middleware
 	 * @param RequestReviewStatuses $request_review_statuses
+	 * @param TransientsInterface   $transients
 	 */
-	public function __construct( RESTServer $server, Middleware $middleware, RequestReviewStatuses $request_review_statuses ) {
+	public function __construct( RESTServer $server, Middleware $middleware, RequestReviewStatuses $request_review_statuses, TransientsInterface $transients ) {
 		parent::__construct( $server );
 		$this->middleware              = $middleware;
 		$this->request_review_statuses = $request_review_statuses;
+		$this->transients              = $transients;
 	}
 
 	/**
@@ -63,8 +71,13 @@ class RequestReviewController extends BaseOptionsController {
 	protected function get_review_read_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$response      = $this->middleware->get_account_review_status();
-				$review_status = $this->request_review_statuses->get_statuses_from_response( $response );
+				$review_status = $this->get_cached_review_status();
+
+				if ( is_null( $review_status ) ) {
+					$response      = $this->middleware->get_account_review_status();
+					$review_status = $this->request_review_statuses->get_statuses_from_response( $response );
+					$this->set_cached_review_status( $review_status );
+				}
 
 				return $this->prepare_item_for_response( $review_status, $request );
 			} catch ( Exception $e ) {
@@ -115,5 +128,29 @@ class RequestReviewController extends BaseOptionsController {
 	 */
 	protected function get_schema_title(): string {
 		return 'merchant_account_review';
+	}
+
+	/**
+	 * Save the Account Review Status data inside a transient for caching purposes.
+	 *
+	 * @param array $value The Account Review Status data to save in the transient
+	 */
+	private function set_cached_review_status( $value ): void {
+		$this->transients->set(
+			TransientsInterface::MC_ACCOUNT_REVIEW,
+			$value,
+			$this->request_review_statuses->get_account_review_lifetime()
+		);
+	}
+
+	/**
+	 * Get the Account Review Status data inside a transient for caching purposes.
+	 *
+	 * @return null|array Returns NULL in case no data is available or an array with the Account Review Status data otherwise.
+	 */
+	private function get_cached_review_status(): ?array {
+		return $this->transients->get(
+			TransientsInterface::MC_ACCOUNT_REVIEW,
+		);
 	}
 }
