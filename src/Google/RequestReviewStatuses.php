@@ -99,7 +99,7 @@ class RequestReviewStatuses implements Service {
 	 *
 	 * @return int The cooldown in milliseconds and adding the lifetime cache
 	 */
-	private function get_cooldown( $cooldown ) {
+	private function get_cooldown( int $cooldown ) {
 		if ( $cooldown ) {
 			$cooldown = ( $cooldown + self::get_account_review_lifetime() ) * 1000;
 		}
