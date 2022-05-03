@@ -5,6 +5,10 @@ import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import { getNewPath } from '@woocommerce/navigation';
 import { Link } from '@woocommerce/components';
+
+/**
+ * Internal dependencies
+ */
 import { LOCAL_STORAGE_KEYS } from '.~/constants';
 
 const BEFORE_CONVERSION = {
