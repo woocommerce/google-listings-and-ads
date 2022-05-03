@@ -566,10 +566,6 @@ const TreeSelectControl = ( {
 		<div
 			{ ...focusOutside }
 			onKeyDown={ onKeyDown }
-			onClick={ () => {
-				if ( disabled ) return;
-				setTreeVisible( true );
-			} }
 			className={ classnames(
 				'woocommerce-tree-select-control',
 				className
@@ -590,6 +586,10 @@ const TreeSelectControl = ( {
 				isExpanded={ showTree }
 				onFocus={ () => {
 					setFocused( null );
+					setTreeVisible( true );
+				} }
+				onControlClick={ () => {
+					if ( disabled ) return;
 					setTreeVisible( true );
 				} }
 				instanceId={ instanceId }
