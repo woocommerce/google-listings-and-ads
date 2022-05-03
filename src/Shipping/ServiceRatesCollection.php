@@ -59,7 +59,7 @@ class ServiceRatesCollection extends CountryRatesCollection {
 	/**
 	 * Return array of location rates grouped by their applicable shipping classes. Multiple rates might be returned per class.
 	 *
-	 * @return LocationRate[][] An array of location rates grouped by their applicable shipping class. Shipping class name is used as array keys.
+	 * @return LocationRate[][] Arrays of location rates grouped by their applicable shipping class. Shipping class name is used as array keys.
 	 */
 	public function get_rates_grouped_by_shipping_class(): array {
 		$this->group_rates_by_shipping_class();
