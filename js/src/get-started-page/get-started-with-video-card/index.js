@@ -80,6 +80,7 @@ const GetStartedWithVideoCard = () => {
 					eventProps={ {
 						target: 'set_up_free_listings',
 						trigger: 'click',
+						context: 'get-started-with-video',
 					} }
 				>
 					{ __(
@@ -105,7 +106,7 @@ const GetStartedWithVideoCard = () => {
 						{
 							link: (
 								<AppDocumentationLink
-									context="get-started"
+									context="get-started-with-video"
 									linkId="wp-terms-of-service"
 									href="https://wordpress.com/tos/"
 								/>

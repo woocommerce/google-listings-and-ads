@@ -57,6 +57,7 @@ const GetStartedCard = () => {
 					eventProps={ {
 						target: 'set_up_free_listings',
 						trigger: 'click',
+						context: 'get-started',
 					} }
 				>
 					{ __(
