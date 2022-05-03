@@ -20,12 +20,12 @@ End of \`woo-tracking-jsdoc\`-generated content.
  * Creates MD link to the line of code, where the symbol was defined.
  *
  * @param {Object} symbol JSDoc symbol object.
- * @param {string} pwd
+ * @param {string} readmeDir The absolute path to the directory of README file.
  */
-function getLineLink( symbol, pwd ) {
+function getLineLink( symbol, readmeDir ) {
 	const localLocation =
 		path.relative(
-			pwd,
+			readmeDir,
 			path.join( symbol.meta.path, symbol.meta.filename )
 		) +
 		'#L' +
@@ -52,6 +52,7 @@ exports.publish = function ( data ) {
 		pwd,
 	} = env;
 
+	const readmeDir = path.join( pwd, path.dirname( readmePath ) );
 	const replacementRegex = replacement
 		? new RegExp( replacement )
 		: defaultReplacementRegex;
@@ -62,7 +63,7 @@ exports.publish = function ( data ) {
 		.order( 'name' )
 		.each( ( symbol ) => {
 			// Build the event title with the link to its source.
-			mdResult += `\n### ${ getLineLink( symbol, pwd ) }\n`;
+			mdResult += `\n### ${ getLineLink( symbol, readmeDir ) }\n`;
 			// description
 			mdResult += ( symbol.description || '' ) + '\n';
 			// Build properites table.
@@ -103,7 +104,7 @@ exports.publish = function ( data ) {
 			if ( emitters.size ) {
 				mdResult += `#### Emitters\n`;
 				emitters.forEach( ( fires, emitter ) => {
-					mdResult += '- ' + getLineLink( emitter, pwd );
+					mdResult += '- ' + getLineLink( emitter, readmeDir );
 					if ( fires.length > 1 ) {
 						mdResult +=
 							`\n` +
