@@ -1,20 +1,20 @@
 /**
  * Internal dependencies
  */
-import validateShippingTime from './validateShippingTime';
+import validateShippingTimeGroup from './validateShippingTimeGroup';
 
 const validValues = {
 	countryCodes: [ 'US', 'CA' ],
 	time: 12,
 };
 
-describe( 'validateShippingTime', () => {
+describe( 'validateShippingTimeGroup', () => {
 	it( 'has no errors properties with validValues', () => {
 		const values = {
 			...validValues,
 		};
 
-		const errors = validateShippingTime( values );
+		const errors = validateShippingTimeGroup( values );
 
 		expect( errors ).toEqual( {} );
 	} );
@@ -25,7 +25,7 @@ describe( 'validateShippingTime', () => {
 			countryCodes: [],
 		};
 
-		const errors = validateShippingTime( values );
+		const errors = validateShippingTimeGroup( values );
 
 		expect( errors ).toHaveProperty( 'countryCodes' );
 	} );
@@ -36,7 +36,7 @@ describe( 'validateShippingTime', () => {
 			time: null,
 		};
 
-		const errors = validateShippingTime( values );
+		const errors = validateShippingTimeGroup( values );
 
 		expect( errors ).toHaveProperty( 'time' );
 	} );
@@ -47,7 +47,7 @@ describe( 'validateShippingTime', () => {
 			time: -1,
 		};
 
-		const errors = validateShippingTime( values );
+		const errors = validateShippingTimeGroup( values );
 
 		expect( errors ).toHaveProperty( 'time' );
 	} );

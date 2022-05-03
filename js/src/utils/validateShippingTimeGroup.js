@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
-const validateShippingTime = ( values ) => {
+const validateShippingTimeGroup = ( values ) => {
 	const errors = {};
 
 	if ( values.countryCodes.length === 0 ) {
@@ -30,4 +30,4 @@ const validateShippingTime = ( values ) => {
 	return errors;
 };
 
-export default validateShippingTime;
+export default validateShippingTimeGroup;

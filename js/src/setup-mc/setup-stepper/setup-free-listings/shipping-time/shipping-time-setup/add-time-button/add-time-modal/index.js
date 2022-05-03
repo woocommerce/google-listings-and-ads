@@ -14,7 +14,7 @@ import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
 import { useAppDispatch } from '.~/data';
-import validateShippingTime from '.~/utils/validateShippingTime';
+import validateShippingTimeGroup from '.~/utils/validateShippingTimeGroup';
 import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddTimeModal = ( props ) => {
@@ -35,7 +35,7 @@ const AddTimeModal = ( props ) => {
 				countryCodes: remainingCountryCodes,
 				time: 0,
 			} }
-			validate={ validateShippingTime }
+			validate={ validateShippingTimeGroup }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {

@@ -13,7 +13,7 @@ import AppModal from '.~/components/app-modal';
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import SupportedCountrySelect from '.~/components/supported-country-select';
-import validateShippingTime from '.~/utils/validateShippingTime';
+import validateShippingTimeGroup from '.~/utils/validateShippingTimeGroup';
 
 /**
  *Form to edit time for selected country(-ies).
@@ -61,7 +61,7 @@ const EditTimeModal = ( {
 				countryCodes: time.countries,
 				time: time.time,
 			} }
-			validate={ validateShippingTime }
+			validate={ validateShippingTimeGroup }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
