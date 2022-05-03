@@ -80,7 +80,7 @@ class RequestReviewStatuses implements Service {
 
 		return [
 			'issues'   => array_map( 'strtolower', array_unique( $issues ) ),
-			'cooldown' => self::parse_cooldown( $cooldown ), // add lifetime cache to cooldown time
+			'cooldown' => self::get_cooldown( $cooldown ), // add lifetime cache to cooldown time
 			'status'   => $status,
 		];
 	}
@@ -97,9 +97,9 @@ class RequestReviewStatuses implements Service {
 	/**
 	 * @param int $cooldown The cooldown in PHP format (seconds)
 	 *
-	 * @return int The cooldown in miliseconds and adding the lifetime cache
+	 * @return int The cooldown in milliseconds and adding the lifetime cache
 	 */
-	private function parse_cooldown( $cooldown ) {
+	private function get_cooldown( $cooldown ) {
 		if ( $cooldown ) {
 			$cooldown = ( $cooldown + self::get_account_review_lifetime() ) * 1000;
 		}
