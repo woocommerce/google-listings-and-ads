@@ -21,7 +21,7 @@ import './index.scss';
 
 const ExternalIcon = () => (
 	<Icon
-		className="gla-campaign-conversion-status-notice__external_icon components-external-link__icon"
+		className="gla-campaign-conversion-status-notice__external_icon"
 		icon={ externalIcon }
 		size={ 18 }
 	/>
