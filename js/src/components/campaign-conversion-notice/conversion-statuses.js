@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { getNewPath } from '@woocommerce/navigation';
 import { Link } from '@woocommerce/components';
 
 /**
