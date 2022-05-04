@@ -125,7 +125,7 @@ class RequestReviewStatuses implements Service {
 	 */
 	private function get_cooldown( int $cooldown ) {
 		if ( $cooldown ) {
-			$cooldown = ( $cooldown + self::get_account_review_lifetime() ) * 1000;
+			$cooldown = ( $cooldown + $this->get_account_review_lifetime() ) * 1000;
 		}
 
 		return $cooldown;
