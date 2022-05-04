@@ -20,7 +20,7 @@ const validateShippingRateGroup = ( values ) => {
 		);
 	}
 
-	if ( values.rate === undefined ) {
+	if ( ! Number.isFinite( values.rate ) ) {
 		errors.rate = __(
 			'Please enter the estimated shipping rate.',
 			'google-listings-and-ads'
