@@ -13,7 +13,7 @@ const validateShippingTimeGroup = ( values ) => {
 		);
 	}
 
-	if ( values.time === null ) {
+	if ( ! Number.isInteger( values.time ) ) {
 		errors.time = __(
 			'Please enter the estimated shipping time.',
 			'google-listings-and-ads'
