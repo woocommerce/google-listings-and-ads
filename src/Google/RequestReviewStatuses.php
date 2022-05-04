@@ -50,14 +50,14 @@ class RequestReviewStatuses implements Service {
 			// otherwise we compute the new status, issues and cooldown period
 			foreach ( $program_type['data']['regionStatuses'] as $region_status ) {
 				$issues = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
-				self::maybe_update_cooldown_period( $region_status, $cooldown );
-				self::maybe_update_status( $region_status['eligibilityStatus'], $status );
+				$this->maybe_update_cooldown_period( $region_status, $cooldown );
+				$this->maybe_update_status( $region_status['eligibilityStatus'], $status );
 			}
 		}
 
 		return [
 			'issues'   => array_map( 'strtolower', array_values( array_unique( $issues ) ) ),
-			'cooldown' => self::get_cooldown( $cooldown ), // add lifetime cache to cooldown time
+			'cooldown' => $this->get_cooldown( $cooldown ), // add lifetime cache to cooldown time
 			'status'   => $status,
 		];
 	}
