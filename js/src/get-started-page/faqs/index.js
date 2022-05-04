@@ -186,9 +186,13 @@ const faqItems = [
 			'How do I sync my products to Google free listings?',
 			'google-listings-and-ads'
 		),
-		answer: __(
-			'The Google Listings and Ads plugin allows you to upload your store and product data to Google. Your products will sync automatically to make relevant information available for free listings, Google Ads, and other Google services. You can create a new Merchant Center account or link an existing account to connect your store and list products across Google.',
-			'google-listings-and-ads'
+		answer: (
+			<p>
+				{ __(
+					'The Google Listings and Ads plugin allows you to upload your store and product data to Google. Your products will sync automatically to make relevant information available for free listings, Google Ads, and other Google services. You can create a new Merchant Center account or link an existing account to connect your store and list products across Google.',
+					'google-listings-and-ads'
+				) }
+			</p>
 		),
 	},
 	{
@@ -197,9 +201,13 @@ const faqItems = [
 			'Can I run both Shopping ads and free listings campaigns at the same time?',
 			'google-listings-and-ads'
 		),
-		answer: __(
-			'Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.',
-			'google-listings-and-ads'
+		answer: (
+			<p>
+				{ __(
+					'Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.',
+					'google-listings-and-ads'
+				) }
+			</p>
 		),
 	},
 	{
