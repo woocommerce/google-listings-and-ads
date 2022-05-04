@@ -50,8 +50,8 @@ class RequestReviewStatuses implements Service {
 			// otherwise we compute the new status, issues and cooldown period
 			foreach ( $program_type['data']['regionStatuses'] as $region_status ) {
 				$issues = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
-				$this->maybe_update_cooldown_period( $region_status, $cooldown );
-				$this->maybe_update_status( $region_status['eligibilityStatus'], $status );
+				$cooldown = $this->maybe_update_cooldown_period( $region_status, $cooldown );
+				$status = $this->maybe_update_status( $region_status['eligibilityStatus'], $status );
 			}
 		}
 
@@ -66,8 +66,10 @@ class RequestReviewStatuses implements Service {
 	 *
 	 * @param array $region_status Associative array containing (maybe) a cooldown date property.
 	 * @param int   $cooldown Referenced current cooldown to compare with
+	 *
+	 * @return int The cooldown
 	 */
-	private function maybe_update_cooldown_period( $region_status, &$cooldown ) {
+	private function maybe_update_cooldown_period( $region_status, $cooldown ) {
 		if (
 			isset( $region_status['reviewIneligibilityReasonDetails'] ) &&
 			isset( $region_status['reviewIneligibilityReasonDetails']['cooldownTime'] )
@@ -78,6 +80,8 @@ class RequestReviewStatuses implements Service {
 				$cooldown = $region_cooldown;
 			}
 		}
+
+		return $cooldown;
 	}
 
 	/**
@@ -85,8 +89,10 @@ class RequestReviewStatuses implements Service {
 	 *
 	 * @param String $new_status New status to check has more priority than the current one
 	 * @param String $status Referenced current status
+	 *
+	 * @return String The status
 	 */
-	private function maybe_update_status( $new_status, &$status ) {
+	private function maybe_update_status( $new_status, $status ) {
 		$status_priority_list = [
 			self::ONBOARDING, // highest priority
 			self::DISAPPROVED,
@@ -99,13 +105,12 @@ class RequestReviewStatuses implements Service {
 		$current_status_priority = array_search( $status, $status_priority_list, true );
 		$new_status_priority     = array_search( $new_status, $status_priority_list, true );
 
-		if ( $new_status_priority === false ) {
-			return;
+
+		if ( $new_status_priority !== false && ( is_null( $status ) || $current_status_priority > $new_status_priority ) ) {
+			return $new_status;
 		}
 
-		if ( is_null( $status ) || $current_status_priority > $new_status_priority ) {
-			$status = $new_status;
-		}
+		return $status;
 	}
 
 
