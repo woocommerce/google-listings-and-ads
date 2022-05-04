@@ -27,7 +27,7 @@ const getConversionCampaignStatusNotice = (
 				1000;
 
 	if ( ! isConverted ) return 'BEFORE_CONVERSION';
-	else if ( isConverted && isInMigrationPeriod ) {
+	else if ( isInMigrationPeriod ) {
 		return 'AFTER_CONVERSION';
 	}
 	return null;
