@@ -49,9 +49,9 @@ class RequestReviewStatuses implements Service {
 
 			// otherwise we compute the new status, issues and cooldown period
 			foreach ( $program_type['data']['regionStatuses'] as $region_status ) {
-				$issues = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
+				$issues   = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
 				$cooldown = $this->maybe_update_cooldown_period( $region_status, $cooldown );
-				$status = $this->maybe_update_status( $region_status['eligibilityStatus'], $status );
+				$status   = $this->maybe_update_status( $region_status['eligibilityStatus'], $status );
 			}
 		}
 
@@ -104,7 +104,6 @@ class RequestReviewStatuses implements Service {
 
 		$current_status_priority = array_search( $status, $status_priority_list, true );
 		$new_status_priority     = array_search( $new_status, $status_priority_list, true );
-
 
 		if ( $new_status_priority !== false && ( is_null( $status ) || $current_status_priority > $new_status_priority ) ) {
 			return $new_status;
