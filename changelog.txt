@@ -1,6 +1,6 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
-= 1.12.7 - 2022-xx-xx =
+= 1.12.7 - 2022-05-04 =
 * Fix - Label UI for selecting countries (TreeSelectControl / SupportedCountrySelect).
 * Tweak - Refactor, remove `record*Event` utils.
 * Tweak - Upgrade @wordpress/scripts to 22.1.0, and the related packages were upgraded to the corresponding versions.

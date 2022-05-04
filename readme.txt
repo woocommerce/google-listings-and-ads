@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.12.6
+Stable tag: 1.12.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,7 +109,7 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 1.12.7 - 2022-xx-xx =
+= 1.12.7 - 2022-05-04 =
 * Fix - Label UI for selecting countries (TreeSelectControl / SupportedCountrySelect).
 * Tweak - Refactor, remove `record*Event` utils.
 * Tweak - Upgrade @wordpress/scripts to 22.1.0, and the related packages were upgraded to the corresponding versions.
