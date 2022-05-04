@@ -97,7 +97,7 @@ class RequestReviewStatuses implements Service {
 		];
 
 		$current_status_priority = array_search( $status, $status_priority_list, true );
-		$new_status_priority = array_search( $new_status, $status_priority_list, true );
+		$new_status_priority     = array_search( $new_status, $status_priority_list, true );
 
 		if ( $new_status_priority === false ) {
 			return;
