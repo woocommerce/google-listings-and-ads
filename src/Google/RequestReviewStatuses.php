@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
  */
 class RequestReviewStatuses implements Service {
 
+	public const ENABLED        = 'ENABLED';
 	public const DISAPPROVED    = 'DISAPPROVED';
 	public const WARNING        = 'WARNING';
 	public const UNDER_REVIEW   = 'UNDER_REVIEW';
@@ -31,7 +32,7 @@ class RequestReviewStatuses implements Service {
 		$cooldown = 0;
 		$status   = null;
 
-		$valid_program_states = [ 'ENABLED', self::NO_OFFERS ];
+		$valid_program_states = [ self::ENABLED, self::NO_OFFERS ];
 
 		foreach ( $response as $program_type ) {
 
