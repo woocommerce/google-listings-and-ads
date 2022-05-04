@@ -7,13 +7,13 @@
 		opacity: 0.5;
 	}
 
-	@include break-small() {
+	@include break-small {
 		flex-direction: row;
 		gap: var(--main-gap);
 	}
 
 	header {
-		@include break-small() {
+		@include break-small {
 			width: 33%;
 			padding-top: var(--main-gap);
 		}

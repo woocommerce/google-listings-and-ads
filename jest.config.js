@@ -4,6 +4,7 @@ const defaultConfig = require( '@wordpress/scripts/config/jest-unit.config' );
 
 module.exports = {
 	...defaultConfig,
+	testEnvironment: 'jsdom',
 	moduleNameMapper: {
 		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
@@ -15,13 +16,18 @@ module.exports = {
 	// Exclude e2e tests from unit testing.
 	testPathIgnorePatterns: [
 		'/node_modules/',
-		'/tests/e2e/',
 		'/__helpers__/',
+		'<rootDir>/tests/e2e/',
 	],
-	coveragePathIgnorePatterns: [ '/node_modules/', '/__helpers__/' ],
+	coveragePathIgnorePatterns: [
+		'/node_modules/',
+		'/__helpers__/',
+		'<rootDir>/tests/',
+	],
 	watchPathIgnorePatterns: [
 		'<rootDir>/.externalized.json',
 		'<rootDir>/js/build/',
+		'<rootDir>/js/build-dev',
 	],
 	globals: {
 		glaData: {

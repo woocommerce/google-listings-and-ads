@@ -570,14 +570,14 @@ describe( 'reducer', () => {
 				orderby: 'title',
 				per_page: 2,
 				total: 7,
-				pages: { '1': [ '#1', '#2' ] },
+				pages: { 1: [ '#1', '#2' ] },
 			} );
 			expect( pageFourState ).toHaveProperty( path, {
 				order: 'asc',
 				orderby: 'title',
 				per_page: 2,
 				total: 7,
-				pages: { '1': [ '#1', '#2' ], '4': [ '#7' ] },
+				pages: { 1: [ '#1', '#2' ], 4: [ '#7' ] },
 			} );
 		} );
 
@@ -596,7 +596,7 @@ describe( 'reducer', () => {
 				const initValue = {
 					...baseQuery,
 					total: 7,
-					pages: { '1': [ '#1', '#2' ], '4': [ '#7' ] },
+					pages: { 1: [ '#1', '#2' ], 4: [ '#7' ] },
 				};
 				const originalState = prepareState( path, initValue, [
 					path,
@@ -621,7 +621,7 @@ describe( 'reducer', () => {
 					...baseQuery,
 					[ key ]: value,
 					total: 7,
-					pages: { '2': [ '#3', '#4' ] },
+					pages: { 2: [ '#3', '#4' ] },
 				} );
 			}
 		);

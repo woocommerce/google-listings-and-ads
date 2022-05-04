@@ -5,6 +5,7 @@
 bin export-ignore
 tests export-ignore
 js/src export-ignore
+js/build-dev export-ignore
 README.md export-ignore
 package.json export-ignore
 package-lock.json export-ignore
@@ -16,6 +17,7 @@ composer.lock export-ignore
 phpcs.xml.dist export-ignore
 phpunit.xml.dist export-ignore
 webpack.config.js export-ignore
+webpack-development.config.js export-ignore
 jest.config.js export-ignore
 wordpress_org_assets export-ignore
 .editorconfig export-ignore

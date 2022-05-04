@@ -16,18 +16,18 @@ $button-color: #949494;
 		cursor: pointer;
 
 		&:hover {
-			fill: darken($color: $button-color, $amount: 20%);
+			fill: color.adjust($button-color, $lightness: -20%);
 		}
 	}
 
 	.components-popover__content {
 		width: 300px;
 
-		@include break-large() {
+		@include break-large {
 			width: 360px;
 		}
 
-		@include break-xlarge() {
+		@include break-xlarge {
 			width: 480px;
 		}
 

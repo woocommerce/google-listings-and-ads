@@ -3,7 +3,7 @@
 		flex-direction: column;
 		align-items: flex-end;
 
-		@include break-large() {
+		@include break-large {
 			flex-direction: row;
 			align-items: center;
 		}
@@ -24,7 +24,7 @@
 			text-align: right;
 			margin-bottom: -4px;
 
-			@include break-large() {
+			@include break-large {
 				margin-top: calc(var(--main-gap) * 1.5);
 			}
 		}

@@ -9,7 +9,7 @@
 		gap: calc(var(--main-gap) / 2);
 		margin-top: var(--large-gap);
 
-		@include break-mobile() {
+		@include break-mobile {
 			flex-direction: row;
 			justify-content: flex-end;
 		}
