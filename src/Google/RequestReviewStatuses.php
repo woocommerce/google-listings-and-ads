@@ -44,8 +44,7 @@ class RequestReviewStatuses implements Service {
 
 			// In case any Program is not enabled or there are no regionStatuses we return null status
 			if ( ! isset( $program_type['data']['regionStatuses'] ) || ! in_array( $program_type['data']['globalState'], $valid_program_states, true ) ) {
-				$status = null;
-				break;
+				continue;
 			}
 
 			// otherwise we compute the new status, issues and cooldown period
