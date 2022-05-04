@@ -2,4 +2,19 @@
 	.components-panel__row {
 		display: block;
 	}
+
+	.components-panel__body-title {
+		.components-panel__body-toggle.components-button {
+			display: flex;
+			flex-direction: row-reverse;
+			justify-content: space-between;
+
+			.components-panel__arrow {
+				position: unset;
+				right: unset;
+				top: unset;
+				transform: unset;
+			}
+		}
+	}
 }
