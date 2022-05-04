@@ -27,6 +27,11 @@
 			.gla-campaign-conversion-status-notice__external_link {
 				margin-bottom: 0;
 			}
+
+			.gla-campaign-conversion-status-notice__external_link a {
+				font-weight: 600;
+				text-decoration: none;
+			}
 		}
 	}
 }
