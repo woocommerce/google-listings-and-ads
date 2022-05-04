@@ -155,7 +155,6 @@
 		],
 		"ci": {
 			"trackBranches": [
-				"tweak/1333-wp-scripts-webpack",
 				"trunk",
 				"develop"
 			]

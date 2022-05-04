@@ -5,7 +5,6 @@ on:
     branches:
       - trunk
       - develop
-      - tweak/1333-wp-scripts-webpack
   pull_request:
 
 concurrency:
