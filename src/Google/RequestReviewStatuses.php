@@ -96,7 +96,14 @@ class RequestReviewStatuses implements Service {
 			self::APPROVED,
 		];
 
-		if ( is_null( $status ) || array_search( $status, $status_priority_list, true ) > array_search( $new_status, $status_priority_list, true ) ) {
+		$current_status_priority = array_search( $status, $status_priority_list, true );
+		$new_status_priority = array_search( $new_status, $status_priority_list, true );
+
+		if ( $new_status_priority === false ) {
+			return;
+		}
+
+		if ( is_null( $status ) || $current_status_priority > $new_status_priority ) {
 			$status = $new_status;
 		}
 	}
