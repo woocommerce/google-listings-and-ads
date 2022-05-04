@@ -119,10 +119,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Automatically generate Tracking events docs from JSDoc.
 * Tweak - Move Tracking events docs to JSDoc.
 
-= 1.12.4 - 2022-04-06 =
-* Fix - Prevent fatal errors when migrating or syncing merchant settings.
-
-= 1.12.3 - 2022-04-05 =
-* Fix - Shipping times section not showing up and unable to proceed through the Setup Merchant Center flow.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
