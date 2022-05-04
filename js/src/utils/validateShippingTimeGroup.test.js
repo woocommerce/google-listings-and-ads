@@ -19,7 +19,7 @@ describe( 'validateShippingTimeGroup', () => {
 		expect( errors ).toEqual( {} );
 	} );
 
-	it( 'has errors.countries when values.countryCodes.length is 0', () => {
+	it( 'has errors.countryCodes when values.countryCodes.length is 0', () => {
 		const values = {
 			...validValues,
 			countryCodes: [],
