@@ -29,7 +29,7 @@ export const LOCAL_STORAGE_KEYS = {
 	IS_AFTER_MIGRATION_NOTICE_DISMISSED:
 		'gla-is-after-migration-notice-dismissed',
 	IS_REPORTS_MIGRATION_NOTICE_DISMISSED:
-		'gla-is-after-migration-notice-dismissed',
+		'gla-is-reports-migration-notice-dismissed',
 };
 
 export const API_RESPONSE_CODES = {
