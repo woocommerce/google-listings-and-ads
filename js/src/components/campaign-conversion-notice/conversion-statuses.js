@@ -10,6 +10,7 @@ import { Link } from '@woocommerce/components';
  * Internal dependencies
  */
 import { LOCAL_STORAGE_KEYS } from '.~/constants';
+import { geReportsUrl } from '.~/utils/urls';
 
 const BEFORE_CONVERSION = {
 	title: __(
@@ -44,7 +45,7 @@ const AFTER_CONVERSION = {
 			link: (
 				<Link
 					className="gla-campaign-conversion-status-notice-reports__link"
-					href={ getNewPath( null, '/google/reports' ) }
+					href={ geReportsUrl() }
 				/>
 			),
 		}
