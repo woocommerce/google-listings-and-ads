@@ -39,7 +39,7 @@ export { CompareButton };
 /**
  * Displays a card + search used to filter results as a comparison between objects.
  */
-export class CompareFilter extends Component {
+class CompareFilter extends Component {
 	constructor( { getLabels, param, query } ) {
 		super( ...arguments );
 		this.state = {
@@ -189,3 +189,5 @@ CompareFilter.defaultProps = {
 	labels: {},
 	query: {},
 };
+
+export { CompareFilter };

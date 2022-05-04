@@ -456,7 +456,7 @@ const TreeSelectControl = ( {
 	/**
 	 * Get formatted Tags from the selected values.
 	 *
-	 * @return {{label: {string}, id: {string}}[]} An array of Tags
+	 * @return {Array<{id: string, label: string|undefined}>} An array of Tags
 	 */
 	const getTags = () => {
 		if ( ! options.length ) {
@@ -566,10 +566,6 @@ const TreeSelectControl = ( {
 		<div
 			{ ...focusOutside }
 			onKeyDown={ onKeyDown }
-			onClick={ () => {
-				if ( disabled ) return;
-				setTreeVisible( true );
-			} }
 			className={ classnames(
 				'woocommerce-tree-select-control',
 				className
@@ -592,6 +588,10 @@ const TreeSelectControl = ( {
 					setFocused( null );
 					setTreeVisible( true );
 				} }
+				onControlClick={ () => {
+					if ( disabled ) return;
+					setTreeVisible( true );
+				} }
 				instanceId={ instanceId }
 				placeholder={ placeholder }
 				label={ label }
@@ -599,11 +599,6 @@ const TreeSelectControl = ( {
 				onTagsChange={ handleTagsChange }
 				onInputChange={ handleOnInputChange }
 			/>
-			{ help && (
-				<div className="woocommerce-tree-select-control__help">
-					{ help }
-				</div>
-			) }
 			{ showTree && (
 				<div
 					className="woocommerce-tree-select-control__tree"
@@ -619,6 +614,11 @@ const TreeSelectControl = ( {
 						onNodesExpandedChange={ setNodesExpanded }
 						onOptionFocused={ handleOptionFocused }
 					/>
+				</div>
+			) }
+			{ help && (
+				<div className="woocommerce-tree-select-control__help">
+					{ help }
 				</div>
 			) }
 		</div>

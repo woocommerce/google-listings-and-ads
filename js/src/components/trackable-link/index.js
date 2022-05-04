@@ -2,11 +2,7 @@
  * External dependencies
  */
 import { Link } from '@woocommerce/components';
-
-/**
- * Internal dependencies
- */
-import recordEvent from '.~/utils/recordEvent';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * A {@link module:@woocommerce/components~Link} component that will call `recordEvent` with `eventName` and `eventProps` parameters upon click.

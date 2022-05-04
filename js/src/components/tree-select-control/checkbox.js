@@ -4,7 +4,7 @@
 import { Icon, check } from '@wordpress/icons';
 
 /**
- * @typedef {import('./').RepositoryOption} RepositoryOption
+ * @typedef {import('./index').RepositoryOption} RepositoryOption
  */
 
 /**

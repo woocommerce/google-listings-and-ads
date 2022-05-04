@@ -22,9 +22,9 @@ class FilteredProductList implements Countable {
 	/**
 	 * List of product objects or IDs.
 	 *
-	 * @var WC_Product[]|int[]
+	 * @var WC_Product[]
 	 */
-	protected $products;
+	protected $products = [];
 
 	/**
 	 * Count before filtering.
@@ -36,18 +36,18 @@ class FilteredProductList implements Countable {
 	/**
 	 * FilteredProductList constructor.
 	 *
-	 * @param WC_Product[]|int[] $products         List of filtered products.
-	 * @param int                $unfiltered_count Product count before filtering.
+	 * @param WC_Product[] $products         List of filtered products.
+	 * @param int          $unfiltered_count Product count before filtering.
 	 */
-	public function __construct( $products, int $unfiltered_count ) {
-		$this->products         = $products ?? [];
+	public function __construct( array $products, int $unfiltered_count ) {
+		$this->products         = $products;
 		$this->unfiltered_count = $unfiltered_count;
 	}
 
 	/**
 	 * Get the list of products.
 	 *
-	 * @return array
+	 * @return WC_Product[]
 	 */
 	public function get(): array {
 		return $this->products;

@@ -82,20 +82,16 @@ const AddTimeModal = ( props ) => {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<div>
-								<div className="label">
-									{ __(
-										'If customer is in',
-										'google-listings-and-ads'
-									) }
-								</div>
-								<AudienceCountrySelect
-									onDropdownVisibilityChange={
-										setDropdownVisible
-									}
-									{ ...getInputProps( 'countryCodes' ) }
-								/>
-							</div>
+							<AudienceCountrySelect
+								label={ __(
+									'If customer is in',
+									'google-listings-and-ads'
+								) }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
+								{ ...getInputProps( 'countryCodes' ) }
+							/>
 							<AppInputNumberControl
 								label={ __(
 									'Then the estimated shipping time displayed in the product listing is',
