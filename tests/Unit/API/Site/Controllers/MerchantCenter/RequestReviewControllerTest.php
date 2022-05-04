@@ -44,7 +44,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
-								                 'eligibilityStatus'       => 'WARNING',
+								                 'eligibilityStatus'       => RequestReviewStatuses::WARNING,
 								                 'reviewIssues'            => [ 'one', 'two' ],
 							                 ]
 						                 ]
@@ -56,7 +56,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_GET_REQUEST );
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [
-			'status'   => 'WARNING',
+			'status'   => RequestReviewStatuses::WARNING,
 			'issues'   => [ 'one', 'two' ],
 			'cooldown' => 0
 		], $response->get_data() );
@@ -75,11 +75,11 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
-								                 'eligibilityStatus'       => 'APPROVED',
+								                 'eligibilityStatus'       => RequestReviewStatuses::APPROVED,
 							                 ],
 							                 [
 								                 'reviewEligibilityStatus' => 'ELIGIBLE',
-								                 'eligibilityStatus'       => 'DISAPPROVED',
+								                 'eligibilityStatus'       => RequestReviewStatuses::DISAPPROVED,
 								                 'reviewIssues'            => [ 'one' ]
 							                 ],
 						                 ]
@@ -92,17 +92,17 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
-								                 'eligibilityStatus'       => 'WARNING',
+								                 'eligibilityStatus'       => RequestReviewStatuses::WARNING,
 								                 'reviewIssues'            => [ 'two' ]
 							                 ],
 							                 [
 								                 'reviewEligibilityStatus' => 'ELIGIBLE',
-								                 'eligibilityStatus'       => 'DISAPPROVED',
+								                 'eligibilityStatus'       => RequestReviewStatuses::DISAPPROVED,
 								                 'reviewIssues'            => [ 'one' ]
 							                 ],
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
-								                 'eligibilityStatus'       => 'UNDER_REVIEW'
+								                 'eligibilityStatus'       => RequestReviewStatuses::UNDER_REVIEW
 							                 ],
 						                 ]
 					                 ]
@@ -113,7 +113,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_GET_REQUEST );
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [
-			'status'   => 'DISAPPROVED',
+			'status'   => RequestReviewStatuses::DISAPPROVED,
 			'issues'   => [ 'one', 'two' ],
 			'cooldown' => 0
 		], $response->get_data() );
@@ -132,11 +132,11 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
-								                 'eligibilityStatus'       => 'APPROVED',
+								                 'eligibilityStatus'       => RequestReviewStatuses::APPROVED,
 							                 ],
 							                 [
 								                 'reviewEligibilityStatus' => 'ELIGIBLE',
-								                 'eligibilityStatus'       => 'DISAPPROVED',
+								                 'eligibilityStatus'       => RequestReviewStatuses::DISAPPROVED,
 								                 'reviewIssues'            => [ 'one' ]
 							                 ],
 						                 ]
@@ -145,7 +145,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'programTypeB' => [
 					                 'status' => 200,
 					                 'data'   => [
-						                 "globalState" =>  "NO_OFFERS_UPLOADED"
+						                 "globalState" =>  RequestReviewStatuses::NO_OFFERS
 					                 ]
 				                 ]
 			                 ]
@@ -173,11 +173,11 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
-								                 'eligibilityStatus'       => 'APPROVED',
+								                 'eligibilityStatus'       => RequestReviewStatuses::APPROVED,
 							                 ],
 							                 [
 								                 'reviewEligibilityStatus' => 'ELIGIBLE',
-								                 'eligibilityStatus'       => 'DISAPPROVED',
+								                 'eligibilityStatus'       => RequestReviewStatuses::DISAPPROVED,
 							                 ],
 						                 ]
 					                 ]
@@ -213,7 +213,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 						                 'regionStatuses' => [
 							                 [
 								                 'regionCodes'                      => [ 'US' ],
-								                 'eligibilityStatus'                => 'DISAPPROVED',
+								                 'eligibilityStatus'                => RequestReviewStatuses::DISAPPROVED,
 								                 'reviewEligibilityStatus'          => 'INELIGIBLE',
 								                 'reviewIneligibilityReasonDetails' => [
 									                 'cooldownTime' => "2022-04-27T10:58:51Z" // 27/04/2022
@@ -221,7 +221,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 							                 ],
 							                 [
 								                 'regionCodes'                      => [ 'NL' ],
-								                 'eligibilityStatus'                => 'DISAPPROVED',
+								                 'eligibilityStatus'                => RequestReviewStatuses::DISAPPROVED,
 								                 'reviewEligibilityStatus'          => 'INELIGIBLE',
 								                 'reviewIneligibilityReasonDetails' => [
 									                 'cooldownTime' => "2022-04-25T10:58:51Z" // 25/04/2022
@@ -229,7 +229,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 							                 ],
 							                 [
 								                 'regionCodes'             => [ 'IT' ],
-								                 'eligibilityStatus'       => 'DISAPPROVED',
+								                 'eligibilityStatus'       => RequestReviewStatuses::DISAPPROVED,
 								                 'reviewEligibilityStatus' => 'ELIGIBLE',
 							                 ],
 						                 ]
@@ -241,7 +241,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_GET_REQUEST );
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [
-			'status'   => 'DISAPPROVED',
+			'status'   => RequestReviewStatuses::DISAPPROVED,
 			'issues'   => [],
 			'cooldown' => 1651058331000 // 27/04/2022
 		], $response->get_data() );
