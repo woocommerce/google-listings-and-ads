@@ -74,12 +74,22 @@ const APPROVED = {
 	icon: <SuccessIcon size={ 24 } />,
 };
 
+const ONBOARDING = {
+	status: __( 'No products added', 'google-listing-and-ads' ),
+	statusDescription: __(
+		'Add and sync products to Google.',
+		'google-listing-and-ads'
+	),
+	icon: <WarningIcon size={ 24 } />,
+};
+
 const REVIEW_STATUSES = {
 	UNDER_REVIEW,
 	PENDING_REVIEW,
 	DISAPPROVED,
 	WARNING,
 	APPROVED,
+	ONBOARDING,
 };
 
 export default REVIEW_STATUSES;
