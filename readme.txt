@@ -109,6 +109,14 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.12.8 - 2022-05-05 =
+* Update - Add the FAQs card for UX improvements on get started page.
+* Update - Add the benefits card for UX improvements on get started page.
+* Update - Add the customer quotes card for UX improvements on get started page.
+* Update - Add the features card for UX improvements on get started page.
+* Update - Add the first card with a CTA and a video for UX improvements on get started page.
+* Update - Add the get started card for UX improvements on get started page.
+
 = 1.12.7 - 2022-05-04 =
 * Fix - Label UI for selecting countries (TreeSelectControl / SupportedCountrySelect).
 * Tweak - Refactor, remove `record*Event` utils.
