@@ -41,10 +41,10 @@ describe( 'getConversionCampaignStatusNotice', () => {
 			)
 		).toBeNull();
 	} );
-	it( 'WP option: gla_campaign_convert_status is null (so the conversion has not started yet)', () => {
+	it( 'WP option: gla_campaign_convert_status is null (Google Ads account is not connected)', () => {
 		const adsCampaignConvertStatus = null;
 		expect(
 			getConversionCampaignStatusNotice( adsCampaignConvertStatus )
-		).toBe( 'BEFORE_CONVERSION' );
+		).toBeNull();
 	} );
 } );

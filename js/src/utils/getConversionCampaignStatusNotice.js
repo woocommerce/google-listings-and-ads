@@ -16,8 +16,10 @@ const getConversionCampaignStatusNotice = (
 	adsCampaignConvertStatus,
 	timestamp = new Date().getTime()
 ) => {
-	const isConverted = adsCampaignConvertStatus?.status === 'converted';
-	const conversionTimestamp = adsCampaignConvertStatus?.updated;
+	if ( ! adsCampaignConvertStatus ) return null;
+
+	const isConverted = adsCampaignConvertStatus.status === 'converted';
+	const conversionTimestamp = adsCampaignConvertStatus.updated;
 
 	const isInMigrationPeriod =
 		conversionTimestamp &&
