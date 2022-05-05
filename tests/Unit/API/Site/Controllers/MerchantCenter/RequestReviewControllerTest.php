@@ -40,7 +40,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'programType' => [
 					                 'status' => 200,
 					                 'data'   => [
-						                 "globalState" =>  "ENABLED",
+						                 "globalState" =>  RequestReviewStatuses::ENABLED,
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
@@ -71,7 +71,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'programTypeA' => [
 					                 'status' => 200,
 					                 'data'   => [
-						                 "globalState" =>  "ENABLED",
+						                 "globalState" =>  RequestReviewStatuses::ENABLED,
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
@@ -88,7 +88,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'programTypeB' => [
 					                 'status' => 200,
 					                 'data'   => [
-						                 "globalState" =>  "ENABLED",
+						                 "globalState" =>  RequestReviewStatuses::ENABLED,
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
@@ -128,7 +128,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'programTypeA' => [
 					                 'status' => 200,
 					                 'data'   => [
-						                 "globalState" =>  "ENABLED",
+						                 "globalState" =>  RequestReviewStatuses::ENABLED,
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
@@ -205,7 +205,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'programTypeB' => [
 					                 'status' => 200,
 					                 'data'   => [
-						                 "globalState"    => "ENABLED",
+						                 "globalState"    => RequestReviewStatuses::ENABLED,
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'INELIGIBLE',
@@ -241,7 +241,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'programTypeA' => [
 					                 'status' => 200,
 					                 'data'   => [
-						                 "globalState"    => "ENABLED",
+						                 "globalState"    => RequestReviewStatuses::ENABLED,
 						                 'regionStatuses' => [
 							                 [
 								                 'reviewEligibilityStatus' => 'UNKNOWN',
@@ -280,7 +280,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'programTypeA' => [
 					                 'status' => 200,
 					                 'data'   => [
-						                 "globalState"    => "TEST",
+						                 "globalState"    => RequestReviewStatuses::ENABLED,
 					                 ]
 				                 ]
 			                 ]
@@ -304,7 +304,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				                 'freeListingsProgram' => [
 					                 'status' => 200,
 					                 'data'   => [
-						                 "globalState" =>  "ENABLED",
+						                 "globalState" =>  RequestReviewStatuses::ENABLED,
 						                 'regionStatuses' => [
 							                 [
 								                 'regionCodes'                      => [ 'US' ],
