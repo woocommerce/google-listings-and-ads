@@ -8,6 +8,8 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -15,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -25,12 +28,18 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+	use PluginHelper;
 
 	/** @var string Developer ID */
 	protected const DEVELOPER_ID = 'dOGY3NW';
 
 	/** @var string Meta key used to mark orders as converted */
 	protected const ORDER_CONVERSION_META_KEY = '_gla_tracked';
+
+	/**
+	 * @var AssetsHandlerInterface
+	 */
+	protected $assets_handler;
 
 	/**
 	 * @var GoogleGtagJs
@@ -55,16 +64,24 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Global Site Tag constructor.
 	 *
-	 * @param GoogleGtagJs  $gtag_js
-	 * @param WP            $wp
-	 * @param ProductHelper $product_helper
-	 * @param WC            $wc
+	 * @param AssetsHandlerInterface $assets_handler
+	 * @param GoogleGtagJs           $gtag_js
+	 * @param ProductHelper          $product_helper
+	 * @param WC                     $wc
+	 * @param WP                     $wp
 	 */
-	public function __construct( GoogleGtagJs $gtag_js, WP $wp, ProductHelper $product_helper, WC $wc ) {
+	public function __construct(
+		AssetsHandlerInterface $assets_handler,
+		GoogleGtagJs $gtag_js,
+		ProductHelper $product_helper,
+		WC $wc,
+		WP $wp
+	) {
+		$this->assets_handler = $assets_handler;
 		$this->gtag_js        = $gtag_js;
-		$this->wp             = $wp;
 		$this->product_helper = $product_helper;
 		$this->wc             = $wc;
+		$this->wp             = $wp;
 	}
 
 	/**
@@ -107,6 +124,32 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'wp_body_open',
 			function () {
 				$this->display_page_view_event_snippet();
+			}
+		);
+
+		$this->register_assets();
+	}
+
+	/**
+	 * Register and enqueue assets for gtag events in blocks.
+	 */
+	protected function register_assets() {
+		$gtag_events = new ScriptAsset(
+			'gla-gtag-events',
+			'js/build/gtag-events',
+			[ 'wp-i18n', 'wp-hooks' ],
+			'',
+			function () {
+				return is_page();
+			}
+		);
+
+		$this->assets_handler->add( $gtag_events );
+
+		add_action(
+			'wp_enqueue_scripts',
+			function() use ( $gtag_events ) {
+				$this->assets_handler->enqueue( $gtag_events );
 			}
 		);
 	}
