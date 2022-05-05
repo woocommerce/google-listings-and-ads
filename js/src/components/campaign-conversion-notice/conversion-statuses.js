@@ -3,13 +3,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
 import { LOCAL_STORAGE_KEYS } from '.~/constants';
 import { geReportsUrl } from '.~/utils/urls';
+import TrackableLink from '.~/components/trackable-link';
 
 const BEFORE_CONVERSION = {
 	title: __(
@@ -22,6 +22,7 @@ const BEFORE_CONVERSION = {
 	),
 	externalLink: {
 		link: '#',
+		linkId: 'campaign-conversion-status-before-migration-read-more',
 		content: __(
 			'Learn more about this upgrade',
 			'google-listings-and-ads'
@@ -42,15 +43,21 @@ const AFTER_CONVERSION = {
 		),
 		{
 			link: (
-				<Link
-					className="gla-campaign-conversion-status-notice-reports__link"
+				<TrackableLink
 					href={ geReportsUrl() }
+					className="gla-campaign-conversion-status-notice-reports__link"
+					eventName="gla_upgrade_campaign_reports_link_click"
+					eventProps={ {
+						context: 'dashboard',
+						href: geReportsUrl(),
+					} }
 				/>
 			),
 		}
 	),
 	externalLink: {
 		link: '#',
+		linkId: 'campaign-conversion-status-after-migration-read-more',
 		content: __(
 			'Learn more about this upgrade',
 			'google-listings-and-ads'
