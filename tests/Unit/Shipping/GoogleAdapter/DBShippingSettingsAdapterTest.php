@@ -48,9 +48,13 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			if ( 'US' === $service->getDeliveryCountry() ) {
 				$this->assertEquals( 'USD', $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency() );
 				$this->assertEquals( 10, $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getValue() );
+				$this->assertEquals( 1, $service->getDeliveryTime()->getMinTransitTimeInDays() );
+				$this->assertEquals( 1, $service->getDeliveryTime()->getMaxTransitTimeInDays() );
 			} elseif ( 'AU' === $service->getDeliveryCountry() ) {
 				$this->assertEquals( 'USD', $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getCurrency() );
 				$this->assertEquals( 50, $service->getRateGroups()[0]->getSingleValue()->getFlatRate()->getValue() );
+				$this->assertEquals( 2, $service->getDeliveryTime()->getMinTransitTimeInDays() );
+				$this->assertEquals( 2, $service->getDeliveryTime()->getMaxTransitTimeInDays() );
 			}
 		}
 	}
