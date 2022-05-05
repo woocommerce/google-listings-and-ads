@@ -71,7 +71,7 @@ class CountryRatesCollection extends LocationRatesCollection {
 			// Group rates by their applicable country and affecting shipping area
 			$service_key = $country . $shipping_area;
 			// If the rate has a min order amount constraint, then it should be under a new service
-			if ( ! is_null( $min_order_amount ) ) {
+			if ( $location_rate->get_shipping_rate()->has_min_order_amount() ) {
 				$service_key .= $min_order_amount;
 			}
 
