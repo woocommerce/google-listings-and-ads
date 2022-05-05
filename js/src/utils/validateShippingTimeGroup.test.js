@@ -41,6 +41,28 @@ describe( 'validateShippingTimeGroup', () => {
 		expect( errors ).toHaveProperty( 'time' );
 	} );
 
+	it( 'has errors.time when values.time is undefined', () => {
+		const values = {
+			...validValues,
+			time: undefined,
+		};
+
+		const errors = validateShippingTimeGroup( values );
+
+		expect( errors ).toHaveProperty( 'time' );
+	} );
+
+	it( `has errors.time when values.time is ''`, () => {
+		const values = {
+			...validValues,
+			time: '',
+		};
+
+		const errors = validateShippingTimeGroup( values );
+
+		expect( errors ).toHaveProperty( 'time' );
+	} );
+
 	it( 'has errors.time when values.time is less than 0', () => {
 		const values = {
 			...validValues,
