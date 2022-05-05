@@ -52,7 +52,7 @@
 	}
 
 	&__frame {
-		@include break-small() {
+		@include break-small {
 			transform: initial;
 			position: relative;
 			top: 0;

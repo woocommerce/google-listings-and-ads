@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
@@ -12,12 +13,12 @@ import AppModal from '.~/components/app-modal';
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
-import './index.scss';
 import { useAppDispatch } from '.~/data';
 
 const EditTimeModal = ( props ) => {
 	const { time: groupedTime, onRequestClose } = props;
 	const { upsertShippingTimes, deleteShippingTimes } = useAppDispatch();
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const handleDeleteClick = () => {
 		deleteShippingTimes( groupedTime.countries );
@@ -80,7 +81,9 @@ const EditTimeModal = ( props ) => {
 
 				return (
 					<AppModal
-						className="gla-edit-time-modal"
+						overflow="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'
@@ -106,18 +109,16 @@ const EditTimeModal = ( props ) => {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<div>
-								<div className="label">
-									{ __(
-										'If customer is in',
-										'google-listings-and-ads'
-									) }
-								</div>
-								<AudienceCountrySelect
-									multiple
-									{ ...getInputProps( 'countryCodes' ) }
-								/>
-							</div>
+							<AudienceCountrySelect
+								label={ __(
+									'If customer is in',
+									'google-listings-and-ads'
+								) }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
+								{ ...getInputProps( 'countryCodes' ) }
+							/>
 							<AppInputNumberControl
 								label={ __(
 									'Then the estimated shipping time displayed in the product listing is',

@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
@@ -19,6 +20,7 @@ const AddTimeModal = ( props ) => {
 	const { onRequestClose } = props;
 	const { upsertShippingTimes } = useAppDispatch();
 	const remainingCountryCodes = useGetRemainingCountryCodes();
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const handleValidate = ( values ) => {
 		const errors = {};
@@ -60,6 +62,9 @@ const AddTimeModal = ( props ) => {
 
 				return (
 					<AppModal
+						overflow="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'
@@ -77,18 +82,16 @@ const AddTimeModal = ( props ) => {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<div>
-								<div className="label">
-									{ __(
-										'If customer is in',
-										'google-listings-and-ads'
-									) }
-								</div>
-								<AudienceCountrySelect
-									multiple
-									{ ...getInputProps( 'countryCodes' ) }
-								/>
-							</div>
+							<AudienceCountrySelect
+								label={ __(
+									'If customer is in',
+									'google-listings-and-ads'
+								) }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
+								{ ...getInputProps( 'countryCodes' ) }
+							/>
 							<AppInputNumberControl
 								label={ __(
 									'Then the estimated shipping time displayed in the product listing is',

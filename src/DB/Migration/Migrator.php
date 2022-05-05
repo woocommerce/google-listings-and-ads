@@ -28,6 +28,14 @@ class Migrator implements Service {
 	 */
 	public function __construct( array $migrations ) {
 		$this->migrations = $migrations;
+
+		// Sort migrations by version.
+		uasort(
+			$this->migrations,
+			function ( MigrationInterface $migration_a, MigrationInterface $migration_b ) {
+				return version_compare( $migration_a->get_applicable_version(), $migration_b->get_applicable_version() );
+			}
+		);
 	}
 
 	/**

@@ -4,13 +4,13 @@
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AppModal from '.~/components/app-modal';
-import recordEvent from '.~/utils/recordEvent';
 import './index.scss';
 import { getEditFreeListingsUrl, getEditCampaignUrl } from '.~/utils/urls';
 

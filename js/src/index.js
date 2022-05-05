@@ -10,7 +10,6 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 /**
  * Internal dependencies
  */
-import './public-path';
 import './css/index.scss';
 import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';

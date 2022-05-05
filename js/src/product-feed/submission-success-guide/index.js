@@ -22,7 +22,7 @@ import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-butt
 import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
 import wooLogoURL from './woocommerce-logo.svg';
-import googleLogoURL from './google-logo.svg';
+import googleLogoURL from '.~/images/google-logo.svg';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';

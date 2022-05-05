@@ -3,13 +3,21 @@
  */
 import { getNewPath } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
-import { recordSetupAdsEvent } from '.~/utils/recordEvent';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
+
+/**
+ * Triggered on events during ads setup and editing
+ *
+ * @event gla_setup_ads
+ * @property {string} target Button ID
+ * @property {string} trigger Action (e.g. `click`)
+ */
 
 /**
  * @fires gla_setup_ads with given `{ target: 'back', trigger: 'click' }` when back button is clicked.
@@ -19,7 +27,7 @@ const SetupAdsTopBar = () => {
 	// Those events are fired before the actual navigation happens.
 	// The navigation itself may or maynot be blocked, for example to avoid leaving unsaved chanes.
 	const handleBackButtonClick = () => {
-		recordSetupAdsEvent( 'back' );
+		recordEvent( 'gla_setup_ads', { target: 'back', trigger: 'click' } );
 	};
 
 	return (
