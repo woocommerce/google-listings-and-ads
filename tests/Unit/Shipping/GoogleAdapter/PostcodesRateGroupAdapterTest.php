@@ -22,7 +22,7 @@ class PostcodesRateGroupAdapterTest extends UnitTest {
 	public function test_maps_location_rates() {
 		$location_rates = [
 			new LocationRate( new ShippingLocation( 0, 'US', null, [ new PostcodeRange( '4000', '4001' ) ] ), new ShippingRate( 110 ) ),
-			new LocationRate( new ShippingLocation( 4, 'DE', null, [ new PostcodeRange( '1000', '1001' ) ] ), new ShippingRate( 410 ) ),
+			new LocationRate( new ShippingLocation( 4, 'AU', null, [ new PostcodeRange( '1000', '1001' ) ] ), new ShippingRate( 410 ) ),
 		];
 
 		$rate_group = new PostcodesRateGroupAdapter(
@@ -40,7 +40,7 @@ class PostcodesRateGroupAdapterTest extends UnitTest {
 		$this->assertEqualSets(
 			[
 				'US - 4000...4001',
-				'DE - 1000...1001',
+				'AU - 1000...1001',
 			],
 			$table->getRowHeaders()->getPostalCodeGroupNames()
 		);
