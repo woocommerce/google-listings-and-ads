@@ -30,7 +30,7 @@ describe( 'validateShippingRateGroup', () => {
 		expect( errors ).toHaveProperty( 'countries' );
 	} );
 
-	it( 'has errors.rate when values.rate is empty', () => {
+	it( 'has errors.rate when values.rate is undefined', () => {
 		const values = {
 			...validValues,
 			rate: undefined,
