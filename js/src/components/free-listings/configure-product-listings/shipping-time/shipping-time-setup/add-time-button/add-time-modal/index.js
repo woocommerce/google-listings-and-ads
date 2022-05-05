@@ -27,17 +27,14 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const handleSubmitCallback = ( values ) => {
-		onSubmit( {
-			countries: values.countryCodes,
-			time: values.time,
-		} );
+		onSubmit( values );
 		onRequestClose();
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countryCodes: countries,
+				countries,
 				time: 0,
 			} }
 			validate={ validateShippingTimeGroup }
@@ -80,7 +77,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 								onDropdownVisibilityChange={
 									setDropdownVisible
 								}
-								{ ...getInputProps( 'countryCodes' ) }
+								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputNumberControl
 								label={ __(

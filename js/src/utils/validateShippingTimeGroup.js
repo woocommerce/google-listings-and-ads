@@ -6,8 +6,8 @@ import { __ } from '@wordpress/i18n';
 const validateShippingTimeGroup = ( values ) => {
 	const errors = {};
 
-	if ( values.countryCodes.length === 0 ) {
-		errors.countryCodes = __(
+	if ( values.countries.length === 0 ) {
+		errors.countries = __(
 			'Please specify at least one country.',
 			'google-listings-and-ads'
 		);

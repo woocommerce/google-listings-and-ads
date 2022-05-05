@@ -28,9 +28,12 @@ const EditTimeModal = ( props ) => {
 	};
 
 	const handleSubmitCallback = ( values ) => {
-		upsertShippingTimes( values );
+		upsertShippingTimes( {
+			countryCodes: values.countries,
+			time: values.time,
+		} );
 
-		const valuesCountrySet = new Set( values.countryCodes );
+		const valuesCountrySet = new Set( values.countries );
 		const deletedCountryCodes = groupedTime.countries.filter(
 			( el ) => ! valuesCountrySet.has( el )
 		);
@@ -44,7 +47,7 @@ const EditTimeModal = ( props ) => {
 	return (
 		<Form
 			initialValues={ {
-				countryCodes: groupedTime.countries,
+				countries: groupedTime.countries,
 				time: groupedTime.time,
 			} }
 			validate={ validateShippingTimeGroup }
@@ -91,7 +94,7 @@ const EditTimeModal = ( props ) => {
 								onDropdownVisibilityChange={
 									setDropdownVisible
 								}
-								{ ...getInputProps( 'countryCodes' ) }
+								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputNumberControl
 								label={ __(

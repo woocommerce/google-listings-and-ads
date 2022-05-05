@@ -44,21 +44,18 @@ const EditTimeModal = ( {
 	};
 
 	const handleSubmitCallback = ( values ) => {
-		const remainingCountries = new Set( values.countryCodes );
+		const remainingCountries = new Set( values.countries );
 		const removedCountries = time.countries.filter(
 			( el ) => ! remainingCountries.has( el )
 		);
 
-		onSubmit(
-			{ countries: values.countryCodes, time: values.time },
-			removedCountries
-		);
+		onSubmit( values, removedCountries );
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countryCodes: time.countries,
+				countries: time.countries,
 				time: time.time,
 			} }
 			validate={ validateShippingTimeGroup }
@@ -109,7 +106,7 @@ const EditTimeModal = ( {
 								onDropdownVisibilityChange={
 									setDropdownVisible
 								}
-								{ ...getInputProps( 'countryCodes' ) }
+								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputNumberControl
 								label={ __(

@@ -24,7 +24,10 @@ const AddTimeModal = ( props ) => {
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const handleSubmitCallback = ( values ) => {
-		upsertShippingTimes( values );
+		upsertShippingTimes( {
+			countryCodes: values.countries,
+			time: values.time,
+		} );
 
 		onRequestClose();
 	};
@@ -32,7 +35,7 @@ const AddTimeModal = ( props ) => {
 	return (
 		<Form
 			initialValues={ {
-				countryCodes: remainingCountryCodes,
+				countries: remainingCountryCodes,
 				time: 0,
 			} }
 			validate={ validateShippingTimeGroup }
@@ -71,7 +74,7 @@ const AddTimeModal = ( props ) => {
 								onDropdownVisibilityChange={
 									setDropdownVisible
 								}
-								{ ...getInputProps( 'countryCodes' ) }
+								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputNumberControl
 								label={ __(

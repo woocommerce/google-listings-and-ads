@@ -4,7 +4,7 @@
 import validateShippingTimeGroup from './validateShippingTimeGroup';
 
 const validValues = {
-	countryCodes: [ 'US', 'CA' ],
+	countries: [ 'US', 'CA' ],
 	time: 12,
 };
 
@@ -19,15 +19,15 @@ describe( 'validateShippingTimeGroup', () => {
 		expect( errors ).toEqual( {} );
 	} );
 
-	it( 'has errors.countryCodes when values.countryCodes.length is 0', () => {
+	it( 'has errors.countries when values.countries.length is 0', () => {
 		const values = {
 			...validValues,
-			countryCodes: [],
+			countries: [],
 		};
 
 		const errors = validateShippingTimeGroup( values );
 
-		expect( errors ).toHaveProperty( 'countryCodes' );
+		expect( errors ).toHaveProperty( 'countries' );
 	} );
 
 	it( 'has errors.time when values.time is empty', () => {
