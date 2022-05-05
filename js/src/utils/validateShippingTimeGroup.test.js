@@ -30,7 +30,7 @@ describe( 'validateShippingTimeGroup', () => {
 		expect( errors ).toHaveProperty( 'countries' );
 	} );
 
-	it( 'has errors.time when values.time is empty', () => {
+	it( 'has errors.time when values.time is null', () => {
 		const values = {
 			...validValues,
 			time: null,
