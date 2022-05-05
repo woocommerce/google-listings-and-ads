@@ -204,7 +204,7 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		);
 		$this->assertEquals(
 			array_merge( [ $simple_product->get_id() ], $variable_product->get_children() ),
-			$this->product_repository->find_sync_ready_product()->get_product_ids()
+			$this->product_repository->find_sync_ready_products()->get_product_ids()
 		);
 	}
 

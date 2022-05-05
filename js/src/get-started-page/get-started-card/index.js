@@ -3,14 +3,12 @@
  */
 import {
 	Card,
-	Flex,
+	CardBody,
 	FlexItem,
-	FlexBlock,
 	__experimentalText as Text,
 } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -20,74 +18,72 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import motivationImageURL from './image.svg';
 import './index.scss';
 import AppButton from '.~/components/app-button';
+import { getSetupMCUrl } from '.~/utils/urls';
 
 /**
- * @fires gla_setup_mc with `{ target: 'set_up_free_listings', trigger: 'click' }`.
+ * @fires gla_setup_mc with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started' }`.
+ * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
  */
 const GetStartedCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;
 
 	return (
-		<Card className="woocommerce-marketing-google-get-started-card">
-			<Flex>
-				<FlexBlock className="motivation-text">
-					<Text variant="title.medium" className="title">
-						{ __(
-							'List your products on Google, for free and with ads',
+		<Card className="gla-get-started-card" isBorderless>
+			<FlexItem className="motivation-image">
+				<img
+					src={ motivationImageURL }
+					alt={ __(
+						'Google Shopping search results example',
+						'google-listings-and-ads'
+					) }
+					width="279"
+					height="185"
+				/>
+			</FlexItem>
+			<CardBody>
+				<Text
+					variant="title.medium"
+					className="gla-get-started-card__title"
+				>
+					{ __(
+						'Get your products in front of more shoppers with Google Listings & Ads',
+						'google-listings-and-ads'
+					) }
+				</Text>
+				<AppButton
+					isPrimary
+					disabled={ disableNextStep }
+					href={ getSetupMCUrl() }
+					eventName="gla_setup_mc"
+					eventProps={ {
+						target: 'set_up_free_listings',
+						trigger: 'click',
+						context: 'get-started',
+					} }
+				>
+					{ __(
+						'Start listing products →',
+						'google-listings-and-ads'
+					) }
+				</AppButton>
+				<Text className="gla-get-started-card__terms-notice">
+					{ createInterpolateElement(
+						__(
+							'By clicking ‘Start listing products‘, you agree to our <link>Terms of Service.</link>',
 							'google-listings-and-ads'
-						) }
-					</Text>
-					<Text variant="body" className="description">
-						{ __(
-							'Reach more shoppers and drive sales for your store. Integrate with Google to list your products for free and launch paid ad campaigns.',
-							'google-listings-and-ads'
-						) }
-					</Text>
-					<AppButton
-						isPrimary
-						disabled={ disableNextStep }
-						href={ getNewPath( {}, '/google/setup-mc' ) }
-						eventName="gla_setup_mc"
-						eventProps={ {
-							target: 'set_up_free_listings',
-							trigger: 'click',
-						} }
-					>
-						{ __(
-							'Set up free listings in Google',
-							'google-listings-and-ads'
-						) }
-					</AppButton>
-					<Text className="woocommerce-marketing-google-get-started-card__terms-notice">
-						{ createInterpolateElement(
-							__(
-								'By clicking ‘Set up free listings in Google’, you agree to our <link>Terms of Service.</link>',
-								'google-listings-and-ads'
+						),
+						{
+							link: (
+								<AppDocumentationLink
+									context="get-started"
+									linkId="wp-terms-of-service"
+									href="https://wordpress.com/tos/"
+								/>
 							),
-							{
-								link: (
-									<AppDocumentationLink
-										context="get-started"
-										linkId="wp-terms-of-service"
-										href="https://wordpress.com/tos/"
-									/>
-								),
-							}
-						) }
-					</Text>
-				</FlexBlock>
-				<FlexItem className="motivation-image">
-					<img
-						src={ motivationImageURL }
-						alt={ __(
-							'Google Shopping search results example',
-							'google-listings-and-ads'
-						) }
-						width="416"
-						height="394"
-					/>
-				</FlexItem>
-			</Flex>
+						}
+					) }
+				</Text>
+			</CardBody>
 		</Card>
 	);
 };
