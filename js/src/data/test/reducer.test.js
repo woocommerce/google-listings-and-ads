@@ -40,7 +40,7 @@ describe( 'reducer', () => {
 			mc_setup: null,
 			mc_review_request: {
 				issues: null,
-				nextAttempt: null,
+				cooldown: null,
 				status: null,
 			},
 			mc_product_statistics: null,

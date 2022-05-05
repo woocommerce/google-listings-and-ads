@@ -38,7 +38,7 @@ const DEFAULT_STATE = {
 	},
 	mc_review_request: {
 		status: null,
-		nextAttempt: null,
+		cooldown: null,
 		issues: null,
 	},
 	mc_product_feed: null,

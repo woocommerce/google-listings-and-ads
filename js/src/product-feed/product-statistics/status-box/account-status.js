@@ -19,11 +19,15 @@ import REVIEW_STATUSES from '.~/product-feed/review-request/review-request-statu
 const AccountStatus = () => {
 	const account = useAppSelectDispatch( 'getMCReviewRequest' );
 
-	if ( ! account.hasFinishedResolution || ! account.data ) {
+	if ( ! account.hasFinishedResolution || ! account.data?.status ) {
 		return null;
 	}
 
 	const accountStatus = REVIEW_STATUSES[ account.data.status ];
+
+	if ( ! accountStatus ) {
+		return null;
+	}
 
 	return (
 		<Status
