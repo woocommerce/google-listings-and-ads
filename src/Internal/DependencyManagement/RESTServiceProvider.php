@@ -101,7 +101,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share_with_container( MerchantCenterReportsController::class );
 		$this->share( ShippingRateBatchController::class, ShippingRateQuery::class );
 		$this->share( ShippingRateController::class, ShippingRateQuery::class );
-		$this->share( ShippingRateSuggestionsController::class, ShippingZone::class, ShippingSuggestionService::class );
+		$this->share( ShippingRateSuggestionsController::class, ShippingSuggestionService::class );
 		$this->share_with_container( ShippingTimeBatchController::class );
 		$this->share_with_container( ShippingTimeController::class );
 		$this->share( TargetAudienceController::class, WP::class, WC::class, ShippingZone::class, GoogleHelper::class );

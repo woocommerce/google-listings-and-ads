@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
@@ -33,11 +32,6 @@ class ShippingRateSuggestionsController extends BaseController implements ISO316
 	protected $route_base = 'mc/shipping/rates/suggestions';
 
 	/**
-	 * @var ShippingZone
-	 */
-	protected $shipping_zone;
-
-	/**
 	 * @var ShippingSuggestionService
 	 */
 	protected $shipping_suggestion;
@@ -46,12 +40,10 @@ class ShippingRateSuggestionsController extends BaseController implements ISO316
 	 * ShippingRateSuggestionsController constructor.
 	 *
 	 * @param RESTServer                $server
-	 * @param ShippingZone              $shipping_zone
 	 * @param ShippingSuggestionService $shipping_suggestion
 	 */
-	public function __construct( RESTServer $server, ShippingZone $shipping_zone, ShippingSuggestionService $shipping_suggestion ) {
+	public function __construct( RESTServer $server, ShippingSuggestionService $shipping_suggestion ) {
 		parent::__construct( $server );
-		$this->shipping_zone       = $shipping_zone;
 		$this->shipping_suggestion = $shipping_suggestion;
 	}
 
