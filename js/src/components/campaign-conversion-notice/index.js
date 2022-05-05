@@ -31,6 +31,9 @@ const ExternalIcon = () => (
  * Shows Notice {@link Notice}
  * providing information about the conversion status of PMax campaigns
  *
+ * @fires gla_upgrade_campaign_learn_more_link_click with `{ context: 'dashboard, linkId: 'campaign-conversion-status-before-migration-read-more | campaign-conversion-status-after-migration-read-more', href: '#' }`.
+ * @fires gla_upgrade_campaign_reports_link_click with  `{ context: 'dashboard, href: '/google/reports' }` it is fire after the migration is completed.
+ *
  * @param {Object} props React props.
  * @param {string} props.context Context or page on which the notice is shown, to be forwarded to the link's track event.
  * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
@@ -73,7 +76,7 @@ const CampaignConversionStatusNotice = ( { context } ) => {
 				<AppDocumentationLink
 					context={ context }
 					linkId={ status.externalLink.linkId }
-					eventName="gla_learn_more_campaign_upgrade_link_click"
+					eventName="gla_upgrade_campaign_learn_more_link_click"
 					href={ status.externalLink.link }
 				>
 					{ status.externalLink.content }
