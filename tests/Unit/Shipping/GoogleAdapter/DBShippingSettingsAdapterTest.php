@@ -105,6 +105,30 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 		$this->assertCount( 1, $services[0]->getRateGroups() );
 	}
 
+	public function test_creates_zero_flat_rate_for_free_shipping_no_threshold() {
+		$db_rates = [
+			[
+				'country' => 'US',
+				'rate' => 0,
+				'options' => [],
+			],
+		];
+
+		$settings = new DBShippingSettingsAdapter(
+			[
+				'currency'       => 'USD',
+				'delivery_times' => [ 'US' => 1 ],
+				'db_rates'       => $db_rates,
+			]
+		);
+
+		$services = $settings->getServices();
+
+		$this->assertCount( 1, $services );
+		$this->assertCount( 1, $services[0]->getRateGroups() );
+		$this->assertEquals( 0, $services[0]->getRateGroups()[0]->getSingleValue()->getFlatRate()->getValue() );
+	}
+
 	public function test_creates_separate_service_for_free_shipping_threshold() {
 		$db_rates = [
 			[
