@@ -156,8 +156,7 @@ class LocationRatesProcessorTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function setUp(): void {
 		$this->rates_processor = new LocationRatesProcessor();
 	}
 }

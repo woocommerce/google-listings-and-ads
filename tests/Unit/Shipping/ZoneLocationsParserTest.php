@@ -273,10 +273,9 @@ class ZoneLocationsParserTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
-		parent::setUp();
-		$this->wc               = $this->createMock( WC::class );
-		$this->google_helper    = $this->createMock( GoogleHelper::class );
+	public function setUp(): void {
+		$this->wc            = $this->createMock( WC::class );
+		$this->google_helper = $this->createMock( GoogleHelper::class );
 
 		// Return random IDs for countries and subdivisions.
 		$this->google_helper->expects( $this->any() )

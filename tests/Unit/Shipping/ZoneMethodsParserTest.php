@@ -235,8 +235,7 @@ class ZoneMethodsParserTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function setUp(): void {
 		$this->wc             = $this->createMock( WC::class );
 		$this->methods_parser = new ZoneMethodsParser( $this->wc );
 	}
