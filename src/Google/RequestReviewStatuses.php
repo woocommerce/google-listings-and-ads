@@ -33,7 +33,7 @@ class RequestReviewStatuses implements Service {
 		$cooldown = 0;
 		$status   = null;
 
-		$valid_program_states = [ self::ENABLED, self::NO_OFFERS ];
+		$valid_program_states    = [ self::ENABLED, self::NO_OFFERS ];
 		$review_eligible_regions = [];
 
 		foreach ( $response as $program_type ) {
@@ -51,17 +51,17 @@ class RequestReviewStatuses implements Service {
 
 			// Otherwise, we compute the new status, issues and cooldown period
 			foreach ( $program_type['data']['regionStatuses'] as $region_status ) {
-				$issues   = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
-				$cooldown = $this->maybe_update_cooldown_period( $region_status, $cooldown );
-				$status   = $this->maybe_update_status( $region_status['eligibilityStatus'], $status );
-				$review_eligible_regions = $this->maybe_load_eligible_region( $region_status, $status );
+				$issues                  = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
+				$cooldown                = $this->maybe_update_cooldown_period( $region_status, $cooldown );
+				$status                  = $this->maybe_update_status( $region_status['eligibilityStatus'], $status );
+				$review_eligible_regions = $this->maybe_load_eligible_region( $region_status, $review_eligible_regions );
 			}
 		}
 
 		return [
-			'issues'   => array_map( 'strtolower', array_values( array_unique( $issues ) ) ),
-			'cooldown' => $this->get_cooldown( $cooldown ), // add lifetime cache to cooldown time
-			'status'   => $status,
+			'issues'                => array_map( 'strtolower', array_values( array_unique( $issues ) ) ),
+			'cooldown'              => $this->get_cooldown( $cooldown ), // add lifetime cache to cooldown time
+			'status'                => $status,
 			'reviewEligibleRegions' => array_unique( $review_eligible_regions ),
 		];
 	}
@@ -119,13 +119,19 @@ class RequestReviewStatuses implements Service {
 
 	/**
 	 * Updates the regions where a request review is allowed.
+	 *
 	 * @param array $region_status Associative array containing the region eligibility.
 	 * @param array $review_eligible_regions Indexed array with the current eligible regions.
 	 *
 	 * @return array The (maybe) modified $review_eligible_regions array
 	 */
-	private function maybe_load_eligible_region( $region_status, $review_eligible_regions ) {
-		if ( isset( $region_status['reviewEligibilityStatus'] ) && $region_status['reviewEligibilityStatus'] === self::ELIGIBLE ) {
+	private function maybe_load_eligible_region( array $region_status, array $review_eligible_regions ) {
+		if (
+			isset( $region_status['regionCodes'] ) &&
+			count( $region_status['regionCodes'] ) &&
+			isset( $region_status['reviewEligibilityStatus'] ) &&
+			$region_status['reviewEligibilityStatus'] === self::ELIGIBLE
+		) {
 			array_push( $review_eligible_regions, $region_status['regionCodes'][0] );
 		}
 

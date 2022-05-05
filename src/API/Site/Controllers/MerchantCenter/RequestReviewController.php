@@ -69,10 +69,10 @@ class RequestReviewController extends BaseOptionsController {
 			'mc/request-review',
 			[
 				[
-					'methods'             => TransportMethods::CREATABLE,
+					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->post_review_request_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-				]
+				],
 			],
 		);
 	}
@@ -95,46 +95,56 @@ class RequestReviewController extends BaseOptionsController {
 	/**
 	 * Get the callback function after requesting a review.
 	 *
-	 * @return Response
+	 * @return callable
 	 */
-	protected function post_review_request_callback(): Response {
-		try {
+	protected function post_review_request_callback(): callable {
+		return function () {
+			try {
 
-			// getting the current account status
-			$account_review_status = $this->get_review_status();
+				// getting the current account status
+				$account_review_status = $this->get_review_status();
 
-			// Abort if it's in cool down period
-			if ( $account_review_status['cooldown'] ) {
-				do_action( 'woocommerce_gla_request_review_failure', [
-					'error'                 => 'cooldown',
-					'account_review_status' => $account_review_status
-				] );
-				throw new Exception( __( 'Your account is under cool down period and cannot request a new review.', 'google-listings-and-ads' ), 400 );
+				// Abort if it's in cool down period
+				if ( $account_review_status['cooldown'] ) {
+					do_action(
+						'woocommerce_gla_request_review_failure',
+						[
+							'error'                 => 'cooldown',
+							'account_review_status' => $account_review_status,
+						]
+					);
+					throw new Exception( __( 'Your account is under cool down period and cannot request a new review.', 'google-listings-and-ads' ), 400 );
+				}
+
+				// Abort if there is no eligible region available
+				if ( ! count( $account_review_status['reviewEligibleRegions'] ) ) {
+					do_action(
+						'woocommerce_gla_request_review_failure',
+						[
+							'error'                 => 'ineligible',
+							'account_review_status' => $account_review_status,
+						]
+					);
+					throw new Exception( __( 'Your account is not eligible for a new request review.', 'google-listings-and-ads' ), 400 );
+				}
+
+				$response = $this->middleware->account_request_review( $account_review_status['reviewEligibleRegions'] );
+
+				// Update Account status when successful response
+				$this->set_cached_review_status(
+					[
+						'issues'                => [],
+						'cooldown'              => 0,
+						'status'                => $this->request_review_statuses::UNDER_REVIEW,
+						'reviewEligibleRegions' => [],
+					]
+				);
+
+				return new Response( $response );
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
-
-			// Abort if there is no eligible region available
-			if ( ! count( $account_review_status['reviewEligibleRegions'] ) ) {
-				do_action( 'woocommerce_gla_request_review_failure', [
-					'error'                 => 'ineligible',
-					'account_review_status' => $account_review_status
-				] );
-				throw new Exception( __( 'Your account is not eligible for a new request review.', 'google-listings-and-ads' ), 400 );
-			}
-
-			$response = $this->middleware->account_request_review( $account_review_status['reviewEligibleRegions'] );
-
-			// Update Account status when successful response
-			$this->set_cached_review_status( [
-				'issues' => [],
-				'cooldown' => 0,
-				'status' => $this->request_review_statuses::UNDER_REVIEW,
-				'reviewEligibleRegions' => []
-			] );
-
-			return new Response( $response );
-		} catch ( Exception $e ) {
-			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-		}
+		};
 	}
 
 	/**
@@ -144,19 +154,19 @@ class RequestReviewController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'status'   => [
+			'status'                => [
 				'type'        => 'string',
 				'description' => __( 'The status of the last review.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'cooldown' => [
+			'cooldown'              => [
 				'type'        => 'integer',
 				'description' => __( 'Timestamp indicating if the user is in cool down period.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'issues'   => [
+			'issues'                => [
 				'type'        => 'array',
 				'description' => __( 'The issues related to the Merchant Center to be reviewed and addressed before approval.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
@@ -173,7 +183,7 @@ class RequestReviewController extends BaseOptionsController {
 				'items'       => [
 					'type' => 'string',
 				],
-			]
+			],
 		];
 	}
 
@@ -217,10 +227,10 @@ class RequestReviewController extends BaseOptionsController {
 	 * Get the Account Review Status. We attempt to get the cached version or create a request otherwise.
 	 *
 	 * @return null|array Returns NULL in case no data is available or an array with the Account Review Status data otherwise.
-	 * @throws Exception
+	 * @throws Exception If the get_account_review_status API call fails.
 	 */
 	private function get_review_status(): ?array {
-		$review_status = $this->get_cached_review_status();
+			$review_status = $this->get_cached_review_status();
 
 		if ( is_null( $review_status ) ) {
 			$response      = $this->middleware->get_account_review_status();
@@ -228,6 +238,7 @@ class RequestReviewController extends BaseOptionsController {
 			$this->set_cached_review_status( $review_status );
 		}
 
-		return $review_status;
+			return $review_status;
+
 	}
 }

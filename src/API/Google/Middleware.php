@@ -558,6 +558,7 @@ class Middleware implements OptionsAwareInterface {
 	/**
 	 * Request a new account review
 	 *
+	 * @param array $regions Regions to request a review.
 	 * @throws Exception When there is an invalid response.
 	 */
 	public function account_request_review( $regions ) {
@@ -589,14 +590,16 @@ class Middleware implements OptionsAwareInterface {
 				 * This makes all the calls after the first to fail as they will be under review.
 				 *
 				 * The undesired call of this function for accounts under review is already prevented in a previous stage, so, there is no danger doing this.
-				 *
-				 **/
+				 */
 				if ( 200 !== $result->getStatusCode() && ! str_contains( $response['message'], 'already under review' ) ) {
-					do_action( 'woocommerce_gla_request_review_failure', [
-						'error'                 => 'response',
-						'region_code'           => $region_code,
-						'response'              => $response
-					] );
+					do_action(
+						'woocommerce_gla_request_review_failure',
+						[
+							'error'       => 'response',
+							'region_code' => $region_code,
+							'response'    => $response,
+						]
+					);
 					do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
 					$error = $response['message'] ?? __( 'Invalid response getting requesting a new review.', 'google-listings-and-ads' );
 					throw new Exception( $error, $result->getStatusCode() );
@@ -605,7 +608,7 @@ class Middleware implements OptionsAwareInterface {
 
 			// Otherwise, return a successful message and update the account status
 			return [
-				'message' => __( 'A new review has been successfully requested', 'google-listings-and-ads' )
+				'message' => __( 'A new review has been successfully requested', 'google-listings-and-ads' ),
 			];
 
 		} catch ( ClientExceptionInterface $e ) {
