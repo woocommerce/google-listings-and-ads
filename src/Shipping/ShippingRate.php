@@ -82,7 +82,7 @@ class ShippingRate implements JsonSerializable {
 	}
 
 	/**
-	 * Returns whether the shipping rate has a minmium order amount constraint.
+	 * Returns whether the shipping rate has a minimum order amount constraint.
 	 *
 	 * @return bool
 	 */
