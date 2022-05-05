@@ -55,8 +55,9 @@ const requestToHandle = ( request ) => {
 
 	return wcHandleMap[ request ];
 };
-const exceptSVGRule = ( rule ) => {
-	return ! rule.test.toString().match( /svg/i );
+
+const exceptSVGAndPNGRule = ( rule ) => {
+	return ! rule.test.toString().match( /svg|png/i );
 };
 
 const webpackConfig = {
@@ -66,7 +67,7 @@ const webpackConfig = {
 		// Expose image assets as files.
 		rules: [
 			// Remove `@wordpress/` rules for SVGs.
-			...defaultConfig.module.rules.filter( exceptSVGRule ),
+			...defaultConfig.module.rules.filter( exceptSVGAndPNGRule ),
 			{
 				test: /\.(svg|png|jpe?g|gif)$/i,
 				type: 'asset/resource',
@@ -182,7 +183,8 @@ const updatedSassOptions = {
 		'@import "_colors"; ' +
 		'@import "_variables"; ' +
 		'@import "_mixins"; ' +
-		'@import "_breakpoints"; ',
+		'@import "_breakpoints"; ' +
+		'@import "_gla_variables"; ',
 };
 
 // Update sass-loader config to prepend imports automatically

@@ -37,7 +37,7 @@ describe( 'Merchant who is getting started', () => {
 
 		// click on the call-to-action button.
 		const setupButton = (
-			await page.$x( "//a[text()='Set up free listings in Google']" )
+			await page.$x( "//a[text()='Start listing products →']" )
 		 )[ 0 ];
 		await setupButton.click();
 		await page.waitForNavigation();

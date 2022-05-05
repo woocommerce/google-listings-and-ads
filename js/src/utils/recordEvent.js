@@ -78,6 +78,7 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @event gla_setup_mc
  * @property {string} target Button ID
  * @property {string} trigger Action (e.g. `click`)
+ * @property {string} context Indicates which CTA is clicked
  */
 
 /**

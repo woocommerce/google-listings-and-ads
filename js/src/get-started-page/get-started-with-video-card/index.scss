@@ -1,0 +1,125 @@
+.gla-get-started-with-video-card {
+	flex-direction: column;
+
+	.components-flex {
+		// Adjust <CardHeader> imported from @wordpress/components.
+		&.components-card__header {
+			justify-content: flex-end;
+			padding: $grid-unit * 2.5;
+
+			& > p {
+				margin: 0 1em;
+				line-height: $gla-line-height-smaller;
+				font-size: $helptext-font-size;
+				color: $gray-600;
+			}
+
+			@media (max-width: $break-small) {
+				justify-content: center;
+				text-align: center;
+				padding: $grid-unit-20;
+
+				& > p::after {
+					content: " Google";
+				}
+
+				& > img {
+					display: none;
+				}
+			}
+		}
+	}
+
+	.motivation-video {
+		min-width: 100%;
+		margin: 0;
+	}
+
+	// Adjust <CardBody> imported from @wordpress/components.
+	// Repeat selector to make it higher priority.
+	.components-card__body.components-card__body {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		margin: calc(var(--main-gap) * 1.67) calc(var(--main-gap) * 4.67);
+		padding: 0;
+
+		@media (max-width: $break-small) {
+			margin: $grid-unit-30;
+		}
+	}
+
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__title {
+		padding: 0 $grid-unit-30;
+		margin-bottom: $grid-unit-15;
+	}
+
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__description {
+		margin-bottom: $grid-unit-40;
+		padding: 0 $grid-unit-10;
+	}
+
+	// Use more specific rules to make it higher priority to override <AppButton> component.
+	& &__button {
+		display: flex;
+		justify-content: center;
+		width: 188px;
+		height: 36px;
+		font-size: $gla-font-small;
+		margin-bottom: $grid-unit-10;
+	}
+
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__hint {
+		font-size: $helptext-font-size;
+		color: $gray-400;
+		margin-bottom: $grid-unit-40;
+	}
+
+	// Use more specific rules to make it higher priority to override <Text> component.
+	& &__terms-notice {
+		font-size: $helptext-font-size;
+		a {
+			text-decoration: none;
+		}
+	}
+
+	.components-tip {
+		border-top: 1px solid $gray-300;
+		padding: $grid-unit-30 $grid-unit-15;
+		margin: 0 $grid-unit-50;
+
+		& svg {
+			fill: $gray-900;
+			margin-right: $grid-unit-15;
+		}
+
+		& p {
+			font-size: $helptext-font-size;
+			color: $gray-600;
+		}
+	}
+
+	@media (max-width: $break-small) {
+		& &__title {
+			font-size: $gla-font-medium-mobile;
+			line-height: $gla-line-height-large-mobile;
+		}
+
+		& &__description {
+			padding: 0 $grid-unit-15;
+		}
+
+		.components-tip {
+			padding: $grid-unit-30 $grid-unit-05;
+			margin: 0 $grid-unit-30;
+
+			& svg {
+				align-self: flex-start;
+			}
+		}
+	}
+}
