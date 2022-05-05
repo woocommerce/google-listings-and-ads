@@ -581,8 +581,17 @@ class Middleware implements OptionsAwareInterface {
 
 				$response = json_decode( $result->getBody()->getContents(), true );
 
-				// catch potential errors in a specific region
-				if ( 200 !== $result->getStatusCode() ) {
+				/**
+				 * Catch potential errors in any specific region API call.
+				 *
+				 * Notice due some inconsistencies with Google API we are not considering [Bad Request -> ...already under review...]
+				 * as an exception. This is because we suspect that calling the API of a region is triggering other regions requests as well.
+				 * This makes all the calls after the first to fail as they will be under review.
+				 *
+				 * The undesired call of this function for accounts under review is already prevented in a previous stage, so, there is no danger doing this.
+				 *
+				 **/
+				if ( 200 !== $result->getStatusCode() && ! str_contains( $response['message'], 'already under review' ) ) {
 					do_action( 'woocommerce_gla_request_review_failure', [
 						'error'                 => 'response',
 						'region_code'           => $region_code,
@@ -594,7 +603,7 @@ class Middleware implements OptionsAwareInterface {
 				}
 			}
 
-			// Otherwise, return a successful message
+			// Otherwise, return a successful message and update the account status
 			return [
 				'message' => __( 'A new review has been successfully requested', 'google-listings-and-ads' )
 			];

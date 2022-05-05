@@ -85,19 +85,10 @@ class RequestReviewController extends BaseOptionsController {
 	protected function get_review_read_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$review_status = $this->get_cached_review_status();
-
-				if ( is_null( $review_status ) ) {
-					$response      = $this->middleware->get_account_review_status();
-					$review_status = $this->request_review_statuses->get_statuses_from_response( $response );
-					$this->set_cached_review_status( $review_status );
-				}
-
-				return $this->prepare_item_for_response( $review_status, $request );
+				return $this->prepare_item_for_response( $this->get_review_status(), $request );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
-
 		};
 	}
 
@@ -110,10 +101,10 @@ class RequestReviewController extends BaseOptionsController {
 		try {
 
 			// getting the current account status
-			$account_review_status = $this->request_review_statuses->get_statuses_from_response( $this->middleware->get_account_review_status() );
+			$account_review_status = $this->get_review_status();
 
 			// Abort if it's in cool down period
-			if ( $account_review_status['cooldown'] > 0 ) {
+			if ( $account_review_status['cooldown'] ) {
 				do_action( 'woocommerce_gla_request_review_failure', [
 					'error'                 => 'cooldown',
 					'account_review_status' => $account_review_status
@@ -122,7 +113,7 @@ class RequestReviewController extends BaseOptionsController {
 			}
 
 			// Abort if there is no eligible region available
-			if ( count( $account_review_status['reviewEligibleRegions'] ) === 0 ) {
+			if ( ! count( $account_review_status['reviewEligibleRegions'] ) ) {
 				do_action( 'woocommerce_gla_request_review_failure', [
 					'error'                 => 'ineligible',
 					'account_review_status' => $account_review_status
@@ -131,6 +122,14 @@ class RequestReviewController extends BaseOptionsController {
 			}
 
 			$response = $this->middleware->account_request_review( $account_review_status['reviewEligibleRegions'] );
+
+			// Update Account status when successful response
+			$this->set_cached_review_status( [
+				'issues' => [],
+				'cooldown' => 0,
+				'status' => $this->request_review_statuses::UNDER_REVIEW,
+				'reviewEligibleRegions' => []
+			] );
 
 			return new Response( $response );
 		} catch ( Exception $e ) {
@@ -212,5 +211,23 @@ class RequestReviewController extends BaseOptionsController {
 		return $this->transients->get(
 			TransientsInterface::MC_ACCOUNT_REVIEW,
 		);
+	}
+
+	/**
+	 * Get the Account Review Status. We attempt to get the cached version or create a request otherwise.
+	 *
+	 * @return null|array Returns NULL in case no data is available or an array with the Account Review Status data otherwise.
+	 * @throws Exception
+	 */
+	private function get_review_status(): ?array {
+		$review_status = $this->get_cached_review_status();
+
+		if ( is_null( $review_status ) ) {
+			$response      = $this->middleware->get_account_review_status();
+			$review_status = $this->request_review_statuses->get_statuses_from_response( $response );
+			$this->set_cached_review_status( $review_status );
+		}
+
+		return $review_status;
 	}
 }
