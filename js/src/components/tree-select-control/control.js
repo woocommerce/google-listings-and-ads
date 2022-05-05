@@ -2,6 +2,7 @@
  * External dependencies
  */
 import classnames from 'classnames';
+import { noop } from 'lodash';
 import { useRef } from '@wordpress/element';
 
 /**
@@ -24,6 +25,7 @@ import { BACKSPACE } from './constants';
  * @param {Function} props.onFocus On Focus Callback
  * @param {Function} props.onTagsChange Callback when the Tags change
  * @param {Function} props.onInputChange Callback when the Input value changes
+ * @param {Function} [props.onControlClick] Callback when clicking on the control.
  * @return {JSX.Element} The rendered component
  */
 const Control = ( {
@@ -36,6 +38,7 @@ const Control = ( {
 	onFocus = () => {},
 	onTagsChange = () => {},
 	onInputChange = () => {},
+	onControlClick = noop,
 } ) => {
 	const hasTags = tags.length > 0;
 	const showPlaceholder = ! hasTags && ! isExpanded;
@@ -64,8 +67,9 @@ const Control = ( {
 					'has-tags': hasTags,
 				}
 			) }
-			onClick={ () => {
+			onClick={ ( e ) => {
 				inputRef.current.focus();
+				onControlClick( e );
 			} }
 		>
 			{ hasTags && (

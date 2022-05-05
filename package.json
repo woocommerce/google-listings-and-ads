@@ -2,7 +2,7 @@
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
 	"license": "GPL-3.0-or-later",
-	"version": "1.12.6",
+	"version": "1.12.7",
 	"description": "google-listings-and-ads",
 	"repository": {
 		"type": "git",
@@ -34,6 +34,7 @@
 		"outdated:nondewp": "npm outdated --color=always | grep --color=never --invert -E \"^(.\\[31m|.\\[33m)?(`cat .externalized.json | sed 's/[][\"]//g'| sed 's/,/|/g'`)\"",
 		"packages-update": "wp-scripts packages-update",
 		"start": "wp-scripts start",
+		"start:hot": "npm run dev -- --config ./webpack-development.config.js && npm start -- --hot --allowed-hosts all",
 		"storybook": "start-storybook  -c ./storybook -p 6006 --ci",
 		"storybook:build": "BABEL_ENV=development build-storybook  -c ./storybook -o ./storybook/dist",
 		"storybook:deploy": "npm run storybook:build && gh-pages -d ./storybook/dist",
@@ -44,43 +45,44 @@
 		"test-proxy": "node ./tests/proxy"
 	},
 	"devDependencies": {
-		"@hapi/hapi": "^20.1.3",
 		"@babel/core": "^7.17.8",
+		"@hapi/hapi": "^20.1.3",
 		"@storybook/addon-actions": "^6.4.19",
 		"@storybook/addon-docs": "^6.5.0-alpha.51",
 		"@storybook/addon-essentials": "^6.4.19",
 		"@storybook/addon-interactions": "^6.4.19",
 		"@storybook/addon-links": "^6.4.19",
+		"@storybook/builder-webpack5": "^6.4.22",
+		"@storybook/manager-webpack5": "^6.4.22",
 		"@storybook/react": "^6.4.19",
 		"@storybook/testing-library": "0.0.9",
 		"@testing-library/jest-dom": "^5.16.1",
-		"@testing-library/react": "^11.1.0",
+		"@testing-library/react": "^12.1.3",
 		"@testing-library/react-hooks": "^5.1.1",
 		"@testing-library/user-event": "^13.5.0",
 		"@types/jest": "^27.4.0",
 		"@types/puppeteer": "^5.4.4",
-		"@woocommerce/e2e-environment": "^0.2.3",
-		"@woocommerce/e2e-utils": "^0.1.6",
+		"@woocommerce/e2e-environment": "^0.3.0",
+		"@woocommerce/e2e-utils": "^0.2.0",
 		"@woocommerce/eslint-plugin": "^1.2.0",
-		"@wordpress/dependency-extraction-webpack-plugin": "^3.2.3-next.33ec3857e2.0",
-		"@wordpress/prettier-config": "^1.0.5",
-		"@wordpress/scripts": "^17.1.0",
-		"@wordpress/stylelint-config": "^19.0.5",
+		"@wordpress/dependency-extraction-webpack-plugin": "^3.3.2",
+		"@wordpress/prettier-config": "^1.1.2",
+		"@wordpress/scripts": "~22.1.0",
 		"babel-loader": "^8.2.4",
 		"bundlewatch": "^0.3.2",
 		"eslint": "^7.17.0",
 		"eslint-import-resolver-webpack": "^0.13.1",
 		"eslint-plugin-import": "^2.25.4",
-		"file-loader": "^6.2.0",
 		"gh-pages": "^3.2.3",
 		"h2o2": "^8.2.0",
+		"jest-environment-jsdom": "^27.5.1",
 		"jsdoc": "^3.6.10",
 		"jsdoc-advanced-types-plugin": "github:tomalec/jsdoc-advanced-types-plugin#add/return-support",
 		"jsdoc-plugin-intersection": "^1.0.4",
 		"jsdoc-plugin-typescript": "^2.0.6",
-		"postcss": "^8.4.4",
-		"prettier": "npm:wp-prettier@^2.0.5",
-		"stylelint": "^13.8.0"
+		"path-browserify": "^1.0.1",
+		"prettier": "npm:wp-prettier@2.2.1-beta-1",
+		"stylelint-config-standard-scss": "^3.0.0"
 	},
 	"dependencies": {
 		"@woocommerce/components": "8.1.0",
@@ -95,7 +97,6 @@
 		"@wordpress/base-styles": "^3.2.0",
 		"@wordpress/components": "^12.0.8",
 		"@wordpress/compose": "^3.25.3",
-		"@wordpress/core-data": "^3.1.2",
 		"@wordpress/data": "^4.26.1",
 		"@wordpress/data-controls": "^1.20.1",
 		"@wordpress/date": "^3.9.0",
@@ -111,7 +112,6 @@
 		"gridicons": "^3.3.1",
 		"libphonenumber-js": "^1.9.22",
 		"lodash": "^4.17.20",
-		"md5": "^2.3.0",
 		"prop-types": "^15.7.2",
 		"rememo": "^3.0.0",
 		"use-debounce": "^5.2.0"
@@ -126,6 +126,9 @@
 			"google-listings-and-ads.php"
 		]
 	},
+	"browserslist": [
+		"extends @wordpress/browserslist-config"
+	],
 	"bundlewatch": {
 		"files": [
 			{

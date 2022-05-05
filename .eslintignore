@@ -1,6 +1,7 @@
 !.eslintrc.js
 !.github
 build
+build-dev
 build-module
 coverage
 languages
