@@ -30,10 +30,32 @@ describe( 'validateShippingRateGroup', () => {
 		expect( errors ).toHaveProperty( 'countries' );
 	} );
 
+	it( 'has errors.rate when values.rate is null', () => {
+		const values = {
+			...validValues,
+			rate: null,
+		};
+
+		const errors = validateShippingRateGroup( values );
+
+		expect( errors ).toHaveProperty( 'rate' );
+	} );
+
 	it( 'has errors.rate when values.rate is undefined', () => {
 		const values = {
 			...validValues,
 			rate: undefined,
+		};
+
+		const errors = validateShippingRateGroup( values );
+
+		expect( errors ).toHaveProperty( 'rate' );
+	} );
+
+	it( `has errors.rate when values.rate is ''`, () => {
+		const values = {
+			...validValues,
+			rate: '',
 		};
 
 		const errors = validateShippingRateGroup( values );
