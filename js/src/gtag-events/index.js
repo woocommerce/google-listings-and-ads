@@ -8,18 +8,12 @@ import { addAction } from '@wordpress/hooks';
  * Internal dependencies
  */
 import { namespace, actionPrefix, sendToGroup } from './constants';
-import {
-	getItemObject,
-	trackEvent
-} from './utils';
+import { getItemObject, trackEvent } from './utils';
 
 addAction(
 	`${ actionPrefix }-cart-add-item`,
 	namespace,
-	( {
-		product,
-		quantity = 1,
-	} ) => {
+	( { product, quantity = 1 } ) => {
 		trackEvent( 'add_to_cart', {
 			ecomm_pagetype: 'cart',
 			event_category: 'ecommerce',

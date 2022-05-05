@@ -1,7 +1,10 @@
 /**
  * Track an event using the global gtag function.
+ *
+ * @param {string} eventName
+ * @param {Object} eventParams
  */
-export const trackEvent = (	eventName, eventParams ) => {
+export const trackEvent = ( eventName, eventParams ) => {
 	if ( typeof gtag !== 'function' ) {
 		throw new Error( 'Function gtag not implemented.' );
 	}
@@ -13,9 +16,12 @@ export const trackEvent = (	eventName, eventParams ) => {
 /**
  * Formats data into an Item object.
  *
+ * @param {Object} product
+ * @param {number} quantity
+ *
  * @see https://developers.google.com/analytics/devguides/collection/ga4/reference/events#add_to_cart
  */
- export const getItemObject = ( product, quantity ) => {
+export const getItemObject = ( product, quantity ) => {
 	const productIdentifier = 'gla_' + product.id;
 	const productCategory =
 		'categories' in product && product.categories.length
