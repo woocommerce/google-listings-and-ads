@@ -9,7 +9,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -19,8 +19,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 
 /**
  * Main class for Global Site Tag.
@@ -134,11 +135,16 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Register and enqueue assets for gtag events in blocks.
 	 */
 	protected function register_assets() {
-		$gtag_events = new ScriptAsset(
+		$gtag_events = new ScriptWithBuiltDependenciesAsset(
 			'gla-gtag-events',
 			'js/build/gtag-events',
-			[ 'wp-i18n', 'wp-hooks' ],
-			'',
+			"{$this->get_root_dir()}/js/build/gtag-events.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/gtag-events.js" ),
+				]
+			),
 			function () {
 				return is_page();
 			}
