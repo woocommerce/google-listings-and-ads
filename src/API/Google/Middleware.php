@@ -553,4 +553,71 @@ class Middleware implements OptionsAwareInterface {
 			);
 		}
 	}
+
+
+	/**
+	 * Request a new account review
+	 *
+	 * @param array $regions Regions to request a review.
+	 * @throws Exception When there is an invalid response.
+	 */
+	public function account_request_review( $regions ) {
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+
+			// For each region we request a new review
+			foreach ( $regions as $region_code ) {
+				$result = $client->post(
+					$this->get_manager_url( 'account-review-request' ),
+					[
+						'body' => json_encode(
+							[
+								'accountId'  => $this->options->get_merchant_id(),
+								'regionCode' => $region_code,
+							]
+						),
+					]
+				);
+
+				$response = json_decode( $result->getBody()->getContents(), true );
+
+				/**
+				 * Catch potential errors in any specific region API call.
+				 *
+				 * Notice due some inconsistencies with Google API we are not considering [Bad Request -> ...already under review...]
+				 * as an exception. This is because we suspect that calling the API of a region is triggering other regions requests as well.
+				 * This makes all the calls after the first to fail as they will be under review.
+				 *
+				 * The undesired call of this function for accounts under review is already prevented in a previous stage, so, there is no danger doing this.
+				 */
+				if ( 200 !== $result->getStatusCode() && ! str_contains( $response['message'], 'already under review' ) ) {
+					do_action(
+						'woocommerce_gla_request_review_failure',
+						[
+							'error'       => 'response',
+							'region_code' => $region_code,
+							'response'    => $response,
+						]
+					);
+					do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
+					$error = $response['message'] ?? __( 'Invalid response getting requesting a new review.', 'google-listings-and-ads' );
+					throw new Exception( $error, $result->getStatusCode() );
+				}
+			}
+
+			// Otherwise, return a successful message and update the account status
+			return [
+				'message' => __( 'A new review has been successfully requested', 'google-listings-and-ads' ),
+			];
+
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error requesting a new review.', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
+		}
+	}
 }
