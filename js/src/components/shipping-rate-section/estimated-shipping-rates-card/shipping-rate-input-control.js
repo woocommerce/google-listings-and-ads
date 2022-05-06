@@ -26,7 +26,7 @@ import './shipping-rate-input-control.scss';
  * This is meant to display an "Edit" button.
  *
  * @param {Object} props
- * @param {Array<CountryCode>} props.countryOptions Country options to be passed to EditMinimumOrderFormModal.
+ * @param {Array<CountryCode>} props.countryOptions Country options to be passed to EditRateFormModal.
  * @param {ShippingRateGroup} props.value Shipping rate group value.
  * @param {(newGroup: ShippingRateGroup) => void} props.onChange Called when shipping rate group changes.
  * @param {() => void} props.onDelete Called when delete button in EditRateFormModal is clicked.
