@@ -93,12 +93,6 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 			'CN' => 'China',
 		];
 
-		$mc_supported_countries = [
-			'US',
-			'GB',
-			'TW',
-		];
-
 		$mc_supported_countries_currencies_data = [
 			'US' => 'USD',
 			'GB' => 'GBP',
@@ -131,6 +125,12 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 					'CN',
 				],
 			],
+		];
+
+		$supported_countries_of_continent = [
+			'EU' => [ 'GB' => 'GB' ],
+			'NA' => [ 'US' => 'US' ],
+			'AS' => [ 'TW' => 'TW' ],
 		];
 
 		$expected = [
@@ -174,17 +174,21 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 			->method( 'get_countries' )
 			->willReturn( $countries_data );
 
+		$this->google_helper->expects( $this->once() )
+			->method( 'get_mc_supported_countries_currencies' )
+			->willReturn( $mc_supported_countries_currencies_data );
+
 		$this->wc->expects( $this->once() )
 			->method( 'get_continents' )
 			->willReturn( $continents_data );
 
-		$this->google_helper->expects( $this->once() )
-			->method( 'get_mc_supported_countries' )
-			->willReturn( $mc_supported_countries );
-
-		$this->google_helper->expects( $this->once() )
-			->method( 'get_mc_supported_countries_currencies' )
-			->willReturn( $mc_supported_countries_currencies_data );
+		$this->google_helper->expects( $this->exactly( 3 ) )
+			->method( 'get_supported_countries_from_continent' )
+			->willReturnOnConsecutiveCalls(
+				$supported_countries_of_continent['EU'],
+				$supported_countries_of_continent['NA'],
+				$supported_countries_of_continent['AS']
+			);
 
 		$response = $this->do_request( self::ROUTE, 'GET', $countries_params );
 
