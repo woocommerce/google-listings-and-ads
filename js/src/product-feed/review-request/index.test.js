@@ -53,7 +53,11 @@ describe( 'Request Review Component', () => {
 				<ReviewRequest
 					account={ {
 						hasFinishedResolution: true,
-						data: { status, issues: [ '#1', '#2' ] },
+						data: {
+							status,
+							issues: [ '#1', '#2' ],
+							reviewEligibleRegions: [ 'US' ],
+						},
 					} }
 				/>
 			);
