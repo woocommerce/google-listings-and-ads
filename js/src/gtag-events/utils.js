@@ -1,4 +1,9 @@
 /**
+ * Internal dependencies
+ */
+import { sendToGroup } from './constants';
+
+/**
  * Track an event using the global gtag function.
  *
  * @param {string} eventName
@@ -9,8 +14,11 @@ export const trackEvent = ( eventName, eventParams ) => {
 		throw new Error( 'Function gtag not implemented.' );
 	}
 	// eslint-disable-next-line no-console
-	console.log( `Tracking event ${ eventName }`, eventParams );
-	window.gtag( 'event', eventName, eventParams );
+	console.log( `Tracking event ${ eventName }` );
+	window.gtag( 'event', eventName, {
+		send_to: sendToGroup,
+		...eventParams,
+	} );
 };
 
 /**

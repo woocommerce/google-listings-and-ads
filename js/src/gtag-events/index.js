@@ -7,7 +7,7 @@ import { addAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { namespace, actionPrefix, sendToGroup } from './constants';
+import { namespace, actionPrefix } from './constants';
 import { getItemObject, trackEvent } from './utils';
 
 addAction(
@@ -18,7 +18,6 @@ addAction(
 			ecomm_pagetype: 'cart',
 			event_category: 'ecommerce',
 			event_label: __( 'Add to Cart', 'google-listings-and-ads' ),
-			send_to: sendToGroup,
 			items: [ getItemObject( product, quantity ) ],
 		} );
 	}
