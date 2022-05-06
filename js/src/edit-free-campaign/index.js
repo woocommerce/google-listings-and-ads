@@ -121,7 +121,13 @@ export default function EditFreeCampaign() {
 	const { createNotice } = useDispatchCoreNotices();
 
 	// Check what've changed to show prompt, and send requests only to save changed things.
-	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
+	const didAudienceChanged = ! isEqual(
+		...[ targetAudience, savedTargetAudience ].map( ( el ) => ( {
+			...el,
+			countries: new Set( el?.countries ),
+		} ) )
+	);
+
 	const didSettingsChanged = ! isEqual( settings, savedSettings );
 	const didRatesChanged = hasUnsavedShippingRates(
 		shippingRates,

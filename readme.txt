@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.12.7
+Stable tag: 1.12.8
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -108,6 +108,14 @@ Performance Max campaigns are pay-per-click, meaning you only pay when someone c
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.
 
 == Changelog ==
+
+= 1.12.8 - 2022-05-05 =
+* Update - Add the FAQs card for UX improvements on get started page.
+* Update - Add the benefits card for UX improvements on get started page.
+* Update - Add the customer quotes card for UX improvements on get started page.
+* Update - Add the features card for UX improvements on get started page.
+* Update - Add the first card with a CTA and a video for UX improvements on get started page.
+* Update - Add the get started card for UX improvements on get started page.
 
 = 1.12.7 - 2022-05-04 =
 * Fix - Label UI for selecting countries (TreeSelectControl / SupportedCountrySelect).
