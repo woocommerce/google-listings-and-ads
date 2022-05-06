@@ -929,3 +929,25 @@ export function* updateMCProductVisibility( ids, visible ) {
 		throw error;
 	}
 }
+
+/**
+ * Request a new review for the connected account
+ */
+export function* mcRequestReview() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/request-review`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_MC_REVIEW_REQUEST,
+			response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__( 'Unable to request a new review.', 'google-listings-and-ads' )
+		);
+		throw error;
+	}
+}
