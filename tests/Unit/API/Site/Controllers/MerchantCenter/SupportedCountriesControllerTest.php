@@ -56,11 +56,11 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 					'name'     => 'United States',
 					'currency' => 'USD',
 				],
-				'GB' =>[
+				'GB' => [
 					'name'     => 'United Kingdom',
 					'currency' => 'GBP',
 				],
-				'TW' =>[
+				'TW' => [
 					'name'     => 'Taiwan',
 					'currency' => 'TWD',
 				],
@@ -139,11 +139,11 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 					'name'     => 'United States',
 					'currency' => 'USD',
 				],
-				'GB' =>[
+				'GB' => [
 					'name'     => 'United Kingdom',
 					'currency' => 'GBP',
 				],
-				'TW' =>[
+				'TW' => [
 					'name'     => 'Taiwan',
 					'currency' => 'TWD',
 				],
