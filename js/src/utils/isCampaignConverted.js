@@ -15,7 +15,7 @@ import { CAMPAIGN_TYPE } from '.~/constants';
 const isCampaignConverted = ( adsCampaignConvertStatus, campaignType ) => {
 	return (
 		adsCampaignConvertStatus?.status === 'converted' &&
-		campaignType &&
+		!! campaignType &&
 		campaignType !== CAMPAIGN_TYPE.PERFORMANCE_MAX
 	);
 };
