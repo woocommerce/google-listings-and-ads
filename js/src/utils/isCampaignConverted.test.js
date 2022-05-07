@@ -47,4 +47,10 @@ describe( 'isCampaignConverted', () => {
 		const adsCampaignConvertStatus = null;
 		expect( isCampaignConverted( adsCampaignConvertStatus ) ).toBe( false );
 	} );
+	it( 'Is converted but does not have a campaign type', () => {
+		const adsCampaignConvertStatus = {
+			status: 'converted',
+		};
+		expect( isCampaignConverted( adsCampaignConvertStatus ) ).toBe( false );
+	} );
 } );
