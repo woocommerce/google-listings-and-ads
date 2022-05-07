@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Exception;
@@ -155,6 +156,13 @@ class ReportsController extends BaseReportsController {
 							'enum'        => CampaignStatus::labels(),
 							'description' => __( 'Campaign status.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
+						],
+						'type'      => [
+							'type'              => 'string',
+							'enum'              => CampaignType::labels(),
+							'description'       => __( 'Campaign type.', 'google-listings-and-ads' ),
+							'context'           => [ 'view', 'edit' ],
+							'validate_callback' => 'rest_validate_request_arg',
 						],
 						'subtotals' => $this->get_totals_schema(),
 					],

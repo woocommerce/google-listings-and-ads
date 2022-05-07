@@ -165,6 +165,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 					'id'        => $campaign_id,
 					'name'      => $campaign_name,
 					'status'    => CampaignStatus::label( $campaign->getStatus() ),
+					'type'      => $campaign_type,
 					'subtotals' => $metrics,
 				]
 			);
