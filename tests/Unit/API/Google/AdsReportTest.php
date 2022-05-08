@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -128,6 +129,7 @@ class AdsReportTest extends UnitTest {
 						'sales'       => 38,
 						'conversions' => 3,
 					],
+					'type'      => CampaignType::PERFORMANCE_MAX,
 				],
 				[
 					'id'        => 2345678901,
@@ -140,6 +142,7 @@ class AdsReportTest extends UnitTest {
 						'sales'       => 86,
 						'conversions' => 4,
 					],
+					'type'      => CampaignType::PERFORMANCE_MAX,
 				],
 			],
 			'intervals'  => [
@@ -557,12 +560,14 @@ class AdsReportTest extends UnitTest {
 					'name'      => 'First Campaign',
 					'status'    => 'enabled',
 					'subtotals' => [],
+					'type'      => CampaignType::PERFORMANCE_MAX,
 				],
 				[
 					'id'        => 2345678901,
 					'name'      => 'Second Campaign',
 					'status'    => 'enabled',
 					'subtotals' => [],
+					'type'      => CampaignType::PERFORMANCE_MAX,
 				],
 			],
 			'intervals'  => [
@@ -654,6 +659,7 @@ class AdsReportTest extends UnitTest {
 					'id'        => 1234567890,
 					'name'      => 'Test Campaign (Old)',
 					'status'    => 'removed',
+					'type'      => CampaignType::SHOPPING,
 					'subtotals' => [
 						'clicks' => 12,
 					],
@@ -662,6 +668,7 @@ class AdsReportTest extends UnitTest {
 					'id'        => 2345678901,
 					'name'      => 'Test Campaign',
 					'status'    => 'enabled',
+					'type'      => CampaignType::PERFORMANCE_MAX,
 					'subtotals' => [
 						'clicks' => 58,
 					],
