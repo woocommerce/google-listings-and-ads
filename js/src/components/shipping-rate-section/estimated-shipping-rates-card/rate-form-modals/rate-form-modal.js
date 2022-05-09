@@ -9,7 +9,7 @@ import { noop } from 'lodash';
 /**
  * Internal dependencies
  */
-import validate from './validate.js';
+import validateShippingRateGroup from './validateShippingRateGroup.js';
 import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control/index.js';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -45,7 +45,7 @@ const RateFormModal = ( {
 	return (
 		<Form
 			initialValues={ initialValues }
-			validate={ validate }
+			validate={ validateShippingRateGroup }
 			onSubmit={ onSubmit }
 		>
 			{ ( formProps ) => {
