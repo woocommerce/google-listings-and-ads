@@ -14,14 +14,13 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import groupShippingRatesByMethodCurrencyRate from './groupShippingRatesByMethodCurrencyRate';
 import ShippingRateInputControl from './shipping-rate-input-control';
-import { AddRateFormModal, EditRateFormModal } from './rate-form-modals';
+import { AddRateFormModal } from './rate-form-modals';
 import { SHIPPING_RATE_METHOD } from '.~/constants';
 import getHandlers from './getHandlers';
 
 /**
  * @typedef { import(".~/data/actions").ShippingRate } ShippingRate
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
- * @typedef { import("./typedefs").ShippingRateGroup } ShippingRateGroup
  */
 
 /**
@@ -46,33 +45,6 @@ export default function EstimatedShippingRatesCard( {
 	} = getHandlers( { value, onChange } );
 
 	/**
-	 * An Edit button that displays EditRateFormModal to edit shipping rate group upon clicking on the Edit button.
-	 *
-	 * @param {Object} props Props.
-	 * @param {Array<CountryCode>} props.countryOptions Country options to be passed to EditRateFormModal.
-	 * @param {ShippingRateGroup} props.group Shipping rate group to be edited.
-	 */
-	const GroupEditModalButton = ( { countryOptions, group } ) => {
-		return (
-			<AppButtonModalTrigger
-				button={
-					<Button isTertiary>
-						{ __( 'Edit', 'google-listings-and-ads' ) }
-					</Button>
-				}
-				modal={
-					<EditRateFormModal
-						countryOptions={ countryOptions }
-						initialValues={ group }
-						onSubmit={ getChangeHandler( group ) }
-						onDelete={ getDeleteHandler( group ) }
-					/>
-				}
-			/>
-		);
-	};
-
-	/**
 	 * Function to render the shipping rate groups from `value`.
 	 *
 	 * If there is no group, we render a `ShippingRateInputControl`
@@ -95,14 +67,10 @@ export default function EstimatedShippingRatesCard( {
 
 			return (
 				<ShippingRateInputControl
-					labelButton={
-						<GroupEditModalButton
-							countryOptions={ audienceCountries }
-							group={ prefilledGroup }
-						/>
-					}
+					countryOptions={ audienceCountries }
 					value={ prefilledGroup }
 					onChange={ getChangeHandler( prefilledGroup ) }
+					onDelete={ getDeleteHandler( prefilledGroup ) }
 				/>
 			);
 		}
@@ -126,14 +94,10 @@ export default function EstimatedShippingRatesCard( {
 					return (
 						<ShippingRateInputControl
 							key={ group.countries.join( '-' ) }
-							labelButton={
-								<GroupEditModalButton
-									countryOptions={ audienceCountries }
-									group={ group }
-								/>
-							}
+							countryOptions={ audienceCountries }
 							value={ group }
 							onChange={ getChangeHandler( group ) }
+							onDelete={ getDeleteHandler( group ) }
 						/>
 					);
 				} ) }

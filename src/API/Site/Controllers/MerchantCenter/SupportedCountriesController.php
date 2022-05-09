@@ -123,17 +123,9 @@ class SupportedCountriesController extends BaseController {
 	 */
 	protected function get_supported_continents(): array {
 		$all_continents = $this->wc->get_continents();
-		$mc_countries   = $this->google_helper->get_mc_supported_countries();
 
-		// TODO: Create a shared function to get supported countries from a continent
-		// in GoogleHelper afer the below PR is merged into develop.
-		// https://github.com/woocommerce/google-listings-and-ads/pull/1341
 		foreach ( $all_continents as $continent_code => $continent ) {
-			$countries_of_continent           = $continent['countries'];
-			$supported_countries_of_continent = array_intersect(
-				$countries_of_continent,
-				$mc_countries
-			);
+			$supported_countries_of_continent = $this->google_helper->get_supported_countries_from_continent( $continent_code );
 
 			if ( empty( $supported_countries_of_continent ) ) {
 				unset( $all_continents[ $continent_code ] );
