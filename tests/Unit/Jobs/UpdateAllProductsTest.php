@@ -77,7 +77,10 @@ class UpdateAllProductsTest extends UnitTest {
 					return 2;
 				}
 				return $batch_count;
-			}, 10, 2 );
+			},
+			10,
+			2
+		);
 
 		$this->job->init();
 	}
@@ -92,19 +95,18 @@ class UpdateAllProductsTest extends UnitTest {
 	 */
 	public function test_single_empty_batch() {
 		$filtered_product_list = new FilteredProductList( [], 0 );
-		$this->action_scheduler->expects( $this->once() )
-			->method( 'schedule_immediate' )
-			->with( self::CREATE_BATCH_HOOK, [ 1 ] );
 		$this->product_repository->expects( $this->once() )
 			->method( 'find_sync_ready_products' )
 			->willReturn( $filtered_product_list );
-
 		/*
 		 * We expect only single call to `has_scheduled_action` when scheduling
 		 * the batch and no calls further since batch is empty.
 		 */
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' );
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( self::CREATE_BATCH_HOOK, [ 1 ] );
 
 		$this->job->schedule();
 
@@ -116,7 +118,11 @@ class UpdateAllProductsTest extends UnitTest {
 	 */
 	public function test_single_partial_batch() {
 		$filtered_product_list = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 1 );
-
+		$this->product_repository->expects( $this->once() )
+			->method( 'find_sync_ready_products' )
+			->willReturn( $filtered_product_list );
+		$this->action_scheduler->expects( $this->exactly( 2 ) )
+			->method( 'has_scheduled_action' );
 		$this->action_scheduler->expects( $this->exactly( 2 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
@@ -124,20 +130,13 @@ class UpdateAllProductsTest extends UnitTest {
 				[ self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] ]
 			);
 
-		$this->product_repository->expects( $this->once() )
-			->method( 'find_sync_ready_products' )
-			->willReturn( $filtered_product_list );
-
-		$this->action_scheduler->expects( $this->exactly( 2 ) )
-			->method( 'has_scheduled_action' );
-
 		$this->job->schedule();
 
 		do_action( self::CREATE_BATCH_HOOK, 1 );
 	}
 
 	/**
-	 * We test two filly loaded batches to make sure batch and process item jobs are correctly scheduled
+	 * We test two fully loaded batches to make sure batch and process item actions are correctly scheduled
 	 */
 	public function test_multiple_full_batches() {
 
