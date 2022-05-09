@@ -62,7 +62,7 @@ const ReviewRequestModal = ( {
 					)
 				);
 				setIsRequestingReview( false );
-				onClose( 'request-success' );
+				onClose( 'request-review-success' );
 				recordEvent( 'gla_request_review_success' );
 			} )
 			.catch( ( error ) => {
