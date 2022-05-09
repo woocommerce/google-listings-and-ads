@@ -65,12 +65,15 @@ class GoogleAdsCleanupServices {
 		'AdScheduleView',
 		'AgeRangeView',
 		'Asset',
+		'AssetFieldTypeView',
+		'AssetGroupProductGroupView',
 		'AssetSet',
 		'BatchJob',
 		'BiddingDataExclusion',
 		'BiddingSeasonalityAdjustment',
 		'BiddingStrategy',
 		'BiddingStrategySimulation',
+		'CallView',
 		'CampaignAsset',
 		'CampaignAssetSet',
 		'CampaignAudienceView',
@@ -131,6 +134,7 @@ class GoogleAdsCleanupServices {
 		'GroupPlacementView',
 		'HotelGroupView',
 		'HotelPerformanceView',
+		'HotelReconciliation',
 		'IncomeRangeView',
 		'Invoice',
 		'KeywordPlanAdGroupKeyword',
@@ -164,6 +168,7 @@ class GoogleAdsCleanupServices {
 		'SharedCriterion',
 		'SharedSet',
 		'ShoppingPerformanceView',
+		'SmartCampaignSearchTermView',
 		'SmartCampaignSetting',
 		'SmartCampaignSuggest',
 		'ThirdPartyAppAnalyticsLink',
@@ -267,6 +272,7 @@ class GoogleAdsCleanupServices {
 		// Remove metadata files.
 		$this->src_path = '/metadata/Google/Ads/GoogleAds';
 		$this->remove_file( "/{$this->version}/Services/{$service}Service.php" );
+		$this->remove_file( "/{$this->version}/Resources/{$service}.php" );
 	}
 
 	/**
