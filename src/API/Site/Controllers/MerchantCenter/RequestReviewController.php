@@ -128,19 +128,19 @@ class RequestReviewController extends BaseOptionsController {
 					throw new Exception( __( 'Your account is not eligible for a new request review.', 'google-listings-and-ads' ), 400 );
 				}
 
-				$response = $this->middleware->account_request_review( $account_review_status['reviewEligibleRegions'] );
+				$this->middleware->account_request_review( $account_review_status['reviewEligibleRegions'] );
+
+				$new_status = [
+					'issues'                => [],
+					'cooldown'              => 0,
+					'status'                => $this->request_review_statuses::UNDER_REVIEW,
+					'reviewEligibleRegions' => [],
+				];
 
 				// Update Account status when successful response
-				$this->set_cached_review_status(
-					[
-						'issues'                => [],
-						'cooldown'              => 0,
-						'status'                => $this->request_review_statuses::UNDER_REVIEW,
-						'reviewEligibleRegions' => [],
-					]
-				);
+				$this->set_cached_review_status( $new_status );
 
-				return new Response( $response );
+				return new Response( $new_status );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
