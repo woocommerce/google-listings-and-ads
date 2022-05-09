@@ -13,6 +13,16 @@ import localStorage from '.~/utils/localStorage';
 import getConversionCampaignStatusNotice from '.~/utils/getConversionCampaignStatusNotice';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 
+/**
+ * Shows Notice {@link Notice}
+ * providing information about the conversion status of PMax campaigns
+ *
+ * @fires gla_upgrade_campaign_learn_more_link_click with `{ context: 'reports-programs, linkId: 'campaign-conversion-status-after-migration-reports-read-more', href: '#' }`.
+ *
+ * @param {Object} props React props.
+ * @param {string} props.context Context or page on which the notice is shown, to be forwarded to the link's track event.
+ * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
+ */
 const CampaignConversionReportsNotice = ( { context } ) => {
 	const conversionStatus = getConversionCampaignStatusNotice(
 		glaData.adsCampaignConvertStatus
