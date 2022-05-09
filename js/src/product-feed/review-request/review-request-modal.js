@@ -13,6 +13,8 @@ import AppModal from '.~/components/app-modal';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import ReviewRequestIssues from './review-request-issues';
+import { useAppDispatch } from '.~/data';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 /**
  * Render a modal showing the issues list and a notice with a remind for
@@ -22,15 +24,16 @@ import ReviewRequestIssues from './review-request-issues';
  * @param {Object[]} [props.issues=[]] Array with issues
  * @param {boolean} [props.isActive=false] True if the Modal is visible, false otherwise
  * @param {Function} [props.onClose] Callback function when closing the modal
- * @param {Function} [props.onSendRequest] Callback function when the user request the review
  */
 const ReviewRequestModal = ( {
 	issues = [],
 	isActive = false,
 	onClose = () => {},
-	onSendRequest = () => {},
 } ) => {
 	const [ checkBoxChecked, setCheckBoxChecked ] = useState( false );
+	const [ isRequestingReview, setIsRequestingReview ] = useState( false );
+	const { mcRequestReview } = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 
 	if ( ! isActive ) {
 		return null;
@@ -41,6 +44,32 @@ const ReviewRequestModal = ( {
 		recordEvent( 'gla_request_review_issues_solved_checkbox_click', {
 			action: checked ? 'check' : 'uncheck',
 		} );
+	};
+
+	const handleReviewRequest = () => {
+		if ( isRequestingReview ) return;
+
+		setIsRequestingReview( true );
+		recordEvent( 'gla_request_review' );
+
+		mcRequestReview()
+			.then( () => {
+				createNotice(
+					'success',
+					__(
+						'Your account review was successfully requested.',
+						'google-listings-and-ads'
+					)
+				);
+				setIsRequestingReview( false );
+				onClose( 'request-success' );
+				recordEvent( 'gla_request_review_success' );
+			} )
+			.catch( ( error ) => {
+				recordEvent( 'gla_request_review_failure', {
+					error: error?.message,
+				} );
+			} );
 	};
 
 	return (
@@ -58,10 +87,11 @@ const ReviewRequestModal = ( {
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
+					loading={ isRequestingReview }
 					key="primary"
 					isPrimary
 					disabled={ ! checkBoxChecked && issues.length }
-					onClick={ onSendRequest }
+					onClick={ handleReviewRequest }
 				>
 					{ __(
 						'Request account review',

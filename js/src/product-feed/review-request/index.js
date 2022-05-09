@@ -3,14 +3,11 @@
  */
 import { useState } from '@wordpress/element';
 import { recordEvent } from '@woocommerce/tracks';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '.~/data';
 import useActiveIssueType from '.~/hooks/useActiveIssueType';
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import ReviewRequestModal from './review-request-modal';
 import ReviewRequestNotice from './review-request-notice';
 import { ISSUE_TYPE_ACCOUNT, REQUEST_REVIEW } from '.~/constants';
@@ -23,8 +20,6 @@ const showNotice = ( status ) => !! REVIEW_STATUSES[ status ]?.title;
 const ReviewRequest = ( { account = {} } ) => {
 	const [ modalActive, setModalActive ] = useState( false );
 	const activeIssueType = useActiveIssueType();
-	const { mcRequestReview } = useAppDispatch();
-	const { createNotice } = useDispatchCoreNotices();
 
 	const {
 		data: mcData,
@@ -54,28 +49,6 @@ const ReviewRequest = ( { account = {} } ) => {
 		} );
 	};
 
-	const handleReviewRequest = () => {
-		handleModalClose( 'confirm-request-review' );
-		recordEvent( 'gla_request_review' );
-
-		mcRequestReview()
-			.then( () => {
-				createNotice(
-					'success',
-					__(
-						'Your account review was successfully requested.',
-						'google-listings-and-ads'
-					)
-				);
-				recordEvent( 'gla_request_review_success' );
-			} )
-			.catch( ( error ) => {
-				recordEvent( 'gla_request_review_failure', {
-					error: error?.message,
-				} );
-			} );
-	};
-
 	return (
 		<div className="gla-review-request">
 			<ReviewRequestModal
@@ -84,7 +57,6 @@ const ReviewRequest = ( { account = {} } ) => {
 				) }
 				isActive={ modalActive }
 				onClose={ handleModalClose }
-				onSendRequest={ handleReviewRequest }
 			/>
 			<ReviewRequestNotice
 				account={ accountData }
