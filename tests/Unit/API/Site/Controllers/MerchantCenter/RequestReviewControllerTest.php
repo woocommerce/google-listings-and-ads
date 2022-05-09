@@ -127,7 +127,10 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
 			[
-				'message' => 'A new review has been successfully requested',
+				'issues'                => [],
+				'cooldown'              => 0,
+				'status'                => $this->request_review_statuses::UNDER_REVIEW,
+				'reviewEligibleRegions' => [],
 			],
 			$response->get_data()
 		);
