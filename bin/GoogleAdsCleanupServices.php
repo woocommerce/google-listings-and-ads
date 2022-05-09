@@ -224,7 +224,7 @@ class GoogleAdsCleanupServices {
 	 * Remove all services.
 	 */
 	protected function remove_services() {
-		$this->output_text( 'Removing unused services from Google Ads library' );
+		$this->output_text( 'Removing unused services from Google Ads library ' . $this->version );
 
 		foreach ( $this->services as $service ) {
 			$this->remove_service( $service );
