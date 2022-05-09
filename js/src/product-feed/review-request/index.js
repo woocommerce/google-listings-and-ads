@@ -35,7 +35,7 @@ const ReviewRequest = ( { account = {} } ) => {
 	if (
 		! mcDataHasFinishedResolution ||
 		! hasFinishedResolution ||
-		! showNotice( accountData.status ) ||
+		! showNotice( accountData?.status ) ||
 		activeIssueType !== ISSUE_TYPE_ACCOUNT
 	) {
 		return null;
@@ -63,7 +63,7 @@ const ReviewRequest = ( { account = {} } ) => {
 				createNotice(
 					'success',
 					__(
-						'Account review was successfully requested.',
+						'Your account review was successfully requested.',
 						'google-listings-and-ads'
 					)
 				);
@@ -71,15 +71,8 @@ const ReviewRequest = ( { account = {} } ) => {
 			} )
 			.catch( ( error ) => {
 				recordEvent( 'gla_request_review_failure', {
-					error: error.toString(),
+					error: error?.message,
 				} );
-				createNotice(
-					'error',
-					__(
-						'And error happened processing the account request review.',
-						'google-listings-and-ads'
-					)
-				);
 			} );
 	};
 

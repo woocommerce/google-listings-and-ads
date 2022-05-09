@@ -941,13 +941,10 @@ export function* mcRequestReview() {
 
 		return {
 			type: TYPES.RECEIVE_MC_REVIEW_REQUEST,
-			response,
+			mcReviewRequest: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__( 'Unable to request a new review.', 'google-listings-and-ads' )
-		);
+		yield handleFetchError( error, error?.message );
 		throw error;
 	}
 }
