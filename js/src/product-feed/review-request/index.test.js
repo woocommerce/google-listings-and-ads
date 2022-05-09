@@ -16,6 +16,13 @@ jest.mock( '@woocommerce/tracks', () => {
 	};
 } );
 
+jest.mock( '.~/hooks/useDispatchCoreNotices', () => ( {
+	__esModule: true,
+	default: jest.fn().mockName( 'useDispatchCoreNotices' ).mockReturnValue( {
+		createNotice: jest.fn(),
+	} ),
+} ) );
+
 /**
  * External dependencies
  */
