@@ -1339,7 +1339,7 @@ class GoogleHelper implements Service {
 	 */
 	public function get_supported_countries_from_continent( string $continent_code ): array {
 		$countries  = [];
-		$continents = $this->wc->get_wc_countries()->get_continents();
+		$continents = $this->wc->get_continents();
 		if ( isset( $continents[ $continent_code ] ) ) {
 			$countries = $continents[ $continent_code ]['countries'];
 

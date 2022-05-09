@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
-use WC_Countries;
 
 /**
  * Class GoogleHelperTest
@@ -94,29 +93,25 @@ class GoogleHelperTest extends UnitTest {
 
 	public function test_returns_supported_countries_from_continent() {
 		// Mock the WC_Countries class to return the list of countries for the EU continent.
-		$wc_countries = $this->createMock( WC_Countries::class );
-		$wc_countries->expects( $this->any() )
-					 ->method( 'get_continents' )
-					 ->willReturn( [
-						 'EU' => [
-							 'name'      => 'Europe',
-							 'countries' => [
-								 // A random country code, not supported by Merchant Center. This should be ignored.
-								 'OO1',
-								 // Another random country code, not supported by Merchant Center. This should be ignored.
-								 'OO2',
-								 // Countries supported by MC
-								 'GB',
-								 'FR',
-								 'DE',
-								 'DK',
-								 // And many more ...
-							 ],
-						 ],
-					 ] );
 		$this->wc->expects( $this->any() )
-				 ->method( 'get_wc_countries' )
-				 ->willReturn( $wc_countries );
+				 ->method( 'get_continents' )
+				 ->willReturn( [
+					 'EU' => [
+						 'name'      => 'Europe',
+						 'countries' => [
+							 // A random country code, not supported by Merchant Center. This should be ignored.
+							 'OO1',
+							 // Another random country code, not supported by Merchant Center. This should be ignored.
+							 'OO2',
+							 // Countries supported by MC
+							 'GB',
+							 'FR',
+							 'DE',
+							 'DK',
+							 // And many more ...
+						 ],
+					 ],
+				 ] );
 
 		$this->assertEqualSets(
 			[
