@@ -414,11 +414,9 @@ class GoogleAdsCleanupServices {
 	 */
 	protected function output_text( string $text ) {
 		if ( $this->event ) {
-			$event->getIO()->write( $text );
+			$this->event->getIO()->write( $text );
 		} else {
 			echo $text . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 	}
 }
-
-GoogleAdsCleanupServices::remove();
