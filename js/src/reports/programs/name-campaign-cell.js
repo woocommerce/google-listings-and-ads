@@ -10,8 +10,18 @@ import AppTooltip from '.~/components/app-tooltip';
 import { glaData } from '.~/constants';
 import isCampaignConverted from '.~/utils/isCampaignConverted';
 
-const NameCampaignCell = ( row ) => {
-	if ( isCampaignConverted( glaData.adsCampaignConvertStatus, row.type ) ) {
+/**
+ * Shows Tooltip {@link Notice}
+ * providing information about the conversion status of PMax campaigns
+ *
+ *
+ * @param {Object} props React props.
+ * @param {string} props.name Campaign Name
+ * @param {string} props.type Campaign type
+ * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
+ */
+const NameCampaignCell = ( { type, name } ) => {
+	if ( isCampaignConverted( glaData.adsCampaignConvertStatus, type ) ) {
 		return (
 			<AppTooltip
 				data-testid="tooltip-conversion-campaign"
@@ -21,12 +31,12 @@ const NameCampaignCell = ( row ) => {
 					'google-listings-and-ads'
 				) }
 			>
-				{ row.name }
+				{ name }
 			</AppTooltip>
 		);
 	}
 
-	return row.name;
+	return name;
 };
 
 export default NameCampaignCell;
