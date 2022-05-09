@@ -205,14 +205,20 @@ class GoogleAdsCleanupServices {
 	protected $src_path = '/src/Google/Ads/GoogleAds';
 
 	/**
+	 * @var string Source code path.
+	 */
+	protected $code_path = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param Event|null  $event Composer event.
 	 * @param string|null $path  Path of the Ads library.
 	 */
 	public function __construct( Event $event = null, string $path = null ) {
-		$this->event = $event;
-		$this->path  = $path ?: dirname( __DIR__ ) . '/vendor/googleads/google-ads-php';
+		$this->event     = $event;
+		$this->path      = $path ?: dirname( __DIR__ ) . '/vendor/googleads/google-ads-php';
+		$this->code_path = dirname( __DIR__ ) . '/src';
 	}
 
 	/**
@@ -223,6 +229,7 @@ class GoogleAdsCleanupServices {
 	public static function remove( Event $event = null ) {
 		$cleanup = new GoogleAdsCleanupServices( $event );
 		$cleanup->remove_services();
+		$cleanup->remove_enums();
 	}
 
 	/**
@@ -273,6 +280,85 @@ class GoogleAdsCleanupServices {
 		$this->src_path = '/metadata/Google/Ads/GoogleAds';
 		$this->remove_file( "/{$this->version}/Services/{$service}Service.php" );
 		$this->remove_file( "/{$this->version}/Resources/{$service}.php" );
+	}
+
+	/**
+	 * Find used enums and remove any unused ones.
+	 */
+	protected function remove_enums() {
+		$library_enums = $this->find_library_enums();
+		$used_enums    = $this->find_used_enums();
+
+		foreach ( array_diff( $library_enums, $used_enums ) as $enum ) {
+			$this->remove_enum( $enum );
+		};
+	}
+
+	/**
+	 * Remove a specific enum.
+	 *
+	 * @param string $enum Enum name.
+	 */
+	protected function remove_enum( string $enum ) {
+		$this->output_text( "Removing enum {$enum}" );
+		$this->src_path = '/src/Google/Ads/GoogleAds';
+
+		$this->remove_file( "/{$this->version}/Enums/{$enum}Enum.php" );
+		$this->remove_file( "/{$this->version}/Enums/{$enum}Enum_{$enum}.php" );
+		$this->remove_file( "/{$this->version}/Enums/{$enum}Enum/{$enum}.php" );
+		$this->remove_directory( "/{$this->version}/Enums/{$enum}Enum" );
+
+		// Remove metadata files.
+		$this->src_path = '/metadata/Google/Ads/GoogleAds';
+		$this->remove_file( "/{$this->version}/Enums/{$enum}.php" );
+	}
+
+	/**
+	 * Find enum names within the library.
+	 *
+	 * @return array
+	 */
+	protected function find_library_enums(): array {
+		$path = "{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Enums";
+
+		$output = glob( "{$path}/*.php" );
+
+		if ( empty( $output ) ) {
+			return [];
+		}
+
+		return array_map(
+			function( $file ) {
+				preg_match( '/(.*)\.php/', basename( $file ), $matches );
+				return $matches[1];
+			},
+			$output
+		);
+	}
+
+	/**
+	 * Find enum names used within the extension.
+	 *
+	 * @return array
+	 */
+	protected function find_used_enums(): array {
+		$pattern = "use Google\\\\Ads\\\\GoogleAds\\\\{$this->version}\\\\Enums\\\\([A-Za-z]+)Enum\\\\";
+		$command = "grep -rE --include=*.php '{$pattern}' {$this->code_path}";
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec
+		exec( $command, $output );
+
+		if ( empty( $output ) ) {
+			return [];
+		}
+
+		return array_map(
+			function( $line ) use ( $pattern ) {
+				preg_match( "/{$pattern}/", $line, $matches );
+				return $matches[1];
+			},
+			$output
+		);
 	}
 
 	/**
@@ -389,6 +475,21 @@ class GoogleAdsCleanupServices {
 		}
 
 		unlink( $file );
+	}
+
+	/**
+	 * Remove a directory.
+	 *
+	 * @param string $directory
+	 */
+	protected function remove_directory( string $directory ) {
+		$directory = $this->file_path( $directory );
+		if ( ! is_dir( $directory ) ) {
+			$this->warning( sprintf( 'Directory does not exist: %s', $directory ) );
+			return;
+		}
+
+		rmdir( $directory );
 	}
 
 	/**
