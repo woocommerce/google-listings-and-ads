@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
-use WC_Countries;
 use WC_Shipping_Flat_Rate;
 use WC_Shipping_Free_Shipping;
 use WC_Shipping_Method;
@@ -19,9 +18,9 @@ use WC_Shipping_Zone;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping
  *
- * @property MockObject|WC $wc
- * @property GoogleHelper  $google_helper
- * @property ShippingZone  $shipping_zone
+ * @property MockObject|WC           $wc
+ * @property MockObject|GoogleHelper $google_helper
+ * @property ShippingZone            $shipping_zone
  */
 class ShippingZoneTest extends UnitTest {
 
@@ -342,29 +341,15 @@ class ShippingZoneTest extends UnitTest {
 					 return $zone;
 				 } );
 
-		// Mock the WC_Countries class to return the list of countries for the EU continent.
-		$wc_countries = $this->createMock( WC_Countries::class );
-		$wc_countries->expects( $this->any() )
-					 ->method( 'get_continents' )
-					 ->willReturn( [
-						 'EU' => [
-							 'name'      => 'Europe',
-							 'countries' => [
-								 // A random country code, not supported by Merchant Center. This should be ignored.
-								 'OO1',
-								 // Another random country code, not supported by Merchant Center. This should be ignored.
-								 'OO2',
-								 'GB',
-								 'FR',
-								 'DE',
-								 'DK',
-								 // And many more ...
-							 ],
-						 ],
-					 ] );
-		$this->wc->expects( $this->any() )
-				 ->method( 'get_wc_countries' )
-				 ->willReturn( $wc_countries );
+		// Mock the GoogleHelper class to return the list of supported countries for the EU continent.
+		$this->google_helper->expects( $this->any() )
+							->method( 'get_supported_countries_from_continent' )
+							->willReturn( [
+								'GB',
+								'FR',
+								'DE',
+								'DK',
+							] );
 
 		$this->assertEqualSets(
 			[
@@ -1140,7 +1125,17 @@ class ShippingZoneTest extends UnitTest {
 				 ->method( 'get_woocommerce_currency' )
 				 ->willReturn( 'USD' );
 
-		$this->google_helper = new GoogleHelper( $this->wc );
+		$this->google_helper = $this->createMock( GoogleHelper::class );
+		// Mock Merchant Center supported countries.
+		$this->google_helper->expects( $this->any() )
+							->method( 'get_mc_supported_countries' )
+							->willReturn( [
+								'US',
+								'GB',
+								'FR',
+								'DE',
+								'DK',
+							] );
 
 		$this->shipping_zone = new ShippingZone( $this->wc, $this->google_helper );
 	}

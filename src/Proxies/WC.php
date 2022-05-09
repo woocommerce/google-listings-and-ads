@@ -37,6 +37,11 @@ class WC {
 	protected $wc_countries;
 
 	/**
+	 * @var array
+	 */
+	protected $continents;
+
+	/**
 	 * WC constructor.
 	 *
 	 * @param WC_Countries|null $countries
