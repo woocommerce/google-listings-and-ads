@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\TaskList;
 
-use Automattic\WooCommerce\Admin\Features\Onboarding;
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\TaskLists;
 use Automattic\WooCommerce\Admin\Loader;
 use Automattic\WooCommerce\Admin\PageController;
@@ -34,10 +33,6 @@ trait TaskListTrait {
 	 * @return bool
 	 */
 	private function check_should_show_tasks(): bool {
-		if ( version_compare( WC_VERSION, '5.9', '<' ) ) {
-			return Onboarding::should_show_tasks();
-		}
-
 		$setup_list    = TaskLists::get_list( 'setup' );
 		$extended_list = TaskLists::get_list( 'extended' );
 
