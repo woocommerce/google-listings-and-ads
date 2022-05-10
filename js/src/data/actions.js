@@ -933,16 +933,14 @@ export function* updateMCProductVisibility( ids, visible ) {
 /**
  * Request a new review for the connected account
  */
-export function* mcRequestReview() {
+export function* sendMCReviewRequest() {
 	try {
 		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/request-review`,
+			path: `${ API_NAMESPACE }/mc/review`,
+			method: 'POST',
 		} );
 
-		return {
-			type: TYPES.RECEIVE_MC_REVIEW_REQUEST,
-			mcReviewRequest: response,
-		};
+		return receiveMCReviewRequest( response );
 	} catch ( error ) {
 		yield handleFetchError( error, error?.message );
 		throw error;
