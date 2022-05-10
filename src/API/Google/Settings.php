@@ -86,7 +86,7 @@ class Settings {
 		$currency = $wc_proxy->get_woocommerce_currency();
 
 		$services = [];
-		foreach ( $rates as ['country' => $country, 'method' => $method, 'rate' => $rate, 'options' => $options] ) {
+		foreach ( $rates as ['country' => $country, 'rate' => $rate, 'options' => $options] ) {
 			// No negative rates.
 			if ( $rate < 0 ) {
 				continue;
@@ -98,7 +98,7 @@ class Settings {
 
 			$delivery_days = intval( $times[ $country ] );
 
-			$service = $this->create_shipping_service( $country, $method, $currency, (float) $rate, $delivery_days, $options );
+			$service = $this->create_shipping_service( $country, $currency, (float) $rate, $delivery_days, $options );
 
 			if ( isset( $options['free_shipping_threshold'] ) ) {
 				$minimum_order_value = (float) $options['free_shipping_threshold'];
@@ -281,12 +281,11 @@ class Settings {
 	 *
 	 * @param string   $currency
 	 * @param float    $rate
-	 * @param string   $method
 	 * @param string[] $shipping_labels
 	 *
 	 * @return RateGroup
 	 */
-	protected function create_rate_group_object( string $currency, float $rate, string $method, array $shipping_labels = [] ): RateGroup {
+	protected function create_rate_group_object( string $currency, float $rate, array $shipping_labels = [] ): RateGroup {
 		$price = new Price();
 		$price->setCurrency( $currency );
 		$price->setValue( $rate );
@@ -299,9 +298,8 @@ class Settings {
 		$rate_group->setSingleValue( $value );
 
 		$name = sprintf(
-		/* translators: %1 is the shipping method, %2 is the shipping rate, %3 is the currency (e.g. USD) */
-			__( '%1$s - %2$s %3$s', 'google-listings-and-ads' ),
-			str_replace( '_', ' ', ucwords( $method, '_' ) ), // Capitalize the shipping method name.
+		/* translators: %1 is the shipping rate, %2 is the currency (e.g. USD) */
+			__( 'Flat rate - %1$s %2$s', 'google-listings-and-ads' ),
 			$rate,
 			$currency
 		);
@@ -327,7 +325,6 @@ class Settings {
 	 * Create a shipping service object.
 	 *
 	 * @param string     $country
-	 * @param string     $method
 	 * @param string     $currency
 	 * @param float      $rate
 	 * @param int        $delivery_days
@@ -335,7 +332,7 @@ class Settings {
 	 *
 	 * @return Service
 	 */
-	protected function create_shipping_service( string $country, string $method, string $currency, float $rate, int $delivery_days, ?array $options = [] ): Service {
+	protected function create_shipping_service( string $country, string $currency, float $rate, int $delivery_days, ?array $options = [] ): Service {
 		$unique  = sprintf( '%04x', mt_rand( 0, 0xffff ) );
 		$service = new Service();
 		$service->setActive( true );
@@ -359,13 +356,12 @@ class Settings {
 				$rate_groups[] = $this->create_rate_group_object(
 					$currency,
 					$class_rate,
-					$method,
 					[ $class ]
 				);
 			}
 		}
 		// Create a main rate group for the service.
-		$rate_groups[] = $this->create_rate_group_object( $currency, $rate, $method );
+		$rate_groups[] = $this->create_rate_group_object( $currency, $rate );
 		$service->setRateGroups( $rate_groups );
 
 		$service->setDeliveryTime( $this->create_time_object( $delivery_days ) );
@@ -384,7 +380,7 @@ class Settings {
 	 * @return Service
 	 */
 	protected function create_conditional_free_shipping_service( string $country, string $currency, float $minimum_order_value, int $delivery_days ): Service {
-		$service = $this->create_shipping_service( $country, 'free_shipping', $currency, 0, $delivery_days );
+		$service = $this->create_shipping_service( $country, $currency, 0, $delivery_days );
 
 		// Set the minimum order value to be eligible for free shipping.
 		$service->setMinimumOrderValue(

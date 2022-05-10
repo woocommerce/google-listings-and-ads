@@ -4,8 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRateFlat;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRateFree;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneMethodsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -38,10 +36,8 @@ class ZoneMethodsParserTest extends UnitTest {
 			 ->method( 'get_shipping_methods' )
 			 ->willReturn( [ $flat_rate ] );
 
-		/** @var ShippingRateFlat[] $shipping_rates */
 		$shipping_rates = $this->methods_parser->parse( $zone );
 		$this->assertCount( 1, $shipping_rates );
-		$this->assertInstanceOf( ShippingRateFlat::class, $shipping_rates[0] );
 		$this->assertEquals( 10, $shipping_rates[0]->get_rate() );
 	}
 
@@ -78,10 +74,8 @@ class ZoneMethodsParserTest extends UnitTest {
 			 ->method( 'get_shipping_methods' )
 			 ->willReturn( [ $flat_rate ] );
 
-		/** @var ShippingRateFlat[] $shipping_rates */
 		$shipping_rates = $this->methods_parser->parse( $zone );
 		$this->assertCount( 1, $shipping_rates );
-		$this->assertInstanceOf( ShippingRateFlat::class, $shipping_rates[0] );
 
 		// The `no_class_cost` should be added to the flat rate method cost (10+2=12).
 		$this->assertEquals( 12, $shipping_rates[0]->get_rate() );
@@ -126,11 +120,10 @@ class ZoneMethodsParserTest extends UnitTest {
 			 ->method( 'get_shipping_methods' )
 			 ->willReturn( [ $free_shipping ] );
 
-		/** @var ShippingRateFree[] $shipping_rates */
 		$shipping_rates = $this->methods_parser->parse( $zone );
 		$this->assertCount( 1, $shipping_rates );
-		$this->assertInstanceOf( ShippingRateFree::class, $shipping_rates[0] );
-		$this->assertEquals( 99.99, $shipping_rates[0]->get_threshold() );
+		$this->assertEquals( 0, $shipping_rates[0]->get_rate() );
+		$this->assertEquals( 99.99, $shipping_rates[0]->get_min_order_amount() );
 	}
 
 	/**
