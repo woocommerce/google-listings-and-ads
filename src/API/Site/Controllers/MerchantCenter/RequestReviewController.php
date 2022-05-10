@@ -66,10 +66,10 @@ class RequestReviewController extends BaseOptionsController {
 		 * POST a request review for the current account
 		 */
 		$this->register_route(
-			'mc/request-review',
+			'mc/review',
 			[
 				[
-					'methods'             => TransportMethods::READABLE,
+					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->post_review_request_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
