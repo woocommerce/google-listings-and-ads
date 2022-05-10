@@ -15,14 +15,12 @@ import localStorage from '.~/utils/localStorage';
  *
  *
  * @param {Object} props React props.
- * @param {boolean} props.shouldDisplay True if the the notice should be displayed otherwise false.
  * @param {JSX.Element} props.children Children to render.
  * @param {string} props.className Class to use in the Notice component.
  * @param {Object} props.localStorageKey Local Storage Key where is keep the dismiss state.
  * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
  */
 const MigrationCampaignNotice = ( {
-	shouldDisplay,
 	children,
 	className,
 	localStorageKey,
@@ -36,7 +34,7 @@ const MigrationCampaignNotice = ( {
 		setIsDismissed( true );
 	};
 
-	if ( isDismissed || ! shouldDisplay ) {
+	if ( isDismissed ) {
 		return null;
 	}
 

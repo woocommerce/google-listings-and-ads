@@ -48,7 +48,6 @@ const CampaignConversionDashboardNotice = ( { context } ) => {
 		<MigrationCampaignNotice
 			className="gla-campaign-conversion-status-notice"
 			localStorageKey={ status.localStorageKey }
-			shouldDisplay={ !! status }
 		>
 			<Text
 				variant="subtitle.small"

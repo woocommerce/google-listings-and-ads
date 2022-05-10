@@ -25,16 +25,14 @@ const CampaignConversionReportsNotice = () => {
 	);
 
 	const status = CONVERSION_STATUSES.REPORTS_CONVERSION;
-	const shouldDisplay = conversionStatus === 'AFTER_CONVERSION';
 
-	if ( ! status ) {
+	if ( conversionStatus !== 'AFTER_CONVERSION' ) {
 		return null;
 	}
 
 	return (
 		<MigrationCampaignNotice
 			className="gla-campaign-conversion-status-reports-notice"
-			shouldDisplay={ shouldDisplay }
 			localStorageKey={ status.localStorageKey }
 		>
 			<Text data-testid="gla-campaign-conversion-reports-notice">
