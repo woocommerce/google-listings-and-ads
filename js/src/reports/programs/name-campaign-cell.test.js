@@ -7,7 +7,7 @@ import '@testing-library/jest-dom/extend-expect';
 /**
  * Internal dependencies
  */
-import NameCampaignCell from '.~/reports/programs/name-campaign-cell';
+import CampaignNameCell from '.~/reports/programs/campaign-name-cell';
 import isCampaignConverted from '.~/utils/isCampaignConverted';
 import { CAMPAIGN_TYPE } from '.~/constants';
 
@@ -23,7 +23,7 @@ describe( 'Notice Campaign Migration', () => {
 		};
 
 		const { getByText, findByText } = render(
-			<NameCampaignCell { ...row } />
+			<CampaignNameCell { ...row } />
 		);
 
 		const campaignName = getByText( 'shopping campaign' );
@@ -47,7 +47,7 @@ describe( 'Notice Campaign Migration', () => {
 		};
 
 		const { getByText, queryByText } = render(
-			<NameCampaignCell { ...row } />
+			<CampaignNameCell { ...row } />
 		);
 
 		const campaignName = getByText( 'pmax campaign' );

@@ -9,7 +9,7 @@ import { useMemo } from '@wordpress/element';
  */
 import CompareTableCard from '../compare-table-card';
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
-import NameCampaignCell from './name-campaign-cell';
+import CampaignNameCell from './campaign-name-cell';
 
 const compareBy = 'programs';
 const compareParam = 'filter';
@@ -87,7 +87,7 @@ const CompareProgramsTableCard = ( {
 				'google-listings-and-ads'
 			) }
 			nameHeader={ __( 'Program', 'google-listings-and-ads' ) }
-			nameCell={ NameCampaignCell }
+			nameCell={ CampaignNameCell }
 			compareBy={ compareBy }
 			compareParam={ compareParam }
 			metrics={ metrics }

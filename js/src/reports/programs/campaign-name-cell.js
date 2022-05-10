@@ -21,7 +21,7 @@ import './name-campaign-cell.scss';
  * @param {string} props.type Campaign type
  * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
  */
-const NameCampaignCell = ( { type, name } ) => {
+const CampaignNameCell = ( { type, name } ) => {
 	if ( isCampaignConverted( glaData.adsCampaignConvertStatus, type ) ) {
 		return (
 			<div className="gla-reports__tooltip-campaing-name">
@@ -41,4 +41,4 @@ const NameCampaignCell = ( { type, name } ) => {
 	return name;
 };
 
-export default NameCampaignCell;
+export default CampaignNameCell;
