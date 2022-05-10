@@ -150,8 +150,8 @@ class ShippingZone implements Service {
 	/**
 	 * Maps each shipping method to its related shipping locations.
 	 *
-	 * @param ShippingRate[] $shipping_rates The shipping rates.
-	 * @param Location[]     $locations      The shipping locations.
+	 * @param ShippingRate[]     $shipping_rates The shipping rates.
+	 * @param ShippingLocation[] $locations      The shipping locations.
 	 *
 	 * @since x.x.x
 	 */

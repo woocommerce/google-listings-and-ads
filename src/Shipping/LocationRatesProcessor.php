@@ -33,6 +33,10 @@ class LocationRatesProcessor {
 				$type = 'conditional_free';
 			}
 
+			// Append the shipping class names to the type key to group and compare the class rates together.
+			$classes = ! empty( $shipping_rate->get_applicable_classes() ) ? join( ',', $shipping_rate->get_applicable_classes() ) : '';
+			$type   .= $classes;
+
 			if ( ! isset( $grouped_rates[ $type ] ) || $this->should_rate_be_replaced( $shipping_rate, $grouped_rates[ $type ]->get_shipping_rate() ) ) {
 				$grouped_rates[ $type ] = $location_rate;
 			}

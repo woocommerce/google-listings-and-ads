@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneMethodsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -75,29 +76,37 @@ class ZoneMethodsParserTest extends UnitTest {
 			 ->willReturn( [ $flat_rate ] );
 
 		$shipping_rates = $this->methods_parser->parse( $zone );
-		$this->assertCount( 1, $shipping_rates );
 
-		// The `no_class_cost` should be added to the flat rate method cost (10+2=12).
-		$this->assertEquals( 12, $shipping_rates[0]->get_rate() );
+		// The shipping class with a dynamic price should be ignored. The third rate is the one with no class.
+		$this->assertCount( 3, $shipping_rates );
 
-		// The shipping class with a dynamic price should be ignored.
-		$this->assertCount( 2, $shipping_rates[0]->get_shipping_class_rates() );
-
-		// The shipping class costs should be added to the flat rate method cost (10+5=15 and 10+15=25).
+		$classes = array_map(
+			function (ShippingRate $shipping_rate) {
+				return $shipping_rate->get_applicable_classes();
+			},
+			$shipping_rates
+		);
 		$this->assertEqualSets(
 			[
-				[
-					'class' => 'light',
-					'rate'  => 15,
-				],
-				[
-					'class' => 'heavy',
-					'rate'  => 25,
-				],
+				[],
+				[ 'light' ],
+				[ 'heavy' ],
 			],
-			$shipping_rates[0]->get_shipping_class_rates()
+			$classes
 		);
 
+		foreach ( $shipping_rates as $shipping_rate ) {
+			if ( [] === $shipping_rate->get_applicable_classes() ) {
+				// The `no_class_cost` should be added to the flat rate method cost (10+2=12).
+				$this->assertEquals( 12, $shipping_rate->get_rate() );
+			} elseif ( [ 'light' ] === $shipping_rate->get_applicable_classes() ) {
+				// The shipping class costs should be added to the flat rate method cost (10+5=15).
+				$this->assertEquals( 15, $shipping_rate->get_rate() );
+			} elseif ( [ 'heavy' ] === $shipping_rate->get_applicable_classes() ) {
+				// The shipping class costs should be added to the flat rate method cost (10+15=25).
+				$this->assertEquals( 25, $shipping_rate->get_rate() );
+			}
+		}
 	}
 
 	/**
@@ -226,8 +235,7 @@ class ZoneMethodsParserTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function setUp(): void {
 		$this->wc             = $this->createMock( WC::class );
 		$this->methods_parser = new ZoneMethodsParser( $this->wc );
 	}

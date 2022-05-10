@@ -4,8 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\Location;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRatesProcessor;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\PostcodeRange;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
@@ -31,8 +32,8 @@ class ShippingZoneTest extends UnitTest {
 							 ->method( 'parse' )
 							 ->willReturn(
 								 [
-									 new Location( 'US' ),
-									 new Location( 'DE' ),
+									 new ShippingLocation( 2840, 'US' ),
+									 new ShippingLocation( 2276, 'DE' ),
 								 ]
 							 );
 		$this->methods_parser->expects( $this->once() )
@@ -49,12 +50,16 @@ class ShippingZoneTest extends UnitTest {
 	}
 
 	public function test_returns_shipping_rates_for_country() {
+		$postcodes = [
+			new PostcodeRange( '12345' ),
+			new PostcodeRange( '67890' ),
+		];
 		$this->locations_parser->expects( $this->once() )
 							 ->method( 'parse' )
 							 ->willReturn(
 								 [
-									 new Location( 'US', 'CA', [ '12345', '67890' ] ),
-									 new Location( 'CA', 'BC', [ '12345', '67890' ] ),
+									 new ShippingLocation( 21137, 'US', 'CA', $postcodes ),
+									 new ShippingLocation( 20035, 'AU', 'NSW', $postcodes ),
 								 ]
 							 );
 		$this->methods_parser->expects( $this->once() )
@@ -66,14 +71,14 @@ class ShippingZoneTest extends UnitTest {
 		$this->assertEquals( 0, $location_rates[0]->get_shipping_rate()->get_rate() );
 		$this->assertEquals( 'US', $location_rates[0]->get_location()->get_country() );
 		$this->assertEquals( 'CA', $location_rates[0]->get_location()->get_state() );
-		$this->assertEqualSets( [ '12345', '67890' ], $location_rates[0]->get_location()->get_postcodes() );
+		$this->assertEqualSets( $postcodes, $location_rates[0]->get_location()->get_postcodes() );
 
-		$location_rates = $this->shipping_zone->get_shipping_rates_for_country( 'CA' );
+		$location_rates = $this->shipping_zone->get_shipping_rates_for_country( 'AU' );
 		$this->assertCount( 1, $location_rates );
 		$this->assertEquals( 0, $location_rates[0]->get_shipping_rate()->get_rate() );
-		$this->assertEquals( 'CA', $location_rates[0]->get_location()->get_country() );
-		$this->assertEquals( 'BC', $location_rates[0]->get_location()->get_state() );
-		$this->assertEqualSets( [ '12345', '67890' ], $location_rates[0]->get_location()->get_postcodes() );
+		$this->assertEquals( 'AU', $location_rates[0]->get_location()->get_country() );
+		$this->assertEquals( 'NSW', $location_rates[0]->get_location()->get_state() );
+		$this->assertEqualSets( $postcodes, $location_rates[0]->get_location()->get_postcodes() );
 
 		// Test non-existent country.
 		$location_rates = $this->shipping_zone->get_shipping_rates_for_country( 'XX' );
@@ -85,8 +90,8 @@ class ShippingZoneTest extends UnitTest {
 							 ->method( 'parse' )
 							 ->willReturn(
 								 [
-									 new Location( 'US', 'CA' ),
-									 new Location( 'CA', 'BC' ),
+									 new ShippingLocation( 21137, 'US', 'CA' ),
+									 new ShippingLocation( 20035, 'AU', 'NSW' ),
 								 ]
 							 );
 		$this->methods_parser->expects( $this->once() )
@@ -110,7 +115,7 @@ class ShippingZoneTest extends UnitTest {
 	public function test_ignores_zones_with_no_methods() {
 		$this->locations_parser->expects( $this->once() )
 							 ->method( 'parse' )
-							 ->willReturn( [ new Location( 'US' ) ] );
+							 ->willReturn( [ new ShippingLocation( 2840, 'US' ) ] );
 		$this->methods_parser->expects( $this->once() )
 							 ->method( 'parse' )
 							 ->willReturn( [] );

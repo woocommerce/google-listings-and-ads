@@ -45,7 +45,7 @@ class ZoneLocationsParser implements Service {
 	 *
 	 * @param WC_Shipping_Zone $zone
 	 *
-	 * @return Location[] Array of supported locations.
+	 * @return ShippingLocation[] Array of supported locations.
 	 */
 	public function parse( WC_Shipping_Zone $zone ): array {
 		$locations = [];
@@ -55,12 +55,14 @@ class ZoneLocationsParser implements Service {
 			switch ( $location->type ) {
 				case 'country':
 					if ( $this->google_helper->is_country_supported( $location->code ) ) {
-						$locations[ $location->code ] = new Location( $location->code, null, $postcodes );
+						$google_id                    = $this->google_helper->find_country_id_by_code( $location->code );
+						$locations[ $location->code ] = new ShippingLocation( $google_id, $location->code, null, $postcodes );
 					}
 					break;
 				case 'continent':
 					foreach ( $this->get_supported_countries_from_continent( $location->code ) as $country ) {
-						$locations[ $country ] = new Location( $country, null, $postcodes );
+						$google_id             = $this->google_helper->find_country_id_by_code( $location->code );
+						$locations[ $country ] = new ShippingLocation( $google_id, $country, null, $postcodes );
 					}
 					break;
 				case 'state':
@@ -73,9 +75,11 @@ class ZoneLocationsParser implements Service {
 
 					// Only add the state if the regional shipping is supported for its country.
 					if ( $this->google_helper->does_country_support_regional_shipping( $country ) ) {
-						$locations[ $location->code ] = new Location( $country, $state, $postcodes );
+						$google_id                    = $this->google_helper->find_subdivision_id_by_code( $state, $country );
+						$locations[ $location->code ] = new ShippingLocation( $google_id, $country, $state, $postcodes );
 					} else {
-						$locations[ $country ] = new Location( $country, null, $postcodes );
+						$google_id             = $this->google_helper->find_country_id_by_code( $country );
+						$locations[ $country ] = new ShippingLocation( $google_id, $country, null, $postcodes );
 					}
 					break;
 				default:
@@ -91,7 +95,7 @@ class ZoneLocationsParser implements Service {
 	 *
 	 * @param WC_Shipping_Zone $zone
 	 *
-	 * @return string[] Array of postcodes.
+	 * @return PostcodeRange[] Array of postcodes.
 	 */
 	protected function get_postcodes_from_zone( WC_Shipping_Zone $zone ): array {
 		$postcodes = array_filter(
@@ -103,7 +107,7 @@ class ZoneLocationsParser implements Service {
 
 		return array_map(
 			function ( $postcode ) {
-				return $postcode->code;
+				return PostcodeRange::from_string( $postcode->code );
 			},
 			$postcodes
 		);

@@ -63,6 +63,12 @@ class ShippingSuggestionService implements Service {
 			// Check if there is a conditional free shipping rate (with minimum order amount).
 			// We will set the minimum order amount as the free shipping threshold for other rates.
 			$shipping_rate = $location_rate->get_shipping_rate();
+
+			// Ignore rates with shipping classes.
+			if ( ! empty( $shipping_rate->get_applicable_classes() ) ) {
+				continue;
+			}
+
 			if ( $shipping_rate->is_free() && $shipping_rate->has_min_order_amount() ) {
 				$free_threshold = $shipping_rate->get_min_order_amount();
 

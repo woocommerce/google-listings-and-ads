@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\Location;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
@@ -23,7 +23,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class ShippingSuggestionServiceTest extends UnitTest {
 	public function test_get_suggestions_returns_correct_data() {
-		$location = new Location( 'US', 'CA' );
+		$location = new ShippingLocation( 21137, 'US', 'CA' );
 
 		$location_rates = [
 			new LocationRate( $location, new ShippingRate( 200 ) ),
@@ -47,7 +47,7 @@ class ShippingSuggestionServiceTest extends UnitTest {
 	}
 
 	public function test_get_suggestions_skips_conditional_free_rate() {
-		$location = new Location( 'US', 'CA' );
+		$location = new ShippingLocation( 21137, 'US', 'CA' );
 
 		$free_rate_1 = new ShippingRate( 0 );
 		$free_rate_1->set_min_order_amount( 50 );
@@ -67,7 +67,7 @@ class ShippingSuggestionServiceTest extends UnitTest {
 	}
 
 	public function test_get_suggestions_sets_conditional_free_rate_threshold_on_other_rates() {
-		$location = new Location( 'US', 'CA' );
+		$location = new ShippingLocation( 21137, 'US', 'CA' );
 
 		$free_rate_1 = new ShippingRate( 0 );
 		$free_rate_1->set_min_order_amount( 50 );
@@ -84,6 +84,26 @@ class ShippingSuggestionServiceTest extends UnitTest {
 		$suggestions = $this->suggestion_service->get_suggestions( 'US' );
 		$this->assertCount( 1, $suggestions );
 		$this->assertEquals( [ 'free_shipping_threshold' => 50 ], $suggestions[0]['options'] );
+	}
+
+	public function test_get_suggestions_ignores_rates_with_shipping_classes() {
+		$location = new ShippingLocation( 21137, 'US', 'CA' );
+
+		$light_class_rate = new ShippingRate( 100 );
+		$light_class_rate->set_applicable_classes( [ 'light' ] );
+
+		$location_rates = [
+			new LocationRate( $location, $light_class_rate ),
+			new LocationRate( $location, new ShippingRate( 200 ) ),
+		];
+
+		$this->shipping_zone->expects( $this->any() )
+							->method( 'get_shipping_rates_grouped_by_country' )
+							->willReturn( $location_rates );
+
+		$suggestions = $this->suggestion_service->get_suggestions( 'US' );
+		$this->assertCount( 1, $suggestions );
+		$this->assertEquals( 200, $suggestions[0]['rate'] );
 	}
 
 	/**

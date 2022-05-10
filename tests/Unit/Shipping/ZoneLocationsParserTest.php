@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\Location;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -238,7 +238,7 @@ class ZoneLocationsParserTest extends UnitTest {
 		$this->assertCount( 3, $parsed_locations );
 
 		$location_countries = array_map(
-			function ( Location $location ) {
+			function ( ShippingLocation $location ) {
 				return $location->get_country();
 			},
 			$parsed_locations
@@ -254,12 +254,12 @@ class ZoneLocationsParserTest extends UnitTest {
 		);
 
 		$states = array_map(
-			function ( Location $location ) {
+			function ( ShippingLocation $location ) {
 				return $location->get_state();
 			},
 			$parsed_locations
 		);
-		$this->assertEquals(
+		$this->assertEqualSets(
 			[
 				'NV',
 				// Two null entries for the country locations without a state.
@@ -273,10 +273,26 @@ class ZoneLocationsParserTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
-		parent::setUp();
-		$this->wc               = $this->createMock( WC::class );
-		$this->google_helper    = $this->createMock( GoogleHelper::class );
+	public function setUp(): void {
+		$this->wc            = $this->createMock( WC::class );
+		$this->google_helper = $this->createMock( GoogleHelper::class );
+
+		// Return random IDs for countries and subdivisions.
+		$this->google_helper->expects( $this->any() )
+							->method( 'find_country_id_by_code' )
+							->willReturnCallback(
+								function () {
+									return rand();
+								}
+							);
+		$this->google_helper->expects( $this->any() )
+							->method( 'find_subdivision_id_by_code' )
+							->willReturnCallback(
+								function () {
+									return rand();
+								}
+							);
+
 		$this->locations_parser = new ZoneLocationsParser( $this->wc, $this->google_helper );
 	}
 }
