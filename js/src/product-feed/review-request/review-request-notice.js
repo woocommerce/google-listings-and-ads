@@ -68,7 +68,7 @@ const ReviewRequestNotice = ( {
 			<FlexItem className="gla-review-request-notice__button">
 				{ accountReviewStatus.requestButton &&
 					( account.cooldown ||
-						account.reviewEligibleRegions?.length > 0 ) && (
+						account.reviewEligibleRegions.length > 0 ) && (
 						<AppButton
 							isPrimary
 							onClick={ onRequestReviewClick }
