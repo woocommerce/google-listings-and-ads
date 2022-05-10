@@ -17,6 +17,17 @@ import './index.scss';
 
 const showNotice = ( status ) => !! REVIEW_STATUSES[ status ]?.title;
 
+/**
+ * @typedef { import(".~/data/actions").AccountStatus } AccountStatus
+ */
+
+/**
+ * @fires gla_modal_closed with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
+ * @fires gla_modal_open with `context: REQUEST_REVIEW`
+ *
+ * @param {Object} props Component props
+ * @param {AccountStatus} props.account Account object
+ */
 const ReviewRequest = ( { account = {} } ) => {
 	const [ modalActive, setModalActive ] = useState( false );
 	const activeIssueType = useActiveIssueType();

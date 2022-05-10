@@ -17,8 +17,38 @@ import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 /**
+ * Triggered when request review button is clicked
+ *
+ * @event gla_request_review
+ */
+
+/**
+ * Triggered when the request review is successful
+ *
+ * @event gla_request_review_success
+ */
+
+/**
+ * Triggered when the request review fails
+ *
+ * @event gla_request_review_failure
+ */
+
+/**
+ * Triggered when clicking on the checkbox
+ *
+ * @property {'check'|'uncheck'} action Indicates if the checkbox is checked or unchecked
+ * @event gla_request_review_issues_solved_checkbox_click
+ */
+
+/**
  * Render a modal showing the issues list and a notice with a remind for
  * the user to review those issues before requesting the review.
+ *
+ * @fires gla_request_review_issues_solved_checkbox_click with `action: 'checked' | 'unchecked'
+ * @fires gla_request_review
+ * @fires gla_request_review_success
+ * @fires gla_request_review_failure
  *
  * @param {Object} props Component props
  * @param {Object[]} [props.issues=[]] Array with issues
