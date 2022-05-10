@@ -153,8 +153,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$this->assets_handler->add( $gtag_events );
 
 		add_action(
-			'wp_enqueue_scripts',
-			function() use ( $gtag_events ) {
+			'enqueue_block_assets',
+			function () use ( $gtag_events ) {
 				$this->assets_handler->enqueue( $gtag_events );
 			}
 		);
