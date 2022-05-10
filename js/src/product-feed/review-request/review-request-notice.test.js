@@ -75,7 +75,7 @@ describe( 'Request Review Notice', () => {
 
 		const { queryByText, queryByRole } = render(
 			<ReviewRequestNotice
-				account={ { status: 'DISAPPROVED' } }
+				account={ { status: 'DISAPPROVED', reviewEligibleRegions: [] } }
 				onRequestReviewClick={ onRequestReviewClick }
 			/>
 		);

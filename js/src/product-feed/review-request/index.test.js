@@ -44,7 +44,7 @@ describe( 'Request Review Component', () => {
 				<ReviewRequest
 					account={ {
 						hasFinishedResolution: true,
-						data: { status },
+						data: { status, reviewEligibleRegions: [] },
 					} }
 				/>
 			);

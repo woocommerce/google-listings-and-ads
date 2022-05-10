@@ -20,7 +20,7 @@ jest.mock( '.~/data', () => ( {
 	__esModule: true,
 	useAppDispatch: jest.fn( () => {
 		return {
-			mcRequestReview: jest.fn( () => Promise.resolve() ),
+			sendMCReviewRequest: jest.fn( () => Promise.resolve() ),
 		};
 	} ),
 } ) );
@@ -147,7 +147,7 @@ describe( 'Request Review Modal', () => {
 		);
 
 		await act( async () => {
-			// necessary to wait for the millisecond to perform the promise resolve in mcRequestReview
+			// necessary to wait for the millisecond to perform the promise resolve in sendMCReviewRequest
 			await Promise.resolve();
 		} );
 
