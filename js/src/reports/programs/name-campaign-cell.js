@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
 import AppTooltip from '.~/components/app-tooltip';
 import { glaData } from '.~/constants';
 import isCampaignConverted from '.~/utils/isCampaignConverted';
+import './name-campaign-cell.scss';
 
 /**
  * Shows Tooltip {@link Notice}
@@ -23,16 +24,17 @@ import isCampaignConverted from '.~/utils/isCampaignConverted';
 const NameCampaignCell = ( { type, name } ) => {
 	if ( isCampaignConverted( glaData.adsCampaignConvertStatus, type ) ) {
 		return (
-			<AppTooltip
-				data-testid="tooltip-conversion-campaign"
-				position="top right"
-				text={ __(
-					'This campaign has been upgraded to Performance Max',
-					'google-listings-and-ads'
-				) }
-			>
-				{ name }
-			</AppTooltip>
+			<div className="gla-reports__tooltip-campaing-name">
+				<AppTooltip
+					position="top right"
+					text={ __(
+						'This campaign has been upgraded to Performance Max',
+						'google-listings-and-ads'
+					) }
+				>
+					{ name }
+				</AppTooltip>
+			</div>
 		);
 	}
 
