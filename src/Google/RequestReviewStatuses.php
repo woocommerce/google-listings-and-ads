@@ -128,7 +128,7 @@ class RequestReviewStatuses implements Service {
 	private function maybe_load_eligible_region( array $region_status, array $review_eligible_regions ) {
 		if (
 			isset( $region_status['regionCodes'] ) &&
-			count( $region_status['regionCodes'] ) &&
+			! empty( $region_status['regionCodes'] ) &&
 			isset( $region_status['reviewEligibilityStatus'] ) &&
 			$region_status['reviewEligibilityStatus'] === self::ELIGIBLE
 		) {
