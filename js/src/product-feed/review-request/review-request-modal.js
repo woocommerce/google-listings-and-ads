@@ -65,10 +65,8 @@ const ReviewRequestModal = ( {
 				onClose( 'request-review-success' );
 				recordEvent( 'gla_request_review_success' );
 			} )
-			.catch( ( error ) => {
-				recordEvent( 'gla_request_review_failure', {
-					error: error?.message,
-				} );
+			.catch( () => {
+				recordEvent( 'gla_request_review_failure' );
 			} );
 	};
 
