@@ -40,10 +40,6 @@ const CampaignConversionDashboardNotice = ( { context } ) => {
 
 	const status = CONVERSION_STATUSES[ conversionStatus ];
 
-	const shouldDisplay = () => {
-		return !! status;
-	};
-
 	if ( ! status ) {
 		return null;
 	}
@@ -51,8 +47,8 @@ const CampaignConversionDashboardNotice = ( { context } ) => {
 	return (
 		<MigrationCampaignNotice
 			className="gla-campaign-conversion-status-notice"
-			shouldDisplay={ shouldDisplay }
 			localStorageKey={ status.localStorageKey }
+			shouldDisplay={ !! status }
 		>
 			<Text
 				variant="subtitle.small"

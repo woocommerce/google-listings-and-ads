@@ -27,9 +27,7 @@ const MigrationCampaignNotice = ( {
 	className,
 	localStorageKey,
 } ) => {
-	const defaultDismissedValue = localStorage.get( localStorageKey )
-		? true
-		: false;
+	const defaultDismissedValue = !! localStorage.get( localStorageKey );
 
 	const [ isDismissed, setIsDismissed ] = useState( defaultDismissedValue );
 
@@ -38,7 +36,7 @@ const MigrationCampaignNotice = ( {
 		setIsDismissed( true );
 	};
 
-	if ( isDismissed || ! shouldDisplay() ) {
+	if ( isDismissed || ! shouldDisplay ) {
 		return null;
 	}
 

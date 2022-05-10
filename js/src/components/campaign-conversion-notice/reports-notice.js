@@ -25,10 +25,7 @@ const CampaignConversionReportsNotice = () => {
 	);
 
 	const status = CONVERSION_STATUSES.REPORTS_CONVERSION;
-
-	const shouldDisplay = () => {
-		return conversionStatus === 'AFTER_CONVERSION';
-	};
+	const shouldDisplay = conversionStatus === 'AFTER_CONVERSION';
 
 	if ( ! status ) {
 		return null;
