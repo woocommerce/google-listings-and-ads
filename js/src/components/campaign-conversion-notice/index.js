@@ -1,22 +1,17 @@
 /**
  * External dependencies
  */
-import {
-	Notice,
-	Icon,
-	__experimentalText as Text,
-} from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { Icon, __experimentalText as Text } from '@wordpress/components';
 import { external as externalIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import { glaData } from '.~/constants';
-import localStorage from '.~/utils/localStorage';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import CONVERSION_STATUSES from './conversion-statuses';
 import getConversionCampaignStatusNotice from '.~/utils/getConversionCampaignStatusNotice';
+import MigrationCampaignNotice from './migration-notice';
 import './index.scss';
 
 const ExternalIcon = () => (
@@ -38,31 +33,26 @@ const ExternalIcon = () => (
  * @param {string} props.context Context or page on which the notice is shown, to be forwarded to the link's track event.
  * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
  */
-const CampaignConversionStatusNotice = ( { context } ) => {
+const CampaignConversionDashboardNotice = ( { context } ) => {
 	const conversionStatus = getConversionCampaignStatusNotice(
 		glaData.adsCampaignConvertStatus
 	);
+
 	const status = CONVERSION_STATUSES[ conversionStatus ];
 
-	const defaultDismissedValue = localStorage.get( status?.localStorageKey )
-		? true
-		: false;
-
-	const [ isDismissed, setIsDismissed ] = useState( defaultDismissedValue );
-
-	const onRemove = () => {
-		localStorage.set( status?.localStorageKey, true );
-		setIsDismissed( true );
+	const shouldDisplay = () => {
+		return !! status;
 	};
 
-	if ( isDismissed || ! status ) {
+	if ( ! status ) {
 		return null;
 	}
 
 	return (
-		<Notice
+		<MigrationCampaignNotice
 			className="gla-campaign-conversion-status-notice"
-			onRemove={ onRemove }
+			shouldDisplay={ shouldDisplay }
+			localStorageKey={ status.localStorageKey }
 		>
 			<Text
 				variant="subtitle.small"
@@ -82,8 +72,8 @@ const CampaignConversionStatusNotice = ( { context } ) => {
 					<ExternalIcon />
 				</AppDocumentationLink>
 			</p>
-		</Notice>
+		</MigrationCampaignNotice>
 	);
 };
 
-export default CampaignConversionStatusNotice;
+export default CampaignConversionDashboardNotice;

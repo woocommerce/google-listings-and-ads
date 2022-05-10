@@ -7,7 +7,7 @@ import '@testing-library/jest-dom/extend-expect';
 /**
  * Internal dependencies
  */
-import CampaignConversionStatusNotice from '.~/components/campaign-conversion-notice/index';
+import CampaignConversionDashboardNotice from '.~/components/campaign-conversion-notice/index';
 import getConversionCampaignStatusNotice from '.~/utils/getConversionCampaignStatusNotice';
 
 jest.mock( '.~/utils/getConversionCampaignStatusNotice', () => jest.fn() );
@@ -18,7 +18,7 @@ describe( 'Notice Campaign Migration', () => {
 			'BEFORE_CONVERSION'
 		);
 
-		const { getByTestId } = render( <CampaignConversionStatusNotice /> );
+		const { getByTestId } = render( <CampaignConversionDashboardNotice /> );
 
 		const activeComponent = getByTestId(
 			'gla-campaign-conversion-dashboard-notice'
@@ -31,7 +31,7 @@ describe( 'Notice Campaign Migration', () => {
 		getConversionCampaignStatusNotice.mockReturnValueOnce(
 			'AFTER_CONVERSION'
 		);
-		const { getByTestId } = render( <CampaignConversionStatusNotice /> );
+		const { getByTestId } = render( <CampaignConversionDashboardNotice /> );
 
 		const activeComponent = getByTestId(
 			'gla-campaign-conversion-dashboard-notice'
@@ -45,7 +45,7 @@ describe( 'Notice Campaign Migration', () => {
 			'AFTER_CONVERSION'
 		);
 		const { queryByTestId, getByRole } = render(
-			<CampaignConversionStatusNotice />
+			<CampaignConversionDashboardNotice />
 		);
 
 		const closeButton = getByRole( 'button' );
@@ -60,7 +60,9 @@ describe( 'Notice Campaign Migration', () => {
 	} );
 	it( 'No campaign status', () => {
 		getConversionCampaignStatusNotice.mockReturnValueOnce( null );
-		const { queryByTestId } = render( <CampaignConversionStatusNotice /> );
+		const { queryByTestId } = render(
+			<CampaignConversionDashboardNotice />
+		);
 
 		const notice = queryByTestId(
 			'gla-campaign-conversion-dashboard-notice'

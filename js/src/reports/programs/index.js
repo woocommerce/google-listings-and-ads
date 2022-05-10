@@ -123,7 +123,7 @@ const ProgramsReport = () => {
 				loaded={ loaded }
 				intervals={ intervals }
 			/>
-			<CampaignConversionReportsNotice context={ trackEventId } />
+			<CampaignConversionReportsNotice />
 			<CompareProgramsTableCard
 				trackEventReportId={ trackEventId }
 				isLoading={ ! loaded }
