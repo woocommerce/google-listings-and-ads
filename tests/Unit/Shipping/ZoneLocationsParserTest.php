@@ -4,12 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
-use WC_Countries;
 use WC_Shipping_Zone;
 
 /**
@@ -17,7 +15,6 @@ use WC_Shipping_Zone;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping
  *
- * @property MockObject|WC           $wc
  * @property MockObject|GoogleHelper $google_helper
  * @property ZoneLocationsParser     $locations_parser
  */
@@ -111,31 +108,14 @@ class ZoneLocationsParserTest extends UnitTest {
 			 ->willReturn( $zone_locations );
 
 
-		// Mock the WC_Countries class to return a predefined list of countries for the EU continent.
-		$wc_countries = $this->createMock( WC_Countries::class );
-		$wc_countries->expects( $this->any() )
-					 ->method( 'get_continents' )
-					 ->willReturn( [
-						 'EU' => [
-							 'name'      => 'Europe',
-							 'countries' => [
-								 'DE',
-								 'DK',
-							 ],
-						 ],
-					 ] );
-		$this->wc->expects( $this->any() )
-				 ->method( 'get_wc_countries' )
-				 ->willReturn( $wc_countries );
-
+		// Mock Merchant Center supported countries.
 		$this->google_helper->expects( $this->any() )
-							->method( 'get_mc_supported_countries' )
-							->willReturn(
-								[
-									'DE',
-									'DK',
-								]
-							);
+							->method( 'get_supported_countries_from_continent' )
+							->with( 'EU' )
+							->willReturn( [
+								'DE',
+								'DK',
+							] );
 		$this->google_helper->expects( $this->any() )
 							->method( 'is_country_supported' )
 							->willReturn( true );
@@ -178,11 +158,6 @@ class ZoneLocationsParserTest extends UnitTest {
 				'code' => 'EU',
 				'type' => 'continent',
 			],
-			// Non-existent continent.
-			(object) [
-				'code' => 'ZZ',
-				'type' => 'continent',
-			],
 		];
 
 		$zone = $this->createMock( WC_Shipping_Zone::class );
@@ -190,24 +165,12 @@ class ZoneLocationsParserTest extends UnitTest {
 			 ->method( 'get_zone_locations' )
 			 ->willReturn( $zone_locations );
 
-		// Mock the WC_Countries class to return a predefined list of countries for the EU continent.
-		$wc_countries = $this->createMock( WC_Countries::class );
-		$wc_countries->expects( $this->any() )
-					 ->method( 'get_continents' )
-					 ->willReturn( [
-						 'EU' => [
-							 'name'      => 'Europe',
-							 'countries' => [
-								 // Supported country.
-								 'DE',
-								 // Unsupported country.
-								 'AA',
-							 ],
-						 ],
-					 ] );
-		$this->wc->expects( $this->any() )
-				 ->method( 'get_wc_countries' )
-				 ->willReturn( $wc_countries );
+		// Mock Merchant Center supported countries.
+		$this->google_helper->expects( $this->any() )
+							->method( 'get_supported_countries_from_continent' )
+							->willReturnMap( [
+								[ 'EU', [ 'DE' ] ],
+							] );
 
 		$this->google_helper->expects( $this->any() )
 							->method( 'get_mc_supported_countries' )
@@ -225,7 +188,6 @@ class ZoneLocationsParserTest extends UnitTest {
 									[ 'DE', true ],
 									[ 'XX', false ],
 									[ 'YY', false ],
-									[ 'AA', false ],
 								]
 							);
 		$this->google_helper->expects( $this->any() )
@@ -274,7 +236,6 @@ class ZoneLocationsParserTest extends UnitTest {
 	 * Runs before each test is executed.
 	 */
 	public function setUp(): void {
-		$this->wc            = $this->createMock( WC::class );
 		$this->google_helper = $this->createMock( GoogleHelper::class );
 
 		// Return random IDs for countries and subdivisions.
@@ -293,6 +254,6 @@ class ZoneLocationsParserTest extends UnitTest {
 								}
 							);
 
-		$this->locations_parser = new ZoneLocationsParser( $this->wc, $this->google_helper );
+		$this->locations_parser = new ZoneLocationsParser( $this->google_helper );
 	}
 }

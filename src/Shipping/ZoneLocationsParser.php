@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use WC_Shipping_Zone;
 
 defined( 'ABSPATH' ) || exit;
@@ -20,11 +19,6 @@ defined( 'ABSPATH' ) || exit;
 class ZoneLocationsParser implements Service {
 
 	/**
-	 * @var WC
-	 */
-	protected $wc;
-
-	/**
 	 * @var GoogleHelper
 	 */
 	protected $google_helper;
@@ -32,11 +26,9 @@ class ZoneLocationsParser implements Service {
 	/**
 	 * ZoneLocationsParser constructor.
 	 *
-	 * @param WC           $wc
 	 * @param GoogleHelper $google_helper
 	 */
-	public function __construct( WC $wc, GoogleHelper $google_helper ) {
-		$this->wc            = $wc;
+	public function __construct( GoogleHelper $google_helper ) {
 		$this->google_helper = $google_helper;
 	}
 
@@ -60,7 +52,7 @@ class ZoneLocationsParser implements Service {
 					}
 					break;
 				case 'continent':
-					foreach ( $this->get_supported_countries_from_continent( $location->code ) as $country ) {
+					foreach ( $this->google_helper->get_supported_countries_from_continent( $location->code ) as $country ) {
 						$google_id             = $this->google_helper->find_country_id_by_code( $location->code );
 						$locations[ $country ] = new ShippingLocation( $google_id, $country, null, $postcodes );
 					}
@@ -111,30 +103,6 @@ class ZoneLocationsParser implements Service {
 			},
 			$postcodes
 		);
-	}
-
-	/**
-	 * Gets the list of supported Merchant Center countries from a continent.
-	 *
-	 * @param string $continent_code
-	 *
-	 * @return string[] Returns an array of country codes with each country code used both as the key and value.
-	 *                  For example: [ 'US' => 'US', 'DE' => 'DE' ].
-	 */
-	protected function get_supported_countries_from_continent( string $continent_code ): array {
-		$countries  = [];
-		$continents = $this->wc->get_wc_countries()->get_continents();
-		if ( isset( $continents[ $continent_code ] ) ) {
-			$countries = $continents[ $continent_code ]['countries'];
-
-			// Match the list of countries with the list of Merchant Center supported countries.
-			$countries = array_intersect( $countries, $this->google_helper->get_mc_supported_countries() );
-
-			// Use the country code as array keys.
-			$countries = array_combine( $countries, $countries );
-		}
-
-		return $countries;
 	}
 
 }

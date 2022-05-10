@@ -375,7 +375,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( DeprecatedFilters::class );
 
 		$this->share_with_tags( LocationRatesProcessor::class );
-		$this->share_with_tags( ZoneLocationsParser::class, WC::class, GoogleHelper::class );
+		$this->share_with_tags( ZoneLocationsParser::class, GoogleHelper::class );
 		$this->share_with_tags( ZoneMethodsParser::class, WC::class );
 		$this->share_with_tags( ShippingZone::class, WC::class, ZoneLocationsParser::class, ZoneMethodsParser::class, LocationRatesProcessor::class );
 		$this->share_with_tags( ShippingSuggestionService::class, ShippingZone::class, WC::class );
