@@ -76,7 +76,6 @@ const CampaignConversionStatusNotice = ( { context } ) => {
 				<AppDocumentationLink
 					context={ context }
 					linkId={ status.externalLink.linkId }
-					eventName="gla_upgrade_campaign_learn_more_link_click"
 					href={ status.externalLink.link }
 				>
 					{ status.externalLink.content }

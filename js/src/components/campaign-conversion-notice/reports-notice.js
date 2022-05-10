@@ -65,7 +65,6 @@ const CampaignConversionReportsNotice = ( { context } ) => {
 								context={ context }
 								//TODO Update link when it is defined
 								href="#"
-								eventName="gla_upgrade_campaign_learn_more_link_click"
 								linkId="campaign-conversion-status-after-migration-reports-read-more"
 							/>
 						),
