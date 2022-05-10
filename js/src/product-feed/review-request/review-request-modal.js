@@ -62,12 +62,17 @@ const ReviewRequestModal = ( {
 } ) => {
 	const [ checkBoxChecked, setCheckBoxChecked ] = useState( false );
 	const [ isRequestingReview, setIsRequestingReview ] = useState( false );
-	const { mcRequestReview } = useAppDispatch();
+	const { sendMCReviewRequest } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 
 	if ( ! isActive ) {
 		return null;
 	}
+
+	const handleOnClose = ( action ) => {
+		if ( isRequestingReview ) return;
+		onClose( action );
+	};
 
 	const handleCheckboxChange = ( checked ) => {
 		setCheckBoxChecked( checked );
@@ -82,7 +87,7 @@ const ReviewRequestModal = ( {
 		setIsRequestingReview( true );
 		recordEvent( 'gla_request_review' );
 
-		mcRequestReview()
+		sendMCReviewRequest()
 			.then( () => {
 				createNotice(
 					'success',
@@ -91,12 +96,15 @@ const ReviewRequestModal = ( {
 						'google-listings-and-ads'
 					)
 				);
-				setIsRequestingReview( false );
+
 				onClose( 'request-review-success' );
 				recordEvent( 'gla_request_review_success' );
 			} )
 			.catch( () => {
 				recordEvent( 'gla_request_review_failure' );
+			} )
+			.finally( () => {
+				setIsRequestingReview( false );
 			} );
 	};
 
@@ -109,7 +117,7 @@ const ReviewRequestModal = ( {
 					key="secondary"
 					isSecondary
 					onClick={ () => {
-						onClose( 'maybe-later' );
+						handleOnClose( 'maybe-later' );
 					} }
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
@@ -128,7 +136,7 @@ const ReviewRequestModal = ( {
 				</AppButton>,
 			] }
 			onRequestClose={ () => {
-				onClose( 'dismiss' );
+				handleOnClose( 'dismiss' );
 			} }
 		>
 			<Notice
