@@ -18,8 +18,7 @@ use Google\Exception;
 class RequestReviewControllerTest extends RESTControllerUnitTest {
 
 
-	protected const ROUTE_GET_REQUEST    = '/wc/gla/mc/review';
-	protected const ROUTE_REQUEST_REVIEW = '/wc/gla/mc/request-review';
+	protected const ROUTE_REQUEST    = '/wc/gla/mc/review';
 	private $middleware;
 	private $transients;
 	private $request_review_statuses;
@@ -85,7 +84,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$response = $this->do_request( self::ROUTE_GET_REQUEST );
+		$response = $this->do_get_request_review();
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
 			[
@@ -123,7 +122,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$response = $this->do_request( self::ROUTE_REQUEST_REVIEW );
+		$response = $this->do_post_request_review();
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
 			[
@@ -153,7 +152,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$response = $this->do_request( self::ROUTE_REQUEST_REVIEW );
+		$response = $this->do_post_request_review();
 		$this->assertEquals( 'Your account is under cool down period and cannot request a new review.', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
@@ -175,7 +174,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$response = $this->do_request( self::ROUTE_REQUEST_REVIEW );
+		$response = $this->do_post_request_review();
 		$this->assertEquals( 'Your account is not eligible for a new request review.', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
@@ -216,7 +215,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$response = $this->do_request( self::ROUTE_GET_REQUEST );
+		$response = $this->do_get_request_review();
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
 			[
@@ -239,7 +238,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$response = $this->do_request( self::ROUTE_GET_REQUEST );
+		$response = $this->do_get_request_review();
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
 			[
@@ -271,7 +270,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$response = $this->do_request( self::ROUTE_GET_REQUEST );
+		$response = $this->do_get_request_review();
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
 			[
@@ -311,7 +310,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$response = $this->do_request( self::ROUTE_GET_REQUEST );
+		$response = $this->do_get_request_review();
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
 			[
@@ -338,7 +337,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$response = $this->do_request( self::ROUTE_GET_REQUEST );
+		$response = $this->do_get_request_review();
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
 			[
@@ -384,7 +383,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$response = $this->do_request( self::ROUTE_GET_REQUEST );
+		$response = $this->do_get_request_review();
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
 			[
@@ -429,7 +428,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				]
 			);
 
-		$response = $this->do_request( self::ROUTE_GET_REQUEST );
+		$response = $this->do_get_request_review();
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
 			[
@@ -447,10 +446,8 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 			->method( 'get_account_review_status' )
 			->willThrowException( new Exception( 'error', 401 ) );
 
-		$routes = [ self::ROUTE_GET_REQUEST, self::ROUTE_REQUEST_REVIEW ];
-
-		foreach ( $routes as $route ) {
-			$response = $this->do_request( $route );
+		$responses = [ $this->do_post_request_review(), $this->do_get_request_review() ];
+		foreach ( $responses as $response ) {
 			$this->assertEquals( 'error', $response->get_data()['message'] );
 			$this->assertEquals( 401, $response->get_status() );
 		}
@@ -477,14 +474,17 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 			->method( 'account_request_review' )
 			->willThrowException( new Exception( 'error', 401 ) );
 
-		$response = $this->do_request( self::ROUTE_REQUEST_REVIEW );
+		$response = $this->do_post_request_review();
 		$this->assertEquals( 'error', $response->get_data()['message'] );
 		$this->assertEquals( 401, $response->get_status() );
 
 	}
 
-	public function test_register_route() {
-		 $this->assertArrayHasKey( self::ROUTE_GET_REQUEST, $this->server->get_routes() );
-		$this->assertArrayHasKey( self::ROUTE_REQUEST_REVIEW, $this->server->get_routes() );
+	private function do_post_request_review() {
+		return $this->do_request( self::ROUTE_REQUEST, 'POST' );
+	}
+
+	private function do_get_request_review() {
+		return $this->do_request( self::ROUTE_REQUEST );
 	}
 }
