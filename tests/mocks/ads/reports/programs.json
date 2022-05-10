@@ -9,7 +9,8 @@
 				"spend": 63.14,
 				"clicks": 139,
 				"impressions": 16037
-			}
+			},
+			"type": "shopping"
 		},
 		{
 			"id": 234,
@@ -21,7 +22,8 @@
 				"clicks": 15,
 				"impressions": 14205,
 				"conversions": 123
-			}
+			},
+			"type": "performance_max"
 		}
 	],
 	"intervals": [
