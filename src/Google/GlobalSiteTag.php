@@ -142,7 +142,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/gtag-events.js" ),
+					'version'      => $this->get_version(),
 				]
 			),
 			function () {
