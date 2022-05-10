@@ -129,7 +129,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	/**
 	 * Schedule a new "process" action to run immediately.
 	 *
-	 * @param array $items
+	 * @param int[] $items Array of item ids.
 	 */
 	protected function schedule_process_action( array $items ) {
 		if ( ! $this->is_processing( $items ) ) {

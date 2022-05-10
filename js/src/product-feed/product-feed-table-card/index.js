@@ -17,12 +17,13 @@ import {
 	Table,
 	TablePlaceholder,
 } from '@woocommerce/components';
+import { recordEvent } from '@woocommerce/tracks';
 import classnames from 'classnames';
 
 /**
  * Internal dependencies
  */
-import recordEvent, { recordTablePageEvent } from '.~/utils/recordEvent';
+import { recordTablePageEvent } from '.~/utils/recordEvent';
 import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import './index.scss';

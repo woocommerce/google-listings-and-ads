@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { cloneDeep } from 'lodash';
+import { cloneDeep, noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import {
 	useEffect,
@@ -12,7 +12,6 @@ import {
 	useCallback,
 } from '@wordpress/element';
 import classnames from 'classnames';
-// eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
 import {
 	__experimentalUseFocusOutside as useFocusOutside,
 	useInstanceId,
@@ -75,6 +74,7 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @param {string} [props.id] Component id
  * @param {string} [props.label] Label for the component
  * @param {string | false} [props.selectAllLabel] Label for the Select All root element. False for disable.
+ * @param {string} [props.help] Help text under the select input.
  * @param {string} [props.placeholder] Placeholder for the search control input
  * @param {string} [props.className] The class name for this component
  * @param {boolean} [props.disabled] Disables the component
@@ -82,12 +82,14 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @param {string[]} [props.value] Selected values
  * @param {number} [props.maxVisibleTags] The maximum number of tags to show. Undefined, 0 or less than 0 evaluates to "Show All".
  * @param {Function} [props.onChange] Callback when the selector changes
+ * @param {(visible: boolean) => void} [props.onDropdownVisibilityChange] Callback when the visibility of the dropdown options is changed.
  * @return {JSX.Element} The component
  */
 const TreeSelectControl = ( {
 	id,
 	label,
 	selectAllLabel = __( 'All', 'google-listings-and-ads' ),
+	help,
 	placeholder,
 	className,
 	disabled,
@@ -95,6 +97,7 @@ const TreeSelectControl = ( {
 	value = [],
 	maxVisibleTags,
 	onChange = () => {},
+	onDropdownVisibilityChange = noop,
 } ) => {
 	let instanceId = useInstanceId( TreeSelectControl );
 	instanceId = id ?? instanceId;
@@ -104,6 +107,9 @@ const TreeSelectControl = ( {
 	const [ inputControlValue, setInputControlValue ] = useState( '' );
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
 	const [ focused, setFocused ] = useState( null );
+
+	const onDropdownVisibilityChangeRef = useRef();
+	onDropdownVisibilityChangeRef.current = onDropdownVisibilityChange;
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
 	const filteredOptionsCache = useRef( {} );
@@ -443,10 +449,14 @@ const TreeSelectControl = ( {
 		}
 	}, [ focused ] );
 
+	useEffect( () => {
+		onDropdownVisibilityChangeRef.current( showTree );
+	}, [ showTree ] );
+
 	/**
 	 * Get formatted Tags from the selected values.
 	 *
-	 * @return {{label: {string}, id: {string}}[]} An array of Tags
+	 * @return {Array<{id: string, label: string|undefined}>} An array of Tags
 	 */
 	const getTags = () => {
 		if ( ! options.length ) {
@@ -556,10 +566,6 @@ const TreeSelectControl = ( {
 		<div
 			{ ...focusOutside }
 			onKeyDown={ onKeyDown }
-			onClick={ () => {
-				if ( disabled ) return;
-				setTreeVisible( true );
-			} }
 			className={ classnames(
 				'woocommerce-tree-select-control',
 				className
@@ -580,6 +586,10 @@ const TreeSelectControl = ( {
 				isExpanded={ showTree }
 				onFocus={ () => {
 					setFocused( null );
+					setTreeVisible( true );
+				} }
+				onControlClick={ () => {
+					if ( disabled ) return;
 					setTreeVisible( true );
 				} }
 				instanceId={ instanceId }
@@ -604,6 +614,11 @@ const TreeSelectControl = ( {
 						onNodesExpandedChange={ setNodesExpanded }
 						onOptionFocused={ handleOptionFocused }
 					/>
+				</div>
+			) }
+			{ help && (
+				<div className="woocommerce-tree-select-control__help">
+					{ help }
 				</div>
 			) }
 		</div>

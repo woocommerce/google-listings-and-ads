@@ -2,13 +2,59 @@
  * External dependencies
  */
 import { TableCard } from '@woocommerce/components';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import AppTableCardDiv from '.~/components/app-table-card-div';
-import recordColumnToggleEvent from './recordColumnToggleEvent';
-import { recordTableSortEvent } from '.~/utils/recordEvent';
+
+/**
+ * Toggling display of table columns
+ *
+ * @event gla_table_header_toggle
+ * @property {string} report Name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
+ * @property {string} column Name of the column
+ * @property {'on' | 'off'} status Indicates if the column was toggled on or off.
+ */
+
+/**
+ * Maps `TableCard`'s `onColumnsChange` arguments to `gla_table_header_toggle` event.
+ *
+ * @param {string} report The report's name
+ * @param {Array<string>} shown List of shown columns
+ * @param {string} column Column that was toggled
+ * @fires gla_table_header_toggle with given `report: trackEventReportId, column: toggled`
+ */
+const recordColumnToggleEvent = ( report, shown, column ) => {
+	const status = shown.includes( column ) ? 'on' : 'off';
+	recordEvent( 'gla_table_header_toggle', {
+		report,
+		column,
+		status,
+	} );
+};
+
+/**
+ * Sorting table
+ *
+ * @event gla_table_sort
+ * @property {string} report Name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
+ * @property {string} column Name of the column
+ * @property {string} direction (`asc`|`desc`)
+ */
+
+/**
+ * Maps `TableCard`'s `onSort` arguments to `gla_table_sort` event.
+ *
+ * @param {string} report The report's name
+ * @param {string} column Column that was sorted
+ * @param {'asc' | 'desc'} direction Indicates if it was sorted in ascending or descending order
+ * @fires gla_table_sort with given props.
+ */
+const recordTableSortEvent = ( report, column, direction ) => {
+	recordEvent( 'gla_table_sort', { report, column, direction } );
+};
 
 /**
  * Renders a TableCard component with additional styling,
@@ -30,12 +76,15 @@ const AppTableCard = ( props ) => {
 	/**
 	 * Returns a function that records a track event before executing an original handler.
 	 *
-	 * @param {Function} recordEvent The function to record the event.
+	 * @param {Function} recordSpecificEvent The function to record the event.
 	 * @param {Function} [originalHandler] The original event handler.
 	 *
 	 * @return {decoratedHandler} Decorated handler.
 	 */
-	function decorateHandlerWithTrackEvent( recordEvent, originalHandler ) {
+	function decorateHandlerWithTrackEvent(
+		recordSpecificEvent,
+		originalHandler
+	) {
 		/**
 		 * Records track event with specified `trackEventReportId` and any args given,
 		 * then calls original handler if any.
@@ -45,7 +94,7 @@ const AppTableCard = ( props ) => {
 		 */
 		return function decoratedHandler( ...args ) {
 			if ( trackEventReportId ) {
-				recordEvent( trackEventReportId, ...args );
+				recordSpecificEvent( trackEventReportId, ...args );
 			}
 
 			// Call the original handler if given.

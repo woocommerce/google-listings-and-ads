@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -16,7 +17,6 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 import SetupAdsFormContent from './setup-ads-form-content';
 import useSetupCompleteCallback from './useSetupCompleteCallback';
 import validateForm from '.~/utils/paid-ads/validateForm';
-import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 
 /**
  * @fires gla_launch_paid_campaign_button_click on submit
@@ -57,7 +57,10 @@ const SetupAdsForm = () => {
 	const handleSubmit = ( values ) => {
 		const { amount, countryCodes } = values;
 
-		recordLaunchPaidCampaignClickEvent( amount, countryCodes );
+		recordEvent( 'gla_launch_paid_campaign_button_click', {
+			audiences: countryCodes.join( ',' ),
+			budget: amount,
+		} );
 
 		handleSetupComplete( amount, countryCodes, () => {
 			setSubmitted( true );

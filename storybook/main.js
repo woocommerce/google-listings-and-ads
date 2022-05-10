@@ -21,6 +21,9 @@ const cssLoaders = [
 ];
 
 module.exports = {
+	core: {
+		builder: 'webpack5',
+	},
 	stories: [
 		// any file inside a stories folder in the JS dir
 		'../js/src/**/stories/*.@(js|jsx|ts|tsx)',

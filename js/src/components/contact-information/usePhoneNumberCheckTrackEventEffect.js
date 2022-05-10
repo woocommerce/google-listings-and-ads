@@ -3,11 +3,7 @@
  */
 import { useEffect } from '@wordpress/element';
 import { getPath } from '@woocommerce/navigation';
-
-/**
- * Internal dependencies
- */
-import recordEvent from '.~/utils/recordEvent';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Check for whether the phone number for Merchant Center exists or not.

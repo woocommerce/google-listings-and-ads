@@ -3,7 +3,7 @@
  */
 import { API_NAMESPACE } from '.~/data/constants';
 import useTargetAudience from '.~/hooks/useTargetAudience';
-import useGetCountries from '.~/hooks/useGetCountries';
+import useMCCountries from '.~/hooks/useMCCountries';
 import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
 
 /**
@@ -33,7 +33,7 @@ import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
  * @return {TargetAudienceWithSuggestionsResult} A result object with `loading` and `data`.
  */
 const useTargetAudienceWithSuggestions = () => {
-	const { hasFinishedResolution: hfrCountries } = useGetCountries();
+	const { hasFinishedResolution: hfrCountries } = useMCCountries();
 	const {
 		hasFinishedResolution: hfrTargetAudience,
 		data: dataTargetAudience,

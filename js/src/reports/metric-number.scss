@@ -8,16 +8,16 @@
 		max-width: 40em;
 		white-space: normal;
 
-		$link-color:  #9ec2e6;
+		$link-color: #9ec2e6;
 
 		a {
 			color: $link-color;
 		}
 		a:hover {
-			color: darken($color: $link-color, $amount: 20%);
+			color: color.adjust($link-color, $lightness: -20%);
 		}
 		a:active {
-			color: darken($color: $link-color, $amount: 25%);
+			color: color.adjust($link-color, $lightness: -25%);
 		}
 	}
 }
@@ -31,9 +31,10 @@ $icon-color: #949494;
 	cursor: pointer;
 
 	&:hover {
-		fill: darken($color: $icon-color, $amount: 20%);
+		fill: color.adjust($icon-color, $lightness: -20%);
 	}
 }
+
 // Provide gutters for tooltip infos.
 // We could have use `gap` on a tooltip, but `<Tooltip>` does not expose it,
 // so let's avoid reliying on its undocumented implementation details.

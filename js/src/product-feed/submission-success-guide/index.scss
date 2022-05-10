@@ -1,7 +1,7 @@
 .gla-submission-success-guide {
 	&.components-guide {
 		height: auto;
-		@include break-small() {
+		@include break-small {
 			max-width: 517px;
 			max-height: none;
 		}
@@ -14,7 +14,7 @@
 			color: #50575e;
 
 			&:hover svg {
-				fill: currentColor;
+				fill: currentcolor;
 			}
 		}
 	}
@@ -56,6 +56,7 @@
 					margin-top: 12px;
 				}
 			}
+
 			justify-content: flex-end;
 			width: 100%;
 			height: auto;
@@ -99,6 +100,7 @@
 	&__logo-item {
 		flex: 1;
 		margin-bottom: 0;
+
 		// Clear the 4px space gap for SVG
 		line-height: 0;
 		&:first-child {
