@@ -26,7 +26,7 @@ const showNotice = ( status ) => !! REVIEW_STATUSES[ status ]?.title;
  * @fires gla_modal_open with `context: REQUEST_REVIEW`
  *
  * @param {Object} props Component props
- * @param {AccountStatus} props.account Account object
+ * @param { { isResolving: boolean, hasFinishedResolution: boolean, data: AccountStatus, invalidateResolution: Function } } props.account Account data payload coming from the data store.
  */
 const ReviewRequest = ( { account = {} } ) => {
 	const [ modalActive, setModalActive ] = useState( false );
@@ -41,7 +41,7 @@ const ReviewRequest = ( { account = {} } ) => {
 	if (
 		! mcDataHasFinishedResolution ||
 		! hasFinishedResolution ||
-		! showNotice( accountData?.status ) ||
+		! showNotice( accountData.status ) ||
 		activeIssueType !== ISSUE_TYPE_ACCOUNT
 	) {
 		return null;
