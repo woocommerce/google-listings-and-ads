@@ -524,9 +524,10 @@ class Middleware implements OptionsAwareInterface {
 	/**
 	 * Get Account Review Status
 	 *
+	 * @return array With the response data
 	 * @throws Exception When there is an invalid response.
 	 */
-	public function get_account_review_status() {
+	public function get_account_review_status(): array {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -559,9 +560,10 @@ class Middleware implements OptionsAwareInterface {
 	 * Request a new account review
 	 *
 	 * @param array $regions Regions to request a review.
+	 * @return array With a successful message
 	 * @throws Exception When there is an invalid response.
 	 */
-	public function account_request_review( $regions ) {
+	public function account_request_review( $regions ): array {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
