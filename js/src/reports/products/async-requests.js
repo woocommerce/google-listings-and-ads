@@ -62,7 +62,8 @@ export const getProductLabels = getRequestByIdString(
  * @return {string} - formatted variation name
  */
 export function getVariationName( { attributes, name } ) {
-	const separator = getSetting( 'variationTitleAttributesSeparator', ' - ' );
+	const separator =
+		getSetting( 'admin' )?.variationTitleAttributesSeparator || ' - ';
 
 	if ( name.indexOf( separator ) > -1 ) {
 		return name;

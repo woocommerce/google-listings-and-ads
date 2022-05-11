@@ -208,6 +208,13 @@ install_wc() {
     # Install composer for WooCommerce
     cd "${WC_DIR}"
     composer install --ignore-platform-reqs --no-interaction --no-dev
+
+    # Generate feature config for WooCommerce
+    GENERATE_FEATURE_CONFIG=bin/generate-feature-config.php
+    if [ -f $GENERATE_FEATURE_CONFIG ]; then
+      php $GENERATE_FEATURE_CONFIG
+    fi
+
     cd -
   else
     echo "WooCommerce ($WC_VERSION) already installed."
