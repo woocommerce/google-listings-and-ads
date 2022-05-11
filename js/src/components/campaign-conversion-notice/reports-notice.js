@@ -10,6 +10,7 @@ import { glaData } from '.~/constants';
 import CONVERSION_STATUSES from './conversion-statuses';
 import getConversionCampaignStatusNotice from '.~/utils/getConversionCampaignStatusNotice';
 import DismissibleNotice from './dismissible-notice';
+import './reports-notice.scss';
 
 /**
  * Shows Notice {@link Notice}
