@@ -76,7 +76,8 @@ class GoogleAdsCleanupServices {
 		$library = array_unique(
 			array_merge(
 				$this->find_library_file_pattern(
-					"{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Services"
+					"{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Services",
+					'Service'
 				),
 				$this->find_library_file_pattern(
 					"{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Resources"
@@ -238,7 +239,7 @@ class GoogleAdsCleanupServices {
 	 * @return string
 	 */
 	protected function remove_suffix( string $suffix, string $text ): string {
-		return preg_replace( '/' . preg_quote( $suffix, '/' ) . '$/' );
+		return preg_replace( '/' . preg_quote( $suffix, '/' ) . '$/', '', $text );
 	}
 
 	/**
