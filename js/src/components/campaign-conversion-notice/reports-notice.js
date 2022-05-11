@@ -9,7 +9,7 @@ import { __experimentalText as Text } from '@wordpress/components';
 import { glaData } from '.~/constants';
 import CONVERSION_STATUSES from './conversion-statuses';
 import getConversionCampaignStatusNotice from '.~/utils/getConversionCampaignStatusNotice';
-import MigrationCampaignNotice from './migration-notice';
+import DismissibleNotice from './dismissible-notice';
 
 /**
  * Shows Notice {@link Notice}
@@ -30,14 +30,14 @@ const CampaignConversionReportsNotice = () => {
 	}
 
 	return (
-		<MigrationCampaignNotice
+		<DismissibleNotice
 			className="gla-campaign-conversion-status-reports-notice"
 			localStorageKey={ status.localStorageKey }
 		>
 			<Text data-testid="gla-campaign-conversion-reports-notice">
 				{ status.content }
 			</Text>
-		</MigrationCampaignNotice>
+		</DismissibleNotice>
 	);
 };
 

@@ -11,7 +11,7 @@ import { glaData } from '.~/constants';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import CONVERSION_STATUSES from './conversion-statuses';
 import getConversionCampaignStatusNotice from '.~/utils/getConversionCampaignStatusNotice';
-import MigrationCampaignNotice from './migration-notice';
+import DismissibleNotice from './dismissible-notice';
 import './index.scss';
 
 const ExternalIcon = () => (
@@ -44,7 +44,7 @@ const CampaignConversionDashboardNotice = ( { context } ) => {
 	}
 
 	return (
-		<MigrationCampaignNotice
+		<DismissibleNotice
 			className="gla-campaign-conversion-status-notice"
 			localStorageKey={ status.localStorageKey }
 		>
@@ -66,7 +66,7 @@ const CampaignConversionDashboardNotice = ( { context } ) => {
 					<ExternalIcon />
 				</AppDocumentationLink>
 			</p>
-		</MigrationCampaignNotice>
+		</DismissibleNotice>
 	);
 };
 

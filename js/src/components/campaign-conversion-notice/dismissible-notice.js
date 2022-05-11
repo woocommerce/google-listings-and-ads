@@ -20,17 +20,18 @@ import localStorage from '.~/utils/localStorage';
  * @param {Object} props.localStorageKey Local Storage Key where is keep the dismiss state.
  * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
  */
-const MigrationCampaignNotice = ( {
-	children,
-	className,
-	localStorageKey,
-} ) => {
-	const defaultDismissedValue = !! localStorage.get( localStorageKey );
+const DismissibleNotice = ( { children, className, localStorageKey } ) => {
+	const defaultDismissedValue = localStorageKey
+		? !! localStorage.get( localStorageKey )
+		: false;
 
 	const [ isDismissed, setIsDismissed ] = useState( defaultDismissedValue );
 
 	const onRemove = () => {
-		localStorage.set( localStorageKey, true );
+		if ( localStorage ) {
+			localStorage.set( localStorageKey, true );
+		}
+
 		setIsDismissed( true );
 	};
 
@@ -45,4 +46,4 @@ const MigrationCampaignNotice = ( {
 	);
 };
 
-export default MigrationCampaignNotice;
+export default DismissibleNotice;
