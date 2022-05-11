@@ -68,7 +68,7 @@ class GoogleAdsCleanupServices {
 	}
 
 	/**
-	 * Remove all services and resources.
+	 * Find services and resources and remove any unused ones.
 	 */
 	protected function remove_services() {
 		$this->output_text( 'Removing unused services and resources from Google Ads library ' . $this->version );
@@ -102,7 +102,7 @@ class GoogleAdsCleanupServices {
 	}
 
 	/**
-	 * Remove a specific service.
+	 * Remove a specific service or resource.
 	 *
 	 * @param string $service Service name.
 	 */
