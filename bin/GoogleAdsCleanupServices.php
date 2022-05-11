@@ -209,8 +209,8 @@ class GoogleAdsCleanupServices {
 	/**
 	 * Find a specific filename pattern within the library.
 	 *
-	 * @param string $pattern Regexp pattern to match.
-	 * @param string $suffix  Suffix to remove from filename.
+	 * @param string      $pattern Regexp pattern to match.
+	 * @param string|null $suffix  Suffix to remove from filename.
 	 *
 	 * @return array List of matched names.
 	 */
