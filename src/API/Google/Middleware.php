@@ -527,7 +527,7 @@ class Middleware implements OptionsAwareInterface {
 	 * @return array With the response data
 	 * @throws Exception When there is an invalid response.
 	 */
-	public function get_account_review_status(): array {
+	public function get_account_review_status() {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -563,7 +563,7 @@ class Middleware implements OptionsAwareInterface {
 	 * @return array With a successful message
 	 * @throws Exception When there is an invalid response.
 	 */
-	public function account_request_review( $regions ): array {
+	public function account_request_review( $regions ) {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
