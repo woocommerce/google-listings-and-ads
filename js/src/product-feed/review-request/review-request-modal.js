@@ -96,15 +96,13 @@ const ReviewRequestModal = ( {
 						'google-listings-and-ads'
 					)
 				);
-
-				onClose( 'request-review-success' );
+				setIsRequestingReview( false );
 				recordEvent( 'gla_request_review_success' );
+				onClose( 'request-review-success' );
 			} )
 			.catch( () => {
-				recordEvent( 'gla_request_review_failure' );
-			} )
-			.finally( () => {
 				setIsRequestingReview( false );
+				recordEvent( 'gla_request_review_failure' );
 			} );
 	};
 
