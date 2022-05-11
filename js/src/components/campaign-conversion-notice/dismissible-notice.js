@@ -10,17 +10,21 @@ import { useState } from '@wordpress/element';
 import localStorage from '.~/utils/localStorage';
 
 /**
- * Shows Notice {@link Notice}
- * It is the wrapper for the campaign conversion notices
+ * Shows dismissible Notice {@link Notice}
+ * If localStorageKey is provided it will store the dismiss state in the localStorage
  *
  *
  * @param {Object} props React props.
  * @param {JSX.Element} props.children Children to render.
  * @param {string} props.className Class to use in the Notice component.
- * @param {Object} props.localStorageKey Local Storage Key where is keep the dismiss state.
+ * @param {string|null} props.localStorageKey Local Storage Key where is keep the dismiss state.
  * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
  */
-const DismissibleNotice = ( { children, className, localStorageKey } ) => {
+const DismissibleNotice = ( {
+	children,
+	className,
+	localStorageKey = null,
+} ) => {
 	const defaultDismissedValue = localStorageKey
 		? !! localStorage.get( localStorageKey )
 		: false;
@@ -28,7 +32,7 @@ const DismissibleNotice = ( { children, className, localStorageKey } ) => {
 	const [ isDismissed, setIsDismissed ] = useState( defaultDismissedValue );
 
 	const onRemove = () => {
-		if ( localStorage ) {
+		if ( localStorageKey ) {
 			localStorage.set( localStorageKey, true );
 		}
 
