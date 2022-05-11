@@ -79,7 +79,7 @@ const REPORTS_CONVERSION = {
 		{
 			readMoreLink: (
 				<AppDocumentationLink
-					context={ 'reports-programs' }
+					context="reports-programs"
 					//TODO Update link when it is defined
 					href="#"
 					linkId="campaign-conversion-status-after-migration-reports-read-more"
