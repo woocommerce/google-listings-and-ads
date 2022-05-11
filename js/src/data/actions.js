@@ -68,7 +68,7 @@ export function handleFetchError( error, message ) {
  * @typedef {Object} AccountStatus
  * @property {string} status Account status. See the available statuses here https://developers.google.com/shopping-content/reference/rest/v2.1/State
  * @property {number} cooldown Cooldown period timestamp indicating how long the user should wait until the next request
- * @property {Array} issues List of issue keys for this accoun
+ * @property {Array} issues List of issue keys for this account
  * @property {Array} reviewEligibleRegions List of region codes available for review
  */
 
