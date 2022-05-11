@@ -329,8 +329,7 @@ class GoogleAdsCleanupServices {
 
 		return array_map(
 			function( $file ) {
-				preg_match( '/(.*)\.php/', basename( $file ), $matches );
-				return $matches[1];
+				return pathinfo( $file, PATHINFO_FILENAME );
 			},
 			$output
 		);
