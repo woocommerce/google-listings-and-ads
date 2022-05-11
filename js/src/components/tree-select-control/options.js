@@ -12,8 +12,8 @@ import { ARROW_LEFT, ARROW_RIGHT, ROOT_VALUE } from './constants';
 import Checkbox from '.~/components/tree-select-control/checkbox';
 
 /**
- * @typedef {import('./').RepositoryOption} RepositoryOption
- * @typedef {import('./').Option} Option
+ * @typedef {import('./index').RepositoryOption} RepositoryOption
+ * @typedef {import('./index').Option} Option
  */
 
 /**

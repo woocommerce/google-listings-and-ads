@@ -4,11 +4,11 @@
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
-import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from './setup-free-listings';
 import ChooseAudience from './choose-audience';
@@ -26,19 +26,28 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 	const [ step, setStep ] = useState( savedStep );
 
 	const handleSetupAccountsContinue = () => {
-		recordSetupMCEvent( 'step1_continue' );
+		recordEvent( 'gla_setup_mc', {
+			target: 'step1_continue',
+			trigger: 'click',
+		} );
 		setStep( stepNameKeyMap.target_audience );
 		onRefetchSavedStep();
 	};
 
 	const handleChooseAudienceContinue = () => {
-		recordSetupMCEvent( 'step2_continue' );
+		recordEvent( 'gla_setup_mc', {
+			target: 'step2_continue',
+			trigger: 'click',
+		} );
 		setStep( stepNameKeyMap.shipping_and_taxes );
 		onRefetchSavedStep();
 	};
 
 	const handleSetupListingsContinue = () => {
-		recordSetupMCEvent( 'step3_continue' );
+		recordEvent( 'gla_setup_mc', {
+			target: 'step3_continue',
+			trigger: 'click',
+		} );
 		setStep( stepNameKeyMap.store_requirements );
 		onRefetchSavedStep();
 	};

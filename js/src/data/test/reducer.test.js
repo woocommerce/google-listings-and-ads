@@ -19,6 +19,7 @@ describe( 'reducer', () => {
 			mc: {
 				target_audience: null,
 				countries: null,
+				continents: null,
 				shipping: {
 					rates: [],
 					times: [],
@@ -375,6 +376,32 @@ describe( 'reducer', () => {
 		} );
 	} );
 
+	describe( 'Countries and continents supported by Merchant Center', () => {
+		it( 'should return with received countries and continents', () => {
+			const data = {
+				countries: {
+					CA: { currency: 'CAD', name: 'Canada' },
+					US: { currency: 'USD', name: 'United States' },
+				},
+				continents: {
+					NA: {
+						name: 'North America',
+						countries: [ 'CA', 'US' ],
+					},
+				},
+			};
+			const action = {
+				type: TYPES.RECEIVE_MC_COUNTRIES_AND_CONTINENTS,
+				data,
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( 'mc.countries', data.countries );
+			expect( state ).toHaveProperty( 'mc.continents', data.continents );
+		} );
+	} );
+
 	describe( 'Ads campaigns', () => {
 		const path = 'ads_campaigns';
 
@@ -543,14 +570,14 @@ describe( 'reducer', () => {
 				orderby: 'title',
 				per_page: 2,
 				total: 7,
-				pages: { '1': [ '#1', '#2' ] },
+				pages: { 1: [ '#1', '#2' ] },
 			} );
 			expect( pageFourState ).toHaveProperty( path, {
 				order: 'asc',
 				orderby: 'title',
 				per_page: 2,
 				total: 7,
-				pages: { '1': [ '#1', '#2' ], '4': [ '#7' ] },
+				pages: { 1: [ '#1', '#2' ], 4: [ '#7' ] },
 			} );
 		} );
 
@@ -569,7 +596,7 @@ describe( 'reducer', () => {
 				const initValue = {
 					...baseQuery,
 					total: 7,
-					pages: { '1': [ '#1', '#2' ], '4': [ '#7' ] },
+					pages: { 1: [ '#1', '#2' ], 4: [ '#7' ] },
 				};
 				const originalState = prepareState( path, initValue, [
 					path,
@@ -594,7 +621,7 @@ describe( 'reducer', () => {
 					...baseQuery,
 					[ key ]: value,
 					total: 7,
-					pages: { '2': [ '#3', '#4' ] },
+					pages: { 2: [ '#3', '#4' ] },
 				} );
 			}
 		);
@@ -651,7 +678,6 @@ describe( 'reducer', () => {
 			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS, 'billingStatus', 'mc.accounts.ads_billing_status' ],
 			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_EXISTING, 'accounts', 'mc.accounts.existing_ads' ],
 			[ TYPES.RECEIVE_MC_CONTACT_INFORMATION, 'data', 'mc.contact' ],
-			[ TYPES.RECEIVE_COUNTRIES, 'countries', 'mc.countries' ],
 			[ TYPES.RECEIVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
 			[ TYPES.SAVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
 			[ TYPES.RECEIVE_MC_SETUP, 'mcSetup', 'mc_setup' ],

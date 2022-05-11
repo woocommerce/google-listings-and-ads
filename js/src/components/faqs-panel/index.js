@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { Panel, PanelBody, PanelRow } from '@wordpress/components';
 import { recordEvent } from '@woocommerce/tracks';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
@@ -30,11 +31,12 @@ const getPanelToggleHandler = ( trackName, id ) => ( isOpened ) => {
  * @param {Object} props React props.
  * @param {string} props.trackName The track event name to be recorded when toggling on FAQ items.
  * @param {Array<FaqItem>} props.faqItems FAQ items for rendering.
+ * @param {string} [props.className] The class name for this component.
  */
-export default function FaqsPanel( { trackName, faqItems } ) {
+export default function FaqsPanel( { trackName, faqItems, className } ) {
 	return (
 		<Panel
-			className="gla-faqs-panel"
+			className={ classnames( 'gla-faqs-panel', className ) }
 			header={ __(
 				'Frequently asked questions',
 				'google-listings-and-ads'

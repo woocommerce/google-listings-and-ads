@@ -36,11 +36,7 @@ const AppSubNav = ( props ) => {
 				return (
 					<Fragment key={ tab.key }>
 						<Link
-							className={ classnames( {
-								current: isCurrent,
-								// Workaround for https://github.com/woocommerce/woocommerce-admin/issues/7772.
-								'gla-sub-nav__item--current': isCurrent,
-							} ) }
+							className={ classnames( { current: isCurrent } ) }
 							tabIndex={ isCurrent ? null : -1 }
 							id={ `${ tab.key }` }
 							href={ tab.href }

@@ -7,6 +7,7 @@
 	&__body {
 		// Make card contents within a row have the same height
 		flex: 1;
+
 		// This could be just display: flex, but since Safari 14.0 is still supported,
 		// and does not support gap for flexbox, we use grid instead.
 		display: grid;
@@ -19,10 +20,10 @@
 		background-color: #f8f9fa;
 		color: #757575;
 		text-align: center;
+
 		// Make it match the SummaryNumber placeholder's height
 		// not to make the UI jumpy once preloaders is replaced with an error.
 		min-height: 117px;
-
 		gap: $grid-unit-20;
 
 		& > * {

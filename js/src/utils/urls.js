@@ -29,6 +29,7 @@ export const subpaths = {
 };
 
 const getStartedPath = pagePaths.getStarted;
+const setupMCPath = pagePaths.setupMC;
 const dashboardPath = pagePaths.dashboard;
 const settingsPath = pagePaths.settings;
 const reportsPath = pagePaths.reports;
@@ -50,6 +51,10 @@ export const getCreateCampaignUrl = () => {
 
 export const getGetStartedUrl = () => {
 	return getNewPath( null, getStartedPath, null );
+};
+
+export const getSetupMCUrl = () => {
+	return getNewPath( null, setupMCPath, null );
 };
 
 export const getDashboardUrl = () => {

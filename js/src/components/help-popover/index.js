@@ -4,12 +4,19 @@
 import { Popover } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import GridiconHelpOutline from 'gridicons/dist/help-outline';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
-import recordTooltipViewedEvent from './recordTooltipViewedEvent';
 import './index.scss';
+
+/**
+ * Viewing tooltip
+ *
+ * @event gla_tooltip_viewed
+ * @property {string} id Tooltip identifier.
+ */
 
 /**
  * @param {Object} props React props
@@ -22,7 +29,9 @@ const HelpPopover = ( { id, children } ) => {
 
 	const handleButtonClick = () => {
 		setShowPopover( true );
-		recordTooltipViewedEvent( id );
+		recordEvent( 'gla_tooltip_viewed', {
+			id,
+		} );
 	};
 
 	const handlePopoverClose = () => {

@@ -3,12 +3,14 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Pill } from '@woocommerce/components';
-import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import AppInputPriceControl from '.~/components/app-input-price-control';
+import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
+import AppButton from '.~/components/app-button';
+import { EditRateFormModal } from './rate-form-modals';
 import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
 import './shipping-rate-input-control.scss';
 
@@ -24,14 +26,16 @@ import './shipping-rate-input-control.scss';
  * This is meant to display an "Edit" button.
  *
  * @param {Object} props
- * @param {JSX.Element} props.labelButton Button to be displayed after the label text.
+ * @param {Array<CountryCode>} props.countryOptions Country options to be passed to EditRateFormModal.
  * @param {ShippingRateGroup} props.value Shipping rate group value.
  * @param {(newGroup: ShippingRateGroup) => void} props.onChange Called when shipping rate group changes.
+ * @param {() => void} props.onDelete Called when delete button in EditRateFormModal is clicked.
  */
 const ShippingRateInputControl = ( {
-	labelButton,
+	countryOptions,
 	value,
-	onChange = noop,
+	onChange,
+	onDelete,
 } ) => {
 	const { countries, currency, rate } = value;
 
@@ -54,7 +58,21 @@ const ShippingRateInputControl = ( {
 						<ShippingRateInputControlLabelText
 							countries={ countries }
 						/>
-						{ labelButton }
+						<AppButtonModalTrigger
+							button={
+								<AppButton isTertiary>
+									{ __( 'Edit', 'google-listings-and-ads' ) }
+								</AppButton>
+							}
+							modal={
+								<EditRateFormModal
+									countryOptions={ countryOptions }
+									initialValues={ value }
+									onSubmit={ onChange }
+									onDelete={ onDelete }
+								/>
+							}
+						/>
 					</div>
 				}
 				suffix={ currency }

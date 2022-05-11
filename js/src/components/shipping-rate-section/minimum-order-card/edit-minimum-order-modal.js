@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
@@ -11,10 +12,11 @@ import { Form } from '@woocommerce/components';
 import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AppCountrySelect from '.~/components/app-country-select';
+import SupportedCountrySelect from '.~/components/supported-country-select';
 
 const EditMinimumOrderModal = ( props ) => {
 	const { countryOptions, value, onChange, onRequestClose } = props;
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const handleDeleteClick = () => {
 		onRequestClose();
@@ -71,6 +73,9 @@ const EditMinimumOrderModal = ( props ) => {
 
 				return (
 					<AppModal
+						overflow="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Minimum order to qualify for free shipping',
 							'google-listings-and-ads'
@@ -99,13 +104,15 @@ const EditMinimumOrderModal = ( props ) => {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<AppCountrySelect
+							<SupportedCountrySelect
 								label={ __(
 									'If customer is in',
 									'google-listings-and-ads'
 								) }
-								options={ countryOptions }
-								multiple
+								countryCodes={ countryOptions }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
 								{ ...getInputProps( 'countries' ) }
 							/>
 							<AppInputPriceControl

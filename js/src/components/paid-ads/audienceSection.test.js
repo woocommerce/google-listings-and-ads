@@ -10,6 +10,29 @@ import userEvent from '@testing-library/user-event';
  */
 import AudienceSection from '.~/components/paid-ads/audience-section';
 
+jest.mock( '.~/hooks/useAppSelectDispatch', () =>
+	jest.fn( () => ( {
+		hasFinishedResolution: true,
+		data: {
+			continents: {
+				EU: {
+					name: 'Europe',
+					countries: [ 'GB', 'ES' ],
+				},
+				NA: {
+					name: 'North America',
+					countries: [ 'US' ],
+				},
+			},
+			countries: {
+				GB: { name: 'United Kingdom' },
+				US: { name: 'United States' },
+				ES: { name: 'Spain' },
+			},
+		},
+	} ) )
+);
+
 jest.mock( '.~/hooks/useCountryKeyNameMap', () =>
 	jest.fn( () => ( {
 		GB: 'United Kingdom',
@@ -43,9 +66,9 @@ describe( 'AudienceSection with multiple countries selector', () => {
 
 		//Test that input is not editable
 		userEvent.clear( dropdown );
-		userEvent.type( dropdown, 'S' );
+		userEvent.type( dropdown, 'spa' );
 
-		const options = screen.queryAllByRole( 'option' );
+		const options = screen.queryAllByRole( 'checkbox' );
 		expect( options.length ).toBe( 0 );
 		expect( onChange ).toHaveBeenCalledTimes( 0 );
 	} );
@@ -58,9 +81,9 @@ describe( 'AudienceSection with multiple countries selector', () => {
 
 		//Test that input is editable
 		userEvent.clear( dropdown );
-		userEvent.type( dropdown, 'S' );
+		userEvent.type( dropdown, 'spa' );
 
-		const options = await screen.findAllByRole( 'option' );
+		const options = await screen.findAllByRole( 'checkbox' );
 		expect( options.length ).toBeGreaterThan( 0 );
 
 		const firstOption = options[ 0 ];

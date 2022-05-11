@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -59,6 +60,7 @@ class SupportedCountriesController extends BaseController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_countries_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_query_args(),
 				],
 			]
 		);
@@ -70,8 +72,16 @@ class SupportedCountriesController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_countries_callback(): callable {
-		return function() {
-			return $this->get_supported_countries();
+		return function( Request $request ) {
+			$return = [
+				'countries' => $this->get_supported_countries( $request ),
+			];
+
+			if ( $request->get_param( 'continents' ) ) {
+				$return['continents'] = $this->get_supported_continents();
+			}
+
+			return $return;
 		};
 	}
 
@@ -107,6 +117,27 @@ class SupportedCountriesController extends BaseController {
 	}
 
 	/**
+	 * Get the array of supported continents.
+	 *
+	 * @return array
+	 */
+	protected function get_supported_continents(): array {
+		$all_continents = $this->wc->get_continents();
+
+		foreach ( $all_continents as $continent_code => $continent ) {
+			$supported_countries_of_continent = $this->google_helper->get_supported_countries_from_continent( $continent_code );
+
+			if ( empty( $supported_countries_of_continent ) ) {
+				unset( $all_continents[ $continent_code ] );
+			} else {
+				$all_continents[ $continent_code ]['countries'] = array_values( $supported_countries_of_continent );
+			}
+		}
+
+		return $all_continents;
+	}
+
+	/**
 	 * Get the item schema name for the controller.
 	 *
 	 * Used for building the API response schema.
@@ -115,5 +146,20 @@ class SupportedCountriesController extends BaseController {
 	 */
 	protected function get_schema_title(): string {
 		return 'supported_countries';
+	}
+
+	/**
+	 * Get the arguments for the query endpoint.
+	 *
+	 * @return array
+	 */
+	protected function get_query_args(): array {
+		return [
+			'continents' => [
+				'description'       => __( 'Include continents data if set to true.', 'google-listings-and-ads' ),
+				'type'              => 'boolean',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
 	}
 }
