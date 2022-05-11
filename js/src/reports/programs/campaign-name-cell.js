@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppTooltip from '.~/components/app-tooltip';
-import './name-campaign-cell.scss';
+import './campaign-name-cell.scss';
 
 /**
  * Shows Tooltip {@link Notice}
