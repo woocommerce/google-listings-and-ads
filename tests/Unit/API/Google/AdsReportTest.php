@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -128,6 +129,7 @@ class AdsReportTest extends UnitTest {
 						'sales'       => 38,
 						'conversions' => 3,
 					],
+					'isConverted'    => false,
 				],
 				[
 					'id'        => 2345678901,
@@ -140,6 +142,7 @@ class AdsReportTest extends UnitTest {
 						'sales'       => 86,
 						'conversions' => 4,
 					],
+					'isConverted'    => false,
 				],
 			],
 			'intervals'  => [
@@ -553,16 +556,18 @@ class AdsReportTest extends UnitTest {
 		$expected = [
 			$report_type => [
 				[
-					'id'        => 1234567890,
-					'name'      => 'First Campaign',
-					'status'    => 'enabled',
-					'subtotals' => [],
+					'id'          => 1234567890,
+					'name'        => 'First Campaign',
+					'status'      => 'enabled',
+					'subtotals'   => [],
+					'isConverted' => false,
 				],
 				[
-					'id'        => 2345678901,
-					'name'      => 'Second Campaign',
-					'status'    => 'enabled',
-					'subtotals' => [],
+					'id'          => 2345678901,
+					'name'        => 'Second Campaign',
+					'status'      => 'enabled',
+					'subtotals'   => [],
+					'isConverted' => false,
 				],
 			],
 			'intervals'  => [
@@ -651,17 +656,19 @@ class AdsReportTest extends UnitTest {
 		$expected = [
 			$report_type => [
 				[
-					'id'        => 1234567890,
-					'name'      => 'Test Campaign (Old)',
-					'status'    => 'removed',
+					'id'          => 1234567890,
+					'name'        => 'Test Campaign (Old)',
+					'status'      => 'removed',
+					'isConverted' => true,
 					'subtotals' => [
 						'clicks' => 12,
 					],
 				],
 				[
-					'id'        => 2345678901,
-					'name'      => 'Test Campaign',
-					'status'    => 'enabled',
+					'id'           => 2345678901,
+					'name'         => 'Test Campaign',
+					'status'       => 'enabled',
+					'isConverted'  => false,
 					'subtotals' => [
 						'clicks' => 58,
 					],
