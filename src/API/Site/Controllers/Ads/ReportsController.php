@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Exception;
@@ -141,29 +140,28 @@ class ReportsController extends BaseReportsController {
 				'items' => [
 					'type'       => 'object',
 					'properties' => [
-						'id'        => [
+						'id'          => [
 							'type'        => 'integer',
 							'description' => __( 'ID number.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
-						'name'      => [
+						'name'        => [
 							'type'        => 'string',
 							'description' => __( 'Campaign name.', 'google-listings-and-ads' ),
 							'context'     => [ 'view', 'edit' ],
 						],
-						'status'    => [
+						'status'      => [
 							'type'        => 'string',
 							'enum'        => CampaignStatus::labels(),
 							'description' => __( 'Campaign status.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
-						'type'      => [
-							'type'        => 'string',
-							'enum'        => CampaignType::labels(),
-							'description' => __( 'Campaign type.', 'google-listings-and-ads' ),
+						'isConverted' => [
+							'type'        => 'boolean',
+							'description' => __( 'Whether the campaign has been converted', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
-						'subtotals' => $this->get_totals_schema(),
+						'subtotals'   => $this->get_totals_schema(),
 					],
 				],
 			],

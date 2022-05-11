@@ -129,7 +129,7 @@ class AdsReportTest extends UnitTest {
 						'sales'       => 38,
 						'conversions' => 3,
 					],
-					'type'      => CampaignType::PERFORMANCE_MAX,
+					'isConverted'    => false,
 				],
 				[
 					'id'        => 2345678901,
@@ -142,7 +142,7 @@ class AdsReportTest extends UnitTest {
 						'sales'       => 86,
 						'conversions' => 4,
 					],
-					'type'      => CampaignType::PERFORMANCE_MAX,
+					'isConverted'    => false,
 				],
 			],
 			'intervals'  => [
@@ -556,18 +556,18 @@ class AdsReportTest extends UnitTest {
 		$expected = [
 			$report_type => [
 				[
-					'id'        => 1234567890,
-					'name'      => 'First Campaign',
-					'status'    => 'enabled',
-					'subtotals' => [],
-					'type'      => CampaignType::PERFORMANCE_MAX,
+					'id'          => 1234567890,
+					'name'        => 'First Campaign',
+					'status'      => 'enabled',
+					'subtotals'   => [],
+					'isConverted' => false,
 				],
 				[
-					'id'        => 2345678901,
-					'name'      => 'Second Campaign',
-					'status'    => 'enabled',
-					'subtotals' => [],
-					'type'      => CampaignType::PERFORMANCE_MAX,
+					'id'          => 2345678901,
+					'name'        => 'Second Campaign',
+					'status'      => 'enabled',
+					'subtotals'   => [],
+					'isConverted' => false,
 				],
 			],
 			'intervals'  => [
@@ -656,19 +656,19 @@ class AdsReportTest extends UnitTest {
 		$expected = [
 			$report_type => [
 				[
-					'id'        => 1234567890,
-					'name'      => 'Test Campaign (Old)',
-					'status'    => 'removed',
-					'type'      => CampaignType::SHOPPING,
+					'id'          => 1234567890,
+					'name'        => 'Test Campaign (Old)',
+					'status'      => 'removed',
+					'isConverted' => true,
 					'subtotals' => [
 						'clicks' => 12,
 					],
 				],
 				[
-					'id'        => 2345678901,
-					'name'      => 'Test Campaign',
-					'status'    => 'enabled',
-					'type'      => CampaignType::PERFORMANCE_MAX,
+					'id'           => 2345678901,
+					'name'         => 'Test Campaign',
+					'status'       => 'enabled',
+					'isConverted'  => false,
 					'subtotals' => [
 						'clicks' => 58,
 					],

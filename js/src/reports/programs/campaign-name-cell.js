@@ -7,8 +7,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppTooltip from '.~/components/app-tooltip';
-import { glaData } from '.~/constants';
-import isCampaignConverted from '.~/utils/isCampaignConverted';
 import './name-campaign-cell.scss';
 
 /**
@@ -18,11 +16,11 @@ import './name-campaign-cell.scss';
  *
  * @param {Object} props React props.
  * @param {string} props.name Campaign Name
- * @param {string} props.type Campaign type
+ * @param {string} props.isConverted Weather the campaign is converted
  * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
  */
-const CampaignNameCell = ( { type, name } ) => {
-	if ( isCampaignConverted( glaData.adsCampaignConvertStatus, type ) ) {
+const CampaignNameCell = ( { isConverted, name } ) => {
+	if ( isConverted ) {
 		return (
 			<div className="gla-reports__tooltip-campaing-name">
 				<AppTooltip

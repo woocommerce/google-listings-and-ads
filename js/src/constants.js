@@ -16,11 +16,6 @@ export const HOUR_IN_SECONDS = 60 * MINUTE_IN_SECONDS;
 export const DAY_IN_SECONDS = 24 * HOUR_IN_SECONDS;
 export const MONTH_IN_SECONDS = 30 * DAY_IN_SECONDS;
 
-export const CAMPAIGN_TYPE = {
-	PERFORMANCE_MAX: 'performance_max',
-	SHOPPING: 'shopping',
-};
-
 export const GUIDE_NAMES = {
 	SUBMISSION_SUCCESS: 'submission-success',
 	CAMPAIGN_CREATION_SUCCESS: 'campaign-creation-success',

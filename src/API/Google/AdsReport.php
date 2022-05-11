@@ -149,8 +149,10 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 			$campaign_name = $campaign->getName();
 			$campaign_type = CampaignType::label( $campaign->getAdvertisingChannelType() );
 
+			$is_converted = $this->has_converted && CampaignType::PERFORMANCE_MAX !== $campaign_type;
+
 			// Rename (old converted campaigns).
-			if ( $this->has_converted && CampaignType::PERFORMANCE_MAX !== $campaign_type ) {
+			if ( $is_converted ) {
 				$campaign_name = sprintf(
 					// translators: %s: Original campaign name.
 					__( '%s (Old)', 'google-listings-and-ads' ),
@@ -162,11 +164,11 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 				'campaigns',
 				(string) $campaign_id,
 				[
-					'id'        => $campaign_id,
-					'name'      => $campaign_name,
-					'status'    => CampaignStatus::label( $campaign->getStatus() ),
-					'type'      => $campaign_type,
-					'subtotals' => $metrics,
+					'id'          => $campaign_id,
+					'name'        => $campaign_name,
+					'status'      => CampaignStatus::label( $campaign->getStatus() ),
+					'isConverted' => $is_converted,
+					'subtotals'   => $metrics,
 				]
 			);
 		}

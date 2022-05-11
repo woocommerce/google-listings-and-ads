@@ -10,7 +10,7 @@
 				"clicks": 139,
 				"impressions": 16037
 			},
-			"type": "shopping"
+			"isConverted": true
 		},
 		{
 			"id": 234,
@@ -23,7 +23,7 @@
 				"impressions": 14205,
 				"conversions": 123
 			},
-			"type": "performance_max"
+			"isConverted": false
 		}
 	],
 	"intervals": [

@@ -8,17 +8,11 @@ import '@testing-library/jest-dom/extend-expect';
  * Internal dependencies
  */
 import CampaignNameCell from '.~/reports/programs/campaign-name-cell';
-import isCampaignConverted from '.~/utils/isCampaignConverted';
-import { CAMPAIGN_TYPE } from '.~/constants';
-
-jest.mock( '.~/utils/isCampaignConverted', () => jest.fn() );
 
 describe( 'Notice Campaign Migration', () => {
 	it( 'Converted', async () => {
-		isCampaignConverted.mockReturnValueOnce( true );
-
 		const row = {
-			type: CAMPAIGN_TYPE.SHOPPING,
+			isConverted: true,
 			name: 'shopping campaign',
 		};
 
@@ -39,10 +33,8 @@ describe( 'Notice Campaign Migration', () => {
 		expect( tooltip ).toBeTruthy();
 	} );
 	it( 'PMax should not have tooltip', async () => {
-		isCampaignConverted.mockReturnValueOnce( false );
-
 		const row = {
-			type: CAMPAIGN_TYPE.PERFORMANCE_MAX,
+			isConverted: false,
 			name: 'pmax campaign',
 		};
 
