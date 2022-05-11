@@ -10,6 +10,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import { LOCAL_STORAGE_KEYS } from '.~/constants';
 import { geReportsUrl } from '.~/utils/urls';
 import TrackableLink from '.~/components/trackable-link';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 
 const BEFORE_CONVERSION = {
 	title: __(
@@ -21,6 +22,7 @@ const BEFORE_CONVERSION = {
 		'google-listings-and-ads'
 	),
 	externalLink: {
+		//TODO Update link when it is defined
 		link: '#',
 		linkId: 'campaign-conversion-status-before-migration-read-more',
 		content: __(
@@ -56,6 +58,7 @@ const AFTER_CONVERSION = {
 		}
 	),
 	externalLink: {
+		//TODO Update link when it is defined
 		link: '#',
 		linkId: 'campaign-conversion-status-after-migration-read-more',
 		content: __(
@@ -66,6 +69,30 @@ const AFTER_CONVERSION = {
 	localStorageKey: LOCAL_STORAGE_KEYS.IS_AFTER_MIGRATION_NOTICE_DISMISSED,
 };
 
-const CONVERSION_STATUSES = { AFTER_CONVERSION, BEFORE_CONVERSION };
+const REPORTS_CONVERSION = {
+	localStorageKey: LOCAL_STORAGE_KEYS.IS_REPORTS_MIGRATION_NOTICE_DISMISSED,
+	content: createInterpolateElement(
+		__(
+			'Your existing campaigns have been upgraded to Performance Max. <readMoreLink>Learn more about this upgrade</readMoreLink>',
+			'google-listings-and-ads'
+		),
+		{
+			readMoreLink: (
+				<AppDocumentationLink
+					context="reports-programs"
+					//TODO Update link when it is defined
+					href="#"
+					linkId="campaign-conversion-status-after-migration-reports-read-more"
+				/>
+			),
+		}
+	),
+};
+
+const CONVERSION_STATUSES = {
+	AFTER_CONVERSION,
+	BEFORE_CONVERSION,
+	REPORTS_CONVERSION,
+};
 
 export default CONVERSION_STATUSES;

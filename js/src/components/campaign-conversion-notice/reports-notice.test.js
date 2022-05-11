@@ -7,37 +7,34 @@ import '@testing-library/jest-dom/extend-expect';
 /**
  * Internal dependencies
  */
-import CampaignConversionDashboardNotice from '.~/components/campaign-conversion-notice/index';
+import CampaignConversionReportsNotice from '.~/components/campaign-conversion-notice/reports-notice';
 import getConversionCampaignStatusNotice from '.~/utils/getConversionCampaignStatusNotice';
 
 jest.mock( '.~/utils/getConversionCampaignStatusNotice', () => jest.fn() );
 
-describe( 'Notice Campaign Migration', () => {
+describe( 'Notice Reports Campaign Migration', () => {
 	it( 'Unconverted', () => {
 		getConversionCampaignStatusNotice.mockReturnValueOnce(
 			'BEFORE_CONVERSION'
 		);
 
-		const { getByTestId } = render( <CampaignConversionDashboardNotice /> );
+		const { queryByTestId } = render( <CampaignConversionReportsNotice /> );
 
-		const activeComponent = getByTestId(
-			'gla-campaign-conversion-dashboard-notice'
+		const notice = queryByTestId(
+			'gla-campaign-conversion-reports-notice'
 		);
-		expect( activeComponent ).toHaveTextContent(
-			'Your Google Listings & Ads campaigns will soon be automatically upgraded'
-		);
+
+		expect( notice ).toBeFalsy();
 	} );
 	it( 'Converted', () => {
 		getConversionCampaignStatusNotice.mockReturnValueOnce(
 			'AFTER_CONVERSION'
 		);
-		const { getByTestId } = render( <CampaignConversionDashboardNotice /> );
+		const { getByTestId } = render( <CampaignConversionReportsNotice /> );
 
-		const activeComponent = getByTestId(
-			'gla-campaign-conversion-dashboard-notice'
-		);
-		expect( activeComponent ).toHaveTextContent(
-			'Your Google Listings & Ads campaigns have been automatically upgraded'
+		const notice = getByTestId( 'gla-campaign-conversion-reports-notice' );
+		expect( notice ).toHaveTextContent(
+			'Your existing campaigns have been upgraded to Performance Max'
 		);
 	} );
 	it( 'Dismissed Notice', () => {
@@ -45,7 +42,7 @@ describe( 'Notice Campaign Migration', () => {
 			'AFTER_CONVERSION'
 		);
 		const { queryByTestId, getByRole } = render(
-			<CampaignConversionDashboardNotice />
+			<CampaignConversionReportsNotice />
 		);
 
 		const closeButton = getByRole( 'button' );
@@ -53,19 +50,17 @@ describe( 'Notice Campaign Migration', () => {
 		fireEvent.click( closeButton );
 
 		const notice = queryByTestId(
-			'gla-campaign-conversion-dashboard-notice'
+			'gla-campaign-conversion-reports-notice'
 		);
 
 		expect( notice ).toBeFalsy();
 	} );
 	it( 'No campaign status', () => {
 		getConversionCampaignStatusNotice.mockReturnValueOnce( null );
-		const { queryByTestId } = render(
-			<CampaignConversionDashboardNotice />
-		);
+		const { queryByTestId } = render( <CampaignConversionReportsNotice /> );
 
 		const notice = queryByTestId(
-			'gla-campaign-conversion-dashboard-notice'
+			'gla-campaign-conversion-reports-notice'
 		);
 
 		expect( notice ).toBeFalsy();
