@@ -96,7 +96,6 @@ const ReviewRequestModal = ( {
 						'google-listings-and-ads'
 					)
 				);
-				setIsRequestingReview( false );
 				recordEvent( 'gla_request_review_success' );
 				onClose( 'request-review-success' );
 			} )
