@@ -22,7 +22,7 @@ import './campaign-name-cell.scss';
 const CampaignNameCell = ( { isConverted, name } ) => {
 	if ( isConverted ) {
 		return (
-			<div className="gla-reports__tooltip-campaing-name">
+			<div className="gla-reports__tooltip-campaign-name">
 				<AppTooltip
 					position="top right"
 					text={ __(
