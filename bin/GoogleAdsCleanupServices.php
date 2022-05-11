@@ -222,7 +222,7 @@ class GoogleAdsCleanupServices {
 	}
 
 	/**
-	 * Remove services.
+	 * Remove unused classes from the library.
 	 *
 	 * @param Event $event Event context provided by Composer
 	 */
@@ -233,12 +233,34 @@ class GoogleAdsCleanupServices {
 	}
 
 	/**
-	 * Remove all services.
+	 * Remove all services and resources.
 	 */
 	protected function remove_services() {
-		$this->output_text( 'Removing unused services from Google Ads library ' . $this->version );
+		$this->output_text( 'Removing unused services and resources from Google Ads library ' . $this->version );
 
-		foreach ( $this->services as $service ) {
+		$library = array_unique(
+			array_merge(
+				$this->find_library_file_pattern(
+					"{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Services"
+				),
+				$this->find_library_file_pattern(
+					"{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Resources"
+				),
+			)
+		);
+
+		$used = array_unique(
+			array_merge(
+				$this->find_used_pattern(
+					"use Google\\\\Ads\\\\GoogleAds\\\\{$this->version}\\\\Services\\\\([A-Za-z0-9]+)ServiceClient;"
+				),
+				$this->find_used_pattern(
+					"use Google\\\\Ads\\\\GoogleAds\\\\{$this->version}\\\\Resources\\\\([A-Za-z0-9]+);"
+				)
+			)
+		);
+
+		foreach ( array_diff( $library, $used ) as $service ) {
 			$this->remove_service( $service );
 		}
 	}
@@ -286,8 +308,15 @@ class GoogleAdsCleanupServices {
 	 * Find used enums and remove any unused ones.
 	 */
 	protected function remove_enums() {
-		$library_enums = $this->find_library_enums();
-		$used_enums    = $this->find_used_enums();
+		$this->output_text( 'Removing unused enums from Google Ads library ' . $this->version );
+
+		$library_enums = $this->find_library_file_pattern(
+			"{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Enums"
+		);
+
+		$used_enums = $this->find_used_pattern(
+			"use Google\\\\Ads\\\\GoogleAds\\\\{$this->version}\\\\Enums\\\\([A-Za-z0-9]+)Enum\\\\"
+		);
 
 		foreach ( array_diff( $library_enums, $used_enums ) as $enum ) {
 			$this->remove_enum( $enum );
@@ -314,34 +343,13 @@ class GoogleAdsCleanupServices {
 	}
 
 	/**
-	 * Find enum names within the library.
+	 * Find a specific pattern used within the extension.
 	 *
-	 * @return array
-	 */
-	protected function find_library_enums(): array {
-		$path = "{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Enums";
-
-		$output = glob( "{$path}/*.php" );
-
-		if ( empty( $output ) ) {
-			return [];
-		}
-
-		return array_map(
-			function( $file ) {
-				return pathinfo( $file, PATHINFO_FILENAME );
-			},
-			$output
-		);
-	}
-
-	/**
-	 * Find enum names used within the extension.
+	 * @param string $pattern Regexp pattern to match.
 	 *
-	 * @return array
+	 * @return array List of names that match.
 	 */
-	protected function find_used_enums(): array {
-		$pattern = "use Google\\\\Ads\\\\GoogleAds\\\\{$this->version}\\\\Enums\\\\([A-Za-z]+)Enum\\\\";
+	protected function find_used_pattern( string $pattern ): array {
 		$command = "grep -rE --include=*.php '{$pattern}' {$this->code_path}";
 
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec
@@ -351,13 +359,51 @@ class GoogleAdsCleanupServices {
 			return [];
 		}
 
+		return array_unique(
+			array_map(
+				function( $line ) use ( $pattern ) {
+					preg_match( "/{$pattern}/", $line, $matches );
+					return $matches[1];
+				},
+				$output
+			)
+		);
+	}
+
+	/**
+	 * Find a specific filename pattern within the library.
+	 *
+	 * @param string $pattern Regexp pattern to match.
+	 * @param string $suffix  Suffix to remove from filename.
+	 *
+	 * @return array List of matched names.
+	 */
+	protected function find_library_file_pattern( string $pattern, string $suffix = null ): array {
+		$output = glob( "{$pattern}/*.php" );
+
+		if ( empty( $output ) ) {
+			return [];
+		}
+
 		return array_map(
-			function( $line ) use ( $pattern ) {
-				preg_match( "/{$pattern}/", $line, $matches );
-				return $matches[1];
+			function( $file ) use ( $suffix ) {
+				$name = pathinfo( $file, PATHINFO_FILENAME );
+				return $suffix ? $this->remove_suffix( $suffix, $name ) : $name;
 			},
 			$output
 		);
+	}
+
+	/**
+	 * Optionally remove a suffix from a string.
+	 *
+	 * @param string $suffix Suffix to remove.
+	 * @param string $text   Text to remove the suffix from.
+	 *
+	 * @return string
+	 */
+	protected function remove_suffix( string $suffix, string $text ): string {
+		return preg_replace( '/' . preg_quote( $suffix, '/' ) . '$/' );
 	}
 
 	/**
