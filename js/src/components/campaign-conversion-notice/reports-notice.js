@@ -15,7 +15,6 @@ import MigrationCampaignNotice from './migration-notice';
  * Shows Notice {@link Notice}
  * providing information about the conversion status of PMax campaigns
  *
- * @fires gla_upgrade_campaign_learn_more_link_click with `{ context: 'reports-programs, linkId: 'campaign-conversion-status-after-migration-reports-read-more', href: '#' }`.
  *
  * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
  */
