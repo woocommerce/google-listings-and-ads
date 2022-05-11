@@ -11,7 +11,7 @@ import localStorage from '.~/utils/localStorage';
 
 /**
  * Shows Notice {@link Notice}
- * It is the wrapper for the campaign convertion notices
+ * It is the wrapper for the campaign conversion notices
  *
  *
  * @param {Object} props React props.
