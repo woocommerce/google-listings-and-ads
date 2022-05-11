@@ -16,8 +16,8 @@ import './campaign-name-cell.scss';
  *
  * @param {Object} props React props.
  * @param {string} props.name Campaign Name
- * @param {string} props.isConverted Weather the campaign is converted
- * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
+ * @param {boolean} props.isConverted Weather the campaign is converted
+ * @return {JSX.Element} element with the tooltip or the campaign name
  */
 const CampaignNameCell = ( { isConverted, name } ) => {
 	if ( isConverted ) {
