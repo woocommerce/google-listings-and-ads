@@ -950,7 +950,7 @@ export function* sendMCReviewRequest() {
 			method: 'POST',
 		} );
 
-		return receiveMCReviewRequest( response );
+		return yield receiveMCReviewRequest( response );
 	} catch ( error ) {
 		yield handleFetchError( error, error?.message );
 		throw error;
