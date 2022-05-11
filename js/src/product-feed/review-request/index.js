@@ -17,9 +17,21 @@ import './index.scss';
 
 const showNotice = ( status ) => !! REVIEW_STATUSES[ status ]?.title;
 
+/**
+ * @typedef { import(".~/data/actions").AccountStatus } AccountStatus
+ */
+
+/**
+ * @fires gla_modal_closed with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
+ * @fires gla_modal_open with `context: REQUEST_REVIEW`
+ *
+ * @param {Object} props Component props
+ * @param { { isResolving: boolean, hasFinishedResolution: boolean, data: AccountStatus, invalidateResolution: Function } } props.account Account data payload coming from the data store.
+ */
 const ReviewRequest = ( { account = {} } ) => {
 	const [ modalActive, setModalActive ] = useState( false );
 	const activeIssueType = useActiveIssueType();
+
 	const {
 		data: mcData,
 		hasFinishedResolution: mcDataHasFinishedResolution,
@@ -48,12 +60,6 @@ const ReviewRequest = ( { account = {} } ) => {
 		} );
 	};
 
-	const handleReviewRequest = () => {
-		handleModalClose( 'confirm-request-review' );
-		recordEvent( 'gla_request_review' );
-		// TODO: Implement call to Review Request API
-	};
-
 	return (
 		<div className="gla-review-request">
 			<ReviewRequestModal
@@ -62,7 +68,6 @@ const ReviewRequest = ( { account = {} } ) => {
 				) }
 				isActive={ modalActive }
 				onClose={ handleModalClose }
-				onSendRequest={ handleReviewRequest }
 			/>
 			<ReviewRequestNotice
 				account={ accountData }

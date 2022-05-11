@@ -3,10 +3,32 @@ jest.mock( '@woocommerce/tracks', () => {
 		recordEvent: jest.fn(),
 	};
 } );
+
+jest.mock( '.~/hooks/useDispatchCoreNotices', () => ( {
+	__esModule: true,
+	default: jest
+		.fn()
+		.mockName( 'useDispatchCoreNotices' )
+		.mockImplementation( () => {
+			return {
+				createNotice: jest.fn(),
+			};
+		} ),
+} ) );
+
+jest.mock( '.~/data', () => ( {
+	__esModule: true,
+	useAppDispatch: jest.fn( () => {
+		return {
+			sendMCReviewRequest: jest.fn( () => Promise.resolve() ),
+		};
+	} ),
+} ) );
+
 /**
  * External dependencies
  */
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import { recordEvent } from '@woocommerce/tracks';
 
 /**
@@ -92,29 +114,46 @@ describe( 'Request Review Modal', () => {
 		expect( onClose ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'Request review button is active after checking the checkbox and it calls onSendRequest on click', () => {
-		const onSendRequest = jest.fn().mockName( 'onSendRequest' );
+	it( 'Request review button is active after checking the checkbox and it calls onSendRequest on click', async () => {
+		jest.clearAllMocks();
+
 		const { queryByRole } = render(
-			<ReviewRequestModal
-				issues={ issues }
-				isActive={ true }
-				onSendRequest={ onSendRequest }
-			/>
+			<ReviewRequestModal issues={ issues } isActive={ true } />
 		);
 
 		const button = queryByRole( 'button', {
 			name: 'Request account review',
 		} );
+
 		const checkbox = queryByRole( 'checkbox' );
 		expect( button ).toBeTruthy();
 		fireEvent.click( button );
-		expect( onSendRequest ).not.toHaveBeenCalled();
-
+		expect( recordEvent ).not.toHaveBeenCalled();
 		expect( checkbox ).toBeTruthy();
+
 		expect( checkbox.checked ).toEqual( false );
 		fireEvent.click( checkbox );
 		expect( checkbox.checked ).toEqual( true );
+		expect( recordEvent ).toHaveBeenNthCalledWith(
+			1,
+			'gla_request_review_issues_solved_checkbox_click',
+			{ action: 'check' }
+		);
 		fireEvent.click( button );
-		expect( onSendRequest ).toHaveBeenCalledTimes( 1 );
+
+		expect( recordEvent ).toHaveBeenNthCalledWith(
+			2,
+			'gla_request_review'
+		);
+
+		await act( async () => {
+			// necessary to wait for the millisecond to perform the promise resolve in sendMCReviewRequest
+			await Promise.resolve();
+		} );
+
+		expect( recordEvent ).toHaveBeenNthCalledWith(
+			3,
+			'gla_request_review_success'
+		);
 	} );
 } );

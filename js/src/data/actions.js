@@ -63,6 +63,16 @@ export function handleFetchError( error, message ) {
  */
 
 /**
+ * Account status data. Indicates the current status for the Google MC account.
+ *
+ * @typedef {Object} AccountStatus
+ * @property {string} status Account status. See the available statuses here https://developers.google.com/shopping-content/reference/rest/v2.1/State
+ * @property {number} cooldown Cooldown period timestamp indicating how long the user should wait until the next request
+ * @property {Array} issues List of issue keys for this account
+ * @property {Array} reviewEligibleRegions List of region codes available for review
+ */
+
+/**
  *
  * @return {Array<ShippingRate>} Array of individual shipping rates.
  */
@@ -926,6 +936,23 @@ export function* updateMCProductVisibility( ids, visible ) {
 				'google-listings-and-ads'
 			)
 		);
+		throw error;
+	}
+}
+
+/**
+ * Request a new review for the connected account
+ */
+export function* sendMCReviewRequest() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/review`,
+			method: 'POST',
+		} );
+
+		return yield receiveMCReviewRequest( response );
+	} catch ( error ) {
+		yield handleFetchError( error, error?.message );
 		throw error;
 	}
 }

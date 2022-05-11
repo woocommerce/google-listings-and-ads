@@ -66,17 +66,19 @@ const ReviewRequestNotice = ( {
 				</Flex>
 			</FlexItem>
 			<FlexItem className="gla-review-request-notice__button">
-				{ accountReviewStatus.requestButton && (
-					<AppButton
-						isPrimary
-						onClick={ onRequestReviewClick }
-						disabled={ !! account.cooldown }
-						text={ __(
-							'Request review',
-							'google-listings-and-ads'
-						) }
-					/>
-				) }
+				{ accountReviewStatus.requestButton &&
+					( account.cooldown ||
+						account.reviewEligibleRegions.length > 0 ) && (
+						<AppButton
+							isPrimary
+							onClick={ onRequestReviewClick }
+							disabled={ !! account.cooldown }
+							text={ __(
+								'Request review',
+								'google-listings-and-ads'
+							) }
+						/>
+					) }
 			</FlexItem>
 		</Flex>
 	);
