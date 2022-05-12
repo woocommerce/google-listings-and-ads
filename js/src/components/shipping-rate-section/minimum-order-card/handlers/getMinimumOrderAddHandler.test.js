@@ -1,9 +1,9 @@
 /**
  * Internal dependencies
  */
-import getMinimumOrderAddHandler from './getMinimumOrderAddHandler';
+import { addGroup } from './getMinimumOrderAddHandler';
 
-describe( 'getMinimumOrderAddHandler( value, onChange )( newGroup )', () => {
+describe( 'addGroup( value, newGroup )', () => {
 	const value = Object.freeze( [
 		{
 			id: '1',
@@ -34,23 +34,15 @@ describe( 'getMinimumOrderAddHandler( value, onChange )( newGroup )', () => {
 			},
 		},
 	] );
-	const mockOnChange = jest.fn();
 
-	afterEach( () => {
-		mockOnChange.mockClear();
-	} );
-
-	it( 'Calls the `onChange` callback with new value (`shippingRate.options.free_shipping_threshold` set to `newGroup.threshold`)', () => {
+	it( 'returns a new value (`shippingRate.options.free_shipping_threshold` set to `newGroup.threshold`)', () => {
 		const newGroup = {
 			countries: [ 'US' ],
 			currency: 'USD',
 			threshold: 30,
 		};
 
-		getMinimumOrderAddHandler( value, mockOnChange )( newGroup );
-
-		expect( mockOnChange.mock.calls.length ).toBe( 1 );
-		expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
+		expect( addGroup( value, newGroup ) ).toStrictEqual( [
 			{
 				id: '1',
 				country: 'US',

@@ -1,9 +1,9 @@
 /**
  * Internal dependencies
  */
-import getMinimumOrderChangeHandler from './getMinimumOrderChangeHandler';
+import { changeGroup } from './getMinimumOrderChangeHandler';
 
-describe( 'getMinimumOrderChangeHandler( value, onChange, oldGroup )( newGroup )', () => {
+describe( 'changeGroup( value, oldGroup, newGroup )', () => {
 	const value = Object.freeze( [
 		{
 			id: '1',
@@ -34,13 +34,8 @@ describe( 'getMinimumOrderChangeHandler( value, onChange, oldGroup )( newGroup )
 			},
 		},
 	] );
-	const mockOnChange = jest.fn();
 
-	afterEach( () => {
-		mockOnChange.mockClear();
-	} );
-
-	it( 'Calls the `onChange` callback with new value updated based on changed group threshold', () => {
+	it( 'returns a new value updated based on changed group threshold', () => {
 		const oldGroup = {
 			countries: [ 'AU', 'CN' ],
 			currency: 'USD',
@@ -51,15 +46,7 @@ describe( 'getMinimumOrderChangeHandler( value, onChange, oldGroup )( newGroup )
 			threshold: 80,
 		};
 
-		const handleChange = getMinimumOrderChangeHandler(
-			value,
-			mockOnChange,
-			oldGroup
-		);
-		handleChange( newGroup );
-
-		expect( mockOnChange.mock.calls.length ).toBe( 1 );
-		expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
+		expect( changeGroup( value, oldGroup, newGroup ) ).toStrictEqual( [
 			{
 				id: '1',
 				country: 'US',
@@ -91,7 +78,7 @@ describe( 'getMinimumOrderChangeHandler( value, onChange, oldGroup )( newGroup )
 		] );
 	} );
 
-	it( 'Calls the `onChange` callback with new value updated based on removed and added countries', () => {
+	it( 'returns a new value updated based on removed and added countries', () => {
 		const oldGroup = {
 			countries: [ 'AU', 'CN' ],
 			currency: 'USD',
@@ -103,15 +90,7 @@ describe( 'getMinimumOrderChangeHandler( value, onChange, oldGroup )( newGroup )
 			countries: [ 'CN', 'US' ],
 		};
 
-		const handleChange = getMinimumOrderChangeHandler(
-			value,
-			mockOnChange,
-			oldGroup
-		);
-		handleChange( newGroup );
-
-		expect( mockOnChange.mock.calls.length ).toBe( 1 );
-		expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
+		expect( changeGroup( value, oldGroup, newGroup ) ).toStrictEqual( [
 			{
 				id: '1',
 				country: 'US',
@@ -145,7 +124,7 @@ describe( 'getMinimumOrderChangeHandler( value, onChange, oldGroup )( newGroup )
 		] );
 	} );
 
-	it( 'Calls the `onChange` callback with new value updated based on all changed countries and threshold', () => {
+	it( 'returns a new value updated based on all changed countries and threshold', () => {
 		const oldGroup = {
 			countries: [ 'AU', 'CN' ],
 			currency: 'USD',
@@ -158,15 +137,7 @@ describe( 'getMinimumOrderChangeHandler( value, onChange, oldGroup )( newGroup )
 			threshold: 88,
 		};
 
-		const handleChange = getMinimumOrderChangeHandler(
-			value,
-			mockOnChange,
-			oldGroup
-		);
-		handleChange( newGroup );
-
-		expect( mockOnChange.mock.calls.length ).toBe( 1 );
-		expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
+		expect( changeGroup( value, oldGroup, newGroup ) ).toStrictEqual( [
 			{
 				id: '1',
 				country: 'US',

@@ -1,9 +1,9 @@
 /**
  * Internal dependencies
  */
-import getMinimumOrderDeleteHandler from './getMinimumOrderDeleteHandler';
+import { deleteGroup } from './getMinimumOrderDeleteHandler';
 
-describe( 'getMinimumOrderDeleteHandler( value, onChange, oldGroup )()', () => {
+describe( 'deleteGroup( value, oldGroup )', () => {
 	const value = Object.freeze( [
 		{
 			id: '1',
@@ -34,28 +34,15 @@ describe( 'getMinimumOrderDeleteHandler( value, onChange, oldGroup )()', () => {
 			},
 		},
 	] );
-	const mockOnChange = jest.fn();
 
-	afterEach( () => {
-		mockOnChange.mockClear();
-	} );
-
-	it( 'Calls the `onChange` callback with new value, with free_shipping_threshold removed for the countries in `oldGroup`', () => {
+	it( 'returns a new value, with free_shipping_threshold removed for the countries in `oldGroup`', () => {
 		const oldGroup = {
 			countries: [ 'CN', 'AU' ],
 			currency: 'USD',
 			threshold: 50,
 		};
 
-		const handleDelete = getMinimumOrderDeleteHandler(
-			value,
-			mockOnChange,
-			oldGroup
-		);
-		handleDelete();
-
-		expect( mockOnChange.mock.calls.length ).toBe( 1 );
-		expect( mockOnChange.mock.calls[ 0 ][ 0 ] ).toStrictEqual( [
+		expect( deleteGroup( value, oldGroup ) ).toStrictEqual( [
 			{
 				id: '1',
 				country: 'US',
