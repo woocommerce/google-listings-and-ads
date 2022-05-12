@@ -23,17 +23,9 @@ const ExternalIcon = () => (
 		size={ 18 }
 	/>
 );
-/**
- * Clicking on a text link within the notice on the Get Started page.
- *
- * @event gla_get_started_notice_link_click
- * @property {string} link_id Link identifier
- * @property {string} context Indicates which link is clicked
- * @property {string} href Link's URL
- */
 
 /**
- * @fires gla_get_started_notice_link_click with `{ context: "get-started", link_id: "supported-languages" }`
+ * @fires gla_documentation_link_click with `{ context: "get-started", link_id: "supported-languages" }`
  */
 const UnsupportedLanguage = () => {
 	const { data } = useTargetAudience();
@@ -66,7 +58,6 @@ const UnsupportedLanguage = () => {
 						<AppDocumentationLink
 							className="gla-get-started-notice__link"
 							href="https://support.google.com/merchants/answer/160637"
-							eventName="gla_get_started_notice_link_click"
 							context="get-started"
 							linkId="supported-languages"
 						/>
@@ -79,7 +70,7 @@ const UnsupportedLanguage = () => {
 };
 
 /**
- * @fires gla_get_started_notice_link_click with `{ context: "get-started", link_id: "supported-countries" }`
+ * @fires gla_documentation_link_click with `{ context: "get-started", link_id: "supported-countries" }`
  */
 const UnsupportedCountry = () => {
 	const { name: countryName } = useStoreCountry();
@@ -112,7 +103,6 @@ const UnsupportedCountry = () => {
 						<AppDocumentationLink
 							className="gla-get-started-notice__link"
 							href="https://support.google.com/merchants/answer/160637"
-							eventName="gla_get_started_notice_link_click"
 							context="get-started"
 							linkId="supported-countries"
 						/>
