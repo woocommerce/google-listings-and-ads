@@ -16,6 +16,13 @@ jest.mock( '@woocommerce/tracks', () => {
 	};
 } );
 
+jest.mock( '.~/hooks/useDispatchCoreNotices', () => ( {
+	__esModule: true,
+	default: jest.fn().mockName( 'useDispatchCoreNotices' ).mockReturnValue( {
+		createNotice: jest.fn(),
+	} ),
+} ) );
+
 /**
  * External dependencies
  */
@@ -37,7 +44,7 @@ describe( 'Request Review Component', () => {
 				<ReviewRequest
 					account={ {
 						hasFinishedResolution: true,
-						data: { status },
+						data: { status, reviewEligibleRegions: [] },
 					} }
 				/>
 			);
@@ -53,7 +60,11 @@ describe( 'Request Review Component', () => {
 				<ReviewRequest
 					account={ {
 						hasFinishedResolution: true,
-						data: { status, issues: [ '#1', '#2' ] },
+						data: {
+							status,
+							issues: [ '#1', '#2' ],
+							reviewEligibleRegions: [ 'US' ],
+						},
 					} }
 				/>
 			);

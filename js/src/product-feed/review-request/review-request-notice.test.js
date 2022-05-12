@@ -19,7 +19,7 @@ describe( 'Request Review Notice', () => {
 
 			const { queryByText, queryByRole } = render(
 				<ReviewRequestNotice
-					account={ { status } }
+					account={ { status, reviewEligibleRegions: [ 'US' ] } }
 					onRequestReviewClick={ onRequestReviewClick }
 				/>
 			);
@@ -66,5 +66,28 @@ describe( 'Request Review Notice', () => {
 
 		fireEvent.click( button );
 		expect( onRequestReviewClick ).not.toBeCalled();
+	} );
+
+	it( 'Doesnt render button if no regions are available and there is no cooldown', () => {
+		const onRequestReviewClick = jest
+			.fn()
+			.mockName( 'onRequestReviewClick' );
+
+		const { queryByText, queryByRole } = render(
+			<ReviewRequestNotice
+				account={ { status: 'DISAPPROVED', reviewEligibleRegions: [] } }
+				onRequestReviewClick={ onRequestReviewClick }
+			/>
+		);
+
+		expect(
+			queryByText(
+				'Fix all account suspension issues listed below to request a review of your account.'
+			)
+		).toBeTruthy();
+
+		const button = queryByRole( 'button' );
+
+		expect( button ).toBeFalsy();
 	} );
 } );

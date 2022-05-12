@@ -17,6 +17,7 @@ class RequestReviewStatuses implements Service {
 	public const ONBOARDING     = 'ONBOARDING';
 	public const APPROVED       = 'APPROVED';
 	public const NO_OFFERS      = 'NO_OFFERS_UPLOADED';
+	public const ELIGIBLE       = 'ELIGIBLE';
 
 
 	public const MC_ACCOUNT_REVIEW_LIFETIME = MINUTE_IN_SECONDS * 20; // 20 minutes
@@ -32,7 +33,8 @@ class RequestReviewStatuses implements Service {
 		$cooldown = 0;
 		$status   = null;
 
-		$valid_program_states = [ self::ENABLED, self::NO_OFFERS ];
+		$valid_program_states    = [ self::ENABLED, self::NO_OFFERS ];
+		$review_eligible_regions = [];
 
 		foreach ( $response as $program_type ) {
 
@@ -47,18 +49,20 @@ class RequestReviewStatuses implements Service {
 				continue;
 			}
 
-			// otherwise we compute the new status, issues and cooldown period
+			// Otherwise, we compute the new status, issues and cooldown period
 			foreach ( $program_type['data']['regionStatuses'] as $region_status ) {
-				$issues   = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
-				$cooldown = $this->maybe_update_cooldown_period( $region_status, $cooldown );
-				$status   = $this->maybe_update_status( $region_status['eligibilityStatus'], $status );
+				$issues                  = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
+				$cooldown                = $this->maybe_update_cooldown_period( $region_status, $cooldown );
+				$status                  = $this->maybe_update_status( $region_status['eligibilityStatus'], $status );
+				$review_eligible_regions = $this->maybe_load_eligible_region( $region_status, $review_eligible_regions );
 			}
 		}
 
 		return [
-			'issues'   => array_map( 'strtolower', array_values( array_unique( $issues ) ) ),
-			'cooldown' => $this->get_cooldown( $cooldown ), // add lifetime cache to cooldown time
-			'status'   => $status,
+			'issues'                => array_map( 'strtolower', array_values( array_unique( $issues ) ) ),
+			'cooldown'              => $this->get_cooldown( $cooldown ), // add lifetime cache to cooldown time
+			'status'                => $status,
+			'reviewEligibleRegions' => array_unique( $review_eligible_regions ),
 		];
 	}
 	/**
@@ -112,6 +116,26 @@ class RequestReviewStatuses implements Service {
 		return $status;
 	}
 
+
+	/**
+	 * Updates the regions where a request review is allowed.
+	 *
+	 * @param array $region_status Associative array containing the region eligibility.
+	 * @param array $review_eligible_regions Indexed array with the current eligible regions.
+	 *
+	 * @return array The (maybe) modified $review_eligible_regions array
+	 */
+	private function maybe_load_eligible_region( array $region_status, array $review_eligible_regions ) {
+		if (
+			! empty( $region_status['regionCodes'] ) &&
+			isset( $region_status['reviewEligibilityStatus'] ) &&
+			$region_status['reviewEligibilityStatus'] === self::ELIGIBLE
+		) {
+			array_push( $review_eligible_regions, $region_status['regionCodes'][0] );
+		}
+
+		return $review_eligible_regions;
+	}
 
 	/**
 	 * Allows a hook to modify the lifetime of the Account review data.

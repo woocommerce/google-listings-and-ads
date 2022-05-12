@@ -43,6 +43,7 @@ describe( 'reducer', () => {
 				issues: null,
 				cooldown: null,
 				status: null,
+				reviewEligibleRegions: [],
 			},
 			mc_product_statistics: null,
 			mc_issues: {
