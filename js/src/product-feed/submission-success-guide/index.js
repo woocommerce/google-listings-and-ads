@@ -157,7 +157,7 @@ const handleGuideFinish = ( e ) => {
  * @fires gla_modal_closed with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
  * @fires gla_modal_open with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
  */
-export default function SubmissionSuccessGuide() {
+const SubmissionSuccessGuide = () => {
 	useEffect( () => {
 		recordEvent( 'gla_modal_open', {
 			context: GUIDE_NAMES.SUBMISSION_SUCCESS,
@@ -207,4 +207,6 @@ export default function SubmissionSuccessGuide() {
 			onFinish={ handleGuideFinish }
 		/>
 	);
-}
+};
+
+export default SubmissionSuccessGuide;

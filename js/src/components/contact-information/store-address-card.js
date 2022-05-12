@@ -36,7 +36,7 @@ import './store-address-card.scss';
  *
  * @return {JSX.Element} Filled AccountCard component.
  */
-export default function StoreAddressCard() {
+const StoreAddressCard = () => {
 	const { loaded, data, refetch } = useStoreAddress();
 	const { subpath } = getQuery();
 	const editButton = (
@@ -119,7 +119,9 @@ export default function StoreAddressCard() {
 			</Section.Card.Body>
 		</AccountCard>
 	);
-}
+};
+
+export default StoreAddressCard;
 
 /**
  * Trigger when store address edit button is clicked.

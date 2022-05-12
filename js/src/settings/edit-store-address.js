@@ -38,7 +38,7 @@ const learnMoreUrl =
  * @fires gla_contact_information_save_button_click
  * @fires gla_documentation_link_click with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
  */
-export default function EditStoreAddress() {
+const EditStoreAddress = () => {
 	useLayout( 'full-content' );
 
 	const { updateGoogleMCContactInformation } = useAppDispatch();
@@ -108,4 +108,6 @@ export default function EditStoreAddress() {
 			</div>
 		</>
 	);
-}
+};
+
+export default EditStoreAddress;

@@ -22,7 +22,7 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
  *
  * @fires gla_documentation_link_click with `{ context: "dashboard|reports-products|reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
  */
-export default function DifferentCurrencyNotice( { context } ) {
+const DifferentCurrencyNotice = ( { context } ) => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { code: storeCurrency } = useStoreCurrency();
 
@@ -63,4 +63,6 @@ export default function DifferentCurrencyNotice( { context } ) {
 			) }
 		</Notice>
 	);
-}
+};
+
+export default DifferentCurrencyNotice;

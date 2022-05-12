@@ -26,7 +26,7 @@ const learnMoreUrl =
  * @see PhoneNumberCard
  * @fires gla_documentation_link_click with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
  */
-export default function EditPhoneNumber() {
+const EditPhoneNumber = () => {
 	const phone = useGoogleMCPhoneNumber();
 
 	usePhoneNumberCheckTrackEventEffect( phone );
@@ -76,4 +76,6 @@ export default function EditPhoneNumber() {
 			</div>
 		</>
 	);
-}
+};
+
+export default EditPhoneNumber;

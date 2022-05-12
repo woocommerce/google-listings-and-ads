@@ -71,10 +71,12 @@ const faqItems = [
  * @fires gla_setup_mc_faq
  * @fires gla_documentation_link_click with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
  */
-export default function Faqs() {
+const Faqs = () => {
 	return (
 		<Section>
 			<FaqsPanel trackName="gla_setup_mc_faq" faqItems={ faqItems } />
 		</Section>
 	);
-}
+};
+
+export default Faqs;
