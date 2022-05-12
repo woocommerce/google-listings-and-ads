@@ -658,7 +658,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 7 ) )
+		$this->options->expects( $this->exactly( 8 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::CONTACT_INFO_SETUP ],
@@ -667,7 +667,8 @@ class AccountServiceTest extends UnitTest {
 				[ OptionsInterface::MERCHANT_CENTER ],
 				[ OptionsInterface::SITE_VERIFICATION ],
 				[ OptionsInterface::TARGET_AUDIENCE ],
-				[ OptionsInterface::MERCHANT_ID ]
+				[ OptionsInterface::MERCHANT_ID ],
+				[ OptionsInterface::CLAIMED_URL_HASH ]
 			);
 
 		$this->merchant_statuses->expects( $this->once() )->method( 'delete' );
