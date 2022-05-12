@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { changeGroup } from './getMinimumOrderChangeHandler';
+import { changeGroup } from './changeGroup';
 
 describe( 'changeGroup( value, oldGroup, newGroup )', () => {
 	const value = Object.freeze( [
@@ -34,7 +34,87 @@ describe( 'changeGroup( value, oldGroup, newGroup )', () => {
 			},
 		},
 	] );
+	// Pure add.
+	it( "returns new value with `newGroup.country`'s `shippingRate.options.free_shipping_threshold` updated to `newGroup.threshold`, when falsy `oldGroup` is given", () => {
+		const newGroup = {
+			countries: [ 'US' ],
+			currency: 'USD',
+			threshold: 30,
+		};
 
+		expect( changeGroup( value, null, newGroup ) ).toStrictEqual( [
+			{
+				id: '1',
+				country: 'US',
+				method: 'flat_rate',
+				currency: 'USD',
+				rate: 20,
+				options: {
+					free_shipping_threshold: 30,
+				},
+			},
+			{
+				id: '2',
+				country: 'AU',
+				method: 'flat_rate',
+				currency: 'USD',
+				rate: 20,
+				options: {
+					free_shipping_threshold: 50,
+				},
+			},
+			{
+				id: '3',
+				country: 'CN',
+				method: 'flat_rate',
+				currency: 'USD',
+				rate: 25,
+				options: {
+					free_shipping_threshold: 50,
+				},
+			},
+		] );
+	} );
+	// Pure delete.
+	it( 'returns a new value with `free_shipping_threshold=undefined` for the countries in `oldGroup` when falsy `newGroup` is given', () => {
+		const oldGroup = {
+			countries: [ 'CN', 'AU' ],
+			currency: 'USD',
+			threshold: 50,
+		};
+
+		expect( changeGroup( value, oldGroup ) ).toStrictEqual( [
+			{
+				id: '1',
+				country: 'US',
+				method: 'flat_rate',
+				currency: 'USD',
+				rate: 20,
+				options: {},
+			},
+			{
+				id: '2',
+				country: 'AU',
+				method: 'flat_rate',
+				currency: 'USD',
+				rate: 20,
+				options: {
+					free_shipping_threshold: undefined,
+				},
+			},
+			{
+				id: '3',
+				country: 'CN',
+				method: 'flat_rate',
+				currency: 'USD',
+				rate: 25,
+				options: {
+					free_shipping_threshold: undefined,
+				},
+			},
+		] );
+	} );
+	// Update.
 	it( 'returns a new value updated based on changed group threshold', () => {
 		const oldGroup = {
 			countries: [ 'AU', 'CN' ],
