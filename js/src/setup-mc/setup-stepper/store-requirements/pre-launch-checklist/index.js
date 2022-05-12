@@ -15,6 +15,9 @@ import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import './index.scss';
 
+/*
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-checklist', link_id: 'checklist-requirements', href: 'https://support.google.com/merchants/answer/6363310' }`
+ */
 const PreLaunchChecklist = ( props ) => {
 	const { formProps } = props;
 	const { getInputProps } = formProps;

@@ -92,6 +92,7 @@ const actions = (
  * @fires gla_edit_product_issue_click
  * @fires gla_table_go_to_page with `context: 'issues-to-resolve'`
  * @fires gla_table_page_click with `context: 'issues-to-resolve'`
+ * @fires gla_documentation_link_click with `{ context: 'product-feed', link_id: 'issues-to-resolve', href: 'https://support.google.com/merchants/answer/6363310' }`
  */
 const IssuesTableCard = () => {
 	const [ page, setPage ] = useState( 1 );

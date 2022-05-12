@@ -22,6 +22,7 @@ import CountryModal from './country-modal';
 
 /**
  * @fires gla_free_ad_credit_country_click
+ * @fires gla_documentation_link_click with `{ context: 'setup-ads', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
  */
 const FreeAdCredit = () => {
 	const [ showModal, setShowModal ] = useState( false );

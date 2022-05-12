@@ -71,6 +71,7 @@ export function ContactInformationPreview() {
  *
  * @param {Object} props React props.
  * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified.
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-contact-information|settings-no-phone-number-notice|settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
  */
 export default function ContactInformation( { onPhoneNumberVerified } ) {
 	const phone = useGoogleMCPhoneNumber();

@@ -25,7 +25,7 @@ const ExternalIcon = () => (
 );
 
 /**
- * @fires gla_documentation_link_click with `{ context: "get-started", link_id: "supported-languages" }`
+ * @fires gla_documentation_link_click with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
  */
 const UnsupportedLanguage = () => {
 	const { data } = useTargetAudience();

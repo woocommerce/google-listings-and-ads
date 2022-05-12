@@ -24,6 +24,7 @@ import './index.scss';
  * @param {Function} [props.onCreateAccount] Callback function when the account is created
  * @param {Function} [props.onRequestClose] Callback function when the modal is closed
  * @fires gla_mc_account_create_button_click
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
  */
 const TermsModal = ( {
 	onCreateAccount = () => {},
