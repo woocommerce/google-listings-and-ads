@@ -250,6 +250,7 @@ class AccountService implements OptionsAwareInterface, Service {
 		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
 		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
+		$this->options->delete( OptionsInterface::CLAIMED_URL_HASH );
 
 		$this->container->get( MerchantStatuses::class )->delete();
 
@@ -455,6 +456,9 @@ class AccountService implements OptionsAwareInterface, Service {
 
 			$account->setWebsiteUrl( $site_url );
 			$merchant->update_account( $account );
+
+			// Clear previous hashed URL.
+			$this->options->delete( OptionsInterface::CLAIMED_URL_HASH );
 
 			do_action( 'woocommerce_gla_url_switch_success', [] );
 		}
