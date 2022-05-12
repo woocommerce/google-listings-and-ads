@@ -254,7 +254,9 @@ class Admin implements Service, Registerable, Conditional {
 	 * @param WP_Scripts $scripts WP_Scripts instance.
 	 */
 	private function inject_fast_refresh_for_dev( $scripts ) {
-		if ( ! file_exists( "{$this->get_root_dir()}/js/build/runtime.js" ) ) {
+		$runtime_path = "{$this->get_root_dir()}/js/build/runtime.js";
+
+		if ( ! file_exists( $runtime_path ) ) {
 			return;
 		}
 
@@ -275,7 +277,8 @@ class Admin implements Service, Registerable, Conditional {
 		$scripts->add(
 			'gla-webpack-rumtime',
 			"{$plugin_url}/js/build/runtime.js",
-			[]
+			[],
+			(string) filemtime( $runtime_path )
 		);
 		$react_script->deps[] = 'gla-webpack-rumtime';
 
