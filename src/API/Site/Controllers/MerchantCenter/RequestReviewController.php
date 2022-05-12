@@ -129,22 +129,43 @@ class RequestReviewController extends BaseOptionsController {
 				}
 
 				$this->middleware->account_request_review( $account_review_status['reviewEligibleRegions'] );
+				return $this->set_under_review_status();
 
-				$new_status = [
-					'issues'                => [],
-					'cooldown'              => 0,
-					'status'                => $this->request_review_statuses::UNDER_REVIEW,
-					'reviewEligibleRegions' => [],
-				];
-
-				// Update Account status when successful response
-				$this->set_cached_review_status( $new_status );
-
-				return new Response( $new_status );
 			} catch ( Exception $e ) {
+				/**
+				 * Catch potential errors in any specific region API call.
+				 *
+				 * Notice due some inconsistencies with Google API we are not considering [Bad Request -> ...already under review...]
+				 * as an exception. This is because we suspect that calling the API of a region is triggering other regions requests as well.
+				 * This makes all the calls after the first to fail as they will be under review.
+				 *
+				 * The undesired call of this function for accounts under review is already prevented in a previous stage, so, there is no danger doing this.
+				 */
+				if ( strpos( $e->getMessage(), 'under review' ) !== false ) {
+					return $this->set_under_review_status();
+				}
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
+	}
+
+	/**
+	 * Set Under review Status in the cache and return the response
+	 *
+	 * @return Response With the Under review status
+	 */
+	private function set_under_review_status() {
+		$new_status = [
+			'issues'                => [],
+			'cooldown'              => 0,
+			'status'                => $this->request_review_statuses::UNDER_REVIEW,
+			'reviewEligibleRegions' => [],
+		];
+
+		// Update Account status when successful response
+		$this->set_cached_review_status( $new_status );
+
+		return new Response( $new_status );
 	}
 
 	/**
