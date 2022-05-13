@@ -36,6 +36,8 @@ defined( 'ABSPATH' ) || exit;
  * - MerchantAccountState
  * - MerchantStatuses
  * - Settings
+ * - ShippingRateQuery
+ * - ShippingTimeQuery
  * - WC
  * - WP
  * - TargetAudience
@@ -94,7 +96,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * Whether we are able to sync data to the Merchant Center account.
 	 * Account must be connected and the URL we claimed with must match the site URL.
 	 *
-	 * @since x.x.xis_mc_connected
+	 * @since x.x.x
 	 * @return boolean
 	 */
 	public function is_ready_for_syncing(): bool {
