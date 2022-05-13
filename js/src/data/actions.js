@@ -10,7 +10,6 @@ import { __ } from '@wordpress/i18n';
  */
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
-import { adaptAdsCampaign } from './adapters';
 
 export function handleFetchError( error, message ) {
 	const { createNotice } = dispatch( 'core/notices' );
@@ -713,27 +712,6 @@ export function* saveTargetAudience( targetAudience ) {
 			error,
 			__(
 				'There was an error saving target audience data.',
-				'google-listings-and-ads'
-			)
-		);
-	}
-}
-
-export function* fetchAdsCampaigns() {
-	try {
-		const campaigns = yield apiFetch( {
-			path: `${ API_NAMESPACE }/ads/campaigns`,
-		} );
-
-		return {
-			type: TYPES.RECEIVE_ADS_CAMPAIGNS,
-			adsCampaigns: campaigns.map( adaptAdsCampaign ),
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error loading ads campaigns.',
 				'google-listings-and-ads'
 			)
 		);

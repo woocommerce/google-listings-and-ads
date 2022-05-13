@@ -12,6 +12,7 @@ import { REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
+import { adaptAdsCampaign } from './adapters';
 
 import {
 	handleFetchError,
@@ -149,7 +150,24 @@ export function* getTargetAudience() {
 }
 
 export function* getAdsCampaigns() {
-	yield fetchAdsCampaigns();
+	try {
+		const campaigns = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ADS_CAMPAIGNS,
+			adsCampaigns: campaigns.map( adaptAdsCampaign ),
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading ads campaigns.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
 export function* getMCSetup() {
