@@ -20,7 +20,9 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
  * @param {string} props.context Context or page on which the notice is shown, to be forwarded to the link's track event.
  * @return {JSX.Element} {@link Notice} element with the warning message and the link to the documentation.
  *
- * @fires gla_documentation_link_click with `{ context: "dashboard|reports-products|reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
+ * @fires gla_documentation_link_click with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
+ * @fires gla_documentation_link_click with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
+ * @fires gla_documentation_link_click with `{ context: "reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
  */
 const DifferentCurrencyNotice = ( { context } ) => {
 	const { googleAdsAccount } = useGoogleAdsAccount();

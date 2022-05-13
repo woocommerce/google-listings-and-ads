@@ -19,7 +19,8 @@ import './request-full-access-google-account-card.scss';
  *
  * @param {Object} props React props.
  * @param {string} props.additionalScopeEmail Specify the email to be requested additional permission scopes to Google.
- * @fires gla_google_account_connect_button_click with `{ action: 'scope', context: 'reconnect' | 'setup-mc' }`
+ * @fires gla_google_account_connect_button_click with `{ action: 'scope', context: 'reconnect' }`
+ * @fires gla_google_account_connect_button_click with `{ action: 'scope', context: 'setup-mc' }`
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
  */
 const RequestFullAccessGoogleAccountCard = ( { additionalScopeEmail } ) => {
