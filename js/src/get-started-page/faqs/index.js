@@ -247,32 +247,24 @@ const faqItems = [
 ];
 
 /**
- * Clicking on getting started page faq item to collapse or expand it.
- *
- * @event gla_get_started_faq
- * @property {string} id FAQ identifier
- * @property {string} action (`expand`|`collapse`)
- */
-
-/**
- * @fires gla_get_started_faq with `{ id: 'what-do-i-need-to-get-started', action: 'expand' }`.
- * @fires gla_get_started_faq with `{ id: 'what-do-i-need-to-get-started', action: 'collapse' }`.
- * @fires gla_get_started_faq with `{ id: 'what-if-i-already-have-free-listings', action: 'expand' }`.
- * @fires gla_get_started_faq with `{ id: 'what-if-i-already-have-free-listings', action: 'collapse' }`.
- * @fires gla_get_started_faq with `{ id: 'is-my-store-ready-to-sync-with-google', action: 'expand' }`.
- * @fires gla_get_started_faq with `{ id: 'is-my-store-ready-to-sync-with-google', action: 'collapse' }`.
- * @fires gla_get_started_faq with `{ id: 'what-is-a-performance-max-campaign', action: 'expand' }`.
- * @fires gla_get_started_faq with `{ id: 'what-is-a-performance-max-campaign', action: 'collapse' }`.
- * @fires gla_get_started_faq with `{ id: 'what-are-free-listings', action: 'expand' }`.
- * @fires gla_get_started_faq with `{ id: 'what-are-free-listings', action: 'collapse' }`.
- * @fires gla_get_started_faq with `{ id: 'where-to-track-free-listings-and-performance-max-campaign-performance', action: 'expand' }`.
- * @fires gla_get_started_faq with `{ id: 'where-to-track-free-listings-and-performance-max-campaign-performance', action: 'collapse' }`.
- * @fires gla_get_started_faq with `{ id: 'how-to-sync-products-to-google-free-listings', action: 'expand' }`.
- * @fires gla_get_started_faq with `{ id: 'how-to-sync-products-to-google-free-listings', action: 'collapse' }`.
- * @fires gla_get_started_faq with `{ id: 'can-i-run-both-shopping-ads-and-free-listings-campaigns', action: 'expand' }`.
- * @fires gla_get_started_faq with `{ id: 'can-i-run-both-shopping-ads-and-free-listings-campaigns', action: 'collapse' }`.
- * @fires gla_get_started_faq with `{ id: 'how-can-i-get-the-ad-credit-offer', action: 'expand' }`.
- * @fires gla_get_started_faq with `{ id: 'how-can-i-get-the-ad-credit-offer', action: 'collapse' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'collapse' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'what-if-i-already-have-free-listings', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'what-if-i-already-have-free-listings', action: 'collapse' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'is-my-store-ready-to-sync-with-google', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'is-my-store-ready-to-sync-with-google', action: 'collapse' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'what-is-a-performance-max-campaign', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'what-is-a-performance-max-campaign', action: 'collapse' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'what-are-free-listings', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'what-are-free-listings', action: 'collapse' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'where-to-track-free-listings-and-performance-max-campaign-performance', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'where-to-track-free-listings-and-performance-max-campaign-performance', action: 'collapse' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'how-to-sync-products-to-google-free-listings', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'how-to-sync-products-to-google-free-listings', action: 'collapse' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'can-i-run-both-shopping-ads-and-free-listings-campaigns', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'can-i-run-both-shopping-ads-and-free-listings-campaigns', action: 'collapse' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'how-can-i-get-the-ad-credit-offer', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'get-started', id: 'how-can-i-get-the-ad-credit-offer', action: 'collapse' }`.
  * @fires gla_documentation_link_click with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#general-requirements' }`.
  * @fires gla_documentation_link_click with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
  * @fires gla_documentation_link_click with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-merchant-center-requirements' }`.
@@ -285,7 +277,8 @@ const Faqs = () => {
 	return (
 		<FaqsPanel
 			className="gla-get-started-faqs"
-			trackName="gla_get_started_faq"
+			trackName="gla_faq"
+			context="get-started"
 			faqItems={ faqItems }
 		/>
 	);
