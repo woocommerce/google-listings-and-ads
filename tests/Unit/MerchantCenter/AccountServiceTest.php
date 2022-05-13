@@ -552,6 +552,10 @@ class AccountServiceTest extends UnitTest {
 			->method( 'update_account' )
 			->with( $this->get_account_with_url( get_home_url() ) );
 
+		$this->options->expects( $this->once() )
+			->method( 'delete')
+			->with( OptionsInterface::CLAIMED_URL_HASH );
+
 		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->switch_url( self::TEST_ACCOUNT_ID ) );
 	}
 
