@@ -55,9 +55,9 @@ trait MerchantTrait {
 		return $account;
 	}
 
-	public function get_status_website_claimed(): AccountStatus {
+	public function get_status_website_claimed( bool $claimed = true ): AccountStatus {
 		$status = new AccountStatus();
-		$status->setWebsiteClaimed( true );
+		$status->setWebsiteClaimed( $claimed );
 
 		return $status;
 	}

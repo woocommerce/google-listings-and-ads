@@ -203,7 +203,7 @@ class Merchant implements OptionsAwareInterface {
 	public function get_claimed_url_hash(): ?string {
 		$claimed_url_hash = $this->options->get( OptionsInterface::CLAIMED_URL_HASH );
 
-		if ( empty( $hashclaimed_url_ ) && $this->options->get_merchant_id() ) {
+		if ( empty( $claimed_url_hash ) && $this->options->get_merchant_id() ) {
 			try {
 				$account_url = $this->get_account()->getWebsiteUrl();
 
