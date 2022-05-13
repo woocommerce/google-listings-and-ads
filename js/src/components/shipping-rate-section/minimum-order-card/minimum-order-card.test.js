@@ -59,7 +59,7 @@ describe( 'MinimumOrderCard', () => {
 			jest.clearAllMocks();
 		} );
 
-		test( 'When the new minimum order value is provided for a remianing country, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold` set to the given value', async () => {
+		test( 'When the new minimum order value is provided for a remaining country, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold` set to the given value', async () => {
 			// Open "Add another…" modal.
 			userEvent.click( rendered.getByRole( 'button', { name: /Add/ } ) );
 			// Input some value.
