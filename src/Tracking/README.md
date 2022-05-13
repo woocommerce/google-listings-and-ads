@@ -198,15 +198,21 @@ When a documentation link is clicked.
 `href` | `string` | link's URL
 #### Emitters
 - [`AppDocumentationLink`](../../js/src/components/app-documentation-link/index.js#L29)
-- [`ContactInformation`](../../js/src/components/contact-information/index.js#L76) with `{ context: 'setup-mc-contact-information|settings-no-phone-number-notice|settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
-- [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L25) with `{ context: "dashboard|reports-products|reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
+- [`ContactInformation`](../../js/src/components/contact-information/index.js#L78)
+	- with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
+	- with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
+	- with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
+- [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L27)
+	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
+	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
+	- with `{ context: "reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 - [`FormContent`](../../js/src/components/free-listings/choose-audience/form-content.js#L31) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`ShippingTimeSection`](../../js/src/components/free-listings/configure-product-listings/shipping-time-section.js#L17) with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 - [`TaxRate`](../../js/src/components/free-listings/configure-product-listings/tax-rate.js#L21)
 	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-read-more', href: 'https://support.google.com/merchants/answer/160162' }`
 	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
-- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L22) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
-- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L25) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
+- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
+- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
 - [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L36) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
 - [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L32)
 	- with `{ context: 'setup-ads', link_id: 'shopping-ads-policies', href: 'https://support.google.com/merchants/answer/6149970' }`
@@ -216,7 +222,7 @@ When a documentation link is clicked.
 - [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L22)
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
-- [`Faqs`](../../js/src/get-started-page/faqs/index.js#L267)
+- [`Faqs`](../../js/src/get-started-page/faqs/index.js#L276)
 	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#general-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
 	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-merchant-center-requirements' }`.
@@ -237,7 +243,7 @@ When a documentation link is clicked.
 - [`CreateCampaign`](../../js/src/setup-ads/ads-stepper/create-campaign/index.js#L21) with `{ context: 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 - [`FreeAdCredit`](../../js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L27) with `{ context: 'setup-ads', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
 - [`FormContent`](../../js/src/setup-mc/setup-stepper/choose-audience/form-content.js#L31) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
-- [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L74) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
+- [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L69) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
 
 ### [`gla_edit_mc_phone_number`](../../js/src/components/contact-information/phone-number-card/phone-number-card-preview.js#L13)
 Triggered when phone number edit button is clicked.
@@ -291,6 +297,40 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 #### Emitters
 - [`StoreAddressCard`](../../js/src/components/contact-information/store-address-card.js#L39) Whenever "Edit in WooCommerce Settings" button is clicked.
 
+### [`gla_faq`](../../js/src/components/faqs-panel/index.js#L22)
+Clicking on faq item to collapse or expand it.
+#### Properties
+|   |   |   |
+|---|---|---|
+`id` | `string` | FAQ identifier
+`action` | `string` | (`expand`\|`collapse`)
+`context` | `string` | Indicates which page / module the FAQ is in
+#### Emitters
+- [`Faqs`](../../js/src/get-started-page/faqs/index.js#L276)
+	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'expand' }`.
+	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'collapse' }`.
+	- with `{ context: 'get-started', id: 'what-if-i-already-have-free-listings', action: 'expand' }`.
+	- with `{ context: 'get-started', id: 'what-if-i-already-have-free-listings', action: 'collapse' }`.
+	- with `{ context: 'get-started', id: 'is-my-store-ready-to-sync-with-google', action: 'expand' }`.
+	- with `{ context: 'get-started', id: 'is-my-store-ready-to-sync-with-google', action: 'collapse' }`.
+	- with `{ context: 'get-started', id: 'what-is-a-performance-max-campaign', action: 'expand' }`.
+	- with `{ context: 'get-started', id: 'what-is-a-performance-max-campaign', action: 'collapse' }`.
+	- with `{ context: 'get-started', id: 'what-are-free-listings', action: 'expand' }`.
+	- with `{ context: 'get-started', id: 'what-are-free-listings', action: 'collapse' }`.
+	- with `{ context: 'get-started', id: 'where-to-track-free-listings-and-performance-max-campaign-performance', action: 'expand' }`.
+	- with `{ context: 'get-started', id: 'where-to-track-free-listings-and-performance-max-campaign-performance', action: 'collapse' }`.
+	- with `{ context: 'get-started', id: 'how-to-sync-products-to-google-free-listings', action: 'expand' }`.
+	- with `{ context: 'get-started', id: 'how-to-sync-products-to-google-free-listings', action: 'collapse' }`.
+	- with `{ context: 'get-started', id: 'can-i-run-both-shopping-ads-and-free-listings-campaigns', action: 'expand' }`.
+	- with `{ context: 'get-started', id: 'can-i-run-both-shopping-ads-and-free-listings-campaigns', action: 'collapse' }`.
+	- with `{ context: 'get-started', id: 'how-can-i-get-the-ad-credit-offer', action: 'expand' }`.
+	- with `{ context: 'get-started', id: 'how-can-i-get-the-ad-credit-offer', action: 'collapse' }`.
+- [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L69)
+	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-wp-account', action: 'expand' }`.
+	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-wp-account', action: 'collapse' }`.
+	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'expand' }`.
+	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'collapse' }`.
+
 ### [`gla_filter`](../../js/src/utils/recordEvent.js#L64)
 Triggered when changing products & variations filter,
  with data that comes from
@@ -312,22 +352,12 @@ Clicking on the link to view free ad credit value by country.
 |---|---|---|
 `context` | `string` | Indicates which page the link is in.
 #### Emitters
-- [`FreeAdCredit`](../../js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L27)
+- [`FreeAdCredit`](../../js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L27) with `{ context: 'setup-ads' }`.
 
 ### [`gla_free_campaign_edited`](../../js/src/edit-free-campaign/index.js#L48)
 Saving changes to the free campaign.
 #### Emitters
 - [`EditFreeCampaign`](../../js/src/edit-free-campaign/index.js#L64)
-
-### [`gla_get_started_faq`](../../js/src/get-started-page/faqs/index.js#L249)
-Clicking on getting started page faq item to collapse or expand it.
-#### Properties
-|   |   |   |
-|---|---|---|
-`id` | `string` | FAQ identifier
-`action` | `string` | (`expand`\|`collapse`)
-#### Emitters
-- [`Faqs`](../../js/src/get-started-page/faqs/index.js#L267)
 
 ### [`gla_google_account_connect_button_click`](../../js/src/utils/recordEvent.js#L92)
 Clicking on the button to connect Google account.
@@ -337,8 +367,12 @@ Clicking on the button to connect Google account.
 `context` | `string` | (`setup-mc`\|`setup-ads`\|`reconnect`) - indicate the button is clicked from which page.
 `action` | `string` | (`authorization`\|`scope`) 	- `authorization` is used when the plugin has not been authorized yet and requests Google account access and permission scopes from users.   - `scope` is used when requesting required permission scopes from users in order to proceed with more plugin functions. Added with the Partial OAuth feature (aka Incremental Authorization).
 #### Emitters
-- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L22) with `{ action: 'authorization', context: 'reconnect' | 'setup-mc' }`
-- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L25) with `{ action: 'scope', context: 'reconnect' | 'setup-mc' }`
+- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23)
+	- with `{ action: 'authorization', context: 'reconnect' }`
+	- with `{ action: 'authorization', context: 'setup-mc' }`
+- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26)
+	- with `{ action: 'scope', context: 'reconnect' }`
+	- with `{ action: 'scope', context: 'setup-mc' }`
 - [`AuthorizeAds`](../../js/src/components/google-ads-account-card/authorize-ads.js#L21) with `{ action: 'scope', context: 'setup-ads' }`
 
 ### [`gla_google_account_connect_different_account_button_click`](../../js/src/components/google-account-card/connected-google-account-card.js#L15)
@@ -511,16 +545,6 @@ Setup Merchant Center
 - [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L30) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started-with-video' }`.
 - [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L25) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
 - [`SetupMCTopBar`](../../js/src/setup-mc/top-bar/index.js#L17) with `{ target: 'back', trigger: 'click' }`.
-
-### [`gla_setup_mc_faq`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L62)
-Clicking on faq items to collapse or expand it in the Setup Merchant Center page
-#### Properties
-|   |   |   |
-|---|---|---|
-`id` | `string` | FAQ identifier
-`action` | `string` | (`expand`\|`collapse`)
-#### Emitters
-- [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L74)
 
 ### [`gla_table_go_to_page`](../../js/src/utils/recordEvent.js#L10)
 When table pagination is changed by entering page via "Go to page" input.
