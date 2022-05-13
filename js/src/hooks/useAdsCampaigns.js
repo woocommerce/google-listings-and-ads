@@ -23,10 +23,10 @@ const selectorName = 'getAdsCampaigns';
 /**
  * A hook that calls `getAdsCampaigns` selector to load current campaigns
  * from merchant's Google Ads account if connected.
- *
+ * @param {object} query parameters to pass to ads/campaigns ednpoint. Currently it is only accepting one parameter: exclude_removed=true|false
  * @return {AdsCampaignsPayload} The data and its state.
  */
-const useAdsCampaigns = () => {
+const useAdsCampaigns = ( query = { exclude_removed: true } ) => {
 	return useSelect( ( select ) => {
 		// TODO: ideally adsSetupComplete should be retrieved from API endpoint
 		// and then put into wp-data.
@@ -42,7 +42,7 @@ const useAdsCampaigns = () => {
 		}
 
 		const selector = select( STORE_KEY );
-		const data = selector[ selectorName ]();
+		const data = selector[ selectorName ]( query );
 		const loading = selector.isResolving( selectorName );
 		const loaded = selector.hasFinishedResolution( selectorName );
 

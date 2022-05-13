@@ -149,10 +149,10 @@ export function* getTargetAudience() {
 	yield fetchTargetAudience();
 }
 
-export function* getAdsCampaigns() {
+export function* getAdsCampaigns( query ) {
 	try {
 		const campaigns = yield apiFetch( {
-			path: `${ API_NAMESPACE }/ads/campaigns`,
+			path: addQueryArgs( `${ API_NAMESPACE }/ads/campaigns`, query ),
 		} );
 
 		return {

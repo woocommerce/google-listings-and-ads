@@ -104,7 +104,7 @@ export const getTargetAudience = ( state ) => {
 	return state.mc.target_audience;
 };
 
-export const getAdsCampaigns = ( state ) => {
+export const getAdsCampaigns = ( state, query ) => {
 	return state.ads_campaigns;
 };
 
