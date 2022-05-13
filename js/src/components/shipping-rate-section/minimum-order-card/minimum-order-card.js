@@ -20,7 +20,7 @@ import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 import MinimumOrderInputControl from './minimum-order-input-control';
 import { AddMinimumOrderFormModal } from './minimum-order-form-modals';
 import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
-import { changeGroup } from './changeGroup';
+import { changeMinimumOrderGroup } from './changeMinimumOrderGroup';
 import './minimum-order-card.scss';
 
 const MinimumOrderCard = ( props ) => {
@@ -43,10 +43,18 @@ const MinimumOrderCard = ( props ) => {
 					countryOptions={ countryOptions }
 					value={ groups[ 0 ] }
 					onChange={ ( newGroup ) =>
-						onChange( changeGroup( value, groups[ 0 ], newGroup ) )
+						onChange(
+							changeMinimumOrderGroup(
+								value,
+								groups[ 0 ],
+								newGroup
+							)
+						)
 					}
 					onDelete={ () =>
-						onChange( changeGroup( value, groups[ 0 ] ) )
+						onChange(
+							changeMinimumOrderGroup( value, groups[ 0 ] )
+						)
 					}
 				/>
 			);
@@ -79,11 +87,17 @@ const MinimumOrderCard = ( props ) => {
 							value={ group }
 							onChange={ ( newGroup ) =>
 								onChange(
-									changeGroup( value, group, newGroup )
+									changeMinimumOrderGroup(
+										value,
+										group,
+										newGroup
+									)
 								)
 							}
 							onDelete={ () =>
-								onChange( changeGroup( value, group ) )
+								onChange(
+									changeMinimumOrderGroup( value, group )
+								)
 							}
 						/>
 					);
@@ -110,7 +124,11 @@ const MinimumOrderCard = ( props ) => {
 									initialValues={ emptyThresholdGroup }
 									onSubmit={ ( newGroup ) =>
 										onChange(
-											changeGroup( value, null, newGroup )
+											changeMinimumOrderGroup(
+												value,
+												null,
+												newGroup
+											)
 										)
 									}
 								/>

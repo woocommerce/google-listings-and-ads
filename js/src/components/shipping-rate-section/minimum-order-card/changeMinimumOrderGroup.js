@@ -15,7 +15,7 @@
  * @param {MinimumOrderGroup} [oldGroup] Old minimum order group.
  * @param {MinimumOrderGroup} [newGroup] New minimum order group.
  */
-export const changeGroup = ( value, oldGroup, newGroup ) => {
+export const changeMinimumOrderGroup = ( value, oldGroup, newGroup ) => {
 	return value.map( ( shippingRate ) => {
 		const newShippingRate = {
 			...shippingRate,

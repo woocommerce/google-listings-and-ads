@@ -1,9 +1,9 @@
 /**
  * Internal dependencies
  */
-import { changeGroup } from './changeGroup';
+import { changeMinimumOrderGroup } from './changeMinimumOrderGroup';
 
-describe( 'changeGroup( value, oldGroup, newGroup )', () => {
+describe( 'changeMinimumOrderGroup', () => {
 	const value = Object.freeze( [
 		{
 			id: '1',
@@ -42,7 +42,9 @@ describe( 'changeGroup( value, oldGroup, newGroup )', () => {
 			threshold: 30,
 		};
 
-		expect( changeGroup( value, null, newGroup ) ).toStrictEqual( [
+		expect(
+			changeMinimumOrderGroup( value, null, newGroup )
+		).toStrictEqual( [
 			{
 				id: '1',
 				country: 'US',
@@ -83,7 +85,7 @@ describe( 'changeGroup( value, oldGroup, newGroup )', () => {
 			threshold: 50,
 		};
 
-		expect( changeGroup( value, oldGroup ) ).toStrictEqual( [
+		expect( changeMinimumOrderGroup( value, oldGroup ) ).toStrictEqual( [
 			{
 				id: '1',
 				country: 'US',
@@ -126,7 +128,9 @@ describe( 'changeGroup( value, oldGroup, newGroup )', () => {
 			threshold: 80,
 		};
 
-		expect( changeGroup( value, oldGroup, newGroup ) ).toStrictEqual( [
+		expect(
+			changeMinimumOrderGroup( value, oldGroup, newGroup )
+		).toStrictEqual( [
 			{
 				id: '1',
 				country: 'US',
@@ -170,7 +174,9 @@ describe( 'changeGroup( value, oldGroup, newGroup )', () => {
 			countries: [ 'CN', 'US' ],
 		};
 
-		expect( changeGroup( value, oldGroup, newGroup ) ).toStrictEqual( [
+		expect(
+			changeMinimumOrderGroup( value, oldGroup, newGroup )
+		).toStrictEqual( [
 			{
 				id: '1',
 				country: 'US',
@@ -217,7 +223,9 @@ describe( 'changeGroup( value, oldGroup, newGroup )', () => {
 			threshold: 88,
 		};
 
-		expect( changeGroup( value, oldGroup, newGroup ) ).toStrictEqual( [
+		expect(
+			changeMinimumOrderGroup( value, oldGroup, newGroup )
+		).toStrictEqual( [
 			{
 				id: '1',
 				country: 'US',
