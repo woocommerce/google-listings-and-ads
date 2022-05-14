@@ -177,6 +177,15 @@ export function* getAdsCampaigns( query ) {
 	}
 }
 
+getAdsCampaigns.shouldInvalidate = ( action, query ) => {
+	return (
+		( action.type === TYPES.UPDATE_ADS_CAMPAIGN ||
+			action.type === TYPES.DELETE_ADS_CAMPAIGN ||
+			action.type === TYPES.CREATE_ADS_CAMPAIGN ) &&
+		query?.exclude_removed === false
+	);
+};
+
 export function* getMCSetup() {
 	yield fetchMCSetup();
 }
