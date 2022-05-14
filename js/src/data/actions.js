@@ -48,7 +48,7 @@ export function handleFetchError( error, message ) {
  * @typedef {Object} Campaign
  * @property {number} id Campaign ID.
  * @property {string} name Campaign name.
- * @property {'enabled'|'paused'} status Campaign is currently running or has been paused.
+ * @property {'enabled'|'paused'|'removed'} status Campaign is currently running, has been paused or removed.
  * @property {number} amount Amount of daily budget for running ads.
  * @property {CountryCode} country The sales country of this campain.
  *   Please note that this is a targeting country for advertising,
