@@ -105,6 +105,10 @@ export const getTargetAudience = ( state ) => {
 };
 
 export const getAdsCampaigns = ( state, query ) => {
+	if ( query?.exclude_removed === false ) {
+		return state.all_ads_campaigns;
+	}
+
 	return state.ads_campaigns;
 };
 
