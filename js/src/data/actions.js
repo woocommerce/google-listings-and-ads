@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
+import { adaptAdsCampaign } from './adapters';
 
 export function handleFetchError( error, message ) {
 	const { createNotice } = dispatch( 'core/notices' );
