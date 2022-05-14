@@ -8,6 +8,7 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '.~/data';
 import { glaData } from '.~/constants';
+import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 
 const selectorName = 'getAdsCampaigns';
 
@@ -26,32 +27,42 @@ const selectorName = 'getAdsCampaigns';
  * @param {object} query parameters to pass to ads/campaigns ednpoint. Currently it is only accepting one parameter: exclude_removed=true|false
  * @return {AdsCampaignsPayload} The data and its state.
  */
-const useAdsCampaigns = ( query = { exclude_removed: true } ) => {
-	return useSelect( ( select ) => {
-		// TODO: ideally adsSetupComplete should be retrieved from API endpoint
-		// and then put into wp-data.
-		// With that in place, then we don't need to depend on glaData
-		// which requires force reload using window.location.href.
-		const { adsSetupComplete } = glaData;
-		if ( ! adsSetupComplete ) {
+const useAdsCampaigns = ( ...args ) => {
+	const argsRefValue = useIsEqualRefValue( args );
+
+	return useSelect(
+		( select ) => {
+			// TODO: ideally adsSetupComplete should be retrieved from API endpoint
+			// and then put into wp-data.
+			// With that in place, then we don't need to depend on glaData
+			// which requires force reload using window.location.href.
+			const { adsSetupComplete } = glaData;
+
+			if ( ! adsSetupComplete ) {
+				return {
+					loading: false,
+					loaded: true,
+					data: [],
+				};
+			}
+
+			const selector = select( STORE_KEY );
+			const data = selector[ selectorName ]( ...argsRefValue );
+			const loading = selector.isResolving( selectorName, argsRefValue );
+
+			const loaded = selector.hasFinishedResolution(
+				selectorName,
+				argsRefValue
+			);
+
 			return {
-				loading: false,
-				loaded: true,
-				data: [],
+				loading,
+				loaded,
+				data,
 			};
-		}
-
-		const selector = select( STORE_KEY );
-		const data = selector[ selectorName ]( query );
-		const loading = selector.isResolving( selectorName );
-		const loaded = selector.hasFinishedResolution( selectorName );
-
-		return {
-			loading,
-			loaded,
-			data,
-		};
-	}, [] );
+		},
+		[ argsRefValue ]
+	);
 };
 
 export default useAdsCampaigns;
