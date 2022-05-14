@@ -31,6 +31,7 @@ const DEFAULT_STATE = {
 		contact: null,
 	},
 	ads_campaigns: null,
+	all_ads_campaigns: null,
 	mc_setup: null,
 	mc_product_statistics: null,
 	mc_issues: null,
@@ -269,7 +270,15 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				...( state.ads_campaigns || [] ),
 				action.createdCampaign,
 			];
-			return setIn( state, 'ads_campaigns', adsCampaigns );
+			const allAdsCampaigns = [
+				...( state.all_ads_campaigns || [] ),
+				action.createdCampaign,
+			];
+
+			return chainState( state )
+				.setIn( 'ads_campaigns', adsCampaigns )
+				.setIn( 'all_ads_campaigns', allAdsCampaigns )
+				.end();
 		}
 
 		case TYPES.UPDATE_ADS_CAMPAIGN: {
@@ -285,7 +294,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const newAdsCampaigns = [ ...state.ads_campaigns ];
 			newAdsCampaigns[ idx ] = updatedCampaign;
 
-			return setIn( state, 'ads_campaigns', newAdsCampaigns );
+			const allAdsCampaigns = (
+				state.all_ads_campaigns || []
+			).map( ( el ) => ( el.id === id ? { ...el, ...data } : el ) );
+
+			return chainState( state )
+				.setIn( 'ads_campaigns', newAdsCampaigns )
+				.setIn( 'all_ads_campaigns', allAdsCampaigns )
+				.end();
 		}
 
 		case TYPES.DELETE_ADS_CAMPAIGN: {
@@ -293,7 +309,16 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const adsCampaign = state.ads_campaigns.filter(
 				( el ) => el.id !== id
 			);
-			return setIn( state, 'ads_campaigns', adsCampaign );
+			const allAdsCampaigns = (
+				state.all_ads_campaigns || []
+			).map( ( el ) =>
+				el.id === id ? { ...el, status: 'removed' } : el
+			);
+
+			return chainState( state )
+				.setIn( 'ads_campaigns', adsCampaign )
+				.setIn( 'all_ads_campaigns', allAdsCampaigns )
+				.end();
 		}
 
 		case TYPES.RECEIVE_MC_SETUP: {
