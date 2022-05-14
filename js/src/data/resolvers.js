@@ -155,6 +155,13 @@ export function* getAdsCampaigns( query ) {
 			path: addQueryArgs( `${ API_NAMESPACE }/ads/campaigns`, query ),
 		} );
 
+		if ( query?.exclude_removed === false ) {
+			return {
+				type: TYPES.RECEIVE_ALL_ADS_CAMPAIGNS,
+				adsCampaigns: campaigns.map( adaptAdsCampaign ),
+			};
+		}
+
 		return {
 			type: TYPES.RECEIVE_ADS_CAMPAIGNS,
 			adsCampaigns: campaigns.map( adaptAdsCampaign ),
