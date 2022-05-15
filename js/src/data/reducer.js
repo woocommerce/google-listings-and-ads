@@ -262,6 +262,9 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ADS_CAMPAIGNS: {
+			if ( action.query?.exclude_removed === false ) {
+				return setIn( state, 'all_ads_campaigns', action.adsCampaigns );
+			}
 			return setIn( state, 'ads_campaigns', action.adsCampaigns );
 		}
 
