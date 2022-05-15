@@ -1,0 +1,79 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
+
+use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class BeforeCampaignMigration
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
+ */
+class BeforeCampaignMigration extends AbstractNote implements AdsAwareInterface {
+
+	use AdsAwareTrait;
+	use PluginHelper;
+	use Utilities;
+
+	/**
+	 * Get the note's unique name.
+	 *
+	 * @return string
+	 */
+	public function get_name(): string {
+		return 'gla-before-campaign-migration';
+	}
+
+	/**
+	 * Get the note entry.
+	 */
+	public function get_entry(): NoteEntry {
+		$note = new NoteEntry();
+
+		$note->set_title( __( 'Your Google Listings & Ads campaigns will soon be automatically upgraded', 'google-listings-and-ads' ) );
+		$note->set_content(
+			__(
+				'From July through September, Google will be upgrading your existing campaigns from Smart Shopping to Performance Max, giving you the same benefits, plus expanded reach. There will be no impact to your spend or campaign settings due to this upgrade.',
+				'google-listings-and-ads'
+			)
+		);
+		$note->set_content_data( (object) [] );
+		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
+		$note->set_layout( 'banner' );
+		$note->set_image( '' );
+		$note->set_name( $this->get_name() );
+		$note->set_source( $this->get_slug() );
+		// TODO update learn more link once it is confirmed
+		$note->add_action(
+			'learn-more-upgrade-campaign',
+			__( 'Learn more about this upgrade', 'google-listings-and-ads' ),
+			'#'
+		);
+
+		return $note;
+	}
+
+
+	/**
+	 * Checks if a note can and should be added.
+	 *
+	 * - checks if the campaign migration is not completed
+	 *
+	 * @return bool
+	 */
+	public function should_be_added(): bool {
+		if ( $this->has_been_added() ) {
+			return false;
+		}
+
+		return ! $this->ads_service->is_migration_completed();
+
+	}
+}
