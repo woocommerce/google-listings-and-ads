@@ -28,7 +28,6 @@ import {
 	fetchExistingGoogleAdsAccounts,
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
-	fetchAdsCampaigns,
 	fetchMCSetup,
 	receiveGoogleAccountAccess,
 	receiveReport,
