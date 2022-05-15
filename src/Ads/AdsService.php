@@ -63,4 +63,15 @@ class AdsService implements OptionsAwareInterface, Service {
 		return $google_connected && $this->is_setup_complete();
 	}
 
+	/**
+	 * Get whether Ads Campaign are migrated.
+	 *
+	 * @since x.x.x
+	 * @return bool
+	 */
+	public function is_migration_completed(): bool {
+		$convert_status = $this->options->get( OptionsInterface::CAMPAIGN_CONVERT_STATUS );
+		return is_array( $convert_status ) && isset( $convert_status['status'] ) && $convert_status['status'] === 'converted';
+	}
+
 }
