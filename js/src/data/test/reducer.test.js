@@ -405,6 +405,7 @@ describe( 'reducer', () => {
 
 	describe( 'Ads campaigns', () => {
 		const path = 'ads_campaigns';
+		const pathAllAds = 'all_ads_campaigns';
 
 		it( 'should return with received ads campaigns', () => {
 			const action = {
@@ -491,6 +492,18 @@ describe( 'reducer', () => {
 				{ id: 123 },
 				{ id: 789 },
 			] );
+		} );
+
+		it( 'should return with received all ads campaigns if exclude removed is false', () => {
+			const action = {
+				type: TYPES.RECEIVE_ADS_CAMPAIGNS,
+				adsCampaigns: [ { id: 123 }, { id: 456 } ],
+				query: { exclude_removed: false },
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( pathAllAds, action.adsCampaigns );
 		} );
 	} );
 
