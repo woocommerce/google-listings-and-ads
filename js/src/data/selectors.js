@@ -104,6 +104,19 @@ export const getTargetAudience = ( state ) => {
 	return state.mc.target_audience;
 };
 
+/**
+ * @typedef {import('.~/data/actions').Campaign} Campaign
+ */
+
+/**
+ * Get the Ads Campaign
+ *
+ * @param  {Object} state The current store state will be injected by `wp.data`.
+ * @param  {Object} query Campaigns options.
+ * @param  {boolean} query.exclude_removed Whether to include removed campaigns.
+ *
+ * @return {Array<Campaign>} campaign data.
+ */
 export const getAdsCampaigns = ( state, query ) => {
 	if ( query?.exclude_removed === false ) {
 		return state.all_ads_campaigns;

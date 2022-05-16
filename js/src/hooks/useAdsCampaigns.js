@@ -25,7 +25,7 @@ const selectorName = 'getAdsCampaigns';
  * A hook that calls `getAdsCampaigns` selector to load current campaigns
  * from merchant's Google Ads account if connected.
  *
- * @param {...*} args Arguments to be forwarded to the selector. For example: {exclude_removed: true|false}
+ * @param {...*} args Arguments to be forwarded to the selector. The only allowed argument is {exclude_removed: true|false}
  * @return {AdsCampaignsPayload} The data and its state.
  */
 const useAdsCampaigns = ( ...args ) => {
