@@ -494,7 +494,7 @@ describe( 'reducer', () => {
 			] );
 		} );
 
-		it( 'should return with received all ads campaigns if exclude removed is false', () => {
+		it( 'should return with all ads campaigns if exclude removed is false', () => {
 			const action = {
 				type: TYPES.RECEIVE_ADS_CAMPAIGNS,
 				adsCampaigns: [ { id: 123 }, { id: 456 } ],
