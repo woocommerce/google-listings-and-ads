@@ -33,10 +33,10 @@ import { useAppDispatch } from '.~/data';
  * @param {{ id: number }} props.googleMCAccount A data payload object containing the user's Google Merchant Center account ID.
  * @param {boolean} [props.hideAccountSwitch=false] Indicate whether hide the account switch block at the card footer.
  */
-export default function ConnectedGoogleMCAccountCard( {
+const ConnectedGoogleMCAccountCard = ( {
 	googleMCAccount,
 	hideAccountSwitch = false,
-} ) {
+} ) => {
 	const { createNotice, removeNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 
@@ -114,4 +114,6 @@ export default function ConnectedGoogleMCAccountCard( {
 			) }
 		</AccountCard>
 	);
-}
+};
+
+export default ConnectedGoogleMCAccountCard;

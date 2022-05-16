@@ -29,11 +29,11 @@ import useSwitchGoogleAccount from './useSwitchGoogleAccount';
  *
  * @fires gla_google_account_connect_different_account_button_click
  */
-export default function ConnectedGoogleAccountCard( {
+const ConnectedGoogleAccountCard = ( {
 	googleAccount,
 	helper,
 	hideAccountSwitch = false,
-} ) {
+} ) => {
 	const [ handleSwitch, { loading } ] = useSwitchGoogleAccount();
 
 	return (
@@ -59,4 +59,6 @@ export default function ConnectedGoogleAccountCard( {
 			) }
 		</AccountCard>
 	);
-}
+};
+
+export default ConnectedGoogleAccountCard;

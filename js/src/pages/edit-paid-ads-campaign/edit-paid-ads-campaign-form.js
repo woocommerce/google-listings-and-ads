@@ -19,6 +19,10 @@ import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
 import validateForm from '.~/utils/paid-ads/validateForm';
 
+/**
+ * @fires gla_documentation_link_click with `{ context: 'edit-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+ */
+
 const EditPaidAdsCampaignForm = ( props ) => {
 	const { campaign } = props;
 	const { amount, allowMultiple, displayCountries: countryCodes } = campaign;

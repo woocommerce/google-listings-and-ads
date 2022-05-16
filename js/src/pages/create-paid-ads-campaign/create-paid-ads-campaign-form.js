@@ -24,6 +24,7 @@ import { getDashboardUrl } from '.~/utils/urls';
 
 /**
  * @fires gla_launch_paid_campaign_button_click on submit
+ * @fires gla_documentation_link_click with `{ context: 'create-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  */
 const CreatePaidAdsCampaignForm = () => {
 	const [ loading, setLoading ] = useState( false );

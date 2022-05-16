@@ -29,6 +29,7 @@ import './index.scss';
 
 /**
  * @fires gla_ads_account_connect_button_click when "Connect" button is clicked.
+ * @fires gla_documentation_link_click with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
  * @param {Object} props React props
  * @return {JSX.Element} {@link AccountCard} filled with content.
  */

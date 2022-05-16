@@ -23,6 +23,8 @@ import './index.scss';
  * Terms and conditions agreement modal.
  *
  * @fires gla_ads_account_create_button_click When agreed by clicking "Create account".
+ * @fires gla_documentation_link_click with `{ context: 'setup-ads', link_id: 'shopping-ads-policies', href: 'https://support.google.com/merchants/answer/6149970' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
  * @param {Object} props React props
  * @param {Function} [props.onCreateAccount] Callback function when account is created
  * @param {Function} [props.onRequestClose] Callback function when the modal is closed
