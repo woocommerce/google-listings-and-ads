@@ -214,7 +214,9 @@ const TreeSelectControl = ( {
 		const step = stepDict[ event.key ];
 
 		if ( step && dropdownRef.current && filteredOptions.length ) {
-			const elements = focus.tabbable.find( dropdownRef.current );
+			const elements = focus.focusable
+				.find( dropdownRef.current )
+				.filter( ( el ) => el.type === 'checkbox' );
 			const currentIndex = elements.indexOf( event.target );
 			const index = Math.max( currentIndex + step, -1 ) % elements.length;
 			elements.at( index ).focus();
