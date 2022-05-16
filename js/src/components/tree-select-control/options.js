@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { noop } from 'lodash';
 import { Flex } from '@wordpress/components';
 import { Icon, chevronUp, chevronDown } from '@wordpress/icons';
 import classnames from 'classnames';
@@ -25,6 +26,7 @@ import Checkbox from '.~/components/tree-select-control/checkbox';
  * @param {boolean} [props.isFiltered=false] Flag to know if there is a filter applied
  * @param {Function} props.onChange Callback when an option changes
  * @param {Function} props.onNodesExpandedChange Callback when a node is expanded/collapsed
+ * @param {Function} [props.onExpanderClick] Callback when an expander is clicked.
  */
 const Options = ( {
 	options = [],
@@ -33,6 +35,7 @@ const Options = ( {
 	onChange = () => {},
 	nodesExpanded = [],
 	onNodesExpandedChange = () => {},
+	onExpanderClick = noop,
 } ) => {
 	/**
 	 * Verifies if an option is checked.
@@ -133,7 +136,8 @@ const Options = ( {
 								! hasChildren && 'is-hidden'
 							) }
 							tabIndex="-1"
-							onClick={ () => {
+							onClick={ ( e ) => {
+								onExpanderClick( e );
 								toggleExpanded( option );
 							} }
 						>
@@ -176,6 +180,7 @@ const Options = ( {
 							onChange={ onChange }
 							nodesExpanded={ nodesExpanded }
 							onNodesExpandedChange={ onNodesExpandedChange }
+							onExpanderClick={ onExpanderClick }
 						/>
 					</div>
 				) }

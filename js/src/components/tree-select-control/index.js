@@ -3,6 +3,7 @@
  */
 import { cloneDeep, noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
+import { focus } from '@wordpress/dom';
 import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
 import classnames from 'classnames';
 import {
@@ -93,6 +94,7 @@ const TreeSelectControl = ( {
 	const [ inputControlValue, setInputControlValue ] = useState( '' );
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
 
+	const dropdownRef = useRef();
 	const onDropdownVisibilityChangeRef = useRef();
 	onDropdownVisibilityChangeRef.current = onDropdownVisibilityChange;
 
@@ -204,6 +206,20 @@ const TreeSelectControl = ( {
 			setTreeVisible( true );
 			event.preventDefault();
 		}
+
+		const stepDict = {
+			[ ARROW_UP ]: -1,
+			[ ARROW_DOWN ]: 1,
+		};
+		const step = stepDict[ event.key ];
+
+		if ( step && dropdownRef.current && filteredOptions.length ) {
+			const elements = focus.tabbable.find( dropdownRef.current );
+			const currentIndex = elements.indexOf( event.target );
+			const index = Math.max( currentIndex + step, -1 ) % elements.length;
+			elements.at( index ).focus();
+			event.preventDefault();
+		}
 	};
 
 	useEffect( () => {
@@ -224,6 +240,12 @@ const TreeSelectControl = ( {
 			const option = optionsRepository[ key ];
 			return { id: key, label: option?.label };
 		} );
+	};
+
+	const handleExpanderClick = ( e ) => {
+		const elements = focus.focusable.find( dropdownRef.current );
+		const index = elements.indexOf( e.currentTarget ) + 1;
+		elements.at( index ).focus();
 	};
 
 	/**
@@ -353,6 +375,7 @@ const TreeSelectControl = ( {
 			/>
 			{ showTree && (
 				<div
+					ref={ dropdownRef }
 					className="woocommerce-tree-select-control__tree"
 					role="tree"
 					tabIndex="-1"
@@ -364,6 +387,7 @@ const TreeSelectControl = ( {
 						onChange={ handleOptionsChange }
 						nodesExpanded={ nodesExpanded }
 						onNodesExpandedChange={ setNodesExpanded }
+						onExpanderClick={ handleExpanderClick }
 					/>
 				</div>
 			) }

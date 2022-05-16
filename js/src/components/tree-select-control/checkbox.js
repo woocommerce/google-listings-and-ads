@@ -29,7 +29,6 @@ const Checkbox = ( { option, checked, className, ...props } ) => {
 						}` }
 						className="components-checkbox-control__input"
 						type="checkbox"
-						tabIndex="-1"
 						value={ option.value }
 						checked={ checked }
 						{ ...props }
