@@ -5,6 +5,7 @@ const defaultConfig = require( '@wordpress/scripts/config/jest-unit.config' );
 module.exports = {
 	...defaultConfig,
 	testEnvironment: 'jsdom',
+	setupFiles: [ 'core-js' ],
 	moduleNameMapper: {
 		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
