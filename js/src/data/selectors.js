@@ -113,7 +113,7 @@ export const getTargetAudience = ( state ) => {
  *
  * @param  {Object} state The current store state will be injected by `wp.data`.
  * @param  {Object} query Campaigns options.
- * @param  {boolean} query.exclude_removed Whether to include removed campaigns.
+ * @param  {boolean} query.exclude_removed Whether to exclude removed campaigns.
  *
  * @return {Array<Campaign>} campaign data.
  */
