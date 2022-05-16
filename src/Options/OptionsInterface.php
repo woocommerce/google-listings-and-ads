@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
  */
 interface OptionsInterface {
 
+
 	public const ADS_ACCOUNT_CURRENCY   = 'ads_account_currency';
 	public const ADS_ACCOUNT_STATE      = 'ads_account_state';
 	public const ADS_BILLING_URL        = 'ads_billing_url';
@@ -70,32 +71,32 @@ interface OptionsInterface {
 	/**
 	 * Get an option.
 	 *
-	 * @param string $name    The option name.
+	 * @param string $name The option name.
 	 * @param mixed  $default A default value for the option.
 	 *
 	 * @return mixed
 	 */
-	public function get( string $name, $default = null );
+	public function get( string $name, $default = null);
 
 	/**
 	 * Add an option.
 	 *
-	 * @param string $name  The option name.
+	 * @param string $name The option name.
 	 * @param mixed  $value The option value.
 	 *
 	 * @return bool
 	 */
-	public function add( string $name, $value ): bool;
+	public function add( string $name, $value): bool;
 
 	/**
 	 * Update an option.
 	 *
-	 * @param string $name  The option name.
+	 * @param string $name The option name.
 	 * @param mixed  $value The option value.
 	 *
 	 * @return bool
 	 */
-	public function update( string $name, $value ): bool;
+	public function update( string $name, $value): bool;
 
 	/**
 	 * Delete an option.
@@ -104,7 +105,7 @@ interface OptionsInterface {
 	 *
 	 * @return bool
 	 */
-	public function delete( string $name ): bool;
+	public function delete( string $name): bool;
 
 	/**
 	 * Helper function to retrieve the Merchant Account ID.
