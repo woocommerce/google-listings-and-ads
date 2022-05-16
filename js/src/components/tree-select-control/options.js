@@ -12,7 +12,6 @@ import { ARROW_LEFT, ARROW_RIGHT, ROOT_VALUE } from './constants';
 import Checkbox from '.~/components/tree-select-control/checkbox';
 
 /**
- * @typedef {import('./index').RepositoryOption} RepositoryOption
  * @typedef {import('./index').Option} Option
  */
 
@@ -20,13 +19,12 @@ import Checkbox from '.~/components/tree-select-control/checkbox';
  * This component renders a list of options and its children recursively
  *
  * @param {Object} props Component parameters
- * @param {RepositoryOption[]} props.options List of options to be rendered
+ * @param {Option[]} props.options List of options to be rendered
  * @param {string[]} props.value List of selected values
  * @param {string[]} props.nodesExpanded List of expanded nodes.
  * @param {boolean} [props.isFiltered=false] Flag to know if there is a filter applied
  * @param {Function} props.onChange Callback when an option changes
  * @param {Function} props.onNodesExpandedChange Callback when a node is expanded/collapsed
- * @param {Function} props.onOptionFocused Callback when an option get the focus via change or expansion
  */
 const Options = ( {
 	options = [],
@@ -35,7 +33,6 @@ const Options = ( {
 	onChange = () => {},
 	nodesExpanded = [],
 	onNodesExpandedChange = () => {},
-	onOptionFocused = () => {},
 } ) => {
 	/**
 	 * Verifies if an option is checked.
@@ -111,7 +108,7 @@ const Options = ( {
 		}
 	};
 
-	return options.map( ( option, idx ) => {
+	return options.map( ( option ) => {
 		const isRoot = option.value === ROOT_VALUE;
 		const hasChildren = !! option.children?.length;
 		const checked = isChecked( option );
@@ -137,7 +134,6 @@ const Options = ( {
 							) }
 							tabIndex="-1"
 							onClick={ () => {
-								onOptionFocused( option );
 								toggleExpanded( option );
 							} }
 						>
@@ -156,10 +152,8 @@ const Options = ( {
 								'is-partially-checked'
 						) }
 						option={ option }
-						index={ idx }
 						checked={ checked }
 						onChange={ ( e ) => {
-							onOptionFocused( option );
 							onChange( e.target.checked, option );
 						} }
 						onKeyDown={ ( e ) => {
@@ -182,7 +176,6 @@ const Options = ( {
 							onChange={ onChange }
 							nodesExpanded={ nodesExpanded }
 							onNodesExpandedChange={ onNodesExpandedChange }
-							onOptionFocused={ onOptionFocused }
 						/>
 					</div>
 				) }
