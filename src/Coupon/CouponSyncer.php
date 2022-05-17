@@ -460,7 +460,7 @@ class CouponSyncer implements Service {
 	 * @throws CouponSyncerException If Google Merchant Center is not set up and connected.
 	 */
 	protected function validate_merchant_center_setup(): void {
-		if ( ! $this->merchant_center->is_connected() ) {
+		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
 			do_action(
 				'woocommerce_gla_error',
 				'Cannot sync any coupons before setting up Google Merchant Center.',

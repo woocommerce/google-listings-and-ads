@@ -20,7 +20,7 @@ use WC_Coupon;
  * Class SyncerHooksTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
- *         
+ *
  * @property MockObject|MerchantCenterService $merchant_center
  * @property MockObject|JobRepository $job_repository
  * @property MockObject|UpdateCoupon $update_coupon_job
@@ -73,7 +73,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
         $adapted_coupon = new WCCouponAdapter( [ 'wc_coupon' => $coupon ] );
         $adapted_coupon->disable_promotion( $coupon );
-        $expected_coupon_entry = new DeleteCouponEntry( 
+        $expected_coupon_entry = new DeleteCouponEntry(
             $coupon->get_id(),
             $adapted_coupon,
             ['US' => 'google_id'] );
@@ -91,7 +91,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
         $adapted_coupon = new WCCouponAdapter( [ 'wc_coupon' => $coupon ] );
         $adapted_coupon->disable_promotion( $coupon );
-        $expected_coupon_entry = new DeleteCouponEntry( 
+        $expected_coupon_entry = new DeleteCouponEntry(
             $coupon->get_id(),
             $adapted_coupon,
             ['US' => 'google_id'] );
@@ -123,7 +123,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
         $post = $this->factory()->post->create_and_get();
         // update post
-        $this->factory()->post->update_object( 
+        $this->factory()->post->update_object(
             $post->ID,
             ['post_title' => 'Sample title'] );
         // trash post
@@ -140,10 +140,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
         $this->login_as_administrator();
 
-        $this->merchant_center = $this->createMock( 
+        $this->merchant_center = $this->createMock(
             MerchantCenterService::class );
         $this->merchant_center->expects( $this->any() )
-            ->method( 'is_connected' )
+            ->method( 'is_ready_for_syncing' )
             ->willReturn( true );
 
         $this->update_coupon_job = $this->createMock( UpdateCoupon::class );
@@ -151,14 +151,14 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
         $this->job_repository = $this->createMock( JobRepository::class );
         $this->job_repository->expects( $this->any() )
             ->method( 'get' )
-            ->willReturnMap( 
+            ->willReturnMap(
             [
                 [DeleteCoupon::class,$this->delete_coupon_job],
                 [UpdateCoupon::class,$this->update_coupon_job]] );
 
         $this->wc = $this->container->get( WC::class );
         $this->coupon_helper = $this->container->get( CouponHelper::class );
-        $this->syncer_hooks = new SyncerHooks( 
+        $this->syncer_hooks = new SyncerHooks(
             $this->coupon_helper,
             $this->job_repository,
             $this->merchant_center,

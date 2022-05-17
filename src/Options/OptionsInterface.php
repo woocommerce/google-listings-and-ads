@@ -19,6 +19,7 @@ interface OptionsInterface {
 	public const ADS_ID                 = 'ads_id';
 	public const ADS_CONVERSION_ACTION  = 'ads_conversion_action';
 	public const ADS_SETUP_COMPLETED_AT = 'ads_setup_completed_at';
+	public const CLAIMED_URL_HASH       = 'claimed_url_hash';
 	public const CONTACT_INFO_SETUP     = 'contact_info_setup';
 	public const DELAYED_ACTIVATE       = 'delayed_activate';
 	public const DB_VERSION             = 'db_version';
@@ -44,6 +45,7 @@ interface OptionsInterface {
 		self::ADS_ID                 => true,
 		self::ADS_CONVERSION_ACTION  => true,
 		self::ADS_SETUP_COMPLETED_AT => true,
+		self::CLAIMED_URL_HASH       => true,
 		self::CONTACT_INFO_SETUP     => true,
 		self::DB_VERSION             => true,
 		self::FILE_VERSION           => true,
