@@ -29,7 +29,7 @@ const selectorName = 'getAdsCampaigns';
  * @return {AdsCampaignsPayload} The data and its state.
  */
 const useAdsCampaigns = ( ...query ) => {
-	const argsRefValue = useIsEqualRefValue( query );
+	const queryRefValue = useIsEqualRefValue( query );
 
 	return useSelect(
 		( select ) => {
@@ -48,12 +48,12 @@ const useAdsCampaigns = ( ...query ) => {
 			}
 
 			const selector = select( STORE_KEY );
-			const data = selector[ selectorName ]( ...argsRefValue );
-			const loading = selector.isResolving( selectorName, argsRefValue );
+			const data = selector[ selectorName ]( ...queryRefValue );
+			const loading = selector.isResolving( selectorName, queryRefValue );
 
 			const loaded = selector.hasFinishedResolution(
 				selectorName,
-				argsRefValue
+				queryRefValue
 			);
 
 			return {
@@ -62,7 +62,7 @@ const useAdsCampaigns = ( ...query ) => {
 				data,
 			};
 		},
-		[ argsRefValue ]
+		[ queryRefValue ]
 	);
 };
 
