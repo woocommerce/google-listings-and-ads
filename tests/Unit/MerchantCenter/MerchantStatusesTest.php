@@ -29,7 +29,7 @@ class MerchantStatusesTest extends UnitTest
 	private $merchant_center_service;
 	private $account_status;
 	private $product_meta_query_helper;
-	private MerchantStatuses $merchant_statuses;
+	private $merchant_statuses;
 
 	/**
 	 * Runs before each test is executed.
