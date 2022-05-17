@@ -8,6 +8,7 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '.~/data';
 import { glaData } from '.~/constants';
+import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 
 const selectorName = 'getAdsCampaigns';
 
@@ -24,34 +25,45 @@ const selectorName = 'getAdsCampaigns';
  * A hook that calls `getAdsCampaigns` selector to load current campaigns
  * from merchant's Google Ads account if connected.
  *
+ * @param {{exclude_removed: true|false}} query Query to be forwarded to the selector.
  * @return {AdsCampaignsPayload} The data and its state.
  */
-const useAdsCampaigns = () => {
-	return useSelect( ( select ) => {
-		// TODO: ideally adsSetupComplete should be retrieved from API endpoint
-		// and then put into wp-data.
-		// With that in place, then we don't need to depend on glaData
-		// which requires force reload using window.location.href.
-		const { adsSetupComplete } = glaData;
-		if ( ! adsSetupComplete ) {
+const useAdsCampaigns = ( ...query ) => {
+	const queryRefValue = useIsEqualRefValue( query );
+
+	return useSelect(
+		( select ) => {
+			// TODO: ideally adsSetupComplete should be retrieved from API endpoint
+			// and then put into wp-data.
+			// With that in place, then we don't need to depend on glaData
+			// which requires force reload using window.location.href.
+			const { adsSetupComplete } = glaData;
+
+			if ( ! adsSetupComplete ) {
+				return {
+					loading: false,
+					loaded: true,
+					data: [],
+				};
+			}
+
+			const selector = select( STORE_KEY );
+			const data = selector[ selectorName ]( ...queryRefValue );
+			const loading = selector.isResolving( selectorName, queryRefValue );
+
+			const loaded = selector.hasFinishedResolution(
+				selectorName,
+				queryRefValue
+			);
+
 			return {
-				loading: false,
-				loaded: true,
-				data: [],
+				loading,
+				loaded,
+				data,
 			};
-		}
-
-		const selector = select( STORE_KEY );
-		const data = selector[ selectorName ]();
-		const loading = selector.isResolving( selectorName );
-		const loaded = selector.hasFinishedResolution( selectorName );
-
-		return {
-			loading,
-			loaded,
-			data,
-		};
-	}, [] );
+		},
+		[ queryRefValue ]
+	);
 };
 
 export default useAdsCampaigns;

@@ -48,7 +48,7 @@ export function handleFetchError( error, message ) {
  * @typedef {Object} Campaign
  * @property {number} id Campaign ID.
  * @property {string} name Campaign name.
- * @property {'enabled'|'paused'} status Campaign is currently running or has been paused.
+ * @property {'enabled'|'paused'|'removed'} status Campaign is currently running, has been paused or removed.
  * @property {number} amount Amount of daily budget for running ads.
  * @property {CountryCode} country The sales country of this campain.
  *   Please note that this is a targeting country for advertising,
@@ -713,27 +713,6 @@ export function* saveTargetAudience( targetAudience ) {
 			error,
 			__(
 				'There was an error saving target audience data.',
-				'google-listings-and-ads'
-			)
-		);
-	}
-}
-
-export function* fetchAdsCampaigns() {
-	try {
-		const campaigns = yield apiFetch( {
-			path: `${ API_NAMESPACE }/ads/campaigns`,
-		} );
-
-		return {
-			type: TYPES.RECEIVE_ADS_CAMPAIGNS,
-			adsCampaigns: campaigns.map( adaptAdsCampaign ),
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error loading ads campaigns.',
 				'google-listings-and-ads'
 			)
 		);
