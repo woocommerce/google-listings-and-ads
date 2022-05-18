@@ -15,7 +15,7 @@ interface ProductSyncerJobInterface {
 	/**
 	 * Get whether Merchant Center is connected and ready for syncing data.
 	 *
-	 * @since x.x.x
+	 * @since 1.13.0
 	 * @return bool
 	 */
 	public function is_mc_ready_for_syncing(): bool;

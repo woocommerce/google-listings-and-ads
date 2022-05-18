@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.12.8
+Stable tag: 1.13.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,7 +109,7 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 1.13.0 - 2022-xx-xx =
+= 1.13.0 - 2022-05-18 =
 * Add - Extending Update All Products Test Suit.
 * Add - Request a Google Merchant Account Review for disapproved accounts.
 * Fix - Address a crash problem of TreeSelectControl component when the dropdown is not showing and press the Up or Down key.

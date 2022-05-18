@@ -197,7 +197,7 @@ class Merchant implements OptionsAwareInterface {
 	 * Get hash of the site URL we used during onboarding.
 	 * If not available in a local option, it's fetched from the Merchant Center account.
 	 *
-	 * @since x.x.x
+	 * @since 1.13.0
 	 * @return string|null
 	 */
 	public function get_claimed_url_hash(): ?string {

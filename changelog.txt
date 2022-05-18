@@ -1,6 +1,6 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
-= 1.13.0 - 2022-xx-xx =
+= 1.13.0 - 2022-05-18 =
 * Add - Extending Update All Products Test Suit.
 * Add - Request a Google Merchant Account Review for disapproved accounts.
 * Fix - Address a crash problem of TreeSelectControl component when the dropdown is not showing and press the Up or Down key.
