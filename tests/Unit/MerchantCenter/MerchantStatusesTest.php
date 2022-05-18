@@ -18,7 +18,12 @@ use Google\Service\ShoppingContent;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Test Suit for MerchantStatuses
+ * @property Merchant $merchant
+ * @property MerchantIssueQuery $merchant_issue_query
+ * @property MerchantCenterService $merchant_center_service
+ * @property ShoppingContent\AccountStatus $account_status
+ * @property ProductMetaQueryHelper $product_meta_query_helper
+ * @property MerchantStatuses $merchant_statuses
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
  * @group MerchantCenterStatuses
  */
