@@ -65,9 +65,7 @@ class BeforeCampaignMigration extends AbstractNote implements AdsAwareInterface 
 
 
 	/**
-	 * Checks if a note can and should be added.
-	 *
-	 * - checks if the campaign migration is not completed
+	 * Checks if a note should be added and the campaign migration is not completed
 	 *
 	 * @return bool
 	 */
