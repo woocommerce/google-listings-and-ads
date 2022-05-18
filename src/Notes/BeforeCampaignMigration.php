@@ -5,9 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
 use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,11 +18,11 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class BeforeCampaignMigration extends AbstractNote implements AdsAwareInterface {
+class BeforeCampaignMigration extends AbstractNote implements OptionsAwareInterface, AdsAwareInterface {
 
 	use AdsAwareTrait;
 	use PluginHelper;
-	use Utilities;
+	use OptionsAwareTrait;
 
 	/**
 	 * Get the note's unique name.
