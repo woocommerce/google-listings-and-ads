@@ -9,6 +9,29 @@ import { fireEvent, render } from '@testing-library/react';
 import TreeSelectControl from '.~/components/tree-select-control/index';
 import Options from '.~/components/tree-select-control/options';
 
+/**
+ * In jsdom, the width and height of all elements are zero,
+ * so setting `offsetWidth` to avoid them to be filtered out
+ * by `isVisible` in focusable.
+ * Ref: https://github.com/WordPress/gutenberg/blob/%40wordpress/dom%403.1.1/packages/dom/src/focusable.js#L42-L48
+ */
+jest.mock( '@wordpress/dom', () => {
+	const { focus } = jest.requireActual( '@wordpress/dom' );
+	const descriptor = { configurable: true, get: () => 1 };
+	function find( context ) {
+		context.querySelectorAll( '*' ).forEach( ( element ) => {
+			Object.defineProperty( element, 'offsetWidth', descriptor );
+		} );
+		return focus.focusable.find( ...arguments );
+	}
+	return {
+		focus: {
+			...focus,
+			focusable: { ...focus.focusable, find },
+		},
+	};
+} );
+
 const options = [
 	{
 		value: 'EU',

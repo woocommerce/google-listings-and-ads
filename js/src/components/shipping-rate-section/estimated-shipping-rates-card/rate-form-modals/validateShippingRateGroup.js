@@ -10,12 +10,19 @@ import { __ } from '@wordpress/i18n';
 /**
  * @param {ShippingRateGroup} values
  */
-const validate = ( values ) => {
+const validateShippingRateGroup = ( values ) => {
 	const errors = {};
 
 	if ( values.countries.length === 0 ) {
 		errors.countries = __(
 			'Please specify at least one country.',
+			'google-listings-and-ads'
+		);
+	}
+
+	if ( ! Number.isFinite( values.rate ) ) {
+		errors.rate = __(
+			'Please enter the estimated shipping rate.',
 			'google-listings-and-ads'
 		);
 	}
@@ -30,4 +37,4 @@ const validate = ( values ) => {
 	return errors;
 };
 
-export default validate;
+export default validateShippingRateGroup;

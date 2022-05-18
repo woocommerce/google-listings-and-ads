@@ -21,7 +21,7 @@ import './index.scss';
  * @param {number} [props.size=18] Icon size.
  */
 const ErrorIcon = ( { size = 18 } ) => {
-	return <GridiconNotice className="app-error-icon" size={ size } />;
+	return <GridiconNotice className="gla-error-icon" size={ size } />;
 };
 
 export default ErrorIcon;

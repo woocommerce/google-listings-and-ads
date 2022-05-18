@@ -1188,7 +1188,7 @@ class GoogleHelper implements Service {
 	 * WooCommerce Countries -> https://github.com/woocommerce/woocommerce/blob/master/i18n/countries.php
 	 * Google Supported Countries -> https://support.google.com/merchants/answer/160637?hl=en
 	 *
-	 * @return string[]
+	 * @return string[] Array of country codes.
 	 */
 	public function get_mc_supported_countries(): array {
 		return array_keys( $this->get_mc_supported_countries_data() );
@@ -1325,6 +1325,32 @@ class GoogleHelper implements Service {
 	 */
 	public function find_subdivision_id_by_code( string $code, string $country_code ): ?int {
 		return self::COUNTRY_SUBDIVISIONS[ $country_code ][ $code ]['id'] ?? null;
+	}
+
+	/**
+	 * Gets the list of supported Merchant Center countries from a continent.
+	 *
+	 * @param string $continent_code
+	 *
+	 * @return string[] Returns an array of country codes with each country code used both as the key and value.
+	 *                  For example: [ 'US' => 'US', 'DE' => 'DE' ].
+	 *
+	 * @since 1.13.0
+	 */
+	public function get_supported_countries_from_continent( string $continent_code ): array {
+		$countries  = [];
+		$continents = $this->wc->get_continents();
+		if ( isset( $continents[ $continent_code ] ) ) {
+			$countries = $continents[ $continent_code ]['countries'];
+
+			// Match the list of countries with the list of Merchant Center supported countries.
+			$countries = array_intersect( $countries, $this->get_mc_supported_countries() );
+
+			// Use the country code as array keys.
+			$countries = array_combine( $countries, $countries );
+		}
+
+		return $countries;
 	}
 
 	/**

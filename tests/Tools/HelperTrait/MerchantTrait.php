@@ -40,12 +40,17 @@ trait MerchantTrait {
 
 	public function get_valid_account(): Account {
 		$account       = new Account();
+		$account->setBusinessInformation( $this->get_valid_business_info() );
+
+		return $account;
+	}
+
+	public function get_valid_business_info(): AccountBusinessInformation {
 		$business_info = new AccountBusinessInformation();
 		$business_info->setPhoneNumber( $this->valid_account_phone_number );
 		$business_info->setAddress( $this->get_sample_address() );
-		$account->setBusinessInformation( $business_info );
 
-		return $account;
+		return $business_info;
 	}
 
 	public function get_account_with_url( string $url ): Account {
@@ -55,9 +60,9 @@ trait MerchantTrait {
 		return $account;
 	}
 
-	public function get_status_website_claimed(): AccountStatus {
+	public function get_status_website_claimed( bool $claimed = true ): AccountStatus {
 		$status = new AccountStatus();
-		$status->setWebsiteClaimed( true );
+		$status->setWebsiteClaimed( $claimed );
 
 		return $status;
 	}

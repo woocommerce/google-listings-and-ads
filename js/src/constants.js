@@ -29,3 +29,9 @@ export const API_RESPONSE_CODES = {
 export const SHIPPING_RATE_METHOD = {
 	FLAT_RATE: 'flat_rate',
 };
+
+// MC Issues Related
+export const ISSUE_TYPE_PRODUCT = 'product';
+export const ISSUE_TYPE_ACCOUNT = 'account';
+export const REQUEST_REVIEW = 'request-review';
+export const ISSUE_TABLE_PER_PAGE = 5;

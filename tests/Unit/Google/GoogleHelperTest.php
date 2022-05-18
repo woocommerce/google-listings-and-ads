@@ -91,6 +91,39 @@ class GoogleHelperTest extends UnitTest {
 		$this->assertNull( $this->google_helper->find_subdivision_id_by_code( 'OR', 'LB' ) );
 	}
 
+	public function test_returns_supported_countries_from_continent() {
+		// Mock the WC_Countries class to return the list of countries for the EU continent.
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_continents' )
+				 ->willReturn( [
+					 'EU' => [
+						 'name'      => 'Europe',
+						 'countries' => [
+							 // A random country code, not supported by Merchant Center. This should be ignored.
+							 'OO1',
+							 // Another random country code, not supported by Merchant Center. This should be ignored.
+							 'OO2',
+							 // Countries supported by MC
+							 'GB',
+							 'FR',
+							 'DE',
+							 'DK',
+							 // And many more ...
+						 ],
+					 ],
+				 ] );
+
+		$this->assertEqualSets(
+			[
+				'GB',
+				'FR',
+				'DE',
+				'DK',
+			],
+			$this->google_helper->get_supported_countries_from_continent( 'EU' )
+		);
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */

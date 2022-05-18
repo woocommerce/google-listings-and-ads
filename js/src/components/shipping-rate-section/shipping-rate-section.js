@@ -14,6 +14,11 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
 
+/**
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
+ */
+
 const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 	const { getInputProps, values, setValue } = formProps;
 	const inputProps = getInputProps( 'shipping_rate' );

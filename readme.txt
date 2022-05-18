@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.12.8
+Stable tag: 1.13.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -54,7 +54,7 @@ Create a new Google Ads account through Google Listings & Ads and a promotional 
 = Minimum Requirements =
 
 * WordPress 5.7 or greater
-* WooCommerce 5.8 or greater
+* WooCommerce 6.0 or greater
 * PHP version 7.3 or greater (PHP 7.4 or greater is recommended)
 * MySQL version 5.6 or greater
 
@@ -109,6 +109,26 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.13.0 - 2022-05-18 =
+* Add - Extending Update All Products Test Suit.
+* Add - Request a Google Merchant Account Review for disapproved accounts.
+* Fix - Address a crash problem of TreeSelectControl component when the dropdown is not showing and press the Up or Down key.
+* Fix - Edit shipping rate modal disappears after auto-save shipping rate in Setup MC.
+* Fix - Prevent product sync if the site URL does not match the originally claimed URL.
+* Fix - Revert filtering only Shopping destination for account issues.
+* Fix - The unsaved prompt might pop up when the countries of the target audience are the same when navigating away from the free listings edit page.
+* Fix - Unit tests for WooCommerce 6.5.
+* Fix - Validation for shipping rates and shipping times in Setup MC and Edit Free Listings.
+* Tweak - Add helper class to obtain supported countries of a continent.
+* Tweak - Adjust the implementation of focus navigation for the TreeSelectControl component.
+* Tweak - Cleanup unused Google Ads services.
+* Tweak - Drop support for WooCommerce < 6.0.
+* Tweak - Enhance event name for documentation link and update tracking document.
+* Tweak - WooCommerce 6.5 compatibility.
+* Tweak - WordPress 6.0 compatibility.
+* Update - Improved UX in the Product Feed Issues table.
+* Update - Use a shared helper method to get supported countries of a continent for /mc/countries API.
+
 = 1.12.8 - 2022-05-05 =
 * Update - Add the FAQs card for UX improvements on get started page.
 * Update - Add the benefits card for UX improvements on get started page.
@@ -123,15 +143,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Upgrade @wordpress/scripts to 22.1.0, and the related packages were upgraded to the corresponding versions.
 * Tweak - Upgrade the packages of the e2e testing.
 * Tweak - Upgrade webpack config to v5, and enhance the config.
-
-= 1.12.6 - 2022-04-29 =
-* Fix - Update all products job syncing products
-
-= 1.12.5 - 2022-04-12 =
-* Fix - Cache Yoast SEO values per product, to ensure unique values.
-* Fix - Feature/tree select control component.
-* Fix - Prompt to reconnect when a Jetpack disconnect is detected.
-* Tweak - Automatically generate Tracking events docs from JSDoc.
-* Tweak - Move Tracking events docs to JSDoc.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

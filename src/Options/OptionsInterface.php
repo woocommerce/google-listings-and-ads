@@ -12,12 +12,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
  */
 interface OptionsInterface {
 
+
 	public const ADS_ACCOUNT_CURRENCY   = 'ads_account_currency';
 	public const ADS_ACCOUNT_STATE      = 'ads_account_state';
 	public const ADS_BILLING_URL        = 'ads_billing_url';
 	public const ADS_ID                 = 'ads_id';
 	public const ADS_CONVERSION_ACTION  = 'ads_conversion_action';
 	public const ADS_SETUP_COMPLETED_AT = 'ads_setup_completed_at';
+	public const CLAIMED_URL_HASH       = 'claimed_url_hash';
 	public const CONTACT_INFO_SETUP     = 'contact_info_setup';
 	public const DELAYED_ACTIVATE       = 'delayed_activate';
 	public const DB_VERSION             = 'db_version';
@@ -43,6 +45,7 @@ interface OptionsInterface {
 		self::ADS_ID                 => true,
 		self::ADS_CONVERSION_ACTION  => true,
 		self::ADS_SETUP_COMPLETED_AT => true,
+		self::CLAIMED_URL_HASH       => true,
 		self::CONTACT_INFO_SETUP     => true,
 		self::DB_VERSION             => true,
 		self::FILE_VERSION           => true,
@@ -70,32 +73,32 @@ interface OptionsInterface {
 	/**
 	 * Get an option.
 	 *
-	 * @param string $name    The option name.
+	 * @param string $name The option name.
 	 * @param mixed  $default A default value for the option.
 	 *
 	 * @return mixed
 	 */
-	public function get( string $name, $default = null );
+	public function get( string $name, $default = null);
 
 	/**
 	 * Add an option.
 	 *
-	 * @param string $name  The option name.
+	 * @param string $name The option name.
 	 * @param mixed  $value The option value.
 	 *
 	 * @return bool
 	 */
-	public function add( string $name, $value ): bool;
+	public function add( string $name, $value): bool;
 
 	/**
 	 * Update an option.
 	 *
-	 * @param string $name  The option name.
+	 * @param string $name The option name.
 	 * @param mixed  $value The option value.
 	 *
 	 * @return bool
 	 */
-	public function update( string $name, $value ): bool;
+	public function update( string $name, $value): bool;
 
 	/**
 	 * Delete an option.
@@ -104,7 +107,7 @@ interface OptionsInterface {
 	 *
 	 * @return bool
 	 */
-	public function delete( string $name ): bool;
+	public function delete( string $name): bool;
 
 	/**
 	 * Helper function to retrieve the Merchant Account ID.

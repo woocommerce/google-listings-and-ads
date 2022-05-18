@@ -29,14 +29,15 @@ import TrackableLink from '../trackable-link';
 const AppDocumentationLink = ( props ) => {
 	const { context, linkId, href, ...rest } = props;
 
+	// Put eventName after spreading `rest` to prevent eventName from being overridden.
 	return (
 		<TrackableLink
-			eventName="gla_documentation_link_click"
 			eventProps={ { context, link_id: linkId, href } }
 			type="external"
 			target="_blank"
 			href={ href }
 			{ ...rest }
+			eventName="gla_documentation_link_click"
 		/>
 	);
 };

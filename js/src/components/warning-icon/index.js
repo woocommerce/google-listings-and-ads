@@ -15,7 +15,7 @@ import './index.scss';
  * @param {number} [props.size=18] Icon size.
  */
 const WarningIcon = ( { size = 18 } ) => {
-	return <GridiconNoticeOutline className="app-warning-icon" size={ size } />;
+	return <GridiconNoticeOutline className="gla-warning-icon" size={ size } />;
 };
 
 export default WarningIcon;

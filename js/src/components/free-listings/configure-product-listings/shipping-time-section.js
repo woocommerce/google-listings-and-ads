@@ -10,6 +10,10 @@ import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import ShippingTimeSetup from './shipping-time/shipping-time-setup';
 
+/**
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
+ */
+
 const ShippingTimeSection = ( {
 	formProps,
 	countries: selectedCountryCodes,

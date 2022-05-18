@@ -13,6 +13,11 @@ import AppRadioContentControl from '.~/components/app-radio-content-control';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 
+/**
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-read-more', href: 'https://support.google.com/merchants/answer/160162' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
+ */
+
 const TaxRate = ( props ) => {
 	const {
 		formProps: { getInputProps },

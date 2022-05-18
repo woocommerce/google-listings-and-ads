@@ -33,7 +33,16 @@ const DEFAULT_STATE = {
 	ads_campaigns: null,
 	mc_setup: null,
 	mc_product_statistics: null,
-	mc_issues: null,
+	mc_issues: {
+		account: null,
+		product: null,
+	},
+	mc_review_request: {
+		status: null,
+		cooldown: null,
+		issues: null,
+		reviewEligibleRegions: [],
+	},
 	mc_product_feed: null,
 	report: {},
 };
@@ -308,16 +317,21 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 		}
 
+		case TYPES.RECEIVE_MC_REVIEW_REQUEST: {
+			return setIn( state, 'mc_review_request', action.mcReviewRequest );
+		}
+
 		case TYPES.RECEIVE_MC_ISSUES: {
 			const { query, data } = action;
-			const issues = state.mc_issues?.issues.slice() || [];
+			const issues =
+				state.mc_issues[ query.issue_type ]?.issues.slice() || [];
 			issues.splice(
 				( query.page - 1 ) * query.per_page,
 				query.per_page,
 				...data.issues
 			);
 
-			return chainState( state, 'mc_issues' )
+			return chainState( state, `mc_issues.${ query.issue_type }` )
 				.setIn( 'issues', issues )
 				.setIn( 'total', data.total )
 				.end();
