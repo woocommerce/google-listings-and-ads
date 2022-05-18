@@ -34,6 +34,8 @@ class AfterCampaignMigration extends AbstractNote implements AdsAwareInterface {
 
 	/**
 	 * Get the note entry.
+	 *
+	 * @return NoteEntry
 	 */
 	public function get_entry(): NoteEntry {
 		$note = new NoteEntry();
