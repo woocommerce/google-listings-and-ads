@@ -48,10 +48,7 @@ class AfterCampaignMigration extends AbstractNote implements OptionsAwareInterfa
 				'google-listings-and-ads'
 			)
 		);
-		$note->set_content_data( (object) [] );
-		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
-		$note->set_layout( 'plain' );
-		$note->set_image( '' );
+
 		$note->set_name( $this->get_name() );
 		$note->set_source( $this->get_slug() );
 		// TODO update learn more link once it is confirmed
