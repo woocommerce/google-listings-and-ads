@@ -124,14 +124,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Upgrade the packages of the e2e testing.
 * Tweak - Upgrade webpack config to v5, and enhance the config.
 
-= 1.12.6 - 2022-04-29 =
-* Fix - Update all products job syncing products
-
-= 1.12.5 - 2022-04-12 =
-* Fix - Cache Yoast SEO values per product, to ensure unique values.
-* Fix - Feature/tree select control component.
-* Fix - Prompt to reconnect when a Jetpack disconnect is detected.
-* Tweak - Automatically generate Tracking events docs from JSDoc.
-* Tweak - Move Tracking events docs to JSDoc.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
