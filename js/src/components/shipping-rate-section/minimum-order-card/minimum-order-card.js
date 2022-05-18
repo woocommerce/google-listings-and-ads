@@ -35,6 +35,17 @@ const MinimumOrderCard = ( props ) => {
 			( shippingRate ) => shippingRate.country
 		);
 
+		// Event handlers for add, update, delete operations.
+		const addHandler = ( newGroup ) => {
+			onChange( changeMinimumOrderGroup( value, null, newGroup ) );
+		};
+		const getChangeHandler = ( oldGroup ) => ( newGroup ) => {
+			onChange( changeMinimumOrderGroup( value, oldGroup, newGroup ) );
+		};
+		const getDeleteHandler = ( oldGroup ) => () => {
+			onChange( changeMinimumOrderGroup( value, oldGroup ) );
+		};
+
 		// If group length is 1, we render the group,
 		// regardless of threshold is defined or not.
 		if ( groups.length === 1 ) {
@@ -42,20 +53,8 @@ const MinimumOrderCard = ( props ) => {
 				<MinimumOrderInputControl
 					countryOptions={ countryOptions }
 					value={ groups[ 0 ] }
-					onChange={ ( newGroup ) =>
-						onChange(
-							changeMinimumOrderGroup(
-								value,
-								groups[ 0 ],
-								newGroup
-							)
-						)
-					}
-					onDelete={ () =>
-						onChange(
-							changeMinimumOrderGroup( value, groups[ 0 ] )
-						)
-					}
+					onChange={ getChangeHandler( groups[ 0 ] ) }
+					onDelete={ getDeleteHandler( groups[ 0 ] ) }
 				/>
 			);
 		}
@@ -85,20 +84,8 @@ const MinimumOrderCard = ( props ) => {
 							key={ group.countries.join( '-' ) }
 							countryOptions={ countryOptions }
 							value={ group }
-							onChange={ ( newGroup ) =>
-								onChange(
-									changeMinimumOrderGroup(
-										value,
-										group,
-										newGroup
-									)
-								)
-							}
-							onDelete={ () =>
-								onChange(
-									changeMinimumOrderGroup( value, group )
-								)
-							}
+							onChange={ getChangeHandler( group ) }
+							onDelete={ getDeleteHandler( group ) }
 						/>
 					);
 				} ) }
@@ -122,15 +109,7 @@ const MinimumOrderCard = ( props ) => {
 										emptyThresholdGroup.countries
 									}
 									initialValues={ emptyThresholdGroup }
-									onSubmit={ ( newGroup ) =>
-										onChange(
-											changeMinimumOrderGroup(
-												value,
-												null,
-												newGroup
-											)
-										)
-									}
+									onSubmit={ addHandler }
 								/>
 							}
 						/>
