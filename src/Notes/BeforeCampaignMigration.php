@@ -72,11 +72,7 @@ class BeforeCampaignMigration extends AbstractNote implements AdsAwareInterface 
 	 * @return bool
 	 */
 	public function should_be_added(): bool {
-		if ( $this->has_been_added() ) {
-			return false;
-		}
-
-		return ! $this->ads_service->is_migration_completed();
+		return ! $this->has_been_added() && ! $this->ads_service->is_migration_completed();
 
 	}
 }
