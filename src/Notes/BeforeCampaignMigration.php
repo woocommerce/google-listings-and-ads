@@ -13,6 +13,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class BeforeCampaignMigration
+ * Shows an inbox notification related to the campaign migration before the migration starts
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
