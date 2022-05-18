@@ -20,11 +20,7 @@ import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 import MinimumOrderInputControl from './minimum-order-input-control';
 import { AddMinimumOrderFormModal } from './minimum-order-form-modals';
 import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
-import {
-	getMinimumOrderAddHandler,
-	getMinimumOrderChangeHandler,
-	getMinimumOrderDeleteHandler,
-} from './handlers';
+import { changeMinimumOrderGroup } from './changeMinimumOrderGroup';
 import './minimum-order-card.scss';
 
 const MinimumOrderCard = ( props ) => {
@@ -39,25 +35,26 @@ const MinimumOrderCard = ( props ) => {
 			( shippingRate ) => shippingRate.country
 		);
 
-		/**
-		 * If group length is 1, we render the group,
-		 * regardless of threshold is defined or not.
-		 */
+		// Event handlers for add, update, delete operations.
+		const addHandler = ( newGroup ) => {
+			onChange( changeMinimumOrderGroup( value, null, newGroup ) );
+		};
+		const getChangeHandler = ( oldGroup ) => ( newGroup ) => {
+			onChange( changeMinimumOrderGroup( value, oldGroup, newGroup ) );
+		};
+		const getDeleteHandler = ( oldGroup ) => () => {
+			onChange( changeMinimumOrderGroup( value, oldGroup ) );
+		};
+
+		// If group length is 1, we render the group,
+		// regardless of threshold is defined or not.
 		if ( groups.length === 1 ) {
 			return (
 				<MinimumOrderInputControl
 					countryOptions={ countryOptions }
 					value={ groups[ 0 ] }
-					onChange={ getMinimumOrderChangeHandler(
-						value,
-						onChange,
-						groups[ 0 ]
-					) }
-					onDelete={ getMinimumOrderDeleteHandler(
-						value,
-						onChange,
-						groups[ 0 ]
-					) }
+					onChange={ getChangeHandler( groups[ 0 ] ) }
+					onDelete={ getDeleteHandler( groups[ 0 ] ) }
 				/>
 			);
 		}
@@ -87,16 +84,8 @@ const MinimumOrderCard = ( props ) => {
 							key={ group.countries.join( '-' ) }
 							countryOptions={ countryOptions }
 							value={ group }
-							onChange={ getMinimumOrderChangeHandler(
-								value,
-								onChange,
-								group
-							) }
-							onDelete={ getMinimumOrderDeleteHandler(
-								value,
-								onChange,
-								group
-							) }
+							onChange={ getChangeHandler( group ) }
+							onDelete={ getDeleteHandler( group ) }
 						/>
 					);
 				} ) }
@@ -120,10 +109,7 @@ const MinimumOrderCard = ( props ) => {
 										emptyThresholdGroup.countries
 									}
 									initialValues={ emptyThresholdGroup }
-									onSubmit={ getMinimumOrderAddHandler(
-										value,
-										onChange
-									) }
+									onSubmit={ addHandler }
 								/>
 							}
 						/>

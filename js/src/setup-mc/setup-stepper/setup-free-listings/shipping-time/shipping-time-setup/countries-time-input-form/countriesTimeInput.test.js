@@ -10,19 +10,9 @@ import userEvent from '@testing-library/user-event';
  */
 import CountriesTimeInputForm from './';
 
-jest.mock( '.~/hooks/useStoreCurrency', () =>
-	jest.fn( () => ( {
-		code: 'GBP',
-	} ) )
-);
+jest.mock( '.~/hooks/useStoreCurrency' );
 
-jest.mock( '.~/hooks/useCountryKeyNameMap', () =>
-	jest.fn( () => ( {
-		GB: 'United Kingdom',
-		US: 'United States',
-		ES: 'Spain',
-	} ) )
-);
+jest.mock( '.~/hooks/useCountryKeyNameMap' );
 
 jest.mock( '.~/hooks/useTargetAudienceFinalCountryCodes', () => () => ( {
 	data: { selectedCountryCodes: [ 'ES' ] },
