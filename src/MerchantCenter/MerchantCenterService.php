@@ -96,7 +96,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * Whether we are able to sync data to the Merchant Center account.
 	 * Account must be connected and the URL we claimed with must match the site URL.
 	 *
-	 * @since x.x.x
+	 * @since 1.13.0
 	 * @return boolean
 	 */
 	public function is_ready_for_syncing(): bool {
