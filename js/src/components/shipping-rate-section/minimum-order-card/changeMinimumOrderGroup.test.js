@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import { changeMinimumOrderGroup } from './changeMinimumOrderGroup';
+import { structuredClone } from '.~/utils/structuredClone.js';
 
 describe( 'changeMinimumOrderGroup', () => {
 	const value = Object.freeze( [
@@ -15,7 +16,7 @@ describe( 'changeMinimumOrderGroup', () => {
 		},
 		{
 			id: '2',
-			country: 'AU',
+			country: 'ES',
 			method: 'flat_rate',
 			currency: 'USD',
 			rate: 20,
@@ -42,177 +43,75 @@ describe( 'changeMinimumOrderGroup', () => {
 			threshold: 30,
 		};
 
+		// Expect US threshold to be set to 30.
+		const expectedValue = structuredClone( value );
+		expectedValue[ 0 ].options.free_shipping_threshold = 30;
 		expect(
 			changeMinimumOrderGroup( value, null, newGroup )
-		).toStrictEqual( [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 20,
-				options: {
-					free_shipping_threshold: 30,
-				},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 20,
-				options: {
-					free_shipping_threshold: 50,
-				},
-			},
-			{
-				id: '3',
-				country: 'CN',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 50,
-				},
-			},
-		] );
+		).toStrictEqual( expectedValue );
 	} );
 	// Pure delete.
 	it( 'returns a new value with `free_shipping_threshold=undefined` for the countries in `oldGroup` when falsy `newGroup` is given', () => {
 		const oldGroup = {
-			countries: [ 'CN', 'AU' ],
+			countries: [ 'CN', 'ES' ],
 			currency: 'USD',
 			threshold: 50,
 		};
 
-		expect( changeMinimumOrderGroup( value, oldGroup ) ).toStrictEqual( [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 20,
-				options: {},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 20,
-				options: {
-					free_shipping_threshold: undefined,
-				},
-			},
-			{
-				id: '3',
-				country: 'CN',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: undefined,
-				},
-			},
-		] );
+		// Expect ES & CN threshold to be set to `undefined`.
+		const expectedValue = structuredClone( value );
+		expectedValue[ 1 ].options.free_shipping_threshold = undefined;
+		expectedValue[ 2 ].options.free_shipping_threshold = undefined;
+		expect( changeMinimumOrderGroup( value, oldGroup ) ).toStrictEqual(
+			expectedValue
+		);
 	} );
 	// Update.
 	it( 'returns a new value updated based on changed group threshold', () => {
 		const oldGroup = {
-			countries: [ 'AU', 'CN' ],
+			countries: [ 'ES', 'CN' ],
 			currency: 'USD',
 			threshold: 50,
 		};
 		const newGroup = {
 			...oldGroup,
-			threshold: 80,
+			threshold: 507,
 		};
 
+		// Expect ES, CN threshold to be updated to 507.
+		const expectedValue = structuredClone( value );
+		expectedValue[ 1 ].options.free_shipping_threshold = 507;
+		expectedValue[ 2 ].options.free_shipping_threshold = 507;
 		expect(
 			changeMinimumOrderGroup( value, oldGroup, newGroup )
-		).toStrictEqual( [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 20,
-				options: {},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 20,
-				options: {
-					free_shipping_threshold: 80,
-				},
-			},
-			{
-				id: '3',
-				country: 'CN',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 80,
-				},
-			},
-		] );
+		).toStrictEqual( expectedValue );
 	} );
 
 	it( 'returns a new value updated based on removed and added countries', () => {
 		const oldGroup = {
-			countries: [ 'AU', 'CN' ],
+			countries: [ 'ES', 'CN' ],
 			currency: 'USD',
 			threshold: 50,
 		};
-		// country AU is removed, and country US is added.
+		// country ES is removed, and country US is added.
 		const newGroup = {
 			...oldGroup,
 			countries: [ 'CN', 'US' ],
 		};
 
+		// Expect US threshold to be set to 50,
+		// and ES threshold to be set to `undefined.
+		const expectedValue = structuredClone( value );
+		expectedValue[ 0 ].options.free_shipping_threshold = 50;
+		expectedValue[ 1 ].options.free_shipping_threshold = undefined;
 		expect(
 			changeMinimumOrderGroup( value, oldGroup, newGroup )
-		).toStrictEqual( [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 20,
-				options: {
-					free_shipping_threshold: 50,
-				},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 20,
-				options: {
-					free_shipping_threshold: undefined,
-				},
-			},
-			{
-				id: '3',
-				country: 'CN',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 50,
-				},
-			},
-		] );
+		).toStrictEqual( expectedValue );
 	} );
 
 	it( 'returns a new value updated based on all changed countries and threshold', () => {
 		const oldGroup = {
-			countries: [ 'AU', 'CN' ],
+			countries: [ 'ES', 'CN' ],
 			currency: 'USD',
 			threshold: 50,
 		};
@@ -220,42 +119,18 @@ describe( 'changeMinimumOrderGroup', () => {
 		const newGroup = {
 			...oldGroup,
 			countries: [ 'CN', 'US' ],
-			threshold: 88,
+			threshold: 507,
 		};
 
+		// Expect US threshold to be set to 507,
+		// ES threshold to be set to `undefined`,
+		// and CN to be changed to 507.
+		const expectedValue = structuredClone( value );
+		expectedValue[ 0 ].options.free_shipping_threshold = 507;
+		expectedValue[ 1 ].options.free_shipping_threshold = undefined;
+		expectedValue[ 2 ].options.free_shipping_threshold = 507;
 		expect(
 			changeMinimumOrderGroup( value, oldGroup, newGroup )
-		).toStrictEqual( [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 20,
-				options: {
-					free_shipping_threshold: 88,
-				},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 20,
-				options: {
-					free_shipping_threshold: undefined,
-				},
-			},
-			{
-				id: '3',
-				country: 'CN',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 88,
-				},
-			},
-		] );
+		).toStrictEqual( expectedValue );
 	} );
 } );

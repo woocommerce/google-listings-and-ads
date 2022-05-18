@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import MinimumOrderCard from './minimum-order-card.js';
+import { structuredClone } from '.~/utils/structuredClone.js';
 
 jest.mock( '.~/hooks/useAppSelectDispatch' );
 jest.mock( '.~/hooks/useCountryKeyNameMap' );
@@ -76,16 +77,10 @@ describe( 'MinimumOrderCard', () => {
 			// Wait for Form component's onSubmit microtask.
 			await waitFor( () => {
 				expect( onChange ).toHaveBeenCalledTimes( 1 );
-				expect( onChange ).toHaveBeenCalledWith( [
-					{
-						...value[ 0 ],
-						options: {
-							free_shipping_threshold: 30,
-						},
-					},
-					value[ 1 ],
-					value[ 2 ],
-				] );
+				// Expect US threshold to be set to 30.
+				const expectedValue = structuredClone( value );
+				expectedValue[ 0 ].options.free_shipping_threshold = 30;
+				expect( onChange ).toHaveBeenCalledWith( expectedValue );
 			} );
 		} );
 		test( 'When a minimum order value is changed for an existing group, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to the given value', async () => {
@@ -99,21 +94,12 @@ describe( 'MinimumOrderCard', () => {
 			// Wait for Form component's onSubmit microtask.
 			await waitFor( () => {
 				expect( onChange ).toHaveBeenCalledTimes( 1 );
-				expect( onChange ).toHaveBeenCalledWith( [
-					value[ 0 ],
-					{
-						...value[ 1 ],
-						options: {
-							free_shipping_threshold: 507,
-						},
-					},
-					{
-						...value[ 2 ],
-						options: {
-							free_shipping_threshold: 507,
-						},
-					},
-				] );
+
+				// Expect ES, CN threshold to be updated to 507.
+				const expectedValue = structuredClone( value );
+				expectedValue[ 1 ].options.free_shipping_threshold = 507;
+				expectedValue[ 2 ].options.free_shipping_threshold = 507;
+				expect( onChange ).toHaveBeenCalledWith( expectedValue );
 			} );
 		} );
 		test( 'When a set of countries is changed for a minimum order value in an existing group, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to the given value for new countries, and `undefied` for old ones', async () => {
@@ -138,26 +124,13 @@ describe( 'MinimumOrderCard', () => {
 			// Wait for Form component's onSubmit microtask.
 			await waitFor( () => {
 				expect( onChange ).toHaveBeenCalledTimes( 1 );
-				expect( onChange ).toHaveBeenCalledWith( [
-					{
-						...value[ 0 ],
-						options: {
-							free_shipping_threshold: 50,
-						},
-					},
-					{
-						...value[ 1 ],
-						options: {
-							free_shipping_threshold: undefined,
-						},
-					},
-					{
-						...value[ 2 ],
-						options: {
-							free_shipping_threshold: 50,
-						},
-					},
-				] );
+
+				// Expect US threshold to be set to 50,
+				// and ES threshold to be set to `undefined.
+				const expectedValue = structuredClone( value );
+				expectedValue[ 0 ].options.free_shipping_threshold = 50;
+				expectedValue[ 1 ].options.free_shipping_threshold = undefined;
+				expect( onChange ).toHaveBeenCalledWith( expectedValue );
 			} );
 		} );
 		test( 'When a set of countries and threshold are changed for an existing group, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to the given value for new countries, and `undefied` for old ones', async () => {
@@ -186,26 +159,15 @@ describe( 'MinimumOrderCard', () => {
 			// Wait for Form component's onSubmit microtask.
 			await waitFor( () => {
 				expect( onChange ).toHaveBeenCalledTimes( 1 );
-				expect( onChange ).toHaveBeenCalledWith( [
-					{
-						...value[ 0 ],
-						options: {
-							free_shipping_threshold: 507,
-						},
-					},
-					{
-						...value[ 1 ],
-						options: {
-							free_shipping_threshold: undefined,
-						},
-					},
-					{
-						...value[ 2 ],
-						options: {
-							free_shipping_threshold: 507,
-						},
-					},
-				] );
+
+				// Expect US threshold to be set to 507,
+				// ES threshold to be set to `undefined`,
+				// and CN to be changed to 507.
+				const expectedValue = structuredClone( value );
+				expectedValue[ 0 ].options.free_shipping_threshold = 507;
+				expectedValue[ 1 ].options.free_shipping_threshold = undefined;
+				expectedValue[ 2 ].options.free_shipping_threshold = 507;
+				expect( onChange ).toHaveBeenCalledWith( expectedValue );
 			} );
 		} );
 
@@ -219,21 +181,12 @@ describe( 'MinimumOrderCard', () => {
 			// Wait for Form component's onSubmit microtask.
 			await waitFor( () => {
 				expect( onChange ).toHaveBeenCalledTimes( 1 );
-				expect( onChange ).toHaveBeenCalledWith( [
-					value[ 0 ],
-					{
-						...value[ 1 ],
-						options: {
-							free_shipping_threshold: undefined,
-						},
-					},
-					{
-						...value[ 2 ],
-						options: {
-							free_shipping_threshold: undefined,
-						},
-					},
-				] );
+
+				// Expect ES & CN threshold to be set to `undefined`.
+				const expectedValue = structuredClone( value );
+				expectedValue[ 1 ].options.free_shipping_threshold = undefined;
+				expectedValue[ 2 ].options.free_shipping_threshold = undefined;
+				expect( onChange ).toHaveBeenCalledWith( expectedValue );
 			} );
 		} );
 	} );
