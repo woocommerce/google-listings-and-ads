@@ -71,7 +71,7 @@ class AdsService implements OptionsAwareInterface, Service {
 	 */
 	public function is_migration_completed(): bool {
 		$convert_status = $this->options->get( OptionsInterface::CAMPAIGN_CONVERT_STATUS );
-		return is_array( $convert_status ) && isset( $convert_status['status'] ) && $convert_status['status'] === 'converted';
+		return isset( $convert_status['status'] ) && $convert_status['status'] === 'converted';
 	}
 
 }
