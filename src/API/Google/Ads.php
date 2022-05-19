@@ -42,13 +42,6 @@ class Ads implements OptionsAwareInterface {
 	protected $client;
 
 	/**
-	 * Client for fetching accounts details.
-	 *
-	 * @var CustomerServiceClient
-	 */
-	protected $customer_service;
-
-	/**
 	 * Ads constructor.
 	 *
 	 * @param GoogleAdsClient $client
@@ -65,7 +58,7 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function get_ads_accounts(): array {
 		try {
-			$customers = $this->get_customer_service()->listAccessibleCustomers();
+			$customers = $this->client->getCustomerServiceClient()->listAccessibleCustomers();
 			$return    = [];
 
 			foreach ( $customers->getResourceNames() as $name ) {
@@ -268,18 +261,6 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function update_billing_url( string $url ): bool {
 		return $this->options->update( OptionsInterface::ADS_BILLING_URL, $url );
-	}
-
-	/**
-	 * Returns the customer service client.
-	 *
-	 * @return CustomerServiceClient
-	 */
-	private function get_customer_service(): CustomerServiceClient {
-		if ( null === $this->customer_service ) {
-			$this->customer_service = $this->client->getCustomerServiceClient();
-		}
-		return $this->customer_service;
 	}
 
 	/**
