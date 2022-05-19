@@ -11,7 +11,8 @@ import { glaData } from '.~/constants';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import CONVERSION_STATUSES from './conversion-statuses';
 import getConversionCampaignStatusNotice from '.~/utils/getConversionCampaignStatusNotice';
-import DismissibleNotice from './dismissible-notice';
+import DismissibleNotice from '.~/components/dismissible-notice';
+DismissibleNotice;
 import './index.scss';
 
 const ExternalIcon = () => (

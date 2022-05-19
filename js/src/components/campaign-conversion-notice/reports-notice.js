@@ -9,7 +9,7 @@ import { __experimentalText as Text } from '@wordpress/components';
 import { glaData } from '.~/constants';
 import CONVERSION_STATUSES from './conversion-statuses';
 import getConversionCampaignStatusNotice from '.~/utils/getConversionCampaignStatusNotice';
-import DismissibleNotice from './dismissible-notice';
+import DismissibleNotice from '.~/components/dismissible-notice';
 import './reports-notice.scss';
 
 /**
