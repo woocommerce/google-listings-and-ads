@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAccountAccessQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAccountQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsBillingStatusQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
@@ -283,9 +284,13 @@ class Ads implements OptionsAwareInterface {
 	 */
 	private function get_account_details( string $account ): ?array {
 		try {
-			$customer = $this->get_customer_service()->getCustomer( $account );
+			$customer = ( new AdsAccountQuery() )
+				->set_client( $this->client, $this->parse_ads_id( $account ) )
+				->where( 'customer.resource_name', $account, '=' )
+				->get_result()
+				->getCustomer();
 
-			if ( $customer->getManager() || $customer->getTestAccount() ) {
+			if ( ! $customer || $customer->getManager() || $customer->getTestAccount() ) {
 				return null;
 			}
 

@@ -67,11 +67,15 @@ abstract class AdsQuery extends Query {
 	 * @throws ApiException When no results returned or an error occurs.
 	 */
 	public function get_result(): GoogleAdsRow {
-		foreach ( $this->get_results()->iterateAllElements() as $row ) {
-			return $row;
+		$results = $this->get_results();
+
+		if ( $results ) {
+			foreach ( $results->iterateAllElements() as $row ) {
+				return $row;
+			}
 		}
 
-		throw new ApiException( __( 'No result from query', 'google-listings-and-ads' ) );
+		throw new ApiException( __( 'No result from query', 'google-listings-and-ads' ), 404, '' );
 	}
 
 	/**
