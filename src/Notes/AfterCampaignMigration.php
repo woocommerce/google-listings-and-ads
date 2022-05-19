@@ -18,6 +18,8 @@ defined( 'ABSPATH' ) || exit;
  * Shows an inbox notification related to the campaign migration after the migration starts
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
+ *
+ * @since x.x.x
  */
 class AfterCampaignMigration extends AbstractNote implements OptionsAwareInterface, AdsAwareInterface {
 
@@ -56,7 +58,7 @@ class AfterCampaignMigration extends AbstractNote implements OptionsAwareInterfa
 		$note->add_action(
 			'read-more-upgrade-campaign',
 			__( 'Read more about this upgrade', 'google-listings-and-ads' ),
-			'#'
+			'https://support.google.com/google-ads/answer/11576060'
 		);
 
 		return $note;

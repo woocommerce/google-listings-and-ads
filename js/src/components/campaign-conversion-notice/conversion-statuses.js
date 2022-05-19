@@ -22,8 +22,7 @@ const BEFORE_CONVERSION = {
 		'google-listings-and-ads'
 	),
 	externalLink: {
-		link:
-			'https://href.li/?https://support.google.com/google-ads/answer/11576060',
+		link: 'https://support.google.com/google-ads/answer/11576060',
 		linkId: 'campaign-conversion-status-before-migration-read-more',
 		content: __(
 			'Learn more about this upgrade',
@@ -58,8 +57,7 @@ const AFTER_CONVERSION = {
 		}
 	),
 	externalLink: {
-		link:
-			'https://href.li/?https://support.google.com/google-ads/answer/11576060',
+		link: 'https://support.google.com/google-ads/answer/11576060',
 		linkId: 'campaign-conversion-status-after-migration-read-more',
 		content: __(
 			'Learn more about this upgrade',
@@ -80,7 +78,7 @@ const REPORTS_CONVERSION = {
 			readMoreLink: (
 				<AppDocumentationLink
 					context="reports-programs"
-					href="https://href.li/?https://support.google.com/google-ads/answer/11576060"
+					href="https://support.google.com/google-ads/answer/11576060"
 					linkId="campaign-conversion-status-after-migration-reports-read-more"
 				/>
 			),
