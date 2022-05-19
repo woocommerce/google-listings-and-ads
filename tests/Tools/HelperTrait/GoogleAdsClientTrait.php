@@ -145,6 +145,20 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates a mocked AdsQuery response with a list of mocked rows.
+	 *
+	 * @param array $responses List of responses containing sets of GoogleAdsRow.
+	 */
+	protected function generate_ads_multiple_query_mock( array $responses ) {
+		foreach ( $responses as $key => $rows ) {
+			$responses[ $key ] = $this->createMock( PagedListResponse::class );
+			$responses[ $key ]->method( 'iterateAllElements' )->willReturn( $rows );
+		}
+
+		$this->service_client->method( 'search' )->willReturnOnConsecutiveCalls( ...$responses );
+	}
+
+	/**
 	 * Generates mocked AdsCampaignQuery and AdsCampaignCriterionQuery responses.
 	 *
 	 * @param array $campaigns_responses Set of campaign data to convert.
@@ -315,7 +329,7 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
-	 * Generates a mocked customer.
+	 * Generates a list of mocked AdsAccountQuery responses.
 	 *
 	 * @param array $customers List of customer data to mock.
 	 */
@@ -337,10 +351,10 @@ trait GoogleAdsClientTrait {
 			if ( isset( $data['currency'] ) ) {
 				$customer->method( 'getCurrencyCode' )->willReturn( $data['currency'] );
 			}
-			$customers[ $key ] = $customer;
+			$customers[ $key ] = [ ( new GoogleAdsRow )->setCustomer( $customer ) ];
 		}
 
-		$this->customer_service->method( 'getCustomer' )->willReturnOnConsecutiveCalls( ...$customers );
+		$this->generate_ads_multiple_query_mock( $customers );
 	}
 
 	/**
