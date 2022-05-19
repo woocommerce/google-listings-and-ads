@@ -20,6 +20,15 @@ defined( 'ABSPATH' ) || exit;
 class CleanupSyncedProducts extends AbstractProductSyncerBatchedJob {
 
 	/**
+	 * Get whether Merchant Center is connected.
+	 *
+	 * @return bool
+	 */
+	public function is_mc_connected(): bool {
+		return $this->merchant_center->is_connected();
+	}
+
+	/**
 	 * Get the name of the job.
 	 *
 	 * @return string

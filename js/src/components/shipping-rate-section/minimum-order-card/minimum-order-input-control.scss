@@ -1,13 +1,13 @@
 .gla-minimum-order-input-control {
-	&__label {
+	& &__label {
 		display: flex;
 		justify-content: space-between;
 		gap: 4px;
-	}
 
-	&__edit-button.components-button.is-tertiary {
-		height: fit-content;
-		line-height: 1.4em;
-		padding: 0;
+		button {
+			height: fit-content;
+			line-height: 1.4em;
+			padding: 0;
+		}
 	}
 }

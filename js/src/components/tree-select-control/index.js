@@ -3,14 +3,8 @@
  */
 import { cloneDeep, noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import {
-	useEffect,
-	useMemo,
-	useState,
-	useRef,
-	createRef,
-	useCallback,
-} from '@wordpress/element';
+import { focus } from '@wordpress/dom';
+import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
 import classnames from 'classnames';
 import {
 	__experimentalUseFocusOutside as useFocusOutside,
@@ -58,13 +52,6 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @property {string} label The label for the option
  * @property {Option[]} [children] The children Option objects
  * @property {string} [key] Optional unique key for the Option. It will fallback to the value property if not defined
- *
- *
- *
- * @typedef {Object} RepositoryData
- * @property {Object} [ref] React Ref associated to the option. This is for system purposes only.
- *
- * @typedef {Option & RepositoryData} RepositoryOption
  **/
 
 /**
@@ -106,8 +93,8 @@ const TreeSelectControl = ( {
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
 	const [ inputControlValue, setInputControlValue ] = useState( '' );
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
-	const [ focused, setFocused ] = useState( null );
 
+	const dropdownRef = useRef();
 	const onDropdownVisibilityChangeRef = useRef();
 	onDropdownVisibilityChangeRef.current = onDropdownVisibilityChange;
 
@@ -143,223 +130,15 @@ const TreeSelectControl = ( {
 
 		filteredOptionsCache.current = []; // clear cache if options change
 
-		function loadOption( option, parent ) {
-			option.children?.forEach( ( child ) => {
-				loadOption( child, option );
-			} );
-
-			repository[ option.key ?? option.value ] = {
-				...option,
-				parent,
-				ref: createRef(),
-			};
+		function loadOption( option ) {
+			option.children?.forEach( loadOption );
+			repository[ option.key ?? option.value ] = option;
 		}
 
-		treeOptions.forEach( ( option ) => loadOption( option ) );
+		treeOptions.forEach( loadOption );
 
 		return repository;
 	}, [ treeOptions ] );
-
-	/**
-	 * Check if an Option is expanded
-	 * An option is expanded if the Option value is in the nodesExpanded list or is the ROOT
-	 * or has children and there is a search filter
-	 *
-	 * @param {Option} option The option to check if it's expanded
-	 * @return {boolean} True if it's expanded, false otherwise
-	 */
-	const isOptionExpanded = ( option ) => {
-		return (
-			nodesExpanded.includes( option.value ) ||
-			option.value === ROOT_VALUE ||
-			( hasChildren( option ) && !! filter )
-		);
-	};
-
-	/**
-	 * Get the option parent
-	 *
-	 * @param {Option} option The option to get the parent
-	 * @return {Option} The parent option
-	 */
-	const getOptionParent = ( option ) => {
-		const parent = getOptionFromRepository( option )?.parent;
-		return getOptionFromRepository( parent );
-	};
-
-	/**
-	 * Get the option index based on the Option ref
-	 *
-	 * @param {RepositoryOption} option The option to get the index
-	 * @return {number} The index
-	 */
-	const getOptionIndexFromRef = ( option ) => {
-		return Number( option.ref.current.dataset.index );
-	};
-
-	/**
-	 * Get the option index based on its position relative to its parent
-	 *
-	 * @param {Option} option The option to check the position
-	 * @param {Option} parent The parent option
-	 * @return {number} The index of the option or -1 if not found
-	 */
-	const getOptionIndexFromParent = ( option, parent ) => {
-		return parent.children.findIndex(
-			( el ) => el.key === option.key && el.value === option.value
-		);
-	};
-
-	/**
-	 * Get the Option last child recursively
-	 *
-	 * @param {Option} option The option to get the last child
-	 * @return {Option} The last child in the option
-	 */
-	const getLastChild = ( option ) => {
-		if ( isOptionExpanded( option ) ) {
-			for (
-				let index = option.children.length - 1;
-				index >= 0;
-				index--
-			) {
-				const nextEl = getOptionFromRepository(
-					option.children[ index ]
-				);
-
-				if ( nextEl.ref.current ) {
-					return getLastChild( nextEl );
-				}
-			}
-		}
-
-		return getOptionFromRepository( option );
-	};
-
-	/**
-	 * Get the previous available Option in the tree
-	 *
-	 * @param {Object} option The reference option to get the previous element
-	 * @return {Object} The previous option
-	 */
-	const getPreviousOption = ( option ) => {
-		// if no option is provided means we are focused in the search control.
-		// Hence the element to focus is the last
-		if ( ! option ) {
-			return getLastChild(
-				filteredOptions[ filteredOptions.length - 1 ]
-			);
-		}
-
-		const parent = getOptionParent( option );
-
-		if ( parent ) {
-			let index = getOptionIndexFromParent( option, parent );
-
-			// iterate over the elements until get the last one visible
-			while ( index ) {
-				const nextEl = getOptionFromRepository(
-					parent.children[ index - 1 ]
-				);
-
-				if ( ! nextEl.ref.current ) {
-					index--;
-				} else {
-					return getLastChild( nextEl );
-				}
-			}
-
-			return getOptionFromRepository( parent );
-		}
-
-		const index = getOptionIndexFromRef( option );
-		return getLastChild(
-			filteredOptions[
-				index > 0 ? index - 1 : filteredOptions.length - 1
-			]
-		);
-	};
-
-	/**
-	 * Get the next option available in the tree
-	 *
-	 * The function attempts to get the next option in the current level
-	 * if there is no more options, it tries to get the next option on the upper level.
-	 *
-	 * @param {Option} option The reference option to get the next element
-	 * @param {number} offset The starting index position
-	 * @param {boolean} checkExpanded If true, we check the children in the provided option
-	 * @return {Object} The next available option in the tree
-	 */
-	const getNextOption = ( option, offset = 0, checkExpanded = true ) => {
-		// if no option is provided means we are focused in the search control.
-		// Hence the element to focus is the first
-		if ( ! option ) {
-			return getOptionFromRepository( filteredOptions[ 0 ] );
-		}
-
-		// if the option is expanded and we are checking children...
-		if ( checkExpanded && isOptionExpanded( option ) ) {
-			// if there are still elements to check in the children
-			if ( offset < option.children.length ) {
-				const nextEl = getOptionFromRepository(
-					option.children[ offset ]
-				);
-
-				// if element is not visible, continue checking the next child
-				if ( ! nextEl.ref.current ) {
-					return getNextOption( option, offset + 1 );
-				}
-
-				return nextEl;
-			}
-		}
-
-		const parent = getOptionParent( option );
-
-		if ( parent ) {
-			// get the element position in the parent
-			const index = getOptionIndexFromParent( option, parent );
-
-			const nextEl = getOptionFromRepository(
-				parent.children[ index + offset + 1 ]
-			);
-
-			// if there are no more children, iterate over the next parent
-			if ( ! nextEl ) {
-				return getNextOption( parent, 0, false );
-			}
-
-			// if element is not visible, continue checking the next element
-			if ( ! nextEl.ref.current ) {
-				return getNextOption( option, offset + 1, checkExpanded );
-			}
-
-			return nextEl;
-		}
-
-		// if we are at root level, go to next element
-		return getOptionFromRepository(
-			filteredOptions[
-				( getOptionIndexFromRef( option ) + offset + 1 ) %
-					filteredOptions.length
-			]
-		);
-	};
-
-	/**
-	 * Gets an option from the repository using the option key or the option value
-	 *
-	 * @param {Option} option The option to get from the Repository
-	 * @return {RepositoryOption|undefined} The Repository option or undefined if it's not found
-	 */
-	const getOptionFromRepository = useCallback(
-		( option ) => {
-			if ( ! option ) return;
-			return optionsRepository[ option.key ?? option.value ];
-		},
-		[ optionsRepository ]
-	);
 
 	/**
 	 * Perform the search query filter in the Tree options
@@ -391,8 +170,6 @@ const TreeSelectControl = ( {
 		};
 
 		const filterOption = ( option ) => {
-			option.ref = getOptionFromRepository( option ).ref;
-
 			if ( hasChildren( option ) ) {
 				option.children = option.children.filter( filterOption );
 				return !! option.children.length;
@@ -416,7 +193,7 @@ const TreeSelectControl = ( {
 		filteredTreeOptions = filteredTreeOptions.filter( filterOption );
 		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
 		setFilteredOptions( filteredTreeOptions );
-	}, [ treeOptions, filter, getOptionFromRepository ] );
+	}, [ treeOptions, filter ] );
 
 	const onKeyDown = ( event ) => {
 		if ( disabled ) return;
@@ -430,24 +207,22 @@ const TreeSelectControl = ( {
 			event.preventDefault();
 		}
 
-		if ( ARROW_UP === event.key ) {
-			if ( ! filteredOptions.length ) return;
-			setFocused( getPreviousOption( focused ) );
-			event.preventDefault();
-		}
+		const stepDict = {
+			[ ARROW_UP ]: -1,
+			[ ARROW_DOWN ]: 1,
+		};
+		const step = stepDict[ event.key ];
 
-		if ( ARROW_DOWN === event.key ) {
-			if ( ! filteredOptions.length ) return;
-			setFocused( getNextOption( focused ) );
+		if ( step && dropdownRef.current && filteredOptions.length ) {
+			const elements = focus.focusable
+				.find( dropdownRef.current )
+				.filter( ( el ) => el.type === 'checkbox' );
+			const currentIndex = elements.indexOf( event.target );
+			const index = Math.max( currentIndex + step, -1 ) % elements.length;
+			elements.at( index ).focus();
 			event.preventDefault();
 		}
 	};
-
-	useEffect( () => {
-		if ( focused ) {
-			focused.ref.current.focus();
-		}
-	}, [ focused ] );
 
 	useEffect( () => {
 		onDropdownVisibilityChangeRef.current( showTree );
@@ -467,6 +242,12 @@ const TreeSelectControl = ( {
 			const option = optionsRepository[ key ];
 			return { id: key, label: option?.label };
 		} );
+	};
+
+	const handleExpanderClick = ( e ) => {
+		const elements = focus.focusable.find( dropdownRef.current );
+		const index = elements.indexOf( e.currentTarget ) + 1;
+		elements.at( index ).focus();
 	};
 
 	/**
@@ -557,10 +338,6 @@ const TreeSelectControl = ( {
 		setInputControlValue( e.target.value );
 	};
 
-	const handleOptionFocused = ( option ) => {
-		setFocused( option );
-	};
-
 	return (
 		// eslint-disable-next-line jsx-a11y/no-static-element-interactions
 		<div
@@ -585,7 +362,6 @@ const TreeSelectControl = ( {
 				tags={ getTags() }
 				isExpanded={ showTree }
 				onFocus={ () => {
-					setFocused( null );
 					setTreeVisible( true );
 				} }
 				onControlClick={ () => {
@@ -601,6 +377,7 @@ const TreeSelectControl = ( {
 			/>
 			{ showTree && (
 				<div
+					ref={ dropdownRef }
 					className="woocommerce-tree-select-control__tree"
 					role="tree"
 					tabIndex="-1"
@@ -612,7 +389,7 @@ const TreeSelectControl = ( {
 						onChange={ handleOptionsChange }
 						nodesExpanded={ nodesExpanded }
 						onNodesExpandedChange={ setNodesExpanded }
-						onOptionFocused={ handleOptionFocused }
+						onExpanderClick={ handleExpanderClick }
 					/>
 				</div>
 			) }

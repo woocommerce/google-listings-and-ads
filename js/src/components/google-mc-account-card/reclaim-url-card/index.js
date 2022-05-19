@@ -36,6 +36,7 @@ import AppInputLinkControl from '.~/components/app-input-link-control';
  * @param {Function} [props.onSwitchAccount] Callback when clicking on Switch Account
  * @fires gla_mc_account_reclaim_url_button_click
  * @fires gla_mc_account_switch_account_button_click with `context: 'reclaim-url'`
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
  */
 const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 	const { invalidateResolution } = useAppDispatch();

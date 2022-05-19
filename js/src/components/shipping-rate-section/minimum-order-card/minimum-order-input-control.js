@@ -1,20 +1,37 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import AppInputPriceControl from '.~/components/app-input-price-control';
+import AppButton from '.~/components/app-button';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
+import AppInputPriceControl from '.~/components/app-input-price-control';
+import { EditMinimumOrderFormModal } from './minimum-order-form-modals';
 import MinimumOrderInputControlLabelText from './minimum-order-input-control-label-text';
-import EditMinimumOrderModal from './edit-minimum-order-modal';
 import './minimum-order-input-control.scss';
 
+/**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ * @typedef { import("./typedefs").MinimumOrderGroup } MinimumOrderGroup
+ */
+
+/**
+ * Input control to edit a minimum order group.
+ *
+ * The input control label contains a placeholder area for `button`, after the label text.
+ * This is meant to display an "Edit" button.
+ *
+ * @param {Object} props
+ * @param {Array<CountryCode>} props.countryOptions Country options to be passed to EditMinimumOrderFormModal.
+ * @param {MinimumOrderGroup} props.value Minimum order group value.
+ * @param {(newGroup: MinimumOrderGroup) => void} props.onChange Called when minimum order group changes.
+ * @param {() => void} props.onDelete Called when delete button in EditMinimumOrderFormModal is clicked.
+ */
 const MinimumOrderInputControl = ( props ) => {
-	const { countryOptions, value, onChange } = props;
+	const { countryOptions, value, onChange, onDelete } = props;
 	const { countries, threshold, currency } = value;
 
 	const handleBlur = ( event, numberValue ) => {
@@ -29,10 +46,6 @@ const MinimumOrderInputControl = ( props ) => {
 		} );
 	};
 
-	const handleEditChange = ( newValue ) => {
-		onChange( newValue );
-	};
-
 	return (
 		<AppInputPriceControl
 			className="gla-minimum-order-input-control"
@@ -43,18 +56,16 @@ const MinimumOrderInputControl = ( props ) => {
 					/>
 					<AppButtonModalTrigger
 						button={
-							<Button
-								className="gla-minimum-order-input-control__edit-button"
-								isTertiary
-							>
+							<AppButton isTertiary>
 								{ __( 'Edit', 'google-listings-and-ads' ) }
-							</Button>
+							</AppButton>
 						}
 						modal={
-							<EditMinimumOrderModal
+							<EditMinimumOrderFormModal
 								countryOptions={ countryOptions }
-								value={ value }
-								onChange={ handleEditChange }
+								initialValues={ value }
+								onSubmit={ onChange }
+								onDelete={ onDelete }
 							/>
 						}
 					/>

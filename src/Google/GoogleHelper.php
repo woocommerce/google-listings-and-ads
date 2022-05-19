@@ -1335,7 +1335,7 @@ class GoogleHelper implements Service {
 	 * @return string[] Returns an array of country codes with each country code used both as the key and value.
 	 *                  For example: [ 'US' => 'US', 'DE' => 'DE' ].
 	 *
-	 * @since x.x.x
+	 * @since 1.13.0
 	 */
 	public function get_supported_countries_from_continent( string $continent_code ): array {
 		$countries  = [];

@@ -1,5 +1,25 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 1.13.0 - 2022-05-18 =
+* Add - Extending Update All Products Test Suit.
+* Add - Request a Google Merchant Account Review for disapproved accounts.
+* Fix - Address a crash problem of TreeSelectControl component when the dropdown is not showing and press the Up or Down key.
+* Fix - Edit shipping rate modal disappears after auto-save shipping rate in Setup MC.
+* Fix - Prevent product sync if the site URL does not match the originally claimed URL.
+* Fix - Revert filtering only Shopping destination for account issues.
+* Fix - The unsaved prompt might pop up when the countries of the target audience are the same when navigating away from the free listings edit page.
+* Fix - Unit tests for WooCommerce 6.5.
+* Fix - Validation for shipping rates and shipping times in Setup MC and Edit Free Listings.
+* Tweak - Add helper class to obtain supported countries of a continent.
+* Tweak - Adjust the implementation of focus navigation for the TreeSelectControl component.
+* Tweak - Cleanup unused Google Ads services.
+* Tweak - Drop support for WooCommerce < 6.0.
+* Tweak - Enhance event name for documentation link and update tracking document.
+* Tweak - WooCommerce 6.5 compatibility.
+* Tweak - WordPress 6.0 compatibility.
+* Update - Improved UX in the Product Feed Issues table.
+* Update - Use a shared helper method to get supported countries of a continent for /mc/countries API.
+
 = 1.12.8 - 2022-05-05 =
 * Update - Add the FAQs card for UX improvements on get started page.
 * Update - Add the benefits card for UX improvements on get started page.

@@ -11,12 +11,22 @@ import classnames from 'classnames';
  */
 import './index.scss';
 
-const getPanelToggleHandler = ( trackName, id ) => ( isOpened ) => {
+const getPanelToggleHandler = ( trackName, id, context ) => ( isOpened ) => {
 	recordEvent( trackName, {
 		id,
 		action: isOpened ? 'expand' : 'collapse',
+		context,
 	} );
 };
+
+/**
+ * Clicking on faq item to collapse or expand it.
+ *
+ * @event gla_faq
+ * @property {string} id FAQ identifier
+ * @property {string} action (`expand`|`collapse`)
+ * @property {string} context Indicates which page / module the FAQ is in
+ */
 
 /**
  * @typedef {Object} FaqItem
@@ -32,8 +42,14 @@ const getPanelToggleHandler = ( trackName, id ) => ( isOpened ) => {
  * @param {string} props.trackName The track event name to be recorded when toggling on FAQ items.
  * @param {Array<FaqItem>} props.faqItems FAQ items for rendering.
  * @param {string} [props.className] The class name for this component.
+ * @param {string} props.context The track event property to be recorded when toggling on FAQ items.
  */
-export default function FaqsPanel( { trackName, faqItems, className } ) {
+export default function FaqsPanel( {
+	trackName,
+	faqItems,
+	className,
+	context,
+} ) {
 	return (
 		<Panel
 			className={ classnames( 'gla-faqs-panel', className ) }
@@ -48,7 +64,11 @@ export default function FaqsPanel( { trackName, faqItems, className } ) {
 						key={ trackId }
 						title={ question }
 						initialOpen={ false }
-						onToggle={ getPanelToggleHandler( trackName, trackId ) }
+						onToggle={ getPanelToggleHandler(
+							trackName,
+							trackId,
+							context
+						) }
 					>
 						<PanelRow>{ answer }</PanelRow>
 					</PanelBody>

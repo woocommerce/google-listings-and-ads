@@ -124,8 +124,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Retrieve the Merchant Center issues and total count. Refresh if the cache issues have gone stale.
 	 * Issue details are reduced, and for products, grouped by type.
-	 * Issues can be filtered by type, searched by name or ID (if product type) and paginated.
+	 * Issues can be filtered by type, severity and searched by name or ID (if product type) and paginated.
 	 * Count takes into account the type filter, but not the pagination.
+	 *
+	 * In case there are issues with severity Error we hide the other issues with lower severity.
 	 *
 	 * @param string|null $type To filter by issue type if desired.
 	 * @param int         $per_page The number of issues to return (0 for no limit).
@@ -137,7 +139,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	public function get_issues( string $type = null, int $per_page = 0, int $page = 1, bool $force_refresh = false ): array {
 		$this->maybe_refresh_status_data( $force_refresh );
-		return $this->fetch_issues( $type, $per_page, $page );
+
+		// Get only error issues
+		$severity_error_issues = $this->fetch_issues( $type, $per_page, $page, true );
+
+		// In case there are error issues we show only those, otherwise we show all the issues.
+		return $severity_error_issues['total'] > 0 ? $severity_error_issues : $this->fetch_issues( $type, $per_page, $page );
 	}
 
 	/**
@@ -178,7 +185,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$this->mc_statuses = [];
 
 		// Update account-level issues.
-		 $this->refresh_account_issues();
+		$this->refresh_account_issues();
 
 		// Update MC product issues and tabulate statistics in batches.
 		$chunk_size = apply_filters( 'woocommerce_gla_merchant_status_google_ids_chunk', 1000 );
@@ -245,11 +252,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @param string|null $type To filter by issue type if desired.
 	 * @param int         $per_page The number of issues to return (0 for no limit).
 	 * @param int         $page The page to start on (1-indexed).
+	 * @param bool        $only_errors Filters only the issues with error and critical severity.
 	 *
 	 * @return array The requested issues and the total count of issues.
 	 * @throws InvalidValue If the type filter is invalid.
 	 */
-	protected function fetch_issues( string $type = null, int $per_page = 0, int $page = 1 ): array {
+	protected function fetch_issues( string $type = null, int $per_page = 0, int $page = 1, bool $only_errors = false ): array {
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 
@@ -269,6 +277,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		if ( $per_page > 0 ) {
 			$issue_query->set_limit( $per_page );
 			$issue_query->set_offset( $per_page * ( $page - 1 ) );
+		}
+
+		if ( $only_errors ) {
+			$issue_query->where( 'severity', [ 'error', 'critical' ], 'IN' );
 		}
 
 		$issues = [];
@@ -382,7 +394,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 					'product'              => __( 'All products', 'google-listings-and-ads' ),
 					'code'                 => $issue->getId(),
 					'issue'                => $issue->getTitle(),
-					'action'               => __( 'Read more about this account issue', 'google-listings-and-ads' ),
+					'action'               => $issue->getDetail(),
 					'action_url'           => $issue->getDocumentation(),
 					'created_at'           => $created_at,
 					'type'                 => self::TYPE_ACCOUNT,
@@ -390,6 +402,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 					'source'               => 'mc',
 					'applicable_countries' => [ $issue->getCountry() ],
 				];
+
+				$account_issues[ $key ] = $this->maybe_override_issue_values( $account_issues[ $key ] );
 			}
 		}
 
@@ -781,5 +795,32 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		);
 
 		return $is_warning ? self::SEVERITY_WARNING : self::SEVERITY_ERROR;
+	}
+
+	/**
+	 * In very rare instances, issue values need to be overridden manually.
+	 *
+	 * @param array $issue
+	 *
+	 * @return array The original issue with any possibly overridden values.
+	 */
+	private function maybe_override_issue_values( array $issue ): array {
+		if ( 'merchant_quality_low' === $issue['code'] ) {
+			$issue['issue']      = 'Show products on additional surfaces across Google through enhanced free listings';
+			$issue['severity']   = self::SEVERITY_WARNING;
+			$issue['action']     = 'Read about enhanced free listings';
+			$issue['action_url'] = 'https://support.google.com/merchants/answer/9199328?hl=en';
+		}
+
+		return $issue;
+	}
+
+	/**
+	 * Getter for get_cache_created_time
+	 *
+	 * @return DateTime The DateTime stored in cache_created_time
+	 */
+	public function get_cache_created_time(): DateTime {
+		return $this->cache_created_time;
 	}
 }

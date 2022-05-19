@@ -61,7 +61,7 @@ function isNotOurStep( location ) {
  *
  * @fires gla_free_campaign_edited
  */
-export default function EditFreeCampaign() {
+const EditFreeCampaign = () => {
 	useLayout( 'full-content' );
 
 	const {
@@ -296,4 +296,6 @@ export default function EditFreeCampaign() {
 			/>
 		</>
 	);
-}
+};
+
+export default EditFreeCampaign;

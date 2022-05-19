@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useState } from '@wordpress/element';
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
 
@@ -13,63 +12,45 @@ import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import SupportedCountrySelect from '.~/components/supported-country-select';
+import validateMinimumOrder from './validateMinimumOrder';
 
-const EditMinimumOrderModal = ( props ) => {
-	const { countryOptions, value, onChange, onRequestClose } = props;
+/**
+ * @typedef { import("@wordpress/components").Button } Button
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ * @typedef { import("../typedefs.js").MinimumOrderGroup } MinimumOrderGroup
+ */
+
+/**
+ * Minimum order modal that is wrapped in a form.
+ *
+ * Buttons can be customized by using the `renderButtons` prop.
+ * The render function will be passed `formProps`,
+ * allowing the buttons to have access to form's `isValidForm` and `handleSubmit`.
+ *
+ * @param {Object} props Props.
+ * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in SupportedCountrySelect.
+ * @param {(formProps: Object) => Array<Button>} props.renderButtons Function to render buttons for the modal. `formProps` will be passed into this render function.
+ * @param {MinimumOrderGroup} props.initialValues Initial values for the form.
+ * @param {(values: MinimumOrderGroup) => void} props.onSubmit Callback when the form is submitted, with the form value.
+ * @param {() => void} props.onRequestClose Callback to close the modal.
+ */
+const MinimumOrderFormModal = ( {
+	countryOptions,
+	renderButtons,
+	initialValues,
+	onSubmit,
+	onRequestClose,
+} ) => {
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
-
-	const handleDeleteClick = () => {
-		onRequestClose();
-		onChange( {
-			countries: [],
-			currency: undefined,
-			threshold: undefined,
-		} );
-	};
-
-	const handleValidate = ( values ) => {
-		const errors = {};
-
-		if ( values.countries.length === 0 ) {
-			errors.countries = __(
-				'Please specify at least one country.',
-				'google-listings-and-ads'
-			);
-		}
-
-		if ( ! ( values.threshold > 0 ) ) {
-			errors.price = __(
-				'The minimum order amount must be greater than 0.',
-				'google-listings-and-ads'
-			);
-		}
-
-		return errors;
-	};
-
-	const handleSubmitCallback = ( newValue ) => {
-		onRequestClose();
-		onChange( newValue );
-	};
 
 	return (
 		<Form
-			initialValues={ {
-				countries: value.countries,
-				currency: value.currency,
-				threshold: value.threshold,
-			} }
-			validate={ handleValidate }
-			onSubmit={ handleSubmitCallback }
+			initialValues={ initialValues }
+			validate={ validateMinimumOrder }
+			onSubmit={ onSubmit }
 		>
 			{ ( formProps ) => {
-				const {
-					getInputProps,
-					values,
-					setValue,
-					isValidForm,
-					handleSubmit,
-				} = formProps;
+				const { getInputProps, values, setValue } = formProps;
 
 				return (
 					<AppModal
@@ -80,27 +61,7 @@ const EditMinimumOrderModal = ( props ) => {
 							'Minimum order to qualify for free shipping',
 							'google-listings-and-ads'
 						) }
-						buttons={ [
-							<Button
-								key="delete"
-								isTertiary
-								isDestructive
-								onClick={ handleDeleteClick }
-							>
-								{ __( 'Delete', 'google-listings-and-ads' ) }
-							</Button>,
-							<Button
-								key="save"
-								isPrimary
-								disabled={ ! isValidForm }
-								onClick={ handleSubmit }
-							>
-								{ __(
-									'Update minimum order',
-									'google-listings-and-ads'
-								) }
-							</Button>,
-						] }
+						buttons={ renderButtons( formProps ) }
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
@@ -142,4 +103,4 @@ const EditMinimumOrderModal = ( props ) => {
 	);
 };
 
-export default EditMinimumOrderModal;
+export default MinimumOrderFormModal;

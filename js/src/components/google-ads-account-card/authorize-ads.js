@@ -18,7 +18,7 @@ const pageName = 'setup-ads';
  * @param {string} props.additionalScopeEmail
  * @fires gla_google_account_connect_button_click with `{ action: 'scope', context: 'setup-ads' }`
  */
-export default function AuthorizeAds( { additionalScopeEmail } ) {
+const AuthorizeAds = ( { additionalScopeEmail } ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchGoogleConnect, { loading, data } ] = useGoogleAuthorization(
 		pageName,
@@ -59,4 +59,6 @@ export default function AuthorizeAds( { additionalScopeEmail } ) {
 			}
 		/>
 	);
-}
+};
+
+export default AuthorizeAds;

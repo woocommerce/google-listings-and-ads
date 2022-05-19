@@ -13,11 +13,13 @@ interface TransientsInterface {
 	public const ADS_METRICS          = 'ads_metrics';
 	public const FREE_LISTING_METRICS = 'free_listing_metrics';
 	public const MC_STATUSES          = 'mc_statuses';
+	public const MC_ACCOUNT_REVIEW    = 'mc_account_review';
 
 	public const VALID_OPTIONS = [
 		self::ADS_METRICS          => true,
 		self::FREE_LISTING_METRICS => true,
 		self::MC_STATUSES          => true,
+		self::MC_ACCOUNT_REVIEW    => true,
 	];
 
 	/**

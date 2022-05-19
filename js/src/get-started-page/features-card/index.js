@@ -42,6 +42,11 @@ const LearnMoreLink = ( { linkId, href } ) => {
 	);
 };
 
+/*
+ * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'get-started-features-free-listing-learn-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google' }`.
+ * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'get-started-features-google-ads-learn-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-performance-max-campaigns' }`.
+ * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'get-started-features-dashboard-learn-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
+ */
 const FeaturesCard = () => {
 	return (
 		<Card className="gla-get-started-features-card" isBorderless>

@@ -55,12 +55,12 @@ abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob imple
 	}
 
 	/**
-	 * Get whether Merchant Center is connected.
+	 * Get whether Merchant Center is connected and ready for syncing data.
 	 *
 	 * @return bool
 	 */
-	public function is_mc_connected(): bool {
-		return $this->merchant_center->is_connected();
+	public function is_mc_ready_for_syncing(): bool {
+		return $this->merchant_center->is_ready_for_syncing();
 	}
 
 	/**
@@ -71,6 +71,6 @@ abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob imple
 	 * @return bool Returns true if the job can be scheduled.
 	 */
 	public function can_schedule( $args = [] ): bool {
-		return ! $this->is_running( $args ) && $this->is_mc_connected();
+		return ! $this->is_running( $args ) && $this->is_mc_ready_for_syncing();
 	}
 }

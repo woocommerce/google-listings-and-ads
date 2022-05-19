@@ -6,4 +6,43 @@
 			margin-bottom: 0;
 		}
 	}
+
+	.app-tab-nav {
+		&__tabs {
+			padding: 0 $grid-unit-30;
+			margin-bottom: 0;
+		}
+	}
+
+	.gla-issues-solved {
+		max-width: $break-small;
+		padding: $grid-unit-50;
+		margin: 0 auto;
+		text-align: center;
+
+		&__icon {
+			margin-bottom: $grid-unit-20;
+			width: $grid-unit-50;
+			height: $grid-unit-50;
+			color: color.adjust($gray-400, $lightness: -6.5%);
+			font-size: $grid-unit-50;
+		}
+
+		&__body {
+			margin-top: $grid-unit-10;
+			color: $gray-700;
+			line-height: 1.2;
+		}
+	}
+}
+
+.gla-issues-table-data-modal {
+	.components-modal__header {
+		border-bottom: 1px solid #ccc;
+	}
+
+	.gridicon {
+		width: 12px;
+		margin-right: 0.5em;
+	}
 }
