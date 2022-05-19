@@ -37,9 +37,4 @@ describe( 'Issues Data Table Modal', () => {
 			}
 		);
 	} );
-
-	test( 'Not Render if no issue', () => {
-		const { queryByText } = render( <IssuesTableDataModal /> );
-		expect( queryByText( '#issue-1' ) ).toBeFalsy();
-	} );
 } );

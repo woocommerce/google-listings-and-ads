@@ -14,12 +14,11 @@ import AppButton from '.~/components/app-button';
  * Renders a modal showing information about a Google Merchant Center issue
  *
  * @fires gla_documentation_link_click with { context: 'issues-data-table-modal' }
- * @param {Object} params Component params
- * @param {Object} params.issue The issue to be rendered in the modal
- * @param {Function} params.onRequestClose Onnclose callback function
+ * @param {Object} props React props
+ * @param {Object} props.issue The issue to be rendered in the modal
+ * @param {Function} [props.onRequestClose] Callback function when closing the modal
  */
 const IssuesTableDataModal = ( { issue, onRequestClose = () => {} } ) => {
-	if ( ! issue ) return null;
 	return (
 		<AppModal
 			className="gla-issues-table-data-modal"
@@ -32,7 +31,7 @@ const IssuesTableDataModal = ( { issue, onRequestClose = () => {} } ) => {
 					target="_blank"
 					href={ issue.action_url }
 					text={ __( 'Learn more', 'google-listings-and-ads' ) }
-					eventName={ 'gla_documentation_link_click' }
+					eventName="gla_documentation_link_click"
 					eventProps={ {
 						context: 'issues-data-table-modal',
 						linkId: issue.code,
