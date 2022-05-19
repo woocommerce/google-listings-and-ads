@@ -6,11 +6,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class AdsAccountQuery
+ * Class AdsAccountAccessQuery
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
-class AdsAccountQuery extends AdsQuery {
+class AdsAccountAccessQuery extends AdsQuery {
 
 	/**
 	 * Query constructor.

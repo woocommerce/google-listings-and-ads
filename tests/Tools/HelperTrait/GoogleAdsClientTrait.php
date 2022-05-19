@@ -213,7 +213,7 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
-	 * Generates a mocked AdsAccountQuery response.
+	 * Generates a mocked AdsAccountAccessQuery response.
 	 *
 	 * @param bool $has_access
 	 */
