@@ -107,7 +107,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'wp_body_open',
 			function () {
 				$this->display_page_view_event_snippet();
-				$this->display_cart_page_snippet();
 			}
 		);
 
@@ -135,7 +134,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				function ( $gtag_snippet ) use ( $ads_conversion_id ) {
 					return preg_replace(
 						'~(\s)</script>~',
-						"\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA' });\n$1</script>",
+						"\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA', 'send_page_view': 'false' });\n$1</script>",
 						$gtag_snippet
 					);
 				}
@@ -162,7 +161,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	gtag('js', new Date());
 	gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
 
-	gtag('config','<?php echo esc_js( $ads_conversion_id ); ?>', { 'groups': 'GLA' });
+	gtag('config','<?php echo esc_js( $ads_conversion_id ); ?>', { 'groups': 'GLA', 'send_page_view': 'false' });
 </script>
 		<?php
 		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
@@ -193,11 +192,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		$conversion_gtag_info =
 		sprintf(
-			'gtag("event", "conversion",
-                {"send_to": "%s",
-                 "value": "%s",
-                 "currency": "%s",
-                 "transaction_id": "%s"});',
+			'gtag("event", "conversion", {
+        send_to: "%s",
+        value: "%s",
+        currency: "%s",
+        transaction_id: "%s"});',
 			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
 			esc_js( $order->get_total() ),
 			esc_js( $order->get_currency() ),
@@ -214,12 +213,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$price        = $item->get_subtotal();
 			$item_info    = $item_info . sprintf(
 				'{
-                    "id": "gla_%s",
-                    "price": %s,
-                    "google_business_vertical": "retail",
-                    "name":"%s",
-                    "quantity":"%s",
-                }',
+            id: "gla_%s",
+            price: %s,
+            google_business_vertical: "retail",
+            item_name:"%s",
+            quantity:"%s",
+          }',
 				esc_js( $product_id ),
 				esc_js( $price ),
 				esc_js( $product_name ),
@@ -237,22 +236,21 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		}
 		$purchase_page_gtag =
 		sprintf(
-			'gtag("event", "purchase",
-				{
-                    "developer_id.%s": "true",
-                    "ecomm_pagetype": "purchase",
-                    "send_to": "%s",
-                    "transaction_id": "%s",
-                    "currency": "%s",
-                    "country": "%s",
-                    "value": "%s",
-                    "new_customer": "%s",
-                    "tax": "%s",
-                    "shipping": "%s",
-                    "delivery_postal_code": "%s",
-                    "aw_feed_country": "%s",
-                    "aw_feed_language": "%s",
-                    items: [' . $item_info . ']});',
+			'gtag("event", "purchase", {
+        developer_id.%s: "true",
+        ecomm_pagetype: "purchase",
+        send_to: "%s",
+        transaction_id: "%s",
+        currency: "%s",
+        country: "%s",
+        value: "%s",
+        new_customer: "%s",
+        tax: "%s",
+        shipping: "%s",
+        delivery_postal_code: "%s",
+        aw_feed_country: "%s",
+        aw_feed_language: "%s",
+        items: [%s]});',
 			esc_js( self::DEVELOPER_ID ),
 			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
 			esc_js( $order->get_id() ),
@@ -265,6 +263,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $order->get_shipping_postcode() ),
 			esc_js( $this->wc->get_base_country() ),
 			esc_js( $language ),
+			esc_js( $item_info ),
 		);
 		wp_print_inline_script_tag( $purchase_page_gtag );
 	}
@@ -280,23 +279,23 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$product        = wc_get_product( get_the_ID() );
 		$view_item_gtag = sprintf(
 			'gtag("event", "view_item", {
-                    "send_to": "GLA",
-                    "developer_id.%s": "true",
-                    "ecomm_pagetype": "product",
-                    "value": "%s",
-                    items:[{
-                    "id": "gla_%s",
-                    "price": %s,
-                    "google_business_vertical": "retail",
-                    "name":"%s",
-                    "category":"%s",
-                    }]});',
+        send_to: "GLA",
+        developer_id.%s: "true",
+        ecomm_pagetype: "product",
+        value: %s,
+        items:[{
+          id: "gla_%s",
+          price: %s,
+          google_business_vertical: "retail",
+          item_name: "%s",
+          item_category: "%s",
+        }]});',
 			esc_js( self::DEVELOPER_ID ),
-			esc_js( (string) $product->get_price() ),
+			esc_js( (float) $product->get_price() ),
 			esc_js( $product->get_id() ),
-			esc_js( (string) $product->get_price() ),
+			esc_js( (float) $product->get_price() ),
 			esc_js( $product->get_name() ),
-			esc_js( join( '& ', $this->product_helper->get_categories( $product ) ) ),
+			esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
 		);
 		wp_print_inline_script_tag( $view_item_gtag );
 	}
@@ -305,63 +304,55 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Display the JavaScript code to track all pages.
 	 */
 	private function display_page_view_event_snippet(): void {
-		$page_view_gtag =
-		sprintf(
-			'gtag(
-                    "event", "page_view", {
-                    "send_to": "GLA",
-                    "developer_id.%s": "true",});',
+		$page_view_gtag = sprintf(
+			'gtag("event", "page_view", {
+            send_to: "GLA",
+            developer_id.%s: "true",});',
 			esc_js( self::DEVELOPER_ID )
 		);
-		wp_print_inline_script_tag( $page_view_gtag );
-	}
-
-	/**
-	 * Display the JavaScript code to track the cart page.
-	 */
-	private function display_cart_page_snippet(): void {
-		// Only display on the cart page.
 		if ( ! is_cart() ) {
-			return;
-		}
+			wp_print_inline_script_tag( $page_view_gtag );
+		} else {
+			// display the JavaScript code to track the cart page
+			$item_info = '';
 
-		$item_info = '';
+			foreach ( WC()->cart->get_cart() as $cart_item ) {
+				// gets the product id
+				$id = $cart_item['product_id'];
 
-		foreach ( WC()->cart->get_cart() as $cart_item ) {
-			// gets the product id
-			$id = $cart_item['product_id'];
+				// gets the product object
+				$product = $cart_item['data'];
+				$name    = $product->get_name();
+				$price   = $product->get_price();
+				// gets the cart item quantity
+				$quantity = $cart_item['quantity'];
 
-			// gets the product object
-			$product = $cart_item['data'];
-			$name    = $product->get_name();
-			$price   = $product->get_price();
-			// gets the cart item quantity
-			$quantity = $cart_item['quantity'];
-
-			$item_info = $item_info . sprintf(
-				'{
-				"id": "gla_%s",
-				"price": %s,
-				"google_business_vertical": "retail",
-				"name":"%s",
-				"quantity":"%s",
+				$item_info = $item_info . sprintf(
+					'{
+				id: "gla_%s",
+				price: %s,
+				google_business_vertical: "retail",
+				item_name:"%s",
+				quantity:"%s",
 				}',
-				esc_js( $id ),
-				esc_js( $price ),
-				esc_js( $name ),
-				esc_js( $quantity )
+					esc_js( $id ),
+					esc_js( $price ),
+					esc_js( $name ),
+					esc_js( $quantity )
+				);
+			}
+			$value          = WC()->cart->total;
+			$page_view_gtag = sprintf(
+				'gtag("event", "page_view", {
+        send_to: "GLA",
+        ecomm_pagetype: "cart",
+        value: "%s",
+        items: [%s]});',
+				esc_js( $value ),
+				esc_js( $item_info ),
 			);
+			wp_print_inline_script_tag( $page_view_gtag );
 		}
-		$value          = WC()->cart->total;
-		$page_view_gtag = sprintf(
-			'gtag("event", "page_view",
-				{"send_to": "GLA",
-				"ecomm_pagetype": "cart",
-				"value": "%s",
-				 items: [' . $item_info . ']});',
-			esc_js( $value ),
-		);
-		wp_print_inline_script_tag( $page_view_gtag );
 	}
 
 	/**
@@ -384,23 +375,23 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				function () use ( $product ) {
 					$add_to_cart_gtag = sprintf(
 						'gtag("event", "add_to_cart", {
-                            "send_to": "GLA",
-                            "developer_id.%s": "true",
-                            "ecomm_pagetype": "cart",
-                            "value": "%s",
-                            items:[{
-                            "id": "gla_%s",
-                            "price": %s,
-                            "google_business_vertical": "retail",
-                            "name":"%s",
-                            "category":"%s",
-                            }]});',
+              send_to: "GLA",
+              developer_id.%s: "true",
+              ecomm_pagetype: "cart",
+              value: "%s",
+              items:[{
+                id: "gla_%s",
+                price: %s,
+                google_business_vertical: "retail",
+                item_name:"%s",
+                category:"%s",
+              }]});',
 						esc_js( self::DEVELOPER_ID ),
 						esc_js( (string) $product->get_price() ),
 						esc_js( $product->get_id() ),
 						esc_js( (string) $product->get_price() ),
 						esc_js( $product->get_name() ),
-						esc_js( join( '& ', $this->product_helper->get_categories( $product ) ) ),
+						esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
 					);
 					wp_print_inline_script_tag( $add_to_cart_gtag );
 				}
@@ -434,6 +425,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		);
 		$query->set( 'customer', $customer_email );
 		$orders = $query->get_orders();
-		return count( $orders ) === 1 ? 'true' : 'false';
+		return count( $orders ) === 1 ? true : false;
 	}
 }
