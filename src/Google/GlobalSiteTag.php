@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Global Site Tag functionality - add main script and track conversions.
  *
@@ -21,410 +22,427 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 /**
  * Main class for Global Site Tag.
  */
-class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareInterface {
+class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareInterface
+{
 
 
-	use OptionsAwareTrait;
+  use OptionsAwareTrait;
 
-	/** @var string Developer ID */
-	protected const DEVELOPER_ID = 'dOGY3NW';
+  /** @var string Developer ID */
+  protected const DEVELOPER_ID = 'dOGY3NW';
 
-	/** @var string Meta key used to mark orders as converted */
-	protected const ORDER_CONVERSION_META_KEY = '_gla_tracked';
+  /** @var string Meta key used to mark orders as converted */
+  protected const ORDER_CONVERSION_META_KEY = '_gla_tracked';
 
-	/**
-	 * @var GoogleGtagJs
-	 */
-	protected $gtag_js;
+  /**
+   * @var GoogleGtagJs
+   */
+  protected $gtag_js;
 
-	/**
-	 * @var WP
-	 */
-	protected $wp;
+  /**
+   * @var WP
+   */
+  protected $wp;
 
-	/**
-	 * @var ProductHelper
-	 */
-	protected $product_helper;
+  /**
+   * @var ProductHelper
+   */
+  protected $product_helper;
 
-	/**
-	 * @var WC
-	 */
-	protected $wc;
+  /**
+   * @var WC
+   */
+  protected $wc;
 
-	/**
-	 * Global Site Tag constructor.
-	 *
-	 * @param GoogleGtagJs  $gtag_js
-	 * @param WP            $wp
-	 * @param ProductHelper $product_helper
-	 * @param WC            $wc
-	 */
-	public function __construct( GoogleGtagJs $gtag_js, WP $wp, ProductHelper $product_helper, WC $wc ) {
-		$this->gtag_js        = $gtag_js;
-		$this->wp             = $wp;
-		$this->product_helper = $product_helper;
-		$this->wc             = $wc;
-	}
+  /**
+   * Global Site Tag constructor.
+   *
+   * @param GoogleGtagJs  $gtag_js
+   * @param WP            $wp
+   * @param ProductHelper $product_helper
+   * @param WC            $wc
+   */
+  public function __construct(GoogleGtagJs $gtag_js, WP $wp, ProductHelper $product_helper, WC $wc)
+  {
+    $this->gtag_js        = $gtag_js;
+    $this->wp             = $wp;
+    $this->product_helper = $product_helper;
+    $this->wc             = $wc;
+  }
 
-	/**
-	 * Register the service.
-	 */
-	public function register(): void {
-		$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
+  /**
+   * Register the service.
+   */
+  public function register(): void
+  {
+    $conversion_action = $this->options->get(OptionsInterface::ADS_CONVERSION_ACTION);
 
-		// No snippets without conversion action info.
-		if ( ! $conversion_action ) {
-			return;
-		}
+    // No snippets without conversion action info.
+    if (!$conversion_action) {
+      return;
+    }
 
-		$ads_conversion_id    = $conversion_action['conversion_id'];
-		$ads_conversion_label = $conversion_action['conversion_label'];
+    $ads_conversion_id    = $conversion_action['conversion_id'];
+    $ads_conversion_label = $conversion_action['conversion_label'];
 
-		add_action(
-			'wp_head',
-			function () use ( $ads_conversion_id ) {
-				$this->activate_global_site_tag( $ads_conversion_id );
-			},
-			999998
-		);
-		add_action(
-			'woocommerce_before_thankyou',
-			function ( $order_id ) use ( $ads_conversion_id, $ads_conversion_label ) {
-				$this->maybe_display_conversion_and_purchase_event_snippets( $ads_conversion_id, $ads_conversion_label, $order_id );
-			},
-			1000000
-		);
+    add_action(
+      'wp_head',
+      function () use ($ads_conversion_id) {
+        $this->activate_global_site_tag($ads_conversion_id);
+      },
+      999998
+    );
+    add_action(
+      'woocommerce_before_thankyou',
+      function ($order_id) use ($ads_conversion_id, $ads_conversion_label) {
+        $this->maybe_display_conversion_and_purchase_event_snippets($ads_conversion_id, $ads_conversion_label, $order_id);
+      },
+      1000000
+    );
 
-		add_action(
-			'woocommerce_after_single_product',
-			function () {
-				$this->display_view_item_event_snippet();
-			}
-		);
+    add_action(
+      'woocommerce_after_single_product',
+      function () {
+        $this->display_view_item_event_snippet();
+      }
+    );
 
-		add_action(
-			'wp_body_open',
-			function () {
-				$this->display_page_view_event_snippet();
-			}
-		);
+    add_action(
+      'wp_body_open',
+      function () {
+        $this->display_page_view_event_snippet();
+      }
+    );
 
-		add_filter(
-			'wc_add_to_cart_message_html',
-			function ( $message, $products ) {
-				return $this->custom_action_add_to_cart( $message, $products );
-			},
-			1000000,
-			2
-		);
-	}
+    add_filter(
+      'wc_add_to_cart_message_html',
+      function ($message, $products) {
+        return $this->custom_action_add_to_cart($message, $products);
+      },
+      1000000,
+      2
+    );
+  }
 
-	/**
-	 * Activate the Global Site Tag framework:
-	 * - Insert GST code, or
-	 * - Include the Google Ads conversion ID in WooCommerce Google Analytics Integration output, if available
-	 *
-	 * @param string $ads_conversion_id Google Ads account conversion ID.
-	 */
-	public function activate_global_site_tag( string $ads_conversion_id ) {
-		if ( $this->gtag_js->is_adding_framework() ) {
-			add_filter(
-				'woocommerce_gtag_snippet',
-				function ( $gtag_snippet ) use ( $ads_conversion_id ) {
-					return preg_replace(
-						'~(\s)</script>~',
-						"\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA', 'send_page_view': 'false' });\n$1</script>",
-						$gtag_snippet
-					);
-				}
-			);
-		} else {
-			$this->display_global_site_tag( $ads_conversion_id );
-		}
-	}
+  /**
+   * Activate the Global Site Tag framework:
+   * - Insert GST code, or
+   * - Include the Google Ads conversion ID in WooCommerce Google Analytics Integration output, if available
+   *
+   * @param string $ads_conversion_id Google Ads account conversion ID.
+   */
+  public function activate_global_site_tag(string $ads_conversion_id)
+  {
+    if ($this->gtag_js->is_adding_framework()) {
+      add_filter(
+        'woocommerce_gtag_snippet',
+        function ($gtag_snippet) use ($ads_conversion_id) {
+          return preg_replace(
+            '~(\s)</script>~',
+            "\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA', 'send_page_view': 'false' });\n$1</script>",
+            $gtag_snippet
+          );
+        }
+      );
+    } else {
+      $this->display_global_site_tag($ads_conversion_id);
+    }
+  }
 
-	/**
-	 * Display the JavaScript code to load the Global Site Tag framework.
-	 *
-	 * @param string $ads_conversion_id Google Ads account conversion ID.
-	 */
-	protected function display_global_site_tag( string $ads_conversion_id ) {
-		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
-		?>
+  /**
+   * Display the JavaScript code to load the Global Site Tag framework.
+   *
+   * @param string $ads_conversion_id Google Ads account conversion ID.
+   */
+  protected function display_global_site_tag(string $ads_conversion_id)
+  {
+    // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+?>
 
-<!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js( $ads_conversion_id ); ?> - Google Listings & Ads -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js( $ads_conversion_id ); ?>"></script>
-<script>
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
+    <!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js($ads_conversion_id); ?> - Google Listings & Ads -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js($ads_conversion_id); ?>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
 
-	gtag('config','<?php echo esc_js( $ads_conversion_id ); ?>', { 'groups': 'GLA', 'send_page_view': 'false' });
-</script>
-		<?php
-		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
-	}
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('set', 'developer_id.<?php echo esc_js(self::DEVELOPER_ID); ?>', true);
 
-	/**
-	 * Display the JavaScript code to track conversions on the order confirmation page.
-	 *
-	 * @param string $ads_conversion_id Google Ads account conversion ID.
-	 * @param string $ads_conversion_label Google Ads conversion label.
-	 * @param int    $order_id The order id.
-	 */
-	public function maybe_display_conversion_and_purchase_event_snippets( string $ads_conversion_id, string $ads_conversion_label, int $order_id ): void {
-		// Only display on the order confirmation page.
-		if ( ! is_order_received_page() ) {
-			return;
-		}
+      gtag('config', '<?php echo esc_js($ads_conversion_id); ?>', {
+        'groups': 'GLA',
+        'send_page_view': 'false'
+      });
+    </script>
+<?php
+    // phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+  }
 
-		$order = wc_get_order( $order_id );
-		// Make sure there is a valid order object and it is not already marked as tracked
-		if ( ! $order || 1 === $order->get_meta( self::ORDER_CONVERSION_META_KEY, true ) ) {
-			return;
-		}
+  /**
+   * Display the JavaScript code to track conversions on the order confirmation page.
+   *
+   * @param string $ads_conversion_id Google Ads account conversion ID.
+   * @param string $ads_conversion_label Google Ads conversion label.
+   * @param int    $order_id The order id.
+   */
+  public function maybe_display_conversion_and_purchase_event_snippets(string $ads_conversion_id, string $ads_conversion_label, int $order_id): void
+  {
+    // Only display on the order confirmation page.
+    if (!is_order_received_page()) {
+      return;
+    }
 
-		// Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
-		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
-		$order->save_meta_data();
+    $order = wc_get_order($order_id);
+    // Make sure there is a valid order object and it is not already marked as tracked
+    if (!$order || 1 === $order->get_meta(self::ORDER_CONVERSION_META_KEY, true)) {
+      return;
+    }
 
-		$conversion_gtag_info =
-		sprintf(
-			'gtag("event", "conversion", {
-        send_to: "%s",
-        value: "%s",
-        currency: "%s",
-        transaction_id: "%s"});',
-			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
-			esc_js( $order->get_total() ),
-			esc_js( $order->get_currency() ),
-			esc_js( $order->get_id() ),
-		);
-		wp_print_inline_script_tag( $conversion_gtag_info );
+    // Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
+    $order->update_meta_data(self::ORDER_CONVERSION_META_KEY, 1);
+    $order->save_meta_data();
 
-		// Get the item info in the order
-		$item_info = '';
-		foreach ( $order->get_items() as $item_id => $item ) {
-			$product_id   = $item->get_product_id();
-			$product_name = $item->get_name();
-			$quantity     = $item->get_quantity();
-			$price        = $item->get_subtotal();
-			$item_info    = $item_info . sprintf(
-				'{
+    $conversion_gtag_info =
+      sprintf(
+        'gtag("event", "conversion", {
+                  send_to: "%s",
+                  value: "%s",
+                  currency: "%s",
+                  transaction_id: "%s"});',
+        esc_js("{$ads_conversion_id}/{$ads_conversion_label}"),
+        esc_js($order->get_total()),
+        esc_js($order->get_currency()),
+        esc_js($order->get_id()),
+      );
+    wp_print_inline_script_tag($conversion_gtag_info);
+
+    // Get the item info in the order
+    $item_info = '';
+    foreach ($order->get_items() as $item_id => $item) {
+      $product_id   = $item->get_product_id();
+      $product_name = $item->get_name();
+      $quantity     = $item->get_quantity();
+      $price        = $item->get_subtotal();
+      $item_info    = $item_info . sprintf(
+        '{
             id: "gla_%s",
             price: %s,
             google_business_vertical: "retail",
             item_name:"%s",
             quantity:"%s",
           }',
-				esc_js( $product_id ),
-				esc_js( $price ),
-				esc_js( $product_name ),
-				esc_js( $quantity ),
-			);
-		}
+        esc_js($product_id),
+        esc_js($price),
+        esc_js($product_name),
+        esc_js($quantity),
+      );
+    }
 
-		// Check if this is the first time customer
-		$is_new_customer = $this->is_first_time_customer( $order->get_billing_email() );
+    // Check if this is the first time customer
+    $is_new_customer = $this->is_first_time_customer($order->get_billing_email());
 
-		// Track the purchase page
-		$language = $this->wp->get_locale();
-		if ( 'en_US' === $language ) {
-			$language = 'English';
-		}
-		$purchase_page_gtag =
-		sprintf(
-			'gtag("event", "purchase", {
-        developer_id.%s: "true",
-        ecomm_pagetype: "purchase",
-        send_to: "%s",
-        transaction_id: "%s",
-        currency: "%s",
-        country: "%s",
-        value: "%s",
-        new_customer: "%s",
-        tax: "%s",
-        shipping: "%s",
-        delivery_postal_code: "%s",
-        aw_feed_country: "%s",
-        aw_feed_language: "%s",
-        items: [%s]});',
-			esc_js( self::DEVELOPER_ID ),
-			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
-			esc_js( $order->get_id() ),
-			esc_js( $order->get_currency() ),
-			esc_js( $this->wc->get_base_country() ),
-			esc_js( $order->get_total() ),
-			esc_js( $is_new_customer ),
-			esc_js( $order->get_cart_tax() ),
-			esc_js( $order->get_total_shipping() ),
-			esc_js( $order->get_shipping_postcode() ),
-			esc_js( $this->wc->get_base_country() ),
-			esc_js( $language ),
-			esc_js( $item_info ),
-		);
-		wp_print_inline_script_tag( $purchase_page_gtag );
-	}
+    // Track the purchase page
+    $language = $this->wp->get_locale();
+    if ('en_US' === $language) {
+      $language = 'English';
+    }
+    $purchase_page_gtag =
+      sprintf(
+        'gtag("event", "purchase", {
+              developer_id.%s: "true",
+              ecomm_pagetype: "purchase",
+              send_to: "%s",
+              transaction_id: "%s",
+              currency: "%s",
+              country: "%s",
+              value: "%s",
+              new_customer: "%s",
+              tax: "%s",
+              shipping: "%s",
+              delivery_postal_code: "%s",
+              aw_feed_country: "%s",
+              aw_feed_language: "%s",
+              items: [%s]});',
+        esc_js(self::DEVELOPER_ID),
+        esc_js("{$ads_conversion_id}/{$ads_conversion_label}"),
+        esc_js($order->get_id()),
+        esc_js($order->get_currency()),
+        esc_js($this->wc->get_base_country()),
+        esc_js($order->get_total()),
+        esc_js($is_new_customer),
+        esc_js($order->get_cart_tax()),
+        esc_js($order->get_total_shipping()),
+        esc_js($order->get_shipping_postcode()),
+        esc_js($this->wc->get_base_country()),
+        esc_js($language),
+        esc_js($item_info),
+      );
+    wp_print_inline_script_tag($purchase_page_gtag);
+  }
 
-	/**
-	 * Display the JavaScript code to track the product view page.
-	 */
-	private function display_view_item_event_snippet(): void {
-		// Only display on the product view page.
-		if ( ! is_product() ) {
-			return;
-		}
-		$product        = wc_get_product( get_the_ID() );
-		$view_item_gtag = sprintf(
-			'gtag("event", "view_item", {
-        send_to: "GLA",
-        developer_id.%s: "true",
-        ecomm_pagetype: "product",
-        value: %s,
-        items:[{
-          id: "gla_%s",
-          price: %s,
-          google_business_vertical: "retail",
-          item_name: "%s",
-          item_category: "%s",
-        }]});',
-			esc_js( self::DEVELOPER_ID ),
-			esc_js( (float) $product->get_price() ),
-			esc_js( $product->get_id() ),
-			esc_js( (float) $product->get_price() ),
-			esc_js( $product->get_name() ),
-			esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
-		);
-		wp_print_inline_script_tag( $view_item_gtag );
-	}
-
-	/**
-	 * Display the JavaScript code to track all pages.
-	 */
-	private function display_page_view_event_snippet(): void {
-		$page_view_gtag = sprintf(
-			'gtag("event", "page_view", {
-            send_to: "GLA",
-            developer_id.%s: "true",});',
-			esc_js( self::DEVELOPER_ID )
-		);
-		if ( ! is_cart() ) {
-			wp_print_inline_script_tag( $page_view_gtag );
-		} else {
-			// display the JavaScript code to track the cart page
-			$item_info = '';
-
-			foreach ( WC()->cart->get_cart() as $cart_item ) {
-				// gets the product id
-				$id = $cart_item['product_id'];
-
-				// gets the product object
-				$product = $cart_item['data'];
-				$name    = $product->get_name();
-				$price   = $product->get_price();
-				// gets the cart item quantity
-				$quantity = $cart_item['quantity'];
-
-				$item_info = $item_info . sprintf(
-					'{
-				id: "gla_%s",
-				price: %s,
-				google_business_vertical: "retail",
-				item_name:"%s",
-				quantity:"%s",
-				}',
-					esc_js( $id ),
-					esc_js( $price ),
-					esc_js( $name ),
-					esc_js( $quantity )
-				);
-			}
-			$value          = WC()->cart->total;
-			$page_view_gtag = sprintf(
-				'gtag("event", "page_view", {
-        send_to: "GLA",
-        ecomm_pagetype: "cart",
-        value: "%s",
-        items: [%s]});',
-				esc_js( $value ),
-				esc_js( $item_info ),
-			);
-			wp_print_inline_script_tag( $page_view_gtag );
-		}
-	}
-
-	/**
-	 * TODO : Track "add to cart button" on single pages, archive pages, and
-	 * through various shortcodes and blocks with a compatible solution.
-	 *
-	 * Display the JavaScript code to track the add to cart button.
-	 *
-	 * @param string $message Add to cart messages.
-	 * @param array  $products Product ID list.
-	 */
-	private function custom_action_add_to_cart( $message, $products ) {
-		// Only display this tag info after click the add to cart button .
-		foreach ( $products as $product_id => $value ) {
-
-			$product = wc_get_product( $product_id );
-
-			add_action(
-				'wp_footer',
-				function () use ( $product ) {
-					$add_to_cart_gtag = sprintf(
-						'gtag("event", "add_to_cart", {
+  /**
+   * Display the JavaScript code to track the product view page.
+   */
+  private function display_view_item_event_snippet(): void
+  {
+    // Only display on the product view page.
+    if (!is_product()) {
+      return;
+    }
+    $product        = wc_get_product(get_the_ID());
+    $view_item_gtag = sprintf(
+      'gtag("event", "view_item", {
               send_to: "GLA",
               developer_id.%s: "true",
-              ecomm_pagetype: "cart",
-              value: "%s",
+              ecomm_pagetype: "product",
+              value: %s,
               items:[{
                 id: "gla_%s",
                 price: %s,
                 google_business_vertical: "retail",
-                item_name:"%s",
-                category:"%s",
+                item_name: "%s",
+                item_category: "%s",
               }]});',
-						esc_js( self::DEVELOPER_ID ),
-						esc_js( (string) $product->get_price() ),
-						esc_js( $product->get_id() ),
-						esc_js( (string) $product->get_price() ),
-						esc_js( $product->get_name() ),
-						esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
-					);
-					wp_print_inline_script_tag( $add_to_cart_gtag );
-				}
-			);
+      esc_js(self::DEVELOPER_ID),
+      esc_js((float) $product->get_price()),
+      esc_js($product->get_id()),
+      esc_js((float) $product->get_price()),
+      esc_js($product->get_name()),
+      esc_js(join(' & ', $this->product_helper->get_categories($product))),
+    );
+    wp_print_inline_script_tag($view_item_gtag);
+  }
 
-			return $message;
-		}
-	}
+  /**
+   * Display the JavaScript code to track all pages.
+   */
+  private function display_page_view_event_snippet(): void
+  {
+    $page_view_gtag = sprintf(
+      'gtag("event", "page_view", {
+                  send_to: "GLA",
+                  developer_id.%s: "true",});',
+      esc_js(self::DEVELOPER_ID)
+    );
+    if (!is_cart()) {
+      wp_print_inline_script_tag($page_view_gtag);
+    } else {
+      // display the JavaScript code to track the cart page
+      $item_info = '';
 
-	/**
-	 * TODO: Should the Global Site Tag framework be used if there are no paid Ads campaigns?
-	 *
-	 * @return bool True if the Global Site Tag framework should be included.
-	 */
-	public static function is_needed(): bool {
-		return true;
-	}
+      foreach (WC()->cart->get_cart() as $cart_item) {
+        // gets the product id
+        $id = $cart_item['product_id'];
 
-	/**
-	 * Check if it is the new customer order.
-	 *
-	 * @param string $customer_email Customer email address.
-	 * @return bool True if this is new customer order.
-	 */
-	private static function is_first_time_customer( $customer_email ): bool {
-		$query = new \WC_Order_Query(
-			[
-				'limit'  => 2,
-				'return' => 'ids',
-			]
-		);
-		$query->set( 'customer', $customer_email );
-		$orders = $query->get_orders();
-		return count( $orders ) === 1 ? true : false;
-	}
+        // gets the product object
+        $product = $cart_item['data'];
+        $name    = $product->get_name();
+        $price   = $product->get_price();
+        // gets the cart item quantity
+        $quantity = $cart_item['quantity'];
+
+        $item_info = $item_info . sprintf(
+          '{
+          id: "gla_%s",
+          price: %s,
+          google_business_vertical: "retail",
+          item_name:"%s",
+          quantity:"%s",
+				}',
+          esc_js($id),
+          esc_js($price),
+          esc_js($name),
+          esc_js($quantity)
+        );
+      }
+      $value          = WC()->cart->total;
+      $page_view_gtag = sprintf(
+        'gtag("event", "page_view", {
+              send_to: "GLA",
+              ecomm_pagetype: "cart",
+              value: "%s",
+              items: [%s]});',
+        esc_js($value),
+        esc_js($item_info),
+      );
+      wp_print_inline_script_tag($page_view_gtag);
+    }
+  }
+
+  /**
+   * TODO : Track "add to cart button" on single pages, archive pages, and
+   * through various shortcodes and blocks with a compatible solution.
+   *
+   * Display the JavaScript code to track the add to cart button.
+   *
+   * @param string $message Add to cart messages.
+   * @param array  $products Product ID list.
+   */
+  private function custom_action_add_to_cart($message, $products)
+  {
+    // Only display this tag info after click the add to cart button .
+    foreach ($products as $product_id => $value) {
+
+      $product = wc_get_product($product_id);
+
+      add_action(
+        'wp_footer',
+        function () use ($product) {
+          $add_to_cart_gtag = sprintf(
+            'gtag("event", "add_to_cart", {
+                    send_to: "GLA",
+                    developer_id.%s: "true",
+                    ecomm_pagetype: "cart",
+                    value: "%s",
+                    items:[{
+                      id: "gla_%s",
+                      price: %s,
+                      google_business_vertical: "retail",
+                      item_name:"%s",
+                      category:"%s",
+                    }]});',
+            esc_js(self::DEVELOPER_ID),
+            esc_js((string) $product->get_price()),
+            esc_js($product->get_id()),
+            esc_js((string) $product->get_price()),
+            esc_js($product->get_name()),
+            esc_js(join(' & ', $this->product_helper->get_categories($product))),
+          );
+          wp_print_inline_script_tag($add_to_cart_gtag);
+        }
+      );
+
+      return $message;
+    }
+  }
+
+  /**
+   * TODO: Should the Global Site Tag framework be used if there are no paid Ads campaigns?
+   *
+   * @return bool True if the Global Site Tag framework should be included.
+   */
+  public static function is_needed(): bool
+  {
+    return true;
+  }
+
+  /**
+   * Check if it is the new customer order.
+   *
+   * @param string $customer_email Customer email address.
+   * @return bool True if this is new customer order.
+   */
+  private static function is_first_time_customer($customer_email): bool
+  {
+    $query = new \WC_Order_Query(
+      [
+        'limit'  => 2,
+        'return' => 'ids',
+      ]
+    );
+    $query->set('customer', $customer_email);
+    $orders = $query->get_orders();
+    return count($orders) === 1 ? true : false;
+  }
 }
