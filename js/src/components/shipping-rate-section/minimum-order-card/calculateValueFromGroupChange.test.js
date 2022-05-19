@@ -1,10 +1,10 @@
 /**
  * Internal dependencies
  */
-import { changeMinimumOrderGroup } from './changeMinimumOrderGroup';
+import { calculateValueFromGroupChange } from './calculateValueFromGroupChange';
 import { structuredClone } from '.~/utils/structuredClone.js';
 
-describe( 'changeMinimumOrderGroup', () => {
+describe( 'calculateValueFromGroupChange', () => {
 	const value = Object.freeze( [
 		{
 			id: '1',
@@ -47,7 +47,7 @@ describe( 'changeMinimumOrderGroup', () => {
 		const expectedValue = structuredClone( value );
 		expectedValue[ 0 ].options.free_shipping_threshold = 30;
 		expect(
-			changeMinimumOrderGroup( value, null, newGroup )
+			calculateValueFromGroupChange( value, null, newGroup )
 		).toStrictEqual( expectedValue );
 	} );
 	// Pure delete.
@@ -62,9 +62,9 @@ describe( 'changeMinimumOrderGroup', () => {
 		const expectedValue = structuredClone( value );
 		expectedValue[ 1 ].options.free_shipping_threshold = undefined;
 		expectedValue[ 2 ].options.free_shipping_threshold = undefined;
-		expect( changeMinimumOrderGroup( value, oldGroup ) ).toStrictEqual(
-			expectedValue
-		);
+		expect(
+			calculateValueFromGroupChange( value, oldGroup )
+		).toStrictEqual( expectedValue );
 	} );
 	// Update.
 	it( 'returns a new value updated based on changed group threshold', () => {
@@ -83,7 +83,7 @@ describe( 'changeMinimumOrderGroup', () => {
 		expectedValue[ 1 ].options.free_shipping_threshold = 507;
 		expectedValue[ 2 ].options.free_shipping_threshold = 507;
 		expect(
-			changeMinimumOrderGroup( value, oldGroup, newGroup )
+			calculateValueFromGroupChange( value, oldGroup, newGroup )
 		).toStrictEqual( expectedValue );
 	} );
 
@@ -105,7 +105,7 @@ describe( 'changeMinimumOrderGroup', () => {
 		expectedValue[ 0 ].options.free_shipping_threshold = 50;
 		expectedValue[ 1 ].options.free_shipping_threshold = undefined;
 		expect(
-			changeMinimumOrderGroup( value, oldGroup, newGroup )
+			calculateValueFromGroupChange( value, oldGroup, newGroup )
 		).toStrictEqual( expectedValue );
 	} );
 
@@ -130,7 +130,7 @@ describe( 'changeMinimumOrderGroup', () => {
 		expectedValue[ 1 ].options.free_shipping_threshold = undefined;
 		expectedValue[ 2 ].options.free_shipping_threshold = 507;
 		expect(
-			changeMinimumOrderGroup( value, oldGroup, newGroup )
+			calculateValueFromGroupChange( value, oldGroup, newGroup )
 		).toStrictEqual( expectedValue );
 	} );
 } );

@@ -20,7 +20,7 @@ import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 import MinimumOrderInputControl from './minimum-order-input-control';
 import { AddMinimumOrderFormModal } from './minimum-order-form-modals';
 import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
-import { changeMinimumOrderGroup } from './changeMinimumOrderGroup';
+import { calculateValueFromGroupChange } from './calculateValueFromGroupChange';
 import './minimum-order-card.scss';
 
 const MinimumOrderCard = ( props ) => {
@@ -37,13 +37,15 @@ const MinimumOrderCard = ( props ) => {
 
 		// Event handlers for add, update, delete operations.
 		const addHandler = ( newGroup ) => {
-			onChange( changeMinimumOrderGroup( value, null, newGroup ) );
+			onChange( calculateValueFromGroupChange( value, null, newGroup ) );
 		};
 		const getChangeHandler = ( oldGroup ) => ( newGroup ) => {
-			onChange( changeMinimumOrderGroup( value, oldGroup, newGroup ) );
+			onChange(
+				calculateValueFromGroupChange( value, oldGroup, newGroup )
+			);
 		};
 		const getDeleteHandler = ( oldGroup ) => () => {
-			onChange( changeMinimumOrderGroup( value, oldGroup ) );
+			onChange( calculateValueFromGroupChange( value, oldGroup ) );
 		};
 
 		// If group length is 1, we render the group,
