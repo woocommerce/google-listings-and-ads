@@ -208,8 +208,15 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function request_ads_currency(): bool {
 		try {
-			$resource = ResourceNames::forCustomer( $this->options->get_ads_id() );
-			$customer = $this->client->getCustomerServiceClient()->getCustomer( $resource );
+			$ads_id   = $this->options->get_ads_id();
+			$account  = ResourceNames::forCustomer( $ads_id );
+			$customer = ( new AdsAccountQuery() )
+				->set_client( $this->client, $ads_id )
+				->columns( [ 'customer.currency_code' ] )
+				->where( 'customer.resource_name', $account, '=' )
+				->get_result()
+				->getCustomer();
+
 			$currency = $customer->getCurrencyCode();
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
