@@ -65,8 +65,7 @@ describe( 'MinimumOrderCard', () => {
 			userEvent.click( rendered.getByRole( 'button', { name: /Add/ } ) );
 			// Input some value.
 			const input = screen.getByRole( 'textbox' );
-			// For some reason it's typed backwards.
-			await userEvent.type( input, '03' );
+			await userEvent.type( input, '30' );
 			// Confirm.
 			await userEvent.click(
 				screen.getByRole( 'button', {
@@ -86,7 +85,6 @@ describe( 'MinimumOrderCard', () => {
 		test( 'When a minimum order value is changed for an existing group, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to the given value', async () => {
 			// Input some value.
 			const input = rendered.getByRole( 'textbox' );
-			// For some reason it's typed backwards.
 			await userEvent.type( input, '7' );
 			// Blur away.
 			await userEvent.tab();
@@ -147,7 +145,6 @@ describe( 'MinimumOrderCard', () => {
 			fireEvent.click( screen.queryByLabelText( 'United States' ) );
 			// Input some value.
 			const input = rendered.getByRole( 'textbox' );
-			// For some reason it's typed backwards.
 			await userEvent.type( input, '7' );
 			// Confirm.
 			await userEvent.click(
