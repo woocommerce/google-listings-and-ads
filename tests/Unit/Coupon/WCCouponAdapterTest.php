@@ -10,6 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\DataTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\CouponTrait;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
+use Google\Service\ShoppingContent\TimePeriod as GoogleTimePeriod;
+
 use WC_DateTime;
 use WC_Coupon;
 use function Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\json_encode;
@@ -133,7 +135,16 @@ class WCCouponAdapterTest extends UnitTest {
 	            'targetCountry' => 'US',
 	        ]
 	        );
-	    $this->assertEquals( '2021-01-01T02:03:45+00:00/2021-07-03T02:03:45+00:00', $adapted_coupon->getPromotionEffectiveDates() );
+		$expected = new GoogleTimePeriod(
+				[
+					'startTime' => '2021-01-01T02:03:45+00:00',
+					'endTime'   => '2021-07-03T02:03:45+00:00',
+				]
+			);
+
+		$actual = $adapted_coupon->getPromotionEffectiveTimePeriod();
+	    $this->assertEquals( $expected->getStartTime() , $actual->getStartTime() );
+		$this->assertEquals( $expected->getEndTime() , $actual->getEndTime() );
 	}
 
 	public function test_disable_promotion() {
@@ -153,13 +164,21 @@ class WCCouponAdapterTest extends UnitTest {
 	        ]
 	        );
 	    $adapted_coupon->disable_promotion( $coupon );
+	    $dates = $adapted_coupon->getPromotionEffectiveTimePeriod();
 
-	    $dates = explode( '/', $adapted_coupon->getPromotionEffectiveDates() );
+	    $this->assertEquals(
+	        new GoogleTimePeriod(
+				[
+					'startTime' => (string) $postdate,
+					'endTime'   => (string) $postdate,
+				]
+			),
+	        $dates);
+
 	    $now = date(DATE_ATOM);
-
-	    $this->assertEquals( $postdate, $dates[0] );
-	    $this->assertGreaterThanOrEqual( $postdate, $dates[1] );
-	    $this->assertLessThanOrEqual( $now, $dates[1] );
+	    $this->assertEquals( $postdate, $dates->startTime );
+	    $this->assertGreaterThanOrEqual( $postdate, $dates->endTime );
+	    $this->assertLessThanOrEqual( $now, $dates->endTime );
 	}
 
 	public function test_product_id_restrictions() {
@@ -210,7 +229,6 @@ class WCCouponAdapterTest extends UnitTest {
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'promotionId' ) );
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'productApplicability' ) );
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'offerType' ) );
-		$this->assertTrue( $metadata->hasPropertyMetadata( 'promotionEffectiveDates' ) );
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'redemptionChannel' ) );
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'couponValueType' ) );
 	}
