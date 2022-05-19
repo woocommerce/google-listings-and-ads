@@ -69,9 +69,7 @@ const IssuesTableData = ( { data } ) => {
 							button={
 								<AppButton
 									isLink
-									eventName={
-										'gla_click_read_more_about_issue'
-									}
+									eventName="gla_click_read_more_about_issue"
 									eventProps={ {
 										context: 'issues-to-resolve',
 										issue: el.code,
