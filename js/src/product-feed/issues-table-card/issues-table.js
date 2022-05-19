@@ -9,40 +9,13 @@ import { Pagination, TablePlaceholder } from '@woocommerce/components';
  * Internal dependencies
  */
 import { ISSUE_TABLE_PER_PAGE } from '.~/constants';
+import ISSUES_TABLE_DATA_HEADERS from './issues-table-data-headers';
 import { recordTablePageEvent } from '.~/utils/recordEvent';
-import IssuesTableData from '.~/product-feed/issues-table-card/issues-table-data';
+import IssuesTableData from './issues-table-data';
 import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
 import usePagination from '.~/hooks/usePagination';
 import useActiveIssueType from '.~/hooks/useActiveIssueType';
 import './index.scss';
-
-const headers = [
-	{
-		key: 'type',
-		label: __( 'Type', 'google-listings-and-ads' ),
-		isLeftAligned: true,
-		required: true,
-	},
-	{
-		key: 'affectedProduct',
-		label: __( 'Affected product', 'google-listings-and-ads' ),
-		isLeftAligned: true,
-		required: true,
-	},
-	{
-		key: 'issue',
-		label: __( 'Issue', 'google-listings-and-ads' ),
-		isLeftAligned: true,
-		required: true,
-	},
-	{
-		key: 'suggestedAction',
-		label: __( 'Suggested action', 'google-listings-and-ads' ),
-		isLeftAligned: true,
-		required: true,
-	},
-	{ key: 'action', label: '', required: true },
-];
 
 /**
  * The table rendering the issues data with a paginator.
@@ -77,14 +50,14 @@ const IssuesTable = () => {
 			<CardBody size={ null }>
 				{ ! hasFinishedResolution ? (
 					<TablePlaceholder
-						headers={ headers }
+						headers={ ISSUES_TABLE_DATA_HEADERS }
 						caption={ __(
 							'Loading Issues To Resolve',
 							'google-listings-and-ads'
 						) }
 					/>
 				) : (
-					<IssuesTableData headers={ headers } data={ data } />
+					<IssuesTableData data={ data } />
 				) }
 			</CardBody>
 			{ data?.total > 0 && (

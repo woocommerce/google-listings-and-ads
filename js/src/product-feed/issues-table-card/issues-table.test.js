@@ -1,17 +1,3 @@
-const mockIssue = ( id, args ) => {
-	return {
-		product_id: id,
-		issue: `#issue-${ id }`,
-		code: `#code-${ id }`,
-		product: `#product-${ id }`,
-		severity: 'warning',
-		action: `Action for ${ id }`,
-		action_url: `example.com/${ id }`,
-		type: 'product',
-		...args,
-	};
-};
-
 jest.mock( '.~/hooks/useActiveIssueType' );
 jest.mock( '.~/hooks/useMCIssuesTypeFilter', () => ( {
 	__esModule: true,
@@ -30,6 +16,7 @@ import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
 import IssuesTable from '.~/product-feed/issues-table-card/issues-table';
 import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
 import useActiveIssueType from '.~/hooks/useActiveIssueType';
+import mockIssue from '.~/tests/mock-issue';
 
 describe( 'Issues Table', () => {
 	describe( 'Rendering correctly the table', () => {
