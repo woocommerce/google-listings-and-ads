@@ -220,17 +220,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$quantity     = $item->get_quantity();
 			$price        = $item->get_subtotal();
 			$item_info    = $item_info . sprintf(
-			'{
+				'{
 				id: "gla_%s",
 				price: %s,
 				google_business_vertical: "retail",
 				item_name:"%s",
 				quantity:"%s",
-			}',
-			esc_js( $product_id ),
-			esc_js( $price ),
-			esc_js( $product_name ),
-			esc_js( $quantity ),
+				}',
+				esc_js( $product_id ),
+				esc_js( $price ),
+				esc_js( $product_name ),
+				esc_js( $quantity ),
 			);
 		}
 
@@ -336,17 +336,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$quantity = $cart_item['quantity'];
 
 				$item_info = $item_info . sprintf(
-				'{
+					'{
 					id: "gla_%s",
 					price: %s,
 					google_business_vertical: "retail",
 					item_name:"%s",
 					quantity:"%s",
-				}',
-				esc_js( $id ),
-				esc_js( $price ),
-				esc_js( $name ),
-				esc_js( $quantity )
+					}',
+					esc_js( $id ),
+					esc_js( $price ),
+					esc_js( $name ),
+					esc_js( $quantity )
 				);
 			}
 			$value          = WC()->cart->total;
