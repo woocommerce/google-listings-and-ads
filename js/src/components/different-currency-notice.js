@@ -19,8 +19,12 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
  * @param {Object} props React props.
  * @param {string} props.context Context or page on which the notice is shown, to be forwarded to the link's track event.
  * @return {JSX.Element} {@link Notice} element with the warning message and the link to the documentation.
+ *
+ * @fires gla_documentation_link_click with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
+ * @fires gla_documentation_link_click with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
+ * @fires gla_documentation_link_click with `{ context: "reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
  */
-export default function DifferentCurrencyNotice( { context } ) {
+const DifferentCurrencyNotice = ( { context } ) => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { code: storeCurrency } = useStoreCurrency();
 
@@ -53,7 +57,6 @@ export default function DifferentCurrencyNotice( { context } ) {
 						<AppDocumentationLink
 							className="gla-different-currency-notice__link"
 							href="https://support.google.com/google-ads/answer/9841530"
-							eventName="gla_different_currency_notice_link_click"
 							context={ context }
 							linkId="setting-up-currency"
 						/>
@@ -62,4 +65,6 @@ export default function DifferentCurrencyNotice( { context } ) {
 			) }
 		</Notice>
 	);
-}
+};
+
+export default DifferentCurrencyNotice;

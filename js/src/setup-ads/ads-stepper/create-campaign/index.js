@@ -14,6 +14,10 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import CreateCampaignFormContent from '.~/components/paid-ads/create-campaign-form-content';
 import AppButton from '.~/components/app-button';
 
+/**
+ * @fires gla_documentation_link_click with `{ context: 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+ */
+
 const CreateCampaign = ( props ) => {
 	const { formProps, onContinue = () => {} } = props;
 	const { isValidForm } = formProps;

@@ -10,13 +10,8 @@ import userEvent from '@testing-library/user-event';
  */
 import AudienceSection from '.~/components/paid-ads/audience-section';
 
-jest.mock( '.~/hooks/useCountryKeyNameMap', () =>
-	jest.fn( () => ( {
-		GB: 'United Kingdom',
-		US: 'United States',
-		ES: 'Spain',
-	} ) )
-);
+jest.mock( '.~/hooks/useAppSelectDispatch' );
+jest.mock( '.~/hooks/useCountryKeyNameMap' );
 
 jest.mock( '.~/hooks/useTargetAudienceFinalCountryCodes', () =>
 	jest.fn( () => ( { data: [ 'GB', 'US', 'ES' ] } ) )
@@ -43,9 +38,9 @@ describe( 'AudienceSection with multiple countries selector', () => {
 
 		//Test that input is not editable
 		userEvent.clear( dropdown );
-		userEvent.type( dropdown, 'S' );
+		userEvent.type( dropdown, 'spa' );
 
-		const options = screen.queryAllByRole( 'option' );
+		const options = screen.queryAllByRole( 'checkbox' );
 		expect( options.length ).toBe( 0 );
 		expect( onChange ).toHaveBeenCalledTimes( 0 );
 	} );
@@ -58,9 +53,9 @@ describe( 'AudienceSection with multiple countries selector', () => {
 
 		//Test that input is editable
 		userEvent.clear( dropdown );
-		userEvent.type( dropdown, 'S' );
+		userEvent.type( dropdown, 'spa' );
 
-		const options = await screen.findAllByRole( 'option' );
+		const options = await screen.findAllByRole( 'checkbox' );
 		expect( options.length ).toBeGreaterThan( 0 );
 
 		const firstOption = options[ 0 ];

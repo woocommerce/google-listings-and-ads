@@ -88,9 +88,17 @@ export const getGoogleMCPhoneNumber = createRegistrySelector(
 	}
 );
 
-export const getCountries = ( state ) => {
-	return state.mc.countries;
-};
+export const getMCCountriesAndContinents = createSelector(
+	( state ) => {
+		const { countries, continents } = state.mc;
+
+		return {
+			countries,
+			continents,
+		};
+	},
+	( state ) => [ state.mc.countries, state.mc.continents ]
+);
 
 export const getTargetAudience = ( state ) => {
 	return state.mc.target_audience;
@@ -108,28 +116,30 @@ export const getMCProductStatistics = ( state ) => {
 	return state.mc_product_statistics;
 };
 
+export const getMCReviewRequest = ( state ) => {
+	return state.mc_review_request;
+};
+
 // note: we use rememo createSelector here to cache the sliced issues array,
 // to prevent returning new array to the consumer every time,
 // which might cause rendering performance problem.
 export const getMCIssues = createSelector(
 	( state, query ) => {
-		if ( ! state.mc_issues ) {
-			return state.mc_issues;
+		const mcIssues = state.mc_issues[ query.issue_type ];
+
+		if ( ! mcIssues ) {
+			return mcIssues;
 		}
 
 		const start = ( query.page - 1 ) * query.per_page;
 		const end = start + query.per_page;
 
 		return {
-			issues: state.mc_issues.issues.slice( start, end ),
-			total: state.mc_issues.total,
+			issues: mcIssues.issues.slice( start, end ),
+			total: mcIssues.total,
 		};
 	},
-	( state ) => [
-		state.mc_issues,
-		state.mc_issues?.issues,
-		state.mc_issues?.total,
-	]
+	( state ) => [ state.mc_issues ]
 );
 
 export const getMCProductFeed = ( state, query ) => {

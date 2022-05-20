@@ -32,7 +32,8 @@
 	"license": "GPL-3.0",
 	"autoload": {
 		"psr-4": {
-			"Automattic\\WooCommerce\\GoogleListingsAndAds\\": "src/"
+			"Automattic\\WooCommerce\\GoogleListingsAndAds\\": "src/",
+			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\": "bin/"
 		},
 		"files": [
 			"vendor/guzzlehttp/guzzle/src/functions_include.php",
@@ -57,8 +58,9 @@
 	"scripts": {
 		"install-scripts": [
 			"Google\\Task\\Composer::cleanup",
-			"php ./bin/prefix-vendor-namespace.php",
+			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\GoogleAdsCleanupServices::remove",
 			"composer run-script remove-google-ads-api-version-support -- 6 7 8",
+			"php ./bin/prefix-vendor-namespace.php",
 			"bash ./bin/cleanup-vendor-files.sh",
 			"composer dump-autoload"
 		],

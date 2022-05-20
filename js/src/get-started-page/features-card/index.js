@@ -4,60 +4,81 @@
 import { __ } from '@wordpress/i18n';
 import {
 	Card,
+	CardHeader,
 	Flex,
 	FlexBlock,
 	__experimentalText as Text,
 } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import connectionImageURL from './img-connection.svg';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import freeListingsImageURL from './img-free-listings.svg';
-import googleAdsImageURL from './img-google-ads.svg';
+import productPromotionImageURL from './img-product-promotion.svg';
+import dashboardImageURL from './img-dashboard.svg';
 import './index.scss';
 
+const LearnMoreLink = ( { linkId, href } ) => {
+	return (
+		<Text
+			className="gla-get-started-features-card__learn-more"
+			variant="body"
+		>
+			{ createInterpolateElement(
+				__( '<link>Learn More →</link>', 'google-listings-and-ads' ),
+				{
+					link: (
+						<AppDocumentationLink
+							context="get-started"
+							linkId={ linkId }
+							href={ href }
+						/>
+					),
+				}
+			) }
+		</Text>
+	);
+};
+
+/*
+ * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'get-started-features-free-listing-learn-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google' }`.
+ * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'get-started-features-google-ads-learn-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-performance-max-campaigns' }`.
+ * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'get-started-features-dashboard-learn-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
+ */
 const FeaturesCard = () => {
 	return (
-		<Card className="gla-get-started-features-card">
-			<Flex>
-				<FlexBlock>
-					<img
-						src={ connectionImageURL }
-						alt={ __(
-							'Drawing of jigsaw puzzles connecting together',
-							'google-listings-and-ads'
-						) }
-						width="117"
-						height="100"
-					/>
-					<Text
-						className="gla-get-started-features-card__label"
-						variant="label"
-					>
-						{ __(
-							'Connect your store seamlessly',
-							'google-listings-and-ads'
-						) }
-					</Text>
-					<Text
-						className="gla-get-started-features-card__content"
-						variant="body"
-					>
-						{ __(
-							'Sync your WooCommerce store data with Google Merchant Center to easily list your products across Google.',
-							'google-listings-and-ads'
-						) }
-					</Text>
-				</FlexBlock>
+		<Card className="gla-get-started-features-card" isBorderless>
+			<CardHeader>
+				<Text
+					className="gla-get-started-features-card__title"
+					variant="title.medium"
+				>
+					{ __(
+						'49% of shoppers surveyed say they use Google to discover or find a new item or product',
+						'google-listings-and-ads'
+					) }
+				</Text>
+				<Text
+					className="gla-get-started-features-card__description"
+					variant="body"
+				>
+					{ __(
+						'With Google Listings & Ads, connect with the right shoppers at the right moment when they’re looking to buy products like yours.',
+						'google-listings-and-ads'
+					) }
+				</Text>
+			</CardHeader>
+			<Flex gap={ 0 }>
 				<FlexBlock>
 					<img
 						src={ freeListingsImageURL }
 						alt={ __(
-							'Drawing of a person looking at their mobile',
+							'Drawing of WooCommerce and Google',
 							'google-listings-and-ads'
 						) }
-						width="100"
+						width="183"
 						height="100"
 					/>
 					<Text
@@ -65,7 +86,7 @@ const FeaturesCard = () => {
 						variant="label"
 					>
 						{ __(
-							'Reach online shoppers with free listings',
+							'Show products automatically on Google for free',
 							'google-listings-and-ads'
 						) }
 					</Text>
@@ -74,19 +95,56 @@ const FeaturesCard = () => {
 						variant="body"
 					>
 						{ __(
-							`Showcase eligible products to shoppers looking for what you offer and drive traffic to your store with Google's free listings.`,
+							'When your products are added and approved, they’ll be eligible for free listings, reaching shoppers across Google’s network.',
 							'google-listings-and-ads'
 						) }
 					</Text>
+					<LearnMoreLink
+						linkId="get-started-features-free-listing-learn-more"
+						href="https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google"
+					/>
 				</FlexBlock>
 				<FlexBlock>
 					<img
-						src={ googleAdsImageURL }
+						src={ productPromotionImageURL }
+						alt={ __(
+							'Drawing of a mobile and product ads',
+							'google-listings-and-ads'
+						) }
+						width="183"
+						height="100"
+					/>
+					<Text
+						className="gla-get-started-features-card__label"
+						variant="label"
+					>
+						{ __(
+							'Promote products and drive more sales with paid ads',
+							'google-listings-and-ads'
+						) }
+					</Text>
+					<Text
+						className="gla-get-started-features-card__content"
+						variant="body"
+					>
+						{ __(
+							'Connect your Google Ads account, choose a budget, and Google will optimize your ads so they appear at the right time and place. ',
+							'google-listings-and-ads'
+						) }
+					</Text>
+					<LearnMoreLink
+						linkId="get-started-features-google-ads-learn-more"
+						href="https://woocommerce.com/document/google-listings-and-ads/#google-performance-max-campaigns"
+					/>
+				</FlexBlock>
+				<FlexBlock>
+					<img
+						src={ dashboardImageURL }
 						alt={ __(
 							'Drawing of a bar and line charts heading up',
 							'google-listings-and-ads'
 						) }
-						width="104"
+						width="183"
 						height="100"
 					/>
 					<Text
@@ -94,7 +152,7 @@ const FeaturesCard = () => {
 						variant="label"
 					>
 						{ __(
-							'Boost store traffic and sales with Google Ads',
+							'Track performance straight from your store dashboard',
 							'google-listings-and-ads'
 						) }
 					</Text>
@@ -103,10 +161,14 @@ const FeaturesCard = () => {
 						variant="body"
 					>
 						{ __(
-							'Create a Performance Max campaign to promote products across Google Search, Shopping, Gmail, YouTube, and the Display Network.',
+							'Real-time reporting all within your WooCommerce dashboard means you know how your campaigns are performing at all times.',
 							'google-listings-and-ads'
 						) }
 					</Text>
+					<LearnMoreLink
+						linkId="get-started-features-dashboard-learn-more"
+						href="https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics"
+					/>
 				</FlexBlock>
 			</Flex>
 		</Card>

@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
@@ -11,8 +12,8 @@ import { Form } from '@woocommerce/components';
 import AppModal from '.~/components/app-modal';
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AppCountrySelect from '.~/components/app-country-select';
-import './index.scss';
+import SupportedCountrySelect from '.~/components/supported-country-select';
+import validateShippingTimeGroup from '.~/utils/validateShippingTimeGroup';
 
 /**
  *Form to edit time for selected country(-ies).
@@ -31,6 +32,8 @@ const EditTimeModal = ( {
 	onSubmit,
 	onRequestClose,
 } ) => {
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
+
 	// We actually may have times for more countries than the audience ones.
 	const availableCountries = Array.from(
 		new Set( [ ...time.countries, ...audienceCountries ] )
@@ -40,33 +43,13 @@ const EditTimeModal = ( {
 		onDelete( time.countries );
 	};
 
-	const handleValidate = ( values ) => {
-		const errors = {};
-
-		if ( values.countries.length === 0 ) {
-			errors.countries = __(
-				'Please specify at least one country.',
-				'google-listings-and-ads'
-			);
-		}
-
-		if ( values.time < 0 ) {
-			errors.time = __(
-				'The estimated shipping time cannot be less than 0.',
-				'google-listings-and-ads'
-			);
-		}
-
-		return errors;
-	};
-
-	const handleSubmitCallback = ( newAggregatedTime ) => {
-		const remainingCountries = new Set( newAggregatedTime.countries );
+	const handleSubmitCallback = ( values ) => {
+		const remainingCountries = new Set( values.countries );
 		const removedCountries = time.countries.filter(
 			( el ) => ! remainingCountries.has( el )
 		);
 
-		onSubmit( newAggregatedTime, removedCountries );
+		onSubmit( values, removedCountries );
 	};
 
 	return (
@@ -75,7 +58,7 @@ const EditTimeModal = ( {
 				countries: time.countries,
 				time: time.time,
 			} }
-			validate={ handleValidate }
+			validate={ validateShippingTimeGroup }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
@@ -83,7 +66,9 @@ const EditTimeModal = ( {
 
 				return (
 					<AppModal
-						className="gla-edit-time-modal"
+						overflow="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'
@@ -112,19 +97,17 @@ const EditTimeModal = ( {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<div>
-								<div className="label">
-									{ __(
-										'If customer is in',
-										'google-listings-and-ads'
-									) }
-								</div>
-								<AppCountrySelect
-									options={ availableCountries }
-									multiple
-									{ ...getInputProps( 'countries' ) }
-								/>
-							</div>
+							<SupportedCountrySelect
+								label={ __(
+									'If customer is in',
+									'google-listings-and-ads'
+								) }
+								countryCodes={ availableCountries }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
+								{ ...getInputProps( 'countries' ) }
+							/>
 							<AppInputNumberControl
 								label={ __(
 									'Then the estimated shipping time displayed in the product listing is',

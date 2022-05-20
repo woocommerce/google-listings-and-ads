@@ -12,6 +12,7 @@ const DEFAULT_STATE = {
 	mc: {
 		target_audience: null,
 		countries: null,
+		continents: null,
 		shipping: {
 			rates: [],
 			times: [],
@@ -32,7 +33,16 @@ const DEFAULT_STATE = {
 	ads_campaigns: null,
 	mc_setup: null,
 	mc_product_statistics: null,
-	mc_issues: null,
+	mc_issues: {
+		account: null,
+		product: null,
+	},
+	mc_review_request: {
+		status: null,
+		cooldown: null,
+		issues: null,
+		reviewEligibleRegions: [],
+	},
 	mc_product_feed: null,
 	report: {},
 };
@@ -246,8 +256,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'mc.contact', action.data );
 		}
 
-		case TYPES.RECEIVE_COUNTRIES: {
-			return setIn( state, 'mc.countries', action.countries );
+		case TYPES.RECEIVE_MC_COUNTRIES_AND_CONTINENTS: {
+			const { data } = action;
+			return chainState( state, 'mc' )
+				.setIn( 'countries', data.countries )
+				.setIn( 'continents', data.continents )
+				.end();
 		}
 
 		case TYPES.RECEIVE_TARGET_AUDIENCE:
@@ -303,16 +317,21 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 		}
 
+		case TYPES.RECEIVE_MC_REVIEW_REQUEST: {
+			return setIn( state, 'mc_review_request', action.mcReviewRequest );
+		}
+
 		case TYPES.RECEIVE_MC_ISSUES: {
 			const { query, data } = action;
-			const issues = state.mc_issues?.issues.slice() || [];
+			const issues =
+				state.mc_issues[ query.issue_type ]?.issues.slice() || [];
 			issues.splice(
 				( query.page - 1 ) * query.per_page,
 				query.per_page,
 				...data.issues
 			);
 
-			return chainState( state, 'mc_issues' )
+			return chainState( state, `mc_issues.${ query.issue_type }` )
 				.setIn( 'issues', issues )
 				.setIn( 'total', data.total )
 				.end();

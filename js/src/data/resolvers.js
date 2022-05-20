@@ -8,7 +8,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
+import {
+	REPORT_SOURCE_PAID,
+	REPORT_SOURCE_FREE,
+	ISSUE_TYPE_ACCOUNT,
+} from '.~/constants';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
@@ -26,7 +30,6 @@ import {
 	fetchGoogleAdsAccountBillingStatus,
 	fetchExistingGoogleAdsAccounts,
 	receiveGoogleMCContactInformation,
-	fetchCountries,
 	fetchTargetAudience,
 	fetchAdsCampaigns,
 	fetchMCSetup,
@@ -35,6 +38,7 @@ import {
 	receiveMCProductStatistics,
 	receiveMCIssues,
 	receiveMCProductFeed,
+	receiveMCReviewRequest,
 } from './actions';
 
 export function* getShippingRates() {
@@ -95,10 +99,6 @@ export function* getGoogleAdsAccount() {
 	yield fetchGoogleAdsAccount();
 }
 
-getGoogleAdsAccount.shouldInvalidate = ( action ) => {
-	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS;
-};
-
 export function* getGoogleAdsAccountBillingStatus() {
 	yield fetchGoogleAdsAccountBillingStatus();
 }
@@ -128,8 +128,25 @@ getGoogleMCContactInformation.shouldInvalidate = ( action ) => {
 	return action.type === TYPES.VERIFIED_MC_PHONE_NUMBER;
 };
 
-export function* getCountries() {
-	yield fetchCountries();
+export function* getMCCountriesAndContinents() {
+	try {
+		const query = { continents: true };
+		const path = addQueryArgs( `${ API_NAMESPACE }/mc/countries`, query );
+		const data = yield apiFetch( { path } );
+
+		return {
+			type: TYPES.RECEIVE_MC_COUNTRIES_AND_CONTINENTS,
+			data,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading supported country details.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
 export function* getTargetAudience() {
@@ -162,10 +179,35 @@ export function* getMCProductStatistics() {
 	}
 }
 
-export function* getMCIssues( query ) {
+export function* getMCReviewRequest() {
 	try {
 		const response = yield apiFetch( {
-			path: addQueryArgs( `${ API_NAMESPACE }/mc/issues`, query ),
+			path: `${ API_NAMESPACE }/mc/review`,
+		} );
+
+		yield receiveMCReviewRequest( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading your merchant center product review request status.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getMCIssues( query ) {
+	try {
+		const { issue_type: issueType, ...args } = query;
+
+		const response = yield apiFetch( {
+			path: addQueryArgs(
+				`${ API_NAMESPACE }/mc/issues/${
+					issueType || ISSUE_TYPE_ACCOUNT
+				}`,
+				args
+			),
 		} );
 
 		yield receiveMCIssues( query, response );

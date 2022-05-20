@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
@@ -31,9 +32,12 @@ defined( 'ABSPATH' ) || exit;
  * ContainerAware used to access:
  * - AddressUtility
  * - ContactInformation
+ * - Merchant
  * - MerchantAccountState
  * - MerchantStatuses
  * - Settings
+ * - ShippingRateQuery
+ * - ShippingTimeQuery
  * - WC
  * - WP
  * - TargetAudience
@@ -86,6 +90,20 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 */
 	public function is_google_connected(): bool {
 		return boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) );
+	}
+
+	/**
+	 * Whether we are able to sync data to the Merchant Center account.
+	 * Account must be connected and the URL we claimed with must match the site URL.
+	 *
+	 * @since 1.13.0
+	 * @return boolean
+	 */
+	public function is_ready_for_syncing(): bool {
+		$claimed_url_hash = $this->container->get( Merchant::class )->get_claimed_url_hash();
+		$site_url_hash    = md5( $this->get_site_url() );
+
+		return $this->is_connected() && apply_filters( 'woocommerce_gla_ready_for_syncing', $claimed_url_hash === $site_url_hash );
 	}
 
 	/**

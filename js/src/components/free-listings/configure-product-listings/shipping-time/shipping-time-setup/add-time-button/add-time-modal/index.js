@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
@@ -11,7 +12,8 @@ import { Form } from '@woocommerce/components';
 import AppModal from '.~/components/app-modal';
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AppCountrySelect from '.~/components/app-country-select';
+import SupportedCountrySelect from '.~/components/supported-country-select';
+import validateShippingTimeGroup from '.~/utils/validateShippingTimeGroup';
 
 /**
  * Form to add a new time for selected country(-ies).
@@ -22,25 +24,7 @@ import AppCountrySelect from '.~/components/app-country-select';
  * @param {function(AggregatedShippingTime): void} props.onSubmit Called with submitted value.
  */
 const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
-	const handleValidate = ( values ) => {
-		const errors = {};
-
-		if ( values.countries.length === 0 ) {
-			errors.countries = __(
-				'Please specify at least one country.',
-				'google-listings-and-ads'
-			);
-		}
-
-		if ( values.time < 0 ) {
-			errors.time = __(
-				'The estimated shipping time cannot be less than 0.',
-				'google-listings-and-ads'
-			);
-		}
-
-		return errors;
-	};
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const handleSubmitCallback = ( values ) => {
 		onSubmit( values );
@@ -53,7 +37,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 				countries,
 				time: 0,
 			} }
-			validate={ handleValidate }
+			validate={ validateShippingTimeGroup }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
@@ -61,6 +45,9 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 
 				return (
 					<AppModal
+						overflow="visible"
+						shouldCloseOnEsc={ ! dropdownVisible }
+						shouldCloseOnClickOutside={ ! dropdownVisible }
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'
@@ -81,19 +68,17 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<div>
-								<div className="label">
-									{ __(
-										'If customer is in',
-										'google-listings-and-ads'
-									) }
-								</div>
-								<AppCountrySelect
-									options={ countries }
-									multiple
-									{ ...getInputProps( 'countries' ) }
-								/>
-							</div>
+							<SupportedCountrySelect
+								label={ __(
+									'If customer is in',
+									'google-listings-and-ads'
+								) }
+								countryCodes={ countries }
+								onDropdownVisibilityChange={
+									setDropdownVisible
+								}
+								{ ...getInputProps( 'countries' ) }
+							/>
 							<AppInputNumberControl
 								label={ __(
 									'Then the estimated shipping time displayed in the product listing is',

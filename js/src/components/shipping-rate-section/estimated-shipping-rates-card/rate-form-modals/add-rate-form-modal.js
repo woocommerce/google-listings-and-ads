@@ -19,7 +19,7 @@ import RateFormModal from './rate-form-modal.js';
  * Form to add a new rate for selected country(-ies).
  *
  * @param {Object} props
- * @param {Array<CountryCode>} props.countryOptions Array of country codes, to be used as options in AppCountrySelect.
+ * @param {Array<CountryCode>} props.countryOptions Array of country codes, to be used as options in SupportedCountrySelect.
  * @param {ShippingRateGroup} props.initialValues Initial values for the form.
  * @param {(values: ShippingRateGroup) => void} props.onSubmit Called with submitted value.
  * @param {() => void} props.onRequestClose Callback to close the modal.

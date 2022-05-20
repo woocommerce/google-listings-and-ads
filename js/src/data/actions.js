@@ -63,6 +63,16 @@ export function handleFetchError( error, message ) {
  */
 
 /**
+ * Account status data. Indicates the current status for the Google MC account.
+ *
+ * @typedef {Object} AccountStatus
+ * @property {string} status Account status. See the available statuses here https://developers.google.com/shopping-content/reference/rest/v2.1/State
+ * @property {number} cooldown Cooldown period timestamp indicating how long the user should wait until the next request
+ * @property {Array} issues List of issue keys for this account
+ * @property {Array} reviewEligibleRegions List of region codes available for review
+ */
+
+/**
  *
  * @return {Array<ShippingRate>} Array of individual shipping rates.
  */
@@ -654,27 +664,6 @@ export function* verifyPhoneNumber( verificationId, code, method ) {
 	}
 }
 
-export function* fetchCountries() {
-	try {
-		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/countries`,
-		} );
-
-		return {
-			type: TYPES.RECEIVE_COUNTRIES,
-			countries: response,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error loading supported country details.',
-				'google-listings-and-ads'
-			)
-		);
-	}
-}
-
 export function* fetchTargetAudience() {
 	try {
 		const response = yield apiFetch( {
@@ -895,6 +884,13 @@ export function* receiveMCProductStatistics( mcProductStatistics ) {
 	};
 }
 
+export function* receiveMCReviewRequest( mcReviewRequest ) {
+	return {
+		type: TYPES.RECEIVE_MC_REVIEW_REQUEST,
+		mcReviewRequest,
+	};
+}
+
 export function* receiveMCIssues( query, data ) {
 	return {
 		type: TYPES.RECEIVE_MC_ISSUES,
@@ -940,6 +936,23 @@ export function* updateMCProductVisibility( ids, visible ) {
 				'google-listings-and-ads'
 			)
 		);
+		throw error;
+	}
+}
+
+/**
+ * Request a new review for the connected account
+ */
+export function* sendMCReviewRequest() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/review`,
+			method: 'POST',
+		} );
+
+		return yield receiveMCReviewRequest( response );
+	} catch ( error ) {
+		yield handleFetchError( error, error?.message );
 		throw error;
 	}
 }

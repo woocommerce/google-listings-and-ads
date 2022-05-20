@@ -10,6 +10,9 @@ import { __ } from '@wordpress/i18n';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import HelpPopover from '.~/components/help-popover';
 
+/**
+ * @fires gla_documentation_link_click with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
+ */
 const ProductStatusHelpPopover = () => {
 	const map = {
 		strong: <strong></strong>,

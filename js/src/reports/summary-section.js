@@ -3,11 +3,11 @@
  */
 import { SummaryList, SummaryListPlaceholder } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
-import { recordChartTabClickEvent } from '.~/utils/recordEvent';
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import MetricNumber from './metric-number';
 
@@ -36,13 +36,13 @@ const noValidData = {
  * @param {string} props.trackEventId Report ID used in tracking events.
  * @fires gla_chart_tab_click
  */
-export default function SummarySection( {
+const SummarySection = ( {
 	loaded,
 	metrics,
 	expectedLength = metrics.length,
 	totals,
 	trackEventId,
-} ) {
+} ) => {
 	const query = useUrlQuery();
 	if ( ! loaded ) {
 		return <SummaryListPlaceholder numberOfItems={ expectedLength } />;
@@ -51,7 +51,7 @@ export default function SummarySection( {
 	const { selectedMetric = metrics[ 0 ].key } = query;
 
 	const trackClickEvent = ( context ) => {
-		recordChartTabClickEvent( {
+		recordEvent( 'gla_chart_tab_click', {
 			report: trackEventId,
 			context,
 		} );
@@ -78,7 +78,9 @@ export default function SummarySection( {
 			}
 		</SummaryList>
 	);
-}
+};
+
+export default SummarySection;
 
 /**
  * @typedef {import("./index.js").Metric} Metric

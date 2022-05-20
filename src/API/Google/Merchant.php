@@ -194,6 +194,34 @@ class Merchant implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get hash of the site URL we used during onboarding.
+	 * If not available in a local option, it's fetched from the Merchant Center account.
+	 *
+	 * @since 1.13.0
+	 * @return string|null
+	 */
+	public function get_claimed_url_hash(): ?string {
+		$claimed_url_hash = $this->options->get( OptionsInterface::CLAIMED_URL_HASH );
+
+		if ( empty( $claimed_url_hash ) && $this->options->get_merchant_id() ) {
+			try {
+				$account_url = $this->get_account()->getWebsiteUrl();
+
+				if ( empty( $account_url ) || ! $this->get_accountstatus()->getWebsiteClaimed() ) {
+					return null;
+				}
+
+				$claimed_url_hash = md5( $account_url );
+				$this->options->update( OptionsInterface::CLAIMED_URL_HASH, $claimed_url_hash );
+			} catch ( Exception $e ) {
+				return null;
+			}
+		}
+
+		return $claimed_url_hash;
+	}
+
+	/**
 	 * Retrieve the user's Merchant Center account information.
 	 *
 	 * @param int $id Optional - the Merchant Center account to retrieve
@@ -204,13 +232,7 @@ class Merchant implements OptionsAwareInterface {
 		$id = $id ?: $this->options->get_merchant_id();
 
 		try {
-			$mc_account_status = $this->service->accountstatuses->get(
-				$id,
-				$id,
-				[
-					'destinations' => 'Shopping',
-				]
-			);
+			$mc_account_status = $this->service->accountstatuses->get( $id, $id );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve Merchant Center account status.', 'google-listings-and-ads' ), $e->getCode() );

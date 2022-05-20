@@ -103,8 +103,8 @@ class SyncerHooks implements Service, Registerable {
 	 * Register a service.
 	 */
 	public function register(): void {
-		// only register the hooks if Merchant Center is set up and connected.
-		if ( ! $this->merchant_center->is_connected() ) {
+		// only register the hooks if Merchant Center is connected and ready for syncing data.
+		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
 			return;
 		}
 

@@ -10,7 +10,6 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 /**
  * Internal dependencies
  */
-import './public-path';
 import './css/index.scss';
 import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';
@@ -23,10 +22,8 @@ import './data';
 import isWCNavigationEnabled from './utils/isWCNavigationEnabled';
 
 const woocommerceTranslation =
-	// Pre WC 5.8
-	getSetting( 'woocommerceTranslation' ) ||
-	// WC 5.8+
-	getSetting( 'admin' )?.woocommerceTranslation;
+	getSetting( 'admin' )?.woocommerceTranslation ||
+	__( 'WooCommerce', 'google-listings-and-ads' );
 
 addFilter(
 	'woocommerce_admin_pages_list',

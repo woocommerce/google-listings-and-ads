@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -29,7 +30,7 @@ defined( 'ABSPATH' ) || exit;
  * Class AccountServiceTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
- *
+ * @group AccountService
  * @property MockObject|CleanupSyncedProducts $cleanup_synced
  * @property MockObject|Merchant              $merchant
  * @property MockObject|MerchantCenterService $mc_service
@@ -41,6 +42,7 @@ defined( 'ABSPATH' ) || exit;
  * @property MockObject|ShippingRateTable     $rate_table
  * @property MockObject|ShippingTimeTable     $time_table
  * @property MockObject|MerchantAccountState  $state
+ * @property MockObject|TransientsInterface   $transients
  * @property AccountService                   $account
  * @property Container                        $container
  */
@@ -86,6 +88,7 @@ class AccountServiceTest extends UnitTest {
 		$this->time_table        = $this->createMock( ShippingTimeTable::class );
 		$this->state             = $this->createMock( MerchantAccountState::class );
 		$this->options           = $this->createMock( OptionsInterface::class );
+		$this->transients        = $this->createMock( TransientsInterface::class );
 
 		$this->container = new Container();
 		$this->container->share( CleanupSyncedProducts::class, $this->cleanup_synced );
@@ -98,6 +101,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( ShippingRateTable::class, $this->rate_table );
 		$this->container->share( ShippingTimeTable::class, $this->time_table );
 		$this->container->share( MerchantAccountState::class, $this->state );
+		$this->container->share( TransientsInterface::class, $this->transients );
 
 		$this->account = new AccountService( $this->container );
 		$this->account->set_options_object( $this->options );
@@ -552,6 +556,10 @@ class AccountServiceTest extends UnitTest {
 			->method( 'update_account' )
 			->with( $this->get_account_with_url( get_home_url() ) );
 
+		$this->options->expects( $this->once() )
+			->method( 'delete')
+			->with( OptionsInterface::CLAIMED_URL_HASH );
+
 		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->switch_url( self::TEST_ACCOUNT_ID ) );
 	}
 
@@ -658,7 +666,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 7 ) )
+		$this->options->expects( $this->exactly( 8 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::CONTACT_INFO_SETUP ],
@@ -667,7 +675,8 @@ class AccountServiceTest extends UnitTest {
 				[ OptionsInterface::MERCHANT_CENTER ],
 				[ OptionsInterface::SITE_VERIFICATION ],
 				[ OptionsInterface::TARGET_AUDIENCE ],
-				[ OptionsInterface::MERCHANT_ID ]
+				[ OptionsInterface::MERCHANT_ID ],
+				[ OptionsInterface::CLAIMED_URL_HASH ]
 			);
 
 		$this->merchant_statuses->expects( $this->once() )->method( 'delete' );
@@ -676,6 +685,8 @@ class AccountServiceTest extends UnitTest {
 		$this->time_table->expects( $this->once() )->method( 'truncate' );
 
 		$this->cleanup_synced->expects( $this->once() )->method( 'schedule' );
+
+		$this->transients->expects( $this->once() )->method( 'delete' )->with( TransientsInterface::MC_ACCOUNT_REVIEW );
 
 		$this->account->disconnect();
 	}

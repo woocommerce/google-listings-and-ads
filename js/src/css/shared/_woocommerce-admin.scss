@@ -1,17 +1,3 @@
-/**
- * Workaround to hide the initial loading spinner that causes whole page flickering.
- * The flickering issue has been fixed and released with WC-admin 2.9.0.
- *   - https://github.com/woocommerce/woocommerce-admin/pull/7886
- *   - https://github.com/woocommerce/woocommerce-admin/blob/v2.9.0/changelog.txt#L16
- *
- * This workaround can be removed after the L-2 version ≥ WC 6.0, which uses WC-admin 2.9.4
- */
-.woocommerce-layout__primary {
-	> .woocommerce-spinner:first-child {
-		display: none;
-	}
-}
-
 // Used in .~/hooks/useLayout.js
 .gla-full-content {
 	// #wpbody `margin-top` style is set onto DOM node directly in WC Admin.
@@ -49,7 +35,6 @@
 
 			.woocommerce-layout__main {
 				padding: 0;
-
 			}
 		}
 	}

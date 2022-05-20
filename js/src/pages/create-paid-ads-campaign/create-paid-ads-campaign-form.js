@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
 import { getHistory } from '@woocommerce/navigation';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -20,10 +21,10 @@ import { useAppDispatch } from '.~/data';
 import CreateCampaignFormContent from '.~/components/paid-ads/create-campaign-form-content';
 import validateForm from '.~/utils/paid-ads/validateForm';
 import { getDashboardUrl } from '.~/utils/urls';
-import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 
 /**
  * @fires gla_launch_paid_campaign_button_click on submit
+ * @fires gla_documentation_link_click with `{ context: 'create-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  */
 const CreatePaidAdsCampaignForm = () => {
 	const [ loading, setLoading ] = useState( false );
@@ -41,7 +42,10 @@ const CreatePaidAdsCampaignForm = () => {
 		try {
 			const { amount, countryCodes } = values;
 
-			recordLaunchPaidCampaignClickEvent( amount, countryCodes );
+			recordEvent( 'gla_launch_paid_campaign_button_click', {
+				audiences: countryCodes.join( ',' ),
+				budget: amount,
+			} );
 
 			await createAdsCampaign( amount, countryCodes );
 

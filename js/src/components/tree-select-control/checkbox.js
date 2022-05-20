@@ -4,20 +4,19 @@
 import { Icon, check } from '@wordpress/icons';
 
 /**
- * @typedef {import('./').RepositoryOption} RepositoryOption
+ * @typedef {import('./index').Option} Option
  */
 
 /**
  * Renders a custom Checkbox
  *
  * @param {Object} props Component properties
- * @param {RepositoryOption} props.option Option for the checkbox
- * @param {number} props.index The position in the tree
+ * @param {Option} props.option Option for the checkbox
  * @param {string} props.className The className for the component
  * @param {boolean} props.checked Defines if the checkbox is checked
  * @return {JSX.Element|null} The Checkbox component
  */
-const Checkbox = ( { option, index, checked, className, ...props } ) => {
+const Checkbox = ( { option, checked, className, ...props } ) => {
 	if ( ! option ) return null;
 
 	return (
@@ -25,11 +24,9 @@ const Checkbox = ( { option, index, checked, className, ...props } ) => {
 			<div className="components-base-control__field">
 				<span className="components-checkbox-control__input-container">
 					<input
-						ref={ option.ref }
 						id={ `inspector-checkbox-control-${
 							option.key ?? option.value
 						}` }
-						data-index={ index }
 						className="components-checkbox-control__input"
 						type="checkbox"
 						tabIndex="-1"

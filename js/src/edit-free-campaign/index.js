@@ -61,7 +61,7 @@ function isNotOurStep( location ) {
  *
  * @fires gla_free_campaign_edited
  */
-export default function EditFreeCampaign() {
+const EditFreeCampaign = () => {
 	useLayout( 'full-content' );
 
 	const {
@@ -121,7 +121,13 @@ export default function EditFreeCampaign() {
 	const { createNotice } = useDispatchCoreNotices();
 
 	// Check what've changed to show prompt, and send requests only to save changed things.
-	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
+	const didAudienceChanged = ! isEqual(
+		...[ targetAudience, savedTargetAudience ].map( ( el ) => ( {
+			...el,
+			countries: new Set( el?.countries ),
+		} ) )
+	);
+
 	const didSettingsChanged = ! isEqual( settings, savedSettings );
 	const didRatesChanged = hasUnsavedShippingRates(
 		shippingRates,
@@ -290,4 +296,6 @@ export default function EditFreeCampaign() {
 			/>
 		</>
 	);
-}
+};
+
+export default EditFreeCampaign;

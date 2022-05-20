@@ -22,7 +22,7 @@ import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-butt
 import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
 import wooLogoURL from './woocommerce-logo.svg';
-import googleLogoURL from './google-logo.svg';
+import googleLogoURL from '.~/images/google-logo.svg';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';
@@ -157,7 +157,7 @@ const handleGuideFinish = ( e ) => {
  * @fires gla_modal_closed with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
  * @fires gla_modal_open with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
  */
-export default function SubmissionSuccessGuide() {
+const SubmissionSuccessGuide = () => {
 	useEffect( () => {
 		recordEvent( 'gla_modal_open', {
 			context: GUIDE_NAMES.SUBMISSION_SUCCESS,
@@ -207,4 +207,6 @@ export default function SubmissionSuccessGuide() {
 			onFinish={ handleGuideFinish }
 		/>
 	);
-}
+};
+
+export default SubmissionSuccessGuide;

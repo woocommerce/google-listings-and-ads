@@ -3,12 +3,12 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getNewPath } from '@woocommerce/navigation';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import TopBar from '.~/components/stepper/top-bar';
-import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import HelpIconButton from '.~/components/help-icon-button';
 
 /**
@@ -16,7 +16,7 @@ import HelpIconButton from '.~/components/help-icon-button';
  */
 const SetupMCTopBar = () => {
 	const handleBackButtonClick = () => {
-		recordSetupMCEvent( 'back' );
+		recordEvent( 'gla_setup_mc', { target: 'back', trigger: 'click' } );
 	};
 
 	return (
