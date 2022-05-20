@@ -63,6 +63,8 @@ describe( 'Dismissible notice', () => {
 		fireEvent.click( removeButton );
 
 		expect( onRemove ).toHaveBeenCalledTimes( 1 );
+
+		//It is not call because the localStorageKey is not set
 		expect( getLocalStorage ).toHaveBeenCalledTimes( 0 );
 
 		expect( queryByText( 'My dismissible notice' ) ).toBeFalsy();
@@ -101,7 +103,7 @@ describe( 'Dismissible notice', () => {
 		expect( queryByText( 'My dismissible notice' ) ).toBeFalsy();
 	} );
 
-	it( 'Should not render Dismissible Notice if the localStorageKey is set to true', () => {
+	it( 'Should not render Dismissible Notice if the dismiss state in the localStorage is set to true', () => {
 		const getLocalStorage = localStorage.get.mockImplementation( () => {
 			return 'true';
 		} );
@@ -118,6 +120,7 @@ describe( 'Dismissible notice', () => {
 
 		expect( queryByText( 'My dismissible notice' ) ).toBeFalsy();
 		expect( getLocalStorage ).toHaveBeenCalledTimes( 1 );
+		expect( getLocalStorage ).toBeCalledWith( localStorageKey );
 		expect( onRemove ).toHaveBeenCalledTimes( 0 );
 	} );
 } );
