@@ -17,7 +17,7 @@ jest.mock( '.~/utils/localStorage', () => {
 	};
 } );
 
-describe( 'Dismissable notice', () => {
+describe( 'Dismissible notice', () => {
 	const onRemove = jest.fn().mockName( 'On remove callback' );
 	const localStorageKey = 'myDismissLocalStorageKey';
 
@@ -25,7 +25,7 @@ describe( 'Dismissable notice', () => {
 		jest.clearAllMocks();
 	} );
 
-	it( 'Rendering Dismissable Notice', () => {
+	it( 'Rendering Dismissible Notice', () => {
 		//using spokenMessage='' to avoid accessibility message.
 		//See https://make.wordpress.org/accessibility/handbook/markup/wp-a11y-speak/#the-generated-output
 		const { getByText, getByRole, container } = render(
@@ -44,7 +44,7 @@ describe( 'Dismissable notice', () => {
 		expect( removeButton ).toBeTruthy();
 	} );
 
-	it( 'Rendering Dismissable Notice with onRemove callback', () => {
+	it( 'Rendering Dismissible Notice with onRemove callback', () => {
 		const getLocalStorage = localStorage.get.mockImplementation( () => {
 			return null;
 		} );
@@ -68,7 +68,7 @@ describe( 'Dismissable notice', () => {
 		expect( queryByText( 'My dismissible notice' ) ).toBeFalsy();
 	} );
 
-	it( 'Rendering Dismissable Notice with localStorageKey', () => {
+	it( 'Rendering Dismissible Notice with localStorageKey', () => {
 		const getLocalStorage = localStorage.get.mockImplementation( () => {
 			return null;
 		} );
@@ -101,7 +101,7 @@ describe( 'Dismissable notice', () => {
 		expect( queryByText( 'My dismissible notice' ) ).toBeFalsy();
 	} );
 
-	it( 'Should not render Dismissable Notice if the localStorageKey is set to true', () => {
+	it( 'Should not render Dismissible Notice if the localStorageKey is set to true', () => {
 		const getLocalStorage = localStorage.get.mockImplementation( () => {
 			return 'true';
 		} );
