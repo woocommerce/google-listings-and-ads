@@ -201,10 +201,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$conversion_gtag_info =
 		sprintf(
 			'gtag("event", "conversion", {
-        send_to: "%s",
-        value: "%s",
-        currency: "%s",
-        transaction_id: "%s"});',
+			send_to: "%s",
+			value: "%s",
+			currency: "%s",
+			transaction_id: "%s"});',
 			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
 			esc_js( $order->get_total() ),
 			esc_js( $order->get_currency() ),
@@ -220,17 +220,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$quantity     = $item->get_quantity();
 			$price        = $item->get_subtotal();
 			$item_info    = $item_info . sprintf(
-				'{
-            id: "gla_%s",
-            price: %s,
-            google_business_vertical: "retail",
-            item_name:"%s",
-            quantity:"%s",
-          }',
-				esc_js( $product_id ),
-				esc_js( $price ),
-				esc_js( $product_name ),
-				esc_js( $quantity ),
+			'{
+				id: "gla_%s",
+				price: %s,
+				google_business_vertical: "retail",
+				item_name:"%s",
+				quantity:"%s",
+			}',
+			esc_js( $product_id ),
+			esc_js( $price ),
+			esc_js( $product_name ),
+			esc_js( $quantity ),
 			);
 		}
 
@@ -245,20 +245,20 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$purchase_page_gtag =
 		sprintf(
 			'gtag("event", "purchase", {
-        developer_id.%s: "true",
-        ecomm_pagetype: "purchase",
-        send_to: "%s",
-        transaction_id: "%s",
-        currency: "%s",
-        country: "%s",
-        value: "%s",
-        new_customer: "%s",
-        tax: "%s",
-        shipping: "%s",
-        delivery_postal_code: "%s",
-        aw_feed_country: "%s",
-        aw_feed_language: "%s",
-        items: [%s]});',
+			developer_id.%s: "true",
+			ecomm_pagetype: "purchase",
+			send_to: "%s",
+			transaction_id: "%s",
+			currency: "%s",
+			country: "%s",
+			value: "%s",
+			new_customer: "%s",
+			tax: "%s",
+			shipping: "%s",
+			delivery_postal_code: "%s",
+			aw_feed_country: "%s",
+			aw_feed_language: "%s",
+			items: [%s]});',
 			esc_js( self::DEVELOPER_ID ),
 			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
 			esc_js( $order->get_id() ),
@@ -287,17 +287,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$product        = wc_get_product( get_the_ID() );
 		$view_item_gtag = sprintf(
 			'gtag("event", "view_item", {
-        send_to: "GLA",
-        developer_id.%s: "true",
-        ecomm_pagetype: "product",
-        value: %s,
-        items:[{
-          id: "gla_%s",
-          price: %s,
-          google_business_vertical: "retail",
-          item_name: "%s",
-          item_category: "%s",
-        }]});',
+			send_to: "GLA",
+			developer_id.%s: "true",
+			ecomm_pagetype: "product",
+			value: %s,
+			items:[{
+				id: "gla_%s",
+				price: %s,
+				google_business_vertical: "retail",
+				item_name: "%s",
+				item_category: "%s",
+			}]});',
 			esc_js( self::DEVELOPER_ID ),
 			esc_js( (float) $product->get_price() ),
 			esc_js( $product->get_id() ),
@@ -314,8 +314,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	private function display_page_view_event_snippet(): void {
 		$page_view_gtag = sprintf(
 			'gtag("event", "page_view", {
-        send_to: "GLA",
-        developer_id.%s: "true",});',
+			send_to: "GLA",
+			developer_id.%s: "true",});',
 			esc_js( self::DEVELOPER_ID )
 		);
 		if ( ! is_cart() ) {
@@ -336,26 +336,26 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$quantity = $cart_item['quantity'];
 
 				$item_info = $item_info . sprintf(
-					'{
-          id: "gla_%s",
-          price: %s,
-          google_business_vertical: "retail",
-          item_name:"%s",
-          quantity:"%s",
+				'{
+					id: "gla_%s",
+					price: %s,
+					google_business_vertical: "retail",
+					item_name:"%s",
+					quantity:"%s",
 				}',
-					esc_js( $id ),
-					esc_js( $price ),
-					esc_js( $name ),
-					esc_js( $quantity )
+				esc_js( $id ),
+				esc_js( $price ),
+				esc_js( $name ),
+				esc_js( $quantity )
 				);
 			}
 			$value          = WC()->cart->total;
 			$page_view_gtag = sprintf(
 				'gtag("event", "page_view", {
-          send_to: "GLA",
-          ecomm_pagetype: "cart",
-          value: "%s",
-          items: [%s]});',
+				send_to: "GLA",
+				ecomm_pagetype: "cart",
+				value: "%s",
+				items: [%s]});',
 				esc_js( $value ),
 				esc_js( $item_info ),
 			);
@@ -383,17 +383,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				function () use ( $product ) {
 					$add_to_cart_gtag = sprintf(
 						'gtag("event", "add_to_cart", {
-              send_to: "GLA",
-              developer_id.%s: "true",
-              ecomm_pagetype: "cart",
-              value: "%s",
-              items:[{
-                id: "gla_%s",
-                price: %s,
-                google_business_vertical: "retail",
-                item_name:"%s",
-                category:"%s",
-                  }]});',
+						send_to: "GLA",
+						developer_id.%s: "true",
+						ecomm_pagetype: "cart",
+						value: "%s",
+						items:[{
+							id: "gla_%s",
+							price: %s,
+							google_business_vertical: "retail",
+							item_name:"%s",
+							category:"%s",
+							}]});',
 						esc_js( self::DEVELOPER_ID ),
 						esc_js( (string) $product->get_price() ),
 						esc_js( $product->get_id() ),
