@@ -101,9 +101,9 @@ describe( 'Dismissable notice', () => {
 		expect( queryByText( 'My dismissible notice' ) ).toBeFalsy();
 	} );
 
-	it( 'Should not render Dismissable Notice if the localStorageKey is set', () => {
+	it( 'Should not render Dismissable Notice if the localStorageKey is set to true', () => {
 		const getLocalStorage = localStorage.get.mockImplementation( () => {
-			return true;
+			return 'true';
 		} );
 
 		const { queryByText } = render(

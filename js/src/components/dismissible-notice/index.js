@@ -20,7 +20,7 @@ import localStorage from '.~/utils/localStorage';
  * @param {string|null} props.localStorageKey Local Storage Key where is keep the dismiss state.
  * @param {Function} props.onRemove Callback when clicking on remove notice
  * @param {Object} props.restProps Props to be forwarded to Notice Component. Like className.
- * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
+ * @return {JSX.Element} {@link Notice} Dismissible Notice element
  */
 const DismissibleNotice = ( {
 	children,
@@ -29,7 +29,7 @@ const DismissibleNotice = ( {
 	...rest
 } ) => {
 	const defaultDismissedValue = localStorageKey
-		? !! localStorage.get( localStorageKey )
+		? localStorage.get( localStorageKey ) === 'true'
 		: false;
 
 	const [ isDismissed, setIsDismissed ] = useState( defaultDismissedValue );
