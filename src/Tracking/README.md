@@ -236,7 +236,7 @@ When a documentation link is clicked.
 - [`UnsupportedCountry`](../../js/src/get-started-page/unsupported-notices/index.js#L75) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`CreatePaidAdsCampaignForm`](../../js/src/pages/create-paid-ads-campaign/create-paid-ads-campaign-form.js#L29) with `{ context: 'create-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 - [`EditPaidAdsCampaignForm`](../../js/src/pages/edit-paid-ads-campaign/edit-paid-ads-campaign-form.js#L26) with `{ context: 'edit-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
-- [`IssuesTableCard`](../../js/src/product-feed/issues-table-card/index.js#L97) with `{ context: 'product-feed', link_id: 'issues-to-resolve', href: 'https://support.google.com/merchants/answer/6363310' }`
+- [`IssuesTableDataModal`](../../js/src/product-feed/issues-table-card/issues-table-data-modal.js#L21) with { context: 'issues-data-table-modal' }
 - [`ProductStatusHelpPopover`](../../js/src/product-feed/product-statistics/product-status-help-popover/index.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
 - [`EditPhoneNumber`](../../js/src/settings/edit-phone-number.js#L29) with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
 - [`EditStoreAddress`](../../js/src/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
@@ -276,15 +276,13 @@ Triggered when edit links are clicked from product feed table.
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/product-feed/product-feed-table-card/index.js#L66)
 
-### [`gla_edit_product_issue_click`](../../js/src/product-feed/issues-table-card/index.js#L83)
+### [`gla_edit_product_issue_click`](../../js/src/product-feed/issues-table-card/index.js#L46)
 Triggered when edit links are clicked from Issues to resolve table.
 #### Properties
 |   |   |   |
 |---|---|---|
 `code` | `string` | Issue code returned from Google
 `issue` | `string` | Issue description returned from Google
-#### Emitters
-- [`IssuesTableCard`](../../js/src/product-feed/issues-table-card/index.js#L97)
 
 ### [`gla_edit_wc_store_address`](../../js/src/components/contact-information/store-address-card.js#L23)
 Triggered when store address "Edit in WooCommerce Settings" button is clicked.
@@ -491,6 +489,7 @@ A modal is closed.
 `action` | `string` | Indicates the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked
 #### Emitters
 - [`Dashboard`](../../js/src/dashboard/index.js#L33) when CES modal is closed.
+- [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L160) with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
 
 ### [`gla_modal_content_link_click`](../../js/src/components/guide-page-content/index.js#L28)
@@ -510,7 +509,32 @@ A modal is opend
 |---|---|---|
 `context` | `string` | Indicates which modal is opened
 #### Emitters
+- [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L160) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+
+### [`gla_request_review`](../../js/src/product-feed/review-request/review-request-modal.js#L19)
+Triggered when request review button is clicked
+#### Emitters
+- [`ReviewRequestModal`](../../js/src/product-feed/review-request/review-request-modal.js#L58)
+
+### [`gla_request_review_failure`](../../js/src/product-feed/review-request/review-request-modal.js#L31)
+Triggered when the request review fails
+#### Emitters
+- [`ReviewRequestModal`](../../js/src/product-feed/review-request/review-request-modal.js#L58)
+
+### [`gla_request_review_issues_solved_checkbox_click`](../../js/src/product-feed/review-request/review-request-modal.js#L37)
+Triggered when clicking on the checkbox
+#### Properties
+|   |   |   |
+|---|---|---|
+`action` | `'check'\|'uncheck'` | Indicates if the checkbox is checked or unchecked
+#### Emitters
+- [`ReviewRequestModal`](../../js/src/product-feed/review-request/review-request-modal.js#L58) with `action: 'checked' | 'unchecked'
+
+### [`gla_request_review_success`](../../js/src/product-feed/review-request/review-request-modal.js#L25)
+Triggered when the request review is successful
+#### Emitters
+- [`ReviewRequestModal`](../../js/src/product-feed/review-request/review-request-modal.js#L58)
 
 ### [`gla_setup_ads`](../../js/src/setup-ads/top-bar/index.js#L14)
 Triggered on events during ads setup and editing
@@ -554,7 +578,6 @@ When table pagination is changed by entering page via "Go to page" input.
 `context` | `string` | Name of the table
 `page` | `string` | Page number (starting at 1)
 #### Emitters
-- [`IssuesTableCard`](../../js/src/product-feed/issues-table-card/index.js#L97) with `context: 'issues-to-resolve'`
 - [`ProductFeedTableCard`](../../js/src/product-feed/product-feed-table-card/index.js#L66) with `context: 'product-feed'`
 - [`recordTablePageEvent`](../../js/src/utils/recordEvent.js#L38) with the given `{ context, page }`.
 
@@ -578,7 +601,6 @@ When table pagination is clicked
 `context` | `string` | Name of the table
 `direction` | `string` | Direction of page to be changed. `("next" \| "previous")`
 #### Emitters
-- [`IssuesTableCard`](../../js/src/product-feed/issues-table-card/index.js#L97) with `context: 'issues-to-resolve'`
 - [`ProductFeedTableCard`](../../js/src/product-feed/product-feed-table-card/index.js#L66) with `context: 'product-feed'`
 - [`recordTablePageEvent`](../../js/src/utils/recordEvent.js#L38) with the given `{ context, direction }`.
 
