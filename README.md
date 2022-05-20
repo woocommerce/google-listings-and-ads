@@ -9,11 +9,11 @@
 
 A native integration with Google offering free listings and Performance Max ads to WooCommerce merchants.
 
-- [WooCommerce.com product page](https://woocommerce.com/products/google-listings-and-ads/)
-- [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)
-- [User documentation](https://docs.woocommerce.com/document/google-listings-and-ads/)
-- [Ideas board](https://ideas.woocommerce.com/forums/133476-woocommerce?category_id=403986)
-- [Storybook](https://woocommerce.github.io/google-listings-and-ads/?path=/story/tree-select-control--base)
+-   [WooCommerce.com product page](https://woocommerce.com/products/google-listings-and-ads/)
+-   [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)
+-   [User documentation](https://docs.woocommerce.com/document/google-listings-and-ads/)
+-   [Ideas board](https://ideas.woocommerce.com/forums/133476-woocommerce?category_id=403986)
+-   [Storybook](https://woocommerce.github.io/google-listings-and-ads/?path=/story/tree-select-control--base)
 
 ## Support
 
