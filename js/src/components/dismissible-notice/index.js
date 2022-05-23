@@ -28,9 +28,8 @@ const DismissibleNotice = ( {
 	onRemove = noop,
 	...rest
 } ) => {
-	const defaultDismissedValue = localStorageKey
-		? localStorage.get( localStorageKey ) === 'true'
-		: false;
+	const defaultDismissedValue =
+		localStorage.get( localStorageKey ) === 'true';
 
 	const [ isDismissed, setIsDismissed ] = useState( defaultDismissedValue );
 

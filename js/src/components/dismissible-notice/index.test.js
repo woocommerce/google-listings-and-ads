@@ -60,12 +60,11 @@ describe( 'Dismissible notice', () => {
 		const removeButton = getByRole( 'button' );
 		expect( removeButton ).toBeTruthy();
 
+		expect( getLocalStorage ).toHaveBeenCalledTimes( 1 );
+
 		fireEvent.click( removeButton );
 
 		expect( onRemove ).toHaveBeenCalledTimes( 1 );
-
-		//It is not call because the localStorageKey is not set
-		expect( getLocalStorage ).toHaveBeenCalledTimes( 0 );
 
 		expect( queryByText( 'My dismissible notice' ) ).toBeFalsy();
 	} );
