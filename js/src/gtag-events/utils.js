@@ -36,9 +36,9 @@ export const getItemObject = ( product, quantity ) => {
 			? product.categories[ 0 ].name
 			: '';
 	return {
-		item_id: productIdentifier,
-		item_name: product.name,
-		item_category: productCategory,
+		id: productIdentifier,
+		name: product.name,
+		category: productCategory,
 		price: (
 			parseInt( product.prices.price, 10 ) /
 			10 ** product.prices.currency_minor_unit
