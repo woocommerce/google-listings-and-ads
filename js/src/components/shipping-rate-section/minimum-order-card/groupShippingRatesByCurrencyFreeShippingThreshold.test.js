@@ -1,9 +1,9 @@
 /**
  * Internal dependencies
  */
-import groupShippingRatesByFreeShippingThreshold from './groupShippingRatesByFreeShippingThreshold';
+import groupShippingRatesByCurrencyFreeShippingThreshold from './groupShippingRatesByCurrencyFreeShippingThreshold';
 
-describe( 'groupShippingRatesByFreeShippingThreshold', () => {
+describe( 'groupShippingRatesByCurrencyFreeShippingThreshold', () => {
 	it( 'should group the shipping rates based on currency and rate', () => {
 		const shippingRates = [
 			{
@@ -42,7 +42,7 @@ describe( 'groupShippingRatesByFreeShippingThreshold', () => {
 			},
 		];
 
-		const result = groupShippingRatesByFreeShippingThreshold(
+		const result = groupShippingRatesByCurrencyFreeShippingThreshold(
 			shippingRates
 		);
 

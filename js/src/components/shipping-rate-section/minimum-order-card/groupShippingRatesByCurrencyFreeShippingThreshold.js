@@ -4,12 +4,12 @@
  */
 
 /**
- * Group shipping rates by free shipping threshold into minimum order groups.
+ * Group shipping rates based on currency and free shipping threshold into minimum order groups.
  *
  * @param {Array<ShippingRate>} shippingRates Array of shipping rates.
  * @return {Array<MinimumOrderGroup>} Array of minimum order groups.
  */
-const groupShippingRatesByFreeShippingThreshold = ( shippingRates ) => {
+const groupShippingRatesByCurrencyFreeShippingThreshold = ( shippingRates ) => {
 	const map = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
@@ -33,4 +33,4 @@ const groupShippingRatesByFreeShippingThreshold = ( shippingRates ) => {
 	return Array.from( map.values() );
 };
 
-export default groupShippingRatesByFreeShippingThreshold;
+export default groupShippingRatesByCurrencyFreeShippingThreshold;
