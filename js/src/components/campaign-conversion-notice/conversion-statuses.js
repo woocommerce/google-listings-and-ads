@@ -12,6 +12,8 @@ import { geReportsUrl } from '.~/utils/urls';
 import TrackableLink from '.~/components/trackable-link';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 
+const URL_READ_MORE = 'https://support.google.com/google-ads/answer/11576060';
+
 const BEFORE_CONVERSION = {
 	title: __(
 		'Your Google Listings & Ads campaigns will soon be automatically upgraded',
@@ -22,7 +24,7 @@ const BEFORE_CONVERSION = {
 		'google-listings-and-ads'
 	),
 	externalLink: {
-		link: 'https://support.google.com/google-ads/answer/11576060',
+		link: URL_READ_MORE,
 		linkId: 'campaign-conversion-status-before-migration-read-more',
 		content: __(
 			'Learn more about this upgrade',
@@ -57,7 +59,7 @@ const AFTER_CONVERSION = {
 		}
 	),
 	externalLink: {
-		link: 'https://support.google.com/google-ads/answer/11576060',
+		link: URL_READ_MORE,
 		linkId: 'campaign-conversion-status-after-migration-read-more',
 		content: __(
 			'Learn more about this upgrade',
@@ -78,7 +80,7 @@ const REPORTS_CONVERSION = {
 			readMoreLink: (
 				<AppDocumentationLink
 					context="reports-programs"
-					href="https://support.google.com/google-ads/answer/11576060"
+					href={ URL_READ_MORE }
 					linkId="campaign-conversion-status-after-migration-reports-read-more"
 				/>
 			),
