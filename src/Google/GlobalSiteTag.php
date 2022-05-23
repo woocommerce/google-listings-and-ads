@@ -242,7 +242,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			currency: "%s",
 			country: "%s",
 			value: "%s",
-			new_customer: "%s",
+			new_customer: %s,
 			tax: "%s",
 			shipping: "%s",
 			delivery_postal_code: "%s",
@@ -257,6 +257,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $is_new_customer ),
 			esc_js( $order->get_cart_tax() ),
 			esc_js( $order->get_total_shipping() ),
+			esc_js( $order->get_billing_postcode() ),
 			esc_js( $order->get_shipping_postcode() ),
 			esc_js( $this->wc->get_base_country() ),
 			esc_js( $language ),
@@ -361,9 +362,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Check if it is the new customer order.
 	 *
 	 * @param string $customer_email Customer email address.
-	 * @return bool True if this is new customer order.
+	 * @return string True if this is new customer order.
 	 */
-	private static function is_first_time_customer( $customer_email ): bool {
+	private static function is_first_time_customer( $customer_email ): string {
 		$query = new \WC_Order_Query(
 			[
 				'limit'  => 2,
@@ -372,6 +373,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		);
 		$query->set( 'customer', $customer_email );
 		$orders = $query->get_orders();
-		return count( $orders ) === 1 ? true : false;
+		return count( $orders ) === 1 ? 'true' : 'false';
 	}
 }
