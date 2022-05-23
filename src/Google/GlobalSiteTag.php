@@ -146,14 +146,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				]
 			),
 			function () {
-				return is_page();
+				return is_page() || is_woocommerce() || is_cart();
 			}
 		);
 
 		$this->assets_handler->add( $gtag_events );
 
 		add_action(
-			'enqueue_block_assets',
+			'wp_enqueue_scripts',
 			function () use ( $gtag_events ) {
 				$this->assets_handler->enqueue( $gtag_events );
 			}
