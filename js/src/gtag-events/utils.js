@@ -22,6 +22,20 @@ export const trackEvent = ( eventName, eventParams ) => {
 };
 
 /**
+ * Track an add_to_cart event.
+ *
+ * @param {Object} product
+ * @param {int}    quantity
+ */
+export const trackAddToCartEvent = ( product, quantity = 1 ) => {
+	trackEvent( 'add_to_cart', {
+		ecomm_pagetype: 'cart',
+		event_category: 'ecommerce',
+		items: [ getItemObject( product, quantity ) ],
+	} );
+};
+
+/**
  * Formats data into an Item object.
  *
  * @param {Object} product
