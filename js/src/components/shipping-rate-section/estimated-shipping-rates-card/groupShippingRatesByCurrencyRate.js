@@ -10,21 +10,21 @@
  * @return {Array<ShippingRateGroup>} Array of shipping rate groups.
  */
 const groupShippingRatesByCurrencyRate = ( shippingRates ) => {
-	const rateGroupMap = new Map();
+	const map = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
 		const { country, currency, rate } = shippingRate;
-		const currencyRate = `${ currency } ${ rate } `;
-		const group = rateGroupMap.get( currencyRate ) || {
+		const key = `${ currency } ${ rate } `;
+		const group = map.get( key ) || {
 			countries: [],
 			currency,
 			rate,
 		};
 		group.countries.push( country );
-		rateGroupMap.set( currencyRate, group );
+		map.set( key, group );
 	} );
 
-	return Array.from( rateGroupMap.values() );
+	return Array.from( map.values() );
 };
 
 export default groupShippingRatesByCurrencyRate;
