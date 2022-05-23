@@ -4,7 +4,7 @@
  */
 
 /**
- * Group shipping rates based on currency and free shipping threshold into minimum order groups.
+ * Group shipping rates by currency and free shipping threshold into minimum order groups.
  *
  * @param {Array<ShippingRate>} shippingRates Array of shipping rates.
  * @return {Array<MinimumOrderGroup>} Array of minimum order groups.
