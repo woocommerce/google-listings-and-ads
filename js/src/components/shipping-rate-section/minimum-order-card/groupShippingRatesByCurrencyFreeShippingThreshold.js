@@ -17,17 +17,14 @@ const groupShippingRatesByCurrencyFreeShippingThreshold = ( shippingRates ) => {
 			options: { free_shipping_threshold: threshold },
 			currency,
 		} = shippingRate;
-
-		const thresholdCurrency = `${ threshold } ${ currency }`;
-
-		const group = map.get( thresholdCurrency ) || {
+		const key = `${ threshold } ${ currency }`;
+		const group = map.get( key ) || {
 			countries: [],
 			threshold,
 			currency,
 		};
 		group.countries.push( shippingRate.country );
-
-		map.set( thresholdCurrency, group );
+		map.set( key, group );
 	} );
 
 	return Array.from( map.values() );
