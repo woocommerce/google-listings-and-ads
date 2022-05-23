@@ -111,15 +111,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				$this->display_page_view_event_snippet();
 			}
 		);
-
-		add_filter(
-			'wc_add_to_cart_message_html',
-			function ( $message, $products ) {
-				return $this->custom_action_add_to_cart( $message, $products );
-			},
-			1000000,
-			2
-		);
 	}
 
 	/**
@@ -213,18 +204,18 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		wp_print_inline_script_tag( $conversion_gtag_info );
 
 		// Get the item info in the order
-		$item_info = '';
+		$item_info = [];
 		foreach ( $order->get_items() as $item_id => $item ) {
 			$product_id   = $item->get_product_id();
 			$product_name = $item->get_name();
 			$quantity     = $item->get_quantity();
 			$price        = $item->get_subtotal();
-			$item_info    = $item_info . sprintf(
+			$item_info [] = sprintf(
 				'{
 				id: "gla_%s",
 				price: %s,
 				google_business_vertical: "retail",
-				item_name:"%s",
+				name:"%s",
 				quantity:"%s",
 				}',
 				esc_js( $product_id ),
@@ -245,7 +236,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$purchase_page_gtag =
 		sprintf(
 			'gtag("event", "purchase", {
-			developer_id.%s: "true",
 			ecomm_pagetype: "purchase",
 			send_to: "%s",
 			transaction_id: "%s",
@@ -259,7 +249,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			aw_feed_country: "%s",
 			aw_feed_language: "%s",
 			items: [%s]});',
-			esc_js( self::DEVELOPER_ID ),
 			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
 			esc_js( $order->get_id() ),
 			esc_js( $order->get_currency() ),
@@ -271,7 +260,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $order->get_shipping_postcode() ),
 			esc_js( $this->wc->get_base_country() ),
 			esc_js( $language ),
-			esc_js( $item_info ),
+			join( ',', $item_info ),
 		);
 		wp_print_inline_script_tag( $purchase_page_gtag );
 	}
@@ -288,17 +277,15 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$view_item_gtag = sprintf(
 			'gtag("event", "view_item", {
 			send_to: "GLA",
-			developer_id.%s: "true",
 			ecomm_pagetype: "product",
 			value: %s,
 			items:[{
 				id: "gla_%s",
 				price: %s,
 				google_business_vertical: "retail",
-				item_name: "%s",
-				item_category: "%s",
+				name: "%s",
+				category: "%s",
 			}]});',
-			esc_js( self::DEVELOPER_ID ),
 			esc_js( (float) $product->get_price() ),
 			esc_js( $product->get_id() ),
 			esc_js( (float) $product->get_price() ),
@@ -314,15 +301,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	private function display_page_view_event_snippet(): void {
 		$page_view_gtag = sprintf(
 			'gtag("event", "page_view", {
-			send_to: "GLA",
-			developer_id.%s: "true",});',
-			esc_js( self::DEVELOPER_ID )
+			send_to: "GLA",});',
 		);
 		if ( ! is_cart() ) {
 			wp_print_inline_script_tag( $page_view_gtag );
 		} else {
 			// display the JavaScript code to track the cart page
-			$item_info = '';
+			$item_info = [];
 
 			foreach ( WC()->cart->get_cart() as $cart_item ) {
 				// gets the product id
@@ -335,12 +320,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				// gets the cart item quantity
 				$quantity = $cart_item['quantity'];
 
-				$item_info = $item_info . sprintf(
+				$item_info[] = sprintf(
 					'{
 					id: "gla_%s",
 					price: %s,
 					google_business_vertical: "retail",
-					item_name:"%s",
+					name:"%s",
 					quantity:"%s",
 					}',
 					esc_js( $id ),
@@ -357,55 +342,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				value: "%s",
 				items: [%s]});',
 				esc_js( $value ),
-				esc_js( $item_info ),
+				join( ',', $item_info ),
 			);
 			wp_print_inline_script_tag( $page_view_gtag );
-		}
-	}
-
-	/**
-	 * TODO : Track "add to cart button" on single pages, archive pages, and
-	 * through various shortcodes and blocks with a compatible solution.
-	 *
-	 * Display the JavaScript code to track the add to cart button.
-	 *
-	 * @param string $message Add to cart messages.
-	 * @param array  $products Product ID list.
-	 */
-	private function custom_action_add_to_cart( $message, $products ) {
-		// Only display this tag info after click the add to cart button .
-		foreach ( $products as $product_id => $value ) {
-
-			$product = wc_get_product( $product_id );
-
-			add_action(
-				'wp_footer',
-				function () use ( $product ) {
-					$add_to_cart_gtag = sprintf(
-						'gtag("event", "add_to_cart", {
-						send_to: "GLA",
-						developer_id.%s: "true",
-						ecomm_pagetype: "cart",
-						value: "%s",
-						items:[{
-							id: "gla_%s",
-							price: %s,
-							google_business_vertical: "retail",
-							item_name:"%s",
-							category:"%s",
-							}]});',
-						esc_js( self::DEVELOPER_ID ),
-						esc_js( (string) $product->get_price() ),
-						esc_js( $product->get_id() ),
-						esc_js( (string) $product->get_price() ),
-						esc_js( $product->get_name() ),
-						esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
-					);
-					wp_print_inline_script_tag( $add_to_cart_gtag );
-				}
-			);
-
-			return $message;
 		}
 	}
 
