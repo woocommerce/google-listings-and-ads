@@ -63,6 +63,8 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @typedef {Object} BaseInnerOption
  * @property {string|JSX.Element} label The label string or label with highlighted react element for the option.
  * @property {InnerOption[]|undefined} children The (filtered) children options.
+ * @property {boolean} hasChildren Whether this option has children.
+ * @property {boolean} expanded Whether this option is expanded.
  *
  * @typedef {CommonOption & BaseInnerOption} InnerOption
  */
@@ -112,6 +114,8 @@ const TreeSelectControl = ( {
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
 	const filteredOptionsCache = useRef( {} );
+	const cacheStatesRef = useRef( {} );
+	cacheStatesRef.current.expandedValues = nodesExpanded;
 
 	const showTree = ! disabled && treeVisible;
 
@@ -152,15 +156,14 @@ const TreeSelectControl = ( {
 		return repository;
 	}, [ treeOptions ] );
 
-	/**
+	/*
 	 * Perform the search query filter in the Tree options
 	 *
 	 * 1. Check if the search query is already cached and return it if so.
-	 * 2. Deep Copy the tree. Since we are going to modify its children and labels recursively.
+	 * 2. Deep copy the tree with adding properties for rendering.
 	 * 3. In case of filter, we apply the filter option function to the tree.
 	 * 4. In the filter function we also highlight the label with the matching letters
 	 * 5. Finally we set the cache with the obtained results and apply the filters
-	 *
 	 */
 	const filteredOptions = useMemo( () => {
 		const cachedFilteredOptions = filteredOptionsCache.current[ filter ];
@@ -170,6 +173,7 @@ const TreeSelectControl = ( {
 		}
 
 		const isFiltered = Boolean( filter );
+		const { current } = cacheStatesRef;
 
 		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
 			const matchLength = matchPosition + filter.length;
@@ -187,11 +191,32 @@ const TreeSelectControl = ( {
 			);
 		};
 
+		const descriptors = {
+			expanded: {
+				/**
+				 * Returns whether this option is expanded.
+				 * A child option always returns false.
+				 *
+				 * @return {boolean} True if expanded, false otherwise.
+				 */
+				get() {
+					return (
+						isFiltered ||
+						this.value === ROOT_VALUE ||
+						current.expandedValues.includes( this.value )
+					);
+				},
+			},
+		};
+
 		const reduceOptions = ( acc, { children = [], ...option } ) => {
-			if ( children.length > 0 ) {
+			option.hasChildren = children.length > 0;
+
+			if ( option.hasChildren ) {
 				option.children = children.reduce( reduceOptions, [] );
 
 				if ( option.children.length ) {
+					Object.defineProperties( option, descriptors );
 					acc.push( option );
 				}
 			} else {
@@ -203,6 +228,7 @@ const TreeSelectControl = ( {
 					option.label = highlightOptionLabel( option.label, match );
 				}
 
+				Object.defineProperties( option, descriptors );
 				acc.push( option );
 			}
 
@@ -405,7 +431,6 @@ const TreeSelectControl = ( {
 					<Options
 						options={ filteredOptions }
 						value={ value }
-						isFiltered={ !! filter }
 						onChange={ handleOptionsChange }
 						nodesExpanded={ nodesExpanded }
 						onNodesExpandedChange={ setNodesExpanded }

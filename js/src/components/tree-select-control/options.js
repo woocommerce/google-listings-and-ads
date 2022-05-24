@@ -23,7 +23,6 @@ import Checkbox from '.~/components/tree-select-control/checkbox';
  * @param {InnerOption[]} props.options List of options to be rendered
  * @param {string[]} props.value List of selected values
  * @param {string[]} props.nodesExpanded List of expanded nodes.
- * @param {boolean} [props.isFiltered=false] Flag to know if there is a filter applied
  * @param {Function} props.onChange Callback when an option changes
  * @param {Function} props.onNodesExpandedChange Callback when a node is expanded/collapsed
  * @param {Function} [props.onExpanderClick] Callback when an expander is clicked.
@@ -31,7 +30,6 @@ import Checkbox from '.~/components/tree-select-control/checkbox';
 const Options = ( {
 	options = [],
 	value = [],
-	isFiltered = false,
 	onChange = () => {},
 	nodesExpanded = [],
 	onNodesExpandedChange = () => {},
@@ -101,28 +99,28 @@ const Options = ( {
 	 *
 	 * @param {Event} event The KeyDown event
 	 * @param {InnerOption} option The option where the event happened
-	 * @param {boolean} isExpanded True if the node is expanded, false otherwise
 	 */
-	const handleKeyDown = ( event, option, isExpanded ) => {
-		if ( event.key === ARROW_RIGHT && ! isExpanded ) {
+	const handleKeyDown = ( event, option ) => {
+		if ( ! option.hasChildren ) {
+			return;
+		}
+		if ( event.key === ARROW_RIGHT && ! option.expanded ) {
 			toggleExpanded( option );
-		} else if ( event.key === ARROW_LEFT && isExpanded ) {
+		} else if ( event.key === ARROW_LEFT && option.expanded ) {
 			toggleExpanded( option );
 		}
 	};
 
 	return options.map( ( option ) => {
 		const isRoot = option.value === ROOT_VALUE;
-		const hasChildren = !! option.children?.length;
+		const { hasChildren, expanded } = option;
 		const checked = isChecked( option );
-		const isExpanded =
-			isFiltered || isRoot || nodesExpanded.includes( option.value );
 
 		return (
 			<div
 				key={ `${ option.key ?? option.value }` }
 				role={ hasChildren ? 'treegroup' : 'treeitem' }
-				aria-expanded={ hasChildren ? isExpanded : undefined }
+				aria-expanded={ hasChildren ? expanded : undefined }
 				className={ classnames(
 					'woocommerce-tree-select-control__node',
 					hasChildren && 'has-children'
@@ -141,9 +139,7 @@ const Options = ( {
 								toggleExpanded( option );
 							} }
 						>
-							<Icon
-								icon={ isExpanded ? chevronUp : chevronDown }
-							/>
+							<Icon icon={ expanded ? chevronUp : chevronDown } />
 						</button>
 					) }
 
@@ -161,12 +157,12 @@ const Options = ( {
 							onChange( e.target.checked, option );
 						} }
 						onKeyDown={ ( e ) => {
-							handleKeyDown( e, option, isExpanded );
+							handleKeyDown( e, option );
 						} }
 					/>
 				</Flex>
 
-				{ hasChildren && isExpanded && (
+				{ hasChildren && expanded && (
 					<div
 						className={ classnames(
 							'woocommerce-tree-select-control__children',
@@ -175,7 +171,6 @@ const Options = ( {
 					>
 						<Options
 							options={ option.children }
-							isFiltered={ isFiltered }
 							value={ value }
 							onChange={ onChange }
 							nodesExpanded={ nodesExpanded }
