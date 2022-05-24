@@ -3,6 +3,7 @@
  */
 import { Notice } from '@wordpress/components';
 import { useState } from '@wordpress/element';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -16,25 +17,28 @@ import localStorage from '.~/utils/localStorage';
  *
  * @param {Object} props React props.
  * @param {JSX.Element} props.children Children to render.
- * @param {string} props.className Class to use in the Notice component.
  * @param {string|null} props.localStorageKey Local Storage Key where is keep the dismiss state.
- * @return {JSX.Element} {@link Notice} element with the info message and the link to the documentation.
+ * @param {Function} props.onRemove Callback when clicking on remove notice
+ * @param {Object} props.restProps Props to be forwarded to Notice Component. Like className.
+ * @return {JSX.Element} {@link Notice} Dismissible Notice element
  */
 const DismissibleNotice = ( {
 	children,
-	className,
 	localStorageKey = null,
+	onRemove = noop,
+	...rest
 } ) => {
-	const defaultDismissedValue = localStorageKey
-		? !! localStorage.get( localStorageKey )
-		: false;
+	const defaultDismissedValue =
+		localStorage.get( localStorageKey ) === 'true';
 
 	const [ isDismissed, setIsDismissed ] = useState( defaultDismissedValue );
 
-	const onRemove = () => {
+	const handleRemove = () => {
 		if ( localStorageKey ) {
 			localStorage.set( localStorageKey, true );
 		}
+
+		onRemove();
 
 		setIsDismissed( true );
 	};
@@ -44,7 +48,7 @@ const DismissibleNotice = ( {
 	}
 
 	return (
-		<Notice className={ className } onRemove={ onRemove }>
+		<Notice onRemove={ handleRemove } { ...rest }>
 			{ children }
 		</Notice>
 	);
