@@ -21,60 +21,16 @@ import Checkbox from '.~/components/tree-select-control/checkbox';
  *
  * @param {Object} props Component parameters
  * @param {InnerOption[]} props.options List of options to be rendered
- * @param {string[]} props.value List of selected values
  * @param {Function} props.onChange Callback when an option changes
  * @param {Function} [props.onExpanderClick] Callback when an expander is clicked.
  * @param {(option: InnerOption) => void} [props.onToggleExpanded] Callback when requesting an expander to be toggled.
  */
 const Options = ( {
 	options = [],
-	value = [],
 	onChange = () => {},
 	onExpanderClick = noop,
 	onToggleExpanded = noop,
 } ) => {
-	/**
-	 * Verifies if an option is checked.
-	 * An option is checked if their value is selected or all of their children are selected
-	 *
-	 * @param {Option} option The option to verify if is checked
-	 * @return {boolean} True if checked, false otherwise
-	 */
-	const isChecked = ( option ) => {
-		return (
-			value.includes( option.value ) || isEveryChildrenSelected( option )
-		);
-	};
-
-	/**
-	 * Verifies if an option has some children checked.
-	 *
-	 * @param {Option} parent the Option to verify
-	 * @return {boolean} True if any at least one of the children is checked, false otherwsie
-	 */
-	const hasSomeChildrenChecked = ( parent ) => {
-		if ( ! parent.children?.length ) {
-			return false;
-		}
-
-		return parent.children.some(
-			( child ) => isChecked( child ) || hasSomeChildrenChecked( child )
-		);
-	};
-
-	/**
-	 * Returns true if all the children for the parent are selected
-	 *
-	 * @param {Option} parent The parent option to check
-	 */
-	const isEveryChildrenSelected = ( parent ) => {
-		if ( ! parent.children?.length ) {
-			return false;
-		}
-
-		return parent.children.every( ( child ) => isChecked( child ) );
-	};
-
 	/**
 	 * Alters the node with some keys for accessibility
 	 * ArrowRight - Expands the node
@@ -96,8 +52,7 @@ const Options = ( {
 
 	return options.map( ( option ) => {
 		const isRoot = option.value === ROOT_VALUE;
-		const { hasChildren, expanded } = option;
-		const checked = isChecked( option );
+		const { hasChildren, checked, partialChecked, expanded } = option;
 
 		return (
 			<div
@@ -130,9 +85,7 @@ const Options = ( {
 						className={ classnames(
 							'components-base-control',
 							'woocommerce-tree-select-control__option',
-							! checked &&
-								hasSomeChildrenChecked( option ) &&
-								'is-partially-checked'
+							partialChecked && 'is-partially-checked'
 						) }
 						option={ option }
 						checked={ checked }
@@ -154,7 +107,6 @@ const Options = ( {
 					>
 						<Options
 							options={ option.children }
-							value={ value }
 							onChange={ onChange }
 							onExpanderClick={ onExpanderClick }
 							onToggleExpanded={ onToggleExpanded }
