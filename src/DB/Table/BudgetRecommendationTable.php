@@ -53,6 +53,21 @@ SQL;
 	}
 
 	/**
+	 * Reload initial data.
+	 */
+	public function reload_data(): void {
+		if ( $this->exists() ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL
+			$this->wpdb->query( "TRUNCATE TABLE `{$this->wpdb->_escape( $this->budget_rate_table->get_name() )}`" );
+		} else {
+			parent::install();
+
+		}
+		$this->load_initial_data();
+
+	}
+
+	/**
 	 * Get the un-prefixed (raw) table name.
 	 *
 	 * @return string
