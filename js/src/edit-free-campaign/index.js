@@ -134,7 +134,12 @@ const EditFreeCampaign = () => {
 		savedShippingRates
 	);
 
-	const didTimesChanged = ! isEqual( shippingTimes, savedShippingTimes );
+	// Dont take in consideration the order when comparing objects
+	const didTimesChanged = ! isEqual(
+		new Set( shippingTimes ),
+		new Set( savedShippingTimes )
+	);
+
 	const didAnythingChanged =
 		didAudienceChanged ||
 		didSettingsChanged ||
