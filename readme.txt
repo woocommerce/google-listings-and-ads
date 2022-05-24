@@ -137,11 +137,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Add the first card with a CTA and a video for UX improvements on get started page.
 * Update - Add the get started card for UX improvements on get started page.
 
-= 1.12.7 - 2022-05-04 =
-* Fix - Label UI for selecting countries (TreeSelectControl / SupportedCountrySelect).
-* Tweak - Refactor, remove `record*Event` utils.
-* Tweak - Upgrade @wordpress/scripts to 22.1.0, and the related packages were upgraded to the corresponding versions.
-* Tweak - Upgrade the packages of the e2e testing.
-* Tweak - Upgrade webpack config to v5, and enhance the config.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
