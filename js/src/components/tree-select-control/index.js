@@ -138,7 +138,6 @@ const TreeSelectControl = ( {
 		setTreeVisible( false );
 	} );
 
-	const hasChildren = ( option ) => option.children?.length;
 	const filterQuery = inputControlValue.trim().toLowerCase();
 	const filter = filterQuery.length >= 3 ? filterQuery : '';
 
@@ -368,10 +367,10 @@ const TreeSelectControl = ( {
 	 * or a child option
 	 *
 	 * @param {boolean} checked Indicates if the item should be checked
-	 * @param {Option} option The option to change
+	 * @param {InnerOption} option The option to change
 	 */
 	const handleOptionsChange = ( checked, option ) => {
-		if ( hasChildren( option ) ) {
+		if ( option.hasChildren ) {
 			handleParentChange( checked, option );
 		} else {
 			handleSingleChange( checked, option );
@@ -382,7 +381,7 @@ const TreeSelectControl = ( {
 	 * Handles a change of a child element.
 	 *
 	 * @param {boolean} checked Indicates if the item should be checked
-	 * @param {Option} option The option to change
+	 * @param {InnerOption} option The option to change
 	 */
 	const handleSingleChange = ( checked, option ) => {
 		const newValue = checked
@@ -396,39 +395,23 @@ const TreeSelectControl = ( {
 	 * Handles a change of a Parent element.
 	 *
 	 * @param {boolean} checked Indicates if the item should be checked
-	 * @param {Option} option The option to change
+	 * @param {InnerOption} option The option to change
 	 */
 	const handleParentChange = ( checked, option ) => {
-		const newValue = [ ...value ];
+		let newValue;
+		const changedValues = option.allLeaves
+			.filter( ( opt ) => opt.checked !== checked )
+			.map( ( opt ) => opt.value );
 
-		if ( checked && ! nodesExpanded.includes( option.value ) ) {
-			setNodesExpanded( [ ...nodesExpanded, option.value ] );
-		}
-
-		function loadChildren( parent ) {
-			if ( ! parent.children ) {
-				return;
+		if ( checked ) {
+			if ( ! option.expanded ) {
+				handleToggleExpanded( option );
 			}
-
-			parent.children.forEach( ( child ) => {
-				if ( hasChildren( child ) ) {
-					loadChildren( child );
-					return;
-				}
-
-				const childPosition = newValue.indexOf( child.value );
-
-				if ( ! checked && childPosition >= 0 ) {
-					newValue.splice( childPosition, 1 );
-				}
-
-				if ( checked && childPosition < 0 ) {
-					newValue.push( child.value );
-				}
-			} );
+			newValue = value.concat( changedValues );
+		} else {
+			newValue = value.filter( ( el ) => ! changedValues.includes( el ) );
 		}
 
-		loadChildren( option );
 		onChange( newValue );
 	};
 
