@@ -13,14 +13,14 @@ import { ARROW_LEFT, ARROW_RIGHT, ROOT_VALUE } from './constants';
 import Checkbox from '.~/components/tree-select-control/checkbox';
 
 /**
- * @typedef {import('./index').Option} Option
+ * @typedef {import('./index').InnerOption} InnerOption
  */
 
 /**
  * This component renders a list of options and its children recursively
  *
  * @param {Object} props Component parameters
- * @param {Option[]} props.options List of options to be rendered
+ * @param {InnerOption[]} props.options List of options to be rendered
  * @param {string[]} props.value List of selected values
  * @param {string[]} props.nodesExpanded List of expanded nodes.
  * @param {boolean} [props.isFiltered=false] Flag to know if there is a filter applied
@@ -100,7 +100,7 @@ const Options = ( {
 	 * ArrowLeft - Collapses the node
 	 *
 	 * @param {Event} event The KeyDown event
-	 * @param {Option} option The option where the event happened
+	 * @param {InnerOption} option The option where the event happened
 	 * @param {boolean} isExpanded True if the node is expanded, false otherwise
 	 */
 	const handleKeyDown = ( event, option, isExpanded ) => {

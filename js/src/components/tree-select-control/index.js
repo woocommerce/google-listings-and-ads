@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { cloneDeep, noop } from 'lodash';
+import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { focus } from '@wordpress/dom';
 import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
@@ -46,13 +46,26 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  **/
 
 /**
- *
- * @typedef {Object} Option
+ * @typedef {Object} CommonOption
  * @property {string} value The value for the option
+ * @property {string} [key] Optional unique key for the Option. It will fallback to the value property if not defined
+ */
+
+/**
+ * @typedef {Object} BaseOption
  * @property {string} label The label for the option
  * @property {Option[]} [children] The children Option objects
- * @property {string} [key] Optional unique key for the Option. It will fallback to the value property if not defined
- **/
+ *
+ * @typedef {CommonOption & BaseOption} Option
+ */
+
+/**
+ * @typedef {Object} BaseInnerOption
+ * @property {string|JSX.Element} label The label string or label with highlighted react element for the option.
+ * @property {InnerOption[]|undefined} children The (filtered) children options.
+ *
+ * @typedef {CommonOption & BaseInnerOption} InnerOption
+ */
 
 /**
  * Renders a component with a searchable control, tags and a tree selector.
@@ -92,7 +105,6 @@ const TreeSelectControl = ( {
 	const [ treeVisible, setTreeVisible ] = useState( false );
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
 	const [ inputControlValue, setInputControlValue ] = useState( '' );
-	const [ filteredOptions, setFilteredOptions ] = useState( [] );
 
 	const dropdownRef = useRef();
 	const onDropdownVisibilityChangeRef = useRef();
@@ -150,13 +162,19 @@ const TreeSelectControl = ( {
 	 * 5. Finally we set the cache with the obtained results and apply the filters
 	 *
 	 */
-	useEffect( () => {
+	const filteredOptions = useMemo( () => {
 		const cachedFilteredOptions = filteredOptionsCache.current[ filter ];
+
+		if ( cachedFilteredOptions ) {
+			return cachedFilteredOptions;
+		}
+
+		const isFiltered = Boolean( filter );
 
 		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
 			const matchLength = matchPosition + filter.length;
 
-			if ( ! filter ) return optionLabel;
+			if ( ! isFiltered ) return optionLabel;
 
 			return (
 				<span>
@@ -169,30 +187,32 @@ const TreeSelectControl = ( {
 			);
 		};
 
-		const filterOption = ( option ) => {
-			if ( hasChildren( option ) ) {
-				option.children = option.children.filter( filterOption );
-				return !! option.children.length;
+		const reduceOptions = ( acc, { children = [], ...option } ) => {
+			if ( children.length > 0 ) {
+				option.children = children.reduce( reduceOptions, [] );
+
+				if ( option.children.length ) {
+					acc.push( option );
+				}
+			} else {
+				if ( isFiltered ) {
+					const match = option.label.toLowerCase().indexOf( filter );
+					if ( match === -1 ) {
+						return acc;
+					}
+					option.label = highlightOptionLabel( option.label, match );
+				}
+
+				acc.push( option );
 			}
 
-			const match = option.label.toLowerCase().indexOf( filter );
-
-			if ( match >= 0 ) {
-				option.label = highlightOptionLabel( option.label, match );
-				return true;
-			}
+			return acc;
 		};
 
-		if ( cachedFilteredOptions ) {
-			setFilteredOptions( cachedFilteredOptions );
-			return;
-		}
-
-		let filteredTreeOptions = cloneDeep( treeOptions );
-
-		filteredTreeOptions = filteredTreeOptions.filter( filterOption );
+		const filteredTreeOptions = treeOptions.reduce( reduceOptions, [] );
 		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
-		setFilteredOptions( filteredTreeOptions );
+
+		return filteredTreeOptions;
 	}, [ treeOptions, filter ] );
 
 	const onKeyDown = ( event ) => {
