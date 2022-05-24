@@ -25,7 +25,7 @@ export const trackEvent = ( eventName, eventParams ) => {
  * Track an add_to_cart event.
  *
  * @param {Object} product
- * @param {int}    quantity
+ * @param {number} quantity
  */
 export const trackAddToCartEvent = ( product, quantity = 1 ) => {
 	trackEvent( 'add_to_cart', {
@@ -40,24 +40,28 @@ export const trackAddToCartEvent = ( product, quantity = 1 ) => {
  *
  * @param {Object} product
  * @param {number} quantity
- *
- * @see https://developers.google.com/analytics/devguides/collection/ga4/reference/events#add_to_cart
  */
 export const getItemObject = ( product, quantity ) => {
-	const productIdentifier = 'gla_' + product.id;
-	const productCategory =
-		'categories' in product && product.categories.length
-			? product.categories[ 0 ].name
-			: '';
-	return {
-		id: productIdentifier,
-		name: product.name,
-		category: productCategory,
-		price: (
-			parseInt( product.prices.price, 10 ) /
-			10 ** product.prices.currency_minor_unit
-		).toString(),
+	const item = {
+		id: 'gla_' + product.id,
 		quantity,
 		google_business_vertical: 'retail',
 	};
+
+	if ( product.name ) {
+		item.name = product.name;
+	}
+
+	if ( 'categories' in product && product.categories.length ) {
+		item.category = product.categories[ 0 ].name;
+	}
+
+	if ( product.prices && product.prices.price ) {
+		item.price = (
+			parseInt( product.prices.price, 10 ) /
+			10 ** product.prices.currency_minor_unit
+		).toString();
+	}
+
+	return item;
 };
