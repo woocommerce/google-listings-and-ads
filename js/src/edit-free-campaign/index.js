@@ -134,7 +134,7 @@ const EditFreeCampaign = () => {
 		savedShippingRates
 	);
 
-	// Dont take in consideration the order when comparing objects
+	// Dont take in consideration the order of the rules when comparing the Shipping times.
 	const didTimesChanged = ! isEqual(
 		new Set( shippingTimes ),
 		new Set( savedShippingTimes )
