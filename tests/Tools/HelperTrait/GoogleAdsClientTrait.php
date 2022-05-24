@@ -26,6 +26,7 @@ use Google\Ads\GoogleAds\V9\Resources\ConversionAction;
 use Google\Ads\GoogleAds\V9\Resources\Customer;
 use Google\Ads\GoogleAds\V9\Resources\CustomerUserAccess;
 use Google\Ads\GoogleAds\V9\Resources\MerchantCenterLink;
+use Google\Ads\GoogleAds\V9\Resources\ShoppingPerformanceView;
 use Google\Ads\GoogleAds\V9\Services\ConversionActionServiceClient;
 use Google\Ads\GoogleAds\V9\Services\CustomerServiceClient;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
@@ -508,6 +509,10 @@ trait GoogleAdsClientTrait {
 			$campaign->method( 'getName' )->willReturn( $row['campaign']['name'] );
 			$campaign->method( 'getStatus' )->willReturn( AdsCampaignStatus::value( $row['campaign']['status'] ) );
 			$ads_row->setCampaign( $campaign );
+
+			// Mock data for ShoppingPerformanceView
+			$shopping_performance_view = $this->createMock( ShoppingPerformanceView::class );
+			$ads_row->setShoppingPerformanceView( $shopping_performance_view );
 		}
 
 		if ( ! empty( $row['metrics'] ) && ! empty( $args['fields'] ) ) {
