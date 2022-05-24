@@ -1,7 +1,8 @@
 const webpack = require( 'webpack' );
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const { hasArgInCLI } = require( '@wordpress/scripts/utils' );
-const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
+const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
+
 const ReactRefreshWebpackPlugin = require( '@pmmmwh/react-refresh-webpack-plugin' );
 const path = require( 'path' );
 
@@ -9,51 +10,26 @@ const isProduction = process.env.NODE_ENV === 'production';
 const hasReactFastRefresh = hasArgInCLI( '--hot' ) && ! isProduction;
 
 const requestToExternal = ( request ) => {
-	// Opt-out WordPress packages.
-	// The following default externals are bundled for compatibility with older versions of WP
-	// Note CSS for specific components is bundled via admin/assets/src/index.scss
-	// WP 5.4 is the min version for <Card* />, <TabPanel />
-	const bundled = [
+	const bundledPackages = [
+		// Opt-out WordPress packages.
+		// The following default externals are bundled for compatibility with older versions of WP
+		// Note CSS for specific components is bundled via admin/assets/src/index.scss
+		// WP 5.4 is the min version for <Card* />, <TabPanel />
 		'@wordpress/compose',
 		'@wordpress/components',
 		'@wordpress/primitives',
+		// Opt-out WooCommerce packages.
+		'@woocommerce/currency',
+		'@woocommerce/date',
+		'@woocommerce/number',
+		'@woocommerce/tracks',
 	];
-	if ( bundled.includes( request ) ) {
+	if ( bundledPackages.includes( request ) ) {
 		return false;
 	}
 
-	// Opt-in WooCommerce packages.
-	// To switch to opt-out, we would have to use '@woocommerce/dependency-extraction-webpack-plugin'.
-	const wcDepMap = {
-		'@woocommerce/components': [ 'wc', 'components' ],
-		'@woocommerce/navigation': [ 'wc', 'navigation' ],
-		'@woocommerce/data': [ 'wc', 'data' ],
-		// Since WooCommerce 5.8, the Settings store no longer contains "countries", "currency" and "adminURL",
-		// to be able to fetch that, we use unpublished `'@woocommerce/settings': 'wc-settings` package.
-		// It's delivered with WC, so we use Dependency Extraction Webpack Plugin to import it.
-		// See https://github.com/woocommerce/woocommerce-admin/issues/7781,
-		// https://github.com/woocommerce/woocommerce-admin/issues/7810
-		// Please note, that this is NOT https://www.npmjs.com/package/@woocommerce/settings,
-		// or https://github.com/woocommerce/woocommerce-admin/tree/main/packages/wc-admin-settings
-		// but https://github.com/woocommerce/woocommerce-gutenberg-products-block/blob/trunk/assets/js/settings/shared/index.ts
-		// (at an unknown version).
-		'@woocommerce/settings': [ 'wc', 'wcSettings' ],
-		'@woocommerce/customer-effort-score': [ 'wc', 'customerEffortScore' ],
-	};
-
-	return wcDepMap[ request ];
-};
-
-const requestToHandle = ( request ) => {
-	const wcHandleMap = {
-		'@woocommerce/components': 'wc-components',
-		'@woocommerce/navigation': 'wc-navigation',
-		'@woocommerce/data': 'wc-store-data',
-		'@woocommerce/settings': 'wc-settings',
-		'@woocommerce/customer-effort-score': 'wc-customer-effort-score',
-	};
-
-	return wcHandleMap[ request ];
+	// Follow with the default behavior for any other.
+	return undefined;
 };
 
 const exceptSVGAndPNGRule = ( rule ) => {
@@ -93,6 +69,7 @@ const webpackConfig = {
 	plugins: [
 		...defaultConfig.plugins.filter( ( plugin ) => {
 			const filteredPlugins = [
+				// Filter WP/DEWP, as we will replace it with WC one.
 				'DependencyExtractionWebpackPlugin',
 				/**
 				 * We don't use block.json to build the client files.
@@ -108,11 +85,10 @@ const webpackConfig = {
 			];
 			return ! filteredPlugins.includes( plugin.constructor.name );
 		} ),
-		new DependencyExtractionWebpackPlugin( {
+		new WooCommerceDependencyExtractionWebpackPlugin( {
 			externalizedReport:
 				! hasReactFastRefresh && '../../.externalized.json',
 			requestToExternal,
-			requestToHandle,
 		} ),
 		/**
 		 * Automatic polyfills for native node.js modules were removed from webpack v5.
