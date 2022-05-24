@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.13.0
+Stable tag: 1.13.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.13.1 - 2022-05-24 =
+* Fix - Missing ShoppingPerformanceView error when viewing report data.
+* Fix - Update the start/end date in the timePeriod message of coupon following google.protobuf.Timestamp.
+* Tweak - Show MC Issues resolution steps in the UI.
+
 = 1.13.0 - 2022-05-18 =
 * Add - Extending Update All Products Test Suit.
 * Add - Request a Google Merchant Account Review for disapproved accounts.
@@ -136,12 +141,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Add the features card for UX improvements on get started page.
 * Update - Add the first card with a CTA and a video for UX improvements on get started page.
 * Update - Add the get started card for UX improvements on get started page.
-
-= 1.12.7 - 2022-05-04 =
-* Fix - Label UI for selecting countries (TreeSelectControl / SupportedCountrySelect).
-* Tweak - Refactor, remove `record*Event` utils.
-* Tweak - Upgrade @wordpress/scripts to 22.1.0, and the related packages were upgraded to the corresponding versions.
-* Tweak - Upgrade the packages of the e2e testing.
-* Tweak - Upgrade webpack config to v5, and enhance the config.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
