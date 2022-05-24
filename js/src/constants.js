@@ -26,10 +26,6 @@ export const API_RESPONSE_CODES = {
 	GOOGLE_DISCONNECTED: 'GOOGLE_DISCONNECTED',
 };
 
-export const SHIPPING_RATE_METHOD = {
-	FLAT_RATE: 'flat_rate',
-};
-
 // MC Issues Related
 export const ISSUE_TYPE_PRODUCT = 'product';
 export const ISSUE_TYPE_ACCOUNT = 'account';

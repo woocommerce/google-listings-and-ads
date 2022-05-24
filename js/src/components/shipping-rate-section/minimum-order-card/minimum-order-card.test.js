@@ -23,7 +23,6 @@ describe( 'MinimumOrderCard', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 20,
 					options: {},
@@ -31,7 +30,6 @@ describe( 'MinimumOrderCard', () => {
 				{
 					id: '2',
 					country: 'ES',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 20,
 					options: {
@@ -41,7 +39,6 @@ describe( 'MinimumOrderCard', () => {
 				{
 					id: '3',
 					country: 'CN',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {

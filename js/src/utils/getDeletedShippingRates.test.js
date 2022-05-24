@@ -8,14 +8,12 @@ describe( 'getDeletedShippingRates', () => {
 		const newShippingRates = [
 			{
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
 				options: {},
 			},
 			{
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -28,7 +26,6 @@ describe( 'getDeletedShippingRates', () => {
 			{
 				id: '1',
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
 				options: {},
@@ -36,7 +33,6 @@ describe( 'getDeletedShippingRates', () => {
 			{
 				id: '2',
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -59,7 +55,6 @@ describe( 'getDeletedShippingRates', () => {
 			// country AU is edited.
 			{
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -69,7 +64,6 @@ describe( 'getDeletedShippingRates', () => {
 			// country MY is added.
 			{
 				country: 'MY',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -82,7 +76,6 @@ describe( 'getDeletedShippingRates', () => {
 			{
 				id: '1',
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
 				options: {},
@@ -90,7 +83,6 @@ describe( 'getDeletedShippingRates', () => {
 			{
 				id: '2',
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -108,7 +100,6 @@ describe( 'getDeletedShippingRates', () => {
 			{
 				id: '1',
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
 				options: {},
