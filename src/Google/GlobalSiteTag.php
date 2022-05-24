@@ -193,11 +193,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		sprintf(
 			'gtag("event", "conversion", {
 			send_to: "%s",
-			value: "%s",
+			value: %f,
 			currency: "%s",
 			transaction_id: "%s"});',
 			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
-			esc_js( $order->get_total() ),
+			$order->get_total(),
 			esc_js( $order->get_currency() ),
 			esc_js( $order->get_id() ),
 		);
@@ -213,15 +213,15 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$item_info [] = sprintf(
 				'{
 				id: "gla_%s",
-				price: %s,
+				price: %f,
 				google_business_vertical: "retail",
-				name:"%s",
-				quantity:"%s",
+				name: "%s",
+				quantity: %d,
 				}',
 				esc_js( $product_id ),
-				esc_js( $price ),
+				$price,
 				esc_js( $product_name ),
-				esc_js( $quantity ),
+				$quantity,
 			);
 		}
 
@@ -241,10 +241,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			transaction_id: "%s",
 			currency: "%s",
 			country: "%s",
-			value: "%s",
+			value: %f,
 			new_customer: %s,
 			tax: "%s",
-			shipping: "%s",
+			shipping: %f,
 			delivery_postal_code: "%s",
 			aw_feed_country: "%s",
 			aw_feed_language: "%s",
@@ -253,12 +253,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $order->get_id() ),
 			esc_js( $order->get_currency() ),
 			esc_js( $this->wc->get_base_country() ),
-			esc_js( $order->get_total() ),
-			esc_js( $is_new_customer ),
+			$order->get_total(),
+			$is_new_customer ? 'true' : 'false',
 			esc_js( $order->get_cart_tax() ),
-			esc_js( $order->get_total_shipping() ),
+			$order->get_total_shipping(),
 			esc_js( $order->get_billing_postcode() ),
-			esc_js( $order->get_shipping_postcode() ),
 			esc_js( $this->wc->get_base_country() ),
 			esc_js( $language ),
 			join( ',', $item_info ),
@@ -279,17 +278,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'gtag("event", "view_item", {
 			send_to: "GLA",
 			ecomm_pagetype: "product",
-			value: %s,
+			value: %f,
 			items:[{
 				id: "gla_%s",
-				price: %s,
+				price: %f,
 				google_business_vertical: "retail",
 				name: "%s",
 				category: "%s",
 			}]});',
-			esc_js( (float) $product->get_price() ),
+			wc_get_price_to_display( $product ),
 			esc_js( $product->get_id() ),
-			esc_js( (float) $product->get_price() ),
+			wc_get_price_to_display( $product ),
 			esc_js( $product->get_name() ),
 			esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
 		);
@@ -300,12 +299,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Display the JavaScript code to track all pages.
 	 */
 	private function display_page_view_event_snippet(): void {
-		$page_view_gtag = sprintf(
-			'gtag("event", "page_view", {
-			send_to: "GLA",});',
-		);
 		if ( ! is_cart() ) {
-			wp_print_inline_script_tag( $page_view_gtag );
+			wp_print_inline_script_tag(
+				'gtag("event", "page_view", {send_to: "GLA"});'
+			);
+			return;
 		} else {
 			// display the JavaScript code to track the cart page
 			$item_info = [];
@@ -317,22 +315,24 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				// gets the product object
 				$product = $cart_item['data'];
 				$name    = $product->get_name();
-				$price   = $product->get_price();
+				$price   = WC()->cart->display_prices_including_tax() ?
+				wc_get_price_including_tax( $product ) : wc_get_price_excluding_tax( $product );
+				$product->get_price();
 				// gets the cart item quantity
 				$quantity = $cart_item['quantity'];
 
 				$item_info[] = sprintf(
 					'{
 					id: "gla_%s",
-					price: %s,
+					price: %f,
 					google_business_vertical: "retail",
 					name:"%s",
-					quantity:"%s",
+					quantity: %d,
 					}',
 					esc_js( $id ),
-					esc_js( $price ),
+					$price,
 					esc_js( $name ),
-					esc_js( $quantity )
+					$quantity,
 				);
 			}
 			$value          = WC()->cart->total;
@@ -340,9 +340,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				'gtag("event", "page_view", {
 				send_to: "GLA",
 				ecomm_pagetype: "cart",
-				value: "%s",
+				value: %f,
 				items: [%s]});',
-				esc_js( $value ),
+				$value,
 				join( ',', $item_info ),
 			);
 			wp_print_inline_script_tag( $page_view_gtag );
@@ -359,12 +359,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * Check if it is the new customer order.
+	 * Check if the customer has previous orders.
+	 * Called after order creation (check for older orders including the order which was just created).
 	 *
 	 * @param string $customer_email Customer email address.
-	 * @return string True if this is new customer order.
+	 * @return bool True if this customer has previous orders.
 	 */
-	private static function is_first_time_customer( $customer_email ): string {
+	private static function is_first_time_customer( $customer_email ): bool {
 		$query = new \WC_Order_Query(
 			[
 				'limit'  => 2,
@@ -373,6 +374,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		);
 		$query->set( 'customer', $customer_email );
 		$orders = $query->get_orders();
-		return count( $orders ) === 1 ? 'true' : 'false';
+		return count( $orders ) === 1 ? true : false;
 	}
 }
