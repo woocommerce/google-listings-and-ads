@@ -109,6 +109,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.13.1 - 2022-05-24 =
+* Tweak - WC 6.5 compatibility.
+
 = 1.13.0 - 2022-05-18 =
 * Add - Extending Update All Products Test Suit.
 * Add - Request a Google Merchant Account Review for disapproved accounts.
