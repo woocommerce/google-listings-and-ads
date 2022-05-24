@@ -110,7 +110,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 == Changelog ==
 
 = 1.13.1 - 2022-05-24 =
-* Tweak - WC 6.5 compatibility.
+* Fix - Missing ShoppingPerformanceView error when viewing report data.
+* Fix - Update the start/end date in the timePeriod message of coupon following google.protobuf.Timestamp.
+* Tweak - Show MC Issues resolution steps in the UI.
 
 = 1.13.0 - 2022-05-18 =
 * Add - Extending Update All Products Test Suit.
