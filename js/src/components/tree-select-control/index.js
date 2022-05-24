@@ -297,6 +297,19 @@ const TreeSelectControl = ( {
 	};
 
 	/**
+	 * Expands/Collapses the Option
+	 *
+	 * @param {InnerOption} option The option to be expanded or collapsed.
+	 */
+	const handleToggleExpanded = ( option ) => {
+		setNodesExpanded(
+			option.expanded
+				? nodesExpanded.filter( ( el ) => option.value !== el )
+				: [ ...nodesExpanded, option.value ]
+		);
+	};
+
+	/**
 	 * Handles a change on the Tree options. Could be a click on a parent option
 	 * or a child option
 	 *
@@ -432,9 +445,8 @@ const TreeSelectControl = ( {
 						options={ filteredOptions }
 						value={ value }
 						onChange={ handleOptionsChange }
-						nodesExpanded={ nodesExpanded }
-						onNodesExpandedChange={ setNodesExpanded }
 						onExpanderClick={ handleExpanderClick }
+						onToggleExpanded={ handleToggleExpanded }
 					/>
 				</div>
 			) }

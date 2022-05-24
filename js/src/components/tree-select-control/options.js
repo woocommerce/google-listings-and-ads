@@ -22,18 +22,16 @@ import Checkbox from '.~/components/tree-select-control/checkbox';
  * @param {Object} props Component parameters
  * @param {InnerOption[]} props.options List of options to be rendered
  * @param {string[]} props.value List of selected values
- * @param {string[]} props.nodesExpanded List of expanded nodes.
  * @param {Function} props.onChange Callback when an option changes
- * @param {Function} props.onNodesExpandedChange Callback when a node is expanded/collapsed
  * @param {Function} [props.onExpanderClick] Callback when an expander is clicked.
+ * @param {(option: InnerOption) => void} [props.onToggleExpanded] Callback when requesting an expander to be toggled.
  */
 const Options = ( {
 	options = [],
 	value = [],
 	onChange = () => {},
-	nodesExpanded = [],
-	onNodesExpandedChange = () => {},
 	onExpanderClick = noop,
+	onToggleExpanded = noop,
 } ) => {
 	/**
 	 * Verifies if an option is checked.
@@ -78,21 +76,6 @@ const Options = ( {
 	};
 
 	/**
-	 * Expands/Collapses the Option
-	 *
-	 * @param {Option} option The option to be expanded or collapsed
-	 */
-	const toggleExpanded = ( option ) => {
-		if ( ! option.children?.length ) return;
-
-		onNodesExpandedChange(
-			nodesExpanded.includes( option.value )
-				? nodesExpanded.filter( ( el ) => option.value !== el )
-				: [ ...nodesExpanded, option.value ]
-		);
-	};
-
-	/**
 	 * Alters the node with some keys for accessibility
 	 * ArrowRight - Expands the node
 	 * ArrowLeft - Collapses the node
@@ -105,9 +88,9 @@ const Options = ( {
 			return;
 		}
 		if ( event.key === ARROW_RIGHT && ! option.expanded ) {
-			toggleExpanded( option );
+			onToggleExpanded( option );
 		} else if ( event.key === ARROW_LEFT && option.expanded ) {
-			toggleExpanded( option );
+			onToggleExpanded( option );
 		}
 	};
 
@@ -136,7 +119,7 @@ const Options = ( {
 							tabIndex="-1"
 							onClick={ ( e ) => {
 								onExpanderClick( e );
-								toggleExpanded( option );
+								onToggleExpanded( option );
 							} }
 						>
 							<Icon icon={ expanded ? chevronUp : chevronDown } />
@@ -173,9 +156,8 @@ const Options = ( {
 							options={ option.children }
 							value={ value }
 							onChange={ onChange }
-							nodesExpanded={ nodesExpanded }
-							onNodesExpandedChange={ onNodesExpandedChange }
 							onExpanderClick={ onExpanderClick }
+							onToggleExpanded={ onToggleExpanded }
 						/>
 					</div>
 				) }
