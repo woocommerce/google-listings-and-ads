@@ -1,5 +1,10 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 1.13.1 - 2022-05-24 =
+* Fix - Missing ShoppingPerformanceView error when viewing report data.
+* Fix - Update the start/end date in the timePeriod message of coupon following google.protobuf.Timestamp.
+* Tweak - Show MC Issues resolution steps in the UI.
+
 = 1.13.0 - 2022-05-18 =
 * Add - Extending Update All Products Test Suit.
 * Add - Request a Google Merchant Account Review for disapproved accounts.

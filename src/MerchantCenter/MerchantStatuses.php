@@ -185,7 +185,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$this->mc_statuses = [];
 
 		// Update account-level issues.
-		 $this->refresh_account_issues();
+		$this->refresh_account_issues();
 
 		// Update MC product issues and tabulate statistics in batches.
 		$chunk_size = apply_filters( 'woocommerce_gla_merchant_status_google_ids_chunk', 1000 );
@@ -394,7 +394,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 					'product'              => __( 'All products', 'google-listings-and-ads' ),
 					'code'                 => $issue->getId(),
 					'issue'                => $issue->getTitle(),
-					'action'               => __( 'Read more about this account issue', 'google-listings-and-ads' ),
+					'action'               => $issue->getDetail(),
 					'action_url'           => $issue->getDocumentation(),
 					'created_at'           => $created_at,
 					'type'                 => self::TYPE_ACCOUNT,
@@ -813,5 +813,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 
 		return $issue;
+	}
+
+	/**
+	 * Getter for get_cache_created_time
+	 *
+	 * @return DateTime The DateTime stored in cache_created_time
+	 */
+	public function get_cache_created_time(): DateTime {
+		return $this->cache_created_time;
 	}
 }

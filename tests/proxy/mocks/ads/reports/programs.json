@@ -15,6 +15,9 @@
 			},
 			"segments": {
 				"date": "2021-05-01"
+			},
+			"shoppingPerformanceView": {
+				"resourceName": "customers/1234567890/shoppingPerformanceView"
 			}
 		},
 		{
@@ -32,6 +35,9 @@
 			},
 			"segments": {
 				"date": "2021-05-02"
+			},
+			"shoppingPerformanceView": {
+				"resourceName": "customers/1234567890/shoppingPerformanceView"
 			}
 		},
 		{
@@ -49,6 +55,9 @@
 			},
 			"segments": {
 				"date": "2021-05-03"
+			},
+			"shoppingPerformanceView": {
+				"resourceName": "customers/1234567890/shoppingPerformanceView"
 			}
 		},
 		{
@@ -66,6 +75,9 @@
 			},
 			"segments": {
 				"date": "2021-05-04"
+			},
+			"shoppingPerformanceView": {
+				"resourceName": "customers/1234567890/shoppingPerformanceView"
 			}
 		},
 		{
@@ -83,6 +95,9 @@
 			},
 			"segments": {
 				"date": "2021-05-05"
+			},
+			"shoppingPerformanceView": {
+				"resourceName": "customers/1234567890/shoppingPerformanceView"
 			}
 		},
 		{
@@ -100,6 +115,9 @@
 			},
 			"segments": {
 				"date": "2021-05-06"
+			},
+			"shoppingPerformanceView": {
+				"resourceName": "customers/1234567890/shoppingPerformanceView"
 			}
 		},
 		{
@@ -117,6 +135,9 @@
 			},
 			"segments": {
 				"date": "2021-05-07"
+			},
+			"shoppingPerformanceView": {
+				"resourceName": "customers/1234567890/shoppingPerformanceView"
 			}
 		}
 	]
