@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
+use Google\Ads\GoogleAds\V9\Resources\ShoppingPerformanceView;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -16,6 +18,7 @@ abstract class AdsReportQuery extends AdsQuery {
 
 	/**
 	 * Query constructor.
+	 * Uses the resource ShoppingPerformanceView.
 	 *
 	 * @param array $args Query arguments.
 	 */
