@@ -134,12 +134,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Improved UX in the Product Feed Issues table.
 * Update - Use a shared helper method to get supported countries of a continent for /mc/countries API.
 
-= 1.12.8 - 2022-05-05 =
-* Update - Add the FAQs card for UX improvements on get started page.
-* Update - Add the benefits card for UX improvements on get started page.
-* Update - Add the customer quotes card for UX improvements on get started page.
-* Update - Add the features card for UX improvements on get started page.
-* Update - Add the first card with a CTA and a video for UX improvements on get started page.
-* Update - Add the get started card for UX improvements on get started page.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
