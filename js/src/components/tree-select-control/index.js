@@ -176,12 +176,12 @@ const TreeSelectControl = ( {
 			return cachedFilteredOptions;
 		}
 
-		const isFiltered = Boolean( filter );
+		const isSearching = Boolean( filter );
 
 		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
 			const matchLength = matchPosition + filter.length;
 
-			if ( ! isFiltered ) return optionLabel;
+			if ( ! isSearching ) return optionLabel;
 
 			return (
 				<span>
@@ -259,7 +259,7 @@ const TreeSelectControl = ( {
 				 */
 				get() {
 					return (
-						isFiltered ||
+						isSearching ||
 						this.value === ROOT_VALUE ||
 						current.expandedValues.includes( this.value )
 					);
@@ -274,7 +274,7 @@ const TreeSelectControl = ( {
 				if ( ! option.children.length ) {
 					return acc;
 				}
-			} else if ( isFiltered ) {
+			} else if ( isSearching ) {
 				const match = option.label.toLowerCase().indexOf( filter );
 				if ( match === -1 ) {
 					return acc;
