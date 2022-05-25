@@ -57,10 +57,9 @@ export const getItemObject = ( product, quantity ) => {
 	}
 
 	if ( product.prices && product.prices.price ) {
-		item.price = (
+		item.price =
 			parseInt( product.prices.price, 10 ) /
-			10 ** product.prices.currency_minor_unit
-		).toString();
+			10 ** product.prices.currency_minor_unit;
 	}
 
 	return item;
