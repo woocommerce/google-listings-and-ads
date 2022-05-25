@@ -24,8 +24,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
  */
 class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareInterface {
 
-
-
 	use OptionsAwareTrait;
 
 	/** @var string Developer ID */
@@ -127,7 +125,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				function ( $gtag_snippet ) use ( $ads_conversion_id ) {
 					return preg_replace(
 						'~(\s)</script>~',
-						"\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA', 'send_page_view': 'false' });\n$1</script>",
+						"\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA', 'send_page_view': false });\n$1</script>",
 						$gtag_snippet
 					);
 				}
@@ -159,7 +157,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 	  gtag('config', '<?php echo esc_js( $ads_conversion_id ); ?>', {
 		'groups': 'GLA',
-		'send_page_view': 'false'
+		'send_page_view': false
 	  });
 	</script>
 		<?php
@@ -243,7 +241,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			country: "%s",
 			value: %f,
 			new_customer: %s,
-			tax: "%s",
+			tax: %f,
 			shipping: %f,
 			delivery_postal_code: "%s",
 			aw_feed_country: "%s",
@@ -304,49 +302,46 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				'gtag("event", "page_view", {send_to: "GLA"});'
 			);
 			return;
-		} else {
-			// display the JavaScript code to track the cart page
-			$item_info = [];
-
-			foreach ( WC()->cart->get_cart() as $cart_item ) {
-				// gets the product id
-				$id = $cart_item['product_id'];
-
-				// gets the product object
-				$product = $cart_item['data'];
-				$name    = $product->get_name();
-				$price   = WC()->cart->display_prices_including_tax() ?
-				wc_get_price_including_tax( $product ) : wc_get_price_excluding_tax( $product );
-				$product->get_price();
-				// gets the cart item quantity
-				$quantity = $cart_item['quantity'];
-
-				$item_info[] = sprintf(
-					'{
-					id: "gla_%s",
-					price: %f,
-					google_business_vertical: "retail",
-					name:"%s",
-					quantity: %d,
-					}',
-					esc_js( $id ),
-					$price,
-					esc_js( $name ),
-					$quantity,
-				);
-			}
-			$value          = WC()->cart->total;
-			$page_view_gtag = sprintf(
-				'gtag("event", "page_view", {
-				send_to: "GLA",
-				ecomm_pagetype: "cart",
-				value: %f,
-				items: [%s]});',
-				$value,
-				join( ',', $item_info ),
-			);
-			wp_print_inline_script_tag( $page_view_gtag );
 		}
+		// display the JavaScript code to track the cart page
+		$item_info = [];
+
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			// gets the product id
+			$id = $cart_item['product_id'];
+
+			// gets the product object
+			$product = $cart_item['data'];
+			$name    = $product->get_name();
+			$price   = WC()->cart->display_prices_including_tax() ? wc_get_price_including_tax( $product ) : wc_get_price_excluding_tax( $product );
+			// gets the cart item quantity
+			$quantity = $cart_item['quantity'];
+
+			$item_info[] = sprintf(
+				'{
+				id: "gla_%s",
+				price: %f,
+				google_business_vertical: "retail",
+				name:"%s",
+				quantity: %d,
+				}',
+				esc_js( $id ),
+				$price,
+				esc_js( $name ),
+				$quantity,
+			);
+		}
+		$value          = WC()->cart->total;
+		$page_view_gtag = sprintf(
+			'gtag("event", "page_view", {
+			send_to: "GLA",
+			ecomm_pagetype: "cart",
+			value: %f,
+			items: [%s]});',
+			$value,
+			join( ',', $item_info ),
+		);
+		wp_print_inline_script_tag( $page_view_gtag );
 	}
 
 	/**
