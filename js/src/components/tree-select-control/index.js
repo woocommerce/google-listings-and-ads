@@ -196,6 +196,11 @@ const TreeSelectControl = ( {
 
 		const descriptors = {
 			hasChildren: {
+				/**
+				 * Returns whether this option has children.
+				 *
+				 * @return {boolean} True if has children, false otherwise.
+				 */
 				get() {
 					return this.children?.length > 0;
 				},
