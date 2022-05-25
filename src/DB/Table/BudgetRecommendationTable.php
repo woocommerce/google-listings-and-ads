@@ -15,6 +15,13 @@ defined( 'ABSPATH' ) || exit;
 class BudgetRecommendationTable extends Table {
 
 	/**
+	 * Whether the initial data has been loaded
+	 *
+	 * @var bool
+	 */
+	public $has_loaded_initial_data = false;
+
+	/**
 	 * Get the schema for the DB.
 	 *
 	 * This should be a SQL string for creating the DB table.
@@ -34,7 +41,6 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
 ) {$this->get_collation()};
 SQL;
 	}
-
 
 	/**
 	 * Install the Database table.
@@ -56,15 +62,10 @@ SQL;
 	 * Reload initial data.
 	 */
 	public function reload_data(): void {
-		if ( $this->exists() ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL
-			$this->wpdb->query( "TRUNCATE TABLE `{$this->wpdb->_escape( $this->budget_rate_table->get_name() )}`" );
-		} else {
-			parent::install();
-
+		if ( $this->exists() && ! $this->has_loaded_initial_data ) {
+			$this->truncate();
+			$this->load_initial_data();
 		}
-		$this->load_initial_data();
-
 	}
 
 	/**
@@ -136,6 +137,8 @@ SQL;
 
 			$this->insert_chunk( $placeholders, $values );
 		}
+
+		$this->has_loaded_initial_data = true;
 	}
 
 	/**
