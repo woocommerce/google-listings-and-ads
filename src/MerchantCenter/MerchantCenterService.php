@@ -104,6 +104,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * @return boolean
 	 */
 	public function is_ready_for_syncing(): bool {
+		/** @var TransientsInterface $transients */
 		$transients  = $this->container->get( TransientsInterface::class );
 		$url_matches = $transients->get( TransientsInterface::URL_MATCHES );
 
