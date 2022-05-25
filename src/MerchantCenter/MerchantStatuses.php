@@ -819,7 +819,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		if ( 'merchant_quality_low' === $issue['code'] || "Account isn't eligible for free listings" === $issue['issue'] ) {
 			$issue['issue']      = 'Show products on additional surfaces across Google through free listings';
 			$issue['severity']   = self::SEVERITY_WARNING;
-			$issue['action']     = 'Read about free listings';
 			$issue['action_url'] = 'https://support.google.com/merchants/answer/9199328?hl=en';
 		}
 
