@@ -62,9 +62,9 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
 /**
  * @typedef {Object} BaseInnerOption
  * @property {string|JSX.Element} label The label string or label with highlighted react element for the option.
- * @property {InnerOption[]|undefined} children The (filtered) children options.
+ * @property {InnerOption[]|undefined} children The children options. The options are filtered if in searching.
  * @property {boolean} hasChildren Whether this option has children.
- * @property {InnerOption[]} allLeaves All (filtered) leaf options under this option.
+ * @property {InnerOption[]} leaves All leaf options that are flattened under this option. The options are filtered if in searching.
  * @property {boolean} checked Whether this option is checked.
  * @property {boolean} partialChecked Whether this option is partially checked.
  * @property {boolean} expanded Whether this option is expanded.
@@ -200,32 +200,32 @@ const TreeSelectControl = ( {
 					return this.children?.length > 0;
 				},
 			},
-			allLeaves: {
+			leaves: {
 				/**
-				 * Returns all (filtered) leaf options under this option.
+				 * Return all leaf options flattened under this option. The options are filtered if in searching.
 				 *
-				 * @return {InnerOption[]} All (filtered) leaf options under this option.
+				 * @return {InnerOption[]} All leaf options that are flattened under this option. The options are filtered if in searching.
 				 */
 				get() {
 					if ( ! this.hasChildren ) {
 						return [];
 					}
 					return this.children.flatMap( ( option ) => {
-						return option.hasChildren ? option.allLeaves : option;
+						return option.hasChildren ? option.leaves : option;
 					} );
 				},
 			},
 			checked: {
 				/**
 				 * Returns whether this option is checked.
-				 * A child option is checked its value is selected.
+				 * A leaf option is checked if its value is selected.
 				 * A parent option is checked if all leaves are checked.
 				 *
 				 * @return {boolean} True if checked, false otherwise.
 				 */
 				get() {
 					if ( this.hasChildren ) {
-						return this.allLeaves.every( ( opt ) => opt.checked );
+						return this.leaves.every( ( opt ) => opt.checked );
 					}
 					return current.selectedValues.includes( this.value );
 				},
@@ -233,7 +233,7 @@ const TreeSelectControl = ( {
 			partialChecked: {
 				/**
 				 * Returns whether this option is partially checked.
-				 * A child option always returns false.
+				 * A leaf option always returns false.
 				 * A parent option is partially checked if at least one but not all leaves are checked.
 				 *
 				 * @return {boolean} True if partially checked, false otherwise.
@@ -244,7 +244,7 @@ const TreeSelectControl = ( {
 					}
 					return (
 						! this.checked &&
-						this.allLeaves.some(
+						this.leaves.some(
 							( opt ) => opt.checked || opt.partialChecked
 						)
 					);
@@ -253,7 +253,7 @@ const TreeSelectControl = ( {
 			expanded: {
 				/**
 				 * Returns whether this option is expanded.
-				 * A child option always returns false.
+				 * A leaf option always returns false.
 				 *
 				 * @return {boolean} True if expanded, false otherwise.
 				 */
@@ -399,7 +399,7 @@ const TreeSelectControl = ( {
 	 */
 	const handleParentChange = ( checked, option ) => {
 		let newValue;
-		const changedValues = option.allLeaves
+		const changedValues = option.leaves
 			.filter( ( opt ) => opt.checked !== checked )
 			.map( ( opt ) => opt.value );
 
