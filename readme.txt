@@ -109,6 +109,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.13.2 - 2022-05-25 =
+* Fix - Prevent repeated account URL retrievals.
+
 = 1.13.1 - 2022-05-24 =
 * Fix - Missing ShoppingPerformanceView error when viewing report data.
 * Fix - Update the start/end date in the timePeriod message of coupon following google.protobuf.Timestamp.
