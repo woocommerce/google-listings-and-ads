@@ -195,6 +195,11 @@ const TreeSelectControl = ( {
 		};
 
 		const descriptors = {
+			hasChildren: {
+				get() {
+					return this.children?.length > 0;
+				},
+			},
 			allLeaves: {
 				/**
 				 * Returns all (filtered) leaf options under this option.
@@ -263,27 +268,22 @@ const TreeSelectControl = ( {
 		};
 
 		const reduceOptions = ( acc, { children = [], ...option } ) => {
-			option.hasChildren = children.length > 0;
-
-			if ( option.hasChildren ) {
+			if ( children.length ) {
 				option.children = children.reduce( reduceOptions, [] );
 
-				if ( option.children.length ) {
-					Object.defineProperties( option, descriptors );
-					acc.push( option );
+				if ( ! option.children.length ) {
+					return acc;
 				}
-			} else {
-				if ( isFiltered ) {
-					const match = option.label.toLowerCase().indexOf( filter );
-					if ( match === -1 ) {
-						return acc;
-					}
-					option.label = highlightOptionLabel( option.label, match );
+			} else if ( isFiltered ) {
+				const match = option.label.toLowerCase().indexOf( filter );
+				if ( match === -1 ) {
+					return acc;
 				}
-
-				Object.defineProperties( option, descriptors );
-				acc.push( option );
+				option.label = highlightOptionLabel( option.label, match );
 			}
+
+			Object.defineProperties( option, descriptors );
+			acc.push( option );
 
 			return acc;
 		};
