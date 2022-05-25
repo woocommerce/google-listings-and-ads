@@ -116,10 +116,9 @@ const TreeSelectControl = ( {
 	onDropdownVisibilityChangeRef.current = onDropdownVisibilityChange;
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
-	const filteredOptionsCache = useRef( {} );
-	const cacheStatesRef = useRef( {} );
-	cacheStatesRef.current.expandedValues = nodesExpanded;
-	cacheStatesRef.current.selectedValues = value;
+	const cacheRef = useRef( { filteredOptionsMap: new Map() } );
+	cacheRef.current.expandedValues = nodesExpanded;
+	cacheRef.current.selectedValues = value;
 
 	const showTree = ! disabled && treeVisible;
 
@@ -147,7 +146,8 @@ const TreeSelectControl = ( {
 	const optionsRepository = useMemo( () => {
 		const repository = {};
 
-		filteredOptionsCache.current = []; // clear cache if options change
+		// Clear cache if options change
+		cacheRef.current.filteredOptionsMap.clear();
 
 		function loadOption( option ) {
 			option.children?.forEach( loadOption );
@@ -169,14 +169,14 @@ const TreeSelectControl = ( {
 	 * 5. Finally we set the cache with the obtained results and apply the filters
 	 */
 	const filteredOptions = useMemo( () => {
-		const cachedFilteredOptions = filteredOptionsCache.current[ filter ];
+		const { current } = cacheRef;
+		const cachedFilteredOptions = current.filteredOptionsMap.get( filter );
 
 		if ( cachedFilteredOptions ) {
 			return cachedFilteredOptions;
 		}
 
 		const isFiltered = Boolean( filter );
-		const { current } = cacheStatesRef;
 
 		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
 			const matchLength = matchPosition + filter.length;
@@ -289,7 +289,7 @@ const TreeSelectControl = ( {
 		};
 
 		const filteredTreeOptions = treeOptions.reduce( reduceOptions, [] );
-		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
+		current.filteredOptionsMap.set( filter, filteredTreeOptions );
 
 		return filteredTreeOptions;
 	}, [ treeOptions, filter ] );
