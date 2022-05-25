@@ -3,6 +3,8 @@
  */
 import { sendToGroup } from './constants';
 
+/* global glaGtagData */
+
 /**
  * Track an event using the global gtag function.
  *
@@ -63,4 +65,16 @@ export const getItemObject = ( product, quantity ) => {
 	}
 
 	return item;
+};
+
+/**
+ * Formats a regular price into a price object.
+ *
+ * @param {number} price
+ */
+export const getPriceObject = ( price ) => {
+	return {
+		price: price * 10 ** glaGtagData.currency_minor_unit,
+		currency_minor_unit: glaGtagData.currency_minor_unit,
+	}
 };

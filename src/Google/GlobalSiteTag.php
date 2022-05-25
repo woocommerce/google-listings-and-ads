@@ -150,6 +150,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			}
 		);
 
+		$gtag_events->add_localization(
+			'glaGtagData',
+			[
+				'currency_minor_unit' => wc_get_price_decimals(),
+			]
+		);
+
 		$this->assets_handler->add( $gtag_events );
 
 		add_action(

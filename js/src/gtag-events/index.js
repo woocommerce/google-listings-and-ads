@@ -7,7 +7,7 @@ import { addAction } from '@wordpress/hooks';
  * Internal dependencies
  */
 import { namespace, actionPrefix } from './constants';
-import { trackAddToCartEvent } from './utils';
+import { getPriceObject, trackAddToCartEvent } from './utils';
 
 addAction(
 	`${ actionPrefix }-cart-add-item`,
@@ -29,16 +29,33 @@ const singleAddToCartClick = function ( event ) {
 		return;
 	}
 
-	const quantity = cartForm.querySelector( '[name=quantity]' );
-	const product = cartForm.querySelector( '[name=add-to-cart]' );
-	const variation = cartForm.querySelector( '[name=variation_id]' );
-
-	if ( product ) {
-		trackAddToCartEvent(
-			{ id: variation ? variation.value : product.value },
-			quantity ? parseInt( quantity.value, 10 ) : 1
-		);
+	const addToCart = cartForm.querySelector( '[name=add-to-cart]' );
+	if ( ! addToCart ) {
+		return;
 	}
+
+	const variationId = cartForm.querySelector( '[name=variation_id]' );
+	const quantity = cartForm.querySelector( '[name=quantity]' );
+
+	const product = {
+		id: parseInt( variationId ? variationId.value : addToCart.value, 10 ),
+	};
+
+	if ( variationId && cartForm.dataset.product_variations ) {
+		const variations = JSON.parse( cartForm.dataset.product_variations );
+		const variation = Array.isArray( variations )
+			? variations.find( ( entry ) => entry.variation_id === product.id )
+			: null;
+
+		if ( variation ) {
+			product.prices = getPriceObject( variation.display_price );
+		}
+	}
+
+	trackAddToCartEvent(
+		product,
+		quantity ? parseInt( quantity.value, 10 ) : 1
+	);
 };
 
 window.onload = function () {
