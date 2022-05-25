@@ -169,8 +169,8 @@ const TreeSelectControl = ( {
 	 * 5. Finally we set the cache with the obtained results and apply the filters
 	 */
 	const filteredOptions = useMemo( () => {
-		const { current } = cacheRef;
-		const cachedFilteredOptions = current.filteredOptionsMap.get( filter );
+		const { current: cache } = cacheRef;
+		const cachedFilteredOptions = cache.filteredOptionsMap.get( filter );
 
 		if ( cachedFilteredOptions ) {
 			return cachedFilteredOptions;
@@ -232,7 +232,7 @@ const TreeSelectControl = ( {
 					if ( this.hasChildren ) {
 						return this.leaves.every( ( opt ) => opt.checked );
 					}
-					return current.selectedValues.includes( this.value );
+					return cache.selectedValues.includes( this.value );
 				},
 			},
 			partialChecked: {
@@ -266,7 +266,7 @@ const TreeSelectControl = ( {
 					return (
 						isSearching ||
 						this.value === ROOT_VALUE ||
-						current.expandedValues.includes( this.value )
+						cache.expandedValues.includes( this.value )
 					);
 				},
 			},
@@ -294,7 +294,7 @@ const TreeSelectControl = ( {
 		};
 
 		const filteredTreeOptions = treeOptions.reduce( reduceOptions, [] );
-		current.filteredOptionsMap.set( filter, filteredTreeOptions );
+		cache.filteredOptionsMap.set( filter, filteredTreeOptions );
 
 		return filteredTreeOptions;
 	}, [ treeOptions, filter ] );
