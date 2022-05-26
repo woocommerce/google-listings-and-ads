@@ -7,7 +7,14 @@ import { addAction } from '@wordpress/hooks';
  * Internal dependencies
  */
 import { namespace, actionPrefix } from './constants';
-import { getPriceObject, getProductObject, trackAddToCartEvent } from './utils';
+import {
+	getPriceObject,
+	getProductObject,
+	retrievedVariation,
+	trackAddToCartEvent,
+} from './utils';
+
+/* global jQuery */
 
 addAction(
 	`${ actionPrefix }-cart-add-item`,
@@ -60,6 +67,7 @@ const singleAddToCartClick = function ( event ) {
 	);
 };
 
+// Register for add_to_cart click events.
 window.onload = function () {
 	document
 		.querySelectorAll(
@@ -75,3 +83,14 @@ window.onload = function () {
 			button.addEventListener( 'click', singleAddToCartClick );
 		} );
 };
+
+// Register for jQuery event to update product data.
+if ( typeof jQuery === 'function' ) {
+	jQuery( document ).on(
+		'found_variation',
+		'form.cart',
+		function ( event, variation ) {
+			retrievedVariation( variation );
+		}
+	);
+}

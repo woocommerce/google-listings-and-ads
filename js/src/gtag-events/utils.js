@@ -96,3 +96,15 @@ export const getProductObject = ( product ) => {
 	}
 	return product;
 };
+
+/**
+ * Updates product data with the retrieved variation.
+ *
+ * @param {Object} variation
+ */
+export const retrievedVariation = ( variation ) => {
+	glaGtagData.products[ variation.variation_id ] = {
+		name: variation.display_name,
+		price: variation.display_price,
+	};
+};
