@@ -115,14 +115,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			function () use ( $ads_conversion_id ) {
 				$this->activate_global_site_tag( $ads_conversion_id );
 			},
-			999998
+			999999
 		);
+
 		add_action(
 			'woocommerce_before_thankyou',
 			function ( $order_id ) use ( $ads_conversion_id, $ads_conversion_label ) {
 				$this->maybe_display_conversion_and_purchase_event_snippets( $ads_conversion_id, $ads_conversion_label, $order_id );
 			},
-			1000000
 		);
 
 		add_action(
