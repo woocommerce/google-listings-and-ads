@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 
 /**
  * Global Site Tag functionality - add main script and track conversions.
@@ -23,6 +24,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use WC_Product;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Main class for Global Site Tag.
@@ -49,11 +52,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected $gtag_js;
 
 	/**
-	 * @var WP
-	 */
-	protected $wp;
-
-	/**
 	 * @var ProductHelper
 	 */
 	protected $product_helper;
@@ -62,6 +60,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @var WC
 	 */
 	protected $wc;
+
+	/**
+	 * @var WP
+	 */
+	protected $wp;
 
 	/**
 	 * Additional product data used for tracking add_to_cart events.
