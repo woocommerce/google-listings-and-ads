@@ -237,27 +237,25 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	protected function display_global_site_tag( string $ads_conversion_id ) {
-	  // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 
-	<!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js( $ads_conversion_id ); ?> - Google Listings & Ads -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js( $ads_conversion_id ); ?>"></script>
-	<script>
-	  window.dataLayer = window.dataLayer || [];
+		<!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js( $ads_conversion_id ); ?> - Google Listings & Ads -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js( $ads_conversion_id ); ?>"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() { dataLayer.push(arguments); }
 
-	  function gtag() {
-		dataLayer.push(arguments);
-	  }
-	  gtag('js', new Date());
-	  gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
+			gtag('js', new Date());
+			gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
+			gtag('config', '<?php echo esc_js( $ads_conversion_id ); ?>', {
+				'groups': 'GLA',
+				'send_page_view': false
+			});
+		</script>
 
-	  gtag('config', '<?php echo esc_js( $ads_conversion_id ); ?>', {
-		'groups': 'GLA',
-		'send_page_view': false
-	  });
-	</script>
 		<?php
-	  // phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 
 	/**
