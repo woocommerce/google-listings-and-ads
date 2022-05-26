@@ -22,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
+use WC_Product;
 
 /**
  * Main class for Global Site Tag.
@@ -61,6 +62,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @var WC
 	 */
 	protected $wc;
+
+	/**
+	 * Additional product data used for tracking add_to_cart events.
+	 *
+	 * @var array
+	 */
+	protected $products = [];
 
 	/**
 	 * Global Site Tag constructor.
@@ -128,6 +136,16 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			}
 		);
 
+		add_filter(
+			'woocommerce_loop_add_to_cart_link',
+			function ( $link, $product, $args ) {
+				$this->add_product_data( $product );
+				return $link;
+			},
+			10,
+			3
+		);
+
 		$this->register_assets();
 	}
 
@@ -150,18 +168,19 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			}
 		);
 
-		$gtag_events->add_localization(
-			'glaGtagData',
-			[
-				'currency_minor_unit' => wc_get_price_decimals(),
-			]
-		);
-
 		$this->assets_handler->add( $gtag_events );
 
 		add_action(
-			'wp_enqueue_scripts',
+			'wp_footer',
 			function () use ( $gtag_events ) {
+				$gtag_events->add_localization(
+					'glaGtagData',
+					[
+						'currency_minor_unit' => wc_get_price_decimals(),
+						'products'            => $this->products,
+					]
+				);
+
 				$this->assets_handler->enqueue( $gtag_events );
 			}
 		);
@@ -323,11 +342,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Display the JavaScript code to track the product view page.
 	 */
 	private function display_view_item_event_snippet(): void {
-		// Only display on the product view page.
-		if ( ! is_product() ) {
+		$product = wc_get_product( get_the_ID() );
+		if ( ! $product instanceof WC_Product ) {
 			return;
 		}
-		$product        = wc_get_product( get_the_ID() );
+
+		$this->add_product_data( $product );
+
 		$view_item_gtag = sprintf(
 			'gtag("event", "view_item", {
 			send_to: "GLA",
@@ -398,6 +419,20 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			join( ',', $item_info ),
 		);
 		wp_print_inline_script_tag( $page_view_gtag );
+	}
+
+	/**
+	 * Add product data to include in JS data.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param WC_Product $product
+	 */
+	protected function add_product_data( $product ) {
+		$this->products[ $product->get_id() ] = [
+			'name'  => $product->get_name(),
+			'price' => wc_get_price_to_display( $product ),
+		];
 	}
 
 	/**

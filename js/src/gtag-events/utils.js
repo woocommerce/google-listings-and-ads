@@ -38,10 +38,11 @@ export const trackAddToCartEvent = ( product, quantity = 1 ) => {
 };
 
 /**
- * Formats data into an Item object.
+ * Formats data into a cart Item object.
  *
  * @param {Object} product
  * @param {number} quantity
+ * @return {Object} Item object.
  */
 export const getItemObject = ( product, quantity ) => {
 	const item = {
@@ -71,10 +72,27 @@ export const getItemObject = ( product, quantity ) => {
  * Formats a regular price into a price object.
  *
  * @param {number} price
+ * @return {Object} Price object.
  */
 export const getPriceObject = ( price ) => {
 	return {
 		price: price * 10 ** glaGtagData.currency_minor_unit,
 		currency_minor_unit: glaGtagData.currency_minor_unit,
+	};
+};
+
+/**
+ * Formats a product object to include name and price from global data.
+ *
+ * @param {Object} product
+ * @return {Object} Product object.
+ */
+export const getProductObject = ( product ) => {
+	if ( product.id && glaGtagData.products[ product.id ] ) {
+		product.name = glaGtagData.products[ product.id ].name;
+		product.prices = getPriceObject(
+			glaGtagData.products[ product.id ].price
+		);
 	}
+	return product;
 };

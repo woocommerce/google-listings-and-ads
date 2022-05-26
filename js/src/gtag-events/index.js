@@ -7,7 +7,7 @@ import { addAction } from '@wordpress/hooks';
  * Internal dependencies
  */
 import { namespace, actionPrefix } from './constants';
-import { getPriceObject, trackAddToCartEvent } from './utils';
+import { getPriceObject, getProductObject, trackAddToCartEvent } from './utils';
 
 addAction(
 	`${ actionPrefix }-cart-add-item`,
@@ -19,8 +19,9 @@ addAction(
 
 const addToCartClick = function ( event ) {
 	const data = event.target.dataset;
+	const product = getProductObject( { id: data.product_id } );
 
-	trackAddToCartEvent( { id: data.product_id }, data.quantity || 1 );
+	trackAddToCartEvent( product, data.quantity || 1 );
 };
 
 const singleAddToCartClick = function ( event ) {
@@ -37,9 +38,9 @@ const singleAddToCartClick = function ( event ) {
 	const variationId = cartForm.querySelector( '[name=variation_id]' );
 	const quantity = cartForm.querySelector( '[name=quantity]' );
 
-	const product = {
+	const product = getProductObject( {
 		id: parseInt( variationId ? variationId.value : addToCart.value, 10 ),
-	};
+	} );
 
 	if ( variationId && cartForm.dataset.product_variations ) {
 		const variations = JSON.parse( cartForm.dataset.product_variations );
