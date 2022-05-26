@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Migration20220524T1653383133
  *
- * Migration class to reload the default Ads budgets
+ * Migration class to reload the default Ads budgets recommendations
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration
  *
