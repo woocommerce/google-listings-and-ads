@@ -14,12 +14,14 @@ interface TransientsInterface {
 	public const FREE_LISTING_METRICS = 'free_listing_metrics';
 	public const MC_STATUSES          = 'mc_statuses';
 	public const MC_ACCOUNT_REVIEW    = 'mc_account_review';
+	public const URL_MATCHES          = 'url_matches';
 
 	public const VALID_OPTIONS = [
 		self::ADS_METRICS          => true,
 		self::FREE_LISTING_METRICS => true,
 		self::MC_STATUSES          => true,
 		self::MC_ACCOUNT_REVIEW    => true,
+		self::URL_MATCHES          => true,
 	];
 
 	/**

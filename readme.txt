@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.13.1
+Stable tag: 1.13.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.13.2 - 2022-05-25 =
+* Fix - Prevent repeated account URL retrievals.
+
 = 1.13.1 - 2022-05-24 =
 * Fix - Missing ShoppingPerformanceView error when viewing report data.
 * Fix - Update the start/end date in the timePeriod message of coupon following google.protobuf.Timestamp.
@@ -133,13 +136,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WordPress 6.0 compatibility.
 * Update - Improved UX in the Product Feed Issues table.
 * Update - Use a shared helper method to get supported countries of a continent for /mc/countries API.
-
-= 1.12.8 - 2022-05-05 =
-* Update - Add the FAQs card for UX improvements on get started page.
-* Update - Add the benefits card for UX improvements on get started page.
-* Update - Add the customer quotes card for UX improvements on get started page.
-* Update - Add the features card for UX improvements on get started page.
-* Update - Add the first card with a CTA and a video for UX improvements on get started page.
-* Update - Add the get started card for UX improvements on get started page.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

@@ -7,7 +7,7 @@
  */
 const path = require( 'path' );
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
-const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
+const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
 
 const sharedConfig = {
 	mode: 'development',
@@ -24,7 +24,7 @@ const reactRefreshEntryConfig = {
 		'react-refresh-entry':
 			'@pmmmwh/react-refresh-webpack-plugin/client/ReactRefreshEntry.js',
 	},
-	plugins: [ new DependencyExtractionWebpackPlugin() ],
+	plugins: [ new WooCommerceDependencyExtractionWebpackPlugin() ],
 };
 
 const reactRefreshRuntimeConfig = {
@@ -39,7 +39,9 @@ const reactRefreshRuntimeConfig = {
 		},
 	},
 	plugins: [
-		new DependencyExtractionWebpackPlugin( { useDefaults: false } ),
+		new WooCommerceDependencyExtractionWebpackPlugin( {
+			useDefaults: false,
+		} ),
 	],
 };
 
