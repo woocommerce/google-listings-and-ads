@@ -49,6 +49,7 @@ const singleAddToCartClick = function ( event ) {
 			: null;
 
 		if ( variation ) {
+			product.name = variation.display_name;
 			product.prices = getPriceObject( variation.display_price );
 		}
 	}

@@ -136,6 +136,15 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			}
 		);
 
+		$this->product_data_hooks();
+		$this->register_assets();
+	}
+
+	/**
+	 * Attach filters to add product data required for tracking events.
+	 */
+	protected function product_data_hooks() {
+		// Add product data for any add_to_cart link.
 		add_filter(
 			'woocommerce_loop_add_to_cart_link',
 			function ( $link, $product, $args ) {
@@ -146,7 +155,16 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			3
 		);
 
-		$this->register_assets();
+		// Add display name for an available variation.
+		add_filter(
+			'woocommerce_available_variation',
+			function ( $data, $instance, $variation ) {
+				$data['display_name'] = $variation->get_name();
+				return $data;
+			},
+			10,
+			3
+		);
 	}
 
 	/**
