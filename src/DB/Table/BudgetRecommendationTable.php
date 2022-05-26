@@ -60,6 +60,8 @@ SQL;
 
 	/**
 	 * Reload initial data.
+	 *
+	 * @return void
 	 */
 	public function reload_data(): void {
 		if ( $this->exists() && ! $this->has_loaded_initial_data ) {
