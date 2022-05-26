@@ -30,14 +30,14 @@ class BudgetRecommendationTableTest extends UnitTest {
 						 ->getMock();
 
 		$this->mock_budget_recommendation = $this->getMockBuilder( BudgetRecommendationTable::class )
-						 ->setMethods( [ 'exists', 'truncate', 'get_sql_safe_name' ] )
+						->setMethods( [ 'exists', 'truncate', 'get_sql_safe_name' ] )
 						->setConstructorArgs(
 							[
 								$this->wp,
 								$this->wpdb,
 							]
 						)
-						 ->getMock();
+						->getMock();
 	}
 
 
