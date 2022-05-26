@@ -8,7 +8,6 @@ import { addAction } from '@wordpress/hooks';
  */
 import { namespace, actionPrefix } from './constants';
 import {
-	getPriceObject,
 	getProductObject,
 	retrievedVariation,
 	trackAddToCartEvent,
@@ -48,18 +47,6 @@ const singleAddToCartClick = function ( event ) {
 	const product = getProductObject( {
 		id: parseInt( variationId ? variationId.value : addToCart.value, 10 ),
 	} );
-
-	if ( variationId && cartForm.dataset.product_variations ) {
-		const variations = JSON.parse( cartForm.dataset.product_variations );
-		const variation = Array.isArray( variations )
-			? variations.find( ( entry ) => entry.variation_id === product.id )
-			: null;
-
-		if ( variation ) {
-			product.name = variation.display_name;
-			product.prices = getPriceObject( variation.display_price );
-		}
-	}
 
 	trackAddToCartEvent(
 		product,
