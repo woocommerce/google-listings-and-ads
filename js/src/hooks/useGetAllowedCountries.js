@@ -4,7 +4,7 @@
 import useAppSelectDispatch from './useAppSelectDispatch';
 
 /**
- * Call `useAppSelectDispatch` with `"getAllowedCountries"`.
+ * Call `useAppSelectDispatch` with `"getAllowedCountries"`
  *
  * @return {useAppSelectDispatch} Result of useAppSelectDispatch.
  */
