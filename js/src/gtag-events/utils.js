@@ -76,7 +76,7 @@ export const getCartItemObject = ( product, quantity ) => {
  */
 export const getPriceObject = ( price ) => {
 	return {
-		price: price * 10 ** glaGtagData.currency_minor_unit,
+		price: Math.round( price * 10 ** glaGtagData.currency_minor_unit ),
 		currency_minor_unit: glaGtagData.currency_minor_unit,
 	};
 };
