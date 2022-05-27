@@ -1,4 +1,3 @@
-js / s;
 /**
  * Internal dependencies
  */
@@ -14,4 +13,3 @@ const useSsl = () => {
 };
 
 export default useSsl;
-rc / hooks / useSsl.js;
