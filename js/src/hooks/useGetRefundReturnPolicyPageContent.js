@@ -8,7 +8,7 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  *
  * @return {useAppSelectDispatch} Result of useAppSelectDispatch.
  */
-const useGetPaymentGateways = () => {
+const useGetRefundReturnPolicyPageContent = () => {
 	return useAppSelectDispatch( 'getRefundReturnPolicyPageContent' );
 };
 
