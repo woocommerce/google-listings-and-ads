@@ -20,6 +20,12 @@ describe( 'reducer', () => {
 				target_audience: null,
 				countries: null,
 				continents: null,
+				policy_check: {
+					allowed_countries: null,
+					payment_gateways: null,
+					return_refund_policy: null,
+					ssl: null,
+				},
 				shipping: {
 					rates: [],
 					times: [],
