@@ -831,7 +831,6 @@ export function* fetchReturnRefundPolicyPageContent() {
 				'google-listings-and-ads'
 			)
 		);
-
 	}
 }
 
