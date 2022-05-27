@@ -165,8 +165,8 @@ export function* getIsSsl() {
 	yield fetchIsSsl();
 }
 
-export function* getRefundReturnPolicyContentPage() {
-	yield fetchRefundReturnPolicyContentPage();
+export function* getReturnRefundPolicyContentPage() {
+	yield fetchReturnRefundPolicyPageContent();
 }
 
 export function* getTargetAudience() {
