@@ -1,6 +1,7 @@
-js/s/**
-* Internal dependencies
-*/
+js / s;
+/**
+ * Internal dependencies
+ */
 import useAppSelectDispatch from './useAppSelectDispatch';
 
 /**
@@ -9,7 +10,8 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  * @return {useAppSelectDispatch} Result of useAppSelectDispatch.
  */
 const useSsl = () => {
-  return useAppSelectDispatch( 'getIsSsl' );
+	return useAppSelectDispatch( 'getIsSsl' );
 };
 
-export default useSsl;rc/hooks/useSsl.js
+export default useSsl;
+rc / hooks / useSsl.js;
