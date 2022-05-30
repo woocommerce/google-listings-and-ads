@@ -15,8 +15,7 @@ export const trackEvent = ( eventName, eventParams ) => {
 	if ( typeof gtag !== 'function' ) {
 		throw new Error( 'Function gtag not implemented.' );
 	}
-	// eslint-disable-next-line no-console
-	console.log( `Tracking event ${ eventName }` );
+
 	window.gtag( 'event', eventName, {
 		send_to: SEND_TO_GROUP,
 		...eventParams,
