@@ -764,7 +764,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$metadata->addConstraint( new Assert\Callback( 'validate_availability' ) );
 
 		$metadata->addPropertyConstraint( 'gtin', new Assert\Regex( '/^\d{8}(?:\d{4,6})?$/' ) );
-		$metadata->addPropertyConstraint( 'mpn', new Assert\Type( 'alnum' ) ); // alphanumeric
+		$metadata->addPropertyConstraint( 'mpn', new Assert\Type( 'string' ) );
 		$metadata->addPropertyConstraint( 'mpn', new Assert\Length( null, 0, 70 ) ); // maximum 70 characters
 
 		$metadata->addPropertyConstraint(
