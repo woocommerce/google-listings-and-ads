@@ -10,6 +10,7 @@ import { SEND_TO_GROUP } from './constants';
  *
  * @param {string} eventName
  * @param {Object} eventParams
+ * @throws Will throw an error if the global gtag function is not available.
  */
 export const trackEvent = ( eventName, eventParams ) => {
 	if ( typeof gtag !== 'function' ) {
