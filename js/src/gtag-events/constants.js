@@ -1,3 +1,3 @@
-export const namespace = 'google-listings-and-ads';
-export const actionPrefix = 'experimental__woocommerce_blocks';
-export const sendToGroup = 'GLA';
+export const NAMESPACE = 'google-listings-and-ads';
+export const ACTION_PREFIX = 'experimental__woocommerce_blocks';
+export const SEND_TO_GROUP = 'GLA';

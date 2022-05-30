@@ -6,7 +6,7 @@ import { addAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { namespace, actionPrefix } from './constants';
+import { NAMESPACE, ACTION_PREFIX } from './constants';
 import {
 	getProductObject,
 	retrievedVariation,
@@ -16,8 +16,8 @@ import {
 /* global jQuery */
 
 addAction(
-	`${ actionPrefix }-cart-add-item`,
-	namespace,
+	`${ ACTION_PREFIX }-cart-add-item`,
+	NAMESPACE,
 	( { product, quantity = 1 } ) => {
 		trackAddToCartEvent( product, quantity );
 	}

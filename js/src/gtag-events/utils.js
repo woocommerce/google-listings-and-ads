@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { sendToGroup } from './constants';
+import { SEND_TO_GROUP } from './constants';
 
 /* global glaGtagData */
 
@@ -18,7 +18,7 @@ export const trackEvent = ( eventName, eventParams ) => {
 	// eslint-disable-next-line no-console
 	console.log( `Tracking event ${ eventName }` );
 	window.gtag( 'event', eventName, {
-		send_to: sendToGroup,
+		send_to: SEND_TO_GROUP,
 		...eventParams,
 	} );
 };
