@@ -9,7 +9,7 @@ use Throwable;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class ScriptWithBuiltDependenciesAsset
+ * Construct a ScriptAsset loading the dependencies from a generated file.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Assets
  */
@@ -20,11 +20,12 @@ class ScriptWithBuiltDependenciesAsset extends ScriptAsset {
 	 *
 	 * @param string          $handle                      The script handle.
 	 * @param string          $uri                         The URI for the script.
-	 * @param string          $build_dependency_path
-	 * @param DependencyArray $fallback_dependency_data
+	 * @param string          $build_dependency_path       Path to the generated dependency file.
+	 * @param DependencyArray $fallback_dependency_data    Fallback dependencies (if the generated file is not readable).
 	 * @param callable|null   $enqueue_condition_callback  (Optional) The asset is always enqueued if this callback
 	 *                                                     returns true or isn't set.
-	 * @param bool            $in_footer
+	 * @param bool            $in_footer                   Whether to enqueue the script before </body> instead of in
+	 *                                                     the <head> (default: true).
 	 */
 	public function __construct(
 		string $handle,

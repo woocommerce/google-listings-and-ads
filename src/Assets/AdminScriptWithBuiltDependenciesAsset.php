@@ -6,7 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class AdminScriptWithBuiltDependenciesAsset
+ * Construct a ScriptAsset loading the dependencies from a generated file.
+ * Uses the AdminAssetHelper trait to enqueue the scripts for backend use.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Assets
  */
