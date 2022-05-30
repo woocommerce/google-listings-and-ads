@@ -32,7 +32,7 @@ export const trackAddToCartEvent = ( product, quantity = 1 ) => {
 	trackEvent( 'add_to_cart', {
 		ecomm_pagetype: 'cart',
 		event_category: 'ecommerce',
-		items: [ getItemObject( product, quantity ) ],
+		items: [ getCartItemObject( product, quantity ) ],
 	} );
 };
 
@@ -43,7 +43,7 @@ export const trackAddToCartEvent = ( product, quantity = 1 ) => {
  * @param {number} quantity
  * @return {Object} Item object.
  */
-export const getItemObject = ( product, quantity ) => {
+export const getCartItemObject = ( product, quantity ) => {
 	const item = {
 		id: 'gla_' + product.id,
 		quantity,
