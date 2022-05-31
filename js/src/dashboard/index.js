@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { Button } from '@wordpress/components';
-import { useState, useCallback } from '@wordpress/element';
+import { useState, useCallback, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { getNewPath, getQuery, getHistory } from '@woocommerce/navigation';
@@ -26,12 +26,18 @@ import EditFreeCampaign from '.~/edit-free-campaign';
 import EditPaidAdsCampaign from '.~/pages/edit-paid-ads-campaign';
 import CreatePaidAdsCampaign from '.~/pages/create-paid-ads-campaign';
 import { CTA_CREATE_ANOTHER_CAMPAIGN, CTA_CONFIRM } from './constants';
+import useUrlQuery from '.~/hooks/useUrlQuery';
 
 /**
  * @fires gla_modal_closed when CES modal is closed.
  */
 const Dashboard = () => {
 	const [ isCESPromptOpen, setCESPromptOpen ] = useState( false );
+	const query = useUrlQuery();
+
+	useEffect( () => {
+		setCESPromptOpen( false );
+	}, [ query.subpath ] );
 
 	const handleCampaignCreationSuccessGuideClose = useCallback(
 		( e, specifiedAction ) => {
@@ -56,7 +62,6 @@ const Dashboard = () => {
 		[ setCESPromptOpen ]
 	);
 
-	const query = getQuery();
 	switch ( query.subpath ) {
 		case subpaths.editFreeListings:
 			return <EditFreeCampaign />;
