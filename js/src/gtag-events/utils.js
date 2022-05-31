@@ -55,11 +55,11 @@ export const getCartItemObject = ( product, quantity ) => {
 		item.name = product.name;
 	}
 
-	if ( 'categories' in product && product.categories.length ) {
+	if ( product?.categories?.length ) {
 		item.category = product.categories[ 0 ].name;
 	}
 
-	if ( product.prices && product.prices.price ) {
+	if ( product?.prices?.price ) {
 		item.price =
 			parseInt( product.prices.price, 10 ) /
 			10 ** product.prices.currency_minor_unit;
@@ -88,7 +88,7 @@ export const getPriceObject = ( price ) => {
  * @return {Object} Product object.
  */
 export const getProductObject = ( product ) => {
-	if ( product.id && glaGtagData.products[ product.id ] ) {
+	if ( glaGtagData.products[ product.id ] ) {
 		product.name = glaGtagData.products[ product.id ].name;
 		product.prices = getPriceObject(
 			glaGtagData.products[ product.id ].price
@@ -103,6 +103,10 @@ export const getProductObject = ( product ) => {
  * @param {Object} variation
  */
 export const retrievedVariation = ( variation ) => {
+	if ( ! variation?.variation_id ) {
+		return;
+	}
+
 	glaGtagData.products[ variation.variation_id ] = {
 		name: variation.display_name,
 		price: variation.display_price,
