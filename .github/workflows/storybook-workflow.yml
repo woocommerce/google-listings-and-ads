@@ -6,7 +6,7 @@ on:
       - trunk
       - develop
     paths:
-      -  "./js/src/components/**"
+      - "**/js/src/components/**"
       - ./package.json
       - ./package-lock.json
       - "./storybook/**"
@@ -14,7 +14,7 @@ on:
       - ./.github/actions/prepare-node/action.yml
   pull_request:
     paths:
-      - "./js/src/components/**"
+      - "**/js/src/components/**"
       - ./package.json
       - ./package-lock.json
       - "./storybook/**"
@@ -26,8 +26,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  storybook:
-    name: Deploy Storybook
+  Storybook:
+    name: Deploy Storybook to Github Pages
     runs-on: ubuntu-latest
     env:
       FORCE_COLOR: 2
