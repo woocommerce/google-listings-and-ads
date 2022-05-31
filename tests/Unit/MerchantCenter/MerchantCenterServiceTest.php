@@ -305,8 +305,22 @@ class MerchantCenterServiceTest extends UnitTest {
 
 	public function test_is_promotion_supported_country() {
 		$this->wc->method( 'get_base_country' )->willReturn( 'US' );
-		$this->google_helper->method( 'get_mc_promotion_supported_countries' )->willReturn( [ 'US' ] );
+		$this->google_helper->method( 'get_mc_promotion_supported_countries' )->willReturn( [
+			'AU',
+			'CA',
+			'DE',
+			'FR',
+			'GB',
+			'IN',
+			'US',
+		] );
 		$this->assertTrue( $this->mc_service->is_promotion_supported_country() );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'AU' ) );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'CA' ) );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'DE' ) );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'FR' ) );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'GB' ) );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'IN' ) );
 		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'US' ) );
 		$this->assertFalse( $this->mc_service->is_promotion_supported_country( 'XX' ) );
 	}
