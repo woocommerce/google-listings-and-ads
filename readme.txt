@@ -117,24 +117,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Update the start/end date in the timePeriod message of coupon following google.protobuf.Timestamp.
 * Tweak - Show MC Issues resolution steps in the UI.
 
-= 1.13.0 - 2022-05-18 =
-* Add - Extending Update All Products Test Suit.
-* Add - Request a Google Merchant Account Review for disapproved accounts.
-* Fix - Address a crash problem of TreeSelectControl component when the dropdown is not showing and press the Up or Down key.
-* Fix - Edit shipping rate modal disappears after auto-save shipping rate in Setup MC.
-* Fix - Prevent product sync if the site URL does not match the originally claimed URL.
-* Fix - Revert filtering only Shopping destination for account issues.
-* Fix - The unsaved prompt might pop up when the countries of the target audience are the same when navigating away from the free listings edit page.
-* Fix - Unit tests for WooCommerce 6.5.
-* Fix - Validation for shipping rates and shipping times in Setup MC and Edit Free Listings.
-* Tweak - Add helper class to obtain supported countries of a continent.
-* Tweak - Adjust the implementation of focus navigation for the TreeSelectControl component.
-* Tweak - Cleanup unused Google Ads services.
-* Tweak - Drop support for WooCommerce < 6.0.
-* Tweak - Enhance event name for documentation link and update tracking document.
-* Tweak - WooCommerce 6.5 compatibility.
-* Tweak - WordPress 6.0 compatibility.
-* Update - Improved UX in the Product Feed Issues table.
-* Update - Use a shared helper method to get supported countries of a continent for /mc/countries API.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
