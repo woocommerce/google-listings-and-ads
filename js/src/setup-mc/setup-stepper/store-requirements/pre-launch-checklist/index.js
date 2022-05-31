@@ -178,7 +178,7 @@ const PreLaunchChecklist = ( props ) => {
 													link: (
 														<AppDocumentationLink
 															context="setup-mc-checklist"
-															linkId="check-payment-methods"
+															linkId="check-refund-policy"
 															href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms"
 														/>
 													),
