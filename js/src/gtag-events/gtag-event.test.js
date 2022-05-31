@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import {
-	getItemObject,
+	getCartItemObject,
 	getPriceObject,
 	getProductObject,
 	retrievedVariation,
@@ -12,7 +12,6 @@ import {
 
 describe( 'gtagEvents', () => {
 	beforeEach( () => {
-		console.log = jest.fn(); // eslint-disable-line no-console
 		window.gtag = jest.fn();
 		window.glaGtagData = {
 			currency_minor_unit: 2,
@@ -90,7 +89,7 @@ describe( 'gtagEvents', () => {
 				currency_minor_unit: 2,
 			},
 		};
-		expect( getItemObject( product, 2 ) ).toEqual( {
+		expect( getCartItemObject( product, 2 ) ).toEqual( {
 			id: 'gla_1234',
 			name: 'Test name',
 			category: 'One',
@@ -102,7 +101,7 @@ describe( 'gtagEvents', () => {
 
 	it( 'formatted item object - no additional details', () => {
 		const product = { id: 1234 };
-		expect( getItemObject( product, 2 ) ).toEqual( {
+		expect( getCartItemObject( product, 2 ) ).toEqual( {
 			id: 'gla_1234',
 			quantity: 2,
 			google_business_vertical: 'retail',
