@@ -10,12 +10,16 @@ on:
       - ./package.json
       - ./package-lock.json
       - "./storybook/**"
+      - ./.github/workflows/storybook-workflow.yml
+      - ./.github/actions/prepare-node/action.yml
   pull_request:
     paths:
       - "./js/src/components/**"
       - ./package.json
       - ./package-lock.json
       - "./storybook/**"
+      - ./.github/workflows/storybook-workflow.yml
+      - ./.github/actions/prepare-node/action.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
