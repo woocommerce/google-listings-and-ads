@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   Storybook:
-    name: Deploy Storybook to Github Pages
+    name: Deploy Storybook
     runs-on: ubuntu-latest
     env:
       FORCE_COLOR: 2
@@ -37,6 +37,12 @@ jobs:
 
       - name: Prepare node
         uses: ./.github/actions/prepare-node
+        
+      - name: Build Storybook
+        run: npm run storybook:build
 
-      - name: Deploy Storybook
-        run: npm run storybook:deploy
+      - name: Deploy to GH Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./storybook/dist
