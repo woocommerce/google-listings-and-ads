@@ -134,7 +134,12 @@ const EditFreeCampaign = () => {
 		savedShippingRates
 	);
 
-	const didTimesChanged = ! isEqual( shippingTimes, savedShippingTimes );
+	// Check what've changed to show prompt. Dont take in consideration the order when comparing the Shipping times.
+	const didTimesChanged = ! isEqual(
+		new Set( shippingTimes ),
+		new Set( savedShippingTimes )
+	);
+
 	const didAnythingChanged =
 		didAudienceChanged ||
 		didSettingsChanged ||
