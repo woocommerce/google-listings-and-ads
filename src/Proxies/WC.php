@@ -184,4 +184,11 @@ class WC {
 	public function get_woocommerce_currency(): string {
 		return get_woocommerce_currency();
 	}
+
+	/**
+	 * Get available payment gateways.
+	 */
+	public function get_available_payment_gateways(): array {
+		return WCCore()->payment_gateways->get_available_payment_gateways();
+	}
 }
