@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 
 /**
  * Global Site Tag functionality - add main script and track conversions.
@@ -8,6 +9,8 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -15,9 +18,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
+use WC_Product;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Main class for Global Site Tag.
@@ -25,6 +33,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+	use PluginHelper;
 
 	/** @var string Developer ID */
 	protected const DEVELOPER_ID = 'dOGY3NW';
@@ -33,14 +42,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected const ORDER_CONVERSION_META_KEY = '_gla_tracked';
 
 	/**
+	 * @var AssetsHandlerInterface
+	 */
+	protected $assets_handler;
+
+	/**
 	 * @var GoogleGtagJs
 	 */
 	protected $gtag_js;
-
-	/**
-	 * @var WP
-	 */
-	protected $wp;
 
 	/**
 	 * @var ProductHelper
@@ -53,18 +62,38 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected $wc;
 
 	/**
+	 * @var WP
+	 */
+	protected $wp;
+
+	/**
+	 * Additional product data used for tracking add_to_cart events.
+	 *
+	 * @var array
+	 */
+	protected $products = [];
+
+	/**
 	 * Global Site Tag constructor.
 	 *
-	 * @param GoogleGtagJs  $gtag_js
-	 * @param WP            $wp
-	 * @param ProductHelper $product_helper
-	 * @param WC            $wc
+	 * @param AssetsHandlerInterface $assets_handler
+	 * @param GoogleGtagJs           $gtag_js
+	 * @param ProductHelper          $product_helper
+	 * @param WC                     $wc
+	 * @param WP                     $wp
 	 */
-	public function __construct( GoogleGtagJs $gtag_js, WP $wp, ProductHelper $product_helper, WC $wc ) {
+	public function __construct(
+		AssetsHandlerInterface $assets_handler,
+		GoogleGtagJs $gtag_js,
+		ProductHelper $product_helper,
+		WC $wc,
+		WP $wp
+	) {
+		$this->assets_handler = $assets_handler;
 		$this->gtag_js        = $gtag_js;
-		$this->wp             = $wp;
 		$this->product_helper = $product_helper;
 		$this->wc             = $wc;
+		$this->wp             = $wp;
 	}
 
 	/**
@@ -86,14 +115,14 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			function () use ( $ads_conversion_id ) {
 				$this->activate_global_site_tag( $ads_conversion_id );
 			},
-			999998
+			999999
 		);
+
 		add_action(
 			'woocommerce_before_thankyou',
 			function ( $order_id ) use ( $ads_conversion_id, $ads_conversion_label ) {
 				$this->maybe_display_conversion_and_purchase_event_snippets( $ads_conversion_id, $ads_conversion_label, $order_id );
 			},
-			1000000
 		);
 
 		add_action(
@@ -107,6 +136,73 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'wp_body_open',
 			function () {
 				$this->display_page_view_event_snippet();
+			}
+		);
+
+		$this->product_data_hooks();
+		$this->register_assets();
+	}
+
+	/**
+	 * Attach filters to add product data required for tracking events.
+	 */
+	protected function product_data_hooks() {
+		// Add product data for any add_to_cart link.
+		add_filter(
+			'woocommerce_loop_add_to_cart_link',
+			function ( $link, $product, $args ) {
+				$this->add_product_data( $product );
+				return $link;
+			},
+			10,
+			3
+		);
+
+		// Add display name for an available variation.
+		add_filter(
+			'woocommerce_available_variation',
+			function ( $data, $instance, $variation ) {
+				$data['display_name'] = $variation->get_name();
+				return $data;
+			},
+			10,
+			3
+		);
+	}
+
+	/**
+	 * Register and enqueue assets for gtag events in blocks.
+	 */
+	protected function register_assets() {
+		$gtag_events = new ScriptWithBuiltDependenciesAsset(
+			'gla-gtag-events',
+			'js/build/gtag-events',
+			"{$this->get_root_dir()}/js/build/gtag-events.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => $this->get_version(),
+				]
+			),
+			function () {
+				return is_page() || is_woocommerce() || is_cart();
+			}
+		);
+
+		$this->assets_handler->add( $gtag_events );
+
+		add_action(
+			'wp_footer',
+			function () use ( $gtag_events ) {
+				$gtag_events->add_localization(
+					'glaGtagData',
+					[
+						'currency_minor_unit' => wc_get_price_decimals(),
+						'products'            => $this->products,
+					]
+				);
+
+				$this->assets_handler->enqueue( $gtag_events );
 			}
 		);
 	}
@@ -141,27 +237,25 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	protected function display_global_site_tag( string $ads_conversion_id ) {
-	  // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 
-	<!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js( $ads_conversion_id ); ?> - Google Listings & Ads -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js( $ads_conversion_id ); ?>"></script>
-	<script>
-	  window.dataLayer = window.dataLayer || [];
+		<!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js( $ads_conversion_id ); ?> - Google Listings & Ads -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js( $ads_conversion_id ); ?>"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() { dataLayer.push(arguments); }
 
-	  function gtag() {
-		dataLayer.push(arguments);
-	  }
-	  gtag('js', new Date());
-	  gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
+			gtag('js', new Date());
+			gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
+			gtag('config', '<?php echo esc_js( $ads_conversion_id ); ?>', {
+				'groups': 'GLA',
+				'send_page_view': false
+			});
+		</script>
 
-	  gtag('config', '<?php echo esc_js( $ads_conversion_id ); ?>', {
-		'groups': 'GLA',
-		'send_page_view': false
-	  });
-	</script>
 		<?php
-	  // phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 
 	/**
@@ -267,11 +361,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Display the JavaScript code to track the product view page.
 	 */
 	private function display_view_item_event_snippet(): void {
-		// Only display on the product view page.
-		if ( ! is_product() ) {
+		$product = wc_get_product( get_the_ID() );
+		if ( ! $product instanceof WC_Product ) {
 			return;
 		}
-		$product        = wc_get_product( get_the_ID() );
+
+		$this->add_product_data( $product );
+
 		$view_item_gtag = sprintf(
 			'gtag("event", "view_item", {
 			send_to: "GLA",
@@ -342,6 +438,20 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			join( ',', $item_info ),
 		);
 		wp_print_inline_script_tag( $page_view_gtag );
+	}
+
+	/**
+	 * Add product data to include in JS data.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param WC_Product $product
+	 */
+	protected function add_product_data( $product ) {
+		$this->products[ $product->get_id() ] = [
+			'name'  => $product->get_name(),
+			'price' => wc_get_price_to_display( $product ),
+		];
 	}
 
 	/**
