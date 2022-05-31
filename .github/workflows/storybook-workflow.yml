@@ -6,13 +6,13 @@ on:
       - trunk
       - develop
     paths:
-      - "**/stories/**.js"
+      -  "./js/components/*"
       - ./package.json
       - ./package-lock.json
       - ./storybook
   pull_request:
     paths:
-      - "**/stories/**.js"
+      - "./js/components/*"
       - ./package.json
       - ./package-lock.json
       - ./storybook
