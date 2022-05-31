@@ -97,5 +97,3 @@ add_action(
 	},
 	1
 );
-
-define( 'TEST', 'TEST' );
