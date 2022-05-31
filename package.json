@@ -3,7 +3,7 @@
 	"title": "Google Listings and Ads",
 	"license": "GPL-3.0-or-later",
 	"version": "1.13.2",
-	"description": "google-listings-and-ads",
+	"description": "google-listings-and-ads test",
 	"repository": {
 		"type": "git",
 		"url": "git@github.com:woocommerce/google-listings-and-ads.git"
