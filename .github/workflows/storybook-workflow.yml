@@ -6,7 +6,7 @@ on:
       - trunk
       - develop
     paths:
-      - "**/js/src/components/**"
+      - "js/src/components/**"
       - package.json
       - package-lock.json
       - "storybook/**"
