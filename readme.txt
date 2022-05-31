@@ -109,6 +109,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.13.3 - 2022-05-31 =
+* Add - Add six more promotion supported countries.
+* Fix - Allow unicode for Manufacturer Part Number (MPN ) value.
+* Update - budget recommendation conversion rate.
+
 = 1.13.2 - 2022-05-25 =
 * Fix - Prevent repeated account URL retrievals.
 
