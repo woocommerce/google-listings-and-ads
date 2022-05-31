@@ -1,0 +1,38 @@
+name: Deploy Storybook
+
+on:
+  push:
+    branches:
+      - trunk
+      - develop
+    paths:
+      - "**/stories/**.js"
+      - ./package.json
+      - ./package-lock.json
+      - ./storybook
+  pull_request:
+    paths:
+      - "**/stories/**.js"
+      - ./package.json
+      - ./package-lock.json
+      - ./storybook
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  storybook:
+    name: Deploy Storybook
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
+
+      - name: Deploy Storybook
+        run: npm run storybook:deploy
