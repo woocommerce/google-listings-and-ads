@@ -6,16 +6,16 @@ on:
       - trunk
       - develop
     paths:
-      -  "./js/src/components/*"
+      -  "./js/src/components/**"
       - ./package.json
       - ./package-lock.json
-      - ./storybook
+      - "./storybook/**"
   pull_request:
     paths:
-      - "./js/src/components/*"
+      - "./js/src/components/**"
       - ./package.json
       - ./package-lock.json
-      - ./storybook
+      - "./storybook/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
