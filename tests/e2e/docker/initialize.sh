@@ -12,6 +12,9 @@ wp config set WP_DEBUG_DISPLAY false --raw
 wp config set JETPACK_AUTOLOAD_DEV true --raw
 wp plugin install woocommerce --activate
 
+# Install basic auth for API requests on http.
+wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
+
 # Install and activate WC-admin for GLA.
 wp plugin install woocommerce-admin --activate
 
