@@ -3,6 +3,7 @@
  */
 import {
 	shopper, // eslint-disable-line import/named
+	createSimpleProduct,
 } from '@woocommerce/e2e-utils';
 
 /**
@@ -12,11 +13,14 @@ import {
 	clearConversionID,
 	saveConversionID,
 } from '../../utils/connection-test-page';
-import { trackGtagEvent } from '../../utils/track-event';
+import { getEventData, trackGtagEvent } from '../../utils/track-event';
+
+let simpleProductID;
 
 describe( 'GTag events', () => {
 	beforeAll( async () => {
 		await saveConversionID();
+		simpleProductID = await createSimpleProduct();
 	} );
 
 	afterAll( async () => {
@@ -40,5 +44,18 @@ describe( 'GTag events', () => {
 
 		await shopper.goToShop();
 		await expect( event ).resolves.toBeTruthy();
+	} );
+
+	it( 'View item event is sent on a single product page', async () => {
+		const event = trackGtagEvent( 'view_item' );
+
+		await shopper.goToProduct( simpleProductID );
+
+		await event.then( ( request ) => {
+			const data = getEventData( request );
+			expect( data.id ).toEqual( 'gla_' + simpleProductID );
+			expect( data.ecomm_pagetype ).toEqual( 'product' );
+			expect( data.google_business_vertical ).toEqual( 'retail' );
+		} );
 	} );
 } );
