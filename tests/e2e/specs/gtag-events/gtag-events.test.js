@@ -58,4 +58,19 @@ describe( 'GTag events', () => {
 			expect( data.google_business_vertical ).toEqual( 'retail' );
 		} );
 	} );
+
+	it( 'Add to cart event is sent on a single product page', async () => {
+		const event = trackGtagEvent( 'add_to_cart' );
+
+		await shopper.goToProduct( simpleProductID );
+		await shopper.addToCart();
+
+		await event.then( ( request ) => {
+			const data = getEventData( request );
+			expect( data.id ).toEqual( 'gla_' + simpleProductID );
+			expect( data.ecomm_pagetype ).toEqual( 'cart' );
+			expect( data.event_category ).toEqual( 'ecommerce' );
+			expect( data.google_business_vertical ).toEqual( 'retail' );
+		} );
+	} );
 } );
