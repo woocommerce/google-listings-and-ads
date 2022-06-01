@@ -69,7 +69,7 @@ const singleAddToCartClick = function ( event ) {
 window.onload = function () {
 	document
 		.querySelectorAll(
-			'.add_to_cart_button:not( .product_type_variable, .product_type_grouped )'
+			'.add_to_cart_button:not( .product_type_variable ):not( .product_type_grouped )'
 		)
 		.forEach( ( button ) => {
 			button.addEventListener( 'click', addToCartClick );
