@@ -4,6 +4,10 @@
 /* global page */
 
 /**
+ * @typedef {import('puppeteer').HTTPRequest} HTTPRequest
+ */
+
+/**
  * Tracks when the Gtag Event request matching a specific name is sent.
  *
  * @param {string} eventName Event name to match.
@@ -16,4 +20,19 @@ export function trackGtagEvent( eventName ) {
 		const match = encodeURIComponent( 'event=' + eventName );
 		return url.startsWith( eventURL ) && url.includes( match );
 	} );
+}
+
+/**
+ * Retrieve data from a gtag event and convert it to key / value pairs.
+ *
+ * @param {HTTPRequest} request
+ * @return {Array} Key / value pairs.
+ */
+export function getEventData( request ) {
+	const url = new URL( request.url() );
+	const data = new URLSearchParams( url.search ).get( 'data' );
+
+	return Object.fromEntries(
+		data.split( ';' ).map( ( pair ) => pair.split( '=' ) )
+	);
 }
