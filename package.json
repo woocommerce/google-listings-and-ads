@@ -71,7 +71,8 @@
 		"path-browserify": "^1.0.1",
 		"prettier": "npm:wp-prettier@2.2.1-beta-1",
 		"stylelint-config-standard-scss": "^3.0.0",
-		"woocommerce-grow-storybook": "https://gitpkg.now.sh/woocommerce/grow/packages/js/storybook?fecfad52db350afd3550842e2374dee8dbc587ea"
+		"woocommerce-grow-storybook": "https://gitpkg.now.sh/woocommerce/grow/packages/js/storybook?fecfad52db350afd3550842e2374dee8dbc587ea",
+		"woocommerce-grow-tracking-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/tracking-jsdoc?add/jsdoc"
 	},
 	"dependencies": {
 		"@woocommerce/components": "8.1.0",
