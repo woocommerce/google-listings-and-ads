@@ -1,10 +1,6 @@
 {
-  "opts": {
-    "recurse": true,
-    "template": "woocommerce-grow-tracking-jsdoc"
-  },
   "plugins": [
-    "woocommerce-grow-tracking-jsdoc/tilde-alias",
+    "woocommerce-grow-jsdoc/tilde-alias",
     "woocommerce-grow-tracking-jsdoc/fires-description",
     "jsdoc-plugin-typescript",
     "jsdoc-advanced-types-plugin",
