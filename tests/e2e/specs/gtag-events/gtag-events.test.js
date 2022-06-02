@@ -67,6 +67,7 @@ describe( 'GTag events', () => {
 		const event = trackGtagEvent( 'add_to_cart' );
 
 		await shopper.goToProduct( simpleProductID );
+		await page.waitForSelector( 'form.cart' );
 		await shopper.addToCart();
 
 		await event.then( ( request ) => {
@@ -88,6 +89,21 @@ describe( 'GTag events', () => {
 		await event.then( ( request ) => {
 			const data = getEventData( request );
 			expect( data.id ).toEqual( 'gla_' + relatedProductID );
+			expect( data.ecomm_pagetype ).toEqual( 'cart' );
+			expect( data.event_category ).toEqual( 'ecommerce' );
+			expect( data.google_business_vertical ).toEqual( 'retail' );
+		} );
+	} );
+
+	it( 'Add to cart event is sent from the shop page', async () => {
+		const event = trackGtagEvent( 'add_to_cart' );
+
+		await shopper.goToShop();
+		await shopper.addToCartFromShopPage( simpleProductID );
+
+		await event.then( ( request ) => {
+			const data = getEventData( request );
+			expect( data.id ).toEqual( 'gla_' + simpleProductID );
 			expect( data.ecomm_pagetype ).toEqual( 'cart' );
 			expect( data.event_category ).toEqual( 'ecommerce' );
 			expect( data.google_business_vertical ).toEqual( 'retail' );
