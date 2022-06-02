@@ -28,3 +28,6 @@ wp user create customer customer@woocommercecoree2etestsuite.com --user_pass=pas
 
 # Skip activation redirect, so it will not interrupt our tests.
 wp transient delete _wc_activation_redirect
+
+# Initialize pretty permalinks.
+wp rewrite structure /%postname%/
