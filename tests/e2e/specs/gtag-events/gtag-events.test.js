@@ -109,4 +109,15 @@ describe( 'GTag events', () => {
 			expect( data.google_business_vertical ).toEqual( 'retail' );
 		} );
 	} );
+
+	it( 'Cart page view event is sent from the cart page', async () => {
+		const event = trackGtagEvent( 'page_view' );
+		await shopper.goToCart();
+
+		await event.then( ( request ) => {
+			const data = getEventData( request );
+			expect( data.ecomm_pagetype ).toEqual( 'cart' );
+			expect( data.google_business_vertical ).toEqual( 'retail' );
+		} );
+	} );
 } );
