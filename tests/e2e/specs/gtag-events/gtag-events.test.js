@@ -13,7 +13,11 @@ import {
 	clearConversionID,
 	saveConversionID,
 } from '../../utils/connection-test-page';
-import { getEventData, trackGtagEvent } from '../../utils/track-event';
+import {
+	getEventData,
+	relatedProductAddToCart,
+	trackGtagEvent,
+} from '../../utils/track-event';
 
 let simpleProductID;
 
@@ -68,6 +72,22 @@ describe( 'GTag events', () => {
 		await event.then( ( request ) => {
 			const data = getEventData( request );
 			expect( data.id ).toEqual( 'gla_' + simpleProductID );
+			expect( data.ecomm_pagetype ).toEqual( 'cart' );
+			expect( data.event_category ).toEqual( 'ecommerce' );
+			expect( data.google_business_vertical ).toEqual( 'retail' );
+		} );
+	} );
+
+	it( 'Add to cart event is sent from related product on single product page', async () => {
+		await createSimpleProduct(); // Create an additional product for related to show up.
+		const event = trackGtagEvent( 'add_to_cart' );
+
+		await shopper.goToProduct( simpleProductID );
+		const relatedProductID = await relatedProductAddToCart();
+
+		await event.then( ( request ) => {
+			const data = getEventData( request );
+			expect( data.id ).toEqual( 'gla_' + relatedProductID );
 			expect( data.ecomm_pagetype ).toEqual( 'cart' );
 			expect( data.event_category ).toEqual( 'ecommerce' );
 			expect( data.google_business_vertical ).toEqual( 'retail' );

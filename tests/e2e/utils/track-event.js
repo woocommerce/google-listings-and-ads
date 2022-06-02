@@ -26,7 +26,7 @@ export function trackGtagEvent( eventName ) {
  * Retrieve data from a gtag event and convert it to key / value pairs.
  *
  * @param {HTTPRequest} request
- * @return {Array} Key / value pairs.
+ * @return {Object} Data sent with the event.
  */
 export function getEventData( request ) {
 	const url = new URL( request.url() );
@@ -35,4 +35,20 @@ export function getEventData( request ) {
 	return Object.fromEntries(
 		data.split( ';' ).map( ( pair ) => pair.split( '=' ) )
 	);
+}
+
+/**
+ * Adds a related product to the cart.
+ *
+ * @return {number} Product ID of the added product.
+ */
+export async function relatedProductAddToCart() {
+	const addToCart = '.related.products .add_to_cart_button';
+
+	await page.click( addToCart );
+	await expect( page ).toMatchElement( addToCart + '.added' );
+
+	return await page.$eval( addToCart, ( el ) => {
+		return el.getAttribute( 'data-product_id' );
+	} );
 }
