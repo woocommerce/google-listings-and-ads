@@ -170,6 +170,26 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
 	}
 
+	public function test_is_ready_for_syncing_not_setup() {
+		$hash = md5( site_url() );
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( $hash );
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::GOOGLE_CONNECTED, false ],
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ]
+			)
+			->willReturnOnConsecutiveCalls(
+				true,
+				false
+			);
+
+		$this->transients->expects( $this->never() )
+			->method( 'get' )
+			->with( TransientsInterface::URL_MATCHES );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+	}
+
 	public function test_is_ready_for_syncing_filter_override() {
 		$hash = md5( 'https://staging-site.test' );
 		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( $hash );
