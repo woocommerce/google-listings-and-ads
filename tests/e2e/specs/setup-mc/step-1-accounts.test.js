@@ -56,14 +56,14 @@ describe( 'At setup page', () => {
 
 				jetpackConnectMock = requestMock
 					// Match "connect" not "connected".
-					.mock( /%2Fwc%2Fgla%2Fjetpack%2Fconnect\b/ )
+					.mock( /\/wc\/gla\/jetpack\/connect\b/ )
 					.mockImplementation( ( interceptedRequest ) => {
 						// Mock connected
 						interceptedRequest.respond( {
 							content: 'application/json',
 							headers: { 'Access-Control-Allow-Origin': '*' },
 							body: JSON.stringify( {
-								url: createURL( '/auth/url/' ),
+								url: createURL( '', 'auth_url' ),
 							} ),
 						} );
 						return true;
@@ -85,7 +85,7 @@ describe( 'At setup page', () => {
 				// Expect Jetpack call to be executed.
 				expect( jetpackConnectMock ).toBeCalled();
 				// Expect the user to be redirected
-				expect( page.url() ).toEqual( createURL( '/auth/url/' ) );
+				expect( page.url() ).toEqual( createURL( '', 'auth_url' ) );
 			} );
 		} );
 	} );
@@ -94,7 +94,7 @@ describe( 'At setup page', () => {
 			// Mock Jetpack as connected
 			await requestMock.observe( page );
 			requestMock
-				.mock( /%2Fwc%2Fgla%2Fjetpack%2Fconnected\b/ )
+				.mock( /\/wc\/gla\/jetpack\/connected\b/ )
 				.mockImplementation( ( interceptedRequest ) => {
 					interceptedRequest.respond( {
 						content: 'application/json',
@@ -114,7 +114,7 @@ describe( 'At setup page', () => {
 			// If not mocked will fail and render nothing,
 			// as Jetpack is mocked only on the client-side.
 			requestMock
-				.mock( /%2Fwc%2Fgla%2Fgoogle%2Fconnected\b/ )
+				.mock( /\/wc\/gla\/google\/connected\b/ )
 				.mockImplementation( ( interceptedRequest ) => {
 					interceptedRequest.respond( {
 						content: 'application/json',
@@ -153,13 +153,13 @@ describe( 'At setup page', () => {
 			beforeEach( async function mockGoogleConnect() {
 				// Spy on Google connection request.
 				googleConnectMock = requestMock
-					.mock( /%2Fwc%2Fgla%2Fgoogle%2Fconnect\b/ )
+					.mock( /\/wc\/gla\/google\/connect\b/ )
 					.mockImplementation( ( interceptedRequest ) => {
 						interceptedRequest.respond( {
 							content: 'application/json',
 							headers: { 'Access-Control-Allow-Origin': '*' },
 							body: JSON.stringify( {
-								url: createURL( '/google/auth/' ),
+								url: createURL( '', 'google_auth' ),
 							} ),
 						} );
 						return true;
@@ -180,7 +180,7 @@ describe( 'At setup page', () => {
 				// Expect Google call to be executed.
 				expect( googleConnectMock ).toBeCalled();
 				// Expect the user to be redirected
-				expect( page.url() ).toEqual( createURL( '/google/auth/' ) );
+				expect( page.url() ).toEqual( createURL( '', 'google_auth' ) );
 			} );
 		} );
 	} );
