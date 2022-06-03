@@ -13,11 +13,8 @@ import {
 	clearConversionID,
 	saveConversionID,
 } from '../../utils/connection-test-page';
-import {
-	getEventData,
-	relatedProductAddToCart,
-	trackGtagEvent,
-} from '../../utils/track-event';
+import { getEventData, trackGtagEvent } from '../../utils/track-event';
+import { relatedProductAddToCart } from '../../utils/cart';
 
 let simpleProductID;
 
