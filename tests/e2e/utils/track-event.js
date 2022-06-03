@@ -32,7 +32,10 @@ export function getEventData( request ) {
 	const url = new URL( request.url() );
 	const params = new URLSearchParams( url.search );
 	const data = Object.fromEntries(
-		params.get( 'data' ).split( ';' ).map( ( pair ) => pair.split( '=' ) )
+		params
+			.get( 'data' )
+			.split( ';' )
+			.map( ( pair ) => pair.split( '=' ) )
 	);
 
 	if ( params.get( 'value' ) ) {

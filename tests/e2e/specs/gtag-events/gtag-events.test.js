@@ -2,10 +2,11 @@
  * External dependencies
  */
 import {
-	shopper, // eslint-disable-line import/named
 	createSimpleProduct,
+	SHOP_PAGE, // eslint-disable-line import/named
+	shopper, // eslint-disable-line import/named
 	uiUnblocked,
-	withRestApi,
+	withRestApi, // eslint-disable-line import/named
 } from '@woocommerce/e2e-utils';
 
 /**
@@ -18,7 +19,7 @@ import {
 import { getEventData, trackGtagEvent } from '../../utils/track-event';
 import { emptyCart, relatedProductAddToCart } from '../../utils/cart';
 
-const config = require( 'config' );
+const config = require( 'config' ); // eslint-disable-line import/no-extraneous-dependencies
 const productPrice = config.has( 'products.simple.price' )
 	? config.get( 'products.simple.price' )
 	: '9.99';
@@ -109,7 +110,10 @@ describe( 'GTag events', () => {
 	it( 'Add to cart event is sent from the shop page', async () => {
 		const event = trackGtagEvent( 'add_to_cart' );
 
-		await shopper.goToShop();
+		// Go to shop page (newest first)
+		await page.goto( SHOP_PAGE + '?orderby=date', {
+			waitUntil: 'networkidle0',
+		} );
 		await shopper.addToCartFromShopPage( simpleProductID );
 
 		await event.then( ( request ) => {
