@@ -237,6 +237,14 @@ class MerchantTest extends UnitTest {
 		$this->assertNull( $this->merchant->get_claimed_url_hash() );
 	}
 
+	public function test_get_claimed_url_hash_from_account() {
+		$url = 'https://site.test';
+		$this->mock_get_account( $this->get_account_with_url( $url ) );
+		$this->mock_get_account_status( $this->get_status_website_claimed() );
+
+		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
+	}
+
 	public function test_get_claimed_url_hash_with_trailing_slash() {
 		$url = 'https://site.test';
 		$this->mock_get_account( $this->get_account_with_url( trailingslashit( $url ) ) );
