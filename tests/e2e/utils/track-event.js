@@ -14,7 +14,7 @@
  * @return {Promise} Matching request.
  */
 export function trackGtagEvent( eventName ) {
-	const eventURL = 'https://www.google.com/pagead/1p-user-list/';
+	const eventURL = 'https://www.google.com/pagead';
 	return page.waitForRequest( ( request ) => {
 		const url = request.url();
 		const match = encodeURIComponent( 'event=' + eventName );
@@ -23,16 +23,25 @@ export function trackGtagEvent( eventName ) {
 }
 
 /**
- * Retrieve data from a gtag event and convert it to key / value pairs.
+ * Retrieve data from a Gtag event.
  *
  * @param {HTTPRequest} request
  * @return {Object} Data sent with the event.
  */
 export function getEventData( request ) {
 	const url = new URL( request.url() );
-	const data = new URLSearchParams( url.search ).get( 'data' );
-
-	return Object.fromEntries(
-		data.split( ';' ).map( ( pair ) => pair.split( '=' ) )
+	const params = new URLSearchParams( url.search );
+	const data = Object.fromEntries(
+		params.get( 'data' ).split( ';' ).map( ( pair ) => pair.split( '=' ) )
 	);
+
+	if ( params.get( 'value' ) ) {
+		data.value = params.get( 'value' );
+	}
+
+	if ( params.get( 'currency_code' ) ) {
+		data.currency_code = params.get( 'currency_code' );
+	}
+
+	return data;
 }
