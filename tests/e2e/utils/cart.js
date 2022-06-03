@@ -2,6 +2,14 @@
  * Helper functions for handling the cart.
  */
 
+/**
+ * External dependencies
+ */
+import {
+	SHOP_CART_PAGE, // eslint-disable-line import/named
+	uiUnblocked,
+} from '@woocommerce/e2e-utils';
+
 /* global page */
 
 /**
@@ -17,5 +25,32 @@ export async function relatedProductAddToCart() {
 
 	return await page.$eval( addToCart, ( el ) => {
 		return el.getAttribute( 'data-product_id' );
+	} );
+}
+
+/**
+ * Empty the cart.
+ *
+ * Needed until this issue is included in the @woocommerce/e2e-utils package:
+ * https://github.com/woocommerce/woocommerce/pull/31977
+ */
+export async function emptyCart() {
+	await page.goto( SHOP_CART_PAGE, {
+		waitUntil: 'networkidle0',
+	} );
+
+	// Remove products if they exist
+	if ( ( await page.$( '.remove' ) ) !== null ) {
+		let products = await page.$$( '.remove' );
+		while ( products && products.length > 0 ) {
+			await page.click( '.remove' );
+			await uiUnblocked();
+			products = await page.$$( '.remove' );
+		}
+	}
+
+	await page.waitForSelector( '.woocommerce-info' );
+	await expect( page ).toMatchElement( '.woocommerce-info', {
+		text: 'Your cart is currently empty.',
 	} );
 }
