@@ -4,6 +4,8 @@
 import {
 	shopper, // eslint-disable-line import/named
 	createSimpleProduct,
+	uiUnblocked,
+	withRestApi,
 } from '@woocommerce/e2e-utils';
 
 /**
@@ -14,7 +16,12 @@ import {
 	saveConversionID,
 } from '../../utils/connection-test-page';
 import { getEventData, trackGtagEvent } from '../../utils/track-event';
-import { relatedProductAddToCart } from '../../utils/cart';
+import { emptyCart, relatedProductAddToCart } from '../../utils/cart';
+
+const config = require( 'config' );
+const productPrice = config.has( 'products.simple.price' )
+	? config.get( 'products.simple.price' )
+	: '9.99';
 
 let simpleProductID;
 
@@ -22,6 +29,13 @@ describe( 'GTag events', () => {
 	beforeAll( async () => {
 		await saveConversionID();
 		simpleProductID = await createSimpleProduct();
+
+		// Enable COD payment method
+		await withRestApi.updatePaymentGateway(
+			'cod',
+			{ enabled: true },
+			false
+		);
 	} );
 
 	afterAll( async () => {
@@ -115,6 +129,28 @@ describe( 'GTag events', () => {
 			const data = getEventData( request );
 			expect( data.ecomm_pagetype ).toEqual( 'cart' );
 			expect( data.google_business_vertical ).toEqual( 'retail' );
+		} );
+	} );
+
+	it( 'Conversion event is sent on order complete page', async () => {
+		await emptyCart();
+		await shopper.goToProduct( simpleProductID );
+		await page.waitForSelector( 'form.cart' );
+		await shopper.addToCart();
+
+		await shopper.goToCheckout();
+		await shopper.fillBillingDetails(
+			config.get( 'addresses.customer.billing' )
+		);
+		await uiUnblocked();
+
+		const event = trackGtagEvent( 'conversion' );
+		await shopper.placeOrder();
+
+		await event.then( ( request ) => {
+			const data = getEventData( request );
+			expect( data.value ).toEqual( productPrice );
+			expect( data.currency_code ).toEqual( 'USD' );
 		} );
 	} );
 } );
