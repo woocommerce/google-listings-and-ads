@@ -157,4 +157,28 @@ describe( 'GTag events', () => {
 			expect( data.currency_code ).toEqual( 'USD' );
 		} );
 	} );
+
+	it( 'Purchase event is sent on order complete page', async () => {
+		await emptyCart();
+		await shopper.goToProduct( simpleProductID );
+		await page.waitForSelector( 'form.cart' );
+		await shopper.addToCart();
+
+		await shopper.goToCheckout();
+		await shopper.fillBillingDetails(
+			config.get( 'addresses.customer.billing' )
+		);
+		await uiUnblocked();
+
+		const event = trackGtagEvent( 'purchase' );
+		await shopper.placeOrder();
+
+		await event.then( ( request ) => {
+			const data = getEventData( request );
+			expect( data.value ).toEqual( productPrice );
+			expect( data.ecomm_pagetype ).toEqual( 'purchase' );
+			expect( data.currency_code ).toEqual( 'USD' );
+			expect( data.country ).toEqual( 'US' );
+		} );
+	} );
 } );
