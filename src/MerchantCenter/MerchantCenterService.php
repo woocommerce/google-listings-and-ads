@@ -104,6 +104,10 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * @return boolean
 	 */
 	public function is_ready_for_syncing(): bool {
+		if ( ! $this->is_connected() ) {
+			return false;
+		}
+
 		/** @var TransientsInterface $transients */
 		$transients  = $this->container->get( TransientsInterface::class );
 		$url_matches = $transients->get( TransientsInterface::URL_MATCHES );
@@ -115,7 +119,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			$transients->set( TransientsInterface::URL_MATCHES, $url_matches, HOUR_IN_SECONDS * 12 );
 		}
 
-		return $this->is_connected() && 'yes' === $url_matches;
+		return 'yes' === $url_matches;
 	}
 
 	/**
