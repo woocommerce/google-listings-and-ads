@@ -23,6 +23,7 @@ defined( 'ABSPATH' ) || exit;
  * Class MiddlewareTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
+ * @group Middleware
  *
  * @property MockObject|Ads               $ads
  * @property MockObject|DateTimeUtility   $date_utility
@@ -351,6 +352,39 @@ class MiddlewareTest extends UnitTest {
 		$tos = $this->middleware->check_tos_accepted( 'google-mc' );
 		$this->assertFalse( $tos->accepted() );
 		$this->assertEquals( 'error', $tos->message() );
+	}
+
+	public function test_get_account_review_status() {
+		$this->merchant->expects( $this->once() )->method( 'is_standalone' )->willReturn( false );
+		$this->generate_request_mock( [ 'freeListingsProgram' => 'freeListingsProgram', 'shoppingAdsProgram' => 'shoppingAdsProgram'] );
+
+		$this->assertEquals( $this->middleware->get_account_review_status(), [ 'freeListingsProgram' => 'freeListingsProgram', 'shoppingAdsProgram' => 'shoppingAdsProgram'] );
+	}
+
+	public function test_get_account_review_status_standalone() {
+		$this->merchant->expects( $this->once() )->method( 'is_standalone' )->willReturn( true );
+		$this->assertEquals( $this->middleware->get_account_review_status(), [] );
+	}
+
+	public function test_get_account_review_status_exception() {
+		$this->merchant->expects( $this->once() )->method( 'is_standalone' )->willReturn( false );
+		$this->generate_request_mock_exception( 'Some exception' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Error getting account review status' );
+		$this->expectExceptionCode( 400 );
+
+		$this->middleware->get_account_review_status();
+	}
+
+	public function test_get_account_review_status_error() {
+		$this->merchant->expects( $this->once() )->method( 'is_standalone' )->willReturn( false );
+		$this->generate_request_mock( [] );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Invalid response getting account review status' );
+
+		$this->middleware->get_account_review_status();
 	}
 
 }
