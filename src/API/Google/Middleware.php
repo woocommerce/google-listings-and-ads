@@ -529,6 +529,15 @@ class Middleware implements OptionsAwareInterface {
 	 */
 	public function get_account_review_status() {
 		try {
+			/** @var Merchant $merchant */
+			$merchant = $this->container->get( Merchant::class );
+
+			if ( $merchant->is_standalone() ) {
+				$response = [];
+				do_action( 'woocommerce_gla_request_review_standalone', $response );
+				return $response;
+			}
+
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->get(
