@@ -34,6 +34,7 @@ export async function relatedProductAddToCart() {
 export async function blockProductAddToCart() {
 	const addToCart = '.wp-block-button__link.add_to_cart_button';
 
+	await page.waitForSelector( addToCart );
 	await page.click( addToCart );
 	await expect( page ).toMatchElement( addToCart + '.added' );
 }
