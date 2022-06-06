@@ -59,7 +59,7 @@ export async function createBlockShopPage() {
 	const file = await readJson( filePath );
 	const { title, pageContent: content } = file;
 
-	if ( ! await pageExistsByTitle( title ) ) {
+	if ( ! ( await pageExistsByTitle( title ) ) ) {
 		await createPage( title, content );
 	}
 }
