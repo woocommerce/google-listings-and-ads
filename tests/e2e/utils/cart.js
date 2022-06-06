@@ -29,6 +29,16 @@ export async function relatedProductAddToCart() {
 }
 
 /**
+ * Add a product to the cart from a block shop page.
+ */
+export async function blockProductAddToCart() {
+	const addToCart = '.wp-block-button__link.add_to_cart_button';
+
+	await page.click( addToCart );
+	await expect( page ).toMatchElement( addToCart + '.added' );
+}
+
+/**
  * Empty the cart.
  *
  * Needed until this issue is included in the @woocommerce/e2e-utils package:
