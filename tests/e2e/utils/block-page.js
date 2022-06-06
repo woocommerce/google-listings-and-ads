@@ -13,7 +13,7 @@ const WPAPI = `${ config.url }wp-json/wp/v2/pages`;
  * Check if a page exists from a title.
  *
  * @param {string} title
- * @return {number} Existing page ID.
+ * @return {Promise<number>} Existing page ID.
  */
 export async function pageExistsByTitle( title ) {
 	const slug = cleanForSlug( title );
@@ -28,7 +28,7 @@ export async function pageExistsByTitle( title ) {
  *
  * @param {string} title
  * @param {string} content
- * @return {number} Created page ID.
+ * @return {Promise<number>} Created page ID.
  */
 export async function createPage( title, content ) {
 	return await axios
@@ -59,7 +59,7 @@ export async function createBlockShopPage() {
 	const file = await readJson( filePath );
 	const { title, pageContent: content } = file;
 
-	if ( ! pageExistsByTitle( title ) ) {
-		createPage( title, content );
+	if ( ! await pageExistsByTitle( title ) ) {
+		await createPage( title, content );
 	}
 }
