@@ -529,13 +529,9 @@ class Middleware implements OptionsAwareInterface {
 	 */
 	public function get_account_review_status() {
 		try {
-			/** @var Merchant $merchant */
-			$merchant = $this->container->get( Merchant::class );
 
-			if ( $merchant->is_standalone() ) {
-				$response = [];
-				do_action( 'woocommerce_gla_request_review_standalone', $response );
-				return $response;
+			if ( ! $this->is_subaccount() ) {
+				return [];
 			}
 
 			/** @var Client $client */
@@ -621,5 +617,23 @@ class Middleware implements OptionsAwareInterface {
 				$e->getCode()
 			);
 		}
+	}
+
+	/**
+	 * This function detects if the current account is a sub-account
+	 *
+	 * @return bool True if it's a standalone account.
+	 */
+	public function is_subaccount(): bool {
+		$merchant_id = $this->options->get_merchant_id();
+		$accounts    = $this->get_merchant_accounts();
+
+		foreach ( $accounts as $account ) {
+			if ( $account['id'] === $merchant_id && $account['subaccount'] ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

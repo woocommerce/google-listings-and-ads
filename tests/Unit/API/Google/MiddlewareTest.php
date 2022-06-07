@@ -355,31 +355,73 @@ class MiddlewareTest extends UnitTest {
 	}
 
 	public function test_get_account_review_status() {
-		$this->merchant->expects( $this->once() )->method( 'is_standalone' )->willReturn( false );
-		$this->generate_request_mock( [ 'freeListingsProgram' => 'freeListingsProgram', 'shoppingAdsProgram' => 'shoppingAdsProgram'] );
 
-		$this->assertEquals( $this->middleware->get_account_review_status(), [ 'freeListingsProgram' => 'freeListingsProgram', 'shoppingAdsProgram' => 'shoppingAdsProgram'] );
+		$this->options->expects( $this->exactly( 2 ) )->method('get_merchant_id')->willReturn(self::TEST_MERCHANT_ID);
+
+		$accounts = [
+			[
+				'id'         => self::TEST_MERCHANT_ID,
+				'subaccount' => true,
+			],
+			[
+				'id'         => 34567812,
+				'subaccount' => false,
+			]
+		];
+
+		$review_status = [ 'freeListingsProgram' => 'freeListingsProgram', 'shoppingAdsProgram' => 'shoppingAdsProgram'];
+
+		$this->generate_account_review_mock( $accounts,  $review_status);
+
+
+		$this->assertEquals( $this->middleware->get_account_review_status(), $review_status);
 	}
 
 	public function test_get_account_review_status_standalone() {
-		$this->merchant->expects( $this->once() )->method( 'is_standalone' )->willReturn( true );
+		$this->options->expects( $this->once() )->method('get_merchant_id')->willReturn(self::TEST_MERCHANT_ID);
+
+		$accounts = [
+			[
+				'id'         => self::TEST_MERCHANT_ID,
+				'subaccount' => false,
+			],
+			[
+				'id'         => 34567812,
+				'subaccount' => true,
+			]
+		];
+
+		$this->generate_request_mock( $accounts );
 		$this->assertEquals( $this->middleware->get_account_review_status(), [] );
 	}
 
+
 	public function test_get_account_review_status_exception() {
-		$this->merchant->expects( $this->once() )->method( 'is_standalone' )->willReturn( false );
+		$this->options->expects( $this->once() )->method('get_merchant_id')->willReturn(self::TEST_MERCHANT_ID);
+
 		$this->generate_request_mock_exception( 'Some exception' );
 
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Error getting account review status' );
+		$this->expectExceptionMessage( 'Error retrieving accounts' );
 		$this->expectExceptionCode( 400 );
 
 		$this->middleware->get_account_review_status();
 	}
 
+
 	public function test_get_account_review_status_error() {
-		$this->merchant->expects( $this->once() )->method( 'is_standalone' )->willReturn( false );
-		$this->generate_request_mock( [] );
+		$this->options->expects( $this->exactly( 2 ) )->method('get_merchant_id')->willReturn(self::TEST_MERCHANT_ID);
+
+		$accounts = [
+			[
+				'id'         => self::TEST_MERCHANT_ID,
+				'subaccount' => true,
+			]
+		];
+
+		$review_status = [];
+
+		$this->generate_account_review_mock( $accounts,  $review_status);
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Invalid response getting account review status' );

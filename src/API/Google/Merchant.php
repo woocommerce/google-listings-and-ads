@@ -348,20 +348,4 @@ class Merchant implements OptionsAwareInterface {
 	public function update_merchant_id( int $id ): bool {
 		return $this->options->update( OptionsInterface::MERCHANT_ID, $id );
 	}
-
-	/**
-	 * A standalone account is an account created directly in MC without using our plugin.
-	 * Standalone accounts have no access to WCS proxy and other features.
-	 *
-	 * This function detects if the account is standalone
-	 * We use this API for that https://developers.google.com/shopping-content/reference/rest/v2.1/accounts/authinfo
-	 *
-	 * We consider an accou t standalone if no aggregatorId is present or no accountIdentifiers are available.
-	 *
-	 * @return bool True if it's a standalone account.
-	 */
-	public function is_standalone(): bool {
-		$type = $this->service->accounts->authinfo();
-		return ! isset( $type['accountIdentifiers'] ) || empty( $type['accountIdentifiers'] ) || is_null( $type['accountIdentifiers'][0]['aggregatorId'] );
-	}
 }
