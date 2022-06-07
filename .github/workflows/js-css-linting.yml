@@ -8,14 +8,14 @@ on:
     paths:
       - "**.js"
       - "**.scss"
-      - ./.github/workflows/js-css-linting.yml
-      - ./.github/actions/prepare-node/action.yml
+      - .github/workflows/js-css-linting.yml
+      - .github/actions/prepare-node/action.yml
   pull_request:
     paths:
       - "**.js"
       - "**.scss"
-      - ./.github/workflows/js-css-linting.yml
-      - ./.github/actions/prepare-node/action.yml
+      - .github/workflows/js-css-linting.yml
+      - .github/actions/prepare-node/action.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

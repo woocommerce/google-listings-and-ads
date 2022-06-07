@@ -104,18 +104,22 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * @return boolean
 	 */
 	public function is_ready_for_syncing(): bool {
+		if ( ! $this->is_connected() ) {
+			return false;
+		}
+
 		/** @var TransientsInterface $transients */
 		$transients  = $this->container->get( TransientsInterface::class );
 		$url_matches = $transients->get( TransientsInterface::URL_MATCHES );
 
 		if ( null === $url_matches ) {
 			$claimed_url_hash = $this->container->get( Merchant::class )->get_claimed_url_hash();
-			$site_url_hash    = md5( $this->get_site_url() );
+			$site_url_hash    = md5( untrailingslashit( $this->get_site_url() ) );
 			$url_matches      = apply_filters( 'woocommerce_gla_ready_for_syncing', $claimed_url_hash === $site_url_hash ) ? 'yes' : 'no';
 			$transients->set( TransientsInterface::URL_MATCHES, $url_matches, HOUR_IN_SECONDS * 12 );
 		}
 
-		return $this->is_connected() && 'yes' === $url_matches;
+		return 'yes' === $url_matches;
 	}
 
 	/**
