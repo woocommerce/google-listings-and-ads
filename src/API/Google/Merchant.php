@@ -211,7 +211,7 @@ class Merchant implements OptionsAwareInterface {
 					return null;
 				}
 
-				$claimed_url_hash = md5( $account_url );
+				$claimed_url_hash = md5( untrailingslashit( $account_url ) );
 				$this->options->update( OptionsInterface::CLAIMED_URL_HASH, $claimed_url_hash );
 			} catch ( Exception $e ) {
 				return null;
