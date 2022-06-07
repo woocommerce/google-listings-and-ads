@@ -17,7 +17,12 @@ import {
 	saveConversionID,
 } from '../../utils/connection-test-page';
 import { getEventData, trackGtagEvent } from '../../utils/track-event';
-import { emptyCart, relatedProductAddToCart } from '../../utils/cart';
+import {
+	blockProductAddToCart,
+	emptyCart,
+	relatedProductAddToCart,
+} from '../../utils/cart';
+import { createBlockShopPage } from '../../utils/block-page';
 
 const config = require( 'config' ); // eslint-disable-line import/no-extraneous-dependencies
 const productPrice = config.has( 'products.simple.price' )
@@ -29,6 +34,7 @@ let simpleProductID;
 describe( 'GTag events', () => {
 	beforeAll( async () => {
 		await saveConversionID();
+		await createBlockShopPage();
 		simpleProductID = await createSimpleProduct();
 
 		// Enable COD payment method
@@ -71,6 +77,25 @@ describe( 'GTag events', () => {
 			const data = getEventData( request );
 			expect( data.id ).toEqual( 'gla_' + simpleProductID );
 			expect( data.ecomm_pagetype ).toEqual( 'product' );
+			expect( data.google_business_vertical ).toEqual( 'retail' );
+		} );
+	} );
+
+	it( 'Add to cart event is sent from a block shop page', async () => {
+		const event = trackGtagEvent( 'add_to_cart' );
+
+		// Go to block shop page
+		await page.goto( config.url + '/all-products-block', {
+			waitUntil: 'networkidle0',
+		} );
+
+		await blockProductAddToCart();
+
+		await event.then( ( request ) => {
+			const data = getEventData( request );
+			expect( data.id ).toEqual( 'gla_' + simpleProductID );
+			expect( data.ecomm_pagetype ).toEqual( 'cart' );
+			expect( data.event_category ).toEqual( 'ecommerce' );
 			expect( data.google_business_vertical ).toEqual( 'retail' );
 		} );
 	} );
