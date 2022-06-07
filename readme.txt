@@ -109,6 +109,16 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.13.4 - 2022-06-07 =
+* Fix - Adding Github Actions for storybook.
+* Fix - Do not show error notice when Merchant Center review request API call failed.
+* Fix - Do not store URL matches transient until fully connected.
+* Fix - Fix GitHub Workflow paths.
+* Fix - Use commit instead of branch for storybook dependency.
+* Tweak - Always compare site URL hash without trailing slash.
+* Tweak - Compliance Policy links.
+* Tweak - WC 6.6 compatibility.
+
 = 1.13.3 - 2022-05-31 =
 * Add - Add six more promotion supported countries.
 * Fix - Allow unicode for Manufacturer Part Number (MPN) value.
