@@ -7,7 +7,7 @@
     "jsdoc-plugin-intersection"
   ],
   "typescript": {
-    "moduleRoot": "js/src"
+    "moduleRoot": "./js/src"
   },
   "templates": {
     "woocommerce-grow-tracking-jsdoc": {
