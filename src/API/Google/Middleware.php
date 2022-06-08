@@ -643,7 +643,7 @@ class Middleware implements OptionsAwareInterface {
 			$transients->set( $transients::MC_IS_SUBACCOUNT, $is_subaccount );
 		}
 
-		// since transients doesn't support booleans, we save them as 0/1 and do the conversion here
+		// since transients don't support booleans, we save them as 0/1 and do the conversion here
 		return boolval( $is_subaccount );
 	}
 }
