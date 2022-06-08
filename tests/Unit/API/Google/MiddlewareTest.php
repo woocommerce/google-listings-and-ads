@@ -360,7 +360,7 @@ class MiddlewareTest extends UnitTest {
 
 	public function test_get_account_review_status() {
 
-		$this->options->expects( $this->exactly( 2 ) )->method('get_merchant_id')->willReturn(self::TEST_MERCHANT_ID);
+		$this->options->expects( $this->exactly( 2 ) )->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
 
 		$accounts = [
 			[
@@ -373,16 +373,16 @@ class MiddlewareTest extends UnitTest {
 			]
 		];
 
-		$review_status = [ 'freeListingsProgram' => 'freeListingsProgram', 'shoppingAdsProgram' => 'shoppingAdsProgram'];
+		$review_status = [ 'freeListingsProgram' => 'freeListingsProgram', 'shoppingAdsProgram' => 'shoppingAdsProgram' ];
 
-		$this->generate_account_review_mock( $accounts,  $review_status);
+		$this->generate_account_review_mock( $accounts,  $review_status );
 
 
-		$this->assertEquals( $this->middleware->get_account_review_status(), $review_status);
+		$this->assertEquals( $this->middleware->get_account_review_status(), $review_status );
 	}
 
 	public function test_get_account_review_status_standalone() {
-		$this->options->expects( $this->once() )->method('get_merchant_id')->willReturn(self::TEST_MERCHANT_ID);
+		$this->options->expects( $this->once() )->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
 
 		$accounts = [
 			[
@@ -401,7 +401,7 @@ class MiddlewareTest extends UnitTest {
 
 
 	public function test_get_account_review_status_exception() {
-		$this->options->expects( $this->once() )->method('get_merchant_id')->willReturn(self::TEST_MERCHANT_ID);
+		$this->options->expects( $this->once() )->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
 
 		$this->generate_request_mock_exception( 'Some exception' );
 
@@ -414,7 +414,7 @@ class MiddlewareTest extends UnitTest {
 
 
 	public function test_get_account_review_status_error() {
-		$this->options->expects( $this->exactly( 2 ) )->method('get_merchant_id')->willReturn(self::TEST_MERCHANT_ID);
+		$this->options->expects( $this->exactly( 2 ) )->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
 
 		$accounts = [
 			[
@@ -425,7 +425,7 @@ class MiddlewareTest extends UnitTest {
 
 		$review_status = [];
 
-		$this->generate_account_review_mock( $accounts,  $review_status);
+		$this->generate_account_review_mock( $accounts,  $review_status );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Invalid response getting account review status' );
