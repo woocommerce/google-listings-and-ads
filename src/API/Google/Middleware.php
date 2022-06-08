@@ -498,7 +498,7 @@ class Middleware implements OptionsAwareInterface {
 	 */
 	protected function default_account_name(): string {
 		return sprintf(
-		/* translators: 1: current date in the format Y-m-d */
+			/* translators: 1: current date in the format Y-m-d */
 			__( 'Account %1$s', 'google-listings-and-ads' ),
 			( new DateTime() )->format( 'Y-m-d' )
 		);
