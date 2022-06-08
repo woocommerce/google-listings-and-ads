@@ -1,10 +1,11 @@
 {
   "opts": {
-    "recurse": true
+    "recurse": true,
+    "template": "woocommerce-grow-tracking-jsdoc"
   },
   "plugins": [
-    "woo-tracking-jsdoc/tilde-alias.js",
-    "woo-tracking-jsdoc/fires-description.js",
+    "woocommerce-grow-tracking-jsdoc/tilde-alias",
+    "woocommerce-grow-tracking-jsdoc/fires-description",
     "jsdoc-plugin-typescript",
     "jsdoc-advanced-types-plugin",
     "jsdoc-plugin-intersection"
@@ -13,7 +14,7 @@
     "moduleRoot": "js/src"
   },
   "templates": {
-    "woo-tracking-jsdoc": {
+    "woocommerce-grow-tracking-jsdoc": {
       "path": "src/Tracking/README.md"
     }
   }

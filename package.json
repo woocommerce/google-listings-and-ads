@@ -18,7 +18,7 @@
 		"check-engines": "wp-scripts check-engines",
 		"check-licenses": "wp-scripts check-licenses",
 		"dev": "NODE_ENV=development wp-scripts build",
-		"doc:tracking": "jsdoc ./js/src -c .jsdocrc.json -t ./woo-tracking-jsdoc",
+		"doc:tracking": "jsdoc ./js/src -c .jsdocrc.json",
 		"docker:up": "npx wc-e2e docker:up",
 		"docker:down": "npx wc-e2e docker:down",
 		"format:js": "wp-scripts format",
