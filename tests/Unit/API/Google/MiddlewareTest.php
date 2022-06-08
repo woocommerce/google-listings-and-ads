@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GuzzleClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -25,14 +26,15 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  * @group Middleware
  *
- * @property MockObject|Ads               $ads
- * @property MockObject|DateTimeUtility   $date_utility
- * @property MockObject|GoogleHelper      $google_helper
- * @property MockObject|Merchant          $merchant
- * @property MockObject|WP                $wp
- * @property MockObject|OptionsInterface  $options
- * @property Middleware                   $middleware
- * @property Container                    $container
+ * @property MockObject|Ads                  $ads
+ * @property MockObject|DateTimeUtility      $date_utility
+ * @property MockObject|GoogleHelper         $google_helper
+ * @property MockObject|Merchant             $merchant
+ * @property MockObject|WP                   $wp
+ * @property MockObject|OptionsInterface     $options
+ * @property MockObject|TransientsInterface  $transients
+ * @property Middleware                      $middleware
+ * @property Container                       $container
  */
 class MiddlewareTest extends UnitTest {
 
@@ -56,12 +58,14 @@ class MiddlewareTest extends UnitTest {
 		$this->google_helper = $this->createMock( GoogleHelper::class );
 		$this->merchant      = $this->createMock( Merchant::class );
 		$this->options       = $this->createMock( OptionsInterface::class );
+		$this->transients    = $this->createMock( TransientsInterface::class );
 		$this->wp            = $this->createMock( WP::class );
 
 		$this->container->share( Ads::class, $this->ads );
 		$this->container->share( DateTimeUtility::class, $this->date_utility );
 		$this->container->share( GoogleHelper::class, $this->google_helper );
 		$this->container->share( Merchant::class, $this->merchant );
+		$this->container->share( TransientsInterface::class, $this->transients );
 		$this->container->share( WP::class, $this->wp );
 
 		$this->middleware = new Middleware( $this->container );

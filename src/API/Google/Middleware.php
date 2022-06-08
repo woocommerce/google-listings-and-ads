@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
@@ -35,6 +36,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class Middleware implements OptionsAwareInterface {
 
+
 	use ApiExceptionTrait;
 	use OptionsAwareTrait;
 	use PluginHelper;
@@ -56,10 +58,9 @@ class Middleware implements OptionsAwareInterface {
 	/**
 	 * Get all Merchant Accounts associated with the connected account.
 	 *
-	 * @since 1.7.0
-	 *
 	 * @return array
 	 * @throws Exception When an Exception is caught.
+	 * @since 1.7.0
 	 */
 	public function get_merchant_accounts(): array {
 		try {
@@ -122,9 +123,7 @@ class Middleware implements OptionsAwareInterface {
 	/**
 	 * Send a request to create a merchant account.
 	 *
-	 * @since 1.5.0
-	 *
-	 * @param string $name     Site name
+	 * @param string $name Site name
 	 * @param string $site_url Website URL
 	 *
 	 * @return int Created merchant account ID
@@ -132,6 +131,7 @@ class Middleware implements OptionsAwareInterface {
 	 * @throws Exception   When an Exception is caught or we receive an invalid response.
 	 * @throws InvalidTerm When the account name contains invalid terms.
 	 * @throws InvalidDomainName When the site URL ends with an invalid top-level domain.
+	 * @since 1.5.0
 	 */
 	protected function create_merchant_account_request( string $name, string $site_url ): int {
 		try {
@@ -498,7 +498,7 @@ class Middleware implements OptionsAwareInterface {
 	 */
 	protected function default_account_name(): string {
 		return sprintf(
-			/* translators: 1: current date in the format Y-m-d */
+		/* translators: 1: current date in the format Y-m-d */
 			__( 'Account %1$s', 'google-listings-and-ads' ),
 			( new DateTime() )->format( 'Y-m-d' )
 		);
@@ -540,16 +540,16 @@ class Middleware implements OptionsAwareInterface {
 				$this->get_manager_url( 'account-review-status/' . $this->options->get_merchant_id() ),
 			);
 
-			$response = json_decode( $result->getBody()->getContents(), true );
+			 $response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() && isset( $response['freeListingsProgram'] ) && isset( $response['shoppingAdsProgram'] ) ) {
 				do_action( 'woocommerce_gla_request_review_response', $response );
 				return $response;
 			}
 
-			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
-			$error = $response['message'] ?? __( 'Invalid response getting account review status', 'google-listings-and-ads' );
-			throw new Exception( $error, $result->getStatusCode() );
+			 do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
+			 $error = $response['message'] ?? __( 'Invalid response getting account review status', 'google-listings-and-ads' );
+			 throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
@@ -621,19 +621,31 @@ class Middleware implements OptionsAwareInterface {
 
 	/**
 	 * This function detects if the current account is a sub-account
+	 * This function is cached in the MC_IS_SUBACCOUNT transient
 	 *
 	 * @return bool True if it's a standalone account.
 	 */
 	public function is_subaccount(): bool {
-		$merchant_id = $this->options->get_merchant_id();
-		$accounts    = $this->get_merchant_accounts();
+		/** @var TransientsInterface $transients */
+		$transients    = $this->container->get( TransientsInterface::class );
+		$is_subaccount = $transients->get( $transients::MC_IS_SUBACCOUNT );
 
-		foreach ( $accounts as $account ) {
-			if ( $account['id'] === $merchant_id && $account['subaccount'] ) {
-				return true;
+		if ( is_null( $is_subaccount ) ) {
+			$is_subaccount = 0;
+
+			$merchant_id = $this->options->get_merchant_id();
+			$accounts    = $this->get_merchant_accounts();
+
+			foreach ( $accounts as $account ) {
+				if ( $account['id'] === $merchant_id && $account['subaccount'] ) {
+					$is_subaccount = 1;
+				}
 			}
+
+			$transients->set( $transients::MC_IS_SUBACCOUNT, $is_subaccount );
 		}
 
-		return false;
+		// since transients doesn't support booleans, we save them as 0/1 and do the conversion here
+		return boolval( $is_subaccount );
 	}
 }

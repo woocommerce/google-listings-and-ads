@@ -263,6 +263,7 @@ class AccountService implements OptionsAwareInterface, Service {
 
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_ACCOUNT_REVIEW );
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::URL_MATCHES );
+		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_IS_SUBACCOUNT );
 	}
 
 	/**
