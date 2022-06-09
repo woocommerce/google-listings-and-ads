@@ -529,7 +529,7 @@ Triggered when clicking on the checkbox
 | ---- | ---- | ----------- |
 `action` | `'check'\|'uncheck'` | Indicates if the checkbox is checked or unchecked
 #### Emitters
-- [`ReviewRequestModal`](../../js/src/product-feed/review-request/review-request-modal.js#L58) with `action: 'checked' | 'unchecked'
+- [`ReviewRequestModal`](../../js/src/product-feed/review-request/review-request-modal.js#L58) with `action: 'checked' | 'unchecked'`
 
 ### [`gla_request_review_success`](../../js/src/product-feed/review-request/review-request-modal.js#L25)
 Triggered when the request review is successful
