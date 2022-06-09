@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { screen, render } from '@testing-library/react';
+import { screen, render, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -38,24 +38,37 @@ describe( 'TreeSelectControl - Control Component', () => {
 		expect( onTagsChange ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'Renders the input', () => {
-		const { queryByRole } = render( <Control /> );
+	it( 'Calls onInputChange when typing', () => {
+		const onInputChange = jest
+			.fn()
+			.mockName( 'onInputChange' )
+			.mockImplementation( ( e ) => e.target.value );
+		const { queryByRole } = render(
+			<Control onInputChange={ onInputChange } />
+		);
 
 		const input = queryByRole( 'combobox' );
 		expect( input ).toBeTruthy();
 		expect( input.hasAttribute( 'disabled' ) ).toBeFalsy();
-		userEvent.type( input, 'test' );
-		expect( input.value ).toBe( 'test' );
+		userEvent.type( input, 'a' );
+		expect( onInputChange ).toHaveBeenCalledTimes( 1 );
+		expect( onInputChange ).toHaveNthReturnedWith( 1, 'a' );
+		fireEvent.change( input, { target: { value: 'test' } } );
+		expect( onInputChange ).toHaveBeenCalledTimes( 2 );
+		expect( onInputChange ).toHaveNthReturnedWith( 2, 'test' );
 	} );
 
 	it( 'Allows disabled input', () => {
-		const { queryByRole } = render( <Control disabled={ true } /> );
+		const onInputChange = jest.fn().mockName( 'onInputChange' );
+		const { queryByRole } = render(
+			<Control disabled={ true } onInputChange={ onInputChange } />
+		);
 
 		const input = queryByRole( 'combobox' );
 		expect( input ).toBeTruthy();
 		expect( input.hasAttribute( 'disabled' ) ).toBeTruthy();
-		userEvent.type( input, 'test' );
-		expect( input.value ).toBe( '' );
+		userEvent.type( input, 'a' );
+		expect( onInputChange ).not.toHaveBeenCalled();
 	} );
 
 	it( 'Calls onFocus callback when it is focused', () => {

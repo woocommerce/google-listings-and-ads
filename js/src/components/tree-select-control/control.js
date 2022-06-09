@@ -22,6 +22,7 @@ import { BACKSPACE } from './constants';
  * @param {boolean} props.isExpanded True if the tree is expanded
  * @param {boolean} props.disabled True if the component is disabled
  * @param {number} props.maxVisibleTags The maximum number of tags to show. Undefined, 0 or less than 0 evaluates to "Show All".
+ * @param {string} props.value The current input value
  * @param {Function} props.onFocus On Focus Callback
  * @param {Function} props.onTagsChange Callback when the Tags change
  * @param {Function} props.onInputChange Callback when the Input value changes
@@ -35,6 +36,7 @@ const Control = ( {
 	isExpanded,
 	disabled,
 	maxVisibleTags,
+	value = '',
 	onFocus = () => {},
 	onTagsChange = () => {},
 	onInputChange = () => {},
@@ -46,7 +48,7 @@ const Control = ( {
 
 	const handleKeydown = ( event ) => {
 		if ( BACKSPACE === event.key ) {
-			if ( inputRef.current.value ) return;
+			if ( value ) return;
 			onTagsChange( tags.slice( 0, -1 ) );
 			event.preventDefault();
 		}
@@ -91,6 +93,7 @@ const Control = ( {
 					className="woocommerce-tree-select-control__control-input"
 					role="combobox"
 					aria-autocomplete="list"
+					value={ value }
 					aria-expanded={ isExpanded }
 					disabled={ disabled }
 					onFocus={ onFocus }
