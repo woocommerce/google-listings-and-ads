@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { Button } from '@wordpress/components';
-import { useState, useCallback, useEffect } from '@wordpress/element';
+import { useState, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { getNewPath, getQuery, getHistory } from '@woocommerce/navigation';
@@ -34,10 +34,6 @@ import useUrlQuery from '.~/hooks/useUrlQuery';
 const Dashboard = () => {
 	const [ isCESPromptOpen, setCESPromptOpen ] = useState( false );
 	const query = useUrlQuery();
-
-	useEffect( () => {
-		setCESPromptOpen( false );
-	}, [ query.subpath ] );
 
 	const handleCampaignCreationSuccessGuideClose = useCallback(
 		( e, specifiedAction ) => {
