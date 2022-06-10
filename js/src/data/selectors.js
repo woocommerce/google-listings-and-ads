@@ -124,7 +124,7 @@ export const getAllowedCountries = ( state ) => {
 	return state.mc.policy_check.allowed_countries;
 };
 
-export const getIsSsl = ( state ) => {
+export const getIsStoreSsl = ( state ) => {
 	return state.mc.policy_check.store_ssl;
 };
 
