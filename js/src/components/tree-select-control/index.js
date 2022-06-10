@@ -392,6 +392,7 @@ const TreeSelectControl = ( {
 		if ( ! nodesExpanded.includes( option.parent ) ) {
 			controlRef.current.focus();
 		}
+
 	};
 
 	/**
