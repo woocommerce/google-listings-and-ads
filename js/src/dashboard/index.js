@@ -26,14 +26,12 @@ import EditFreeCampaign from '.~/edit-free-campaign';
 import EditPaidAdsCampaign from '.~/pages/edit-paid-ads-campaign';
 import CreatePaidAdsCampaign from '.~/pages/create-paid-ads-campaign';
 import { CTA_CREATE_ANOTHER_CAMPAIGN, CTA_CONFIRM } from './constants';
-import useUrlQuery from '.~/hooks/useUrlQuery';
 
 /**
  * @fires gla_modal_closed when CES modal is closed.
  */
 const Dashboard = () => {
 	const [ isCESPromptOpen, setCESPromptOpen ] = useState( false );
-	const query = useUrlQuery();
 
 	const handleCampaignCreationSuccessGuideClose = useCallback(
 		( e, specifiedAction ) => {
@@ -58,6 +56,7 @@ const Dashboard = () => {
 		[ setCESPromptOpen ]
 	);
 
+	const query = getQuery();
 	switch ( query.subpath ) {
 		case subpaths.editFreeListings:
 			return <EditFreeCampaign />;
