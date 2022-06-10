@@ -32,10 +32,6 @@ import {
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchAdsCampaigns,
-	fetchAllowedCountries,
-	fetchPaymentGateways,
-	fetchRefundReturnPolicyPage,
-	fetchIsSsl,
 	fetchMCSetup,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -164,7 +160,7 @@ export function* getAllowedCountries() {
 
 		return {
 			type: TYPES.RECEIVE_ALLOWED_COUNTRIES,
-			data,
+			allowed_countries: response,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
@@ -188,7 +184,7 @@ export function* getPaymentGateways() {
 
 		return {
 			type: TYPES.RECEIVE_PAYMENT_GATEWAYS,
-			data,
+			payment_gateways: response,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
@@ -212,7 +208,7 @@ export function* getIsStoreSsl() {
 
 		return {
 			type: TYPES.RECEIVE_IS_STORE_SSL,
-			data,
+			store_ssl: response,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
@@ -236,7 +232,7 @@ export function* getRefundReturnPolicyPage() {
 
 		return {
 			type: TYPES.RECEIVE_REFUND_RETURN_POLICY,
-			data,
+			refund_return_policy: response,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
