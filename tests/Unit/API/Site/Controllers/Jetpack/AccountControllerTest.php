@@ -78,7 +78,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	public function test_disconnect() {
 		$this->manager->expects( $this->once() )
-			->method( 'remove_connection' );
+			->method( 'disconnect_site' );
 		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
 			->withConsecutive(

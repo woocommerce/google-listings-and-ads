@@ -97,9 +97,6 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function get_connect_callback(): callable {
 		return function( Request $request ) {
-			// Mark the plugin connection as enabled, in case it was disabled earlier.
-			$this->manager->enable_plugin();
-
 			// Register the site to wp.com.
 			if ( ! $this->manager->is_connected() ) {
 				$result = $this->manager->register();
@@ -155,7 +152,7 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function get_disconnect_callback(): callable {
 		return function() {
-			$this->manager->remove_connection();
+			$this->manager->disconnect_site();
 			$this->options->delete( OptionsInterface::WP_TOS_ACCEPTED );
 			$this->options->delete( OptionsInterface::JETPACK_CONNECTED );
 
