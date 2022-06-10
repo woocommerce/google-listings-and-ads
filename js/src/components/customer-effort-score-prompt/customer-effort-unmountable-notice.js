@@ -15,9 +15,9 @@ import useCESNotice from '.~/hooks/useCESNotice';
  *
  * ## Motivation
  *
- * The CustomerEffortScore component include in the package @woocommerce/customer-effort-score does not remove the notice
+ * The CustomerEffortScore component included in the package @woocommerce/customer-effort-score does not remove the notice
  * when the component has been unmounted, throwing an error when the "Give Feedback" button has been clicked. This new
- * component is removing the notice if the CES component does not exist.
+ * component removes the notice if the CES component does not exist.
  *
  * @param {Object} props                               Component props.
  * @param {string} props.label                         The label displayed in the modal.
