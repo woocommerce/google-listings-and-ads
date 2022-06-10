@@ -68,6 +68,7 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @property {boolean} checked Whether this option is checked.
  * @property {boolean} partialChecked Whether this option is partially checked.
  * @property {boolean} expanded Whether this option is expanded.
+ * @property {boolean} parent The parent of the current option
  *
  * @typedef {CommonOption & BaseInnerOption} InnerOption
  */
@@ -150,8 +151,13 @@ const TreeSelectControl = ( {
 		// Clear cache if options change
 		cacheRef.current.filteredOptionsMap.clear();
 
-		function loadOption( option ) {
-			option.children?.forEach( loadOption );
+		function loadOption( option, parentId ) {
+			option.parent = parentId;
+
+			option.children?.forEach( ( el ) =>
+				loadOption( el, option.value )
+			);
+
 			repository[ option.key ?? option.value ] = option;
 		}
 
@@ -382,20 +388,8 @@ const TreeSelectControl = ( {
 			handleSingleChange( checked, option );
 		}
 
-		clearSearchInput( option );
-	};
-
-	const clearSearchInput = ( option ) => {
 		setInputControlValue( '' );
-		const optionID = option.key || option.value;
-
-		const currentFocusedElement = focus.focusable
-			.find( dropdownRef.current )
-			.filter( ( el ) => el.value === optionID )[ 0 ];
-
-		const treeGroup = currentFocusedElement?.closest( '[role=treegroup]' );
-		const parentId = treeGroup?.querySelector( 'input' );
-		if ( ! nodesExpanded.includes( parentId?.value ) ) {
+		if ( ! nodesExpanded.includes( option.parent ) ) {
 			controlRef.current.focus();
 		}
 	};
