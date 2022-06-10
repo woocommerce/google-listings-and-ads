@@ -77,7 +77,7 @@ class Settings {
 	 *
 	 * @since 1.12.0
 	 */
-	protected function should_get_shipping_rates_from_woocommerce(): bool {
+	public function should_get_shipping_rates_from_woocommerce(): bool {
 		return 'automatic' === ( $this->get_settings()['shipping_rate'] ?? '' );
 	}
 
