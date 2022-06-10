@@ -640,8 +640,6 @@ class ConnectionTest implements Service, Registerable {
 		$manager = $this->container->get( Manager::class );
 
 		if ( 'connect' === $_GET['action'] && check_admin_referer( 'connect' ) ) {
-			$manager->enable_plugin(); // Mark the plugin connection as enabled, in case it was disabled earlier.
-
 			// Register the site to wp.com.
 			if ( ! $manager->is_connected() ) {
 				$result = $manager->register();
