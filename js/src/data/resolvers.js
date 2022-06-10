@@ -34,7 +34,7 @@ import {
 	fetchAdsCampaigns,
 	fetchAllowedCountries,
 	fetchPaymentGateways,
-	fetchReturnRefundPolicyPageContent,
+	fetchRefundReturnPolicyPage,
 	fetchIsSsl,
 	fetchMCSetup,
 	receiveGoogleAccountAccess,
@@ -153,20 +153,100 @@ export function* getMCCountriesAndContinents() {
 	}
 }
 
+/**
+ * Fetch the allowed countries for checking geo restrictions.
+ */
 export function* getAllowedCountries() {
-	yield fetchAllowedCountries();
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/policy_check/allowed_countries`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ALLOWED_COUNTRIES,
+			data,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading allowed countries details.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
+/**
+ * Fetch the payment gateways for checking payment gateway.
+ */
 export function* getPaymentGateways() {
-	yield fetchPaymentGateways();
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/policy_check/payment_gateways`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_PAYMENT_GATEWAYS,
+			data,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading payment gateways details.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
-export function* getIsSsl() {
-	yield fetchIsSsl();
+/**
+ * Fetch store ssl info for checking the secure checkout process.
+ */
+export function* getIsStoreSsl() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/policy_check/store_ssl`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_IS_STORE_SSL,
+			data,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading store ssl details.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
-export function* getReturnRefundPolicyContentPage() {
-	yield fetchReturnRefundPolicyPageContent();
+/**
+ * Fetch refund return policy page for checking the refund return policy.
+ */
+export function* getRefundReturnPolicyPage() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/policy_check/refund_return_policy`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_REFUND_RETURN_POLICY,
+			data,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading refund return policy page details.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
 export function* getTargetAudience() {

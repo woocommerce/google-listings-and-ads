@@ -8,6 +8,17 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  *
  * @return {useAppSelectDispatch} Result of useAppSelectDispatch.
  */
+/**
+ * Get store ssl from API. Returns `{ hasFinishedResolution, data, invalidateResolution }`.
+ *
+ * `data` is an object of store ssl mapping. e.g.:
+ *
+ * ```json
+ * {
+ * 		'is Ssl' : 'true'
+ * }
+ * ```
+ */
 const useSsl = () => {
 	return useAppSelectDispatch( 'getIsSsl' );
 };
