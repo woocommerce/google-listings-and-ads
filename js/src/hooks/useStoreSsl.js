@@ -4,7 +4,7 @@
 import useAppSelectDispatch from './useAppSelectDispatch';
 
 /**
- * Call `useAppSelectDispatch` with `"getIsSsl"`.
+ * Call `useAppSelectDispatch` with `"getIsStoreSsl"`.
  *
  * @return {useAppSelectDispatch} Result of useAppSelectDispatch.
  */
@@ -15,12 +15,12 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  *
  * ```json
  * {
- * 		"is Ssl" : "true"
+ * 		"is Store Ssl" : "true"
  * }
  * ```
  */
-const useSsl = () => {
-	return useAppSelectDispatch( 'getIsSsl' );
+const useStoreSsl = () => {
+	return useAppSelectDispatch( 'getIsStoreSsl' );
 };
 
-export default useSsl;
+export default useStoreSsl;

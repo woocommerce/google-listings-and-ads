@@ -14,7 +14,7 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  * 			"id": "wc_custom_pg",
  *		        "title": "Custom Payment Gateway",
  *		        "method_description":
- *			"Description of the payment gateway",
+ *				"Description of the payment gateway",
  *		}
  *
  * }
