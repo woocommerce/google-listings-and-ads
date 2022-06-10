@@ -10,12 +10,12 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  *
  * ```json
  * {
- *		payment_gateways: {
-			id: 'wc_custom_pg',
-	*		title: 'Custom Payment Gateway',
-	*		method_description:
-	*			'Description of the payment gateway',
- 		}
+ *		"payment_gateways": {
+ * 			"id": "wc_custom_pg",
+ *		        "title": "Custom Payment Gateway",
+ *		        "method_description":
+ *			"Description of the payment gateway",
+ *		}
  *
  * }
  * ```

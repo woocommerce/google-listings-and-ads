@@ -15,7 +15,7 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  *
  * ```json
  * {
- * 		'is Ssl' : 'true'
+ * 		"is Ssl" : "true"
  * }
  * ```
  */

@@ -10,7 +10,7 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  *
  * ```json
  * {
- * 		'Refund and Returns Policy'
+ * 		"refund_return_policy": "Refund and Returns Policy"
  * }
  * ```
  */
