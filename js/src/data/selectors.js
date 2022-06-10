@@ -132,8 +132,8 @@ export const getPaymentGateways = ( state ) => {
 	return state.mc.policy_check.payment_gateways;
 };
 
-export const getReturnRefundPolicyPageContent = ( state ) => {
-	return state.mc.policy_check.return_refund_policy;
+export const getRefundReturnPolicyPage = ( state ) => {
+	return state.mc.policy_check.refund_return_policy;
 };
 
 // note: we use rememo createSelector here to cache the sliced issues array,
