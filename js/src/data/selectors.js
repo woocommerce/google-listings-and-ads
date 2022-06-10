@@ -125,7 +125,7 @@ export const getAllowedCountries = ( state ) => {
 };
 
 export const getIsSsl = ( state ) => {
-	return state.mc.policy_check.ssl;
+	return state.mc.policy_check.store_ssl;
 };
 
 export const getPaymentGateways = ( state ) => {
