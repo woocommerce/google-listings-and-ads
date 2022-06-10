@@ -667,7 +667,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'disconnect' === $_GET['action'] && check_admin_referer( 'disconnect' ) ) {
-			$manager->remove_connection();
+			$manager->disconnect_site();
 
 			$redirect = admin_url( 'admin.php?page=connection-test-admin-page' );
 			wp_safe_redirect( $redirect );
