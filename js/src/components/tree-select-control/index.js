@@ -111,6 +111,7 @@ const TreeSelectControl = ( {
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
 	const [ inputControlValue, setInputControlValue ] = useState( '' );
 
+	const controlRef = useRef();
 	const dropdownRef = useRef();
 	const onDropdownVisibilityChangeRef = useRef();
 	onDropdownVisibilityChangeRef.current = onDropdownVisibilityChange;
@@ -381,7 +382,22 @@ const TreeSelectControl = ( {
 			handleSingleChange( checked, option );
 		}
 
+		clearSearchInput( option );
+	};
+
+	const clearSearchInput = ( option ) => {
 		setInputControlValue( '' );
+		const optionID = option.key || option.value;
+
+		const currentFocusedElement = focus.focusable
+			.find( dropdownRef.current )
+			.filter( ( el ) => el.value === optionID )[ 0 ];
+
+		const treeGroup = currentFocusedElement?.closest( '[role=treegroup]' );
+		const parentId = treeGroup?.querySelector( 'input' );
+		if ( ! nodesExpanded.includes( parentId?.value ) ) {
+			controlRef.current.focus();
+		}
 	};
 
 	/**
@@ -461,6 +477,7 @@ const TreeSelectControl = ( {
 			) }
 
 			<Control
+				ref={ controlRef }
 				disabled={ disabled }
 				tags={ getTags() }
 				isExpanded={ showTree }
