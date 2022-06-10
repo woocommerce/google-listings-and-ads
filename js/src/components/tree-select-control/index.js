@@ -380,6 +380,8 @@ const TreeSelectControl = ( {
 		} else {
 			handleSingleChange( checked, option );
 		}
+
+		setInputControlValue( '' );
 	};
 
 	/**
@@ -473,6 +475,7 @@ const TreeSelectControl = ( {
 				placeholder={ placeholder }
 				label={ label }
 				maxVisibleTags={ maxVisibleTags }
+				value={ inputControlValue }
 				onTagsChange={ handleTagsChange }
 				onInputChange={ handleOnInputChange }
 			/>
