@@ -28,7 +28,7 @@ const useCESNotice = (
 	return useUnmountableNotice( 'success', label, {
 		actions: [
 			{
-				label: __( 'Give feedback', 'woocommerce-admin' ),
+				label: __( 'Give feedback', 'google-listings-and-ads' ),
 				onClick: onClickCallBack,
 			},
 		],
