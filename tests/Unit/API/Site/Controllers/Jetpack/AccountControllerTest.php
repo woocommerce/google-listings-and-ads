@@ -107,7 +107,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		];
 
 		$this->tokens->method( 'get_access_token' )->willReturn( 'abcd' );
-		$this->manager->method( 'is_active' )->willReturn( true );
+		$this->manager->method( 'has_connected_owner' )->willReturn( true );
 		$this->manager->method( 'is_connection_owner' )->willReturn( true );
 		$this->manager->method( 'get_tokens' )->willReturn( $this->tokens );
 
@@ -136,7 +136,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	public function test_connected_invalid_token() {
 		$this->tokens->method( 'get_access_token' )->willReturn( false );
-		$this->manager->method( 'is_active' )->willReturn( true );
+		$this->manager->method( 'has_connected_owner' )->willReturn( true );
 		$this->manager->method( 'is_connection_owner' )->willReturn( true );
 		$this->manager->method( 'get_tokens' )->willReturn( $this->tokens );
 
@@ -155,7 +155,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_disconnected() {
-		$this->manager->method( 'is_active' )->willReturn( false );
+		$this->manager->method( 'has_connected_owner' )->willReturn( false );
 		$this->manager->method( 'is_connection_owner' )->willReturn( false );
 
 		$response = $this->do_request( self::ROUTE_CONNECTED, 'GET' );

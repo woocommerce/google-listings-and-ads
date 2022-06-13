@@ -191,7 +191,7 @@ class AccountController extends BaseOptionsController {
 	 * @return bool
 	 */
 	protected function is_jetpack_connected(): bool {
-		if ( ! $this->manager->is_active() ) {
+		if ( ! $this->manager->has_connected_owner() ) {
 			return false;
 		}
 
