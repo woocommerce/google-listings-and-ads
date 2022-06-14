@@ -23,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ConnectionController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ContactInformationController as MerchantCenterContactInformationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\IssuesController as MerchantCenterIssuesController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PolicyComplianceCheckController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PhoneVerificationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ProductFeedController as MerchantCenterProductFeedController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ProductStatisticsController as MerchantCenterProductStatsController;
@@ -112,6 +113,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( SettingsSyncController::class, Settings::class );
 		$this->share( DisconnectController::class );
 		$this->share( SetupCompleteController::class );
+		$this->share( PolicyComplianceCheckController::class, WC::class, GoogleHelper::class );
 	}
 
 	/**
