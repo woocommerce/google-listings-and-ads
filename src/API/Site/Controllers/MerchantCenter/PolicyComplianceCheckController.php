@@ -126,7 +126,7 @@ class PolicyComplianceCheckController extends BaseController {
 	 * @return bool
 	 */
 	protected function get_is_store_ssl(): bool {
-		return is_store_ssl();
+		return is_ssl();
 	}
 
 	/**
