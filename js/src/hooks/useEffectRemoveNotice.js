@@ -11,7 +11,7 @@ import useNotices from '.~/hooks/useNotices';
 import { STORE_KEY } from '.~/data/constants';
 
 /**
- * Removes a wp notice using its label when the component it is unmounted
+ * Search for a notice with specific label and remove it if the component is unmounted.
  *
  * @param {string} label the notice label
  * @param {string} [storeKey] the store
