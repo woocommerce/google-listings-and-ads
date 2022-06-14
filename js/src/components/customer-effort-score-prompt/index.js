@@ -10,6 +10,7 @@ import { recordEvent } from '@woocommerce/tracks';
  */
 import { LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
+import useEffectRemoveNotice from '.~/hooks/useEffectRemoveNotice';
 
 /**
  * CES prompt snackbar open
@@ -47,6 +48,8 @@ import localStorage from '.~/utils/localStorage';
  * @return {JSX.Element} Rendered element.
  */
 const CustomerEffortScorePrompt = ( { eventContext, label } ) => {
+	useEffectRemoveNotice( label, 'core/notices2' );
+
 	const removeCESPromptFlagFromLocal = () => {
 		localStorage.remove(
 			LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN
