@@ -2,9 +2,9 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
-Tested up to: 5.9
+Tested up to: 6.0
 Requires PHP: 7.3
-Stable tag: 1.13.4
+Stable tag: 1.13.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,14 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.13.5 - 2022-06-15 =
+* Fix - Avoid losing focus when selecting an option in Tree Select Control.
+* Fix - Bump node-forge from 1.2.1 to 1.3.1.
+* Tweak - Clear input search filter after selecting an option.
+* Tweak - Disable Review Request in Standalone Accounts.
+* Tweak - Update copy for Free and Enhanced Listings merge
+* Tweak - WC 6.6 compatibility.
+
 = 1.13.4 - 2022-06-07 =
 * Fix - Adding Github Actions for storybook.
 * Fix - Do not show error notice when Merchant Center review request API call failed.
@@ -129,7 +137,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Simplify and centralize the processing of internal states for the TreeSelectControl component.
 * Update - budget recommendation conversion rate.
 
-= 1.13.2 - 2022-05-25 =
-* Fix - Prevent repeated account URL retrievals.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

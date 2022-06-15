@@ -180,11 +180,21 @@ export function* getMCProductStatistics() {
 }
 
 export function* getMCReviewRequest() {
-	const response = yield apiFetch( {
-		path: `${ API_NAMESPACE }/mc/review`,
-	} );
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/review`,
+		} );
 
-	yield receiveMCReviewRequest( response );
+		yield receiveMCReviewRequest( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading your merchant center product review request status.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
 export function* getMCIssues( query ) {

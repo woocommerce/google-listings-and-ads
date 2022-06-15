@@ -122,4 +122,20 @@ describe( 'TreeSelectControl - Options Component', () => {
 			unCheckedOptionWrapper.classList.contains( 'is-partially-checked' )
 		).toBeFalsy();
 	} );
+
+	it( 'Clears search input when option changes', () => {
+		const { queryAllByRole, queryByRole } = render(
+			<TreeSelectControl options={ options } />
+		);
+
+		const input = queryByRole( 'combobox' );
+		fireEvent.click( input );
+		fireEvent.change( input, { target: { value: 'Fra' } } );
+		expect( input.value ).toBe( 'Fra' );
+
+		const checkbox = queryAllByRole( 'checkbox' );
+		fireEvent.click( checkbox[ 0 ] );
+
+		expect( input.value ).toBe( '' );
+	} );
 } );
