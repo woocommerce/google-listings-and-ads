@@ -97,9 +97,6 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function get_connect_callback(): callable {
 		return function( Request $request ) {
-			// Mark the plugin connection as enabled, in case it was disabled earlier.
-			$this->manager->enable_plugin();
-
 			// Register the site to wp.com.
 			if ( ! $this->manager->is_connected() ) {
 				$result = $this->manager->register();
