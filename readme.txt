@@ -109,6 +109,14 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.13.5 - 2022-06-15 =
+* Fix - Avoid losing focus when selecting an option in Tree Select Control.
+* Fix - Bump node-forge from 1.2.1 to 1.3.1.
+* Tweak - Clear input search filter after selecting an option.
+* Tweak - Disable Review Request in Standalone Accounts.
+* Tweak - Update copy for Free and Enhanced Listings merge
+* Tweak - WC 6.6 compatibility.
+
 = 1.13.4 - 2022-06-07 =
 * Fix - Adding Github Actions for storybook.
 * Fix - Do not show error notice when Merchant Center review request API call failed.
