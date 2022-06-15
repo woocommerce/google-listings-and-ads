@@ -12,6 +12,12 @@ const DEFAULT_STATE = {
 	mc: {
 		target_audience: null,
 		countries: null,
+		policy_check: {
+			allowed_countries: null,
+			store_ssl: null,
+			payment_gateways: null,
+			refund_return_policy: null,
+		},
 		continents: null,
 		shipping: {
 			rates: [],
@@ -363,6 +369,42 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_REPORT: {
 			const { reportKey, data } = action;
 			return setIn( state, [ 'report', reportKey ], data );
+		}
+
+		case TYPES.RECEIVE_ALLOWED_COUNTRIES: {
+			const { data } = action;
+			return setIn(
+				state,
+				'mc.policy_check.allowed_countries',
+				data.policy_check.allowed_countries
+			);
+		}
+
+		case TYPES.RECEIVE_IS_STORE_SSL: {
+			const { data } = action;
+			return setIn(
+				state,
+				'mc.policy_check.store_ssl',
+				data.policy_check.store_ssl
+			);
+		}
+
+		case TYPES.RECEIVE_PAYMENT_GATEWAYS: {
+			const { data } = action;
+			return setIn(
+				state,
+				'mc.policy_check.payment_gateways',
+				data.policy_check.payment_gateways
+			);
+		}
+
+		case TYPES.RECEIVE_REFUND_RETURN_POLICY: {
+			const { data } = action;
+			return setIn(
+				state,
+				'mc.policy_check.refund_return_policy',
+				data.policy_check.refund_return_policy
+			);
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

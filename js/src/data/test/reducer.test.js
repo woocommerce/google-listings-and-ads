@@ -20,6 +20,12 @@ describe( 'reducer', () => {
 				target_audience: null,
 				countries: null,
 				continents: null,
+				policy_check: {
+					allowed_countries: null,
+					payment_gateways: null,
+					refund_return_policy: null,
+					store_ssl: null,
+				},
 				shipping: {
 					rates: [],
 					times: [],
@@ -408,6 +414,92 @@ describe( 'reducer', () => {
 			state.assertConsistentRef();
 			expect( state ).toHaveProperty( 'mc.countries', data.countries );
 			expect( state ).toHaveProperty( 'mc.continents', data.continents );
+		} );
+	} );
+
+	describe( 'Policy Check', () => {
+		it( 'should return with allowed countries', () => {
+			const data = {
+				policy_check: {
+					allowed_countries: {
+						CA: { currency: 'CAD', name: 'Canada' },
+						US: { currency: 'USD', name: 'United States' },
+					},
+				},
+			};
+			const action = {
+				type: TYPES.RECEIVE_ALLOWED_COUNTRIES,
+				data,
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty(
+				'mc.policy_check.allowed_countries',
+				data.policy_check.allowed_countries
+			);
+		} );
+
+		it( 'should return with store_ssl', () => {
+			const data = {
+				policy_check: {
+					store_ssl: true,
+				},
+			};
+			const action = {
+				type: TYPES.RECEIVE_IS_STORE_SSL,
+				data,
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty(
+				'mc.policy_check.store_ssl',
+				data.policy_check.store_ssl
+			);
+		} );
+
+		it( 'should return with payment gateways', () => {
+			const data = {
+				policy_check: {
+					payment_gateways: {
+						id: 'wc_custom_pg',
+						title: 'Custom Payment Gateway',
+						method_description:
+							'Description of the payment gateway',
+					},
+				},
+			};
+			const action = {
+				type: TYPES.RECEIVE_PAYMENT_GATEWAYS,
+				data,
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty(
+				'mc.policy_check.payment_gateways',
+				data.policy_check.payment_gateways
+			);
+		} );
+
+		it( 'should return with refund return policy', () => {
+			const data = {
+				policy_check: {
+					refund_return_policy: 'Refund and Returns Policy',
+				},
+			};
+			const action = {
+				type: TYPES.RECEIVE_REFUND_RETURN_POLICY,
+				data,
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty(
+				'mc.policy_check.refund_return_policy',
+				data.policy_check.refund_return_policy
+			);
 		} );
 	} );
 
