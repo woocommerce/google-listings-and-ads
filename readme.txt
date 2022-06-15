@@ -2,7 +2,7 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
-Tested up to: 5.9
+Tested up to: 6.0
 Requires PHP: 7.3
 Stable tag: 1.13.4
 License: GPLv3
@@ -129,7 +129,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Simplify and centralize the processing of internal states for the TreeSelectControl component.
 * Update - budget recommendation conversion rate.
 
-= 1.13.2 - 2022-05-25 =
-* Fix - Prevent repeated account URL retrievals.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
