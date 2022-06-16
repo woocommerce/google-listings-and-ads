@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import CustomerEffortScore from '@woocommerce/customer-effort-score';
 import { recordEvent } from '@woocommerce/tracks';
 
 /**
@@ -10,6 +9,7 @@ import { recordEvent } from '@woocommerce/tracks';
  */
 import { LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
+import CustomerEffortScoreUnmountableNotice from './customer-effort-unmountable-notice';
 
 /**
  * CES prompt snackbar open
@@ -81,7 +81,7 @@ const CustomerEffortScorePrompt = ( { eventContext, label } ) => {
 	};
 
 	return (
-		<CustomerEffortScore
+		<CustomerEffortScoreUnmountableNotice
 			label={ label }
 			recordScoreCallback={ recordScore }
 			onNoticeShownCallback={ onNoticeShown }
