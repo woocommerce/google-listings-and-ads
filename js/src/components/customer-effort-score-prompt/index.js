@@ -49,7 +49,7 @@ import useEffectRemoveNotice from '.~/hooks/useEffectRemoveNotice';
  */
 const CustomerEffortScorePrompt = ( { eventContext, label } ) => {
 	// NOTE: Currently CES Prompts uses core/notices2 as a store key, this seems something temporal
-	//and probably will be needed to change back to core/notices2.
+	//and probably will be needed to change back to core/notices.
 	//See: https://github.com/woocommerce/woocommerce/blob/6.6.0/packages/js/notices/src/store/index.js
 	useEffectRemoveNotice( label, 'core/notices2' );
 
