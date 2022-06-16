@@ -8,7 +8,7 @@ import { dispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import useNotices from '.~/hooks/useNotices';
-import { STORE_KEY } from '.~/data/constants';
+import { NOTICES_KEY } from '.~/data/constants';
 
 /**
  * Search for a notice with specific label and remove it if the component is unmounted.
@@ -18,7 +18,7 @@ import { STORE_KEY } from '.~/data/constants';
  *
  * @return {import('@wordpress/notices').Notice|null} The notice to be removed otherwise null if it is not found
  */
-const useEffectRemoveNotice = ( label, storeKey = STORE_KEY ) => {
+const useEffectRemoveNotice = ( label, storeKey = NOTICES_KEY ) => {
 	const notices = useNotices( storeKey );
 	const notice = notices.find( ( el ) => el.content === label );
 
