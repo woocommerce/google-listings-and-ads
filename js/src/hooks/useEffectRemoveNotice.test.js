@@ -8,7 +8,7 @@ import { renderHook } from '@testing-library/react-hooks';
  */
 import useEffectRemoveNotice from './useEffectRemoveNotice';
 import useNotices from '.~/hooks/useNotices';
-import { NOTICES_KEY } from '.~/data/constants';
+import { NOTICES_STORE_KEY } from '.~/data/constants';
 
 const mockRemoveNotice = jest.fn();
 
@@ -42,7 +42,7 @@ describe( 'useEffectRemoveNotice', () => {
 		);
 
 		expect( mockRemoveNotice ).toHaveBeenCalledTimes( 0 );
-		expect( useNotices ).toHaveBeenCalledWith( NOTICES_KEY );
+		expect( useNotices ).toHaveBeenCalledWith( NOTICES_STORE_KEY );
 
 		expect( result.current ).toEqual( notice );
 	} );
@@ -57,7 +57,7 @@ describe( 'useEffectRemoveNotice', () => {
 		);
 
 		expect( mockRemoveNotice ).toHaveBeenCalledTimes( 0 );
-		expect( useNotices ).toHaveBeenCalledWith( NOTICES_KEY );
+		expect( useNotices ).toHaveBeenCalledWith( NOTICES_STORE_KEY );
 
 		expect( result.current ).toEqual( null );
 	} );

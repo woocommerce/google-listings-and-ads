@@ -6,7 +6,7 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { NOTICES_KEY } from '.~/data/constants';
+import { NOTICES_STORE_KEY } from '.~/data/constants';
 
 /**
  * @typedef {import('@wordpress/notices').Notice} Notice
@@ -19,7 +19,7 @@ import { NOTICES_KEY } from '.~/data/constants';
  *
  * @return {Array<Notice>} Returns the Notices
  */
-const useNotices = ( storeKey = NOTICES_KEY ) => {
+const useNotices = ( storeKey = NOTICES_STORE_KEY ) => {
 	return useSelect(
 		( select ) => {
 			const selector = select( storeKey );
