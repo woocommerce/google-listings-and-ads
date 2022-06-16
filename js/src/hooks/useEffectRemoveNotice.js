@@ -30,7 +30,7 @@ const useEffectRemoveNotice = ( label, storeKey = STORE_KEY ) => {
 				removeNotice( notice.id );
 			}
 		};
-	}, [ label, notice, storeKey ] );
+	}, [ notice, storeKey ] );
 
 	return notice || null;
 };
