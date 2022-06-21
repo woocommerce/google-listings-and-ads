@@ -640,8 +640,6 @@ class ConnectionTest implements Service, Registerable {
 		$manager = $this->container->get( Manager::class );
 
 		if ( 'connect' === $_GET['action'] && check_admin_referer( 'connect' ) ) {
-			$manager->enable_plugin(); // Mark the plugin connection as enabled, in case it was disabled earlier.
-
 			// Register the site to wp.com.
 			if ( ! $manager->is_connected() ) {
 				$result = $manager->register();
@@ -669,9 +667,19 @@ class ConnectionTest implements Service, Registerable {
 		if ( 'disconnect' === $_GET['action'] && check_admin_referer( 'disconnect' ) ) {
 			$manager->remove_connection();
 
-			$redirect = admin_url( 'admin.php?page=connection-test-admin-page' );
-			wp_safe_redirect( $redirect );
-			exit;
+			$plugin = $manager->get_plugin();
+
+			if ( $plugin && ! $plugin->is_only() ) {
+				$connected_plugins = $manager->get_connected_plugins();
+				$this->response    = 'Cannot disconnect Jetpack connection as there are other plugins using it: ';
+				$this->response   .= implode( ', ', array_keys( $connected_plugins ) ) . "\n";
+				$this->response   .= 'Please disconnect the connection using My Jetpack.';
+				return;
+			} else {
+				$redirect = admin_url( 'admin.php?page=connection-test-admin-page' );
+				wp_safe_redirect( $redirect );
+				exit;
+			}
 		}
 
 		if ( 'wcs-test' === $_GET['action'] && check_admin_referer( 'wcs-test' ) ) {
