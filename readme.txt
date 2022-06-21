@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.3
-Stable tag: 1.13.5
+Stable tag: 1.13.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.13.6 - 2022-06-21 =
+* Fix - Cannot disconnect Jetpack when other activated plugins are using Jetpack connection.
+* Fix - Compatibility CES prompts with WC 6.6.0.
+* Fix - Multiple CES prompts on the Dashboard Page.
+
 = 1.13.5 - 2022-06-15 =
 * Fix - Avoid losing focus when selecting an option in Tree Select Control.
 * Fix - Bump node-forge from 1.2.1 to 1.3.1.
@@ -126,16 +131,6 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Always compare site URL hash without trailing slash.
 * Tweak - Compliance Policy links.
 * Tweak - WC 6.6 compatibility.
-
-= 1.13.3 - 2022-05-31 =
-* Add - Add six more promotion supported countries.
-* Fix - Allow unicode for Manufacturer Part Number (MPN) value.
-* Fix - Avoid to show Unsaved Values confirmation in Edit Free Listing when no values has been changed.
-* Fix - Prevent repeated account URL retrievals.
-* Fix - Update tracking docs.
-* Tweak - Replace storybook deps in favor of woocommerce-grow/storybook.
-* Tweak - Simplify and centralize the processing of internal states for the TreeSelectControl component.
-* Update - budget recommendation conversion rate.
 
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
