@@ -30,7 +30,7 @@ jobs:
         with:
           tools: cs2pr
 
-      - name: Log PHPCS debug information
+      - name: Log PHPCS information
         run: vendor/bin/phpcs -i
 
       - name: Run PHPCS on all files
