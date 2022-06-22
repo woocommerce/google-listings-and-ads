@@ -7,6 +7,12 @@ changelog:
       - github-actions
 
   categories:
+      # Major level
+    - title: [Breaking] Breaking Changes 🚨
+      labels:
+        - "changelog: breaking"
+
+    # Minor level
     - title: [Add] New Features 🎉
       labels:
         - "changelog: add"
@@ -16,6 +22,7 @@ changelog:
       labels:
         - "changelog: update"
 
+    # Patch level
     - title: [Fix] Fixes 🛠
       labels:
         - "changelog: fix"
@@ -25,6 +32,10 @@ changelog:
       labels:
         - "changelog: tweak"
         - "type: technical debt"
+
+    - title: [Doc] Documentation 📚
+      labels:
+        - "changelog: docs"
 
     - title: Other Changes
       labels:
