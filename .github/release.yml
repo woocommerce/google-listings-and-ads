@@ -7,21 +7,21 @@ changelog:
       - github-actions
 
   categories:
-    - title: Fixes 🛠
-      labels:
-        - "changelog: fix"
-        - "type: bug"
-
-    - title: New Features 🎉
+    - title: [Add] New Features 🎉
       labels:
         - "changelog: add"
         - "type: enhancement"
 
-    - title: Updated ✨
+    - title: [Update] Updated ✨
       labels:
         - "changelog: update"
 
-    - title: Tweaked 🔧
+    - title: [Fix] Fixes 🛠
+      labels:
+        - "changelog: fix"
+        - "type: bug"
+
+    - title: [Tweak] Tweaked 🔧
       labels:
         - "changelog: tweak"
         - "type: technical debt"
