@@ -3,7 +3,8 @@ changelog:
     labels:
       - "changelog: none"
     authors:
-      - dependabot[bot]
+      - dependabot
+      - github-actions
 
   categories:
     - title: Fixes 🛠
