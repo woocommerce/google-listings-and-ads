@@ -10,14 +10,12 @@ on:
       - package.json
       - package-lock.json
       - .github/workflows/js-unit-tests.yml
-      - .github/actions/prepare-node/action.yml
   pull_request:
     paths:
       - "**.js"
       - package.json
       - package-lock.json
       - .github/workflows/js-unit-tests.yml
-      - .github/actions/prepare-node/action.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,7 +32,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Prepare node
-        uses: ./.github/actions/prepare-node
+        uses: woocommerce/grow/prepare-node@actions-v1
+        with:
+          node-version-file: ".nvmrc"
 
       - name: Run JavaScript unit tests
         run: npm run test:js
