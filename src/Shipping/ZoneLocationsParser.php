@@ -46,15 +46,20 @@ class ZoneLocationsParser implements Service {
 		foreach ( $zone->get_zone_locations() as $location ) {
 			switch ( $location->type ) {
 				case 'country':
-					if ( $this->google_helper->is_country_supported( $location->code ) ) {
-						$google_id                    = $this->google_helper->find_country_id_by_code( $location->code );
-						$locations[ $location->code ] = new ShippingLocation( $google_id, $location->code, null, $postcodes );
+					$country = $location->code;
+					if ( $this->google_helper->is_country_supported( $country ) ) {
+						$google_id = $this->google_helper->find_country_id_by_code( $country );
+						$region    = $this->maybe_create_region_for_postcodes( $country, $postcodes );
+
+						$locations[ $location->code ] = new ShippingLocation( $google_id, $country, null, $region );
 					}
 					break;
 				case 'continent':
 					foreach ( $this->google_helper->get_supported_countries_from_continent( $location->code ) as $country ) {
-						$google_id             = $this->google_helper->find_country_id_by_code( $location->code );
-						$locations[ $country ] = new ShippingLocation( $google_id, $country, null, $postcodes );
+						$google_id = $this->google_helper->find_country_id_by_code( $location->code );
+						$region    = $this->maybe_create_region_for_postcodes( $country, $postcodes );
+
+						$locations[ $country ] = new ShippingLocation( $google_id, $country, null, $region );
 					}
 					break;
 				case 'state':
@@ -65,13 +70,15 @@ class ZoneLocationsParser implements Service {
 						break;
 					}
 
-					// Only add the state if the regional shipping is supported for its country.
+					$region = $this->maybe_create_region_for_postcodes( $country, $postcodes );
+
+					// Only add the state if the regional shipping is supported for the country.
 					if ( $this->google_helper->does_country_support_regional_shipping( $country ) ) {
 						$google_id                    = $this->google_helper->find_subdivision_id_by_code( $state, $country );
-						$locations[ $location->code ] = new ShippingLocation( $google_id, $country, $state, $postcodes );
+						$locations[ $location->code ] = new ShippingLocation( $google_id, $country, $state, $region );
 					} else {
 						$google_id             = $this->google_helper->find_country_id_by_code( $country );
-						$locations[ $country ] = new ShippingLocation( $google_id, $country, null, $postcodes );
+						$locations[ $country ] = new ShippingLocation( $google_id, $country, null, $region );
 					}
 					break;
 				default:
@@ -103,6 +110,25 @@ class ZoneLocationsParser implements Service {
 			},
 			$postcodes
 		);
+	}
+
+	/**
+	 * Returns the applicable shipping region including postcodes for the given WooCommerce shipping zone.
+	 *
+	 * @param string $country
+	 * @param array  $postcode_ranges
+	 *
+	 * @return ShippingRegion|null
+	 */
+	protected function maybe_create_region_for_postcodes( string $country, array $postcode_ranges ): ?ShippingRegion {
+		// Do not return a region if the country does not support regional shipping, or if no postcode ranges provided.
+		if ( ! $this->google_helper->does_country_support_regional_shipping( $country ) || empty( $postcode_ranges ) ) {
+			return null;
+		}
+
+		$region_id = ShippingRegion::generate_random_id();
+
+		return new ShippingRegion( $region_id, $country, $postcode_ranges );
 	}
 
 }

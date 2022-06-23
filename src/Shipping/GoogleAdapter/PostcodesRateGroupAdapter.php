@@ -30,7 +30,12 @@ class PostcodesRateGroupAdapter extends AbstractRateGroupAdapter {
 		$postal_codes = [];
 		$rows         = [];
 		foreach ( $location_rates as $location_rate ) {
-			$postcode_name                  = $location_rate->get_location()->get_postcode_group_name();
+			$region = $location_rate->get_location()->get_shipping_region();
+			if ( empty( $region ) ) {
+				continue;
+			}
+
+			$postcode_name                  = $region->get_id();
 			$postal_codes[ $postcode_name ] = $postcode_name;
 
 			$rows[ $postcode_name ] = new Row( [ 'cells' => [ $this->create_value_object( $location_rate->get_shipping_rate()->get_rate(), $currency ) ] ] );
