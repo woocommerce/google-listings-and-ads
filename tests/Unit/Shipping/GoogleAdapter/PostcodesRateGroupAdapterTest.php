@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\PostcodeRange;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRegion;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Google\Service\ShoppingContent\Row;
 
@@ -20,9 +21,12 @@ use Google\Service\ShoppingContent\Row;
 class PostcodesRateGroupAdapterTest extends UnitTest {
 
 	public function test_maps_location_rates() {
+		$region_1 = new ShippingRegion( '123456', 'US', [ new PostcodeRange( '4000', '4001' ) ] );
+		$region_2 = new ShippingRegion( '234567', 'AU', [ new PostcodeRange( '1000', '1001' ) ] );
+
 		$location_rates = [
-			new LocationRate( new ShippingLocation( 0, 'US', null, [ new PostcodeRange( '4000', '4001' ) ] ), new ShippingRate( 110 ) ),
-			new LocationRate( new ShippingLocation( 4, 'AU', null, [ new PostcodeRange( '1000', '1001' ) ] ), new ShippingRate( 410 ) ),
+			new LocationRate( new ShippingLocation( 0, 'US', null, $region_1 ), new ShippingRate( 110 ) ),
+			new LocationRate( new ShippingLocation( 4, 'AU', null, $region_2 ), new ShippingRate( 410 ) ),
 		];
 
 		$rate_group = new PostcodesRateGroupAdapter(
@@ -39,8 +43,8 @@ class PostcodesRateGroupAdapterTest extends UnitTest {
 
 		$this->assertEqualSets(
 			[
-				'US - 4000...4001',
-				'AU - 1000...1001',
+				'123456',
+				'234567',
 			],
 			$table->getRowHeaders()->getPostalCodeGroupNames()
 		);
@@ -76,10 +80,12 @@ class PostcodesRateGroupAdapterTest extends UnitTest {
 	public function test_fails_if_no_currency_provided() {
 		$this->expectException( InvalidValue::class );
 
+		$region_1 = new ShippingRegion( '123456', 'US', [ new PostcodeRange( '4000', '4001' ) ] );
+
 		new PostcodesRateGroupAdapter(
 			[
 				'location_rates' => [
-					new LocationRate( new ShippingLocation( 0, 'US', null, [ new PostcodeRange( '4000', '4001' ) ] ), new ShippingRate( 110 ) ),
+					new LocationRate( new ShippingLocation( 0, 'US', null, $region_1 ), new ShippingRate( 110 ) ),
 				],
 			]
 		);

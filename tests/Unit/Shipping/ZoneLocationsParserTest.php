@@ -78,7 +78,7 @@ class ZoneLocationsParserTest extends UnitTest {
 		$this->assertEmpty( $parsed_locations[0]->get_state() );
 	}
 
-	public function test_returns_postcodes_for_all_other_locations() {
+	public function test_returns_postcodes_for_supported_locations() {
 		$zone_locations = [
 			(object) [
 				'code' => 'US:CA',
@@ -121,13 +121,27 @@ class ZoneLocationsParserTest extends UnitTest {
 							->willReturn( true );
 		$this->google_helper->expects( $this->any() )
 							->method( 'does_country_support_regional_shipping' )
-							->willReturn( true );
+							->willReturnMap(
+								[
+									[ 'US', true ],
+									[ 'FR', false ],
+									[ 'DE', false ],
+									[ 'DK', false ],
+								]
+							);
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
 		$this->assertCount( 4, $parsed_locations );
 		foreach ( $parsed_locations as $location ) {
-			$this->assertEqualSets( [ '12345', '67890' ], $location->get_postcodes() );
+			if ( 'US' === $location->get_country() ) {
+				// A region including the postcode ranges is created for the country that supports regional shipping.
+				$this->assertNotNull( $location->get_shipping_region() );
+				$this->assertEqualSets( [ '12345', '67890' ], $location->get_shipping_region()->get_postcode_ranges() );
+			} else {
+				// Does NOT assign a region for countries that do not support regional shipping.
+				$this->assertNull( $location->get_shipping_region() );
+			}
 		}
 	}
 

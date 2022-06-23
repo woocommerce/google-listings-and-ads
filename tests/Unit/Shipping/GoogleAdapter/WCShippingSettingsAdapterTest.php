@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\PostcodeRange;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRegion;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Google\Service\ShoppingContent\DeliveryTime;
 use Google\Service\ShoppingContent\PostalCodeGroup;
@@ -25,7 +26,8 @@ use Google\Service\ShoppingContent\Service as GoogleShippingService;
  */
 class WCShippingSettingsAdapterTest extends UnitTest {
 	public function test_creates_rate_group_for_country_postal_rates() {
-		$location_1      = new ShippingLocation( 1, 'US', null, [ new PostcodeRange( '1000' ) ] );
+		$region_1        = new ShippingRegion( '123456', 'US', [ new PostcodeRange( '1000' ) ] );
+		$location_1      = new ShippingLocation( 1, 'US', null, $region_1 );
 		$location_rate_1 = new LocationRate( $location_1, new ShippingRate( 100 ) );
 
 		$settings = new WCShippingSettingsAdapter(
@@ -106,21 +108,23 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 	}
 
 	public function test_sets_postcode_groups() {
-		$location_1      = new ShippingLocation(
-			1,
+		$region_1        = new ShippingRegion(
+			'123456',
 			'US',
-			null,
 			[
 				new PostcodeRange( '1000' ),
 				new PostcodeRange( '2000', '2001' ),
 			]
 		);
+		$location_1      = new ShippingLocation( 1, 'US', null, $region_1 );
 		$location_rate_1 = new LocationRate( $location_1, new ShippingRate( 100 ) );
 
-		$location_2      = new ShippingLocation( 2, 'US', 'CA', [ new PostcodeRange( '9000', '9001' ) ] );
+		$region_2        = new ShippingRegion( '234567', 'US', [ new PostcodeRange( '9000', '9001' ) ] );
+		$location_2      = new ShippingLocation( 2, 'US', 'CA', $region_2 );
 		$location_rate_2 = new LocationRate( $location_2, new ShippingRate( 200 ) );
 
-		$location_3      = new ShippingLocation( 3, 'AU', 'NSW', [ new PostcodeRange( '9000', '9001' ) ] );
+		$region_3        = new ShippingRegion( '345678', 'AU', [ new PostcodeRange( '9000', '9001' ) ] );
+		$location_3      = new ShippingLocation( 3, 'AU', 'NSW', $region_3 );
 		$location_rate_3 = new LocationRate( $location_3, new ShippingRate( 300 ) );
 
 		$settings = new WCShippingSettingsAdapter(
@@ -146,16 +150,16 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 		);
 		$this->assertEqualSets(
 			[
-				'US - 1000,2000...2001',
-				'US - 9000...9001',
-				'AU - 9000...9001',
+				'123456',
+				'234567',
+				'345678',
 			],
 			$postcode_names
 		);
 
 		foreach ( $postcode_groups as $postal_code_group ) {
 			switch ( $postal_code_group->getName() ) {
-				case 'US - 1000,2000...2001':
+				case '123456':
 					$this->assertEquals( 'US', $postal_code_group->getCountry() );
 					$this->assertCount( 2, $postal_code_group->getPostalCodeRanges() );
 					foreach ( $postal_code_group->getPostalCodeRanges() as $postal_code_range ) {
@@ -166,13 +170,13 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 						}
 					}
 					break;
-				case 'US - 9000...9001':
+				case '234567':
 					$this->assertEquals( 'US', $postal_code_group->getCountry() );
 					$this->assertCount( 1, $postal_code_group->getPostalCodeRanges() );
 					$this->assertEquals( '9000', $postal_code_group->getPostalCodeRanges()[0]->getPostalCodeRangeBegin() );
 					$this->assertEquals( '9001', $postal_code_group->getPostalCodeRanges()[0]->getPostalCodeRangeEnd() );
 					break;
-				case 'AU - 9000...9001':
+				case '345678':
 					$this->assertEquals( 'AU', $postal_code_group->getCountry() );
 					$this->assertCount( 1, $postal_code_group->getPostalCodeRanges() );
 					$this->assertEquals( '9000', $postal_code_group->getPostalCodeRanges()[0]->getPostalCodeRangeBegin() );
