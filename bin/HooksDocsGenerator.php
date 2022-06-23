@@ -108,7 +108,7 @@ class HooksDocsGenerator {
 
 			foreach ( $files as $f ) {
 				$current_file     = $f;
-				$tokens           = token_get_all( file_get_contents( $f ) );
+				$tokens           = token_get_all( file_get_contents( $f ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 				$token_type       = false;
 				$current_class    = '';
 				$current_function = '';
@@ -274,7 +274,7 @@ class HooksDocsGenerator {
 		// Add hooks reference content.
 		$output = self::get_delimited_list_output( $hook_list, $files_to_scan );
 
-		file_put_contents( self::HOOKS_MARKDOWN_OUTPUT, $output );
+		file_put_contents( self::HOOKS_MARKDOWN_OUTPUT, $output ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 	}
 }
 
