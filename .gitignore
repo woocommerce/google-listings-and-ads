@@ -11,7 +11,6 @@ languages/*
 coverage
 .phpunit.result.cache
 tests/e2e/test-results.json
-gla_hooks_reference.html
 
 # Directories/files that may appear in your environment
 .DS_Store

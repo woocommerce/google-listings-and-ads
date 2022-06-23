@@ -12,7 +12,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Util;
  *
  * Example: php bin/HooksDocsGenerator.php
  *
- * The HTML output "gla_hooks_reference.html" will be generated in the repo's root directory.
+ * The markdown output will be generated in `src/Hooks/README.md`.
  */
 class HooksDocsGenerator {
 
@@ -28,9 +28,9 @@ class HooksDocsGenerator {
 	protected const GLA_GITHUB_PATH = 'https://github.com/woocommerce/google-listings-and-ads/blob/develop/';
 
 	/**
-	 * Hooks docs HTML output.
+	 * Hooks docs markdown output.
 	 */
-	protected const HOOKS_HTML_OUTPUT = './gla_hooks_reference.html';
+	protected const HOOKS_MARKDOWN_OUTPUT = './src/Hooks/README.md';
 
 	/**
 	 * List of files found.
@@ -230,7 +230,7 @@ class HooksDocsGenerator {
 	 * @return string
 	 */
 	protected static function get_file_link( array $file ): string {
-		return '<a href="' . self::GLA_GITHUB_PATH . self::get_file_url( $file ) . '">' . basename( $file['path'] ) . '</a>';
+		return '<a href="' . self::GLA_GITHUB_PATH . self::get_file_url( $file ) . '">' . basename( $file['path'] ) . "#L{$file['line']}" . '</a>';
 	}
 
 	/**
@@ -240,31 +240,22 @@ class HooksDocsGenerator {
 	 * @param array $files_to_scan List of files to scan.
 	 */
 	protected static function get_delimited_list_output( array $hook_list, array $files_to_scan ): string {
-		$output = '';
+		$output  = "# Hooks Reference\n\n";
+		$output .= "A list of hooks, i.e `actions` and `filters`, that are defined or used in this project.\n\n";
 
-		$index = [];
-		foreach ( $files_to_scan as $heading => $files ) {
-				$index[] = '<a href="#hooks-' . str_replace( ' ', '-', strtolower( $heading ) ) . '">' . $heading . '</a>';
-		}
-
-		$output .= '<p>' . implode( ', ', $index ) . '</p>';
-
-		$output .= '<div class="hooks-reference">';
 		foreach ( $hook_list as $heading => $hooks ) {
-			$output .= '<h2 id="hooks-' . str_replace( ' ', '-', strtolower( $heading ) ) . '">' . $heading . '</h2>';
-			$output .= '<dl class="phpdocumentor-table-of-contents">';
 			foreach ( $hooks as $hook => $details ) {
-				$output   .= '<dt class="phpdocumentor-table-of-contents__entry -' . $details['type'] . '">' . $hook . '</dt>';
+				$output   .= "## {$hook}\n\n";
+				$output   .= "**Type**: {$details['type']}\n\n";
+				$output   .= "**Used in**:\n\n";
 				$link_list = [];
 				foreach ( $details['files'] as $file ) {
-					$link_list[] = self::get_file_link( $file );
+					$link_list[] = '- ' . self::get_file_link( $file );
 				}
-				$output .= '<dd>' . implode( ', ', $link_list ) . '</dd>';
+				$output .= implode( "\n", $link_list );
+				$output .= "\n\n";
 			}
-			$output .= '</dl>';
 		}
-
-		$output .= '</div>';
 
 		return $output;
 	}
@@ -283,7 +274,7 @@ class HooksDocsGenerator {
 		// Add hooks reference content.
 		$output = self::get_delimited_list_output( $hook_list, $files_to_scan );
 
-		file_put_contents( self::HOOKS_HTML_OUTPUT, $output );
+		file_put_contents( self::HOOKS_MARKDOWN_OUTPUT, $output );
 	}
 }
 
