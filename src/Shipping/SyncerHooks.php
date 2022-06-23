@@ -74,6 +74,9 @@ class SyncerHooks implements Service, Registerable {
 		// After a shipping zone object is saved to database.
 		add_action( 'woocommerce_after_shipping_zone_object_save', $update_settings, 90 );
 
+		// After a shipping zone is deleted.
+		add_action( 'woocommerce_delete_shipping_zone', $update_settings, 90 );
+
 		// After a shipping method is added to or deleted from a shipping zone.
 		add_action( 'woocommerce_shipping_zone_method_added', $update_settings, 90 );
 		add_action( 'woocommerce_shipping_zone_method_deleted', $update_settings, 90 );
