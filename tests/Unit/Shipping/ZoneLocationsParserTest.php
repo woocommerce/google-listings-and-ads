@@ -206,8 +206,12 @@ class ZoneLocationsParserTest extends UnitTest {
 							);
 		$this->google_helper->expects( $this->any() )
 							->method( 'does_country_support_regional_shipping' )
-							->with( 'US' )
-							->willReturn( true );
+							->willReturnMap(
+								[
+									[ 'US', true ],
+									[ 'DE', false ],
+								]
+							);
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
