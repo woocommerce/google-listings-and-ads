@@ -11,7 +11,6 @@ on:
       - package-lock.json
       - "storybook/**"
       - .github/workflows/storybook-workflow.yml
-      - .github/actions/prepare-node/action.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,10 +24,12 @@ jobs:
       FORCE_COLOR: 2
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Prepare node
-        uses: ./.github/actions/prepare-node
+        uses: woocommerce/grow/prepare-node@actions-v1
+        with:
+          node-version-file: ".nvmrc"
 
       - name: Build Storybook
         run: npm run storybook:build
