@@ -35,7 +35,7 @@ class PolicyComplianceCheck implements Service {
 	 * @param WC $wc
 	 */
 	public function __construct( WC $wc ) {
-		$this->wc = wc;
+		$this->wc = $wc;
 	}
 
 	/**
