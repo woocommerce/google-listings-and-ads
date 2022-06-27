@@ -32,7 +32,7 @@ class WP {
 	 */
 	public function __construct() {
 		global $wp;
-		$this->wp =& $wp;
+		$this->wp = & $wp;
 	}
 
 	/**
