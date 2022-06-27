@@ -68,7 +68,7 @@ class ShippingRegion {
 	 *
 	 * For privacy reasons, the region ID value must be a randomized set of numbers (minimum 6 digits)
 	 *
-	 * @return int
+	 * @return string
 	 *
 	 * @throws \Exception If generating a random ID fails.
 	 *
