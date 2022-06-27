@@ -78,4 +78,13 @@ class ShippingRegion {
 		return (string) random_int( 100000, PHP_INT_MAX );
 	}
 
+	/**
+	 * Returns the string representation of this object.
+	 *
+	 * @return string
+	 */
+	public function __toString() {
+		return $this->get_country() . join( ',', $this->get_postcode_ranges() );
+	}
+
 }

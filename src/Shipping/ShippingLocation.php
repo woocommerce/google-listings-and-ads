@@ -108,7 +108,7 @@ class ShippingLocation {
 		if ( ! empty( $this->get_shipping_region() ) ) {
 			// We assume that each postcode is unique within any supported country (a requirement set by Google API).
 			// Therefore, there is no need to include the state name in the location string even if it's provided.
-			$code .= '::' . $this->get_shipping_region()->get_id();
+			$code .= '::' . $this->get_shipping_region();
 		} elseif ( ! empty( $this->get_state() ) ) {
 			$code .= '_' . $this->get_state();
 		}
