@@ -50,9 +50,9 @@ class PolicyComplianceCheck implements Service {
 	/**
 	 * Check if the payment gateways is empty or not for the controller.
 	 *
-	 * @return bool
+	 * @return array
 	 */
-	protected function has_payment_gateways(): bool {
+	protected function has_payment_gateways(): array {
 		$gateways = $this->wc->get_available_payment_gateways();
 		if ( empty( $gateways ) ) {
 			return [ 'payment_gateways' => false ];
@@ -63,18 +63,18 @@ class PolicyComplianceCheck implements Service {
 	/**
 	 * Check if the store is using SSL for the controller.
 	 *
-	 * @return bool
+	 * @return array
 	 */
-	protected function get_is_store_ssl(): bool {
+	protected function get_is_store_ssl(): array {
 		return [ 'ssl' => is_ssl() ];
 	}
 
 	/**
 	 * Check if the store has refund return policy page for the controller.
 	 *
-	 * @return bool
+	 * @return array
 	 */
-	protected function has_refund_return_policy_page(): bool {
+	protected function has_refund_return_policy_page(): array {
 		if ( $this->the_slug_exists( 'refund_returns' ) ) {
 			return [ 'refund_return_policy_page' => true ];
 		}
