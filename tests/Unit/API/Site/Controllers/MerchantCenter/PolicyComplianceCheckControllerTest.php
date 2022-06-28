@@ -2,7 +2,6 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PhoneVerificationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PolicyComplianceCheckController;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -30,6 +29,7 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 		$this->policy_compliance_check = $this->createMock( PolicyComplianceCheck::class );
 		$this->controller         = new PolicyComplianceCheckController( $this->server, $this->policy_compliance_check );
 		$this->controller->register();
+		$this->controller->register_routes();
 	}
 
 	public function test_allowed_countries() {
