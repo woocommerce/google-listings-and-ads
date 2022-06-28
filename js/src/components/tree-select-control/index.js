@@ -68,6 +68,7 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @property {boolean} checked Whether this option is checked.
  * @property {boolean} partialChecked Whether this option is partially checked.
  * @property {boolean} expanded Whether this option is expanded.
+ * @property {boolean} parent The parent of the current option
  *
  * @typedef {CommonOption & BaseInnerOption} InnerOption
  */
@@ -111,6 +112,7 @@ const TreeSelectControl = ( {
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
 	const [ inputControlValue, setInputControlValue ] = useState( '' );
 
+	const controlRef = useRef();
 	const dropdownRef = useRef();
 	const onDropdownVisibilityChangeRef = useRef();
 	onDropdownVisibilityChangeRef.current = onDropdownVisibilityChange;
@@ -149,8 +151,13 @@ const TreeSelectControl = ( {
 		// Clear cache if options change
 		cacheRef.current.filteredOptionsMap.clear();
 
-		function loadOption( option ) {
-			option.children?.forEach( loadOption );
+		function loadOption( option, parentId ) {
+			option.parent = parentId;
+
+			option.children?.forEach( ( el ) =>
+				loadOption( el, option.value )
+			);
+
 			repository[ option.key ?? option.value ] = option;
 		}
 
@@ -380,6 +387,11 @@ const TreeSelectControl = ( {
 		} else {
 			handleSingleChange( checked, option );
 		}
+
+		setInputControlValue( '' );
+		if ( ! nodesExpanded.includes( option.parent ) ) {
+			controlRef.current.focus();
+		}
 	};
 
 	/**
@@ -459,6 +471,7 @@ const TreeSelectControl = ( {
 			) }
 
 			<Control
+				ref={ controlRef }
 				disabled={ disabled }
 				tags={ getTags() }
 				isExpanded={ showTree }
@@ -473,6 +486,7 @@ const TreeSelectControl = ( {
 				placeholder={ placeholder }
 				label={ label }
 				maxVisibleTags={ maxVisibleTags }
+				value={ inputControlValue }
 				onTagsChange={ handleTagsChange }
 				onInputChange={ handleOnInputChange }
 			/>

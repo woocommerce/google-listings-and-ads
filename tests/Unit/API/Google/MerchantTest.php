@@ -245,6 +245,14 @@ class MerchantTest extends UnitTest {
 		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
 	}
 
+	public function test_get_claimed_url_hash_with_trailing_slash() {
+		$url = 'https://site.test';
+		$this->mock_get_account( $this->get_account_with_url( trailingslashit( $url ) ) );
+		$this->mock_get_account_status( $this->get_status_website_claimed() );
+
+		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
+	}
+
 	public function test_get_claimed_url_hash_from_account_failure() {
 		$this->mock_get_account_exception( new GoogleException( 'error', 400 ) );
 

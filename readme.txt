@@ -2,9 +2,9 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
-Tested up to: 5.9
+Tested up to: 6.0
 Requires PHP: 7.3
-Stable tag: 1.13.3
+Stable tag: 1.13.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,22 +109,28 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 1.13.3 - 2022-05-31 =
-* Add - Add six more promotion supported countries.
-* Fix - Allow unicode for Manufacturer Part Number (MPN) value.
-* Fix - Avoid to show Unsaved Values confirmation in Edit Free Listing when no values has been changed.
-* Fix - Prevent repeated account URL retrievals.
-* Fix - Update tracking docs.
-* Tweak - Replace storybook deps in favor of woocommerce-grow/storybook.
-* Tweak - Simplify and centralize the processing of internal states for the TreeSelectControl component.
-* Update - budget recommendation conversion rate.
+= 1.13.6 - 2022-06-21 =
+* Fix - Cannot disconnect Jetpack when other activated plugins are using Jetpack connection.
+* Fix - Compatibility CES prompts with WC 6.6.0.
+* Fix - Multiple CES prompts on the Dashboard Page.
 
-= 1.13.2 - 2022-05-25 =
-* Fix - Prevent repeated account URL retrievals.
+= 1.13.5 - 2022-06-15 =
+* Fix - Avoid losing focus when selecting an option in Tree Select Control.
+* Fix - Bump node-forge from 1.2.1 to 1.3.1.
+* Tweak - Clear input search filter after selecting an option.
+* Tweak - Disable Review Request in Standalone Accounts.
+* Tweak - Update copy for Free and Enhanced Listings merge
+* Tweak - WC 6.6 compatibility.
 
-= 1.13.1 - 2022-05-24 =
-* Fix - Missing ShoppingPerformanceView error when viewing report data.
-* Fix - Update the start/end date in the timePeriod message of coupon following google.protobuf.Timestamp.
-* Tweak - Show MC Issues resolution steps in the UI.
+= 1.13.4 - 2022-06-07 =
+* Fix - Adding Github Actions for storybook.
+* Fix - Do not show error notice when Merchant Center review request API call failed.
+* Fix - Do not store URL matches transient until fully connected.
+* Fix - Fix GitHub Workflow paths.
+* Fix - Use commit instead of branch for storybook dependency.
+* Tweak - Always compare site URL hash without trailing slash.
+* Tweak - Compliance Policy links.
+* Tweak - WC 6.6 compatibility.
+
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

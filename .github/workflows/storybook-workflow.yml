@@ -1,4 +1,4 @@
-name: JavaScript Unit Tests
+name: Deploy Storybook
 
 on:
   push:
@@ -6,24 +6,19 @@ on:
       - trunk
       - develop
     paths:
-      - "**.js"
+      - "js/src/components/**"
       - package.json
       - package-lock.json
-      - .github/workflows/js-unit-tests.yml
-  pull_request:
-    paths:
-      - "**.js"
-      - package.json
-      - package-lock.json
-      - .github/workflows/js-unit-tests.yml
+      - "storybook/**"
+      - .github/workflows/storybook-workflow.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  UnitTests:
-    name: JavaScript unit tests
+  Storybook:
+    name: Deploy Storybook
     runs-on: ubuntu-latest
     env:
       FORCE_COLOR: 2
@@ -36,5 +31,11 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      - name: Run JavaScript unit tests
-        run: npm run test:js
+      - name: Build Storybook
+        run: npm run storybook:build
+
+      - name: Deploy to GH Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./storybook/dist

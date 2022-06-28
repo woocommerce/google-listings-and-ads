@@ -45,7 +45,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
  * Render a modal showing the issues list and a notice with a remind for
  * the user to review those issues before requesting the review.
  *
- * @fires gla_request_review_issues_solved_checkbox_click with `action: 'checked' | 'unchecked'
+ * @fires gla_request_review_issues_solved_checkbox_click with `action: 'checked' | 'unchecked'`
  * @fires gla_request_review
  * @fires gla_request_review_success
  * @fires gla_request_review_failure
