@@ -117,7 +117,6 @@ class PolicyComplianceCheckController extends BaseController {
 	protected function has_payment_gateways_callback(): callable {
 		return function ( Request $request ) {
 			try {
-
 				return $this->policy_compliance_check->has_payment_gateways();
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -165,7 +164,7 @@ class PolicyComplianceCheckController extends BaseController {
 		return [
 			'allowed_countries' => [
 				'type'        => 'array',
-				'description' => __( 'The allowed countries associated with onboarding policy checking.', 'google-listings-and-ads' ),
+				'description' => __( 'The allowed countries where the store could be accessed.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
 			'payment_gateways'  => [
