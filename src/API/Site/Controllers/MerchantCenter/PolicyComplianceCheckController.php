@@ -10,6 +10,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
+use Exception;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 
 defined( 'ABSPATH' ) || exit;

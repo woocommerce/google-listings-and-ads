@@ -37,7 +37,7 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 		                         ->method( 'get_allowed_countries' )
 		                         ->willReturn([ 'allowed_countries' => ['US', 'UK'] ]);
 
-		$response = $this->do_request( self::ALLOWED_COUNTRIES, 'POST', [] );
+		$response = $this->do_request( self::ALLOWED_COUNTRIES, 'GET', [] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [ 'allowed_countries' => ['US', 'UK'] ], $response->get_data() );
@@ -46,9 +46,9 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 	public function test_store_ssl() {
 		$this->policy_compliance_check->expects( $this->once() )
 		                         ->method( 'get_is_store_ssl' )
-		                         ->willReturn( [ 'ssl' => true ] );
+		                         ->willReturn( [ 'store_ssl' => true ] );
 
-		$response = $this->do_request( self::STORE_SSL, 'POST', [] );
+		$response = $this->do_request( self::STORE_SSL, 'GET', [] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [ 'store_ssl' => true ], $response->get_data() );
@@ -59,7 +59,7 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 		                         ->method( 'has_payment_gateways' )
 		                         ->willReturn( [ 'payment_gateways' => true ] );
 
-		$response = $this->do_request( self::PAYMENT_GATEWAYS, 'POST', [] );
+		$response = $this->do_request( self::PAYMENT_GATEWAYS, 'GET', [] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [ 'payment_gateways' => true ], $response->get_data() );
@@ -70,7 +70,7 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 		                         ->method( 'has_refund_return_policy_page' )
 		                         ->willReturn( [ 'refund_return_policy_page' => true ] );
 
-		$response = $this->do_request( self::REFUND_RETURN, 'POST', [] );
+		$response = $this->do_request( self::REFUND_RETURN, 'GET', [] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( [ 'refund_return_policy_page' => true ], $response->get_data() );
