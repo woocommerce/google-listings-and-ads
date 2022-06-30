@@ -58,17 +58,17 @@ class Ads implements OptionsAwareInterface {
 	public function get_ads_accounts(): array {
 		try {
 			$customers = $this->client->getCustomerServiceClient()->listAccessibleCustomers();
-			$return    = [];
+			$accounts  = [];
 
 			foreach ( $customers->getResourceNames() as $name ) {
 				$account = $this->get_account_details( $name );
 
 				if ( $account ) {
-					$return[] = $account;
+					$accounts[] = $account;
 				}
 			}
 
-			return $return;
+			return $accounts;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
