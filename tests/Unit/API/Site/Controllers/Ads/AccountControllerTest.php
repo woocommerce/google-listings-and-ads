@@ -82,7 +82,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_get_accounts_with_no_ids() {
+	public function test_get_accounts_empty_set() {
 		$this->account->expects( $this->once() )
 			->method( 'get_accounts' )
 			->willReturn( self::TEST_NO_ACCOUNTS );
