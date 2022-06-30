@@ -17,7 +17,6 @@ use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V9\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
 use Google\Ads\GoogleAds\V9\Resources\MerchantCenterLink;
-use Google\Ads\GoogleAds\V9\Services\CustomerServiceClient;
 use Google\Ads\GoogleAds\V9\Services\MerchantCenterLinkOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
