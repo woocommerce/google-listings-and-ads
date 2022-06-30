@@ -11,7 +11,7 @@
 		margin-bottom: 0;
 
 		.hero-text__subtitle {
-			font-size: 16px;
+			font-size: $editor-font-size;
 			font-weight: 600;
 			line-height: 1.5;
 			padding: 0;
@@ -20,7 +20,7 @@
 		}
 
 		.hero-text__body {
-			font-size: 14px;
+			font-size: $gla-font-small;
 			margin-bottom: var(--main-gap);
 		}
 	}

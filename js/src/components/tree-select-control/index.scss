@@ -20,15 +20,15 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 
 	&__label {
 		display: block;
-		font-size: 16px;
+		font-size: $editor-font-size;
 		color: $gray-700;
 		padding-bottom: $gap-smaller;
 	}
 
 	&__help {
 		margin-top: $gap-smallest;
-		line-height: 16px;
-		font-size: 12px;
+		line-height: $gla-line-height-smaller;
+		font-size: $helptext-font-size;
 		color: $gray-700;
 	}
 
@@ -54,7 +54,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 		}
 
 		.woocommerce-tree-select-control__control-input {
-			font-size: 16px;
+			font-size: $editor-font-size;
 			border: 0;
 			box-shadow: none;
 			color: $gray-800;
@@ -62,7 +62,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 			padding-left: 0;
 			padding-right: 0;
 			width: 100%;
-			line-height: 24px;
+			line-height: 1.5;
 			text-align: left;
 			letter-spacing: inherit;
 			background: transparent;
@@ -89,7 +89,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 
 		&.with-value .components-base-control__label,
 		&.has-tags .components-base-control__label {
-			font-size: 12px;
+			font-size: $helptext-font-size;
 			margin-top: -$gap-small;
 		}
 
@@ -183,7 +183,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 	}
 
 	.woocommerce-tree-select-control__option {
-		font-size: 16px;
+		font-size: $editor-font-size;
 		padding: 0 0 0 $gap-smaller;
 		flex: 1;
 		text-align: left;
@@ -238,7 +238,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 		}
 
 		.components-base-control.is-active .components-base-control__label {
-			font-size: 12px;
+			font-size: $helptext-font-size;
 			margin-top: -$gap-small;
 		}
 

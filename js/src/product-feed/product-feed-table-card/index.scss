@@ -26,11 +26,11 @@
 		.components-base-control {
 			width: 250px;
 			height: 36px;
-			font-size: 13px;
+			font-size: $default-font-size;
 		}
 
 		.components-base-control__label {
-			font-size: 13px;
+			font-size: $default-font-size;
 		}
 
 		.with-value .components-base-control__label {
@@ -43,12 +43,12 @@
 
 		.woocommerce-select-control__option {
 			min-height: 36px;
-			font-size: 13px;
+			font-size: $default-font-size;
 		}
 
 		.woocommerce-select-control__control-input {
 			margin-top: 0;
-			font-size: 13px;
+			font-size: $default-font-size;
 			color: $gray-900;
 		}
 	}

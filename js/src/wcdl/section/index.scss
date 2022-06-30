@@ -19,7 +19,7 @@
 		}
 
 		h1 {
-			font-size: 16px;
+			font-size: $editor-font-size;
 			font-style: normal;
 			font-weight: 600;
 			margin-bottom: 8px;
@@ -28,7 +28,7 @@
 
 		> p {
 			margin: 0 0 1em;
-			line-height: 16px;
+			line-height: $gla-line-height-smaller;
 		}
 	}
 
