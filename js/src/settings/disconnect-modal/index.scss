@@ -1,6 +1,6 @@
 .gla-disconnect-accounts-modal {
 	@include break-small {
-		max-width: 600px;
+		max-width: $break-small;
 	}
 
 	.components-modal__header-heading {

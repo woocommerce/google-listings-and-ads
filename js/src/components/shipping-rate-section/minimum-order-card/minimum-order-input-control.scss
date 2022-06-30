@@ -2,7 +2,7 @@
 	& &__label {
 		display: flex;
 		justify-content: space-between;
-		gap: 4px;
+		gap: $grid-unit-05;
 
 		button {
 			height: fit-content;

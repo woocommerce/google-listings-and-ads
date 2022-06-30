@@ -1,9 +1,9 @@
 .gla-stepper-top-bar {
 	display: flex;
 	align-items: stretch;
-	min-height: 64px;
-	background-color: #fff;
-	box-shadow: 0 -1px 0 0 #ccc inset;
+	min-height: $grid-unit-40 * 2;
+	background-color: $white;
+	box-shadow: 0 -1px 0 0 $gray-400 inset;
 
 	.back-button {
 		display: flex;

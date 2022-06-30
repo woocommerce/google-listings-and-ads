@@ -2,7 +2,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	background-color: #fff;
+	background-color: $white;
 	padding: var(--large-gap);
 	padding-bottom: 0;
 
@@ -16,7 +16,7 @@
 			line-height: 1.5;
 			padding: 0;
 			margin: 0;
-			margin-top: 4px;
+			margin-top: $grid-unit-05;
 		}
 
 		.hero-text__body {
@@ -26,6 +26,6 @@
 	}
 
 	.hero-image {
-		margin-bottom: -4px;
+		margin-bottom: -#{$grid-unit-05};
 	}
 }

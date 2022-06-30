@@ -37,7 +37,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		border: 1px solid $gray-600;
+		border: $border-width solid $gray-600;
 		border-radius: 3px;
 		background: $white;
 		padding: $gap-small;
@@ -79,7 +79,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 		i {
 			color: #636d75;
 			margin-right: $gap-small;
-			width: 24px;
+			width: $icon-size;
 		}
 
 		&.is-active {
@@ -94,7 +94,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 		}
 
 		&.is-disabled {
-			border: 1px solid rgb(167 170 173 / 50%);
+			border: $border-width solid rgb(167 170 173 / 50%);
 			background: rgb(255 255 255 / 50%);
 
 			.components-base-control__field {
@@ -125,11 +125,11 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 	}
 
 	.woocommerce-tree-select-control__show-more {
-		max-height: 24px;
+		max-height: $icon-size;
 	}
 
 	.woocommerce-tag {
-		max-height: 24px;
+		max-height: $icon-size;
 	}
 
 	.woocommerce-tree-select-control__clear {
@@ -165,7 +165,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 	.woocommerce-tree-select-control__node {
 
 		&.has-children {
-			border-bottom: 1px solid #eee;
+			border-bottom: $border-width solid #eee;
 
 			&:last-child {
 				border-bottom: 0;
@@ -178,7 +178,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 	}
 
 	.woocommerce-tree-select-control__main {
-		border-top: 1px solid $gray-200;
+		border-top: $border-width solid $gray-200;
 		padding-left: 0;
 	}
 
@@ -202,10 +202,10 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 			.components-checkbox-control__input {
 				background: var(--wp-admin-theme-color);
 				border: $gap-smallest solid $white;
-				box-shadow: 0 0 0 1px #1e1e1e;
+				box-shadow: 0 0 0 1px $gray-900;
 
 				&:focus {
-					box-shadow: 0 0 0 1px #fff, 0 0 0 3px var(--wp-admin-theme-color);
+					box-shadow: 0 0 0 1px $white, 0 0 0 3px var(--wp-admin-theme-color);
 				}
 			}
 		}
@@ -234,7 +234,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 
 	&.is-searchable {
 		.components-base-control__label {
-			left: 48px;
+			left: $grid-unit-60;
 		}
 
 		.components-base-control.is-active .components-base-control__label {
@@ -243,7 +243,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 		}
 
 		.woocommerce-tree-select-control__control-input {
-			padding-left: 12px;
+			padding-left: $grid-unit-15;
 		}
 	}
 }

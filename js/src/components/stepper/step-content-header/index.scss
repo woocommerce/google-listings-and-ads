@@ -5,7 +5,7 @@
 	max-width: 487px;
 	text-align: center;
 	margin: auto;
-	gap: 12px;
+	gap: $grid-unit-15;
 	margin-bottom: var(--large-gap);
 
 	h1 {

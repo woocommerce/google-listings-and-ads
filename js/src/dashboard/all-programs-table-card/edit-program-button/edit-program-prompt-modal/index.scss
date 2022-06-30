@@ -1,5 +1,5 @@
 .gla-edit-program-prompt-modal {
 	@include break-small {
-		max-width: 360px;
+		max-width: $modal-min-width;
 	}
 }

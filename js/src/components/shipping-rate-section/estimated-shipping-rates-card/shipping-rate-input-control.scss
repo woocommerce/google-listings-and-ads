@@ -2,12 +2,12 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-items: flex-end;
-	gap: 8px;
+	gap: $grid-unit;
 
 	.label {
 		display: flex;
 		justify-content: space-between;
-		gap: 4px;
+		gap: $grid-unit-05;
 
 		button {
 			height: fit-content;
@@ -17,7 +17,7 @@
 	}
 
 	.app-input-control {
-		width: 300px;
+		width: $gla-size-medium;
 	}
 
 	.gla-input-pill-div {
@@ -25,8 +25,8 @@
 		padding: 2px 0;
 
 		.woocommerce-pill {
-			border-color: #008a20;
-			color: #008a20;
+			border-color: $gla-color-green;
+			color: $gla-color-green;
 		}
 	}
 }

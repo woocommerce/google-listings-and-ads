@@ -8,7 +8,7 @@
 
 	&__label {
 		color: $gray-700;
-		padding-bottom: 4px;
+		padding-bottom: $grid-unit-05;
 	}
 
 	&__helper-text {
@@ -34,7 +34,7 @@
 			}
 
 			.woocommerce-tag {
-				max-height: 24px;
+				max-height: $icon-size;
 			}
 		}
 
@@ -54,7 +54,7 @@
 				}
 				.woocommerce-tag__text {
 					padding: 0 $grid-unit-10;
-					border-radius: 12px;
+					border-radius: $grid-unit-15;
 				}
 			}
 		}

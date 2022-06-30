@@ -67,7 +67,7 @@
 		display: flex;
 		justify-content: center;
 		width: 188px;
-		height: 36px;
+		height: $gla-size-control-height;
 		font-size: $gla-font-small;
 		margin-bottom: $grid-unit-10;
 	}
@@ -88,7 +88,7 @@
 	}
 
 	.components-tip {
-		border-top: 1px solid $gray-300;
+		border-top: $border-width solid $gray-300;
 		padding: $grid-unit-30 $grid-unit-15;
 		margin: 0 $grid-unit-50;
 

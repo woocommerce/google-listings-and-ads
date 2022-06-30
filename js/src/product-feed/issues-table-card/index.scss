@@ -38,11 +38,11 @@
 
 .gla-issues-table-data-modal {
 	.components-modal__header {
-		border-bottom: 1px solid #ccc;
+		border-bottom: $border-width solid $gray-400;
 	}
 
 	.gridicon {
-		width: 12px;
+		width: $grid-unit-15;
 		margin-right: 0.5em;
 	}
 }

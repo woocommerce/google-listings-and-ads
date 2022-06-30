@@ -1,7 +1,7 @@
 .app-tab-nav__tabs {
 	display: flex;
 	align-items: stretch;
-	box-shadow: inset 0 -1px 0 #ccc;
+	box-shadow: inset 0 -1px 0 $gray-400;
 	margin-bottom: var(--main-gap);
 
 	&-item {
@@ -11,7 +11,7 @@
 		border-radius: 0;
 		cursor: pointer;
 		height: $grid-unit-60;
-		padding: 3px $grid-unit-20; // Use padding to offset the is-active border, this benefits Windows High Contrast mode
+		padding: $gla-grid-unit-05 $grid-unit-20; // Use padding to offset the is-active border, this benefits Windows High Contrast mode
 		margin-left: 0;
 		font-weight: 500;
 		box-sizing: border-box;

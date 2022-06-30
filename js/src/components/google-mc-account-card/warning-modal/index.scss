@@ -1,10 +1,10 @@
 .gla-mc-warning-modal {
-	max-width: 600px;
+	max-width: $break-small;
 
 	&__warning-text {
 		font-weight: bold;
 		display: flex;
-		gap: 8px;
+		gap: $grid-unit;
 
 		svg {
 			flex-shrink: 0;

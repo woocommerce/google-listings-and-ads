@@ -14,7 +14,7 @@
 	&__title {
 		font-size: $default-font-size;
 		font-weight: 600;
-		margin-bottom: 8px;
+		margin-bottom: $grid-unit;
 	}
 
 	&__description {

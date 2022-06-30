@@ -1,7 +1,7 @@
 .gla-google-mc-account {
 	.wcdl-section {
 		header {
-			box-shadow: inset 0 1px 0 #ddd;
+			box-shadow: inset 0 1px 0 $gray-300;
 			padding-top: var(--main-gap);
 
 			.components-tip {
@@ -32,7 +32,7 @@
 							* 	width: (not specified);
 							* 	white-space: nowrap;
 							*/
-							width: 250px;
+							width: $gla-size-small;
 							white-space: normal;
 							text-align: left;
 						}

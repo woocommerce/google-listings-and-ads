@@ -13,7 +13,7 @@
 	// Add a gap between the SVG icon and text when the icon is on the right side.
 	// `:last-child` is to prevent this style apply on the loading <Spinner>.
 	&--icon-position-right.has-icon svg:last-child {
-		margin-left: 8px;
+		margin-left: $grid-unit;
 	}
 
 	/**
@@ -23,6 +23,6 @@
 	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/button/style.scss#L15
 	 */
 	&--icon-with-text.has-icon {
-		padding: 6px 12px;
+		padding: $gla-grid-unit $grid-unit-15;
 	}
 }

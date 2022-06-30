@@ -5,7 +5,7 @@
 }
 
 .gla-review-request-modal {
-	max-width: 600px;
+	max-width: $break-small;
 
 	&__notice {
 		margin-left: 0;
@@ -33,7 +33,7 @@
 	}
 
 	&__text-body {
-		color: #757575;
+		color: $gray-700;
 	}
 
 	&__button {
