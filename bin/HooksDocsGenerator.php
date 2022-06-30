@@ -60,7 +60,6 @@ class HooksDocsGenerator {
 					$files = array_merge( $files, $retrieved_files );
 				}
 			}
-
 		}
 		return $files;
 	}
