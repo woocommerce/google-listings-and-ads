@@ -2,3 +2,20 @@
 @import "node_modules/@wordpress/base-styles/variables";
 
 // Add other variables or adjustments we want below
+
+// Typography
+
+$gla-font-smallest: 11px;
+$gla-font-small: 14px;
+$gla-font-small-medium: 20px;
+$gla-font-medium: 24px;
+$gla-font-big: 32px;
+
+// Line Heights
+
+$gla-line-height-smallest: 13px;
+$gla-line-height-smaller: 16px;
+$gla-line-height-small: 18px;
+$gla-line-height-medium: 20px;
+$gla-line-height-medium-large: 28px;
+$gla-line-height-large: 32px;
