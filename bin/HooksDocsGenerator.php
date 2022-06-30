@@ -33,13 +33,6 @@ class HooksDocsGenerator {
 	protected const HOOKS_MARKDOWN_OUTPUT = './src/Hooks/README.md';
 
 	/**
-	 * List of files found.
-	 *
-	 * @var array
-	 */
-	protected static $found_files = [];
-
-	/**
 	 * Get files.
 	 *
 	 * @param string $pattern Search pattern.
@@ -62,21 +55,12 @@ class HooksDocsGenerator {
 
 		if ( is_array( $paths ) ) {
 			foreach ( $paths as $p ) {
-				$found_files     = [];
 				$retrieved_files = (array) self::get_files( $pattern, $flags, $p . '/' );
-
-				foreach ( $retrieved_files as $file ) {
-					if ( ! in_array( $file, self::$found_files, true ) ) {
-						$found_files[] = $file;
-					}
-				}
-
-				self::$found_files = array_merge( self::$found_files, $found_files );
-
-				if ( is_array( $files ) && is_array( $found_files ) ) {
-					$files = array_merge( $files, $found_files );
+				if ( is_array( $files ) && is_array( $retrieved_files ) ) {
+					$files = array_merge( $files, $retrieved_files );
 				}
 			}
+
 		}
 		return $files;
 	}
@@ -89,7 +73,7 @@ class HooksDocsGenerator {
 	protected static function get_files_to_scan(): array {
 		$files = [];
 
-		$files['Src'] = self::get_files( '*.php', GLOB_MARK, self::SOURCE_PATH );
+		$files['Src'] = array_unique( self::get_files( '*.php', GLOB_MARK, self::SOURCE_PATH ) );
 		return array_filter( $files );
 	}
 
