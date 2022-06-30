@@ -148,7 +148,7 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Check if we have access to the merchant account.
+	 * Check if we have access to the ads account.
 	 *
 	 * @param string $email Email address of the connected account.
 	 *
