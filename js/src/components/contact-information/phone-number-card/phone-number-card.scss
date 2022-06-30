@@ -12,7 +12,7 @@
 			}
 
 			.woocommerce-select-control__control-input {
-				font-size: 13px;
+				font-size: $default-font-size;
 				color: $gray-900;
 			}
 
@@ -22,7 +22,7 @@
 
 			.woocommerce-select-control__option {
 				min-height: 36px;
-				font-size: 13px;
+				font-size: $default-font-size;
 			}
 		}
 	}
@@ -31,7 +31,7 @@
 	.components-input-control .components-input-control__container {
 		.components-input-control__input {
 			height: 36px;
-			font-size: 13px;
+			font-size: $default-font-size;
 			color: $gray-900;
 		}
 

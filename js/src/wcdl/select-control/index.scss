@@ -13,8 +13,8 @@
 
 	&__helper-text {
 		font-style: italic;
-		font-size: 12px;
-		line-height: 16px;
+		font-size: $helptext-font-size;
+		line-height: $gla-line-height-smaller;
 	}
 
 	// don't show the default magnifier icon.

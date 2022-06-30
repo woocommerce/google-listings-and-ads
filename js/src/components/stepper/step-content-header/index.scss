@@ -9,13 +9,13 @@
 	margin-bottom: var(--large-gap);
 
 	h1 {
-		font-size: 32px;
+		font-size: $gla-font-big;
 		font-weight: 400;
 		padding: 0;
 	}
 
 	.description {
-		font-size: 13px;
+		font-size: $default-font-size;
 		font-weight: 400;
 		margin: 0;
 	}

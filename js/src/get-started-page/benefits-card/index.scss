@@ -49,7 +49,7 @@
 	@media (max-width: $break-small) {
 		// Use more specific rules to make it higher priority to override <Text> component.
 		& &__title {
-			font-size: $gla-font-medium-mobile;
+			font-size: $gla-font-small-medium;
 		}
 	}
 }

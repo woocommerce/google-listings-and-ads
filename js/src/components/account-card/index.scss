@@ -1,5 +1,5 @@
 .gla-account-card {
-	line-height: 16px;
+	line-height: $gla-line-height-smaller;
 
 	&--is-disabled {
 		opacity: 0.5;
@@ -34,7 +34,7 @@
 	&__helper {
 		margin-top: 4px;
 		font-style: italic;
-		font-size: 12px;
+		font-size: $helptext-font-size;
 		color: $gray-700;
 	}
 

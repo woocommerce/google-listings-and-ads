@@ -14,9 +14,9 @@
 	.title {
 		align-self: center;
 		flex: 1;
-		font-size: 16px;
+		font-size: $editor-font-size;
 		font-weight: 400;
-		line-height: 28px;
+		line-height: $gla-line-height-medium-large;
 		letter-spacing: 0;
 	}
 

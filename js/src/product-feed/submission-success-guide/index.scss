@@ -71,7 +71,7 @@
 				box-sizing: border-box;
 				border-radius: 3px;
 				font-weight: 500;
-				font-size: 14px;
+				font-size: $gla-font-small;
 				& ~ .components-button {
 					margin-left: calc(var(--main-gap) / 2);
 				}
