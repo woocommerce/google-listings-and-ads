@@ -18,32 +18,38 @@ export default function useNavigateAwayPromptEffect(
 	blockedLocation = () => true
 ) {
 	useEffect( () => {
-		// Bind beforeunload event for non `woocommerce/navigation` links and reloads.
-		// history#v5 does bind `beforeunload` automatically, with v4 we need to do it ourselves.
-		const eventListener = ( e ) => {
-			// If you prevent default behavior in Mozilla Firefox prompt will always be shown.
-			e.preventDefault();
-			// Chrome requires returnValue to be set.
-			e.returnValue = message;
-		};
+		// Block woocommerce/navigation in order to show a confirmation prompt in case shouldBlock is true
+		const unblock = getHistory().block( ( transition ) => {
+			let shouldUnblock = true;
 
-		if ( shouldBlock ) {
-			window.addEventListener( 'beforeunload', eventListener );
-		}
-		// Block woocommerce/navigation.
-		const unblock = getHistory().block( ( location ) => {
-			// TODO: Consider being futureproof for history.v5 where
-			// getHistory().block( ( { location, retry } ) => {
+			/**
+			 * In history v4 (< WC 6.7) block method only receives one parameter (the location)
+			 * In v5 (>= WC 6.7) its a transition object with location, retry and action props
+			 */
+			const location = transition?.location || transition;
 
-			// Return the message / truthy value to show a prompt.
+			// show prompt if we want to block the navigation
 			if ( shouldBlock && blockedLocation( location ) ) {
-				return message;
+				// eslint-disable-next-line no-alert
+				shouldUnblock = window.confirm( message );
 			}
+
+			// if it is not blocked unblock the navigation and retry (v5) or return true (v4) ...
+			if ( shouldUnblock ) {
+				unblock();
+				if ( typeof transition?.retry !== 'undefined' ) {
+					transition.retry();
+				} else {
+					return true;
+				}
+			}
+
+			// v4 compatibility requires return false to actually block the navigation
+			return false;
 		} );
 
 		return () => {
 			unblock();
-			window.removeEventListener( 'beforeunload', eventListener );
 		};
 	}, [ message, shouldBlock, blockedLocation ] );
 }
