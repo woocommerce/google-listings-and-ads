@@ -33,23 +33,23 @@ class ShippingLocation {
 	protected $state;
 
 	/**
-	 * @var PostcodeRange[]
+	 * @var ShippingRegion
 	 */
-	protected $postcodes;
+	protected $shipping_region;
 
 	/**
 	 * ShippingLocation constructor.
 	 *
-	 * @param int                  $google_id
-	 * @param string               $country
-	 * @param string|null          $state
-	 * @param PostcodeRange[]|null $postcodes
+	 * @param int                 $google_id
+	 * @param string              $country
+	 * @param string|null         $state
+	 * @param ShippingRegion|null $shipping_region
 	 */
-	public function __construct( int $google_id, string $country, ?string $state = null, ?array $postcodes = null ) {
-		$this->google_id = $google_id;
-		$this->country   = $country;
-		$this->state     = $state;
-		$this->postcodes = $postcodes;
+	public function __construct( int $google_id, string $country, ?string $state = null, ShippingRegion $shipping_region = null ) {
+		$this->google_id       = $google_id;
+		$this->country         = $country;
+		$this->state           = $state;
+		$this->shipping_region = $shipping_region;
 	}
 
 	/**
@@ -74,27 +74,10 @@ class ShippingLocation {
 	}
 
 	/**
-	 * @return PostcodeRange[]|null
+	 * @return ShippingRegion|null
 	 */
-	public function get_postcodes(): ?array {
-		return $this->postcodes;
-	}
-
-	/**
-	 * Return the postcode group name for this location.
-	 *
-	 * @return string Serialized string representation of the postcodes, or an empty string if the location doesn't have any postcodes.
-	 */
-	public function get_postcode_group_name(): string {
-		if ( empty( $this->get_postcodes() ) ) {
-			return '';
-		}
-
-		return sprintf(
-			'%s - %s',
-			$this->get_country(),
-			join( ',', $this->get_postcodes() )
-		);
+	public function get_shipping_region(): ?ShippingRegion {
+		return $this->shipping_region;
 	}
 
 	/**
@@ -103,7 +86,7 @@ class ShippingLocation {
 	 * @return string
 	 */
 	public function get_applicable_area(): string {
-		if ( ! empty( $this->get_postcodes() ) ) {
+		if ( ! empty( $this->get_shipping_region() ) ) {
 			// ShippingLocation applies to a select postal code ranges of a country
 			return self::POSTCODE_AREA;
 		} elseif ( ! empty( $this->get_state() ) ) {
@@ -122,10 +105,10 @@ class ShippingLocation {
 	 */
 	public function __toString() {
 		$code = $this->get_country();
-		if ( ! empty( $this->get_postcodes() ) ) {
+		if ( ! empty( $this->get_shipping_region() ) ) {
 			// We assume that each postcode is unique within any supported country (a requirement set by Google API).
 			// Therefore, there is no need to include the state name in the location string even if it's provided.
-			$code .= '::' . join( ',', $this->get_postcodes() );
+			$code .= '::' . $this->get_shipping_region();
 		} elseif ( ! empty( $this->get_state() ) ) {
 			$code .= '_' . $this->get_state();
 		}

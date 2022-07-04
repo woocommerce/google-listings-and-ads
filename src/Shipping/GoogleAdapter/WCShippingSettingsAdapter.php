@@ -188,12 +188,13 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 
 		foreach ( $location_rates as $location_rate ) {
 			$location = $location_rate->get_location();
-			if ( empty( $location->get_postcodes() ) ) {
+			if ( empty( $location->get_shipping_region() ) ) {
 				continue;
 			}
+			$region = $location->get_shipping_region();
 
 			$postcode_ranges = [];
-			foreach ( $location->get_postcodes() as $postcode_range ) {
+			foreach ( $region->get_postcode_ranges() as $postcode_range ) {
 				$postcode_ranges[] = new PostalCodeRange(
 					[
 						'postalCodeRangeBegin' => $postcode_range->get_start_code(),
@@ -202,10 +203,9 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 				);
 			}
 
-			$postcode_name                     = $location->get_postcode_group_name();
-			$postcode_groups[ $postcode_name ] = new PostalCodeGroup(
+			$postcode_groups[ $region->get_id() ] = new PostalCodeGroup(
 				[
-					'name'             => $postcode_name,
+					'name'             => $region->get_id(),
 					'country'          => $location->get_country(),
 					'postalCodeRanges' => $postcode_ranges,
 				]

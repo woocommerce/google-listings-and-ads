@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\PostcodeRange;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ServiceRatesCollection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRegion;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 
 /**
@@ -44,6 +45,7 @@ class CountryRatesCollectionTest extends UnitTest {
 	public function test_returns_rates_grouped_by_service() {
 		$min_order_rate = new ShippingRate( 0 );
 		$min_order_rate->set_min_order_amount( 1000 );
+		$region_1       = new ShippingRegion( '123456', 'US', [ new PostcodeRange( '4000', '4001' ) ] );
 		$location_rates = [
 			// Country level
 			new LocationRate( new ShippingLocation( 0, 'US' ), $min_order_rate ),
@@ -52,7 +54,7 @@ class CountryRatesCollectionTest extends UnitTest {
 			new LocationRate( new ShippingLocation( 1, 'US', 'CA' ), new ShippingRate( 100 ) ),
 			new LocationRate( new ShippingLocation( 1, 'US', 'CA' ), new ShippingRate( 0 ) ),
 			// Country post code level
-			new LocationRate( new ShippingLocation( 0, 'US', null, [ new PostcodeRange( '4000', '4001' ) ] ), new ShippingRate( 110 ) ),
+			new LocationRate( new ShippingLocation( 0, 'US', null, $region_1 ), new ShippingRate( 110 ) ),
 		];
 
 		$collection = new CountryRatesCollection( 'US', $location_rates );
@@ -63,12 +65,15 @@ class CountryRatesCollectionTest extends UnitTest {
 	}
 
 	public function test_returns_rates_applicable_to_both_states_and_postcode_under_same_service_as_country_postcodes() {
+		$region_1       = new ShippingRegion( '123456', 'US', [ new PostcodeRange( '4000', '4001' ) ] );
+		$region_2       = new ShippingRegion( '123456', 'US', [ new PostcodeRange( '9000', '9001' ) ] );
+		$region_3       = new ShippingRegion( '123456', 'US', [ new PostcodeRange( '2000', '2001' ) ] );
 		$location_rates = [
 			// Country post code level
-			new LocationRate( new ShippingLocation( 0, 'US', null, [ new PostcodeRange( '4000', '4001' ) ] ), new ShippingRate( 110 ) ),
+			new LocationRate( new ShippingLocation( 0, 'US', null, $region_1 ), new ShippingRate( 110 ) ),
 			// State post code level
-			new LocationRate( new ShippingLocation( 1, 'US', 'CA', [ new PostcodeRange( '9000', '9001' ) ] ), new ShippingRate( 10 ) ),
-			new LocationRate( new ShippingLocation( 1, 'US', 'NV', [ new PostcodeRange( '2000', '2001' ) ] ), new ShippingRate( 10 ) ),
+			new LocationRate( new ShippingLocation( 1, 'US', 'CA', $region_2 ), new ShippingRate( 10 ) ),
+			new LocationRate( new ShippingLocation( 1, 'US', 'NV', $region_3 ), new ShippingRate( 10 ) ),
 		];
 
 		$collection = new CountryRatesCollection( 'US', $location_rates );
