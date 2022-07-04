@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { cloneDeep, noop } from 'lodash';
+import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { focus } from '@wordpress/dom';
 import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
@@ -46,13 +46,32 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  **/
 
 /**
- *
- * @typedef {Object} Option
+ * @typedef {Object} CommonOption
  * @property {string} value The value for the option
+ * @property {string} [key] Optional unique key for the Option. It will fallback to the value property if not defined
+ */
+
+/**
+ * @typedef {Object} BaseOption
  * @property {string} label The label for the option
  * @property {Option[]} [children] The children Option objects
- * @property {string} [key] Optional unique key for the Option. It will fallback to the value property if not defined
- **/
+ *
+ * @typedef {CommonOption & BaseOption} Option
+ */
+
+/**
+ * @typedef {Object} BaseInnerOption
+ * @property {string|JSX.Element} label The label string or label with highlighted react element for the option.
+ * @property {InnerOption[]|undefined} children The children options. The options are filtered if in searching.
+ * @property {boolean} hasChildren Whether this option has children.
+ * @property {InnerOption[]} leaves All leaf options that are flattened under this option. The options are filtered if in searching.
+ * @property {boolean} checked Whether this option is checked.
+ * @property {boolean} partialChecked Whether this option is partially checked.
+ * @property {boolean} expanded Whether this option is expanded.
+ * @property {boolean} parent The parent of the current option
+ *
+ * @typedef {CommonOption & BaseInnerOption} InnerOption
+ */
 
 /**
  * Renders a component with a searchable control, tags and a tree selector.
@@ -92,14 +111,16 @@ const TreeSelectControl = ( {
 	const [ treeVisible, setTreeVisible ] = useState( false );
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
 	const [ inputControlValue, setInputControlValue ] = useState( '' );
-	const [ filteredOptions, setFilteredOptions ] = useState( [] );
 
+	const controlRef = useRef();
 	const dropdownRef = useRef();
 	const onDropdownVisibilityChangeRef = useRef();
 	onDropdownVisibilityChangeRef.current = onDropdownVisibilityChange;
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
-	const filteredOptionsCache = useRef( {} );
+	const cacheRef = useRef( { filteredOptionsMap: new Map() } );
+	cacheRef.current.expandedValues = nodesExpanded;
+	cacheRef.current.selectedValues = value;
 
 	const showTree = ! disabled && treeVisible;
 
@@ -118,7 +139,6 @@ const TreeSelectControl = ( {
 		setTreeVisible( false );
 	} );
 
-	const hasChildren = ( option ) => option.children?.length;
 	const filterQuery = inputControlValue.trim().toLowerCase();
 	const filter = filterQuery.length >= 3 ? filterQuery : '';
 
@@ -128,10 +148,16 @@ const TreeSelectControl = ( {
 	const optionsRepository = useMemo( () => {
 		const repository = {};
 
-		filteredOptionsCache.current = []; // clear cache if options change
+		// Clear cache if options change
+		cacheRef.current.filteredOptionsMap.clear();
 
-		function loadOption( option ) {
-			option.children?.forEach( loadOption );
+		function loadOption( option, parentId ) {
+			option.parent = parentId;
+
+			option.children?.forEach( ( el ) =>
+				loadOption( el, option.value )
+			);
+
 			repository[ option.key ?? option.value ] = option;
 		}
 
@@ -140,23 +166,29 @@ const TreeSelectControl = ( {
 		return repository;
 	}, [ treeOptions ] );
 
-	/**
+	/*
 	 * Perform the search query filter in the Tree options
 	 *
 	 * 1. Check if the search query is already cached and return it if so.
-	 * 2. Deep Copy the tree. Since we are going to modify its children and labels recursively.
+	 * 2. Deep copy the tree with adding properties for rendering.
 	 * 3. In case of filter, we apply the filter option function to the tree.
 	 * 4. In the filter function we also highlight the label with the matching letters
 	 * 5. Finally we set the cache with the obtained results and apply the filters
-	 *
 	 */
-	useEffect( () => {
-		const cachedFilteredOptions = filteredOptionsCache.current[ filter ];
+	const filteredOptions = useMemo( () => {
+		const { current: cache } = cacheRef;
+		const cachedFilteredOptions = cache.filteredOptionsMap.get( filter );
+
+		if ( cachedFilteredOptions ) {
+			return cachedFilteredOptions;
+		}
+
+		const isSearching = Boolean( filter );
 
 		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
 			const matchLength = matchPosition + filter.length;
 
-			if ( ! filter ) return optionLabel;
+			if ( ! isSearching ) return optionLabel;
 
 			return (
 				<span>
@@ -169,30 +201,109 @@ const TreeSelectControl = ( {
 			);
 		};
 
-		const filterOption = ( option ) => {
-			if ( hasChildren( option ) ) {
-				option.children = option.children.filter( filterOption );
-				return !! option.children.length;
-			}
-
-			const match = option.label.toLowerCase().indexOf( filter );
-
-			if ( match >= 0 ) {
-				option.label = highlightOptionLabel( option.label, match );
-				return true;
-			}
+		const descriptors = {
+			hasChildren: {
+				/**
+				 * Returns whether this option has children.
+				 *
+				 * @return {boolean} True if has children, false otherwise.
+				 */
+				get() {
+					return this.children?.length > 0;
+				},
+			},
+			leaves: {
+				/**
+				 * Return all leaf options flattened under this option. The options are filtered if in searching.
+				 *
+				 * @return {InnerOption[]} All leaf options that are flattened under this option. The options are filtered if in searching.
+				 */
+				get() {
+					if ( ! this.hasChildren ) {
+						return [];
+					}
+					return this.children.flatMap( ( option ) => {
+						return option.hasChildren ? option.leaves : option;
+					} );
+				},
+			},
+			checked: {
+				/**
+				 * Returns whether this option is checked.
+				 * A leaf option is checked if its value is selected.
+				 * A parent option is checked if all leaves are checked.
+				 *
+				 * @return {boolean} True if checked, false otherwise.
+				 */
+				get() {
+					if ( this.hasChildren ) {
+						return this.leaves.every( ( opt ) => opt.checked );
+					}
+					return cache.selectedValues.includes( this.value );
+				},
+			},
+			partialChecked: {
+				/**
+				 * Returns whether this option is partially checked.
+				 * A leaf option always returns false.
+				 * A parent option is partially checked if at least one but not all leaves are checked.
+				 *
+				 * @return {boolean} True if partially checked, false otherwise.
+				 */
+				get() {
+					if ( ! this.hasChildren ) {
+						return false;
+					}
+					return (
+						! this.checked &&
+						this.leaves.some(
+							( opt ) => opt.checked || opt.partialChecked
+						)
+					);
+				},
+			},
+			expanded: {
+				/**
+				 * Returns whether this option is expanded.
+				 * A leaf option always returns false.
+				 *
+				 * @return {boolean} True if expanded, false otherwise.
+				 */
+				get() {
+					return (
+						isSearching ||
+						this.value === ROOT_VALUE ||
+						cache.expandedValues.includes( this.value )
+					);
+				},
+			},
 		};
 
-		if ( cachedFilteredOptions ) {
-			setFilteredOptions( cachedFilteredOptions );
-			return;
-		}
+		const reduceOptions = ( acc, { children = [], ...option } ) => {
+			if ( children.length ) {
+				option.children = children.reduce( reduceOptions, [] );
 
-		let filteredTreeOptions = cloneDeep( treeOptions );
+				if ( ! option.children.length ) {
+					return acc;
+				}
+			} else if ( isSearching ) {
+				const match = option.label.toLowerCase().indexOf( filter );
+				if ( match === -1 ) {
+					return acc;
+				}
+				option.label = highlightOptionLabel( option.label, match );
+			}
 
-		filteredTreeOptions = filteredTreeOptions.filter( filterOption );
-		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
-		setFilteredOptions( filteredTreeOptions );
+			Object.defineProperties( option, descriptors );
+			acc.push( option );
+
+			return acc;
+		};
+
+		const filteredTreeOptions = treeOptions.reduce( reduceOptions, [] );
+		cache.filteredOptionsMap.set( filter, filteredTreeOptions );
+
+		return filteredTreeOptions;
 	}, [ treeOptions, filter ] );
 
 	const onKeyDown = ( event ) => {
@@ -251,17 +362,35 @@ const TreeSelectControl = ( {
 	};
 
 	/**
+	 * Expands/Collapses the Option
+	 *
+	 * @param {InnerOption} option The option to be expanded or collapsed.
+	 */
+	const handleToggleExpanded = ( option ) => {
+		setNodesExpanded(
+			option.expanded
+				? nodesExpanded.filter( ( el ) => option.value !== el )
+				: [ ...nodesExpanded, option.value ]
+		);
+	};
+
+	/**
 	 * Handles a change on the Tree options. Could be a click on a parent option
 	 * or a child option
 	 *
 	 * @param {boolean} checked Indicates if the item should be checked
-	 * @param {Option} option The option to change
+	 * @param {InnerOption} option The option to change
 	 */
 	const handleOptionsChange = ( checked, option ) => {
-		if ( hasChildren( option ) ) {
+		if ( option.hasChildren ) {
 			handleParentChange( checked, option );
 		} else {
 			handleSingleChange( checked, option );
+		}
+
+		setInputControlValue( '' );
+		if ( ! nodesExpanded.includes( option.parent ) ) {
+			controlRef.current.focus();
 		}
 	};
 
@@ -269,7 +398,7 @@ const TreeSelectControl = ( {
 	 * Handles a change of a child element.
 	 *
 	 * @param {boolean} checked Indicates if the item should be checked
-	 * @param {Option} option The option to change
+	 * @param {InnerOption} option The option to change
 	 */
 	const handleSingleChange = ( checked, option ) => {
 		const newValue = checked
@@ -283,39 +412,23 @@ const TreeSelectControl = ( {
 	 * Handles a change of a Parent element.
 	 *
 	 * @param {boolean} checked Indicates if the item should be checked
-	 * @param {Option} option The option to change
+	 * @param {InnerOption} option The option to change
 	 */
 	const handleParentChange = ( checked, option ) => {
-		const newValue = [ ...value ];
+		let newValue;
+		const changedValues = option.leaves
+			.filter( ( opt ) => opt.checked !== checked )
+			.map( ( opt ) => opt.value );
 
-		if ( checked && ! nodesExpanded.includes( option.value ) ) {
-			setNodesExpanded( [ ...nodesExpanded, option.value ] );
-		}
-
-		function loadChildren( parent ) {
-			if ( ! parent.children ) {
-				return;
+		if ( checked ) {
+			if ( ! option.expanded ) {
+				handleToggleExpanded( option );
 			}
-
-			parent.children.forEach( ( child ) => {
-				if ( hasChildren( child ) ) {
-					loadChildren( child );
-					return;
-				}
-
-				const childPosition = newValue.indexOf( child.value );
-
-				if ( ! checked && childPosition >= 0 ) {
-					newValue.splice( childPosition, 1 );
-				}
-
-				if ( checked && childPosition < 0 ) {
-					newValue.push( child.value );
-				}
-			} );
+			newValue = value.concat( changedValues );
+		} else {
+			newValue = value.filter( ( el ) => ! changedValues.includes( el ) );
 		}
 
-		loadChildren( option );
 		onChange( newValue );
 	};
 
@@ -358,6 +471,7 @@ const TreeSelectControl = ( {
 			) }
 
 			<Control
+				ref={ controlRef }
 				disabled={ disabled }
 				tags={ getTags() }
 				isExpanded={ showTree }
@@ -372,6 +486,7 @@ const TreeSelectControl = ( {
 				placeholder={ placeholder }
 				label={ label }
 				maxVisibleTags={ maxVisibleTags }
+				value={ inputControlValue }
 				onTagsChange={ handleTagsChange }
 				onInputChange={ handleOnInputChange }
 			/>
@@ -384,12 +499,9 @@ const TreeSelectControl = ( {
 				>
 					<Options
 						options={ filteredOptions }
-						value={ value }
-						isFiltered={ !! filter }
 						onChange={ handleOptionsChange }
-						nodesExpanded={ nodesExpanded }
-						onNodesExpandedChange={ setNodesExpanded }
 						onExpanderClick={ handleExpanderClick }
+						onToggleExpanded={ handleToggleExpanded }
 					/>
 				</div>
 			) }

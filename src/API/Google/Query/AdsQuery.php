@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidProperty;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\PagedListResponse;
 
@@ -57,6 +58,24 @@ abstract class AdsQuery extends Query {
 		$this->id     = $id;
 
 		return $this;
+	}
+
+	/**
+	 * Get the first row from the results.
+	 *
+	 * @return GoogleAdsRow
+	 * @throws ApiException When no results returned or an error occurs.
+	 */
+	public function get_result(): GoogleAdsRow {
+		$results = $this->get_results();
+
+		if ( $results ) {
+			foreach ( $results->iterateAllElements() as $row ) {
+				return $row;
+			}
+		}
+
+		throw new ApiException( __( 'No result from query', 'google-listings-and-ads' ), 404, '' );
 	}
 
 	/**

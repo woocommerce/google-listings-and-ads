@@ -8,14 +8,12 @@ on:
     paths:
       - "**.js"
       - "**.scss"
-      - ./.github/workflows/js-css-linting.yml
-      - ./.github/actions/prepare-node/action.yml
+      - .github/workflows/js-css-linting.yml
   pull_request:
     paths:
       - "**.js"
       - "**.scss"
-      - ./.github/workflows/js-css-linting.yml
-      - ./.github/actions/prepare-node/action.yml
+      - .github/workflows/js-css-linting.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,10 +28,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Prepare node
-        uses: ./.github/actions/prepare-node
+        uses: woocommerce/grow/prepare-node@actions-v1
+        with:
+          node-version-file: ".nvmrc"
 
       - name: Lint JavaScript and annotate linting errors
         run: npm run lint:js -- --quiet --format ./.github/scripts/eslintFormatter.js
@@ -43,10 +43,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Prepare node
-        uses: ./.github/actions/prepare-node
+        uses: woocommerce/grow/prepare-node@actions-v1
+        with:
+          node-version-file: ".nvmrc"
 
       - name: Lint CSS and annotate linting errors
         run: npm run lint:css -- --custom-formatter ./.github/scripts/stylelintFormatter.js

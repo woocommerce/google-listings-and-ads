@@ -1197,10 +1197,18 @@ class GoogleHelper implements Service {
 	/**
 	 * Get an array of Google Merchant Center supported countries and currencies for promotions.
 	 *
+	 * Google Promotion Supported Countries -> https://developers.google.com/shopping-content/reference/rest/v2.1/promotions
+	 *
 	 * @return array
 	 */
 	protected function get_mc_promotion_supported_countries_currencies(): array {
 		return [
+			'AU' => 'AUD', // Australia
+			'CA' => 'CAD', // Canada
+			'DE' => 'EUR', // Germany
+			'FR' => 'EUR', // France
+			'GB' => 'GBP', // United Kingdom
+			'IN' => 'INR', // India
 			'US' => 'USD', // United States
 		];
 	}

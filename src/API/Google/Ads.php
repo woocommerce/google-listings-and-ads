@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAccountAccessQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAccountQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsBillingStatusQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -49,22 +50,25 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get Ads IDs associated with the connected Google account.
+	 * Get Ads accounts associated with the connected Google account.
 	 *
-	 * @return int[]
+	 * @return array
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_ads_account_ids(): array {
+	public function get_ads_accounts(): array {
 		try {
 			$customers = $this->client->getCustomerServiceClient()->listAccessibleCustomers();
-			$ids       = [];
+			$accounts  = [];
 
 			foreach ( $customers->getResourceNames() as $name ) {
-				/** @var string $name */
-				$ids[] = $this->parse_ads_id( $name );
+				$account = $this->get_account_details( $name );
+
+				if ( $account ) {
+					$accounts[] = $account;
+				}
 			}
 
-			return $ids;
+			return $accounts;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
@@ -143,7 +147,7 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Check if we have access to the merchant account.
+	 * Check if we have access to the ads account.
 	 *
 	 * @param string $email Email address of the connected account.
 	 *
@@ -153,10 +157,10 @@ class Ads implements OptionsAwareInterface {
 		$ads_id = $this->options->get_ads_id();
 
 		try {
-			$results = ( new AdsAccountQuery() )
-			->set_client( $this->client, $ads_id )
-			->where( 'customer_user_access.email_address', $email )
-			->get_results();
+			$results = ( new AdsAccountAccessQuery() )
+				->set_client( $this->client, $ads_id )
+				->where( 'customer_user_access.email_address', $email )
+				->get_results();
 
 			foreach ( $results->iterateAllElements() as $row ) {
 				$access = $row->getCustomerUserAccess();
@@ -196,8 +200,15 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function request_ads_currency(): bool {
 		try {
-			$resource = ResourceNames::forCustomer( $this->options->get_ads_id() );
-			$customer = $this->client->getCustomerServiceClient()->getCustomer( $resource );
+			$ads_id   = $this->options->get_ads_id();
+			$account  = ResourceNames::forCustomer( $ads_id );
+			$customer = ( new AdsAccountQuery() )
+				->set_client( $this->client, $ads_id )
+				->columns( [ 'customer.currency_code' ] )
+				->where( 'customer.resource_name', $account, '=' )
+				->get_result()
+				->getCustomer();
+
 			$currency = $customer->getCurrencyCode();
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
@@ -249,6 +260,36 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function update_billing_url( string $url ): bool {
 		return $this->options->update( OptionsInterface::ADS_BILLING_URL, $url );
+	}
+
+	/**
+	 * Fetch the account details.
+	 * Returns null for any account that fails or is not the right type.
+	 *
+	 * @param string $account Customer resource name.
+	 * @return null|array
+	 */
+	private function get_account_details( string $account ): ?array {
+		try {
+			$customer = ( new AdsAccountQuery() )
+				->set_client( $this->client, $this->parse_ads_id( $account ) )
+				->where( 'customer.resource_name', $account, '=' )
+				->get_result()
+				->getCustomer();
+
+			if ( ! $customer || $customer->getManager() || $customer->getTestAccount() ) {
+				return null;
+			}
+
+			return [
+				'id'   => $customer->getId(),
+				'name' => $customer->getDescriptiveName(),
+			];
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+		}
+
+		return null;
 	}
 
 	/**

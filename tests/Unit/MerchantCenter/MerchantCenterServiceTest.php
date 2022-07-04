@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -40,6 +41,7 @@ defined( 'ABSPATH' ) || exit;
  * @property MockObject|ShippingRateQuery    $shipping_rate_query
  * @property MockObject|ShippingTimeQuery    $shipping_time_query
  * @property MockObject|TargetAudience       $target_audience
+ * @property MockObject|TransientsInterface  $transients
  * @property MockObject|WC                   $wc
  * @property MockObject|WP                   $wp
  * @property MerchantCenterService           $mc_service
@@ -67,6 +69,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->shipping_rate_query    = $this->createMock( ShippingRateQuery::class );
 		$this->shipping_time_query    = $this->createMock( ShippingTimeQuery::class );
 		$this->target_audience        = $this->createMock( TargetAudience::class );
+		$this->transients             = $this->createMock( TransientsInterface::class );
 		$this->wc                     = $this->createMock( WC::class );
 		$this->wp                     = $this->createMock( WP::class );
 		$this->options                = $this->createMock( OptionsInterface::class );
@@ -82,6 +85,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->container->share( ShippingRateQuery::class, $this->shipping_rate_query );
 		$this->container->share( ShippingTimeQuery::class, $this->shipping_time_query );
 		$this->container->share( TargetAudience::class, $this->target_audience );
+		$this->container->share( TransientsInterface::class, $this->transients );
 		$this->container->share( WC::class, $this->wc );
 		$this->container->share( WP::class, $this->wp );
 
@@ -166,6 +170,26 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
 	}
 
+	public function test_is_ready_for_syncing_not_setup() {
+		$hash = md5( site_url() );
+		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( $hash );
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::GOOGLE_CONNECTED, false ],
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ]
+			)
+			->willReturnOnConsecutiveCalls(
+				true,
+				false
+			);
+
+		$this->transients->expects( $this->never() )
+			->method( 'get' )
+			->with( TransientsInterface::URL_MATCHES );
+
+		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+	}
+
 	public function test_is_ready_for_syncing_filter_override() {
 		$hash = md5( 'https://staging-site.test' );
 		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( $hash );
@@ -181,6 +205,44 @@ class MerchantCenterServiceTest extends UnitTest {
 
 		add_filter( 'woocommerce_gla_ready_for_syncing', '__return_true' );
 
+		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
+	}
+
+	public function test_is_ready_for_syncing_fetch_from_transient() {
+		$hash = md5( site_url() );
+		$this->merchant->expects( $this->once() )
+			->method( 'get_claimed_url_hash' )
+			->willReturn( $hash );
+
+		$this->options->expects( $this->exactly( 4 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::GOOGLE_CONNECTED, false ],
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::GOOGLE_CONNECTED, false ],
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ]
+			)
+			->willReturnOnConsecutiveCalls(
+				true,
+				self::TEST_SETUP_COMPLETED,
+				true,
+				self::TEST_SETUP_COMPLETED
+			);
+
+		$this->transients->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->with( TransientsInterface::URL_MATCHES )
+			->willReturnOnConsecutiveCalls(
+				null,
+				'yes'
+			);
+
+		$this->transients->expects( $this->once() )
+			->method( 'set' )
+			->with( TransientsInterface::URL_MATCHES, 'yes', HOUR_IN_SECONDS * 12 );
+
+		// Call twice to ensure we are getting the value from the transient the second time.
+		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
 		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
 	}
 
@@ -263,8 +325,22 @@ class MerchantCenterServiceTest extends UnitTest {
 
 	public function test_is_promotion_supported_country() {
 		$this->wc->method( 'get_base_country' )->willReturn( 'US' );
-		$this->google_helper->method( 'get_mc_promotion_supported_countries' )->willReturn( [ 'US' ] );
+		$this->google_helper->method( 'get_mc_promotion_supported_countries' )->willReturn( [
+			'AU',
+			'CA',
+			'DE',
+			'FR',
+			'GB',
+			'IN',
+			'US',
+		] );
 		$this->assertTrue( $this->mc_service->is_promotion_supported_country() );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'AU' ) );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'CA' ) );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'DE' ) );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'FR' ) );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'GB' ) );
+		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'IN' ) );
 		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'US' ) );
 		$this->assertFalse( $this->mc_service->is_promotion_supported_country( 'XX' ) );
 	}

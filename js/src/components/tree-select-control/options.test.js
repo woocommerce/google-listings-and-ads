@@ -7,7 +7,6 @@ import { fireEvent, render } from '@testing-library/react';
  * Internal dependencies
  */
 import TreeSelectControl from '.~/components/tree-select-control/index';
-import Options from '.~/components/tree-select-control/options';
 
 /**
  * In jsdom, the width and height of all elements are zero,
@@ -91,9 +90,11 @@ describe( 'TreeSelectControl - Options Component', () => {
 	} );
 
 	it( 'Partially selects groups', () => {
-		const { queryByText } = render(
-			<Options options={ options } value={ [ 'ES' ] } />
+		const { queryByRole, queryByText } = render(
+			<TreeSelectControl options={ options } value={ [ 'ES' ] } />
 		);
+
+		fireEvent.click( queryByRole( 'combobox' ) );
 
 		const partiallyCheckedOption = queryByText( 'Europe' );
 		const unCheckedOption = queryByText( 'North America' );
@@ -120,5 +121,21 @@ describe( 'TreeSelectControl - Options Component', () => {
 		expect(
 			unCheckedOptionWrapper.classList.contains( 'is-partially-checked' )
 		).toBeFalsy();
+	} );
+
+	it( 'Clears search input when option changes', () => {
+		const { queryAllByRole, queryByRole } = render(
+			<TreeSelectControl options={ options } />
+		);
+
+		const input = queryByRole( 'combobox' );
+		fireEvent.click( input );
+		fireEvent.change( input, { target: { value: 'Fra' } } );
+		expect( input.value ).toBe( 'Fra' );
+
+		const checkbox = queryAllByRole( 'checkbox' );
+		fireEvent.click( checkbox[ 0 ] );
+
+		expect( input.value ).toBe( '' );
 	} );
 } );

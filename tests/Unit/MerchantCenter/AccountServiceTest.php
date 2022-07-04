@@ -686,7 +686,13 @@ class AccountServiceTest extends UnitTest {
 
 		$this->cleanup_synced->expects( $this->once() )->method( 'schedule' );
 
-		$this->transients->expects( $this->once() )->method( 'delete' )->with( TransientsInterface::MC_ACCOUNT_REVIEW );
+		$this->transients->expects( $this->exactly( 3 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ TransientsInterface::MC_ACCOUNT_REVIEW ],
+				[ TransientsInterface::URL_MATCHES ],
+				[ TransientsInterface::MC_IS_SUBACCOUNT ]
+			);
 
 		$this->account->disconnect();
 	}

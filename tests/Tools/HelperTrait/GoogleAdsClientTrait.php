@@ -146,6 +146,20 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates a mocked AdsQuery response with a list of mocked rows.
+	 *
+	 * @param array $responses List of responses containing sets of GoogleAdsRow.
+	 */
+	protected function generate_ads_multiple_query_mock( array $responses ) {
+		foreach ( $responses as $key => $rows ) {
+			$responses[ $key ] = $this->createMock( PagedListResponse::class );
+			$responses[ $key ]->method( 'iterateAllElements' )->willReturn( $rows );
+		}
+
+		$this->service_client->method( 'search' )->willReturnOnConsecutiveCalls( ...$responses );
+	}
+
+	/**
 	 * Generates mocked AdsCampaignQuery and AdsCampaignCriterionQuery responses.
 	 *
 	 * @param array $campaigns_responses Set of campaign data to convert.
@@ -214,7 +228,7 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
-	 * Generates a mocked AdsAccountQuery response.
+	 * Generates a mocked AdsAccountAccessQuery response.
 	 *
 	 * @param bool $has_access
 	 */
@@ -316,15 +330,32 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
-	 * Generates a mocked customer.
+	 * Generates a list of mocked AdsAccountQuery responses.
 	 *
-	 * @param string $currency
+	 * @param array $customers List of customer data to mock.
 	 */
-	protected function generate_customer_mock( string $currency ) {
-		$customer = $this->createMock( Customer::class );
-		$customer->method( 'getCurrencyCode' )->willReturn( $currency );
+	protected function generate_customers_mock( array $customers ) {
+		foreach ( $customers as $key => $data ) {
+			$customer = $this->createMock( Customer::class );
+			if ( isset( $data['id'] ) ) {
+				$customer->method( 'getId' )->willReturn( $data['id'] );
+			}
+			if ( isset( $data['name'] ) ) {
+				$customer->method( 'getDescriptiveName' )->willReturn( $data['name'] );
+			}
+			if ( isset( $data['manager'] ) ) {
+				$customer->method( 'getManager' )->willReturn( $data['manager'] );
+			}
+			if ( isset( $data['test_account'] ) ) {
+				$customer->method( 'getTestAccount' )->willReturn( $data['test_account'] );
+			}
+			if ( isset( $data['currency'] ) ) {
+				$customer->method( 'getCurrencyCode' )->willReturn( $data['currency'] );
+			}
+			$customers[ $key ] = [ ( new GoogleAdsRow )->setCustomer( $customer ) ];
+		}
 
-		$this->customer_service->method( 'getCustomer' )->willReturn( $customer );
+		$this->generate_ads_multiple_query_mock( $customers );
 	}
 
 	/**

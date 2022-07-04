@@ -155,4 +155,35 @@ trait GuzzleClientTrait {
 			400
 		);
 	}
+
+	/**
+	 * Generates two mocked request for when we request a review status
+	 * 1. Get Merchant accounts
+	 * 2. Get Account Review statuses
+	 *
+	 * @param array $merchant_accounts_response The mocked response for the merchant_accounts call
+	 * @param array $account_review_response The mocked response for the account_review call
+	 */
+	protected function generate_account_review_mock( $merchant_accounts_response, $account_review_response ) {
+		$body = $this->createMock( StreamInterface::class );
+		$body->method( 'getContents' )
+			->will(
+				$this->onConsecutiveCalls(
+					json_encode( $merchant_accounts_response ),
+					json_encode( $account_review_response )
+				)
+			);
+
+		$result = $this->createMock( ResponseInterface::class );
+		$result->method( 'getBody' )->willReturn( $body );
+		$result->method( 'getStatusCode' )->willReturn( 200 );
+
+		$this->client->method( 'get' )->will(
+			$this->onConsecutiveCalls(
+				$result,
+				$result,
+			)
+		);
+
+	}
 }

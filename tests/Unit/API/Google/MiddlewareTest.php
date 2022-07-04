@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GuzzleClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -23,15 +24,17 @@ defined( 'ABSPATH' ) || exit;
  * Class MiddlewareTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
+ * @group Middleware
  *
- * @property MockObject|Ads               $ads
- * @property MockObject|DateTimeUtility   $date_utility
- * @property MockObject|GoogleHelper      $google_helper
- * @property MockObject|Merchant          $merchant
- * @property MockObject|WP                $wp
- * @property MockObject|OptionsInterface  $options
- * @property Middleware                   $middleware
- * @property Container                    $container
+ * @property MockObject|Ads                  $ads
+ * @property MockObject|DateTimeUtility      $date_utility
+ * @property MockObject|GoogleHelper         $google_helper
+ * @property MockObject|Merchant             $merchant
+ * @property MockObject|WP                   $wp
+ * @property MockObject|OptionsInterface     $options
+ * @property MockObject|TransientsInterface  $transients
+ * @property Middleware                      $middleware
+ * @property Container                       $container
  */
 class MiddlewareTest extends UnitTest {
 
@@ -55,12 +58,14 @@ class MiddlewareTest extends UnitTest {
 		$this->google_helper = $this->createMock( GoogleHelper::class );
 		$this->merchant      = $this->createMock( Merchant::class );
 		$this->options       = $this->createMock( OptionsInterface::class );
+		$this->transients    = $this->createMock( TransientsInterface::class );
 		$this->wp            = $this->createMock( WP::class );
 
 		$this->container->share( Ads::class, $this->ads );
 		$this->container->share( DateTimeUtility::class, $this->date_utility );
 		$this->container->share( GoogleHelper::class, $this->google_helper );
 		$this->container->share( Merchant::class, $this->merchant );
+		$this->container->share( TransientsInterface::class, $this->transients );
 		$this->container->share( WP::class, $this->wp );
 
 		$this->middleware = new Middleware( $this->container );
@@ -351,6 +356,81 @@ class MiddlewareTest extends UnitTest {
 		$tos = $this->middleware->check_tos_accepted( 'google-mc' );
 		$this->assertFalse( $tos->accepted() );
 		$this->assertEquals( 'error', $tos->message() );
+	}
+
+	public function test_get_account_review_status() {
+
+		$this->options->expects( $this->exactly( 2 ) )->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+
+		$accounts = [
+			[
+				'id'         => self::TEST_MERCHANT_ID,
+				'subaccount' => true,
+			],
+			[
+				'id'         => 34567812,
+				'subaccount' => false,
+			]
+		];
+
+		$review_status = [ 'freeListingsProgram' => 'freeListingsProgram', 'shoppingAdsProgram' => 'shoppingAdsProgram' ];
+
+		$this->generate_account_review_mock( $accounts,  $review_status );
+
+
+		$this->assertEquals( $this->middleware->get_account_review_status(), $review_status );
+	}
+
+	public function test_get_account_review_status_standalone() {
+		$this->options->expects( $this->once() )->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+
+		$accounts = [
+			[
+				'id'         => self::TEST_MERCHANT_ID,
+				'subaccount' => false,
+			],
+			[
+				'id'         => 34567812,
+				'subaccount' => true,
+			]
+		];
+
+		$this->generate_request_mock( $accounts );
+		$this->assertEquals( $this->middleware->get_account_review_status(), [] );
+	}
+
+
+	public function test_get_account_review_status_exception() {
+		$this->options->expects( $this->once() )->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+
+		$this->generate_request_mock_exception( 'Some exception' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Error retrieving accounts' );
+		$this->expectExceptionCode( 400 );
+
+		$this->middleware->get_account_review_status();
+	}
+
+
+	public function test_get_account_review_status_error() {
+		$this->options->expects( $this->exactly( 2 ) )->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
+
+		$accounts = [
+			[
+				'id'         => self::TEST_MERCHANT_ID,
+				'subaccount' => true,
+			]
+		];
+
+		$review_status = [];
+
+		$this->generate_account_review_mock( $accounts,  $review_status );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Invalid response getting account review status' );
+
+		$this->middleware->get_account_review_status();
 	}
 
 }

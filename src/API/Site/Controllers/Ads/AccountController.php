@@ -96,7 +96,7 @@ class AccountController extends BaseController {
 	protected function get_accounts_callback(): callable {
 		return function() {
 			try {
-				return new Response( $this->account->get_account_ids() );
+				return new Response( $this->account->get_accounts() );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
