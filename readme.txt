@@ -122,15 +122,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Update copy for Free and Enhanced Listings merge
 * Tweak - WC 6.6 compatibility.
 
-= 1.13.4 - 2022-06-07 =
-* Fix - Adding Github Actions for storybook.
-* Fix - Do not show error notice when Merchant Center review request API call failed.
-* Fix - Do not store URL matches transient until fully connected.
-* Fix - Fix GitHub Workflow paths.
-* Fix - Use commit instead of branch for storybook dependency.
-* Tweak - Always compare site URL hash without trailing slash.
-* Tweak - Compliance Policy links.
-* Tweak - WC 6.6 compatibility.
-
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
