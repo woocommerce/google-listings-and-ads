@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.3
-Stable tag: 1.13.6
+Stable tag: 2.0.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,12 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.0.0 - 2022-07-05 =
+* Add - Filter Ads accounts to exclude manager and test accounts.
+* Add - Return account names when retrieving the list of existing accounts.
+* Fix - Normalize image URLs before validation.
+* Tweak - WooCommerce 6.7 compatibility.
+
 = 1.13.6 - 2022-06-21 =
 * Fix - Cannot disconnect Jetpack when other activated plugins are using Jetpack connection.
 * Fix - Compatibility CES prompts with WC 6.6.0.
@@ -121,16 +127,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Disable Review Request in Standalone Accounts.
 * Tweak - Update copy for Free and Enhanced Listings merge
 * Tweak - WC 6.6 compatibility.
-
-= 1.13.4 - 2022-06-07 =
-* Fix - Adding Github Actions for storybook.
-* Fix - Do not show error notice when Merchant Center review request API call failed.
-* Fix - Do not store URL matches transient until fully connected.
-* Fix - Fix GitHub Workflow paths.
-* Fix - Use commit instead of branch for storybook dependency.
-* Tweak - Always compare site URL hash without trailing slash.
-* Tweak - Compliance Policy links.
-* Tweak - WC 6.6 compatibility.
-
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
