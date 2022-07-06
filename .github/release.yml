@@ -31,7 +31,10 @@ changelog:
     - title: [Tweak] Tweaked 🔧
       labels:
         - "changelog: tweak"
-        - "type: technical debt"
+
+    - title: [Dev] Developer-facing changes 🧑‍💻
+      labels:
+        - "changelog: dev"
 
     - title: [Doc] Documentation 📚
       labels:
