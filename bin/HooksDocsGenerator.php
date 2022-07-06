@@ -72,7 +72,8 @@ class HooksDocsGenerator {
 	protected static function get_files_to_scan(): array {
 		$files = [];
 
-		$files['Src'] = array_unique( self::get_files( '*.php', GLOB_MARK, self::SOURCE_PATH ) );
+		$files['Main'] = [ 'google-listings-and-ads.php' ];
+		$files['Src']  = array_unique( self::get_files( '*.php', GLOB_MARK, self::SOURCE_PATH ) );
 		return array_filter( $files );
 	}
 
