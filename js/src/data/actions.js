@@ -715,9 +715,9 @@ export function receiveGoogleAdsAccountBillingStatus( billingStatus ) {
 }
 
 /**
- * Save the target audience contries.
+ * Save the target audience countries.
  *
- * @param {TargetAudienceData} targetAudience with the audience countries
+ * @param {TargetAudienceData} targetAudience audience countries
  * @return {Object} Action object to save target audience.
  */
 export function* saveTargetAudience( targetAudience ) {
