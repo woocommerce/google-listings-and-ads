@@ -18,6 +18,12 @@ export default function useNavigateAwayPromptEffect(
 	blockedLocation = () => true
 ) {
 	useEffect( () => {
+		/**
+		 * Bind beforeunload event for non `woocommerce/navigation` links and reloads.
+		 * history#v5 does bind `beforeunload` automatically, with v4 we need to do it ourselves.
+		 *
+		 * @param {Event} e Before Unload Event
+		 */
 		const eventListener = ( e ) => {
 			// If you prevent default behavior in Mozilla Firefox prompt will always be shown.
 			e.preventDefault();
