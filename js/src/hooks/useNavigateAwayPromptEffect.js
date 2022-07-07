@@ -18,9 +18,20 @@ export default function useNavigateAwayPromptEffect(
 	blockedLocation = () => true
 ) {
 	useEffect( () => {
+		const eventListener = ( e ) => {
+			// If you prevent default behavior in Mozilla Firefox prompt will always be shown.
+			e.preventDefault();
+			// Chrome requires returnValue to be set.
+			e.returnValue = message;
+		};
+
 		// Block woocommerce/navigation in order to show a confirmation prompt in case shouldBlock is true
 		const unblock = getHistory().block( ( transition ) => {
 			let shouldUnblock = true;
+
+			if ( shouldBlock ) {
+				window.addEventListener( 'beforeunload', eventListener );
+			}
 
 			/**
 			 * In history v4 (< WC 6.7) block method only receives one parameter (the location)
@@ -50,6 +61,7 @@ export default function useNavigateAwayPromptEffect(
 
 		return () => {
 			unblock();
+			window.removeEventListener( 'beforeunload', eventListener );
 		};
 	}, [ message, shouldBlock, blockedLocation ] );
 }
