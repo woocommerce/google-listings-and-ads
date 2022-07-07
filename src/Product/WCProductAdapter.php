@@ -753,8 +753,17 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$metadata->addPropertyConstraint( 'link', new Assert\Url() );
 
 		$metadata->addPropertyConstraint( 'imageLink', new Assert\NotBlank() );
-		$metadata->addPropertyConstraint( 'imageLink', new Assert\Url() );
-		$metadata->addPropertyConstraint( 'additionalImageLinks', new Assert\All( [ 'constraints' => [ new Assert\Url() ] ] ) );
+		$metadata->addPropertyConstraint( 'imageLink', new Assert\Url( [ 'normalizer' => 'Normalizer::normalize' ] ) );
+		$metadata->addPropertyConstraint(
+			'additionalImageLinks',
+			new Assert\All(
+				[
+					'constraints' => [
+						new Assert\Url( [ 'normalizer' => 'Normalizer::normalize' ] ),
+					],
+				]
+			)
+		);
 
 		$metadata->addGetterConstraint( 'price', new Assert\NotNull() );
 		$metadata->addGetterConstraint( 'price', new GooglePriceConstraint() );

@@ -14,6 +14,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\DataTrai
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use Google\Service\ShoppingContent\ProductShipping;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\Validation;
 use WC_DateTime;
 use WC_Helper_Product;
 use WC_Product;
@@ -511,7 +513,7 @@ DESCRIPTION;
 	        'Beta Category', 'product_cat', array('parent' => $category_2['term_id']) );
 	    $product->set_category_ids([$category_1['term_id'], $category_3['term_id']] );
 	    $product->save();
-	    
+
 	    $adapted_product = new WCProductAdapter(
 	        [
 	            'wc_product'    => $product,
@@ -1513,6 +1515,35 @@ DESCRIPTION;
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'condition' ) );
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'multipack' ) );
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'isBundle' ) );
+	}
+
+	public function test_valid_image_name_with_utf8_nfd() {
+		$adapted_product            = new WCProductAdapter();
+		$adapted_product->imageLink = 'https://domain.com/ïmágê-ñåmè.jpg';
+
+		$violation = $this->validate_product_property( $adapted_product, 'imageLink' );
+		$this->assertNull( $violation );
+	}
+
+	/**
+	 * Validate a product property and return the first violation.
+	 *
+	 * @param WCProductAdapter $adapted_product Product to validate.
+	 * @param string           $property        Property to check for violations.
+	 * @return null|ConstraintViolation
+	 */
+	protected function validate_product_property( WCProductAdapter $adapted_product, string $property ) {
+		$validator = Validation::createValidatorBuilder()
+			->addMethodMapping( 'load_validator_metadata' )
+			->getValidator();
+
+		foreach ( $validator->validate( $adapted_product ) as $violation ) {
+			if ( $violation->getPropertyPath() === $property ) {
+				return $violation;
+			}
+		}
+
+		return null;
 	}
 
 	/**
