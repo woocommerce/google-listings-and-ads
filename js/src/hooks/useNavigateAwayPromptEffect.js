@@ -31,13 +31,13 @@ export default function useNavigateAwayPromptEffect(
 			e.returnValue = message;
 		};
 
+		if ( shouldBlock ) {
+			window.addEventListener( 'beforeunload', eventListener );
+		}
+
 		// Block woocommerce/navigation in order to show a confirmation prompt in case shouldBlock is true
 		const unblock = getHistory().block( ( transition ) => {
 			let shouldUnblock = true;
-
-			if ( shouldBlock ) {
-				window.addEventListener( 'beforeunload', eventListener );
-			}
 
 			/**
 			 * In history v4 (< WC 6.7) block method only receives one parameter (the location)
