@@ -78,6 +78,9 @@ const EditFreeCampaign = () => {
 		savedTargetAudience
 	);
 	const [ settings, updateSettings ] = useState( savedSettings );
+	const [ forceUnblockedNavigation, setForceUnblockedNavigation ] = useState(
+		false
+	);
 
 	const {
 		hasFinishedResolution: hfrShippingRates,
@@ -152,7 +155,7 @@ const EditFreeCampaign = () => {
 			'You have unsaved campaign data. Are you sure you want to leave?',
 			'google-listings-and-ads'
 		),
-		didAnythingChanged,
+		didAnythingChanged && ! forceUnblockedNavigation,
 		isNotOurStep
 	);
 
@@ -193,8 +196,10 @@ const EditFreeCampaign = () => {
 	};
 
 	const handleChooseAudienceContinue = () => {
+		setForceUnblockedNavigation( true );
 		updateShippingAfterChooseAudienceStep();
 		getHistory().push( getNewPath( { pageStep: '2' } ) );
+		setForceUnblockedNavigation( false );
 	};
 
 	const handleSetupFreeListingsContinue = async () => {
