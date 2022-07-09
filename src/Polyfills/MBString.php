@@ -254,7 +254,7 @@ final class MBString {
 	 * @param string $encoding
 	 *
 	 * @return string
-	 * @throws \ValueError If no linked budget has been found.
+	 * @throws \ValueError If $encoding is not a valid encoding.
 	 *
 	 * @since x.x.x
 	 */

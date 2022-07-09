@@ -46,7 +46,7 @@ class Normalizer {
 	 *
 	 * @param string $s
 	 * @param int    $form
-	 * @throws \ValueError Throws normalizer_normalize error.
+	 * @throws \ValueError Throws if $form is not a valid  normalization form.
 	 */
 	public static function normalize( string $s, int $form = self::FORM_C ) {
 		if ( ! preg_match( '//u', $s ) ) {
