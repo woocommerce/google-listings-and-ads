@@ -27,7 +27,8 @@
 		"yoast/phpunit-polyfills": "^1.0"
 	},
 	"replace": {
-		"symfony/polyfill-mbstring": "*"
+		"symfony/polyfill-mbstring": "*",
+		"symfony/polyfill-intl-normalizer": "*"
 	},
 	"license": "GPL-3.0",
 	"autoload": {
