@@ -38,12 +38,13 @@
 		"files": [
 			"vendor/guzzlehttp/guzzle/src/functions_include.php",
 			"vendor/guzzlehttp/promises/src/functions_include.php"
-		]
+		],
+		"classmap": [ "src/Polyfills" ]
 	},
 	"autoload-dev": {
 		"psr-4": {
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Tests\\": "tests/"
-		}
+		}	
 	},
 	"config": {
 		"platform": {
