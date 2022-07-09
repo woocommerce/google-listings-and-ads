@@ -265,7 +265,7 @@ final class MBString {
 
 		$normalized_encoding = self::get_encoding( $encoding );
 
-		if ( 'UTF-8' === $normalized_encoding || false !== @\iconv( $normalized_encoding, $normalized_encoding, ' ' ) ) {
+		if ( 'UTF-8' === $normalized_encoding || false !== \iconv( $normalized_encoding, $normalized_encoding, ' ' ) ) {
 			self::$internal_encoding = $normalized_encoding;
 
 			return true;
