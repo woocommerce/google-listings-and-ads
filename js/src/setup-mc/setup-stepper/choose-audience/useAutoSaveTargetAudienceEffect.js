@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -22,8 +23,12 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
  * which has not been saved before yet.
  *
  * @param {TargetAudienceData} targetAudience Target audience value object to be saved.
+ * @param {(autoSaveResult: boolean) => void} autoSaveCallback Callback function when the autosave is called
  */
-const useAutoSaveTargetAudienceEffect = ( targetAudience ) => {
+const useAutoSaveTargetAudienceEffect = (
+	targetAudience,
+	autoSaveCallback = noop
+) => {
 	const { saveTargetAudience } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 
@@ -35,6 +40,7 @@ const useAutoSaveTargetAudienceEffect = ( targetAudience ) => {
 	const saveTargetAudienceCallback = async ( value ) => {
 		try {
 			await saveTargetAudience( value );
+			autoSaveCallback( true );
 		} catch ( error ) {
 			createNotice(
 				'error',
@@ -43,6 +49,7 @@ const useAutoSaveTargetAudienceEffect = ( targetAudience ) => {
 					'google-listings-and-ads'
 				)
 			);
+			autoSaveCallback( false );
 		}
 	};
 
