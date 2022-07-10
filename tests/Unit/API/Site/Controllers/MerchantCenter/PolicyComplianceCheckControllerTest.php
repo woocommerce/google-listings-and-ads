@@ -18,10 +18,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 
-	protected const ALLOWED_COUNTRIES     	= '/wc/gla/mc/policy_check/allowed_countries';
-	protected const STORE_SSL     		= '/wc/gla/mc/policy_check/store_ssl';
-	protected const PAYMENT_GATEWAYS     	= '/wc/gla/mc/policy_check/payment_gateways';
-	protected const REFUND_RETURN     	= '/wc/gla/mc/policy_check/refund_return_policy';
+	protected const POLICY_CHECK     	= '/wc/gla/mc/policy_check';
 
 	public function setUp(): void {
 		parent::setUp();
@@ -49,7 +46,7 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 		                         ->method( 'has_payment_gateways' )
 		                         ->willReturn( [ 'payment_gateways' => true ] );
 
-		$response = $this->do_request( self::ALLOWED_COUNTRIES, 'GET', [] );
+		$response = $this->do_request( self::POLICY_CHECK, 'GET', [] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
