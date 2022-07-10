@@ -43,8 +43,8 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 		                         ->willReturn( [ 'payment_gateways' => true ] );
 
 		$this->policy_compliance_check->expects( $this->once() )
-		                         ->method( 'has_payment_gateways' )
-		                         ->willReturn( [ 'payment_gateways' => true ] );
+		                         ->method( 'has_refund_return_policy_page' )
+		                         ->willReturn( [ 'refund_return_policy_page' => true ] );
 
 		$response = $this->do_request( self::POLICY_CHECK, 'GET', [] );
 
