@@ -5,14 +5,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\EmptySchemaPropertiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Exception;
 use WP_REST_Request as Request;
-use WP_REST_Response as Response;
 
 
 defined( 'ABSPATH' ) || exit;
@@ -25,7 +22,6 @@ defined( 'ABSPATH' ) || exit;
 class PolicyComplianceCheckController extends BaseController {
 
 	use CountryCodeTrait;
-	use EmptySchemaPropertiesTrait;
 
 	/**
 	 * The PolicyComplianceCheck object.
@@ -95,65 +91,86 @@ class PolicyComplianceCheckController extends BaseController {
 	}
 
 	/**
-	 * Get the allowed countries for the controller.
+	 * Get the allowed countries, payment gateways info, store ssl and refund return policy page for the controller.
 	 *
 	 * @return callable
 	 */
-	protected function get_allowed_countries_callback(): callable {
-		return function ( Request $request ) {
+	protected function get_policy_check_callback(): callable {
+		return function () {
 			try {
-				return $this->policy_compliance_check->get_allowed_countries();
+				return array_merge(
+					$this->policy_compliance_check->get_allowed_countries(),
+					$this->policy_compliance_check->has_payment_gateways(),
+					$this->policy_compliance_check->get_is_store_ssl(),
+					$this->policy_compliance_check->has_refund_return_policy_page(),
+				);
+
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
 		};
 	}
 
-	/**
-	 * Check if the payment gateways is empty or not for the controller.
-	 *
-	 * @return callable
-	 */
-	protected function has_payment_gateways_callback(): callable {
-		return function ( Request $request ) {
-			try {
-				return $this->policy_compliance_check->has_payment_gateways();
-			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
-			}
-		};
-	}
+	// /**
+	// * Get the allowed countries for the controller.
+	// *
+	// * @return callable
+	// */
+	// protected function get_allowed_countries_callback(): callable {
+	// return function ( ) {
+	// try {
+	// return $this->policy_compliance_check->get_allowed_countries();
+	// } catch ( Exception $e ) {
+	// return $this->response_from_exception( $e );
+	// }
+	// };
+	// }
 
-	/**
-	 * Check if the store is using SSL for the controller.
-	 *
-	 * @return callable
-	 */
-	protected function get_is_store_ssl_callback(): callable {
-		return function ( Request $request ) {
-			try {
-				return $this->policy_compliance_check->get_is_store_ssl();
-			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
-			}
-		};
+	// /**
+	// * Check if the payment gateways is empty or not for the controller.
+	// *
+	// * @return callable
+	// */
+	// protected function has_payment_gateways_callback(): callable {
+	// return function ( ) {
+	// try {
+	// return $this->policy_compliance_check->has_payment_gateways();
+	// } catch ( Exception $e ) {
+	// return $this->response_from_exception( $e );
+	// }
+	// };
+	// }
 
-	}
+	// /**
+	// * Check if the store is using SSL for the controller.
+	// *
+	// * @return callable
+	// */
+	// protected function get_is_store_ssl_callback(): callable {
+	// return function ( ) {
+	// try {
+	// return $this->policy_compliance_check->get_is_store_ssl();
+	// } catch ( Exception $e ) {
+	// return $this->response_from_exception( $e );
+	// }
+	// };
 
-	/**
-	 * Check if the store has refund return policy page for the controller.
-	 *
-	 * @return callable
-	 */
-	protected function has_refund_return_policy_page_callback(): callable {
-		return function ( Request $request ) {
-			try {
-				return $this->policy_compliance_check->has_refund_return_policy_page();
-			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
-			}
-		};
-	}
+	// }
+
+	// /**
+	// * Check if the store has refund return policy page for the controller.
+	// *
+	// * @return callable
+	// */
+	// protected function has_refund_return_policy_page_callback(): callable {
+	// return function ( ) {
+	// try {
+	// return $this->policy_compliance_check->has_refund_return_policy_page();
+	// } catch ( Exception $e ) {
+	// return $this->response_from_exception( $e );
+	// }
+	// };
+	// }
 
 	/**
 	 * Get the schema for policy compliance check endpoints.
@@ -162,24 +179,29 @@ class PolicyComplianceCheckController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'allowed_countries' => [
+			// 'allowed_countries' => [
+			// 'type'        => 'array',
+			// 'description' => __( 'The allowed countries where the store could be accessed.', 'google-listings-and-ads' ),
+			// 'context'     => [ 'view' ],
+			// ],
+			// 'payment_gateways'  => [
+			// 'type'        => 'boolean',
+			// 'description' => __( 'The payment gateways associated with onboarding policy checking.', 'google-listings-and-ads' ),
+			// 'context'     => [ 'view' ],
+			// ],
+			// 'store_ssl'         => [
+			// 'type'        => 'boolean',
+			// 'description' => __( 'The store ssl associated with onboarding policy checking.', 'google-listings-and-ads' ),
+			// 'context'     => [ 'view' ],
+			// ],
+			// 'refund_returns'    => [
+			// 'type'        => 'boolean',
+			// 'description' => __( 'The refund returns policy associated with onboarding policy checking.', 'google-listings-and-ads' ),
+			// 'context'     => [ 'view' ],
+			// ],
+			'policy_check' => [
 				'type'        => 'array',
-				'description' => __( 'The allowed countries where the store could be accessed.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-			],
-			'payment_gateways'  => [
-				'type'        => 'boolean',
-				'description' => __( 'The payment gateways associated with onboarding policy checking.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-			],
-			'store_ssl'         => [
-				'type'        => 'boolean',
-				'description' => __( 'The store ssl associated with onboarding policy checking.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-			],
-			'refund_returns'    => [
-				'type'        => 'boolean',
-				'description' => __( 'The refund returns policy associated with onboarding policy checking.', 'google-listings-and-ads' ),
+				'description' => __( 'The policy setting check associated with merchant onboarding.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
 		];

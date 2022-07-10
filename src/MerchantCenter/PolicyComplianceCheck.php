@@ -3,14 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
-use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\PhoneNumber;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Google\Service\Exception as GoogleServiceException;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  *
- * @since 1.5.0
+ * @since x.x.x
  */
 class PolicyComplianceCheck implements Service {
 	/**
