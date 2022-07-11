@@ -70,6 +70,6 @@ if ( ! function_exists( 'mb_internal_encoding' ) ) {
 	 * @since x.x.x
 	 */
 	function mb_internal_encoding( $encoding = null ) {
-		return Mbstring::mb_internal_encoding( $encoding );
+		return MBString::mb_internal_encoding( $encoding );
 	}
 }
