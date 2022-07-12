@@ -52,6 +52,7 @@
 		"@testing-library/user-event": "^13.5.0",
 		"@types/jest": "^27.4.0",
 		"@types/puppeteer": "^5.4.4",
+		"@woocommerce/admin-e2e-tests": "^1.0.0",
 		"@woocommerce/dependency-extraction-webpack-plugin": "^2.0.0",
 		"@woocommerce/e2e-environment": "^0.3.0",
 		"@woocommerce/e2e-utils": "^0.2.0",
