@@ -38,51 +38,50 @@ class PolicyComplianceCheck implements Service {
 	 * @return array
 	 */
 	public function get_allowed_countries(): array {
-		return [ 'allowed_countries' => $this->wc->get_allowed_countries() ];
+		return $this->wc->get_allowed_countries();
 	}
 
 	/**
 	 * Check if the payment gateways is empty or not for the controller.
 	 *
-	 * @return array
+	 * @return bool
 	 */
-	public function has_payment_gateways(): array {
+	public function has_payment_gateways(): bool {
 		$gateways = $this->wc->get_available_payment_gateways();
 		if ( empty( $gateways ) ) {
-			return [ 'payment_gateways' => false ];
+			return false;
 		}
-		return [ 'payment_gateways' => true ];
+		return true;
 	}
 
 	/**
 	 * Check if the store is using SSL for the controller.
 	 *
-	 * @return array
+	 * @return bool
 	 */
-	public function get_is_store_ssl(): array {
-		return [ 'ssl' => is_ssl() ];
+	public function get_is_store_ssl(): bool {
+		return is_ssl();
 	}
 
 	/**
 	 * Check if the store has refund return policy page for the controller.
 	 *
-	 * @return array
+	 * @return bool
 	 */
-	public function has_refund_return_policy_page(): array {
+	public function has_refund_return_policy_page(): bool {
 		if ( $this->the_slug_exists( 'refund_returns' ) ) {
-			return [ 'refund_return_policy_page' => true ];
+			return true;
 		}
-		return [ 'refund_return_policy_page' => false ];
+		return false;
 	}
-
 
 	/**
 	 * Check if the slug exists or not.
 	 *
-	 * @param PostName $post_name
+	 * @param string $post_name
 	 * @return bool
 	 */
-	protected function the_slug_exists( $post_name ): bool {
+	protected function the_slug_exists( string $post_name ): bool {
 		$args = [
 			'name'        => $post_name,
 			'post_type'   => 'page',

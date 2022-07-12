@@ -32,30 +32,30 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 	public function test_policy_check() {
 		$this->policy_compliance_check->expects( $this->once() )
 		                         ->method( 'get_allowed_countries' )
-		                         ->willReturn([ 'allowed_countries' => ['US', 'UK'] ]);
+		                         ->willReturn(['US', 'UK']);
 
 		$this->policy_compliance_check->expects( $this->once() )
 		                         ->method( 'get_is_store_ssl' )
-		                         ->willReturn( [ 'store_ssl' => true ] );
+		                         ->willReturn( true );
 
 		$this->policy_compliance_check->expects( $this->once() )
 		                         ->method( 'has_payment_gateways' )
-		                         ->willReturn( [ 'payment_gateways' => true ] );
+		                         ->willReturn( true );
 
 		$this->policy_compliance_check->expects( $this->once() )
 		                         ->method( 'has_refund_return_policy_page' )
-		                         ->willReturn( [ 'refund_return_policy_page' => true ] );
+		                         ->willReturn( true );
 
 		$response = $this->do_request( self::POLICY_CHECK, 'GET', [] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
-		 ['policy_check' =>	array_merge(
-				[ 'allowed_countries' => ['US', 'UK'] ],
-				[ 'store_ssl' => true ],
-				[ 'payment_gateways' => true ],
-				[ 'refund_return_policy_page' => true ])],
+		 ['policy_check' =>	[
+			'allowed_countries'    	=> ['US', 'UK'],
+			'store_ssl'         	=> true,
+			'payment_gateways'  	=> true,
+			'refund_returns' 	=> true,
+		]],
 		$response->get_data());
 	}
-
 }

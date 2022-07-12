@@ -4,22 +4,24 @@
 import useAppSelectDispatch from './useAppSelectDispatch';
 
 /**
- * Get allowed countries from calling `useAppSelectDispatch` with `"getAllowedCountries"`.
+ * Get policy detail info from calling `useAppSelectDispatch` with `getPolicyCheck`.
  * Returns `{ hasFinishedResolution, data, invalidateResolution }`.
  *
- * `data` is an object of country mapping. e.g.:
+ * `data` is an object of policy check mapping. e.g.:
  *
  * ```json
  * {
- * 		 "AR": {
- * 			"name": "Argentina",
- * 			"currency": "ARS"
- * 		}
+ *	'policy_check' =>	[
+ *				'allowed_countries'    	=> ['US', 'UK'],
+ *				'store_ssl'         	=> true,
+ *				'payment_gateways'  	=> true,
+ *				'refund_returns' 	=> true,
+ *				]
  * }
  * ```
  */
 const usePolicyCheck = () => {
-	return useAppSelectDispatch( 'usePolicyCheck' );
+	return useAppSelectDispatch( 'getPolicyCheck' );
 };
 
 export default usePolicyCheck;
