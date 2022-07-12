@@ -120,12 +120,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Compatibility CES prompts with WC 6.6.0.
 * Fix - Multiple CES prompts on the Dashboard Page.
 
-= 1.13.5 - 2022-06-15 =
-* Fix - Avoid losing focus when selecting an option in Tree Select Control.
-* Fix - Bump node-forge from 1.2.1 to 1.3.1.
-* Tweak - Clear input search filter after selecting an option.
-* Tweak - Disable Review Request in Standalone Accounts.
-* Tweak - Update copy for Free and Enhanced Listings merge
-* Tweak - WC 6.6 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
