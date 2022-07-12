@@ -369,7 +369,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.POLICY_CHECK: {
 			const { data } = action;
 			return setIn( state, 'mc.policy_check', data.policy_check );
-		}		
+		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:
