@@ -58,3 +58,18 @@ if ( ! function_exists( 'mb_substr' ) ) {
 		return MBString::mb_substr( $string, $start, $length, $encoding );
 	}
 }
+
+if ( ! function_exists( 'mb_internal_encoding' ) ) {
+	/**
+	 * Get internal encoding.
+	 *
+	 * @param string $encoding
+	 *
+	 * @return string|bool
+	 *
+	 * @since x.x.x
+	 */
+	function mb_internal_encoding( $encoding = null ) {
+		return MBString::mb_internal_encoding( $encoding );
+	}
+}

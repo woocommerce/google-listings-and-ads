@@ -463,7 +463,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			}
 
 			$product_issue_template = [
-				'product'              => $this->product_data_lookup[ $wc_product_id ]['name'],
+				'product'              => html_entity_decode( $this->product_data_lookup[ $wc_product_id ]['name'] ),
 				'product_id'           => $wc_product_id,
 				'created_at'           => $created_at,
 				'applicable_countries' => [],
