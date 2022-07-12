@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.3
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,16 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.0.1 - 2022-07-12 =
+* Add - A script to generate a list of hooks that defined or used in GLA.
+* Add - GH workflow to set PR labels.
+* Add - Normalizer Polyfill.
+* Dev - changed the changelog types list.
+* Fix - Compatibility with History Navigation v5.
+* Fix - Encoding product names in Issues Table .
+* Fix - Release 2.0.0.
+* Tweak - Remove try and catch in saveTargetAudience action.
+
 = 2.0.0 - 2022-07-05 =
 * Add - Filter Ads accounts to exclude manager and test accounts.
 * Add - Return account names when retrieving the list of existing accounts.
@@ -119,13 +129,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Cannot disconnect Jetpack when other activated plugins are using Jetpack connection.
 * Fix - Compatibility CES prompts with WC 6.6.0.
 * Fix - Multiple CES prompts on the Dashboard Page.
-
-= 1.13.5 - 2022-06-15 =
-* Fix - Avoid losing focus when selecting an option in Tree Select Control.
-* Fix - Bump node-forge from 1.2.1 to 1.3.1.
-* Tweak - Clear input search filter after selecting an option.
-* Tweak - Disable Review Request in Standalone Accounts.
-* Tweak - Update copy for Free and Enhanced Listings merge
-* Tweak - WC 6.6 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

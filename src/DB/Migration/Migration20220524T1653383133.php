@@ -39,7 +39,7 @@ class Migration20220524T1653383133 extends AbstractMigration {
 	 * @return string A version number. For example: 1.4.1
 	 */
 	public function get_applicable_version(): string {
-		return '1.13.3';
+		return '2.0.1';
 	}
 
 	/**

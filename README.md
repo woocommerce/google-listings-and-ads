@@ -162,7 +162,8 @@ To remove the Docker container and images (this will **delete everything** in th
 
 ## Docs
 
--   [Usage Tracking](./src/Tracking/README.md)
+- [Usage Tracking](./src/Tracking/README.md)
+- [Hooks defined or used in GLA](./src/Hooks/README.md)
 
 <p align="center">
 	<br/><br/>
