@@ -7,36 +7,36 @@ changelog:
       - github-actions
 
   categories:
-      # Major level
-    - title: [Breaking] Breaking Changes 🚨
+    # Major level
+    - title: "[Breaking] Breaking Changes 🚨"
       labels:
         - "changelog: breaking"
 
     # Minor level
-    - title: [Add] New Features 🎉
+    - title: "[Add] New Features 🎉"
       labels:
         - "changelog: add"
         - "type: enhancement"
 
-    - title: [Update] Updated ✨
+    - title: "[Update] Updated ✨"
       labels:
         - "changelog: update"
 
     # Patch level
-    - title: [Fix] Fixes 🛠
+    - title: "[Fix] Fixes 🛠"
       labels:
         - "changelog: fix"
         - "type: bug"
 
-    - title: [Tweak] Tweaked 🔧
+    - title: "[Tweak] Tweaked 🔧"
       labels:
         - "changelog: tweak"
 
-    - title: [Dev] Developer-facing changes 🧑‍💻
+    - title: "[Dev] Developer-facing changes 🧑‍💻"
       labels:
         - "changelog: dev"
 
-    - title: [Doc] Documentation 📚
+    - title: "[Doc] Documentation 📚"
       labels:
         - "changelog: docs"
 
