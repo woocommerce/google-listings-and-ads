@@ -34,10 +34,7 @@ const FormContent = ( props ) => {
 	const { locale, language } = values;
 	const [ isAutoSaved, setAutoSaved ] = useState( true );
 
-	const autoSaveCallback = ( resultAutoSave ) =>
-		setAutoSaved( resultAutoSave );
-
-	useAutoSaveTargetAudienceEffect( values, autoSaveCallback );
+	useAutoSaveTargetAudienceEffect( values, setAutoSaved );
 	useAutoClearShippingEffect( values.location, values.countries );
 
 	return (
