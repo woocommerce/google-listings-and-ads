@@ -413,7 +413,7 @@ describe( 'reducer', () => {
 	} );
 
 	describe( 'Policy Check', () => {
-		it( 'should return policy check', () => {
+		it( 'should return with policy check info', () => {
 			const data = {
 				policy_check: {
 					allowed_countries: {
@@ -427,7 +427,7 @@ describe( 'reducer', () => {
 						method_description:
 							'Description of the payment gateway',
 					},
-					refund_return_policy: 'Refund and Returns Policy',
+					refund_returns: 'Refund and Returns Policy',
 				},
 			};
 			const action = {
@@ -438,8 +438,8 @@ describe( 'reducer', () => {
 
 			state.assertConsistentRef();
 			expect( state ).toHaveProperty(
-				'mc.policy_check.refund_return_policy',
-				data.policy_check.refund_return_policy
+				'mc.policy_check.refund_returns',
+				data.policy_check.refund_returns
 			);
 			expect( state ).toHaveProperty(
 				'mc.policy_check.payment_gateways',
