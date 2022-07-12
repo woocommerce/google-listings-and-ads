@@ -256,7 +256,7 @@ final class MBString {
 	 * @return string
 	 * @throws \ValueError If $encoding is not a valid encoding.
 	 *
-	 * @since x.x.x
+	 * @since 2.0.1
 	 */
 	public static function mb_internal_encoding( $encoding = null ) {
 		if ( null === $encoding ) {
