@@ -65,12 +65,14 @@ class PolicyComplianceCheckController extends BaseController {
 	protected function get_policy_check_callback(): callable {
 		return function () {
 			try {
-				return array_merge(
-					$this->policy_compliance_check->get_allowed_countries(),
-					$this->policy_compliance_check->has_payment_gateways(),
-					$this->policy_compliance_check->get_is_store_ssl(),
-					$this->policy_compliance_check->has_refund_return_policy_page(),
-				);
+				return [
+					'policy_check' => array_merge(
+						$this->policy_compliance_check->get_allowed_countries(),
+						$this->policy_compliance_check->has_payment_gateways(),
+						$this->policy_compliance_check->get_is_store_ssl(),
+						$this->policy_compliance_check->has_refund_return_policy_page(),
+					),
+				];
 
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );

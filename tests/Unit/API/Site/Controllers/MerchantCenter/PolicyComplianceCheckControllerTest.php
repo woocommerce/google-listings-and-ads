@@ -23,8 +23,8 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->policy_compliance_check = $this->createMock( PolicyComplianceCheck::class );
-		$this->controller         = new PolicyComplianceCheckController( $this->server, $this->policy_compliance_check );
+		$this->policy_compliance_check	= $this->createMock( PolicyComplianceCheck::class );
+		$this->controller         	= new PolicyComplianceCheckController( $this->server, $this->policy_compliance_check );
 		$this->controller->register();
 		$this->controller->register_routes();
 	}
@@ -50,11 +50,11 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
-			array_merge(
+		 ['policy_check' =>	array_merge(
 				[ 'allowed_countries' => ['US', 'UK'] ],
 				[ 'store_ssl' => true ],
 				[ 'payment_gateways' => true ],
-				[ 'refund_return_policy_page' => true ]),
+				[ 'refund_return_policy_page' => true ])],
 		$response->get_data());
 	}
 

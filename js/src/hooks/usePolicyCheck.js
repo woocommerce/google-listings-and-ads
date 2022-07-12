@@ -18,8 +18,8 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  * }
  * ```
  */
-const useAllowedCountries = () => {
-	return useAppSelectDispatch( 'getAllowedCountries' );
+const usePolicyCheck = () => {
+	return useAppSelectDispatch( 'usePolicyCheck' );
 };
 
-export default useAllowedCountries;
+export default usePolicyCheck;
