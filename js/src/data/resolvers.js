@@ -173,7 +173,6 @@ export function* getMCCountriesAndContinents() {
 		}
  }
 
-
 export function* getTargetAudience() {
 	yield fetchTargetAudience();
 }

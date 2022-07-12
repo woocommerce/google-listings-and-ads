@@ -73,6 +73,14 @@ export function handleFetchError( error, message ) {
  */
 
 /**
+ * @typedef {Object} TargetAudienceData
+ * @property {string} locale The locale for the site. Example: 'en_US'.
+ * @property {string} language The language to use for product listings. Example: 'English'.
+ * @property {string} location Type of location, There are two possible values: 'selected' countries or 'all' countries.
+ * @property {Array<CountryCode>} countries Array of audience countries.
+ */
+
+/**
  *
  * @return {Array<ShippingRate>} Array of individual shipping rates.
  */
@@ -706,27 +714,23 @@ export function receiveGoogleAdsAccountBillingStatus( billingStatus ) {
 	};
 }
 
+/**
+ * Save the target audience countries.
+ *
+ * @param {TargetAudienceData} targetAudience audience countries
+ * @return {Object} Action object to save target audience.
+ */
 export function* saveTargetAudience( targetAudience ) {
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/target_audience`,
-			method: 'POST',
-			data: targetAudience,
-		} );
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/target_audience`,
+		method: 'POST',
+		data: targetAudience,
+	} );
 
-		return {
-			type: TYPES.SAVE_TARGET_AUDIENCE,
-			target_audience: targetAudience,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error saving target audience data.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+	return {
+		type: TYPES.SAVE_TARGET_AUDIENCE,
+		target_audience: targetAudience,
+	};
 }
 
 export function* fetchAdsCampaigns() {
