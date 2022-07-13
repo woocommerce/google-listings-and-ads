@@ -1,5 +1,5 @@
 const Hello = ( props ) => {
-	const { name } = props;
+	const { name, hello } = props
 
 	return <p>Hello, { name }!</p>;
 };
