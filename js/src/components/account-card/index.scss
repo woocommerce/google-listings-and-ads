@@ -46,7 +46,7 @@
 		// the visual design needs. So we override its size here.
 		> .components-button.is-link {
 			min-height: $gla-size-control-height;
-			padding: calc( #{ $grid-unit-15 } / 2 ) $grid-unit-15;
+			padding: calc(#{ $grid-unit-15 } / 2) $grid-unit-15;
 		}
 	}
 
