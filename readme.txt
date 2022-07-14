@@ -110,13 +110,12 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 == Changelog ==
 
 = 2.0.1 - 2022-07-12 =
-* Add - A script to generate a list of hooks that defined or used in GLA.
-* Add - GH workflow to set PR labels.
+* Dev - A script to generate a list of hooks that defined or used in GLA.
+* Dev - GH workflow to set PR labels.
 * Add - Normalizer Polyfill.
 * Dev - changed the changelog types list.
 * Fix - Compatibility with History Navigation v5.
 * Fix - Encoding product names in Issues Table .
-* Fix - Release 2.0.0.
 * Tweak - Remove try and catch in saveTargetAudience action.
 
 = 2.0.0 - 2022-07-05 =
