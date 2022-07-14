@@ -24,7 +24,7 @@ $button-color: $gray-600;
 		width: $gla-size-medium;
 
 		@include break-large {
-			width: $modal-min-width;
+			width: $gla-modal-width;
 		}
 
 		@include break-xlarge {

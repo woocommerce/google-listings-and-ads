@@ -40,7 +40,7 @@
 				// The pagination dots' style
 				min-width: calc(#{$grid-unit-50} / 2);
 				height: calc(#{$grid-unit-50} / 2);
-				padding: $gla-grid-unit;
+				padding: calc( #{ $grid-unit-15 } / 2 );
 			}
 		}
 
@@ -69,7 +69,7 @@
 				height: $gla-size-control-height;
 				padding: 0 $grid-unit-20;
 				box-sizing: border-box;
-				border-radius: $gla-grid-unit-05;
+				border-radius: 3px;
 				font-weight: 500;
 				font-size: $gla-font-small;
 				& ~ .components-button {

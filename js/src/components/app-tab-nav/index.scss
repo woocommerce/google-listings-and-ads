@@ -11,7 +11,7 @@
 		border-radius: 0;
 		cursor: pointer;
 		height: $grid-unit-60;
-		padding: $gla-grid-unit-05 $grid-unit-20; // Use padding to offset the is-active border, this benefits Windows High Contrast mode
+		padding: calc( #{ $grid-unit-15 } / 4 ) $grid-unit-20; // Use padding to offset the is-active border, this benefits Windows High Contrast mode
 		margin-left: 0;
 		font-weight: 500;
 		box-sizing: border-box;
