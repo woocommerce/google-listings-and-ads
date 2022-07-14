@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { noop } from 'lodash';
 
 /**
  * Internal dependencies
