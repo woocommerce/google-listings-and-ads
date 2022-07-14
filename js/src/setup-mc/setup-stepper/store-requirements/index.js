@@ -36,10 +36,26 @@ export default function StoreRequirements() {
 	 * all onboarding accounts are considered unverified phone numbers.
 	 */
 	const [ isPhoneNumberReady, setPhoneNumberReady ] = useState( false );
+	const [ isSaveSettings, setSaveSettings ] = useState( true );
 	const [ completing, setCompleting ] = useState( false );
 
-	const handleChangeCallback = ( _, values ) => {
-		saveSettings( values );
+	const handleChangeCallback = async ( _, values ) => {
+		try {
+			await saveSettings( values );
+			setSaveSettings( true );
+		} catch ( error ) {
+			//Create the notice only once
+			if ( isSaveSettings === true ) {
+				createNotice(
+					'error',
+					__(
+						'There was an error trying to save settings. Please try again later.',
+						'google-listings-and-ads'
+					)
+				);
+			}
+			setSaveSettings( false );
+		}
 	};
 
 	const handleSubmitCallback = async () => {
@@ -120,7 +136,9 @@ export default function StoreRequirements() {
 								<AppButton
 									isPrimary
 									loading={ completing }
-									disabled={ ! isReadyToComplete }
+									disabled={
+										! isReadyToComplete || ! isSaveSettings
+									}
 									onClick={ handleSubmit }
 								>
 									{ __(
