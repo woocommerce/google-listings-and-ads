@@ -84,15 +84,15 @@ export function handleFetchError( error, message ) {
  * Settings Data
  *
  * @typedef {Object} SettingsData
- * @property {boolean} offer_free_shipping Whether if the merchant offers free shipping.
- * @property {string} shipping_rate Type of the shipping rate. There a three possible values: 'automatic', 'flat' and 'manual'
- * @property {string} shipping_time Type of the shipping time. There are two possible values: 'flat' and 'manual'.
- * @property {string|null} tax_rate Type of tax rate, There are two possible values if US is selected: 'destination' and 'manual' otherwise will be null.
- * @property {boolean} website_live Whether the store website is live.
- * @property {boolean} checkout_process_secure Whether the checkout process is complete and secure.
- * @property {boolean} payment_methods_visible Whether the payment methods are visible on the website.
- * @property {boolean} refund_tos_visible Whether the refund policy and terms of service are visible on the website.
- * @property {boolean} contact_info_visible Whether the phone number, email, and/or address are visible on the website.
+ * @property {boolean} [offer_free_shipping] Whether if the merchant offers free shipping.
+ * @property {string} [shipping_rate] Type of the shipping rate. There a three possible values: 'automatic', 'flat' and 'manual'
+ * @property {string} [shipping_time] Type of the shipping time. There are two possible values: 'flat' and 'manual'.
+ * @property {string|null} [tax_rate] Type of tax rate, There are two possible values if US is selected: 'destination' and 'manual' otherwise will be null.
+ * @property {boolean} [website_live] Whether the store website is live.
+ * @property {boolean} [checkout_process_secure] Whether the checkout process is complete and secure.
+ * @property {boolean} [payment_methods_visible] Whether the payment methods are visible on the website.
+ * @property {boolean} [refund_tos_visible] Whether the refund policy and terms of service are visible on the website.
+ * @property {boolean} [contact_info_visible] Whether the phone number, email, and/or address are visible on the website.
  */
 
 /**
