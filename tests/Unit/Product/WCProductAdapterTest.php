@@ -861,7 +861,7 @@ DESCRIPTION;
 		$this->assertNull( $adapted_product->getShippingWidth() );
 	}
 
-	public function test_identifier_exists_is_false_if_gtin_and_mpn_not_provided() {
+	public function test_identifier_exists_is_null_if_gtin_and_mpn_not_provided() {
 		$product         = WC_Helper_Product::create_simple_product( false );
 		$adapted_product = new WCProductAdapter(
 			[
@@ -869,10 +869,10 @@ DESCRIPTION;
 				'targetCountry' => 'US',
 			]
 		);
-		$this->assertFalse( $adapted_product->getIdentifierExists() );
+		$this->assertNull( $adapted_product->getIdentifierExists() );
 	}
 
-	public function test_identifier_exists_is_true_if_gtin_provided() {
+	public function test_identifier_exists_is_null_if_gtin_provided() {
 		$product         = WC_Helper_Product::create_simple_product( false );
 		$adapted_product = new WCProductAdapter(
 			[
@@ -883,10 +883,10 @@ DESCRIPTION;
 				],
 			]
 		);
-		$this->assertTrue( $adapted_product->getIdentifierExists() );
+		$this->assertNull( $adapted_product->getIdentifierExists() );
 	}
 
-	public function test_identifier_exists_is_true_if_mpn_provided() {
+	public function test_identifier_exists_is_null_if_mpn_provided() {
 		$product         = WC_Helper_Product::create_simple_product( false );
 		$adapted_product = new WCProductAdapter(
 			[
@@ -897,7 +897,7 @@ DESCRIPTION;
 				],
 			]
 		);
-		$this->assertTrue( $adapted_product->getIdentifierExists() );
+		$this->assertNull( $adapted_product->getIdentifierExists() );
 	}
 
 	public function test_product_price_is_set() {
