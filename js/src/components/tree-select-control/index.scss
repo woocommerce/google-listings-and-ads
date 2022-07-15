@@ -38,7 +38,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 		flex-wrap: wrap;
 		align-items: center;
 		border: $border-width solid $gray-600;
-		border-radius: 3px;
+		border-radius: $gla-border-radius;
 		background: $white;
 		padding: $gap-small;
 		position: relative;
@@ -148,7 +148,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgb(0 0 0 / 20%),
 		flex-direction: column;
 		align-items: stretch;
 		box-shadow: $muriel-box-shadow-6dp;
-		border-radius: 3px;
+		border-radius: $gla-border-radius;
 		position: absolute;
 		left: 0;
 		right: 0;

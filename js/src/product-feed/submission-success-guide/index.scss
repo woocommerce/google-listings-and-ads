@@ -69,7 +69,7 @@
 				height: $gla-size-control-height;
 				padding: 0 $grid-unit-20;
 				box-sizing: border-box;
-				border-radius: 3px;
+				border-radius: $gla-border-radius;
 				font-weight: 500;
 				font-size: $gla-font-small;
 				& ~ .components-button {
