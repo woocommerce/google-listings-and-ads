@@ -21,14 +21,14 @@ $button-color: $gray-600;
 	}
 
 	.components-popover__content {
-		width: $gla-size-medium;
+		width: $gla-width-medium;
 
 		@include break-large {
-			width: $gla-modal-width;
+			width: $gla-width-medium-large;
 		}
 
 		@include break-xlarge {
-			width: $break-mobile;
+			width: $gla-width-mobile;
 		}
 
 		> div {

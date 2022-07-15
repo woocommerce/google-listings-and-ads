@@ -24,7 +24,7 @@
 	// Override the SelectControl to smaller size
 	.woocommerce-table__actions {
 		.components-base-control {
-			width: $gla-size-small;
+			width: $gla-width-small;
 			height: $gla-size-control-height;
 			font-size: $default-font-size;
 		}
