@@ -23,6 +23,6 @@
 	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/button/style.scss#L15
 	 */
 	&--icon-with-text.has-icon {
-		padding: calc(#{ $grid-unit-15 } / 2) $grid-unit-15;
+		padding: calc($grid-unit-15 / 2) $grid-unit-15;
 	}
 }
