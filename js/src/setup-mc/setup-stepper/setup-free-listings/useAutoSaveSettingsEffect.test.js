@@ -55,6 +55,7 @@ describe( 'useAutoSaveSettingsEffect', () => {
 
 		await waitFor( () => {
 			expect( mockSaveSettings ).toHaveBeenCalledTimes( 1 );
+			expect( mockSaveSettings ).toHaveBeenCalledWith( newSettings );
 			//No errors should be displayed
 			expect( mockCreateNotice ).toHaveBeenCalledTimes( 0 );
 		} );
