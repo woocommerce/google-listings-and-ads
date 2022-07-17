@@ -50,12 +50,12 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
-		 ['policy_check' =>	[
+		[
 			'allowed_countries'    	=> ['US', 'UK'],
 			'store_ssl'         	=> true,
 			'payment_gateways'  	=> true,
 			'refund_returns' 	=> true,
-		]],
+		],
 		$response->get_data());
 	}
 }

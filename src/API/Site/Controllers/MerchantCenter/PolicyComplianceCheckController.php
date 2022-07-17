@@ -66,12 +66,10 @@ class PolicyComplianceCheckController extends BaseController {
 		return function () {
 			try {
 				return [
-					'policy_check' => [
-						'allowed_countries' => $this->policy_compliance_check->get_allowed_countries(),
-						'payment_gateways'  => $this->policy_compliance_check->has_payment_gateways(),
-						'store_ssl'         => $this->policy_compliance_check->get_is_store_ssl(),
-						'refund_returns'    => $this->policy_compliance_check->has_refund_return_policy_page(),
-					],
+					'allowed_countries' => $this->policy_compliance_check->get_allowed_countries(),
+					'payment_gateways'  => $this->policy_compliance_check->has_payment_gateways(),
+					'store_ssl'         => $this->policy_compliance_check->get_is_store_ssl(),
+					'refund_returns'    => $this->policy_compliance_check->has_refund_return_policy_page(),
 				];
 
 			} catch ( Exception $e ) {
@@ -88,27 +86,25 @@ class PolicyComplianceCheckController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'policy_check' => [
-				'allowed_countries' => [
-					'type'        => 'array',
-					'description' => __( 'The allowed countries where the store could be accessed.', 'google-listings-and-ads' ),
-					'context'     => [ 'view' ],
-				],
-				'payment_gateways'  => [
-					'type'        => 'boolean',
-					'description' => __( 'The payment gateways associated with onboarding policy checking.', 'google-listings-and-ads' ),
-					'context'     => [ 'view' ],
-				],
-				'store_ssl'         => [
-					'type'        => 'boolean',
-					'description' => __( 'The store ssl associated with onboarding policy checking.', 'google-listings-and-ads' ),
-					'context'     => [ 'view' ],
-				],
-				'refund_returns'    => [
-					'type'        => 'boolean',
-					'description' => __( 'The refund returns policy associated with onboarding policy checking.', 'google-listings-and-ads' ),
-					'context'     => [ 'view' ],
-				],
+			'allowed_countries' => [
+				'type'        => 'array',
+				'description' => __( 'The allowed countries where the store could be accessed.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'payment_gateways'  => [
+				'type'        => 'boolean',
+				'description' => __( 'The payment gateways associated with onboarding policy checking.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'store_ssl'         => [
+				'type'        => 'boolean',
+				'description' => __( 'The store ssl associated with onboarding policy checking.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'refund_returns'    => [
+				'type'        => 'boolean',
+				'description' => __( 'The refund returns policy associated with onboarding policy checking.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
 			],
 		];
 	}

@@ -415,20 +415,17 @@ describe( 'reducer', () => {
 	describe( 'Policy Check', () => {
 		it( 'should return with policy check info', () => {
 			const data = {
-				policy_check: {
-					allowed_countries: {
-						CA: { currency: 'CAD', name: 'Canada' },
-						US: { currency: 'USD', name: 'United States' },
-					},
-					store_ssl: true,
-					payment_gateways: {
-						id: 'wc_custom_pg',
-						title: 'Custom Payment Gateway',
-						method_description:
-							'Description of the payment gateway',
-					},
-					refund_returns: 'Refund and Returns Policy',
+				allowed_countries: {
+					CA: { currency: 'CAD', name: 'Canada' },
+					US: { currency: 'USD', name: 'United States' },
 				},
+				store_ssl: true,
+				payment_gateways: {
+					id: 'wc_custom_pg',
+					title: 'Custom Payment Gateway',
+					method_description: 'Description of the payment gateway',
+				},
+				refund_returns: 'Refund and Returns Policy',
 			};
 			const action = {
 				type: TYPES.POLICY_CHECK,
@@ -439,19 +436,19 @@ describe( 'reducer', () => {
 			state.assertConsistentRef();
 			expect( state ).toHaveProperty(
 				'mc.policy_check.refund_returns',
-				data.policy_check.refund_returns
+				data.refund_returns
 			);
 			expect( state ).toHaveProperty(
 				'mc.policy_check.payment_gateways',
-				data.policy_check.payment_gateways
+				data.payment_gateways
 			);
 			expect( state ).toHaveProperty(
 				'mc.policy_check.store_ssl',
-				data.policy_check.store_ssl
+				data.store_ssl
 			);
 			expect( state ).toHaveProperty(
 				'mc.policy_check.allowed_countries',
-				data.policy_check.allowed_countries
+				data.allowed_countries
 			);
 		} );
 	} );
