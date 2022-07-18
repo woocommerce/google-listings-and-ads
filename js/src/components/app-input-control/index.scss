@@ -6,7 +6,7 @@
 
 		// hack with !important to override the specificity in @wordpress/components.
 		label.components-input-control__label {
-			color: #757575 !important;
+			color: $gray-700 !important;
 			white-space: normal !important;
 		}
 	}
