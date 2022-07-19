@@ -9,7 +9,7 @@
  * Text Domain: google-listings-and-ads
  * Requires at least: 5.7
  * Tested up to: 6.0
- * Requires PHP: 7.3
+ * Requires PHP: 7.4
  *
  * WC requires at least: 6.0
  * WC tested up to: 6.7
@@ -29,7 +29,7 @@ use Psr\Container\ContainerInterface;
 defined( 'ABSPATH' ) || exit;
 
 define( 'WC_GLA_VERSION', '2.0.1' ); // WRCS: DEFINED_VERSION.
-define( 'WC_GLA_MIN_PHP_VER', '7.3' );
+define( 'WC_GLA_MIN_PHP_VER', '7.4' );
 define( 'WC_GLA_MIN_WC_VER', '6.0' );
 
 // Load and initialize the autoloader.
