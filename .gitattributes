@@ -30,3 +30,4 @@ wordpress_org_assets export-ignore
 .stylelintrc.json export-ignore
 .nvmrc export-ignore
 storybook export-ignore
+.jsdocrc.json export-ignore

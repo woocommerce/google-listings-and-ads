@@ -247,4 +247,35 @@ final class MBString {
 
 		return (string) \iconv_substr( $string, $start, $length, $encoding );
 	}
+
+	/**
+	 * Internal encoding
+	 *
+	 * @param string $encoding
+	 *
+	 * @return string
+	 * @throws \ValueError If $encoding is not a valid encoding.
+	 *
+	 * @since 2.0.1
+	 */
+	public static function mb_internal_encoding( $encoding = null ) {
+		if ( null === $encoding ) {
+			return self::$internal_encoding;
+		}
+
+		$normalized_encoding = self::get_encoding( $encoding );
+
+		// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		if ( 'UTF-8' === $normalized_encoding || false !== @\iconv( $normalized_encoding, $normalized_encoding, ' ' ) ) {
+			self::$internal_encoding = $normalized_encoding;
+
+			return true;
+		}
+
+		if ( 80000 > \PHP_VERSION_ID ) {
+			return false;
+		}
+
+		throw new \ValueError( sprintf( 'Argument #1 ($encoding) must be a valid encoding, "%s" given', $encoding ) );
+	}
 }

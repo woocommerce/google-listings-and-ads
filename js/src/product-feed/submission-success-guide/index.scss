@@ -38,9 +38,9 @@
 
 			.components-button {
 				// The pagination dots' style
-				min-width: 20px;
-				height: 20px;
-				padding: 6px;
+				min-width: calc($grid-unit-50 / 2);
+				height: calc($grid-unit-50 / 2);
+				padding: calc($grid-unit-15 / 2);
 			}
 		}
 
@@ -53,7 +53,7 @@
 				.components-button {
 					justify-content: center;
 					width: 100%;
-					margin-top: 12px;
+					margin-top: $grid-unit-15;
 				}
 			}
 
@@ -66,12 +66,12 @@
 
 			.components-button {
 				position: static;
-				height: 36px;
-				padding: 0 16px;
+				height: $gla-size-control-height;
+				padding: 0 $grid-unit-20;
 				box-sizing: border-box;
-				border-radius: 3px;
+				border-radius: $gla-border-radius;
 				font-weight: 500;
-				font-size: 14px;
+				font-size: $gla-font-small;
 				& ~ .components-button {
 					margin-left: calc(var(--main-gap) / 2);
 				}
@@ -84,7 +84,7 @@
 		}
 
 		&__forward-button {
-			border: 1px solid;
+			border: $border-width solid;
 		}
 	}
 
@@ -109,7 +109,7 @@
 	}
 
 	&__logo-separator-line {
-		width: 1px;
+		width: $border-width;
 		height: 63px;
 		margin: 0 28px;
 		background-color: $gray-600;

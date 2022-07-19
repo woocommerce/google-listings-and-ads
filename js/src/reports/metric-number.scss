@@ -1,7 +1,7 @@
 .gla-reports__metric-label {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: $grid-unit;
 
 	.components-tooltip .components-popover__content {
 		min-width: 32em;
@@ -22,7 +22,7 @@
 	}
 }
 
-$icon-color: #949494;
+$icon-color: $gray-600;
 
 .gla-reports__metric-infoicon {
 	display: flex;

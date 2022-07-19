@@ -12,13 +12,13 @@
 	}
 
 	&__title {
-		font-size: 13px;
+		font-size: $default-font-size;
 		font-weight: 600;
-		margin-bottom: 8px;
+		margin-bottom: $grid-unit;
 	}
 
 	&__description {
-		font-size: 12px;
+		font-size: $helptext-font-size;
 		font-style: italic;
 	}
 }
