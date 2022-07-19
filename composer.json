@@ -10,7 +10,7 @@
 		"automattic/jetpack-config": "^1.4",
 		"automattic/jetpack-connection": "^1.40",
 		"google/apiclient": "^2.12",
-		"google/apiclient-services": "~0.230",
+		"google/apiclient-services": "~0.258",
 		"googleads/google-ads-php": "^15.1",
 		"league/container": "^3.3",
 		"league/iso3166": "^3.0",
