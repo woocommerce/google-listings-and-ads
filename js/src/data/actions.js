@@ -85,8 +85,8 @@ export function handleFetchError( error, message ) {
  *
  * @typedef {Object} SettingsData
  * @property {boolean} [offer_free_shipping] Whether if the merchant offers free shipping.
- * @property {string} [shipping_rate] Type of the shipping rate. There a three possible values: 'automatic', 'flat' and 'manual'
- * @property {string} [shipping_time] Type of the shipping time. There are two possible values: 'flat' and 'manual'.
+ * @property {'automatic'|'flat'|'manual'} [shipping_rate] Type of the shipping rate.
+ * @property {'flat'|'manual'} [shipping_time] Type of the shipping time.
  * @property {string|null} [tax_rate] Type of tax rate, There are two possible values if US is selected: 'destination' and 'manual' otherwise will be null.
  * @property {boolean} [website_live] Whether the store website is live.
  * @property {boolean} [checkout_process_secure] Whether the checkout process is complete and secure.
