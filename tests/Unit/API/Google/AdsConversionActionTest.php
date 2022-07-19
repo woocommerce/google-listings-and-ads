@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Exception;
-use Google\Ads\GoogleAds\V9\Enums\ConversionActionStatusEnum\ConversionActionStatus;
+use Google\Ads\GoogleAds\V11\Enums\ConversionActionStatusEnum\ConversionActionStatus;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 
