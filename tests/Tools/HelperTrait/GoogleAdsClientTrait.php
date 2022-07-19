@@ -364,7 +364,7 @@ trait GoogleAdsClientTrait {
 	 * @param ApiException $exception
 	 */
 	protected function generate_customer_mock_exception( ApiException $exception ) {
-		$this->customer_service->method( 'getCustomer' )->willThrowException( $exception );
+		$this->service_client->method( 'search' )->willThrowException( $exception );
 	}
 
 	/**
