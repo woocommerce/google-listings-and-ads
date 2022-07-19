@@ -23,7 +23,6 @@ use Google\Ads\GoogleAds\V11\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V11\Services\CampaignServiceClient;
 use Google\Ads\GoogleAds\V11\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V11\Services\GeoTargetConstantServiceClient;
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
@@ -527,10 +526,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws Exception When unable to parse resource ID.
 	 */
 	protected function parse_geo_target_location_id( string $geo_target_constant ): int {
-		try {
-			$parts = GeoTargetConstantServiceClient::parseName( $geo_target_constant );
-			return absint( $parts['criterion_id'] );
-		} catch ( ValidationException $e ) {
+		if ( 1 === preg_match( '#geoTargetConstants/(?<id>\d+)#', $geo_target_constant, $parts ) ) {
+			return absint( $parts['id'] );
+		} else {
 			throw new Exception( __( 'Invalid geo target location ID', 'google-listings-and-ads' ) );
 		}
 	}
