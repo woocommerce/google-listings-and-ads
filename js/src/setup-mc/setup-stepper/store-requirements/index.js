@@ -45,7 +45,7 @@ export default function StoreRequirements() {
 			setSettingsSaved( true );
 		} catch ( error ) {
 			//Create the notice only once
-			if ( settingsSaved === true ) {
+			if ( settingsSaved ) {
 				createNotice(
 					'error',
 					__(
@@ -122,7 +122,8 @@ export default function StoreRequirements() {
 					const isReadyToComplete =
 						isValidForm &&
 						isPhoneNumberReady &&
-						address.isAddressFilled;
+						address.isAddressFilled &&
+						settingsSaved;
 
 					return (
 						<>
@@ -136,9 +137,7 @@ export default function StoreRequirements() {
 								<AppButton
 									isPrimary
 									loading={ completing }
-									disabled={
-										! isReadyToComplete || ! settingsSaved
-									}
+									disabled={ ! isReadyToComplete }
 									onClick={ handleSubmit }
 								>
 									{ __(
