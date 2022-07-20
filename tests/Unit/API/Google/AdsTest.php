@@ -234,7 +234,7 @@ class AdsTest extends UnitTest {
 
 	public function test_request_ads_currency_unavailable() {
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
-		$this->generate_customer_mock_exception(
+		$this->generate_ads_query_mock_exception(
 			new ApiException( 'unavailable', 14, 'UNAVAILABLE' )
 		);
 

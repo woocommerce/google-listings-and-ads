@@ -44,6 +44,8 @@ class AdsConversionActionTest extends UnitTest {
 
 		$this->conversion_action = new AdsConversionAction( $this->client );
 		$this->conversion_action->set_options_object( $this->options );
+
+		$this->options->method( 'get_ads_id' )->willReturn( $this->ads_id );
 	}
 
 	public function test_create_conversion_action() {
@@ -51,7 +53,7 @@ class AdsConversionActionTest extends UnitTest {
 			'create',
 			self::TEST_CONVERSION_ACTION_ID
 		);
-		$this->generate_conversion_action_mock(
+		$this->generate_conversion_action_query_mock(
 			[
 				'id'      => self::TEST_CONVERSION_ACTION_ID,
 				'name'    => self::TEST_CONVERSION_NAME,
@@ -120,7 +122,7 @@ class AdsConversionActionTest extends UnitTest {
 	}
 
 	public function test_get_conversion_action_by_id() {
-		$this->generate_conversion_action_mock(
+		$this->generate_conversion_action_query_mock(
 			[
 				'id'      => self::TEST_CONVERSION_ACTION_ID,
 				'name'    => self::TEST_CONVERSION_NAME,
@@ -142,25 +144,13 @@ class AdsConversionActionTest extends UnitTest {
 	}
 
 	public function test_get_conversion_action_api_exception() {
-		$this->generate_conversion_action_exception(
+		$this->generate_ads_query_mock_exception(
 			new ApiException( 'invalid', 3, 'INVALID_ARGUMENT' )
 		);
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 400 );
 		$this->expectExceptionMessage( 'Error retrieving conversion action: invalid' );
-
-		$this->conversion_action->get_conversion_action( self::TEST_CONVERSION_ACTION_ID );
-	}
-
-	public function test_get_conversion_action_exception() {
-		$this->generate_conversion_action_exception(
-			new Exception( 'unauthorized', 401 )
-		);
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionCode( 401 );
-		$this->expectExceptionMessage( 'Error retrieving conversion action: unauthorized' );
 
 		$this->conversion_action->get_conversion_action( self::TEST_CONVERSION_ACTION_ID );
 	}

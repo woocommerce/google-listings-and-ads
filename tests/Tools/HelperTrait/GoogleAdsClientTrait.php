@@ -359,15 +359,6 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
-	 * Generates a mocked exception when a customer is requested.
-	 *
-	 * @param ApiException $exception
-	 */
-	protected function generate_customer_mock_exception( ApiException $exception ) {
-		$this->service_client->method( 'search' )->willThrowException( $exception );
-	}
-
-	/**
 	 * Generates a list of mocked customers resource names.
 	 *
 	 * @param array $list
@@ -458,11 +449,11 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
-	 * Creates a mocked ConversionAction.
+	 * Creates a mocked AdsConversionActionQuery response.
 	 *
 	 * @param array $data Conversion Action data.
 	 */
-	protected function generate_conversion_action_mock( array $data ) {
+	protected function generate_conversion_action_query_mock( array $data ) {
 		$tag = $this->createMock( TagSnippet::class );
 		$tag->method( 'getType' )->willReturn( TrackingCodeType::WEBPAGE );
 		$tag->method( 'getPageFormat' )->willReturn( TrackingCodePageFormat::HTML );
@@ -474,9 +465,11 @@ trait GoogleAdsClientTrait {
 		$conversion_action->method( 'getStatus' )->willReturn( $data['status'] );
 		$conversion_action->method( 'getTagSnippets' )->willReturn( [ $tag ] );
 
-		$this->conversion_action_service->expects( $this->once() )
-			->method( 'getConversionAction' )
-			->willReturn( $conversion_action );
+		$this->generate_ads_query_mock(
+			[
+				( new GoogleAdsRow )->setConversionAction( $conversion_action ),
+			]
+		);
 	}
 
 	/**
@@ -486,15 +479,6 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_conversion_action_mutate_exception( Exception $exception ) {
 		$this->conversion_action_service->method( 'mutateConversionActions' )->willThrowException( $exception );
-	}
-
-	/**
-	 * Generates a mocked exception when a ConversionAction is requested.
-	 *
-	 * @param Exception $exception
-	 */
-	protected function generate_conversion_action_exception( Exception $exception ) {
-		$this->conversion_action_service->method( 'getConversionAction' )->willThrowException( $exception );
 	}
 
 	/**
