@@ -11,7 +11,7 @@
 		"automattic/jetpack-connection": "^1.40",
 		"google/apiclient": "^2.12",
 		"google/apiclient-services": "~0.258",
-		"googleads/google-ads-php": "^15.1",
+		"googleads/google-ads-php": "^16.0",
 		"league/container": "^3.3",
 		"league/iso3166": "^3.0",
 		"phpseclib/bcmath_compat": "^2.0",

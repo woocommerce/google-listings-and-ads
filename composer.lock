@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f4dd5bea5b9b8ec7d5019255c0ff4843",
+    "content-hash": "a162aab2f295f41616b10294a20bafb1",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -862,23 +862,23 @@
         },
         {
             "name": "googleads/google-ads-php",
-            "version": "v15.1.0",
+            "version": "v16.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleads/google-ads-php.git",
-                "reference": "986e0ead76e9d73950f5689474768497a501f592"
+                "reference": "41382c1419a78d98821b67b52a5f47d615a131b2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/986e0ead76e9d73950f5689474768497a501f592",
-                "reference": "986e0ead76e9d73950f5689474768497a501f592",
+                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/41382c1419a78d98821b67b52a5f47d615a131b2",
+                "reference": "41382c1419a78d98821b67b52a5f47d615a131b2",
                 "shasum": ""
             },
             "require": {
-                "google/gax": "^1.7.0",
+                "google/gax": "^1.13.0",
                 "google/protobuf": "^3.19.4",
                 "grpc/grpc": "^1.36.0",
-                "monolog/monolog": "^2.0 || ^3.0",
+                "monolog/monolog": "^1.26 || ^2.0 || ^3.0",
                 "php": ">=7.4"
             },
             "require-dev": {
@@ -919,9 +919,9 @@
             "homepage": "https://github.com/googleads/google-ads-php",
             "support": {
                 "issues": "https://github.com/googleads/google-ads-php/issues",
-                "source": "https://github.com/googleads/google-ads-php/tree/v15.1.0"
+                "source": "https://github.com/googleads/google-ads-php/tree/v16.0.0"
             },
-            "time": "2022-06-16T17:07:10+00:00"
+            "time": "2022-07-19T14:23:38+00:00"
         },
         {
             "name": "grpc/grpc",
