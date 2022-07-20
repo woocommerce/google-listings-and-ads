@@ -27,6 +27,7 @@ import HelpIconButton from '.~/components/help-icon-button';
 import hasUnsavedShippingRates from './hasUnsavedShippingRates';
 import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '.~/hooks/useSaveShippingTimes';
+import useCreateNoticeForRejectedPromises from '.~/hooks/useCreateNoticeForRejectedPromises';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -122,6 +123,9 @@ const EditFreeCampaign = () => {
 		method: 'POST',
 	} );
 	const { createNotice } = useDispatchCoreNotices();
+	const {
+		createNoticeForRejectedPromises,
+	} = useCreateNoticeForRejectedPromises();
 
 	// Check what've changed to show prompt, and send requests only to save changed things.
 	const didAudienceChanged = ! isEqual(
@@ -205,23 +209,34 @@ const EditFreeCampaign = () => {
 	const handleSetupFreeListingsContinue = async () => {
 		// TODO: Disable the form so the user won't be able to input any changes, which could be disregarded.
 		try {
-			await Promise.allSettled( [
+			const promises = [
 				saveTargetAudience( targetAudience ),
 				saveSettings( settings ),
 				saveShippingRates( shippingRates ),
 				saveShippingTimes( shippingTimes ),
+			];
+
+			const rejected = await createNoticeForRejectedPromises( promises, [
+				'Target audience',
+				'Settings',
+				'Shipping rates',
+				'Shipping times',
 			] );
 
 			// Sync data once our changes are saved, even partially succesfully.
 			await fetchSettingsSync();
 
-			createNotice(
-				'success',
-				__(
-					'Your changes to your Free Listings have been saved and will be synced to your Google Merchant Center account.',
-					'google-listings-and-ads'
-				)
-			);
+			//If all promises have been fulfilled successful
+			if ( ! rejected.length ) {
+				createNotice(
+					'success',
+					__(
+						'Your changes to your Free Listings have been saved and will be synced to your Google Merchant Center account.',
+						'google-listings-and-ads'
+					)
+				);
+			}
+
 			recordEvent( 'gla_free_campaign_edited' );
 		} catch ( error ) {
 			createNotice(
