@@ -8,9 +8,8 @@ use Composer\Script\Event;
 /**
  * Utilities to remove PHP 8.0 specific code of Symfony polyfills to make it compatible with woorelease.
  * See issue: https://github.com/woocommerce/google-listings-and-ads/issues/331#issuecomment-838372148
- * 
+ *
  * This class is based on https://github.com/woocommerce/google-listings-and-ads/blob/develop/bin/GoogleAdsCleanupServices.php
- * 
  */
 class SymfonyPolyfillCleanup {
 
