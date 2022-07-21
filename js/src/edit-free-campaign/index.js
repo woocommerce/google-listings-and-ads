@@ -218,7 +218,7 @@ const EditFreeCampaign = () => {
 
 			const rejected = await createNoticeForRejectedPromises( promises, [
 				'Target audience',
-				'Settings',
+				'MC Settings',
 				'Shipping rates',
 				'Shipping times',
 			] );
