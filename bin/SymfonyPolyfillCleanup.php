@@ -8,6 +8,9 @@ use Composer\Script\Event;
 /**
  * Utilities to remove PHP 8.0 specific code of Symfony polyfills to make it compatible with woorelease.
  * See issue: https://github.com/woocommerce/google-listings-and-ads/issues/331#issuecomment-838372148
+ * 
+ * This class is based on https://github.com/woocommerce/google-listings-and-ads/blob/develop/bin/GoogleAdsCleanupServices.php
+ * 
  */
 class SymfonyPolyfillCleanup {
 
@@ -41,7 +44,7 @@ class SymfonyPolyfillCleanup {
 	 * Constructor.
 	 *
 	 * @param Event|null  $event Composer event.
-	 * @param string|null $path  Path of the Ads library.
+	 * @param string|null $path  Path of the Symfony library.
 	 */
 	public function __construct( Event $event = null, string $path = null ) {
 		$this->event = $event;
@@ -69,7 +72,7 @@ class SymfonyPolyfillCleanup {
 	}
 
 	/**
-	 * Remove bootstrap80.php files and the require conditional statement in bootstrap.php
+	 * Remove bootstrap80.php files and the conditional statement in bootstrap.php
 	 */
 	protected function remove_bootstraps80() {
 		$this->output_text( 'Removing PHP 8.0 specific code for symfony polyfills' );
@@ -103,8 +106,8 @@ class SymfonyPolyfillCleanup {
 	 * Remove a statement from a file.
 	 *
 	 * @param string $file
-	 * @param string $inner_pattern The inner pattern for the conditional statement.
-	 * @param string $statement_pattern The conditional pattern.
+	 * @param string $inner_pattern The inner pattern for the  statement.
+	 * @param string $statement_pattern The statement pattern.
 	 */
 	protected function remove_statement_with_pattern( string $file, string $inner_pattern, string $statement_pattern ) {
 		if ( ! file_exists( $file ) ) {
@@ -124,7 +127,7 @@ class SymfonyPolyfillCleanup {
 		$length  = strlen( $contents );
 		$bracket = 0;
 
-		// Parse until we find beginning the conditional pattern.
+		// Parse until we find beginning of statement pattern.
 		$start = strrpos( $contents, $statement_pattern, ( $length - $offset ) * -1 );
 
 		// Parse until we encounter closing bracket.
