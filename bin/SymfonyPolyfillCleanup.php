@@ -19,7 +19,7 @@ class SymfonyPolyfillCleanup {
 	 *
 	 * @var boolean
 	 */
-	protected $debug = true;
+	protected $debug = false;
 
 	/**
 	 * @var Event Composer event.
