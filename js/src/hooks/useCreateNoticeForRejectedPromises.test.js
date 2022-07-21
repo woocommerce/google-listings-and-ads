@@ -8,10 +8,10 @@ import { renderHook } from '@testing-library/react-hooks';
  */
 import useCreateNoticeForRejectedPromises from './useCreateNoticeForRejectedPromises';
 
-const mockCreateNotice = jest.fn().mockName( 'createNotice' );
+const mockCreateNoticeForMultipleErrors = jest.fn().mockName( 'createNotice' );
 
-jest.mock( '.~/hooks/useDispatchCoreNotices', () => () => ( {
-	createNotice: mockCreateNotice,
+jest.mock( '.~/hooks/useCreateNoticeForMultipleErrors', () => () => ( {
+	createNoticeForMultipleErrors: mockCreateNoticeForMultipleErrors,
 } ) );
 
 describe( 'useCreateNoticeForRejectedPromises', () => {
@@ -38,7 +38,11 @@ describe( 'useCreateNoticeForRejectedPromises', () => {
 		);
 
 		expect( rejectedMessages ).toEqual( [] );
-		expect( mockCreateNotice ).toHaveBeenCalledTimes( 0 );
+		expect( mockCreateNoticeForMultipleErrors ).toHaveBeenCalledTimes( 1 );
+		expect( mockCreateNoticeForMultipleErrors ).toHaveBeenCalledWith(
+			[],
+			true
+		);
 	} );
 
 	it( 'One rejected Promise', async () => {
@@ -57,10 +61,10 @@ describe( 'useCreateNoticeForRejectedPromises', () => {
 		);
 
 		expect( rejectedMessages ).toEqual( [ 'Promise B' ] );
-		expect( mockCreateNotice ).toHaveBeenCalledTimes( 1 );
-		expect( mockCreateNotice ).toHaveBeenCalledWith(
-			'error',
-			'There are errors in the following actions: Promise B. Other changes have been saved. Please try again later.'
+		expect( mockCreateNoticeForMultipleErrors ).toHaveBeenCalledTimes( 1 );
+		expect( mockCreateNoticeForMultipleErrors ).toHaveBeenCalledWith(
+			[ 'Promise B' ],
+			true
 		);
 	} );
 
@@ -94,10 +98,10 @@ describe( 'useCreateNoticeForRejectedPromises', () => {
 			'Promise C',
 			'Promise D',
 		] );
-		expect( mockCreateNotice ).toHaveBeenCalledTimes( 1 );
-		expect( mockCreateNotice ).toHaveBeenCalledWith(
-			'error',
-			'There are errors in the following actions: Promise B, Promise C and Promise D. Other changes have been saved. Please try again later.'
+		expect( mockCreateNoticeForMultipleErrors ).toHaveBeenCalledTimes( 1 );
+		expect( mockCreateNoticeForMultipleErrors ).toHaveBeenCalledWith(
+			[ 'Promise B', 'Promise C', 'Promise D' ],
+			true
 		);
 	} );
 
@@ -121,10 +125,10 @@ describe( 'useCreateNoticeForRejectedPromises', () => {
 			'Promise B',
 			'Promise C',
 		] );
-		expect( mockCreateNotice ).toHaveBeenCalledTimes( 1 );
-		expect( mockCreateNotice ).toHaveBeenCalledWith(
-			'error',
-			'There are errors in the following actions: Promise A, Promise B and Promise C.  Please try again later.'
+		expect( mockCreateNoticeForMultipleErrors ).toHaveBeenCalledTimes( 1 );
+		expect( mockCreateNoticeForMultipleErrors ).toHaveBeenCalledWith(
+			[ 'Promise A', 'Promise B', 'Promise C' ],
+			false
 		);
 	} );
 } );

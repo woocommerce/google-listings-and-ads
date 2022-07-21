@@ -1,13 +1,7 @@
 /**
- * External dependencies
- */
-import { __, sprintf } from '@wordpress/i18n';
-
-/**
  * Internal dependencies
  */
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import concatenateListOfWords from '.~/utils/concatenateListOfWords';
+import useCreateNoticeForMultipleErrors from '.~/hooks/useCreateNoticeForMultipleErrors';
 
 /**
  *
@@ -23,7 +17,9 @@ import concatenateListOfWords from '.~/utils/concatenateListOfWords';
  * @return {CreateNoticeForRejectedPromises} - A function that will create the error notice for the rejected promises.
  */
 export default function useCreateNoticeForRejectedPromises() {
-	const { createNotice } = useDispatchCoreNotices();
+	const {
+		createNoticeForMultipleErrors,
+	} = useCreateNoticeForMultipleErrors();
 
 	/**
 	 * @type {CreateNoticeForRejectedPromises} CreateNoticeForRejectedPromises	 *
@@ -40,23 +36,12 @@ export default function useCreateNoticeForRejectedPromises() {
 			return acc;
 		}, [] );
 
-		if ( rejectedMessages.length ) {
-			const listErrors = concatenateListOfWords( rejectedMessages );
+		const isPartiallySuccessful = rejectedMessages.length < promises.length;
 
-			const content = sprintf(
-				// translators: 1: list of errors 2: optional text if some promises have been invoked successfully.
-				__(
-					'There are errors in the following actions: %1$s. %2$s Please try again later.',
-					'google-listings-and-ads'
-				),
-				listErrors,
-				rejectedMessages.length < promises.length
-					? 'Other changes have been saved.'
-					: ''
-			);
-
-			createNotice( 'error', content );
-		}
+		createNoticeForMultipleErrors(
+			rejectedMessages,
+			isPartiallySuccessful
+		);
 
 		return rejectedMessages;
 	};
