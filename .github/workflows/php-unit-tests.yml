@@ -32,11 +32,11 @@ jobs:
       matrix:
         php: [7.3, 7.4]
         wp-version: [5.7, 5.8, latest]
-        wc-version: [6.8-beta.1]
+        wc-version: [release/6.8]
         include:
           - php: 8.0
             wp-version: latest
-            wc-version: 6.8-beta.1
+            wc-version: release/6.8
 
     steps:
       - name: Checkout repository
