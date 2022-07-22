@@ -180,7 +180,7 @@ class SymfonyPolyfillCleanup {
 	/**
 	 * Find a specific filename pattern within the polyfill folder.
 	 *
-	 * @param string $pattern Regexp pattern to match.
+	 * @param string $pattern glob pattern to match.
 	 * @param string $polyfill Polyfill folder
 	 *
 	 * @return array List of matched names.
