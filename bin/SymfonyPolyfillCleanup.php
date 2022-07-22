@@ -86,7 +86,7 @@ class SymfonyPolyfillCleanup {
 			);
 
 			foreach ( $bootstraps as $bootstrap ) {
-				$this->remove_statement_with_pattern( $bootstrap, "return require __DIR__.'/bootstrap80.php", 'if (\PHP_VERSION_ID >= 80000)' );
+				$this->remove_statement_with_pattern( $bootstrap, "require .*\/bootstrap80.php", 'if (\PHP_VERSION_ID >= 80000)' );
 			}
 
 			// Search for bootstrap80.php
@@ -116,7 +116,7 @@ class SymfonyPolyfillCleanup {
 
 		$contents = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 
-		$pattern = '/' . preg_quote( $inner_pattern, '/' ) . '/';
+		$pattern = '/' . $inner_pattern . '/';
 		if ( ! preg_match( $pattern, $contents, $matches, PREG_OFFSET_CAPTURE ) ) {
 			$this->warning( sprintf( 'Inner pattern %s not found in %s', $inner_pattern, $file ) );
 			return;
