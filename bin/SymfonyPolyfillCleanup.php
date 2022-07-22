@@ -80,13 +80,20 @@ class SymfonyPolyfillCleanup {
 
 		foreach ( $list_of_polyfills as $polyfill ) {
 
+			$statement_results = [];
+
 			// Search for bootstrap.php
 			$bootstraps = array_unique(
 				$this->find_library_file_pattern( 'bootstrap', $polyfill )
 			);
 
 			foreach ( $bootstraps as $bootstrap ) {
-				$this->remove_statement_with_pattern( $bootstrap, "require .*\/bootstrap80.php", 'if (\PHP_VERSION_ID >= 80000)' );
+				$statement_results[] = $this->remove_statement_with_pattern( $bootstrap, 'require .*\/bootstrap80.php', 'if (\PHP_VERSION_ID >= 80000)' );
+			}
+
+			// If the statement is not found, skip removing bootstrap80.php
+			if ( ! in_array( true, $statement_results, true ) ) {
+				continue;
 			}
 
 			// Search for bootstrap80.php
@@ -107,11 +114,12 @@ class SymfonyPolyfillCleanup {
 	 * @param string $file
 	 * @param string $inner_pattern The inner pattern for the  statement.
 	 * @param string $statement_pattern The statement pattern.
+	 * @return bool Returns true if the statement is found otherwise false.
 	 */
 	protected function remove_statement_with_pattern( string $file, string $inner_pattern, string $statement_pattern ) {
 		if ( ! file_exists( $file ) ) {
 			$this->warning( sprintf( 'File does not exist: %s', $file ) );
-			return;
+			return false;
 		}
 
 		$contents = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions
@@ -119,7 +127,7 @@ class SymfonyPolyfillCleanup {
 		$pattern = '/' . $inner_pattern . '/';
 		if ( ! preg_match( $pattern, $contents, $matches, PREG_OFFSET_CAPTURE ) ) {
 			$this->warning( sprintf( 'Inner pattern %s not found in %s', $inner_pattern, $file ) );
-			return;
+			return false;
 		}
 
 		$offset  = $matches[0][1];
@@ -144,7 +152,7 @@ class SymfonyPolyfillCleanup {
 
 		if ( false === $start || 0 > $start || $end >= $length ) {
 			$this->warning( sprintf( 'Statement %s not found in %s', $statement_pattern, $file ) );
-			return;
+			return false;
 		}
 
 		// Include whitespaces before start.
@@ -157,10 +165,11 @@ class SymfonyPolyfillCleanup {
 
 		if ( empty( $new ) ) {
 			$this->warning( sprintf( 'Replace failed for statement %s in %s', $statement_pattern, $file ) );
-			return;
+			return false;
 		}
 
 		file_put_contents( $file, $new ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		return true;
 	}
 
 	/**
