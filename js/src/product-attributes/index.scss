@@ -3,7 +3,7 @@
 		.gla-metabox.wc-metabox {
 			overflow: hidden;
 			clear: both;
-			border: 1px solid $gray-300;
+			border: $border-width solid $gray-300;
 
 			// using !important to override the WooCommerce style for meta boxes
 			margin: $grid-unit-20 0 !important;
@@ -32,7 +32,7 @@
 		}
 
 		.gla-metabox.wc-metabox:last-of-type {
-			border-bottom: 1px solid $gray-300;
+			border-bottom: $border-width solid $gray-300;
 		}
 	}
 }

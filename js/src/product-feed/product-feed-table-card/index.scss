@@ -3,7 +3,7 @@
 		.woocommerce-table__actions {
 			align-items: center;
 			justify-content: flex-end;
-			min-height: 36px;
+			min-height: $gla-size-control-height;
 
 			// Override 100% div width within actions
 			> div {
@@ -24,13 +24,13 @@
 	// Override the SelectControl to smaller size
 	.woocommerce-table__actions {
 		.components-base-control {
-			width: 250px;
-			height: 36px;
-			font-size: 13px;
+			width: $gla-width-small;
+			height: $gla-size-control-height;
+			font-size: $default-font-size;
 		}
 
 		.components-base-control__label {
-			font-size: 13px;
+			font-size: $default-font-size;
 		}
 
 		.with-value .components-base-control__label {
@@ -42,13 +42,13 @@
 		}
 
 		.woocommerce-select-control__option {
-			min-height: 36px;
-			font-size: 13px;
+			min-height: $gla-size-control-height;
+			font-size: $default-font-size;
 		}
 
 		.woocommerce-select-control__control-input {
 			margin-top: 0;
-			font-size: 13px;
+			font-size: $default-font-size;
 			color: $gray-900;
 		}
 	}

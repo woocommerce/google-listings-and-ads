@@ -1,5 +1,5 @@
 .gla-account-card {
-	line-height: 16px;
+	line-height: $gla-line-height-smaller;
 
 	&--is-disabled {
 		opacity: 0.5;
@@ -16,7 +16,7 @@
 	}
 
 	&__title {
-		margin-bottom: 4px;
+		margin-bottom: $grid-unit-05;
 		color: $black;
 	}
 
@@ -32,9 +32,9 @@
 	}
 
 	&__helper {
-		margin-top: 4px;
+		margin-top: $grid-unit-05;
 		font-style: italic;
-		font-size: 12px;
+		font-size: $helptext-font-size;
 		color: $gray-700;
 	}
 
@@ -45,8 +45,8 @@
 		// but the default link style has a smaller size that doesn't meet
 		// the visual design needs. So we override its size here.
 		> .components-button.is-link {
-			min-height: 36px;
-			padding: 6px 12px;
+			min-height: $gla-size-control-height;
+			padding: calc($grid-unit-15 / 2) $grid-unit-15;
 		}
 	}
 
