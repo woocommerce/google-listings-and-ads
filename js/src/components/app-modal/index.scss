@@ -1,6 +1,6 @@
 .app-modal {
 	@include break-large {
-		width: 600px;
+		width: $gla-width-large;
 	}
 
 	.app-modal__footer {

@@ -15,13 +15,13 @@
 		margin-bottom: calc(var(--main-gap) / 2);
 
 		svg {
-			fill: #949494;
+			fill: $gray-600;
 		}
 	}
 
 	&__low-budget {
 		svg {
-			fill: #f0b849;
+			fill: $alert-yellow;
 		}
 	}
 }

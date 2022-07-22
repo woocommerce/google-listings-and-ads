@@ -67,7 +67,7 @@ if ( ! function_exists( 'mb_internal_encoding' ) ) {
 	 *
 	 * @return string|bool
 	 *
-	 * @since x.x.x
+	 * @since 2.0.1
 	 */
 	function mb_internal_encoding( $encoding = null ) {
 		return MBString::mb_internal_encoding( $encoding );

@@ -1,5 +1,14 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 2.0.1 - 2022-07-12 =
+* Dev - A script to generate a list of hooks that defined or used in GLA.
+* Dev - GH workflow to set PR labels.
+* Add - Normalizer Polyfill.
+* Dev - changed the changelog types list.
+* Fix - Compatibility with History Navigation v5.
+* Fix - Encoding product names in Issues Table .
+* Tweak - Remove try and catch in saveTargetAudience action.
+
 = 2.0.0 - 2022-07-05 =
 * Add - Filter Ads accounts to exclude manager and test accounts.
 * Add - Return account names when retrieving the list of existing accounts.

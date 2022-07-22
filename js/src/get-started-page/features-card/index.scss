@@ -25,7 +25,7 @@
 
 		@media (max-width: $break-small) {
 			flex-direction: column;
-			gap: 40px;
+			gap: $grid-unit-50;
 			padding: 0 55px 44px;
 		}
 	}
@@ -65,8 +65,8 @@
 	@media (max-width: $break-small) {
 		// Use more specific rules to make it higher priority to override <Text> component.
 		& &__title {
-			font-size: $gla-font-medium-mobile;
-			line-height: $gla-line-height-large-mobile;
+			font-size: $gla-font-small-medium;
+			line-height: $gla-line-height-medium-large;
 		}
 
 		// Use more specific rules to make it higher priority to override <Text> component.

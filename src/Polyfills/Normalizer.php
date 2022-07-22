@@ -10,7 +10,7 @@ declare( strict_types=1 );
  * For the full copyright and license information, please view the LICENSE
  * https://github.com/symfony/polyfill-intl-normalizer/blob/main/LICENSE
  * 
- * @since x.x.x
+ * @since 2.0.1
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Polyfills
  */

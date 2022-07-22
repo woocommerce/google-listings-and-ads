@@ -1,9 +1,9 @@
 .gla-stepper-top-bar {
 	display: flex;
 	align-items: stretch;
-	min-height: 64px;
-	background-color: #fff;
-	box-shadow: 0 -1px 0 0 #ccc inset;
+	min-height: $grid-unit-40 * 2;
+	background-color: $white;
+	box-shadow: 0 -1px 0 0 $gray-400 inset;
 
 	.back-button {
 		display: flex;
@@ -14,9 +14,9 @@
 	.title {
 		align-self: center;
 		flex: 1;
-		font-size: 16px;
+		font-size: $editor-font-size;
 		font-weight: 400;
-		line-height: 28px;
+		line-height: $gla-line-height-medium-large;
 		letter-spacing: 0;
 	}
 

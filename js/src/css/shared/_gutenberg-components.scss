@@ -39,7 +39,7 @@
 
 // hack to fix InputControl suffix's empty right margin.
 .components-input-control__suffix {
-	margin-right: 8px;
+	margin-right: $grid-unit;
 }
 
 // Hack to fix the Tooltip position of the top-right side close button in a Modal component.
