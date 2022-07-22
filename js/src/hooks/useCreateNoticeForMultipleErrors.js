@@ -14,7 +14,7 @@ import concatenateListOfWords from '.~/utils/concatenateListOfWords';
  * 'There are errors in the following actions: Target Audience and Shipping Rates. Please try again later.'
  *
  * @callback CreateNoticeForMultipleErrors
- * @param  {Array<string>} rejectedMessages Name of each provided promise in the first argument. It will be used to create the notice and needs to follow the same order that in the first argument.
+ * @param  {Array<string>} errorMessages Error messages to be displayed in the notice.
  * @param {boolean} [isPartiallySuccessful] Whether some actions were successful.
  */
 
@@ -35,11 +35,11 @@ export default function useCreateNoticeForMultipleErrors() {
 	 * @type {CreateNoticeForMultipleErrors} CreateNoticeForMultipleErrors
 	 */
 	const createNoticeForMultipleErrors = (
-		rejectedMessages,
+		errorMessages,
 		isPartiallySuccessful = true
 	) => {
-		if ( rejectedMessages.length ) {
-			const listErrors = concatenateListOfWords( rejectedMessages );
+		if ( errorMessages.length ) {
+			const listErrors = concatenateListOfWords( errorMessages );
 
 			const content = sprintf(
 				// translators: 1: list of errors 2: optional text if some promises have been invoked successfully.
