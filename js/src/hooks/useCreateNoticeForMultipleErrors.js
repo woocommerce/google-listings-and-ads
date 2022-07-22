@@ -10,7 +10,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import concatenateListOfWords from '.~/utils/concatenateListOfWords';
 
 /**
- * Creates a error notice for a list of error messages. For example for a list of error messages: createNoticeForMultipleErrors(['Target Audience', 'Shipping Rates']) will create a notice with the following message:
+ * Creates an error notice for a list of error messages. For example for a list of error messages: createNoticeForMultipleErrors(['Target Audience', 'Shipping Rates']) will create a notice with the following message:
  * 'There are errors in the following actions: Target Audience and Shipping Rates. Please try again later.'
  *
  * @callback CreateNoticeForMultipleErrors
@@ -26,7 +26,7 @@ import concatenateListOfWords from '.~/utils/concatenateListOfWords';
 /**
  * A hook to create an error notice for multiple messages.
  *
- * @return {UseCreateNoticeForMultipleErrors} - A function that will create a error notice for a list of messages.
+ * @return {UseCreateNoticeForMultipleErrors} - A function that will create an error notice for a list of messages.
  */
 export default function useCreateNoticeForMultipleErrors() {
 	const { createNotice } = useDispatchCoreNotices();
