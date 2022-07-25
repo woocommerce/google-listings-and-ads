@@ -22,7 +22,7 @@ export default function useCreateNoticeForRejectedPromises() {
 	} = useCreateNoticeForMultipleErrors();
 
 	/**
-	 * @type {CreateNoticeForRejectedPromises} CreateNoticeForRejectedPromises	 *
+	 * @type {CreateNoticeForRejectedPromises} CreateNoticeForRejectedPromises
 	 */
 	const createNoticeForRejectedPromises = async (
 		promises,
