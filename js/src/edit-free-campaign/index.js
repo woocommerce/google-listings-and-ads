@@ -217,10 +217,10 @@ const EditFreeCampaign = () => {
 			];
 
 			const rejected = await createNoticeForRejectedPromises( promises, [
-				'Target audience',
-				'MC Settings',
-				'Shipping rates',
-				'Shipping times',
+				__( 'Target audience' ),
+				__( 'Merchant Center Settings' ),
+				__( 'Shipping rates' ),
+				__( 'Shipping times' ),
 			] );
 
 			// Sync data once our changes are saved, even partially succesfully.
