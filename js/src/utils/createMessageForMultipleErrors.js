@@ -12,9 +12,9 @@ import concatenateListOfWords from '.~/utils/concatenateListOfWords';
  * Creates a message for a list of error messages. For example for a list of error messages: createMessageForMultipleErrors(['Target Audience', 'Shipping Rates']) will create the following message:
  * 'There are errors in the following actions: Target Audience and Shipping Rates. Please try again later.'
  *
- * @param {Array<string>} errorMessages Error messages to be displayed in the notice.
+ * @param {Array<string>} errorMessages Error messages to be joined.
  * @param {boolean} [isPartiallySuccessful='true'] Whether some actions were successful.
- * @return {string|null} - Return the error message for a list of error otherwise null if there are not error messages
+ * @return {string|null} - Return the error message for a list of errors otherwise null if there are no error messages
  */
 export default function createMessageForMultipleErrors(
 	errorMessages,
