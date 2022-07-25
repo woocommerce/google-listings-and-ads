@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __, sprintf, _n } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -25,8 +25,10 @@ export default function createMessageForMultipleErrors(
 
 		const content = sprintf(
 			// translators: 1: list of errors 2: optional text if some promises have been invoked successfully.
-			__(
+			_n(
+				'There is an error in the following action: %1$s. %2$s Please try again later.',
 				'There are errors in the following actions: %1$s. %2$s Please try again later.',
+				errorMessages.length,
 				'google-listings-and-ads'
 			),
 			listErrors,

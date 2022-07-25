@@ -20,7 +20,7 @@ describe( 'createTextForMultipleErrors', () => {
 		const result = createTextForMultipleErrors( errors );
 
 		expect( result ).toBe(
-			'There are errors in the following actions: Target Audience. Other changes have been saved. Please try again later.'
+			'There is an error in the following action: Target Audience. Other changes have been saved. Please try again later.'
 		);
 	} );
 

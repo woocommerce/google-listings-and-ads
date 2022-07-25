@@ -33,7 +33,7 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		);
 
 		expect( rejectedMessages ).toEqual(
-			'There are errors in the following actions: Promise B. Other changes have been saved. Please try again later.'
+			'There is an error in the following action: Promise B. Other changes have been saved. Please try again later.'
 		);
 	} );
 
