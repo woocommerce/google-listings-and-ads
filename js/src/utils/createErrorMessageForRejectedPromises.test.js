@@ -2,47 +2,56 @@
  * Internal dependencies
  */
 import createErrorMessageForRejectedPromises from './createErrorMessageForRejectedPromises';
+import createMessageForMultipleErrors from '.~/utils/createMessageForMultipleErrors';
+
+jest.mock( '.~/utils/createMessageForMultipleErrors', () => jest.fn() );
 
 describe( 'createErrorMessageForRejectedPromises', () => {
-	const successPromise = new Promise( ( resolve ) => resolve( 'OK' ) );
-	const rejectedPromise = new Promise( ( r, reject ) => reject( 'Failed' ) );
+	const successPromise = () => new Promise( ( resolve ) => resolve( 'OK' ) );
+	const rejectedPromise = () =>
+		new Promise( ( r, reject ) => reject( 'Failed' ) );
 
 	afterEach( () => {
 		jest.clearAllMocks();
 	} );
 
 	it( 'No rejected Promises', async () => {
-		const promises = [ successPromise, successPromise, successPromise ];
+		const promises = [
+			successPromise(),
+			successPromise(),
+			successPromise(),
+		];
 		const promisesName = [ 'Promise A', 'Promise B', 'Promise C' ];
 
-		const rejectedMessages = await createErrorMessageForRejectedPromises(
-			promises,
-			promisesName
-		);
+		await createErrorMessageForRejectedPromises( promises, promisesName );
 
-		expect( rejectedMessages ).toBeNull();
+		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
+		expect( createMessageForMultipleErrors ).toBeCalledWith( [], true );
 	} );
 
 	it( 'One rejected Promise', async () => {
-		const promises = [ successPromise, rejectedPromise, successPromise ];
+		const promises = [
+			successPromise(),
+			rejectedPromise(),
+			successPromise(),
+		];
 		const promisesName = [ 'Promise A', 'Promise B', 'Promise C' ];
 
-		const rejectedMessages = await createErrorMessageForRejectedPromises(
-			promises,
-			promisesName
-		);
+		await createErrorMessageForRejectedPromises( promises, promisesName );
 
-		expect( rejectedMessages ).toEqual(
-			'There is an error in the following action: Promise B. Other changes have been saved. Please try again later.'
+		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
+		expect( createMessageForMultipleErrors ).toBeCalledWith(
+			[ 'Promise B' ],
+			true
 		);
 	} );
 
 	it( 'Multiple rejected promises', async () => {
 		const promises = [
-			successPromise,
-			rejectedPromise,
-			rejectedPromise,
-			rejectedPromise,
+			successPromise(),
+			rejectedPromise(),
+			rejectedPromise(),
+			rejectedPromise(),
 		];
 		const promisesName = [
 			'Promise A',
@@ -51,27 +60,29 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 			'Promise D',
 		];
 
-		const rejectedMessages = await createErrorMessageForRejectedPromises(
-			promises,
-			promisesName
-		);
+		await createErrorMessageForRejectedPromises( promises, promisesName );
 
-		expect( rejectedMessages ).toEqual(
-			'There are errors in the following actions: Promise B, Promise C and Promise D. Other changes have been saved. Please try again later.'
+		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
+		expect( createMessageForMultipleErrors ).toBeCalledWith(
+			[ 'Promise B', 'Promise C', 'Promise D' ],
+			true
 		);
 	} );
 
 	it( 'All rejected promises', async () => {
-		const promises = [ rejectedPromise, rejectedPromise, rejectedPromise ];
+		const promises = [
+			rejectedPromise(),
+			rejectedPromise(),
+			rejectedPromise(),
+		];
 		const promisesName = [ 'Promise A', 'Promise B', 'Promise C' ];
 
-		const rejectedMessages = await createErrorMessageForRejectedPromises(
-			promises,
-			promisesName
-		);
+		await createErrorMessageForRejectedPromises( promises, promisesName );
 
-		expect( rejectedMessages ).toEqual(
-			'There are errors in the following actions: Promise A, Promise B and Promise C.  Please try again later.'
+		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
+		expect( createMessageForMultipleErrors ).toBeCalledWith(
+			[ 'Promise A', 'Promise B', 'Promise C' ],
+			false
 		);
 	} );
 } );

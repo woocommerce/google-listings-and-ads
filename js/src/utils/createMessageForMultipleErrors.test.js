@@ -4,10 +4,6 @@
 import createTextForMultipleErrors from './createMessageForMultipleErrors';
 
 describe( 'createTextForMultipleErrors', () => {
-	afterEach( () => {
-		jest.clearAllMocks();
-	} );
-
 	it( 'No error messages', () => {
 		const errors = [];
 		const result = createTextForMultipleErrors( errors );
