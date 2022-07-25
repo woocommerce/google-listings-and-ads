@@ -17,7 +17,7 @@ export default function concatenateListOfWords(
 	separatorLastElement = 'and'
 ) {
 	if ( listWords.length === 1 ) {
-		return listWords.slice( -1 ).join( '' );
+		return listWords[ 0 ];
 	}
 	return `${ listWords
 		.slice( 0, -1 )
