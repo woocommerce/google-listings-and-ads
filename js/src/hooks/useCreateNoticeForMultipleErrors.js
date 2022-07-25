@@ -48,7 +48,9 @@ export default function useCreateNoticeForMultipleErrors() {
 					'google-listings-and-ads'
 				),
 				listErrors,
-				isPartiallySuccessful ? 'Other changes have been saved.' : ''
+				isPartiallySuccessful
+					? __( 'Other changes have been saved.' )
+					: ''
 			);
 
 			createNotice( 'error', content );
