@@ -85,14 +85,16 @@ class SymfonyPolyfillCleanup {
 			$bootstrap  = reset( $bootstraps );
 
 			// If the statement is not found, skip removing bootstrap80.php
-			if ( ! $this->remove_statement_with_pattern( $bootstrap, 'require .*\/bootstrap80.php', 'if (\PHP_VERSION_ID >= 80000)' ) ) {
+			if ( $bootstrap && ! $this->remove_statement_with_pattern( $bootstrap, 'require .*\/bootstrap80.php', 'if (\PHP_VERSION_ID >= 80000)' ) ) {
 				continue;
 			}
 
 			// Search for bootstrap80.php
 			$bootstraps80 = $this->find_library_file_pattern( 'bootstrap80', $polyfill );
 			$bootstrap80  = reset( $bootstraps80 );
-			$this->remove_file( $bootstrap80 );
+			if ( $bootstrap80 ) {
+				$this->remove_file( $bootstrap80 );
+			}
 		}
 	}
 
