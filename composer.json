@@ -17,7 +17,10 @@
 		"phpseclib/bcmath_compat": "^2.0",
 		"psr/container": "^1.0",
 		"symfony/validator": "^5.2",
-		"ext-json": "*"
+		"ext-json": "*",
+		"symfony/polyfill-intl-normalizer": "^1.26",
+		"symfony/polyfill-mbstring": "^1.26"
+		
 	},
 	"require-dev": {
 		"dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
@@ -25,10 +28,6 @@
 		"wp-cli/i18n-command": "^2.2",
 		"wp-coding-standards/wpcs": "^2.3",
 		"yoast/phpunit-polyfills": "^1.0"
-	},
-	"replace": {
-		"symfony/polyfill-mbstring": "*",
-		"symfony/polyfill-intl-normalizer": "*"
 	},
 	"license": "GPL-3.0",
 	"autoload": {
@@ -39,8 +38,7 @@
 		"files": [
 			"vendor/guzzlehttp/guzzle/src/functions_include.php",
 			"vendor/guzzlehttp/promises/src/functions_include.php"
-		],
-		"classmap": [ "src/Polyfills" ]
+		]
 	},
 	"autoload-dev": {
 		"psr-4": {
@@ -61,6 +59,7 @@
 		"install-scripts": [
 			"Google\\Task\\Composer::cleanup",
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\GoogleAdsCleanupServices::remove",
+			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\SymfonyPolyfillCleanup::remove",
 			"composer run-script remove-google-ads-api-version-support -- 6 7 8",
 			"php ./bin/prefix-vendor-namespace.php",
 			"bash ./bin/cleanup-vendor-files.sh",
