@@ -27,7 +27,7 @@ import HelpIconButton from '.~/components/help-icon-button';
 import hasUnsavedShippingRates from './hasUnsavedShippingRates';
 import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '.~/hooks/useSaveShippingTimes';
-import useCreateNoticeForRejectedPromises from '.~/hooks/useCreateNoticeForRejectedPromises';
+import createErrorMessageForRejectedPromises from '.~/utils/createErrorMessageForRejectedPromises';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -123,9 +123,6 @@ const EditFreeCampaign = () => {
 		method: 'POST',
 	} );
 	const { createNotice } = useDispatchCoreNotices();
-	const {
-		createNoticeForRejectedPromises,
-	} = useCreateNoticeForRejectedPromises();
 
 	// Check what've changed to show prompt, and send requests only to save changed things.
 	const didAudienceChanged = ! isEqual(
@@ -216,18 +213,22 @@ const EditFreeCampaign = () => {
 				saveShippingTimes( shippingTimes ),
 			];
 
-			const rejected = await createNoticeForRejectedPromises( promises, [
-				__( 'Target audience' ),
-				__( 'Merchant Center Settings' ),
-				__( 'Shipping rates' ),
-				__( 'Shipping times' ),
-			] );
+			const errorMessage = await createErrorMessageForRejectedPromises(
+				promises,
+				[
+					__( 'Target audience' ),
+					__( 'Merchant Center Settings' ),
+					__( 'Shipping rates' ),
+					__( 'Shipping times' ),
+				]
+			);
 
 			// Sync data once our changes are saved, even partially succesfully.
 			await fetchSettingsSync();
 
-			//If all promises have been fulfilled successful
-			if ( ! rejected.length ) {
+			if ( errorMessage ) {
+				createNotice( 'error', errorMessage );
+			} else {
 				createNotice(
 					'success',
 					__(
