@@ -6,8 +6,8 @@
  * concatenateListOfWords(['A', 'B', 'C']) will return 'A, B and C'
  *
  * @param  {Array<string>} listWords A list of words to concatenate.
- * @param  {string} [separator] The separator between words.
- * @param  {string} [separatorLastElement] The separator for the last word.
+ * @param  {string} [separator=', '] The separator between words.
+ * @param  {string} [separatorLastElement='and'] The separator for the last word.
  * @return {string} The concatenated string.
  */
 
