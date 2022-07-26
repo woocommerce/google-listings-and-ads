@@ -88,8 +88,8 @@ class PolicyComplianceCheckController extends BaseController {
 	protected function get_schema_properties(): array {
 		return [
 			'allowed_countries' => [
-				'type'        => 'array',
-				'description' => __( 'The allowed countries where the store could be accessed.', 'google-listings-and-ads' ),
+				'type'        => 'boolean',
+				'description' => __( 'The store website could be accessed or not by all users.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
 			'payment_gateways'  => [
