@@ -32,7 +32,7 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 	public function test_policy_check() {
 		$this->policy_compliance_check->expects( $this->once() )
 		                         ->method( 'is_accessible' )
-		                         ->willReturn([true]);
+		                         ->willReturn(true);
 
 		$this->policy_compliance_check->expects( $this->once() )
 		                         ->method( 'get_is_store_ssl' )
