@@ -12,7 +12,7 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  * ```json
  * {
  *	'policy_check' =>	[
- *				'allowed_countries'    	=> ['US', 'UK'],
+ *				'allowed_countries'    	=> true,
  *				'store_ssl'         	=> true,
  *				'payment_gateways'  	=> true,
  *				'refund_returns' 	=> true,
