@@ -31,8 +31,8 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 
 	public function test_policy_check() {
 		$this->policy_compliance_check->expects( $this->once() )
-		                         ->method( 'get_allowed_countries' )
-		                         ->willReturn(['US', 'UK']);
+		                         ->method( 'is_assessible' )
+		                         ->willReturn([true]);
 
 		$this->policy_compliance_check->expects( $this->once() )
 		                         ->method( 'get_is_store_ssl' )
@@ -51,7 +51,7 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
 		[
-			'allowed_countries'    	=> ['US', 'UK'],
+			'allowed_countries'    	=> true,
 			'store_ssl'         	=> true,
 			'payment_gateways'  	=> true,
 			'refund_returns' 	=> true,

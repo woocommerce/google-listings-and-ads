@@ -5,6 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+
 
 defined( 'ABSPATH' ) || exit;
 
@@ -24,21 +26,36 @@ class PolicyComplianceCheck implements Service {
 	protected $wc;
 
 	/**
+	 * @var GoogleHelper
+	 */
+	protected $google_helper;
+
+	/**
 	 * BaseController constructor.
 	 *
-	 * @param WC $wc
+	 * @param WC           $wc
+	 * @param GoogleHelper $google_helper
 	 */
-	public function __construct( WC $wc ) {
-		$this->wc = $wc;
+	public function __construct( WC $wc, GoogleHelper $google_helper ) {
+		$this->wc            = $wc;
+		$this->google_helper = $google_helper;
 	}
 
 	/**
-	 * Get the allowed countries for the controller.
+	 * Check if the store website is accessed by all users for the controller.
 	 *
-	 * @return array
+	 * @return bool
 	 */
-	public function get_allowed_countries(): array {
-		return $this->wc->get_allowed_countries();
+	public function is_accessible(): bool {
+		$all_countries = $this->wc->get_countries();
+		$mc_countries  = $this->google_helper->get_mc_supported_countries();
+
+		foreach ( $mc_countries as $country ) {
+			if ( ! array_key_exists( $country, $all_countries ) ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**

@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Exception;
-use WP_REST_Request as Request;
 
 
 defined( 'ABSPATH' ) || exit;
@@ -65,12 +64,14 @@ class PolicyComplianceCheckController extends BaseController {
 	protected function get_policy_check_callback(): callable {
 		return function () {
 			try {
-				return [
-					'allowed_countries' => $this->policy_compliance_check->get_allowed_countries(),
-					'payment_gateways'  => $this->policy_compliance_check->has_payment_gateways(),
-					'store_ssl'         => $this->policy_compliance_check->get_is_store_ssl(),
-					'refund_returns'    => $this->policy_compliance_check->has_refund_return_policy_page(),
-				];
+				return new Response(
+					[
+						'allowed_countries' => $this->policy_compliance_check->is_accessible(),
+						'payment_gateways'  => $this->policy_compliance_check->has_payment_gateways(),
+						'store_ssl'         => $this->policy_compliance_check->get_is_store_ssl(),
+						'refund_returns'    => $this->policy_compliance_check->has_refund_return_policy_page(),
+					]
+				);
 
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -106,6 +107,7 @@ class PolicyComplianceCheckController extends BaseController {
 				'description' => __( 'The refund returns policy associated with onboarding policy checking.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
+			'schema'            => $this->get_api_response_schema_callback(),
 		];
 	}
 
