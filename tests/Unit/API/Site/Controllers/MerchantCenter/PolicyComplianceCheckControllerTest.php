@@ -31,7 +31,7 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 
 	public function test_policy_check() {
 		$this->policy_compliance_check->expects( $this->once() )
-		                         ->method( 'is_assessible' )
+		                         ->method( 'is_accessible' )
 		                         ->willReturn([true]);
 
 		$this->policy_compliance_check->expects( $this->once() )
