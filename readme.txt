@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -108,6 +108,16 @@ Performance Max campaigns are pay-per-click, meaning you only pay when someone c
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.
 
 == Changelog ==
+
+= 2.0.2 - 2022-07-29 =
+* Fix - Disable identifier_exists field.
+* Tweak - Propagate errors for saveSettings.
+* Tweak - Refactor SCSS variables.
+* Tweak - Remove PHP 8.0 specific code of Symfony polyfills.
+* Tweak - Revert migration applicable version value.
+* Tweak - Update change log records type.
+* Tweak - WC 6.8 compatibility.
+* Update - Google Ads library to API V11.
 
 = 2.0.1 - 2022-07-12 =
 * Dev - A script to generate a list of hooks that defined or used in GLA.
