@@ -1,7 +1,7 @@
 .gla-supported-country-select {
 	.woocommerce-tree-select-control__label {
-		padding-bottom: 4px;
-		font-size: 13px;
+		padding-bottom: $grid-unit-05;
+		font-size: $default-font-size;
 	}
 
 	.woocommerce-tree-select-control__help {

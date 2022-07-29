@@ -6,8 +6,8 @@
 			line-height: $gla-line-height-large;
 
 			@media (max-width: $break-small) {
-				font-size: $gla-font-medium-mobile;
-				line-height: $gla-line-height-large-mobile;
+				font-size: $gla-font-small-medium;
+				line-height: $gla-line-height-medium-large;
 			}
 		}
 	}

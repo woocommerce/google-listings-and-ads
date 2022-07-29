@@ -2,7 +2,7 @@
 	&__last-updated {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: $grid-unit;
 		margin-bottom: calc(var(--main-gap) / 3 * 2);
 	}
 

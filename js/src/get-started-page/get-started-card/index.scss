@@ -22,11 +22,11 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 20px;
+		gap: calc($grid-unit-50 / 2);
 		padding: 0;
 
 		@media (max-width: $break-small) {
-			gap: 16px;
+			gap: $grid-unit-20;
 			text-align: center;
 			align-items: center;
 		}
@@ -45,8 +45,8 @@
 	@media (max-width: $break-small) {
 		// Use more specific rules to make it higher priority to override <Text> component.
 		& &__title {
-			font-size: $gla-font-medium-mobile;
-			line-height: $gla-line-height-large-mobile;
+			font-size: $gla-font-small-medium;
+			line-height: $gla-line-height-medium-large;
 		}
 
 		// Use more specific rules to make it higher priority to override <Text> component.

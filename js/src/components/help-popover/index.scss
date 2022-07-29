@@ -1,4 +1,4 @@
-$button-color: #949494;
+$button-color: $gray-600;
 
 .help-popover {
 	display: inline-flex;
@@ -21,14 +21,14 @@ $button-color: #949494;
 	}
 
 	.components-popover__content {
-		width: 300px;
+		width: $gla-width-medium;
 
 		@include break-large {
-			width: 360px;
+			width: $gla-width-medium-large;
 		}
 
 		@include break-xlarge {
-			width: 480px;
+			width: $gla-width-mobile;
 		}
 
 		> div {

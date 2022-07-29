@@ -16,9 +16,9 @@
 		align-items: center;
 		height: 100%;
 		padding: var(--main-gap);
-		border: 1px solid #e0e0e0;
+		border: $border-width solid $gray-200;
 		background-color: #f8f9fa;
-		color: #757575;
+		color: $gray-700;
 		text-align: center;
 
 		// Make it match the SummaryNumber placeholder's height

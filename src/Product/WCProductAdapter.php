@@ -123,7 +123,6 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			 ->map_wc_product_shipping()
 			 ->map_wc_prices();
 
-		$this->setIdentifierExists( ! empty( $this->getGtin() ) || ! empty( $this->getMpn() ) );
 	}
 
 	/**

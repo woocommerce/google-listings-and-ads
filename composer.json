@@ -5,19 +5,22 @@
 	"prefer-stable": true,
 	"minimum-stability": "dev",
 	"require": {
-		"php": ">=7.3",
+		"php": ">=7.4",
 		"automattic/jetpack-autoloader": "^2.4",
 		"automattic/jetpack-config": "^1.4",
 		"automattic/jetpack-connection": "^1.40",
 		"google/apiclient": "^2.12",
-		"google/apiclient-services": "~0.230",
-		"googleads/google-ads-php": "^12.0",
+		"google/apiclient-services": "~0.258",
+		"googleads/google-ads-php": "^16.0",
 		"league/container": "^3.3",
 		"league/iso3166": "^3.0",
 		"phpseclib/bcmath_compat": "^2.0",
 		"psr/container": "^1.0",
 		"symfony/validator": "^5.2",
-		"ext-json": "*"
+		"ext-json": "*",
+		"symfony/polyfill-intl-normalizer": "^1.26",
+		"symfony/polyfill-mbstring": "^1.26"
+		
 	},
 	"require-dev": {
 		"dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
@@ -25,10 +28,6 @@
 		"wp-cli/i18n-command": "^2.2",
 		"wp-coding-standards/wpcs": "^2.3",
 		"yoast/phpunit-polyfills": "^1.0"
-	},
-	"replace": {
-		"symfony/polyfill-mbstring": "*",
-		"symfony/polyfill-intl-normalizer": "*"
 	},
 	"license": "GPL-3.0",
 	"autoload": {
@@ -39,8 +38,7 @@
 		"files": [
 			"vendor/guzzlehttp/guzzle/src/functions_include.php",
 			"vendor/guzzlehttp/promises/src/functions_include.php"
-		],
-		"classmap": [ "src/Polyfills" ]
+		]
 	},
 	"autoload-dev": {
 		"psr-4": {
@@ -49,7 +47,7 @@
 	},
 	"config": {
 		"platform": {
-			"php": "7.3.27"
+			"php": "7.4.30"
 		},
 		"sort-packages": true,
 		"allow-plugins": {
@@ -60,8 +58,9 @@
 	"scripts": {
 		"install-scripts": [
 			"Google\\Task\\Composer::cleanup",
+			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\SymfonyPolyfillCleanup::remove",
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\GoogleAdsCleanupServices::remove",
-			"composer run-script remove-google-ads-api-version-support -- 6 7 8",
+			"composer run-script remove-google-ads-api-version-support -- 8 9 10",
 			"php ./bin/prefix-vendor-namespace.php",
 			"bash ./bin/cleanup-vendor-files.sh",
 			"composer dump-autoload"

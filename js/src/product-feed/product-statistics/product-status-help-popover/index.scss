@@ -1,15 +1,15 @@
 .gla-product-status-help-popover {
 	.components-popover__content {
 		@include break-medium {
-			width: 300px;
+			width: $gla-width-medium;
 		}
 
 		@include break-large {
-			width: 360px;
+			width: $gla-width-medium-large;
 		}
 
 		@include break-xlarge {
-			width: 480px;
+			width: $gla-width-mobile;
 		}
 	}
 }

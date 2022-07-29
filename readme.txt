@@ -3,8 +3,8 @@ Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
-Requires PHP: 7.3
-Stable tag: 2.0.1
+Requires PHP: 7.4
+Stable tag: 2.0.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -55,7 +55,7 @@ Create a new Google Ads account through Google Listings & Ads and a promotional 
 
 * WordPress 5.7 or greater
 * WooCommerce 6.0 or greater
-* PHP version 7.3 or greater (PHP 7.4 or greater is recommended)
+* PHP version 7.4 or greater
 * MySQL version 5.6 or greater
 
 Visit the [WooCommerce server requirements documentation](https://docs.woocommerce.com/document/server-requirements/) for a detailed list of server requirements.
@@ -109,14 +109,23 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.0.2 - 2022-07-29 =
+* Fix - Disable identifier_exists field.
+* Tweak - Propagate errors for saveSettings.
+* Tweak - Refactor SCSS variables.
+* Tweak - Remove PHP 8.0 specific code of Symfony polyfills.
+* Tweak - Revert migration applicable version value.
+* Tweak - Update change log records type.
+* Tweak - WC 6.8 compatibility.
+* Update - Google Ads library to API V11.
+
 = 2.0.1 - 2022-07-12 =
-* Add - A script to generate a list of hooks that defined or used in GLA.
-* Add - GH workflow to set PR labels.
+* Dev - A script to generate a list of hooks that defined or used in GLA.
+* Dev - GH workflow to set PR labels.
 * Add - Normalizer Polyfill.
 * Dev - changed the changelog types list.
 * Fix - Compatibility with History Navigation v5.
 * Fix - Encoding product names in Issues Table .
-* Fix - Release 2.0.0.
 * Tweak - Remove try and catch in saveTargetAudience action.
 
 = 2.0.0 - 2022-07-05 =
