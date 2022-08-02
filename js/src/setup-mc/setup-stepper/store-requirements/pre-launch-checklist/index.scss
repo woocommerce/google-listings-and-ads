@@ -8,4 +8,13 @@
 			vertical-align: text-bottom;
 		}
 	}
+
+#checkbox {
+	display: flex;
+	justify-content:stretch;
+
+	#panel {
+		min-width: 600px;
+	}
+      }
 }
