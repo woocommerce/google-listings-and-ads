@@ -419,6 +419,9 @@ describe( 'reducer', () => {
 					CA: { currency: 'CAD', name: 'Canada' },
 					US: { currency: 'USD', name: 'United States' },
 				},
+				robots_restriction: false,
+				page_error: false,
+				page_restricts: false,
 				store_ssl: true,
 				payment_gateways: {
 					id: 'wc_custom_pg',
@@ -449,6 +452,18 @@ describe( 'reducer', () => {
 			expect( state ).toHaveProperty(
 				'mc.policy_check.allowed_countries',
 				data.allowed_countries
+			);
+			expect( state ).toHaveProperty(
+				'mc.policy_check.robots_restriction',
+				data.robots_restriction
+			);
+			expect( state ).toHaveProperty(
+				'mc.policy_check.page_error',
+				data.page_error
+			);
+			expect( state ).toHaveProperty(
+				'mc.policy_check.page_restricts',
+				data.page_restricts
 			);
 		} );
 	} );

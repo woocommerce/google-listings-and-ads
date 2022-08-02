@@ -59,6 +59,121 @@ class PolicyComplianceCheck implements Service {
 	}
 
 	/**
+	 * Check if the store sample product landing pages lead to a 404 error.
+	 *
+	 * @return bool
+	 */
+	public function has_page_error(): bool {
+		$ids = wc_get_products(
+			[
+				'return' => 'ids',
+				'limit'  => 1,
+			]
+		);
+		if ( ! empty( $ids ) ) {
+			$url     = get_permalink( $ids[0] );
+			$headers = get_headers( $url );
+			if ( ! empty( $headesr ) && $headers[0] !== 'HTTP/1.1 200 OK' ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Check if the store sample product landing pages has redirects through 3P domains.
+	 *
+	 * @return bool
+	 */
+	public function has_redirects(): bool {
+		$ids = wc_get_products(
+			[
+				'return' => 'ids',
+				'limit'  => 1,
+			]
+		);
+		if ( ! empty( $ids ) ) {
+			$headers = get_headers( $get_permalink( $ids[0] ) );
+			if ( ! empty( $headesr ) && isset( $headers[0] ) ) {
+				if ( $headers[0] === 'HTTP/1.1 302 Found' ) {
+					// this is the URL where it's redirecting
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Check if the merchant set the restrictions in robots.txt or not in the store.
+	 *
+	 * @return bool
+	 */
+	public function has_restriction(): bool {
+		return $this->robots_allowed( get_site_url() );
+	}
+
+	/**
+	 * Check if the robots.txt has restrictions or not in the store.
+	 *
+	 * @param string $url
+	 * @param bool   $useragent
+	 * @return bool
+	 */
+	private function robots_allowed( $url, $useragent = false ) {
+		// parse url to retrieve host and path
+		$parsed = wp_parse_url( $url );
+
+		$agents = [ preg_quote( '*', null ) ];
+		if ( $useragent ) {
+			$agents[] = preg_quote( $useragent, null );
+		}
+		$agents = implode( '|', $agents );
+
+		// location of robots.txt file
+
+		$robotstxt = @file( "http://{$parsed['host']}/robots.txt" );
+
+		// if there isn't a robots, then we're allowed in
+		if ( empty( $robotstxt ) ) {
+			return true;
+		}
+
+		$rules        = [];
+		$rule_applies = false;
+		foreach ( $robotstxt as $line ) {
+			// skip blank lines
+			$line = trim( $line );
+			if ( ! $line ) {
+				continue;
+			}
+
+			// following rules only apply if User-agent matches $useragent or '*'
+			if ( preg_match( '/^\s*User-agent: (.*)/i', $line, $match ) ) {
+				$rule_applies = preg_match( "/($agents)/i", $match[1] );
+			}
+			if ( $rule_applies && preg_match( '/^\s*Disallow:(.*)/i', $line, $regs ) ) {
+				// an empty rule implies full access - no further tests required
+				if ( ! $regs[1] ) {
+					return true;
+				}
+				// add rules that apply to array for testing
+				$rules[] = preg_quote( trim( $regs[1] ), '/' );
+			}
+		}
+
+		foreach ( $rules as $rule ) {
+			// check if page is disallowed to us
+			if ( preg_match( "/^$rule/", $parsed['path'] ) ) {
+				return false;
+			}
+		}
+
+		// page is not disallowed
+		return true;
+	}
+
+	/**
 	 * Check if the payment gateways is empty or not for the controller.
 	 *
 	 * @return bool
