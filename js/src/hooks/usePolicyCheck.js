@@ -19,7 +19,6 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  *				'store_ssl'         	=> true,
  *				'payment_gateways'  	=> true,
  *				'refund_returns' 	=> true,
-
  *				]
  * }
  * ```
