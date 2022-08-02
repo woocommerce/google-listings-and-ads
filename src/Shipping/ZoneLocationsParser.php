@@ -56,7 +56,7 @@ class ZoneLocationsParser implements Service {
 					break;
 				case 'continent':
 					foreach ( $this->google_helper->get_supported_countries_from_continent( $location->code ) as $country ) {
-						$google_id = $this->google_helper->find_country_id_by_code( $location->code );
+						$google_id = $this->google_helper->find_country_id_by_code( $country );
 						$region    = $this->maybe_create_region_for_postcodes( $country, $postcodes );
 
 						$locations[ $country ] = new ShippingLocation( $google_id, $country, null, $region );
