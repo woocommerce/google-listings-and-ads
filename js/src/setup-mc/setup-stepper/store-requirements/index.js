@@ -20,7 +20,7 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import AppSpinner from '.~/components/app-spinner';
 import PreLaunchChecklist from './pre-launch-checklist';
 
-function _checkErrors( values ) {
+function _checkErrors() {
 	const errors = {};
 	return errors;
 }
@@ -38,7 +38,7 @@ export default function StoreRequirements() {
 	 */
 	const [ isPhoneNumberReady, setPhoneNumberReady ] = useState( false );
 	const [ settingsSaved, setSettingsSaved ] = useState( true );
-	const [ completing, setCompleting ] = useState( false );
+	const [ setCompleting ] = useState( false );
 
 	const handleChangeCallback = async ( _, values ) => {
 		try {
@@ -128,7 +128,25 @@ export default function StoreRequirements() {
 
 					return (
 						<>
+							<ContactInformation
+								onPhoneNumberVerified={ () =>
+									setPhoneNumberReady( true )
+								}
+							/>
 							<PreLaunchChecklist formProps={ formProps } />
+							<StepContentFooter>
+								<AppButton
+									isPrimary
+									loading={ completing }
+									disabled={ ! isReadyToComplete }
+									onClick={ handleSubmit }
+								>
+									{ __(
+										'Complete setup',
+										'google-listings-and-ads'
+									) }
+								</AppButton>
+							</StepContentFooter>
 						</>
 					);
 				} }
