@@ -110,7 +110,7 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function has_restriction(): bool {
-		return !$this->robots_allowed( get_site_url() );
+		return ! $this->robots_allowed( get_site_url() );
 	}
 
 	/**

@@ -67,13 +67,13 @@ class PolicyComplianceCheckController extends BaseController {
 			try {
 				return new Response(
 					[
-						'allowed_countries'  => $this->policy_compliance_check->is_accessible(),
-						'robots_restriction' => $this->policy_compliance_check->has_restriction(),
-						'page_not_found_error'         => $this->policy_compliance_check->has_page_not_found_error(),
-						'page_redirects'     => $this->policy_compliance_check->has_redirects(),
-						'payment_gateways'   => $this->policy_compliance_check->has_payment_gateways(),
-						'store_ssl'          => $this->policy_compliance_check->get_is_store_ssl(),
-						'refund_returns'     => $this->policy_compliance_check->has_refund_return_policy_page(),
+						'allowed_countries'    => $this->policy_compliance_check->is_accessible(),
+						'robots_restriction'   => $this->policy_compliance_check->has_restriction(),
+						'page_not_found_error' => $this->policy_compliance_check->has_page_not_found_error(),
+						'page_redirects'       => $this->policy_compliance_check->has_redirects(),
+						'payment_gateways'     => $this->policy_compliance_check->has_payment_gateways(),
+						'store_ssl'            => $this->policy_compliance_check->get_is_store_ssl(),
+						'refund_returns'       => $this->policy_compliance_check->has_refund_return_policy_page(),
 					]
 				);
 
@@ -91,42 +91,42 @@ class PolicyComplianceCheckController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'allowed_countries'  => [
+			'allowed_countries'    => [
 				'type'        => 'boolean',
 				'description' => __( 'The store website could be accessed or not by all users.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
-			'robots_restriction' => [
+			'robots_restriction'   => [
 				'type'        => 'boolean',
 				'description' => __( 'The merchant set the restrictions in robots.txt or not in the store.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
-			'page_not_found_error'         => [
+			'page_not_found_error' => [
 				'type'        => 'boolean',
 				'description' => __( 'The sample of product landing pages leads to a 404 error.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
-			'page_redirects'     => [
+			'page_redirects'       => [
 				'type'        => 'boolean',
 				'description' => __( 'The sample of product landing pages have redirects through 3P domains.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
-			'payment_gateways'   => [
+			'payment_gateways'     => [
 				'type'        => 'boolean',
 				'description' => __( 'The payment gateways associated with onboarding policy checking.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
-			'store_ssl'          => [
+			'store_ssl'            => [
 				'type'        => 'boolean',
 				'description' => __( 'The store ssl associated with onboarding policy checking.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
-			'refund_returns'     => [
+			'refund_returns'       => [
 				'type'        => 'boolean',
 				'description' => __( 'The refund returns policy associated with onboarding policy checking.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
-			'schema'             => $this->get_api_response_schema_callback(),
+			'schema'               => $this->get_api_response_schema_callback(),
 		];
 	}
 
