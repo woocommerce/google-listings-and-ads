@@ -17,6 +17,9 @@ import useSettings from '.~/components/free-listings/configure-product-listings/
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
+import StepContentFooter from '.~/components/stepper/step-content-footer';
+import ContactInformation from '.~/components/contact-information';
+import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
 import PreLaunchChecklist from './pre-launch-checklist';
 
@@ -38,7 +41,7 @@ export default function StoreRequirements() {
 	 */
 	const [ isPhoneNumberReady, setPhoneNumberReady ] = useState( false );
 	const [ settingsSaved, setSettingsSaved ] = useState( true );
-	const [ setCompleting ] = useState( false );
+	const [ completing, setCompleting ] = useState( false );
 
 	const handleChangeCallback = async ( _, values ) => {
 		try {
