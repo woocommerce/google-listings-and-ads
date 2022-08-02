@@ -132,7 +132,7 @@ class PolicyComplianceCheck implements Service {
 
 		// location of robots.txt file
 
-		$robotstxt = @file( "http://{$parsed['host']}/robots.txt" );
+		$robotstxt = file( "http://{$parsed['host']}/robots.txt" );
 
 		// if there isn't a robots, then we're allowed in
 		if ( empty( $robotstxt ) ) {
