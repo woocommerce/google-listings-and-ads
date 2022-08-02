@@ -39,7 +39,7 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 		                         ->willReturn(false);
 
 		$this->policy_compliance_check->expects( $this->once() )
-		                         ->method( 'has_page_error' )
+		                         ->method( 'has_page_not_found_error' )
 		                         ->willReturn(false);
 
 		$this->policy_compliance_check->expects( $this->once() )
@@ -65,7 +65,7 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 		[
 			'allowed_countries'    	=> true,
 			'robots_restriction'    => false,
-			'page_error'            => false,
+			'page_not_found_error'            => false,
 			'page_redirects'        => false,
 			'store_ssl'         	=> true,
 			'payment_gateways'  	=> true,

@@ -14,7 +14,7 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  *	'policy_check' =>	[
  *				'allowed_countries'    	=> true,
  *                              'robots_restriction'    => false,
- *                              'page_error'    	=> false,
+ *                              'page_not_found_error'  => false,
  *                              'page_restricts'    	=> false,
  *				'store_ssl'         	=> true,
  *				'payment_gateways'  	=> true,

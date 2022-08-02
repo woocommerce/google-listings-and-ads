@@ -63,7 +63,7 @@ class PolicyComplianceCheck implements Service {
 	 *
 	 * @return bool
 	 */
-	public function has_page_error(): bool {
+	public function has_page_not_found_error(): bool {
 		$ids = wc_get_products(
 			[
 				'return' => 'ids',

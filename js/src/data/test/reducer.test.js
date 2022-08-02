@@ -420,7 +420,7 @@ describe( 'reducer', () => {
 					US: { currency: 'USD', name: 'United States' },
 				},
 				robots_restriction: false,
-				page_error: false,
+				page_not_found_error: false,
 				page_restricts: false,
 				store_ssl: true,
 				payment_gateways: {
@@ -458,8 +458,8 @@ describe( 'reducer', () => {
 				data.robots_restriction
 			);
 			expect( state ).toHaveProperty(
-				'mc.policy_check.page_error',
-				data.page_error
+				'mc.policy_check.page_not_found_error',
+				data.page_not_found_error
 			);
 			expect( state ).toHaveProperty(
 				'mc.policy_check.page_restricts',
