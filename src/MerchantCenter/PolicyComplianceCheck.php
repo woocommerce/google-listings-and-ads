@@ -93,7 +93,7 @@ class PolicyComplianceCheck implements Service {
 			]
 		);
 		if ( ! empty( $ids ) ) {
-			$headers = get_headers( $get_permalink( $ids[0] ) );
+			$headers = get_headers( get_permalink( $ids[0] ) );
 			if ( ! empty( $headesr ) && isset( $headers[0] ) ) {
 				if ( $headers[0] === 'HTTP/1.1 302 Found' ) {
 					// this is the URL where it's redirecting
@@ -110,7 +110,7 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function has_restriction(): bool {
-		return $this->robots_allowed( get_site_url() );
+		return !$this->robots_allowed( get_site_url() );
 	}
 
 	/**
