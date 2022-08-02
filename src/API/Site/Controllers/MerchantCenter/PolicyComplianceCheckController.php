@@ -70,7 +70,7 @@ class PolicyComplianceCheckController extends BaseController {
 						'allowed_countries'  => $this->policy_compliance_check->is_accessible(),
 						'robots_restriction' => $this->policy_compliance_check->has_restriction(),
 						'page_error'         => $this->policy_compliance_check->has_page_error(),
-						'page_restricts'     => $this->policy_compliance_check->has_redirects(),
+						'page_redirects'     => $this->policy_compliance_check->has_redirects(),
 						'payment_gateways'   => $this->policy_compliance_check->has_payment_gateways(),
 						'store_ssl'          => $this->policy_compliance_check->get_is_store_ssl(),
 						'refund_returns'     => $this->policy_compliance_check->has_refund_return_policy_page(),
