@@ -3,9 +3,14 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { CheckboxControl } from '@wordpress/components';
-import { Button } from '@wordpress/components';
-import { Panel, PanelBody, PanelRow } from '@wordpress/components';
+import {
+	Button,
+	CheckboxControl,
+	Panel,
+	PanelBody,
+	PanelRow,
+} from '@wordpress/components';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -36,30 +41,29 @@ const PreLaunchChecklist = ( props ) => {
 			context,
 		} );
 	};
-
-	if ( ! values[ 'checked' ] ) {
-		const { data } = usePolicyCheck();
-		if ( ! data ) {
-			return <AppSpinner />;
-		}
-		var website_live =
+	const { data } = usePolicyCheck();
+	if ( ! data ) {
+		return <AppSpinner />;
+	}
+	if ( ! values.checked ) {
+		const websiteLive =
 			data.allowed_countries &&
 			! data.robots_restriction &&
 			! data.page_not_found_error &&
 			! data.page_redirects;
-		if ( website_live != values[ 'website_live' ] ) {
-			setValue( 'website_live', website_live );
+		if ( websiteLive !== values.website_live ) {
+			setValue( 'website_live', data.website_live );
 		}
 
-		if ( data.store_ssl != values[ 'checkout_process_secure' ] ) {
+		if ( data.store_ssl !== values.checkout_process_secure ) {
 			setValue( 'checkout_process_secure', data.store_ssl );
 		}
 
-		if ( data.refund_returns != values[ 'refund_tos_visible' ] ) {
+		if ( data.refund_returns !== values.refund_tos_visible ) {
 			setValue( 'refund_tos_visible', data.refund_returns );
 		}
 
-		if ( data.payment_gateways != values[ 'payment_methods_visible' ] ) {
+		if ( data.payment_gateways !== values.payment_methods_visible ) {
 			setValue( 'payment_methods_visible', data.payment_gateways );
 		}
 
@@ -99,7 +103,7 @@ const PreLaunchChecklist = ( props ) => {
 				<Section.Card>
 					<Section.Card.Body>
 						<VerticalGapLayout size="large">
-							{ ! values[ 'website_live' ] && (
+							{ ! values.website_live && (
 								<div id="checkbox">
 									<CheckboxControl
 										{ ...getInputProps( 'website_live' ) }
@@ -123,7 +127,7 @@ const PreLaunchChecklist = ( props ) => {
 											>
 												<PanelRow>
 													{ __(
-														'We use a WordPress.com account to connect your site to the WooCommerce and Google servers. It ensures that requests (e.g. product feed, clicks, sales, etc) from your site are securely and correctly attributed to your store. It enables a connection to your self-hosted site, and provides a common authentication interface across disparate server configurations and architectures.',
+														'We use a WordPress.com account to connect your site to the WooCommerce and Google servers. It ensures that requests (e.g. product feed, clicks, sales, etc) from your site are securely and correctly attributed to your store. It enables a connection to your self-hosted site, and provides a common authentication interface across disparate server configurations and architectures.',
 														'google-listings-and-ads'
 													) }
 												</PanelRow>
@@ -148,7 +152,7 @@ const PreLaunchChecklist = ( props ) => {
 												<Button
 													isPrimary
 													disabled={
-														values[ 'website_live' ]
+														values.website_live
 													}
 													onClick={ () => {
 														setValue(
@@ -156,9 +160,7 @@ const PreLaunchChecklist = ( props ) => {
 															true
 														);
 														saveSettings(
-															values[
-																website_live
-															],
+															values.website_live,
 															true
 														);
 													} }
@@ -173,7 +175,7 @@ const PreLaunchChecklist = ( props ) => {
 									</div>
 								</div>
 							) }
-							{ values[ 'website_live' ] && (
+							{ values.website_live && (
 								<CheckboxControl
 									label={
 										<span className="gla-pre-launch-checklist__checkbox_popover">
@@ -188,7 +190,7 @@ const PreLaunchChecklist = ( props ) => {
 									{ ...getInputProps( 'website_live' ) }
 								/>
 							) }
-							{ ! values[ 'payment_methods_visible' ] && (
+							{ ! values.payment_methods_visible && (
 								<div id="checkbox">
 									<CheckboxControl
 										{ ...getInputProps(
@@ -239,9 +241,7 @@ const PreLaunchChecklist = ( props ) => {
 												<Button
 													isPrimary
 													disabled={
-														values[
-															'payment_methods_visible'
-														]
+														values.payment_methods_visible
 													}
 													onClick={ () => {
 														setValue(
@@ -249,9 +249,7 @@ const PreLaunchChecklist = ( props ) => {
 															true
 														);
 														saveSettings(
-															values[
-																'payment_methods_visible'
-															],
+															values.payment_methods_visible,
 															true
 														);
 													} }
@@ -267,7 +265,7 @@ const PreLaunchChecklist = ( props ) => {
 								</div>
 							) }
 
-							{ values[ 'payment_methods_visible' ] && (
+							{ values.payment_methods_visible && (
 								<CheckboxControl
 									label={
 										<span className="gla-pre-launch-checklist__checkbox_popover">
@@ -284,7 +282,7 @@ const PreLaunchChecklist = ( props ) => {
 									) }
 								/>
 							) }
-							{ ! values[ 'checkout_process_secure' ] && (
+							{ ! values.checkout_process_secure && (
 								<div id="checkbox">
 									<CheckboxControl
 										{ ...getInputProps(
@@ -342,9 +340,7 @@ const PreLaunchChecklist = ( props ) => {
 												<Button
 													isPrimary
 													disabled={
-														values[
-															'checkout_process_secure'
-														]
+														values.checkout_process_secure
 													}
 													onClick={ () => {
 														setValue(
@@ -352,9 +348,7 @@ const PreLaunchChecklist = ( props ) => {
 															true
 														);
 														saveSettings(
-															values[
-																'checkout_process_secure'
-															],
+															values.checkout_process_secure,
 															true
 														);
 													} }
@@ -369,7 +363,7 @@ const PreLaunchChecklist = ( props ) => {
 									</div>
 								</div>
 							) }
-							{ values[ 'checkout_process_secure' ] && (
+							{ values.checkout_process_secure && (
 								<CheckboxControl
 									label={
 										<span className="gla-pre-launch-checklist__checkbox_popover">
@@ -387,7 +381,7 @@ const PreLaunchChecklist = ( props ) => {
 								/>
 							) }
 
-							{ ! values[ 'refund_tos_visible' ] && (
+							{ ! values.refund_tos_visible && (
 								<div id="checkbox">
 									<CheckboxControl
 										{ ...getInputProps(
@@ -438,9 +432,7 @@ const PreLaunchChecklist = ( props ) => {
 												<Button
 													isPrimary
 													disabled={
-														values[
-															'refund_tos_visible'
-														]
+														values.refund_tos_visible
 													}
 													onClick={ () => {
 														setValue(
@@ -461,7 +453,7 @@ const PreLaunchChecklist = ( props ) => {
 								</div>
 							) }
 
-							{ values[ 'refund_tos_visible' ] && (
+							{ values.refund_tos_visible && (
 								<CheckboxControl
 									label={
 										<span className="gla-pre-launch-checklist__checkbox_popover">
@@ -477,7 +469,7 @@ const PreLaunchChecklist = ( props ) => {
 								/>
 							) }
 
-							{ ! values[ 'contact_info_visible' ] && (
+							{ ! values.contact_info_visible && (
 								<div id="checkbox">
 									<CheckboxControl
 										{ ...getInputProps(
@@ -508,9 +500,7 @@ const PreLaunchChecklist = ( props ) => {
 												<Button
 													isPrimary
 													disabled={
-														values[
-															'contact_info_visible'
-														]
+														values.contact_info_visible
 													}
 													onClick={ () => {
 														setValue(
@@ -518,9 +508,7 @@ const PreLaunchChecklist = ( props ) => {
 															true
 														);
 														saveSettings(
-															values[
-																contact_info_visible
-															],
+															values.contact_info_visible,
 															true
 														);
 													} }
@@ -535,7 +523,7 @@ const PreLaunchChecklist = ( props ) => {
 									</div>
 								</div>
 							) }
-							{ values[ 'contact_info_visible' ] && (
+							{ values.contact_info_visible && (
 								<CheckboxControl
 									label={
 										<span className="gla-pre-launch-checklist__checkbox_popover">
