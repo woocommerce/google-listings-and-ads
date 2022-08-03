@@ -10,6 +10,7 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
+import ChooseAudienceSection from '.~/components/free-listings/choose-audience-section';
 import ShippingRateSection from '.~/components/shipping-rate-section';
 import ShippingTimeSection from '.~/components/free-listings/configure-product-listings/shipping-time-section';
 import AppButton from '.~/components/app-button';
@@ -44,6 +45,7 @@ const FormContent = ( {
 
 	return (
 		<StepContent>
+			<ChooseAudienceSection formProps={ formProps } />
 			<ShippingRateSection
 				formProps={ formProps }
 				audienceCountries={ countries }

@@ -2,8 +2,8 @@
  * External dependencies
  */
 import { Form } from '@woocommerce/components';
-import { useState } from '@wordpress/element';
-import { pick } from 'lodash';
+import { useState, useRef } from '@wordpress/element';
+import { pick, noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -15,10 +15,12 @@ import getOfferFreeShippingInitialValue from '.~/utils/getOfferFreeShippingIniti
 import FormContent from './form-content';
 
 /**
+ * @typedef {import('.~/data/actions').TargetAudienceData } TargetAudienceData
  * @typedef {import('.~/data/actions').ShippingRate} ShippingRateFromServerSide
  * @typedef {import('.~/data/actions').ShippingTime} ShippingTime
- * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
+
+const targetAudienceFields = [ 'locale', 'language', 'location', 'countries' ];
 
 /**
  * Field names for settings.
@@ -62,34 +64,40 @@ const getSettings = ( values ) => {
  * without any save strategy, this is to be bound externaly.
  *
  * @param {Object} props
- * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to FormContent.
+ * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
+ * @param {(targetAudience: TargetAudienceData) => Array<string>} props.resolveFinalCountries Callback for this component to resolve the given `targetAudience` to the final list of countries.
+ * @param {(targetAudience: TargetAudienceData) => void} [props.onTargetAudienceChange] Callback called with new data once target audience data is changed. Forwarded from and {@link Form.Props.onChange}.
  * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
- * @param {(change: {name, value}, values: Object) => void} props.onSettingsChange Callback called with new data once form data is changed. Forwarded from and {@link Form.Props.onChange}.
+ * @param {(change: {name, value}, values: Object) => void} [props.onSettingsChange] Callback called with new data once form data is changed. Forwarded from and {@link Form.Props.onChange}.
  * @param {Array<ShippingRateFromServerSide>} props.shippingRates Shipping rates data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} props.onShippingRatesChange Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChange}.
+ * @param {(newValue: Object) => void} [props.onShippingRatesChange] Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChange}.
  * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} props.onShippingTimesChange Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChange}.
- * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked. Could be async. While it's being resolved the form would turn into a saving state.
+ * @param {(newValue: Object) => void} [props.onShippingTimesChange] Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChange}.
+ * @param {() => void} [props.onContinue] Callback called once continue button is clicked. Could be async. While it's being resolved the form would turn into a saving state.
  * @param {string} [props.submitLabel] Submit button label, to be forwarded to `FormContent`.
  */
 const SetupFreeListings = ( {
-	countries,
+	targetAudience,
+	resolveFinalCountries,
+	onTargetAudienceChange = noop,
 	settings,
-	onSettingsChange = () => {},
+	onSettingsChange = noop,
 	shippingRates,
-	onShippingRatesChange = () => {},
+	onShippingRatesChange = noop,
 	shippingTimes,
-	onShippingTimesChange = () => {},
-	onContinue = () => {},
+	onShippingTimesChange = noop,
+	onContinue = noop,
 	submitLabel,
 } ) => {
 	const [ saving, setSaving ] = useState( false );
+	const formRef = useRef();
 
-	if ( ! settings || ! shippingRates || ! shippingTimes || ! countries ) {
+	if ( ! ( targetAudience && settings && shippingRates && shippingTimes ) ) {
 		return <AppSpinner />;
 	}
 
 	const handleValidate = ( values ) => {
+		const countries = resolveFinalCountries( values );
 		const { shipping_country_times: shippingTimesData } = values;
 
 		return checkErrors( values, shippingTimesData, countries );
@@ -108,6 +116,22 @@ const SetupFreeListings = ( {
 			onShippingTimesChange( values.shipping_country_times );
 		} else if ( settingsFieldNames.includes( change.name ) ) {
 			onSettingsChange( change, getSettings( values ) );
+		} else if ( targetAudienceFields.includes( change.name ) ) {
+			onTargetAudienceChange( pick( values, targetAudienceFields ) );
+
+			// Only keep shipping data with selected countries.
+			[ 'shipping_country_rates', 'shipping_country_times' ].forEach(
+				( field ) => {
+					const countries = resolveFinalCountries( values );
+					const currentValues = values[ field ];
+					const nextValues = currentValues.filter( ( el ) =>
+						countries.includes( el.country || el.countryCode )
+					);
+					if ( nextValues.length !== currentValues.length ) {
+						formRef.current.setValue( field, nextValues );
+					}
+				}
+			);
 		}
 	};
 
@@ -115,7 +139,13 @@ const SetupFreeListings = ( {
 		<div className="gla-setup-free-listings">
 			<Hero />
 			<Form
+				ref={ formRef }
 				initialValues={ {
+					// Fields for target audience.
+					locale: targetAudience.locale,
+					language: targetAudience.language,
+					location: targetAudience.location,
+					countries: targetAudience.countries || [],
 					// These are the fields for settings.
 					shipping_rate: settings.shipping_rate,
 					shipping_time: settings.shipping_time,
@@ -138,6 +168,8 @@ const SetupFreeListings = ( {
 				onSubmit={ handleSubmit }
 			>
 				{ ( formProps ) => {
+					const countries = resolveFinalCountries( formProps.values );
+
 					return (
 						<FormContent
 							formProps={ formProps }

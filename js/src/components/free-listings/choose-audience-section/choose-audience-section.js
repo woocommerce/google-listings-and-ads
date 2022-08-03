@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Button, RadioControl } from '@wordpress/components';
+import { RadioControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -13,29 +13,28 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
 import SupportedCountrySelect from '.~/components/supported-country-select';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import '.~/components/free-listings/choose-audience/index.scss';
+import './choose-audience-section.scss';
 
 /**
- * Form to choose audience.
+ * Section form to choose audience.
  *
  * To be used in onboarding and further editing.
  * Does not provide any save strategy, this is to be bound externaly.
- * Copied from {@link .~/setup-mc/setup-stepper/choose-audience/form-content.js}.
  *
- * @param {Object} props
+ * @param {Object} props React props.
+ * @param {Object} props.formProps Form props forwarded from `Form` component.
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
  */
-const FormContent = ( props ) => {
-	const { formProps } = props;
-	const { values, isValidForm, getInputProps, handleSubmit } = formProps;
+const ChooseAudienceSection = ( { formProps } ) => {
+	const { values, getInputProps } = formProps;
 	const { locale, language } = values;
 
 	return (
 		<>
 			<Section
+				className="gla-choose-audience-section"
 				title={ __( 'Audience', 'google-listings-and-ads' ) }
 				description={
 					<p>
@@ -52,7 +51,7 @@ const FormContent = ( props ) => {
 							<Subsection.Title>
 								{ __( 'Language', 'google-listings-and-ads' ) }
 							</Subsection.Title>
-							<Subsection.HelperText className="helper-text">
+							<Subsection.HelperText className="gla-choose-audience-section__language-helper">
 								{ createInterpolateElement(
 									__(
 										'Listings can only be displayed in your site language. <link>Read more</link>',
@@ -83,7 +82,7 @@ const FormContent = ( props ) => {
 							<Subsection.Title>
 								{ __( 'Location', 'google-listings-and-ads' ) }
 							</Subsection.Title>
-							<Subsection.HelperText className="helper-text">
+							<Subsection.HelperText>
 								{ __(
 									'Your store should already have the appropriate shipping and tax rates (if required) for potential customers in your selected location(s).',
 									'google-listings-and-ads'
@@ -99,18 +98,14 @@ const FormContent = ( props ) => {
 									) }
 									value="selected"
 								>
-									<div className="input">
-										<SupportedCountrySelect
-											multiple
-											{ ...getInputProps( 'countries' ) }
-										/>
-									</div>
-									<div className="cannot-find-country">
-										{ __(
+									<SupportedCountrySelect
+										multiple
+										{ ...getInputProps( 'countries' ) }
+										help={ __(
 											'Can’t find a country? Only supported countries can be selected.',
 											'google-listings-and-ads'
 										) }
-									</div>
+									/>
 								</AppRadioContentControl>
 								<AppRadioContentControl
 									{ ...getInputProps( 'location' ) }
@@ -132,17 +127,8 @@ const FormContent = ( props ) => {
 					</Section.Card.Body>
 				</Section.Card>
 			</Section>
-			<StepContentFooter>
-				<Button
-					isPrimary
-					disabled={ ! isValidForm }
-					onClick={ handleSubmit }
-				>
-					{ __( 'Continue', 'google-listings-and-ads' ) }
-				</Button>
-			</StepContentFooter>
 		</>
 	);
 };
 
-export default FormContent;
+export default ChooseAudienceSection;

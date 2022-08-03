@@ -12,7 +12,6 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import FormContent from './form-content';
 import useTargetAudienceWithSuggestions from './useTargetAudienceWithSuggestions';
-import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
  * Step with a form to choose audience.

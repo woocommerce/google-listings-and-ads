@@ -18,7 +18,6 @@ import SupportedCountrySelect from '.~/components/supported-country-select';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useAutoSaveTargetAudienceEffect from './useAutoSaveTargetAudienceEffect';
 import useAutoClearShippingEffect from './useAutoClearShippingEffect';
-import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
  * Form to choose audience.
