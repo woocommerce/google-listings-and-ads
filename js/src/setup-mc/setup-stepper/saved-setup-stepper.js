@@ -17,6 +17,7 @@ import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
 import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '.~/hooks/useSaveShippingTimes';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from '.~/components/free-listings/setup-free-listings';
 import StoreRequirements from './store-requirements';
@@ -50,6 +51,7 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 	const { saveTargetAudience, saveSettings } = useAppDispatch();
 	const { saveShippingRates } = useSaveShippingRates();
 	const { saveShippingTimes } = useSaveShippingTimes();
+	const { createNotice } = useDispatchCoreNotices();
 
 	// Auto-save the suggested audience data as the initial values to fall back with the original implementation.
 	// Ref: https://github.com/woocommerce/google-listings-and-ads/blob/2.0.2/js/src/setup-mc/setup-stepper/choose-audience/form-content.js#L37
@@ -86,9 +88,9 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 		}
 	};
 
-	const handleSettingsChange = ( change, newSettings ) => {
-		saveSettings( newSettings );
-	};
+	function handleFormChange( errorMessage, newValue ) {
+		this( newValue ).catch( () => createNotice( 'error', errorMessage ) );
+	}
 
 	const initShippingRates = hasResolvedShippingRates ? shippingRates : null;
 	const initShippingTimes = hasResolvedShippingTimes ? shippingTimes : null;
@@ -121,14 +123,38 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 					content: (
 						<SetupFreeListings
 							targetAudience={ initTargetAudience }
-							resolveFinalCountries={ getFinalCountries }
-							onTargetAudienceChange={ saveTargetAudience }
 							settings={ settings }
-							onSettingsChange={ handleSettingsChange }
 							shippingRates={ initShippingRates }
-							onShippingRatesChange={ saveShippingRates }
 							shippingTimes={ initShippingTimes }
-							onShippingTimesChange={ saveShippingTimes }
+							resolveFinalCountries={ getFinalCountries }
+							onTargetAudienceChange={ handleFormChange.bind(
+								saveTargetAudience,
+								__(
+									'There was an error saving audience.',
+									'google-listings-and-ads'
+								)
+							) }
+							onSettingsChange={ handleFormChange.bind(
+								saveSettings,
+								__(
+									'There was an error saving settings.',
+									'google-listings-and-ads'
+								)
+							) }
+							onShippingRatesChange={ handleFormChange.bind(
+								saveShippingRates,
+								__(
+									'There was an error saving shipping rates.',
+									'google-listings-and-ads'
+								)
+							) }
+							onShippingTimesChange={ handleFormChange.bind(
+								saveShippingTimes,
+								__(
+									'There was an error saving shipping times.',
+									'google-listings-and-ads'
+								)
+							) }
 							onContinue={ handleSetupListingsContinue }
 							submitLabel={ __(
 								'Continue',

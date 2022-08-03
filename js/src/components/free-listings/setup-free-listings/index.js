@@ -68,7 +68,7 @@ const getSettings = ( values ) => {
  * @param {(targetAudience: TargetAudienceData) => Array<string>} props.resolveFinalCountries Callback for this component to resolve the given `targetAudience` to the final list of countries.
  * @param {(targetAudience: TargetAudienceData) => void} [props.onTargetAudienceChange] Callback called with new data once target audience data is changed. Forwarded from and {@link Form.Props.onChange}.
  * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
- * @param {(change: {name, value}, values: Object) => void} [props.onSettingsChange] Callback called with new data once form data is changed. Forwarded from and {@link Form.Props.onChange}.
+ * @param {(newValue: Object) => void} [props.onSettingsChange] Callback called with new data once form data is changed. Forwarded from and {@link Form.Props.onChange}.
  * @param {Array<ShippingRateFromServerSide>} props.shippingRates Shipping rates data, if not given AppSpinner will be rendered.
  * @param {(newValue: Object) => void} [props.onShippingRatesChange] Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChange}.
  * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
@@ -115,7 +115,7 @@ const SetupFreeListings = ( {
 		} else if ( change.name === 'shipping_country_times' ) {
 			onShippingTimesChange( values.shipping_country_times );
 		} else if ( settingsFieldNames.includes( change.name ) ) {
-			onSettingsChange( change, getSettings( values ) );
+			onSettingsChange( getSettings( values ) );
 		} else if ( targetAudienceFields.includes( change.name ) ) {
 			onTargetAudienceChange( pick( values, targetAudienceFields ) );
 

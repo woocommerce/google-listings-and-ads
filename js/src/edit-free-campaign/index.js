@@ -188,9 +188,7 @@ const EditFreeCampaign = () => {
 				resolveFinalCountries={ getFinalCountries }
 				onTargetAudienceChange={ updateTargetAudience }
 				settings={ settings }
-				onSettingsChange={ ( change, newSettings ) => {
-					updateSettings( newSettings );
-				} }
+				onSettingsChange={ updateSettings }
 				shippingRates={ loadedShippingRates }
 				onShippingRatesChange={ updateShippingRates }
 				shippingTimes={ loadedShippingTimes }
