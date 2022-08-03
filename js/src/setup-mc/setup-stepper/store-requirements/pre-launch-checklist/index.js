@@ -134,7 +134,7 @@ const PreLaunchChecklist = ( props ) => {
 												<p>
 													{ createInterpolateElement(
 														__(
-															'<link>Learn more about common landing page issues and how to fix them  </link>',
+															'<link>Learn more about common landing page issues and how to fix them</link>',
 															'google-listings-and-ads'
 														),
 														{
