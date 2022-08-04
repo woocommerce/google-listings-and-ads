@@ -108,13 +108,13 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberVerified } ) {
  *
  * @fires gla_mc_phone_number_edit_button_click
  */
-export default function PhoneNumberCard( {
+const PhoneNumberCard = ( {
 	view,
 	phoneNumber,
 	initEditing = null,
 	onEditClick,
 	onPhoneNumberVerified = noop,
-} ) {
+} ) => {
 	const { loaded, data } = phoneNumber;
 	const [ isEditing, setEditing ] = useState( initEditing );
 
@@ -181,4 +181,6 @@ export default function PhoneNumberCard( {
 			indicator={ indicator }
 		/>
 	);
-}
+};
+
+export default PhoneNumberCard;

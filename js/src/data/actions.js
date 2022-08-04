@@ -63,6 +63,39 @@ export function handleFetchError( error, message ) {
  */
 
 /**
+ * Account status data. Indicates the current status for the Google MC account.
+ *
+ * @typedef {Object} AccountStatus
+ * @property {string} status Account status. See the available statuses here https://developers.google.com/shopping-content/reference/rest/v2.1/State
+ * @property {number} cooldown Cooldown period timestamp indicating how long the user should wait until the next request
+ * @property {Array} issues List of issue keys for this account
+ * @property {Array} reviewEligibleRegions List of region codes available for review
+ */
+
+/**
+ * @typedef {Object} TargetAudienceData
+ * @property {string} locale The locale for the site. Example: 'en_US'.
+ * @property {string} language The language to use for product listings. Example: 'English'.
+ * @property {string} location Type of location, There are two possible values: 'selected' countries or 'all' countries.
+ * @property {Array<CountryCode>} countries Array of audience countries.
+ */
+
+/**
+ * Settings Data
+ *
+ * @typedef {Object} SettingsData
+ * @property {boolean} [offer_free_shipping] Whether if the merchant offers free shipping.
+ * @property {'automatic'|'flat'|'manual'} [shipping_rate] Type of the shipping rate.
+ * @property {'flat'|'manual'} [shipping_time] Type of the shipping time.
+ * @property {string|null} [tax_rate] Type of tax rate, There are two possible values if US is selected: 'destination' and 'manual' otherwise will be null.
+ * @property {boolean} [website_live] Whether the store website is live.
+ * @property {boolean} [checkout_process_secure] Whether the checkout process is complete and secure.
+ * @property {boolean} [payment_methods_visible] Whether the payment methods are visible on the website.
+ * @property {boolean} [refund_tos_visible] Whether the refund policy and terms of service are visible on the website.
+ * @property {boolean} [contact_info_visible] Whether the phone number, email, and/or address are visible on the website.
+ */
+
+/**
  *
  * @return {Array<ShippingRate>} Array of individual shipping rates.
  */
@@ -275,27 +308,23 @@ export function* fetchSettings() {
 	}
 }
 
+/**
+ * Save the the MC settings.
+ *
+ * @param {SettingsData} settings settings
+ * @return {Object} Action object to save target audience.
+ */
 export function* saveSettings( settings ) {
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/settings`,
-			method: 'POST',
-			data: settings,
-		} );
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/settings`,
+		method: 'POST',
+		data: settings,
+	} );
 
-		return {
-			type: TYPES.SAVE_SETTINGS,
-			settings,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to save settings. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+	return {
+		type: TYPES.SAVE_SETTINGS,
+		settings,
+	};
 }
 
 export function* fetchJetpackAccount() {
@@ -696,27 +725,23 @@ export function receiveGoogleAdsAccountBillingStatus( billingStatus ) {
 	};
 }
 
+/**
+ * Save the target audience countries.
+ *
+ * @param {TargetAudienceData} targetAudience audience countries
+ * @return {Object} Action object to save target audience.
+ */
 export function* saveTargetAudience( targetAudience ) {
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/target_audience`,
-			method: 'POST',
-			data: targetAudience,
-		} );
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/target_audience`,
+		method: 'POST',
+		data: targetAudience,
+	} );
 
-		return {
-			type: TYPES.SAVE_TARGET_AUDIENCE,
-			target_audience: targetAudience,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error saving target audience data.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+	return {
+		type: TYPES.SAVE_TARGET_AUDIENCE,
+		target_audience: targetAudience,
+	};
 }
 
 /**
@@ -853,6 +878,13 @@ export function* receiveMCProductStatistics( mcProductStatistics ) {
 	};
 }
 
+export function* receiveMCReviewRequest( mcReviewRequest ) {
+	return {
+		type: TYPES.RECEIVE_MC_REVIEW_REQUEST,
+		mcReviewRequest,
+	};
+}
+
 export function* receiveMCIssues( query, data ) {
 	return {
 		type: TYPES.RECEIVE_MC_ISSUES,
@@ -898,6 +930,23 @@ export function* updateMCProductVisibility( ids, visible ) {
 				'google-listings-and-ads'
 			)
 		);
+		throw error;
+	}
+}
+
+/**
+ * Request a new review for the connected account
+ */
+export function* sendMCReviewRequest() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/review`,
+			method: 'POST',
+		} );
+
+		return yield receiveMCReviewRequest( response );
+	} catch ( error ) {
+		yield handleFetchError( error, error?.message );
 		throw error;
 	}
 }

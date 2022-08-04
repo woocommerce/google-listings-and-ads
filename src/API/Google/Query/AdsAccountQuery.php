@@ -16,7 +16,7 @@ class AdsAccountQuery extends AdsQuery {
 	 * Query constructor.
 	 */
 	public function __construct() {
-		parent::__construct( 'customer_user_access' );
-		$this->columns( [ 'customer_user_access.resource_name', 'customer_user_access.access_role' ] );
+		parent::__construct( 'customer' );
+		$this->columns( [ 'customer.id', 'customer.descriptive_name', 'customer.manager', 'customer.test_account' ] );
 	}
 }

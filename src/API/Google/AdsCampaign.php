@@ -16,16 +16,15 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V9\ResourceNames;
-use Google\Ads\GoogleAds\V9\Common\MaximizeConversionValue;
-use Google\Ads\GoogleAds\V9\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V9\Resources\Campaign;
-use Google\Ads\GoogleAds\V9\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V9\Services\CampaignServiceClient;
-use Google\Ads\GoogleAds\V9\Services\CampaignOperation;
-use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V9\Services\GeoTargetConstantServiceClient;
-use Google\Ads\GoogleAds\V9\Services\MutateOperation;
+use Google\Ads\GoogleAds\Util\V11\ResourceNames;
+use Google\Ads\GoogleAds\V11\Common\MaximizeConversionValue;
+use Google\Ads\GoogleAds\V11\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V11\Resources\Campaign;
+use Google\Ads\GoogleAds\V11\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V11\Services\CampaignServiceClient;
+use Google\Ads\GoogleAds\V11\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V11\Services\MutateOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
@@ -597,10 +596,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws Exception When unable to parse resource ID.
 	 */
 	protected function parse_geo_target_location_id( string $geo_target_constant ): int {
-		try {
-			$parts = GeoTargetConstantServiceClient::parseName( $geo_target_constant );
-			return absint( $parts['criterion_id'] );
-		} catch ( ValidationException $e ) {
+		if ( 1 === preg_match( '#geoTargetConstants/(?<id>\d+)#', $geo_target_constant, $parts ) ) {
+			return absint( $parts['id'] );
+		} else {
 			throw new Exception( __( 'Invalid geo target location ID', 'google-listings-and-ads' ) );
 		}
 	}

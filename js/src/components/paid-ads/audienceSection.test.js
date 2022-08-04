@@ -10,36 +10,8 @@ import userEvent from '@testing-library/user-event';
  */
 import AudienceSection from '.~/components/paid-ads/audience-section';
 
-jest.mock( '.~/hooks/useAppSelectDispatch', () =>
-	jest.fn( () => ( {
-		hasFinishedResolution: true,
-		data: {
-			continents: {
-				EU: {
-					name: 'Europe',
-					countries: [ 'GB', 'ES' ],
-				},
-				NA: {
-					name: 'North America',
-					countries: [ 'US' ],
-				},
-			},
-			countries: {
-				GB: { name: 'United Kingdom' },
-				US: { name: 'United States' },
-				ES: { name: 'Spain' },
-			},
-		},
-	} ) )
-);
-
-jest.mock( '.~/hooks/useCountryKeyNameMap', () =>
-	jest.fn( () => ( {
-		GB: 'United Kingdom',
-		US: 'United States',
-		ES: 'Spain',
-	} ) )
-);
+jest.mock( '.~/hooks/useAppSelectDispatch' );
+jest.mock( '.~/hooks/useCountryKeyNameMap' );
 
 jest.mock( '.~/hooks/useTargetAudienceFinalCountryCodes', () =>
 	jest.fn( () => ( { data: [ 'GB', 'US', 'ES' ] } ) )

@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
 use Exception;
 use Google\Exception as GoogleException;
 use Google\Service\Exception as GoogleServiceException;
@@ -39,6 +40,8 @@ defined( 'ABSPATH' ) || exit;
  * @property  Merchant                    $merchant
  */
 class MerchantTest extends UnitTest {
+
+	use MerchantTrait;
 
 	/**
 	 * Runs before each test is executed.
@@ -204,52 +207,67 @@ class MerchantTest extends UnitTest {
 
 	public function test_get_account() {
 		$account = $this->createMock( Account::class );
-
-		$this->service->accounts->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->willReturn( $account );
+		$this->mock_get_account( $account );
 
 		$this->assertEquals( $account, $this->merchant->get_account() );
 	}
 
 	public function test_get_account_failure() {
-		$this->service->accounts->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleException( 'error', 400 )
-				)
-			);
+		$this->mock_get_account_exception( new GoogleException( 'error', 400 ) );
 
 		$this->expectException( MerchantApiException::class );
         $this->expectExceptionCode( 400 );
 		$this->merchant->get_account();
 	}
 
+	public function test_get_claimed_url_hash_from_cache() {
+		$url = 'https://site.test';
+		$this->options->method( 'get' )
+			->with( OptionsInterface::CLAIMED_URL_HASH )
+			->willReturn( md5( $url ) );
+
+		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
+	}
+
+	public function test_get_claimed_url_hash_not_claimed() {
+		$url = 'https://site.test';
+		$this->mock_get_account( $this->get_account_with_url( $url  ) );
+		$this->mock_get_account_status( $this->get_status_website_claimed( false ) );
+
+		$this->assertNull( $this->merchant->get_claimed_url_hash() );
+	}
+
+	public function test_get_claimed_url_hash_from_account() {
+		$url = 'https://site.test';
+		$this->mock_get_account( $this->get_account_with_url( $url ) );
+		$this->mock_get_account_status( $this->get_status_website_claimed() );
+
+		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
+	}
+
+	public function test_get_claimed_url_hash_with_trailing_slash() {
+		$url = 'https://site.test';
+		$this->mock_get_account( $this->get_account_with_url( trailingslashit( $url ) ) );
+		$this->mock_get_account_status( $this->get_status_website_claimed() );
+
+		$this->assertEquals( md5( $url ), $this->merchant->get_claimed_url_hash() );
+	}
+
+	public function test_get_claimed_url_hash_from_account_failure() {
+		$this->mock_get_account_exception( new GoogleException( 'error', 400 ) );
+
+		$this->assertNull( $this->merchant->get_claimed_url_hash() );
+	}
+
 	public function test_get_accountstatuses() {
 		$account_status = $this->createMock( AccountStatus::class );
-
-		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
-		$this->service->accountstatuses->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->willReturn( $account_status );
+		$this->mock_get_account_status( $account_status );
 
 		$this->assertEquals( $account_status, $this->merchant->get_accountstatus() );
 	}
 
 	public function test_get_accountstatus_failure() {
-		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
-		$this->service->accountstatuses->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleException( 'error', 400 )
-				)
-			);
+		$this->mock_get_account_status_exception( new GoogleException( 'error', 400 ) );
 
 		$this->expectException( Exception::class );
         $this->expectExceptionCode( 400 );
@@ -344,10 +362,7 @@ class MerchantTest extends UnitTest {
 				)
 			);
 
-		$this->service->accounts->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->willReturn( $account );
+		$this->mock_get_account( $account );
 
 		$this->service->accounts->expects( $this->once() )
 			->method( 'update' )
@@ -371,10 +386,7 @@ class MerchantTest extends UnitTest {
 			->method( 'getAdsLinks' )
 			->willReturn( [ $ads_link ] );
 
-		$this->service->accounts->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->willReturn( $account );
+		$this->mock_get_account( $account );
 
 		$this->assertFalse(
 			$this->merchant->link_ads_id( $ads_id )
@@ -398,10 +410,7 @@ class MerchantTest extends UnitTest {
 			->method( 'getUsers' )
 			->willReturn( [ $user ] );
 
-		$this->service->accounts->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->willReturn( $account );
+		$this->mock_get_account( $account );
 
 		$this->assertTrue(
 			$this->merchant->has_access( $email )
@@ -411,14 +420,7 @@ class MerchantTest extends UnitTest {
 	public function test_no_access_to_account() {
 		$email = 'john@doe.email';
 
-		$this->service->accounts->expects( $this->once() )
-			->method( 'get' )
-			->with( $this->merchant_id, $this->merchant_id )
-			->will(
-				$this->throwException(
-					new GoogleException( 'no access', 403 )
-				)
-			);
+		$this->mock_get_account_exception( new GoogleException( 'no access', 403 ) );
 
 		$this->assertFalse(
 			$this->merchant->has_access( $email )
@@ -431,6 +433,36 @@ class MerchantTest extends UnitTest {
 			->with( OptionsInterface::MERCHANT_ID, $this->merchant_id )
 			->willReturn( true );
 		$this->assertTrue( $this->merchant->update_merchant_id( $this->merchant_id ) );
+	}
+
+	private function mock_get_account( Account $account ) {
+		$this->service->accounts->expects( $this->once() )
+			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
+			->willReturn( $account );
+	}
+
+	private function mock_get_account_exception( GoogleException $exception ) {
+		$this->service->accounts->expects( $this->once() )
+			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
+			->will( $this->throwException( $exception ) );
+	}
+
+	private function mock_get_account_status( AccountStatus $account_status ) {
+		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
+		$this->service->accountstatuses->expects( $this->once() )
+			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
+			->willReturn( $account_status );
+	}
+
+	private function mock_get_account_status_exception( GoogleException $exception ) {
+		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
+		$this->service->accountstatuses->expects( $this->once() )
+			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
+			->will( $this->throwException( $exception ) );
 	}
 
 }

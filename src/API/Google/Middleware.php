@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
@@ -56,10 +57,9 @@ class Middleware implements OptionsAwareInterface {
 	/**
 	 * Get all Merchant Accounts associated with the connected account.
 	 *
-	 * @since 1.7.0
-	 *
 	 * @return array
 	 * @throws Exception When an Exception is caught.
+	 * @since 1.7.0
 	 */
 	public function get_merchant_accounts(): array {
 		try {
@@ -122,9 +122,7 @@ class Middleware implements OptionsAwareInterface {
 	/**
 	 * Send a request to create a merchant account.
 	 *
-	 * @since 1.5.0
-	 *
-	 * @param string $name     Site name
+	 * @param string $name Site name
 	 * @param string $site_url Website URL
 	 *
 	 * @return int Created merchant account ID
@@ -132,6 +130,7 @@ class Middleware implements OptionsAwareInterface {
 	 * @throws Exception   When an Exception is caught or we receive an invalid response.
 	 * @throws InvalidTerm When the account name contains invalid terms.
 	 * @throws InvalidDomainName When the site URL ends with an invalid top-level domain.
+	 * @since 1.5.0
 	 */
 	protected function create_merchant_account_request( string $name, string $site_url ): int {
 		try {
@@ -519,5 +518,132 @@ class Middleware implements OptionsAwareInterface {
 		$datetime_util = $this->container->get( DateTimeUtility::class );
 
 		return $datetime_util->maybe_convert_tz_string( $timezone );
+	}
+
+	/**
+	 * Get Account Review Status
+	 *
+	 * @return array With the response data
+	 * @throws Exception When there is an invalid response.
+	 */
+	public function get_account_review_status() {
+		try {
+
+			if ( ! $this->is_subaccount() ) {
+				return [];
+			}
+
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->get(
+				$this->get_manager_url( 'account-review-status/' . $this->options->get_merchant_id() ),
+			);
+
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 === $result->getStatusCode() && isset( $response['freeListingsProgram'] ) && isset( $response['shoppingAdsProgram'] ) ) {
+				do_action( 'woocommerce_gla_request_review_response', $response );
+				return $response;
+			}
+			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
+			$error = $response['message'] ?? __( 'Invalid response getting account review status', 'google-listings-and-ads' );
+			throw new Exception( $error, $result->getStatusCode() );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error getting account review status', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
+		}
+	}
+
+
+	/**
+	 * Request a new account review
+	 *
+	 * @param array $regions Regions to request a review.
+	 * @return array With a successful message
+	 * @throws Exception When there is an invalid response.
+	 */
+	public function account_request_review( $regions ) {
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+
+			// For each region we request a new review
+			foreach ( $regions as $region_code ) {
+				$result = $client->post(
+					$this->get_manager_url( 'account-review-request' ),
+					[
+						'body' => json_encode(
+							[
+								'accountId'  => $this->options->get_merchant_id(),
+								'regionCode' => $region_code,
+							]
+						),
+					]
+				);
+
+				$response = json_decode( $result->getBody()->getContents(), true );
+
+				if ( 200 !== $result->getStatusCode() ) {
+					do_action(
+						'woocommerce_gla_request_review_failure',
+						[
+							'error'       => 'response',
+							'region_code' => $region_code,
+							'response'    => $response,
+						]
+					);
+					do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
+					$error = $response['message'] ?? __( 'Invalid response getting requesting a new review.', 'google-listings-and-ads' );
+					throw new Exception( $error, $result->getStatusCode() );
+				}
+			}
+
+			// Otherwise, return a successful message and update the account status
+			return [
+				'message' => __( 'A new review has been successfully requested', 'google-listings-and-ads' ),
+			];
+
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error requesting a new review.', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
+		}
+	}
+
+	/**
+	 * This function detects if the current account is a sub-account
+	 * This function is cached in the MC_IS_SUBACCOUNT transient
+	 *
+	 * @return bool True if it's a standalone account.
+	 */
+	public function is_subaccount(): bool {
+		/** @var TransientsInterface $transients */
+		$transients    = $this->container->get( TransientsInterface::class );
+		$is_subaccount = $transients->get( $transients::MC_IS_SUBACCOUNT );
+
+		if ( is_null( $is_subaccount ) ) {
+			$is_subaccount = 0;
+
+			$merchant_id = $this->options->get_merchant_id();
+			$accounts    = $this->get_merchant_accounts();
+
+			foreach ( $accounts as $account ) {
+				if ( $account['id'] === $merchant_id && $account['subaccount'] ) {
+					$is_subaccount = 1;
+				}
+			}
+
+			$transients->set( $transients::MC_IS_SUBACCOUNT, $is_subaccount );
+		}
+
+		// since transients don't support booleans, we save them as 0/1 and do the conversion here
+		return boolval( $is_subaccount );
 	}
 }

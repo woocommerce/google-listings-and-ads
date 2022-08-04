@@ -12,6 +12,9 @@ wp config set WP_DEBUG_DISPLAY false --raw
 wp config set JETPACK_AUTOLOAD_DEV true --raw
 wp plugin install woocommerce --activate
 
+# Install basic auth for API requests on http.
+wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
+
 # Install and activate WC-admin for GLA.
 wp plugin install woocommerce-admin --activate
 
@@ -25,3 +28,6 @@ wp user create customer customer@woocommercecoree2etestsuite.com --user_pass=pas
 
 # Skip activation redirect, so it will not interrupt our tests.
 wp transient delete _wc_activation_redirect
+
+# Initialize pretty permalinks.
+wp rewrite structure /%postname%/

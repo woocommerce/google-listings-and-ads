@@ -13,6 +13,7 @@ A native integration with Google offering free listings and Performance Max ads 
 -   [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)
 -   [User documentation](https://docs.woocommerce.com/document/google-listings-and-ads/)
 -   [Ideas board](https://ideas.woocommerce.com/forums/133476-woocommerce?category_id=403986)
+-   [Storybook](https://woocommerce.github.io/google-listings-and-ads/)
 
 ## Support
 
@@ -30,7 +31,7 @@ We aim to support the latest two minor versions of WordPress, WooCommerce, and P
 
 -   WordPress 5.7+
 -   WooCommerce 6.0+
--   PHP 7.3+
+-   PHP 7.4+
 
 ## Browsers supported
 
@@ -161,7 +162,8 @@ To remove the Docker container and images (this will **delete everything** in th
 
 ## Docs
 
--   [Usage Tracking](./src/Tracking/README.md)
+- [Usage Tracking](./src/Tracking/README.md)
+- [Hooks defined or used in GLA](./src/Hooks/README.md)
 
 <p align="center">
 	<br/><br/>

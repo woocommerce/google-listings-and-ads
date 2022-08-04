@@ -1,7 +1,7 @@
 .wcdl-subsection-helper-text {
-	font-size: 12px;
+	font-size: $helptext-font-size;
 	font-style: italic;
 	font-weight: 400;
-	line-height: 16px;
+	line-height: $gla-line-height-smaller;
 	letter-spacing: 0;
 }

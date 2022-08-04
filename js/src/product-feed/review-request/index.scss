@@ -1,0 +1,42 @@
+.gla-review-request {
+	.gla-sync-icon {
+		fill: $alert-yellow;
+	}
+}
+
+.gla-review-request-modal {
+	max-width: $gla-width-large;
+
+	&__notice {
+		margin-left: 0;
+		margin-bottom: $grid-unit-30;
+	}
+
+	&__issue-list {
+		list-style: initial;
+		padding: inherit;
+		padding-bottom: 0;
+	}
+
+	&__checkbox {
+		margin-top: $grid-unit-30;
+	}
+}
+
+.gla-review-request-notice {
+	background: #fef8ee;
+	padding: $grid-unit-30;
+	flex-wrap: wrap;
+
+	&__text {
+		padding: 0 $grid-unit-20;
+	}
+
+	&__text-body {
+		color: $gray-700;
+	}
+
+	&__button {
+		margin: $grid-unit-10 0;
+	}
+}

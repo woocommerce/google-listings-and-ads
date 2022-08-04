@@ -2,9 +2,9 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
-Tested up to: 5.9
-Requires PHP: 7.3
-Stable tag: 1.12.8
+Tested up to: 6.0
+Requires PHP: 7.4
+Stable tag: 2.0.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -55,7 +55,7 @@ Create a new Google Ads account through Google Listings & Ads and a promotional 
 
 * WordPress 5.7 or greater
 * WooCommerce 6.0 or greater
-* PHP version 7.3 or greater (PHP 7.4 or greater is recommended)
+* PHP version 7.4 or greater
 * MySQL version 5.6 or greater
 
 Visit the [WooCommerce server requirements documentation](https://docs.woocommerce.com/document/server-requirements/) for a detailed list of server requirements.
@@ -109,29 +109,34 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 1.12.8 - 2022-05-05 =
-* Update - Add the FAQs card for UX improvements on get started page.
-* Update - Add the benefits card for UX improvements on get started page.
-* Update - Add the customer quotes card for UX improvements on get started page.
-* Update - Add the features card for UX improvements on get started page.
-* Update - Add the first card with a CTA and a video for UX improvements on get started page.
-* Update - Add the get started card for UX improvements on get started page.
+= 2.0.2 - 2022-07-29 =
+* Fix - Disable identifier_exists field.
+* Tweak - Propagate errors for saveSettings.
+* Tweak - Refactor SCSS variables.
+* Tweak - Remove PHP 8.0 specific code of Symfony polyfills.
+* Tweak - Revert migration applicable version value.
+* Tweak - Update change log records type.
+* Tweak - WC 6.8 compatibility.
+* Update - Google Ads library to API V11.
 
-= 1.12.7 - 2022-05-04 =
-* Fix - Label UI for selecting countries (TreeSelectControl / SupportedCountrySelect).
-* Tweak - Refactor, remove `record*Event` utils.
-* Tweak - Upgrade @wordpress/scripts to 22.1.0, and the related packages were upgraded to the corresponding versions.
-* Tweak - Upgrade the packages of the e2e testing.
-* Tweak - Upgrade webpack config to v5, and enhance the config.
+= 2.0.1 - 2022-07-12 =
+* Dev - A script to generate a list of hooks that defined or used in GLA.
+* Dev - GH workflow to set PR labels.
+* Add - Normalizer Polyfill.
+* Dev - changed the changelog types list.
+* Fix - Compatibility with History Navigation v5.
+* Fix - Encoding product names in Issues Table .
+* Tweak - Remove try and catch in saveTargetAudience action.
 
-= 1.12.6 - 2022-04-29 =
-* Fix - Update all products job syncing products
+= 2.0.0 - 2022-07-05 =
+* Add - Filter Ads accounts to exclude manager and test accounts.
+* Add - Return account names when retrieving the list of existing accounts.
+* Fix - Normalize image URLs before validation.
+* Tweak - WooCommerce 6.7 compatibility.
 
-= 1.12.5 - 2022-04-12 =
-* Fix - Cache Yoast SEO values per product, to ensure unique values.
-* Fix - Feature/tree select control component.
-* Fix - Prompt to reconnect when a Jetpack disconnect is detected.
-* Tweak - Automatically generate Tracking events docs from JSDoc.
-* Tweak - Move Tracking events docs to JSDoc.
+= 1.13.6 - 2022-06-21 =
+* Fix - Cannot disconnect Jetpack when other activated plugins are using Jetpack connection.
+* Fix - Compatibility CES prompts with WC 6.6.0.
+* Fix - Multiple CES prompts on the Dashboard Page.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

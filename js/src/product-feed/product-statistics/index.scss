@@ -2,7 +2,7 @@
 	&__last-updated {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: $grid-unit;
 		margin-bottom: calc(var(--main-gap) / 3 * 2);
 	}
 
@@ -35,25 +35,42 @@
 			}
 		}
 
+		.components-flex {
+			align-items: flex-start;
+		}
+
 		.components-flex + .components-flex {
 			margin-top: $grid-unit-10;
 		}
 
 		.components-flex__item {
 			color: $gray-900;
+			padding-top: 0.25 * $grid-unit;
 
 			&:first-child {
 				min-width: 130px;
 			}
 
-			&:nth-child(2) {
-				display: inline-flex;
-				align-items: center;
-				fill: currentcolor;
-				color: #008a20;
+			&.gla-status__icon {
+				min-width: 30px;
+				padding-top: 0;
+
+				.gla-success {
+					fill: $gla-color-green;
+				}
 			}
 
-			&:last-child {
+			.gla-status__label {
+				.gla-error {
+					color: $gla-color-red;
+				}
+
+				.gla-success {
+					color: $gla-color-green;
+				}
+			}
+
+			.gla-status__description {
 				color: $gray-700;
 
 				&:not(:empty)::before {

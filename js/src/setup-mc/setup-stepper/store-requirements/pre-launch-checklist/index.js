@@ -15,6 +15,9 @@ import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import './index.scss';
 
+/*
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-checklist', link_id: 'checklist-requirements', href: 'https://support.google.com/merchants/answer/6363310' }`
+ */
 const PreLaunchChecklist = ( props ) => {
 	const { formProps } = props;
 	const { getInputProps } = formProps;
@@ -38,7 +41,7 @@ const PreLaunchChecklist = ( props ) => {
 							<AppDocumentationLink
 								context="setup-mc-checklist"
 								linkId="checklist-requirements"
-								href="https://support.google.com/merchants/answer/6363310"
+								href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy"
 							>
 								{ __(
 									'Read Google Merchant requirements',
@@ -63,9 +66,20 @@ const PreLaunchChecklist = ( props ) => {
 												) }
 											</span>
 											<HelpPopover id="website_live">
-												{ __(
-													'Ensure your store website and products are online and accessible to your customers.',
-													'google-listings-and-ads'
+												{ createInterpolateElement(
+													__(
+														'Ensure your store website and products are online and accessible to your customers. <link>Read more</link>',
+														'google-listings-and-ads'
+													),
+													{
+														link: (
+															<AppDocumentationLink
+																context="setup-mc-checklist"
+																linkId="check-website-is-live"
+																href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#store-is-live"
+															/>
+														),
+													}
 												) }
 											</HelpPopover>
 										</span>
@@ -100,7 +114,7 @@ const PreLaunchChecklist = ( props ) => {
 															<AppDocumentationLink
 																context="setup-mc-checklist"
 																linkId="check-checkout-process"
-																href="https://support.google.com/merchants/answer/2704221#wycd-unsafe-collection-or-use-of-personal-information"
+																href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout"
 															/>
 														),
 													}
@@ -123,9 +137,20 @@ const PreLaunchChecklist = ( props ) => {
 											) }
 										</span>
 										<HelpPopover id="payment_methods_visible">
-											{ __(
-												'Ensure customers have at least one valid payment method, such as credit card, direct bank transfer, or cash on delivery.',
-												'google-listings-and-ads'
+											{ createInterpolateElement(
+												__(
+													'Ensure customers have at least one valid payment method, such as credit card, direct bank transfer, or cash on delivery. <link>Read more</link>',
+													'google-listings-and-ads'
+												),
+												{
+													link: (
+														<AppDocumentationLink
+															context="setup-mc-checklist"
+															linkId="check-payment-methods"
+															href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#payment-methods"
+														/>
+													),
+												}
 											) }
 										</HelpPopover>
 									</span>
@@ -144,9 +169,20 @@ const PreLaunchChecklist = ( props ) => {
 											) }
 										</span>
 										<HelpPopover id="refund_tos_visible">
-											{ __(
-												'Your site must provide a clear and conspicuous return policy and billing terms to customers.',
-												'google-listings-and-ads'
+											{ createInterpolateElement(
+												__(
+													'Your site must provide a clear and conspicuous return policy and billing terms to customers. <link>Read more</link>',
+													'google-listings-and-ads'
+												),
+												{
+													link: (
+														<AppDocumentationLink
+															context="setup-mc-checklist"
+															linkId="check-refund-policy"
+															href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms"
+														/>
+													),
+												}
 											) }
 										</HelpPopover>
 									</span>
@@ -163,9 +199,20 @@ const PreLaunchChecklist = ( props ) => {
 											) }
 										</span>
 										<HelpPopover id="contact_info_visible">
-											{ __(
-												'Your website must display sufficient and accurate contact information to your customers, including a telephone number and/or email.',
-												'google-listings-and-ads'
+											{ createInterpolateElement(
+												__(
+													'Your website must display sufficient and accurate contact information to your customers, including a telephone number and/or email. <link>Read more</link>',
+													'google-listings-and-ads'
+												),
+												{
+													link: (
+														<AppDocumentationLink
+															context="setup-mc-checklist"
+															linkId="check-phone-numbers"
+															href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#contact-info"
+														/>
+													),
+												}
 											) }
 										</HelpPopover>
 									</span>

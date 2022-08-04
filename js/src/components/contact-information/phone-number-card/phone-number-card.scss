@@ -7,12 +7,12 @@
 
 		.woocommerce-select-control {
 			.components-base-control {
-				height: 36px;
+				height: $gla-size-control-height;
 				border-color: $gray-600;
 			}
 
 			.woocommerce-select-control__control-input {
-				font-size: 13px;
+				font-size: $default-font-size;
 				color: $gray-900;
 			}
 
@@ -21,8 +21,8 @@
 			}
 
 			.woocommerce-select-control__option {
-				min-height: 36px;
-				font-size: 13px;
+				min-height: $gla-size-control-height;
+				font-size: $default-font-size;
 			}
 		}
 	}
@@ -30,8 +30,8 @@
 	// Phone number input
 	.components-input-control .components-input-control__container {
 		.components-input-control__input {
-			height: 36px;
-			font-size: 13px;
+			height: $gla-size-control-height;
+			font-size: $default-font-size;
 			color: $gray-900;
 		}
 
@@ -42,6 +42,6 @@
 
 	// Verification method radio
 	.components-radio-control__option:not(:last-child) {
-		margin-bottom: 8px;
+		margin-bottom: $grid-unit;
 	}
 }

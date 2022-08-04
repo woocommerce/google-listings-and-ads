@@ -60,20 +60,22 @@ const faqItems = [
 ];
 
 /**
- * Clicking on faq items to collapse or expand it in the Setup Merchant Center page
- *
- * @event gla_setup_mc_faq
- * @property {string} id FAQ identifier
- * @property {string} action (`expand`|`collapse`)
+ * @fires gla_faq with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-wp-account', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-wp-account', action: 'collapse' }`.
+ * @fires gla_faq with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'expand' }`.
+ * @fires gla_faq with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'collapse' }`.
+ * @fires gla_documentation_link_click with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
  */
-
-/**
- * @fires gla_setup_mc_faq
- */
-export default function Faqs() {
+const Faqs = () => {
 	return (
 		<Section>
-			<FaqsPanel trackName="gla_setup_mc_faq" faqItems={ faqItems } />
+			<FaqsPanel
+				trackName="gla_faq"
+				context="setup-mc-accounts"
+				faqItems={ faqItems }
+			/>
 		</Section>
 	);
-}
+};
+
+export default Faqs;

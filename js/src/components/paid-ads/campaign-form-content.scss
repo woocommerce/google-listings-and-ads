@@ -3,7 +3,7 @@
 	// Repeat selector to make it higher priority.
 	.components-input-control__container.components-input-control__container {
 		.components-select-control__input {
-			min-height: 36px;
+			min-height: $gla-size-control-height;
 			padding-left: $grid-unit-20;
 		}
 	}

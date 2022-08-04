@@ -36,13 +36,13 @@ const noValidData = {
  * @param {string} props.trackEventId Report ID used in tracking events.
  * @fires gla_chart_tab_click
  */
-export default function SummarySection( {
+const SummarySection = ( {
 	loaded,
 	metrics,
 	expectedLength = metrics.length,
 	totals,
 	trackEventId,
-} ) {
+} ) => {
 	const query = useUrlQuery();
 	if ( ! loaded ) {
 		return <SummaryListPlaceholder numberOfItems={ expectedLength } />;
@@ -78,7 +78,9 @@ export default function SummarySection( {
 			}
 		</SummaryList>
 	);
-}
+};
+
+export default SummarySection;
 
 /**
  * @typedef {import("./index.js").Metric} Metric

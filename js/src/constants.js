@@ -44,3 +44,9 @@ export const SHIPPING_RATE_METHOD = {
 export const CAMPAIGN_ADS_MIGRATION = {
 	MAXIMUM_MONTHS_TO_DISPLAY_NOTICE: 1,
 };
+
+// MC Issues Related
+export const ISSUE_TYPE_PRODUCT = 'product';
+export const ISSUE_TYPE_ACCOUNT = 'account';
+export const REQUEST_REVIEW = 'request-review';
+export const ISSUE_TABLE_PER_PAGE = 5;

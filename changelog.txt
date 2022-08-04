@@ -1,5 +1,91 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 2.0.2 - 2022-07-29 =
+* Fix - Disable identifier_exists field.
+* Tweak - Propagate errors for saveSettings.
+* Tweak - Refactor SCSS variables.
+* Tweak - Remove PHP 8.0 specific code of Symfony polyfills.
+* Tweak - Revert migration applicable version value.
+* Tweak - Update change log records type.
+* Tweak - WC 6.8 compatibility.
+* Update - Google Ads library to API V11.
+
+= 2.0.1 - 2022-07-12 =
+* Dev - A script to generate a list of hooks that defined or used in GLA.
+* Dev - GH workflow to set PR labels.
+* Add - Normalizer Polyfill.
+* Dev - changed the changelog types list.
+* Fix - Compatibility with History Navigation v5.
+* Fix - Encoding product names in Issues Table .
+* Tweak - Remove try and catch in saveTargetAudience action.
+
+= 2.0.0 - 2022-07-05 =
+* Add - Filter Ads accounts to exclude manager and test accounts.
+* Add - Return account names when retrieving the list of existing accounts.
+* Fix - Normalize image URLs before validation.
+* Tweak - WooCommerce 6.7 compatibility.
+
+= 1.13.6 - 2022-06-21 =
+* Fix - Cannot disconnect Jetpack when other activated plugins are using Jetpack connection.
+* Fix - Compatibility CES prompts with WC 6.6.0.
+* Fix - Multiple CES prompts on the Dashboard Page.
+
+= 1.13.5 - 2022-06-15 =
+* Fix - Avoid losing focus when selecting an option in Tree Select Control.
+* Fix - Bump node-forge from 1.2.1 to 1.3.1.
+* Tweak - Clear input search filter after selecting an option.
+* Tweak - Disable Review Request in Standalone Accounts.
+* Tweak - Update copy for Free and Enhanced Listings merge
+* Tweak - WC 6.6 compatibility.
+
+= 1.13.4 - 2022-06-07 =
+* Fix - Adding Github Actions for storybook.
+* Fix - Do not show error notice when Merchant Center review request API call failed.
+* Fix - Do not store URL matches transient until fully connected.
+* Fix - Fix GitHub Workflow paths.
+* Fix - Use commit instead of branch for storybook dependency.
+* Tweak - Always compare site URL hash without trailing slash.
+* Tweak - Compliance Policy links.
+* Tweak - WC 6.6 compatibility.
+
+= 1.13.3 - 2022-05-31 =
+* Add - Add six more promotion supported countries.
+* Fix - Allow unicode for Manufacturer Part Number (MPN) value.
+* Fix - Avoid to show Unsaved Values confirmation in Edit Free Listing when no values has been changed.
+* Fix - Prevent repeated account URL retrievals.
+* Fix - Update tracking docs.
+* Tweak - Replace storybook deps in favor of woocommerce-grow/storybook.
+* Tweak - Simplify and centralize the processing of internal states for the TreeSelectControl component.
+* Update - budget recommendation conversion rate.
+
+= 1.13.2 - 2022-05-25 =
+* Fix - Prevent repeated account URL retrievals.
+
+= 1.13.1 - 2022-05-24 =
+* Fix - Missing ShoppingPerformanceView error when viewing report data.
+* Fix - Update the start/end date in the timePeriod message of coupon following google.protobuf.Timestamp.
+* Tweak - Show MC Issues resolution steps in the UI.
+
+= 1.13.0 - 2022-05-18 =
+* Add - Extending Update All Products Test Suit.
+* Add - Request a Google Merchant Account Review for disapproved accounts.
+* Fix - Address a crash problem of TreeSelectControl component when the dropdown is not showing and press the Up or Down key.
+* Fix - Edit shipping rate modal disappears after auto-save shipping rate in Setup MC.
+* Fix - Prevent product sync if the site URL does not match the originally claimed URL.
+* Fix - Revert filtering only Shopping destination for account issues.
+* Fix - The unsaved prompt might pop up when the countries of the target audience are the same when navigating away from the free listings edit page.
+* Fix - Unit tests for WooCommerce 6.5.
+* Fix - Validation for shipping rates and shipping times in Setup MC and Edit Free Listings.
+* Tweak - Add helper class to obtain supported countries of a continent.
+* Tweak - Adjust the implementation of focus navigation for the TreeSelectControl component.
+* Tweak - Cleanup unused Google Ads services.
+* Tweak - Drop support for WooCommerce < 6.0.
+* Tweak - Enhance event name for documentation link and update tracking document.
+* Tweak - WooCommerce 6.5 compatibility.
+* Tweak - WordPress 6.0 compatibility.
+* Update - Improved UX in the Product Feed Issues table.
+* Update - Use a shared helper method to get supported countries of a continent for /mc/countries API.
+
 = 1.12.8 - 2022-05-05 =
 * Update - Add the FAQs card for UX improvements on get started page.
 * Update - Add the benefits card for UX improvements on get started page.

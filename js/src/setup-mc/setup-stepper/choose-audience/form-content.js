@@ -3,7 +3,7 @@
  */
 import { Button, RadioControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -26,13 +26,15 @@ import '.~/components/free-listings/choose-audience/index.scss';
  *
  * @see .~/components/free-listings/choose-audience/form-content
  * @param {Object} props
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
  */
 const FormContent = ( props ) => {
 	const { formProps } = props;
 	const { values, isValidForm, getInputProps, handleSubmit } = formProps;
 	const { locale, language } = values;
+	const [ isAutoSaved, setAutoSaved ] = useState( true );
 
-	useAutoSaveTargetAudienceEffect( values );
+	useAutoSaveTargetAudienceEffect( values, setAutoSaved );
 	useAutoClearShippingEffect( values.location, values.countries );
 
 	return (
@@ -137,7 +139,7 @@ const FormContent = ( props ) => {
 			<StepContentFooter>
 				<Button
 					isPrimary
-					disabled={ ! isValidForm }
+					disabled={ ! isValidForm || ! isAutoSaved }
 					onClick={ handleSubmit }
 				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }

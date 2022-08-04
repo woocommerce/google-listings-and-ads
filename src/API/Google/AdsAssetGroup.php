@@ -8,16 +8,16 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsListingGroup
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\Util\V9\ResourceNames;
-use Google\Ads\GoogleAds\V9\Enums\AssetGroupStatusEnum\AssetGroupStatus;
-use Google\Ads\GoogleAds\V9\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
-use Google\Ads\GoogleAds\V9\Enums\ListingGroupFilterVerticalEnum\ListingGroupFilterVertical;
-use Google\Ads\GoogleAds\V9\Resources\AssetGroup;
-use Google\Ads\GoogleAds\V9\Resources\AssetGroupListingGroupFilter;
-use Google\Ads\GoogleAds\V9\Services\AssetGroupListingGroupFilterOperation;
-use Google\Ads\GoogleAds\V9\Services\AssetGroupOperation;
-use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V9\Services\MutateOperation;
+use Google\Ads\GoogleAds\Util\V11\ResourceNames;
+use Google\Ads\GoogleAds\V11\Enums\AssetGroupStatusEnum\AssetGroupStatus;
+use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
+use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterVerticalEnum\ListingGroupFilterVertical;
+use Google\Ads\GoogleAds\V11\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V11\Resources\AssetGroupListingGroupFilter;
+use Google\Ads\GoogleAds\V11\Services\AssetGroupListingGroupFilterOperation;
+use Google\Ads\GoogleAds\V11\Services\AssetGroupOperation;
+use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V11\Services\MutateOperation;
 
 /**
  * Class AdsAssetGroup

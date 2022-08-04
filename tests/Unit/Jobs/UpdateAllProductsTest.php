@@ -66,7 +66,7 @@ class UpdateAllProductsTest extends UnitTest {
 			->willReturn( false );
 
 		$this->merchant_center
-			->method( 'is_connected' )
+			->method( 'is_ready_for_syncing' )
 			->willReturn( true );
 
 		/* adding a filter to make batch smaller for testing */

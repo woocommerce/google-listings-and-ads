@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
@@ -15,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -31,9 +33,13 @@ defined( 'ABSPATH' ) || exit;
  * ContainerAware used to access:
  * - AddressUtility
  * - ContactInformation
+ * - Merchant
  * - MerchantAccountState
  * - MerchantStatuses
  * - Settings
+ * - ShippingRateQuery
+ * - ShippingTimeQuery
+ * - TransientsInterface
  * - WC
  * - WP
  * - TargetAudience
@@ -86,6 +92,34 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 */
 	public function is_google_connected(): bool {
 		return boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) );
+	}
+
+	/**
+	 * Whether we are able to sync data to the Merchant Center account.
+	 * Account must be connected and the URL we claimed with must match the site URL.
+	 * URL matches is stored in a transient to prevent it from being refetched in cases
+	 * where the site is unable to access account data.
+	 *
+	 * @since 1.13.0
+	 * @return boolean
+	 */
+	public function is_ready_for_syncing(): bool {
+		if ( ! $this->is_connected() ) {
+			return false;
+		}
+
+		/** @var TransientsInterface $transients */
+		$transients  = $this->container->get( TransientsInterface::class );
+		$url_matches = $transients->get( TransientsInterface::URL_MATCHES );
+
+		if ( null === $url_matches ) {
+			$claimed_url_hash = $this->container->get( Merchant::class )->get_claimed_url_hash();
+			$site_url_hash    = md5( untrailingslashit( $this->get_site_url() ) );
+			$url_matches      = apply_filters( 'woocommerce_gla_ready_for_syncing', $claimed_url_hash === $site_url_hash ) ? 'yes' : 'no';
+			$transients->set( TransientsInterface::URL_MATCHES, $url_matches, HOUR_IN_SECONDS * 12 );
+		}
+
+		return 'yes' === $url_matches;
 	}
 
 	/**

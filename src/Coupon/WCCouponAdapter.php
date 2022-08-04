@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
 use Google\Service\ShoppingContent\PriceAmount as GooglePriceAmount;
 use Google\Service\ShoppingContent\Promotion as GooglePromotion;
+use Google\Service\ShoppingContent\TimePeriod as GoogleTimePeriod;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use WC_DateTime;
@@ -154,7 +155,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 			);
 		}
 
-		$this->setPromotionEffectiveDates(
+		$this->setPromotionEffectiveTimePeriod(
 			$this->get_wc_coupon_effective_dates( $wc_coupon )
 		);
 
@@ -162,13 +163,13 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	}
 
 	/**
-	 * Return the effective dates for the WooCommerce coupon.
+	 * Return the effective time period for the WooCommerce coupon.
 	 *
 	 * @param WC_Coupon $wc_coupon
 	 *
-	 * @return string|null
+	 * @return GoogleTimePeriod
 	 */
-	protected function get_wc_coupon_effective_dates( WC_Coupon $wc_coupon ): ?string {
+	protected function get_wc_coupon_effective_dates( WC_Coupon $wc_coupon ): GoogleTimePeriod {
 		$start_date = $this->get_wc_coupon_start_date( $wc_coupon );
 
 		$end_date = $wc_coupon->get_date_expires();
@@ -184,7 +185,12 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 			$end_date = clone $start_date;
 			$end_date->add( new DateInterval( 'PT1S' ) );
 		}
-		return sprintf( '%s/%s', (string) $start_date, (string) $end_date );
+		return new GoogleTimePeriod(
+			[
+				'startTime' => (string) $start_date,
+				'endTime'   => (string) $end_date,
+			]
+		);
 	}
 
 	/**
@@ -307,8 +313,13 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 			$end_date->add( new DateInterval( 'PT1S' ) );
 		}
 
-		$this->setPromotionEffectiveDates(
-			sprintf( '%s/%s', (string) $start_date, (string) $end_date )
+		$this->setPromotionEffectiveTimePeriod(
+			new GoogleTimePeriod(
+				[
+					'startTime' => (string) $start_date,
+					'endTime'   => (string) $end_date,
+				]
+			)
 		);
 	}
 
@@ -335,10 +346,6 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 		);
 		$metadata->addPropertyConstraint(
 			'offerType',
-			new Assert\NotBlank()
-		);
-		$metadata->addPropertyConstraint(
-			'promotionEffectiveDates',
 			new Assert\NotBlank()
 		);
 		$metadata->addPropertyConstraint(

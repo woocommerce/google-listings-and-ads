@@ -1,0 +1,41 @@
+name: Deploy Storybook
+
+on:
+  push:
+    branches:
+      - trunk
+      - develop
+    paths:
+      - "js/src/components/**"
+      - package.json
+      - package-lock.json
+      - "storybook/**"
+      - .github/workflows/storybook-workflow.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  Storybook:
+    name: Deploy Storybook
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Prepare node
+        uses: woocommerce/grow/prepare-node@actions-v1
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Build Storybook
+        run: npm run storybook:build
+
+      - name: Deploy to GH Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./storybook/dist

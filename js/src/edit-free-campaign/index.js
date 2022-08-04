@@ -61,7 +61,7 @@ function isNotOurStep( location ) {
  *
  * @fires gla_free_campaign_edited
  */
-export default function EditFreeCampaign() {
+const EditFreeCampaign = () => {
 	useLayout( 'full-content' );
 
 	const {
@@ -78,6 +78,9 @@ export default function EditFreeCampaign() {
 		savedTargetAudience
 	);
 	const [ settings, updateSettings ] = useState( savedSettings );
+	const [ forceUnblockedNavigation, setForceUnblockedNavigation ] = useState(
+		false
+	);
 
 	const {
 		hasFinishedResolution: hfrShippingRates,
@@ -134,7 +137,12 @@ export default function EditFreeCampaign() {
 		savedShippingRates
 	);
 
-	const didTimesChanged = ! isEqual( shippingTimes, savedShippingTimes );
+	// Check what've changed to show prompt. Dont take in consideration the order when comparing the Shipping times.
+	const didTimesChanged = ! isEqual(
+		new Set( shippingTimes ),
+		new Set( savedShippingTimes )
+	);
+
 	const didAnythingChanged =
 		didAudienceChanged ||
 		didSettingsChanged ||
@@ -147,7 +155,7 @@ export default function EditFreeCampaign() {
 			'You have unsaved campaign data. Are you sure you want to leave?',
 			'google-listings-and-ads'
 		),
-		didAnythingChanged,
+		didAnythingChanged && ! forceUnblockedNavigation,
 		isNotOurStep
 	);
 
@@ -188,8 +196,10 @@ export default function EditFreeCampaign() {
 	};
 
 	const handleChooseAudienceContinue = () => {
+		setForceUnblockedNavigation( true );
 		updateShippingAfterChooseAudienceStep();
 		getHistory().push( getNewPath( { pageStep: '2' } ) );
+		setForceUnblockedNavigation( false );
 	};
 
 	const handleSetupFreeListingsContinue = async () => {
@@ -296,4 +306,6 @@ export default function EditFreeCampaign() {
 			/>
 		</>
 	);
-}
+};
+
+export default EditFreeCampaign;

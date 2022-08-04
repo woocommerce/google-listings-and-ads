@@ -144,7 +144,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
         parent::setUp();
         $this->merchant_center = $this->createMock( MerchantCenterService::class );
         $this->merchant_center->expects( $this->any() )
-            ->method( 'is_connected' )
+            ->method( 'is_ready_for_syncing' )
             ->willReturn( true );
         $this->merchant_center->expects( $this->any() )
             ->method( 'is_promotion_supported_country' )

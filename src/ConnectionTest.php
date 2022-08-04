@@ -624,6 +624,29 @@ class ConnectionTest implements Service, Registerable {
 					<input name="action" value="wcs-cleanup-products" type="hidden" />
 				</form>
 			<?php } ?>
+
+			<?php if ( ! empty( $_GET['e2e'] ) ) { ?>
+				<h2 class="title">E2E testing</h2>
+
+				<table class="form-table" role="presentation">
+					<tr>
+						<th>Save test conversion ID:</th>
+						<td>
+							<p>
+								<a class="button" id="e2e-test-conversion-id" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'e2e-test-conversion-id' ], $url ), 'e2e-test-conversion-id' ) ); ?>">Save</a>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th>Clear conversion ID:</th>
+						<td>
+							<p>
+								<a class="button" id="e2e-clear-conversion-id" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'e2e-clear-conversion-id' ], $url ), 'e2e-clear-conversion-id' ) ); ?>">Clear</a>
+							</p>
+						</td>
+					</tr>
+				</table>
+			<?php } ?>
 		</div>
 		<?php
 	}
@@ -640,8 +663,6 @@ class ConnectionTest implements Service, Registerable {
 		$manager = $this->container->get( Manager::class );
 
 		if ( 'connect' === $_GET['action'] && check_admin_referer( 'connect' ) ) {
-			$manager->enable_plugin(); // Mark the plugin connection as enabled, in case it was disabled earlier.
-
 			// Register the site to wp.com.
 			if ( ! $manager->is_connected() ) {
 				$result = $manager->register();
@@ -669,9 +690,19 @@ class ConnectionTest implements Service, Registerable {
 		if ( 'disconnect' === $_GET['action'] && check_admin_referer( 'disconnect' ) ) {
 			$manager->remove_connection();
 
-			$redirect = admin_url( 'admin.php?page=connection-test-admin-page' );
-			wp_safe_redirect( $redirect );
-			exit;
+			$plugin = $manager->get_plugin();
+
+			if ( $plugin && ! $plugin->is_only() ) {
+				$connected_plugins = $manager->get_connected_plugins();
+				$this->response    = 'Cannot disconnect Jetpack connection as there are other plugins using it: ';
+				$this->response   .= implode( ', ', array_keys( $connected_plugins ) ) . "\n";
+				$this->response   .= 'Please disconnect the connection using My Jetpack.';
+				return;
+			} else {
+				$redirect = admin_url( 'admin.php?page=connection-test-admin-page' );
+				wp_safe_redirect( $redirect );
+				exit;
+			}
 		}
 
 		if ( 'wcs-test' === $_GET['action'] && check_admin_referer( 'wcs-test' ) ) {
@@ -907,12 +938,12 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-ads-customers-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-customers-lib' ) ) {
 			try {
-				$accounts = $this->container->get( Ads::class )->get_ads_account_ids();
+				$accounts = $this->container->get( Ads::class )->get_ads_accounts();
 
 				$this->response .= 'Total accounts: ' . count( $accounts ) . "\n";
-				foreach ( $accounts as $id ) {
-					$this->response     .= sprintf( "Ads ID: %d\n", $id );
-					$_GET['customer_id'] = $id;
+				foreach ( $accounts as $account ) {
+					$this->response     .= sprintf( "%d : %s\n", $account['id'], $account['name'] );
+					$_GET['customer_id'] = $account['id'];
 				}
 			} catch ( \Exception $e ) {
 				$this->response .= 'Error: ' . $e->getMessage();
@@ -1096,6 +1127,26 @@ class ConnectionTest implements Service, Registerable {
 				$delete_job->schedule();
 				$this->response = 'Successfully scheduled a job to cleanup all products!';
 			}
+		}
+
+		if ( 'e2e-test-conversion-id' === $_GET['action'] && check_admin_referer( 'e2e-test-conversion-id' ) ) {
+			/** @var OptionsInterface $options */
+			$options = $this->container->get( OptionsInterface::class );
+			$options->update(
+				OptionsInterface::ADS_CONVERSION_ACTION,
+				[
+					'conversion_id'    => 'AW-123456',
+					'conversion_label' => 'aB_cdEFgh',
+				]
+			);
+			$this->response .= 'Saved test conversion ID.';
+		}
+
+		if ( 'e2e-clear-conversion-id' === $_GET['action'] && check_admin_referer( 'e2e-clear-conversion-id' ) ) {
+			/** @var OptionsInterface $options */
+			$options = $this->container->get( OptionsInterface::class );
+			$options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
+			$this->response .= 'Cleared conversion ID.';
 		}
 	}
 

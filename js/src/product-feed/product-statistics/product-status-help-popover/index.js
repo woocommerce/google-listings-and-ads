@@ -10,6 +10,9 @@ import { __ } from '@wordpress/i18n';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import HelpPopover from '.~/components/help-popover';
 
+/**
+ * @fires gla_documentation_link_click with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
+ */
 const ProductStatusHelpPopover = () => {
 	const map = {
 		strong: <strong></strong>,
@@ -38,7 +41,7 @@ const ProductStatusHelpPopover = () => {
 			<p>
 				{ createInterpolateElement(
 					__(
-						'After submission, Google assigns each product a status: <strong>Active, Partially Active, Expiring, Pending, or Disapproved.</strong>',
+						'After submission, Google assigns each product a status: <strong>Active, Expiring, Pending, or Disapproved.</strong>',
 						'google-listings-and-ads'
 					),
 					map
@@ -47,16 +50,7 @@ const ProductStatusHelpPopover = () => {
 			<p>
 				{ createInterpolateElement(
 					__(
-						'<strong>‘Active’ products</strong> are fully approved and eligible to appear in standard and enhanced listings on Google.',
-						'google-listings-and-ads'
-					),
-					map
-				) }
-			</p>
-			<p>
-				{ createInterpolateElement(
-					__(
-						'<strong>‘Partially active’ products</strong> are fully approved and eligible to appear in standard listings only.',
+						'<strong>‘Active’ products</strong> are fully approved and eligible to appear in free listings on Google.',
 						'google-listings-and-ads'
 					),
 					map

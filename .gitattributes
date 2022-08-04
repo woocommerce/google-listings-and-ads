@@ -19,7 +19,6 @@ phpunit.xml.dist export-ignore
 webpack.config.js export-ignore
 webpack-development.config.js export-ignore
 jest.config.js export-ignore
-woo-tracking-jsdoc export-ignore
 wordpress_org_assets export-ignore
 .editorconfig export-ignore
 .externalized.json export-ignore
@@ -31,3 +30,4 @@ wordpress_org_assets export-ignore
 .stylelintrc.json export-ignore
 .nvmrc export-ignore
 storybook export-ignore
+.jsdocrc.json export-ignore

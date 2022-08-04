@@ -27,7 +27,9 @@ import {
  */
 import useMCProductStatistics from '.~/hooks/useMCProductStatistics';
 import ProductStatusHelpPopover from './product-status-help-popover';
-import StatusBox from './status-box';
+import SyncStatus from '.~/product-feed/product-statistics/status-box/sync-status';
+import FeedStatus from '.~/product-feed/product-statistics/status-box/feed-status';
+import AccountStatus from '.~/product-feed/product-statistics/status-box/account-status';
 import './index.scss';
 
 const ProductStatistics = () => {
@@ -56,7 +58,7 @@ const ProductStatistics = () => {
 							<SummaryNumber
 								key="active"
 								label={ __(
-									'Active / Partially Active',
+									'Active',
 									'google-listings-and-ads'
 								) }
 								value={ data.statistics.active }
@@ -98,7 +100,9 @@ const ProductStatistics = () => {
 				) }
 			</CardBody>
 			<CardFooter gap={ 0 }>
-				<StatusBox />
+				<FeedStatus />
+				<SyncStatus />
+				<AccountStatus />
 			</CardFooter>
 		</Card>
 	);

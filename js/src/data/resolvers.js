@@ -8,7 +8,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
+import {
+	REPORT_SOURCE_PAID,
+	REPORT_SOURCE_FREE,
+	ISSUE_TYPE_ACCOUNT,
+} from '.~/constants';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
@@ -34,6 +38,7 @@ import {
 	receiveMCProductStatistics,
 	receiveMCIssues,
 	receiveMCProductFeed,
+	receiveMCReviewRequest,
 } from './actions';
 
 export function* getShippingRates() {
@@ -201,10 +206,35 @@ export function* getMCProductStatistics() {
 	}
 }
 
-export function* getMCIssues( query ) {
+export function* getMCReviewRequest() {
 	try {
 		const response = yield apiFetch( {
-			path: addQueryArgs( `${ API_NAMESPACE }/mc/issues`, query ),
+			path: `${ API_NAMESPACE }/mc/review`,
+		} );
+
+		yield receiveMCReviewRequest( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading your merchant center product review request status.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getMCIssues( query ) {
+	try {
+		const { issue_type: issueType, ...args } = query;
+
+		const response = yield apiFetch( {
+			path: addQueryArgs(
+				`${ API_NAMESPACE }/mc/issues/${
+					issueType || ISSUE_TYPE_ACCOUNT
+				}`,
+				args
+			),
 		} );
 
 		yield receiveMCIssues( query, response );
