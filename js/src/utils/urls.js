@@ -32,6 +32,7 @@ const getStartedPath = pagePaths.getStarted;
 const setupMCPath = pagePaths.setupMC;
 const dashboardPath = pagePaths.dashboard;
 const settingsPath = pagePaths.settings;
+const reportsPath = pagePaths.reports;
 
 export const getEditFreeListingsUrl = () => {
 	return getNewPath( { subpath: subpaths.editFreeListings }, dashboardPath );
@@ -62,6 +63,10 @@ export const getDashboardUrl = () => {
 
 export const getSettingsUrl = () => {
 	return getNewPath( null, settingsPath, null );
+};
+
+export const geReportsUrl = () => {
+	return getNewPath( null, reportsPath, null );
 };
 
 export const getEditPhoneNumberUrl = () => {
