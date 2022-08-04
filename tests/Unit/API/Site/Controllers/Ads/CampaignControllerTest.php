@@ -89,7 +89,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			],
 			[
 				'id'                 => 5678901234,
-				'name'               => 'Test Campaign',
+				'name'               => 'PMax: Test Campaign',
 				'status'             => 'enabled',
 				'type'               => 'performance_max',
 				'amount'             => 20,
@@ -101,7 +101,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$expected = [
 			[
 				'id'                 => self::TEST_CAMPAIGN_ID,
-				'name'               => 'Test Campaign (Old)',
+				'name'               => 'Test Campaign',
 				'status'             => 'removed',
 				'type'               => 'shopping',
 				'amount'             => 10,
@@ -110,7 +110,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			],
 			[
 				'id'                 => 5678901234,
-				'name'               => 'Test Campaign',
+				'name'               => 'PMax: Test Campaign',
 				'status'             => 'enabled',
 				'type'               => 'performance_max',
 				'amount'             => 20,
