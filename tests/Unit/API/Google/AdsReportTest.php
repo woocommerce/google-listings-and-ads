@@ -11,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -640,7 +639,7 @@ class AdsReportTest extends UnitTest {
 			[
 				'campaign' => [
 					'status' => 'ENABLED',
-					'name'   => 'Test Campaign',
+					'name'   => 'PMax: Test Campaign',
 					'id'     => 2345678901,
 					'type'   => 'PERFORMANCE_MAX',
 				],
@@ -657,7 +656,7 @@ class AdsReportTest extends UnitTest {
 			$report_type => [
 				[
 					'id'          => 1234567890,
-					'name'        => 'Test Campaign (Old)',
+					'name'        => 'Test Campaign',
 					'status'      => 'removed',
 					'isConverted' => true,
 					'subtotals' => [
@@ -666,7 +665,7 @@ class AdsReportTest extends UnitTest {
 				],
 				[
 					'id'           => 2345678901,
-					'name'         => 'Test Campaign',
+					'name'         => 'PMax: Test Campaign',
 					'status'       => 'enabled',
 					'isConverted'  => false,
 					'subtotals' => [

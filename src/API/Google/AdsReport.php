@@ -148,17 +148,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 			$campaign_id   = $campaign->getId();
 			$campaign_name = $campaign->getName();
 			$campaign_type = CampaignType::label( $campaign->getAdvertisingChannelType() );
-
-			$is_converted = $this->has_converted && CampaignType::PERFORMANCE_MAX !== $campaign_type;
-
-			// Rename (old converted campaigns).
-			if ( $is_converted ) {
-				$campaign_name = sprintf(
-					// translators: %s: Original campaign name.
-					__( '%s (Old)', 'google-listings-and-ads' ),
-					$campaign_name
-				);
-			}
+			$is_converted  = $this->has_converted && CampaignType::PERFORMANCE_MAX !== $campaign_type;
 
 			$this->increase_report_data(
 				'campaigns',
