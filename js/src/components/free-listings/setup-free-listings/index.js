@@ -60,9 +60,6 @@ const getSettings = ( values ) => {
 /**
  * Setup step to configure free listings.
  *
- * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/index.js},
- * without any save strategy, this is to be bound externaly.
- *
  * @param {Object} props
  * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
  * @param {(targetAudience: TargetAudienceData) => Array<string>} props.resolveFinalCountries Callback for this component to resolve the given `targetAudience` to the final list of countries.

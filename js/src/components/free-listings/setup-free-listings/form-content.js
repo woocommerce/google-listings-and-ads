@@ -22,8 +22,6 @@ import ConditionalSection from '.~/components/conditional-section';
 
 /**
  * Form to configure free listigns.
- * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/form-content.js},
- * without auto-save functionality.
  *
  * @param {Object} props React props.
  * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to ShippingRateSection and ShippingTimeSection.
