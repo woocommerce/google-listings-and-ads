@@ -10,12 +10,6 @@ const webpackResolver = {
 			 * Ref: https://webpack.js.org/configuration/resolve/#resolveextensions
 			 */
 			extensions: [ '.js' ],
-			/**
-			 * Make eslint be able to resolve the exports config of `use-debounce`.
-			 * The `exports` config of package.json doesn't work before the current eslint support it.
-			 * Ref: https://github.com/xnimorz/use-debounce/blob/5.2.0/package.json#L8-L14
-			 */
-			conditionNames: [ 'import', 'require' ],
 		},
 	},
 };
