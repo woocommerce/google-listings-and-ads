@@ -20,6 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  */
 class PolicyComplianceCheck implements Service {
+	use PluginHelper;
 	/**
 	 * The WC proxy object.
 	 *
@@ -38,23 +39,16 @@ class PolicyComplianceCheck implements Service {
 	protected $google_helper;
 
 	/**
-	 * @var PluginHelper
-	 */
-	protected $plugin_helper;
-
-	/**
 	 * BaseController constructor.
 	 *
 	 * @param WC           $wc
 	 * @param GoogleHelper $google_helper
 	 * @param WP           $wp
-	 * @param PluginHelper $plugin_helper
 	 */
-	public function __construct( WC $wc, GoogleHelper $google_helper, WP $wp, PluginHelper $plugin_helper ) {
+	public function __construct( WC $wc, GoogleHelper $google_helper, WP $wp ) {
 		$this->wc            = $wc;
 		$this->wp            = $wp;
 		$this->google_helper = $google_helper;
-		$this->plugin_helper = $plugin_helper;
 	}
 
 	/**
