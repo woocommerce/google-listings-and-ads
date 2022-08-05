@@ -18,6 +18,7 @@ import FormContent from './form-content';
  * @typedef {import('.~/data/actions').TargetAudienceData } TargetAudienceData
  * @typedef {import('.~/data/actions').ShippingRate} ShippingRateFromServerSide
  * @typedef {import('.~/data/actions').ShippingTime} ShippingTime
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
 
 const targetAudienceFields = [ 'locale', 'language', 'location', 'countries' ];
@@ -62,7 +63,7 @@ const getSettings = ( values ) => {
  *
  * @param {Object} props
  * @param {TargetAudienceData} props.targetAudience Target audience value data to be initialed the form, if not given AppSpinner will be rendered.
- * @param {(targetAudience: TargetAudienceData) => Array<string>} props.resolveFinalCountries Callback for this component to resolve the given `targetAudience` to the final list of countries.
+ * @param {(targetAudience: TargetAudienceData) => Array<CountryCode>} props.resolveFinalCountries Callback for this component to resolve the given `targetAudience` to the final list of countries.
  * @param {(targetAudience: TargetAudienceData) => void} [props.onTargetAudienceChange] Callback called with new data once target audience data is changed. Forwarded from and {@link Form.Props.onChange}.
  * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
  * @param {(newValue: Object) => void} [props.onSettingsChange] Callback called with new data once form data is changed. Forwarded from and {@link Form.Props.onChange}.
