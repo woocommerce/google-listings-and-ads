@@ -3,6 +3,10 @@
 	flex-direction: column;
 	gap: calc(var(--main-gap) / 2);
 
+	&.gla-vertical-gap-layout__medium {
+		gap: calc(var(--main-gap) / 3 * 2);
+	}
+
 	&.gla-vertical-gap-layout__large {
 		gap: var(--main-gap);
 	}

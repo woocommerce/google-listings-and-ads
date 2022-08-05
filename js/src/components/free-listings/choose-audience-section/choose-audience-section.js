@@ -88,7 +88,7 @@ const ChooseAudienceSection = ( { formProps } ) => {
 									'google-listings-and-ads'
 								) }
 							</Subsection.HelperText>
-							<VerticalGapLayout size="large">
+							<VerticalGapLayout size="medium">
 								<AppRadioContentControl
 									{ ...getInputProps( 'location' ) }
 									collapsible={ true }
