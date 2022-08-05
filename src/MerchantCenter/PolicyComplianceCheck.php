@@ -46,11 +46,11 @@ class PolicyComplianceCheck implements Service {
 	 * BaseController constructor.
 	 *
 	 * @param WC           $wc
-	 * @param WP           $wp
 	 * @param GoogleHelper $google_helper
+	 * @param WP           $wp
 	 * @param PluginHelper $plugin_helper
 	 */
-	public function __construct( WC $wc, WP $wp, GoogleHelper $google_helper, PluginHelper $plugin_helper ) {
+	public function __construct( WC $wc, GoogleHelper $google_helper, WP $wp, PluginHelper $plugin_helper ) {
 		$this->wc            = $wc;
 		$this->wp            = $wp;
 		$this->google_helper = $google_helper;
