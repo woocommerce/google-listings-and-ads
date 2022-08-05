@@ -18,7 +18,7 @@ import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import WPComAccountCard from '.~/components/wpcom-account-card';
 import GoogleAccountCard from '.~/components/google-account-card';
-import GoogleMCAccount from './google-mc-account';
+import GoogleMCAccountCard from '.~/components/google-mc-account-card';
 import Faqs from './faqs';
 
 const SetupAccounts = ( props ) => {
@@ -57,7 +57,7 @@ const SetupAccounts = ( props ) => {
 					'google-listings-and-ads'
 				) }
 				description={ __(
-					'Connect your WordPress.com account, Google account, and Google Merchant Center account to use Google Listings & Ads.',
+					'Connect the accounts required to use Google Listings & Ads.',
 					'google-listings-and-ads'
 				) }
 			/>
@@ -71,9 +71,9 @@ const SetupAccounts = ( props ) => {
 				<VerticalGapLayout size="large">
 					<WPComAccountCard jetpack={ jetpack } />
 					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
+					<GoogleMCAccountCard />
 				</VerticalGapLayout>
 			</Section>
-			<GoogleMCAccount />
 			<Faqs />
 			<StepContentFooter>
 				<Button
