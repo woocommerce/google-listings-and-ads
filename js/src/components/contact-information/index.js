@@ -21,12 +21,24 @@ const learnMoreLinkId = 'contact-information-read-more';
 const learnMoreUrl =
 	'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information';
 
-const description = __(
-	'Your contact information is required by Google for verification purposes. It will be shared with the Google Merchant Center and will not be displayed to customers.',
-	'google-listings-and-ads'
+const description = (
+	<>
+		<p>
+			{ __(
+				'Your contact information is required for verification by Google.',
+				'google-listings-and-ads'
+			) }
+		</p>
+		<p>
+			{ __(
+				'It would be shared with Google Merchant Center for store verification and would not be displayed to customers.',
+				'google-listings-and-ads'
+			) }
+		</p>
+	</>
 );
 
-const mcTitle = __( 'Enter contact information', 'google-listings-and-ads' );
+const mcTitle = __( 'Verify contact information', 'google-listings-and-ads' );
 const settingsTitle = __( 'Contact information', 'google-listings-and-ads' );
 
 /**
@@ -98,7 +110,7 @@ const ContactInformation = ( { onPhoneNumberVerified } ) => {
 			title={ title }
 			description={
 				<div>
-					<p>{ description }</p>
+					{ description }
 					<p>
 						<AppDocumentationLink
 							context={ trackContext }
