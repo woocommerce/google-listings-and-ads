@@ -79,14 +79,13 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function get_is_store_ssl(): bool {
-		$ssl_check = fsockopen( 'ssl://' . $this->get_site_url(), 443, $errno, $errstr, 30 );
+		global $wp_filesystem;
+		WP_Filesystem();
+		$ssl_check = $wp_filesystem->get_contents( 'ssl://' . $this->get_site_url(), 443, $errno, $errstr, 30 );
 		if ( empty( $ssl_check ) ) {
 			return false;
 		}
-		$res = ! ! $ssl_check;
-		if ( $ssl_check ) {
-			fclose( $ssl_check ); }
-			return $res;
+		return ! ! $ssl_check;
 	}
 
 
