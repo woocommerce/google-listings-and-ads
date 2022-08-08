@@ -60,6 +60,16 @@ export const getDashboardUrl = () => {
 	return getNewPath( null, dashboardPath, null );
 };
 
+/**
+ * Return product feed URL with query parameters.
+ *
+ * @param {Object} [query=null] object of params to be updated.
+ * @return {string} Product feed URL with specified query parameters.
+ */
+export const getProductFeedUrl = ( query = null ) => {
+	return getNewPath( query, pagePaths.productFeed, null );
+};
+
 export const getSettingsUrl = () => {
 	return getNewPath( null, settingsPath, null );
 };
