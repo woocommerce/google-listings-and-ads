@@ -64,6 +64,18 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 		}
 	}, [ targetAudience, suggestedAudience, saveTargetAudience ] );
 
+	// Auto-save the default values for shipping options to fall back with the original implementation.
+	// Ref: https://github.com/woocommerce/google-listings-and-ads/blob/2.0.2/js/src/setup-mc/setup-stepper/setup-free-listings/form-content.js#L33
+	useEffect( () => {
+		if ( settings?.shipping_rate === null ) {
+			saveSettings( {
+				...settings,
+				shipping_rate: 'automatic',
+				shipping_time: 'flat',
+			} );
+		}
+	}, [ settings, saveSettings ] );
+
 	const handleSetupAccountsContinue = () => {
 		recordEvent( 'gla_setup_mc', {
 			target: 'step1_continue',
@@ -95,6 +107,7 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 	const initShippingRates = hasResolvedShippingRates ? shippingRates : null;
 	const initShippingTimes = hasResolvedShippingTimes ? shippingTimes : null;
 	const initTargetAudience = targetAudience?.location ? targetAudience : null;
+	const initSettings = settings?.shipping_rate ? settings : null;
 
 	return (
 		<Stepper
@@ -123,7 +136,7 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 					content: (
 						<SetupFreeListings
 							targetAudience={ initTargetAudience }
-							settings={ settings }
+							settings={ initSettings }
 							shippingRates={ initShippingRates }
 							shippingTimes={ initShippingTimes }
 							resolveFinalCountries={ getFinalCountries }

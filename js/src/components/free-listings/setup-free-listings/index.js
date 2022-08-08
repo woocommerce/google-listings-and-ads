@@ -145,8 +145,8 @@ const SetupFreeListings = ( {
 					location: targetAudience.location,
 					countries: targetAudience.countries || [],
 					// These are the fields for settings.
-					shipping_rate: settings.shipping_rate || 'automatic',
-					shipping_time: settings.shipping_time || 'flat',
+					shipping_rate: settings.shipping_rate,
+					shipping_time: settings.shipping_time,
 					tax_rate: settings.tax_rate,
 					website_live: settings.website_live,
 					checkout_process_secure: settings.checkout_process_secure,
