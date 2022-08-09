@@ -346,7 +346,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * - converted      - All campaigns are converted to PMax campaigns
 	 * - not-applicable - User never had any older campaign types
 	 *
-	 * @since x.x.x
+	 * @since 2.0.3
 	 *
 	 * @return string
 	 */

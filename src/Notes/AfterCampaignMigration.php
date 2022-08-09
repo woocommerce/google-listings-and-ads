@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  *
- * @since x.x.x
+ * @since 2.0.3
  */
 class AfterCampaignMigration extends AbstractNote implements OptionsAwareInterface, AdsAwareInterface {
 

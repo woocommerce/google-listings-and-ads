@@ -443,7 +443,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Add product data to include in JS data.
 	 *
-	 * @since x.x.x
+	 * @since 2.0.3
 	 *
 	 * @param WC_Product $product
 	 */
