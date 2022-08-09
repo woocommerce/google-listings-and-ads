@@ -109,6 +109,17 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.0.3 - 2022-xx-xx =
+* Add - Campaign Conversion Status for detecting converted campaigns.
+* Add - Gtag event tracking.
+* Add - Inbox notification for PMax migration.
+* Add - Includes removed campaign in the program report section.
+* Add - Pmax migration banner dashboard.
+* Add - Pmax migration banner reports.
+* Add - Tooltip in reports section for SSC Campaigns.
+* Add - Track add to cart events from all buttons including Gutenberg blocks.
+* Fix - Add Woo gTag remarketing and conversion signals.
+
 = 2.0.2 - 2022-07-29 =
 * Fix - Disable identifier_exists field.
 * Tweak - Propagate errors for saveSettings.
