@@ -140,23 +140,28 @@ class ReportsController extends BaseReportsController {
 				'items' => [
 					'type'       => 'object',
 					'properties' => [
-						'id'        => [
+						'id'          => [
 							'type'        => 'integer',
 							'description' => __( 'ID number.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
-						'name'      => [
+						'name'        => [
 							'type'        => 'string',
 							'description' => __( 'Campaign name.', 'google-listings-and-ads' ),
 							'context'     => [ 'view', 'edit' ],
 						],
-						'status'    => [
+						'status'      => [
 							'type'        => 'string',
 							'enum'        => CampaignStatus::labels(),
 							'description' => __( 'Campaign status.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
-						'subtotals' => $this->get_totals_schema(),
+						'isConverted' => [
+							'type'        => 'boolean',
+							'description' => __( 'Whether the campaign has been converted', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'subtotals'   => $this->get_totals_schema(),
 					],
 				],
 			],

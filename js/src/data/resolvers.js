@@ -16,6 +16,7 @@ import {
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
+import { adaptAdsCampaign } from './adapters';
 
 import {
 	handleFetchError,
@@ -31,7 +32,6 @@ import {
 	fetchExistingGoogleAdsAccounts,
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
-	fetchAdsCampaigns,
 	fetchMCSetup,
 	receiveGoogleAccountAccess,
 	receiveReport,
@@ -153,9 +153,36 @@ export function* getTargetAudience() {
 	yield fetchTargetAudience();
 }
 
-export function* getAdsCampaigns() {
-	yield fetchAdsCampaigns();
+export function* getAdsCampaigns( query ) {
+	try {
+		const campaigns = yield apiFetch( {
+			path: addQueryArgs( `${ API_NAMESPACE }/ads/campaigns`, query ),
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ADS_CAMPAIGNS,
+			query,
+			adsCampaigns: campaigns.map( adaptAdsCampaign ),
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading ads campaigns.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
+
+getAdsCampaigns.shouldInvalidate = ( action, query ) => {
+	return (
+		( action.type === TYPES.UPDATE_ADS_CAMPAIGN ||
+			action.type === TYPES.DELETE_ADS_CAMPAIGN ||
+			action.type === TYPES.CREATE_ADS_CAMPAIGN ) &&
+		query?.exclude_removed === false
+	);
+};
 
 export function* getMCSetup() {
 	yield fetchMCSetup();

@@ -15,6 +15,7 @@ use Google\Ads\GoogleAds\V11\Common\Segments;
 use Google\Ads\GoogleAds\V11\Common\TagSnippet;
 use Google\Ads\GoogleAds\V11\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V11\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
+use Google\Ads\GoogleAds\V11\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
 use Google\Ads\GoogleAds\V11\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
 use Google\Ads\GoogleAds\V11\Enums\TrackingCodeTypeEnum\TrackingCodeType;
 use Google\Ads\GoogleAds\V11\Resources\BillingSetup;
@@ -175,7 +176,7 @@ trait GoogleAdsClientTrait {
 			$campaign_criterion_row_mock
 		);
 
-		$this->service_client->expects( $this->exactly( 2 ) )
+		$this->service_client
 			->method( 'search' )->willReturn( $list_response );
 	}
 
@@ -523,6 +524,7 @@ trait GoogleAdsClientTrait {
 			$campaign->method( 'getId' )->willReturn( $row['campaign']['id'] );
 			$campaign->method( 'getName' )->willReturn( $row['campaign']['name'] );
 			$campaign->method( 'getStatus' )->willReturn( AdsCampaignStatus::value( $row['campaign']['status'] ) );
+			$campaign->method( 'getAdvertisingChannelType' )->willReturn( AdsCampaignType::value( $row['campaign']['type'] ) );
 			$ads_row->setCampaign( $campaign );
 
 			// Mock data for ShoppingPerformanceView

@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V11\ResourceNames;
@@ -95,15 +96,21 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Returns a list of campaigns with targeted locations retrieved from campaign criterion.
 	 *
+	 * @param bool $exclude_removed Exclude removed campaigns (default true).
+	 * @param bool $fetch_criterion Combine the campaign data with criterion data (default true).
+	 *
 	 * @return array
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_campaigns(): array {
+	public function get_campaigns( bool $exclude_removed = true, bool $fetch_criterion = true ): array {
 		try {
-			$campaign_results = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() )
-				->where( 'campaign.status', 'REMOVED', '!=' )
-				->get_results();
+			$query = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() );
 
+			if ( $exclude_removed ) {
+				$query->where( 'campaign.status', 'REMOVED', '!=' );
+			}
+
+			$campaign_results    = $query->get_results();
 			$converted_campaigns = [];
 
 			foreach ( $campaign_results->iterateAllElements() as $row ) {
@@ -111,8 +118,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$converted_campaigns[ $campaign['id'] ] = $campaign;
 			}
 
-			$combined_results = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
-			return array_values( $combined_results );
+			if ( $fetch_criterion ) {
+				$converted_campaigns = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
+			}
+
+			return array_values( $converted_campaigns );
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
@@ -326,6 +336,66 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				]
 			);
 		}
+	}
+
+	/**
+	 * Retrieves the status of converting campaigns.
+	 * The status is cached for an hour during unconverted.
+	 *
+	 * - unconverted    - Still need to convert some older campaigns
+	 * - converted      - All campaigns are converted to PMax campaigns
+	 * - not-applicable - User never had any older campaign types
+	 *
+	 * @since 2.0.3
+	 *
+	 * @return string
+	 */
+	public function get_campaign_convert_status(): string {
+		$convert_status = $this->options->get( OptionsInterface::CAMPAIGN_CONVERT_STATUS );
+
+		if ( ! is_array( $convert_status ) || empty( $convert_status['status'] ) ) {
+			$convert_status = [ 'status' => 'unknown' ];
+		}
+
+		// Refetch if status is unconverted and older than an hour.
+		if (
+			in_array( $convert_status['status'], [ 'unconverted', 'unknown' ], true ) &&
+			( empty( $convert_status['updated'] ) || time() - $convert_status['updated'] > HOUR_IN_SECONDS )
+		) {
+			$old_campaigns            = 0;
+			$old_removed_campaigns    = 0;
+			$convert_status['status'] = 'unconverted';
+
+			try {
+				foreach ( $this->get_campaigns( false, false ) as $campaign ) {
+					if ( CampaignType::PERFORMANCE_MAX !== $campaign['type'] ) {
+						if ( CampaignStatus::REMOVED === $campaign['status'] ) {
+							$old_removed_campaigns++;
+						} else {
+							$old_campaigns++;
+						}
+					}
+				}
+
+				// No old campaign types means we don't need to convert.
+				if ( ! $old_removed_campaigns && ! $old_campaigns ) {
+					$convert_status['status'] = 'not-applicable';
+				}
+
+				// All old campaign types have been removed, means we converted.
+				if ( ! $old_campaigns && $old_removed_campaigns > 0 ) {
+					$convert_status['status'] = 'converted';
+				}
+			} catch ( Exception $e ) {
+				// Error when retrieving campaigns, do not handle conversion.
+				$convert_status['status'] = 'unknown';
+			}
+
+			$convert_status['updated'] = time();
+			$this->options->update( OptionsInterface::CAMPAIGN_CONVERT_STATUS, $convert_status );
+		}
+
+		return $convert_status['status'];
 	}
 
 	/**
