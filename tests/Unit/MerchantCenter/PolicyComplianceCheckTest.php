@@ -60,10 +60,12 @@ class PolicyComplianceCheckTest extends UnitTest {
 	}
 
 	public function test_payment_gateways() {
-					   $payment_gateways = [
+		$this->wc->expects( $this->any() )
+					   ->method( 'get_available_payment_gateways' )
+					   ->willReturn(  [
 						'stripe'	=> $this->createMock( WC_Payment_Gateway::class ),
 						'paypal'	=> $this->createMock( WC_Payment_Gateway::class ),
-					];
+					] );
 
 		$this->assertTrue($this->policy_compliance_check->has_payment_gateways());
 	}
