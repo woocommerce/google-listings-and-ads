@@ -415,20 +415,13 @@ describe( 'reducer', () => {
 	describe( 'Policy Check', () => {
 		it( 'should return with policy check info', () => {
 			const data = {
-				allowed_countries: {
-					CA: { currency: 'CAD', name: 'Canada' },
-					US: { currency: 'USD', name: 'United States' },
-				},
+				allowed_countries: true,
 				robots_restriction: false,
 				page_not_found_error: false,
 				page_restricts: false,
 				store_ssl: true,
-				payment_gateways: {
-					id: 'wc_custom_pg',
-					title: 'Custom Payment Gateway',
-					method_description: 'Description of the payment gateway',
-				},
-				refund_returns: 'Refund and Returns Policy',
+				payment_gateways: true,
+				refund_returns: true,
 			};
 			const action = {
 				type: TYPES.POLICY_CHECK,

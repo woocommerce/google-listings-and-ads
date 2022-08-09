@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 
 
 defined( 'ABSPATH' ) || exit;
@@ -18,6 +20,9 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  */
 class PolicyComplianceCheck implements Service {
+
+	use PluginHelper;
+
 	/**
 	 * The WC proxy object.
 	 *
@@ -31,14 +36,21 @@ class PolicyComplianceCheck implements Service {
 	protected $google_helper;
 
 	/**
+	 * @var TargetAudience
+	 */
+	protected $target_audience;
+
+	/**
 	 * BaseController constructor.
 	 *
-	 * @param WC           $wc
-	 * @param GoogleHelper $google_helper
+	 * @param WC             $wc
+	 * @param GoogleHelper   $google_helper
+	 * @param TargetAudience $target_audience
 	 */
-	public function __construct( WC $wc, GoogleHelper $google_helper ) {
-		$this->wc            = $wc;
-		$this->google_helper = $google_helper;
+	public function __construct( WC $wc, GoogleHelper $google_helper, TargetAudience $target_audience ) {
+		$this->wc              = $wc;
+		$this->google_helper   = $google_helper;
+		$this->target_audience = $target_audience;
 	}
 
 	/**
@@ -47,11 +59,11 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function is_accessible(): bool {
-		$all_countries = $this->wc->get_countries();
-		$mc_countries  = $this->google_helper->get_mc_supported_countries();
+		$all_allowed_countries = $this->wc->get_allowed_countries();
+		$target_countries      = $this->target_audience->get_target_countries();
 
-		foreach ( $mc_countries as $country ) {
-			if ( ! array_key_exists( $country, $all_countries ) ) {
+		foreach ( $target_countries as $country ) {
+			if ( ! array_key_exists( $country, $all_allowed_countries ) ) {
 				return false;
 			}
 		}
@@ -64,18 +76,9 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function has_page_not_found_error(): bool {
-		$ids = wc_get_products(
-			[
-				'return' => 'ids',
-				'limit'  => 1,
-			]
-		);
-		if ( ! empty( $ids ) ) {
-			$url     = get_permalink( $ids[0] );
-			$headers = get_headers( $url );
-			if ( ! empty( $headesr ) && $headers[0] !== 'HTTP/1.1 200 OK' ) {
-				return true;
-			}
+		$headers = $this->get_landing_page_headers();
+		if ( ! empty( $headers ) && $headers[0] !== 'HTTP/1.1 200 OK' ) {
+			return true;
 		}
 		return false;
 	}
@@ -86,6 +89,22 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function has_redirects(): bool {
+				$headers = $this->get_landing_page_headers();
+		if ( ! empty( $headesr ) && isset( $headers[0] ) ) {
+			if ( $headers[0] === 'HTTP/1.1 302 Found' ) {
+				// this is the URL where it's redirecting
+				return true;
+			}
+		}
+			return false;
+	}
+
+	/**
+	 * Get the headers of the store sample product landing pages.
+	 *
+	 * @return array
+	 */
+	public function get_landing_page_headers(): array {
 		$ids = wc_get_products(
 			[
 				'return' => 'ids',
@@ -93,15 +112,11 @@ class PolicyComplianceCheck implements Service {
 			]
 		);
 		if ( ! empty( $ids ) ) {
-			$headers = get_headers( get_permalink( $ids[0] ) );
-			if ( ! empty( $headesr ) && isset( $headers[0] ) ) {
-				if ( $headers[0] === 'HTTP/1.1 302 Found' ) {
-					// this is the URL where it's redirecting
-					return true;
-				}
+			$response = wp_remote_get( $ids[0]->get_permalink() );
+			if ( is_array( $response ) && ! is_wp_error( $response ) ) {
+				return $response['headers'];
 			}
 		}
-		return false;
 	}
 
 	/**
@@ -110,29 +125,21 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function has_restriction(): bool {
-		return ! $this->robots_allowed( get_site_url() );
+		return ! $this->robots_allowed( $this->get_site_url() );
 	}
 
 	/**
 	 * Check if the robots.txt has restrictions or not in the store.
 	 *
 	 * @param string $url
-	 * @param bool   $useragent
 	 * @return bool
 	 */
-	private function robots_allowed( $url, $useragent = false ) {
-		// parse url to retrieve host and path
-		$parsed = wp_parse_url( $url );
-
-		$agents = [ preg_quote( '*', null ) ];
-		if ( $useragent ) {
-			$agents[] = preg_quote( $useragent, null );
-		}
+	private function robots_allowed( $url ) {
+		$agents = [ preg_quote( '*', '/' ) ];
 		$agents = implode( '|', $agents );
 
 		// location of robots.txt file
-
-		$robotstxt = file( "http://{$parsed['host']}/robots.txt" );
+		$robotstxt = file( trailingslashit( $url ) . 'robots.txt' );
 
 		// if there isn't a robots, then we're allowed in
 		if ( empty( $robotstxt ) ) {
@@ -148,11 +155,11 @@ class PolicyComplianceCheck implements Service {
 				continue;
 			}
 
-			// following rules only apply if User-agent matches $useragent or '*'
-			if ( preg_match( '/^\s*User-agent: (.*)/i', $line, $match ) ) {
+			// following rules only apply if User-agent matches '*'
+			if ( preg_match( '/^\s*User-agent:\s*(.*)/i', $line, $match ) ) {
 				$rule_applies = preg_match( "/($agents)/i", $match[1] );
 			}
-			if ( $rule_applies && preg_match( '/^\s*Disallow:(.*)/i', $line, $regs ) ) {
+			if ( $rule_applies && preg_match( '/^\s*Disallow:\s*(.*)/i', $line, $regs ) ) {
 				// an empty rule implies full access - no further tests required
 				if ( ! $regs[1] ) {
 					return true;
@@ -164,7 +171,7 @@ class PolicyComplianceCheck implements Service {
 
 		foreach ( $rules as $rule ) {
 			// check if page is disallowed to us
-			if ( preg_match( "/^$rule/", $parsed['path'] ) ) {
+			if ( preg_match( "/^$rule/", '/' ) ) {
 				return false;
 			}
 		}
@@ -192,8 +199,9 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function get_is_store_ssl(): bool {
-		return is_ssl();
+		return 'https' === wp_parse_url( $this->get_site_url(), PHP_URL_SCHEME );
 	}
+
 
 	/**
 	 * Check if the store has refund return policy page for the controller.
@@ -201,7 +209,9 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function has_refund_return_policy_page(): bool {
-		if ( $this->the_slug_exists( 'refund_returns' ) ) {
+		// Check the slug as it's translated by the "woocommerce" text domain name.
+		// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
+		if ( $this->the_slug_exists( _x( 'refund_returns', 'Page slug', 'woocommerce' ) ) ) {
 			return true;
 		}
 		return false;

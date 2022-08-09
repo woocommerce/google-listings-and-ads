@@ -18,13 +18,13 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 
-	protected const POLICY_CHECK     	= '/wc/gla/mc/policy_check';
+	protected const POLICY_CHECK = '/wc/gla/mc/policy_check';
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->policy_compliance_check	= $this->createMock( PolicyComplianceCheck::class );
-		$this->controller         	= new PolicyComplianceCheckController( $this->server, $this->policy_compliance_check );
+		$this->policy_compliance_check = $this->createMock( PolicyComplianceCheck::class );
+		$this->controller              = new PolicyComplianceCheckController( $this->server, $this->policy_compliance_check );
 		$this->controller->register();
 		$this->controller->register_routes();
 	}
@@ -65,7 +65,7 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 		[
 			'allowed_countries'    	=> true,
 			'robots_restriction'    => false,
-			'page_not_found_error'            => false,
+			'page_not_found_error'  => false,
 			'page_redirects'        => false,
 			'store_ssl'         	=> true,
 			'payment_gateways'  	=> true,
