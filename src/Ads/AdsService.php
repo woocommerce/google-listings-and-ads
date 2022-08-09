@@ -66,7 +66,7 @@ class AdsService implements OptionsAwareInterface, Service {
 	/**
 	 * Get whether Ads Campaign are migrated.
 	 *
-	 * @since x.x.x
+	 * @since 2.0.3
 	 * @return bool
 	 */
 	public function is_migration_completed(): bool {

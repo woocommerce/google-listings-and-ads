@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,7 +109,7 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 2.0.3 - 2022-xx-xx =
+= 2.0.3 - 2022-08-09 =
 * Add - Campaign Conversion Status for detecting converted campaigns.
 * Add - Gtag event tracking.
 * Add - Inbox notification for PMax migration.
