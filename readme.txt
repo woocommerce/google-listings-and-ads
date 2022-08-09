@@ -128,15 +128,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Encoding product names in Issues Table .
 * Tweak - Remove try and catch in saveTargetAudience action.
 
-= 2.0.0 - 2022-07-05 =
-* Add - Filter Ads accounts to exclude manager and test accounts.
-* Add - Return account names when retrieving the list of existing accounts.
-* Fix - Normalize image URLs before validation.
-* Tweak - WooCommerce 6.7 compatibility.
-
-= 1.13.6 - 2022-06-21 =
-* Fix - Cannot disconnect Jetpack when other activated plugins are using Jetpack connection.
-* Fix - Compatibility CES prompts with WC 6.6.0.
-* Fix - Multiple CES prompts on the Dashboard Page.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
