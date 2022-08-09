@@ -32,7 +32,12 @@ export default function createMessageForMultipleErrors(
 				'google-listings-and-ads'
 			),
 			listErrors,
-			isPartiallySuccessful ? __( 'Other changes have been saved.' ) : ''
+			isPartiallySuccessful
+				? __(
+						'Other changes have been saved.',
+						'google-listings-and-ads'
+				  )
+				: ''
 		);
 
 		return content;

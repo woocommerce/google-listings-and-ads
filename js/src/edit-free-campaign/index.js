@@ -216,10 +216,10 @@ const EditFreeCampaign = () => {
 			const errorMessage = await createErrorMessageForRejectedPromises(
 				promises,
 				[
-					__( 'Target audience' ),
-					__( 'Merchant Center Settings' ),
-					__( 'Shipping rates' ),
-					__( 'Shipping times' ),
+					__( 'Target audience', 'google-listings-and-ads' ),
+					__( 'Merchant Center Settings', 'google-listings-and-ads' ),
+					__( 'Shipping rates', 'google-listings-and-ads' ),
+					__( 'Shipping times', 'google-listings-and-ads' ),
 				]
 			);
 
