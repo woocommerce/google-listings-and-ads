@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 
 
 defined( 'ABSPATH' ) || exit;
@@ -18,6 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  */
 class PolicyComplianceCheck implements Service {
+	use PluginHelper;
 	/**
 	 * The WC proxy object.
 	 *
@@ -31,14 +34,21 @@ class PolicyComplianceCheck implements Service {
 	protected $google_helper;
 
 	/**
+	 * @var TargetAudience
+	 */
+	protected $target_audience;
+
+	/**
 	 * BaseController constructor.
 	 *
-	 * @param WC           $wc
-	 * @param GoogleHelper $google_helper
+	 * @param WC             $wc
+	 * @param GoogleHelper   $google_helper
+	 * @param TargetAudience $target_audience
 	 */
-	public function __construct( WC $wc, GoogleHelper $google_helper ) {
-		$this->wc            = $wc;
-		$this->google_helper = $google_helper;
+	public function __construct( WC $wc, GoogleHelper $google_helper, TargetAudience $target_audience ) {
+		$this->wc              = $wc;
+		$this->google_helper   = $google_helper;
+		$this->target_audience = $target_audience;
 	}
 
 	/**
@@ -47,11 +57,11 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function is_accessible(): bool {
-		$all_countries = $this->wc->get_countries();
-		$mc_countries  = $this->google_helper->get_mc_supported_countries();
+		$all_allowed_countries = $this->wc->get_allowed_countries();
+		$target_countries      = $this->target_audience->get_target_countries();
 
-		foreach ( $mc_countries as $country ) {
-			if ( ! array_key_exists( $country, $all_countries ) ) {
+		foreach ( $target_countries as $country ) {
+			if ( ! array_key_exists( $country, $all_allowed_countries ) ) {
 				return false;
 			}
 		}
@@ -192,8 +202,9 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function get_is_store_ssl(): bool {
-		return is_ssl();
+		return 'https' === wp_parse_url( $this->get_site_url(), PHP_URL_SCHEME );
 	}
+
 
 	/**
 	 * Check if the store has refund return policy page for the controller.
@@ -201,7 +212,9 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function has_refund_return_policy_page(): bool {
-		if ( $this->the_slug_exists( 'refund_returns' ) ) {
+		// Check the slug as it's translated by the "woocommerce" text domain name.
+		// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
+		if ( $this->the_slug_exists( _x( 'refund_returns', 'Page slug', 'woocommerce' ) ) ) {
 			return true;
 		}
 		return false;
