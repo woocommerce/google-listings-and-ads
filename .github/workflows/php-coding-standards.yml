@@ -35,3 +35,6 @@ jobs:
 
       - name: Run PHPCS on all files
         run: vendor/bin/phpcs ./* -q --report=checkstyle | cs2pr
+
+      - name: Run PHPCS on all tests
+        run: vendor/bin/phpcs -q --standard=tests/phpcs.xml.dist --report=checkstyle | cs2pr
