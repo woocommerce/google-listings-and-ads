@@ -62,17 +62,17 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 								)
 								->getMock();
 		$batch_helper->expects( $this->once() )
-					 ->method( 'validate_and_generate_update_request_entries' )
-					 ->willReturnCallback(
-						 function ( array $products ) {
-							 return array_map(
-								 function ( WC_Product $product ) {
-									 return new BatchProductRequestEntry( $product->get_id(), $this->generate_adapted_product( $product ) );
-								 },
-								 $products
-							 );
-						 }
-					 );
+			->method( 'validate_and_generate_update_request_entries' )
+			->willReturnCallback(
+				function ( array $products ) {
+					return array_map(
+						function ( WC_Product $product ) {
+							return new BatchProductRequestEntry( $product->get_id(), $this->generate_adapted_product( $product ) );
+						},
+						$products
+					);
+				}
+			);
 
 		// $synced_products:   products that were successfully synced to Merchant Center
 		// $rejected_products: products that have errors and were rejected by Google API
@@ -203,22 +203,22 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		[ $deleted_products, $not_found_products ] = $this->create_multiple_simple_product_sets( 2, 2 );
 
 		$this->google_service->expects( $this->once() )
-							 ->method( 'delete_batch' )
-							 ->willReturnCallback(
-								 function ( array $product_entries ) use ( $deleted_products, $not_found_products ) {
-									 $errors  = [];
-									 $entries = [];
-									 foreach ( $product_entries as $product_entry ) {
-										 if ( isset( $deleted_products[ $product_entry->get_wc_product_id() ] ) ) {
-											 $entries[] = new BatchProductEntry( $product_entry->get_wc_product_id(), null );
-										 } elseif ( isset( $not_found_products[ $product_entry->get_wc_product_id() ] ) ) {
-											 $errors[] = new BatchInvalidProductEntry( $product_entry->get_wc_product_id(), $product_entry->get_product_id(), [ GoogleProductService::NOT_FOUND_ERROR_REASON => 'Not Found!' ] );
-										 }
-									 }
+			->method( 'delete_batch' )
+			->willReturnCallback(
+				function ( array $product_entries ) use ( $deleted_products, $not_found_products ) {
+					$errors  = [];
+					$entries = [];
+					foreach ( $product_entries as $product_entry ) {
+						if ( isset( $deleted_products[ $product_entry->get_wc_product_id() ] ) ) {
+							$entries[] = new BatchProductEntry( $product_entry->get_wc_product_id(), null );
+						} elseif ( isset( $not_found_products[ $product_entry->get_wc_product_id() ] ) ) {
+							$errors[] = new BatchInvalidProductEntry( $product_entry->get_wc_product_id(), $product_entry->get_product_id(), [ GoogleProductService::NOT_FOUND_ERROR_REASON => 'Not Found!' ] );
+						}
+					}
 
-									 return new BatchProductResponse( $entries, $errors );
-								 }
-							 );
+					return new BatchProductResponse( $entries, $errors );
+				}
+			);
 
 		$products = array_merge( $deleted_products, $not_found_products );
 

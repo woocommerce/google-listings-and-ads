@@ -83,7 +83,6 @@ class AdsTest extends UnitTest {
 			]
 		);
 
-
 		$this->assertEquals(
 			[
 				[
