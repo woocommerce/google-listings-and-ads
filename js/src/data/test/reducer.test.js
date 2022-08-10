@@ -416,7 +416,7 @@ describe( 'reducer', () => {
 		it( 'should return with policy check info', () => {
 			const data = {
 				allowed_countries: true,
-        robots_restriction: false,
+				robots_restriction: false,
 				page_not_found_error: false,
 				page_restricts: false,
 				store_ssl: true,
