@@ -4,7 +4,12 @@
 import createErrorMessageForRejectedPromises from './createErrorMessageForRejectedPromises';
 import createMessageForMultipleErrors from '.~/utils/createMessageForMultipleErrors';
 
-jest.mock( '.~/utils/createMessageForMultipleErrors', () => jest.fn() );
+jest.mock( '.~/utils/createMessageForMultipleErrors', () => {
+	const originalModule = jest.requireActual(
+		'.~/utils/createMessageForMultipleErrors'
+	);
+	return jest.fn( originalModule.default );
+} );
 
 describe( 'createErrorMessageForRejectedPromises', () => {
 	const successPromise = () => new Promise( ( resolve ) => resolve( 'OK' ) );
@@ -15,7 +20,7 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		jest.clearAllMocks();
 	} );
 
-	it( 'Called with no rejected promises, calls `createMessageForMultipleErrors` with an empty array and `true`', async () => {
+	it( 'Called with no rejected promises, calls `createMessageForMultipleErrors` with an empty array and `true`, and returns `null`', async () => {
 		const promises = [
 			successPromise(),
 			successPromise(),
@@ -23,13 +28,17 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		];
 		const promisesName = [ 'Promise A', 'Promise B', 'Promise C' ];
 
-		await createErrorMessageForRejectedPromises( promises, promisesName );
+		const message = await createErrorMessageForRejectedPromises(
+			promises,
+			promisesName
+		);
 
+		expect( message ).toBeNull();
 		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
 		expect( createMessageForMultipleErrors ).toBeCalledWith( [], true );
 	} );
 
-	it( 'Called with one rejected promise, calls `createMessageForMultipleErrors` with its name, and `true`', async () => {
+	it( 'Called with one rejected promise, calls `createMessageForMultipleErrors` with its name, and `true`, and returns a message indicates it contains one error and partially successful results', async () => {
 		const promises = [
 			successPromise(),
 			rejectedPromise(),
@@ -37,8 +46,12 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		];
 		const promisesName = [ 'Promise A', 'Promise B', 'Promise C' ];
 
-		await createErrorMessageForRejectedPromises( promises, promisesName );
+		const message = await createErrorMessageForRejectedPromises(
+			promises,
+			promisesName
+		);
 
+		expect( message ).toMatchSnapshot();
 		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
 		expect( createMessageForMultipleErrors ).toBeCalledWith(
 			[ 'Promise B' ],
@@ -46,7 +59,7 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		);
 	} );
 
-	it( 'Called with multiple rejected promises, calls `createMessageForMultipleErrors` with their names, and `true`', async () => {
+	it( 'Called with multiple rejected promises, calls `createMessageForMultipleErrors` with their names, and `true`, and returns a message indicates it contains multiple errors and partially successful results', async () => {
 		const promises = [
 			successPromise(),
 			rejectedPromise(),
@@ -60,8 +73,12 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 			'Promise D',
 		];
 
-		await createErrorMessageForRejectedPromises( promises, promisesName );
+		const message = await createErrorMessageForRejectedPromises(
+			promises,
+			promisesName
+		);
 
+		expect( message ).toMatchSnapshot();
 		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
 		expect( createMessageForMultipleErrors ).toBeCalledWith(
 			[ 'Promise B', 'Promise C', 'Promise D' ],
@@ -69,7 +86,7 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		);
 	} );
 
-	it( 'Called with all rejected promises, calls `createMessageForMultipleErrors` with their names, and `false`', async () => {
+	it( 'Called with all rejected promises, calls `createMessageForMultipleErrors` with their names, and `false`, and returns a message indicates it contains multiple errors without successful results', async () => {
 		const promises = [
 			rejectedPromise(),
 			rejectedPromise(),
@@ -77,8 +94,12 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		];
 		const promisesName = [ 'Promise A', 'Promise B', 'Promise C' ];
 
-		await createErrorMessageForRejectedPromises( promises, promisesName );
+		const message = await createErrorMessageForRejectedPromises(
+			promises,
+			promisesName
+		);
 
+		expect( message ).toMatchSnapshot();
 		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
 		expect( createMessageForMultipleErrors ).toBeCalledWith(
 			[ 'Promise A', 'Promise B', 'Promise C' ],
