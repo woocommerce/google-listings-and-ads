@@ -33,8 +33,7 @@ let simpleProductID;
 
 describe( 'GTag events', () => {
 	beforeAll( async () => {
-		page.setDefaultTimeout( 3000 );
-		jest.setTimeout( 60000 );
+		page.setDefaultTimeout( 1000 );
 		await saveConversionID();
 		await createBlockShopPage();
 		simpleProductID = await createSimpleProduct();
