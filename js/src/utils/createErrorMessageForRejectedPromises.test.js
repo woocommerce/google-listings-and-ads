@@ -15,7 +15,7 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		jest.clearAllMocks();
 	} );
 
-	it( 'No rejected Promises', async () => {
+	it( 'Called with no rejected promises, calls `createMessageForMultipleErrors` with an empty array and `true`', async () => {
 		const promises = [
 			successPromise(),
 			successPromise(),
@@ -29,7 +29,7 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		expect( createMessageForMultipleErrors ).toBeCalledWith( [], true );
 	} );
 
-	it( 'One rejected Promise', async () => {
+	it( 'Called with one rejected promise, calls `createMessageForMultipleErrors` with its name, and `true`', async () => {
 		const promises = [
 			successPromise(),
 			rejectedPromise(),
@@ -46,7 +46,7 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		);
 	} );
 
-	it( 'Multiple rejected promises', async () => {
+	it( 'Called with multiple rejected promises, calls `createMessageForMultipleErrors` with their names, and `true`', async () => {
 		const promises = [
 			successPromise(),
 			rejectedPromise(),
@@ -69,7 +69,7 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		);
 	} );
 
-	it( 'All rejected promises', async () => {
+	it( 'Called with all rejected promises, calls `createMessageForMultipleErrors` with their names, and `false`', async () => {
 		const promises = [
 			rejectedPromise(),
 			rejectedPromise(),
