@@ -100,6 +100,17 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 		}
 	};
 
+	/**
+	 * Handles form change callback and callback's errors via binding an actual callback function and an error message.
+	 *
+	 * `this` should be an async callback function that handles the form change.
+	 * For example:
+	 * `handleFormChange.bind( saveSettings, __( 'Oops!', 'google-listings-and-ads' ) )`
+	 *
+	 * @this {(newValue: *) => Promise}
+	 * @param {string} errorMessage Message when the error occurs.
+	 * @param {*} newValue The new values will be called with the bound callback function.
+	 */
 	function handleFormChange( errorMessage, newValue ) {
 		this( newValue ).catch( () => createNotice( 'error', errorMessage ) );
 	}
