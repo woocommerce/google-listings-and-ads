@@ -34,6 +34,7 @@ let simpleProductID;
 describe( 'GTag events', () => {
 	beforeAll( async () => {
 		page.setDefaultTimeout( 1000 );
+		page.setDefaultNavigationTimeout( 3000 );
 		await saveConversionID();
 		await createBlockShopPage();
 		simpleProductID = await createSimpleProduct();
