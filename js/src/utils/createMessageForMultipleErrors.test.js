@@ -1,19 +1,19 @@
 /**
  * Internal dependencies
  */
-import createTextForMultipleErrors from './createMessageForMultipleErrors';
+import createMessageForMultipleErrors from './createMessageForMultipleErrors';
 
-describe( 'createTextForMultipleErrors', () => {
+describe( 'createMessageForMultipleErrors', () => {
 	it( 'No error messages', () => {
 		const errors = [];
-		const result = createTextForMultipleErrors( errors );
+		const result = createMessageForMultipleErrors( errors );
 		expect( result ).toBeNull();
 	} );
 
 	it( 'One error message', () => {
 		const errors = [ 'Target Audience' ];
 
-		const result = createTextForMultipleErrors( errors );
+		const result = createMessageForMultipleErrors( errors );
 
 		expect( result ).toBe(
 			'There is an error in the following action: Target Audience. Other changes have been saved. Please try again later.'
@@ -24,13 +24,13 @@ describe( 'createTextForMultipleErrors', () => {
 		const errors = [ 'Promise A', 'Promise B', 'Promise C' ];
 		const isPartiallySuccessful = false;
 
-		const result = createTextForMultipleErrors(
+		const result = createMessageForMultipleErrors(
 			errors,
 			isPartiallySuccessful
 		);
 
 		expect( result ).toBe(
-			'There are errors in the following actions: Promise A, Promise B and Promise C.  Please try again later.'
+			'There are errors in the following actions: Promise A, Promise B and Promise C. Please try again later.'
 		);
 	} );
 } );

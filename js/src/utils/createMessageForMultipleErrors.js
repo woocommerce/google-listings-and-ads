@@ -33,22 +33,16 @@ export default function createMessageForMultipleErrors(
 			errorMessages.at( -1 )
 		);
 
-		const content = sprintf(
-			// translators: 1: text for the failed action(s). 2: optional text if some promises have been invoked successfully.
-			__(
-				'%1$s %2$s Please try again later.',
-				'google-listings-and-ads'
-			),
-			listErrors,
-			isPartiallySuccessful
-				? __(
-						'Other changes have been saved.',
-						'google-listings-and-ads'
-				  )
-				: ''
-		);
+		const messageFormat = isPartiallySuccessful
+			? // translators: text for the failed action(s).
+			  __(
+					'%s Other changes have been saved. Please try again later.',
+					'google-listings-and-ads'
+			  )
+			: // translators: text for the failed action(s).
+			  __( '%s Please try again later.', 'google-listings-and-ads' );
 
-		return content;
+		return sprintf( messageFormat, listErrors );
 	}
 
 	return null;
