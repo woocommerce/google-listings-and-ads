@@ -83,7 +83,7 @@ const appearanceDict = {
 		icon: googleMCLogo,
 		title: __( 'Google Merchant Center', 'google-listings-and-ads' ),
 		description: __(
-			'Required to sync products and list on Google Shopping',
+			'Required to sync products and list on Google',
 			'google-listings-and-ads'
 		),
 	},
