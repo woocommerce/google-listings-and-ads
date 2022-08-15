@@ -366,20 +366,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_get_setup_status_step_target_audience() {
-		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
-		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
-
-		$this->assertEquals(
-			[
-				'status' => 'incomplete',
-				'step'   => 'product_listings',
-			],
-			$this->mc_service->get_setup_status()
-		);
-	}
-
-	public function test_get_setup_status_step_shipping_and_taxes() {
+	public function test_get_setup_status_step_product_listings() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->options->method( 'get' )
