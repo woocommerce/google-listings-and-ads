@@ -1,7 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`createErrorMessageForRejectedPromises Called with all rejected promises, calls \`createMessageForMultipleErrors\` with their names, and \`false\`, and returns a message indicates it contains multiple errors without successful results 1`] = `"There are errors in the following actions: Promise A, Promise B and Promise C. Please try again later."`;
-
-exports[`createErrorMessageForRejectedPromises Called with multiple rejected promises, calls \`createMessageForMultipleErrors\` with their names, and \`true\`, and returns a message indicates it contains multiple errors and partially successful results 1`] = `"There are errors in the following actions: Promise B, Promise C and Promise D. Other changes have been saved. Please try again later."`;
-
-exports[`createErrorMessageForRejectedPromises Called with one rejected promise, calls \`createMessageForMultipleErrors\` with its name, and \`true\`, and returns a message indicates it contains one error and partially successful results 1`] = `"There is an error in the following action: Promise B. Other changes have been saved. Please try again later."`;
