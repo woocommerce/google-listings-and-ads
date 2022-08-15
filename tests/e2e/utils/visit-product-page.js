@@ -13,7 +13,7 @@ import {
 
 /**
  * Redirects to a single product page.
- * Waits till the cart form fully loads because shopper.goToProduct uses a
+ * Wait till the cart form fully loads because shopper.goToProduct uses a
  * URL with product ID which leads to a redirect for pretty permalinks.
  *
  * @param {number} productID
