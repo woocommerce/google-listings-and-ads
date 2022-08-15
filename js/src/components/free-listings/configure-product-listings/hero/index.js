@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import heroImageURL from './google-free-listing.svg';
+import heroImageURL from './google-free-listing.png';
 import './index.scss';
 
 /**
@@ -26,7 +26,7 @@ const Hero = () => {
 					<div>
 						<p className="hero-text__subtitle">
 							{ __(
-								'Your free product listings will look something like this.',
+								'Your product listings will look something like this.',
 								'google-listings-and-ads'
 							) }
 						</p>
@@ -39,17 +39,14 @@ const Hero = () => {
 					</div>
 				}
 			/>
-			<div className="hero-image">
-				<img
-					src={ heroImageURL }
-					alt={ __(
-						'Google Shopping search results example',
-						'google-listings-and-ads'
-					) }
-					width="720"
-					height="319"
-				/>
-			</div>
+			<img
+				className="gla-setup-free-listing-hero__image"
+				src={ heroImageURL }
+				alt={ __(
+					'Google Shopping search results example',
+					'google-listings-and-ads'
+				) }
+			/>
 		</div>
 	);
 };
