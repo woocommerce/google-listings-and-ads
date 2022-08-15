@@ -23,6 +23,7 @@ import {
 	relatedProductAddToCart,
 } from '../../utils/cart';
 import { createBlockShopPage } from '../../utils/block-page';
+import { goToSingleProduct } from '../../utils/visit-product-page';
 
 const config = require( 'config' ); // eslint-disable-line import/no-extraneous-dependencies
 const productPrice = config.has( 'products.simple.price' )
@@ -72,7 +73,7 @@ describe( 'GTag events', () => {
 	it( 'View item event is sent on a single product page', async () => {
 		const event = trackGtagEvent( 'view_item' );
 
-		await shopper.goToProduct( simpleProductID );
+		await goToSingleProduct( simpleProductID );
 
 		await event.then( ( request ) => {
 			const data = getEventData( request );
@@ -104,8 +105,7 @@ describe( 'GTag events', () => {
 	it( 'Add to cart event is sent on a single product page', async () => {
 		const event = trackGtagEvent( 'add_to_cart' );
 
-		await shopper.goToProduct( simpleProductID );
-		await page.waitForSelector( 'form.cart' );
+		await goToSingleProduct( simpleProductID );
 		await shopper.addToCart();
 
 		await event.then( ( request ) => {
@@ -121,7 +121,7 @@ describe( 'GTag events', () => {
 		await createSimpleProduct(); // Create an additional product for related to show up.
 		const event = trackGtagEvent( 'add_to_cart' );
 
-		await shopper.goToProduct( simpleProductID );
+		await goToSingleProduct( simpleProductID );
 		const relatedProductID = await relatedProductAddToCart();
 
 		await event.then( ( request ) => {
@@ -164,8 +164,7 @@ describe( 'GTag events', () => {
 
 	it( 'Conversion event is sent on order complete page', async () => {
 		await emptyCart();
-		await shopper.goToProduct( simpleProductID );
-		await page.waitForSelector( 'form.cart' );
+		await goToSingleProduct( simpleProductID );
 		await shopper.addToCart();
 
 		await shopper.goToCheckout();
@@ -186,8 +185,7 @@ describe( 'GTag events', () => {
 
 	it( 'Purchase event is sent on order complete page', async () => {
 		await emptyCart();
-		await shopper.goToProduct( simpleProductID );
-		await page.waitForSelector( 'form.cart' );
+		await goToSingleProduct( simpleProductID );
 		await shopper.addToCart();
 
 		await shopper.goToCheckout();
