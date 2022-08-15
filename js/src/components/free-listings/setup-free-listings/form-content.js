@@ -10,6 +10,7 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
+import ChooseAudienceSection from '.~/components/free-listings/choose-audience-section';
 import ShippingRateSection from '.~/components/shipping-rate-section';
 import ShippingTimeSection from '.~/components/free-listings/configure-product-listings/shipping-time-section';
 import AppButton from '.~/components/app-button';
@@ -21,8 +22,6 @@ import ConditionalSection from '.~/components/conditional-section';
 
 /**
  * Form to configure free listigns.
- * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/form-content.js},
- * without auto-save functionality.
  *
  * @param {Object} props React props.
  * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to ShippingRateSection and ShippingTimeSection.
@@ -44,6 +43,7 @@ const FormContent = ( {
 
 	return (
 		<StepContent>
+			<ChooseAudienceSection formProps={ formProps } />
 			<ShippingRateSection
 				formProps={ formProps }
 				audienceCountries={ countries }

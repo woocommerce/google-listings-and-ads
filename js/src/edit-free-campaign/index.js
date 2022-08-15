@@ -2,8 +2,7 @@
  * External dependencies
  */
 import { useEffect, useState } from '@wordpress/element';
-import { Stepper } from '@woocommerce/components';
-import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
+import { getNewPath } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
 import { recordEvent } from '@woocommerce/tracks';
 import { isEqual } from 'lodash';
@@ -13,11 +12,10 @@ import { isEqual } from 'lodash';
  */
 import { useAppDispatch } from '.~/data';
 import TopBar from '.~/components/stepper/top-bar';
-import ChooseAudience from '.~/components/free-listings/choose-audience';
+import SetupFreeListings from '.~/components/free-listings/setup-free-listings';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
-import SetupFreeListings from './setup-free-listings';
 import useLayout from '.~/hooks/useLayout';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import useShippingRates from '.~/hooks/useShippingRates';
@@ -27,23 +25,6 @@ import HelpIconButton from '.~/components/help-icon-button';
 import hasUnsavedShippingRates from './hasUnsavedShippingRates';
 import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '.~/hooks/useSaveShippingTimes';
-
-/**
- * Function use to allow the user to navigate between form steps without the prompt.
- *
- * @param {Object} location Location object given by the `getHistory().block` callback argument.
- * @return {boolean} `true` if given location is not another step of our form.
- */
-function isNotOurStep( location ) {
-	const allowList = new Set( [
-		'/' + getNewPath( { pageStep: undefined } ),
-		'/' + getNewPath( { pageStep: 1 } ),
-		'/' + getNewPath( { pageStep: 2 } ),
-	] );
-	// TODO: Explore if we can make thich check cleaner given `history`'s API.
-	const destination = location.pathname + location.search;
-	return ! allowList.has( destination );
-}
 
 /**
  * Saving changes to the free campaign.
@@ -78,9 +59,6 @@ const EditFreeCampaign = () => {
 		savedTargetAudience
 	);
 	const [ settings, updateSettings ] = useState( savedSettings );
-	const [ forceUnblockedNavigation, setForceUnblockedNavigation ] = useState(
-		false
-	);
 
 	const {
 		hasFinishedResolution: hfrShippingRates,
@@ -155,52 +133,14 @@ const EditFreeCampaign = () => {
 			'You have unsaved campaign data. Are you sure you want to leave?',
 			'google-listings-and-ads'
 		),
-		didAnythingChanged && ! forceUnblockedNavigation,
-		isNotOurStep
+		didAnythingChanged
 	);
 
-	const { pageStep = '1' } = getQuery();
 	const dashboardURL = getNewPath(
 		// Clear the step we were at, but perserve programId to be able to highlight the program.
 		{ pageStep: undefined, subpath: undefined },
 		'/google/dashboard'
 	);
-
-	/**
-	 * Update shipping rates and times after users are done
-	 * with the changes in Choose Audience step.
-	 *
-	 * Shipping rates and shipping times that do not have
-	 * a corresponding country in target audience will be removed.
-	 */
-	const updateShippingAfterChooseAudienceStep = () => {
-		const finalCountries = getFinalCountries( targetAudience );
-
-		const newShippingRates = loadedShippingRates.filter(
-			( shippingRate ) => {
-				return finalCountries.includes( shippingRate.country );
-			}
-		);
-		updateShippingRates( newShippingRates );
-
-		const newShippingTimes = loadedShippingTimes.filter(
-			( shippingTime ) => {
-				return finalCountries.includes( shippingTime.countryCode );
-			}
-		);
-		updateShippingTimes( newShippingTimes );
-	};
-
-	const handleChooseAudienceChange = ( change, newTargetAudience ) => {
-		updateTargetAudience( newTargetAudience );
-	};
-
-	const handleChooseAudienceContinue = () => {
-		setForceUnblockedNavigation( true );
-		updateShippingAfterChooseAudienceStep();
-		getHistory().push( getNewPath( { pageStep: '2' } ) );
-		setForceUnblockedNavigation( false );
-	};
 
 	const handleSetupFreeListingsContinue = async () => {
 		// TODO: Disable the form so the user won't be able to input any changes, which could be disregarded.
@@ -234,18 +174,6 @@ const EditFreeCampaign = () => {
 		}
 	};
 
-	const handleStepClick = ( key ) => {
-		/**
-		 * When users move from Step 1 Choose Audience to Step 2 Configure listings,
-		 * we update shipping rates and shipping times based on the changes in Choose Audience.
-		 */
-		if ( key === '2' ) {
-			updateShippingAfterChooseAudienceStep();
-		}
-
-		getHistory().push( getNewPath( { pageStep: key } ) );
-	};
-
 	return (
 		<>
 			<TopBar
@@ -255,54 +183,18 @@ const EditFreeCampaign = () => {
 				}
 				backHref={ dashboardURL }
 			/>
-			<Stepper
-				className="gla-setup-stepper"
-				currentStep={ pageStep }
-				steps={ [
-					{
-						key: '1',
-						label: __(
-							'Choose your audience',
-							'google-listings-and-ads'
-						),
-						content: (
-							<ChooseAudience
-								initialData={ targetAudience }
-								onChange={ handleChooseAudienceChange }
-								onContinue={ handleChooseAudienceContinue }
-							/>
-						),
-						onClick: handleStepClick,
-					},
-					{
-						key: '2',
-						label: __(
-							'Configure your product listings',
-							'google-listings-and-ads'
-						),
-						content: (
-							<SetupFreeListings
-								countries={ getFinalCountries(
-									targetAudience
-								) }
-								settings={ settings }
-								onSettingsChange={ ( change, newSettings ) => {
-									updateSettings( newSettings );
-								} }
-								shippingRates={ loadedShippingRates }
-								onShippingRatesChange={ updateShippingRates }
-								shippingTimes={ loadedShippingTimes }
-								onShippingTimesChange={ updateShippingTimes }
-								onContinue={ handleSetupFreeListingsContinue }
-								submitLabel={ __(
-									'Save changes',
-									'google-listings-and-ads'
-								) }
-							/>
-						),
-						onClick: handleStepClick,
-					},
-				] }
+			<SetupFreeListings
+				targetAudience={ targetAudience }
+				resolveFinalCountries={ getFinalCountries }
+				onTargetAudienceChange={ updateTargetAudience }
+				settings={ settings }
+				onSettingsChange={ updateSettings }
+				shippingRates={ loadedShippingRates }
+				onShippingRatesChange={ updateShippingRates }
+				shippingTimes={ loadedShippingTimes }
+				onShippingTimesChange={ updateShippingTimes }
+				onContinue={ handleSetupFreeListingsContinue }
+				submitLabel={ __( 'Save changes', 'google-listings-and-ads' ) }
 			/>
 		</>
 	);
