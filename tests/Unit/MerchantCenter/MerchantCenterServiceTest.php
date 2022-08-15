@@ -366,20 +366,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_get_setup_status_step_target_audience() {
-		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
-		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
-
-		$this->assertEquals(
-			[
-				'status' => 'incomplete',
-				'step'   => 'target_audience',
-			],
-			$this->mc_service->get_setup_status()
-		);
-	}
-
-	public function test_get_setup_status_step_shipping_and_taxes() {
+	public function test_get_setup_status_step_product_listings() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->options->method( 'get' )
@@ -398,7 +385,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->assertEquals(
 			[
 				'status' => 'incomplete',
-				'step'   => 'shipping_and_taxes',
+				'step'   => 'product_listings',
 			],
 			$this->mc_service->get_setup_status()
 		);
@@ -471,6 +458,65 @@ class MerchantCenterServiceTest extends UnitTest {
 			[
 				'status' => 'incomplete',
 				'step'   => 'store_requirements',
+			],
+			$this->mc_service->get_setup_status()
+		);
+	}
+
+	public function test_get_setup_status_step_paid_ads() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::TARGET_AUDIENCE ],
+				[ OptionsInterface::MERCHANT_CENTER, [] ],
+				[ OptionsInterface::MERCHANT_CENTER, [] ]
+			)->willReturnOnConsecutiveCalls(
+				false,
+				[
+					'location'  => 'selected',
+					'countries' => [ 'GB' ],
+				],
+				[],
+				[
+					'website_live'            => true,
+					'checkout_process_secure' => true,
+					'payment_methods_visible' => true,
+					'refund_tos_visible'      => true,
+					'contact_info_visible'    => true,
+				]
+			);
+		$this->shipping_time_query->method( 'get_results' )
+			->willReturn(
+				[
+					[
+						'time'    => '1',
+						'country' => 'GB',
+					],
+				]
+			);
+		$this->shipping_rate_query->method( 'get_results' )
+			->willReturn(
+				[
+					[
+						'rate'    => '10',
+						'country' => 'GB',
+					],
+				]
+			);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'GB' ] );
+		$this->contact_information->method( 'get_contact_information' )
+			->willReturn( $this->get_valid_business_info() );
+		$this->settings->method( 'get_store_address' )
+			->willReturn( $this->get_sample_address() );
+		$this->address_utility->method( 'compare_addresses' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'status' => 'incomplete',
+				'step'   => 'paid_ads',
 			],
 			$this->mc_service->get_setup_status()
 		);

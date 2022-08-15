@@ -21,6 +21,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from '.~/components/free-listings/setup-free-listings';
 import StoreRequirements from './store-requirements';
+import SetupPaidAds from './setup-paid-ads';
 import './index.scss';
 import stepNameKeyMap from './stepNameKeyMap';
 
@@ -81,7 +82,7 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 			target: 'step1_continue',
 			trigger: 'click',
 		} );
-		setStep( stepNameKeyMap.target_audience );
+		setStep( stepNameKeyMap.product_listings );
 		onRefetchSavedStep();
 	};
 
@@ -91,6 +92,15 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 			trigger: 'click',
 		} );
 		setStep( stepNameKeyMap.store_requirements );
+		onRefetchSavedStep();
+	};
+
+	const handleStoreRequirementsContinue = () => {
+		recordEvent( 'gla_setup_mc', {
+			target: 'step3_continue',
+			trigger: 'click',
+		} );
+		setStep( stepNameKeyMap.paid_ads );
 		onRefetchSavedStep();
 	};
 
@@ -139,7 +149,7 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 					onClick: handleStepClick,
 				},
 				{
-					key: stepNameKeyMap.target_audience,
+					key: stepNameKeyMap.product_listings,
 					label: __(
 						'Configure product listings',
 						'google-listings-and-ads'
@@ -194,7 +204,20 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 						'Confirm store requirements',
 						'google-listings-and-ads'
 					),
-					content: <StoreRequirements />,
+					content: (
+						<StoreRequirements
+							onContinue={ handleStoreRequirementsContinue }
+						/>
+					),
+					onClick: handleStepClick,
+				},
+				{
+					key: stepNameKeyMap.paid_ads,
+					label: __(
+						'Complete your campaign',
+						'google-listings-and-ads'
+					),
+					content: <SetupPaidAds />,
 					onClick: handleStepClick,
 				},
 			] }
