@@ -4,8 +4,6 @@
 import createErrorMessageForRejectedPromises from './createErrorMessageForRejectedPromises';
 import createMessageForMultipleErrors from '.~/utils/createMessageForMultipleErrors';
 
-jest.mock( '.~/utils/createMessageForMultipleErrors', () => jest.fn() );
-
 describe( 'createErrorMessageForRejectedPromises', () => {
 	const successPromise = () => new Promise( ( resolve ) => resolve( 'OK' ) );
 	const rejectedPromise = () =>
@@ -23,10 +21,12 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		];
 		const promisesName = [ 'Promise A', 'Promise B', 'Promise C' ];
 
-		await createErrorMessageForRejectedPromises( promises, promisesName );
+		const message = await createErrorMessageForRejectedPromises(
+			promises,
+			promisesName
+		);
 
-		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
-		expect( createMessageForMultipleErrors ).toBeCalledWith( [], true );
+		expect( message ).toBe( createMessageForMultipleErrors( [], true ) );
 	} );
 
 	it( 'Called with one rejected promise, calls `createMessageForMultipleErrors` with its name, and `true`', async () => {
@@ -37,12 +37,13 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		];
 		const promisesName = [ 'Promise A', 'Promise B', 'Promise C' ];
 
-		await createErrorMessageForRejectedPromises( promises, promisesName );
+		const message = await createErrorMessageForRejectedPromises(
+			promises,
+			promisesName
+		);
 
-		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
-		expect( createMessageForMultipleErrors ).toBeCalledWith(
-			[ 'Promise B' ],
-			true
+		expect( message ).toBe(
+			createMessageForMultipleErrors( [ 'Promise B' ], true )
 		);
 	} );
 
@@ -60,12 +61,16 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 			'Promise D',
 		];
 
-		await createErrorMessageForRejectedPromises( promises, promisesName );
+		const message = await createErrorMessageForRejectedPromises(
+			promises,
+			promisesName
+		);
 
-		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
-		expect( createMessageForMultipleErrors ).toBeCalledWith(
-			[ 'Promise B', 'Promise C', 'Promise D' ],
-			true
+		expect( message ).toBe(
+			createMessageForMultipleErrors(
+				[ 'Promise B', 'Promise C', 'Promise D' ],
+				true
+			)
 		);
 	} );
 
@@ -77,12 +82,16 @@ describe( 'createErrorMessageForRejectedPromises', () => {
 		];
 		const promisesName = [ 'Promise A', 'Promise B', 'Promise C' ];
 
-		await createErrorMessageForRejectedPromises( promises, promisesName );
+		const message = await createErrorMessageForRejectedPromises(
+			promises,
+			promisesName
+		);
 
-		expect( createMessageForMultipleErrors ).toBeCalledTimes( 1 );
-		expect( createMessageForMultipleErrors ).toBeCalledWith(
-			[ 'Promise A', 'Promise B', 'Promise C' ],
-			false
+		expect( message ).toBe(
+			createMessageForMultipleErrors(
+				[ 'Promise A', 'Promise B', 'Promise C' ],
+				false
+			)
 		);
 	} );
 } );
