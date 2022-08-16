@@ -109,6 +109,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.0.4 - 2022-08-16 =
+* Dev - E2E Fix for redirecting to single product page.
+* Dev - Remove wc-admin installation from E2E env setup.
+* Fix - Handle multiple errors in the Edit free listings page.
+* Fix - Hide WooCommerce System messages in the plugin screen. .
+* Fix - Onload conflict when tracking events.
+
 = 2.0.3 - 2022-08-09 =
 * Add - Campaign Conversion Status for detecting converted campaigns.
 * Add - Gtag event tracking.
