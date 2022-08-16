@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 2.0.3
+Stable tag: 2.0.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -108,6 +108,13 @@ Performance Max campaigns are pay-per-click, meaning you only pay when someone c
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.
 
 == Changelog ==
+
+= 2.0.4 - 2022-08-16 =
+* Dev - E2E Fix for redirecting to single product page.
+* Dev - Remove wc-admin installation from E2E env setup.
+* Fix - Handle multiple errors in the Edit free listings page.
+* Fix - Hide WooCommerce System messages in the plugin screen. .
+* Fix - Onload conflict when tracking events.
 
 = 2.0.3 - 2022-08-09 =
 * Add - Campaign Conversion Status for detecting converted campaigns.
