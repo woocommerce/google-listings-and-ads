@@ -42,7 +42,10 @@ const getProgramsFilter = createProgramsFilterConfig();
  */
 const ProgramsReportFilters = ( props ) => {
 	const { query, trackEventId } = props;
-	const filtersConfig = [ getProgramsFilter( useAdsCampaigns() ) ];
+	const queryCampaignAds = { exclude_removed: false };
+	const filtersConfig = [
+		getProgramsFilter( useAdsCampaigns( queryCampaignAds ) ),
+	];
 
 	const { period, compare, before, after } = getDateParamsFromQuery( query );
 	const { primary: primaryDate, secondary: secondaryDate } = getCurrentDates(

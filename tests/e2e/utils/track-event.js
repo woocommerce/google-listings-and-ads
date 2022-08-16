@@ -14,11 +14,11 @@
  * @return {Promise} Matching request.
  */
 export function trackGtagEvent( eventName ) {
-	const eventURL = 'https://www.google.com/pagead';
+	const eventPath = '/pagead';
 	return page.waitForRequest( ( request ) => {
 		const url = request.url();
 		const match = encodeURIComponent( 'event=' + eventName );
-		return url.startsWith( eventURL ) && url.includes( match );
+		return url.includes( eventPath ) && url.includes( match );
 	} );
 }
 

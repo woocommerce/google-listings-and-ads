@@ -25,6 +25,7 @@ import HelpIconButton from '.~/components/help-icon-button';
 import hasUnsavedShippingRates from './hasUnsavedShippingRates';
 import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '.~/hooks/useSaveShippingTimes';
+import createErrorMessageForRejectedPromises from '.~/utils/createErrorMessageForRejectedPromises';
 
 /**
  * Saving changes to the free campaign.
@@ -145,23 +146,38 @@ const EditFreeCampaign = () => {
 	const handleSetupFreeListingsContinue = async () => {
 		// TODO: Disable the form so the user won't be able to input any changes, which could be disregarded.
 		try {
-			await Promise.allSettled( [
+			const promises = [
 				saveTargetAudience( targetAudience ),
 				saveSettings( settings ),
 				saveShippingRates( shippingRates ),
 				saveShippingTimes( shippingTimes ),
-			] );
+			];
+
+			const errorMessage = await createErrorMessageForRejectedPromises(
+				promises,
+				[
+					__( 'Target audience', 'google-listings-and-ads' ),
+					__( 'Merchant Center Settings', 'google-listings-and-ads' ),
+					__( 'Shipping rates', 'google-listings-and-ads' ),
+					__( 'Shipping times', 'google-listings-and-ads' ),
+				]
+			);
 
 			// Sync data once our changes are saved, even partially succesfully.
 			await fetchSettingsSync();
 
-			createNotice(
-				'success',
-				__(
-					'Your changes to your Free Listings have been saved and will be synced to your Google Merchant Center account.',
-					'google-listings-and-ads'
-				)
-			);
+			if ( errorMessage ) {
+				createNotice( 'error', errorMessage );
+			} else {
+				createNotice(
+					'success',
+					__(
+						'Your changes to your Free Listings have been saved and will be synced to your Google Merchant Center account.',
+						'google-listings-and-ads'
+					)
+				);
+			}
+
 			recordEvent( 'gla_free_campaign_edited' );
 		} catch ( error ) {
 			createNotice(

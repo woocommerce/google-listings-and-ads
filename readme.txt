@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,17 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.0.3 - 2022-08-09 =
+* Add - Campaign Conversion Status for detecting converted campaigns.
+* Add - Gtag event tracking.
+* Add - Inbox notification for PMax migration.
+* Add - Includes removed campaign in the program report section.
+* Add - Pmax migration banner dashboard.
+* Add - Pmax migration banner reports.
+* Add - Tooltip in reports section for SSC Campaigns.
+* Add - Track add to cart events from all buttons including Gutenberg blocks.
+* Fix - Add Woo gTag remarketing and conversion signals.
+
 = 2.0.2 - 2022-07-29 =
 * Fix - Disable identifier_exists field.
 * Tweak - Propagate errors for saveSettings.
@@ -127,16 +138,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Compatibility with History Navigation v5.
 * Fix - Encoding product names in Issues Table .
 * Tweak - Remove try and catch in saveTargetAudience action.
-
-= 2.0.0 - 2022-07-05 =
-* Add - Filter Ads accounts to exclude manager and test accounts.
-* Add - Return account names when retrieving the list of existing accounts.
-* Fix - Normalize image URLs before validation.
-* Tweak - WooCommerce 6.7 compatibility.
-
-= 1.13.6 - 2022-06-21 =
-* Fix - Cannot disconnect Jetpack when other activated plugins are using Jetpack connection.
-* Fix - Compatibility CES prompts with WC 6.6.0.
-* Fix - Multiple CES prompts on the Dashboard Page.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

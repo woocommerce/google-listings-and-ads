@@ -3,12 +3,14 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -19,8 +21,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  *
+ * @property MockObject|AdsCampaign      $ads_campaign
  * @property MockObject|OptionsInterface $options
  * @property AdsReport                   $report
+ * @property Container                   $container
  */
 class AdsReportTest extends UnitTest {
 
@@ -35,12 +39,17 @@ class AdsReportTest extends UnitTest {
 		parent::setUp();
 
 		$this->ads_client_setup();
+		$this->ads_campaign = $this->createMock( AdsCampaign::class );
 
 		$this->options = $this->createMock( OptionsInterface::class );
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
 
+		$this->container = new Container();
+		$this->container->share( AdsCampaign::class, $this->ads_campaign );
+
 		$this->report = new AdsReport( $this->client );
 		$this->report->set_options_object( $this->options );
+		$this->report->set_container( $this->container );
 	}
 
 	public function test_get_report_data_campaigns() {
@@ -55,6 +64,7 @@ class AdsReportTest extends UnitTest {
 					'status' => 'ENABLED',
 					'name'   => 'First Campaign',
 					'id'     => 1234567890,
+					'type'   => 'PERFORMANCE_MAX',
 				],
 				'metrics'  => [
 					'clicks'           => 12,
@@ -72,6 +82,7 @@ class AdsReportTest extends UnitTest {
 					'status' => 'ENABLED',
 					'name'   => 'Second Campaign',
 					'id'     => 2345678901,
+					'type'   => 'PERFORMANCE_MAX',
 				],
 				'metrics'  => [
 					'clicks'           => 58,
@@ -89,6 +100,7 @@ class AdsReportTest extends UnitTest {
 					'status' => 'ENABLED',
 					'name'   => 'First Campaign',
 					'id'     => 1234567890,
+					'type'   => 'PERFORMANCE_MAX',
 				],
 				'metrics'  => [
 					'clicks'           => 16,
@@ -116,6 +128,7 @@ class AdsReportTest extends UnitTest {
 						'sales'       => 38,
 						'conversions' => 3,
 					],
+					'isConverted'    => false,
 				],
 				[
 					'id'        => 2345678901,
@@ -128,6 +141,7 @@ class AdsReportTest extends UnitTest {
 						'sales'       => 86,
 						'conversions' => 4,
 					],
+					'isConverted'    => false,
 				],
 			],
 			'intervals'  => [
@@ -519,6 +533,7 @@ class AdsReportTest extends UnitTest {
 					'status' => 'ENABLED',
 					'name'   => 'First Campaign',
 					'id'     => 1234567890,
+					'type'   => 'PERFORMANCE_MAX',
 				],
 				'segments' => [
 					'date' => '2022-04-01',
@@ -529,6 +544,7 @@ class AdsReportTest extends UnitTest {
 					'status' => 'ENABLED',
 					'name'   => 'Second Campaign',
 					'id'     => 2345678901,
+					'type'   => 'PERFORMANCE_MAX',
 				],
 				'segments' => [
 					'date' => '2022-04-01',
@@ -539,16 +555,18 @@ class AdsReportTest extends UnitTest {
 		$expected = [
 			$report_type => [
 				[
-					'id'        => 1234567890,
-					'name'      => 'First Campaign',
-					'status'    => 'enabled',
-					'subtotals' => [],
+					'id'          => 1234567890,
+					'name'        => 'First Campaign',
+					'status'      => 'enabled',
+					'subtotals'   => [],
+					'isConverted' => false,
 				],
 				[
-					'id'        => 2345678901,
-					'name'      => 'Second Campaign',
-					'status'    => 'enabled',
-					'subtotals' => [],
+					'id'          => 2345678901,
+					'name'        => 'Second Campaign',
+					'status'      => 'enabled',
+					'subtotals'   => [],
+					'isConverted' => false,
 				],
 			],
 			'intervals'  => [
@@ -595,6 +613,88 @@ class AdsReportTest extends UnitTest {
 			);
 			$this->assertEquals( 404, $e->getCode() );
 		}
+	}
+
+	public function test_get_report_data_converted_campaigns() {
+		$report_type = 'campaigns';
+		$report_args = [
+			'interval' => 'day',
+			'fields'   => [ 'clicks' ],
+		];
+		$report_data = [
+			[
+				'campaign' => [
+					'status' => 'REMOVED',
+					'name'   => 'Test Campaign',
+					'id'     => 1234567890,
+					'type'   => 'SHOPPING',
+				],
+				'metrics'  => [
+					'clicks' => 12,
+				],
+				'segments' => [
+					'date' => '2022-04-01',
+				],
+			],
+			[
+				'campaign' => [
+					'status' => 'ENABLED',
+					'name'   => 'PMax: Test Campaign',
+					'id'     => 2345678901,
+					'type'   => 'PERFORMANCE_MAX',
+				],
+				'metrics'  => [
+					'clicks' => 58,
+				],
+				'segments' => [
+					'date' => '2022-04-01',
+				],
+			],
+		];
+
+		$expected = [
+			$report_type => [
+				[
+					'id'          => 1234567890,
+					'name'        => 'Test Campaign',
+					'status'      => 'removed',
+					'isConverted' => true,
+					'subtotals' => [
+						'clicks' => 12,
+					],
+				],
+				[
+					'id'           => 2345678901,
+					'name'         => 'PMax: Test Campaign',
+					'status'       => 'enabled',
+					'isConverted'  => false,
+					'subtotals' => [
+						'clicks' => 58,
+					],
+				],
+			],
+			'intervals'  => [
+				[
+					'interval'  => '2022-04-01',
+					'subtotals' => [
+						'clicks' => 70,
+					],
+				],
+			],
+			'totals'     => [
+				'clicks' => 70,
+			],
+		];
+
+		$this->ads_campaign
+			->method( 'get_campaign_convert_status' )
+			->willReturn( 'converted' );
+
+		$this->generate_ads_report_query_mock( $report_data, $report_args );
+		$this->assertEquals(
+			$expected,
+			$this->report->get_report_data( $report_type, $report_args )
+		);
 	}
 
 }
