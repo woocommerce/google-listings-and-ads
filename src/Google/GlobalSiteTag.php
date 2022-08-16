@@ -293,7 +293,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $order->get_currency() ),
 			esc_js( $order->get_id() ),
 		);
-		$this->print_inline_gtag_script( $conversion_gtag_info );
+		wp_print_inline_script_tag( $conversion_gtag_info );
 
 		// Get the item info in the order
 		$item_info = [];
@@ -354,7 +354,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $language ),
 			join( ',', $item_info ),
 		);
-		$this->print_inline_gtag_script( $purchase_page_gtag );
+		wp_print_inline_script_tag( $purchase_page_gtag );
 	}
 
 	/**
@@ -386,7 +386,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $product->get_name() ),
 			esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
 		);
-		$this->print_inline_gtag_script( $view_item_gtag );
+		wp_print_inline_script_tag( $view_item_gtag );
 	}
 
 	/**
@@ -394,7 +394,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	private function display_page_view_event_snippet(): void {
 		if ( ! is_cart() ) {
-			$this->print_inline_gtag_script(
+			wp_print_inline_script_tag(
 				'gtag("event", "page_view", {send_to: "GLA"});'
 			);
 			return;
@@ -437,7 +437,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$value,
 			join( ',', $item_info ),
 		);
-		$this->print_inline_gtag_script( $page_view_gtag );
+		wp_print_inline_script_tag( $page_view_gtag );
 	}
 
 	/**
@@ -452,21 +452,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'name'  => $product->get_name(),
 			'price' => wc_get_price_to_display( $product ),
 		];
-	}
-
-	/**
-	 * Outputs the gtag tracking snippet and wraps it to run on page load.
-	 *
-	 * @param string $script JavaScript to print.
-	 */
-	protected function print_inline_gtag_script( string $script ) {
-		wp_print_inline_script_tag(
-			"
-			window.addEventListener( 'load', function () {
-				{$script}
-			} );
-			"
-		);
 	}
 
 	/**
