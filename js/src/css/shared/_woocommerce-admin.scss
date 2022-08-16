@@ -10,12 +10,11 @@
 	.woocommerce-layout {
 		padding-top: 0;
 
-		// set the layout header width to 0 to hide it.
 		// do not set the header to display: none,
 		// because we want the offsetHeight value
 		// and set it to wpbody-content margin-top to counter back.
 		.woocommerce-layout__header {
-			width: 0;
+			visibility: hidden;
 
 			// only display the top left WC navigation,
 			// do not display the h1 page title element
