@@ -66,7 +66,7 @@ const singleAddToCartClick = function ( event ) {
 };
 
 // Register for add_to_cart click events.
-window.addEventListener( 'load', function () {
+document.defaultView.addEventListener( 'DOMContentLoaded', function () {
 	document
 		.querySelectorAll(
 			'.add_to_cart_button:not( .product_type_variable ):not( .product_type_grouped )'
