@@ -66,7 +66,7 @@ const singleAddToCartClick = function ( event ) {
 };
 
 // Register for add_to_cart click events.
-window.onload = function () {
+window.addEventListener( 'load', function () {
 	document
 		.querySelectorAll(
 			'.add_to_cart_button:not( .product_type_variable ):not( .product_type_grouped )'
@@ -80,7 +80,7 @@ window.onload = function () {
 		.forEach( ( button ) => {
 			button.addEventListener( 'click', singleAddToCartClick );
 		} );
-};
+} );
 
 // Register for jQuery event to update product data.
 if ( typeof jQuery === 'function' ) {
