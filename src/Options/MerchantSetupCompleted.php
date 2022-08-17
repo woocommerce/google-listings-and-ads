@@ -27,6 +27,11 @@ class MerchantSetupCompleted implements OptionsAwareInterface, Registerable, Ser
 			'woocommerce_gla_mc_settings_sync',
 			function() {
 				$this->set_contact_information_setup();
+			}
+		);
+		add_action(
+			'woocommerce_gla_mc_setup_completed',
+			function() {
 				$this->set_completed_timestamp();
 			}
 		);
