@@ -32,11 +32,14 @@ export async function relatedProductAddToCart() {
  * Add a product to the cart from a block shop page.
  */
 export async function blockProductAddToCart() {
-	const addToCart = '.wp-block-button__link.add_to_cart_button';
+	const addToCart =
+		'.wp-block-button__link.add_to_cart_button:not([disabled])';
 
 	await page.waitForSelector( addToCart );
 	await page.click( addToCart );
-	await expect( page ).toMatchElement( addToCart + '.added' );
+	await expect( page ).toMatchElement( addToCart + '.added', {
+		timeout: 3000,
+	} );
 }
 
 /**
