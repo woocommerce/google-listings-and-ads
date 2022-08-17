@@ -15,11 +15,12 @@
  */
 export function trackGtagEvent( eventName ) {
 	const eventPath = '/pagead';
+	const option = { timeout: 15000 };
 	return page.waitForRequest( ( request ) => {
 		const url = request.url();
 		const match = encodeURIComponent( 'event=' + eventName );
 		return url.includes( eventPath ) && url.includes( match );
-	} );
+	}, option );
 }
 
 /**
