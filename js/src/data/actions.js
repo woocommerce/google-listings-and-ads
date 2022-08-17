@@ -96,6 +96,24 @@ export function handleFetchError( error, message ) {
  */
 
 /**
+ * @typedef {Object} ProductStatisticsDetails
+ * @property {number} active Number of active products.
+ * @property {number} expiring Number of expiring products.
+ * @property {number} pending Number of pending products.
+ * @property {number} disapproved Number of disapproved products.
+ * @property {number} not_synced Number of not synced products.
+ */
+
+/**
+ * Product status statistics on Google Merchant Center
+ *
+ * @typedef {Object} ProductStatistics
+ * @property {number} scheduled_sync Number of scheduled jobs which will sync products to Google.
+ * @property {number} timestamp Timestamp reflecting when the product status statistics were last generated.
+ * @property {ProductStatisticsDetails} statistics Statistics information of product status on Google Merchant Center.
+ */
+
+/**
  *
  * @return {Array<ShippingRate>} Array of individual shipping rates.
  */
