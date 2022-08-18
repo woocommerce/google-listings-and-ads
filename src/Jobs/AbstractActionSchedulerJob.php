@@ -77,7 +77,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 *
 	 * @throws Exception If an error occurs.
 	 */
-	public function handle_process_items_action( array $items ) {
+	public function handle_process_items_action( array $items = [] ) {
 		$process_hook = $this->get_process_item_hook();
 		$process_args = [ $items ];
 
