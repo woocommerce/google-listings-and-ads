@@ -47,7 +47,7 @@ export function handleFetchError( error, message ) {
  * @typedef {Object} Campaign
  * @property {number} id Campaign ID.
  * @property {string} name Campaign name.
- * @property {'enabled'|'paused'} status Campaign is currently running or has been paused.
+ * @property {'enabled'|'paused'|'removed'} status Campaign is currently running, has been paused or removed.
  * @property {number} amount Amount of daily budget for running ads.
  * @property {CountryCode} country The sales country of this campain.
  *   Please note that this is a targeting country for advertising,
@@ -77,6 +77,21 @@ export function handleFetchError( error, message ) {
  * @property {string} language The language to use for product listings. Example: 'English'.
  * @property {string} location Type of location, There are two possible values: 'selected' countries or 'all' countries.
  * @property {Array<CountryCode>} countries Array of audience countries.
+ */
+
+/**
+ * Settings Data
+ *
+ * @typedef {Object} SettingsData
+ * @property {boolean} [offer_free_shipping] Whether if the merchant offers free shipping.
+ * @property {'automatic'|'flat'|'manual'} [shipping_rate] Type of the shipping rate.
+ * @property {'flat'|'manual'} [shipping_time] Type of the shipping time.
+ * @property {string|null} [tax_rate] Type of tax rate, There are two possible values if US is selected: 'destination' and 'manual' otherwise will be null.
+ * @property {boolean} [website_live] Whether the store website is live.
+ * @property {boolean} [checkout_process_secure] Whether the checkout process is complete and secure.
+ * @property {boolean} [payment_methods_visible] Whether the payment methods are visible on the website.
+ * @property {boolean} [refund_tos_visible] Whether the refund policy and terms of service are visible on the website.
+ * @property {boolean} [contact_info_visible] Whether the phone number, email, and/or address are visible on the website.
  */
 
 /**
@@ -292,27 +307,23 @@ export function* fetchSettings() {
 	}
 }
 
+/**
+ * Save the the MC settings.
+ *
+ * @param {SettingsData} settings settings
+ * @return {Object} Action object to save target audience.
+ */
 export function* saveSettings( settings ) {
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/settings`,
-			method: 'POST',
-			data: settings,
-		} );
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/settings`,
+		method: 'POST',
+		data: settings,
+	} );
 
-		return {
-			type: TYPES.SAVE_SETTINGS,
-			settings,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to save settings. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+	return {
+		type: TYPES.SAVE_SETTINGS,
+		settings,
+	};
 }
 
 export function* fetchJetpackAccount() {
@@ -730,27 +741,6 @@ export function* saveTargetAudience( targetAudience ) {
 		type: TYPES.SAVE_TARGET_AUDIENCE,
 		target_audience: targetAudience,
 	};
-}
-
-export function* fetchAdsCampaigns() {
-	try {
-		const campaigns = yield apiFetch( {
-			path: `${ API_NAMESPACE }/ads/campaigns`,
-		} );
-
-		return {
-			type: TYPES.RECEIVE_ADS_CAMPAIGNS,
-			adsCampaigns: campaigns.map( adaptAdsCampaign ),
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error loading ads campaigns.',
-				'google-listings-and-ads'
-			)
-		);
-	}
 }
 
 /**

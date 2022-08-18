@@ -8,37 +8,38 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Exception;
-use Google\Ads\GoogleAds\Util\V9\ResourceNames;
-use Google\Ads\GoogleAds\V9\Common\LocationInfo;
-use Google\Ads\GoogleAds\V9\Common\Metrics;
-use Google\Ads\GoogleAds\V9\Common\Segments;
-use Google\Ads\GoogleAds\V9\Common\TagSnippet;
-use Google\Ads\GoogleAds\V9\Enums\AccessRoleEnum\AccessRole;
-use Google\Ads\GoogleAds\V9\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
-use Google\Ads\GoogleAds\V9\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
-use Google\Ads\GoogleAds\V9\Enums\TrackingCodeTypeEnum\TrackingCodeType;
-use Google\Ads\GoogleAds\V9\Resources\BillingSetup;
-use Google\Ads\GoogleAds\V9\Resources\Campaign;
-use Google\Ads\GoogleAds\V9\Resources\CampaignBudget;
-use Google\Ads\GoogleAds\V9\Resources\CampaignCriterion;
-use Google\Ads\GoogleAds\V9\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V9\Resources\ConversionAction;
-use Google\Ads\GoogleAds\V9\Resources\Customer;
-use Google\Ads\GoogleAds\V9\Resources\CustomerUserAccess;
-use Google\Ads\GoogleAds\V9\Resources\MerchantCenterLink;
-use Google\Ads\GoogleAds\V9\Resources\ShoppingPerformanceView;
-use Google\Ads\GoogleAds\V9\Services\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V9\Services\CustomerServiceClient;
-use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V9\Services\GoogleAdsServiceClient;
-use Google\Ads\GoogleAds\V9\Services\ListAccessibleCustomersResponse;
-use Google\Ads\GoogleAds\V9\Services\ListMerchantCenterLinksResponse;
-use Google\Ads\GoogleAds\V9\Services\MerchantCenterLinkServiceClient;
-use Google\Ads\GoogleAds\V9\Services\MutateCampaignResult;
-use Google\Ads\GoogleAds\V9\Services\MutateConversionActionResult;
-use Google\Ads\GoogleAds\V9\Services\MutateConversionActionsResponse;
-use Google\Ads\GoogleAds\V9\Services\MutateGoogleAdsResponse;
-use Google\Ads\GoogleAds\V9\Services\MutateOperationResponse;
+use Google\Ads\GoogleAds\Util\V11\ResourceNames;
+use Google\Ads\GoogleAds\V11\Common\LocationInfo;
+use Google\Ads\GoogleAds\V11\Common\Metrics;
+use Google\Ads\GoogleAds\V11\Common\Segments;
+use Google\Ads\GoogleAds\V11\Common\TagSnippet;
+use Google\Ads\GoogleAds\V11\Enums\AccessRoleEnum\AccessRole;
+use Google\Ads\GoogleAds\V11\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
+use Google\Ads\GoogleAds\V11\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
+use Google\Ads\GoogleAds\V11\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
+use Google\Ads\GoogleAds\V11\Enums\TrackingCodeTypeEnum\TrackingCodeType;
+use Google\Ads\GoogleAds\V11\Resources\BillingSetup;
+use Google\Ads\GoogleAds\V11\Resources\Campaign;
+use Google\Ads\GoogleAds\V11\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V11\Resources\CampaignCriterion;
+use Google\Ads\GoogleAds\V11\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V11\Resources\ConversionAction;
+use Google\Ads\GoogleAds\V11\Resources\Customer;
+use Google\Ads\GoogleAds\V11\Resources\CustomerUserAccess;
+use Google\Ads\GoogleAds\V11\Resources\MerchantCenterLink;
+use Google\Ads\GoogleAds\V11\Resources\ShoppingPerformanceView;
+use Google\Ads\GoogleAds\V11\Services\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V11\Services\CustomerServiceClient;
+use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V11\Services\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V11\Services\ListAccessibleCustomersResponse;
+use Google\Ads\GoogleAds\V11\Services\ListMerchantCenterLinksResponse;
+use Google\Ads\GoogleAds\V11\Services\MerchantCenterLinkServiceClient;
+use Google\Ads\GoogleAds\V11\Services\MutateCampaignResult;
+use Google\Ads\GoogleAds\V11\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V11\Services\MutateConversionActionsResponse;
+use Google\Ads\GoogleAds\V11\Services\MutateGoogleAdsResponse;
+use Google\Ads\GoogleAds\V11\Services\MutateOperationResponse;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
@@ -175,7 +176,7 @@ trait GoogleAdsClientTrait {
 			$campaign_criterion_row_mock
 		);
 
-		$this->service_client->expects( $this->exactly( 2 ) )
+		$this->service_client
 			->method( 'search' )->willReturn( $list_response );
 	}
 
@@ -359,15 +360,6 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
-	 * Generates a mocked exception when a customer is requested.
-	 *
-	 * @param ApiException $exception
-	 */
-	protected function generate_customer_mock_exception( ApiException $exception ) {
-		$this->customer_service->method( 'getCustomer' )->willThrowException( $exception );
-	}
-
-	/**
 	 * Generates a list of mocked customers resource names.
 	 *
 	 * @param array $list
@@ -458,11 +450,11 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
-	 * Creates a mocked ConversionAction.
+	 * Creates a mocked AdsConversionActionQuery response.
 	 *
 	 * @param array $data Conversion Action data.
 	 */
-	protected function generate_conversion_action_mock( array $data ) {
+	protected function generate_conversion_action_query_mock( array $data ) {
 		$tag = $this->createMock( TagSnippet::class );
 		$tag->method( 'getType' )->willReturn( TrackingCodeType::WEBPAGE );
 		$tag->method( 'getPageFormat' )->willReturn( TrackingCodePageFormat::HTML );
@@ -474,9 +466,11 @@ trait GoogleAdsClientTrait {
 		$conversion_action->method( 'getStatus' )->willReturn( $data['status'] );
 		$conversion_action->method( 'getTagSnippets' )->willReturn( [ $tag ] );
 
-		$this->conversion_action_service->expects( $this->once() )
-			->method( 'getConversionAction' )
-			->willReturn( $conversion_action );
+		$this->generate_ads_query_mock(
+			[
+				( new GoogleAdsRow )->setConversionAction( $conversion_action ),
+			]
+		);
 	}
 
 	/**
@@ -486,15 +480,6 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_conversion_action_mutate_exception( Exception $exception ) {
 		$this->conversion_action_service->method( 'mutateConversionActions' )->willThrowException( $exception );
-	}
-
-	/**
-	 * Generates a mocked exception when a ConversionAction is requested.
-	 *
-	 * @param Exception $exception
-	 */
-	protected function generate_conversion_action_exception( Exception $exception ) {
-		$this->conversion_action_service->method( 'getConversionAction' )->willThrowException( $exception );
 	}
 
 	/**
@@ -539,6 +524,7 @@ trait GoogleAdsClientTrait {
 			$campaign->method( 'getId' )->willReturn( $row['campaign']['id'] );
 			$campaign->method( 'getName' )->willReturn( $row['campaign']['name'] );
 			$campaign->method( 'getStatus' )->willReturn( AdsCampaignStatus::value( $row['campaign']['status'] ) );
+			$campaign->method( 'getAdvertisingChannelType' )->willReturn( AdsCampaignType::value( $row['campaign']['type'] ) );
 			$ads_row->setCampaign( $campaign );
 
 			// Mock data for ShoppingPerformanceView

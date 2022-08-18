@@ -10,8 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Exception;
-use Google\Ads\GoogleAds\V9\Enums\BillingSetupStatusEnum\BillingSetupStatus as AdsBillingSetupStatus;
-use Google\Ads\GoogleAds\V9\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
+use Google\Ads\GoogleAds\V11\Enums\BillingSetupStatusEnum\BillingSetupStatus as AdsBillingSetupStatus;
+use Google\Ads\GoogleAds\V11\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -234,7 +234,7 @@ class AdsTest extends UnitTest {
 
 	public function test_request_ads_currency_unavailable() {
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
-		$this->generate_customer_mock_exception(
+		$this->generate_ads_query_mock_exception(
 			new ApiException( 'unavailable', 14, 'UNAVAILABLE' )
 		);
 

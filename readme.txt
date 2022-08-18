@@ -3,8 +3,8 @@ Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
-Requires PHP: 7.3
-Stable tag: 2.0.1
+Requires PHP: 7.4
+Stable tag: 2.0.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -55,7 +55,7 @@ Create a new Google Ads account through Google Listings & Ads and a promotional 
 
 * WordPress 5.7 or greater
 * WooCommerce 6.0 or greater
-* PHP version 7.3 or greater (PHP 7.4 or greater is recommended)
+* PHP version 7.4 or greater
 * MySQL version 5.6 or greater
 
 Visit the [WooCommerce server requirements documentation](https://docs.woocommerce.com/document/server-requirements/) for a detailed list of server requirements.
@@ -109,6 +109,34 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.0.4 - 2022-08-16 =
+* Dev - E2E Fix for redirecting to single product page.
+* Dev - Remove wc-admin installation from E2E env setup.
+* Fix - Handle multiple errors in the Edit free listings page.
+* Fix - Hide WooCommerce System messages in the plugin screen. .
+* Fix - Onload conflict when tracking events.
+
+= 2.0.3 - 2022-08-09 =
+* Add - Campaign Conversion Status for detecting converted campaigns.
+* Add - Gtag event tracking.
+* Add - Inbox notification for PMax migration.
+* Add - Includes removed campaign in the program report section.
+* Add - Pmax migration banner dashboard.
+* Add - Pmax migration banner reports.
+* Add - Tooltip in reports section for SSC Campaigns.
+* Add - Track add to cart events from all buttons including Gutenberg blocks.
+* Fix - Add Woo gTag remarketing and conversion signals.
+
+= 2.0.2 - 2022-07-29 =
+* Fix - Disable identifier_exists field.
+* Tweak - Propagate errors for saveSettings.
+* Tweak - Refactor SCSS variables.
+* Tweak - Remove PHP 8.0 specific code of Symfony polyfills.
+* Tweak - Revert migration applicable version value.
+* Tweak - Update change log records type.
+* Tweak - WC 6.8 compatibility.
+* Update - Google Ads library to API V11.
+
 = 2.0.1 - 2022-07-12 =
 * Dev - A script to generate a list of hooks that defined or used in GLA.
 * Dev - GH workflow to set PR labels.
@@ -117,16 +145,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Compatibility with History Navigation v5.
 * Fix - Encoding product names in Issues Table .
 * Tweak - Remove try and catch in saveTargetAudience action.
-
-= 2.0.0 - 2022-07-05 =
-* Add - Filter Ads accounts to exclude manager and test accounts.
-* Add - Return account names when retrieving the list of existing accounts.
-* Fix - Normalize image URLs before validation.
-* Tweak - WooCommerce 6.7 compatibility.
-
-= 1.13.6 - 2022-06-21 =
-* Fix - Cannot disconnect Jetpack when other activated plugins are using Jetpack connection.
-* Fix - Compatibility CES prompts with WC 6.6.0.
-* Fix - Multiple CES prompts on the Dashboard Page.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
