@@ -16,6 +16,7 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
+import ProductFeedStatusSection from './product-feed-status-section';
 import { getProductFeedUrl } from '.~/utils/urls';
 import { GUIDE_NAMES } from '.~/constants';
 import { API_NAMESPACE } from '.~/data/constants';
@@ -67,6 +68,7 @@ export default function SetupPaidAds() {
 					'google-listings-and-ads'
 				) }
 			/>
+			<ProductFeedStatusSection />
 			<FaqsSection />
 			<StepContentFooter>
 				<Flex justify="right" gap={ 4 }>

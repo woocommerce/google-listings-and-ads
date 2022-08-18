@@ -129,6 +129,17 @@ export const getMCSetup = ( state ) => {
 	return state.mc_setup;
 };
 
+/**
+ * @typedef {import('.~/data/actions').ProductStatistics } ProductStatistics
+ */
+
+/**
+ * Get the MC product statistics data.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ *
+ * @return {ProductStatistics|null} The MC product statistics data. Returns `null` if data have not yet loaded.
+ */
 export const getMCProductStatistics = ( state ) => {
 	return state.mc_product_statistics;
 };
