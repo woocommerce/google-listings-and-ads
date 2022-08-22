@@ -180,7 +180,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		DebugLogger::class                 => true,
 		MerchantStatuses::class            => true,
 		PhoneVerification::class           => true,
-		PolicyComplianceCheck::class  	   => true,
+		PolicyComplianceCheck::class       => true,
 		ContactInformation::class          => true,
 		MerchantCenterService::class       => true,
 		TargetAudience::class              => true,
