@@ -3,21 +3,23 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsConversionActionQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Exception;
-use Google\Ads\GoogleAds\V9\Common\TagSnippet;
-use Google\Ads\GoogleAds\V9\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
-use Google\Ads\GoogleAds\V9\Enums\ConversionActionStatusEnum\ConversionActionStatus;
-use Google\Ads\GoogleAds\V9\Enums\ConversionActionTypeEnum\ConversionActionType;
-use Google\Ads\GoogleAds\V9\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
-use Google\Ads\GoogleAds\V9\Enums\TrackingCodeTypeEnum\TrackingCodeType;
-use Google\Ads\GoogleAds\V9\Resources\ConversionAction;
-use Google\Ads\GoogleAds\V9\Resources\ConversionAction\ValueSettings;
-use Google\Ads\GoogleAds\V9\Services\ConversionActionOperation;
-use Google\Ads\GoogleAds\V9\Services\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V9\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V11\Common\TagSnippet;
+use Google\Ads\GoogleAds\V11\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
+use Google\Ads\GoogleAds\V11\Enums\ConversionActionStatusEnum\ConversionActionStatus;
+use Google\Ads\GoogleAds\V11\Enums\ConversionActionTypeEnum\ConversionActionType;
+use Google\Ads\GoogleAds\V11\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
+use Google\Ads\GoogleAds\V11\Enums\TrackingCodeTypeEnum\TrackingCodeType;
+use Google\Ads\GoogleAds\V11\Resources\ConversionAction;
+use Google\Ads\GoogleAds\V11\Resources\ConversionAction\ValueSettings;
+use Google\Ads\GoogleAds\V11\Services\ConversionActionOperation;
+use Google\Ads\GoogleAds\V11\Services\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V11\Services\MutateConversionActionResult;
 use Google\ApiCore\ApiException;
 
 /**
@@ -129,10 +131,14 @@ class AdsConversionAction implements OptionsAwareInterface {
 				$resource_name = ConversionActionServiceClient::conversionActionName( $this->options->get_ads_id(), $resource_name );
 			}
 
-			$ca_client         = $this->client->getConversionActionServiceClient();
-			$conversion_action = $ca_client->getConversionAction( $resource_name );
+			$results = ( new AdsConversionActionQuery() )->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'conversion_action.resource_name', $resource_name, '=' )
+				->get_results();
 
-			return $this->convert_conversion_action( $conversion_action );
+			// Get only the first element from results.
+			foreach ( $results->iterateAllElements() as $row ) {
+				return $this->convert_conversion_action( $row );
+			}
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 			$message = $e->getMessage();
@@ -154,12 +160,13 @@ class AdsConversionAction implements OptionsAwareInterface {
 	/**
 	 * Convert conversion action data to an array.
 	 *
-	 * @param ConversionAction $conversion_action
+	 * @param GoogleAdsRow $row Data row returned from a query request.
 	 *
 	 * @return array An array with some conversion action details.
 	 */
-	private function convert_conversion_action( ConversionAction $conversion_action ): array {
-		$return = [
+	private function convert_conversion_action( GoogleAdsRow $row ): array {
+		$conversion_action = $row->getConversionAction();
+		$return            = [
 			'id'     => $conversion_action->getId(),
 			'name'   => $conversion_action->getName(),
 			'status' => ConversionActionStatus::name( $conversion_action->getStatus() ),

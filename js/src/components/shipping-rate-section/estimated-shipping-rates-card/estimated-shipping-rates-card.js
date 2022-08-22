@@ -12,10 +12,9 @@ import Section from '.~/wcdl/section';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
-import groupShippingRatesByMethodCurrencyRate from './groupShippingRatesByMethodCurrencyRate';
+import groupShippingRatesByCurrencyRate from './groupShippingRatesByCurrencyRate';
 import ShippingRateInputControl from './shipping-rate-input-control';
 import { AddRateFormModal } from './rate-form-modals';
-import { SHIPPING_RATE_METHOD } from '.~/constants';
 import getHandlers from './getHandlers';
 
 /**
@@ -55,12 +54,11 @@ export default function EstimatedShippingRatesCard( {
 	 * and render an "Add rate button" if there are remaining countries.
 	 */
 	const renderGroups = () => {
-		const groups = groupShippingRatesByMethodCurrencyRate( value );
+		const groups = groupShippingRatesByCurrencyRate( value );
 
 		if ( groups.length === 0 ) {
 			const prefilledGroup = {
 				countries: audienceCountries,
-				method: SHIPPING_RATE_METHOD.FLAT_RATE,
 				currency: currencyCode,
 				rate: undefined,
 			};
@@ -80,9 +78,7 @@ export default function EstimatedShippingRatesCard( {
 		 */
 		const remainingCountries = audienceCountries.filter( ( country ) => {
 			const exist = value.some(
-				( shippingRate ) =>
-					shippingRate.country === country &&
-					shippingRate.method === SHIPPING_RATE_METHOD.FLAT_RATE
+				( shippingRate ) => shippingRate.country === country
 			);
 
 			return ! exist;
@@ -120,7 +116,6 @@ export default function EstimatedShippingRatesCard( {
 									countryOptions={ remainingCountries }
 									initialValues={ {
 										countries: remainingCountries,
-										method: SHIPPING_RATE_METHOD.FLAT_RATE,
 										currency: currencyCode,
 										rate: 0,
 									} }

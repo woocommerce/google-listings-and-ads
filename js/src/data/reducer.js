@@ -32,6 +32,7 @@ const DEFAULT_STATE = {
 		contact: null,
 	},
 	ads_campaigns: null,
+	all_ads_campaigns: null,
 	mc_setup: null,
 	mc_product_statistics: null,
 	mc_issues: {
@@ -271,6 +272,9 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ADS_CAMPAIGNS: {
+			if ( action.query?.exclude_removed === false ) {
+				return setIn( state, 'all_ads_campaigns', action.adsCampaigns );
+			}
 			return setIn( state, 'ads_campaigns', action.adsCampaigns );
 		}
 

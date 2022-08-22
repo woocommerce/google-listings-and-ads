@@ -39,6 +39,7 @@ describe( 'reducer', () => {
 				contact: null,
 			},
 			ads_campaigns: null,
+			all_ads_campaigns: null,
 			mc_setup: null,
 			mc_review_request: {
 				issues: null,
@@ -94,7 +95,6 @@ describe( 'reducer', () => {
 					{
 						id: '1',
 						country: 'US',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 4.99,
 						options: {},
@@ -102,7 +102,6 @@ describe( 'reducer', () => {
 					{
 						id: '2',
 						country: 'AU',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 25,
 						options: {},
@@ -120,7 +119,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},
@@ -128,7 +126,6 @@ describe( 'reducer', () => {
 				{
 					id: '2',
 					country: 'CA',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {},
@@ -140,7 +137,6 @@ describe( 'reducer', () => {
 					{
 						id: '2',
 						country: 'CA',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 12,
 						options: {},
@@ -148,7 +144,6 @@ describe( 'reducer', () => {
 					{
 						id: '3',
 						country: 'JP',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 12,
 						options: {},
@@ -163,7 +158,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},
@@ -171,7 +165,6 @@ describe( 'reducer', () => {
 				{
 					id: '2',
 					country: 'CA',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 12,
 					options: {},
@@ -179,7 +172,6 @@ describe( 'reducer', () => {
 				{
 					id: '3',
 					country: 'JP',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 12,
 					options: {},
@@ -192,7 +184,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},
@@ -200,7 +191,6 @@ describe( 'reducer', () => {
 				{
 					id: '2',
 					country: 'CA',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {},
@@ -218,7 +208,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},
@@ -463,6 +452,7 @@ describe( 'reducer', () => {
 
 	describe( 'Ads campaigns', () => {
 		const path = 'ads_campaigns';
+		const pathAllAds = 'all_ads_campaigns';
 
 		it( 'should return with received ads campaigns', () => {
 			const action = {
@@ -549,6 +539,18 @@ describe( 'reducer', () => {
 				{ id: 123 },
 				{ id: 789 },
 			] );
+		} );
+
+		it( 'should return with all ads campaigns if exclude removed is false', () => {
+			const action = {
+				type: TYPES.RECEIVE_ADS_CAMPAIGNS,
+				adsCampaigns: [ { id: 123 }, { id: 456 } ],
+				query: { exclude_removed: false },
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( pathAllAds, action.adsCampaigns );
 		} );
 	} );
 
