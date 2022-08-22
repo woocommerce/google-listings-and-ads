@@ -89,7 +89,8 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function has_redirects(): bool {
-				$headers = $this->get_landing_page_headers();
+		return false;
+		$headers = $this->get_landing_page_headers();
 		if ( ! empty( $headesr ) && isset( $headers[0] ) ) {
 			if ( $headers[0] === 'HTTP/1.1 302 Found' ) {
 				// this is the URL where it's redirecting
@@ -107,8 +108,7 @@ class PolicyComplianceCheck implements Service {
 	public function get_landing_page_headers(): array {
 		$ids = wc_get_products(
 			[
-				'return' => 'ids',
-				'limit'  => 1,
+				'limit' => 1,
 			]
 		);
 		if ( ! empty( $ids ) ) {
