@@ -793,18 +793,51 @@ describe( 'reducer', () => {
 		// prettier-ignore
 		const argumentsTuples = [
 			[ TYPES.RECEIVE_SETTINGS, 'settings', 'mc.settings' ],
-			[ TYPES.RECEIVE_ACCOUNTS_JETPACK, 'account', 'mc.accounts.jetpack' ],
+			[
+				TYPES.RECEIVE_ACCOUNTS_JETPACK,
+				'account',
+				'mc.accounts.jetpack',
+			],
 			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE, 'account', 'mc.accounts.google' ],
-			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ACCESS, 'data', 'mc.accounts.google_access' ],
+			[
+				TYPES.RECEIVE_ACCOUNTS_GOOGLE_ACCESS,
+				'data',
+				'mc.accounts.google_access',
+			],
 			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC, 'account', 'mc.accounts.mc' ],
-			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC_EXISTING, 'accounts', 'mc.accounts.existing_mc' ],
-			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS, 'billingStatus', 'mc.accounts.ads_billing_status' ],
-			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_EXISTING, 'accounts', 'mc.accounts.existing_ads' ],
+			[
+				TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC_EXISTING,
+				'accounts',
+				'mc.accounts.existing_mc',
+			],
+			[
+				TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS,
+				'billingStatus',
+				'mc.accounts.ads_billing_status',
+			],
+			[
+				TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_EXISTING,
+				'accounts',
+				'mc.accounts.existing_ads',
+			],
 			[ TYPES.RECEIVE_MC_CONTACT_INFORMATION, 'data', 'mc.contact' ],
-			[ TYPES.RECEIVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
-			[ TYPES.SAVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
+			[
+				TYPES.RECEIVE_TARGET_AUDIENCE,
+				'target_audience',
+				'mc.target_audience',
+			],
+			[
+				TYPES.SAVE_TARGET_AUDIENCE,
+				'target_audience',
+				'mc.target_audience',
+			],
 			[ TYPES.RECEIVE_MC_SETUP, 'mcSetup', 'mc_setup' ],
-			[ TYPES.RECEIVE_MC_PRODUCT_STATISTICS, 'mcProductStatistics', 'mc_product_statistics' ],
+			[
+				TYPES.RECEIVE_MC_PRODUCT_STATISTICS,
+				'mcProductStatistics',
+				'mc_product_statistics',
+			],
+			[ TYPES.POLICY_CHECK, 'data', 'mc.policy_check' ],
 		];
 		/* eslint-enable prettier/prettier */
 
