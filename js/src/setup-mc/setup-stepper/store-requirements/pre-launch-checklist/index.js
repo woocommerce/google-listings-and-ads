@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 import {
 	Button,
 	CheckboxControl,
@@ -15,13 +14,10 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '.~/data';
-import AppSpinner from '.~/components/app-spinner';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import './index.scss';
-import usePolicyCheck from '.~/hooks/usePolicyCheck';
 
 /*
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-checklist', link_id: 'checklist-requirements', href: 'https://support.google.com/merchants/answer/6363310' }`
@@ -40,34 +36,7 @@ const PreLaunchChecklist = ( props ) => {
 			context,
 		} );
 	};
-	const { data } = usePolicyCheck();
-	if ( ! data ) {
-		return <AppSpinner />;
-	}
-	if ( ! values.checked ) {
-		const websiteLive =
-			data.allowed_countries &&
-			! data.robots_restriction &&
-			! data.page_not_found_error &&
-			! data.page_redirects;
-		if ( websiteLive !== values.website_live ) {
-			setValue( 'website_live', data.website_live );
-		}
 
-		if ( data.store_ssl !== values.checkout_process_secure ) {
-			setValue( 'checkout_process_secure', data.store_ssl );
-		}
-
-		if ( data.refund_returns !== values.refund_tos_visible ) {
-			setValue( 'refund_tos_visible', data.refund_returns );
-		}
-
-		if ( data.payment_gateways !== values.payment_methods_visible ) {
-			setValue( 'payment_methods_visible', data.payment_gateways );
-		}
-
-		setValue( 'checked', true );
-	}
 
 	return (
 		<div className="gla-pre-launch-checklist">

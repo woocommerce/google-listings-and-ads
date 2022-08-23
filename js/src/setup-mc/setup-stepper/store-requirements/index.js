@@ -22,6 +22,7 @@ import ContactInformation from '.~/components/contact-information';
 import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
 import PreLaunchChecklist from './pre-launch-checklist';
+import usePolicyCheck from '.~/hooks/usePolicyCheck';
 
 function _checkErrors() {
 	const errors = {};
@@ -34,6 +35,7 @@ export default function StoreRequirements() {
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: address } = useStoreAddress();
 	const { settings } = useSettings();
+	const { data: policy_check_data } = usePolicyCheck();
 
 	/**
 	 * Since it still lacking the phone verification state,
@@ -41,6 +43,7 @@ export default function StoreRequirements() {
 	 */
 	const [ isPhoneNumberReady, setPhoneNumberReady ] = useState( false );
 	const [ settingsSaved, setSettingsSaved ] = useState( true );
+	const [ policyChecked, setPolicyChecked ] = useState( false );
 	const [ completing, setCompleting ] = useState( false );
 
 	const handleChangeCallback = async ( _, values ) => {
@@ -94,6 +97,41 @@ export default function StoreRequirements() {
 
 	if ( ! settings ) {
 		return <AppSpinner />;
+	}
+	if ( ! policy_check_data ) {
+		return <AppSpinner />;
+	}
+
+	if ( ! policyChecked ) {
+		const websiteLive =
+			policy_check_data.allowed_countries &&
+			! policy_check_data.robots_restriction &&
+			! policy_check_data.page_not_found_error &&
+			! policy_check_data.page_redirects;
+		if ( websiteLive !== settings.website_live ) {
+			settings.website_live = policy_check_data.website_live;
+		}
+
+		if (
+			policy_check_data.store_ssl !== settings.checkout_process_secure
+		) {
+			settings.checkout_process_secure = policy_check_data.store_ssl;
+		}
+
+		if (
+			policy_check_data.refund_returns !== settings.refund_tos_visible
+		) {
+			settings.refund_tos_visible = policy_check_data.refund_returns;
+		}
+
+		if (
+			policy_check_data.payment_gateways !==
+			settings.payment_methods_visible
+		) {
+			settings.payment_methods_visible =
+				policy_check_data.payment_gateways;
+		}
+		setPolicyChecked( true );
 	}
 
 	return (
