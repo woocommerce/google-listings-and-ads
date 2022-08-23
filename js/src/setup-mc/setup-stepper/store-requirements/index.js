@@ -100,7 +100,7 @@ export default function StoreRequirements() {
 		<StepContent>
 			<StepContentHeader
 				title={ __(
-					'[internal] Confirm store requirements',
+					'Confirm store requirements',
 					'google-listings-and-ads'
 				) }
 				description={ __(

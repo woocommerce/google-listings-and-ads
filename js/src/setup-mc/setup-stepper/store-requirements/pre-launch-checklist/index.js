@@ -27,7 +27,6 @@ import usePolicyCheck from '.~/hooks/usePolicyCheck';
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-checklist', link_id: 'checklist-requirements', href: 'https://support.google.com/merchants/answer/6363310' }`
  */
 const PreLaunchChecklist = ( props ) => {
-	const { saveSettings } = useAppDispatch();
 	const { formProps } = props;
 
 	const { getInputProps, setValue, values } = formProps;
@@ -111,17 +110,14 @@ const PreLaunchChecklist = ( props ) => {
 									<div id="panel">
 										<Panel>
 											<PanelBody
-												key={
-													'why-do-i-need-a-wp-account'
-												}
 												title={ __(
 													'My store is live and accessible to all users',
 													'google-listings-and-ads'
 												) }
 												initialOpen={ true }
 												onToggle={ getPanelToggleHandler(
-													'gla_faq',
-													'why-do-i-need-a-wp-account',
+													'website_live',
+													'pre-launch-checklist',
 													'setup-mc-accounts'
 												) }
 											>
@@ -132,35 +128,23 @@ const PreLaunchChecklist = ( props ) => {
 													) }
 												</PanelRow>
 												<p>
-													{ createInterpolateElement(
-														__(
-															'<link>Learn more about common landing page issues and how to fix them</link>',
+													<AppDocumentationLink
+														context="setup-mc-checklist"
+														linkId="check-website-is-live"
+														type="external"
+														href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#store-is-live"
+													>
+														{ __(
+															'Learn more about common landing page issues and how to fix them',
 															'google-listings-and-ads'
-														),
-														{
-															link: (
-																<AppDocumentationLink
-																	context="setup-mc-checklist"
-																	linkId="check-checkout-process"
-																	type="external"
-																	href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#store-is-live"
-																/>
-															),
-														}
-													) }
+														) }
+													</AppDocumentationLink>
 												</p>
 												<Button
 													isPrimary
-													disabled={
-														values.website_live
-													}
 													onClick={ () => {
 														setValue(
 															'website_live',
-															true
-														);
-														saveSettings(
-															values.website_live,
 															true
 														);
 													} }
@@ -200,17 +184,14 @@ const PreLaunchChecklist = ( props ) => {
 									<div id="panel">
 										<Panel>
 											<PanelBody
-												key={
-													'why-do-i-need-a-wp-account'
-												}
 												title={ __(
 													'I have a complete checkout process.',
 													'google-listings-and-ads'
 												) }
 												initialOpen={ true }
 												onToggle={ getPanelToggleHandler(
-													'gla_faq',
-													'why-do-i-need-a-wp-account',
+													'payment_methods_visible',
+													'pre-launch-checklist',
 													'setup-mc-accounts'
 												) }
 											>
@@ -221,35 +202,23 @@ const PreLaunchChecklist = ( props ) => {
 													) }
 												</PanelRow>
 												<p>
-													{ createInterpolateElement(
-														__(
-															"<link>Learn more about Google's checkout requirements & best practices</link>",
+													<AppDocumentationLink
+														context="setup-mc-checklist"
+														linkId="check-payment-methods-visible"
+														type="external"
+														href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout"
+													>
+														{ __(
+															"Learn more about Google's checkout requirements & best practices",
 															'google-listings-and-ads'
-														),
-														{
-															link: (
-																<AppDocumentationLink
-																	context="setup-mc-checklist"
-																	linkId="check-checkout-process"
-																	type="external"
-																	href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout"
-																/>
-															),
-														}
-													) }
+														) }
+													</AppDocumentationLink>
 												</p>
 												<Button
 													isPrimary
-													disabled={
-														values.payment_methods_visible
-													}
 													onClick={ () => {
 														setValue(
 															'payment_methods_visible',
-															true
-														);
-														saveSettings(
-															values.payment_methods_visible,
 															true
 														);
 													} }
@@ -292,17 +261,14 @@ const PreLaunchChecklist = ( props ) => {
 									<div id="panel">
 										<Panel>
 											<PanelBody
-												key={
-													'why-do-i-need-a-wp-account'
-												}
 												title={ __(
 													'Confirm you have a secure checkout process.',
 													'google-listings-and-ads'
 												) }
 												initialOpen={ true }
 												onToggle={ getPanelToggleHandler(
-													'gla_faq',
-													'why-do-i-need-a-wp-account',
+													'checkout_process_secure',
+													'pre-launch-checklist',
 													'setup-mc-accounts'
 												) }
 											>
@@ -320,35 +286,23 @@ const PreLaunchChecklist = ( props ) => {
 													) }
 												</PanelRow>
 												<p>
-													{ createInterpolateElement(
-														__(
-															'<link>Learn to set up SSL on your website</link>',
+													<AppDocumentationLink
+														context="setup-mc-checklist"
+														linkId="check-checkout-process-secure"
+														type="external"
+														href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#payment-methods"
+													>
+														{ __(
+															'Learn to set up SSL on your website',
 															'google-listings-and-ads'
-														),
-														{
-															link: (
-																<AppDocumentationLink
-																	context="setup-mc-checklist"
-																	linkId="check-checkout-process"
-																	type="external"
-																	href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#payment-methods"
-																/>
-															),
-														}
-													) }
+														) }
+													</AppDocumentationLink>
 												</p>
 												<Button
 													isPrimary
-													disabled={
-														values.checkout_process_secure
-													}
 													onClick={ () => {
 														setValue(
 															'checkout_process_secure',
-															true
-														);
-														saveSettings(
-															values.checkout_process_secure,
 															true
 														);
 													} }
@@ -381,148 +335,137 @@ const PreLaunchChecklist = ( props ) => {
 								/>
 							) }
 
-							{ ! values.refund_tos_visible && (
-								<div id="checkbox">
+							{
+								! values.refund_tos_visible && (
+									<div id="checkbox">
+										<CheckboxControl
+											{ ...getInputProps(
+												'refund_tos_visible'
+											) }
+										></CheckboxControl>
+										<div id="panel">
+											<Panel>
+												<PanelBody
+													title={ __(
+														'Confirm a refund policy and terms of service are visible on your online store.',
+														'google-listings-and-ads'
+													) }
+													initialOpen={ true }
+													onToggle={ getPanelToggleHandler(
+														'refund_tos_visible',
+														'pre-launch-checklist',
+														'setup-mc-accounts'
+													) }
+												>
+													<PanelRow>
+														{ __(
+															"Show a clear return and refund policy on your website. Incluse return process, refund process, and customer requirements (return window, product condition and reason for return). If you don't accept returns or refunds, clearly start that on your website. ",
+															'google-listings-and-ads'
+														) }
+													</PanelRow>
+													<p>
+														<AppDocumentationLink
+															context="setup-mc-checklist"
+															linkId="check-refund-tos-visible"
+															type="external"
+															href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms"
+														>
+															{ __(
+																"Learn more about Google's refund policy requirements",
+																'google-listings-and-ads'
+															) }
+														</AppDocumentationLink>
+													</p>
+													<Button
+														isPrimary
+														onClick={ () => {
+															setValue(
+																'refund_tos_visible',
+																true
+															);
+														} }
+													>
+														{ __(
+															'Confirm',
+															'google-listings-and-ads'
+														) }
+													</Button>
+												</PanelBody>
+											</Panel>
+										</div>
+									</div>
+								);
+							}
+
+							{
+								values.refund_tos_visible && (
 									<CheckboxControl
+										label={
+											<span className="gla-pre-launch-checklist__checkbox_popover">
+												<span className="checkbox-label">
+													{ __(
+														'Confirm a refund policy and terms of service are visible on your online store.',
+														'google-listings-and-ads'
+													) }
+												</span>
+											</span>
+										}
 										{ ...getInputProps(
 											'refund_tos_visible'
 										) }
-									></CheckboxControl>
-									<div id="panel">
-										<Panel>
-											<PanelBody
-												key={
-													'why-do-i-need-a-wp-account'
-												}
-												title={ __(
-													'Confirm a refund policy and terms of service are visible on your online store.',
-													'google-listings-and-ads'
-												) }
-												initialOpen={ true }
-												onToggle={ getPanelToggleHandler(
-													'gla_faq',
-													'why-do-i-need-a-wp-account',
-													'setup-mc-accounts'
-												) }
-											>
-												<PanelRow>
-													{ __(
-														"Show a clear return and refund policy on your website. Incluse return process, refund process, and customer requirements (return window, product condition and reason for return). If you don't accept returns or refunds, clearly start that on your website. ",
+									/>
+								);
+							}
+
+							{
+								! values.contact_info_visible && (
+									<div id="checkbox">
+										<CheckboxControl
+											{ ...getInputProps(
+												'contact_info_visible'
+											) }
+										></CheckboxControl>
+										<div id="panel">
+											<Panel>
+												<PanelBody
+													title={ __(
+														"Confirm your store's phone number, email and/or address are visible on your website",
 														'google-listings-and-ads'
 													) }
-												</PanelRow>
-												<p>
-													{ createInterpolateElement(
-														__(
-															"<link>Learn more about Google's refund policy requirements </link>",
+													initialOpen={ true }
+													onToggle={ getPanelToggleHandler(
+														'contact_info_visible',
+														'pre-launch-checklist',
+														'setup-mc-accounts'
+													) }
+												>
+													<PanelRow>
+														{ __(
+															'Allow your customers to contact you for product inquiries by including contact information on your website (i,e, contact us form, business profile link, social media, email or phone number.',
 															'google-listings-and-ads'
-														),
-														{
-															link: (
-																<AppDocumentationLink
-																	context="setup-mc-checklist"
-																	linkId="check-checkout-process"
-																	type="external"
-																	href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms"
-																/>
-															),
-														}
-													) }
-												</p>
-												<Button
-													isPrimary
-													disabled={
-														values.refund_tos_visible
-													}
-													onClick={ () => {
-														setValue(
-															'refund_tos_visible',
-															true
-														);
-														saveSettings( values );
-													} }
-												>
-													{ __(
-														'Confirm',
-														'google-listings-and-ads'
-													) }
-												</Button>
-											</PanelBody>
-										</Panel>
+														) }
+													</PanelRow>
+													<p />
+													<Button
+														isPrimary
+														onClick={ () => {
+															setValue(
+																'contact_info_visible',
+																true
+															);
+														} }
+													>
+														{ __(
+															'Confirm',
+															'google-listings-and-ads'
+														) }
+													</Button>
+												</PanelBody>
+											</Panel>
+										</div>
 									</div>
-								</div>
-							) }
-
-							{ values.refund_tos_visible && (
-								<CheckboxControl
-									label={
-										<span className="gla-pre-launch-checklist__checkbox_popover">
-											<span className="checkbox-label">
-												{ __(
-													'Confirm a refund policy and terms of service are visible on your online store.',
-													'google-listings-and-ads'
-												) }
-											</span>
-										</span>
-									}
-									{ ...getInputProps( 'refund_tos_visible' ) }
-								/>
-							) }
-
-							{ ! values.contact_info_visible && (
-								<div id="checkbox">
-									<CheckboxControl
-										{ ...getInputProps(
-											'contact_info_visible'
-										) }
-									></CheckboxControl>
-									<div id="panel">
-										<Panel>
-											<PanelBody
-												title={ __(
-													"Confirm your store's phone number, email and/or address are visible on your website",
-													'google-listings-and-ads'
-												) }
-												initialOpen={ true }
-												onToggle={ getPanelToggleHandler(
-													'gla_faq',
-													'why-do-i-need-a-wp-account',
-													'setup-mc-accounts'
-												) }
-											>
-												<PanelRow>
-													{ __(
-														'Allow your customers to contact you for product inquiries by including contact information on your website (i,e, contact us form, business profile link, social media, email or phone number.',
-														'google-listings-and-ads'
-													) }
-												</PanelRow>
-												<p />
-												<Button
-													isPrimary
-													disabled={
-														values.contact_info_visible
-													}
-													onClick={ () => {
-														setValue(
-															'contact_info_visible',
-															true
-														);
-														saveSettings(
-															values.contact_info_visible,
-															true
-														);
-													} }
-												>
-													{ __(
-														'Confirm',
-														'google-listings-and-ads'
-													) }
-												</Button>
-											</PanelBody>
-										</Panel>
-									</div>
-								</div>
-							) }
+								);
+							}
 							{ values.contact_info_visible && (
 								<CheckboxControl
 									label={
