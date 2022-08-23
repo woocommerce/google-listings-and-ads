@@ -127,23 +127,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Add - Track add to cart events from all buttons including Gutenberg blocks.
 * Fix - Add Woo gTag remarketing and conversion signals.
 
-= 2.0.2 - 2022-07-29 =
-* Fix - Disable identifier_exists field.
-* Tweak - Propagate errors for saveSettings.
-* Tweak - Refactor SCSS variables.
-* Tweak - Remove PHP 8.0 specific code of Symfony polyfills.
-* Tweak - Revert migration applicable version value.
-* Tweak - Update change log records type.
-* Tweak - WC 6.8 compatibility.
-* Update - Google Ads library to API V11.
-
-= 2.0.1 - 2022-07-12 =
-* Dev - A script to generate a list of hooks that defined or used in GLA.
-* Dev - GH workflow to set PR labels.
-* Add - Normalizer Polyfill.
-* Dev - changed the changelog types list.
-* Fix - Compatibility with History Navigation v5.
-* Fix - Encoding product names in Issues Table .
-* Tweak - Remove try and catch in saveTargetAudience action.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
