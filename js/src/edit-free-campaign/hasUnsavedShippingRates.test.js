@@ -6,10 +6,7 @@ import { cloneDeep, set } from 'lodash';
 /**
  * Internal dependencies
  */
-import { SHIPPING_RATE_METHOD } from '.~/constants';
 import hasUnsavedShippingRates from './hasUnsavedShippingRates';
-
-const method = SHIPPING_RATE_METHOD.FLAT_RATE;
 
 describe( 'hasUnsavedShippingRates', () => {
 	let savedRates;
@@ -23,7 +20,6 @@ describe( 'hasUnsavedShippingRates', () => {
 				rate: 12.34,
 				currency: 'USD',
 				options: { free_shipping_threshold: 1000 },
-				method,
 			},
 			{
 				id: '2',
@@ -31,7 +27,6 @@ describe( 'hasUnsavedShippingRates', () => {
 				rate: 4900,
 				currency: 'JPY',
 				options: { free_shipping_threshold: 2000 },
-				method,
 			},
 		];
 		rates = cloneDeep( savedRates );
@@ -81,7 +76,6 @@ describe( 'hasUnsavedShippingRates', () => {
 		[ 'options', {} ],
 		[ 'options.free_shipping_threshold', undefined ],
 		[ 'options.free_shipping_threshold', 5000 ],
-		[ 'method', 'bumpy_rate' ],
 	] )(
 		'when the property `%s` is edited, for example to %s, should return true',
 		( path, value ) => {

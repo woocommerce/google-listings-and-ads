@@ -118,7 +118,6 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 			}
 		);
 
-		require_once dirname( __DIR__ ) . '/Polyfills/bootstrap.php';
 	}
 
 	/**

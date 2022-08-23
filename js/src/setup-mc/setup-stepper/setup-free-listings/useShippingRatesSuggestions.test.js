@@ -52,14 +52,12 @@ describe( 'useShippingRatesSuggestions', () => {
 			data: [
 				{
 					country: 'GB',
-					method: 'flat_rate',
 					currency: 'US',
 					rate: 12,
 					options: {},
 				},
 				{
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'US',
 					rate: 10,
 					options: {},
@@ -73,14 +71,12 @@ describe( 'useShippingRatesSuggestions', () => {
 		expect( result.current.data ).toStrictEqual( [
 			{
 				country: 'GB',
-				method: 'flat_rate',
 				currency: 'US',
 				rate: 12,
 				options: {},
 			},
 			{
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'US',
 				rate: 10,
 				options: {},

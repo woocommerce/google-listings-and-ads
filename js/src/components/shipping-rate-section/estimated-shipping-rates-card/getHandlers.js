@@ -1,8 +1,7 @@
 /**
  * Internal dependencies
  */
-import { SHIPPING_RATE_METHOD } from '.~/constants';
-import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
+import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
 
 /**
  * @typedef { import(".~/data/actions").ShippingRate } ShippingRate
@@ -11,7 +10,6 @@ import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
  */
 
 const defaultShippingRate = {
-	method: SHIPPING_RATE_METHOD.FLAT_RATE,
 	options: {},
 };
 
@@ -32,11 +30,10 @@ const getHandlers = ( { value, onChange } ) => {
 	 *
 	 * @param {ShippingRateGroup} newGroup Shipping rate group.
 	 */
-	const handleAddSubmit = ( { countries, method, currency, rate } ) => {
+	const handleAddSubmit = ( { countries, currency, rate } ) => {
 		const newShippingRates = countries.map( ( country ) => ( {
 			...defaultShippingRate,
 			country,
-			method,
 			currency,
 			rate,
 		} ) );
@@ -78,7 +75,6 @@ const getHandlers = ( { value, onChange } ) => {
 					...defaultShippingRate,
 					...oldShippingRate,
 					country,
-					method: newGroup.method,
 					currency: newGroup.currency,
 					rate: newGroup.rate,
 				};
@@ -87,7 +83,7 @@ const getHandlers = ( { value, onChange } ) => {
 				 * If the shipping rate is free,
 				 * we remove the free_shipping_threshold.
 				 */
-				if ( ! isNonFreeFlatShippingRate( newShippingRate ) ) {
+				if ( ! isNonFreeShippingRate( newShippingRate ) ) {
 					newShippingRate.options.free_shipping_threshold = undefined;
 				}
 

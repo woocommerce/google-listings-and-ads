@@ -122,6 +122,11 @@ const webpackConfig = {
 			'js/src/product-attributes',
 			'index.js'
 		),
+		'gtag-events': path.resolve(
+			process.cwd(),
+			'js/src/gtag-events',
+			'index.js'
+		),
 	},
 	output: {
 		...defaultConfig.output,

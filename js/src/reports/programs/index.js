@@ -17,6 +17,7 @@ import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
 import ReportsNavigation from '../reports-navigation';
+import CampaignConversionReportsNotice from '.~/components/campaign-conversion-notice/reports-notice';
 
 /**
  * Available metrics and their human-readable labels.
@@ -122,6 +123,7 @@ const ProgramsReport = () => {
 				loaded={ loaded }
 				intervals={ intervals }
 			/>
+			<CampaignConversionReportsNotice />
 			<CompareProgramsTableCard
 				trackEventReportId={ trackEventId }
 				isLoading={ ! loaded }
