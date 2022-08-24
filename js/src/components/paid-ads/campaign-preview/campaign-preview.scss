@@ -1,7 +1,191 @@
+// Please note that there are a lot of hard-coded values since the mockups
+// have special sizes and are only used within the corresponding components.
+// And they don't refer to other shared SCSS variables and shouldn't be used
+// by other components.
+
+$gla-campaign-preview-color-blue: #4285f4;
 $gla-campaign-preview-width: 205px;
 $gla-campaign-preview-height: 270px;
 
 .gla-campaign-preview {
 	width: $gla-campaign-preview-width;
 	height: $gla-campaign-preview-height;
+}
+
+.gla-ads-mockup {
+	// === Shared components within ad previews ===
+	&__placeholder {
+		height: 3px;
+		border-radius: 4px;
+
+		&--thinnest {
+			height: 1px;
+		}
+
+		&--thinner {
+			height: 2px;
+		}
+
+		&--thicker {
+			height: 4px;
+		}
+
+		&--gray-100 {
+			background-color: $gray-100;
+		}
+
+		&--gray-200 {
+			background-color: $gray-200;
+		}
+
+		&--gray-300 {
+			background-color: $gray-300;
+		}
+
+		&--gray-400 {
+			background-color: $gray-400;
+		}
+
+		&--gray-500 {
+			// $gray-400 is not declared Gutenberg style.
+			background-color: #bbb;
+		}
+
+		&--blue {
+			background-color: $gla-campaign-preview-color-blue;
+		}
+	}
+
+	// Display smaller font sizes than browsers' limitations.
+	&__scaled-text {
+		transform: scale(0.5);
+		transform-origin: top left;
+		margin-right: -100%; // Inner shrinkage for offsetting the outer horizontal gap caused by 0.5 times scaling.
+		margin-bottom: -0.5em; // Inner shrinkage for offsetting the outer vertical gap caused by 0.5 times scaling.
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		line-height: 1;
+		font-size: 20px;
+
+		&--smaller {
+			font-size: 18px;
+		}
+
+		&--larger {
+			font-size: 22px;
+		}
+
+		&--gray-700 {
+			color: $gray-700;
+		}
+
+		&--gray-800 {
+			color: $gray-800;
+		}
+
+		&--blue {
+			color: $gla-campaign-preview-color-blue;
+		}
+
+		&--ad-badge {
+			// The same vertical inner shrinkage as above.
+			// A: Height of badge                     = &--ad-badge font-size + vertical padding
+			// B: Height of text after badge          = &--smaller font-size
+			// C: Half of the ratio of badge and text = (A / B) / 2
+			// A = 16 + (3 * 2) = 22
+			// B = 18
+			// C = (A / B) / 2 = (22 / 18) / 2 ≈ 0.6
+			margin-bottom: -0.6em;
+
+			&::before {
+				content: "AD";
+				display: inline-block;
+				margin-right: 12px;
+				border-radius: 6px;
+				padding: 3px;
+				background-color: $alert-yellow;
+				font-size: 16px;
+				color: $white;
+			}
+		}
+	}
+
+	&__product-cover {
+		width: 100%;
+		aspect-ratio: 186 / 143;
+		background: center / cover no-repeat;
+	}
+
+	&-display &__product-cover {
+		height: 126px;
+	}
+
+	&__shop-logo {
+		flex: 0 0 auto;
+		width: 44px;
+		height: 44px;
+		background: center / cover no-repeat;
+	}
+
+	&__search-bar {
+		display: flex;
+		flex-direction: row-reverse;
+		align-items: center;
+		justify-content: space-between;
+		height: 23px;
+		padding: 0 8px;
+		border: 1px solid $gray-200;
+		fill: $gray-400;
+		background-color: $white;
+	}
+
+	&-search &__search-bar {
+		border-radius: 29px;
+	}
+
+	&-map &__search-bar {
+		height: 27px;
+		margin: 10px;
+		border-radius: 4.6px;
+	}
+
+	&-gmail &__search-bar {
+		flex: 1 1;
+		height: 19px;
+		border-radius: 3.7px;
+	}
+
+	&__search-bar-menu {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		width: 13px;
+		height: 9px;
+
+		&[hidden] {
+			display: none;
+		}
+	}
+
+	&__product-banner {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		padding: 10px;
+	}
+
+	&-gmail &__product-banner {
+		flex-direction: row-reverse;
+		border: 1px solid $gray-200;
+		border-radius: 2px;
+	}
+
+	&__product-banner-info {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		height: 42px;
+		overflow: hidden;
+	}
 }
