@@ -50,6 +50,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\AttributeMapping;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
@@ -150,6 +151,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		OptionsInterface::class            => true,
 		TransientsInterface::class         => true,
 		ProductFeed::class                 => true,
+		AttributeMapping::class            => true,
 		ReconnectWordPressNote::class      => true,
 		ReviewAfterClicksNote::class       => true,
 		RESTControllers::class             => true,
@@ -277,6 +279,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( Dashboard::class );
 		$this->conditionally_share_with_tags( Reports::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
+		$this->conditionally_share_with_tags( AttributeMapping::class );
 		$this->conditionally_share_with_tags( Settings::class );
 		$this->conditionally_share_with_tags( TrackerSnapshot::class );
 		$this->conditionally_share_with_tags( EventTracking::class, ContainerInterface::class );
