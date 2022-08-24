@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  *
- * @since x.x.x
+ * @since 2.1.0
  */
 class UpdateShippingSettings extends AbstractActionSchedulerJob {
 	/**

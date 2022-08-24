@@ -86,7 +86,7 @@ class Settings {
 	 *
 	 * @return ShippingSettings
 	 *
-	 * @since x.x.x
+	 * @since 2.1.0
 	 */
 	protected function generate_shipping_settings(): ShippingSettings {
 		$times = $this->get_shipping_times();

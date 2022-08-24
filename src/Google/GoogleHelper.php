@@ -1368,7 +1368,7 @@ class GoogleHelper implements Service {
 	 *
 	 * @return bool
 	 *
-	 * @since x.x.x
+	 * @since 2.1.0
 	 */
 	public function does_country_support_regional_shipping( string $country_code ): bool {
 		return in_array( $country_code, [ 'AU', 'JP', 'US' ], true );
