@@ -31,7 +31,7 @@ export default function StoreRequirements() {
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: address } = useStoreAddress();
 	const { settings } = useSettings();
-	const { data: policy_check_data } = usePolicyCheck();
+	const { data: policyCheckData } = usePolicyCheck();
 
 	/**
 	 * Since it still lacking the phone verification state,
@@ -94,38 +94,33 @@ export default function StoreRequirements() {
 	if ( ! settings ) {
 		return <AppSpinner />;
 	}
-	if ( ! policy_check_data ) {
+	if ( ! policyCheckData ) {
 		return <AppSpinner />;
 	}
 
 	if ( ! policyChecked ) {
 		const websiteLive =
-			policy_check_data.allowed_countries &&
-			! policy_check_data.robots_restriction &&
-			! policy_check_data.page_not_found_error &&
-			! policy_check_data.page_redirects;
+			policyCheckData.allowed_countries &&
+			! policyCheckData.robots_restriction &&
+			! policyCheckData.page_not_found_error &&
+			! policyCheckData.page_redirects;
 		if ( websiteLive !== settings.website_live ) {
-			settings.website_live = policy_check_data.website_live;
+			settings.website_live = policyCheckData.website_live;
+		}
+
+		if ( policyCheckData.store_ssl !== settings.checkout_process_secure ) {
+			settings.checkout_process_secure = policyCheckData.store_ssl;
+		}
+
+		if ( policyCheckData.refund_returns !== settings.refund_tos_visible ) {
+			settings.refund_tos_visible = policyCheckData.refund_returns;
 		}
 
 		if (
-			policy_check_data.store_ssl !== settings.checkout_process_secure
-		) {
-			settings.checkout_process_secure = policy_check_data.store_ssl;
-		}
-
-		if (
-			policy_check_data.refund_returns !== settings.refund_tos_visible
-		) {
-			settings.refund_tos_visible = policy_check_data.refund_returns;
-		}
-
-		if (
-			policy_check_data.payment_gateways !==
+			policyCheckData.payment_gateways !==
 			settings.payment_methods_visible
 		) {
-			settings.payment_methods_visible =
-				policy_check_data.payment_gateways;
+			settings.payment_methods_visible = policyCheckData.payment_gateways;
 		}
 		setPolicyChecked( true );
 	}
