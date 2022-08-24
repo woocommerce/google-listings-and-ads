@@ -265,4 +265,48 @@ $gla-campaign-preview-height: 270px;
 		gap: 8px;
 		padding: 8px 0;
 	}
+
+	// === Google Search preview ===
+	&__search-header {
+		display: flex;
+		justify-content: center;
+		margin: 4px 0 8px;
+	}
+
+	&__search-keywords {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 4px 11px;
+		margin: 8px 0;
+	}
+
+	&__search-card {
+		margin-top: 8px;
+		padding: 7.5px;
+		border: 1px solid $gray-300;
+		border-radius: 4px;
+
+		& + & {
+			border-color: $gray-100;
+		}
+
+		&:last-child {
+			opacity: 0.5;
+		}
+	}
+
+	&__search-card-header {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		margin-bottom: 10px;
+	}
+
+	&__search-card-placeholders {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		min-height: 38px;
+	}
 }
