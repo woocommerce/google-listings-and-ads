@@ -8,8 +8,31 @@ $gla-campaign-preview-width: 205px;
 $gla-campaign-preview-height: 270px;
 
 .gla-campaign-preview {
+	position: relative;
 	width: $gla-campaign-preview-width;
 	height: $gla-campaign-preview-height;
+
+	.gla-ads-mockup {
+		position: absolute;
+	}
+
+	&__transition-blur-enter {
+		opacity: 0;
+	}
+
+	&__transition-blur-enter-active {
+		opacity: 1;
+		transition: opacity 500ms ease-in-out;
+	}
+
+	&__transition-blur-exit {
+		opacity: 1;
+	}
+
+	&__transition-blur-exit-active {
+		opacity: 0;
+		transition: opacity 500ms ease-in-out;
+	}
 }
 
 .gla-ads-mockup {

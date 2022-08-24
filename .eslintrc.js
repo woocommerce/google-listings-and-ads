@@ -28,6 +28,7 @@ module.exports = {
 			'stylelint',
 			'@wordpress/stylelint-config',
 			'@pmmmwh/react-refresh-webpack-plugin',
+			'react-transition-group',
 		],
 		'import/resolver': { webpack: webpackResolver },
 	},
