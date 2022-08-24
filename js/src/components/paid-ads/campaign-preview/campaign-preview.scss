@@ -13,6 +13,14 @@ $gla-campaign-preview-height: 270px;
 }
 
 .gla-ads-mockup {
+	width: $gla-campaign-preview-width;
+	height: $gla-campaign-preview-height;
+	padding: 10px;
+	border: 1px solid $gray-200;
+	border-radius: 4px;
+	overflow: hidden;
+	background-color: $white;
+
 	// === Shared components within ad previews ===
 	&__placeholder {
 		height: 3px;
@@ -187,5 +195,41 @@ $gla-campaign-preview-height: 270px;
 		justify-content: space-between;
 		height: 42px;
 		overflow: hidden;
+	}
+
+	// === Google Shopping preview ===
+	&__tab-list {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	&__tab-list > &__placeholder {
+		min-width: 25px;
+		margin-top: 16px;
+	}
+
+	&__tab-item-with-logo {
+		width: 44px;
+		text-align: center;
+
+		> img {
+			display: block;
+			margin: 0 auto 6px;
+		}
+	}
+
+	&__shopping-product {
+		margin-top: 6px;
+		border: 1px solid $gray-200;
+		border-radius: 4px;
+		overflow: hidden;
+	}
+
+	&__shopping-product-info {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 8px 10px 10px;
 	}
 }
