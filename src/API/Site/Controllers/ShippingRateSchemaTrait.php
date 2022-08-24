@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,16 +35,6 @@ trait ShippingRateSchemaTrait {
 				'context'           => [ 'view', 'edit' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_country_code_validate_callback(),
-				'required'          => true,
-			],
-			'method'   => [
-				'type'              => 'string',
-				'description'       => __( 'The shipping method.', 'google-listings-and-ads' ),
-				'enum'              => [
-					ShippingZone::METHOD_FLAT_RATE,
-				],
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],
 			'currency' => [

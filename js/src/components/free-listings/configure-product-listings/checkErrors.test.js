@@ -1,13 +1,11 @@
 /**
  * Internal dependencies
  */
-import { SHIPPING_RATE_METHOD } from '.~/constants';
 import checkErrors from './checkErrors';
 
 function toRates( ...tuples ) {
 	return tuples.map( ( [ country, rate, threshold ] ) => ( {
 		country,
-		method: SHIPPING_RATE_METHOD.FLAT_RATE,
 		currency: 'USD',
 		rate,
 		options: {

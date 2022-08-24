@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ShippingRat
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
 use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
@@ -32,19 +32,19 @@ class ShippingRateSuggestionsController extends BaseController implements ISO316
 	protected $route_base = 'mc/shipping/rates/suggestions';
 
 	/**
-	 * @var ShippingZone
+	 * @var ShippingSuggestionService
 	 */
-	protected $shipping_zone;
+	protected $shipping_suggestion;
 
 	/**
 	 * ShippingRateSuggestionsController constructor.
 	 *
-	 * @param RESTServer   $server
-	 * @param ShippingZone $shipping_zone
+	 * @param RESTServer                $server
+	 * @param ShippingSuggestionService $shipping_suggestion
 	 */
-	public function __construct( RESTServer $server, ShippingZone $shipping_zone ) {
+	public function __construct( RESTServer $server, ShippingSuggestionService $shipping_suggestion ) {
 		parent::__construct( $server );
-		$this->shipping_zone = $shipping_zone;
+		$this->shipping_suggestion = $shipping_suggestion;
 	}
 
 	/**
@@ -89,16 +89,12 @@ class ShippingRateSuggestionsController extends BaseController implements ISO316
 			$country_codes = $request->get_param( 'country_codes' );
 			$rates_output  = [];
 			foreach ( $country_codes as $country_code ) {
-				$suggestions = $this->shipping_zone->get_shipping_rates_for_country( $country_code );
+				$suggestions = $this->shipping_suggestion->get_suggestions( $country_code );
 
 				// Prepare the output.
 				$suggestions = array_map(
-					function ( $rate ) use ( $request ) {
-						// Remove the shipping class rates from the response because they are not needed.
-						if ( isset( $rate['options']['shipping_class_rates'] ) ) {
-							unset( $rate['options']['shipping_class_rates'] );
-						}
-						$response = $this->prepare_item_for_response( $rate, $request );
+					function ( $suggestion ) use ( $request ) {
+						$response = $this->prepare_item_for_response( $suggestion, $request );
 
 						return $this->prepare_response_for_collection( $response );
 					},

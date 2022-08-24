@@ -15,9 +15,6 @@ wp plugin install woocommerce --activate
 # Install basic auth for API requests on http.
 wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
 
-# Install and activate WC-admin for GLA.
-wp plugin install woocommerce-admin --activate
-
 # GLA is automatically mapped to the docker container's plugins folder,
 # we just need to activate it here.
 wp plugin activate google-listings-and-ads
