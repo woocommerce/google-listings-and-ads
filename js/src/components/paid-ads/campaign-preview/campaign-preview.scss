@@ -309,4 +309,21 @@ $gla-campaign-preview-height: 270px;
 		justify-content: space-between;
 		min-height: 38px;
 	}
+
+	// === Google Map preview ===
+	&-map {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		padding: 0;
+		background: top center no-repeat border-box;
+
+		.gridicons-location {
+			position: absolute;
+			top: 116px;
+			left: 99px;
+			fill: #f86368;
+		}
+	}
 }
