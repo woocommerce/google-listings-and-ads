@@ -23,11 +23,7 @@ import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
 import PreLaunchChecklist from './pre-launch-checklist';
 import usePolicyCheck from '.~/hooks/usePolicyCheck';
-
-function _checkErrors() {
-	const errors = {};
-	return errors;
-}
+import checkErrors from './pre-launch-checklist/checkErrors';
 
 export default function StoreRequirements() {
 	const adminUrl = useAdminUrl();
@@ -154,7 +150,7 @@ export default function StoreRequirements() {
 					refund_tos_visible: settings.refund_tos_visible,
 					contact_info_visible: settings.contact_info_visible,
 				} }
-				validate={ _checkErrors }
+				validate={ checkErrors }
 				onChange={ handleChangeCallback }
 				onSubmit={ handleSubmitCallback }
 			>

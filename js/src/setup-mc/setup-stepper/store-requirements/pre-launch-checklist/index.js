@@ -1,82 +1,82 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import {
-	Button,
-	CheckboxControl,
-	Panel,
-	PanelBody,
-	PanelRow,
-} from '@wordpress/components';
-import { recordEvent } from '@woocommerce/tracks';
+ import { __ } from '@wordpress/i18n';
+ import {
+		Button,
+		CheckboxControl,
+		Panel,
+		PanelBody,
+		PanelRow,
+ } from '@wordpress/components';
+ import { recordEvent } from '@woocommerce/tracks';
 
-/**
- * Internal dependencies
- */
-import AppDocumentationLink from '.~/components/app-documentation-link';
-import Section from '.~/wcdl/section';
-import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import './index.scss';
+ /**
+  * Internal dependencies
+  */
+ import AppDocumentationLink from '.~/components/app-documentation-link';
+ import Section from '.~/wcdl/section';
+ import VerticalGapLayout from '.~/components/vertical-gap-layout';
+ import './index.scss';
 
-/*
- * @fires gla_documentation_link_click with `{ context: 'setup-mc-checklist', link_id: 'checklist-requirements', href: 'https://support.google.com/merchants/answer/6363310' }`
- */
-const PreLaunchChecklist = ( props ) => {
-	const { formProps } = props;
+ /*
+  * @fires gla_documentation_link_click with `{ context: 'setup-mc-checklist', link_id: 'checklist-requirements', href: 'https://support.google.com/merchants/answer/6363310' }`
+  */
+ const PreLaunchChecklist = ( props ) => {
+		const { formProps } = props;
 
-	const { getInputProps, setValue, values } = formProps;
+		const { getInputProps, setValue, values } = formProps;
 
-	const getPanelToggleHandler = ( trackName, id, context ) => (
-		isOpened
-	) => {
-		recordEvent( trackName, {
-			id,
-			action: isOpened ? 'expand' : 'collapse',
-			context,
-		} );
-	};
+		const getPanelToggleHandler = ( trackName, id, context ) => (
+			isOpened
+		) => {
+			recordEvent( trackName, {
+				id,
+				action: isOpened ? 'expand' : 'collapse',
+				context,
+			} );
+		};
 
-
-	return (
-		<div className="gla-pre-launch-checklist">
-			<Section
-				title={ __(
-					'Pre-Launch Checklist',
-					'google-listings-and-ads'
-				) }
-				description={
-					<div>
-						<p>
-							{ __(
-								'Ensure you meet Google Merchant Center requirements by reviewing this checklist. Otherwise, your products may be disapproved or your Google Merchant Center account may be suspended by Google.',
-								'google-listings-and-ads'
-							) }
-						</p>
-						<p>
-							<AppDocumentationLink
-								context="setup-mc-checklist"
-								linkId="checklist-requirements"
-								href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy"
-							>
+		return (
+			<div className="gla-pre-launch-checklist">
+				<Section
+					title={ __(
+						'Pre-Launch Checklist',
+						'google-listings-and-ads'
+					) }
+					description={
+						<div>
+							<p>
 								{ __(
-									'Read Google Merchant requirements',
+									'Ensure you meet Google Merchant Center requirements by reviewing this checklist. Otherwise, your products may be disapproved or your Google Merchant Center account may be suspended by Google.',
 									'google-listings-and-ads'
 								) }
-							</AppDocumentationLink>
-						</p>
-					</div>
-				}
-			>
-				<Section.Card>
-					<Section.Card.Body>
-						<VerticalGapLayout size="large">
-							{ ! values.website_live && (
-								<div id="checkbox">
-									<CheckboxControl
-										{ ...getInputProps( 'website_live' ) }
-									></CheckboxControl>
-									<div id="panel">
+							</p>
+							<p>
+								<AppDocumentationLink
+									context="setup-mc-checklist"
+									linkId="checklist-requirements"
+									href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy"
+								>
+									{ __(
+										'Read Google Merchant requirements',
+										'google-listings-and-ads'
+									) }
+								</AppDocumentationLink>
+							</p>
+						</div>
+					}
+				>
+					<Section.Card>
+						<Section.Card.Body>
+							<VerticalGapLayout size="large">
+								{ ! values.website_live && (
+									<div className="gla-pre-launch-checklist__checkbox">
+										<CheckboxControl
+											{ ...getInputProps(
+												'website_live'
+											) }
+										></CheckboxControl>
 										<Panel>
 											<PanelBody
 												title={ __(
@@ -87,7 +87,7 @@ const PreLaunchChecklist = ( props ) => {
 												onToggle={ getPanelToggleHandler(
 													'website_live',
 													'pre-launch-checklist',
-													'setup-mc-accounts'
+													'onboarding-policy-check'
 												) }
 											>
 												<PanelRow>
@@ -126,31 +126,29 @@ const PreLaunchChecklist = ( props ) => {
 											</PanelBody>
 										</Panel>
 									</div>
-								</div>
-							) }
-							{ values.website_live && (
-								<CheckboxControl
-									label={
-										<span className="gla-pre-launch-checklist__checkbox_popover">
-											<span className="checkbox-label">
-												{ __(
-													'My store is live and accessible to all users.',
-													'google-listings-and-ads'
-												) }
-											</span>
-										</span>
-									}
-									{ ...getInputProps( 'website_live' ) }
-								/>
-							) }
-							{ ! values.payment_methods_visible && (
-								<div id="checkbox">
+								) }
+								{ values.website_live && (
 									<CheckboxControl
-										{ ...getInputProps(
-											'payment_methods_visible'
-										) }
-									></CheckboxControl>
-									<div id="panel">
+										label={
+											<span className="gla-pre-launch-checklist__checkbox_popover">
+												<span className="checkbox-label">
+													{ __(
+														'My store is live and accessible to all users.',
+														'google-listings-and-ads'
+													) }
+												</span>
+											</span>
+										}
+										{ ...getInputProps( 'website_live' ) }
+									/>
+								) }
+								{ ! values.payment_methods_visible && (
+									<div className="gla-pre-launch-checklist__checkbox">
+										<CheckboxControl
+											{ ...getInputProps(
+												'payment_methods_visible'
+											) }
+										></CheckboxControl>
 										<Panel>
 											<PanelBody
 												title={ __(
@@ -161,7 +159,7 @@ const PreLaunchChecklist = ( props ) => {
 												onToggle={ getPanelToggleHandler(
 													'payment_methods_visible',
 													'pre-launch-checklist',
-													'setup-mc-accounts'
+													'onboarding-policy-check'
 												) }
 											>
 												<PanelRow>
@@ -200,34 +198,32 @@ const PreLaunchChecklist = ( props ) => {
 											</PanelBody>
 										</Panel>
 									</div>
-								</div>
-							) }
+								) }
 
-							{ values.payment_methods_visible && (
-								<CheckboxControl
-									label={
-										<span className="gla-pre-launch-checklist__checkbox_popover">
-											<span className="checkbox-label">
-												{ __(
-													'I have a complete checkout process.',
-													'google-listings-and-ads'
-												) }
-											</span>
-										</span>
-									}
-									{ ...getInputProps(
-										'payment_methods_visible'
-									) }
-								/>
-							) }
-							{ ! values.checkout_process_secure && (
-								<div id="checkbox">
+								{ values.payment_methods_visible && (
 									<CheckboxControl
+										label={
+											<span className="gla-pre-launch-checklist__checkbox_popover">
+												<span className="checkbox-label">
+													{ __(
+														'I have a complete checkout process.',
+														'google-listings-and-ads'
+													) }
+												</span>
+											</span>
+										}
 										{ ...getInputProps(
-											'checkout_process_secure'
+											'payment_methods_visible'
 										) }
-									></CheckboxControl>
-									<div id="panel">
+									/>
+								) }
+								{ ! values.checkout_process_secure && (
+									<div className="gla-pre-launch-checklist__checkbox">
+										<CheckboxControl
+											{ ...getInputProps(
+												'checkout_process_secure'
+											) }
+										></CheckboxControl>
 										<Panel>
 											<PanelBody
 												title={ __(
@@ -238,7 +234,7 @@ const PreLaunchChecklist = ( props ) => {
 												onToggle={ getPanelToggleHandler(
 													'checkout_process_secure',
 													'pre-launch-checklist',
-													'setup-mc-accounts'
+													'onboarding-policy-check'
 												) }
 											>
 												<PanelRow>
@@ -284,90 +280,84 @@ const PreLaunchChecklist = ( props ) => {
 											</PanelBody>
 										</Panel>
 									</div>
-								</div>
-							) }
-							{ values.checkout_process_secure && (
-								<CheckboxControl
-									label={
-										<span className="gla-pre-launch-checklist__checkbox_popover">
-											<span className="checkbox-label">
-												{ __(
-													'Confirm you have a secure checkout process.',
-													'google-listings-and-ads'
-												) }
+								) }
+								{ values.checkout_process_secure && (
+									<CheckboxControl
+										label={
+											<span className="gla-pre-launch-checklist__checkbox_popover">
+												<span className="checkbox-label">
+													{ __(
+														'Confirm you have a secure checkout process.',
+														'google-listings-and-ads'
+													) }
+												</span>
 											</span>
-										</span>
-									}
-									{ ...getInputProps(
-										'checkout_process_secure'
-									) }
-								/>
-							) }
+										}
+										{ ...getInputProps(
+											'checkout_process_secure'
+										) }
+									/>
+								) }
 
-							{
-								! values.refund_tos_visible && (
-									<div id="checkbox">
+								{ ! values.refund_tos_visible && (
+									<div className="gla-pre-launch-checklist__checkbox">
 										<CheckboxControl
 											{ ...getInputProps(
 												'refund_tos_visible'
 											) }
 										></CheckboxControl>
-										<div id="panel">
-											<Panel>
-												<PanelBody
-													title={ __(
-														'Confirm a refund policy and terms of service are visible on your online store.',
+										<Panel>
+											<PanelBody
+												title={ __(
+													'Confirm a refund policy and terms of service are visible on your online store.',
+													'google-listings-and-ads'
+												) }
+												initialOpen={ true }
+												onToggle={ getPanelToggleHandler(
+													'refund_tos_visible',
+													'pre-launch-checklist',
+													'onboarding-policy-check'
+												) }
+											>
+												<PanelRow>
+													{ __(
+														"Show a clear return and refund policy on your website. Incluse return process, refund process, and customer requirements (return window, product condition and reason for return). If you don't accept returns or refunds, clearly start that on your website. ",
 														'google-listings-and-ads'
 													) }
-													initialOpen={ true }
-													onToggle={ getPanelToggleHandler(
-														'refund_tos_visible',
-														'pre-launch-checklist',
-														'setup-mc-accounts'
-													) }
-												>
-													<PanelRow>
-														{ __(
-															"Show a clear return and refund policy on your website. Incluse return process, refund process, and customer requirements (return window, product condition and reason for return). If you don't accept returns or refunds, clearly start that on your website. ",
-															'google-listings-and-ads'
-														) }
-													</PanelRow>
-													<p>
-														<AppDocumentationLink
-															context="setup-mc-checklist"
-															linkId="check-refund-tos-visible"
-															type="external"
-															href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms"
-														>
-															{ __(
-																"Learn more about Google's refund policy requirements",
-																'google-listings-and-ads'
-															) }
-														</AppDocumentationLink>
-													</p>
-													<Button
-														isPrimary
-														onClick={ () => {
-															setValue(
-																'refund_tos_visible',
-																true
-															);
-														} }
+												</PanelRow>
+												<p>
+													<AppDocumentationLink
+														context="setup-mc-checklist"
+														linkId="check-refund-tos-visible"
+														type="external"
+														href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms"
 													>
 														{ __(
-															'Confirm',
+															"Learn more about Google's refund policy requirements",
 															'google-listings-and-ads'
 														) }
-													</Button>
-												</PanelBody>
-											</Panel>
-										</div>
+													</AppDocumentationLink>
+												</p>
+												<Button
+													isPrimary
+													onClick={ () => {
+														setValue(
+															'refund_tos_visible',
+															true
+														);
+													} }
+												>
+													{ __(
+														'Confirm',
+														'google-listings-and-ads'
+													) }
+												</Button>
+											</PanelBody>
+										</Panel>
 									</div>
-								);
-							}
+								) }
 
-							{
-								values.refund_tos_visible && (
+								{ values.refund_tos_visible && (
 									<CheckboxControl
 										label={
 											<span className="gla-pre-launch-checklist__checkbox_popover">
@@ -383,81 +373,76 @@ const PreLaunchChecklist = ( props ) => {
 											'refund_tos_visible'
 										) }
 									/>
-								);
-							}
+								) }
 
-							{
-								! values.contact_info_visible && (
-									<div id="checkbox">
+								{ ! values.contact_info_visible && (
+									<div className="gla-pre-launch-checklist__checkbox">
 										<CheckboxControl
 											{ ...getInputProps(
 												'contact_info_visible'
 											) }
 										></CheckboxControl>
-										<div id="panel">
-											<Panel>
-												<PanelBody
-													title={ __(
-														"Confirm your store's phone number, email and/or address are visible on your website",
-														'google-listings-and-ads'
-													) }
-													initialOpen={ true }
-													onToggle={ getPanelToggleHandler(
-														'contact_info_visible',
-														'pre-launch-checklist',
-														'setup-mc-accounts'
-													) }
-												>
-													<PanelRow>
-														{ __(
-															'Allow your customers to contact you for product inquiries by including contact information on your website (i,e, contact us form, business profile link, social media, email or phone number.',
-															'google-listings-and-ads'
-														) }
-													</PanelRow>
-													<p />
-													<Button
-														isPrimary
-														onClick={ () => {
-															setValue(
-																'contact_info_visible',
-																true
-															);
-														} }
-													>
-														{ __(
-															'Confirm',
-															'google-listings-and-ads'
-														) }
-													</Button>
-												</PanelBody>
-											</Panel>
-										</div>
-									</div>
-								);
-							}
-							{ values.contact_info_visible && (
-								<CheckboxControl
-									label={
-										<span className="gla-pre-launch-checklist__checkbox_popover">
-											<span className="checkbox-label">
-												{ __(
-													"Confirm your store's phone number, email and/or address are visible on your website.",
+										<Panel>
+											<PanelBody
+												title={ __(
+													"Confirm your store's phone number, email and/or address are visible on your website",
 													'google-listings-and-ads'
 												) }
+												initialOpen={ true }
+												onToggle={ getPanelToggleHandler(
+													'contact_info_visible',
+													'pre-launch-checklist',
+													'onboarding-policy-check'
+												) }
+											>
+												<PanelRow>
+													{ __(
+														'Allow your customers to contact you for product inquiries by including contact information on your website (i,e, contact us form, business profile link, social media, email or phone number.',
+														'google-listings-and-ads'
+													) }
+												</PanelRow>
+												<p />
+												<Button
+													isPrimary
+													onClick={ () => {
+														setValue(
+															'contact_info_visible',
+															true
+														);
+													} }
+												>
+													{ __(
+														'Confirm',
+														'google-listings-and-ads'
+													) }
+												</Button>
+											</PanelBody>
+										</Panel>
+									</div>
+								) }
+								{ values.contact_info_visible && (
+									<CheckboxControl
+										label={
+											<span className="gla-pre-launch-checklist__checkbox_popover">
+												<span className="checkbox-label">
+													{ __(
+														"Confirm your store's phone number, email and/or address are visible on your website.",
+														'google-listings-and-ads'
+													) }
+												</span>
 											</span>
-										</span>
-									}
-									{ ...getInputProps(
-										'contact_info_visible'
-									) }
-								/>
-							) }
-						</VerticalGapLayout>
-					</Section.Card.Body>
-				</Section.Card>
-			</Section>
-		</div>
-	);
-};
+										}
+										{ ...getInputProps(
+											'contact_info_visible'
+										) }
+									/>
+								) }
+							</VerticalGapLayout>
+						</Section.Card.Body>
+					</Section.Card>
+				</Section>
+			</div>
+		);
+ };
 
-export default PreLaunchChecklist;
+ export default PreLaunchChecklist;
