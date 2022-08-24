@@ -367,4 +367,33 @@ $gla-campaign-preview-height: 270px;
 		flex-direction: column;
 		gap: 4.66px;
 	}
+
+	// === Gmail preview ===
+	&__gmail-header {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin: 5px 0 12px;
+		padding-left: 1px;
+	}
+
+	&__mail-item {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-around;
+		height: 19px;
+		padding-left: 28px;
+		margin-top: 10px;
+
+		&::before {
+			content: "";
+			position: absolute;
+			left: 0;
+			height: 100%;
+			aspect-ratio: 1 / 1;
+			border-radius: 50%;
+			background-color: $gray-100;
+		}
+	}
 }
