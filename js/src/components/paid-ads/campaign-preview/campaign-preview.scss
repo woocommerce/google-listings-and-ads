@@ -232,4 +232,37 @@ $gla-campaign-preview-height: 270px;
 		gap: 8px;
 		padding: 8px 10px 10px;
 	}
+
+	// === YouTube preview ===
+	&__youtube-header {
+		padding: 4px 0;
+		> img {
+			display: block;
+		}
+	}
+
+	&__youtube-product {
+		margin-top: 6px;
+	}
+
+	&__youtube-learn-more-row {
+		display: flex;
+		align-items: center;
+		padding: 3px 6px;
+		background-color: #f0f6fc;
+		font-weight: 600;
+		fill: $gla-campaign-preview-color-blue;
+
+		> div {
+			flex: 1 0;
+			line-height: 0;
+		}
+	}
+
+	&__youtube-product-info {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 8px 0;
+	}
 }
