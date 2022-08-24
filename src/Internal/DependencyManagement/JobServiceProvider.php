@@ -8,6 +8,7 @@ use ActionScheduler_AsyncRequest_QueueRunner as QueueRunnerAsyncRequest;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\AsyncActionRunner;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -30,6 +31,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\CleanupProductTargetCountriesJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\PluginUpdate;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
@@ -41,6 +43,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Event\StartProductSync;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -130,6 +133,10 @@ class JobServiceProvider extends AbstractServiceProvider {
 
 		$this->share_with_tags( StartProductSync::class, JobRepository::class );
 		$this->share_with_tags( PluginUpdate::class, JobRepository::class );
+
+		// Share shipping settings syncer job and hooks.
+		$this->share_action_scheduler_job( UpdateShippingSettings::class, MerchantCenterService::class, GoogleSettings::class );
+		$this->share_with_tags( Shipping\SyncerHooks::class, MerchantCenterService::class, GoogleSettings::class, JobRepository::class );
 
 		// Share plugin update jobs
 		$this->share_product_syncer_job( CleanupProductTargetCountriesJob::class );

@@ -67,8 +67,8 @@ class MerchantMetricsTest extends UnitTest {
 
 		$response = $this->createMock( SearchResponse::class );
 		$response->expects( $this->any() )
-		         ->method( 'getResults' )
-		         ->willReturn( [ $report_row ] );
+			->method( 'getResults' )
+			->willReturn( [ $report_row ] );
 
 		$search_request = new SearchRequest();
 		$search_request->setQuery(
@@ -76,9 +76,9 @@ class MerchantMetricsTest extends UnitTest {
 		);
 
 		$this->shopping_client->reports->expects( $this->once() )
-		                               ->method( 'search' )
-		                               ->with( $test_merchant_id, $search_request )
-		                               ->willReturn( $response );
+			->method( 'search' )
+			->with( $test_merchant_id, $search_request )
+			->willReturn( $response );
 
 		$this->assertSame(
 			[
@@ -94,12 +94,12 @@ class MerchantMetricsTest extends UnitTest {
 
 		$response = $this->createMock( SearchResponse::class );
 		$response->expects( $this->once() )
-		         ->method( 'getResults' )
-		         ->willReturn( [] );
+			->method( 'getResults' )
+			->willReturn( [] );
 
 		$this->shopping_client->reports->expects( $this->once() )
-		                               ->method( 'search' )
-		                               ->willReturn( $response );
+			->method( 'search' )
+			->willReturn( $response );
 
 		$this->assertSame( [], $this->metrics->get_free_listing_metrics() );
 	}
@@ -118,11 +118,11 @@ class MerchantMetricsTest extends UnitTest {
 		$metrics->setClicks( 2 );
 		$metrics->setImpressions( 3 );
 
-		$adsRow = $this->createMock( GoogleAdsRow::class );
-		$adsRow->method( 'getMetrics' )->willReturn( $metrics );
+		$ads_row = $this->createMock( GoogleAdsRow::class );
+		$ads_row->method( 'getMetrics' )->willReturn( $metrics );
 
 		$generator = $this->createMock( \Iterator::class );
-		$generator->method( 'current' )->willReturn( $adsRow );
+		$generator->method( 'current' )->willReturn( $ads_row );
 
 		$response_page = $this->createMock( Page::class );
 		$response_page->method( 'getIterator' )->willReturn( $generator );
@@ -130,11 +130,11 @@ class MerchantMetricsTest extends UnitTest {
 		$response = $this->createMock( PagedListResponse::class );
 		$response->method( 'getPage' )->willReturn( $response_page );
 
-		$googleAdsServiceClient = $this->createMock( GoogleAdsServiceClient::class );
-		$googleAdsServiceClient->method( 'search' )->willReturn( $response );
+		$google_ads_service_client = $this->createMock( GoogleAdsServiceClient::class );
+		$google_ads_service_client->method( 'search' )->willReturn( $response );
 
 		$this->ads_client->method( 'getGoogleAdsServiceClient' )
-		                 ->willReturn( $googleAdsServiceClient );
+			->willReturn( $google_ads_service_client );
 
 		$this->assertSame(
 			[

@@ -215,7 +215,7 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		$attribute_manager = new AttributeManager();
 
 		add_filter(
-			"woocommerce_gla_product_attribute_types",
+			'woocommerce_gla_product_attribute_types',
 			function ( array $attribute_types ) {
 				return array_diff( $attribute_types, [ Brand::class ] );
 			}
@@ -230,7 +230,7 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		$attribute_manager = new AttributeManager();
 
 		add_filter(
-			"woocommerce_gla_product_attribute_types",
+			'woocommerce_gla_product_attribute_types',
 			function ( array $attribute_types ) {
 				$attribute_types[] = \stdClass::class;
 

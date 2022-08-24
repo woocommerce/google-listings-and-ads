@@ -65,14 +65,14 @@ class MerchantStatusesTest extends UnitTest {
 	}
 
 	public function test_refresh_account_issues() {
-		$this->product_meta_query_helper->expects( $this->any() )->method( 'get_all_values' )->willReturn( array() );
+		$this->product_meta_query_helper->expects( $this->any() )->method( 'get_all_values' )->willReturn( [] );
 
 		$this->account_status->expects( $this->any() )
 			->method( 'getAccountLevelIssues' )
 			->willReturn(
-				array(
+				[
 					'one'   => new ShoppingContent\AccountStatusAccountLevelIssue(
-						array(
+						[
 							'id'            => 'id',
 							'title'         => 'title',
 							'country'       => 'US',
@@ -80,10 +80,10 @@ class MerchantStatusesTest extends UnitTest {
 							'detail'        => 'detail',
 							'documentation' => 'https://example.com',
 							'severity'      => 'critical',
-						)
+						]
 					),
 					'two'   => new ShoppingContent\AccountStatusAccountLevelIssue(
-						array(
+						[
 							'id'            => 'id2',
 							'title'         => 'title2',
 							'country'       => 'CA',
@@ -91,10 +91,10 @@ class MerchantStatusesTest extends UnitTest {
 							'detail'        => 'detail2',
 							'documentation' => 'https://example.com/2',
 							'severity'      => 'error',
-						)
+						]
 					),
 					'three' => new ShoppingContent\AccountStatusAccountLevelIssue(
-						array(
+						[
 							'id'            => 'id2',
 							'title'         => 'title2',
 							'country'       => 'US',
@@ -102,9 +102,9 @@ class MerchantStatusesTest extends UnitTest {
 							'detail'        => 'detail2',
 							'documentation' => 'https://example.com/2',
 							'severity'      => 'error',
-						)
+						]
 					),
-				)
+				]
 			);
 
 		$this->merchant_center_service->expects( $this->any() )
@@ -115,8 +115,8 @@ class MerchantStatusesTest extends UnitTest {
 			->method( 'get_accountstatus' )
 			->willReturn( $this->account_status );
 
-		$issues = array(
-			md5( 'title' )  => array(
+		$issues = [
+			md5( 'title' )  => [
 				'product_id'           => 0,
 				'product'              => 'All products',
 				'code'                 => 'id',
@@ -128,8 +128,8 @@ class MerchantStatusesTest extends UnitTest {
 				'severity'             => 'critical',
 				'source'               => 'mc',
 				'applicable_countries' => '["US"]',
-			),
-			md5( 'title2' ) => array(
+			],
+			md5( 'title2' ) => [
 				'product_id'           => 0,
 				'product'              => 'All products',
 				'code'                 => 'id2',
@@ -141,10 +141,12 @@ class MerchantStatusesTest extends UnitTest {
 				'severity'             => 'error',
 				'source'               => 'mc',
 				'applicable_countries' => '["CA","US"]',
-			),
-		);
+			],
+		];
 
-		$this->merchant_issue_query->expects( $this->exactly( 2 ) )->method( 'update_or_insert' )->withConsecutive( array( $issues ), array() );
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
+			->method( 'update_or_insert' )
+			->withConsecutive( [ $issues ], [] );
 		$this->merchant_statuses->maybe_refresh_status_data( true );
 	}
 }

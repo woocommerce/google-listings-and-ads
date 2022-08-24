@@ -3,7 +3,7 @@
  */
 import { Link } from '@woocommerce/components';
 import CurrencyFactory from '@woocommerce/currency';
-import { SETTINGS_STORE_NAME } from '@woocommerce/data';
+import { OPTIONS_STORE_NAME } from '@woocommerce/data';
 import { getCurrentDates } from '@woocommerce/date';
 import { getQuery } from '@woocommerce/navigation';
 import { numberFormat } from '@woocommerce/number';
@@ -22,7 +22,7 @@ describe( 'plugin config should be able to run unit-test with dependency on', ()
 	} );
 
 	test( '@woocommerce/data', () => {
-		expect( SETTINGS_STORE_NAME ).toBeDefined();
+		expect( OPTIONS_STORE_NAME ).toBeDefined();
 	} );
 
 	test( '@woocommerce/date', () => {

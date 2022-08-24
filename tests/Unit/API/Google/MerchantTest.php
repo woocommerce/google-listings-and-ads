@@ -165,7 +165,7 @@ class MerchantTest extends UnitTest {
 			);
 
 		$this->expectException( Exception::class );
-        $this->expectExceptionCode( 403 );
+		$this->expectExceptionCode( 403 );
 		$this->merchant->claimwebsite();
 	}
 
@@ -216,7 +216,7 @@ class MerchantTest extends UnitTest {
 		$this->mock_get_account_exception( new GoogleException( 'error', 400 ) );
 
 		$this->expectException( MerchantApiException::class );
-        $this->expectExceptionCode( 400 );
+		$this->expectExceptionCode( 400 );
 		$this->merchant->get_account();
 	}
 
@@ -231,7 +231,7 @@ class MerchantTest extends UnitTest {
 
 	public function test_get_claimed_url_hash_not_claimed() {
 		$url = 'https://site.test';
-		$this->mock_get_account( $this->get_account_with_url( $url  ) );
+		$this->mock_get_account( $this->get_account_with_url( $url ) );
 		$this->mock_get_account_status( $this->get_status_website_claimed( false ) );
 
 		$this->assertNull( $this->merchant->get_claimed_url_hash() );
@@ -270,7 +270,7 @@ class MerchantTest extends UnitTest {
 		$this->mock_get_account_status_exception( new GoogleException( 'error', 400 ) );
 
 		$this->expectException( Exception::class );
-        $this->expectExceptionCode( 400 );
+		$this->expectExceptionCode( 400 );
 		$this->merchant->get_accountstatus();
 	}
 
@@ -337,7 +337,7 @@ class MerchantTest extends UnitTest {
 			);
 
 		$this->expectException( MerchantApiException::class );
-        $this->expectExceptionCode( 400 );
+		$this->expectExceptionCode( 400 );
 		$this->merchant->update_account( $account );
 	}
 

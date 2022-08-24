@@ -18,7 +18,7 @@ use Google\Exception;
 class RequestReviewControllerTest extends RESTControllerUnitTest {
 
 
-	protected const ROUTE_REQUEST    = '/wc/gla/mc/review';
+	protected const ROUTE_REQUEST = '/wc/gla/mc/review';
 	private $middleware;
 	private $transients;
 	private $request_review_statuses;

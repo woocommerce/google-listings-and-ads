@@ -8,14 +8,12 @@ describe( 'getDifferentShippingRates', () => {
 		const shipingRates1 = [
 			{
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
 				options: {},
 			},
 			{
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -28,7 +26,6 @@ describe( 'getDifferentShippingRates', () => {
 			{
 				id: '1',
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
 				options: {},
@@ -36,7 +33,6 @@ describe( 'getDifferentShippingRates', () => {
 			{
 				id: '2',
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -57,14 +53,12 @@ describe( 'getDifferentShippingRates', () => {
 		const shipingRates1 = [
 			{
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
 				options: {},
 			},
 			{
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -74,7 +68,6 @@ describe( 'getDifferentShippingRates', () => {
 			{
 				// new shipping rate
 				country: 'MY',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 				options: {
@@ -84,7 +77,6 @@ describe( 'getDifferentShippingRates', () => {
 			{
 				// new shipping rate
 				country: 'SG',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -97,7 +89,6 @@ describe( 'getDifferentShippingRates', () => {
 			{
 				id: '1',
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
 				options: {},
@@ -105,7 +96,6 @@ describe( 'getDifferentShippingRates', () => {
 			{
 				id: '2',
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -122,7 +112,6 @@ describe( 'getDifferentShippingRates', () => {
 		expect( result ).toStrictEqual( [
 			{
 				country: 'MY',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 				options: {
@@ -131,7 +120,6 @@ describe( 'getDifferentShippingRates', () => {
 			},
 			{
 				country: 'SG',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -145,14 +133,12 @@ describe( 'getDifferentShippingRates', () => {
 		const shipingRates1 = [
 			{
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
 				options: {},
 			},
 			{
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -161,7 +147,6 @@ describe( 'getDifferentShippingRates', () => {
 			},
 			{
 				country: 'MY',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 888, // edited
 				options: {
@@ -174,7 +159,6 @@ describe( 'getDifferentShippingRates', () => {
 			{
 				id: '1',
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
 				options: {},
@@ -182,7 +166,6 @@ describe( 'getDifferentShippingRates', () => {
 			{
 				id: '2',
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -192,7 +175,6 @@ describe( 'getDifferentShippingRates', () => {
 			{
 				id: '3',
 				country: 'MY',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 				options: {
@@ -209,7 +191,6 @@ describe( 'getDifferentShippingRates', () => {
 		expect( result ).toStrictEqual( [
 			{
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -218,7 +199,6 @@ describe( 'getDifferentShippingRates', () => {
 			},
 			{
 				country: 'MY',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 888,
 				options: {

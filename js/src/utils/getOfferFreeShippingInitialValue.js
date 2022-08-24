@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
+import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
 
 /**
  * @typedef {import('.~/data/actions').ShippingRate} ShippingRate
@@ -23,7 +23,7 @@ import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
  * @return {undefined | boolean} Result.
  */
 const getOfferFreeShippingInitialValue = ( shippingRates ) => {
-	if ( ! shippingRates.some( isNonFreeFlatShippingRate ) ) {
+	if ( ! shippingRates.some( isNonFreeShippingRate ) ) {
 		return undefined;
 	}
 

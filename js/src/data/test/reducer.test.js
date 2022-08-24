@@ -94,7 +94,6 @@ describe( 'reducer', () => {
 					{
 						id: '1',
 						country: 'US',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 4.99,
 						options: {},
@@ -102,7 +101,6 @@ describe( 'reducer', () => {
 					{
 						id: '2',
 						country: 'AU',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 25,
 						options: {},
@@ -120,7 +118,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},
@@ -128,7 +125,6 @@ describe( 'reducer', () => {
 				{
 					id: '2',
 					country: 'CA',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {},
@@ -140,7 +136,6 @@ describe( 'reducer', () => {
 					{
 						id: '2',
 						country: 'CA',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 12,
 						options: {},
@@ -148,7 +143,6 @@ describe( 'reducer', () => {
 					{
 						id: '3',
 						country: 'JP',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 12,
 						options: {},
@@ -163,7 +157,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},
@@ -171,7 +164,6 @@ describe( 'reducer', () => {
 				{
 					id: '2',
 					country: 'CA',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 12,
 					options: {},
@@ -179,7 +171,6 @@ describe( 'reducer', () => {
 				{
 					id: '3',
 					country: 'JP',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 12,
 					options: {},
@@ -192,7 +183,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},
@@ -200,7 +190,6 @@ describe( 'reducer', () => {
 				{
 					id: '2',
 					country: 'CA',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {},
@@ -218,7 +207,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},

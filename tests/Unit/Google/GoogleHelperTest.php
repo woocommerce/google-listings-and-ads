@@ -31,8 +31,8 @@ class GoogleHelperTest extends UnitTest {
 	public function test_get_mc_supported_countries_currencies_includes_south_korea_if_currency_is_KRW() {
 		$wc = $this->createMock( WC::class );
 		$wc->expects( $this->any() )
-		   ->method( 'get_woocommerce_currency' )
-		   ->willReturn( 'KRW' );
+			->method( 'get_woocommerce_currency' )
+			->willReturn( 'KRW' );
 		$google_helper = new GoogleHelper( $wc );
 
 		$supported = $google_helper->get_mc_supported_countries_currencies();
@@ -60,8 +60,8 @@ class GoogleHelperTest extends UnitTest {
 	}
 
 	public function test_is_country_supported() {
-		$this->assertTrue( $this->google_helper->is_country_supported('US') );
-		$this->assertFalse( $this->google_helper->is_country_supported('XX') );
+		$this->assertTrue( $this->google_helper->is_country_supported( 'US' ) );
+		$this->assertFalse( $this->google_helper->is_country_supported( 'XX' ) );
 	}
 
 	public function test_find_country_code_by_id() {
@@ -69,7 +69,7 @@ class GoogleHelperTest extends UnitTest {
 	}
 
 	public function test_find_subdivision_code_by_id() {
-		$this->assertEquals( 'OR', $this->google_helper->find_subdivision_code_by_id(21170) );
+		$this->assertEquals( 'OR', $this->google_helper->find_subdivision_code_by_id( 21170 ) );
 	}
 
 	public function test_find_location_id_by_country_code() {
@@ -94,24 +94,26 @@ class GoogleHelperTest extends UnitTest {
 	public function test_returns_supported_countries_from_continent() {
 		// Mock the WC_Countries class to return the list of countries for the EU continent.
 		$this->wc->expects( $this->any() )
-				 ->method( 'get_continents' )
-				 ->willReturn( [
-					 'EU' => [
-						 'name'      => 'Europe',
-						 'countries' => [
-							 // A random country code, not supported by Merchant Center. This should be ignored.
-							 'OO1',
-							 // Another random country code, not supported by Merchant Center. This should be ignored.
-							 'OO2',
-							 // Countries supported by MC
-							 'GB',
-							 'FR',
-							 'DE',
-							 'DK',
-							 // And many more ...
-						 ],
-					 ],
-				 ] );
+			->method( 'get_continents' )
+			->willReturn(
+				[
+					'EU' => [
+						'name'      => 'Europe',
+						'countries' => [
+							// A random country code, not supported by Merchant Center. This should be ignored.
+							'OO1',
+							// Another random country code, not supported by Merchant Center. This should be ignored.
+							'OO2',
+							// Countries supported by MC
+							'GB',
+							'FR',
+							'DE',
+							'DK',
+							// And many more ...
+						],
+					],
+				]
+			);
 
 		$this->assertEqualSets(
 			[
@@ -132,8 +134,8 @@ class GoogleHelperTest extends UnitTest {
 
 		$this->wc = $this->createMock( WC::class );
 		$this->wc->expects( $this->any() )
-				 ->method( 'get_woocommerce_currency' )
-				 ->willReturn( 'USD' );
+			->method( 'get_woocommerce_currency' )
+			->willReturn( 'USD' );
 
 		$this->google_helper = new GoogleHelper( $this->wc );
 	}

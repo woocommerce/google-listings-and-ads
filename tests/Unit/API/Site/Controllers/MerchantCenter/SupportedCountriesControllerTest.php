@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 
-	const ROUTE = '/wc/gla/mc/countries';
+	protected const ROUTE = '/wc/gla/mc/countries';
 
 	/**
 	 * Runs before each test is executed.
@@ -32,7 +32,7 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 		$this->wc            = $this->createMock( WC::class );
 		$this->google_helper = $this->createMock( GoogleHelper::class );
 
-		$this->supported_countries_controller = new SupportedCountriesController( $this->server,  $this->wc, $this->google_helper );
+		$this->supported_countries_controller = new SupportedCountriesController( $this->server, $this->wc, $this->google_helper );
 		$this->supported_countries_controller->register();
 	}
 
@@ -101,7 +101,7 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 
 		$continents_data = [
 			'EU' => [
-				'name' => 'Europe',
+				'name'      => 'Europe',
 				'countries' => [
 					'AD',
 					'AL',
@@ -109,7 +109,7 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 				],
 			],
 			'NA' => [
-				'name' => 'North America',
+				'name'      => 'North America',
 				'countries' => [
 					'AG',
 					'AI',
@@ -117,7 +117,7 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 				],
 			],
 			'AS' => [
-				'name' => 'Asia',
+				'name'      => 'Asia',
 				'countries' => [
 					'JP',
 					'TW',
@@ -134,7 +134,7 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 		];
 
 		$expected = [
-			'countries' => [
+			'countries'  => [
 				'US' => [
 					'name'     => 'United States',
 					'currency' => 'USD',
@@ -150,19 +150,19 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 			],
 			'continents' => [
 				'EU' => [
-					'name' => 'Europe',
+					'name'      => 'Europe',
 					'countries' => [
 						'GB',
 					],
 				],
 				'NA' => [
-					'name' => 'North America',
+					'name'      => 'North America',
 					'countries' => [
 						'US',
 					],
 				],
 				'AS' => [
-					'name' => 'Asia',
+					'name'      => 'Asia',
 					'countries' => [
 						'TW',
 					],

@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
+import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
 
 const validShippingRateSet = new Set( [ 'automatic', 'flat', 'manual' ] );
 const validShippingTimeSet = new Set( [ 'flat', 'manual' ] );
@@ -42,7 +42,7 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	if ( values.shipping_rate === 'flat' ) {
 		if (
 			values.offer_free_shipping === undefined &&
-			values.shipping_country_rates.some( isNonFreeFlatShippingRate )
+			values.shipping_country_rates.some( isNonFreeShippingRate )
 		) {
 			errors.offer_free_shipping = __(
 				'Please select an option for whether to offer free shipping.',

@@ -92,22 +92,22 @@ class AdsCampaignTest extends UnitTest {
 
 		$campaigns_data = [
 			[
-				'id'      => self::TEST_CAMPAIGN_ID,
-				'name'    => 'Campaign One',
-				'status'  => 'paused',
-				'type'    => 'shopping',
-				'amount'  => 10,
-				'country' => 'US',
-				'targeted_locations' => ['TW'],
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'name'               => 'Campaign One',
+				'status'             => 'paused',
+				'type'               => 'shopping',
+				'amount'             => 10,
+				'country'            => 'US',
+				'targeted_locations' => [ 'TW' ],
 			],
 			[
-				'id'      => 5678901234,
-				'name'    => 'Campaign Two',
-				'status'  => 'enabled',
-				'type'    => 'performance_max',
-				'amount'  => 20,
-				'country' => 'UK',
-				'targeted_locations' => ['HK', 'GB'],
+				'id'                 => 5678901234,
+				'name'               => 'Campaign Two',
+				'status'             => 'enabled',
+				'type'               => 'performance_max',
+				'amount'             => 20,
+				'country'            => 'UK',
+				'targeted_locations' => [ 'HK', 'GB' ],
 			],
 		];
 
@@ -133,21 +133,21 @@ class AdsCampaignTest extends UnitTest {
 
 		$campaigns_data = [
 			[
-				'id'      => self::TEST_CAMPAIGN_ID,
-				'name'    => 'Campaign One',
-				'status'  => 'paused',
-				'type'    => 'shopping',
-				'amount'  => 10,
-				'country' => 'US',
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'name'               => 'Campaign One',
+				'status'             => 'paused',
+				'type'               => 'shopping',
+				'amount'             => 10,
+				'country'            => 'US',
 				'targeted_locations' => [],
 			],
 			[
-				'id'      => 5678901234,
-				'name'    => 'Campaign Two',
-				'status'  => 'enabled',
-				'type'    => 'performance_max',
-				'amount'  => 20,
-				'country' => 'UK',
+				'id'                 => 5678901234,
+				'name'               => 'Campaign Two',
+				'status'             => 'enabled',
+				'type'               => 'performance_max',
+				'amount'             => 20,
+				'country'            => 'UK',
 				'targeted_locations' => [],
 			],
 		];
@@ -174,21 +174,21 @@ class AdsCampaignTest extends UnitTest {
 
 		$campaigns_data = [
 			[
-				'id'      => self::TEST_CAMPAIGN_ID,
-				'name'    => 'Campaign One',
-				'status'  => 'paused',
-				'type'    => 'shopping',
-				'amount'  => 10,
-				'country' => 'US',
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'name'               => 'Campaign One',
+				'status'             => 'paused',
+				'type'               => 'shopping',
+				'amount'             => 10,
+				'country'            => 'US',
 				'targeted_locations' => [],
 			],
 			[
-				'id'      => 5678901234,
-				'name'    => 'Campaign Two',
-				'status'  => 'enabled',
-				'type'    => 'performance_max',
-				'amount'  => 20,
-				'country' => 'UK',
+				'id'                 => 5678901234,
+				'name'               => 'Campaign Two',
+				'status'             => 'enabled',
+				'type'               => 'performance_max',
+				'amount'             => 20,
+				'country'            => 'UK',
 				'targeted_locations' => [],
 			],
 		];
@@ -225,13 +225,13 @@ class AdsCampaignTest extends UnitTest {
 		];
 
 		$campaign_data = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'name'    => 'Single Campaign',
-			'status'  => 'enabled',
-			'type'    => 'performance_max',
-			'amount'  => 10,
-			'country' => 'US',
-			'targeted_locations' => ['TW'],
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'name'               => 'Single Campaign',
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'amount'             => 10,
+			'country'            => 'US',
+			'targeted_locations' => [ 'TW' ],
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );
@@ -258,9 +258,9 @@ class AdsCampaignTest extends UnitTest {
 
 	public function test_create_campaign() {
 		$campaign_data = [
-			'name'    => 'New Campaign',
-			'amount'  => 20,
-			'targeted_locations' => ['US', 'GB'],
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US', 'GB' ],
 		];
 
 		$this->wc->expects( $this->once() )
@@ -286,7 +286,7 @@ class AdsCampaignTest extends UnitTest {
 		$campaign_data = [
 			'name'               => 'New Campaign',
 			'amount'             => 20,
-			'targeted_locations' => ['Null location'],
+			'targeted_locations' => [ 'Null location' ],
 		];
 
 		$this->wc->expects( $this->once() )
@@ -310,9 +310,9 @@ class AdsCampaignTest extends UnitTest {
 
 	public function test_create_campaign_exception_duplicate_campaign_name() {
 		$campaign_data = [
-			'name'    => 'Invalid Campaign',
-			'amount'  => 20,
-			'targeted_locations' => ['US', 'GB'],
+			'name'               => 'Invalid Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US', 'GB' ],
 		];
 
 		$errors = [
@@ -351,7 +351,7 @@ class AdsCampaignTest extends UnitTest {
 		$campaign_data = [
 			'name'               => 'New Campaign',
 			'amount'             => 20,
-			'targeted_locations' => ['Invalid location'],
+			'targeted_locations' => [ 'Invalid location' ],
 		];
 
 		$errors = [
@@ -377,7 +377,7 @@ class AdsCampaignTest extends UnitTest {
 					'message' => 'Error creating campaign: Invalid criterion ID',
 					'errors'  => [
 						'INVALID_CRITERION_ID' => 'Invalid criterion ID',
-						'INVALID_ARGUMENT'        => 'invalid',
+						'INVALID_ARGUMENT'     => 'invalid',
 					],
 				],
 				$e->get_response_data( true )
@@ -388,7 +388,7 @@ class AdsCampaignTest extends UnitTest {
 
 	public function test_edit_campaign() {
 		$campaign_data = [
-			'amount'  => 40,
+			'amount' => 40,
 			'status' => 'paused',
 		];
 
@@ -455,7 +455,7 @@ class AdsCampaignTest extends UnitTest {
 					'message' => 'This campaign has already been deleted',
 					'errors'  => [
 						'OPERATION_NOT_PERMITTED_FOR_REMOVED_RESOURCE' => 'Campaign already deleted',
-						'INVALID_ARGUMENT'                             => 'invalid',
+						'INVALID_ARGUMENT' => 'invalid',
 					],
 					'id'      => self::TEST_CAMPAIGN_ID,
 				],

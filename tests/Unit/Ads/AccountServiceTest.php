@@ -55,17 +55,17 @@ class AccountServiceTest extends UnitTest {
 		'created_timestamp' => 1643833342,
 	];
 	protected const TEST_CONNECTED_DATA    = [
-		'id'       => SELF::TEST_ACCOUNT_ID,
+		'id'       => self::TEST_ACCOUNT_ID,
 		'currency' => 'EUR',
 		'symbol'   => '€',
 		'status'   => 'connected',
 	];
 	protected const TEST_INCOMPLETE_DATA   = [
-		'id'       => SELF::TEST_ACCOUNT_ID,
+		'id'       => self::TEST_ACCOUNT_ID,
 		'currency' => 'EUR',
 		'symbol'   => '€',
 		'status'   => 'incomplete',
-		'step'     => 'billing'
+		'step'     => 'billing',
 	];
 	protected const TEST_DISCONNECTED_DATA = [
 		'id'       => 0,

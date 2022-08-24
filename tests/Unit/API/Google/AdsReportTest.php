@@ -118,30 +118,30 @@ class AdsReportTest extends UnitTest {
 		$expected = [
 			$report_type => [
 				[
-					'id'        => 1234567890,
-					'name'      => 'First Campaign',
-					'status'    => 'enabled',
-					'subtotals' => [
+					'id'          => 1234567890,
+					'name'        => 'First Campaign',
+					'status'      => 'enabled',
+					'subtotals'   => [
 						'clicks'      => 28,
 						'impressions' => 2365,
 						'spend'       => 14.77,
 						'sales'       => 38,
 						'conversions' => 3,
 					],
-					'isConverted'    => false,
+					'isConverted' => false,
 				],
 				[
-					'id'        => 2345678901,
-					'name'      => 'Second Campaign',
-					'status'    => 'enabled',
-					'subtotals' => [
+					'id'          => 2345678901,
+					'name'        => 'Second Campaign',
+					'status'      => 'enabled',
+					'subtotals'   => [
 						'clicks'      => 58,
 						'impressions' => 4823,
 						'spend'       => 21.6,
 						'sales'       => 86,
 						'conversions' => 4,
 					],
-					'isConverted'    => false,
+					'isConverted' => false,
 				],
 			],
 			'intervals'  => [
@@ -659,16 +659,16 @@ class AdsReportTest extends UnitTest {
 					'name'        => 'Test Campaign',
 					'status'      => 'removed',
 					'isConverted' => true,
-					'subtotals' => [
+					'subtotals'   => [
 						'clicks' => 12,
 					],
 				],
 				[
-					'id'           => 2345678901,
-					'name'         => 'PMax: Test Campaign',
-					'status'       => 'enabled',
-					'isConverted'  => false,
-					'subtotals' => [
+					'id'          => 2345678901,
+					'name'        => 'PMax: Test Campaign',
+					'status'      => 'enabled',
+					'isConverted' => false,
+					'subtotals'   => [
 						'clicks' => 58,
 					],
 				],
