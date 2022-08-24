@@ -130,7 +130,7 @@
 			},
 			{
 				"path": "./js/build/index.css",
-				"maxSize": "10 kB"
+				"maxSize": "12 kB"
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
