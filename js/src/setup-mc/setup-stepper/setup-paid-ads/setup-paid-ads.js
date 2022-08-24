@@ -17,6 +17,7 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
 import ProductFeedStatusSection from './product-feed-status-section';
+import PaidAdsFeaturesSection from './paid-ads-features-section';
 import { getProductFeedUrl } from '.~/utils/urls';
 import { GUIDE_NAMES } from '.~/constants';
 import { API_NAMESPACE } from '.~/data/constants';
@@ -24,6 +25,7 @@ import { API_NAMESPACE } from '.~/data/constants';
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
 	const { createNotice } = useDispatchCoreNotices();
+	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( false );
 	const [ completing, setCompleting ] = useState( null );
 
 	const finishFreeListingsSetup = async ( event ) => {
@@ -56,6 +58,19 @@ export default function SetupPaidAds() {
 		await finishFreeListingsSetup( event );
 	};
 
+	function createSkipButton( text ) {
+		return (
+			<AppButton
+				isTertiary
+				data-action="skip-ads"
+				text={ text }
+				loading={ completing === 'skip-ads' }
+				disabled={ completing === 'complete-ads' }
+				onClick={ finishFreeListingsSetup }
+			/>
+		);
+	}
+
 	return (
 		<StepContent>
 			<StepContentHeader
@@ -69,30 +84,43 @@ export default function SetupPaidAds() {
 				) }
 			/>
 			<ProductFeedStatusSection />
-			<FaqsSection />
-			<StepContentFooter>
-				<Flex justify="right" gap={ 4 }>
+			<PaidAdsFeaturesSection
+				hideFooterButtons={ showPaidAdsSetup }
+				skipButton={ createSkipButton(
+					__( 'Skip this step for now', 'google-listings-and-ads' )
+				) }
+				continueButton={
 					<AppButton
-						isTertiary
-						data-action="skip-ads"
-						loading={ completing === 'skip-ads' }
-						disabled={ completing === 'complete-ads' }
-						onClick={ finishFreeListingsSetup }
-					>
-						{ __(
-							'Skip paid ads creation',
+						isPrimary
+						text={ __(
+							'Create a paid ad campaign',
 							'google-listings-and-ads'
 						) }
-					</AppButton>
+						disabled={ completing === 'skip-ads' }
+						onClick={ () => setShowPaidAdsSetup( true ) }
+					/>
+				}
+			/>
+			<FaqsSection />
+			<StepContentFooter hidden={ ! showPaidAdsSetup }>
+				<Flex justify="right" gap={ 4 }>
+					{ createSkipButton(
+						__(
+							'Skip paid ads creation',
+							'google-listings-and-ads'
+						)
+					) }
 					<AppButton
 						isPrimary
 						data-action="complete-ads"
+						text={ __(
+							'Complete setup',
+							'google-listings-and-ads'
+						) }
 						loading={ completing === 'complete-ads' }
 						disabled={ completing === 'skip-ads' }
 						onClick={ handleCompleteClick }
-					>
-						{ __( 'Complete setup', 'google-listings-and-ads' ) }
-					</AppButton>
+					/>
 				</Flex>
 			</StepContentFooter>
 		</StepContent>
