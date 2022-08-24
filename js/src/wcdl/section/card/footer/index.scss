@@ -1,3 +1,7 @@
 .wcdl-section-card-footer {
 	padding: calc(var(--large-gap) / 2) var(--large-gap);
+
+	&[hidden] {
+		display: none;
+	}
 }
