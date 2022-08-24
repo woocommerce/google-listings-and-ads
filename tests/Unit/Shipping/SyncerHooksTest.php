@@ -41,7 +41,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->update_shipping_job->expects( $this->once() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$zone = new WC_Shipping_Zone();
 		$zone->set_zone_name( 'GB' );
@@ -53,7 +53,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->update_shipping_job->expects( $this->once() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$zone = new WC_Shipping_Zone();
 		$zone->set_zone_name( 'EU' );
@@ -68,7 +68,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->update_shipping_job->expects( $this->once() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$zone = WC_Shipping_Zones::get_zone( $this->sample_zone_id );
 		$zone->add_shipping_method( 'flat_rate' );
@@ -78,7 +78,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->update_shipping_job->expects( $this->once() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$zone = WC_Shipping_Zones::get_zone( $this->sample_zone_id );
 
@@ -92,7 +92,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->update_shipping_job->expects( $this->once() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$zone = WC_Shipping_Zones::get_zone( $this->sample_zone_id );
 
@@ -109,7 +109,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->update_shipping_job->expects( $this->never() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$method_id   = 'unsupported_gla_shipping_method';
 		$instance_id = 0;
@@ -121,20 +121,22 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->update_shipping_job->expects( $this->once() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		// Create a shipping class.
-		$this->factory()->term->create( [
-			'taxonomy' => 'product_shipping_class',
-			'name'     => 'light',
-		] );
+		$this->factory()->term->create(
+			[
+				'taxonomy' => 'product_shipping_class',
+				'name'     => 'light',
+			]
+		);
 	}
 
 	public function test_deleting_shipping_class_schedules_update_job() {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->update_shipping_job->expects( $this->once() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		// Delete a shipping class.
 		wp_delete_term( $this->sample_class_id, 'product_shipping_class' );
@@ -144,7 +146,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->update_shipping_job->expects( $this->once() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		// Update a shipping class.
 		wp_update_term( $this->sample_class_id, 'product_shipping_class', [ 'name' => 'heavyweight' ] );
@@ -154,7 +156,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( false, true );
 
 		$this->update_shipping_job->expects( $this->never() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$zone = new WC_Shipping_Zone();
 		$zone->set_zone_name( 'GB' );
@@ -166,7 +168,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( true, false );
 
 		$this->update_shipping_job->expects( $this->never() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$zone = new WC_Shipping_Zone();
 		$zone->set_zone_name( 'GB' );
@@ -182,11 +184,11 @@ class SyncerHooksTest extends UnitTest {
 	 */
 	protected function mock_sync_ready_flags_and_register_hooks( bool $mc_connected, bool $automatic_rates ): void {
 		$this->merchant_center->expects( $this->any() )
-							  ->method( 'is_connected' )
-							  ->willReturn( $mc_connected );
+			->method( 'is_connected' )
+			->willReturn( $mc_connected );
 		$this->google_settings->expects( $this->any() )
-							  ->method( 'should_get_shipping_rates_from_woocommerce' )
-							  ->willReturn( $automatic_rates );
+			->method( 'should_get_shipping_rates_from_woocommerce' )
+			->willReturn( $automatic_rates );
 
 		$this->syncer_hooks->register();
 	}
@@ -208,22 +210,24 @@ class SyncerHooksTest extends UnitTest {
 		$this->sample_zone_id = $zone->get_id();
 
 		// Create a sample shipping class.
-		$this->sample_class_id = $this->factory()->term->create( [
-			'taxonomy' => 'product_shipping_class',
-			'name'     => 'heavy',
-		] );
+		$this->sample_class_id = $this->factory()->term->create(
+			[
+				'taxonomy' => 'product_shipping_class',
+				'name'     => 'heavy',
+			]
+		);
 
-		$this->merchant_center = $this->createMock( MerchantCenterService::class );
-		$this->google_settings = $this->createMock( GoogleSettings::class );
+		$this->merchant_center     = $this->createMock( MerchantCenterService::class );
+		$this->google_settings     = $this->createMock( GoogleSettings::class );
 		$this->update_shipping_job = $this->createMock( UpdateShippingSettings::class );
 		$this->job_repository      = $this->createMock( JobRepository::class );
 		$this->job_repository->expects( $this->any() )
-							 ->method( 'get' )
-							 ->willReturnMap(
-								 [
-									 [ UpdateShippingSettings::class, $this->update_shipping_job ],
-								 ]
-							 );
+			->method( 'get' )
+			->willReturnMap(
+				[
+					[ UpdateShippingSettings::class, $this->update_shipping_job ],
+				]
+			);
 
 		$this->syncer_hooks = new SyncerHooks( $this->merchant_center, $this->google_settings, $this->job_repository );
 	}

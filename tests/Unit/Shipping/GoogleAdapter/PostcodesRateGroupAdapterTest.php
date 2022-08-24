@@ -31,8 +31,8 @@ class PostcodesRateGroupAdapterTest extends UnitTest {
 
 		$rate_group = new PostcodesRateGroupAdapter(
 			[
-				'location_rates'           => $location_rates,
-				'currency'                 => 'USD'
+				'location_rates' => $location_rates,
+				'currency'       => 'USD',
 			]
 		);
 

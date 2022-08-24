@@ -48,7 +48,7 @@ class ServiceRatesCollectionTest extends UnitTest {
 
 		foreach ( $class_rates as $class => $location_rates ) {
 			foreach ( $location_rates as $location_rate ) {
-				$this->assertTrue( in_array( $class, $location_rate->get_shipping_rate()->get_applicable_classes() ) );
+				$this->assertTrue( in_array( $class, $location_rate->get_shipping_rate()->get_applicable_classes(), true ) );
 			}
 		}
 	}

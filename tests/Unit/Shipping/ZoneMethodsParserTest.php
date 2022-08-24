@@ -25,17 +25,17 @@ class ZoneMethodsParserTest extends UnitTest {
 		$flat_rate     = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate->id = ZoneMethodsParser::METHOD_FLAT_RATE;
 		$flat_rate->expects( $this->any() )
-				  ->method( 'get_option' )
-				  ->willReturnMap(
-					  [
-						  [ 'cost', null, 10 ],
-					  ]
-				  );
+			->method( 'get_option' )
+			->willReturnMap(
+				[
+					[ 'cost', null, 10 ],
+				]
+			);
 
 		$zone = $this->createMock( WC_Shipping_Zone::class );
 		$zone->expects( $this->any() )
-			 ->method( 'get_shipping_methods' )
-			 ->willReturn( [ $flat_rate ] );
+			->method( 'get_shipping_methods' )
+			->willReturn( [ $flat_rate ] );
 
 		$shipping_rates = $this->methods_parser->parse( $zone );
 		$this->assertCount( 1, $shipping_rates );
@@ -55,25 +55,27 @@ class ZoneMethodsParserTest extends UnitTest {
 		$qty_class->slug      = 'qty';
 		$shipping_classes     = [ $light_class, $heavy_class, $qty_class ];
 		$this->wc->expects( $this->any() )
-				 ->method( 'get_shipping_classes' )
-				 ->willReturn( $shipping_classes );
+			->method( 'get_shipping_classes' )
+			->willReturn( $shipping_classes );
 
 		$flat_rate     = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate->id = ZoneMethodsParser::METHOD_FLAT_RATE;
 		$flat_rate->expects( $this->any() )
-				  ->method( 'get_option' )
-				  ->willReturnMap( [
-					  [ 'cost', null, 10 ],
-					  [ 'class_cost_0', null, 5 ],
-					  [ 'class_cost_1', null, 15 ],
-					  [ 'class_cost_2', null, '[qty] / 10' ],
-					  [ 'no_class_cost', null, 2 ],
-				  ] );
+			->method( 'get_option' )
+			->willReturnMap(
+				[
+					[ 'cost', null, 10 ],
+					[ 'class_cost_0', null, 5 ],
+					[ 'class_cost_1', null, 15 ],
+					[ 'class_cost_2', null, '[qty] / 10' ],
+					[ 'no_class_cost', null, 2 ],
+				]
+			);
 
 		$zone = $this->createMock( WC_Shipping_Zone::class );
 		$zone->expects( $this->any() )
-			 ->method( 'get_shipping_methods' )
-			 ->willReturn( [ $flat_rate ] );
+			->method( 'get_shipping_methods' )
+			->willReturn( [ $flat_rate ] );
 
 		$shipping_rates = $this->methods_parser->parse( $zone );
 
@@ -81,7 +83,7 @@ class ZoneMethodsParserTest extends UnitTest {
 		$this->assertCount( 3, $shipping_rates );
 
 		$classes = array_map(
-			function (ShippingRate $shipping_rate) {
+			function ( ShippingRate $shipping_rate ) {
 				return $shipping_rate->get_applicable_classes();
 			},
 			$shipping_rates
@@ -118,16 +120,18 @@ class ZoneMethodsParserTest extends UnitTest {
 		$free_shipping     = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping->id = ZoneMethodsParser::METHOD_FREE;
 		$free_shipping->expects( $this->any() )
-					  ->method( 'get_option' )
-					  ->willReturnMap( [
-						  [ 'requires', null, $requires ],
-						  [ 'min_amount', null, 99.99 ],
-					  ] );
+			->method( 'get_option' )
+			->willReturnMap(
+				[
+					[ 'requires', null, $requires ],
+					[ 'min_amount', null, 99.99 ],
+				]
+			);
 
 		$zone = $this->createMock( WC_Shipping_Zone::class );
 		$zone->expects( $this->any() )
-			 ->method( 'get_shipping_methods' )
-			 ->willReturn( [ $free_shipping ] );
+			->method( 'get_shipping_methods' )
+			->willReturn( [ $free_shipping ] );
 
 		$shipping_rates = $this->methods_parser->parse( $zone );
 		$this->assertCount( 1, $shipping_rates );
@@ -144,16 +148,18 @@ class ZoneMethodsParserTest extends UnitTest {
 		$free_shipping     = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping->id = ZoneMethodsParser::METHOD_FREE;
 		$free_shipping->expects( $this->any() )
-					  ->method( 'get_option' )
-					  ->willReturnMap( [
-						  [ 'requires', null, $requires ],
-						  [ 'min_amount', null, 99.99 ],
-					  ] );
+			->method( 'get_option' )
+			->willReturnMap(
+				[
+					[ 'requires', null, $requires ],
+					[ 'min_amount', null, 99.99 ],
+				]
+			);
 
 		$zone = $this->createMock( WC_Shipping_Zone::class );
 		$zone->expects( $this->any() )
-			 ->method( 'get_shipping_methods' )
-			 ->willReturn( [ $free_shipping ] );
+			->method( 'get_shipping_methods' )
+			->willReturn( [ $free_shipping ] );
 
 		$this->assertEmpty( $this->methods_parser->parse( $zone ) );
 	}
@@ -161,49 +167,55 @@ class ZoneMethodsParserTest extends UnitTest {
 	public function test_ignores_unsupported_methods() {
 		$zone = $this->createMock( WC_Shipping_Zone::class );
 		$zone->expects( $this->any() )
-			 ->method( 'get_shipping_methods' )
-			 ->willReturn( [
-				 (object) [
-					 'enabled' => true,
-					 'title'   => 'Unsupported method',
-					 'id'      => 'a_random_unsupported_method',
-				 ],
-			 ] );
+			->method( 'get_shipping_methods' )
+			->willReturn(
+				[
+					(object) [
+						'enabled' => true,
+						'title'   => 'Unsupported method',
+						'id'      => 'a_random_unsupported_method',
+					],
+				]
+			);
 
 		$this->assertEmpty( $this->methods_parser->parse( $zone ) );
 	}
 
 	public function test_ignores_flat_rate_methods_with_no_rate() {
-		$flat_rate = $this->createMock( WC_Shipping_Flat_Rate::class );
+		$flat_rate     = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate->id = ZoneMethodsParser::METHOD_FLAT_RATE;
 		$flat_rate->expects( $this->any() )
-				  ->method( 'get_option' )
-				  ->willReturnMap( [
-					  [ 'cost', null ],
-					  [ 'no_class_cost', null ],
-				  ] );
+			->method( 'get_option' )
+			->willReturnMap(
+				[
+					[ 'cost', null ],
+					[ 'no_class_cost', null ],
+				]
+			);
 
 		$zone = $this->createMock( WC_Shipping_Zone::class );
 		$zone->expects( $this->any() )
-			 ->method( 'get_shipping_methods' )
-			 ->willReturn( [ $flat_rate ] );
+			->method( 'get_shipping_methods' )
+			->willReturn( [ $flat_rate ] );
 
 		$this->assertEmpty( $this->methods_parser->parse( $zone ) );
 	}
 
 	public function test_ignores_flat_rate_methods_with_non_numeric_rate() {
-		$flat_rate = $this->createMock( WC_Shipping_Flat_Rate::class );
+		$flat_rate     = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate->id = ZoneMethodsParser::METHOD_FLAT_RATE;
 		$flat_rate->expects( $this->any() )
-				  ->method( 'get_option' )
-				  ->willReturnMap( [
-					  [ 'cost', '[qty] * 5' ],
-				  ] );
+			->method( 'get_option' )
+			->willReturnMap(
+				[
+					[ 'cost', '[qty] * 5' ],
+				]
+			);
 
 		$zone = $this->createMock( WC_Shipping_Zone::class );
 		$zone->expects( $this->any() )
-			 ->method( 'get_shipping_methods' )
-			 ->willReturn( [ $flat_rate ] );
+			->method( 'get_shipping_methods' )
+			->willReturn( [ $flat_rate ] );
 
 		$this->assertEmpty( $this->methods_parser->parse( $zone ) );
 	}

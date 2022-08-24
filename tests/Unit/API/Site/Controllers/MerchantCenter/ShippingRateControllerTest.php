@@ -66,19 +66,19 @@ class ShippingRateControllerTest extends RESTControllerUnitTest {
 			->method( 'set_order' )
 			->willReturn( $this->shipping_rate_query );
 		$this->shipping_rate_query->expects( $this->once() )
-								  ->method( 'get_results' )
-								  ->willReturn(
-									  [
-										  [
-											  'id'       => '123',
-											  'country'  => 'US',
-											  'currency' => 'USD',
-											  'rate'     => '5.00',
-											  'method'   => 'flat_rate',
-											  'options'  => [],
-										  ],
-									  ]
-								  );
+			->method( 'get_results' )
+			->willReturn(
+				[
+					[
+						'id'       => '123',
+						'country'  => 'US',
+						'currency' => 'USD',
+						'rate'     => '5.00',
+						'method'   => 'flat_rate',
+						'options'  => [],
+					],
+				]
+			);
 
 		$response = $this->do_request( self::ROUTE_RATES, 'GET' );
 		$this->assertEquals( 200, $response->get_status() );
