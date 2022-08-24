@@ -326,4 +326,45 @@ $gla-campaign-preview-height: 270px;
 			fill: #f86368;
 		}
 	}
+
+	// === Google Display Network preview ==
+	&__display-product {
+		margin: 12px 0;
+		border: 1px solid $gray-200;
+	}
+
+	&__display-product &__placeholder {
+		margin: 18px 10px 12px;
+	}
+
+	&__display-product-locator {
+		position: relative;
+	}
+
+	&__display-corner-buttons {
+		position: absolute;
+		right: 0;
+		top: 0;
+	}
+
+	&__display-chevron-button {
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 22px;
+		aspect-ratio: 1 / 1;
+		border-radius: 50%;
+		background-color: $gla-campaign-preview-color-blue;
+		fill: $white;
+	}
+
+	&__display-placeholders {
+		display: flex;
+		flex-direction: column;
+		gap: 4.66px;
+	}
 }
