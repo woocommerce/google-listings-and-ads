@@ -27,8 +27,8 @@ class StatesRateGroupAdapterTest extends UnitTest {
 
 		$rate_group = new StatesRateGroupAdapter(
 			[
-				'location_rates'           => $location_rates,
-				'currency'                 => 'USD'
+				'location_rates' => $location_rates,
+				'currency'       => 'USD',
 			]
 		);
 

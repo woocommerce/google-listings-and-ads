@@ -112,7 +112,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_disconnected() {
-
 		$response = $this->do_request( self::ROUTE_CONNECTED, 'GET' );
 
 		$this->assertEquals(

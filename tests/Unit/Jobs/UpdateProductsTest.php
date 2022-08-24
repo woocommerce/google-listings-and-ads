@@ -41,12 +41,12 @@ class UpdateProductsTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->action_scheduler     = $this->createMock( ActionScheduler::class );
-		$this->monitor              = $this->createMock( ActionSchedulerJobMonitor::class );
-		$this->product_syncer       = $this->createMock( ProductSyncer::class );
-		$this->product_repository   = $this->createMock( ProductRepository::class );
-		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
-		$this->job                  = new UpdateProducts(
+		$this->action_scheduler   = $this->createMock( ActionScheduler::class );
+		$this->monitor            = $this->createMock( ActionSchedulerJobMonitor::class );
+		$this->product_syncer     = $this->createMock( ProductSyncer::class );
+		$this->product_repository = $this->createMock( ProductRepository::class );
+		$this->merchant_center    = $this->createMock( MerchantCenterService::class );
+		$this->job                = new UpdateProducts(
 			$this->action_scheduler,
 			$this->monitor,
 			$this->product_syncer,

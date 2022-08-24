@@ -78,20 +78,23 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 
 		$settings = new WCShippingSettingsAdapter(
 			[
-				'currency' => 'USD',
+				'currency'          => 'USD',
 				'rates_collections' => [
 					new CountryRatesCollection( 'US', [ $location_rate_1, $location_rate_2 ] ),
 					new CountryRatesCollection( 'AU', [ $location_rate_3 ] ),
 				],
-				'delivery_times' => [ 'AU' => 1, 'US' => 2 ],
+				'delivery_times'    => [
+					'AU' => 1,
+					'US' => 2,
+				],
 			]
 		);
 
 		$services = $settings->getServices();
 
-		$this->assertCount(3, $services);
+		$this->assertCount( 3, $services );
 
-		/* @var GoogleShippingService[] $min_order_services **/
+		/** @var GoogleShippingService[] $min_order_services */
 		$min_order_services = array_filter(
 			$services,
 			function ( GoogleShippingService $service ) {
@@ -129,12 +132,15 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 
 		$settings = new WCShippingSettingsAdapter(
 			[
-				'currency' => 'USD',
+				'currency'          => 'USD',
 				'rates_collections' => [
 					new CountryRatesCollection( 'US', [ $location_rate_1, $location_rate_2 ] ),
 					new CountryRatesCollection( 'AU', [ $location_rate_3 ] ),
 				],
-				'delivery_times' => [ 'AU' => 1, 'US' => 2 ],
+				'delivery_times'    => [
+					'AU' => 1,
+					'US' => 2,
+				],
 			]
 		);
 
@@ -143,7 +149,7 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 		$this->assertCount( 3, $postcode_groups );
 
 		$postcode_names = array_map(
-			function (PostalCodeGroup $postal_code_group) {
+			function ( PostalCodeGroup $postal_code_group ) {
 				return $postal_code_group->getName();
 			},
 			$postcode_groups
@@ -194,32 +200,35 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 
 		$settings = new WCShippingSettingsAdapter(
 			[
-				'currency' => 'USD',
+				'currency'          => 'USD',
 				'rates_collections' => [
 					new CountryRatesCollection( 'US', [ $location_rate_1 ] ),
 					new CountryRatesCollection( 'AU', [ $location_rate_2 ] ),
 				],
-				'delivery_times' => [ 'AU' => 5, 'US' => 10 ],
+				'delivery_times'    => [
+					'AU' => 5,
+					'US' => 10,
+				],
 			]
 		);
 
 		$services = $settings->getServices();
 
-		$this->assertCount(2, $services);
+		$this->assertCount( 2, $services );
 
-		/* @var GoogleShippingService[] $us_services **/
+		/** @var GoogleShippingService[] $us_services */
 		$us_services = array_filter(
 			$services,
 			function ( GoogleShippingService $service ) {
 				return 'US' === $service->getDeliveryCountry();
 			}
 		);
-		$us_service = $us_services[ array_key_first( $us_services ) ];
+		$us_service  = $us_services[ array_key_first( $us_services ) ];
 		$this->assertInstanceOf( DeliveryTime::class, $us_service->getDeliveryTime() );
 		$this->assertEquals( 10, $us_service->getDeliveryTime()->getMinTransitTimeInDays() );
 		$this->assertEquals( 10, $us_service->getDeliveryTime()->getMaxTransitTimeInDays() );
 
-		/* @var GoogleShippingService[] $au_services * */
+		/** @var GoogleShippingService[] $au_services */
 		$au_services = array_filter(
 			$services,
 			function ( GoogleShippingService $service ) {
@@ -243,7 +252,10 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 					new CountryRatesCollection( 'US', [ $location_rate_1 ] ),
 					new CountryRatesCollection( 'AU', [ $location_rate_2 ] ),
 				],
-				'delivery_times'    => [ 'AU' => 5, 'US' => 10 ],
+				'delivery_times'    => [
+					'AU' => 5,
+					'US' => 10,
+				],
 			]
 		);
 
@@ -257,7 +269,7 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 
 		new WCShippingSettingsAdapter(
 			[
-				'currency' => 'USD',
+				'currency'       => 'USD',
 				'delivery_times' => [ 'US' => 1 ],
 			]
 		);
@@ -269,7 +281,7 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 		new WCShippingSettingsAdapter(
 			[
 				'rates_collections' => [ new CountryRatesCollection( 'US', [] ) ],
-				'delivery_times' => [ 'US' => 1 ],
+				'delivery_times'    => [ 'US' => 1 ],
 			]
 		);
 	}
@@ -279,7 +291,7 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 
 		new WCShippingSettingsAdapter(
 			[
-				'currency' => 'USD',
+				'currency'          => 'USD',
 				'rates_collections' => [ new CountryRatesCollection( 'US', [] ) ],
 			]
 		);
@@ -293,12 +305,12 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 
 		new WCShippingSettingsAdapter(
 			[
-				'currency' => 'USD',
+				'currency'          => 'USD',
 				'rates_collections' => [
 					new CountryRatesCollection( 'US', [ $location_rate_1 ] ),
 					new CountryRatesCollection( 'AU', [ $location_rate_2 ] ),
 				],
-				'delivery_times' => [ 'AU' => 1 ],
+				'delivery_times'    => [ 'AU' => 1 ],
 			]
 		);
 	}
@@ -308,8 +320,8 @@ class WCShippingSettingsAdapterTest extends UnitTest {
 
 		new WCShippingSettingsAdapter(
 			[
-				'currency' => 'USD',
-				'delivery_times' => [ 'US' => 1 ],
+				'currency'          => 'USD',
+				'delivery_times'    => [ 'US' => 1 ],
 				'rates_collections' => [ new \stdClass() ],
 			]
 		);

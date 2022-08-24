@@ -115,7 +115,6 @@ class WCProductAdapterTest extends UnitTest {
 	}
 
 	public function test_attribute_value_can_be_overridden_via_filter() {
-
 		add_filter(
 			'woocommerce_gla_product_attribute_value_brand',
 			function () {
@@ -193,7 +192,6 @@ class WCProductAdapterTest extends UnitTest {
 	}
 
 	public function test_attribute_values_filter_takes_precedence() {
-
 		add_filter(
 			'woocommerce_gla_product_attribute_value_gtin',
 			function () {
@@ -236,9 +234,12 @@ class WCProductAdapterTest extends UnitTest {
 	}
 
 	public function test_content_language_is_set_by_default_to_en() {
-		add_filter( 'locale', function () {
-			return null;
-		} );
+		add_filter(
+			'locale',
+			function () {
+				return null;
+			}
+		);
 
 		$adapted_product = new WCProductAdapter(
 			[
@@ -251,9 +252,12 @@ class WCProductAdapterTest extends UnitTest {
 	}
 
 	public function test_content_language_is_set_to_wp_locale() {
-		add_filter( 'locale', function () {
-			return 'fr_BE';
-		} );
+		add_filter(
+			'locale',
+			function () {
+				return 'fr_BE';
+			}
+		);
 
 		$adapted_product = new WCProductAdapter(
 			[
@@ -315,8 +319,7 @@ class WCProductAdapterTest extends UnitTest {
 					'<h1>Sample product</h1> description with some valid ⏰⌛⊗⊝Ɋ❤😍 and <strong data-title="what?">invalid</strong> unicode chars' . $invalid_chars .
 					' and some registered short code like [video mp4="source.mp4"] and [gallery order="DESC" orderby="ID"] that ' .
 					'will get <i>stripped out</i>, along with an unregistered short code [some-test-short-code id=1] that will remain intact.' .
-					'<script>window.alert("this should be plain text!")</script><style>h1 {font-size: 2em;}</style>'
-				,
+					'<script>window.alert("this should be plain text!")</script><style>h1 {font-size: 2em;}</style>',
 				'short_description' => 'Short description.',
 			]
 		);
@@ -506,23 +509,26 @@ DESCRIPTION;
 	}
 
 	public function test_product_types_are_set_when_categories_defined() {
-	    $product = WC_Helper_Product::create_simple_product();
-	    $category_1 = wp_insert_term( 'Zulu Category', 'product_cat' );
-	    $category_2 = wp_insert_term( 'Alpha Category', 'product_cat' );
-	    $category_3 = wp_insert_term(
-	        'Beta Category', 'product_cat', array('parent' => $category_2['term_id']) );
-	    $product->set_category_ids([$category_1['term_id'], $category_3['term_id']] );
-	    $product->save();
+		$product    = WC_Helper_Product::create_simple_product();
+		$category_1 = wp_insert_term( 'Zulu Category', 'product_cat' );
+		$category_2 = wp_insert_term( 'Alpha Category', 'product_cat' );
+		$category_3 = wp_insert_term(
+			'Beta Category',
+			'product_cat',
+			[ 'parent' => $category_2['term_id'] ]
+		);
+		$product->set_category_ids( [ $category_1['term_id'], $category_3['term_id'] ] );
+		$product->save();
 
-	    $adapted_product = new WCProductAdapter(
-	        [
-	            'wc_product'    => $product,
-	            'targetCountry' => 'US',
-	        ]
-	    );
-	    $this->assertContains( 'Alpha Category > Beta Category', $adapted_product->getProductTypes() );
-	    $this->assertContains( 'Zulu Category', $adapted_product->getProductTypes() );
-	    $this->assertContains( 'Alpha Category', $adapted_product->getProductTypes() );
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+		$this->assertContains( 'Alpha Category > Beta Category', $adapted_product->getProductTypes() );
+		$this->assertContains( 'Zulu Category', $adapted_product->getProductTypes() );
+		$this->assertContains( 'Alpha Category', $adapted_product->getProductTypes() );
 	}
 
 	public function test_images_are_set() {
@@ -532,8 +538,8 @@ DESCRIPTION;
 
 		$additional_images = [];
 		// Intentionally add more than 10 images to test the limiting functionality.
-		for ($i = 0; $i < 12; $i++) {
-			$additional_images[$i] = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-2.png' ), $product->get_id() );
+		for ( $i = 0; $i < 12; $i++ ) {
+			$additional_images[ $i ] = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-2.png' ), $product->get_id() );
 		}
 
 		$product->set_image_id( $main_image );
@@ -1519,7 +1525,7 @@ DESCRIPTION;
 
 	public function test_valid_image_name_with_utf8_nfd() {
 		$adapted_product            = new WCProductAdapter();
-		$adapted_product->imageLink = 'https://domain.com/ïmágê-ñåmè.jpg';
+		$adapted_product->imageLink = 'https://domain.com/ïmágê-ñåmè.jpg'; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 
 		$violation = $this->validate_product_property( $adapted_product, 'imageLink' );
 		$this->assertNull( $violation );

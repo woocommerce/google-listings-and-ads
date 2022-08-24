@@ -22,7 +22,6 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 	private $products = [];
 
 	public function setUp(): void {
-
 		parent::setUp();
 
 		$this->products = [
@@ -40,7 +39,6 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_filter_sync_ready_products_with_no_filters() {
-
 		[ $product_a, $product_b, $product_c ] = $this->products;
 
 		$this->product_helper->expects( $this->exactly( 3 ) )
@@ -60,7 +58,6 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_filter_sync_ready_products_with_no_filters_but_failed_sync() {
-
 		[ $product_a, $product_b, $product_c ] = $this->products;
 
 		$this->product_helper->expects( $this->exactly( 3 ) )
@@ -80,7 +77,6 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_filter_sync_ready_products_with_pre_filter() {
-
 		add_filter(
 			'woocommerce_gla_get_sync_ready_products_pre_filter',
 			function ( $products ) {
@@ -98,7 +94,6 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_filter_sync_ready_products_with_post_filter() {
-
 		add_filter(
 			'woocommerce_gla_get_sync_ready_products_filter',
 			function ( $products ) {
@@ -125,7 +120,6 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_products_for_delete() {
-
 		[ $product_a, $product_b, $product_c ] = $this->products;
 
 		$this->product_helper->expects( $this->exactly( 3 ) )
