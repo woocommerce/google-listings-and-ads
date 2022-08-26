@@ -44,6 +44,7 @@ const AuthorizeAds = ( { additionalScopeEmail } ) => {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_ADS }
+			alignIcon="top"
 			indicator={
 				<AppButton
 					isSecondary

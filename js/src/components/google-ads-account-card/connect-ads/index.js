@@ -79,6 +79,7 @@ const ConnectAds = ( props ) => {
 	return (
 		<AccountCard
 			className="gla-connect-ads"
+			alignIcon="top"
 			appearance={ APPEARANCE.GOOGLE_ADS }
 		>
 			<CardDivider />
