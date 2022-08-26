@@ -49,6 +49,7 @@ const AppButton = ( props ) => {
 		onClick( ...args );
 	};
 
+	const disabledButton = disabled || loading;
 	const classes = [ 'app-button', className ];
 	let text;
 
@@ -75,7 +76,8 @@ const AppButton = ( props ) => {
 	return (
 		<Button
 			className={ classnames( ...classes ) }
-			disabled={ disabled || loading }
+			disabled={ disabledButton }
+			aria-disabled={ disabledButton }
 			text={ text }
 			onClick={ handleClick }
 			{ ...rest }
