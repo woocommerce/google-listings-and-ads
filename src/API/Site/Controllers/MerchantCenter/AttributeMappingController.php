@@ -96,6 +96,13 @@ class AttributeMappingController extends BaseOptionsController {
 		return function( Request $request ) {
 			try {
 				$destination = $request['destination'];
+
+				if ( ! $destination ) {
+					return [
+						'data' => [],
+					];
+				}
+
 				return $this->get_sources_for_destination( $destination );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
