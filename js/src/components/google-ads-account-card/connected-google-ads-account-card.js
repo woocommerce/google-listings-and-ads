@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -42,7 +43,11 @@ export default function ConnectedGoogleAdsAccountCard( {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_ADS }
-			description={ toAccountText( googleAdsAccount.id ) }
+			description={
+				<ExternalLink href="https://ads.google.com/aw/overview">
+					{ toAccountText( googleAdsAccount.id ) }
+				</ExternalLink>
+			}
 			indicator={ <ConnectedIconLabel /> }
 			{ ...restProps }
 		>
