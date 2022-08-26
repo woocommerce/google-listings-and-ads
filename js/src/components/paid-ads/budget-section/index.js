@@ -53,29 +53,11 @@ const BudgetSection = ( props ) => {
 		<div className="gla-budget-section">
 			<Section
 				disabled={ disabled }
-				title={ __( 'Budget', 'google-listings-and-ads' ) }
-				description={
-					<>
-						<p>
-							{ __(
-								'Enter a daily average cost that works best for your business and the results that you want. You can change your budget or cancel your ad at any time.',
-								'google-listings-and-ads'
-							) }
-						</p>
-						<p>
-							{ __(
-								'You will be billed directly by Google Ads.',
-								'google-listings-and-ads'
-							) }
-						</p>
-						<p>
-							{ __(
-								'Google will optimize your ads to maximize performance across your selected country(s).',
-								'google-listings-and-ads'
-							) }
-						</p>
-					</>
-				}
+				title={ __( 'Set your budget', 'google-listings-and-ads' ) }
+				description={ __(
+					'With Performance Max campaigns, you can set your own budget and Google’s Smart Bidding technology will serve the most appropriate ad, with the optimal bid, to maximize campaign performance.',
+					'google-listings-and-ads'
+				) }
 			>
 				<Section.Card>
 					<Section.Card.Body className="gla-budget-section__card-body">

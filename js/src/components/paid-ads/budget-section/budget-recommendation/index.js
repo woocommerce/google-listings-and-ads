@@ -3,7 +3,8 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import GridiconInfoOutline from 'gridicons/dist/info-outline';
+import { Tip } from '@wordpress/components';
+import GridiconNoticeOutline from 'gridicons/dist/notice-outline';
 
 /**
  * Internal dependencies
@@ -30,16 +31,16 @@ function getHighestBudget( recommendations ) {
 }
 
 function toRecommendationRange( isMultiple, ...values ) {
-	const conversionMap = { strong: <strong /> };
+	const conversionMap = { strong: <strong />, em: <em />, br: <br /> };
 	const template = isMultiple
 		? // translators: it's a range of recommended budget amount. 1: the low value of the range, 2: the high value of the range, 3: the currency of amount.
 		  __(
-				'Most merchants targeting similar countries set a daily budget of <strong>%1$f to %2$f %3$s</strong> for approximately 10 conversions a week.',
+				'Google will optimize your ads to maximize performance across the country/s you select.<br /><em>Tip: Most merchants targeting similar countries <strong>set a daily budget of %1$f to %2$f %3$s</strong></em>',
 				'google-listings-and-ads'
 		  )
 		: // translators: it's a range of recommended budget amount. 1: the low value of the range, 2: the high value of the range, 3: the currency of amount, 4: a country name selected by the merchant.
 		  __(
-				'Most merchants targeting <strong>%4$s</strong> set a daily budget of <strong>%1$f to %2$f %3$s</strong> for approximately 10 conversions a week.',
+				'Google will optimize your ads to maximize performance across the country/s you select.<br /><em>Tip: Most merchants targeting <strong>%4$s set a daily budget of %1$f to %2$f %3$s</strong></em>',
 				'google-listings-and-ads'
 		  );
 
@@ -78,13 +79,9 @@ const BudgetRecommendation = ( props ) => {
 
 	return (
 		<div className="gla-budget-recommendation">
-			<div className="gla-budget-recommendation__recommendation">
-				<GridiconInfoOutline />
-				<div>{ recommendationRange }</div>
-			</div>
 			{ showLowerBudgetNotice && (
 				<div className="gla-budget-recommendation__low-budget">
-					<GridiconInfoOutline />
+					<GridiconNoticeOutline />
 					<div>
 						{ __(
 							'With a budget lower than your competitor range, your campaign may not get noticeable results.',
@@ -93,6 +90,7 @@ const BudgetRecommendation = ( props ) => {
 					</div>
 				</div>
 			) }
+			<Tip>{ recommendationRange }</Tip>
 		</div>
 	);
 };
