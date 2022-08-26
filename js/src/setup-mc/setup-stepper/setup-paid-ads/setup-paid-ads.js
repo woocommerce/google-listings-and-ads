@@ -18,9 +18,15 @@ import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
 import ProductFeedStatusSection from './product-feed-status-section';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
+import GoogleAdsAccountSection from './google-ads-account-section';
 import { getProductFeedUrl } from '.~/utils/urls';
 import { GUIDE_NAMES } from '.~/constants';
 import { API_NAMESPACE } from '.~/data/constants';
+
+function PaidAdsSectionsGroup() {
+	// TODO: Add audience and budget sections.
+	return <GoogleAdsAccountSection />;
+}
 
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
@@ -57,6 +63,12 @@ export default function SetupPaidAds() {
 		// TODO: Implement the compaign creation and paid ads completion.
 		await finishFreeListingsSetup( event );
 	};
+
+	// TODO: Add more disabled conditions to check
+	// - Google Ads account connection
+	// - Campaign data
+	// - Billing setup
+	const disabledComplete = completing === 'skip-ads';
 
 	function createSkipButton( text ) {
 		return (
@@ -101,6 +113,7 @@ export default function SetupPaidAds() {
 					/>
 				}
 			/>
+			{ showPaidAdsSetup && <PaidAdsSectionsGroup /> }
 			<FaqsSection />
 			<StepContentFooter hidden={ ! showPaidAdsSetup }>
 				<Flex justify="right" gap={ 4 }>
@@ -118,7 +131,7 @@ export default function SetupPaidAds() {
 							'google-listings-and-ads'
 						) }
 						loading={ completing === 'complete-ads' }
-						disabled={ completing === 'skip-ads' }
+						disabled={ disabledComplete }
 						onClick={ handleCompleteClick }
 					/>
 				</Flex>
