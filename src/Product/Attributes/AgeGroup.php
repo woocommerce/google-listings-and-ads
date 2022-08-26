@@ -66,4 +66,22 @@ class AgeGroup extends AbstractAttribute implements WithValueOptionsInterface {
 		return AgeGroupInput::class;
 	}
 
+
+	/**
+	 * Returns the attribute name
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return __( 'Age group', 'google-listings-and-ads' );
+	}
+
+	/**
+	 * Returns the attribute sources
+	 *
+	 * @return array
+	 */
+	public static function get_sources(): array {
+		return self::get_value_options();
+	}
 }
