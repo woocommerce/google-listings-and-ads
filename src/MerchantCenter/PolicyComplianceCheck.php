@@ -76,8 +76,9 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function has_page_not_found_error(): bool {
-		$headers = $this->get_landing_page_headers();
-		if ( ! empty( $headers ) && $headers[0] !== 'HTTP/1.1 200 OK' ) {
+		$url      = $this->get_landing_page_url();
+		$response = wp_remote_get( $url );
+		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
 			return true;
 		}
 		return false;
@@ -89,34 +90,27 @@ class PolicyComplianceCheck implements Service {
 	 * @return bool
 	 */
 	public function has_redirects(): bool {
-		$headers = $this->get_landing_page_headers();
-		if ( ! empty( $headesr ) && isset( $headers[0] ) ) {
-			if ( $headers[0] === 'HTTP/1.1 302 Found' ) {
-				// this is the URL where it's redirecting
-				return true;
-			}
+		$url      = $this->get_landing_page_url();
+		$response = wp_remote_get( $url, [ 'redirection' => 0 ] );
+		$code     = wp_remote_retrieve_response_code( $response );
+		if ( $code >= 300 && $code <= 399 ) {
+			return true;
 		}
-			return false;
+		return false;
 	}
 
 	/**
-	 * Get the headers of the store sample product landing pages.
+	 * Returns a product page URL, uses homepage as a fallback.
 	 *
-	 * @return array
+	 * @return string Landing page URL.
 	 */
-	public function get_landing_page_headers(): array {
-		$products = wc_get_products(
-			[
-				'limit' => 1,
-			]
-		);
+	private function get_landing_page_url(): string {
+		$products = wc_get_products( [ 'limit' => 1 ] );
 		if ( ! empty( $products ) ) {
-			$response = wp_remote_get( $products[0]->get_permalink() );
-			if ( is_array( $response ) && ! is_wp_error( $response ) ) {
-				return $response['headers'];
-			}
+			return $products[0]->get_permalink();
 		}
-		return [];
+
+		return $this->get_site_url();
 	}
 
 	/**
@@ -139,9 +133,15 @@ class PolicyComplianceCheck implements Service {
 		$agents = implode( '|', $agents );
 
 		// location of robots.txt file
-		$robotstxt = file( trailingslashit( $url ) . 'robots.txt' );
+		$response = wp_remote_get( trailingslashit( $url ) . 'robots.txt' );
 
-		// if there isn't a robots, then we're allowed in
+		if ( is_wp_error( $response ) ) {
+			return true;
+		}
+
+		$body      = wp_remote_retrieve_body( $response );
+		$robotstxt = preg_split( "/\r\n|\n|\r/", $body );
+
 		if ( empty( $robotstxt ) ) {
 			return true;
 		}
@@ -149,34 +149,22 @@ class PolicyComplianceCheck implements Service {
 		$rules        = [];
 		$rule_applies = false;
 		foreach ( $robotstxt as $line ) {
-			// skip blank lines
 			$line = trim( $line );
 			if ( ! $line ) {
 				continue;
 			}
 
-			// following rules only apply if User-agent matches '*'
-			if ( preg_match( '/^\s*User-agent:\s*(.*)/i', $line, $match ) ) {
-				$rule_applies = preg_match( "/($agents)/i", $match[1] );
-			}
+			$rule_applies = '*' === $match[1];
 			if ( $rule_applies && preg_match( '/^\s*Disallow:\s*(.*)/i', $line, $regs ) ) {
-				// an empty rule implies full access - no further tests required
 				if ( ! $regs[1] ) {
 					return true;
 				}
-				// add rules that apply to array for testing
-				$rules[] = preg_quote( trim( $regs[1] ), '/' );
+				if ( '/' === trim( $regs[1] ) ) {
+					return false;
+				}
 			}
 		}
 
-		foreach ( $rules as $rule ) {
-			// check if page is disallowed to us
-			if ( preg_match( "/^$rule/", '/' ) ) {
-				return false;
-			}
-		}
-
-		// page is not disallowed
 		return true;
 	}
 
