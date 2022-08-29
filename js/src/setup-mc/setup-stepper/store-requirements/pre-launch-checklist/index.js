@@ -8,6 +8,7 @@ import {
 	Panel,
 	PanelBody,
 	PanelRow,
+	FlexBlock,
 } from '@wordpress/components';
 import { recordEvent } from '@woocommerce/tracks';
 
@@ -75,54 +76,56 @@ const PreLaunchChecklist = ( props ) => {
 									<CheckboxControl
 										{ ...getInputProps( 'website_live' ) }
 									></CheckboxControl>
-									<Panel>
-										<PanelBody
-											title={ __(
-												'My store is live and accessible to all users',
-												'google-listings-and-ads'
-											) }
-											initialOpen={ true }
-											onToggle={ getPanelToggleHandler(
-												'website_live',
-												'pre-launch-checklist',
-												'onboarding-policy-check'
-											) }
-										>
-											<PanelRow>
-												{ __(
-													'We use a WordPress.com account to connect your site to the WooCommerce and Google servers. It ensures that requests (e.g. product feed, clicks, sales, etc) from your site are securely and correctly attributed to your store. It enables a connection to your self-hosted site, and provides a common authentication interface across disparate server configurations and architectures.',
+									<FlexBlock>
+										<Panel>
+											<PanelBody
+												title={ __(
+													'My store is live and accessible to all users',
 													'google-listings-and-ads'
 												) }
-											</PanelRow>
-											<p>
-												<AppDocumentationLink
-													context="setup-mc-checklist"
-													linkId="check-website-is-live"
-													type="external"
-													href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#store-is-live"
-												>
+												initialOpen={ true }
+												onToggle={ getPanelToggleHandler(
+													'website_live',
+													'pre-launch-checklist',
+													'onboarding-policy-check'
+												) }
+											>
+												<PanelRow>
 													{ __(
-														'Learn more about common landing page issues and how to fix them',
+														'We use a WordPress.com account to connect your site to the WooCommerce and Google servers. It ensures that requests (e.g. product feed, clicks, sales, etc) from your site are securely and correctly attributed to your store. It enables a connection to your self-hosted site, and provides a common authentication interface across disparate server configurations and architectures.',
 														'google-listings-and-ads'
 													) }
-												</AppDocumentationLink>
-											</p>
-											<Button
-												isPrimary
-												onClick={ () => {
-													setValue(
-														'website_live',
-														true
-													);
-												} }
-											>
-												{ __(
-													'Confirm',
-													'google-listings-and-ads'
-												) }
-											</Button>
-										</PanelBody>
-									</Panel>
+												</PanelRow>
+												<p>
+													<AppDocumentationLink
+														context="setup-mc-checklist"
+														linkId="check-website-is-live"
+														type="external"
+														href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#store-is-live"
+													>
+														{ __(
+															'Learn more about common landing page issues and how to fix them',
+															'google-listings-and-ads'
+														) }
+													</AppDocumentationLink>
+												</p>
+												<Button
+													isPrimary
+													onClick={ () => {
+														setValue(
+															'website_live',
+															true
+														);
+													} }
+												>
+													{ __(
+														'Confirm',
+														'google-listings-and-ads'
+													) }
+												</Button>
+											</PanelBody>
+										</Panel>
+									</FlexBlock>
 								</div>
 							) }
 							{ values.website_live && (
@@ -138,6 +141,7 @@ const PreLaunchChecklist = ( props ) => {
 										</span>
 									}
 									{ ...getInputProps( 'website_live' ) }
+									disabled={ true }
 								/>
 							) }
 							{ ! values.payment_methods_visible && (
@@ -147,54 +151,56 @@ const PreLaunchChecklist = ( props ) => {
 											'payment_methods_visible'
 										) }
 									></CheckboxControl>
-									<Panel>
-										<PanelBody
-											title={ __(
-												'I have a complete checkout process.',
-												'google-listings-and-ads'
-											) }
-											initialOpen={ true }
-											onToggle={ getPanelToggleHandler(
-												'payment_methods_visible',
-												'pre-launch-checklist',
-												'onboarding-policy-check'
-											) }
-										>
-											<PanelRow>
-												{ __(
-													'Ensure that all customers are able to complete the full checkout process on your site with an eligible payment method. Include a confirmation of the purchase after completion of the checkout process. ',
+									<FlexBlock>
+										<Panel>
+											<PanelBody
+												title={ __(
+													'I have a complete checkout process.',
 													'google-listings-and-ads'
 												) }
-											</PanelRow>
-											<p>
-												<AppDocumentationLink
-													context="setup-mc-checklist"
-													linkId="check-payment-methods-visible"
-													type="external"
-													href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout"
-												>
+												initialOpen={ true }
+												onToggle={ getPanelToggleHandler(
+													'payment_methods_visible',
+													'pre-launch-checklist',
+													'onboarding-policy-check'
+												) }
+											>
+												<PanelRow>
 													{ __(
-														"Learn more about Google's checkout requirements & best practices",
+														'Ensure that all customers are able to complete the full checkout process on your site with an eligible payment method. Include a confirmation of the purchase after completion of the checkout process. ',
 														'google-listings-and-ads'
 													) }
-												</AppDocumentationLink>
-											</p>
-											<Button
-												isPrimary
-												onClick={ () => {
-													setValue(
-														'payment_methods_visible',
-														true
-													);
-												} }
-											>
-												{ __(
-													'Confirm',
-													'google-listings-and-ads'
-												) }
-											</Button>
-										</PanelBody>
-									</Panel>
+												</PanelRow>
+												<p>
+													<AppDocumentationLink
+														context="setup-mc-checklist"
+														linkId="check-payment-methods-visible"
+														type="external"
+														href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout"
+													>
+														{ __(
+															"Learn more about Google's checkout requirements & best practices",
+															'google-listings-and-ads'
+														) }
+													</AppDocumentationLink>
+												</p>
+												<Button
+													isPrimary
+													onClick={ () => {
+														setValue(
+															'payment_methods_visible',
+															true
+														);
+													} }
+												>
+													{ __(
+														'Confirm',
+														'google-listings-and-ads'
+													) }
+												</Button>
+											</PanelBody>
+										</Panel>
+									</FlexBlock>
 								</div>
 							) }
 
@@ -213,6 +219,7 @@ const PreLaunchChecklist = ( props ) => {
 									{ ...getInputProps(
 										'payment_methods_visible'
 									) }
+									disabled={ true }
 								/>
 							) }
 							{ ! values.checkout_process_secure && (
@@ -222,61 +229,63 @@ const PreLaunchChecklist = ( props ) => {
 											'checkout_process_secure'
 										) }
 									></CheckboxControl>
-									<Panel>
-										<PanelBody
-											title={ __(
-												'Confirm you have a secure checkout process.',
-												'google-listings-and-ads'
-											) }
-											initialOpen={ true }
-											onToggle={ getPanelToggleHandler(
-												'checkout_process_secure',
-												'pre-launch-checklist',
-												'onboarding-policy-check'
-											) }
-										>
-											<PanelRow>
-												{ __(
-													"Update your website to ensure that every webpage that collects a customer's personal information is processed through a secure SSL server. Any page on your website that collects any personal information from the user needs to be SSL protected.",
+									<FlexBlock>
+										<Panel>
+											<PanelBody
+												title={ __(
+													'Confirm you have a secure checkout process.',
 													'google-listings-and-ads'
 												) }
-											</PanelRow>
-
-											<PanelRow>
-												{ __(
-													"Use a secure server: Make sure to use a secure processing server when processing customer's personal information (SSL-protected, with a valid SSL certificate). With SSL, your webpage URL will appear with https:// instead of http://,",
-													'google-listings-and-ads'
+												initialOpen={ true }
+												onToggle={ getPanelToggleHandler(
+													'checkout_process_secure',
+													'pre-launch-checklist',
+													'onboarding-policy-check'
 												) }
-											</PanelRow>
-											<p>
-												<AppDocumentationLink
-													context="setup-mc-checklist"
-													linkId="check-checkout-process-secure"
-													type="external"
-													href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#payment-methods"
-												>
+											>
+												<PanelRow>
 													{ __(
-														'Learn to set up SSL on your website',
+														"Update your website to ensure that every webpage that collects a customer's personal information is processed through a secure SSL server. Any page on your website that collects any personal information from the user needs to be SSL protected.",
 														'google-listings-and-ads'
 													) }
-												</AppDocumentationLink>
-											</p>
-											<Button
-												isPrimary
-												onClick={ () => {
-													setValue(
-														'checkout_process_secure',
-														true
-													);
-												} }
-											>
-												{ __(
-													'Confirm',
-													'google-listings-and-ads'
-												) }
-											</Button>
-										</PanelBody>
-									</Panel>
+												</PanelRow>
+
+												<PanelRow>
+													{ __(
+														"Use a secure server: Make sure to use a secure processing server when processing customer's personal information (SSL-protected, with a valid SSL certificate). With SSL, your webpage URL will appear with https:// instead of http://,",
+														'google-listings-and-ads'
+													) }
+												</PanelRow>
+												<p>
+													<AppDocumentationLink
+														context="setup-mc-checklist"
+														linkId="check-checkout-process-secure"
+														type="external"
+														href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#payment-methods"
+													>
+														{ __(
+															'Learn to set up SSL on your website',
+															'google-listings-and-ads'
+														) }
+													</AppDocumentationLink>
+												</p>
+												<Button
+													isPrimary
+													onClick={ () => {
+														setValue(
+															'checkout_process_secure',
+															true
+														);
+													} }
+												>
+													{ __(
+														'Confirm',
+														'google-listings-and-ads'
+													) }
+												</Button>
+											</PanelBody>
+										</Panel>
+									</FlexBlock>
 								</div>
 							) }
 							{ values.checkout_process_secure && (
@@ -285,7 +294,7 @@ const PreLaunchChecklist = ( props ) => {
 										<span className="gla-pre-launch-checklist__checkbox_popover">
 											<span className="checkbox-label">
 												{ __(
-													'Confirm you have a secure checkout process.',
+													'I have a secure checkout process.',
 													'google-listings-and-ads'
 												) }
 											</span>
@@ -294,6 +303,7 @@ const PreLaunchChecklist = ( props ) => {
 									{ ...getInputProps(
 										'checkout_process_secure'
 									) }
+									disabled={ true }
 								/>
 							) }
 
@@ -304,54 +314,56 @@ const PreLaunchChecklist = ( props ) => {
 											'refund_tos_visible'
 										) }
 									></CheckboxControl>
-									<Panel>
-										<PanelBody
-											title={ __(
-												'Confirm a refund policy and terms of service are visible on your online store.',
-												'google-listings-and-ads'
-											) }
-											initialOpen={ true }
-											onToggle={ getPanelToggleHandler(
-												'refund_tos_visible',
-												'pre-launch-checklist',
-												'onboarding-policy-check'
-											) }
-										>
-											<PanelRow>
-												{ __(
-													"Show a clear return and refund policy on your website. Incluse return process, refund process, and customer requirements (return window, product condition and reason for return). If you don't accept returns or refunds, clearly start that on your website. ",
+									<FlexBlock>
+										<Panel>
+											<PanelBody
+												title={ __(
+													'Confirm a refund policy and terms of service are visible on your online store.',
 													'google-listings-and-ads'
 												) }
-											</PanelRow>
-											<p>
-												<AppDocumentationLink
-													context="setup-mc-checklist"
-													linkId="check-refund-tos-visible"
-													type="external"
-													href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms"
-												>
+												initialOpen={ true }
+												onToggle={ getPanelToggleHandler(
+													'refund_tos_visible',
+													'pre-launch-checklist',
+													'onboarding-policy-check'
+												) }
+											>
+												<PanelRow>
 													{ __(
-														"Learn more about Google's refund policy requirements",
+														"Show a clear return and refund policy on your website. Incluse return process, refund process, and customer requirements (return window, product condition and reason for return). If you don't accept returns or refunds, clearly start that on your website. ",
 														'google-listings-and-ads'
 													) }
-												</AppDocumentationLink>
-											</p>
-											<Button
-												isPrimary
-												onClick={ () => {
-													setValue(
-														'refund_tos_visible',
-														true
-													);
-												} }
-											>
-												{ __(
-													'Confirm',
-													'google-listings-and-ads'
-												) }
-											</Button>
-										</PanelBody>
-									</Panel>
+												</PanelRow>
+												<p>
+													<AppDocumentationLink
+														context="setup-mc-checklist"
+														linkId="check-refund-tos-visible"
+														type="external"
+														href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms"
+													>
+														{ __(
+															"Learn more about Google's refund policy requirements",
+															'google-listings-and-ads'
+														) }
+													</AppDocumentationLink>
+												</p>
+												<Button
+													isPrimary
+													onClick={ () => {
+														setValue(
+															'refund_tos_visible',
+															true
+														);
+													} }
+												>
+													{ __(
+														'Confirm',
+														'google-listings-and-ads'
+													) }
+												</Button>
+											</PanelBody>
+										</Panel>
+									</FlexBlock>
 								</div>
 							) }
 
@@ -361,13 +373,14 @@ const PreLaunchChecklist = ( props ) => {
 										<span className="gla-pre-launch-checklist__checkbox_popover">
 											<span className="checkbox-label">
 												{ __(
-													'Confirm a refund policy and terms of service are visible on your online store.',
+													'My refund policy and terms of service are visible on my online store.',
 													'google-listings-and-ads'
 												) }
 											</span>
 										</span>
 									}
 									{ ...getInputProps( 'refund_tos_visible' ) }
+									disabled={ true }
 								/>
 							) }
 
@@ -378,42 +391,44 @@ const PreLaunchChecklist = ( props ) => {
 											'contact_info_visible'
 										) }
 									></CheckboxControl>
-									<Panel>
-										<PanelBody
-											title={ __(
-												"Confirm your store's phone number, email and/or address are visible on your website",
-												'google-listings-and-ads'
-											) }
-											initialOpen={ true }
-											onToggle={ getPanelToggleHandler(
-												'contact_info_visible',
-												'pre-launch-checklist',
-												'onboarding-policy-check'
-											) }
-										>
-											<PanelRow>
-												{ __(
-													'Allow your customers to contact you for product inquiries by including contact information on your website (i,e, contact us form, business profile link, social media, email or phone number.',
+									<FlexBlock>
+										<Panel>
+											<PanelBody
+												title={ __(
+													"Confirm your store's phone number, email and/or address are visible on your website",
 													'google-listings-and-ads'
 												) }
-											</PanelRow>
-											<p />
-											<Button
-												isPrimary
-												onClick={ () => {
-													setValue(
-														'contact_info_visible',
-														true
-													);
-												} }
+												initialOpen={ true }
+												onToggle={ getPanelToggleHandler(
+													'contact_info_visible',
+													'pre-launch-checklist',
+													'onboarding-policy-check'
+												) }
 											>
-												{ __(
-													'Confirm',
-													'google-listings-and-ads'
-												) }
-											</Button>
-										</PanelBody>
-									</Panel>
+												<PanelRow>
+													{ __(
+														'Allow your customers to contact you for product inquiries by including contact information on your website (i,e, contact us form, business profile link, social media, email or phone number.',
+														'google-listings-and-ads'
+													) }
+												</PanelRow>
+												<p />
+												<Button
+													isPrimary
+													onClick={ () => {
+														setValue(
+															'contact_info_visible',
+															true
+														);
+													} }
+												>
+													{ __(
+														'Confirm',
+														'google-listings-and-ads'
+													) }
+												</Button>
+											</PanelBody>
+										</Panel>
+									</FlexBlock>
 								</div>
 							) }
 							{ values.contact_info_visible && (
@@ -422,7 +437,7 @@ const PreLaunchChecklist = ( props ) => {
 										<span className="gla-pre-launch-checklist__checkbox_popover">
 											<span className="checkbox-label">
 												{ __(
-													"Confirm your store's phone number, email and/or address are visible on your website.",
+													"My store's phone number, email and/or address are visible on your website.",
 													'google-listings-and-ads'
 												) }
 											</span>
@@ -431,6 +446,7 @@ const PreLaunchChecklist = ( props ) => {
 									{ ...getInputProps(
 										'contact_info_visible'
 									) }
+									disabled={ true }
 								/>
 							) }
 						</VerticalGapLayout>
