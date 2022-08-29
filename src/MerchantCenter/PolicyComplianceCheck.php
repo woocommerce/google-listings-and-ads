@@ -154,7 +154,12 @@ class PolicyComplianceCheck implements Service {
 				continue;
 			}
 
-			$rule_applies = '*' === $match[1];
+			// following rules only apply if User-agent matches '*'
+			if ( preg_match( '/^\s*User-agent:\s*(.*)/i', $line, $match ) ) {
+				$rule_applies = '*' === $match[1];
+
+			}
+
 			if ( $rule_applies && preg_match( '/^\s*Disallow:\s*(.*)/i', $line, $regs ) ) {
 				if ( ! $regs[1] ) {
 					return true;
