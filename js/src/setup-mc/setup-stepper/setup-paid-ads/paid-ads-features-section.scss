@@ -1,0 +1,38 @@
+.gla-paid-ads-features-section {
+	.woocommerce-pill {
+		color: $gray-700;
+	}
+
+	.wcdl-section-card-title {
+		margin-bottom: $grid-unit-15;
+		line-height: $gla-line-height-medium-large;
+		font-weight: normal;
+		font-size: $gla-font-small-medium;
+		color: $gray-900;
+	}
+
+	&__subtitle {
+		line-height: $gla-line-height-medium;
+		font-size: $gla-font-small;
+		color: $gray-800;
+	}
+
+	&__feature-list {
+		display: flex;
+		flex-direction: column;
+		gap: $grid-unit-20;
+		margin: $grid-unit-30 0 $grid-unit-20;
+		line-height: $gla-line-height-smaller;
+		color: $gray-800;
+
+		.gridicon {
+			fill: #5ec862;
+		}
+	}
+
+	&__cite {
+		font-style: normal;
+		font-size: $gla-font-smaller;
+		color: $gray-600;
+	}
+}
