@@ -11,7 +11,6 @@ import { API_RESPONSE_CODES } from '.~/constants';
 import useLegacyMenuEffect from '.~/hooks/useLegacyMenuEffect';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import { subpaths, getReconnectAccountUrl } from '.~/utils/urls';
-import NavigationClassic from '.~/components/navigation-classic';
 import { ContactInformationPreview } from '.~/components/contact-information';
 import LinkedAccounts from './linked-accounts';
 import ReconnectWPComAccount from './reconnect-wpcom-account';
@@ -19,6 +18,8 @@ import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
 import './index.scss';
+import SettingsHeader from '.~/settings/settings-header';
+import AttributeMapping from '.~/settings/attribute-mapping';
 
 const pageClassName = 'gla-settings';
 
@@ -54,12 +55,14 @@ const Settings = () => {
 			return <EditPhoneNumber />;
 		case subpaths.editStoreAddress:
 			return <EditStoreAddress />;
+		case subpaths.attributeMapping:
+			return <AttributeMapping />;
 		default:
 	}
 
 	return (
 		<div className={ pageClassName }>
-			<NavigationClassic />
+			<SettingsHeader />
 			<ContactInformationPreview />
 			<LinkedAccounts />
 		</div>

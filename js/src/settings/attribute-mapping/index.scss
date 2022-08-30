@@ -1,0 +1,17 @@
+.gla-settings-attribute-mapping {
+
+	&__notice {
+		background: $gla-color-light-blue;
+		margin: 0;
+		margin-bottom: $grid-unit-20;
+
+		&.is-dismissible {
+			padding-right: 10px;
+		}
+	}
+
+	&__table-footer {
+		justify-content: flex-start;
+		padding: $grid-unit-20;
+	}
+}

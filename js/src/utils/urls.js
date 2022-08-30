@@ -19,6 +19,7 @@ export const pagePaths = {
 };
 
 export const subpaths = {
+	attributeMapping: '/attribute-mapping',
 	editFreeListings: '/free-listings/edit',
 	editCampaign: '/campaigns/edit',
 	createCampaign: '/campaigns/create',
