@@ -4,6 +4,7 @@
 import classnames from 'classnames';
 
 const styleName = {
+	default: false, // The default style is pre-defined doesn't and need to set another class name.
 	adBadge: 'gla-ads-mockup__scaled-text--ad-badge',
 	smaller: 'gla-ads-mockup__scaled-text--smaller',
 	larger: 'gla-ads-mockup__scaled-text--larger',
@@ -17,24 +18,21 @@ const styleName = {
  *
  * @param {Object} props React props.
  * @param {boolean} [props.adBadge=false] Whether to show the 'AD' badge.
- * @param {boolean} [props.smaller] Whether to draw a smaller text size.
- * @param {boolean} [props.larger] Whether to draw a larger text size.
+ * @param {'smaller'|'default'|'larger'} [props.size='default'] Text size.
  * @param {'blue'|'gray-700'|'gray-800'} [props.color='gray-700'] Text color.
  * @param {JSX.Element} [props.children] Content to be rendered.
  */
 export default function ScaledText( {
 	adBadge = false,
-	smaller,
-	larger,
+	size = 'default',
 	color = 'gray-700',
 	children,
 } ) {
 	const className = classnames(
 		'gla-ads-mockup__scaled-text',
 		styleName[ color ],
-		adBadge && styleName.adBadge,
-		smaller && styleName.smaller,
-		larger && styleName.larger
+		styleName[ size ],
+		adBadge && styleName.adBadge
 	);
 	return <div className={ className } children={ children } />;
 }

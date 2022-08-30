@@ -43,7 +43,7 @@ export default function MockupSearch( { product } ) {
 			</div>
 			<div className="gla-ads-mockup__search-card">
 				<div className="gla-ads-mockup__search-card-header">
-					<ScaledText smaller adBadge>
+					<ScaledText size="smaller" adBadge>
 						{ product.shopUrl }
 					</ScaledText>
 					<Placeholder stroke="thinner" width="79" color="blue" />

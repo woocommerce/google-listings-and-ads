@@ -19,7 +19,7 @@ export default function ProductBanner( { product } ) {
 	return (
 		<div className="gla-ads-mockup__product-banner">
 			<div className="gla-ads-mockup__product-banner-info">
-				<ScaledText smaller adBadge>
+				<ScaledText size="smaller" adBadge>
 					{ product.shopName }
 				</ScaledText>
 				<Placeholder stroke="thinner" width="85" color="gray-300" />

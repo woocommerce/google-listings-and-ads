@@ -36,19 +36,19 @@ export default function MockupYouTube( { product } ) {
 				<ProductCover product={ product } />
 				<div className="gla-ads-mockup__youtube-learn-more-row">
 					<div>
-						<ScaledText smaller color="blue">
+						<ScaledText size="smaller" color="blue">
 							{ __( 'LEARN MORE', 'google-listings-and-ads' ) }
 						</ScaledText>
 					</div>
 					<GridiconExternal size={ 10 } />
 				</div>
 				<div className="gla-ads-mockup__youtube-product-info">
-					<ScaledText larger color="gray-800">
+					<ScaledText size="larger" color="gray-800">
 						{ product.title }
 					</ScaledText>
 					<Placeholder />
 					<Placeholder width="135" />
-					<ScaledText smaller adBadge>
+					<ScaledText size="smaller" adBadge>
 						{ product.shopName }
 					</ScaledText>
 				</div>

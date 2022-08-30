@@ -43,11 +43,11 @@ export default function MockupShopping( { product } ) {
 			<div className="gla-ads-mockup__shopping-product">
 				<ProductCover product={ product } />
 				<div className="gla-ads-mockup__shopping-product-info">
-					<ScaledText larger color="gray-800">
+					<ScaledText size="larger" color="gray-800">
 						{ product.title }
 					</ScaledText>
 					<ScaledText color="gray-800">{ product.price }</ScaledText>
-					<ScaledText smaller>{ product.shopName }</ScaledText>
+					<ScaledText size="smaller">{ product.shopName }</ScaledText>
 				</div>
 			</div>
 		</div>
