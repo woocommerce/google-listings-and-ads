@@ -128,7 +128,7 @@ export default function SetupPaidAds() {
 		return (
 			<AppButton
 				isTertiary
-				data-action="skip-ads"
+				data-action={ ACTION_SKIP }
 				text={ text }
 				loading={ completing === ACTION_SKIP }
 				disabled={ completing === ACTION_COMPLETE }
@@ -181,7 +181,7 @@ export default function SetupPaidAds() {
 					) }
 					<AppButton
 						isPrimary
-						data-action="complete-ads"
+						data-action={ ACTION_COMPLETE }
 						text={ __(
 							'Complete setup',
 							'google-listings-and-ads'
