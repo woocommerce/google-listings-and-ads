@@ -75,6 +75,13 @@ function PaidAdsSectionsGroup( { onCampaignChange } ) {
 	);
 }
 
+const ACTION_COMPLETE = 'complete-ads';
+const ACTION_SKIP = 'skip-ads';
+
+/**
+ * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
+ * or skipping it, and then completing the onboarding flow.
+ */
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
 	const { createNotice } = useDispatchCoreNotices();
@@ -115,7 +122,7 @@ export default function SetupPaidAds() {
 	// The status check of Google Ads account connection is included in `campaign.isValid`,
 	// because when there is no connected account, it will disable the budget section and set the `amount` to `undefined`.
 	// TODO: Add a condition to check Billing setup
-	const disabledComplete = completing === 'skip-ads' || ! campaign.isValid;
+	const disabledComplete = completing === ACTION_SKIP || ! campaign.isValid;
 
 	function createSkipButton( text ) {
 		return (
@@ -123,8 +130,8 @@ export default function SetupPaidAds() {
 				isTertiary
 				data-action="skip-ads"
 				text={ text }
-				loading={ completing === 'skip-ads' }
-				disabled={ completing === 'complete-ads' }
+				loading={ completing === ACTION_SKIP }
+				disabled={ completing === ACTION_COMPLETE }
 				onClick={ finishFreeListingsSetup }
 			/>
 		);
@@ -155,7 +162,7 @@ export default function SetupPaidAds() {
 							'Create a paid ad campaign',
 							'google-listings-and-ads'
 						) }
-						disabled={ completing === 'skip-ads' }
+						disabled={ completing === ACTION_SKIP }
 						onClick={ () => setShowPaidAdsSetup( true ) }
 					/>
 				}
@@ -179,7 +186,7 @@ export default function SetupPaidAds() {
 							'Complete setup',
 							'google-listings-and-ads'
 						) }
-						loading={ completing === 'complete-ads' }
+						loading={ completing === ACTION_COMPLETE }
 						disabled={ disabledComplete }
 						onClick={ handleCompleteClick }
 					/>
