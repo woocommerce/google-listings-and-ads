@@ -99,6 +99,13 @@ export function* getGoogleAdsAccount() {
 	yield fetchGoogleAdsAccount();
 }
 
+getGoogleAdsAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS &&
+		action.invalidateRelatedState
+	);
+};
+
 export function* getGoogleAdsAccountBillingStatus() {
 	yield fetchGoogleAdsAccountBillingStatus();
 }
@@ -106,6 +113,9 @@ export function* getGoogleAdsAccountBillingStatus() {
 export function* getExistingGoogleAdsAccounts() {
 	yield fetchExistingGoogleAdsAccounts();
 }
+
+getExistingGoogleAdsAccounts.shouldInvalidate =
+	getGoogleAdsAccount.shouldInvalidate;
 
 export function* getGoogleMCContactInformation() {
 	try {

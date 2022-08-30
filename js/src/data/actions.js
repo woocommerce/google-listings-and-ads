@@ -479,7 +479,13 @@ export function* disconnectGoogleAccount() {
 	}
 }
 
-export function* disconnectGoogleAdsAccount() {
+/**
+ * Disconnect the connected Google Ads account.
+ *
+ * @param {boolean} [invalidateRelatedState=false] Whether to invalidate related state in wp-data store.
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectGoogleAdsAccount( invalidateRelatedState = false ) {
 	try {
 		yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/connection`,
@@ -488,6 +494,7 @@ export function* disconnectGoogleAdsAccount() {
 
 		return {
 			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS,
+			invalidateRelatedState,
 		};
 	} catch ( error ) {
 		yield handleFetchError(

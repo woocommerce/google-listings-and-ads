@@ -91,7 +91,7 @@ const appearanceDict = {
 		icon: googleAdsLogo,
 		title: __( 'Google Ads', 'google-listings-and-ads' ),
 		description: __(
-			'Required to create paid campaigns with your product listings',
+			'Connect with millions of shoppers who are searching for products like yours and drive sales with Google.',
 			'google-listings-and-ads'
 		),
 	},

@@ -96,6 +96,7 @@ export default function LinkedAccounts() {
 					{ hasAdsAccount && (
 						<ConnectedGoogleAdsAccountCard
 							googleAdsAccount={ googleAdsAccount }
+							hideAccountSwitch
 						>
 							<Section.Card.Footer>
 								<Button
