@@ -4,6 +4,7 @@
 import classnames from 'classnames';
 
 const styleName = {
+	default: false, // The default style is pre-defined doesn't and need to set another class name.
 	thinnest: 'gla-ads-mockup__placeholder--thinnest',
 	thinner: 'gla-ads-mockup__placeholder--thinner',
 	thicker: 'gla-ads-mockup__placeholder--thicker',
@@ -19,25 +20,19 @@ const styleName = {
  * Renders a placeholder to draw a line.
  *
  * @param {Object} props React props.
- * @param {boolean} [props.thinnest] Whether to draw a thinnest placeholder.
- * @param {boolean} [props.thinner] Whether to draw a thinner placeholder.
- * @param {boolean} [props.thicker] Whether to draw a thicker placeholder.
  * @param {string} [props.width] Placeholder width style, 100% by default. It will be px if the unit is omitted.
  * @param {'blue'|'gray-100'|'gray-200'|'gray-300'|'gray-400'|'gray-500'} [props.color='gray-100'] Placeholder color.
+ * @param {'thinnest'|'thinner'|'default'|'thicker'} [props.stroke='default'] Placeholder stroke size.
  */
 export default function Placeholder( {
-	thinnest,
-	thinner,
-	thicker,
 	width,
 	color = 'gray-100',
+	stroke = 'default',
 } ) {
 	const className = classnames(
 		'gla-ads-mockup__placeholder',
 		styleName[ color ],
-		thinnest && styleName.thinnest,
-		thinner && styleName.thinner,
-		thicker && styleName.thicker
+		styleName[ stroke ]
 	);
 
 	let style;

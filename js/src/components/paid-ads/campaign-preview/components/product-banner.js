@@ -22,9 +22,9 @@ export default function ProductBanner( { product } ) {
 				<ScaledText smaller adBadge>
 					{ product.shopName }
 				</ScaledText>
-				<Placeholder thinner width="85" />
-				<Placeholder thinner width="65" />
-				<Placeholder thinner width="27" color="blue" />
+				<Placeholder stroke="thinner" width="85" color="gray-300" />
+				<Placeholder stroke="thinner" width="65" color="gray-300" />
+				<Placeholder stroke="thinner" width="27" color="blue" />
 			</div>
 			<ShopLogo product={ product } />
 		</div>

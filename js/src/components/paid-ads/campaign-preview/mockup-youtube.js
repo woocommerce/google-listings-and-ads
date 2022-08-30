@@ -46,8 +46,8 @@ export default function MockupYouTube( { product } ) {
 					<ScaledText larger color="gray-800">
 						{ product.title }
 					</ScaledText>
-					<Placeholder thicker />
-					<Placeholder thicker width="135" />
+					<Placeholder />
+					<Placeholder width="135" />
 					<ScaledText smaller adBadge>
 						{ product.shopName }
 					</ScaledText>

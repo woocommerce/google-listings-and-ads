@@ -25,8 +25,8 @@ export default function MockupShopping( { product } ) {
 	return (
 		<div className="gla-ads-mockup">
 			<div className="gla-ads-mockup__tab-list">
-				<Placeholder thicker />
-				<Placeholder thicker />
+				<Placeholder stroke="thicker" />
+				<Placeholder stroke="thicker" />
 				<div className="gla-ads-mockup__tab-item-with-logo">
 					<img
 						height="30"
@@ -36,9 +36,9 @@ export default function MockupShopping( { product } ) {
 							'google-listings-and-ads'
 						) }
 					/>
-					<Placeholder thinner color="gray-500" />
+					<Placeholder stroke="thinner" color="gray-500" />
 				</div>
-				<Placeholder thicker />
+				<Placeholder stroke="thicker" />
 			</div>
 			<div className="gla-ads-mockup__shopping-product">
 				<ProductCover product={ product } />

@@ -25,10 +25,10 @@ export default function MockupDisplay( { product } ) {
 	return (
 		<div className="gla-ads-mockup gla-ads-mockup-display">
 			<div className="gla-ads-mockup__display-placeholders">
-				<Placeholder thinner color="gray-300" />
-				<Placeholder thinner color="gray-300" width="146" />
-				<Placeholder thinner color="gray-300" width="149" />
-				<Placeholder thinner color="gray-300" width="135" />
+				<Placeholder stroke="thinner" color="gray-300" />
+				<Placeholder stroke="thinner" color="gray-300" width="146" />
+				<Placeholder stroke="thinner" color="gray-300" width="149" />
+				<Placeholder stroke="thinner" color="gray-300" width="135" />
 			</div>
 			<div className="gla-ads-mockup__display-product">
 				<div className="gla-ads-mockup__display-product-locator">
@@ -45,7 +45,7 @@ export default function MockupDisplay( { product } ) {
 						<GridiconChevronRight size={ 16 } />
 					</div>
 				</div>
-				<Placeholder thinner color="gray-500" />
+				<Placeholder stroke="thinner" color="gray-500" />
 			</div>
 			<div className="gla-ads-mockup__display-placeholders">
 				<Placeholder />

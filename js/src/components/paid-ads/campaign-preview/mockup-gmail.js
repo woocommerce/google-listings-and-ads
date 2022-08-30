@@ -14,9 +14,9 @@ import gmailLogoURL from './images/gmail-logo.svg';
 function MailItem() {
 	return (
 		<div className="gla-ads-mockup__mail-item">
-			<Placeholder thinner color="gray-200" width="65" />
-			<Placeholder thinner color="gray-200" />
-			<Placeholder thinner width="122" />
+			<Placeholder stroke="thinner" color="gray-200" width="65" />
+			<Placeholder stroke="thinner" color="gray-200" />
+			<Placeholder stroke="thinner" width="122" />
 		</div>
 	);
 }
