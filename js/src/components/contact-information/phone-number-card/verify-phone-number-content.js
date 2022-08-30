@@ -16,7 +16,7 @@ import { Notice, Flex } from '@wordpress/components';
  */
 import { useAppDispatch } from '.~/data';
 import useIsMounted from '.~/hooks/useIsMounted';
-import useCountdown from './useCountdown';
+import useCountdown from '.~/hooks/useCountdown';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import AppButton from '.~/components/app-button';

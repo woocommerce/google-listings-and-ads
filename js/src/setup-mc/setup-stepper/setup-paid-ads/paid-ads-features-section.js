@@ -12,6 +12,7 @@ import GridiconGift from 'gridicons/dist/gift';
  */
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import CampaignPreview from '.~/components/paid-ads/campaign-preview';
 import './paid-ads-features-section.scss';
 
 function FeatureList() {
@@ -102,7 +103,11 @@ export default function PaidAdsFeaturesSection( {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<Flex align="center" gap={ 9 }>
+					<Flex
+						className="gla-paid-ads-features-section__content"
+						align="center"
+						gap={ 9 }
+					>
 						<FlexBlock>
 							<Section.Card.Title>
 								{ __(
@@ -125,9 +130,7 @@ export default function PaidAdsFeaturesSection( {
 							</cite>
 						</FlexBlock>
 						<FlexItem>
-							<div style={ { width: '205px' } }>
-								Will be added by another PR
-							</div>
+							<CampaignPreview />
 						</FlexItem>
 					</Flex>
 				</Section.Card.Body>

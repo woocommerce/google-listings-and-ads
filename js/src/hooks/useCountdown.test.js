@@ -10,7 +10,7 @@ import useCountdown from './useCountdown';
 
 describe( 'useCountdown', () => {
 	it( 'initially should return `{ second: 0, callCount: 0, startCountdown: Function }`', () => {
-		const { result } = renderHook( () => useCountdown( 'A' ) );
+		const { result } = renderHook( () => useCountdown() );
 
 		expect( result.current.second ).toBe( 0 );
 		expect( result.current.callCount ).toBe( 0 );
@@ -18,7 +18,7 @@ describe( 'useCountdown', () => {
 	} );
 
 	it( 'should record the calling count of `startCountdown()`', () => {
-		const { result } = renderHook( () => useCountdown( 'A' ) );
+		const { result } = renderHook( () => useCountdown() );
 
 		act( () => {
 			result.current.startCountdown( 10 );
@@ -55,7 +55,7 @@ describe( 'useCountdown', () => {
 		} );
 
 		it( 'should start countdown 10 to 0 by calling `startCountdown( 10 )` and update the `second` property every second with the current remaining countdown.', () => {
-			const { result } = renderHook( () => useCountdown( 'A' ) );
+			const { result } = renderHook( () => useCountdown() );
 
 			act( () => {
 				getTime.mockReturnValue( 0 );
@@ -79,7 +79,7 @@ describe( 'useCountdown', () => {
 		} );
 
 		it( 'even if the countdown time has exceeded the real elapsed time, the returned `second` value should be 0', () => {
-			const { result } = renderHook( () => useCountdown( 'A' ) );
+			const { result } = renderHook( () => useCountdown() );
 
 			act( () => {
 				getTime.mockReturnValue( 0 );

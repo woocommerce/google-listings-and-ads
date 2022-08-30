@@ -1,0 +1,422 @@
+// Please note that there are a lot of hard-coded values since the mockups
+// have special sizes and are only used within the corresponding components.
+// And they don't refer to other shared SCSS variables and shouldn't be used
+// by other components.
+
+$gla-campaign-preview-color-blue: #4285f4;
+$gla-campaign-preview-width: 205px;
+$gla-campaign-preview-height: 270px;
+
+.gla-campaign-preview {
+	position: relative;
+	width: $gla-campaign-preview-width;
+	height: $gla-campaign-preview-height;
+
+	.gla-ads-mockup {
+		position: absolute;
+	}
+
+	&__transition-blur-enter {
+		opacity: 0;
+	}
+
+	&__transition-blur-enter-active {
+		opacity: 1;
+		transition: opacity 500ms ease-in-out;
+	}
+
+	&__transition-blur-exit {
+		opacity: 1;
+	}
+
+	&__transition-blur-exit-active {
+		opacity: 0;
+		transition: opacity 500ms ease-in-out;
+	}
+}
+
+.gla-ads-mockup {
+	width: $gla-campaign-preview-width;
+	height: $gla-campaign-preview-height;
+	padding: 10px;
+	border: 1px solid $gray-200;
+	border-radius: 4px;
+	overflow: hidden;
+	background-color: $white;
+
+	// === Shared components within ad previews ===
+	&__placeholder {
+		height: 3px;
+		border-radius: 4px;
+
+		&--thinnest {
+			height: 1px;
+		}
+
+		&--thinner {
+			height: 2px;
+		}
+
+		&--thicker {
+			height: 4px;
+		}
+
+		&--gray-100 {
+			background-color: $gray-100;
+		}
+
+		&--gray-200 {
+			background-color: $gray-200;
+		}
+
+		&--gray-300 {
+			background-color: $gray-300;
+		}
+
+		&--gray-400 {
+			background-color: $gray-400;
+		}
+
+		&--gray-500 {
+			// $gray-400 is not declared Gutenberg style.
+			background-color: #bbb;
+		}
+
+		&--blue {
+			background-color: $gla-campaign-preview-color-blue;
+		}
+	}
+
+	// Display smaller font sizes than browsers' limitations.
+	&__scaled-text {
+		transform: scale(0.5);
+		transform-origin: top left;
+		margin-right: -100%; // Inner shrinkage for offsetting the outer horizontal gap caused by 0.5 times scaling.
+		margin-bottom: -0.5em; // Inner shrinkage for offsetting the outer vertical gap caused by 0.5 times scaling.
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		line-height: 1;
+		font-size: 20px;
+
+		&--smaller {
+			font-size: 18px;
+		}
+
+		&--larger {
+			font-size: 22px;
+		}
+
+		&--gray-700 {
+			color: $gray-700;
+		}
+
+		&--gray-800 {
+			color: $gray-800;
+		}
+
+		&--blue {
+			color: $gla-campaign-preview-color-blue;
+		}
+
+		&--ad-badge {
+			// The same vertical inner shrinkage as above.
+			// A: Height of badge                     = &--ad-badge font-size + vertical padding
+			// B: Height of text after badge          = &--smaller font-size
+			// C: Half of the ratio of badge and text = (A / B) / 2
+			// A = 16 + (3 * 2) = 22
+			// B = 18
+			// C = (A / B) / 2 = (22 / 18) / 2 ≈ 0.6
+			margin-bottom: -0.6em;
+
+			&::before {
+				content: "AD";
+				display: inline-block;
+				margin-right: 12px;
+				border-radius: 6px;
+				padding: 3px;
+				background-color: $alert-yellow;
+				font-size: 16px;
+				color: $white;
+			}
+		}
+	}
+
+	&__product-cover {
+		width: 100%;
+		aspect-ratio: 186 / 143;
+		background: center / cover no-repeat;
+	}
+
+	&-display &__product-cover {
+		height: 126px;
+	}
+
+	&__shop-logo {
+		flex: 0 0 auto;
+		width: 44px;
+		height: 44px;
+		background: center / cover no-repeat;
+	}
+
+	&__search-bar {
+		display: flex;
+		flex-direction: row-reverse;
+		align-items: center;
+		justify-content: space-between;
+		height: 23px;
+		padding: 0 8px;
+		border: 1px solid $gray-200;
+		fill: $gray-400;
+		background-color: $white;
+	}
+
+	&-search &__search-bar {
+		border-radius: 29px;
+	}
+
+	&-map &__search-bar {
+		height: 27px;
+		margin: 10px;
+		border-radius: 4.6px;
+	}
+
+	&-gmail &__search-bar {
+		flex: 1 1;
+		height: 19px;
+		border-radius: 3.7px;
+	}
+
+	&__search-bar-menu {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		width: 13px;
+		height: 9px;
+
+		&[hidden] {
+			display: none;
+		}
+	}
+
+	&__product-banner {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		padding: 10px;
+	}
+
+	&-gmail &__product-banner {
+		flex-direction: row-reverse;
+		border: 1px solid $gray-200;
+		border-radius: 2px;
+	}
+
+	&__product-banner-info {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		height: 42px;
+		overflow: hidden;
+	}
+
+	// === Google Shopping preview ===
+	&__tab-list {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	&__tab-list > &__placeholder {
+		min-width: 25px;
+		margin-top: 16px;
+	}
+
+	&__tab-item-with-logo {
+		width: 44px;
+		text-align: center;
+
+		> img {
+			display: block;
+			margin: 0 auto 6px;
+		}
+	}
+
+	&__shopping-product {
+		margin-top: 6px;
+		border: 1px solid $gray-200;
+		border-radius: 4px;
+		overflow: hidden;
+	}
+
+	&__shopping-product-info {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 8px 10px 10px;
+	}
+
+	// === YouTube preview ===
+	&__youtube-header {
+		padding: 4px 0;
+		> img {
+			display: block;
+		}
+	}
+
+	&__youtube-product {
+		margin-top: 6px;
+	}
+
+	&__youtube-learn-more-row {
+		display: flex;
+		align-items: center;
+		padding: 3px 6px;
+		background-color: #f0f6fc;
+		font-weight: 600;
+		fill: $gla-campaign-preview-color-blue;
+
+		> div {
+			flex: 1 0;
+			line-height: 0;
+		}
+	}
+
+	&__youtube-product-info {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 8px 0;
+	}
+
+	// === Google Search preview ===
+	&__search-header {
+		display: flex;
+		justify-content: center;
+		margin: 4px 0 8px;
+	}
+
+	&__search-keywords {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 4px 11px;
+		margin: 8px 0;
+	}
+
+	&__search-card {
+		margin-top: 8px;
+		padding: 7.5px;
+		border: 1px solid $gray-300;
+		border-radius: 4px;
+
+		& + & {
+			border-color: $gray-100;
+		}
+
+		&:last-child {
+			opacity: 0.5;
+		}
+	}
+
+	&__search-card-header {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		margin-bottom: 10px;
+	}
+
+	&__search-card-placeholders {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		min-height: 38px;
+	}
+
+	// === Google Map preview ===
+	&-map {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		padding: 0;
+		background: top center no-repeat border-box;
+
+		.gridicons-location {
+			position: absolute;
+			top: 116px;
+			left: 99px;
+			fill: #f86368;
+		}
+	}
+
+	// === Google Display Network preview ==
+	&__display-product {
+		margin: 12px 0;
+		border: 1px solid $gray-200;
+	}
+
+	&__display-product &__placeholder {
+		margin: 18px 10px 12px;
+	}
+
+	&__display-product-locator {
+		position: relative;
+	}
+
+	&__display-corner-buttons {
+		position: absolute;
+		right: 0;
+		top: 0;
+	}
+
+	&__display-chevron-button {
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 22px;
+		aspect-ratio: 1 / 1;
+		border-radius: 50%;
+		background-color: $gla-campaign-preview-color-blue;
+		fill: $white;
+	}
+
+	&__display-placeholders {
+		display: flex;
+		flex-direction: column;
+		gap: 4.66px;
+	}
+
+	// === Gmail preview ===
+	&__gmail-header {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin: 5px 0 12px;
+		padding-left: 1px;
+	}
+
+	&__mail-item {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-around;
+		height: 19px;
+		padding-left: 28px;
+		margin-top: 10px;
+
+		&::before {
+			content: "";
+			position: absolute;
+			left: 0;
+			height: 100%;
+			aspect-ratio: 1 / 1;
+			border-radius: 50%;
+			background-color: $gray-100;
+		}
+	}
+}

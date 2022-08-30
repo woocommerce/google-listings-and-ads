@@ -11,6 +11,13 @@
 		color: $gray-900;
 	}
 
+	@media (max-width: $break-small) {
+		&__content {
+			flex-direction: column;
+			gap: $grid-unit-20;
+		}
+	}
+
 	&__subtitle {
 		line-height: $gla-line-height-medium;
 		font-size: $gla-font-small;

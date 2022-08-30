@@ -14,10 +14,10 @@ import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
  * Get the corresponding countdown states and its start function by given `handle`.
  * The states would be updated every 1000 ms interval till counting down to 0.
  *
- * @param {string} handle The countdown handle.
+ * @param {string} [handle='single'] The countdown handle corresponds with the current countdown instance when it needs multiple counters.
  * @return {Countdown} The corresponding countdown states and its start function.
  */
-export default function useCountdown( handle ) {
+export default function useCountdown( handle = 'single' ) {
 	const timerRef = useRef( {} );
 	const [ second, setSecond ] = useState( 0 );
 
