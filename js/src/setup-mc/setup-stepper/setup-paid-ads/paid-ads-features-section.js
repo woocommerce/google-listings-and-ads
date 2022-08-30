@@ -103,7 +103,11 @@ export default function PaidAdsFeaturesSection( {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<Flex align="center" gap={ 9 }>
+					<Flex
+						className="gla-paid-ads-features-section__content"
+						align="center"
+						gap={ 9 }
+					>
 						<FlexBlock>
 							<Section.Card.Title>
 								{ __(
