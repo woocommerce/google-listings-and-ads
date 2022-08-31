@@ -27,7 +27,7 @@ const AttributeMappingDescription = () => {
 				<AppDocumentationLink
 					context="attribute-mapping"
 					linkId="attribute-mapping-learn-more"
-					href="https://support.google.com/"
+					href="https://support.google.com/" // TODO: Update link
 				>
 					{ __(
 						'Learn more about attribute mapping',

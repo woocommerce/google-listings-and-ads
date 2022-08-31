@@ -2,7 +2,15 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { EmptyTable, Table } from '@woocommerce/components';
+import { Table } from '@woocommerce/components';
+import { CardBody, CardFooter } from '@wordpress/components';
+
+/**
+ * Internal dependencies
+ */
+import Card from '.~/wcdl/section/card';
+import AppButton from '.~/components/app-button';
+import AppTableCardDiv from '.~/components/app-table-card-div';
 
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	{
@@ -30,11 +38,35 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 
 const AttributeMappingTable = () => {
 	return (
-		<Table
-			headers={ ATTRIBUTE_MAPPING_TABLE_HEADERS }
-			numberOfRows={ 1 }
-			rows={ [] }
-		/>
+		<AppTableCardDiv>
+			<Card>
+				<CardBody size={ null }>
+					<Table
+						caption={ __(
+							'Attribute Mapping configuration',
+							'google-listings-and-ads'
+						) }
+						headers={ ATTRIBUTE_MAPPING_TABLE_HEADERS }
+						numberOfRows={ 1 }
+						rows={ [] } // TODO: Implement data getter
+					/>
+				</CardBody>
+				<CardFooter
+					align="start"
+					className="gla-settings-attribute-mapping__table-footer"
+				>
+					<AppButton
+						className="gla-settings-attribute-mapping__button"
+						isSecondary
+						onClick={ () => {} } // TODO: Implement button logic
+						text={ __(
+							'Add new attribute mapping',
+							'google-listings-and-ads'
+						) }
+					/>
+				</CardFooter>
+			</Card>
+		</AppTableCardDiv>
 	);
 };
 
