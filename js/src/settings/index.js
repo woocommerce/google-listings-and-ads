@@ -17,9 +17,9 @@ import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
-import './index.scss';
 import SettingsHeader from '.~/settings/settings-header';
 import AttributeMapping from '.~/settings/attribute-mapping';
+import './index.scss';
 
 const pageClassName = 'gla-settings';
 
