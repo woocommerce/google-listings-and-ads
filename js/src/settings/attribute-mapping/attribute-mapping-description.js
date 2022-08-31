@@ -8,6 +8,11 @@ import { __ } from '@wordpress/i18n';
  */
 import AppDocumentationLink from '.~/components/app-documentation-link';
 
+/**
+ * Renders Attribute mapping description
+ *
+ * @return {JSX.Element} The description markup
+ */
 const AttributeMappingDescription = () => {
 	return (
 		<div>

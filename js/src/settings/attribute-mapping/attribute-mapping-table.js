@@ -36,6 +36,11 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	},
 ];
 
+/**
+ * Renders the Attribute Mapping table component
+ *
+ * @return {JSX.Element} The component
+ */
 const AttributeMappingTable = () => {
 	return (
 		<AppTableCardDiv>

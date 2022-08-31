@@ -12,6 +12,11 @@ import { pagePaths, subpaths } from '.~/utils/urls';
  * Internal dependencies
  */
 
+/**
+ * Get the selected tab key for Settings Navigation
+ *
+ * @return {string} The selected tab key
+ */
 const getSelectedSettingsPageKey = () => {
 	const query = getQuery();
 	return query?.subpath === subpaths.attributeMapping

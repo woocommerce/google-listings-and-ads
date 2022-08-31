@@ -15,6 +15,11 @@ import AttributeMappingDescription from '.~/settings/attribute-mapping/attribute
 import AttributeMappingTable from '.~/settings/attribute-mapping/attribute-mapping-table';
 import './index.scss';
 
+/**
+ * Renders the Attribute Mapping Page
+ *
+ * @return {JSX.Element} The component markup
+ */
 const AttributeMapping = () => {
 	return (
 		<div className="gla-settings-attribute-mapping">
