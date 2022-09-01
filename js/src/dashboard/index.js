@@ -12,6 +12,7 @@ import { recordEvent } from '@woocommerce/tracks';
  * Internal dependencies
  */
 import DifferentCurrencyNotice from '.~/components/different-currency-notice';
+import CampaignConversionDashboardNotice from '.~/components/campaign-conversion-notice';
 import NavigationClassic from '.~/components/navigation-classic';
 import CustomerEffortScorePrompt from '.~/components/customer-effort-score-prompt';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
@@ -86,6 +87,9 @@ const Dashboard = () => {
 			<div className="gla-dashboard">
 				<DifferentCurrencyNotice context="dashboard" />
 				<NavigationClassic />
+				<div className="gla-dashboard__campaign_conversion">
+					<CampaignConversionDashboardNotice context="dashboard" />
+				</div>
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }

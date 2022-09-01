@@ -1,0 +1,12 @@
+.gla-campaign-conversion-status-reports-notice {
+	margin: $grid-unit-40 0 $grid-unit-10;
+	padding: $grid-unit-15 $grid-unit-30;
+	background-color: #cbe3eb;
+	border-left: 0;
+
+	.components-notice__dismiss.has-icon {
+		min-width: 28px;
+		width: 28px;
+		height: 28px;
+	}
+}

@@ -36,10 +36,9 @@ export function handleFetchError( error, message ) {
  * @typedef {Object} ShippingRate
  * @property {string} id id.
  * @property {CountryCode} country Destination country code.
- * @property {string} method Shipping method, e.g. "flat_rate".
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
- * @property {Object} options options depending on the shipping method.
+ * @property {Object} options Options, such as `free_shipping_threshold`.
  */
 
 /**
@@ -48,7 +47,7 @@ export function handleFetchError( error, message ) {
  * @typedef {Object} Campaign
  * @property {number} id Campaign ID.
  * @property {string} name Campaign name.
- * @property {'enabled'|'paused'} status Campaign is currently running or has been paused.
+ * @property {'enabled'|'paused'|'removed'} status Campaign is currently running, has been paused or removed.
  * @property {number} amount Amount of daily budget for running ads.
  * @property {CountryCode} country The sales country of this campain.
  *   Please note that this is a targeting country for advertising,
@@ -742,27 +741,6 @@ export function* saveTargetAudience( targetAudience ) {
 		type: TYPES.SAVE_TARGET_AUDIENCE,
 		target_audience: targetAudience,
 	};
-}
-
-export function* fetchAdsCampaigns() {
-	try {
-		const campaigns = yield apiFetch( {
-			path: `${ API_NAMESPACE }/ads/campaigns`,
-		} );
-
-		return {
-			type: TYPES.RECEIVE_ADS_CAMPAIGNS,
-			adsCampaigns: campaigns.map( adaptAdsCampaign ),
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error loading ads campaigns.',
-				'google-listings-and-ads'
-			)
-		);
-	}
 }
 
 /**

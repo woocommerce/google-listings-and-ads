@@ -39,6 +39,7 @@ describe( 'reducer', () => {
 				contact: null,
 			},
 			ads_campaigns: null,
+			all_ads_campaigns: null,
 			mc_setup: null,
 			mc_review_request: {
 				issues: null,
@@ -94,7 +95,6 @@ describe( 'reducer', () => {
 					{
 						id: '1',
 						country: 'US',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 4.99,
 						options: {},
@@ -102,7 +102,6 @@ describe( 'reducer', () => {
 					{
 						id: '2',
 						country: 'AU',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 25,
 						options: {},
@@ -120,7 +119,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},
@@ -128,7 +126,6 @@ describe( 'reducer', () => {
 				{
 					id: '2',
 					country: 'CA',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {},
@@ -140,7 +137,6 @@ describe( 'reducer', () => {
 					{
 						id: '2',
 						country: 'CA',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 12,
 						options: {},
@@ -148,7 +144,6 @@ describe( 'reducer', () => {
 					{
 						id: '3',
 						country: 'JP',
-						method: 'flat_rate',
 						currency: 'USD',
 						rate: 12,
 						options: {},
@@ -163,7 +158,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},
@@ -171,7 +165,6 @@ describe( 'reducer', () => {
 				{
 					id: '2',
 					country: 'CA',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 12,
 					options: {},
@@ -179,7 +172,6 @@ describe( 'reducer', () => {
 				{
 					id: '3',
 					country: 'JP',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 12,
 					options: {},
@@ -192,7 +184,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},
@@ -200,7 +191,6 @@ describe( 'reducer', () => {
 				{
 					id: '2',
 					country: 'CA',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {},
@@ -218,7 +208,6 @@ describe( 'reducer', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
 					options: {},
@@ -412,57 +401,9 @@ describe( 'reducer', () => {
 		} );
 	} );
 
-	describe( 'Policy Check', () => {
-		it( 'should return with policy check info', () => {
-			const data = {
-				allowed_countries: true,
-				robots_restriction: false,
-				page_not_found_error: false,
-				page_restricts: false,
-				store_ssl: true,
-				payment_gateways: true,
-				refund_returns: true,
-			};
-			const action = {
-				type: TYPES.POLICY_CHECK,
-				data,
-			};
-			const state = reducer( prepareState(), action );
-
-			state.assertConsistentRef();
-			expect( state ).toHaveProperty(
-				'mc.policy_check.refund_returns',
-				data.refund_returns
-			);
-			expect( state ).toHaveProperty(
-				'mc.policy_check.payment_gateways',
-				data.payment_gateways
-			);
-			expect( state ).toHaveProperty(
-				'mc.policy_check.store_ssl',
-				data.store_ssl
-			);
-			expect( state ).toHaveProperty(
-				'mc.policy_check.allowed_countries',
-				data.allowed_countries
-			);
-			expect( state ).toHaveProperty(
-				'mc.policy_check.robots_restriction',
-				data.robots_restriction
-			);
-			expect( state ).toHaveProperty(
-				'mc.policy_check.page_not_found_error',
-				data.page_not_found_error
-			);
-			expect( state ).toHaveProperty(
-				'mc.policy_check.page_restricts',
-				data.page_restricts
-			);
-		} );
-	} );
-
 	describe( 'Ads campaigns', () => {
 		const path = 'ads_campaigns';
+		const pathAllAds = 'all_ads_campaigns';
 
 		it( 'should return with received ads campaigns', () => {
 			const action = {
@@ -549,6 +490,18 @@ describe( 'reducer', () => {
 				{ id: 123 },
 				{ id: 789 },
 			] );
+		} );
+
+		it( 'should return with all ads campaigns if exclude removed is false', () => {
+			const action = {
+				type: TYPES.RECEIVE_ADS_CAMPAIGNS,
+				adsCampaigns: [ { id: 123 }, { id: 456 } ],
+				query: { exclude_removed: false },
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( pathAllAds, action.adsCampaigns );
 		} );
 	} );
 
@@ -805,6 +758,7 @@ describe( 'reducer', () => {
 			[ TYPES.SAVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
 			[ TYPES.RECEIVE_MC_SETUP, 'mcSetup', 'mc_setup' ],
 			[ TYPES.RECEIVE_MC_PRODUCT_STATISTICS, 'mcProductStatistics', 'mc_product_statistics' ],
+			[ TYPES.POLICY_CHECK, 'data', 'mc.policy_check' ],
 		];
 		/* eslint-enable prettier/prettier */
 

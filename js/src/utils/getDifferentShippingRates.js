@@ -20,7 +20,6 @@ import { isEqual, differenceWith, at } from 'lodash';
 const isEqualShippingRate = ( a, b ) => {
 	const paths = [
 		'country',
-		'method',
 		'currency',
 		'rate',
 		'options.free_shipping_threshold',

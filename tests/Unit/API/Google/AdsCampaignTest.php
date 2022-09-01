@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -462,6 +463,145 @@ class AdsCampaignTest extends UnitTest {
 			);
 			$this->assertEquals( 400, $e->getCode() );
 		}
+	}
+
+	public function test_get_campaign_convert_status_unconverted() {
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Campaign One',
+				'status'  => 'enabled',
+				'type'    => CampaignType::SHOPPING,
+				'amount'  => 10,
+				'country' => 'US',
+			],
+			[
+				'id'      => 5678901234,
+				'name'    => 'Campaign Two',
+				'status'  => 'enabled',
+				'type'    => CampaignType::PERFORMANCE_MAX,
+				'amount'  => 20,
+				'country' => 'UK',
+			],
+		];
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
+		$this->assertEquals( 'unconverted', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_get_campaign_convert_status_converted() {
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Test Campaign',
+				'status'  => 'removed',
+				'type'    => CampaignType::SHOPPING,
+				'amount'  => 10,
+				'country' => 'US',
+			],
+			[
+				'id'      => 5678901234,
+				'name'    => 'Test Campaign',
+				'status'  => 'enabled',
+				'type'    => CampaignType::PERFORMANCE_MAX,
+				'amount'  => 10,
+				'country' => 'US',
+			],
+		];
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
+		$this->assertEquals( 'converted', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_get_campaign_convert_status_not_applicable() {
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Campaign One',
+				'status'  => 'removed',
+				'type'    => CampaignType::PERFORMANCE_MAX,
+				'amount'  => 10,
+				'country' => 'US',
+			],
+			[
+				'id'      => 5678901234,
+				'name'    => 'Campaign Two',
+				'status'  => 'enabled',
+				'type'    => CampaignType::PERFORMANCE_MAX,
+				'amount'  => 10,
+				'country' => 'US',
+			],
+		];
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
+		$this->assertEquals( 'not-applicable', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_get_campaign_convert_status_exception() {
+		$this->generate_ads_query_mock_exception( new ApiException( 'unavailable', 14, 'UNAVAILABLE' ) );
+		$this->assertEquals( 'unknown', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_get_campaign_convert_status_fetch_cached() {
+		$this->options->method( 'get' )
+			->with( OptionsInterface::CAMPAIGN_CONVERT_STATUS )
+			->willReturn(
+				[
+					'status'  => 'unconverted',
+					'updated' => time(),
+				]
+			);
+
+		$this->assertEquals( 'unconverted', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_get_campaign_convert_status_refresh_cache() {
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Test Campaign',
+				'status'  => 'enabled',
+				'type'    => CampaignType::PERFORMANCE_MAX,
+				'amount'  => 10,
+				'country' => 'US',
+			],
+		];
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::CAMPAIGN_CONVERT_STATUS )
+			->willReturn(
+				[
+					'status'  => 'unknown',
+					'updated' => time() - WEEK_IN_SECONDS,
+				]
+			);
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
+		$this->assertEquals( 'not-applicable', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_get_campaign_convert_status_refresh_cache_no_update_time() {
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Test Campaign',
+				'status'  => 'enabled',
+				'type'    => CampaignType::SHOPPING,
+				'amount'  => 10,
+				'country' => 'US',
+			],
+		];
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::CAMPAIGN_CONVERT_STATUS )
+			->willReturn(
+				[
+					'status' => 'unknown',
+				]
+			);
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
+		$this->assertEquals( 'unconverted', $this->campaign->get_campaign_convert_status() );
 	}
 
 }

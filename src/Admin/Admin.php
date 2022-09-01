@@ -19,16 +19,19 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
-
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 /**
  * Class Admin
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Pages
  */
-class Admin implements Service, Registerable, Conditional {
+class Admin implements Service, Registerable, Conditional, OptionsAwareInterface {
 
 	use AdminConditional;
 	use PluginHelper;
+	use OptionsAwareTrait;
 
 	/**
 	 * @var AssetsHandlerInterface
@@ -118,13 +121,15 @@ class Admin implements Service, Registerable, Conditional {
 		) )->add_inline_script(
 			'glaData',
 			[
-				'mcSetupComplete'     => $this->merchant_center->is_setup_complete(),
-				'mcSupportedCountry'  => $this->merchant_center->is_store_country_supported(),
-				'mcSupportedLanguage' => $this->merchant_center->is_language_supported(),
-				'adsSetupComplete'    => $this->ads->is_setup_complete(),
-				'enableReports'       => $this->enableReports(),
-				'dateFormat'          => get_option( 'date_format' ),
-				'timeFormat'          => get_option( 'time_format' ),
+				'mcSetupComplete'          => $this->merchant_center->is_setup_complete(),
+				'mcSupportedCountry'       => $this->merchant_center->is_store_country_supported(),
+				'mcSupportedLanguage'      => $this->merchant_center->is_language_supported(),
+				'adsCampaignConvertStatus' => $this->options->get( OptionsInterface::CAMPAIGN_CONVERT_STATUS ),
+				'adsSetupComplete'         => $this->ads->is_setup_complete(),
+				'enableReports'            => $this->enableReports(),
+				'dateFormat'               => get_option( 'date_format' ),
+				'timeFormat'               => get_option( 'time_format' ),
+
 			]
 		);
 

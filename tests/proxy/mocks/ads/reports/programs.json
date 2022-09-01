@@ -4,7 +4,8 @@
 			"campaign": {
 				"status": "ENABLED",
 				"name": "Spring",
-				"id": "1234567890"
+				"id": "1234567890",
+				"advertising_channel_type": "PERFORMANCE_MAX"
 			},
 			"metrics": {
 				"clicks": "12",
@@ -24,7 +25,8 @@
 			"campaign": {
 				"status": "ENABLED",
 				"name": "Summer",
-				"id": "3456789012"
+				"id": "3456789012",
+				"advertising_channel_type": "PERFORMANCE_MAX"
 			},
 			"metrics": {
 				"clicks": "98",
@@ -44,7 +46,8 @@
 			"campaign": {
 				"status": "ENABLED",
 				"name": "Autumn",
-				"id": "5678901234"
+				"id": "5678901234",
+				"advertising_channel_type": "PERFORMANCE_MAX"
 			},
 			"metrics": {
 				"clicks": "7",
@@ -64,7 +67,8 @@
 			"campaign": {
 				"status": "ENABLED",
 				"name": "Winter",
-				"id": "7890123456"
+				"id": "7890123456",
+				"advertising_channel_type": "PERFORMANCE_MAX"
 			},
 			"metrics": {
 				"clicks": "83",
@@ -84,7 +88,8 @@
 			"campaign": {
 				"status": "ENABLED",
 				"name": "Summer",
-				"id": "3456789012"
+				"id": "3456789012",
+				"advertising_channel_type": "PERFORMANCE_MAX"
 			},
 			"metrics": {
 				"clicks": "118",
@@ -104,7 +109,8 @@
 			"campaign": {
 				"status": "ENABLED",
 				"name": "Winter",
-				"id": "7890123456"
+				"id": "7890123456",
+				"advertising_channel_type": "PERFORMANCE_MAX"
 			},
 			"metrics": {
 				"clicks": "12",
@@ -124,7 +130,8 @@
 			"campaign": {
 				"status": "ENABLED",
 				"name": "Winter",
-				"id": "7890123456"
+				"id": "7890123456",
+				"advertising_channel_type": "PERFORMANCE_MAX"
 			},
 			"metrics": {
 				"clicks": "83",
