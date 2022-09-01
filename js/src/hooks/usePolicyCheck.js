@@ -11,13 +11,13 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  *
  * ```json
  * {
- *		"allowed_countries": true,
- *		"robots_restriction": false,
- *		"page_not_found_error": false,
- *		"page_restricts": false,
- *   		"store_ssl": true,
- * 		"payment_gateways": true,
- *		"refund_returns": true
+ *   "allowed_countries": true,
+ *   "robots_restriction": false,
+ *   "page_not_found_error": false,
+ *   "page_redirects": false,
+ *   "store_ssl": true,
+ *   "payment_gateways": true,
+ *   "refund_returns": true
  * }
  * ```
  */
