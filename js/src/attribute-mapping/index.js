@@ -2,18 +2,16 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import DismissibleNotice from '.~/components/dismissible-notice';
 import AttributeMappingDescription from './attribute-mapping-description';
 import AttributeMappingTable from './attribute-mapping-table';
-import './index.scss';
 import NavigationClassic from '.~/components/navigation-classic';
+import './index.scss';
 
 /**
  * Renders the Attribute Mapping Page
