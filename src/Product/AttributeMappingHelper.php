@@ -54,6 +54,11 @@ class AttributeMappingHelper implements Service {
 		return $sources;
 	}
 
+	/**
+	 * Gets the taxonomies and global attributes to render them as options in the frontend.
+	 *
+	 * @return array An array with the taxonomies and global attributes
+	 */
 	public static function get_source_taxonomies(): array {
 		$taxonomies = get_object_taxonomies( 'product' );
 		$taxes      = [];
