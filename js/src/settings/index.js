@@ -17,8 +17,7 @@ import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
-import SettingsHeader from '.~/settings/settings-header';
-import AttributeMapping from '.~/settings/attribute-mapping';
+import NavigationClassic from '.~/components/navigation-classic';
 import './index.scss';
 
 const pageClassName = 'gla-settings';
@@ -55,14 +54,12 @@ const Settings = () => {
 			return <EditPhoneNumber />;
 		case subpaths.editStoreAddress:
 			return <EditStoreAddress />;
-		case subpaths.attributeMapping:
-			return <AttributeMapping />;
 		default:
 	}
 
 	return (
 		<div className={ pageClassName }>
-			<SettingsHeader />
+			<NavigationClassic />
 			<ContactInformationPreview />
 			<LinkedAccounts />
 		</div>

@@ -10,10 +10,10 @@ import { createInterpolateElement } from '@wordpress/element';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import DismissibleNotice from '.~/components/dismissible-notice';
-import SettingsHeader from '.~/settings/settings-header';
-import AttributeMappingDescription from '.~/settings/attribute-mapping/attribute-mapping-description';
-import AttributeMappingTable from '.~/settings/attribute-mapping/attribute-mapping-table';
+import AttributeMappingDescription from './attribute-mapping-description';
+import AttributeMappingTable from './attribute-mapping-table';
 import './index.scss';
+import NavigationClassic from '.~/components/navigation-classic';
 
 /**
  * Renders the Attribute Mapping Page
@@ -23,7 +23,7 @@ import './index.scss';
 const AttributeMapping = () => {
 	return (
 		<div className="gla-settings-attribute-mapping">
-			<SettingsHeader />
+			<NavigationClassic />
 			<Section
 				title={ __( 'Attribute Mapping', 'google-listings-and-ads' ) }
 				description={ <AttributeMappingDescription /> }
