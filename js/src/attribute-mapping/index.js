@@ -29,17 +29,6 @@ const AttributeMapping = () => {
 				description={ <AttributeMappingDescription /> }
 			>
 				<VerticalGapLayout size="overlap">
-					<DismissibleNotice className="gla-settings-attribute-mapping__notice">
-						{ createInterpolateElement(
-							__(
-								'After a review of your products, we’ve pre-configured a select number of attributes for you. Click the ellipsis icon (•••) and select <strong>Edit</strong> to assign a reference field or a default value to the target attribute.',
-								'google-listings-and-ads'
-							),
-							{
-								strong: <strong></strong>,
-							}
-						) }
-					</DismissibleNotice>
 					<AttributeMappingTable />
 				</VerticalGapLayout>
 			</Section>
