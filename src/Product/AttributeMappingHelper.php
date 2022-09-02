@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Color;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,6 +21,7 @@ class AttributeMappingHelper implements Service {
 	private const ATTRIBUTES_AVAILABLE_FOR_MAPPING = [
 		Adult::class,
 		AgeGroup::class,
+		Color::class,
 	];
 
 	/**
@@ -50,5 +52,33 @@ class AttributeMappingHelper implements Service {
 		}
 
 		return $sources;
+	}
+
+	public static function get_source_taxonomies(): array {
+		$taxonomies = get_object_taxonomies( 'product' );
+		$taxes      = [];
+		$attributes = [];
+		foreach ( $taxonomies as $taxonomy ) {
+			$tax = get_taxonomy( $taxonomy );
+			if ( taxonomy_is_product_attribute( $taxonomy ) ) {
+				$attributes[ 'tax:' . $taxonomy ] = $tax->labels->name;
+				continue;
+			}
+
+			$taxes[ 'tax:' . $taxonomy ] = $tax->labels->name;
+		}
+		asort( $taxes );
+		asort( $attributes );
+
+		return array_merge(
+			[
+				'disabled:attributes' => __( '- Global attributes -', 'google-listings-and-ads' ),
+			],
+			$attributes,
+			[
+				'disabled:taxes' => __( '- Taxonomies -', 'google-listings-and-ads' ),
+			],
+			$taxes
+		);
 	}
 }
