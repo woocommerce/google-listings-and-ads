@@ -1,30 +1,32 @@
 #!/bin/bash
 
-echo "Initializing WooCommerce E2E"
-
-# This is mainly the same script as the one in WooCommerce-Admin,
-# with additional tweak for GLA.
-
-# Turn off error display temporarily. This is to prevent deprecated function
-# notices from breaking the display of some screens and then E2E tests.
-# Message was for WC_Admin_Notes_Deactivate_Plugin usage in core WC.
-wp config set WP_DEBUG_DISPLAY false --raw
-wp config set JETPACK_AUTOLOAD_DEV true --raw
+echo "Install WooCommerce & Storefront"
 wp plugin install woocommerce --activate
+wp theme install storefront --activate
 
-# Install basic auth for API requests on http.
-wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
-
-# GLA is automatically mapped to the docker container's plugins folder,
-# we just need to activate it here.
-wp plugin activate google-listings-and-ads
-
-# GLA doesn't really need a customer account here,
-# but we are leaving it intact here just in case we want to run full WooCommerce core e2e test.
+echo "Creating WooCommerce Customer Account"
 wp user create customer customer@woocommercecoree2etestsuite.com --user_pass=password --role=customer --path=/var/www/html
 
-# Skip activation redirect, so it will not interrupt our tests.
-wp transient delete _wc_activation_redirect
+echo "Adding basic WooCommerce settings..."
+wp option set woocommerce_store_address "Example Address Line 1"
+wp option set woocommerce_store_address_2 "Example Address Line 2"
+wp option set woocommerce_store_city "Example City"
+wp option set woocommerce_default_country "US:CA"
+wp option set woocommerce_store_postcode "94110"
+wp option set woocommerce_currency "USD"
+wp option set woocommerce_product_type "both"
+wp option set woocommerce_allow_tracking "no"
 
-# Initialize pretty permalinks.
-wp rewrite structure /%postname%/
+echo "Importing WooCommerce shop pages..."
+wp wc --user=admin tool run install_pages
+
+echo "Installing and activating the WordPress Importer plugin..."
+wp plugin install wordpress-importer --activate
+
+echo "Importing WooCommerce sample products..."
+wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
+
+# echo "Activate <your-extension>"
+# wp plugin activate your-extension
+
+echo "Success! Your E2E Test Environment is now ready."
