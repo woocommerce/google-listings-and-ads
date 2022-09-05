@@ -26,8 +26,10 @@ import AudienceSection from '.~/components/paid-ads/audience-section';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import validateForm from '.~/utils/paid-ads/validateForm';
 import { getProductFeedUrl } from '.~/utils/urls';
-import { GUIDE_NAMES } from '.~/constants';
+import { GUIDE_NAMES, GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 import { API_NAMESPACE } from '.~/data/constants';
+
+const { CONNECTED } = GOOGLE_ADS_ACCOUNT_STATUS;
 
 function PaidAdsSectionsGroup( { onCampaignChange } ) {
 	const { googleAdsAccount } = useGoogleAdsAccount();
@@ -52,8 +54,7 @@ function PaidAdsSectionsGroup( { onCampaignChange } ) {
 		>
 			{ ( formProps ) => {
 				const { countryCodes } = formProps.values;
-				const disabledAudience =
-					googleAdsAccount?.status !== 'connected';
+				const disabledAudience = googleAdsAccount?.status !== CONNECTED;
 				const disabledBudget =
 					disabledAudience || countryCodes.length === 0;
 
