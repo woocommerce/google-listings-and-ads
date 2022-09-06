@@ -110,7 +110,8 @@ class ProductStatisticsController extends BaseOptionsController {
 		try {
 			$response = $this->merchant_statuses->get_product_statistics( $force_refresh );
 
-			$response['scheduled_sync'] = $this->sync_stats->get_count();
+			$response['scheduled_sync']    = $this->sync_stats->get_count();
+			$response['syncable_products'] = $this->sync_stats->get_syncable_products_count();
 
 			return $this->prepare_item_for_response( $response, $request );
 		} catch ( Exception $e ) {
@@ -125,13 +126,13 @@ class ProductStatisticsController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'timestamp'      => [
+			'timestamp'         => [
 				'type'        => 'number',
 				'description' => __( 'Timestamp reflecting when the product status statistics were last generated.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'statistics'     => [
+			'statistics'        => [
 				'type'        => 'object',
 				'description' => __( 'Merchant Center product status statistics.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
@@ -164,9 +165,15 @@ class ProductStatisticsController extends BaseOptionsController {
 					],
 				],
 			],
-			'scheduled_sync' => [
+			'scheduled_sync'    => [
 				'type'        => 'number',
 				'description' => __( 'Amount of scheduled jobs which will sync products to Google.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'syncable_products' => [
+				'type'        => 'number',
+				'description' => __( 'Amount of syncable products which will be synced to Google.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
