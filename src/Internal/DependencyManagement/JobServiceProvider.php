@@ -86,7 +86,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		);
 		$this->share_with_tags( ActionScheduler::class, AsyncActionRunner::class );
 		$this->share_with_tags( ActionSchedulerJobMonitor::class, ActionScheduler::class );
-		$this->share_with_tags( ProductSyncStats::class, ActionScheduler::class );
+		$this->share_with_tags( ProductSyncStats::class, ActionScheduler::class, ProductRepository::class );
 
 		// share product syncer jobs
 		$this->share_product_syncer_job( UpdateAllProducts::class );

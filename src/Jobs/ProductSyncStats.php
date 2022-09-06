@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -25,6 +26,13 @@ class ProductSyncStats {
 	protected $scheduler;
 
 	/**
+	 * The ProductRepository object.
+	 *
+	 * @var ProductRepository
+	 */
+	protected $product_repository;
+
+	/**
 	 * Job names for syncing products.
 	 */
 	protected const MATCHES = [
@@ -37,10 +45,12 @@ class ProductSyncStats {
 	/**
 	 * ProductSyncStats constructor.
 	 *
-	 * @param ActionScheduler $scheduler
+	 * @param ActionScheduler   $scheduler
+	 * @param ProductRepository $product_repository
 	 */
-	public function __construct( ActionScheduler $scheduler ) {
-		$this->scheduler = $scheduler;
+	public function __construct( ActionScheduler $scheduler, ProductRepository $product_repository ) {
+		$this->scheduler          = $scheduler;
+		$this->product_repository = $product_repository;
 	}
 
 	/**
@@ -81,5 +91,15 @@ class ProductSyncStats {
 		}
 
 		return $count;
+	}
+
+	/**
+	 * Return the amount of products which are ready to be synced.
+	 *
+	 * @return int
+	 */
+	public function get_syncable_products_count(): int {
+		$products = $this->product_repository->find_sync_ready_products()->get();
+		return count( $products );
 	}
 }
