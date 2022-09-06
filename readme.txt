@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,14 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.1.1 - 2022-09-06 =
+* Dev - Run PHPCS checks for unit tests.
+* Fix - A compatibility issue with WooCommerce 6.9 which prevents interaction
+* Fix - Fatal error if a null rate specified for flat rate methods with shipping classes.
+* Tweak - Add a filter to disable GTag tracking.
+* Tweak - Updated plugin icons.
+* with the input field of the paid campaign budget.
+
 = 2.1.0 - 2022-08-23 =
 * Add - Automatically sync WooCommerce shipping settings with Merchant Center.
 * Add - Get shipping rates suggestions for provinces/states and postal codes.
@@ -123,16 +131,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Handle multiple errors in the Edit free listings page.
 * Fix - Hide WooCommerce System messages in the plugin screen. .
 * Fix - Onload conflict when tracking events.
-
-= 2.0.3 - 2022-08-09 =
-* Add - Campaign Conversion Status for detecting converted campaigns.
-* Add - Gtag event tracking.
-* Add - Inbox notification for PMax migration.
-* Add - Includes removed campaign in the program report section.
-* Add - Pmax migration banner dashboard.
-* Add - Pmax migration banner reports.
-* Add - Tooltip in reports section for SSC Campaigns.
-* Add - Track add to cart events from all buttons including Gutenberg blocks.
-* Fix - Add Woo gTag remarketing and conversion signals.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
