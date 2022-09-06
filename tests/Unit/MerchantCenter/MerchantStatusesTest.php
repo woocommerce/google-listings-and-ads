@@ -46,17 +46,17 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_center_service   = $this->createMock( MerchantCenterService::class );
 		$this->account_status            = $this->createMock( ShoppingContent\AccountStatus::class );
 		$this->product_meta_query_helper = $this->createMock( ProductMetaQueryHelper::class );
+		$this->product_repository        = $this->createMock( ProductRepository::class );
+		$this->transients                = $this->createMock( TransientsInterface::class );
 
-		$product_repository   = $this->createMock( ProductRepository::class );
-		$transients           = $this->createMock( TransientsInterface::class );
 		$merchant_issue_table = $this->createMock( MerchantIssueTable::class );
 
 		$container = new Container();
 		$container->share( Merchant::class, $this->merchant );
 		$container->share( MerchantIssueQuery::class, $this->merchant_issue_query );
 		$container->share( MerchantCenterService::class, $this->merchant_center_service );
-		$container->share( TransientsInterface::class, $transients );
-		$container->share( ProductRepository::class, $product_repository );
+		$container->share( TransientsInterface::class, $this->transients );
+		$container->share( ProductRepository::class, $this->product_repository );
 		$container->share( ProductMetaQueryHelper::class, $this->product_meta_query_helper );
 		$container->share( MerchantIssueTable::class, $merchant_issue_table );
 
@@ -150,5 +150,24 @@ class MerchantStatusesTest extends UnitTest {
 
 		$this->merchant_issue_query->expects( $this->exactly( 2 ) )->method( 'update_or_insert' )->withConsecutive( array( $issues ), array() );
 		$this->merchant_statuses->maybe_refresh_status_data( true );
+	}
+
+	public function test_get_product_statistics_when_google_is_connected_but_not_finish_onboarding() {
+		$this->merchant_center_service->expects( $this->any() )
+			->method( 'is_google_connected' )
+			->willReturn( true );
+
+		$this->merchant_center_service->expects( $this->any() )
+			->method( 'is_setup_complete' )
+			->willReturn( false );
+
+		$this->product_repository->expects( $this->exactly( 0 ) )->method( 'find_mc_not_synced_product_ids' );
+		$this->transients->expects( $this->exactly( 0 ) )->method( 'set' );
+
+		$product_statistics = $this->merchant_statuses->get_product_statistics( true );
+		$this->assertEquals(
+			[ 'statistics' => null ],
+			$product_statistics
+		);
 	}
 }
