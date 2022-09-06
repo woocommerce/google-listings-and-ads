@@ -109,6 +109,14 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.1.1 - 2022-09-06 =
+* Dev - Run PHPCS checks for unit tests.
+* Fix - A compatibility issue with WooCommerce 6.9 which prevents interaction
+* Fix - Fatal error if a null rate specified for flat rate methods with shipping classes.
+* Tweak - Add a filter to disable GTag tracking.
+* Tweak - Updated plugin icons.
+* with the input field of the paid campaign budget.
+
 = 2.1.0 - 2022-08-23 =
 * Add - Automatically sync WooCommerce shipping settings with Merchant Center.
 * Add - Get shipping rates suggestions for provinces/states and postal codes.
