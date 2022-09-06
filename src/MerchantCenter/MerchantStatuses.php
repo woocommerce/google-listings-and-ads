@@ -108,15 +108,18 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public function get_product_statistics( bool $force_refresh = false ): array {
 		$this->maybe_refresh_status_data( $force_refresh );
 
-		$counting_stats = $this->mc_statuses['statistics'];
-		$counting_stats = array_merge(
-			[ 'active' => $counting_stats[ MCStatus::PARTIALLY_APPROVED ] + $counting_stats[ MCStatus::APPROVED ] ],
-			$counting_stats
-		);
-		unset( $counting_stats[ MCStatus::PARTIALLY_APPROVED ], $counting_stats[ MCStatus::APPROVED ] );
+		$counting_stats = is_array( $this->mc_statuses ) ? $this->mc_statuses['statistics'] : null;
+
+		if ( is_array( $counting_stats ) ) {
+			$counting_stats = array_merge(
+				[ 'active' => $counting_stats[ MCStatus::PARTIALLY_APPROVED ] + $counting_stats[ MCStatus::APPROVED ] ],
+				$counting_stats
+			);
+			unset( $counting_stats[ MCStatus::PARTIALLY_APPROVED ], $counting_stats[ MCStatus::APPROVED ] );
+		}
 
 		return array_merge(
-			$this->mc_statuses,
+			$this->mc_statuses ?: [],
 			[ 'statistics' => $counting_stats ]
 		);
 	}
@@ -166,20 +169,20 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public function maybe_refresh_status_data( bool $force_refresh = false ): void {
 		// Only refresh if the current data has expired.
 		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
-		if ( ! $force_refresh && null !== $this->mc_statuses ) {
+
+		if ( ! $force_refresh && ! empty( $this->mc_statuses ) ) {
 			return;
 		}
 
 		// Save a request if accounts are not connected.
 		$mc_service = $this->container->get( MerchantCenterService::class );
-		if ( ! $mc_service->is_connected() ) {
-
-			// Return a 401 to redirect to reconnect flow if the Google account is not connected.
-			if ( ! $mc_service->is_google_connected() ) {
-				throw new Exception( __( 'Google account is not connected.', 'google-listings-and-ads' ), 401 );
-			}
-
-			throw new Exception( __( 'Merchant Center account is not set up.', 'google-listings-and-ads' ) );
+		// Return a 401 to redirect to reconnect flow if the Google account is not connected.
+		if ( ! $mc_service->is_google_connected() ) {
+			throw new Exception( __( 'Google account is not connected.', 'google-listings-and-ads' ), 401 );
+		}
+		// Return empty statistics if the Google account is connected but haven't finished the onboarding flow.
+		if ( ! $mc_service->is_setup_complete() ) {
+			return;
 		}
 
 		$this->mc_statuses = [];

@@ -108,7 +108,11 @@ class MerchantStatusesTest extends UnitTest {
 			);
 
 		$this->merchant_center_service->expects( $this->any() )
-			->method( 'is_connected' )
+			->method( 'is_google_connected' )
+			->willReturn( true );
+
+		$this->merchant_center_service->expects( $this->any() )
+			->method( 'is_setup_complete' )
 			->willReturn( true );
 
 		$this->merchant->expects( $this->any() )
