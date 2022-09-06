@@ -4,11 +4,11 @@
 import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { Form } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import Form from '.~/components/form';
 import AppModal from '.~/components/app-modal';
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';

@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useState } from '@wordpress/element';
-import { Form } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
 
@@ -10,6 +9,7 @@ import { noop } from 'lodash';
  * Internal dependencies
  */
 import validateShippingRateGroup from './validateShippingRateGroup.js';
+import Form from '.~/components/form';
 import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control/index.js';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';

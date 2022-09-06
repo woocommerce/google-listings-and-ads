@@ -2,11 +2,11 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Form } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import Form from '.~/components/form';
 import AppSpinner from '.~/components/app-spinner';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';

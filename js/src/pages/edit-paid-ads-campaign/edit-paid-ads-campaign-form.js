@@ -3,12 +3,12 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { Form } from '@woocommerce/components';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import Form from '.~/components/form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';

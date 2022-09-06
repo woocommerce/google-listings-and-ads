@@ -4,7 +4,6 @@
 import { isEqual } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import { Form } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
 import { recordEvent } from '@woocommerce/tracks';
 
@@ -14,6 +13,7 @@ import { recordEvent } from '@woocommerce/tracks';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import Form from '.~/components/form';
 import SetupAdsFormContent from './setup-ads-form-content';
 import useSetupCompleteCallback from './useSetupCompleteCallback';
 import validateForm from '.~/utils/paid-ads/validateForm';

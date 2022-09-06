@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import { Form } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
 import { pick } from 'lodash';
 
 /**
  * Internal dependencies
  */
+import Form from '.~/components/form';
 import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';

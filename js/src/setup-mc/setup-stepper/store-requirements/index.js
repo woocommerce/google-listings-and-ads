@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { Form } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
 
 /**
@@ -15,6 +14,7 @@ import useAdminUrl from '.~/hooks/useAdminUrl';
 import useStoreAddress from '.~/hooks/useStoreAddress';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import Form from '.~/components/form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';

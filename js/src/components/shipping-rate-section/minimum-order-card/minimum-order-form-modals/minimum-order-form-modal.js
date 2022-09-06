@@ -3,11 +3,11 @@
  */
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Form } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import Form from '.~/components/form';
 import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';

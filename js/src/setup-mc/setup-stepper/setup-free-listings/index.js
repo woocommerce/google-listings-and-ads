@@ -3,11 +3,11 @@
  */
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Form } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import Form from '.~/components/form';
 import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
