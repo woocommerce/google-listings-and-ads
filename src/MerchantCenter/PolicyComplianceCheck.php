@@ -146,7 +146,6 @@ class PolicyComplianceCheck implements Service {
 			return true;
 		}
 
-		$rules        = [];
 		$rule_applies = false;
 		foreach ( $robotstxt as $line ) {
 			$line = trim( $line );
