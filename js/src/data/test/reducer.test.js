@@ -401,40 +401,6 @@ describe( 'reducer', () => {
 		} );
 	} );
 
-	describe( 'Policy Check', () => {
-		it( 'should return with policy check info', () => {
-			const data = {
-				allowed_countries: true,
-				store_ssl: true,
-				payment_gateways: true,
-				refund_returns: true,
-			};
-			const action = {
-				type: TYPES.POLICY_CHECK,
-				data,
-			};
-			const state = reducer( prepareState(), action );
-
-			state.assertConsistentRef();
-			expect( state ).toHaveProperty(
-				'mc.policy_check.refund_returns',
-				data.refund_returns
-			);
-			expect( state ).toHaveProperty(
-				'mc.policy_check.payment_gateways',
-				data.payment_gateways
-			);
-			expect( state ).toHaveProperty(
-				'mc.policy_check.store_ssl',
-				data.store_ssl
-			);
-			expect( state ).toHaveProperty(
-				'mc.policy_check.allowed_countries',
-				data.allowed_countries
-			);
-		} );
-	} );
-
 	describe( 'Ads campaigns', () => {
 		const path = 'ads_campaigns';
 		const pathAllAds = 'all_ads_campaigns';
@@ -792,6 +758,7 @@ describe( 'reducer', () => {
 			[ TYPES.SAVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
 			[ TYPES.RECEIVE_MC_SETUP, 'mcSetup', 'mc_setup' ],
 			[ TYPES.RECEIVE_MC_PRODUCT_STATISTICS, 'mcProductStatistics', 'mc_product_statistics' ],
+			[ TYPES.POLICY_CHECK, 'data', 'mc.policy_check' ],
 		];
 		/* eslint-enable prettier/prettier */
 

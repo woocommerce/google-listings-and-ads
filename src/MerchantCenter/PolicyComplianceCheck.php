@@ -20,7 +20,9 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  */
 class PolicyComplianceCheck implements Service {
+
 	use PluginHelper;
+
 	/**
 	 * The WC proxy object.
 	 *
@@ -65,6 +67,108 @@ class PolicyComplianceCheck implements Service {
 				return false;
 			}
 		}
+		return true;
+	}
+
+	/**
+	 * Check if the store sample product landing pages lead to a 404 error.
+	 *
+	 * @return bool
+	 */
+	public function has_page_not_found_error(): bool {
+		$url      = $this->get_landing_page_url();
+		$response = wp_remote_get( $url );
+		if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Check if the store sample product landing pages has redirects through 3P domains.
+	 *
+	 * @return bool
+	 */
+	public function has_redirects(): bool {
+		$url      = $this->get_landing_page_url();
+		$response = wp_remote_get( $url, [ 'redirection' => 0 ] );
+		$code     = wp_remote_retrieve_response_code( $response );
+		if ( $code >= 300 && $code <= 399 ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Returns a product page URL, uses homepage as a fallback.
+	 *
+	 * @return string Landing page URL.
+	 */
+	private function get_landing_page_url(): string {
+		$products = wc_get_products( [ 'limit' => 1 ] );
+		if ( ! empty( $products ) ) {
+			return $products[0]->get_permalink();
+		}
+
+		return $this->get_site_url();
+	}
+
+	/**
+	 * Check if the merchant set the restrictions in robots.txt or not in the store.
+	 *
+	 * @return bool
+	 */
+	public function has_restriction(): bool {
+		return ! $this->robots_allowed( $this->get_site_url() );
+	}
+
+	/**
+	 * Check if the robots.txt has restrictions or not in the store.
+	 *
+	 * @param string $url
+	 * @return bool
+	 */
+	private function robots_allowed( $url ) {
+		$agents = [ preg_quote( '*', '/' ) ];
+		$agents = implode( '|', $agents );
+
+		// location of robots.txt file
+		$response = wp_remote_get( trailingslashit( $url ) . 'robots.txt' );
+
+		if ( is_wp_error( $response ) ) {
+			return true;
+		}
+
+		$body      = wp_remote_retrieve_body( $response );
+		$robotstxt = preg_split( "/\r\n|\n|\r/", $body );
+
+		if ( empty( $robotstxt ) ) {
+			return true;
+		}
+
+		$rule_applies = false;
+		foreach ( $robotstxt as $line ) {
+			$line = trim( $line );
+			if ( ! $line ) {
+				continue;
+			}
+
+			// following rules only apply if User-agent matches '*'
+			if ( preg_match( '/^\s*User-agent:\s*(.*)/i', $line, $match ) ) {
+				$rule_applies = '*' === $match[1];
+
+			}
+
+			if ( $rule_applies && preg_match( '/^\s*Disallow:\s*(.*)/i', $line, $regs ) ) {
+				if ( ! $regs[1] ) {
+					return true;
+				}
+				if ( '/' === trim( $regs[1] ) ) {
+					return false;
+				}
+			}
+		}
+
 		return true;
 	}
 
@@ -124,5 +228,4 @@ class PolicyComplianceCheck implements Service {
 		}
 		return false;
 	}
-
 }
