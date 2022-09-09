@@ -6,6 +6,33 @@ import { getHistory } from '@woocommerce/navigation';
 import { noop } from 'lodash';
 
 /**
+ * Returns a normalized location to handle the inconsistent pathname between history v5 (≥ WC 6.7) and v4 (< WC 6.7).
+ *
+ * Since WC calls `history.push()` with a path that starts with 'admin.php?...', it brings
+ * the inconsistent `location` results.
+ *
+ * The `pathname` in v5 may be 'admin.php' or '/wp-admin/admin.php'.
+ *
+ * @see https://github.com/remix-run/history/blob/v5.3.0/packages/history/index.ts#L735
+ * @see https://github.com/remix-run/history/blob/v5.3.0/packages/history/index.ts#L701
+ * @see https://github.com/remix-run/history/blob/v5.3.0/packages/history/index.ts#L1086
+ *
+ * The `pathname` in v4 is always '/admin.php'.
+ *
+ * @see https://github.com/remix-run/history/blob/v4/modules/createBrowserHistory.js#L166
+ * @see https://github.com/remix-run/history/blob/v4/modules/LocationUtils.js#L57-L61
+ *
+ * @param {Object} location Location object to be normalized.
+ * @return {Object} Normalized location object.
+ */
+function normalizeLocation( location ) {
+	return {
+		...location,
+		pathname: location.pathname.replace( /^(\/wp-admin)?\//, '' ),
+	};
+}
+
+/**
  * Show prompt when the user tries to unload/leave the page.
  * Adds and removed `beforeunload` event listener according to the given flag.
  *
@@ -45,7 +72,7 @@ export default function useNavigateAwayPromptEffect(
 				const { location = transition, retry = noop } = transition;
 				let shouldUnblock = true;
 
-				if ( blockedLocation( location ) ) {
+				if ( blockedLocation( normalizeLocation( location ) ) ) {
 					// Show prompt to confirm if the user wants to navigate away
 					shouldUnblock = window.confirm( message ); // eslint-disable-line no-alert
 				}
