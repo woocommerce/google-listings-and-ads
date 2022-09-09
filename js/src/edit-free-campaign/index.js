@@ -37,9 +37,9 @@ import createErrorMessageForRejectedPromises from '.~/utils/createErrorMessageFo
  */
 function isNotOurStep( location ) {
 	const allowList = new Set( [
-		'/' + getNewPath( { pageStep: undefined } ),
-		'/' + getNewPath( { pageStep: 1 } ),
-		'/' + getNewPath( { pageStep: 2 } ),
+		getNewPath( { pageStep: undefined } ),
+		getNewPath( { pageStep: 1 } ),
+		getNewPath( { pageStep: 2 } ),
 	] );
 	// TODO: Explore if we can make thich check cleaner given `history`'s API.
 	const destination = location.pathname + location.search;
