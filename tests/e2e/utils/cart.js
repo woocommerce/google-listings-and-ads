@@ -37,9 +37,7 @@ export async function blockProductAddToCart() {
 
 	await page.waitForSelector( addToCart );
 	await page.click( addToCart );
-	await expect( page ).toMatchElement( addToCart + '.added', {
-		timeout: 3000,
-	} );
+	await expect( page ).toMatchElement( addToCart + '.added' );
 }
 
 /**
