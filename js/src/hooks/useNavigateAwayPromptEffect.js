@@ -5,6 +5,8 @@ import { useEffect } from '@wordpress/element';
 import { getHistory } from '@woocommerce/navigation';
 import { noop } from 'lodash';
 
+const alwaysTrue = () => true;
+
 /**
  * Returns a normalized location to handle the inconsistent pathname between history v5 (≥ WC 6.7) and v4 (< WC 6.7).
  *
@@ -43,7 +45,7 @@ function normalizeLocation( location ) {
 export default function useNavigateAwayPromptEffect(
 	message,
 	shouldBlock,
-	blockedLocation = () => true
+	blockedLocation = alwaysTrue
 ) {
 	// history#v5 compatibility: As one of useEffect deps for triggering a new blocking after history is changed.
 	const { key } = getHistory().location;
