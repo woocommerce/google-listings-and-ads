@@ -12,10 +12,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\CouponTr
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Google\Service\ShoppingContent\TimePeriod as GoogleTimePeriod;
 
-use WC_DateTime;
-use WC_Coupon;
-use function Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\json_encode;
-
 /**
  * Class WCProductAdapterTest
  *
@@ -44,7 +40,7 @@ class WCCouponAdapterTest extends UnitTest {
 	public function test_channel_is_always_set_to_online() {
 		$adapted_coupon = new WCCouponAdapter(
 			[
-			    'wc_coupon'     => $this->create_ready_to_sync_coupon(),
+				'wc_coupon'     => $this->create_ready_to_sync_coupon(),
 				'targetCountry' => 'US',
 				'channel'       => 'local',
 			]
@@ -54,13 +50,16 @@ class WCCouponAdapterTest extends UnitTest {
 	}
 
 	public function test_content_language_is_set_by_default_to_en() {
-		add_filter( 'locale', function () {
-			return null;
-		} );
+		add_filter(
+			'locale',
+			function () {
+				return null;
+			}
+		);
 
 		$adapted_coupon = new WCCouponAdapter(
 			[
-			    'wc_coupon'     => $this->create_ready_to_sync_coupon(),
+				'wc_coupon'     => $this->create_ready_to_sync_coupon(),
 				'targetCountry' => 'US',
 			]
 		);
@@ -69,13 +68,16 @@ class WCCouponAdapterTest extends UnitTest {
 	}
 
 	public function test_content_language_is_set_to_wp_locale() {
-		add_filter( 'locale', function () {
-			return 'fr_BE';
-		} );
+		add_filter(
+			'locale',
+			function () {
+				return 'fr_BE';
+			}
+		);
 
 		$adapted_coupon = new WCCouponAdapter(
 			[
-			    'wc_coupon'     => $this->create_ready_to_sync_coupon(),
+				'wc_coupon'     => $this->create_ready_to_sync_coupon(),
 				'targetCountry' => 'US',
 			]
 		);
@@ -84,141 +86,158 @@ class WCCouponAdapterTest extends UnitTest {
 	}
 
 	public function test_destination_ids_are_set() {
-	    $coupon = $this->create_ready_to_sync_coupon();
-	    $adapted_coupon = new WCCouponAdapter(
-	        [
-	            'wc_coupon'     => $coupon,
-	            'targetCountry' => 'US',
-	        ]
-	        );
-	    $this->assertEquals( ['Shopping_ads', 'Free_listings'], $adapted_coupon->getPromotionDestinationIds() );
-	}
-
-	public function test_promotion_id_is_set() {
-	    $coupon = $this->create_ready_to_sync_coupon();
+		$coupon         = $this->create_ready_to_sync_coupon();
 		$adapted_coupon = new WCCouponAdapter(
 			[
-			    'wc_coupon'     => $coupon,
+				'wc_coupon'     => $coupon,
 				'targetCountry' => 'US',
 			]
 		);
-		$this->assertEquals( "{$this->get_slug()}_{$coupon->get_id()}", $adapted_coupon->getPromotionId() );
+
+		$this->assertEquals(
+			[ 'Shopping_ads', 'Free_listings' ],
+			$adapted_coupon->getPromotionDestinationIds()
+		);
+	}
+
+	public function test_promotion_id_is_set() {
+		$coupon         = $this->create_ready_to_sync_coupon();
+		$adapted_coupon = new WCCouponAdapter(
+			[
+				'wc_coupon'     => $coupon,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals(
+			"{$this->get_slug()}_{$coupon->get_id()}",
+			$adapted_coupon->getPromotionId()
+		);
 	}
 
 	public function test_coupon_code_and_amount_are_set() {
-	    $coupon = $this->create_ready_to_sync_coupon();
-	    $adapted_coupon = new WCCouponAdapter(
-	        [
-	            'wc_coupon'     => $coupon,
-	            'targetCountry' => 'US',
-	        ]
-	    );
-	    $this->assertEquals( $coupon->get_code(), $adapted_coupon->getGenericRedemptionCode() );
-	    $this->assertEquals( $coupon->get_amount(), $adapted_coupon->getPercentOff() );
-	    $this->assertEquals( 'GENERIC_CODE', $adapted_coupon->getOfferType() );
-	    $this->assertEquals( 'PERCENT_OFF', $adapted_coupon->getCouponValueType() );
+		$coupon         = $this->create_ready_to_sync_coupon();
+		$adapted_coupon = new WCCouponAdapter(
+			[
+				'wc_coupon'     => $coupon,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals( $coupon->get_code(), $adapted_coupon->getGenericRedemptionCode() );
+		$this->assertEquals( $coupon->get_amount(), $adapted_coupon->getPercentOff() );
+		$this->assertEquals( 'GENERIC_CODE', $adapted_coupon->getOfferType() );
+		$this->assertEquals( 'PERCENT_OFF', $adapted_coupon->getCouponValueType() );
 	}
 
 	public function test_effective_dates_are_set() {
-	    $coupon = $this->create_ready_to_sync_coupon();
-	    $postdate = '2021-01-01T02:03:45';
-	    $post_args = array(
-	        'ID' => $coupon->get_id(),
-	        'post_date' => $postdate,
-	        'post_date_gmt' => $postdate,
-	    );
-	    wp_update_post( $post_args);
+		$coupon    = $this->create_ready_to_sync_coupon();
+		$postdate  = '2021-01-01T02:03:45';
+		$post_args = [
+			'ID'            => $coupon->get_id(),
+			'post_date'     => $postdate,
+			'post_date_gmt' => $postdate,
+		];
+		wp_update_post( $post_args );
 
-	    $adapted_coupon = new WCCouponAdapter(
-	        [
-	            'wc_coupon'     => $coupon,
-	            'targetCountry' => 'US',
-	        ]
-	        );
-		$expected = new GoogleTimePeriod(
-				[
-					'startTime' => '2021-01-01T02:03:45+00:00',
-					'endTime'   => '2021-07-03T02:03:45+00:00',
-				]
-			);
+		$adapted_coupon = new WCCouponAdapter(
+			[
+				'wc_coupon'     => $coupon,
+				'targetCountry' => 'US',
+			]
+		);
+		$expected       = new GoogleTimePeriod(
+			[
+				'startTime' => '2021-01-01T02:03:45+00:00',
+				'endTime'   => '2021-07-03T02:03:45+00:00',
+			]
+		);
 
 		$actual = $adapted_coupon->getPromotionEffectiveTimePeriod();
-	    $this->assertEquals( $expected->getStartTime() , $actual->getStartTime() );
-		$this->assertEquals( $expected->getEndTime() , $actual->getEndTime() );
+		$this->assertEquals( $expected->getStartTime(), $actual->getStartTime() );
+		$this->assertEquals( $expected->getEndTime(), $actual->getEndTime() );
 	}
 
 	public function test_disable_promotion() {
-	    $coupon = $this->create_ready_to_sync_coupon();
-	    $postdate = date(DATE_ATOM);
-	    $post_args = array(
-	        'ID' => $coupon->get_id(),
-	        'post_date' => $postdate,
-	        'post_date_gmt' => $postdate,
-	    );
-	    wp_update_post( $post_args);
+		$coupon    = $this->create_ready_to_sync_coupon();
+		$postdate  = gmdate( DATE_ATOM );
+		$post_args = [
+			'ID'            => $coupon->get_id(),
+			'post_date'     => $postdate,
+			'post_date_gmt' => $postdate,
+		];
+		wp_update_post( $post_args );
 
-	    $adapted_coupon = new WCCouponAdapter(
-	        [
-	            'wc_coupon'     => $coupon,
-	            'targetCountry' => 'US',
-	        ]
-	        );
-	    $adapted_coupon->disable_promotion( $coupon );
-	    $dates = $adapted_coupon->getPromotionEffectiveTimePeriod();
+		$adapted_coupon = new WCCouponAdapter(
+			[
+				'wc_coupon'     => $coupon,
+				'targetCountry' => 'US',
+			]
+		);
+		$adapted_coupon->disable_promotion( $coupon );
+		$dates = $adapted_coupon->getPromotionEffectiveTimePeriod();
 
-	    $this->assertEquals(
-	        new GoogleTimePeriod(
+		$this->assertEquals(
+			new GoogleTimePeriod(
 				[
 					'startTime' => (string) $postdate,
 					'endTime'   => (string) $postdate,
 				]
 			),
-	        $dates);
+			$dates
+		);
 
-	    $now = date(DATE_ATOM);
-	    $this->assertEquals( $postdate, $dates->startTime );
-	    $this->assertGreaterThanOrEqual( $postdate, $dates->endTime );
-	    $this->assertLessThanOrEqual( $now, $dates->endTime );
+		$now = gmdate( DATE_ATOM );
+
+		//phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		$this->assertEquals( $postdate, $dates->startTime );
+		$this->assertGreaterThanOrEqual( $postdate, $dates->endTime );
+		$this->assertLessThanOrEqual( $now, $dates->endTime );
+		//phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	}
 
 	public function test_product_id_restrictions() {
-	    $product_id_1 = rand();
-	    $product_id_2 = rand();
-	    $coupon = $this->create_ready_to_sync_coupon();
-	    $coupon->set_product_ids([$product_id_1]);
-	    $coupon->set_excluded_product_ids([$product_id_2]);
-	    $coupon->save();
+		$product_id_1 = rand();
+		$product_id_2 = rand();
+		$coupon       = $this->create_ready_to_sync_coupon();
+		$coupon->set_product_ids( [ $product_id_1 ] );
+		$coupon->set_excluded_product_ids( [ $product_id_2 ] );
+		$coupon->save();
 
-	    $adapted_coupon = new WCCouponAdapter(
-	        [
-	            'wc_coupon'     => $coupon,
-	            'targetCountry' => 'US',
-	        ]
-	        );
+		$adapted_coupon = new WCCouponAdapter(
+			[
+				'wc_coupon'     => $coupon,
+				'targetCountry' => 'US',
+			]
+		);
 
-	    $this->assertEquals( ["gla_{$product_id_1}"], $adapted_coupon->getItemId() );
-	    $this->assertEquals( ["gla_{$product_id_2}"], $adapted_coupon->getItemIdExclusion() );
+		$this->assertEquals( [ "gla_{$product_id_1}" ], $adapted_coupon->getItemId() );
+		$this->assertEquals( [ "gla_{$product_id_2}" ], $adapted_coupon->getItemIdExclusion() );
 	}
 
 	public function test_product_type_restrictions() {
-	    $category_1 = wp_insert_term( 'Zulu Category', 'product_cat' );
-	    $category_2 = wp_insert_term( 'Alpha Category', 'product_cat' );
-	    $category_3 = wp_insert_term(
-	        'Beta Category', 'product_cat', array('parent' => $category_2['term_id']) );
-	    $coupon = $this->create_ready_to_sync_coupon();
-	    $coupon->set_product_categories( [$category_1['term_id'], $category_2['term_id']] );
-	    $coupon->set_excluded_product_categories( [$category_3['term_id']] );
-	    $coupon->save();
+		$category_1 = wp_insert_term( 'Zulu Category', 'product_cat' );
+		$category_2 = wp_insert_term( 'Alpha Category', 'product_cat' );
+		$category_3 = wp_insert_term(
+			'Beta Category',
+			'product_cat',
+			[ 'parent' => $category_2['term_id'] ],
+		);
 
-	    $adapted_coupon = new WCCouponAdapter(
-	        [
-	            'wc_coupon'     => $coupon,
-	            'targetCountry' => 'US',
-	        ]
-	        );
+		$coupon = $this->create_ready_to_sync_coupon();
+		$coupon->set_product_categories( [ $category_1['term_id'], $category_2['term_id'] ] );
+		$coupon->set_excluded_product_categories( [ $category_3['term_id'] ] );
+		$coupon->save();
 
-	    $this->assertEquals( ["Zulu Category","Alpha Category"], $adapted_coupon->getProductType() );
-	    $this->assertEquals( ['Alpha Category > Beta Category'], $adapted_coupon->getProductTypeExclusion() );
+		$adapted_coupon = new WCCouponAdapter(
+			[
+				'wc_coupon'     => $coupon,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals( [ 'Zulu Category', 'Alpha Category' ], $adapted_coupon->getProductType() );
+		$this->assertEquals( [ 'Alpha Category > Beta Category' ], $adapted_coupon->getProductTypeExclusion() );
 	}
 
 	public function test_load_validator_metadata() {

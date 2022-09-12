@@ -36,7 +36,11 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->google_helper = $this->createMock( GoogleHelper::class );
 		$this->google_helper->method( 'is_country_supported' )
-			->willReturnCallback( function () { return $this->country_supported; } );
+			->willReturnCallback(
+				function () {
+					return $this->country_supported;
+				}
+			);
 
 		$this->controller = new CampaignController( $this->server, $this->ads_campaign );
 		$this->controller->register();
@@ -149,7 +153,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$campaign_data = [
 			'name'               => 'New Campaign',
 			'amount'             => 20,
-			'targeted_locations' => ['US', 'GB', 'TW'],
+			'targeted_locations' => [ 'US', 'GB', 'TW' ],
 		];
 
 		$expected = [
@@ -173,7 +177,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 	public function test_create_campaign_without_name() {
 		$campaign_data = [
 			'amount'             => 30,
-			'targeted_locations' => ['US', 'GB', 'TW'],
+			'targeted_locations' => [ 'US', 'GB', 'TW' ],
 		];
 
 		$expected = [
@@ -208,7 +212,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 	public function test_create_campaign_invalid_country_code() {
 		$campaign_data = [
 			'amount'             => 20,
-			'targeted_locations' => ['United States'],
+			'targeted_locations' => [ 'United States' ],
 		];
 
 		$this->iso_provider
@@ -227,7 +231,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$campaign_data = [
 			'amount'             => 20,
-			'targeted_locations' => ['CN', 'KP'],
+			'targeted_locations' => [ 'CN', 'KP' ],
 		];
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
@@ -259,8 +263,8 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 	public function test_create_campaign_with_api_exception() {
 		$campaign_data = [
-			'amount'  => 20,
-			'targeted_locations' => ['US'],
+			'amount'             => 20,
+			'targeted_locations' => [ 'US' ],
 		];
 
 		$this->ads_campaign->expects( $this->once() )
@@ -334,7 +338,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 	public function test_edit_campaign() {
 		$campaign_data = [
-			'amount'  => 44.55,
+			'amount' => 44.55,
 		];
 
 		$this->ads_campaign->expects( $this->once() )
@@ -401,7 +405,8 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'status'  => 'success',
 				'message' => 'Successfully deleted campaign.',
 				'id'      => self::TEST_CAMPAIGN_ID,
-			], $response->get_data()
+			],
+			$response->get_data()
 		);
 		$this->assertEquals( 200, $response->get_status() );
 	}

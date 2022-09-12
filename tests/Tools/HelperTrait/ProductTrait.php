@@ -169,7 +169,6 @@ trait ProductTrait {
 	 * // Create 2 sub-arrays where the first set includes 2 products and the second set includes 4 products:
 	 * $this->create_multiple_simple_product_sets( 2, 4 ); // [ [ *, * ], [ *, *, *, * ] ]
 	 * ```
-	 *
 	 */
 	public function create_multiple_simple_product_sets( ...$product_count ): array {
 		$results = [];
@@ -199,6 +198,7 @@ trait ProductTrait {
 	 * Create a dummy variation product or configure an existing product object with dummy data.
 	 *
 	 * @param WC_Product_Variable|null $product Product object to configure, or null to create a new one.
+	 * @param array                    $props   Product properties.
 	 *
 	 * @return WC_Product_Variable
 	 */
@@ -319,7 +319,7 @@ trait ProductTrait {
 	 * @param int $number Number of elements to fill an array with.
 	 * @return WC_Product[]
 	 */
-	protected function generate_simple_product_mocks_set(int $number ) {
+	protected function generate_simple_product_mocks_set( int $number ) {
 		return array_fill( 0, $number, $this->generate_simple_product_mock() );
 	}
 }

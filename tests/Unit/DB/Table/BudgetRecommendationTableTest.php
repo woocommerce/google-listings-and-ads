@@ -54,7 +54,7 @@ class BudgetRecommendationTableTest extends UnitTest {
 
 		$this->mock_budget_recommendation->reload_data();
 
-		$this->assertEquals( true , $this->mock_budget_recommendation->has_loaded_initial_data );
+		$this->assertTrue( $this->mock_budget_recommendation->has_loaded_initial_data );
 	}
 
 	public function test_reload_data_when_table_does_not_exist() {
@@ -70,7 +70,7 @@ class BudgetRecommendationTableTest extends UnitTest {
 
 		$this->mock_budget_recommendation->reload_data();
 
-		$this->assertEquals( false , $this->mock_budget_recommendation->has_loaded_initial_data );
+		$this->assertFalse( $this->mock_budget_recommendation->has_loaded_initial_data );
 
 	}
 
@@ -85,11 +85,11 @@ class BudgetRecommendationTableTest extends UnitTest {
 		$this->wpdb->expects( $this->exactly( 0 ) )
 						 ->method( 'query' );
 
-		//If the table has been deleted or if it is a first installation, the BudgetRecommendationTable::install loads the data				 
+		// If the table has been deleted or if it is a first installation, the BudgetRecommendationTable::install loads the data
 		$this->mock_budget_recommendation->has_loaded_initial_data = true;
 
 		$this->mock_budget_recommendation->reload_data();
 
-	}	
+	}
 
 }

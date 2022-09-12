@@ -22,27 +22,27 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 	use ProductTrait;
 
 	public function test_magic_call_throws_exception_invalid_method_name() {
-		$this->expectException( BadMethodCallException::class);
+		$this->expectException( BadMethodCallException::class );
 		$this->product_meta_handler->in1va2lid_method();
 	}
 
 	public function test_magic_call_throws_exception_method_not_allowed() {
-		$this->expectException( BadMethodCallException::class);
+		$this->expectException( BadMethodCallException::class );
 		$this->product_meta_handler->need_synced_at();
 	}
 
 	public function test_magic_update_throws_exception_invalid_meta_key() {
-		$this->expectException( InvalidMeta::class);
+		$this->expectException( InvalidMeta::class );
 		$this->product_meta_handler->update_invalid_meta_key_test( $this->generate_simple_product_mock(), 1 );
 	}
 
 	public function test_magic_delete_throws_exception_invalid_meta_key() {
-		$this->expectException( InvalidMeta::class);
+		$this->expectException( InvalidMeta::class );
 		$this->product_meta_handler->delete_invalid_meta_key_test( $this->generate_simple_product_mock() );
 	}
 
 	public function test_magic_get_throws_exception_invalid_meta_key() {
-		$this->expectException( InvalidMeta::class);
+		$this->expectException( InvalidMeta::class );
 		$this->product_meta_handler->get_invalid_meta_key_test( $this->generate_simple_product_mock() );
 	}
 
@@ -86,7 +86,7 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 	}
 
 	public function test_update_throws_exception_invalid_meta_key() {
-		$this->expectException( InvalidMeta::class);
+		$this->expectException( InvalidMeta::class );
 		$this->product_meta_handler->update( $this->generate_simple_product_mock(), 'invalid_meta_key_test', 1 );
 	}
 
@@ -102,7 +102,7 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 	}
 
 	public function test_delete_throws_exception_invalid_meta_key() {
-		$this->expectException( InvalidMeta::class);
+		$this->expectException( InvalidMeta::class );
 		$this->product_meta_handler->delete( $this->generate_simple_product_mock(), 'invalid_meta_key_test' );
 	}
 
@@ -115,7 +115,7 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 
 	public function test_get() {
 		$product = WC_Helper_Product::create_simple_product();
-		$product->update_meta_data('_wc_gla_synced_at', 12345);
+		$product->update_meta_data( '_wc_gla_synced_at', 12345 );
 		$product->save_meta_data();
 
 		$value = $this->product_meta_handler->get( $product, ProductMetaHandler::KEY_SYNCED_AT );
@@ -123,7 +123,7 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 	}
 
 	public function test_get_throws_exception_invalid_meta_key() {
-		$this->expectException( InvalidMeta::class);
+		$this->expectException( InvalidMeta::class );
 		$this->product_meta_handler->get( $this->generate_simple_product_mock(), 'invalid_meta_key_test' );
 	}
 
@@ -157,11 +157,11 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 						'compare' => '>',
 						'value'   => 0,
 					],
-				]
-			]
+				],
+			],
 		];
-		$result = $this->product_meta_handler->prefix_meta_query_keys( $meta_query );
 
+		$result   = $this->product_meta_handler->prefix_meta_query_keys( $meta_query );
 		$expected = [
 			'relation' => 'OR',
 			[
@@ -186,10 +186,11 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 						'compare' => '>',
 						'value'   => 0,
 					],
-				]
-			]
+				],
+			],
 		];
-		$this->assertEqualSets($expected, $result);
+
+		$this->assertEqualSets( $expected, $result );
 	}
 
 	public function test_prefix_meta_query_keys_returns_unsupported_meta_keys_intact() {
@@ -210,8 +211,8 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 				'value'   => 1,
 			],
 		];
-		$result = $this->product_meta_handler->prefix_meta_query_keys( $meta_query );
 
+		$result   = $this->product_meta_handler->prefix_meta_query_keys( $meta_query );
 		$expected = [
 			'relation' => 'OR',
 			[
@@ -229,7 +230,8 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 				'value'   => 1,
 			],
 		];
-		$this->assertEqualSets($expected, $result);
+
+		$this->assertEqualSets( $expected, $result );
 	}
 
 	/**

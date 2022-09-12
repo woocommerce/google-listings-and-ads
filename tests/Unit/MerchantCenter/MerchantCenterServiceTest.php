@@ -325,15 +325,19 @@ class MerchantCenterServiceTest extends UnitTest {
 
 	public function test_is_promotion_supported_country() {
 		$this->wc->method( 'get_base_country' )->willReturn( 'US' );
-		$this->google_helper->method( 'get_mc_promotion_supported_countries' )->willReturn( [
-			'AU',
-			'CA',
-			'DE',
-			'FR',
-			'GB',
-			'IN',
-			'US',
-		] );
+		$this->google_helper->method( 'get_mc_promotion_supported_countries' )
+			->willReturn(
+				[
+					'AU',
+					'CA',
+					'DE',
+					'FR',
+					'GB',
+					'IN',
+					'US',
+				]
+			);
+
 		$this->assertTrue( $this->mc_service->is_promotion_supported_country() );
 		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'AU' ) );
 		$this->assertTrue( $this->mc_service->is_promotion_supported_country( 'CA' ) );
@@ -376,7 +380,7 @@ class MerchantCenterServiceTest extends UnitTest {
 			)->willReturnOnConsecutiveCalls(
 				false,
 				[
-					'location' => 'selected',
+					'location'  => 'selected',
 					'countries' => [ 'US' ],
 				]
 			);
@@ -402,7 +406,7 @@ class MerchantCenterServiceTest extends UnitTest {
 			)->willReturnOnConsecutiveCalls(
 				false,
 				[
-					'location' => 'selected',
+					'location'  => 'selected',
 					'countries' => [ 'US' ],
 				],
 				[
@@ -430,7 +434,7 @@ class MerchantCenterServiceTest extends UnitTest {
 			)->willReturnOnConsecutiveCalls(
 				false,
 				[
-					'location' => 'selected',
+					'location'  => 'selected',
 					'countries' => [ 'US' ],
 				]
 			);

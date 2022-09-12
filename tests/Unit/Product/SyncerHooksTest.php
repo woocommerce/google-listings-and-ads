@@ -36,7 +36,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	public function test_create_new_simple_product_schedules_update_job() {
 		$this->update_products_job->expects( $this->once() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		WC_Helper_Product::create_simple_product( true, [ 'status' => 'publish' ] );
 	}
@@ -45,8 +45,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
 
 		$this->update_products_job->expects( $this->once() )
-								  ->method( 'schedule' )
-								  ->with( $this->equalTo( [ [ $product->get_id() ] ] ) );
+			->method( 'schedule' )
+			->with( $this->equalTo( [ [ $product->get_id() ] ] ) );
 
 		$product->set_status( 'publish' );
 		$product->save();
@@ -56,8 +56,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
 
 		$this->update_products_job->expects( $this->once() )
-								  ->method( 'schedule' )
-								  ->with( $this->equalTo( [ [ $product->get_id() ] ] ) );
+			->method( 'schedule' )
+			->with( $this->equalTo( [ [ $product->get_id() ] ] ) );
 
 		// update #1
 		$product->set_status( 'publish' );
@@ -73,8 +73,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$variation_ids    = $variable_product->get_children();
 
 		$this->update_products_job->expects( $this->once() )
-								  ->method( 'schedule' )
-								  ->with( $this->equalTo( [ $variation_ids ] ) );
+			->method( 'schedule' )
+			->with( $this->equalTo( [ $variation_ids ] ) );
 
 		$variable_product->set_status( 'publish' );
 		$variable_product->save();
@@ -84,7 +84,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$variable_product = $this->create_variation_product();
 
 		$this->update_products_job->expects( $this->once() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$this->create_product_variation_object(
 			$variable_product->get_id(),
@@ -102,8 +102,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product = WC_Helper_Product::create_simple_product();
 
 		$this->delete_products_job->expects( $this->never() )
-								  ->method( 'schedule' )
-								  ->with( $this->equalTo( [ [ $product->get_id() ] ] ) );
+			->method( 'schedule' )
+			->with( $this->equalTo( [ [ $product->get_id() ] ] ) );
 
 		$product->delete();
 	}
@@ -113,8 +113,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
 		$this->delete_products_job->expects( $this->once() )
-								  ->method( 'schedule' )
-								  ->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
+			->method( 'schedule' )
+			->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
 
 		$product->delete();
 	}
@@ -124,8 +124,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
 		$this->delete_products_job->expects( $this->once() )
-								  ->method( 'schedule' )
-								  ->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
+			->method( 'schedule' )
+			->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
 
 		$product->delete( true );
 	}
@@ -138,7 +138,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		}
 
 		$this->delete_products_job->expects( $this->exactly( count( $variable_product->get_children() ) ) )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$variable_product->delete();
 	}
@@ -151,7 +151,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		}
 
 		$this->delete_products_job->expects( $this->exactly( count( $variable_product->get_children() ) ) )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$variable_product->delete( true );
 	}
@@ -165,8 +165,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$variation_to_delete = wc_get_product( $variable_product->get_children()[0] );
 
 		$this->delete_products_job->expects( $this->once() )
-								  ->method( 'schedule' )
-								  ->with( $this->equalTo( [ [ 'online:en:US:gla_' . $variation_to_delete->get_id() => $variation_to_delete->get_id() ] ] ) );
+			->method( 'schedule' )
+			->with( $this->equalTo( [ [ 'online:en:US:gla_' . $variation_to_delete->get_id() => $variation_to_delete->get_id() ] ] ) );
 
 		$variation_to_delete->delete();
 	}
@@ -180,8 +180,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$variation_to_delete = wc_get_product( $variable_product->get_children()[0] );
 
 		$this->delete_products_job->expects( $this->once() )
-								  ->method( 'schedule' )
-								  ->with( $this->equalTo( [ [ 'online:en:US:gla_' . $variation_to_delete->get_id() => $variation_to_delete->get_id() ] ] ) );
+			->method( 'schedule' )
+			->with( $this->equalTo( [ [ 'online:en:US:gla_' . $variation_to_delete->get_id() => $variation_to_delete->get_id() ] ] ) );
 
 		$variation_to_delete->delete( true );
 	}
@@ -191,8 +191,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
 		$this->delete_products_job->expects( $this->once() )
-								  ->method( 'schedule' )
-								  ->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
+			->method( 'schedule' )
+			->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
 
 		$product->save();
 	}
@@ -202,8 +202,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
 		$this->delete_products_job->expects( $this->once() )
-								  ->method( 'schedule' )
-								  ->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
+			->method( 'schedule' )
+			->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
 
 		wp_trash_post( $product->get_id() );
 	}
@@ -213,15 +213,15 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
 		$this->delete_products_job->expects( $this->once() )
-								  ->method( 'schedule' )
-								  ->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
+			->method( 'schedule' )
+			->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
 
 		wp_delete_post( $product->get_id(), true );
 	}
 
 	public function test_creating_and_updating_post_does_not_schedule_update_job() {
 		$this->update_products_job->expects( $this->never() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$post = $this->factory()->post->create_and_get();
 
@@ -237,7 +237,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	public function test_trashing_and_deleting_post_does_not_schedule_delete_job() {
 		$this->delete_products_job->expects( $this->never() )
-								  ->method( 'schedule' );
+			->method( 'schedule' );
 
 		$post = $this->factory()->post->create_and_get();
 
@@ -258,20 +258,20 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
-							  ->method( 'is_ready_for_syncing' )
-							  ->willReturn( true );
+			->method( 'is_ready_for_syncing' )
+			->willReturn( true );
 
 		$this->update_products_job = $this->createMock( UpdateProducts::class );
 		$this->delete_products_job = $this->createMock( DeleteProducts::class );
 		$this->job_repository      = $this->createMock( JobRepository::class );
 		$this->job_repository->expects( $this->any() )
-							 ->method( 'get' )
-							 ->willReturnMap(
-								 [
-									 [ UpdateProducts::class, $this->update_products_job ],
-									 [ DeleteProducts::class, $this->delete_products_job ],
-								 ]
-							 );
+			->method( 'get' )
+			->willReturnMap(
+				[
+					[ UpdateProducts::class, $this->update_products_job ],
+					[ DeleteProducts::class, $this->delete_products_job ],
+				]
+			);
 
 		$this->batch_helper   = $this->container->get( BatchProductHelper::class );
 		$this->product_helper = $this->container->get( ProductHelper::class );

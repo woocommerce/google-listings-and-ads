@@ -38,6 +38,12 @@ const BudgetSection = ( props ) => {
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
 
+	// Wrapping `useRef` is because since WC 6.9, the reference of `setValue` may be changed
+	// after calling itself and further leads to an infinite re-rendering loop if used in a
+	// `useEffect`.
+	const setValueRef = useRef();
+	setValueRef.current = setValue;
+
 	/**
 	 * In addition to the initial value setting during initialization, when `disabled` changes
 	 * - from false to true, then clear filled amount to `undefined` for showing a blank <input>.
@@ -46,8 +52,8 @@ const BudgetSection = ( props ) => {
 	const initialAmountRef = useRef( amount );
 	useEffect( () => {
 		const nextAmount = disabled ? undefined : initialAmountRef.current;
-		setValue( 'amount', nextAmount );
-	}, [ disabled, setValue ] );
+		setValueRef.current( 'amount', nextAmount );
+	}, [ disabled ] );
 
 	return (
 		<div className="gla-budget-section">

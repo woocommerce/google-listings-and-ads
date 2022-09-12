@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 2.0.3
+Stable tag: 2.1.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,34 +109,26 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 2.0.3 - 2022-08-09 =
-* Add - Campaign Conversion Status for detecting converted campaigns.
-* Add - Gtag event tracking.
-* Add - Inbox notification for PMax migration.
-* Add - Includes removed campaign in the program report section.
-* Add - Pmax migration banner dashboard.
-* Add - Pmax migration banner reports.
-* Add - Tooltip in reports section for SSC Campaigns.
-* Add - Track add to cart events from all buttons including Gutenberg blocks.
-* Fix - Add Woo gTag remarketing and conversion signals.
+= 2.1.1 - 2022-09-06 =
+* Dev - Run PHPCS checks for unit tests.
+* Fix - A compatibility issue with WooCommerce 6.9 which prevents interaction with the input field of the paid campaign budget.
+* Fix - Fatal error if a null rate specified for flat rate methods with shipping classes.
+* Tweak - Add a filter to disable GTag tracking.
+* Tweak - Updated plugin icons.
 
-= 2.0.2 - 2022-07-29 =
-* Fix - Disable identifier_exists field.
-* Tweak - Propagate errors for saveSettings.
-* Tweak - Refactor SCSS variables.
-* Tweak - Remove PHP 8.0 specific code of Symfony polyfills.
-* Tweak - Revert migration applicable version value.
-* Tweak - Update change log records type.
-* Tweak - WC 6.8 compatibility.
-* Update - Google Ads library to API V11.
+= 2.1.0 - 2022-08-23 =
+* Add - Automatically sync WooCommerce shipping settings with Merchant Center.
+* Add - Get shipping rates suggestions for provinces/states and postal codes.
+* Add - Option to automatically sync the shipping rates based on the store shipping zone configurations.
+* Add - Sync the shipping rates for states/provinces and postal codes to Merchant Center.
+* Fix - A compatibility issue with WC 6.5+ that the store country might be undefined and further break the onboarding setup.
+* Tweak - Generate random ID for postcode regions when syncing shipping settings.
 
-= 2.0.1 - 2022-07-12 =
-* Dev - A script to generate a list of hooks that defined or used in GLA.
-* Dev - GH workflow to set PR labels.
-* Add - Normalizer Polyfill.
-* Dev - changed the changelog types list.
-* Fix - Compatibility with History Navigation v5.
-* Fix - Encoding product names in Issues Table .
-* Tweak - Remove try and catch in saveTargetAudience action.
+= 2.0.4 - 2022-08-16 =
+* Dev - E2E Fix for redirecting to single product page.
+* Dev - Remove wc-admin installation from E2E env setup.
+* Fix - Handle multiple errors in the Edit free listings page.
+* Fix - Hide WooCommerce System messages in the plugin screen. .
+* Fix - Onload conflict when tracking events.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
