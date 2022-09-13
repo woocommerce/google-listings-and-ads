@@ -88,6 +88,11 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 		$this->assertFalse($this->policy_compliance_check->has_redirects());
 	}
 
+	public function test_has_redirects2() {
+		$this->mock_wp_request( 'http://example.org', '', 301 );
+		$this->assertTrue($this->policy_compliance_check->has_redirects());
+	}
+
 	public function test_has_restrictions() {
 		$this->assertFalse($this->policy_compliance_check->has_restriction());
 	}
