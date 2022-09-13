@@ -87,4 +87,16 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	public function test_has_redirects() {
 		$this->assertFalse($this->policy_compliance_check->has_redirects());
 	}
+
+	public function test_has_restrictions() {
+		$this->assertFalse($this->policy_compliance_check->has_restriction());
+	}
+
+	public function test_is_store_ssl() {
+		$this->assertTrue($this->policy_compliance_check->get_is_store_ssl());
+	}
+
+	public function test_has_refund_page() {
+		$this->assertTrue($this->policy_compliance_check->has_refund_return_policy_page());
+	}
 }
