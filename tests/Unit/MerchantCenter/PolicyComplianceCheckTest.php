@@ -84,6 +84,11 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 		$this->assertFalse($this->policy_compliance_check->has_page_not_found_error());
 	}
 
+	public function test_has_page_not_found_error2() {
+		$this->mock_wp_request( 'http://example.org', '', 404 );
+		$this->assertTrue($this->policy_compliance_check->has_page_not_found_error());
+	}
+
 	public function test_has_redirects() {
 		$this->assertFalse($this->policy_compliance_check->has_redirects());
 	}
