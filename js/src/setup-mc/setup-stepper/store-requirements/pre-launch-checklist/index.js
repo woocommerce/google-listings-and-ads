@@ -83,11 +83,11 @@ const PreLaunchChecklist = ( props ) => {
 								formProps={ formProps }
 								fieldName="payment_methods_visible"
 								firstPersonTitle={ __(
-									'My store is live and accessible to all users',
+									'I have a complete checkout process',
 									'google-listings-and-ads'
 								) }
 								secondPersonTitle={ __(
-									'I have a complete checkout process',
+									'Confirm you have a complete checkout process',
 									'google-listings-and-ads'
 								) }
 							>
@@ -123,6 +123,7 @@ const PreLaunchChecklist = ( props ) => {
 									"Update your website to ensure that every webpage that collects a customer's personal information is processed through a secure SSL server. Any page on your website that collects any personal information from the user needs to be SSL protected.",
 									'google-listings-and-ads'
 								) }
+								<div></div>
 								{ __(
 									"Use a secure server: Make sure to use a secure processing server when processing customer's personal information (SSL-protected, with a valid SSL certificate). With SSL, your webpage URL will appear with https:// instead of http://",
 									'google-listings-and-ads'
