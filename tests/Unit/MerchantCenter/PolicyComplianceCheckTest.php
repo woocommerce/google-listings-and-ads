@@ -92,6 +92,11 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 		$this->assertFalse($this->policy_compliance_check->has_restriction());
 	}
 
+	public function test_has_restrictions2() {
+		$this->mock_wp_request( 'http://example.org/robots.txt', 'User-agent: *\nDisallow: /' );
+		$this->assertTrue($this->policy_compliance_check->has_restriction());
+	}
+
 	public function test_is_store_ssl() {
 		$this->assertFalse($this->policy_compliance_check->get_is_store_ssl());
 	}
