@@ -93,7 +93,7 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	}
 
 	public function test_has_restrictions2() {
-		$this->mock_wp_request( 'http://example.org/robots.txt', 'User-agent: *\nDisallow: /' );
+		$this->mock_wp_request( 'http://example.org/robots.txt', "User-agent: *\nDisallow: /" );
 		$this->assertTrue($this->policy_compliance_check->has_restriction());
 	}
 
