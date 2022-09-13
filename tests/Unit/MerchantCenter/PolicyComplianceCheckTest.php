@@ -6,10 +6,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\WPRequestUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
-use WC_Payment_Gateway;
 use PHPUnit\Framework\MockObject\MockObject;
+
+use WC_Payment_Gateway;
+use WC_Helper_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
  * @property  MockObject|TargetAudience	$target_audience
  * @property  PolicyComplianceCheck	$policy_compliance_check
  */
-class PolicyComplianceCheckTest extends UnitTest {
+class PolicyComplianceCheckTest extends WPRequestUnitTest {
 
 	/**
 	 * Runs before each test is executed.
@@ -76,5 +78,13 @@ class PolicyComplianceCheckTest extends UnitTest {
 					   ->willReturn( [] );
 
 		$this->assertFalse($this->policy_compliance_check->has_payment_gateways());
+	}
+
+	public function test_has_page_not_found_error() {
+		$this->assertFalse($this->policy_compliance_check->has_page_not_found_error());
+	}
+
+	public function test_has_redirects() {
+		$this->assertFalse($this->policy_compliance_check->has_redirects());
 	}
 }
