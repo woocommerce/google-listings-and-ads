@@ -93,10 +93,10 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	}
 
 	public function test_is_store_ssl() {
-		$this->assertTrue($this->policy_compliance_check->get_is_store_ssl());
+		$this->assertFalse($this->policy_compliance_check->get_is_store_ssl());
 	}
 
 	public function test_has_refund_page() {
-		$this->assertTrue($this->policy_compliance_check->has_refund_return_policy_page());
+		$this->assertFalse($this->policy_compliance_check->has_refund_return_policy_page());
 	}
 }
