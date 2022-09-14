@@ -67,9 +67,9 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 			'robots_restriction'    => false,
 			'page_not_found_error'  => false,
 			'page_redirects'        => false,
-			'store_ssl'         	=> true,
-			'payment_gateways'  	=> true,
-			'refund_returns' 	=> true,
+			'store_ssl'             => true,
+			'payment_gateways'      => true,
+			'refund_returns'        => true,
 		],
 		$response->get_data());
 	}
