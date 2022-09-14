@@ -41,17 +41,17 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			'domain'     => 'https://account.two',
 		],
 	];
-	protected const TEST_ACCOUNT_DATA     = [ 'id' => SELF::TEST_ACCOUNT_ID ];
+	protected const TEST_ACCOUNT_DATA     = [ 'id' => self::TEST_ACCOUNT_ID ];
 	protected const TEST_ACCOUNT_RESPONSE = [
-		'id'         => SELF::TEST_ACCOUNT_ID,
+		'id'         => self::TEST_ACCOUNT_ID,
 		'subaccount' => null,
 		'name'       => null,
 		'domain'     => null,
 	];
 	protected const TEST_RETRY_AFTER      = 10;
 	protected const TEST_CONNECTED_DATA   = [
-		'id'       => SELF::TEST_ACCOUNT_ID,
-		'status'   => 'connected',
+		'id'     => self::TEST_ACCOUNT_ID,
+		'status' => 'connected',
 	];
 	protected const TEST_STATUS_DATA      = [
 		'status' => 'complete',
@@ -106,14 +106,14 @@ class AccountControllerTest extends RESTControllerUnitTest {
 					'error',
 					406,
 					null,
-					[ 'id' => SELF::TEST_ACCOUNT_ID ]
+					[ 'id' => self::TEST_ACCOUNT_ID ]
 				)
 			);
 
 		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST' );
 
 		$this->assertEquals( 'error', $response->get_data()['message'] );
-		$this->assertEquals( SELF::TEST_ACCOUNT_ID, $response->get_data()['id'] );
+		$this->assertEquals( self::TEST_ACCOUNT_ID, $response->get_data()['id'] );
 		$this->assertEquals( 406, $response->get_status() );
 	}
 
@@ -125,15 +125,15 @@ class AccountControllerTest extends RESTControllerUnitTest {
 					'error',
 					503,
 					null,
-					[ 'retry_after' => SELF::TEST_RETRY_AFTER ]
+					[ 'retry_after' => self::TEST_RETRY_AFTER ]
 				)
 			);
 
 		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST' );
 
 		$this->assertEquals( 'error', $response->get_data()['message'] );
-		$this->assertEquals( SELF::TEST_RETRY_AFTER, $response->get_data()['retry_after'] );
-		$this->assertEquals( SELF::TEST_RETRY_AFTER, $response->get_headers()['Retry-After'] );
+		$this->assertEquals( self::TEST_RETRY_AFTER, $response->get_data()['retry_after'] );
+		$this->assertEquals( self::TEST_RETRY_AFTER, $response->get_headers()['Retry-After'] );
 		$this->assertEquals( 503, $response->get_status() );
 	}
 

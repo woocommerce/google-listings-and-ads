@@ -73,9 +73,9 @@ abstract class RESTControllerUnitTest extends UnitTest {
 	/**
 	 * Perform a request and return the status and returned data.
 	 *
-	 * @param string  $endpoint Endpoint to hit.
-	 * @param string  $type     Type of request e.g GET or POST.
-	 * @param array   $params   Request body or query.
+	 * @param string $endpoint Endpoint to hit.
+	 * @param string $type     Type of request e.g GET or POST.
+	 * @param array  $params   Request body or query.
 	 *
 	 * @return Response
 	 */

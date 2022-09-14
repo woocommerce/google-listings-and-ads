@@ -29,18 +29,18 @@ class ZoneLocationsParserTest extends UnitTest {
 
 		$zone = $this->createMock( WC_Shipping_Zone::class );
 		$zone->expects( $this->any() )
-			 ->method( 'get_zone_locations' )
-			 ->willReturn( $zone_locations );
+			->method( 'get_zone_locations' )
+			->willReturn( $zone_locations );
 
 		$this->google_helper->expects( $this->any() )
-							->method( 'is_country_supported' )
-							->with( 'US' )
-							->willReturn( true );
+			->method( 'is_country_supported' )
+			->with( 'US' )
+			->willReturn( true );
 
 		$this->google_helper->expects( $this->any() )
-							->method( 'does_country_support_regional_shipping' )
-							->with( 'US' )
-							->willReturn( true );
+			->method( 'does_country_support_regional_shipping' )
+			->with( 'US' )
+			->willReturn( true );
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
@@ -59,17 +59,17 @@ class ZoneLocationsParserTest extends UnitTest {
 
 		$zone = $this->createMock( WC_Shipping_Zone::class );
 		$zone->expects( $this->any() )
-			 ->method( 'get_zone_locations' )
-			 ->willReturn( $zone_locations );
+			->method( 'get_zone_locations' )
+			->willReturn( $zone_locations );
 
 		$this->google_helper->expects( $this->any() )
-							->method( 'is_country_supported' )
-							->with( 'XX' )
-							->willReturn( true );
+			->method( 'is_country_supported' )
+			->with( 'XX' )
+			->willReturn( true );
 		$this->google_helper->expects( $this->any() )
-							->method( 'does_country_support_regional_shipping' )
-							->with( 'XX' )
-							->willReturn( false );
+			->method( 'does_country_support_regional_shipping' )
+			->with( 'XX' )
+			->willReturn( false );
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
@@ -104,31 +104,27 @@ class ZoneLocationsParserTest extends UnitTest {
 
 		$zone = $this->createMock( WC_Shipping_Zone::class );
 		$zone->expects( $this->any() )
-			 ->method( 'get_zone_locations' )
-			 ->willReturn( $zone_locations );
-
+			->method( 'get_zone_locations' )
+			->willReturn( $zone_locations );
 
 		// Mock Merchant Center supported countries.
 		$this->google_helper->expects( $this->any() )
-							->method( 'get_supported_countries_from_continent' )
-							->with( 'EU' )
-							->willReturn( [
-								'DE',
-								'DK',
-							] );
+			->method( 'get_supported_countries_from_continent' )
+			->with( 'EU' )
+			->willReturn( [ 'DE', 'DK' ] );
 		$this->google_helper->expects( $this->any() )
-							->method( 'is_country_supported' )
-							->willReturn( true );
+			->method( 'is_country_supported' )
+			->willReturn( true );
 		$this->google_helper->expects( $this->any() )
-							->method( 'does_country_support_regional_shipping' )
-							->willReturnMap(
-								[
-									[ 'US', true ],
-									[ 'FR', false ],
-									[ 'DE', false ],
-									[ 'DK', false ],
-								]
-							);
+			->method( 'does_country_support_regional_shipping' )
+			->willReturnMap(
+				[
+					[ 'US', true ],
+					[ 'FR', false ],
+					[ 'DE', false ],
+					[ 'DK', false ],
+				]
+			);
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
@@ -176,42 +172,44 @@ class ZoneLocationsParserTest extends UnitTest {
 
 		$zone = $this->createMock( WC_Shipping_Zone::class );
 		$zone->expects( $this->any() )
-			 ->method( 'get_zone_locations' )
-			 ->willReturn( $zone_locations );
+			->method( 'get_zone_locations' )
+			->willReturn( $zone_locations );
 
 		// Mock Merchant Center supported countries.
 		$this->google_helper->expects( $this->any() )
-							->method( 'get_supported_countries_from_continent' )
-							->willReturnMap( [
-								[ 'EU', [ 'DE' ] ],
-							] );
+			->method( 'get_supported_countries_from_continent' )
+			->willReturnMap(
+				[
+					[ 'EU', [ 'DE' ] ],
+				]
+			);
 
 		$this->google_helper->expects( $this->any() )
-							->method( 'get_mc_supported_countries' )
-							->willReturn(
-								[
-									'US',
-									'DE'
-								]
-							);
+			->method( 'get_mc_supported_countries' )
+			->willReturn(
+				[
+					'US',
+					'DE',
+				]
+			);
 		$this->google_helper->expects( $this->any() )
-							->method( 'is_country_supported' )
-							->willReturnMap(
-								[
-									[ 'US', true ],
-									[ 'DE', true ],
-									[ 'XX', false ],
-									[ 'YY', false ],
-								]
-							);
+			->method( 'is_country_supported' )
+			->willReturnMap(
+				[
+					[ 'US', true ],
+					[ 'DE', true ],
+					[ 'XX', false ],
+					[ 'YY', false ],
+				]
+			);
 		$this->google_helper->expects( $this->any() )
-							->method( 'does_country_support_regional_shipping' )
-							->willReturnMap(
-								[
-									[ 'US', true ],
-									[ 'DE', false ],
-								]
-							);
+			->method( 'does_country_support_regional_shipping' )
+			->willReturnMap(
+				[
+					[ 'US', true ],
+					[ 'DE', false ],
+				]
+			);
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
@@ -258,19 +256,19 @@ class ZoneLocationsParserTest extends UnitTest {
 
 		// Return random IDs for countries and subdivisions.
 		$this->google_helper->expects( $this->any() )
-							->method( 'find_country_id_by_code' )
-							->willReturnCallback(
-								function () {
-									return rand();
-								}
-							);
+			->method( 'find_country_id_by_code' )
+			->willReturnCallback(
+				function () {
+					return rand();
+				}
+			);
 		$this->google_helper->expects( $this->any() )
-							->method( 'find_subdivision_id_by_code' )
-							->willReturnCallback(
-								function () {
-									return rand();
-								}
-							);
+			->method( 'find_subdivision_id_by_code' )
+			->willReturnCallback(
+				function () {
+					return rand();
+				}
+			);
 
 		$this->locations_parser = new ZoneLocationsParser( $this->google_helper );
 	}

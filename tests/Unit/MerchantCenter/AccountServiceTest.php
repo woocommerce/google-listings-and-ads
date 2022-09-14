@@ -183,7 +183,7 @@ class AccountServiceTest extends UnitTest {
 			->method( 'update' )
 			->with(
 				[
-					'set_id'  => [
+					'set_id' => [
 						'status' => MerchantAccountState::STEP_DONE,
 						'data'   => [ 'from_mca' => false ],
 					],
@@ -474,7 +474,7 @@ class AccountServiceTest extends UnitTest {
 			->method( 'update' )
 			->with(
 				[
-					'claim'  => [
+					'claim' => [
 						'status'  => MerchantAccountState::STEP_ERROR,
 						'message' => 'error',
 						'data'    => [ 'overwrite_required' => true ],
@@ -502,7 +502,7 @@ class AccountServiceTest extends UnitTest {
 						'status' => MerchantAccountState::STEP_DONE,
 						'data'   => [ 'from_mca' => false ],
 					],
-					'claim' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+					'claim'  => [ 'status' => MerchantAccountState::STEP_PENDING ],
 				]
 			);
 
@@ -557,7 +557,7 @@ class AccountServiceTest extends UnitTest {
 			->with( $this->get_account_with_url( get_home_url() ) );
 
 		$this->options->expects( $this->once() )
-			->method( 'delete')
+			->method( 'delete' )
 			->with( OptionsInterface::CLAIMED_URL_HASH );
 
 		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->switch_url( self::TEST_ACCOUNT_ID ) );
@@ -631,7 +631,7 @@ class AccountServiceTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'     => SELF::TEST_ACCOUNT_ID,
+				'id'     => self::TEST_ACCOUNT_ID,
 				'status' => 'connected',
 			],
 			$this->account->get_connected_status()
@@ -649,7 +649,7 @@ class AccountServiceTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'     => SELF::TEST_ACCOUNT_ID,
+				'id'     => self::TEST_ACCOUNT_ID,
 				'status' => 'incomplete',
 				'step'   => 'verify',
 			],

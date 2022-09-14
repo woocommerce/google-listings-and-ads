@@ -153,7 +153,7 @@ class ShippingZone implements Service {
 	 * @param ShippingRate[]     $shipping_rates The shipping rates.
 	 * @param ShippingLocation[] $locations      The shipping locations.
 	 *
-	 * @since x.x.x
+	 * @since 2.1.0
 	 */
 	protected function map_rates_to_locations( array $shipping_rates, array $locations ): void {
 		if ( empty( $shipping_rates ) || empty( $locations ) ) {

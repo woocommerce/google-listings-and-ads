@@ -22,7 +22,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
-	protected const ROUTE_BUDGET_RECOMMENDATION  = '/wc/gla/ads/campaigns/budget-recommendation';
+	protected const ROUTE_BUDGET_RECOMMENDATION = '/wc/gla/ads/campaigns/budget-recommendation';
 
 	public function setUp(): void {
 		parent::setUp();
@@ -41,7 +41,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_budget_recommendation() {
 		$budget_recommendation_params = [
-			'country_codes' => ['JP', 'TW', 'GB', 'US'],
+			'country_codes' => [ 'JP', 'TW', 'GB', 'US' ],
 		];
 
 		$budget_recommendation_data = [
@@ -64,7 +64,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 				'country'           => 'JP',
 				'daily_budget_low'  => '110',
 				'daily_budget_high' => '320',
-			]
+			],
 		];
 
 		$expected_response_data = [
@@ -89,7 +89,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 					'country'           => 'JP',
 					'daily_budget_low'  => 110,
 					'daily_budget_high' => 320,
-				]
+				],
 			],
 		];
 
@@ -119,7 +119,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_budget_recommendation_with_nonexistent_country_code() {
 		$budget_recommendation_params = [
-			'country_codes' => ['AAAAA'],
+			'country_codes' => [ 'AAAAA' ],
 		];
 
 		$this->iso_provider
@@ -135,7 +135,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_budget_recommendation_without_currency() {
 		$budget_recommendation_params = [
-			'country_codes' => ['JP', 'TW', 'GB', 'US'],
+			'country_codes' => [ 'JP', 'TW', 'GB', 'US' ],
 		];
 
 		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $budget_recommendation_params );
@@ -144,7 +144,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			[
 				'message'       => 'No currency available for the Ads account.',
 				'currency'      => '',
-				'country_codes' => ['JP', 'TW', 'GB', 'US'],
+				'country_codes' => [ 'JP', 'TW', 'GB', 'US' ],
 			],
 			$response->get_data()
 		);
@@ -153,7 +153,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_budget_recommendation_cannot_find_any_recommendations() {
 		$budget_recommendation_params = [
-			'country_codes' => ['JP', 'TW', 'GB', 'US'],
+			'country_codes' => [ 'JP', 'TW', 'GB', 'US' ],
 		];
 
 		$this->ads->expects( $this->once() )
@@ -170,7 +170,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			[
 				'message'       => 'Cannot find any budget recommendations.',
 				'currency'      => 'TWD',
-				'country_codes' => ['JP', 'TW', 'GB', 'US'],
+				'country_codes' => [ 'JP', 'TW', 'GB', 'US' ],
 			],
 			$response->get_data()
 		);

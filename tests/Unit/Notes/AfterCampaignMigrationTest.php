@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notes;
 
-
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\AfterCampaignMigration;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -58,15 +57,13 @@ class AfterCampaignMigrationTest extends UnitTest {
 	}
 
 	public function test_should_add_when_migration_not_completed() {
-
-		$this->ads_service->method('is_migration_completed')->willReturn( false );
+		$this->ads_service->method( 'is_migration_completed' )->willReturn( false );
 
 		$this->assertFalse( $this->note->should_be_added() );
 	}
 
 	public function test_should_add_when_migration_is_completed() {
-
-		$this->ads_service->method('is_migration_completed')->willReturn( true );
+		$this->ads_service->method( 'is_migration_completed' )->willReturn( true );
 
 		$this->assertTrue( $this->note->should_be_added() );
 	}

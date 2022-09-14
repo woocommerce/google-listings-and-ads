@@ -37,13 +37,19 @@ require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 // Give access to tests_add_filter() function.
 require_once "{$wp_tests_dir}/includes/functions.php";
 
-tests_add_filter( 'muplugins_loaded', function () {
-	load_plugins();
-} );
+tests_add_filter(
+	'muplugins_loaded',
+	function () {
+		load_plugins();
+	}
+);
 
-tests_add_filter( 'setup_theme', function () {
-	install_woocommerce();
-} );
+tests_add_filter(
+	'setup_theme',
+	function () {
+		install_woocommerce();
+	}
+);
 
 // Start up the WP testing environment.
 require "{$wp_tests_dir}/includes/bootstrap.php";
@@ -87,7 +93,7 @@ function install_woocommerce() {
 	$GLOBALS['wp_roles'] = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 	wp_roles();
 
-	echo "Installing WooCommerce..." . PHP_EOL;
+	echo 'Installing WooCommerce...' . PHP_EOL;
 }
 
 /**
@@ -100,7 +106,7 @@ function load_plugins() {
 	global $gla_dir;
 	global $wc_dir;
 
-	require_once( $wc_dir . '/woocommerce.php' );
+	require_once $wc_dir . '/woocommerce.php';
 	update_option( 'woocommerce_db_version', WC()->version );
 
 	require $gla_dir . '/google-listings-and-ads.php';

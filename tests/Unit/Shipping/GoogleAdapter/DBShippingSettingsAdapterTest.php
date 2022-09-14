@@ -30,7 +30,10 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 		$settings = new DBShippingSettingsAdapter(
 			[
 				'currency'       => 'USD',
-				'delivery_times' => [ 'US' => 1, 'AU' => 2 ],
+				'delivery_times' => [
+					'US' => 1,
+					'AU' => 2,
+				],
 				'db_rates'       => $db_rates,
 			]
 		);
@@ -76,14 +79,14 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 			]
 		);
 
-		$this->assertEmpty(  $settings->getServices() );
+		$this->assertEmpty( $settings->getServices() );
 	}
 
 	public function test_sets_free_shipping_threshold_on_free_rates() {
 		$db_rates = [
 			[
 				'country' => 'US',
-				'rate' => 0,
+				'rate'    => 0,
 				'options' => [
 					'free_shipping_threshold' => 100,
 				],
@@ -109,7 +112,7 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 		$db_rates = [
 			[
 				'country' => 'US',
-				'rate' => 0,
+				'rate'    => 0,
 				'options' => [],
 			],
 		];
@@ -133,7 +136,7 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 		$db_rates = [
 			[
 				'country' => 'US',
-				'rate' => 10.0,
+				'rate'    => 10.0,
 				'options' => [
 					'free_shipping_threshold' => 100.0,
 				],
@@ -168,7 +171,7 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 
 		new DBShippingSettingsAdapter(
 			[
-				'currency' => 'USD',
+				'currency'       => 'USD',
 				'delivery_times' => [ 'US' => 1 ],
 			]
 		);
@@ -180,10 +183,10 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 		new DBShippingSettingsAdapter(
 			[
 				'delivery_times' => [ 'US' => 1 ],
-				'db_rates' => [
+				'db_rates'       => [
 					[
 						'country' => 'US',
-						'rate' => 10.0,
+						'rate'    => 10.0,
 						'options' => [],
 					],
 				],
@@ -200,7 +203,7 @@ class DBShippingSettingsAdapterTest extends UnitTest {
 				'db_rates' => [
 					[
 						'country' => 'US',
-						'rate' => 10.0,
+						'rate'    => 10.0,
 						'options' => [],
 					],
 				],
