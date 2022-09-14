@@ -7,7 +7,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AttributeMappingDescription from './attribute-mapping-description';
 import AttributeMappingTable from './attribute-mapping-table';
 import NavigationClassic from '.~/components/navigation-classic';
@@ -26,9 +25,7 @@ const AttributeMapping = () => {
 				title={ __( 'Attribute Mapping', 'google-listings-and-ads' ) }
 				description={ <AttributeMappingDescription /> }
 			>
-				<VerticalGapLayout size="overlap">
-					<AttributeMappingTable />
-				</VerticalGapLayout>
+				<AttributeMappingTable />
 			</Section>
 		</div>
 	);

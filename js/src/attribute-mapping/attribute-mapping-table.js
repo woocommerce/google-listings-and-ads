@@ -58,10 +58,9 @@ const AttributeMappingTable = () => {
 				</CardBody>
 				<CardFooter
 					align="start"
-					className="gla-settings-attribute-mapping__table-footer"
+					className="gla-attribute-mapping__table-footer"
 				>
 					<AppButton
-						className="gla-settings-attribute-mapping__button"
 						isSecondary
 						onClick={ () => {} } // TODO: Implement button logic
 						text={ __(
