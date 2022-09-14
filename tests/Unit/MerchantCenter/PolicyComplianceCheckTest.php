@@ -120,8 +120,4 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	public function test_not_has_refund_page() {
 		$this->assertFalse($this->policy_compliance_check->has_refund_return_policy_page());
 	}
-
-	public function test_has_refund_page() {
-		$this->assertTrue($this->policy_compliance_check->has_refund_return_policy_page());
-	}
 }
