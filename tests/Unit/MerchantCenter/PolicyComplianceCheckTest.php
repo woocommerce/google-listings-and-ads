@@ -112,9 +112,9 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	}
 
 	public function test_with_store_ssl() {
-		define('WP_HOME','https://example.org');
+		define( 'WP_HOME', 'https://example.org' );
 		$this->assertTrue($this->policy_compliance_check->get_is_store_ssl());
-		define('WP_HOME','http://example.org');
+		define( 'WP_HOME', 'http://example.org' );
 	}
 
 	public function test_not_has_refund_page() {
