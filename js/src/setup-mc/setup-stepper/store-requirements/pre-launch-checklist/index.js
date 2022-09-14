@@ -10,7 +10,6 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import PreLaunchCheckItem from '.~/components/pre-launch-check-item';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import './index.scss';
 
 /*
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-checklist', link_id: 'checklist-requirements', href: 'https://support.google.com/merchants/answer/6363310' }`
@@ -40,7 +39,7 @@ const PreLaunchChecklist = ( props ) => {
 								href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy"
 							>
 								{ __(
-									'Read Google Merchant requirements',
+									'Read Google Merchant Center requirements',
 									'google-listings-and-ads'
 								) }
 							</AppDocumentationLink>
@@ -92,7 +91,7 @@ const PreLaunchChecklist = ( props ) => {
 								) }
 							>
 								{ __(
-									'Ensure that all customers are able to complete the full checkout process on your site with an eligible payment method. Include a confirmation of the purchase after completion of the checkout process. ',
+									'Ensure that all customers are able to complete the full checkout process on your site with an eligible payment method. Include a confirmation of the purchase after completion of the checkout process.',
 									'google-listings-and-ads'
 								) }
 								<AppDocumentationLink
@@ -132,7 +131,7 @@ const PreLaunchChecklist = ( props ) => {
 									context="setup-mc-checklist"
 									linkId="check-checkout-process-secure"
 									type="external"
-									href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#payment-methods"
+									href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout"
 								>
 									{ __(
 										'Learn to set up SSL on your website',
@@ -153,7 +152,7 @@ const PreLaunchChecklist = ( props ) => {
 								) }
 							>
 								{ __(
-									"Show a clear return and refund policy on your website. Incluse return process, refund process, and customer requirements (return window, product condition and reason for return). If you don't accept returns or refunds, clearly start that on your website. ",
+									"Show a clear return and refund policy on your website. Incluse return process, refund process, and customer requirements (return window, product condition and reason for return). If you don't accept returns or refunds, clearly start that on your website.",
 									'google-listings-and-ads'
 								) }
 								<AppDocumentationLink
@@ -181,20 +180,9 @@ const PreLaunchChecklist = ( props ) => {
 								) }
 							>
 								{ __(
-									'Allow your customers to contact you for product inquiries by including contact information on your website (i,e, contact us form, business profile link, social media, email or phone number.',
+									'Allow your customers to contact you for product inquiries by including contact information on your website (i,e, contact us form, business profile link, social media, email or phone number.)',
 									'google-listings-and-ads'
 								) }
-								<AppDocumentationLink
-									context="setup-mc-checklist"
-									linkId="check-contact-info-visible"
-									type="external"
-									href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#contact-info"
-								>
-									{ __(
-										'Lean about adding your business contact information to your website',
-										'google-listings-and-ads'
-									) }
-								</AppDocumentationLink>
 							</PreLaunchCheckItem>
 						</VerticalGapLayout>
 					</Section.Card.Body>

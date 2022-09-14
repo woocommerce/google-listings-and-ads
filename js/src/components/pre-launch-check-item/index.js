@@ -55,7 +55,7 @@ export default function PreLaunchCheckItem( {
 			<Panel>
 				<PanelBody
 					title={ secondPersonTitle }
-					initialOpen={ true }
+					initialOpen={ false }
 					onToggle={ getPanelToggleHandler( fieldName ) }
 				>
 					<PanelRow>
