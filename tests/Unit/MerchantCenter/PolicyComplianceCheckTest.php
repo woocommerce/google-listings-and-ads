@@ -113,8 +113,8 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 
 	public function test_with_store_ssl() {
 		define( 'WP_SITEURL', 'https://example.org' );
+		update_option( 'siteurl', 'https://example.org' );
 		$this->assertTrue($this->policy_compliance_check->get_is_store_ssl());
-		update_option( 'siteurl', 'http://example.org' );
 	}
 
 	public function test_not_has_refund_page() {
