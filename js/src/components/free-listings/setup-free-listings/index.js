@@ -88,7 +88,7 @@ const SetupFreeListings = ( {
 	submitLabel,
 } ) => {
 	const [ saving, setSaving ] = useState( false );
-	const formRef = useRef();
+	const formPropsDelegateeRef = useRef( [] );
 
 	if ( ! ( targetAudience && settings && shippingRates && shippingTimes ) ) {
 		return <AppSpinner />;
@@ -126,7 +126,9 @@ const SetupFreeListings = ( {
 						countries.includes( el.country || el.countryCode )
 					);
 					if ( nextValues.length !== currentValues.length ) {
-						formRef.current.setValue( field, nextValues );
+						formPropsDelegateeRef.current.push( ( formProps ) =>
+							formProps.setValue( field, nextValues )
+						);
 					}
 				}
 			);
@@ -137,7 +139,6 @@ const SetupFreeListings = ( {
 		<div className="gla-setup-free-listings">
 			<Hero />
 			<Form
-				ref={ formRef }
 				initialValues={ {
 					// Fields for target audience.
 					locale: targetAudience.locale,
@@ -167,6 +168,22 @@ const SetupFreeListings = ( {
 			>
 				{ ( formProps ) => {
 					const countries = resolveFinalCountries( formProps.values );
+
+					// Since WC 6.9, the original Form is re-implemented as Functional component from
+					// Class component, but the exposed interfaces are completely changed. Given that
+					// there is no longer a regular interface for updating Form values externally, this
+					// is a hack to delegate the access to `formProps` for external use.
+					//
+					// And, only one delegate can be consumed at a time in this render prop to ensure
+					// the updating states will always be the latest when calling.
+					//
+					// See:
+					// - https://github.com/woocommerce/woocommerce/blob/6.8.2/packages/js/components/src/form/index.js#L42-L46
+					// - https://github.com/woocommerce/woocommerce/blob/6.9.0/packages/js/components/src/form/form.tsx#L125-L127
+					// - https://github.com/woocommerce/woocommerce/blob/6.9.0/packages/js/components/src/form/form.tsx#L134-L138
+					if ( formPropsDelegateeRef.current.length ) {
+						formPropsDelegateeRef.current.pop()( formProps );
+					}
 
 					return (
 						<FormContent
