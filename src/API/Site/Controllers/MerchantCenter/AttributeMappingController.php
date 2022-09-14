@@ -45,11 +45,11 @@ class AttributeMappingController extends BaseOptionsController {
 		 * GET the destination fields for Google Shopping
 		 */
 		$this->register_route(
-			'mc/attribute-mapping/destinations',
+			'mc/mapping/attributes',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_attribute_mapping_destinations_read_callback(),
+					'callback'            => $this->get_mappping_attributes_read_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -60,12 +60,19 @@ class AttributeMappingController extends BaseOptionsController {
 		 * GET for getting the source data for a specific destination
 		 */
 		$this->register_route(
-			'mc/attribute-mapping/sources',
+			'mc/mapping/sources',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_attribute_mapping_sources_read_callback(),
+					'callback'            => $this->get_mapping_sources_read_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => [
+						'attribute' => [
+							'description'       => __( 'The attribute key to get the sources.', 'google-listings-and-ads' ),
+							'type'              => 'string',
+							'validate_callback' => 'rest_validate_request_arg',
+						],
+					],
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			],
@@ -73,14 +80,14 @@ class AttributeMappingController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get the callback function for returning the destinations data
+	 * Callback function for returning the attributes
 	 *
 	 * @return callable
 	 */
-	protected function get_attribute_mapping_destinations_read_callback(): callable {
+	protected function get_mappping_attributes_read_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				return $this->prepare_item_for_response( $this->get_destinations(), $request );
+				return $this->prepare_item_for_response( $this->get_attributes(), $request );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -88,22 +95,22 @@ class AttributeMappingController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get the callback function getting destination data.
+	 * Callback function for returning the sources.
 	 *
 	 * @return callable
 	 */
-	protected function get_attribute_mapping_sources_read_callback(): callable {
+	protected function get_mapping_sources_read_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$destination = $request['destination'];
+				$attribute = $request['attribute'];
 
-				if ( ! $destination ) {
+				if ( ! $attribute ) {
 					return [
 						'data' => [],
 					];
 				}
 
-				return $this->get_sources_for_destination( $destination );
+				return $this->get_sources_for_attribute( $attribute );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -118,8 +125,8 @@ class AttributeMappingController extends BaseOptionsController {
 	protected function get_schema_properties(): array {
 		return [
 			'data' => [
-				'type'        => 'array',
-				'description' => __( 'The data with the different destinations or sources.', 'google-listings-and-ads' ),
+				'type'        => 'object',
+				'description' => __( 'The list of attributes or attribute sources.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
@@ -139,26 +146,26 @@ class AttributeMappingController extends BaseOptionsController {
 	}
 
 	/**
-	 * Destinations getter
+	 * Attributes getter
 	 *
-	 * @return array The destinations
+	 * @return array The attributes available for mapping
 	 */
-	private function get_destinations(): array {
+	private function get_attributes(): array {
 		return [
-			'data' => $this->attribute_mapping_helper->get_destinations(),
+			'data' => $this->attribute_mapping_helper->get_attributes(),
 		];
 	}
 
 	/**
 	 * Sources getter
 	 *
-	 * @param string $destination The destination to get the sources for
+	 * @param string $attribute The attribute to get the sources for
 	 * @return array[] Array with sources
 	 */
-	private function get_sources_for_destination( string $destination ): array {
+	private function get_sources_for_attribute( string $attribute ): array {
 		$sources = $this->attribute_mapping_helper->get_sources();
 		return [
-			'data' => $sources[ $destination ] ?? [],
+			'data' => $sources[ $attribute ] ?? [],
 		];
 	}
 }

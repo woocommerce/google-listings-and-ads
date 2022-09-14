@@ -7,7 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 
 /**
- * Test suit for AttributeMappingController
+ * Test suite for AttributeMappingController
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
  * @group AttributeMapping
@@ -15,8 +15,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUn
 class AttributeMappingControllerTest extends RESTControllerUnitTest {
 
 
-	protected const ROUTE_REQUEST_SOURCES      = '/wc/gla/mc/attribute-mapping/sources';
-	protected const ROUTE_REQUEST_DESTINATIONS = '/wc/gla/mc/attribute-mapping/destinations';
+	protected const ROUTE_REQUEST_SOURCES      = '/wc/gla/mc/mapping/sources';
+	protected const ROUTE_REQUEST_DESTINATIONS = '/wc/gla/mc/mapping/attributes';
 
 	/**
 	 * @var AttributeMappingHelper
@@ -39,12 +39,12 @@ class AttributeMappingControllerTest extends RESTControllerUnitTest {
 
 	public function test_destinations_route() {
 		$this->attribute_mapping_helper->expects( $this->once() )
-			->method( 'get_destinations' );
+			->method( 'get_attributes' );
 
 		$response = $this->do_request( self::ROUTE_REQUEST_DESTINATIONS );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertNotNull( $response->get_data() );
+		$this->assertIsArray( $response->get_data() );
 	}
 
 	public function test_sources_route() {
@@ -59,10 +59,10 @@ class AttributeMappingControllerTest extends RESTControllerUnitTest {
 				],
 			);
 
-		$response = $this->do_request( self::ROUTE_REQUEST_SOURCES, 'GET', [ 'destination' => 'adult' ] );
+		$response = $this->do_request( self::ROUTE_REQUEST_SOURCES, 'GET', [ 'attribute' => 'adult' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertNotNull( $response->get_data() );
+		$this->assertIsArray( $response->get_data() );
 	}
 
 }
