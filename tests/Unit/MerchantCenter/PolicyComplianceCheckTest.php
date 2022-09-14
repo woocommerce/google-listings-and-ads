@@ -80,38 +80,49 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 		$this->assertFalse($this->policy_compliance_check->has_payment_gateways());
 	}
 
-	public function test_has_page_not_found_error() {
+	public function test_not_has_page_not_found_error() {
 		$this->assertFalse($this->policy_compliance_check->has_page_not_found_error());
 	}
 
-	public function test_has_page_not_found_error2() {
+	public function test_has_page_not_found_error() {
 		$this->mock_wp_request( 'http://example.org', '', 404 );
 		$this->assertTrue($this->policy_compliance_check->has_page_not_found_error());
 	}
 
-	public function test_has_redirects() {
+	public function test_not_has_redirects() {
 		$this->assertFalse($this->policy_compliance_check->has_redirects());
 	}
 
-	public function test_has_redirects2() {
+	public function test_has_redirects() {
 		$this->mock_wp_request( 'http://example.org', '', 301 );
 		$this->assertTrue($this->policy_compliance_check->has_redirects());
 	}
 
-	public function test_has_restrictions() {
+	public function test_not_has_restrictions() {
 		$this->assertFalse($this->policy_compliance_check->has_restriction());
 	}
 
-	public function test_has_restrictions2() {
+	public function test_has_restrictions() {
 		$this->mock_wp_request( 'http://example.org/robots.txt', "User-agent: *\nDisallow: /" );
 		$this->assertTrue($this->policy_compliance_check->has_restriction());
 	}
 
-	public function test_is_store_ssl() {
+	public function test_without_store_ssl() {
 		$this->assertFalse($this->policy_compliance_check->get_is_store_ssl());
 	}
 
-	public function test_has_refund_page() {
+	public function test_with_store_ssl() {
+		$orig_site_url = $this->policy_compliance_check->get_site_url();
+		update_option( 'siteurl', 'https://example.com' );
+		$this->assertTrue($this->policy_compliance_check->get_is_store_ssl());
+		update_option( 'siteurl', $orig_site_url );
+	}
+
+	public function test_not_has_refund_page() {
 		$this->assertFalse($this->policy_compliance_check->has_refund_return_policy_page());
+	}
+
+	public function test_has_refund_page() {
+		$this->assertTrue($this->policy_compliance_check->has_refund_return_policy_page());
 	}
 }
