@@ -81,19 +81,23 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	}
 
 	public function test_not_has_page_not_found_error() {
+		define( 'WP_HOME', 'http://example.org' );
 		$this->assertFalse($this->policy_compliance_check->has_page_not_found_error());
 	}
 
 	public function test_has_page_not_found_error() {
+		define( 'WP_HOME', 'http://example.org' );
 		$this->mock_wp_request( 'http://example.org', '', 404 );
 		$this->assertTrue($this->policy_compliance_check->has_page_not_found_error());
 	}
 
 	public function test_not_has_redirects() {
+		define( 'WP_HOME', 'http://example.org' );
 		$this->assertFalse($this->policy_compliance_check->has_redirects());
 	}
 
 	public function test_has_redirects() {
+		define( 'WP_HOME', 'http://example.org' );
 		$this->mock_wp_request( 'http://example.org', '', 301 );
 		$this->assertTrue($this->policy_compliance_check->has_redirects());
 	}
@@ -103,18 +107,19 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	}
 
 	public function test_has_restrictions() {
+		define( 'WP_HOME', 'http://example.org' );
 		$this->mock_wp_request( 'http://example.org/robots.txt', "User-agent: *\nDisallow: /" );
 		$this->assertTrue($this->policy_compliance_check->has_restriction());
 	}
 
 	public function test_without_store_ssl() {
+		define( 'WP_HOME', 'http://example.org' );
 		$this->assertFalse($this->policy_compliance_check->get_is_store_ssl());
 	}
 
 	public function test_with_store_ssl() {
 		define( 'WP_HOME', 'https://example.org' );
 		$this->assertTrue($this->policy_compliance_check->get_is_store_ssl());
-		define( 'WP_HOME', 'http://example.org' );
 	}
 
 	public function test_not_has_refund_page() {
