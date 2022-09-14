@@ -31,46 +31,47 @@ class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
 
 	public function test_policy_check() {
 		$this->policy_compliance_check->expects( $this->once() )
-		                         ->method( 'is_accessible' )
-		                         ->willReturn(true);
+			->method( 'is_accessible' )
+			->willReturn( true );
 
 		$this->policy_compliance_check->expects( $this->once() )
-		                         ->method( 'has_restriction' )
-		                         ->willReturn(false);
+			->method( 'has_restriction' )
+			->willReturn( false );
 
 		$this->policy_compliance_check->expects( $this->once() )
-		                         ->method( 'has_page_not_found_error' )
-		                         ->willReturn(false);
+			->method( 'has_page_not_found_error' )
+			->willReturn( false );
 
 		$this->policy_compliance_check->expects( $this->once() )
-		                         ->method( 'has_redirects' )
-		                         ->willReturn(false);
+			->method( 'has_redirects' )
+			->willReturn( false );
 
 		$this->policy_compliance_check->expects( $this->once() )
-		                         ->method( 'get_is_store_ssl' )
-		                         ->willReturn( true );
+			->method( 'get_is_store_ssl' )
+			->willReturn( true );
 
 		$this->policy_compliance_check->expects( $this->once() )
-		                         ->method( 'has_payment_gateways' )
-		                         ->willReturn( true );
+			->method( 'has_payment_gateways' )
+			->willReturn( true );
 
 		$this->policy_compliance_check->expects( $this->once() )
-		                         ->method( 'has_refund_return_policy_page' )
-		                         ->willReturn( true );
+			->method( 'has_refund_return_policy_page' )
+			->willReturn( true );
 
 		$response = $this->do_request( self::POLICY_CHECK, 'GET', [] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals(
-		[
-			'allowed_countries'    	=> true,
-			'robots_restriction'    => false,
-			'page_not_found_error'  => false,
-			'page_redirects'        => false,
-			'store_ssl'             => true,
-			'payment_gateways'      => true,
-			'refund_returns'        => true,
-		],
-		$response->get_data());
+			[
+				'allowed_countries'    => true,
+				'robots_restriction'   => false,
+				'page_not_found_error' => false,
+				'page_redirects'       => false,
+				'store_ssl'            => true,
+				'payment_gateways'     => true,
+				'refund_returns'       => true,
+			],
+			$response->get_data()
+		);
 	}
 }
