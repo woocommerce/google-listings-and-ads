@@ -112,6 +112,8 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	}
 
 	public function test_with_store_ssl() {
+		define('RELOCATE',true);
+		define('WP_HOME','https://example.org');
 		define( 'WP_SITEURL', 'https://example.org' );
 		update_option( 'siteurl', 'https://example.org' );
 		$this->assertTrue($this->policy_compliance_check->get_is_store_ssl());
