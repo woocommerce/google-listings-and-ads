@@ -98,7 +98,7 @@ const PreLaunchChecklist = ( props ) => {
 									context="setup-mc-checklist"
 									linkId="check-payment-methods-visible"
 									type="external"
-									href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#payment-methods"
+									href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout"
 								>
 									{ __(
 										"Learn more about Google's checkout requirements & best practices",
