@@ -102,7 +102,7 @@ class AttributeMappingController extends BaseOptionsController {
 	protected function get_mapping_sources_read_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$attribute = $request['attribute'];
+				$attribute = $request->get_param( 'attribute' );
 
 				if ( ! $attribute ) {
 					return [
