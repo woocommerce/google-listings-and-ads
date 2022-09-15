@@ -11,6 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { useAppDispatch } from '.~/data';
 import useWindowFocusCallbackIntervalEffect from '.~/hooks/useWindowFocusCallbackIntervalEffect';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
 /**
  * Make API call to complete Google Ads account setup.
@@ -31,7 +32,7 @@ const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
 			path: '/wc/gla/ads/billing-status',
 		} );
 
-		if ( billingStatus.status !== 'approved' ) {
+		if ( billingStatus.status !== GOOGLE_ADS_BILLING_STATUS.APPROVED ) {
 			return;
 		}
 

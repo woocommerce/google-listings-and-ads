@@ -16,6 +16,7 @@ import BillingSavedCard from './billing-saved-card';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppButton from '.~/components/app-button';
 import fallbackBillingUrl from './fallbackBillingUrl';
+import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
 const SetupBilling = ( props ) => {
 	const {
@@ -28,12 +29,15 @@ const SetupBilling = ( props ) => {
 		return <AppSpinner />;
 	}
 
+	const isApproved =
+		billingStatus.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+
 	return (
 		<StepContent>
 			<StepContentHeader
 				title={ __( 'Set up billing', 'google-listings-and-ads' ) }
 				description={
-					billingStatus.status === 'approved'
+					isApproved
 						? __(
 								'You will be billed directly by Google Ads, and you only pay when you get results.',
 								'google-listings-and-ads'
@@ -50,7 +54,7 @@ const SetupBilling = ( props ) => {
 					'google-listings-and-ads'
 				) }
 			>
-				{ billingStatus.status === 'approved' ? (
+				{ isApproved ? (
 					<BillingSavedCard />
 				) : (
 					<SetupCard
@@ -61,7 +65,7 @@ const SetupBilling = ( props ) => {
 					/>
 				) }
 			</Section>
-			{ billingStatus.status === 'approved' && (
+			{ isApproved && (
 				<StepContentFooter>
 					<AppButton
 						isPrimary
