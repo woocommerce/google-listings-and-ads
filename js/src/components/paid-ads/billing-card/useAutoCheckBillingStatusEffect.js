@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -23,7 +24,7 @@ const completeGoogleAdsAccountSetup = () => {
 	} );
 };
 
-const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
+const useAutoCheckBillingStatusEffect = ( onStatusApproved = noop ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { receiveGoogleAdsAccountBillingStatus } = useAppDispatch();
 

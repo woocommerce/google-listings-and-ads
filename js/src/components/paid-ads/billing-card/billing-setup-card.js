@@ -2,18 +2,36 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import toAccountText from '.~/utils/toAccountText';
 import AppSpinner from '.~/components/app-spinner';
-import TitleButtonLayout from '.~/components/title-button-layout';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import Section from '.~/wcdl/section';
 import AppButton from '.~/components/app-button';
 import useAutoCheckBillingStatusEffect from './useAutoCheckBillingStatusEffect';
 import './billing-setup-card.scss';
+
+/**
+ * Returns a string of window.open()'s features that aligns with the center of the current window.
+ *
+ * @param {Window} defaultView The window object.
+ * @param {number} windowWidth Expected window width.
+ * @param {number} windowHeight Expected window height.
+ * @return {string} Centered alignment window features for calling with window.open().
+ */
+function getWindowFeatures( defaultView, windowWidth, windowHeight ) {
+	const { innerWidth, innerHeight, screenX, screenY, screen } = defaultView;
+	const width = Math.min( windowWidth, screen.availWidth );
+	const height = Math.min( windowHeight, screen.availHeight );
+	const left = ( innerWidth - width ) / 2 + screenX;
+	const top = ( innerHeight - height ) / 2 + screenY;
+
+	return `popup=1,left=${ left },top=${ top },width=${ width },height=${ height }`;
+}
 
 /**
  * "Set up billing" button for Google Ads account is clicked.
@@ -39,42 +57,45 @@ const BillingSetupCard = ( { billingUrl, onSetupComplete } ) => {
 		return <AppSpinner />;
 	}
 
+	const handleClick = ( e ) => {
+		const { defaultView } = e.target.ownerDocument;
+		const features = getWindowFeatures( defaultView, 600, 800 );
+
+		defaultView.open( billingUrl, '_blank', features );
+	};
+
 	return (
-		<div className="gla-google-ads-billing-setup-card">
-			<Section.Card>
-				<Section.Card.Body>
-					<div className="gla-google-ads-billing-setup-card__account-number">
-						<TitleButtonLayout
-							title={ toAccountText( googleAdsAccount.id ) }
-						/>
-					</div>
-					<div className="gla-google-ads-billing-setup-card__description">
-						<div className="gla-google-ads-billing-setup-card__description__text">
-							{ __(
-								'You do not have billing information set up in your Google Ads account. Once you have completed your billing setup, your campaign will launch automatically.',
+		<Section.Card className="gla-google-ads-billing-setup-card">
+			<Section.Card.Body>
+				<div className="gla-google-ads-billing-setup-card__description">
+					{ __(
+						'You do not have billing information set up in your Google Ads account. Once you have set up billing, you can start running ads.',
+						'google-listings-and-ads'
+					) }
+					<div className="gla-google-ads-billing-setup-card__description__helper">
+						{ createInterpolateElement(
+							__(
+								'You will be directed to Google Ads for this step. In case your browser is unable to open the pop-up, <link>click here instead</link>.',
 								'google-listings-and-ads'
-							) }
-						</div>
-						<AppButton
-							isSecondary
-							href={ billingUrl }
-							target="_blank"
-							eventName="gla_ads_set_up_billing_click"
-							eventProps={ {
-								context: 'setup-ads',
-								link_id: 'set-up-billing',
-								href: billingUrl,
-							} }
-						>
-							{ __(
-								'Set up billing',
-								'google-listings-and-ads'
-							) }
-						</AppButton>
+							),
+							{ link: <ExternalLink href={ billingUrl } /> }
+						) }
 					</div>
-				</Section.Card.Body>
-			</Section.Card>
-		</div>
+				</div>
+				<AppButton
+					isSecondary
+					onClick={ handleClick }
+					eventName="gla_ads_set_up_billing_click"
+					eventProps={ {
+						context: 'setup-ads',
+						link_id: 'set-up-billing',
+						href: billingUrl,
+					} }
+				>
+					{ __( 'Set up billing', 'google-listings-and-ads' ) }
+				</AppButton>
+			</Section.Card.Body>
+		</Section.Card>
 	);
 };
 

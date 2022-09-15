@@ -1,14 +1,18 @@
 .gla-google-ads-billing-setup-card {
-	&__account-number {
-		margin-bottom: calc(var(--main-gap) / 2);
+	.components-card__body {
+		display: flex;
+		gap: $grid-unit-20;
 	}
 
 	&__description {
 		display: flex;
-		gap: calc(var(--main-gap) * 2);
+		flex-direction: column;
+		gap: $grid-unit-20;
+		color: $black;
 
-		&__text {
+		&__helper {
 			font-style: italic;
+			color: $gray-700;
 		}
 	}
 }
