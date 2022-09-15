@@ -11,11 +11,13 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import AppSpinner from '.~/components/app-spinner';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import Section from '.~/wcdl/section';
-import SetupCard from './setup-card';
+import {
+	BillingSetupCard,
+	fallbackBillingUrl,
+} from '.~/components/paid-ads/billing-card';
 import BillingSavedCard from './billing-saved-card';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppButton from '.~/components/app-button';
-import fallbackBillingUrl from './fallbackBillingUrl';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
 const SetupBilling = ( props ) => {
@@ -57,7 +59,7 @@ const SetupBilling = ( props ) => {
 				{ isApproved ? (
 					<BillingSavedCard />
 				) : (
-					<SetupCard
+					<BillingSetupCard
 						billingUrl={
 							billingStatus.billing_url || fallbackBillingUrl
 						}

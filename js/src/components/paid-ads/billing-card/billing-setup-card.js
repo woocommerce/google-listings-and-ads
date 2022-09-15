@@ -11,9 +11,9 @@ import AppSpinner from '.~/components/app-spinner';
 import TitleButtonLayout from '.~/components/title-button-layout';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import Section from '.~/wcdl/section';
-import './index.scss';
 import AppButton from '.~/components/app-button';
 import useAutoCheckBillingStatusEffect from './useAutoCheckBillingStatusEffect';
+import './billing-setup-card.scss';
 
 /**
  * "Set up billing" button for Google Ads account is clicked.
@@ -31,7 +31,7 @@ import useAutoCheckBillingStatusEffect from './useAutoCheckBillingStatusEffect';
  * @param {Function} props.onSetupComplete Callback function when setup is completed
  * @return {JSX.Element} Card filled with content or `AppSpinner`.
  */
-const SetupCard = ( { billingUrl, onSetupComplete } ) => {
+const BillingSetupCard = ( { billingUrl, onSetupComplete } ) => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	useAutoCheckBillingStatusEffect( onSetupComplete );
 
@@ -78,4 +78,4 @@ const SetupCard = ( { billingUrl, onSetupComplete } ) => {
 	);
 };
 
-export default SetupCard;
+export default BillingSetupCard;
