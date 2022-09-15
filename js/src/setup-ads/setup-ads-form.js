@@ -68,7 +68,14 @@ const SetupAdsForm = () => {
 	};
 
 	const handleChange = ( _, values ) => {
-		setFormChanged( ! isEqual( initialValues, values ) );
+		const args = [ initialValues, values ].map(
+			( { countryCodes, ...v } ) => {
+				v.countrySet = new Set( countryCodes );
+				return v;
+			}
+		);
+
+		setFormChanged( ! isEqual( ...args ) );
 	};
 
 	if ( ! targetAudience ) {

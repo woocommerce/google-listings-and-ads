@@ -37,9 +37,9 @@ import createErrorMessageForRejectedPromises from '.~/utils/createErrorMessageFo
  */
 function isNotOurStep( location ) {
 	const allowList = new Set( [
-		'/' + getNewPath( { pageStep: undefined } ),
-		'/' + getNewPath( { pageStep: 1 } ),
-		'/' + getNewPath( { pageStep: 2 } ),
+		getNewPath( { pageStep: undefined } ),
+		getNewPath( { pageStep: 1 } ),
+		getNewPath( { pageStep: 2 } ),
 	] );
 	// TODO: Explore if we can make thich check cleaner given `history`'s API.
 	const destination = location.pathname + location.search;
@@ -79,9 +79,6 @@ const EditFreeCampaign = () => {
 		savedTargetAudience
 	);
 	const [ settings, updateSettings ] = useState( savedSettings );
-	const [ forceUnblockedNavigation, setForceUnblockedNavigation ] = useState(
-		false
-	);
 
 	const {
 		hasFinishedResolution: hfrShippingRates,
@@ -156,7 +153,7 @@ const EditFreeCampaign = () => {
 			'You have unsaved campaign data. Are you sure you want to leave?',
 			'google-listings-and-ads'
 		),
-		didAnythingChanged && ! forceUnblockedNavigation,
+		didAnythingChanged,
 		isNotOurStep
 	);
 
@@ -197,10 +194,8 @@ const EditFreeCampaign = () => {
 	};
 
 	const handleChooseAudienceContinue = () => {
-		setForceUnblockedNavigation( true );
 		updateShippingAfterChooseAudienceStep();
 		getHistory().push( getNewPath( { pageStep: '2' } ) );
-		setForceUnblockedNavigation( false );
 	};
 
 	const handleSetupFreeListingsContinue = async () => {
