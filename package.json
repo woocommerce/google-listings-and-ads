@@ -73,11 +73,11 @@
 		"woocommerce-grow-storybook": "https://gitpkg.now.sh/woocommerce/grow/packages/js/storybook?fecfad52db350afd3550842e2374dee8dbc587ea"
 	},
 	"dependencies": {
-		"@woocommerce/components": "8.1.0",
+		"@woocommerce/components": "10.3.0",
 		"@woocommerce/currency": "^3.2.1",
-		"@woocommerce/customer-effort-score": "^1.1.0",
-		"@woocommerce/data": "1.4.0",
-		"@woocommerce/date": "^3.1.0",
+		"@woocommerce/customer-effort-score": "^2.2.0",
+		"@woocommerce/data": "4.1.0",
+		"@woocommerce/date": "^4.2.0",
 		"@woocommerce/navigation": "6.1.0",
 		"@woocommerce/number": "^2.1.0",
 		"@woocommerce/tracks": "^1.0.0",
