@@ -109,6 +109,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.1.2 - 2022-09-15 =
+* Fix - WooCommerce 6.7 compatibility issues.
+* Tweak - WC 6.9 compatibility.
+
 = 2.1.1 - 2022-09-06 =
 * Dev - Run PHPCS checks for unit tests.
 * Fix - A compatibility issue with WooCommerce 6.9 which prevents interaction with the input field of the paid campaign budget.
