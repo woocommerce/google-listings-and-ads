@@ -6,6 +6,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { useState, useRef, useEffect } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
 import { Form } from '@woocommerce/components';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -15,6 +16,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
+import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
@@ -120,14 +122,16 @@ const ACTION_SKIP = 'skip-ads';
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
 	const { createNotice } = useDispatchCoreNotices();
+	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( false );
 	const [ paidAds, setPaidAds ] = useState( {} );
 	const [ completing, setCompleting ] = useState( null );
 
-	const finishFreeListingsSetup = async ( event ) => {
+	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
 		setCompleting( event.target.dataset.action );
 
 		try {
+			await onBeforeFinish();
 			await apiFetch( {
 				path: `${ API_NAMESPACE }/mc/settings/sync`,
 				method: 'POST',
@@ -150,8 +154,12 @@ export default function SetupPaidAds() {
 	};
 
 	const handleCompleteClick = async ( event ) => {
-		// TODO: Implement the compaign creation and paid ads completion.
-		await finishFreeListingsSetup( event );
+		const onBeforeFinish = handleSetupComplete.bind(
+			null,
+			paidAds.amount,
+			paidAds.countryCodes
+		);
+		await finishOnboardingSetup( event, onBeforeFinish );
 	};
 
 	// The status check of Google Ads account connection is included in `paidAds.completing`,
@@ -166,7 +174,7 @@ export default function SetupPaidAds() {
 				text={ text }
 				loading={ completing === ACTION_SKIP }
 				disabled={ completing === ACTION_COMPLETE }
-				onClick={ finishFreeListingsSetup }
+				onClick={ finishOnboardingSetup }
 			/>
 		);
 	}
