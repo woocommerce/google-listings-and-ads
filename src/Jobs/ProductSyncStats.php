@@ -43,6 +43,11 @@ class ProductSyncStats {
 	];
 
 	/**
+	 * Batch size for retrieving product count.
+	 */
+	protected const BATCH_SIZE = 500;
+
+	/**
 	 * ProductSyncStats constructor.
 	 *
 	 * @param ActionScheduler   $scheduler
@@ -96,10 +101,23 @@ class ProductSyncStats {
 	/**
 	 * Return the amount of products which are ready to be synced.
 	 *
+	 * @since x.x.x
+	 *
 	 * @return int
 	 */
 	public function get_syncable_products_count(): int {
-		$products = $this->product_repository->find_sync_ready_products()->get();
-		return count( $products );
+		$offset = 0;
+		$count  = 0;
+
+		// Count products in batches as product filtering requires the full product object.
+		// Without batches larger sites would run into resource limitations.
+		do {
+			$result = $this->product_repository->find_sync_ready_products( [], self::BATCH_SIZE, $offset );
+
+			$offset += $result->get_unfiltered_count();
+			$count  += $result->count();
+		} while ( $result->get_unfiltered_count() === self::BATCH_SIZE );
+
+		return $count;
 	}
 }
