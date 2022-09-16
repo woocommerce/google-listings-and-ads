@@ -33,6 +33,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\PluginUpdate;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -86,7 +87,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		);
 		$this->share_with_tags( ActionScheduler::class, AsyncActionRunner::class );
 		$this->share_with_tags( ActionSchedulerJobMonitor::class, ActionScheduler::class );
-		$this->share_with_tags( ProductSyncStats::class, ActionScheduler::class, ProductRepository::class );
+		$this->share_with_tags( ProductSyncStats::class, ActionScheduler::class, ProductRepository::class, TransientsInterface::class );
 
 		// share product syncer jobs
 		$this->share_product_syncer_job( UpdateAllProducts::class );

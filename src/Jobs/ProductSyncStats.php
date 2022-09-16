@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 
 defined( 'ABSPATH' ) || exit;
@@ -33,6 +34,11 @@ class ProductSyncStats {
 	protected $product_repository;
 
 	/**
+	 * @var TransientsInterface
+	 */
+	protected $transients;
+
+	/**
 	 * Job names for syncing products.
 	 */
 	protected const MATCHES = [
@@ -50,12 +56,14 @@ class ProductSyncStats {
 	/**
 	 * ProductSyncStats constructor.
 	 *
-	 * @param ActionScheduler   $scheduler
-	 * @param ProductRepository $product_repository
+	 * @param ActionScheduler     $scheduler
+	 * @param ProductRepository   $product_repository
+	 * @param TransientsInterface $transients
 	 */
-	public function __construct( ActionScheduler $scheduler, ProductRepository $product_repository ) {
+	public function __construct( ActionScheduler $scheduler, ProductRepository $product_repository, TransientsInterface $transients ) {
 		$this->scheduler          = $scheduler;
 		$this->product_repository = $product_repository;
+		$this->transients         = $transients;
 	}
 
 	/**
@@ -100,12 +108,19 @@ class ProductSyncStats {
 
 	/**
 	 * Return the amount of products which are ready to be synced.
+	 * Uses a transient to store the result for one hour.
 	 *
 	 * @since x.x.x
 	 *
 	 * @return int
 	 */
 	public function get_syncable_products_count(): int {
+		$count = (int) $this->transients->get( TransientsInterface::SYNCABLE_PRODUCTS_COUNT );
+
+		if ( $count ) {
+			return $count;
+		}
+
 		$offset = 0;
 		$count  = 0;
 
@@ -117,6 +132,8 @@ class ProductSyncStats {
 			$offset += $result->get_unfiltered_count();
 			$count  += $result->count();
 		} while ( $result->get_unfiltered_count() === self::BATCH_SIZE );
+
+		$this->transients->set( TransientsInterface::SYNCABLE_PRODUCTS_COUNT, $count, HOUR_IN_SECONDS );
 
 		return $count;
 	}
