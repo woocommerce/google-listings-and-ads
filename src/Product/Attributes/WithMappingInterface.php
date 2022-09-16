@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\AttributeInputInterface;
-
 defined( 'ABSPATH' ) || exit;
 
 /**

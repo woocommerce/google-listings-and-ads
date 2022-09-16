@@ -7,11 +7,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 /**
- * Class Settings
+ * Class ProductFeed
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
  */
-class Settings implements Service, Registerable {
+class AttributeMapping implements Service, Registerable {
 
 	/**
 	 * Register a service.
@@ -22,12 +22,12 @@ class Settings implements Service, Registerable {
 			function() {
 				wc_admin_register_page(
 					[
-						'title'    => __( 'Settings', 'google-listings-and-ads' ),
+						'title'    => __( 'Attribute Mapping', 'google-listings-and-ads' ),
 						'parent'   => 'google-listings-and-ads-category',
-						'path'     => '/google/settings',
-						'id'       => 'google-settings',
+						'path'     => '/google/attribute-mapping',
+						'id'       => 'google-attribute-mapping',
 						'nav_args' => [
-							'order'  => 50,
+							'order'  => 40,
 							'parent' => 'google-listings-and-ads-category',
 						],
 					]

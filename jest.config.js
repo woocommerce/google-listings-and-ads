@@ -31,6 +31,9 @@ module.exports = {
 		'<rootDir>/js/build-dev',
 	],
 	globals: {
+		wcAdminFeatures: {
+			navigation: true,
+		},
 		glaData: {
 			mcSetupComplete: true,
 			mcSupportedCountry: true,
