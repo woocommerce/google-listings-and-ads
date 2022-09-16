@@ -31,6 +31,12 @@ export const getSettings = ( state ) => {
  */
 
 /**
+ * @typedef {Object} GoogleMCAccount
+ * @property {number} id Account ID. It's 0 if not yet connected.
+ * @property {string} status Connection status.
+ */
+
+/**
  * Select jetpack connection state.
  *
  * @param {Object} state The current store state will be injected by `wp.data`.
