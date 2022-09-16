@@ -62,7 +62,15 @@ class AttributeMappingControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_REQUEST_SOURCES, 'GET', [ 'attribute' => 'adult' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertIsArray( $response->get_data() );
+		$this->assertEquals(
+			[
+				'data' => [
+					'yes' => 'Yes',
+					'no'  => 'No',
+				],
+			],
+			$response->get_data()
+		);
 	}
 
 }
