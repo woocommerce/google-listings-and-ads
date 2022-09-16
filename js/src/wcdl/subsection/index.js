@@ -4,10 +4,7 @@
 import Title from './title';
 import Body from './body';
 import HelperText from './helper-text';
-
-/**
- * Internal dependencies
- */
+import Subtitle from './subtitle';
 import './index.scss';
 
 const Subsection = ( props ) => {
@@ -17,6 +14,7 @@ const Subsection = ( props ) => {
 };
 
 Subsection.Title = Title;
+Subsection.Subtitle = Subtitle;
 Subsection.Body = Body;
 Subsection.HelperText = HelperText;
 

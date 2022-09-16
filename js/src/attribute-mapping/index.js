@@ -19,7 +19,7 @@ import './index.scss';
  */
 const AttributeMapping = () => {
 	return (
-		<div className="gla-settings-attribute-mapping">
+		<div className="gla-attribute-mapping">
 			<NavigationClassic />
 			<Section
 				title={ __( 'Attribute Mapping', 'google-listings-and-ads' ) }

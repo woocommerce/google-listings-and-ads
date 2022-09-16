@@ -3,4 +3,25 @@
 	&__table-footer {
 		padding: $grid-unit-20;
 	}
+
+	&__radio-control {
+		margin-top: $grid-unit-20;
+		.help-popover {
+			// hack for positioning correctly the popover in the modal radio control
+			.components-popover {
+				position: absolute;
+
+				&__content {
+					max-width: 400px;
+					transform: translateX(-100px);
+				}
+			}
+		}
+	}
+
+	&__help-text {
+		margin-top: $grid-unit;
+	}
+
+
 }
