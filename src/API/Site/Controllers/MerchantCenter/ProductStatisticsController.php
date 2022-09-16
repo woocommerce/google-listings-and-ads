@@ -173,7 +173,7 @@ class ProductStatisticsController extends BaseOptionsController {
 			],
 			'syncable_products' => [
 				'type'        => 'number',
-				'description' => __( 'Amount of syncable products which will be synced to Google.', 'google-listings-and-ads' ),
+				'description' => __( 'Amount of products which are eligible to be synced to Google.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
