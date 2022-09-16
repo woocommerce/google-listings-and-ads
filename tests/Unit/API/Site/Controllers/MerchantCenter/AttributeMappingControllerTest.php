@@ -16,7 +16,7 @@ class AttributeMappingControllerTest extends RESTControllerUnitTest {
 
 
 	protected const ROUTE_REQUEST_SOURCES      = '/wc/gla/mc/mapping/sources';
-	protected const ROUTE_REQUEST_DESTINATIONS = '/wc/gla/mc/mapping/attributes';
+	protected const ROUTE_REQUEST_ATTRIBUTES = '/wc/gla/mc/mapping/attributes';
 
 	/**
 	 * @var AttributeMappingHelper
@@ -33,7 +33,7 @@ class AttributeMappingControllerTest extends RESTControllerUnitTest {
 
 
 	public function test_register_route() {
-		$this->assertArrayHasKey( self::ROUTE_REQUEST_DESTINATIONS, $this->server->get_routes() );
+		$this->assertArrayHasKey( self::ROUTE_REQUEST_ATTRIBUTES, $this->server->get_routes() );
 		$this->assertArrayHasKey( self::ROUTE_REQUEST_SOURCES, $this->server->get_routes() );
 	}
 
@@ -41,7 +41,7 @@ class AttributeMappingControllerTest extends RESTControllerUnitTest {
 		$this->attribute_mapping_helper->expects( $this->once() )
 			->method( 'get_attributes' );
 
-		$response = $this->do_request( self::ROUTE_REQUEST_DESTINATIONS );
+		$response = $this->do_request( self::ROUTE_REQUEST_ATTRIBUTES );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertIsArray( $response->get_data() );
