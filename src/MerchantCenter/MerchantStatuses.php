@@ -108,7 +108,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public function get_product_statistics( bool $force_refresh = false ): array {
 		$this->maybe_refresh_status_data( $force_refresh );
 
-		$counting_stats = is_array( $this->mc_statuses ) ? $this->mc_statuses['statistics'] : null;
+		$counting_stats = isset( $this->mc_statuses['statistics'] ) ? $this->mc_statuses['statistics'] : null;
 
 		if ( is_array( $counting_stats ) ) {
 			$counting_stats = array_merge(
