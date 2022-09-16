@@ -67,30 +67,42 @@ class AttributeMappingHelper implements Service {
 	 * @return array An array with the taxonomies and global attributes
 	 */
 	public static function get_source_taxonomies(): array {
-		$taxonomies = get_object_taxonomies( 'product' );
-		$taxes      = [];
-		$attributes = [];
+		$taxonomies        = get_object_taxonomies( 'product', 'objects' );
+		$parsed_taxonomies = [];
+		$attributes        = [];
+		$sources           = [];
+
 		foreach ( $taxonomies as $taxonomy ) {
-			$tax = get_taxonomy( $taxonomy );
-			if ( taxonomy_is_product_attribute( $taxonomy ) ) {
-				$attributes[ 'tax:' . $taxonomy ] = $tax->labels->name;
+			if ( taxonomy_is_product_attribute( $taxonomy->name ) ) {
+				$attributes[ 'taxonomy:' . $taxonomy->name ] = $taxonomy->label;
 				continue;
 			}
 
-			$taxes[ 'tax:' . $taxonomy ] = $tax->labels->name;
+			$parsed_taxonomies[ 'taxonomy:' . $taxonomy->name ] = $taxonomy->label;
 		}
-		asort( $taxes );
+
+		asort( $parsed_taxonomies );
 		asort( $attributes );
 
-		return array_merge(
-			[
-				'disabled:attributes' => __( '- Global attributes -', 'google-listings-and-ads' ),
-			],
-			$attributes,
-			[
-				'disabled:taxes' => __( '- Taxonomies -', 'google-listings-and-ads' ),
-			],
-			$taxes
-		);
+		if ( ! empty( $attributes ) ) {
+			$sources = array_merge(
+				[
+					'disabled:attributes' => __( '- Global attributes -', 'google-listings-and-ads' ),
+				],
+				$attributes
+			);
+		}
+
+		if ( ! empty( $parsed_taxonomies ) ) {
+			$sources = array_merge(
+				$sources,
+				[
+					'disabled:taxonomies' => __( '- Taxonomies -', 'google-listings-and-ads' ),
+				],
+				$parsed_taxonomies
+			);
+		}
+
+		return $sources;
 	}
 }
