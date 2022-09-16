@@ -44,7 +44,7 @@ class AttributeMappingControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_REQUEST_ATTRIBUTES );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertArrayHasKey(  'data', $response->get_data() );
+		$this->assertArrayHasKey( 'data', $response->get_data() );
 	}
 
 	public function test_sources_route() {
