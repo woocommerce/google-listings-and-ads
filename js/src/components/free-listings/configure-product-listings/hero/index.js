@@ -12,16 +12,16 @@ import './index.scss';
 
 /**
  * Hero element for free listing configuration.
+ *
+ * @param {Object} props React props.
+ * @param {JSX.Element} props.headerTitle Title in the header block.
  */
-const Hero = () => {
+const Hero = ( { headerTitle } ) => {
 	return (
 		<div className="gla-setup-free-listing-hero">
 			<StepContentHeader
 				className="hero-text"
-				title={ __(
-					'Configure your product listings',
-					'google-listings-and-ads'
-				) }
+				title={ headerTitle }
 				description={
 					<div>
 						<p className="hero-text__subtitle">
