@@ -42,9 +42,8 @@ function ProductQuantity( { quantity } ) {
 	);
 }
 
-// TODO: `href`` is not yet ready. Will be added later.
 /**
- * @fires gla_documentation_link_click with `{ context: 'setup-paid-ads', link_id: 'product-feed-status-learn-more', href: 'https://example.com' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-paid-ads', link_id: 'product-feed-status-learn-more', href: 'https://support.google.com/merchants/answer/7439882' }`
  */
 
 /**
@@ -80,7 +79,7 @@ export default function ProductFeedStatusSection() {
 				<AppDocumentationLink
 					context="setup-paid-ads"
 					linkId="product-feed-status-learn-more"
-					href="https://example.com" // TODO: Not yet ready. Will be added later.
+					href="https://support.google.com/merchants/answer/7439882"
 				>
 					{ __( 'Learn more', 'google-listings-and-ads' ) }
 				</AppDocumentationLink>
