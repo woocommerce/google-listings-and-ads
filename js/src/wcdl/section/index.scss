@@ -3,7 +3,8 @@
 	flex-direction: column;
 	margin-bottom: var(--large-gap);
 
-	&--is-disabled {
+	&--is-disabled,
+	&--is-disabled-left header {
 		opacity: 0.5;
 	}
 

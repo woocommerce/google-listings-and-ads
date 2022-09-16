@@ -19,6 +19,7 @@ import './index.scss';
  * @param {JSX.Element} [props.topContent] Content at the top of the section title.
  * @param {JSX.Element} [props.children] Section content at the right side.
  * @param {boolean} [props.disabled] Whether display the whole section in disabled style.
+ * @param {boolean} [props.disabledLeft] Whether display the left side of section in disabled style.
  */
 const Section = ( {
 	className,
@@ -27,10 +28,12 @@ const Section = ( {
 	topContent,
 	children,
 	disabled,
+	disabledLeft,
 } ) => {
 	const sectionClassName = classnames(
 		'wcdl-section',
 		disabled ? 'wcdl-section--is-disabled' : false,
+		disabledLeft ? 'wcdl-section--is-disabled-left' : false,
 		className
 	);
 
