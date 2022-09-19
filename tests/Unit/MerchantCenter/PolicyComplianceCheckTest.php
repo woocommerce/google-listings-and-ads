@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @property  MockObject|WC             $wc
  * @property  MockObject|GoogleHelper   $google_helper
- * @property  MockObject|TargetAudience	$target_audience
+ * @property  MockObject|TargetAudience $target_audience
  * @property  PolicyComplianceCheck     $policy_compliance_check
  */
 class PolicyComplianceCheckTest extends WPRequestUnitTest {
@@ -32,9 +32,9 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->wc               = $this->createMock( WC::class );
-		$this->google_helper    = $this->createMock( GoogleHelper::class );
-		$this->target_audience  = $this->createMock( TargetAudience::class );
+		$this->wc              = $this->createMock( WC::class );
+		$this->google_helper   = $this->createMock( GoogleHelper::class );
+		$this->target_audience = $this->createMock( TargetAudience::class );
 
 		$this->policy_compliance_check = new PolicyComplianceCheck( $this->wc, $this->google_helper, $this->target_audience );
 	}
@@ -42,37 +42,50 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	public function test_website_accessible() {
 		$this->wc->expects( $this->any() )
 					   ->method( 'get_allowed_countries' )
-					   ->willReturn( ['AU' => 'Australia',
-					   'AT' => 'Austria',
-					   'CA' => 'Canada',
-					   'US' => 'United States'] );
+					->willReturn(
+						[
+							'AU' => 'Australia',
+							'AT' => 'Austria',
+							'CA' => 'Canada',
+							'US' => 'United States',
+						]
+					);
 		$this->target_audience->expects( $this->any() )
 					   ->method( 'get_target_countries' )
-					   ->willReturn( ['AU', 'US' ] );
+					   ->willReturn( [ 'AU', 'US' ] );
 
-		$this->assertTrue($this->policy_compliance_check->is_accessible());
+		$this->assertTrue( $this->policy_compliance_check->is_accessible() );
 	}
 
 	public function test_website_not_accessible() {
 		$this->wc->expects( $this->any() )
 					   ->method( 'get_allowed_countries' )
-					   ->willReturn( ['AU' => 'Australia', 'AT' => 'Austria', 'CA' => 'Canada', 'US' => 'United States'] );
+					->willReturn(
+						[
+							'AU' => 'Australia',
+							'AT' => 'Austria',
+							'CA' => 'Canada',
+							'US' => 'United States',
+						]
+					);
 		$this->target_audience->expects( $this->any() )
 					   ->method( 'get_target_countries' )
-					   ->willReturn( ['FR', 'US' ] );
+					   ->willReturn( [ 'FR', 'US' ] );
 
-		$this->assertFalse($this->policy_compliance_check->is_accessible());
+		$this->assertFalse( $this->policy_compliance_check->is_accessible() );
 	}
 
 	public function test_payment_gateways() {
 		$this->wc->expects( $this->any() )
 					   ->method( 'get_available_payment_gateways' )
-					   ->willReturn(  [
-						'stripe' => $this->createMock( WC_Payment_Gateway::class ),
-						'paypal' => $this->createMock( WC_Payment_Gateway::class ),
-					] );
+					->willReturn(
+						[
+							'stripe' => $this->createMock( WC_Payment_Gateway::class ),
+							'paypal' => $this->createMock( WC_Payment_Gateway::class ),
+						]
+					);
 
-		$this->assertTrue($this->policy_compliance_check->has_payment_gateways());
+		$this->assertTrue( $this->policy_compliance_check->has_payment_gateways() );
 	}
 
 	public function test_empty_payment_gateways() {
@@ -80,46 +93,46 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 					   ->method( 'get_available_payment_gateways' )
 					   ->willReturn( [] );
 
-		$this->assertFalse($this->policy_compliance_check->has_payment_gateways());
+		$this->assertFalse( $this->policy_compliance_check->has_payment_gateways() );
 	}
 
 	public function test_not_has_page_not_found_error() {
-		$this->assertFalse($this->policy_compliance_check->has_page_not_found_error());
+		$this->assertFalse( $this->policy_compliance_check->has_page_not_found_error() );
 	}
 
 	public function test_has_page_not_found_error() {
 		$this->mock_wp_request( 'http://example.org', '', 404 );
-		$this->assertTrue($this->policy_compliance_check->has_page_not_found_error());
+		$this->assertTrue( $this->policy_compliance_check->has_page_not_found_error() );
 	}
 
 	public function test_not_has_redirects() {
-		$this->assertFalse($this->policy_compliance_check->has_redirects());
+		$this->assertFalse( $this->policy_compliance_check->has_redirects() );
 	}
 
 	public function test_has_redirects() {
 		$this->mock_wp_request( 'http://example.org', '', 301 );
-		$this->assertTrue($this->policy_compliance_check->has_redirects());
+		$this->assertTrue( $this->policy_compliance_check->has_redirects() );
 	}
 
 	public function test_not_has_restrictions() {
-		$this->assertFalse($this->policy_compliance_check->has_restriction());
+		$this->assertFalse( $this->policy_compliance_check->has_restriction() );
 	}
 
 	public function test_has_restrictions() {
 		$this->mock_wp_request( 'http://example.org/robots.txt', "User-agent: *\nDisallow: /" );
-		$this->assertTrue($this->policy_compliance_check->has_restriction());
+		$this->assertTrue( $this->policy_compliance_check->has_restriction() );
 	}
 
 	public function test_without_store_ssl() {
-		$this->assertFalse($this->policy_compliance_check->get_is_store_ssl());
+		$this->assertFalse( $this->policy_compliance_check->get_is_store_ssl() );
 	}
 
 	public function test_with_store_ssl() {
 		define( 'WP_HOME', 'https://example.org' );
-		$this->assertTrue($this->policy_compliance_check->get_is_store_ssl());
+		$this->assertTrue( $this->policy_compliance_check->get_is_store_ssl() );
 	}
 
 	public function test_not_has_refund_page() {
-		$this->assertFalse($this->policy_compliance_check->has_refund_return_policy_page());
+		$this->assertFalse( $this->policy_compliance_check->has_refund_return_policy_page() );
 	}
 }
