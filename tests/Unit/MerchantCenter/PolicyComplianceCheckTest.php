@@ -97,6 +97,7 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	}
 
 	public function test_not_has_page_not_found_error() {
+		$this->mock_wp_request( 'http://example.org', '' );
 		$this->assertFalse( $this->policy_compliance_check->has_page_not_found_error() );
 	}
 
@@ -106,6 +107,7 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	}
 
 	public function test_not_has_redirects() {
+		$this->mock_wp_request( 'http://example.org', '' );
 		$this->assertFalse( $this->policy_compliance_check->has_redirects() );
 	}
 
@@ -128,11 +130,29 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	}
 
 	public function test_with_store_ssl() {
-		define( 'WP_HOME', 'https://example.org' );
+		$override_url = function () {
+			return 'https://secure.url';
+		};
+		add_filter( 'woocommerce_gla_site_url', $override_url );
 		$this->assertTrue( $this->policy_compliance_check->get_is_store_ssl() );
+		remove_filter( 'woocommerce_gla_site_url', $override_url );
 	}
 
 	public function test_not_has_refund_page() {
 		$this->assertFalse( $this->policy_compliance_check->has_refund_return_policy_page() );
+	}
+
+	public function test_has_refund_page() {
+		$page_id = wp_insert_post(
+			[
+				'post_title'  => 'Refund and Returns',
+				'post_name'   => 'refund_returns',
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+			]
+		);
+
+		$this->assertTrue( $this->policy_compliance_check->has_refund_return_policy_page() );
+		wp_delete_post( $page_id, true );
 	}
 }
