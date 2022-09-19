@@ -88,11 +88,13 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 			$errors = $product_helper->get_validation_errors( $product );
 
 			$products[ $id ] = [
-				'id'      => $id,
-				'title'   => $product->get_name(),
-				'visible' => $product_helper->get_channel_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
-				'status'  => $product_helper->get_mc_status( $product ) ?: $product_helper->get_sync_status( $product ),
-				'errors'  => array_values( $errors ),
+				'id'        => $id,
+				'title'     => $product->get_name(),
+				'visible'   => $product_helper->get_channel_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
+				'status'    => $product_helper->get_mc_status( $product ) ?: $product_helper->get_sync_status( $product ),
+				'image_url' => wp_get_attachment_image_url( $product->get_image_id(), 'full' ),
+				'price'     => $product->get_price(),
+				'errors'    => array_values( $errors ),
 			];
 		}
 
