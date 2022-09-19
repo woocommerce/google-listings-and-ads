@@ -58,6 +58,7 @@ class ProductMetaHandler implements Service, Registerable {
 	public const KEY_SYNC_FAILED_AT         = 'sync_failed_at';
 	public const KEY_SYNC_STATUS            = 'sync_status';
 	public const KEY_MC_STATUS              = 'mc_status';
+	public const KEY_TOTAL_SALES            = 'total_sales';
 
 	protected const TYPES = [
 		self::KEY_SYNCED_AT              => 'int',
@@ -69,6 +70,7 @@ class ProductMetaHandler implements Service, Registerable {
 		self::KEY_SYNC_FAILED_AT         => 'int',
 		self::KEY_SYNC_STATUS            => 'string',
 		self::KEY_MC_STATUS              => 'string',
+		self::KEY_TOTAL_SALES            => 'int',
 	];
 
 	/**

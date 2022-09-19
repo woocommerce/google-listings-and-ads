@@ -165,6 +165,10 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 				$args['meta_key'] = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
 				$args['orderby']  = [ 'meta_value' => $this->get_order() ] + $args['orderby'];
 				break;
+			case 'total_sales':
+				$args['meta_key'] = ProductMetaHandler::KEY_TOTAL_SALES;
+				$args['orderby']  = [ 'meta_value_num' => $this->get_order() ] + $args['orderby'];
+				break;
 			default:
 				throw InvalidValue::not_in_allowed_list( 'orderby', [ 'title', 'id', 'visible', 'status' ] );
 		}
