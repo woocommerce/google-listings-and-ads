@@ -24,7 +24,7 @@ const SELECT_TYPES = {
  * @param {Function} [onCategorySelectorOpen] callback when the Category Tree Selector is open
  */
 const AttributeMappingCategoryControl = ( {
-	onCategorySelectorOpen = noop(),
+	onCategorySelectorOpen = noop,
 } ) => {
 	const [ selectedType, setSelectedType ] = useState();
 	const [ selectedCategories, setSelectedCategories ] = useState();

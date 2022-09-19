@@ -25,7 +25,7 @@ import AttributeMappingCategoryControl from '.~/attribute-mapping/attribute-mapp
  * @param {Object} [props.rule] Optional rule to manage
  * @param {Function} [props.onRequestClose] Callback on closing the modal
  */
-const AttributeMappingRuleModal = ( { rule, onRequestClose = noop() } ) => {
+const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 	const [ selectedAttribute, setSelectedAttribute ] = useState();
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
