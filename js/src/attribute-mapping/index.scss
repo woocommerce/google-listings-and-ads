@@ -10,18 +10,40 @@
 			// hack for positioning correctly the popover in the modal radio control
 			.components-popover {
 				position: absolute;
-
-				&__content {
-					max-width: 400px;
-					transform: translateX(-100px);
-				}
 			}
 		}
 	}
 
-	&__help-text {
-		margin-top: $grid-unit;
-	}
+	&__rule-modal {
 
+		.app-select-control {
+			margin-bottom: $grid-unit;
+			select.components-select-control__input {
+				height: 40px;
+			}
+		}
+
+		.app-input-control {
+			margin-bottom: $grid-unit;
+			input.components-input-control__input {
+				height: 40px;
+			}
+		}
+
+		.woocommerce-tree-select-control {
+			&__control, &__tree {
+				padding: $grid-unit-05 $grid-unit;
+				border-color: $gray-700;
+			}
+
+			&__tags {
+				font-size: 11px;
+			}
+
+			&__option, .components-base-control .woocommerce-tree-select-control__control-input {
+				font-size: $default-font-size;
+			}
+		}
+	}
 
 }

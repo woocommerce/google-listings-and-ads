@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -17,11 +18,18 @@ const SELECT_TYPES = {
 	ONLY: 'ONLY',
 };
 
-const AttributeMappingCategoryControl = () => {
-	const [ selected, setSelected ] = useState();
+/**
+ * Renders the selectors relative to the categories
+ *
+ * @param {Function} [onCategorySelectorOpen] callback when the Category Tree Selector is open
+ */
+const AttributeMappingCategoryControl = ( {
+	onCategorySelectorOpen = noop(),
+} ) => {
+	const [ selectedType, setSelectedType ] = useState();
+	const [ selectedCategories, setSelectedCategories ] = useState();
 	const { data: categories } = useCategoryTree();
 
-	// Todo: Tree Select control to be implemented
 	return (
 		<>
 			<AppSelectControl
@@ -48,8 +56,21 @@ const AttributeMappingCategoryControl = () => {
 						),
 					},
 				] }
-				onChange={ setSelected }
+				onChange={ setSelectedType }
 			/>
+			{ ( selectedType === SELECT_TYPES.ONLY ||
+				selectedType === SELECT_TYPES.EXCEPT ) && (
+				<TreeSelectControl
+					onDropdownVisibilityChange={ onCategorySelectorOpen }
+					options={ categories }
+					onChange={ setSelectedCategories }
+					value={ selectedCategories }
+					placeholder={ __(
+						'Select categories',
+						'google-listings-and-ads'
+					) }
+				/>
+			) }
 		</>
 	);
 };

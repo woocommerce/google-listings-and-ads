@@ -27,6 +27,7 @@ import AttributeMappingCategoryControl from '.~/attribute-mapping/attribute-mapp
  */
 const AttributeMappingRuleModal = ( { rule, onRequestClose = noop() } ) => {
 	const [ selectedAttribute, setSelectedAttribute ] = useState();
+	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const { data: attributes } = useMappingAttributes();
 	const { data: sources } = useMappingAttributesSources( selectedAttribute );
@@ -35,6 +36,9 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop() } ) => {
 
 	return (
 		<AppModal
+			overflow="visible"
+			shouldCloseOnEsc={ ! dropdownVisible }
+			shouldCloseOnClickOutside={ ! dropdownVisible }
 			onRequestClose={ onRequestClose }
 			className="gla-attribute-mapping__rule-modal"
 			title={
@@ -107,7 +111,9 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop() } ) => {
 						<Subsection.Title>
 							{ __( 'Categories', 'google-listings-and-ads' ) }
 						</Subsection.Title>
-						<AttributeMappingCategoryControl />
+						<AttributeMappingCategoryControl
+							onCategorySelectorOpen={ setDropdownVisible }
+						/>
 					</Subsection>
 				</>
 			) }
