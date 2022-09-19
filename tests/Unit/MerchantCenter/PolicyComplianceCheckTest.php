@@ -20,10 +20,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
  *
- * @property  MockObject|WC		$wc
- * @property  MockObject|GoogleHelper	$google_helper
+ * @property  MockObject|WC             $wc
+ * @property  MockObject|GoogleHelper   $google_helper
  * @property  MockObject|TargetAudience	$target_audience
- * @property  PolicyComplianceCheck	$policy_compliance_check
+ * @property  PolicyComplianceCheck     $policy_compliance_check
  */
 class PolicyComplianceCheckTest extends WPRequestUnitTest {
 
@@ -32,9 +32,9 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->wc		= $this->createMock( WC::class );
-		$this->google_helper	= $this->createMock( GoogleHelper::class );
-		$this->target_audience	= $this->createMock( TargetAudience::class );
+		$this->wc               = $this->createMock( WC::class );
+		$this->google_helper    = $this->createMock( GoogleHelper::class );
+		$this->target_audience  = $this->createMock( TargetAudience::class );
 
 		$this->policy_compliance_check = new PolicyComplianceCheck( $this->wc, $this->google_helper, $this->target_audience );
 	}
@@ -42,10 +42,13 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 	public function test_website_accessible() {
 		$this->wc->expects( $this->any() )
 					   ->method( 'get_allowed_countries' )
-					   ->willReturn( ['AU' => 'Australia', 'AT' => 'Austria', 'CA' => 'Canada', 'US' => 'United States'] );
+					   ->willReturn( ['AU' => 'Australia',
+					   'AT' => 'Austria',
+					   'CA' => 'Canada',
+					   'US' => 'United States'] );
 		$this->target_audience->expects( $this->any() )
 					   ->method( 'get_target_countries' )
-					   ->willReturn( ['AU' , 'US' ] );
+					   ->willReturn( ['AU', 'US' ] );
 
 		$this->assertTrue($this->policy_compliance_check->is_accessible());
 	}
@@ -65,8 +68,8 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 		$this->wc->expects( $this->any() )
 					   ->method( 'get_available_payment_gateways' )
 					   ->willReturn(  [
-						'stripe'	=> $this->createMock( WC_Payment_Gateway::class ),
-						'paypal'	=> $this->createMock( WC_Payment_Gateway::class ),
+						'stripe' => $this->createMock( WC_Payment_Gateway::class ),
+						'paypal' => $this->createMock( WC_Payment_Gateway::class ),
 					] );
 
 		$this->assertTrue($this->policy_compliance_check->has_payment_gateways());

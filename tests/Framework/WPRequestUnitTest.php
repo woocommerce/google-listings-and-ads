@@ -62,8 +62,8 @@ abstract class WPRequestUnitTest extends UnitTest {
 	 */
 	protected function mock_wp_request( string $url, string $response, int $status = 200 ) {
 		$this->mocked_requests[ $url ] = [
-			'response'    => [ 'code' => $status ],
-			'body'        => $response,
+			'response' => [ 'code' => $status ],
+			'body'     => $response,
 		];
 	}
 }
