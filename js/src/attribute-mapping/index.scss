@@ -31,7 +31,8 @@
 		}
 
 		.woocommerce-tree-select-control {
-			&__control, &__tree {
+			&__control,
+			&__tree {
 				padding: $grid-unit-05 $grid-unit;
 				border-color: $gray-700;
 			}
@@ -40,10 +41,10 @@
 				font-size: 11px;
 			}
 
-			&__option, .components-base-control .woocommerce-tree-select-control__control-input {
+			&__option,
+			.components-base-control .woocommerce-tree-select-control__control-input {
 				font-size: $default-font-size;
 			}
 		}
 	}
-
 }
