@@ -58,9 +58,20 @@ function PaidAdsSectionsGroup( { onStatesReceived } ) {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	// Watch the `isBillingCompleted` in order to ensure the parent component can
-	// continue the setup from a middle state. For example, refresh the current page
-	// after the billing setup is finished.
+	/*
+	  If a merchant has not yet finished the billing setup, the billing status will be
+	  updated by `useAutoCheckBillingStatusEffect` hook in `BillingSetupCard` component
+	  till it gets completed.
+
+	  Or, if the billing setup is already finished, the loaded `billingStatus.status`
+		will already be 'approved' without passing through the above hook and component.
+
+	  Therefore, in order to ensure the parent component can continue the setup from
+	  any billing status, it only needs to watch the `isBillingCompleted` eventually
+	  to wait for the fulfilled 'approved' status, and then propagate it to the parent.
+
+	  For example, refresh page during onboarding flow after the billing setup is finished.
+	*/
 	useEffect( () => {
 		onStatesReceivedRef.current( {
 			...campaign,
