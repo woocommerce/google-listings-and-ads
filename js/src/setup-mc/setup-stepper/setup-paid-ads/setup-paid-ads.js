@@ -3,9 +3,8 @@
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { useState, useRef, useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
-import { Form } from '@woocommerce/components';
 import { noop } from 'lodash';
 
 /**
@@ -13,9 +12,6 @@ import { noop } from 'lodash';
  */
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
-import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
@@ -24,104 +20,10 @@ import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
 import ProductFeedStatusSection from './product-feed-status-section';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
-import GoogleAdsAccountSection from './google-ads-account-section';
-import AudienceSection from '.~/components/paid-ads/audience-section';
-import BudgetSection from '.~/components/paid-ads/budget-section';
-import BillingCard from '.~/components/paid-ads/billing-card';
-import validateForm from '.~/utils/paid-ads/validateForm';
+import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
 import { API_NAMESPACE } from '.~/data/constants';
-import {
-	GUIDE_NAMES,
-	GOOGLE_ADS_ACCOUNT_STATUS,
-	GOOGLE_ADS_BILLING_STATUS,
-} from '.~/constants';
-
-function PaidAdsSectionsGroup( { onStatesReceived } ) {
-	const { googleAdsAccount } = useGoogleAdsAccount();
-	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
-	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-
-	const onStatesReceivedRef = useRef();
-	onStatesReceivedRef.current = onStatesReceived;
-
-	const initialValues = {
-		amount: 0,
-		countryCodes: targetAudience,
-	};
-	const [ campaign, setCampaign ] = useState( {
-		...initialValues,
-		isValid: ! Object.keys( validateForm( initialValues ) ).length,
-		isReady: false,
-	} );
-
-	const isBillingCompleted =
-		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
-
-	/*
-	  If a merchant has not yet finished the billing setup, the billing status will be
-	  updated by `useAutoCheckBillingStatusEffect` hook in `BillingSetupCard` component
-	  till it gets completed.
-
-	  Or, if the billing setup is already finished, the loaded `billingStatus.status`
-		will already be 'approved' without passing through the above hook and component.
-
-	  Therefore, in order to ensure the parent component can continue the setup from
-	  any billing status, it only needs to watch the `isBillingCompleted` eventually
-	  to wait for the fulfilled 'approved' status, and then propagate it to the parent.
-
-	  For example, refresh page during onboarding flow after the billing setup is finished.
-	*/
-	useEffect( () => {
-		onStatesReceivedRef.current( {
-			...campaign,
-			isReady: campaign.isValid && isBillingCompleted,
-		} );
-	}, [ campaign, isBillingCompleted ] );
-
-	if ( ! targetAudience || ! billingStatus ) {
-		return <GoogleAdsAccountSection />;
-	}
-
-	return (
-		<Form
-			initialValues={ {
-				amount: 0,
-				countryCodes: targetAudience,
-			} }
-			onChange={ ( _, values, isValid ) => {
-				setCampaign( { ...values, isValid } );
-			} }
-			validate={ validateForm }
-		>
-			{ ( formProps ) => {
-				const { countryCodes } = formProps.values;
-				const disabledAudience = ! [
-					GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED,
-					GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE,
-				].includes( googleAdsAccount?.status );
-				const disabledBudget =
-					disabledAudience || countryCodes.length === 0;
-
-				return (
-					<>
-						<GoogleAdsAccountSection />
-						<AudienceSection
-							formProps={ formProps }
-							disabled={ disabledAudience }
-						/>
-						<BudgetSection
-							formProps={ formProps }
-							disabled={ disabledBudget }
-						>
-							{ ! disabledBudget && <BillingCard /> }
-						</BudgetSection>
-					</>
-				);
-			} }
-		</Form>
-	);
-}
+import { GUIDE_NAMES } from '.~/constants';
 
 const ACTION_COMPLETE = 'complete-ads';
 const ACTION_SKIP = 'skip-ads';
@@ -221,7 +123,7 @@ export default function SetupPaidAds() {
 				}
 			/>
 			{ showPaidAdsSetup && (
-				<PaidAdsSectionsGroup onStatesReceived={ setPaidAds } />
+				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
 			) }
 			<FaqsSection />
 			<StepContentFooter hidden={ ! showPaidAdsSetup }>
