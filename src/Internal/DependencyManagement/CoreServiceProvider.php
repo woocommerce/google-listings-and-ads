@@ -75,6 +75,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\BeforeCampaignMigration as
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\AfterCampaignMigration as AfterCampaignMigrationNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AttributeMappingRules;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
@@ -392,5 +393,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ShippingSuggestionService::class, ShippingZone::class, WC::class );
 		$this->share_with_tags( RequestReviewStatuses::class );
 		$this->share_with_tags( AttributeMappingHelper::class );
+		$this->share_with_tags( AttributeMappingRules::class );
 	}
 }

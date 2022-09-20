@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AttributeMappingRules;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
@@ -25,16 +26,23 @@ class AttributeMappingController extends BaseOptionsController {
 	 */
 	private AttributeMappingHelper $attribute_mapping_helper;
 
+	/**
+	 * @var AttributeMappingRules
+	 */
+	private AttributeMappingRules $mapping_rules;
+
 
 	/**
 	 * AttributeMappingController constructor.
 	 *
 	 * @param RESTServer             $server
 	 * @param AttributeMappingHelper $attribute_mapping_helper
+	 * @param AttributeMappingRules           $mapping_rules
 	 */
-	public function __construct( RESTServer $server, AttributeMappingHelper $attribute_mapping_helper ) {
+	public function __construct(RESTServer $server, AttributeMappingHelper $attribute_mapping_helper, AttributeMappingRules $mapping_rules ) {
 		parent::__construct( $server );
 		$this->attribute_mapping_helper = $attribute_mapping_helper;
+		$this->mapping_rules = $mapping_rules;
 	}
 
 	/**
@@ -77,6 +85,33 @@ class AttributeMappingController extends BaseOptionsController {
 				'schema' => $this->get_api_response_schema_callback(),
 			],
 		);
+
+		/**
+		 * GET - Receive Attribute mapping rules from database
+		 */
+		$this->register_route(
+			'mc/mapping/rules',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_mappping_rules_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				]
+			],
+		);
+		/**
+		 * POST - Save the new Attribute mapping rules in database
+		 */
+		$this->register_route(
+			'mc/mapping/rules',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->post_mappping_rules_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				]
+			],
+		);
 	}
 
 	/**
@@ -111,6 +146,43 @@ class AttributeMappingController extends BaseOptionsController {
 				}
 
 				return $this->get_sources_for_attribute( $attribute );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+
+	/**
+	 * Callback function for getting the Attribute Mapping rules from DB
+	 *
+	 * @return callable
+	 */
+	protected function get_mappping_rules_callback(): callable {
+		return function() {
+			try {
+				return $this->mapping_rules->get();
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Callback function for saving the Attribute Mapping rules in DB
+	 *
+	 * @return callable
+	 */
+	protected function post_mappping_rules_callback(): callable {
+		return function( Request $request ) {
+			try {
+				$rules = $request->get_param('rules');
+
+				if ( ! $rules ) {
+					return false;
+				}
+
+				$this->mapping_rules->set( $rules );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}

@@ -49,6 +49,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AttributeMappingRules;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -115,7 +116,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( SettingsSyncController::class, Settings::class );
 		$this->share( DisconnectController::class );
 		$this->share( SetupCompleteController::class );
-		$this->share( AttributeMappingController::class, AttributeMappingHelper::class );
+		$this->share( AttributeMappingController::class, AttributeMappingHelper::class, AttributeMappingRules::class );
 	}
 
 	/**
