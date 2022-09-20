@@ -22,6 +22,7 @@ import ProductFeedStatusSection from './product-feed-status-section';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
+import clientSession from './clientSession';
 import { API_NAMESPACE } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
 
@@ -36,9 +37,16 @@ export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
 	const { createNotice } = useDispatchCoreNotices();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( false );
+	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( () =>
+		clientSession.getShowPaidAdsSetup( false )
+	);
 	const [ paidAds, setPaidAds ] = useState( {} );
 	const [ completing, setCompleting ] = useState( null );
+
+	const handleContinuePaidAdsSetupClick = () => {
+		setShowPaidAdsSetup( true );
+		clientSession.setShowPaidAdsSetup( true );
+	};
 
 	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
 		setCompleting( event.target.dataset.action );
@@ -118,7 +126,7 @@ export default function SetupPaidAds() {
 							'google-listings-and-ads'
 						) }
 						disabled={ completing === ACTION_SKIP }
-						onClick={ () => setShowPaidAdsSetup( true ) }
+						onClick={ handleContinuePaidAdsSetupClick }
 					/>
 				}
 			/>
