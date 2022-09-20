@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
-class IsBundle extends AbstractAttribute {
+class IsBundle extends AbstractAttribute implements WithMappingInterface {
 
 	/**
 	 * Returns the attribute ID.

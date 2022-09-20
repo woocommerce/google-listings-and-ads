@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
-class SizeSystem extends AbstractAttribute implements WithValueOptionsInterface {
+class SizeSystem extends AbstractAttribute implements WithValueOptionsInterface, WithMappingInterface {
 
 	/**
 	 * Returns the attribute ID.
