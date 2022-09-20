@@ -67,4 +67,31 @@ class SizeType extends AbstractAttribute implements WithValueOptionsInterface {
 		return SizeTypeInput::class;
 	}
 
+	/**
+	 * Returns the attribute name
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return __( 'Size Type', 'google-listings-and-ads' );
+	}
+
+	/**
+	 * Returns true if the attribute is an enum
+	 *
+	 * @return bool
+	 */
+	public static function is_enum(): bool {
+		return true;
+	}
+
+	/**
+	 * Returns the attribute sources
+	 *
+	 * @return array
+	 */
+	public static function get_sources(): array {
+		return self::get_value_options();
+	}
+
 }

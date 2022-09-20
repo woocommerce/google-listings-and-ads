@@ -60,4 +60,34 @@ class IsBundle extends AbstractAttribute {
 		return IsBundleInput::class;
 	}
 
+	/**
+	 * Returns the attribute name
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return __( 'Is Bundle', 'google-listings-and-ads' );
+	}
+
+	/**
+	 * Returns true if the attribute is an enum
+	 *
+	 * @return bool
+	 */
+	public static function is_enum(): bool {
+		return true;
+	}
+
+	/**
+	 * Returns the attribute sources
+	 *
+	 * @return array
+	 */
+	public static function get_sources(): array {
+		return [
+			'yes' => __( 'Yes', 'google-listings-and-ads' ),
+			'no'  => __( 'No', 'google-listings-and-ads' ),
+		];
+	}
+
 }

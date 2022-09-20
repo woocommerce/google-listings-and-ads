@@ -70,6 +70,15 @@ class Adult extends AbstractAttribute implements WithMappingInterface {
 	}
 
 	/**
+	 * Returns true if the attribute is an enum
+	 *
+	 * @return bool
+	 */
+	public static function is_enum(): bool {
+		return true;
+	}
+
+	/**
 	 * Returns the attribute sources
 	 *
 	 * @return array
