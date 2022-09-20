@@ -15,6 +15,7 @@ import AudienceSection from '.~/components/paid-ads/audience-section';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
 import validateForm from '.~/utils/paid-ads/validateForm';
+import clientSession from './clientSession';
 import {
 	GOOGLE_ADS_ACCOUNT_STATUS,
 	GOOGLE_ADS_BILLING_STATUS,
@@ -30,6 +31,39 @@ import {
  * @property {boolean} isReady Whether the campaign data and the billing setting are ready for completing the paid ads setup.
  */
 
+const defaultPaidAds = {
+	amount: 0,
+	countryCodes: [],
+	isValid: false,
+	isReady: false,
+};
+
+/**
+ * Resolve the initial paid ads data from the given paid ads data with the loaded target audience.
+ *
+ * @param {PaidAdsData} paidAds The paid ads data as the base to be resolved with other states.
+ * @param {Array<CountryCode>} targetAudience Country codes of selected target audience.
+ * @return {PaidAdsData} The resolved paid ads data.
+ */
+function resolveInitialPaidAds( paidAds, targetAudience ) {
+	const nextPaidAds = { ...paidAds };
+
+	if ( targetAudience ) {
+		if ( nextPaidAds.countryCodes === defaultPaidAds.countryCodes ) {
+			nextPaidAds.countryCodes = targetAudience;
+		} else {
+			// The selected target audience may be changed back and forth during the onboarding flow.
+			// Remove countries if any don't exist in the latest state.
+			nextPaidAds.countryCodes = nextPaidAds.countryCodes.filter(
+				( code ) => targetAudience.includes( code )
+			);
+		}
+	}
+
+	nextPaidAds.isValid = ! Object.keys( validateForm( nextPaidAds ) ).length;
+	return nextPaidAds;
+}
+
 /**
  * Renders sections of Google Ads account, audience, budget, and billing for setting up the paid ads.
  *
@@ -44,14 +78,12 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 	const onStatesReceivedRef = useRef();
 	onStatesReceivedRef.current = onStatesReceived;
 
-	const initialValues = {
-		amount: 0,
-		countryCodes: targetAudience,
-	};
-	const [ campaign, setCampaign ] = useState( {
-		...initialValues,
-		isValid: ! Object.keys( validateForm( initialValues ) ).length,
-		isReady: false,
+	const [ paidAds, setPaidAds ] = useState( () => {
+		const startingPaidAds = {
+			...defaultPaidAds,
+			...clientSession.getCampaign(),
+		};
+		return resolveInitialPaidAds( startingPaidAds, targetAudience );
 	} );
 
 	const isBillingCompleted =
@@ -72,24 +104,35 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 	  For example, refresh page during onboarding flow after the billing setup is finished.
 	*/
 	useEffect( () => {
-		onStatesReceivedRef.current( {
-			...campaign,
-			isReady: campaign.isValid && isBillingCompleted,
-		} );
-	}, [ campaign, isBillingCompleted ] );
+		const nextPaidAds = {
+			...paidAds,
+			isReady: paidAds.isValid && isBillingCompleted,
+		};
+		onStatesReceivedRef.current( nextPaidAds );
+		clientSession.setCampaign( nextPaidAds );
+	}, [ paidAds, isBillingCompleted ] );
+
+	// Resolve the initial states after the `targetAudience` is loaded.
+	useEffect( () => {
+		setPaidAds( ( currentPaidAds ) =>
+			resolveInitialPaidAds( currentPaidAds, targetAudience )
+		);
+	}, [ targetAudience ] );
 
 	if ( ! targetAudience || ! billingStatus ) {
 		return <GoogleAdsAccountSection />;
 	}
 
+	const initialValues = {
+		countryCodes: paidAds.countryCodes,
+		amount: paidAds.amount,
+	};
+
 	return (
 		<Form
-			initialValues={ {
-				amount: 0,
-				countryCodes: targetAudience,
-			} }
+			initialValues={ initialValues }
 			onChange={ ( _, values, isValid ) => {
-				setCampaign( { ...values, isValid } );
+				setPaidAds( { ...paidAds, ...values, isValid } );
 			} }
 			validate={ validateForm }
 		>
