@@ -54,7 +54,7 @@ interface OptionsInterface {
 		self::GOOGLE_CONNECTED        => true,
 		self::INSTALL_TIMESTAMP       => true,
 		self::JETPACK_CONNECTED       => true,
-		self::MAPPING_RULES        => true,
+		self::MAPPING_RULES           => true,
 		self::MC_SETUP_COMPLETED_AT   => true,
 		self::MERCHANT_ACCOUNT_STATE  => true,
 		self::MERCHANT_CENTER         => true,

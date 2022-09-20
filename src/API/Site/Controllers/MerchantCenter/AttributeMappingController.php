@@ -37,12 +37,12 @@ class AttributeMappingController extends BaseOptionsController {
 	 *
 	 * @param RESTServer             $server
 	 * @param AttributeMappingHelper $attribute_mapping_helper
-	 * @param AttributeMappingRules           $mapping_rules
+	 * @param AttributeMappingRules  $mapping_rules
 	 */
-	public function __construct(RESTServer $server, AttributeMappingHelper $attribute_mapping_helper, AttributeMappingRules $mapping_rules ) {
+	public function __construct( RESTServer $server, AttributeMappingHelper $attribute_mapping_helper, AttributeMappingRules $mapping_rules ) {
 		parent::__construct( $server );
 		$this->attribute_mapping_helper = $attribute_mapping_helper;
-		$this->mapping_rules = $mapping_rules;
+		$this->mapping_rules            = $mapping_rules;
 	}
 
 	/**
@@ -96,7 +96,7 @@ class AttributeMappingController extends BaseOptionsController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_mappping_rules_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-				]
+				],
 			],
 		);
 		/**
@@ -109,7 +109,7 @@ class AttributeMappingController extends BaseOptionsController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->post_mappping_rules_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-				]
+				],
 			],
 		);
 	}
@@ -176,10 +176,10 @@ class AttributeMappingController extends BaseOptionsController {
 	protected function post_mappping_rules_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$rules = $request->get_param('rules');
+				$rules = $request->get_param( 'rules' );
 
-				if ( ! $rules ) {
-					return false;
+				if ( is_null( $rules ) ) {
+					return $this->response_from_exception( new Exception( 'Required rules param not provided' ) );
 				}
 
 				$this->mapping_rules->set( $rules );

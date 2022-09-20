@@ -22,6 +22,7 @@ class AttributeMappingRules implements OptionsAwareInterface, Service {
 	/**
 	 *
 	 * Setter for the option
+	 *
 	 * @param array $rules The rules to save in the DB
 	 */
 	public function set( array $rules ) {
@@ -30,6 +31,7 @@ class AttributeMappingRules implements OptionsAwareInterface, Service {
 
 	/**
 	 * Getter for the option
+	 *
 	 * @return array The rules saved in the option
 	 */
 	public function get(): array {
