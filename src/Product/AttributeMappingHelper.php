@@ -45,11 +45,14 @@ class AttributeMappingHelper implements Service {
 		 * @var AttributeInterface $attribute
 		 */
 		foreach ( self::ATTRIBUTES_AVAILABLE_FOR_MAPPING as $attribute ) {
-			array_push($destinations, [
-				'id' => $attribute::get_id(),
-				'label' => $attribute::get_name(),
-				'enum' => $attribute::is_enum()
-			]);
+			array_push(
+				$destinations,
+				[
+					'id'    => $attribute::get_id(),
+					'label' => $attribute::get_name(),
+					'enum'  => $attribute::is_enum(),
+				]
+			);
 		}
 
 		return $destinations;
