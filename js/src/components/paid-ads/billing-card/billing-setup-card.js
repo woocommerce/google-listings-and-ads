@@ -46,7 +46,7 @@ function getWindowFeatures( defaultView, windowWidth, windowHeight ) {
  * @fires gla_ads_set_up_billing_click with `{ context: 'setup-ads', link_id: 'set-up-billing',	href: billingUrl }`
  * @param {Object} props React props.
  * @param {string} props.billingUrl The URL for setting the billing up in Google Ads
- * @param {Function} props.onSetupComplete Callback function when setup is completed
+ * @param {Function} [props.onSetupComplete] Callback function when setup is completed
  * @return {JSX.Element} Card filled with content or `AppSpinner`.
  */
 const BillingSetupCard = ( { billingUrl, onSetupComplete } ) => {
