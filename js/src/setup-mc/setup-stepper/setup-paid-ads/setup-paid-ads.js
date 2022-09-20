@@ -173,7 +173,7 @@ export default function SetupPaidAds() {
 		await finishOnboardingSetup( event, onBeforeFinish );
 	};
 
-	// The status check of Google Ads account connection is included in `paidAds.completing`,
+	// The status check of Google Ads account connection is included in `paidAds.isReady`,
 	// because when there is no connected account, it will disable the budget section and set the `amount` to `undefined`.
 	const disabledComplete = completing === ACTION_SKIP || ! paidAds.isReady;
 
