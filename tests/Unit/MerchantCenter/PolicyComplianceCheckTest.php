@@ -11,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceC
 use PHPUnit\Framework\MockObject\MockObject;
 
 use WC_Payment_Gateway;
-use WC_Helper_Product;
 
 defined( 'ABSPATH' ) || exit;
 
