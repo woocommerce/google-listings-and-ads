@@ -35,24 +35,16 @@ const clientSession = {
 	 * @param {Array<CountryCode>} data.countryCodes Country codes of the campaign.
 	 */
 	setCampaign( { amount, countryCodes } ) {
-		try {
-			const json = JSON.stringify( { amount, countryCodes } );
-			sessionStorage.setItem( KEY_PAID_ADS, json );
-		} catch ( e ) {
-			// noop
-		}
+		const json = JSON.stringify( { amount, countryCodes } );
+		sessionStorage.setItem( KEY_PAID_ADS, json );
 	},
 
 	/**
 	 * @return {CampaignData|null} The stored campaign data. It will return `null` if stored data is not available.
 	 */
 	getCampaign() {
-		try {
-			const json = sessionStorage.getItem( KEY_PAID_ADS );
-			return JSON.parse( json );
-		} catch ( e ) {
-			return null;
-		}
+		const json = sessionStorage.getItem( KEY_PAID_ADS );
+		return json === null ? null : JSON.parse( json );
 	},
 };
 
