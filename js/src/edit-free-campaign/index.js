@@ -200,6 +200,10 @@ const EditFreeCampaign = () => {
 				backHref={ dashboardURL }
 			/>
 			<SetupFreeListings
+				headerTitle={ __(
+					'Edit your listings',
+					'google-listings-and-ads'
+				) }
 				targetAudience={ targetAudience }
 				resolveFinalCountries={ getFinalCountries }
 				onTargetAudienceChange={ updateTargetAudience }

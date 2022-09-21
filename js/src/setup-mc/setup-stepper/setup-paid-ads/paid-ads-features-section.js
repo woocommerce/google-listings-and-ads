@@ -52,9 +52,8 @@ function FeatureList() {
 	);
 }
 
-// TODO: `href` is not yet ready. Will be added later.
 /**
- * @fires gla_documentation_link_click with `{ context: 'setup-paid-ads', link_id: 'paid-ads-with-performance-max-campaigns-learn-more', href: 'https://example.com' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-paid-ads', link_id: 'paid-ads-with-performance-max-campaigns-learn-more', href: 'https://support.google.com/google-ads/answer/10724817' }`
  */
 
 /**
@@ -93,7 +92,7 @@ export default function PaidAdsFeaturesSection( {
 						<AppDocumentationLink
 							context="setup-paid-ads"
 							linkId="paid-ads-with-performance-max-campaigns-learn-more"
-							href="https://example.com" // TODO: Not yet ready. Will be added later.
+							href="https://support.google.com/google-ads/answer/10724817"
 						>
 							{ __( 'Learn more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>
