@@ -26,12 +26,10 @@ const nonInteractableProps = {
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
+ * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
-const BudgetSection = ( props ) => {
-	const {
-		formProps: { getInputProps, setValue, values },
-		disabled = false,
-	} = props;
+const BudgetSection = ( { formProps, disabled = false, children } ) => {
+	const { getInputProps, setValue, values } = formProps;
 	const { countryCodes, amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
@@ -80,7 +78,7 @@ const BudgetSection = ( props ) => {
 							<AppInputPriceControl
 								disabled
 								label={ __(
-									'Monthly max, estimated ',
+									'Monthly max, estimated',
 									'google-listings-and-ads'
 								) }
 								suffix={ currency }
@@ -95,6 +93,7 @@ const BudgetSection = ( props ) => {
 						) }
 					</Section.Card.Body>
 				</Section.Card>
+				{ children }
 			</Section>
 		</div>
 	);

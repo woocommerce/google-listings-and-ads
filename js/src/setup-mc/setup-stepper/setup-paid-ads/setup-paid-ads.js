@@ -5,15 +5,14 @@ import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { useState } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
-import { Form } from '@woocommerce/components';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
@@ -21,60 +20,10 @@ import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
 import ProductFeedStatusSection from './product-feed-status-section';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
-import GoogleAdsAccountSection from './google-ads-account-section';
-import AudienceSection from '.~/components/paid-ads/audience-section';
-import BudgetSection from '.~/components/paid-ads/budget-section';
-import validateForm from '.~/utils/paid-ads/validateForm';
+import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
-import { GUIDE_NAMES, GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 import { API_NAMESPACE } from '.~/data/constants';
-
-const { CONNECTED } = GOOGLE_ADS_ACCOUNT_STATUS;
-
-function PaidAdsSectionsGroup( { onCampaignChange } ) {
-	const { googleAdsAccount } = useGoogleAdsAccount();
-	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
-
-	if ( ! targetAudience ) {
-		return <GoogleAdsAccountSection />;
-	}
-
-	const handleChange = ( _, values, isValid ) => {
-		onCampaignChange( { ...values, isValid } );
-	};
-
-	return (
-		<Form
-			initialValues={ {
-				amount: 0,
-				countryCodes: targetAudience,
-			} }
-			onChange={ handleChange }
-			validate={ validateForm }
-		>
-			{ ( formProps ) => {
-				const { countryCodes } = formProps.values;
-				const disabledAudience = googleAdsAccount?.status !== CONNECTED;
-				const disabledBudget =
-					disabledAudience || countryCodes.length === 0;
-
-				return (
-					<>
-						<GoogleAdsAccountSection />
-						<AudienceSection
-							formProps={ formProps }
-							disabled={ disabledAudience }
-						/>
-						<BudgetSection
-							formProps={ formProps }
-							disabled={ disabledBudget }
-						/>
-					</>
-				);
-			} }
-		</Form>
-	);
-}
+import { GUIDE_NAMES } from '.~/constants';
 
 const ACTION_COMPLETE = 'complete-ads';
 const ACTION_SKIP = 'skip-ads';
@@ -86,14 +35,16 @@ const ACTION_SKIP = 'skip-ads';
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
 	const { createNotice } = useDispatchCoreNotices();
+	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( false );
-	const [ campaign, setCampaign ] = useState( {} );
+	const [ paidAds, setPaidAds ] = useState( {} );
 	const [ completing, setCompleting ] = useState( null );
 
-	const finishFreeListingsSetup = async ( event ) => {
+	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
 		setCompleting( event.target.dataset.action );
 
 		try {
+			await onBeforeFinish();
 			await apiFetch( {
 				path: `${ API_NAMESPACE }/mc/settings/sync`,
 				method: 'POST',
@@ -116,14 +67,17 @@ export default function SetupPaidAds() {
 	};
 
 	const handleCompleteClick = async ( event ) => {
-		// TODO: Implement the compaign creation and paid ads completion.
-		await finishFreeListingsSetup( event );
+		const onBeforeFinish = handleSetupComplete.bind(
+			null,
+			paidAds.amount,
+			paidAds.countryCodes
+		);
+		await finishOnboardingSetup( event, onBeforeFinish );
 	};
 
-	// The status check of Google Ads account connection is included in `campaign.isValid`,
+	// The status check of Google Ads account connection is included in `paidAds.isReady`,
 	// because when there is no connected account, it will disable the budget section and set the `amount` to `undefined`.
-	// TODO: Add a condition to check Billing setup
-	const disabledComplete = completing === ACTION_SKIP || ! campaign.isValid;
+	const disabledComplete = completing === ACTION_SKIP || ! paidAds.isReady;
 
 	function createSkipButton( text ) {
 		return (
@@ -133,7 +87,7 @@ export default function SetupPaidAds() {
 				text={ text }
 				loading={ completing === ACTION_SKIP }
 				disabled={ completing === ACTION_COMPLETE }
-				onClick={ finishFreeListingsSetup }
+				onClick={ finishOnboardingSetup }
 			/>
 		);
 	}
@@ -169,7 +123,7 @@ export default function SetupPaidAds() {
 				}
 			/>
 			{ showPaidAdsSetup && (
-				<PaidAdsSectionsGroup onCampaignChange={ setCampaign } />
+				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
 			) }
 			<FaqsSection />
 			<StepContentFooter hidden={ ! showPaidAdsSetup }>

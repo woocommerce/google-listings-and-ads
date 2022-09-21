@@ -11,7 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
-export default function useSetupCompleteCallback() {
+export default function useAdsSetupCompleteCallback() {
 	const { createAdsCampaign } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const [ loading, setLoading ] = useState( false );
@@ -36,7 +36,7 @@ export default function useSetupCompleteCallback() {
 	const handleFinishSetup = useCallback(
 		( amount, countryCodes, onCompleted ) => {
 			setLoading( true );
-			createAdsCampaign( amount, countryCodes )
+			return createAdsCampaign( amount, countryCodes )
 				.then( completeAdsSetup )
 				.then( onCompleted )
 				.catch( () => setLoading( false ) );

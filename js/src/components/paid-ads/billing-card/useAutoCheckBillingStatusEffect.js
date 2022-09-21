@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -11,6 +12,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { useAppDispatch } from '.~/data';
 import useWindowFocusCallbackIntervalEffect from '.~/hooks/useWindowFocusCallbackIntervalEffect';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
 /**
  * Make API call to complete Google Ads account setup.
@@ -22,7 +24,7 @@ const completeGoogleAdsAccountSetup = () => {
 	} );
 };
 
-const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
+const useAutoCheckBillingStatusEffect = ( onStatusApproved = noop ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { receiveGoogleAdsAccountBillingStatus } = useAppDispatch();
 
@@ -31,7 +33,7 @@ const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
 			path: '/wc/gla/ads/billing-status',
 		} );
 
-		if ( billingStatus.status !== 'approved' ) {
+		if ( billingStatus.status !== GOOGLE_ADS_BILLING_STATUS.APPROVED ) {
 			return;
 		}
 
