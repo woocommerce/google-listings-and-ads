@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQu
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Color;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -27,6 +28,7 @@ class AttributeMappingHelper implements Service {
 	private const ATTRIBUTES_AVAILABLE_FOR_MAPPING = [
 		Adult::class,
 		AgeGroup::class,
+		Color::class,
 	];
 
 	public const CATEGORY_CONDITION_TYPE_ALL    = 'ALL';
@@ -72,6 +74,51 @@ class AttributeMappingHelper implements Service {
 		 */
 		foreach ( self::ATTRIBUTES_AVAILABLE_FOR_MAPPING as $attribute ) {
 			$sources[ $attribute::get_id() ] = $attribute::get_sources();
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * Gets the taxonomies and global attributes to render them as options in the frontend.
+	 *
+	 * @return array An array with the taxonomies and global attributes
+	 */
+	public static function get_source_taxonomies(): array {
+		$taxonomies        = get_object_taxonomies( 'product', 'objects' );
+		$parsed_taxonomies = [];
+		$attributes        = [];
+		$sources           = [];
+
+		foreach ( $taxonomies as $taxonomy ) {
+			if ( taxonomy_is_product_attribute( $taxonomy->name ) ) {
+				$attributes[ 'taxonomy:' . $taxonomy->name ] = $taxonomy->label;
+				continue;
+			}
+
+			$parsed_taxonomies[ 'taxonomy:' . $taxonomy->name ] = $taxonomy->label;
+		}
+
+		asort( $parsed_taxonomies );
+		asort( $attributes );
+
+		if ( ! empty( $attributes ) ) {
+			$sources = array_merge(
+				[
+					'disabled:attributes' => __( '- Global attributes -', 'google-listings-and-ads' ),
+				],
+				$attributes
+			);
+		}
+
+		if ( ! empty( $parsed_taxonomies ) ) {
+			$sources = array_merge(
+				$sources,
+				[
+					'disabled:taxonomies' => __( '- Taxonomies -', 'google-listings-and-ads' ),
+				],
+				$parsed_taxonomies
+			);
 		}
 
 		return $sources;

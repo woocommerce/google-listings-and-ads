@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\ColorInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -47,6 +48,24 @@ class Color extends AbstractAttribute {
 	 */
 	public static function get_input_type(): string {
 		return ColorInput::class;
+	}
+
+	/**
+	 * Returns the attribute name
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return __( 'Color', 'google-listings-and-ads' );
+	}
+
+	/**
+	 * Returns the attribute sources
+	 *
+	 * @return array
+	 */
+	public static function get_sources(): array {
+		return AttributeMappingHelper::get_source_taxonomies();
 	}
 
 }
