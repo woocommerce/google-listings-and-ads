@@ -35,7 +35,6 @@ class AttributeMappingRulesQuery extends Query {
 	 * @return mixed The sanitized value.
 	 */
 	protected function sanitize_value( string $column, $value ) {
-
 		if ( $column === 'attribute' || $column === 'source' ) {
 			return sanitize_text_field( $value );
 		}

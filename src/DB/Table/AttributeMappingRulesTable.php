@@ -51,11 +51,11 @@ SQL;
 	 */
 	public function get_columns(): array {
 		return [
-			'id'            => true,
-			'attribute'     => true,
-			'source'        => true,
+			'id'                      => true,
+			'attribute'               => true,
+			'source'                  => true,
 			'category_condition_type' => true,
-			'categories'    => true,
+			'categories'              => true,
 		];
 	}
 }

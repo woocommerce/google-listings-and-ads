@@ -109,20 +109,20 @@ class AttributeMappingController extends BaseOptionsController {
 							'validate_callback' => 'rest_validate_request_arg',
 							'required'          => true,
 							'properties'        => [
-								'id' => [
+								'id'                      => [
 									'description'       => __( 'The id for the rule to update.', 'google-listings-and-ads' ),
 									'type'              => 'integer',
 									'validate_callback' => 'rest_validate_request_arg',
 									'minimum'           => 1,
 								],
-								'attribute' => [
+								'attribute'               => [
 									'description'       => __( 'The attribute value for the rule.', 'google-listings-and-ads' ),
 									'type'              => 'string',
 									'validate_callback' => 'rest_validate_request_arg',
 									'required'          => true,
-									'enum'              => array_keys( $this->attribute_mapping_helper->get_attributes() )
+									'enum'              => array_keys( $this->attribute_mapping_helper->get_attributes() ),
 								],
-								'source' => [
+								'source'                  => [
 									'description'       => __( 'The source value for the rule.', 'google-listings-and-ads' ),
 									'type'              => 'string',
 									'validate_callback' => 'rest_validate_request_arg',
@@ -133,14 +133,14 @@ class AttributeMappingController extends BaseOptionsController {
 									'type'              => 'string',
 									'validate_callback' => 'rest_validate_request_arg',
 									'required'          => true,
-									'enum'              => $this->attribute_mapping_helper->get_category_condition_types()
+									'enum'              => $this->attribute_mapping_helper->get_category_condition_types(),
 								],
-								'categories' => [
+								'categories'              => [
 									'description'       => __( 'Comma separated categories for this rule.', 'google-listings-and-ads' ),
 									'type'              => 'string',
 									'validate_callback' => 'rest_validate_request_arg',
-								]
-							]
+								],
+							],
 						],
 					],
 				],
@@ -234,7 +234,10 @@ class AttributeMappingController extends BaseOptionsController {
 		return function( Request $request ) {
 			try {
 				$rule = $request->get_param( 'rule' );
-				$result = $this->attribute_mapping_helper->upsert_rule( $rule );
+
+				$result = isset( $rule['id'] )
+					? $this->attribute_mapping_helper->update_rule( $rule )
+					: $this->attribute_mapping_helper->insert_rule( $rule );
 
 				if ( is_null( $result ) ) {
 					return $this->response_from_exception( new Exception( 'Unable to register the new rule.' ) );

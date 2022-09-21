@@ -34,6 +34,9 @@ class AttributeMappingHelper implements Service {
 	public const CATEGORY_CONDITION_TYPE_EXCEPT = 'EXCEPT';
 
 
+	/**
+	 * @param AttributeMappingRulesQuery $rules_query
+	 */
 	public function __construct( AttributeMappingRulesQuery $rules_query ) {
 		$this->rules_query = $rules_query;
 	}
@@ -94,28 +97,34 @@ class AttributeMappingHelper implements Service {
 	}
 
 	/**
-	 * Update / Insert a rule in database
+	 * Insert a rule in database
 	 *
-	 * @param array $rule The rule to insert/update
+	 * @param array $rule The rule to insert
 	 * @return array|null The inserted or updated rule or null if the update/insert failed
 	 */
-	public function upsert_rule( array $rule ): ?array {
-
-		if ( isset( $rule['id'] ) ) {
-			return $this->rules_query->update( $rule, [ 'id' => $rule['id'] ] ) ? $this->get_rule( $rule['id'] ) : null;
-		}
-
+	public function insert_rule( array $rule ): ?array {
 		return $this->rules_query->insert( $rule ) ? $this->get_rule( $this->rules_query->last_insert_id() ) : null;
 	}
 
 	/**
+	 * Update a rule in database
+	 *
+	 * @param array $rule The rule to update
+	 * @return array|null The inserted or updated rule or null if the update/insert failed
+	 */
+	public function update_rule( array $rule ): ?array {
+		return $this->rules_query->update( $rule, [ 'id' => $rule['id'] ] ) ? $this->get_rule( $rule['id'] ) : null;
+	}
+
+	/**
 	 * Removes a rule from DB
+	 *
 	 * @param int $rule_id The Rule ID to remove
 	 *
 	 * @return bool True if the deletion was successful
 	 */
 	public function delete_rule( int $rule_id ): bool {
-		return (bool) $this->rules_query->delete('id', $rule_id);
+		return (bool) $this->rules_query->delete( 'id', $rule_id );
 	}
 
 	/**
@@ -127,7 +136,7 @@ class AttributeMappingHelper implements Service {
 		return [
 			self::CATEGORY_CONDITION_TYPE_ALL,
 			self::CATEGORY_CONDITION_TYPE_EXCEPT,
-			self::CATEGORY_CONDITION_TYPE_ONLY
+			self::CATEGORY_CONDITION_TYPE_ONLY,
 		];
 	}
 }
