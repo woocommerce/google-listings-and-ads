@@ -50,6 +50,11 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 	protected $product_repository;
 
 	/**
+	 * Meta key for total sales.
+	 */
+	protected const META_KEY_TOTAL_SALES = 'total_sales';
+
+	/**
 	 * ProductFeedQueryHelper constructor.
 	 *
 	 * @param wpdb              $wpdb
@@ -168,7 +173,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 				$args['orderby']  = [ 'meta_value' => $this->get_order() ] + $args['orderby'];
 				break;
 			case 'total_sales':
-				$args['meta_key'] = ProductMetaHandler::KEY_TOTAL_SALES;
+				$args['meta_key'] = self::META_KEY_TOTAL_SALES;
 				$args['orderby']  = [ 'meta_value_num' => $this->get_order() ] + $args['orderby'];
 				break;
 			default:
