@@ -40,6 +40,7 @@ const defaultPaidAds = {
 
 /**
  * Resolve the initial paid ads data from the given paid ads data with the loaded target audience.
+ * Parts of the resolved data are used in the `initialValues` prop of `Form` component.
  *
  * @param {PaidAdsData} paidAds The paid ads data as the base to be resolved with other states.
  * @param {Array<CountryCode>} targetAudience Country codes of selected target audience.
@@ -50,6 +51,8 @@ function resolveInitialPaidAds( paidAds, targetAudience ) {
 
 	if ( targetAudience ) {
 		if ( nextPaidAds.countryCodes === defaultPaidAds.countryCodes ) {
+			// Replace the country codes with the loaded target audience only if the reference is
+			// the same as the default because the given country codes might be the restored ones.
 			nextPaidAds.countryCodes = targetAudience;
 		} else {
 			// The selected target audience may be changed back and forth during the onboarding flow.
@@ -79,6 +82,7 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 	onStatesReceivedRef.current = onStatesReceived;
 
 	const [ paidAds, setPaidAds ] = useState( () => {
+		// Resolve the starting paid ads data with the campaign data stored in the client session.
 		const startingPaidAds = {
 			...defaultPaidAds,
 			...clientSession.getCampaign(),
