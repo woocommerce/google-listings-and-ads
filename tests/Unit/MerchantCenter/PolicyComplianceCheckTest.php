@@ -41,57 +41,57 @@ class PolicyComplianceCheckTest extends WPRequestUnitTest {
 
 	public function test_website_accessible() {
 		$this->wc->expects( $this->any() )
-					   ->method( 'get_allowed_countries' )
-					->willReturn(
-						[
-							'AU' => 'Australia',
-							'AT' => 'Austria',
-							'CA' => 'Canada',
-							'US' => 'United States',
-						]
-					);
+			->method( 'get_allowed_countries' )
+			->willReturn(
+				[
+					'AU' => 'Australia',
+					'AT' => 'Austria',
+					'CA' => 'Canada',
+					'US' => 'United States',
+				]
+			);
 		$this->target_audience->expects( $this->any() )
-					   ->method( 'get_target_countries' )
-					   ->willReturn( [ 'AU', 'US' ] );
+			->method( 'get_target_countries' )
+			->willReturn( [ 'AU', 'US' ] );
 
 		$this->assertTrue( $this->policy_compliance_check->is_accessible() );
 	}
 
 	public function test_website_not_accessible() {
 		$this->wc->expects( $this->any() )
-					   ->method( 'get_allowed_countries' )
-					->willReturn(
-						[
-							'AU' => 'Australia',
-							'AT' => 'Austria',
-							'CA' => 'Canada',
-							'US' => 'United States',
-						]
-					);
+			->method( 'get_allowed_countries' )
+			->willReturn(
+				[
+					'AU' => 'Australia',
+					'AT' => 'Austria',
+					'CA' => 'Canada',
+					'US' => 'United States',
+				]
+			);
 		$this->target_audience->expects( $this->any() )
-					   ->method( 'get_target_countries' )
-					   ->willReturn( [ 'FR', 'US' ] );
+			->method( 'get_target_countries' )
+			->willReturn( [ 'FR', 'US' ] );
 
 		$this->assertFalse( $this->policy_compliance_check->is_accessible() );
 	}
 
 	public function test_payment_gateways() {
 		$this->wc->expects( $this->any() )
-					   ->method( 'get_available_payment_gateways' )
-					->willReturn(
-						[
-							'stripe' => $this->createMock( WC_Payment_Gateway::class ),
-							'paypal' => $this->createMock( WC_Payment_Gateway::class ),
-						]
-					);
+			->method( 'get_available_payment_gateways' )
+			->willReturn(
+				[
+					'stripe' => $this->createMock( WC_Payment_Gateway::class ),
+					'paypal' => $this->createMock( WC_Payment_Gateway::class ),
+				]
+			);
 
 		$this->assertTrue( $this->policy_compliance_check->has_payment_gateways() );
 	}
 
 	public function test_empty_payment_gateways() {
 		$this->wc->expects( $this->any() )
-					   ->method( 'get_available_payment_gateways' )
-					   ->willReturn( [] );
+			->method( 'get_available_payment_gateways' )
+			->willReturn( [] );
 
 		$this->assertFalse( $this->policy_compliance_check->has_payment_gateways() );
 	}
