@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
@@ -17,11 +18,25 @@ defined( 'ABSPATH' ) || exit;
  */
 class AttributeMappingHelper implements Service {
 
+	/**
+	 * @var AttributeMappingRulesQuery $rules_query
+	 */
+	private AttributeMappingRulesQuery $rules_query;
+
 
 	private const ATTRIBUTES_AVAILABLE_FOR_MAPPING = [
 		Adult::class,
 		AgeGroup::class,
 	];
+
+	public const CATEGORY_CONDITION_TYPE_ALL    = 'ALL';
+	public const CATEGORY_CONDITION_TYPE_ONLY   = 'ONLY';
+	public const CATEGORY_CONDITION_TYPE_EXCEPT = 'EXCEPT';
+
+
+	public function __construct( AttributeMappingRulesQuery $rules_query ) {
+		$this->rules_query = $rules_query;
+	}
 
 	/**
 	 * Gets all the available attributes for mapping
@@ -57,5 +72,62 @@ class AttributeMappingHelper implements Service {
 		}
 
 		return $sources;
+	}
+
+	/**
+	 * Gets all the rules from Database
+	 *
+	 * @return array The rules from database
+	 */
+	public function get_rules(): array {
+		return $this->rules_query->get_results();
+	}
+
+	/**
+	 * Gets a specific rule from Database
+	 *
+	 * @param int $rule_id The rule ID to get from Database
+	 * @return array The rules from database
+	 */
+	public function get_rule( int $rule_id ): array {
+		return $this->rules_query->where( 'id', $rule_id )->get_row();
+	}
+
+	/**
+	 * Update / Insert a rule in database
+	 *
+	 * @param array $rule The rule to insert/update
+	 * @return array|null The inserted or updated rule or null if the update/insert failed
+	 */
+	public function upsert_rule( array $rule ): ?array {
+
+		if ( isset( $rule['id'] ) ) {
+			return $this->rules_query->update( $rule, [ 'id' => $rule['id'] ] ) ? $this->get_rule( $rule['id'] ) : null;
+		}
+
+		return $this->rules_query->insert( $rule ) ? $this->get_rule( $this->rules_query->last_insert_id() ) : null;
+	}
+
+	/**
+	 * Removes a rule from DB
+	 * @param int $rule_id The Rule ID to remove
+	 *
+	 * @return bool True if the deletion was successful
+	 */
+	public function delete_rule( int $rule_id ): bool {
+		return (bool) $this->rules_query->delete('id', $rule_id);
+	}
+
+	/**
+	 * Get the available conditions for the category.
+	 *
+	 * @return string[] The list of available category conditions
+	 */
+	public function get_category_condition_types(): array {
+		return [
+			self::CATEGORY_CONDITION_TYPE_ALL,
+			self::CATEGORY_CONDITION_TYPE_EXCEPT,
+			self::CATEGORY_CONDITION_TYPE_ONLY
+		];
 	}
 }

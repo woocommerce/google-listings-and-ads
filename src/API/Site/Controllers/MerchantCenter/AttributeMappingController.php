@@ -26,23 +26,16 @@ class AttributeMappingController extends BaseOptionsController {
 	 */
 	private AttributeMappingHelper $attribute_mapping_helper;
 
-	/**
-	 * @var AttributeMappingRules
-	 */
-	private AttributeMappingRules $mapping_rules;
-
 
 	/**
 	 * AttributeMappingController constructor.
 	 *
 	 * @param RESTServer             $server
 	 * @param AttributeMappingHelper $attribute_mapping_helper
-	 * @param AttributeMappingRules  $mapping_rules
 	 */
-	public function __construct( RESTServer $server, AttributeMappingHelper $attribute_mapping_helper, AttributeMappingRules $mapping_rules ) {
+	public function __construct( RESTServer $server, AttributeMappingHelper $attribute_mapping_helper ) {
 		parent::__construct( $server );
 		$this->attribute_mapping_helper = $attribute_mapping_helper;
-		$this->mapping_rules            = $mapping_rules;
 	}
 
 	/**
@@ -87,28 +80,92 @@ class AttributeMappingController extends BaseOptionsController {
 		);
 
 		/**
-		 * GET - Receive Attribute mapping rules from database
+		 * GET - Receive All Attribute mapping rules from database
 		 */
 		$this->register_route(
 			'mc/mapping/rules',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_mappping_rules_callback(),
+					'callback'            => $this->get_mapping_rules_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			],
 		);
 		/**
-		 * POST - Save the new Attribute mapping rules in database
+		 * POST - Upsert an Attribute mapping rule
 		 */
 		$this->register_route(
-			'mc/mapping/rules',
+			'mc/mapping/rule',
 			[
 				[
 					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->post_mappping_rules_callback(),
+					'callback'            => $this->post_mapping_rule_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => [
+						'rule' => [
+							'description'       => __( 'The rule to be inserted or updated.', 'google-listings-and-ads' ),
+							'type'              => 'object',
+							'validate_callback' => 'rest_validate_request_arg',
+							'required'          => true,
+							'properties'        => [
+								'id' => [
+									'description'       => __( 'The id for the rule to update.', 'google-listings-and-ads' ),
+									'type'              => 'integer',
+									'validate_callback' => 'rest_validate_request_arg',
+									'minimum'           => 1,
+								],
+								'attribute' => [
+									'description'       => __( 'The attribute value for the rule.', 'google-listings-and-ads' ),
+									'type'              => 'string',
+									'validate_callback' => 'rest_validate_request_arg',
+									'required'          => true,
+									'enum'              => array_keys( $this->attribute_mapping_helper->get_attributes() )
+								],
+								'source' => [
+									'description'       => __( 'The source value for the rule.', 'google-listings-and-ads' ),
+									'type'              => 'string',
+									'validate_callback' => 'rest_validate_request_arg',
+									'required'          => true,
+								],
+								'category_condition_type' => [
+									'description'       => __( 'The category condition type to apply for this rule.', 'google-listings-and-ads' ),
+									'type'              => 'string',
+									'validate_callback' => 'rest_validate_request_arg',
+									'required'          => true,
+									'enum'              => $this->attribute_mapping_helper->get_category_condition_types()
+								],
+								'categories' => [
+									'description'       => __( 'Comma separated categories for this rule.', 'google-listings-and-ads' ),
+									'type'              => 'string',
+									'validate_callback' => 'rest_validate_request_arg',
+								]
+							]
+						],
+					],
+				],
+			],
+		);
+
+		/**
+		 * DELETE - Delete an Attribute mapping rule
+		 */
+		$this->register_route(
+			'mc/mapping/rule',
+			[
+				[
+					'methods'             => TransportMethods::DELETABLE,
+					'callback'            => $this->delete_mapping_rule_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => [
+						'rule_id' => [
+							'description'       => __( 'The ID for the rule to be deleted.', 'google-listings-and-ads' ),
+							'type'              => 'integer',
+							'validate_callback' => 'rest_validate_request_arg',
+							'required'          => true,
+							'minimum'           => 1,
+						],
+					],
 				],
 			],
 		);
@@ -158,10 +215,10 @@ class AttributeMappingController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	protected function get_mappping_rules_callback(): callable {
+	protected function get_mapping_rules_callback(): callable {
 		return function() {
 			try {
-				return $this->mapping_rules->get();
+				return $this->attribute_mapping_helper->get_rules();
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -169,20 +226,42 @@ class AttributeMappingController extends BaseOptionsController {
 	}
 
 	/**
-	 * Callback function for saving the Attribute Mapping rules in DB
+	 * Callback function for saving an Attribute Mapping rule in DB
 	 *
 	 * @return callable
 	 */
-	protected function post_mappping_rules_callback(): callable {
+	protected function post_mapping_rule_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$rules = $request->get_param( 'rules' );
+				$rule = $request->get_param( 'rule' );
+				$result = $this->attribute_mapping_helper->upsert_rule( $rule );
 
-				if ( is_null( $rules ) ) {
-					return $this->response_from_exception( new Exception( 'Required rules param not provided' ) );
+				if ( is_null( $result ) ) {
+					return $this->response_from_exception( new Exception( 'Unable to register the new rule.' ) );
 				}
 
-				$this->mapping_rules->set( $rules );
+				return $result;
+
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Callback function for deleting an Attribute Mapping rule in DB
+	 *
+	 * @return callable
+	 */
+	protected function delete_mapping_rule_callback(): callable {
+		return function( Request $request ) {
+			try {
+				$rule_id = $request->get_param( 'rule_id' );
+				if ( ! $this->attribute_mapping_helper->delete_rule( $rule_id ) ) {
+					return $this->response_from_exception( new Exception( 'Unable to delete the rule' ) );
+				}
+
+				return true;
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}

@@ -27,7 +27,6 @@ interface OptionsInterface {
 	public const GOOGLE_CONNECTED        = 'google_connected';
 	public const INSTALL_TIMESTAMP       = 'install_timestamp';
 	public const JETPACK_CONNECTED       = 'jetpack_connected';
-	public const MAPPING_RULES           = 'mapping_rules';
 	public const MC_SETUP_COMPLETED_AT   = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE  = 'merchant_account_state';
 	public const MERCHANT_CENTER         = 'merchant_center';
@@ -54,7 +53,6 @@ interface OptionsInterface {
 		self::GOOGLE_CONNECTED        => true,
 		self::INSTALL_TIMESTAMP       => true,
 		self::JETPACK_CONNECTED       => true,
-		self::MAPPING_RULES           => true,
 		self::MC_SETUP_COMPLETED_AT   => true,
 		self::MERCHANT_ACCOUNT_STATE  => true,
 		self::MERCHANT_CENTER         => true,
