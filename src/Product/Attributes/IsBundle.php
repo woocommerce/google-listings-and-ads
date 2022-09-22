@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class IsBundle extends AbstractAttribute implements WithMappingInterface {
 
+	use IsEnumTrait;
+
 	/**
 	 * Returns the attribute ID.
 	 *
@@ -69,14 +71,6 @@ class IsBundle extends AbstractAttribute implements WithMappingInterface {
 		return __( 'Is Bundle', 'google-listings-and-ads' );
 	}
 
-	/**
-	 * Returns true if the attribute is an enum
-	 *
-	 * @return bool
-	 */
-	public static function is_enum(): bool {
-		return true;
-	}
 
 	/**
 	 * Returns the attribute sources

@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Adult extends AbstractAttribute implements WithMappingInterface {
 
+	use IsEnumTrait;
+
 	/**
 	 * Returns the attribute ID.
 	 *
@@ -67,15 +69,6 @@ class Adult extends AbstractAttribute implements WithMappingInterface {
 	 */
 	public static function get_name(): string {
 		return __( 'Adult', 'google-listings-and-ads' );
-	}
-
-	/**
-	 * Returns true if the attribute is an enum
-	 *
-	 * @return bool
-	 */
-	public static function is_enum(): bool {
-		return true;
 	}
 
 	/**

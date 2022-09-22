@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Gender extends AbstractAttribute implements WithValueOptionsInterface, WithMappingInterface {
 
+	use IsEnumTrait;
+
 	/**
 	 * Returns the attribute ID.
 	 *
@@ -71,15 +73,6 @@ class Gender extends AbstractAttribute implements WithValueOptionsInterface, Wit
 	 */
 	public static function get_name(): string {
 		return __( 'Gender', 'google-listings-and-ads' );
-	}
-
-	/**
-	 * Returns true if the attribute is an enum
-	 *
-	 * @return bool
-	 */
-	public static function is_enum(): bool {
-		return true;
 	}
 
 	/**

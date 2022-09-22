@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class SizeType extends AbstractAttribute implements WithValueOptionsInterface, WithMappingInterface {
 
+	use IsEnumTrait;
+
 	/**
 	 * Returns the attribute ID.
 	 *
@@ -74,15 +76,6 @@ class SizeType extends AbstractAttribute implements WithValueOptionsInterface, W
 	 */
 	public static function get_name(): string {
 		return __( 'Size Type', 'google-listings-and-ads' );
-	}
-
-	/**
-	 * Returns true if the attribute is an enum
-	 *
-	 * @return bool
-	 */
-	public static function is_enum(): bool {
-		return true;
 	}
 
 	/**

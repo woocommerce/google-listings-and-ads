@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class AgeGroup extends AbstractAttribute implements WithValueOptionsInterface {
 
+	use IsEnumTrait;
+
 	/**
 	 * Returns the attribute ID.
 	 *
@@ -74,15 +76,6 @@ class AgeGroup extends AbstractAttribute implements WithValueOptionsInterface {
 	 */
 	public static function get_name(): string {
 		return __( 'Age group', 'google-listings-and-ads' );
-	}
-
-	/**
-	 * Returns true if the attribute is an enum
-	 *
-	 * @return bool
-	 */
-	public static function is_enum(): bool {
-		return true;
 	}
 
 	/**

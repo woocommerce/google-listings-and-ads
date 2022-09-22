@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Condition extends AbstractAttribute implements WithValueOptionsInterface, WithMappingInterface {
 
+	use IsEnumTrait;
+
 	/**
 	 * Returns the attribute ID.
 	 *
@@ -73,14 +75,6 @@ class Condition extends AbstractAttribute implements WithValueOptionsInterface, 
 		return __( 'Condition', 'google-listings-and-ads' );
 	}
 
-	/**
-	 * Returns true if the attribute is an enum
-	 *
-	 * @return bool
-	 */
-	public static function is_enum(): bool {
-		return true;
-	}
 
 	/**
 	 * Returns the attribute sources
