@@ -3,9 +3,10 @@
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import { select } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
-import { noop } from 'lodash';
+import { noop, merge } from 'lodash';
 
 /**
  * Internal dependencies
@@ -23,15 +24,45 @@ import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
 import clientSession from './clientSession';
-import { API_NAMESPACE } from '.~/data/constants';
+import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
 
 const ACTION_COMPLETE = 'complete-ads';
 const ACTION_SKIP = 'skip-ads';
 
 /**
+ * Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
+ *
+ * @event gla_onboarding_open_paid_ads_setup_button_click
+ */
+
+/**
+ * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
+ *
+ * @event gla_onboarding_complete_with_paid_ads_button_click
+ */
+
+/**
+ * Clicking on the skip paid ads button to complete the onboarding flow.
+ * The 'unknown' value of properties may means:
+ * - the paid ads setup is not opened
+ * - the final status has not yet been resolved when recording this event
+ * - the status is not available, for example, the billing status is unknown if Google Ads account is not yet connected
+ *
+ * @event gla_onboarding_complete_button_click
+ * @property {string} opened_paid_ads_setup Whether the paid ads setup is opened, e.g. 'yes', 'no'
+ * @property {string} google_ads_account_status The connection status of merchant's Google Ads addcount, e.g. 'unknown', 'connected', 'disconnected', 'incomplete'
+ * @property {string} billing_method_status aaa, The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
+ * @property {string} campaign_form_validation Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
+ */
+
+/**
  * Renders the onboarding step for setting up the paid ads (Google Ads account and paid campaign)
  * or skipping it, and then completing the onboarding flow.
+ *
+ * @fires gla_onboarding_open_paid_ads_setup_button_click
+ * @fires gla_onboarding_complete_with_paid_ads_button_click
+ * @fires gla_onboarding_complete_button_click
  */
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
@@ -88,6 +119,26 @@ export default function SetupPaidAds() {
 	const disabledComplete = completing === ACTION_SKIP || ! paidAds.isReady;
 
 	function createSkipButton( text ) {
+		const eventProps = {
+			opened_paid_ads_setup: 'no',
+			google_ads_account_status: 'unknown',
+			billing_method_status: 'unknown',
+			campaign_form_validation: 'unknown',
+		};
+
+		if ( showPaidAdsSetup ) {
+			const selector = select( STORE_KEY );
+			const account = selector.getGoogleAdsAccount();
+			const billing = selector.getGoogleAdsAccountBillingStatus();
+
+			merge( eventProps, {
+				opened_paid_ads_setup: 'yes',
+				google_ads_account_status: account?.status,
+				billing_method_status: billing?.status,
+				campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
+			} );
+		}
+
 		return (
 			<AppButton
 				isTertiary
@@ -96,6 +147,8 @@ export default function SetupPaidAds() {
 				loading={ completing === ACTION_SKIP }
 				disabled={ completing === ACTION_COMPLETE }
 				onClick={ finishOnboardingSetup }
+				eventName="gla_onboarding_complete_button_click"
+				eventProps={ eventProps }
 			/>
 		);
 	}
@@ -127,6 +180,7 @@ export default function SetupPaidAds() {
 						) }
 						disabled={ completing === ACTION_SKIP }
 						onClick={ handleContinuePaidAdsSetupClick }
+						eventName="gla_onboarding_open_paid_ads_setup_button_click"
 					/>
 				}
 			/>
@@ -152,6 +206,7 @@ export default function SetupPaidAds() {
 						loading={ completing === ACTION_COMPLETE }
 						disabled={ disabledComplete }
 						onClick={ handleCompleteClick }
+						eventName="gla_onboarding_complete_with_paid_ads_button_click"
 					/>
 				</Flex>
 			</StepContentFooter>
