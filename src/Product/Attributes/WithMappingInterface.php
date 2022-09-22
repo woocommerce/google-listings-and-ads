@@ -20,6 +20,13 @@ interface WithMappingInterface {
 	public static function get_name(): string;
 
 	/**
+	 * Returns true if the attribute is enum type
+	 *
+	 * @return boolean
+	 */
+	public static function is_enum(): bool;
+
+	/**
 	 * Returns the available attribute sources
 	 *
 	 * @return array
