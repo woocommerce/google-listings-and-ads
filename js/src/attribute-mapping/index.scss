@@ -3,4 +3,20 @@
 	&__table-footer {
 		padding: $grid-unit-20;
 	}
+
+	&__table-label {
+		background: $gray-100;
+		padding: $grid-unit-05 $grid-unit-10;
+		border-radius: 2px;
+		font-size: 12px;
+		line-height: 16px;
+	}
+
+	&__table-categories {
+		color: $gray-700;
+	}
+
+	&__table-categories-help {
+		border-bottom: 1px dashed;
+	}
 }
