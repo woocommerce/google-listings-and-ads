@@ -4,11 +4,15 @@
 import { _x } from '@wordpress/i18n';
 import { useState, useCallback, useEffect } from '@wordpress/element';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import CurrencyFactory from '@woocommerce/currency';
+import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
 /**
  * Internal dependencies
  */
 import useCountdown from '.~/hooks/useCountdown';
+import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import AppSpinner from '.~/components/app-spinner';
 import MockupShopping from './mockup-shopping';
 import MockupYouTube from './mockup-youtube';
 import MockupSearch from './mockup-search';
@@ -17,6 +21,7 @@ import MockupDisplay from './mockup-display';
 import MockupMap from './mockup-map';
 import productSampleImageURL from './images/product-sample-image.jpg';
 import shopSampleLogoURL from './images/shop-sample-logo.png';
+import { glaData } from '.~/constants';
 import './campaign-preview.scss';
 
 /**
@@ -47,6 +52,13 @@ const fallbackProduct = {
 	shopUrl: 'colleensteestore.com',
 };
 
+const bestsellingQuery = {
+	page: 1,
+	per_page: 1,
+	orderby: 'total_sales',
+	order: 'desc',
+};
+
 const mockups = [
 	MockupShopping,
 	MockupYouTube,
@@ -56,12 +68,36 @@ const mockups = [
 	MockupGmail,
 ];
 
+function resolvePreviewProduct( products = [] ) {
+	const currencyFactory = CurrencyFactory( getSetting( 'currency' ) );
+	const [ product = {} ] = products;
+	const { title, price, image_url: coverUrl } = product;
+	const previewProduct = {
+		title,
+		coverUrl,
+		price: currencyFactory.formatAmount( price ),
+		shopName: getSetting( 'siteTitle' ),
+		shopUrl: new URL( getSetting( 'homeUrl' ) ).host,
+		shopLogoUrl: glaData.siteLogoUrl,
+	};
+
+	Object.entries( previewProduct ).forEach( ( [ key, val ] ) => {
+		// All possible values won't be number 0, so here simply use falsy condition to do fallback.
+		if ( ! val ) {
+			previewProduct[ key ] = fallbackProduct[ key ];
+		}
+	} );
+
+	return previewProduct;
+}
+
 export default function CampaignPreview() {
 	const [ index, setIndex ] = useState( 0 );
 	const { second, callCount, startCountdown } = useCountdown();
-
-	// TODO: Fetch required data from API.
-	const product = fallbackProduct;
+	const { hasFinishedResolution, data } = useAppSelectDispatch(
+		'getMCProductFeed',
+		bestsellingQuery
+	);
 
 	const moveBy = useCallback( ( step ) => {
 		setIndex( ( currentIndex ) => {
@@ -70,15 +106,24 @@ export default function CampaignPreview() {
 	}, [] );
 
 	useEffect( () => {
-		if ( second === 0 ) {
+		if ( hasFinishedResolution && second === 0 ) {
 			if ( callCount > 0 ) {
 				moveBy( 1 );
 			}
 			startCountdown( 5 );
 		}
-	}, [ second, callCount, startCountdown, moveBy ] );
+	}, [ hasFinishedResolution, second, callCount, startCountdown, moveBy ] );
+
+	if ( ! hasFinishedResolution ) {
+		return (
+			<div className="gla-ads-mockup">
+				<AppSpinner />
+			</div>
+		);
+	}
 
 	const Mockup = mockups[ index ];
+	const product = resolvePreviewProduct( data?.products );
 
 	return (
 		<TransitionGroup className="gla-campaign-preview">

@@ -44,6 +44,11 @@ $gla-campaign-preview-height: 270px;
 	overflow: hidden;
 	background-color: $white;
 
+	.app-spinner {
+		align-items: center;
+		height: 100%;
+	}
+
 	// === Shared components within ad previews ===
 	&__placeholder {
 		height: 3px;
