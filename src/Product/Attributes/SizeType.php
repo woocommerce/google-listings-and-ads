@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class SizeType
  *
+ * @see https://support.google.com/merchants/answer/6324497
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
 class SizeType extends AbstractAttribute implements WithValueOptionsInterface {
