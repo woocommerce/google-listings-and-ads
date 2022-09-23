@@ -94,6 +94,7 @@ $gla-campaign-preview-height: 270px;
 
 	// Display smaller font sizes than browsers' limitations.
 	&__scaled-text {
+		height: 1em;
 		transform: scale(0.5);
 		transform-origin: top left;
 		margin-right: -100%; // Inner shrinkage for offsetting the outer horizontal gap caused by 0.5 times scaling.
@@ -101,7 +102,7 @@ $gla-campaign-preview-height: 270px;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		line-height: 1;
+		line-height: 0.9; // With 1em height, it prevents the font descender from getting cropped out.
 		font-size: 20px;
 
 		&--smaller {
@@ -125,6 +126,10 @@ $gla-campaign-preview-height: 270px;
 		}
 
 		&--ad-badge {
+			// Reset height and line-height because ad badge holds enough height for font descender.
+			height: auto;
+			line-height: 1;
+
 			// The same vertical inner shrinkage as above.
 			// A: Height of badge                     = &--ad-badge font-size + vertical padding
 			// B: Height of text after badge          = &--smaller font-size
