@@ -48,8 +48,8 @@ class SizeType extends AbstractAttribute implements WithValueOptionsInterface {
 			'regular'      => __( 'Regular', 'google-listings-and-ads' ),
 			'petite'       => __( 'Petite', 'google-listings-and-ads' ),
 			'plus'         => __( 'Plus', 'google-listings-and-ads' ),
-			'oversize'     => __( 'Oversize', 'google-listings-and-ads' ),
-			'big and tall' => __( 'Big and tall', 'google-listings-and-ads' ),
+			'tall'         => __( 'Tall', 'google-listings-and-ads' ),
+			'big'          => __( 'Big', 'google-listings-and-ads' ),
 			'maternity'    => __( 'Maternity', 'google-listings-and-ads' ),
 		];
 	}
