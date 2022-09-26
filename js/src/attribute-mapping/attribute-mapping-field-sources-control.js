@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import AppSelectControl from '.~/components/app-select-control';
@@ -14,12 +19,21 @@ const AttributeMappingFieldSourcesControl = ( { sources = [], help } ) => {
 	return (
 		<>
 			<AppSelectControl
-				options={ sources.map( ( source ) => {
-					return {
-						...source,
-						disabled: source.value.includes( 'disabled:' ),
-					};
-				} ) }
+				options={ [
+					{
+						value: '',
+						label: __(
+							'Select one option',
+							'google-listings-and-ads'
+						),
+					},
+					...sources.map( ( source ) => {
+						return {
+							...source,
+							disabled: source.value.includes( 'disabled:' ),
+						};
+					} ),
+				] }
 			/>
 			{ help }
 		</>
