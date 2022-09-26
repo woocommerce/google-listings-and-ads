@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -24,6 +25,7 @@ defined( 'ABSPATH' ) || exit;
  * Class ProductFeedQueryHelper
  *
  * ContainerAware used to access:
+ * - MerchantCenterService
  * - MerchantStatuses
  * - ProductHelper
  *
@@ -81,7 +83,10 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 		$args                   = $this->prepare_query_args();
 		list( $limit, $offset ) = $this->prepare_query_pagination();
 
-		$this->container->get( MerchantStatuses::class )->maybe_refresh_status_data();
+		$mc_service = $this->container->get( MerchantCenterService::class );
+		if ( $mc_service->is_connected() ) {
+			$this->container->get( MerchantStatuses::class )->maybe_refresh_status_data();
+		}
 
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
