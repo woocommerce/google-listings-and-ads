@@ -68,4 +68,9 @@ class Color extends AbstractAttribute {
 		return AttributeMappingHelper::get_source_taxonomies();
 	}
 
+	public static function is_enum(): bool {
+		// Todo: TBD. Replace with some trait or other solution avoiding override
+		return false;
+	}
+
 }
