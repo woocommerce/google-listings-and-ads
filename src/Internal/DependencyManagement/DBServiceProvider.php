@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20220923T1663910364;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\MigrationInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20211228T1640692399;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20220524T1653383133;
@@ -96,7 +95,6 @@ class DBServiceProvider extends AbstractServiceProvider {
 		$this->share_migration( MigrationVersion141::class, MerchantIssueTable::class );
 		$this->share_migration( Migration20211228T1640692399::class, ShippingRateTable::class, OptionsInterface::class );
 		$this->share_with_tags( Migration20220524T1653383133::class, BudgetRecommendationTable::class );
-		$this->share_migration( Migration20220923T1663910364::class, MerchantIssueTable::class );
 		$this->share_with_tags( Migrator::class, MigrationInterface::class );
 	}
 
