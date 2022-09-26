@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class AgeGroup extends AbstractAttribute implements WithValueOptionsInterface {
 
+	use IsEnumTrait;
+
 	/**
 	 * Returns the attribute ID.
 	 *
