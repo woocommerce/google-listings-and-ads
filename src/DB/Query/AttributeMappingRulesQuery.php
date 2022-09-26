@@ -41,4 +41,14 @@ class AttributeMappingRulesQuery extends Query {
 
 		return $value;
 	}
+
+	/**
+	 * Gets a specific rule from Database
+	 *
+	 * @param int $rule_id The rule ID to get from Database
+	 * @return array The rules from database
+	 */
+	public function get_rule( int $rule_id ): array {
+		return $this->where( 'id', $rule_id )->get_row();
+	}
 }

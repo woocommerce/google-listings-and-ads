@@ -125,56 +125,6 @@ class AttributeMappingHelper implements Service {
 	}
 
 	/**
-	 * Gets all the rules from Database
-	 *
-	 * @return array The rules from database
-	 */
-	public function get_rules(): array {
-		return $this->rules_query->get_results();
-	}
-
-	/**
-	 * Gets a specific rule from Database
-	 *
-	 * @param int $rule_id The rule ID to get from Database
-	 * @return array The rules from database
-	 */
-	public function get_rule( int $rule_id ): array {
-		return $this->rules_query->where( 'id', $rule_id )->get_row();
-	}
-
-	/**
-	 * Insert a rule in database
-	 *
-	 * @param array $rule The rule to insert
-	 * @return array|null The inserted or updated rule or null if the update/insert failed
-	 */
-	public function insert_rule( array $rule ): ?array {
-		return $this->rules_query->insert( $rule ) ? $this->get_rule( $this->rules_query->last_insert_id() ) : null;
-	}
-
-	/**
-	 * Update a rule in database
-	 *
-	 * @param array $rule The rule to update
-	 * @return array|null The inserted or updated rule or null if the update/insert failed
-	 */
-	public function update_rule( array $rule ): ?array {
-		return $this->rules_query->update( $rule, [ 'id' => $rule['id'] ] ) ? $this->get_rule( $rule['id'] ) : null;
-	}
-
-	/**
-	 * Removes a rule from DB
-	 *
-	 * @param int $rule_id The Rule ID to remove
-	 *
-	 * @return bool True if the deletion was successful
-	 */
-	public function delete_rule( int $rule_id ): bool {
-		return (bool) $this->rules_query->delete( 'id', $rule_id );
-	}
-
-	/**
 	 * Get the available conditions for the category.
 	 *
 	 * @return string[] The list of available category conditions
