@@ -116,7 +116,15 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 		clientSession.setCampaign( nextPaidAds );
 	}, [ paidAds, isBillingCompleted ] );
 
-	// Resolve the initial states after the `targetAudience` is loaded.
+	/*
+	  Resolve the initial states after the `targetAudience` is loaded.
+
+	  Please note that the loaded `targetAudience` is NOT expected to have further changes
+	  in the runtime. If it happens one day and it will need to update <Form>'s internal state
+	  with the changed `targetAudience`, please refer to the following practice.
+	  - https://github.com/woocommerce/google-listings-and-ads/blob/5b6522ca10ad75556e6b2de7c120cc712aab70b1/js/src/components/free-listings/setup-free-listings/index.js#L120-L134
+	  - https://github.com/woocommerce/google-listings-and-ads/blob/5b6522ca10ad75556e6b2de7c120cc712aab70b1/js/src/components/free-listings/setup-free-listings/index.js#L172-L186
+	*/
 	useEffect( () => {
 		setPaidAds( ( currentPaidAds ) =>
 			resolveInitialPaidAds( currentPaidAds, targetAudience )
