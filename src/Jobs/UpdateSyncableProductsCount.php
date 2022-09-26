@@ -54,6 +54,24 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob {
 	}
 
 	/**
+	 * Get the count instance variable.
+	 *
+	 * @return int
+	 */
+	public function get_count(): int {
+		return $this->count;
+	}
+
+	/**
+	 * Set the count instance variable.
+	 *
+	 * @param int $count The number that will be set to $this->count.
+	 */
+	public function set_count( $count ) {
+		$this->count = $count;
+	}
+
+	/**
 	 * Get the name of the job.
 	 *
 	 * @return string
@@ -82,7 +100,7 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob {
 	 * @param int[] $items A single batch of WooCommerce product IDs from the get_batch() method.
 	 */
 	protected function process_items( array $items ) {
-		$this->count += count( $items );
+		$this->set_count( $this->get_count() + count( $items ) );
 	}
 
 	/**
@@ -92,6 +110,6 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob {
 	 *                                If equal to 1 then no items were processed by the job.
 	 */
 	protected function handle_complete( int $final_batch_number ) {
-		$this->transients->set( TransientsInterface::SYNCABLE_PRODUCTS_COUNT, $this->count, HOUR_IN_SECONDS );
+		$this->transients->set( TransientsInterface::SYNCABLE_PRODUCTS_COUNT, $this->get_count(), HOUR_IN_SECONDS );
 	}
 }
