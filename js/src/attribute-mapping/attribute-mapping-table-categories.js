@@ -20,7 +20,7 @@ const SEPARATOR = _x(
 	'google-listings-and-ads'
 );
 
-const CATEGORIES_TO_SHOW = 4;
+const CATEGORIES_TO_SHOW = 5;
 
 /**
  * Renders a text and maybe a tooltip showing the categories for an Attribute Mapping rule

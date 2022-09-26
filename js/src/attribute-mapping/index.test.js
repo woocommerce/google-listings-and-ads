@@ -89,9 +89,12 @@ describe( 'Attribute Mapping', () => {
 
 	test( 'Renders categories helper', async () => {
 		const { queryByText, findByText } = render(
-			<AttributeMappingTableCategories categories={ [ '1' ] } />
+			<AttributeMappingTableCategories
+				categories={ '1' }
+				condition="EXCEPT"
+			/>
 		);
-
+		expect( queryByText( 'All except' ) ).toBeTruthy();
 		const category = queryByText( '1 category' );
 		expect( category ).toBeTruthy();
 		fireEvent.mouseOver( category );
@@ -101,28 +104,18 @@ describe( 'Attribute Mapping', () => {
 	test( 'Renders categories helper with tons of categories', async () => {
 		const { queryByText, findByText } = render(
 			<AttributeMappingTableCategories
-				categories={ [
-					'1',
-					'2',
-					'3',
-					'1',
-					'2',
-					'3',
-					'1',
-					'2',
-					'3',
-					'1',
-					'2',
-					'3',
-				] }
+				categories={ '1,2,3,1,2,3,1,2,3,1,2,3' }
+				condition="ONLY"
 			/>
 		);
 
+		expect( queryByText( 'Only in' ) ).toBeTruthy();
 		const categories = queryByText( '12 categories' );
 		expect( categories ).toBeTruthy();
 		fireEvent.mouseOver( categories );
 		await findByText(
-			'Category 1, Category 2, Category 3, Category 1, Category 2...'
+			'Category 1, Category 2, Category 3, Category 1, Category 2'
 		);
+		await findByText( '+ 7 more' );
 	} );
 } );
