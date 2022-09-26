@@ -2,17 +2,15 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 import { Table } from '@woocommerce/components';
 import { CardBody, CardFooter, Flex } from '@wordpress/components';
-import GridIconTrash from 'gridicons/dist/trash';
+import GridiconTrash from 'gridicons/dist/trash';
 /**
  * Internal dependencies
  */
 import Card from '.~/wcdl/section/card';
 import AppButton from '.~/components/app-button';
 import AppTableCardDiv from '.~/components/app-table-card-div';
-import AppIconButton from '.~/components/app-icon-button';
 import AttributeMappingTableCategories from './attribute-mapping-table-categories';
 
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
@@ -46,32 +44,6 @@ const DUMMY_DESTINATIONS = [
 	{ id: 'brands', name: 'Brands' },
 	{ id: 'color', name: 'Color' },
 ];
-
-const parseCategories = ( condition, categories ) => {
-	if ( condition === 'ALL' ) {
-		return __( 'All', 'google-listings-and-ads' );
-	}
-
-	const conversionMap = {
-		categories: (
-			<AttributeMappingTableCategories
-				categories={ categories.split( ',' ) }
-			/>
-		),
-	};
-
-	if ( condition === 'ONLY' ) {
-		return createInterpolateElement(
-			__( 'Only in <categories />', 'google-listings-and-ads' ),
-			conversionMap
-		);
-	}
-
-	return createInterpolateElement(
-		__( 'All except <categories />', 'google-listings-and-ads' ),
-		conversionMap
-	);
-};
 
 const parseDestinationName = ( destination ) =>
 	DUMMY_DESTINATIONS.find( ( e ) => e.id === destination ).name;
@@ -110,10 +82,12 @@ const AttributeMappingTable = ( { rules } ) => {
 							{
 								display: (
 									<span className="gla-attribute-mapping__table-categories">
-										{ parseCategories(
-											rule.category_conditional_type,
-											rule.categories
-										) }
+										<AttributeMappingTableCategories
+											categories={ rule.categories }
+											condition={
+												rule.category_conditional_type
+											}
+										/>
 									</span>
 								),
 							},
@@ -126,11 +100,7 @@ const AttributeMappingTable = ( { rules } ) => {
 												'google-listings-and-ads'
 											) }
 										</AppButton>
-										<AppIconButton
-											icon={
-												<GridIconTrash size={ 18 } />
-											}
-										/>
+										<AppButton icon={ <GridiconTrash /> } />
 									</Flex>
 								),
 							},
