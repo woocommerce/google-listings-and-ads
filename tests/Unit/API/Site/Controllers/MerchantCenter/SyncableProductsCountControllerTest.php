@@ -3,6 +3,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SyncableProductsCountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -26,8 +27,9 @@ class SyncableProductsCountControllerTest extends RESTControllerUnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->transients = $this->createMock( TransientsInterface::class );
-		$this->controller = new SyncableProductsCountController( $this->server, $this->transients );
+		$this->transients     = $this->createMock( TransientsInterface::class );
+		$this->job_repository = $this->createMock( JobRepository::class );
+		$this->controller     = new SyncableProductsCountController( $this->server, $this->transients, $this->job_repository );
 		$this->controller->register();
 	}
 

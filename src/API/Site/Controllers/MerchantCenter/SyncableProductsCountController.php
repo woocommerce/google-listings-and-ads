@@ -5,6 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateSyncableProductsCount;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
@@ -25,14 +27,21 @@ class SyncableProductsCountController extends BaseController {
 	protected $transients;
 
 	/**
+	 * @var JobRepository
+	 */
+	protected $job_repository;
+
+	/**
 	 * SyncableProductsCountController constructor.
 	 *
 	 * @param RESTServer          $server
 	 * @param TransientsInterface $transients
+	 * @param JobRepository       $job_repository
 	 */
-	public function __construct( RESTServer $server, TransientsInterface $transients ) {
+	public function __construct( RESTServer $server, TransientsInterface $transients, JobRepository $job_repository ) {
 		parent::__construct( $server );
-		$this->transients = $transients;
+		$this->transients     = $transients;
+		$this->job_repository = $job_repository;
 	}
 
 
@@ -46,6 +55,17 @@ class SyncableProductsCountController extends BaseController {
 				[
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_syncable_products_count_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+
+		$this->register_route(
+			'mc/syncable-products-count',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->update_syncable_products_count_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -70,6 +90,26 @@ class SyncableProductsCountController extends BaseController {
 			}
 
 			return $this->prepare_item_for_response( $response, $request );
+		};
+	}
+
+	/**
+	 * Get the callback for syncing shipping.
+	 *
+	 * @return callable
+	 */
+	protected function update_syncable_products_count_callback(): callable {
+		return function( Request $request ) {
+			$job = $this->job_repository->get( UpdateSyncableProductsCount::class );
+			$job->schedule();
+
+			return new Response(
+				[
+					'status'  => 'success',
+					'message' => __( 'Successfully scheduled a job to update the number of syncable products.', 'google-listings-and-ads' ),
+				],
+				201
+			);
 		};
 	}
 
