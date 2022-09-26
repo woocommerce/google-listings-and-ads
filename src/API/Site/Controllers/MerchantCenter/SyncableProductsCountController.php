@@ -122,7 +122,7 @@ class SyncableProductsCountController extends BaseController {
 		return [
 			'count' => [
 				'type'        => 'number',
-				'description' => __( 'Amount of scheduled jobs which will sync products to Google.', 'google-listings-and-ads' ),
+				'description' => __( 'The number of products that are ready to be synced to Google.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
 		];
