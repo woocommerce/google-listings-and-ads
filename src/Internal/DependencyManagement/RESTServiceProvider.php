@@ -115,7 +115,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( SettingsSyncController::class, Settings::class );
 		$this->share( DisconnectController::class );
 		$this->share( SetupCompleteController::class );
-		$this->share( SyncableProductsCountController::class, TransientsInterface::class, JobRepository::class );
+		$this->share( SyncableProductsCountController::class, JobRepository::class );
 	}
 
 	/**

@@ -4,7 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SyncableProductsCountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -15,26 +15,29 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
  *
- * @property TransientsInterface|MockObject $transients
+ * @property JobRepository|MockObject      $job_repository
+ * @property OptionsInterface|MockObject   $options
  */
 class SyncableProductsCountControllerTest extends RESTControllerUnitTest {
 
 	protected const ROUTE_REQUEST = '/wc/gla/mc/syncable-products-count';
-	private $transients;
+	private $job_repository;
 
 	/**
 	 * Runs before each test is executed.
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->transients     = $this->createMock( TransientsInterface::class );
 		$this->job_repository = $this->createMock( JobRepository::class );
-		$this->controller     = new SyncableProductsCountController( $this->server, $this->transients, $this->job_repository );
+		$this->options        = $this->createMock( OptionsInterface::class );
+		$this->controller     = new SyncableProductsCountController( $this->server, $this->job_repository );
+
+		$this->controller->set_options_object( $this->options );
 		$this->controller->register();
 	}
 
 	public function test_get_syncable_products_count() {
-		$this->transients->expects( $this->exactly( 1 ) )
+		$this->options->expects( $this->exactly( 1 ) )
 			->method( 'get' )
 			->willReturn( 100 );
 

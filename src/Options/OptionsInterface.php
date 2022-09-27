@@ -35,6 +35,7 @@ interface OptionsInterface {
 	public const SHIPPING_RATES          = 'shipping_rates';
 	public const SHIPPING_TIMES          = 'shipping_times';
 	public const SITE_VERIFICATION       = 'site_verification';
+	public const SYNCABLE_PRODUCTS_COUNT = 'syncable_products_count';
 	public const TARGET_AUDIENCE         = 'target_audience';
 	public const WP_TOS_ACCEPTED         = 'wp_tos_accepted';
 
@@ -62,6 +63,7 @@ interface OptionsInterface {
 		self::SHIPPING_TIMES          => true,
 		self::REDIRECT_TO_ONBOARDING  => true,
 		self::SITE_VERIFICATION       => true,
+		self::SYNCABLE_PRODUCTS_COUNT => true,
 		self::TARGET_AUDIENCE         => true,
 		self::WP_TOS_ACCEPTED         => true,
 	];

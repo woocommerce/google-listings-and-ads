@@ -3,11 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateSyncableProductsCount;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -19,12 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class SyncableProductsCountController extends BaseController {
-
-	/**
-	 * @var TransientsInterface
-	 */
-	protected $transients;
+class SyncableProductsCountController extends BaseOptionsController {
 
 	/**
 	 * @var JobRepository
@@ -34,13 +29,11 @@ class SyncableProductsCountController extends BaseController {
 	/**
 	 * SyncableProductsCountController constructor.
 	 *
-	 * @param RESTServer          $server
-	 * @param TransientsInterface $transients
-	 * @param JobRepository       $job_repository
+	 * @param RESTServer    $server
+	 * @param JobRepository $job_repository
 	 */
-	public function __construct( RESTServer $server, TransientsInterface $transients, JobRepository $job_repository ) {
+	public function __construct( RESTServer $server, JobRepository $job_repository ) {
 		parent::__construct( $server );
-		$this->transients     = $transients;
 		$this->job_repository = $job_repository;
 	}
 
@@ -77,7 +70,7 @@ class SyncableProductsCountController extends BaseController {
 				'count' => null,
 			];
 
-			$count = (int) $this->transients->get( TransientsInterface::SYNCABLE_PRODUCTS_COUNT );
+			$count = (int) $this->options->get( OptionsInterface::SYNCABLE_PRODUCTS_COUNT );
 
 			if ( $count ) {
 				$response['count'] = $count;

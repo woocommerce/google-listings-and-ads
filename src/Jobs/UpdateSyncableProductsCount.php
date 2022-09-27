@@ -7,7 +7,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractBatchedActionSchedulerJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SyncableProductsBatchedActionSchedulerJobTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 
 defined( 'ABSPATH' ) || exit;
@@ -20,18 +22,14 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  * @since x.x.x
  */
-class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob {
+class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob implements OptionsAwareInterface {
+	use OptionsAwareTrait;
 	use SyncableProductsBatchedActionSchedulerJobTrait;
 
 	/**
 	 * @var ProductRepository
 	 */
 	protected $product_repository;
-
-	/**
-	 * @var TransientsInterface
-	 */
-	protected $transients;
 
 	/**
 	 * @var int
@@ -44,12 +42,10 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob {
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param ProductRepository         $product_repository
-	 * @param TransientsInterface       $transients
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, ProductRepository $product_repository, TransientsInterface $transients ) {
+	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, ProductRepository $product_repository ) {
 		parent::__construct( $action_scheduler, $monitor );
 		$this->product_repository = $product_repository;
-		$this->transients         = $transients;
 		$this->count              = 0;
 	}
 
@@ -110,6 +106,6 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob {
 	 *                                If equal to 1 then no items were processed by the job.
 	 */
 	protected function handle_complete( int $final_batch_number ) {
-		$this->transients->set( TransientsInterface::SYNCABLE_PRODUCTS_COUNT, $this->get_count(), HOUR_IN_SECONDS );
+		$this->options->update( OptionsInterface::SYNCABLE_PRODUCTS_COUNT, $this->get_count() );
 	}
 }

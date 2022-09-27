@@ -7,7 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateSyncableProductsCount;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -22,6 +22,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  * @property MockObject|ActionScheduler           $action_scheduler
  * @property MockObject|ActionSchedulerJobMonitor $monitor
  * @property MockObject|ProductRepository         $product_repository
+ * @property MockObject|OptionsInterface          $options
  * @property UpdateSyncableProductsCount          $job
  */
 class UpdateSyncableProductsCountTest extends UnitTest {
@@ -42,13 +43,13 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 		$this->action_scheduler   = $this->createMock( ActionSchedulerInterface::class );
 		$this->monitor            = $this->createMock( ActionSchedulerJobMonitor::class );
 		$this->product_repository = $this->createMock( ProductRepository::class );
-		$this->transients         = $this->createMock( TransientsInterface::class );
+		$this->options            = $this->createMock( OptionsInterface::class );
 		$this->job                = new UpdateSyncableProductsCount(
 			$this->action_scheduler,
 			$this->monitor,
-			$this->product_repository,
-			$this->transients,
+			$this->product_repository
 		);
+		$this->job->set_options_object( $this->options );
 
 		/* adding a filter to make batch smaller for testing */
 		add_filter(
@@ -86,9 +87,9 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 			->withConsecutive( [ [], self::BATCH_SIZE, 0 ], [ [], self::BATCH_SIZE, 2 ], [ [], self::BATCH_SIZE, 4 ] )
 			->willReturnOnConsecutiveCalls( $batch_a, $batch_b, $batch_c );
 
-		$this->transients->expects( $this->exactly( 1 ) )
-			->method( 'set' )
-			->with( TransientsInterface::SYNCABLE_PRODUCTS_COUNT, 4, HOUR_IN_SECONDS );
+		$this->options->expects( $this->exactly( 1 ) )
+			->method( 'update' )
+			->with( OptionsInterface::SYNCABLE_PRODUCTS_COUNT, 4 );
 
 		$this->job->schedule();
 
