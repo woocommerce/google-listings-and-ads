@@ -109,6 +109,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.1.3 - 2022-09-27 =
+* Fix - Avoid truncate for issues with more than 100 characters length.
+* Fix - Update Size Type Attribute available values.
+* Tweak - Update Website not Claimed issue information.
+
 = 2.1.2 - 2022-09-15 =
 * Fix - WooCommerce 6.7 compatibility issues.
 * Tweak - WC 6.9 compatibility.
