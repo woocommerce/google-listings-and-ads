@@ -11,12 +11,7 @@ import { noop } from 'lodash';
 import AppSelectControl from '.~/components/app-select-control';
 import TreeSelectControl from '.~/components/tree-select-control';
 import useCategoryTree from '.~/hooks/useCategoryTree';
-
-const SELECT_TYPES = {
-	ALL: 'ALL',
-	EXCEPT: 'EXCEPT',
-	ONLY: 'ONLY',
-};
+import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
 
 /**
  * Renders the selectors relative to the categories
@@ -35,21 +30,21 @@ const AttributeMappingCategoryControl = ( {
 			<AppSelectControl
 				options={ [
 					{
-						value: SELECT_TYPES.ALL,
+						value: CATEGORY_CONDITION_SELECT_TYPES.ALL,
 						label: __(
 							'Apply to All categories',
 							'google-listings-and-ads'
 						),
 					},
 					{
-						value: SELECT_TYPES.EXCEPT,
+						value: CATEGORY_CONDITION_SELECT_TYPES.EXCEPT,
 						label: __(
 							'Apply to All categories EXCEPT',
 							'google-listings-and-ads'
 						),
 					},
 					{
-						value: SELECT_TYPES.ONLY,
+						value: CATEGORY_CONDITION_SELECT_TYPES.ONLY,
 						label: __(
 							'Apply ONLY to this categories',
 							'google-listings-and-ads'
@@ -58,8 +53,8 @@ const AttributeMappingCategoryControl = ( {
 				] }
 				onChange={ setSelectedType }
 			/>
-			{ ( selectedType === SELECT_TYPES.ONLY ||
-				selectedType === SELECT_TYPES.EXCEPT ) && (
+			{ ( selectedType === CATEGORY_CONDITION_SELECT_TYPES.ONLY ||
+				selectedType === CATEGORY_CONDITION_SELECT_TYPES.EXCEPT ) && (
 				<TreeSelectControl
 					onDropdownVisibilityChange={ onCategorySelectorOpen }
 					options={ categories }
