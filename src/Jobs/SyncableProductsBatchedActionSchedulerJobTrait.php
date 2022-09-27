@@ -79,6 +79,8 @@ trait SyncableProductsBatchedActionSchedulerJobTrait {
 			}
 
 			// Add another "create_batch" action to handle unfiltered items.
+			// The last batch created here will be an empty batch, it
+			// will call "handle_complete" to finish the job.
 			$this->schedule_create_batch_action( $batch_number + 1 );
 		}
 
