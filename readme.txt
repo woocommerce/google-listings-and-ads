@@ -120,19 +120,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Add a filter to disable GTag tracking.
 * Tweak - Updated plugin icons.
 
-= 2.1.0 - 2022-08-23 =
-* Add - Automatically sync WooCommerce shipping settings with Merchant Center.
-* Add - Get shipping rates suggestions for provinces/states and postal codes.
-* Add - Option to automatically sync the shipping rates based on the store shipping zone configurations.
-* Add - Sync the shipping rates for states/provinces and postal codes to Merchant Center.
-* Fix - A compatibility issue with WC 6.5+ that the store country might be undefined and further break the onboarding setup.
-* Tweak - Generate random ID for postcode regions when syncing shipping settings.
-
-= 2.0.4 - 2022-08-16 =
-* Dev - E2E Fix for redirecting to single product page.
-* Dev - Remove wc-admin installation from E2E env setup.
-* Fix - Handle multiple errors in the Edit free listings page.
-* Fix - Hide WooCommerce System messages in the plugin screen. .
-* Fix - Onload conflict when tracking events.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
