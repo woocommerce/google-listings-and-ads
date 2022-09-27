@@ -7,6 +7,8 @@
 	&__radio-control {
 		margin-top: $grid-unit-20;
 		.help-popover {
+			margin-left: $grid-unit;
+
 			// hack for positioning correctly the popover in the modal radio control
 			.components-popover {
 				position: absolute;

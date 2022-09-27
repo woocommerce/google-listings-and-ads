@@ -39,35 +39,33 @@ const AttributeMappingSourceTypeSelector = ( { sources = [] } ) => {
 			</Subsection.Subtitle>
 			<AppRadioContentControl
 				className="gla-attribute-mapping__radio-control"
-				label={ createInterpolateElement(
-					__(
-						'Use value from existing product field. <help />',
-						'google-listings-and-ads'
-					),
-					{
-						help: (
-							<HelpPopover
-								id={ `${ SOURCE_TYPES.FIELD }-helper-popover` }
-							>
-								{ createInterpolateElement(
-									__(
-										'Create a connection between the target attribute and an existing product field to auto-populate the target attribute with with the value of the field it is linked to. <link>Learn more</link>',
-										'google-listings-and-ads'
+				label={
+					<>
+						{ __(
+							'Use value from existing product field.',
+							'google-listings-and-ads'
+						) }
+						<HelpPopover
+							id={ `${ SOURCE_TYPES.FIELD }-helper-popover` }
+						>
+							{ createInterpolateElement(
+								__(
+									'Create a connection between the target attribute and an existing product field to auto-populate the target attribute with with the value of the field it is linked to. <link>Learn more</link>',
+									'google-listings-and-ads'
+								),
+								{
+									link: (
+										<AppDocumentationLink
+											context="attribute-mapping"
+											linkId="learn-more-about-field-values"
+											href="https://example.com" // todo: check link
+										/>
 									),
-									{
-										link: (
-											<AppDocumentationLink
-												context="attribute-mapping"
-												linkId="learn-more-about-field-values"
-												href="https://example.com" // todo: check link
-											/>
-										),
-									}
-								) }
-							</HelpPopover>
-						),
-					}
-				) }
+								}
+							) }
+						</HelpPopover>
+					</>
+				}
 				onChange={ setSourceType }
 				value={ SOURCE_TYPES.FIELD }
 				selected={ sourceType }
@@ -98,35 +96,33 @@ const AttributeMappingSourceTypeSelector = ( { sources = [] } ) => {
 			</AppRadioContentControl>
 			<AppRadioContentControl
 				className="gla-attribute-mapping__radio-control"
-				label={ createInterpolateElement(
-					__(
-						'Set a fixed value. <help />',
-						'google-listings-and-ads'
-					),
-					{
-						help: (
-							<HelpPopover
-								id={ `${ SOURCE_TYPES.FIXED }-helper-popover` }
-							>
-								{ createInterpolateElement(
-									__(
-										'Use fixed values to populate the target attribute with a value you specify. For example, you can enter a fixed value of White to specify a single color for all your products. <link>Learn more about fixed values</link>',
-										'google-listings-and-ads'
+				label={
+					<>
+						{ __(
+							'Set a fixed value.',
+							'google-listings-and-ads'
+						) }
+						<HelpPopover
+							id={ `${ SOURCE_TYPES.FIXED }-helper-popover` }
+						>
+							{ createInterpolateElement(
+								__(
+									'Use fixed values to populate the target attribute with a value you specify. For example, you can enter a fixed value of White to specify a single color for all your products. <link>Learn more about fixed values</link>',
+									'google-listings-and-ads'
+								),
+								{
+									link: (
+										<AppDocumentationLink
+											context="attribute-mapping"
+											linkId="clearn-more-about-fixed-values"
+											href="https://example.com" // Todo: Check link
+										/>
 									),
-									{
-										link: (
-											<AppDocumentationLink
-												context="attribute-mapping"
-												linkId="clearn-more-about-fixed-values"
-												href="https://example.com" // Todo: Check link
-											/>
-										),
-									}
-								) }
-							</HelpPopover>
-						),
-					}
-				) }
+								}
+							) }
+						</HelpPopover>
+					</>
+				}
 				onChange={ setSourceType }
 				value={ SOURCE_TYPES.FIXED }
 				selected={ sourceType }
