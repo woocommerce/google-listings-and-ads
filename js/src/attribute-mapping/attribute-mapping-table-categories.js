@@ -46,7 +46,7 @@ const AttributeMappingTableCategories = ( { categories, condition } ) => {
 		} )
 		.join( SEPARATOR );
 
-	const maybeDots =
+	const more =
 		categoryArray.length > CATEGORIES_TO_SHOW
 			? sprintf(
 					// translators: %d: The number of categories.
@@ -66,7 +66,7 @@ const AttributeMappingTableCategories = ( { categories, condition } ) => {
 				text={
 					<div className="gla-attribute-mapping__table-categories-tooltip">
 						{ categoryNames }
-						{ maybeDots && <span>{ maybeDots }</span> }
+						{ more && <span>{ more }</span> }
 					</div>
 				}
 			>
