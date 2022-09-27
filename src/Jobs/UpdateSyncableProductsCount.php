@@ -32,11 +32,6 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob impl
 	protected $product_repository;
 
 	/**
-	 * @var int
-	 */
-	private $count;
-
-	/**
 	 * UpdateSyncableProductsCount constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
@@ -46,25 +41,6 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob impl
 	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, ProductRepository $product_repository ) {
 		parent::__construct( $action_scheduler, $monitor );
 		$this->product_repository = $product_repository;
-		$this->count              = 0;
-	}
-
-	/**
-	 * Get the count instance variable.
-	 *
-	 * @return int
-	 */
-	public function get_count(): int {
-		return $this->count;
-	}
-
-	/**
-	 * Set the count instance variable.
-	 *
-	 * @param int $count The number that will be set to $this->count.
-	 */
-	public function set_count( $count ) {
-		$this->count = $count;
 	}
 
 	/**
@@ -96,7 +72,13 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob impl
 	 * @param int[] $items A single batch of WooCommerce product IDs from the get_batch() method.
 	 */
 	protected function process_items( array $items ) {
-		$this->set_count( $this->get_count() + count( $items ) );
+		$product_ids = $this->options->get( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA );
+
+		if ( ! is_array( $product_ids ) ) {
+			$product_ids = [];
+		}
+
+		$this->options->update( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA, [ ...$product_ids, ...$items ] );
 	}
 
 	/**
@@ -106,6 +88,9 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob impl
 	 *                                If equal to 1 then no items were processed by the job.
 	 */
 	protected function handle_complete( int $final_batch_number ) {
-		$this->options->update( OptionsInterface::SYNCABLE_PRODUCTS_COUNT, $this->get_count() );
+		$product_ids = $this->options->get( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA );
+		$count       = count( $product_ids );
+		$this->options->update( OptionsInterface::SYNCABLE_PRODUCTS_COUNT, $count );
+		$this->options->delete( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA );
 	}
 }
