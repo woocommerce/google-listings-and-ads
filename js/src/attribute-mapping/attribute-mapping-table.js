@@ -14,6 +14,7 @@ import AppTableCardDiv from '.~/components/app-table-card-div';
 import AttributeMappingTableCategories from './attribute-mapping-table-categories';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import AttributeMappingRuleModal from '.~/attribute-mapping/attribute-mapping-rule-modal';
+import useMappingAttributes from '.~/hooks/useMappingAttributes';
 
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	{
@@ -41,15 +42,6 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	},
 ];
 
-const DUMMY_DESTINATIONS = [
-	{ id: 'adult', name: 'Adult' },
-	{ id: 'brands', name: 'Brands' },
-	{ id: 'color', name: 'Color' },
-];
-
-const parseDestinationName = ( destination ) =>
-	DUMMY_DESTINATIONS.find( ( e ) => e.id === destination ).name;
-
 /**
  * Renders the Attribute Mapping table component
  *
@@ -58,6 +50,11 @@ const parseDestinationName = ( destination ) =>
  * @return {JSX.Element} The component
  */
 const AttributeMappingTable = ( { rules } ) => {
+	const { data: attributes } = useMappingAttributes();
+
+	const parseDestinationName = ( destination ) =>
+		attributes.find( ( e ) => e.id === destination )?.label || '';
+
 	return (
 		<AppTableCardDiv>
 			<Card>

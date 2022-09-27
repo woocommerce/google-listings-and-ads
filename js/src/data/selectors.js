@@ -273,3 +273,11 @@ export const getDashboardPerformance = createRegistrySelector(
 		};
 	}
 );
+
+export const getMappingAttributes = ( state ) => {
+	return state.mc.mapping.attributes;
+};
+
+export const getMappingSources = ( state, attributeKey ) => {
+	return state.mc.mapping.sources[ attributeKey ];
+};

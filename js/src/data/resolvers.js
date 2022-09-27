@@ -39,6 +39,8 @@ import {
 	receiveMCIssues,
 	receiveMCProductFeed,
 	receiveMCReviewRequest,
+	fetchMappingAttributes,
+	fetchMappingSources,
 } from './actions';
 
 export function* getShippingRates() {
@@ -308,3 +310,18 @@ export function* getReportByApiQuery( category, type, reportQuery ) {
 		);
 	}
 }
+
+export function* getMappingAttributes() {
+	yield fetchMappingAttributes();
+}
+
+export function* getMappingSources( attributeKey ) {
+	yield fetchMappingSources( attributeKey );
+}
+
+/*getMappingSources.shouldInvalidate = ( action, query ) => {
+	return (
+		action.type === TYPES.RECEIVE_MAPPING_SOURCES &&
+		action.attributeKey !== query.attributeKey
+	);
+};*/

@@ -29,6 +29,10 @@ const DEFAULT_STATE = {
 			google_access: null,
 		},
 		contact: null,
+		mapping: {
+			attributes: [],
+			sources: {},
+		},
 	},
 	ads_campaigns: null,
 	all_ads_campaigns: null,
@@ -367,6 +371,18 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_REPORT: {
 			const { reportKey, data } = action;
 			return setIn( state, [ 'report', reportKey ], data );
+		}
+
+		case TYPES.RECEIVE_MAPPING_ATTRIBUTES: {
+			return setIn( state, 'mc.mapping.attributes', action.attributes );
+		}
+
+		case TYPES.RECEIVE_MAPPING_SOURCES: {
+			const { attributeKey, sources } = action;
+			return setIn( state, 'mc.mapping.sources', {
+				...state.mc.mapping.sources,
+				[ attributeKey ]: sources,
+			} );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

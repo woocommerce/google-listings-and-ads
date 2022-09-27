@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { noop } from 'lodash';
 
 /**
@@ -26,13 +26,40 @@ import AttributeMappingCategoryControl from '.~/attribute-mapping/attribute-mapp
  * @param {Function} [props.onRequestClose] Callback on closing the modal
  */
 const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
-	const [ selectedAttribute, setSelectedAttribute ] = useState();
+	const [ selectedAttribute, setSelectedAttribute ] = useState( '' );
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const { data: attributes } = useMappingAttributes();
-	const { data: sources } = useMappingAttributesSources( selectedAttribute );
-	const isEnum = attributes?.find( ( { id } ) => id === selectedAttribute )
-		?.enum;
+	const { data: sources = {} } = useMappingAttributesSources(
+		selectedAttribute
+	);
+
+	const isEnum =
+		attributes.find( ( { id } ) => id === selectedAttribute )?.enum ||
+		false;
+
+	const sourcesOptions = [
+		// Todo: Fix this in the future. (Due to an error on my side returning object in the backend)
+		...Object.keys( sources ).map( ( sourceKey ) => {
+			return {
+				value: sourceKey,
+				label: sources[ sourceKey ],
+			};
+		} ),
+	];
+
+	const attributesOptions = [
+		{
+			value: '',
+			label: 'Select one attribute',
+		},
+		...attributes.map( ( attribute ) => {
+			return {
+				value: attribute.id,
+				label: attribute.label,
+			};
+		} ),
+	];
 
 	return (
 		<AppModal
@@ -73,16 +100,11 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 				</Subsection.Subtitle>
 				<AppSelectControl
 					onChange={ setSelectedAttribute }
-					options={ attributes.map( ( attribute ) => {
-						return {
-							value: attribute.id,
-							label: attribute.label,
-						};
-					} ) }
+					options={ attributesOptions }
 				/>
 			</Subsection>
 
-			{ sources.length > 0 && (
+			{ sourcesOptions.length > 1 && (
 				<>
 					<Subsection>
 						<Subsection.Title>
@@ -99,11 +121,11 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 
 						{ isEnum ? (
 							<AttributeMappingFieldSourcesControl
-								sources={ sources }
+								sources={ sourcesOptions }
 							/>
 						) : (
 							<AttributeMappingSourceTypeSelector
-								sources={ sources }
+								sources={ sourcesOptions }
 							/>
 						) }
 					</Subsection>

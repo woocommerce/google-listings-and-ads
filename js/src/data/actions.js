@@ -949,3 +949,70 @@ export function* sendMCReviewRequest() {
 		throw error;
 	}
 }
+
+/**
+ * Individual shipping time.
+ *
+ * @typedef {Object} ShippingTime
+ * @property {CountryCode} countryCode Destination country code.
+ * @property {number} time Shipping time.
+ */
+
+/**
+ * Action for fetching available attributes for mapping.
+ */
+export function* fetchMappingAttributes() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/attributes`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_MAPPING_ATTRIBUTES,
+			attributes: response.data,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading the mapping attributes.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Action for fetching available sources for mapping a specific attribute.
+ *
+ * @param {string} attributeKey Attribute id to receive the sources
+ */
+export function* fetchMappingSources( attributeKey ) {
+	try {
+		if ( ! attributeKey ) {
+			return {
+				type: TYPES.RECEIVE_MAPPING_SOURCES,
+				sources: {},
+				attributeKey,
+			};
+		}
+
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/sources?attribute=${ attributeKey }`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_MAPPING_SOURCES,
+			sources: response.data,
+			attributeKey,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading the mapping sources for the selected attribute.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
