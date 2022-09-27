@@ -12,7 +12,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
-class SizeType extends AbstractAttribute implements WithValueOptionsInterface {
+class SizeType extends AbstractAttribute implements WithValueOptionsInterface, WithMappingInterface {
+
+	use IsEnumTrait;
 
 	/**
 	 * Returns the attribute ID.
@@ -65,6 +67,24 @@ class SizeType extends AbstractAttribute implements WithValueOptionsInterface {
 	 */
 	public static function get_input_type(): string {
 		return SizeTypeInput::class;
+	}
+
+	/**
+	 * Returns the attribute name
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return __( 'Size Type', 'google-listings-and-ads' );
+	}
+
+	/**
+	 * Returns the attribute sources
+	 *
+	 * @return array
+	 */
+	public static function get_sources(): array {
+		return self::get_value_options();
 	}
 
 }

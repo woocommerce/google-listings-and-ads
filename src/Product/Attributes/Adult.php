@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Adult extends AbstractAttribute implements WithMappingInterface {
 
+	use IsEnumTrait;
+
 	/**
 	 * Returns the attribute ID.
 	 *

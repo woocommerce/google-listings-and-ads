@@ -12,7 +12,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
-class Gender extends AbstractAttribute implements WithValueOptionsInterface {
+class Gender extends AbstractAttribute implements WithValueOptionsInterface, WithMappingInterface {
+
+	use IsEnumTrait;
 
 	/**
 	 * Returns the attribute ID.
@@ -64,4 +66,21 @@ class Gender extends AbstractAttribute implements WithValueOptionsInterface {
 		return GenderInput::class;
 	}
 
+	/**
+	 * Returns the attribute name
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return __( 'Gender', 'google-listings-and-ads' );
+	}
+
+	/**
+	 * Returns the attribute sources
+	 *
+	 * @return array
+	 */
+	public static function get_sources(): array {
+		return self::get_value_options();
+	}
 }

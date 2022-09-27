@@ -50,4 +50,34 @@
 			}
 		}
 	}
+
+	&__table-label {
+		background: $gray-100;
+		padding: $grid-unit-05 $grid-unit-10;
+		border-radius: 2px;
+		font-size: 12px;
+		line-height: 16px;
+	}
+
+	&__table-categories {
+		color: $gray-700;
+	}
+
+	&__table-categories-tooltip {
+		font-weight: 600;
+		width: 150px;
+		white-space: break-spaces;
+		display: block;
+
+		span {
+			font-weight: normal;
+			margin-left: $grid-unit-05;
+		}
+	}
+
+	&__table-categories-help {
+		border-bottom: 1px dashed;
+		margin-left: $grid-unit-05;
+		word-wrap: break-word;
+	}
 }

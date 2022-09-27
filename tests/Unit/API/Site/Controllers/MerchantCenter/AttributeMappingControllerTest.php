@@ -15,8 +15,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUn
 class AttributeMappingControllerTest extends RESTControllerUnitTest {
 
 
-	protected const ROUTE_REQUEST_SOURCES      = '/wc/gla/mc/mapping/sources';
-	protected const ROUTE_REQUEST_ATTRIBUTES   = '/wc/gla/mc/mapping/attributes';
+	protected const ROUTE_REQUEST_SOURCES    = '/wc/gla/mc/mapping/sources';
+	protected const ROUTE_REQUEST_ATTRIBUTES = '/wc/gla/mc/mapping/attributes';
 
 	/**
 	 * @var AttributeMappingHelper
