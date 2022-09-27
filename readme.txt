@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 2.1.2
+Stable tag: 2.1.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.1.3 - 2022-09-27 =
+* Fix - Avoid truncate for issues with more than 100 characters length.
+* Fix - Update Size Type Attribute available values.
+* Tweak - Update Website not Claimed issue information.
+
 = 2.1.2 - 2022-09-15 =
 * Fix - WooCommerce 6.7 compatibility issues.
 * Tweak - WC 6.9 compatibility.
@@ -119,20 +124,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Fatal error if a null rate specified for flat rate methods with shipping classes.
 * Tweak - Add a filter to disable GTag tracking.
 * Tweak - Updated plugin icons.
-
-= 2.1.0 - 2022-08-23 =
-* Add - Automatically sync WooCommerce shipping settings with Merchant Center.
-* Add - Get shipping rates suggestions for provinces/states and postal codes.
-* Add - Option to automatically sync the shipping rates based on the store shipping zone configurations.
-* Add - Sync the shipping rates for states/provinces and postal codes to Merchant Center.
-* Fix - A compatibility issue with WC 6.5+ that the store country might be undefined and further break the onboarding setup.
-* Tweak - Generate random ID for postcode regions when syncing shipping settings.
-
-= 2.0.4 - 2022-08-16 =
-* Dev - E2E Fix for redirecting to single product page.
-* Dev - Remove wc-admin installation from E2E env setup.
-* Fix - Handle multiple errors in the Edit free listings page.
-* Fix - Hide WooCommerce System messages in the plugin screen. .
-* Fix - Onload conflict when tracking events.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
