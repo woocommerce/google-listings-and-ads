@@ -87,6 +87,8 @@ class SyncableProductsCountController extends BaseOptionsController {
 	 */
 	protected function update_syncable_products_count_callback(): callable {
 		return function( Request $request ) {
+			$this->options->delete( OptionsInterface::SYNCABLE_PRODUCTS_COUNT );
+
 			$job = $this->job_repository->get( UpdateSyncableProductsCount::class );
 			$job->schedule();
 
