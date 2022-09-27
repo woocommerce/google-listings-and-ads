@@ -12,6 +12,8 @@ import Card from '.~/wcdl/section/card';
 import AppButton from '.~/components/app-button';
 import AppTableCardDiv from '.~/components/app-table-card-div';
 import AttributeMappingTableCategories from './attribute-mapping-table-categories';
+import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
+import AttributeMappingRuleModal from '.~/attribute-mapping/attribute-mapping-rule-modal';
 
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	{
@@ -111,13 +113,21 @@ const AttributeMappingTable = ( { rules } ) => {
 					align="start"
 					className="gla-attribute-mapping__table-footer"
 				>
-					<AppButton
-						isSecondary
-						onClick={ () => {} } // TODO: Implement button logic
-						text={ __(
-							'Add new attribute mapping',
-							'google-listings-and-ads'
-						) }
+					<AppButtonModalTrigger
+						button={
+							<AppButton
+								isSecondary
+								text={ __(
+									'Create attribute rule',
+									'google-listings-and-ads'
+								) }
+								eventName="gla_attribute_mapping_new_rule_click"
+								eventProps={ {
+									context: 'attribute-mapping-table',
+								} }
+							/>
+						}
+						modal={ <AttributeMappingRuleModal /> }
 					/>
 				</CardFooter>
 			</Card>

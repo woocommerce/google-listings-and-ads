@@ -4,11 +4,58 @@
 		padding: $grid-unit-20;
 	}
 
+	&__radio-control {
+		margin-top: $grid-unit-20;
+		.help-popover {
+			margin-left: $grid-unit;
+
+			// hack for positioning correctly the popover in the modal radio control
+			.components-popover {
+				position: absolute;
+			}
+		}
+	}
+
+	&__rule-modal {
+
+		.app-select-control {
+			margin-bottom: $grid-unit;
+			select.components-select-control__input {
+				height: 40px;
+				max-width: 100%;
+			}
+		}
+
+		.app-input-control {
+			margin-bottom: $grid-unit;
+			input.components-input-control__input {
+				height: 40px;
+			}
+		}
+
+		.woocommerce-tree-select-control {
+			&__control,
+			&__tree {
+				padding: $grid-unit-05 $grid-unit;
+				border-color: $gray-700;
+			}
+
+			&__tags {
+				font-size: 11px;
+			}
+
+			&__option,
+			.components-base-control .woocommerce-tree-select-control__control-input {
+				font-size: $default-font-size;
+			}
+		}
+	}
+
 	&__table-label {
 		background: $gray-100;
 		padding: $grid-unit-05 $grid-unit-10;
 		border-radius: 2px;
-		font-size: 12px;
+		font-size: $gla-font-smaller;
 		line-height: 16px;
 	}
 

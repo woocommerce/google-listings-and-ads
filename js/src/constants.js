@@ -50,3 +50,10 @@ export const ISSUE_TYPE_PRODUCT = 'product';
 export const ISSUE_TYPE_ACCOUNT = 'account';
 export const REQUEST_REVIEW = 'request-review';
 export const ISSUE_TABLE_PER_PAGE = 5;
+
+// Attribute Mapping
+export const CATEGORY_CONDITION_SELECT_TYPES = {
+	ALL: 'ALL',
+	EXCEPT: 'EXCEPT',
+	ONLY: 'ONLY',
+};

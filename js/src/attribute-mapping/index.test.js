@@ -61,7 +61,7 @@ describe( 'Attribute Mapping', () => {
 
 	test( 'Renders Add new Attribute mapping button', () => {
 		const { queryByText } = render( <AttributeMapping /> );
-		expect( queryByText( 'Add new attribute mapping' ) ).toBeTruthy();
+		expect( queryByText( 'Create attribute rule' ) ).toBeTruthy();
 	} );
 
 	test( 'Renders Section title, description and documentation link', () => {

@@ -7,6 +7,7 @@ import { _n, sprintf, _x, __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppTooltip from '.~/components/app-tooltip';
+import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
 
 const DUMMY_CATEGORIES = [
 	{ id: 1, name: 'Category 1' },
@@ -32,7 +33,7 @@ const CATEGORIES_TO_SHOW = 5;
  * @return {JSX.Element|string} The component
  */
 const AttributeMappingTableCategories = ( { categories, condition } ) => {
-	if ( condition === 'ALL' ) {
+	if ( condition === CATEGORY_CONDITION_SELECT_TYPES.ALL ) {
 		return __( 'All', 'google-listings-and-ads' );
 	}
 
@@ -58,7 +59,7 @@ const AttributeMappingTableCategories = ( { categories, condition } ) => {
 	return (
 		<>
 			<span>
-				{ condition === 'ONLY'
+				{ condition === CATEGORY_CONDITION_SELECT_TYPES.ONLY
 					? __( 'Only in', 'google-listings-and-ads' )
 					: __( 'All except', 'google-listings-and-ads' ) }
 			</span>
