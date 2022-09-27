@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Throwable;
+use WP_Error;
 use WP_REST_Request as Request;
 use Exception;
 
@@ -62,7 +64,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->post_mapping_create_rule_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_post_mapping_rules_args(),
+					'args'                => $this->get_schema_properties(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			],
@@ -77,7 +79,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->post_mapping_update_rule_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_post_mapping_rules_args(),
+					'args'                => $this->get_schema_properties(),
 				],
 				[
 					'methods'             => TransportMethods::DELETABLE,
@@ -113,9 +115,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	protected function post_mapping_create_rule_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$rule = $request->get_param( 'rule' );
-
-				if ( ! $this->attribute_mapping_rules_query->insert( $rule ) ) {
+				if ( ! $this->attribute_mapping_rules_query->insert( $this->prepare_item_for_database( $request ) ) ) {
 					return $this->response_from_exception( new Exception( 'Unable to create the new rule.' ) );
 				}
 
@@ -135,10 +135,10 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	protected function post_mapping_update_rule_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$rule_id = absint( $request->get_param( 'id' ) );
-				$rule    = $request->get_param( 'rule' );
+				$rule    = $request->get_params();
+				$rule_id = $request->get_url_params()['id'];
 
-				if ( ! $this->attribute_mapping_rules_query->update( $rule, [ 'id' => $rule_id ] ) ) {
+				if ( ! $this->attribute_mapping_rules_query->update( $this->prepare_item_for_database( $request ), [ 'id' => $rule_id ] ) ) {
 					return $this->response_from_exception( new Exception( 'Unable to update the new rule.' ) );
 				}
 
@@ -182,18 +182,17 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	protected function get_schema_properties(): array {
 		return [
 			'id'                      => [
-				'description'       => __( 'The attribute value for the rule.', 'google-listings-and-ads' ),
-				'type'              => 'string',
+				'description'       => __( 'The Id for the rule.', 'google-listings-and-ads' ),
+				'type'              => 'integer',
 				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => false,
-				'enum'              => array_keys( $this->attribute_mapping_helper->get_attributes() ),
+				'readonly'          => true,
 			],
 			'attribute'               => [
 				'description'       => __( 'The attribute value for the rule.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
-				'enum'              => array_keys( $this->attribute_mapping_helper->get_attributes() ),
+				'enum'              => array_column( $this->attribute_mapping_helper->get_attributes(), 'id' ),
 			],
 			'source'                  => [
 				'description'       => __( 'The source value for the rule.', 'google-listings-and-ads' ),
@@ -211,7 +210,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 			'categories'              => [
 				'description'       => __( 'Comma separated categories for this rule.', 'google-listings-and-ads' ),
 				'type'              => 'string',
-				'required'          => true,
+				'required'          => false,
 				'validate_callback' => function( $param ) {
 					return $this->validate_categories_param( $param );
 				},
@@ -232,40 +231,25 @@ class AttributeMappingRulesController extends BaseOptionsController {
 
 	/**
 	 * @param string $categories  Categories to validate
-	 * @return bool  True if it's validated
-	 * @throws Exception When is not valid.
+	 * @return bool|WP_Error  True if it's validated
+	 *
+	 * @throw Exception when invalid categories are provided
 	 */
-	public function validate_categories_param( string $categories ): bool {
-		// TODO: Make this work
-		$categories_array = explode( ',', $categories );
-
-		if ( empty( $categories_array ) ) {
-			throw new Exception( __( 'Categories param should be a list of category IDs separated by commas.', 'google-listings-and-ads' ) );
-		}
+	public function validate_categories_param( string $categories ) {
+			$categories_array = explode( ',', $categories );
 
 		foreach ( $categories_array as $category ) {
 			if ( ! is_numeric( $category ) ) {
-				throw new Exception( __( 'Each of the categories separated by comma should be in number like format.', 'google-listings-and-ads' ) );
+				return new WP_Error(
+					'gla_attribute_mapping_invalid_categories_schema',
+					'it should be an string with categories separated by comma, and each of the categories should be in number like format',
+					[
+						'categories' => $categories,
+					]
+				);
 			}
 		}
 
-		return true;
-	}
-
-	/**
-	 * Receive the args for the POST Mapping Rules
-	 *
-	 * @return array[] The args schema
-	 */
-	protected function get_post_mapping_rules_args(): array {
-		return [
-			'rule' => [
-				'description'       => __( 'The rule to be loaded in data base.', 'google-listings-and-ads' ),
-				'type'              => 'object',
-				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
-				'properties'        => $this->get_schema_properties(),
-			],
-		];
+			return true;
 	}
 }

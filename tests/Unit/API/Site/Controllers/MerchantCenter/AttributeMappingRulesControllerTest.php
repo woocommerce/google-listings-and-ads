@@ -28,7 +28,6 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 		'attribute'               => 'adult',
 		'source'                  => 'yes',
 		'category_condition_type' => 'ALL',
-		'categories'              => '',
 	];
 
 	/**
@@ -42,20 +41,12 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 	 */
 	private AttributeMappingRulesQuery $attribute_mapping_rules_query;
 
-	/**
-	 * @var array The rule with ID used in tests
-	 */
-	private array $rule_with_id;
-
-
 	public function setUp(): void {
 		parent::setUp();
 		$this->attribute_mapping_helper      = $this->createMock( AttributeMappingHelper::class );
 		$this->attribute_mapping_rules_query = $this->createMock( AttributeMappingRulesQuery::class );
 		$this->controller                    = new AttributeMappingRulesController( $this->server, $this->attribute_mapping_helper, $this->attribute_mapping_rules_query );
 		$this->controller->register();
-		$this->rule_with_id = array_merge( [ 'id' => self::TEST_RULE_ID ], self::TEST_RULE );
-
 	}
 
 
@@ -110,8 +101,7 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 		$this->attribute_mapping_rules_query->expects( $this->once() )
 			->method( 'insert' )->willReturn( 0 );
 
-		// insert works
-		$response = $this->do_request( self::ROUTE_RULES, 'post', [ 'rule' => self::TEST_RULE ] );
+		$response = $this->do_request( self::ROUTE_RULES, 'post', self::TEST_RULE );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
@@ -124,12 +114,13 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 		$this->attribute_mapping_rules_query->expects( $this->once() )
 			->method( 'update' )->willReturn( 0 );
 
-		// insert works
-		$response = $this->do_request( self::ROUTE_RULE, 'post', [ 'rule' => self::TEST_RULE ] );
+		$response = $this->do_request( self::ROUTE_RULE, 'post', self::TEST_RULE );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	private function validate_post_route( $route, $method ) {
+		$rule_with_id = array_merge( [ 'id' => self::TEST_RULE_ID ], self::TEST_RULE, [ 'categories' => null ] );
+
 		$this->attribute_mapping_helper->expects( $this->any() )
 			->method( 'get_attributes' )->willReturn(
 				self::TEST_ATTRIBUTES
@@ -139,26 +130,20 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 			->method( $method )->willReturn( 1 );
 
 		$this->attribute_mapping_rules_query->expects( $this->once() )
-			->method( 'get_rule' )->willReturn( $this->rule_with_id );
+			->method( 'get_rule' )->willReturn( $rule_with_id );
 
 		// insert works
-		$response = $this->do_request( $route, 'post', [ 'rule' => self::TEST_RULE ] );
+		$response = $this->do_request( $route, 'post', self::TEST_RULE );
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( $this->rule_with_id, $response->get_data() );
-
-		// not working without rule param
-		$response = $this->do_request( $route, 'post' );
-		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( $rule_with_id, $response->get_data() );
 
 		// not working without rule.attribute param
 		$response = $this->do_request(
 			$route,
 			'post',
 			[
-				'rule' => [
-					'source'                  => 'x',
-					'category_condition_type' => 'ALL',
-				],
+				'source'                  => 'x',
+				'category_condition_type' => 'ALL',
 			]
 		);
 		$this->assertEquals( 400, $response->get_status() );
@@ -168,10 +153,8 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 			$route,
 			'post',
 			[
-				'rule' => [
-					'attribute'               => 'adult',
-					'category_condition_type' => 'ALL',
-				],
+				'attribute'               => 'adult',
+				'category_condition_type' => 'ALL',
 			]
 		);
 		$this->assertEquals( 400, $response->get_status() );
@@ -181,10 +164,8 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 			$route,
 			'post',
 			[
-				'rule' => [
-					'attribute' => 'adult',
-					'source'    => 'test',
-				],
+				'attribute' => 'adult',
+				'source'    => 'test',
 			]
 		);
 		$this->assertEquals( 400, $response->get_status() );
