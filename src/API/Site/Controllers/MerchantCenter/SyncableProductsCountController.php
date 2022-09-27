@@ -57,12 +57,6 @@ class SyncableProductsCountController extends BaseController {
 					'callback'            => $this->get_syncable_products_count_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
-			]
-		);
-
-		$this->register_route(
-			'mc/syncable-products-count',
-			[
 				[
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->update_syncable_products_count_callback(),
