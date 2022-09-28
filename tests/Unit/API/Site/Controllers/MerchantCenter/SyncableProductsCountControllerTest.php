@@ -42,11 +42,20 @@ class SyncableProductsCountControllerTest extends RESTControllerUnitTest {
 			->willReturn( 100 );
 
 		$response = $this->do_request( self::ROUTE_REQUEST );
-		$this->assertEquals( [ 'count' => 100 ], $response->get_data() );
+		$this->assertSame( [ 'count' => 100 ], $response->get_data() );
 	}
 
-	public function test_get_syncable_products_count_null() {
+	public function test_get_syncable_products_count_no_syncable_products() {
+		$this->options->expects( $this->exactly( 1 ) )
+			->method( 'get' )
+			->willReturn( 0 );
+
 		$response = $this->do_request( self::ROUTE_REQUEST );
-		$this->assertEquals( [ 'count' => null ], $response->get_data() );
+		$this->assertSame( [ 'count' => 0 ], $response->get_data() );
+	}
+
+	public function test_get_syncable_products_count_job_has_not_finished() {
+		$response = $this->do_request( self::ROUTE_REQUEST );
+		$this->assertSame( [ 'count' => null ], $response->get_data() );
 	}
 }

@@ -70,10 +70,10 @@ class SyncableProductsCountController extends BaseOptionsController {
 				'count' => null,
 			];
 
-			$count = (int) $this->options->get( OptionsInterface::SYNCABLE_PRODUCTS_COUNT );
+			$count = $this->options->get( OptionsInterface::SYNCABLE_PRODUCTS_COUNT );
 
-			if ( $count ) {
-				$response['count'] = $count;
+			if ( isset( $count ) ) {
+				$response['count'] = (int) $count;
 			}
 
 			return $this->prepare_item_for_response( $response, $request );
