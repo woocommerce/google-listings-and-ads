@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Table } from '@woocommerce/components';
+import { Table, TablePlaceholder } from '@woocommerce/components';
 import { CardBody, CardFooter, Flex } from '@wordpress/components';
 import GridiconTrash from 'gridicons/dist/trash';
 /**
@@ -50,61 +50,78 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
  * @return {JSX.Element} The component
  */
 const AttributeMappingTable = ( { rules } ) => {
-	const { data: attributes } = useMappingAttributes();
+	const {
+		data: attributes,
+		hasFinishedResolution: attributesHasFinishedResolution,
+	} = useMappingAttributes();
 
 	const parseDestinationName = ( destination ) =>
 		attributes.find( ( e ) => e.id === destination )?.label || '';
+
+	const isLoading = ! attributesHasFinishedResolution; // Todo: Add here rulesHasFinishedResolution for Rules after implementation
 
 	return (
 		<AppTableCardDiv>
 			<Card>
 				<CardBody size={ null }>
-					<Table
-						caption={ __(
-							'Attribute Mapping configuration',
-							'google-listings-and-ads'
-						) }
-						headers={ ATTRIBUTE_MAPPING_TABLE_HEADERS }
-						rows={ rules.map( ( rule ) => [
-							{
-								display: parseDestinationName(
-									rule.destination
-								),
-							},
-							{
-								display: (
-									<span className="gla-attribute-mapping__table-label">
-										{ rule.source_name }
-									</span>
-								),
-							},
-							{
-								display: (
-									<span className="gla-attribute-mapping__table-categories">
-										<AttributeMappingTableCategories
-											categories={ rule.categories }
-											condition={
-												rule.category_conditional_type
-											}
-										/>
-									</span>
-								),
-							},
-							{
-								display: (
-									<Flex justify="end">
-										<AppButton isLink>
-											{ __(
-												'Manage',
-												'google-listings-and-ads'
-											) }
-										</AppButton>
-										<AppButton icon={ <GridiconTrash /> } />
-									</Flex>
-								),
-							},
-						] ) }
-					/>
+					{ isLoading ? (
+						<TablePlaceholder
+							headers={ ATTRIBUTE_MAPPING_TABLE_HEADERS }
+							caption={ __(
+								'Loading Attribute Mapping rules',
+								'google-listings-and-ads'
+							) }
+						/>
+					) : (
+						<Table
+							caption={ __(
+								'Attribute Mapping configuration',
+								'google-listings-and-ads'
+							) }
+							headers={ ATTRIBUTE_MAPPING_TABLE_HEADERS }
+							rows={ rules.map( ( rule ) => [
+								{
+									display: parseDestinationName(
+										rule.destination
+									),
+								},
+								{
+									display: (
+										<span className="gla-attribute-mapping__table-label">
+											{ rule.source_name }
+										</span>
+									),
+								},
+								{
+									display: (
+										<span className="gla-attribute-mapping__table-categories">
+											<AttributeMappingTableCategories
+												categories={ rule.categories }
+												condition={
+													rule.category_conditional_type
+												}
+											/>
+										</span>
+									),
+								},
+								{
+									display: (
+										<Flex justify="end">
+											<AppButton isLink>
+												{ __(
+													'Manage',
+													'google-listings-and-ads'
+												) }
+											</AppButton>
+											<AppButton
+												icon={ <GridiconTrash /> }
+											/>
+										</Flex>
+									),
+								},
+							] ) }
+						/>
+					) }
 				</CardBody>
 				<CardFooter
 					align="start"

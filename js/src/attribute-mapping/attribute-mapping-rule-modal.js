@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useState } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import { noop } from 'lodash';
 
 /**
@@ -17,6 +17,7 @@ import useMappingAttributesSources from '.~/hooks/useMappingAttributesSources';
 import AttributeMappingFieldSourcesControl from './attribute-mapping-field-sources-control';
 import AttributeMappingSourceTypeSelector from './attribute-mapping-source-type-selector';
 import AttributeMappingCategoryControl from '.~/attribute-mapping/attribute-mapping-category-control';
+import AppSpinner from '.~/components/app-spinner';
 
 /**
  * Renders a modal showing a form for editing or creating an Attribute Mapping rule
@@ -30,16 +31,17 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const { data: attributes } = useMappingAttributes();
-	const { data: sources = {} } = useMappingAttributesSources(
-		selectedAttribute
-	);
+	const {
+		data: sources = {},
+		hasFinishedResolution: sourcesHasFinishedResolution,
+	} = useMappingAttributesSources( selectedAttribute );
 
 	const isEnum =
 		attributes.find( ( { id } ) => id === selectedAttribute )?.enum ||
 		false;
 
 	const sourcesOptions = [
-		// Todo: Fix this in the future. (Due to an error on my side returning object in the backend)
+		// Todo: Check this in the future. (Due to an error on my side returning object in the backend)
 		...Object.keys( sources ).map( ( sourceKey ) => {
 			return {
 				value: sourceKey,
@@ -104,7 +106,9 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 				/>
 			</Subsection>
 
-			{ sourcesOptions.length > 1 && (
+			{ ! sourcesHasFinishedResolution && <AppSpinner /> }
+
+			{ sourcesOptions.length > 1 && sourcesHasFinishedResolution && (
 				<>
 					<Subsection>
 						<Subsection.Title>
