@@ -89,7 +89,7 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob impl
 	 */
 	protected function handle_complete( int $final_batch_number ) {
 		$product_ids = $this->options->get( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA );
-		$count       = count( $product_ids );
+		$count       = is_array( $product_ids ) ? count( $product_ids ) : 0;
 		$this->options->update( OptionsInterface::SYNCABLE_PRODUCTS_COUNT, $count );
 		$this->options->delete( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA );
 	}

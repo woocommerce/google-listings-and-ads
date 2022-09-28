@@ -68,8 +68,13 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 	}
 
 	public function test_update_syncable_products_count() {
+		// Syncable products count: 2, total products count: 2
 		$batch_a = new FilteredProductList( $this->generate_simple_product_mocks_set( 2 ), 2 );
+
+		// Syncable products count: 2, total products count: 2
 		$batch_b = new FilteredProductList( $this->generate_simple_product_mocks_set( 2 ), 2 );
+
+		// Syncable products count: 0, total products count: 0
 		$batch_c = new FilteredProductList( [], 0 );
 
 		$syncable_products = [ ...$batch_a->get_product_ids(), ...$batch_b->get_product_ids() ];
@@ -112,6 +117,76 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 		do_action( self::PROCESS_ITEM_HOOK, $batch_a->get_product_ids() );
 		do_action( self::CREATE_BATCH_HOOK, 2 );
 		do_action( self::PROCESS_ITEM_HOOK, $batch_b->get_product_ids() );
+		do_action( self::CREATE_BATCH_HOOK, 3 );
+	}
+
+	public function test_update_syncable_products_count_no_syncable_products_single_batch() {
+		// Syncable products count: 0, total products count: 0
+		$batch = new FilteredProductList( [], 0 );
+
+		$this->action_scheduler->expects( $this->once() )
+			->method( 'schedule_immediate' )
+			->with( self::CREATE_BATCH_HOOK, [ 1 ] );
+
+		$this->product_repository->expects( $this->once() )
+			->method( 'find_sync_ready_products' )
+			->with( [], self::BATCH_SIZE, 0 )
+			->willReturn( $batch );
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA )
+			->willReturn( null );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::SYNCABLE_PRODUCTS_COUNT, 0 );
+
+		$this->job->schedule();
+
+		do_action( self::CREATE_BATCH_HOOK, 1 );
+	}
+
+	public function test_update_syncable_products_count_no_syncable_products_multiple_batches() {
+		// Syncable products count: 0, total products count: 4
+		$batch_a = new FilteredProductList( [], 4 );
+
+		// Syncable products count: 0, total products count: 2
+		$batch_b = new FilteredProductList( [], 2 );
+
+		// Syncable products count: 0, total products count: 0
+		$batch_c = new FilteredProductList( [], 0 );
+
+		$this->action_scheduler->expects( $this->exactly( 3 ) )
+			->method( 'schedule_immediate' )
+			->withConsecutive(
+				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2 ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3 ] ]
+			);
+
+		$this->product_repository->expects( $this->exactly( 3 ) )
+			->method( 'find_sync_ready_products' )
+			->withConsecutive(
+				[ [], self::BATCH_SIZE, 0 ],
+				[ [], self::BATCH_SIZE, 2 ],
+				[ [], self::BATCH_SIZE, 4 ],
+			)
+			->willReturnOnConsecutiveCalls( $batch_a, $batch_b, $batch_c );
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA )
+			->willReturn( null );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::SYNCABLE_PRODUCTS_COUNT, 0 );
+
+		$this->job->schedule();
+
+		do_action( self::CREATE_BATCH_HOOK, 1 );
+		do_action( self::CREATE_BATCH_HOOK, 2 );
 		do_action( self::CREATE_BATCH_HOOK, 3 );
 	}
 }
