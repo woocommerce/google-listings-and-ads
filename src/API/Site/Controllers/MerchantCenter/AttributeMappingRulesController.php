@@ -129,7 +129,6 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	protected function update_rule_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$rule    = $request->get_params();
 				$rule_id = $request->get_url_params()['id'];
 
 				if ( ! $this->attribute_mapping_rules_query->update( $this->prepare_item_for_database( $request ), [ 'id' => $rule_id ] ) ) {
@@ -152,7 +151,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	protected function delete_rule_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$rule_id = absint( $request->get_param( 'id' ) );
+				$rule_id = $request->get_url_params()['id'];
 
 				if ( ! $this->attribute_mapping_rules_query->delete( 'id', $rule_id ) ) {
 					return $this->response_from_exception( new Exception( 'Unable to delete the rule' ) );
