@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Throwable;
 use WP_Error;
 use WP_REST_Request as Request;
 use Exception;
@@ -49,41 +48,36 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 * Register rest routes with WordPress.
 	 */
 	public function register_routes(): void {
-		/**
-		 * GET - Receive All Attribute mapping rules from database
-		 */
 		$this->register_route(
 			'mc/mapping/rules',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_mapping_rules_callback(),
+					'callback'            => $this->get_rule_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				[
 					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->post_mapping_create_rule_callback(),
+					'callback'            => $this->create_rule_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			],
 		);
-		/**
-		 * POST - Upsert an Attribute mapping rule
-		 */
+
 		$this->register_route(
 			'mc/mapping/rules/(?P<id>[\d]+)',
 			[
 				[
 					'methods'             => TransportMethods::EDITABLE,
-					'callback'            => $this->post_mapping_update_rule_callback(),
+					'callback'            => $this->update_rule_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
 				],
 				[
 					'methods'             => TransportMethods::DELETABLE,
-					'callback'            => $this->delete_mapping_rule_callback(),
+					'callback'            => $this->delete_rule_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -97,7 +91,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	protected function get_mapping_rules_callback(): callable {
+	protected function get_rule_callback(): callable {
 		return function() {
 			try {
 				return $this->prepare_response_for_collection( $this->attribute_mapping_rules_query->get_results() );
@@ -112,14 +106,14 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	protected function post_mapping_create_rule_callback(): callable {
+	protected function create_rule_callback(): callable {
 		return function( Request $request ) {
 			try {
 				if ( ! $this->attribute_mapping_rules_query->insert( $this->prepare_item_for_database( $request ) ) ) {
 					return $this->response_from_exception( new Exception( 'Unable to create the new rule.' ) );
 				}
 
-				return $this->attribute_mapping_rules_query->get_rule( $this->attribute_mapping_rules_query->last_insert_id() );
+				return $this->prepare_item_for_response( $this->attribute_mapping_rules_query->get_rule( $this->attribute_mapping_rules_query->last_insert_id() ), $request );
 
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -132,7 +126,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	protected function post_mapping_update_rule_callback(): callable {
+	protected function update_rule_callback(): callable {
 		return function( Request $request ) {
 			try {
 				$rule    = $request->get_params();
@@ -155,7 +149,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	protected function delete_mapping_rule_callback(): callable {
+	protected function delete_rule_callback(): callable {
 		return function( Request $request ) {
 			try {
 				$rule_id = absint( $request->get_param( 'id' ) );
@@ -208,7 +202,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 				'enum'              => $this->attribute_mapping_helper->get_category_condition_types(),
 			],
 			'categories'              => [
-				'description'       => __( 'Comma separated categories for this rule.', 'google-listings-and-ads' ),
+				'description'       => __( 'List of category IDs, separated by commas.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'required'          => false,
 				'validate_callback' => function( $param ) {
@@ -236,13 +230,13 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 * @throw Exception when invalid categories are provided
 	 */
 	public function validate_categories_param( string $categories ) {
-			$categories_array = explode( ',', $categories );
+		$categories_array = explode( ',', $categories );
 
 		foreach ( $categories_array as $category ) {
 			if ( ! is_numeric( $category ) ) {
 				return new WP_Error(
 					'gla_attribute_mapping_invalid_categories_schema',
-					'it should be an string with categories separated by comma, and each of the categories should be in number like format',
+					'categories should be a string of category IDs separated by commas.',
 					[
 						'categories' => $categories,
 					]
@@ -250,6 +244,6 @@ class AttributeMappingRulesController extends BaseOptionsController {
 			}
 		}
 
-			return true;
+		return true;
 	}
 }

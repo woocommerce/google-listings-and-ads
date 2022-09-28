@@ -21,8 +21,16 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 
 	protected const TEST_RULE_ID    = 1;
 	protected const TEST_ATTRIBUTES = [
-		'adult' => 'adult',
-		'brand' => 'brand',
+		[
+			'id'    => 'adult',
+			'label' => 'Adult',
+			'enum'  => true,
+		],
+		[
+			'id'    => 'brand',
+			'label' => 'Brand',
+			'enum'  => false,
+		],
 	];
 	protected const TEST_RULE       = [
 		'attribute'               => 'adult',
@@ -43,10 +51,15 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 
 	public function setUp(): void {
 		parent::setUp();
-		$this->attribute_mapping_helper      = $this->createMock( AttributeMappingHelper::class );
+
+		$this->attribute_mapping_helper = $this->createMock( AttributeMappingHelper::class );
+		$this->attribute_mapping_helper->method( 'get_attributes' )->willReturn( self::TEST_ATTRIBUTES );
+		$this->attribute_mapping_helper->method( 'get_category_condition_types' )->willReturn( [ 'ALL', 'ONLY', 'EXCEPT' ] );
+
 		$this->attribute_mapping_rules_query = $this->createMock( AttributeMappingRulesQuery::class );
 		$this->controller                    = new AttributeMappingRulesController( $this->server, $this->attribute_mapping_helper, $this->attribute_mapping_rules_query );
 		$this->controller->register();
+
 	}
 
 
@@ -92,12 +105,7 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 		$this->validate_post_route( self::ROUTE_RULE, 'update' );
 	}
 
-	public function test_create_rule_route_fails() {
-		$this->attribute_mapping_helper->expects( $this->any() )
-			->method( 'get_attributes' )->willReturn(
-				self::TEST_ATTRIBUTES
-			);
-
+	public function test_create_rule_route_not_creating() {
 		$this->attribute_mapping_rules_query->expects( $this->once() )
 			->method( 'insert' )->willReturn( 0 );
 
@@ -105,12 +113,7 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
-	public function test_update_rule_route_fails() {
-		$this->attribute_mapping_helper->expects( $this->any() )
-			->method( 'get_attributes' )->willReturn(
-				self::TEST_ATTRIBUTES
-			);
-
+	public function test_update_rule_route_not_updating() {
 		$this->attribute_mapping_rules_query->expects( $this->once() )
 			->method( 'update' )->willReturn( 0 );
 
@@ -120,11 +123,6 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 
 	private function validate_post_route( $route, $method ) {
 		$rule_with_id = array_merge( [ 'id' => self::TEST_RULE_ID ], self::TEST_RULE, [ 'categories' => null ] );
-
-		$this->attribute_mapping_helper->expects( $this->any() )
-			->method( 'get_attributes' )->willReturn(
-				self::TEST_ATTRIBUTES
-			);
 
 		$this->attribute_mapping_rules_query->expects( $this->once() )
 			->method( $method )->willReturn( 1 );
@@ -170,6 +168,43 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 		);
 		$this->assertEquals( 400, $response->get_status() );
 
+		// not working with wrong rule.categories
+		$response = $this->do_request(
+			$route,
+			'post',
+			[
+				'attribute'               => 'adult',
+				'source'                  => 'test',
+				'category_condition_type' => 'ONLY',
+				'categories'              => 'test,test',
+			]
+		);
+		$this->assertEquals( 400, $response->get_status() );
+
+		// not working with wrong rule.category_condition_type param
+		$response = $this->do_request(
+			$route,
+			'post',
+			[
+				'attribute'               => 'adult',
+				'source'                  => 'test',
+				'category_condition_type' => 'BAD',
+			]
+		);
+		$this->assertEquals( 400, $response->get_status() );
+
+		// not working with wrong rule.attribute param
+		$response = $this->do_request(
+			$route,
+			'post',
+			[
+				'attribute'               => 'wrong',
+				'source'                  => 'test',
+				'category_condition_type' => 'ALL',
+			]
+		);
+		$this->assertEquals( 400, $response->get_status() );
+
 	}
 
 	public function test_delete_rule_route() {
@@ -183,7 +218,7 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $data, $response->get_data() );
 	}
 
-	public function test_delete_rule_route_error() {
+	public function test_delete_rule_route_not_deleting() {
 		$this->attribute_mapping_rules_query->expects( $this->once() )
 			->method( 'delete' )->willReturn( 0 );
 
