@@ -50,6 +50,10 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 		} ),
 	];
 
+	const attributeSelectorLabel = __(
+		'Select a Google attribute that you want to manage',
+		'google-listings-and-ads'
+	);
 	const attributesOptions = [
 		{
 			value: '',
@@ -95,12 +99,10 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 					{ __( 'Target attribute', 'google-listings-and-ads' ) }
 				</Subsection.Title>
 				<Subsection.Subtitle className="gla_attribute_mapping_helper-text">
-					{ __(
-						'Select a Google attribute that you want to manage',
-						'google-listings-and-ads'
-					) }
+					{ attributeSelectorLabel }
 				</Subsection.Subtitle>
 				<AppSelectControl
+					aria-label={ attributeSelectorLabel }
 					onChange={ setSelectedAttribute }
 					options={ attributesOptions }
 				/>

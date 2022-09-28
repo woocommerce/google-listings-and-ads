@@ -15,7 +15,11 @@ import AppSelectControl from '.~/components/app-select-control';
  * @param { Array } props.sources The sources available for the selector
  * @param { JSX.Element } props.help Help text or component to be render at the bottom of the selector
  */
-const AttributeMappingFieldSourcesControl = ( { sources = [], help } ) => {
+const AttributeMappingFieldSourcesControl = ( {
+	sources = [],
+	help,
+	...props
+} ) => {
 	return (
 		<>
 			<AppSelectControl
@@ -34,6 +38,7 @@ const AttributeMappingFieldSourcesControl = ( { sources = [], help } ) => {
 						};
 					} ),
 				] }
+				{ ...props }
 			/>
 			{ help }
 		</>
