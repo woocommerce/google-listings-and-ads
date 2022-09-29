@@ -2,17 +2,17 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AttributeMappingController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AttributeMappingDataController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 
 /**
- * Test suite for AttributeMappingController
+ * Test suite for AttributeMappingDataController
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
  * @group AttributeMapping
  */
-class AttributeMappingControllerTest extends RESTControllerUnitTest {
+class AttributeMappingDataControllerTest extends RESTControllerUnitTest {
 
 
 	protected const ROUTE_REQUEST_SOURCES    = '/wc/gla/mc/mapping/sources';
@@ -24,10 +24,12 @@ class AttributeMappingControllerTest extends RESTControllerUnitTest {
 	private AttributeMappingHelper $attribute_mapping_helper;
 
 
+
+
 	public function setUp(): void {
 		parent::setUp();
 		$this->attribute_mapping_helper = $this->createMock( AttributeMappingHelper::class );
-		$this->controller               = new AttributeMappingController( $this->server, $this->attribute_mapping_helper );
+		$this->controller               = new AttributeMappingDataController( $this->server, $this->attribute_mapping_helper );
 		$this->controller->register();
 	}
 
@@ -37,7 +39,7 @@ class AttributeMappingControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( self::ROUTE_REQUEST_SOURCES, $this->server->get_routes() );
 	}
 
-	public function test_destinations_route() {
+	public function test_attributes_route() {
 		$this->attribute_mapping_helper->expects( $this->once() )
 			->method( 'get_attributes' );
 

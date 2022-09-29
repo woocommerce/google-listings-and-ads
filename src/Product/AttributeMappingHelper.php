@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
@@ -23,6 +24,11 @@ defined( 'ABSPATH' ) || exit;
  */
 class AttributeMappingHelper implements Service {
 
+	/**
+	 * @var AttributeMappingRulesQuery $rules_query
+	 */
+	private AttributeMappingRulesQuery $rules_query;
+
 
 	private const ATTRIBUTES_AVAILABLE_FOR_MAPPING = [
 		Adult::class,
@@ -34,6 +40,18 @@ class AttributeMappingHelper implements Service {
 		SizeType::class,
 		Color::class,
 	];
+
+	public const CATEGORY_CONDITION_TYPE_ALL    = 'ALL';
+	public const CATEGORY_CONDITION_TYPE_ONLY   = 'ONLY';
+	public const CATEGORY_CONDITION_TYPE_EXCEPT = 'EXCEPT';
+
+
+	/**
+	 * @param AttributeMappingRulesQuery $rules_query
+	 */
+	public function __construct( AttributeMappingRulesQuery $rules_query ) {
+		$this->rules_query = $rules_query;
+	}
 
 	/**
 	 * Gets all the available attributes for mapping
@@ -121,5 +139,18 @@ class AttributeMappingHelper implements Service {
 		}
 
 		return $sources;
+	}
+
+	/**
+	 * Get the available conditions for the category.
+	 *
+	 * @return string[] The list of available category conditions
+	 */
+	public function get_category_condition_types(): array {
+		return [
+			self::CATEGORY_CONDITION_TYPE_ALL,
+			self::CATEGORY_CONDITION_TYPE_EXCEPT,
+			self::CATEGORY_CONDITION_TYPE_ONLY,
+		];
 	}
 }
