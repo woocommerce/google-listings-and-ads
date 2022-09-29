@@ -36,6 +36,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeBatchController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SupportedCountriesController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SyncableProductsCountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\TargetAudienceController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
@@ -43,6 +44,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as MerchantAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
@@ -113,6 +115,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( SettingsSyncController::class, Settings::class );
 		$this->share( DisconnectController::class );
 		$this->share( SetupCompleteController::class );
+		$this->share( SyncableProductsCountController::class, JobRepository::class );
 	}
 
 	/**
