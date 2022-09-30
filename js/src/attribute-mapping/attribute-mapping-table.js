@@ -3,8 +3,9 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Table, TablePlaceholder } from '@woocommerce/components';
-import { CardBody, CardFooter, Flex } from '@wordpress/components';
-import GridiconTrash from 'gridicons/dist/trash';
+import { CardBody, CardFooter, Flex, FlexItem } from '@wordpress/components';
+import { useState } from '@wordpress/element';
+
 /**
  * Internal dependencies
  */
@@ -15,6 +16,8 @@ import AttributeMappingTableCategories from './attribute-mapping-table-categorie
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import AttributeMappingRuleModal from '.~/attribute-mapping/attribute-mapping-rule-modal';
 import useMappingAttributes from '.~/hooks/useMappingAttributes';
+import useMappingRules from '.~/hooks/useMappingRules';
+import { useAppDispatch } from '.~/data';
 
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	{
@@ -45,20 +48,27 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 /**
  * Renders the Attribute Mapping table component
  *
- * @param {Object} props The component props
- * @param {Object} props.rules The rules to show in the table
  * @return {JSX.Element} The component
  */
-const AttributeMappingTable = ( { rules } ) => {
+const AttributeMappingTable = () => {
+	const [ deleting, setDeleting ] = useState( '' );
+	const {
+		data: rules,
+		hasFinishedResolution: rulesHasFinishedResolution,
+	} = useMappingRules();
+
 	const {
 		data: attributes,
 		hasFinishedResolution: attributesHasFinishedResolution,
 	} = useMappingAttributes();
 
+	const { deleteMappingRule } = useAppDispatch();
+
 	const parseDestinationName = ( destination ) =>
 		attributes.find( ( e ) => e.id === destination )?.label || '';
 
-	const isLoading = ! attributesHasFinishedResolution; // Todo: Add here rulesHasFinishedResolution for Rules after implementation
+	const isLoading =
+		! attributesHasFinishedResolution || ! rulesHasFinishedResolution;
 
 	return (
 		<AppTableCardDiv>
@@ -82,13 +92,13 @@ const AttributeMappingTable = ( { rules } ) => {
 							rows={ rules.map( ( rule ) => [
 								{
 									display: parseDestinationName(
-										rule.destination
+										rule.attribute
 									),
 								},
 								{
 									display: (
 										<span className="gla-attribute-mapping__table-label">
-											{ rule.source_name }
+											{ rule.source }
 										</span>
 									),
 								},
@@ -98,7 +108,7 @@ const AttributeMappingTable = ( { rules } ) => {
 											<AttributeMappingTableCategories
 												categories={ rule.categories }
 												condition={
-													rule.category_conditional_type
+													rule.category_condition_type
 												}
 											/>
 										</span>
@@ -107,15 +117,50 @@ const AttributeMappingTable = ( { rules } ) => {
 								{
 									display: (
 										<Flex justify="end">
-											<AppButton isLink>
-												{ __(
-													'Manage',
-													'google-listings-and-ads'
-												) }
-											</AppButton>
-											<AppButton
-												icon={ <GridiconTrash /> }
-											/>
+											<FlexItem>
+												<AppButtonModalTrigger
+													button={
+														<AppButton
+															isLink
+															text={ __(
+																'Manage',
+																'google-listings-and-ads'
+															) }
+															eventName="gla_attribute_mapping_new_rule_click"
+															eventProps={ {
+																context:
+																	'attribute-mapping-table',
+															} }
+														/>
+													}
+													modal={
+														<AttributeMappingRuleModal
+															rule={ rule }
+														/>
+													}
+												/>
+											</FlexItem>
+											<FlexItem>
+												<AppButton
+													isLink
+													onClick={ () => {
+														setDeleting( rule.id );
+														deleteMappingRule(
+															rule
+														);
+													} }
+												>
+													{ deleting === rule.id
+														? __(
+																'Deleting…',
+																'google-listings-and-ads'
+														  )
+														: __(
+																'Delete',
+																'google-listings-and-ads'
+														  ) }
+												</AppButton>
+											</FlexItem>
 										</Flex>
 									),
 								},

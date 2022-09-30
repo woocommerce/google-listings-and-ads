@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
 import { noop } from 'lodash';
 
 /**
@@ -15,14 +14,16 @@ import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
 
 /**
  * Renders the selectors relative to the categories
- *
+
  * @param {Function} [onCategorySelectorOpen] callback when the Category Tree Selector is open
  */
 const AttributeMappingCategoryControl = ( {
+	selectedConditionalType = CATEGORY_CONDITION_SELECT_TYPES.ALL,
+	selectedCategories,
+	onConditionalTypeChange = noop,
+	onCategoriesChange = noop,
 	onCategorySelectorOpen = noop,
 } ) => {
-	const [ selectedType, setSelectedType ] = useState();
-	const [ selectedCategories, setSelectedCategories ] = useState();
 	const { data: categories } = useCategoryTree();
 
 	return (
@@ -51,14 +52,17 @@ const AttributeMappingCategoryControl = ( {
 						),
 					},
 				] }
-				onChange={ setSelectedType }
+				value={ selectedConditionalType }
+				onChange={ onConditionalTypeChange }
 			/>
-			{ ( selectedType === CATEGORY_CONDITION_SELECT_TYPES.ONLY ||
-				selectedType === CATEGORY_CONDITION_SELECT_TYPES.EXCEPT ) && (
+			{ ( selectedConditionalType ===
+				CATEGORY_CONDITION_SELECT_TYPES.ONLY ||
+				selectedConditionalType ===
+					CATEGORY_CONDITION_SELECT_TYPES.EXCEPT ) && (
 				<TreeSelectControl
 					onDropdownVisibilityChange={ onCategorySelectorOpen }
 					options={ categories }
-					onChange={ setSelectedCategories }
+					onChange={ onCategoriesChange }
 					value={ selectedCategories }
 					placeholder={ __(
 						'Select categories',
