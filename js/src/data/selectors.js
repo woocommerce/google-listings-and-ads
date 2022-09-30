@@ -279,9 +279,5 @@ export const getMappingAttributes = ( state ) => {
 };
 
 export const getMappingSources = ( state, attributeKey ) => {
-	if ( ! attributeKey ) {
-		return {}; // Todo: Change this to [] after finishing fix in backend
-	}
-
 	return state.mc.mapping.sources[ attributeKey ];
 };

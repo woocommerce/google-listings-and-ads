@@ -951,52 +951,27 @@ export function* sendMCReviewRequest() {
 }
 
 /**
- * Action for fetching available attributes for mapping.
+ * Receive Mapping Attributes action
+ *
+ * @param {Array} attributes The attributes to update in the state.
  */
-export function* fetchMappingAttributes() {
-	try {
-		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/mapping/attributes`,
-		} );
-
-		return {
-			type: TYPES.RECEIVE_MAPPING_ATTRIBUTES,
-			attributes: response.data,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error loading the mapping attributes.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+export function* receiveMappingAttributes( attributes ) {
+	return {
+		type: TYPES.RECEIVE_MAPPING_ATTRIBUTES,
+		attributes,
+	};
 }
 
 /**
- * Action for fetching available sources for mapping a specific attribute.
+ * Receive Mapping Sources action
  *
- * @param {string} attributeKey Attribute ID to query the sources
+ * @param {Array} sources The sources to update in the state.
+ * @param {string} attributeKey The key for teh attribute we are querying the sources.
  */
-export function* fetchMappingSources( attributeKey ) {
-	try {
-		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/mapping/sources?attribute=${ attributeKey }`,
-		} );
-
-		return {
-			type: TYPES.RECEIVE_MAPPING_SOURCES,
-			sources: response.data,
-			attributeKey,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error loading the mapping sources for the selected attribute.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+export function* receiveMappingSources( sources, attributeKey ) {
+	return {
+		type: TYPES.RECEIVE_MAPPING_SOURCES,
+		sources,
+		attributeKey,
+	};
 }

@@ -379,10 +379,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.RECEIVE_MAPPING_SOURCES: {
 			const { attributeKey, sources } = action;
-			return setIn( state, 'mc.mapping.sources', {
-				...state.mc.mapping.sources,
-				[ attributeKey ]: sources,
-			} );
+
+			return setIn(
+				state,
+				[ 'mc', 'mapping', 'sources', attributeKey ],
+				sources
+			);
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
