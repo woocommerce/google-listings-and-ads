@@ -30,6 +30,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
@@ -391,6 +392,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ShippingZone::class, WC::class, ZoneLocationsParser::class, ZoneMethodsParser::class, LocationRatesProcessor::class );
 		$this->share_with_tags( ShippingSuggestionService::class, ShippingZone::class, WC::class );
 		$this->share_with_tags( RequestReviewStatuses::class );
-		$this->share_with_tags( AttributeMappingHelper::class );
+		$this->share_with_tags( AttributeMappingHelper::class, AttributeMappingRulesQuery::class );
 	}
 }

@@ -69,11 +69,12 @@ class Color extends AbstractAttribute {
 	}
 
 	/**
-	 * Return if is enum
+	 * Defines is_enum property for this Attribute
 	 *
-	 * @return false
+	 * @return bool False for Color attribute
 	 */
 	public static function is_enum(): bool {
+		// Todo: TBD. Replace with some trait or other solution avoiding override
 		return false;
 	}
 

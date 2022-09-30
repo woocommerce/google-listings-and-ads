@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class AttributeMappingController extends BaseOptionsController {
+class AttributeMappingDataController extends BaseOptionsController {
 
 	/**
 	 * @var AttributeMappingHelper
