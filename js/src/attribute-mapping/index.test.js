@@ -116,9 +116,8 @@ describe( 'Attribute Mapping', () => {
 	} );
 
 	test( 'Add new Attribute mapping - Field / Fixed value', async () => {
-		const { queryByText, findByRole } = render(
-			<AttributeMapping />
-		);
+		jest.setTimeout( 10000 );
+		const { queryByText, findByRole } = render( <AttributeMapping /> );
 
 		// Modal is open when clicking th button
 		const button = queryByText( 'Create attribute rule' );
