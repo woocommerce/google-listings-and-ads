@@ -19,7 +19,7 @@ jest.mock( '.~/hooks/useMappingAttributesSources', () => ( {
 	__esModule: true,
 	default: jest
 		.fn()
-		.mockName( 'useMappingAttributes' )
+		.mockName( 'useMappingAttributesSources' )
 		.mockImplementation( () => {
 			return {
 				hasFinishedResolution: true,
