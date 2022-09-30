@@ -91,7 +91,7 @@ describe( 'Attribute Mapping', () => {
 		expect( queryByText( '54 categories' ) ).toBeTruthy();
 	} );
 
-	test( 'Add new Attribute mapping button', async () => {
+	test( 'Add new Attribute mapping - Enum', async () => {
 		const { queryByText, findByRole, findByText } = render(
 			<AttributeMapping />
 		);
@@ -113,6 +113,22 @@ describe( 'Attribute Mapping', () => {
 		await findByText(
 			'Choose how to assign a value to the target attribute'
 		);
+	} );
+
+	test( 'Add new Attribute mapping - Field / Fixed value', async () => {
+		const { queryByText, findByRole } = render(
+			<AttributeMapping />
+		);
+
+		// Modal is open when clicking th button
+		const button = queryByText( 'Create attribute rule' );
+		expect( button ).toBeTruthy();
+		fireEvent.click( button );
+
+		const select = await findByRole( 'combobox', {
+			name: 'Select a Google attribute that you want to manage',
+		} );
+		userEvent.selectOptions( select, 'brands' );
 
 		// Show fixed value when we check "Set a fixed value" radio
 		const setFixedRadio = await findByRole( 'radio', {
