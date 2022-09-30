@@ -1,7 +1,13 @@
 .gla-product-feed-status-section {
-	.gla-sync-icon {
-		fill: $gla-color-green;
-		transform: rotateZ(90deg);
+	.woocommerce-spinner {
+		width: 20px;
+		height: 20px;
+		min-width: 20px;
+
+		&__circle {
+			stroke: $gray-700;
+			stroke-width: 8px;
+		}
 	}
 
 	.wcdl-subsection-title {
