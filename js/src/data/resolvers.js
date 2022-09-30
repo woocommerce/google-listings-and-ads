@@ -39,6 +39,8 @@ import {
 	receiveMCIssues,
 	receiveMCProductFeed,
 	receiveMCReviewRequest,
+	receiveMappingSources,
+	receiveMappingAttributes,
 } from './actions';
 
 export function* getShippingRates() {
@@ -303,6 +305,46 @@ export function* getReportByApiQuery( category, type, reportQuery ) {
 			error,
 			__(
 				'There was an error loading report.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getMappingAttributes() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/attributes`,
+		} );
+
+		yield receiveMappingAttributes( response.data );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading the mapping attributes.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getMappingSources( attributeKey ) {
+	try {
+		if ( ! attributeKey ) {
+			return;
+		}
+
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/sources?attribute=${ attributeKey }`,
+		} );
+
+		yield receiveMappingSources( response.data, attributeKey );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading the mapping sources for the selected attribute.',
 				'google-listings-and-ads'
 			)
 		);

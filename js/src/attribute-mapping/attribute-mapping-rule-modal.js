@@ -17,6 +17,7 @@ import useMappingAttributesSources from '.~/hooks/useMappingAttributesSources';
 import AttributeMappingFieldSourcesControl from './attribute-mapping-field-sources-control';
 import AttributeMappingSourceTypeSelector from './attribute-mapping-source-type-selector';
 import AttributeMappingCategoryControl from '.~/attribute-mapping/attribute-mapping-category-control';
+import AppSpinner from '.~/components/app-spinner';
 
 /**
  * Renders a modal showing a form for editing or creating an Attribute Mapping rule
@@ -26,13 +27,45 @@ import AttributeMappingCategoryControl from '.~/attribute-mapping/attribute-mapp
  * @param {Function} [props.onRequestClose] Callback on closing the modal
  */
 const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
-	const [ selectedAttribute, setSelectedAttribute ] = useState();
+	const [ selectedAttribute, setSelectedAttribute ] = useState( '' );
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const { data: attributes } = useMappingAttributes();
-	const { data: sources } = useMappingAttributesSources( selectedAttribute );
-	const isEnum = attributes?.find( ( { id } ) => id === selectedAttribute )
-		?.enum;
+	const {
+		data: sources = {},
+		hasFinishedResolution: sourcesHasFinishedResolution,
+	} = useMappingAttributesSources( selectedAttribute );
+
+	const isEnum =
+		attributes.find( ( { id } ) => id === selectedAttribute )?.enum ||
+		false;
+
+	const sourcesOptions = [
+		// Todo: Check this in the future. (Due to an error on my side returning object in the backend)
+		...Object.keys( sources ).map( ( sourceKey ) => {
+			return {
+				value: sourceKey,
+				label: sources[ sourceKey ],
+			};
+		} ),
+	];
+
+	const attributeSelectorLabel = __(
+		'Select a Google attribute that you want to manage',
+		'google-listings-and-ads'
+	);
+	const attributesOptions = [
+		{
+			value: '',
+			label: __( 'Select one attribute', 'google-listings-and-ads' ),
+		},
+		...attributes.map( ( attribute ) => {
+			return {
+				value: attribute.id,
+				label: attribute.label,
+			};
+		} ),
+	];
 
 	return (
 		<AppModal
@@ -66,23 +99,18 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 					{ __( 'Target attribute', 'google-listings-and-ads' ) }
 				</Subsection.Title>
 				<Subsection.Subtitle className="gla_attribute_mapping_helper-text">
-					{ __(
-						'Select a Google attribute that you want to manage',
-						'google-listings-and-ads'
-					) }
+					{ attributeSelectorLabel }
 				</Subsection.Subtitle>
 				<AppSelectControl
+					aria-label={ attributeSelectorLabel }
 					onChange={ setSelectedAttribute }
-					options={ attributes.map( ( attribute ) => {
-						return {
-							value: attribute.id,
-							label: attribute.label,
-						};
-					} ) }
+					options={ attributesOptions }
 				/>
 			</Subsection>
 
-			{ sources.length > 0 && (
+			{ ! sourcesHasFinishedResolution && <AppSpinner /> }
+
+			{ sourcesOptions.length > 0 && sourcesHasFinishedResolution && (
 				<>
 					<Subsection>
 						<Subsection.Title>
@@ -99,11 +127,11 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 
 						{ isEnum ? (
 							<AttributeMappingFieldSourcesControl
-								sources={ sources }
+								sources={ sourcesOptions }
 							/>
 						) : (
 							<AttributeMappingSourceTypeSelector
-								sources={ sources }
+								sources={ sourcesOptions }
 							/>
 						) }
 					</Subsection>

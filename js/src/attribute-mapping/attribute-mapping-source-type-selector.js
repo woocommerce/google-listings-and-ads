@@ -19,6 +19,16 @@ const SOURCE_TYPES = {
 	FIELD: 'field',
 };
 
+const fixedValueControlLabel = __(
+	'Set a fixed value.',
+	'google-listings-and-ads'
+);
+
+const selectFieldControlLabel = __(
+	'Use value from existing product field.',
+	'google-listings-and-ads'
+);
+
 /**
  * Renders a selector for choosing the source field.
  *
@@ -41,10 +51,7 @@ const AttributeMappingSourceTypeSelector = ( { sources = [] } ) => {
 				className="gla-attribute-mapping__radio-control"
 				label={
 					<>
-						{ __(
-							'Use value from existing product field.',
-							'google-listings-and-ads'
-						) }
+						{ selectFieldControlLabel }
 						<HelpPopover
 							id={ `${ SOURCE_TYPES.FIELD }-helper-popover` }
 						>
@@ -72,6 +79,7 @@ const AttributeMappingSourceTypeSelector = ( { sources = [] } ) => {
 				collapsible
 			>
 				<AttributeMappingFieldSourcesControl
+					aria-label={ selectFieldControlLabel }
 					sources={ sources }
 					help={
 						<Subsection.HelperText className="gla-attribute-mapping__help-text">
@@ -98,10 +106,7 @@ const AttributeMappingSourceTypeSelector = ( { sources = [] } ) => {
 				className="gla-attribute-mapping__radio-control"
 				label={
 					<>
-						{ __(
-							'Set a fixed value.',
-							'google-listings-and-ads'
-						) }
+						{ fixedValueControlLabel }
 						<HelpPopover
 							id={ `${ SOURCE_TYPES.FIXED }-helper-popover` }
 						>
@@ -129,6 +134,7 @@ const AttributeMappingSourceTypeSelector = ( { sources = [] } ) => {
 				collapsible
 			>
 				<AppInputControl
+					aria-label={ fixedValueControlLabel }
 					placeholder={ __(
 						'Enter a value',
 						'google-listings-and-ads'

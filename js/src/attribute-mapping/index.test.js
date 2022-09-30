@@ -1,8 +1,39 @@
+jest.mock( '.~/hooks/useMappingAttributes', () => ( {
+	__esModule: true,
+	default: jest
+		.fn()
+		.mockName( 'useMappingAttributes' )
+		.mockImplementation( () => {
+			return {
+				hasFinishedResolution: true,
+				data: [
+					{ id: 'adult', label: 'Adult', is_enum: true },
+					{ id: 'brands', label: 'Brands', is_enum: false },
+					{ id: 'color', label: 'Color', is_enum: false },
+				],
+			};
+		} ),
+} ) );
+
+jest.mock( '.~/hooks/useMappingAttributesSources', () => ( {
+	__esModule: true,
+	default: jest
+		.fn()
+		.mockName( 'useMappingAttributesSources' )
+		.mockImplementation( () => {
+			return {
+				hasFinishedResolution: true,
+				data: { yes: 'Yes', no: 'No' },
+			};
+		} ),
+} ) );
+
 /**
  * External dependencies
  */
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -10,6 +41,7 @@ import '@testing-library/jest-dom';
 import AttributeMapping from './index';
 import AttributeMappingTable from '.~/attribute-mapping/attribute-mapping-table';
 import AttributeMappingTableCategories from '.~/attribute-mapping/attribute-mapping-table-categories';
+import useMappingAttributes from '.~/hooks/useMappingAttributes';
 
 const DUMMY_TABLE_DATA = [
 	{
@@ -59,9 +91,59 @@ describe( 'Attribute Mapping', () => {
 		expect( queryByText( '54 categories' ) ).toBeTruthy();
 	} );
 
-	test( 'Renders Add new Attribute mapping button', () => {
-		const { queryByText } = render( <AttributeMapping /> );
-		expect( queryByText( 'Create attribute rule' ) ).toBeTruthy();
+	test( 'Add new Attribute mapping - Enum', async () => {
+		const { queryByText, findByRole, findByText } = render(
+			<AttributeMapping />
+		);
+
+		// Modal is open when clicking th button
+		const button = queryByText( 'Create attribute rule' );
+		expect( button ).toBeTruthy();
+		fireEvent.click( button );
+
+		// Show select option when enum attribute is selected
+		const select = await findByRole( 'combobox', {
+			name: 'Select a Google attribute that you want to manage',
+		} );
+		userEvent.selectOptions( select, 'adult' );
+		await findByText( 'Select one option' );
+
+		// Show type selector when no enum is selected
+		userEvent.selectOptions( select, 'brands' );
+		await findByText(
+			'Choose how to assign a value to the target attribute'
+		);
+	} );
+
+	test( 'Add new Attribute mapping - Field / Fixed value', async () => {
+		jest.setTimeout( 10000 );
+		const { queryByText, findByRole } = render( <AttributeMapping /> );
+
+		// Modal is open when clicking th button
+		const button = queryByText( 'Create attribute rule' );
+		expect( button ).toBeTruthy();
+		fireEvent.click( button );
+
+		const select = await findByRole( 'combobox', {
+			name: 'Select a Google attribute that you want to manage',
+		} );
+		userEvent.selectOptions( select, 'brands' );
+
+		// Show fixed value when we check "Set a fixed value" radio
+		const setFixedRadio = await findByRole( 'radio', {
+			name: 'Set a fixed value.',
+		} );
+		userEvent.click( setFixedRadio );
+		await findByRole( 'textbox' );
+
+		// Show selector value when we check "Use value from existing product field" radio
+		const setFieldRadio = await findByRole( 'radio', {
+			name: 'Use value from existing product field.',
+		} );
+		userEvent.click( setFieldRadio );
+		await findByRole( 'combobox', {
+			name: 'Use value from existing product field.',
+		} );
 	} );
 
 	test( 'Renders Section title, description and documentation link', () => {
@@ -117,5 +199,15 @@ describe( 'Attribute Mapping', () => {
 			'Category 1, Category 2, Category 3, Category 1, Category 2'
 		);
 		await findByText( '+ 7 more' );
+	} );
+
+	test( 'Renders placeholder table when data is has not finished resolution', () => {
+		useMappingAttributes.mockReturnValue( {
+			hasFinishedResolution: false,
+			data: [],
+		} );
+
+		const { queryByText } = render( <AttributeMapping /> );
+		expect( queryByText( 'Loading Attribute Mapping rules' ) ).toBeTruthy();
 	} );
 } );

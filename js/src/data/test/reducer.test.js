@@ -35,6 +35,10 @@ describe( 'reducer', () => {
 					ads_billing_status: null,
 					google_access: null,
 				},
+				mapping: {
+					attributes: [],
+					sources: {}, // Todo: Change to [] after finishing the fix in backend
+				},
 				contact: null,
 			},
 			ads_campaigns: null,

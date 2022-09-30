@@ -949,3 +949,29 @@ export function* sendMCReviewRequest() {
 		throw error;
 	}
 }
+
+/**
+ * Receive Mapping Attributes action
+ *
+ * @param {Array} attributes The attributes to update in the state.
+ */
+export function* receiveMappingAttributes( attributes ) {
+	return {
+		type: TYPES.RECEIVE_MAPPING_ATTRIBUTES,
+		attributes,
+	};
+}
+
+/**
+ * Receive Mapping Sources action
+ *
+ * @param {Array} sources The sources to update in the state.
+ * @param {string} attributeKey The key for the attribute we are querying the sources.
+ */
+export function* receiveMappingSources( sources, attributeKey ) {
+	return {
+		type: TYPES.RECEIVE_MAPPING_SOURCES,
+		sources,
+		attributeKey,
+	};
+}

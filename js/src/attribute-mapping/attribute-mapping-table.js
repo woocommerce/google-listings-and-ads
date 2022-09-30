@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Table } from '@woocommerce/components';
+import { Table, TablePlaceholder } from '@woocommerce/components';
 import { CardBody, CardFooter, Flex } from '@wordpress/components';
 import GridiconTrash from 'gridicons/dist/trash';
 /**
@@ -14,6 +14,7 @@ import AppTableCardDiv from '.~/components/app-table-card-div';
 import AttributeMappingTableCategories from './attribute-mapping-table-categories';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import AttributeMappingRuleModal from '.~/attribute-mapping/attribute-mapping-rule-modal';
+import useMappingAttributes from '.~/hooks/useMappingAttributes';
 
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	{
@@ -41,15 +42,6 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	},
 ];
 
-const DUMMY_DESTINATIONS = [
-	{ id: 'adult', name: 'Adult' },
-	{ id: 'brands', name: 'Brands' },
-	{ id: 'color', name: 'Color' },
-];
-
-const parseDestinationName = ( destination ) =>
-	DUMMY_DESTINATIONS.find( ( e ) => e.id === destination ).name;
-
 /**
  * Renders the Attribute Mapping table component
  *
@@ -58,56 +50,78 @@ const parseDestinationName = ( destination ) =>
  * @return {JSX.Element} The component
  */
 const AttributeMappingTable = ( { rules } ) => {
+	const {
+		data: attributes,
+		hasFinishedResolution: attributesHasFinishedResolution,
+	} = useMappingAttributes();
+
+	const parseDestinationName = ( destination ) =>
+		attributes.find( ( e ) => e.id === destination )?.label || '';
+
+	const isLoading = ! attributesHasFinishedResolution; // Todo: Add here rulesHasFinishedResolution for Rules after implementation
+
 	return (
 		<AppTableCardDiv>
 			<Card>
 				<CardBody size={ null }>
-					<Table
-						caption={ __(
-							'Attribute Mapping configuration',
-							'google-listings-and-ads'
-						) }
-						headers={ ATTRIBUTE_MAPPING_TABLE_HEADERS }
-						rows={ rules.map( ( rule ) => [
-							{
-								display: parseDestinationName(
-									rule.destination
-								),
-							},
-							{
-								display: (
-									<span className="gla-attribute-mapping__table-label">
-										{ rule.source_name }
-									</span>
-								),
-							},
-							{
-								display: (
-									<span className="gla-attribute-mapping__table-categories">
-										<AttributeMappingTableCategories
-											categories={ rule.categories }
-											condition={
-												rule.category_conditional_type
-											}
-										/>
-									</span>
-								),
-							},
-							{
-								display: (
-									<Flex justify="end">
-										<AppButton isLink>
-											{ __(
-												'Manage',
-												'google-listings-and-ads'
-											) }
-										</AppButton>
-										<AppButton icon={ <GridiconTrash /> } />
-									</Flex>
-								),
-							},
-						] ) }
-					/>
+					{ isLoading ? (
+						<TablePlaceholder
+							headers={ ATTRIBUTE_MAPPING_TABLE_HEADERS }
+							caption={ __(
+								'Loading Attribute Mapping rules',
+								'google-listings-and-ads'
+							) }
+						/>
+					) : (
+						<Table
+							caption={ __(
+								'Attribute Mapping configuration',
+								'google-listings-and-ads'
+							) }
+							headers={ ATTRIBUTE_MAPPING_TABLE_HEADERS }
+							rows={ rules.map( ( rule ) => [
+								{
+									display: parseDestinationName(
+										rule.destination
+									),
+								},
+								{
+									display: (
+										<span className="gla-attribute-mapping__table-label">
+											{ rule.source_name }
+										</span>
+									),
+								},
+								{
+									display: (
+										<span className="gla-attribute-mapping__table-categories">
+											<AttributeMappingTableCategories
+												categories={ rule.categories }
+												condition={
+													rule.category_conditional_type
+												}
+											/>
+										</span>
+									),
+								},
+								{
+									display: (
+										<Flex justify="end">
+											<AppButton isLink>
+												{ __(
+													'Manage',
+													'google-listings-and-ads'
+												) }
+											</AppButton>
+											<AppButton
+												icon={ <GridiconTrash /> }
+											/>
+										</Flex>
+									),
+								},
+							] ) }
+						/>
+					) }
 				</CardBody>
 				<CardFooter
 					align="start"
