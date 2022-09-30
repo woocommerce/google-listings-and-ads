@@ -951,14 +951,6 @@ export function* sendMCReviewRequest() {
 }
 
 /**
- * Individual shipping time.
- *
- * @typedef {Object} ShippingTime
- * @property {CountryCode} countryCode Destination country code.
- * @property {number} time Shipping time.
- */
-
-/**
  * Action for fetching available attributes for mapping.
  */
 export function* fetchMappingAttributes() {
