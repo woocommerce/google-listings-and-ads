@@ -110,7 +110,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 
 			{ ! sourcesHasFinishedResolution && <AppSpinner /> }
 
-			{ sourcesOptions.length > 1 && sourcesHasFinishedResolution && (
+			{ sourcesOptions.length > 0 && sourcesHasFinishedResolution && (
 				<>
 					<Subsection>
 						<Subsection.Title>
