@@ -977,18 +977,10 @@ export function* fetchMappingAttributes() {
 /**
  * Action for fetching available sources for mapping a specific attribute.
  *
- * @param {string} attributeKey Attribute id to receive the sources
+ * @param {string} attributeKey Attribute ID to query the sources
  */
 export function* fetchMappingSources( attributeKey ) {
 	try {
-		if ( ! attributeKey ) {
-			return {
-				type: TYPES.RECEIVE_MAPPING_SOURCES,
-				sources: {},
-				attributeKey,
-			};
-		}
-
 		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/mapping/sources?attribute=${ attributeKey }`,
 		} );
