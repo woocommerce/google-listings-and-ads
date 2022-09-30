@@ -125,10 +125,27 @@ class AttributeMappingDataController extends BaseOptionsController {
 	protected function get_schema_properties(): array {
 		return [
 			'data' => [
-				'type'        => 'object',
+				'type'        => 'array',
 				'description' => __( 'The list of attributes or attribute sources.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
+				'items'       => [
+					'id' => [
+						'type'        => 'integer',
+						'description' => __( 'The id for the item.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
+					],
+					'label' => [
+						'type'        => 'string',
+						'description' => __( 'The user friendly name for the item.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
+					],
+					'enum' => [
+						'type'        => 'boolean',
+						'description' => __( 'Indicates if the item is enum type.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
+					],
+				]
 			],
 		];
 	}

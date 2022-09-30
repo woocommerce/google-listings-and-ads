@@ -90,7 +90,17 @@ class AttributeMappingHelper implements Service {
 		 * @var AttributeInterface $attribute
 		 */
 		foreach ( self::ATTRIBUTES_AVAILABLE_FOR_MAPPING as $attribute ) {
-			$sources[ $attribute::get_id() ] = $attribute::get_sources();
+
+			$attribute_sources = [];
+
+			foreach ( $attribute::get_sources() as $key => $value ) {
+				array_push($attribute_sources, [
+					'id' => $key,
+					'label' => $value
+				]);
+			}
+
+			$sources[ $attribute::get_id() ] = $attribute_sources;
 		}
 
 		return $sources;
