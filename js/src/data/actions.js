@@ -966,7 +966,7 @@ export function* receiveMappingAttributes( attributes ) {
  * Receive Mapping Sources action
  *
  * @param {Array} sources The sources to update in the state.
- * @param {string} attributeKey The key for teh attribute we are querying the sources.
+ * @param {string} attributeKey The key for the attribute we are querying the sources.
  */
 export function* receiveMappingSources( sources, attributeKey ) {
 	return {
