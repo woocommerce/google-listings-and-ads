@@ -466,11 +466,28 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * If an item from the provided list of products has a parent, replace it with the parent ID.
+	 *
+	 * @param int[] $product_ids A list of WooCommerce product ID.
+	 *
+	 * @return int[] A list of parent ID or product ID if it doesn't have a parent.
+	 *
+	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
+	 *                      valid parent ID (i.e. it's an orphan).
+	 */
+	public function maybe_swap_for_parent_ids( array $product_ids ) {
+		foreach ( $product_ids as $index => $product_id ) {
+			$product_ids[ $index ] = $this->maybe_swap_for_parent_id( $product_id );
+		}
+		return array_unique( $product_ids );
+	}
+
+	/**
 	 * If the provided product has a parent, return its ID. Otherwise, return the given (valid product) ID.
 	 *
 	 * @param int $product_id WooCommerce product ID.
 	 *
-	 * @return int The parent ID or product ID of it doesn't have a parent.
+	 * @return int The parent ID or product ID if it doesn't have a parent.
 	 *
 	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
 	 *                      valid parent ID (i.e. it's an orphan).

@@ -143,7 +143,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_product_syncer_job( CleanupProductTargetCountriesJob::class );
 
 		// Share update syncable products count job
-		$this->share_action_scheduler_job( UpdateSyncableProductsCount::class, ProductRepository::class );
+		$this->share_action_scheduler_job( UpdateSyncableProductsCount::class, ProductRepository::class, ProductHelper::class );
 	}
 
 	/**

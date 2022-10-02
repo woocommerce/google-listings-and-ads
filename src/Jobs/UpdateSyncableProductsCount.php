@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SyncableProductsBatchedActi
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 
 defined( 'ABSPATH' ) || exit;
@@ -32,15 +33,22 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob impl
 	protected $product_repository;
 
 	/**
+	 * @var ProductHelper
+	 */
+	protected $product_helper;
+
+	/**
 	 * UpdateSyncableProductsCount constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param ProductRepository         $product_repository
+	 * @param ProductHelper             $product_helper
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, ProductRepository $product_repository ) {
+	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, ProductRepository $product_repository, ProductHelper $product_helper ) {
 		parent::__construct( $action_scheduler, $monitor );
 		$this->product_repository = $product_repository;
+		$this->product_helper     = $product_helper;
 	}
 
 	/**
@@ -78,7 +86,9 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob impl
 			$product_ids = [];
 		}
 
-		$this->options->update( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA, [ ...$product_ids, ...$items ] );
+		$grouped_items = $this->product_helper->maybe_swap_for_parent_ids( $items );
+
+		$this->options->update( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA, [ ...$product_ids, ...$grouped_items ] );
 	}
 
 	/**
@@ -89,7 +99,7 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob impl
 	 */
 	protected function handle_complete( int $final_batch_number ) {
 		$product_ids = $this->options->get( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA );
-		$count       = is_array( $product_ids ) ? count( $product_ids ) : 0;
+		$count       = is_array( $product_ids ) ? count( array_unique( $product_ids ) ) : 0;
 		$this->options->update( OptionsInterface::SYNCABLE_PRODUCTS_COUNT, $count );
 		$this->options->delete( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA );
 	}
