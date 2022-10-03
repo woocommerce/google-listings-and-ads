@@ -180,7 +180,7 @@ const PreLaunchChecklist = ( props ) => {
 								) }
 							>
 								{ __(
-									'Allow your customers to contact you for product inquiries by including contact information on your website (i.e. contact us form, business profile link, social media, email or phone number.)',
+									'Allow your customers to contact you for product inquiries by including contact information on your website (i.e. contact us form, business profile link, social media, email or phone number).',
 									'google-listings-and-ads'
 								) }
 							</PreLaunchCheckItem>
