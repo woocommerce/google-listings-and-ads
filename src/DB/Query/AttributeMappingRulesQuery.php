@@ -39,6 +39,10 @@ class AttributeMappingRulesQuery extends Query {
 			return sanitize_text_field( $value );
 		}
 
+		if( $column === 'categories' && is_null( $value ) ) {
+			return "";
+		}
+
 		return $value;
 	}
 
