@@ -378,8 +378,7 @@ export function* getMappingRules() {
 }
 
 /**
- * If some CREATE, UPSERT or DELETE action for mapping rules happens in the APP.
- * We will refresh the data in getMappingRules
+ * Refresh if some UPSERT or DELETE action for mapping rules happens in the APP.
  *
  * @param {Object} action The performed action
  * @return {boolean} True if the action should be invalidated
