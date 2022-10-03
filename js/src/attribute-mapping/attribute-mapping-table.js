@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { Table, TablePlaceholder } from '@woocommerce/components';
 import { CardBody, CardFooter, Flex, FlexItem } from '@wordpress/components';
-import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -17,7 +16,7 @@ import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import AttributeMappingRuleModal from '.~/attribute-mapping/attribute-mapping-rule-modal';
 import useMappingAttributes from '.~/hooks/useMappingAttributes';
 import useMappingRules from '.~/hooks/useMappingRules';
-import { useAppDispatch } from '.~/data';
+import AttributeMappingDeleteRuleModal from '.~/attribute-mapping/attribute-mapping-delete-rule-modal';
 
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	{
@@ -51,7 +50,6 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
  * @return {JSX.Element} The component
  */
 const AttributeMappingTable = () => {
-	const [ deleting, setDeleting ] = useState( '' );
 	const {
 		data: rules,
 		hasFinishedResolution: rulesHasFinishedResolution,
@@ -61,8 +59,6 @@ const AttributeMappingTable = () => {
 		data: attributes,
 		hasFinishedResolution: attributesHasFinishedResolution,
 	} = useMappingAttributes();
-
-	const { deleteMappingRule } = useAppDispatch();
 
 	const parseDestinationName = ( destination ) =>
 		attributes.find( ( e ) => e.id === destination )?.label || '';
@@ -96,6 +92,7 @@ const AttributeMappingTable = () => {
 									),
 								},
 								{
+									// TODO: replace with source_name after implementation
 									display: (
 										<span className="gla-attribute-mapping__table-label">
 											{ rule.source }
@@ -141,25 +138,27 @@ const AttributeMappingTable = () => {
 												/>
 											</FlexItem>
 											<FlexItem>
-												<AppButton
-													isLink
-													onClick={ () => {
-														setDeleting( rule.id );
-														deleteMappingRule(
-															rule
-														);
-													} }
-												>
-													{ deleting === rule.id
-														? __(
-																'Deleting…',
-																'google-listings-and-ads'
-														  )
-														: __(
+												<AppButtonModalTrigger
+													button={
+														<AppButton
+															isLink
+															text={ __(
 																'Delete',
 																'google-listings-and-ads'
-														  ) }
-												</AppButton>
+															) }
+															eventName="gla_attribute_mapping_delete_rule_click"
+															eventProps={ {
+																context:
+																	'attribute-mapping-table',
+															} }
+														/>
+													}
+													modal={
+														<AttributeMappingDeleteRuleModal
+															rule={ rule }
+														/>
+													}
+												/>
 											</FlexItem>
 										</Flex>
 									),

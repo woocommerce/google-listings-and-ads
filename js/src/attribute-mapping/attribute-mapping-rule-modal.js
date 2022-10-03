@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { noop } from 'lodash';
+import { isEqual, noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -21,6 +21,16 @@ import AppSpinner from '.~/components/app-spinner';
 import { useAppDispatch } from '.~/data';
 import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
 
+const enumSelectorLabel = __(
+	'Select default value',
+	'google-listings-and-ads'
+);
+
+const attributeSelectorLabel = __(
+	'Select a Google attribute that you want to manage',
+	'google-listings-and-ads'
+);
+
 /**
  * Renders a modal showing a form for editing or creating an Attribute Mapping rule
  *
@@ -31,7 +41,7 @@ import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
 const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 	const [ newRule, setNewRule ] = useState(
 		rule
-			? { ...rule, categories: rule.categories?.split( ',' ) || [] }
+			? { ...rule }
 			: { category_condition_type: CATEGORY_CONDITION_SELECT_TYPES.ALL }
 	);
 	const [ saving, setSaving ] = useState( false );
@@ -59,10 +69,6 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 		} ),
 	];
 
-	const attributeSelectorLabel = __(
-		'Select a Google attribute that you want to manage',
-		'google-listings-and-ads'
-	);
 	const attributesOptions = [
 		{
 			value: '',
@@ -78,17 +84,19 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 
 	const isValidRule =
 		newRule.hasOwnProperty( 'source' ) &&
-		newRule.hasOwnProperty( 'attribute' );
+		newRule.hasOwnProperty( 'attribute' ) &&
+		( newRule.category_condition_type ===
+			CATEGORY_CONDITION_SELECT_TYPES.ALL ||
+			newRule.categories?.length > 0 ) &&
+		! isEqual( newRule, rule );
 
 	const getParsedRule = () => {
-		if ( newRule.categories ) {
-			return {
-				...newRule,
-				categories: newRule.categories?.join( ',' ) || '',
-			};
+		const parsedRule = { ...newRule };
+		if ( ! parsedRule.categories?.length ) {
+			delete parsedRule.categories;
 		}
 
-		return newRule;
+		return parsedRule;
 	};
 
 	const onSave = async () => {
@@ -109,8 +117,6 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 	const onSourceUpdate = ( source ) => {
 		setNewRule( { ...newRule, source } );
 	};
-
-	console.log( newRule, isEnum );
 
 	return (
 		<AppModal
@@ -169,10 +175,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 					<Subsection>
 						<Subsection.Title>
 							{ isEnum
-								? __(
-										'Select default value',
-										'google-listings-and-ads'
-								  )
+								? enumSelectorLabel
 								: __(
 										'Assign value',
 										'google-listings-and-ads'
@@ -184,6 +187,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 								sources={ sourcesOptions }
 								onChange={ onSourceUpdate }
 								value={ newRule.source }
+								aria-label={ enumSelectorLabel }
 							/>
 						) : (
 							<AttributeMappingSourceTypeSelector
@@ -202,7 +206,9 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 							selectedConditionalType={
 								newRule.category_condition_type
 							}
-							selectedCategories={ newRule.categories }
+							selectedCategories={
+								newRule.categories?.split( ',' ) || []
+							}
 							onConditionalTypeChange={ ( type ) => {
 								setNewRule( {
 									...newRule,
@@ -212,7 +218,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 							onCategoriesChange={ ( categories ) => {
 								setNewRule( {
 									...newRule,
-									categories,
+									categories: categories.join( ',' ),
 								} );
 							} }
 						/>

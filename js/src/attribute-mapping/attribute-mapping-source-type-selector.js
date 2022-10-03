@@ -44,7 +44,9 @@ const AttributeMappingSourceTypeSelector = ( {
 	value,
 } ) => {
 	const [ sourceType, setSourceType ] = useState(
-		value.includes( ':' ) ? SOURCE_TYPES.FIELD : SOURCE_TYPES.FIXED
+		! value || value?.includes( ':' )
+			? SOURCE_TYPES.FIELD
+			: SOURCE_TYPES.FIXED
 	);
 
 	return (

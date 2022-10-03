@@ -14,8 +14,13 @@ import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
 
 /**
  * Renders the selectors relative to the categories
-
- * @param {Function} [onCategorySelectorOpen] callback when the Category Tree Selector is open
+ *
+ * @param {Object} props Component props
+ * @param {Array} props.selectedCategories Selected category IDs
+ * @param {'ALL'|'EXCEPT'|'ONLY'} props.selectedConditionalType Selected conditional type
+ * @param {Function} props.onConditionalTypeChange Callback when the conditional type changes
+ * @param {Function} props.onCategoriesChange Callback when the categories change
+ * @param {Function} props.onCategorySelectorOpen Callback when the categories dropdown is open
  */
 const AttributeMappingCategoryControl = ( {
 	selectedConditionalType = CATEGORY_CONDITION_SELECT_TYPES.ALL,
