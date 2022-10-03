@@ -315,7 +315,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, TargetAudience::class );
 		$this->share_with_tags( ProductFilter::class, ProductHelper::class );
-		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class );
+		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class, ProductHelper::class );
 		$this->share_with_tags( ProductFactory::class, AttributeManager::class, WC::class );
 		$this->share_with_tags(
 			BatchProductHelper::class,

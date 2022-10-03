@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use WC_Product;
@@ -33,14 +34,21 @@ class ProductRepository implements Service {
 	protected $product_filter;
 
 	/**
+	 * @var ProductHelper
+	 */
+	protected $product_helper;
+
+	/**
 	 * ProductRepository constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param ProductFilter      $product_filter
+	 * @param ProductHelper      $product_helper
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, ProductFilter $product_filter ) {
+	public function __construct( ProductMetaHandler $meta_handler, ProductFilter $product_filter, ProductHelper $product_helper ) {
 		$this->meta_handler   = $meta_handler;
 		$this->product_filter = $product_filter;
+		$this->product_helper = $product_helper;
 	}
 
 	/**
@@ -90,6 +98,22 @@ class ProductRepository implements Service {
 		$args['include'] = $ids;
 
 		return $this->find( $args, $limit, $offset );
+	}
+
+	/**
+	 * Find and return an array of WooCommerce product IDs based on the provided product IDs.
+	 *
+	 * @param int[] $ids    Array of WooCommerce product IDs
+	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
+	 *
+	 * @return int[] Array of WooCommerce product IDs
+	 */
+	public function find_ids_by_ids( array $ids, array $args = [], int $limit = -1, int $offset = 0 ): array {
+		$args['include'] = $ids;
+
+		return $this->find_ids( $args, $limit, $offset );
 	}
 
 	/**
@@ -248,7 +272,8 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product IDs that are marked as MC not_synced.
+	 * First it get a list of syncable products, filter it and return
+	 * an array of WooCommerce product IDs that are marked as MC not_synced.
 	 * Excludes variations and variable products without variations.
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
@@ -257,11 +282,25 @@ class ProductRepository implements Service {
 	 * @return int[] Array of WooCommerce product IDs
 	 */
 	public function find_mc_not_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
-		$types = ProductSyncer::get_supported_product_types();
-		$types = array_diff( $types, [ 'variation' ] );
-		$args  = [
-			'status'     => 'publish',
-			'type'       => $types,
+		// Get syncable products, and swap variation products for its parent.
+		$args = [
+			'status'     => [ 'publish' ],
+			'type'       => array_diff( ProductSyncer::get_supported_product_types(), [ 'variable' ] ),
+			'meta_query' => $this->get_sync_ready_products_meta_query(),
+		];
+
+		$syncable_product_ids = $this->product_helper->maybe_swap_for_parent_ids(
+			array_filter(
+				$this->find_ids( $args, $limit, $offset ),
+				function ( $product_id ) {
+					$product = $this->product_helper->get_wc_product( $product_id );
+					return $this->product_helper->is_sync_ready( $product );
+				}
+			)
+		);
+
+		// Get the product ids which their MC status is 'not synced' from the syncable products.
+		$find_by_ids_args = [
 			'meta_query' => [
 				[
 					'key'     => ProductMetaHandler::KEY_MC_STATUS,
@@ -271,7 +310,7 @@ class ProductRepository implements Service {
 			],
 		];
 
-		return $this->find_ids( $args, $limit, $offset );
+		return $this->find_ids_by_ids( $syncable_product_ids, $find_by_ids_args, -1, 0 );
 	}
 
 	/**
