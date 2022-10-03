@@ -94,10 +94,13 @@ class AttributeMappingHelper implements Service {
 			$attribute_sources = [];
 
 			foreach ( $attribute::get_sources() as $key => $value ) {
-				array_push($attribute_sources, [
-					'id' => $key,
-					'label' => $value
-				]);
+				array_push(
+					$attribute_sources,
+					[
+						'id'    => $key,
+						'label' => $value,
+					]
+				);
 			}
 
 			$sources[ $attribute::get_id() ] = $attribute_sources;
