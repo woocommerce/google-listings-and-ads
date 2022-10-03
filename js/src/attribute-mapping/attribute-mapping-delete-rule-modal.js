@@ -56,18 +56,22 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 		>
 			<div>
 				<p>
-					Deleting a rule doesn’t affect any data that has already
-					been submitted to Google.
+					{ __(
+						'Deleting a rule does’t affect any data that has already been submitted to Google.',
+						'google-listings-and-ads'
+					) }
 				</p>
 				<p>
-					Product data is re-submitted to Google every 30 days to
-					ensure that the information in your product listings are
-					up-to-date.
+					{ __(
+						'Product data is re-submitted to Google every 30 days to ensure that the information in your product listings are up-to-date.',
+						'google-listings-and-ads'
+					) }
 				</p>
 				<p>
-					To ensure your products continue to be approved and promoted
-					by Google, make sure that your product fields include all
-					the required information.
+					{ __(
+						'To ensure your products continue to be approved and promoted by Google, make sure that your product fields include all the required information.',
+						'google-listings-and-ads'
+					) }
 				</p>
 			</div>
 		</AppModal>
