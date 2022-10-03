@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -18,12 +19,13 @@ use Google\Service\ShoppingContent;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * @property Merchant $merchant
- * @property MerchantIssueQuery $merchant_issue_query
- * @property MerchantCenterService $merchant_center_service
+ * @property Merchant                      $merchant
+ * @property MerchantIssueQuery            $merchant_issue_query
+ * @property MerchantCenterService         $merchant_center_service
  * @property ShoppingContent\AccountStatus $account_status
- * @property ProductMetaQueryHelper $product_meta_query_helper
- * @property MerchantStatuses $merchant_statuses
+ * @property ProductMetaQueryHelper        $product_meta_query_helper
+ * @property MerchantStatuses              $merchant_statuses
+ * @property ProductHelper                 $product_helper
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
  * @group MerchantCenterStatuses
  */
@@ -35,6 +37,7 @@ class MerchantStatusesTest extends UnitTest {
 	private $account_status;
 	private $product_meta_query_helper;
 	private $merchant_statuses;
+	private $product_helper;
 
 	/**
 	 * Runs before each test is executed.
@@ -46,6 +49,7 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_center_service   = $this->createMock( MerchantCenterService::class );
 		$this->account_status            = $this->createMock( ShoppingContent\AccountStatus::class );
 		$this->product_meta_query_helper = $this->createMock( ProductMetaQueryHelper::class );
+		$this->product_helper            = $this->createMock( ProductHelper::class );
 
 		$product_repository   = $this->createMock( ProductRepository::class );
 		$transients           = $this->createMock( TransientsInterface::class );
@@ -59,6 +63,7 @@ class MerchantStatusesTest extends UnitTest {
 		$container->share( ProductRepository::class, $product_repository );
 		$container->share( ProductMetaQueryHelper::class, $this->product_meta_query_helper );
 		$container->share( MerchantIssueTable::class, $merchant_issue_table );
+		$container->share( ProductHelper::class, $this->product_helper );
 
 		$this->merchant_statuses = new MerchantStatuses();
 		$this->merchant_statuses->set_container( $container );
@@ -66,6 +71,7 @@ class MerchantStatusesTest extends UnitTest {
 
 	public function test_refresh_account_issues() {
 		$this->product_meta_query_helper->expects( $this->any() )->method( 'get_all_values' )->willReturn( [] );
+		$this->product_helper->expects( $this->once() )->method( 'maybe_swap_for_parent_ids' )->willReturn( [] );
 
 		$this->account_status->expects( $this->any() )
 			->method( 'getAccountLevelIssues' )
