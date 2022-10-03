@@ -35,6 +35,7 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
+					disabled={ deleting }
 					key="delete-rule"
 					isPrimary
 					text={
