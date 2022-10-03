@@ -152,7 +152,7 @@ const PreLaunchChecklist = ( props ) => {
 								) }
 							>
 								{ __(
-									"Show a clear return and refund policy on your website. Incluse return process, refund process, and customer requirements (return window, product condition and reason for return). If you don't accept returns or refunds, clearly start that on your website.",
+									"Show a clear return and refund policy on your website. Include return process, refund process, and customer requirements (return window, product condition and reason for return). If you don't accept returns or refunds, clearly state that on your website.",
 									'google-listings-and-ads'
 								) }
 								<AppDocumentationLink
@@ -180,7 +180,7 @@ const PreLaunchChecklist = ( props ) => {
 								) }
 							>
 								{ __(
-									'Allow your customers to contact you for product inquiries by including contact information on your website (i,e, contact us form, business profile link, social media, email or phone number.)',
+									'Allow your customers to contact you for product inquiries by including contact information on your website (i.e. contact us form, business profile link, social media, email or phone number).',
 									'google-listings-and-ads'
 								) }
 							</PreLaunchCheckItem>
