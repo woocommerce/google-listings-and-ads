@@ -268,8 +268,41 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 			$this->product_meta->update_mc_status( wc_get_product( $variation_id ), MCStatus::NOT_SYNCED );
 		}
 
+		$variable_product_with_at_least_one_syncable_variation = WC_Helper_Product::create_variation_product();
+		$this->product_meta->update_mc_status( $variable_product_with_at_least_one_syncable_variation, MCStatus::NOT_SYNCED );
+		foreach ( $variable_product_with_at_least_one_syncable_variation->get_children() as $variation_id ) {
+			add_filter(
+				'woocommerce_product_is_visible',
+				function ( $visible, $pid ) use ( $variable_product_with_at_least_one_syncable_variation ) {
+					// Only the first child is not visible (non-syncable variation product).
+					if ( $pid === $variable_product_with_at_least_one_syncable_variation->get_children()[0] ) {
+						return false;
+					}
+					return $visible;
+				},
+				10,
+				2
+			);
+		}
+
+		$variable_product_without_syncable_variations = WC_Helper_Product::create_variation_product();
+		$this->product_meta->update_mc_status( $variable_product_without_syncable_variations, MCStatus::NOT_SYNCED );
+		foreach ( $variable_product_without_syncable_variations->get_children() as $variation_id ) {
+			add_filter(
+				'woocommerce_product_is_visible',
+				function ( $visible, $pid ) use ( $variation_id ) {
+					if ( $pid === $variation_id ) {
+						return false;
+					}
+					return $visible;
+				},
+				10,
+				2
+			);
+		}
+
 		$this->assertEqualSets(
-			[ $product_2->get_id(), $variable_product->get_id() ],
+			[ $product_2->get_id(), $variable_product->get_id(), $variable_product_with_at_least_one_syncable_variation->get_id() ],
 			$this->product_repository->find_mc_not_synced_product_ids()
 		);
 	}
