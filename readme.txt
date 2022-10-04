@@ -109,6 +109,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.1.4 - 2022-xx-xx =
+* Add - Policy Compliance Checks in the onboarding flow.
+* Tweak - WC 7.0 compatibility.
+
 = 2.1.3 - 2022-09-27 =
 * Fix - Avoid truncate for issues with more than 100 characters length.
 * Fix - Update Size Type Attribute available values.
