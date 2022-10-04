@@ -30,6 +30,11 @@
 	&.is-link {
 		text-decoration: none;
 	}
+
+	// Fix that the panel title is rendered under the button with dropdown arrow.
+	&.components-panel__body-toggle {
+		padding-right: $grid-unit-60;
+	}
 }
 
 // hack to fix radio button selected style bug caused by woocommerce-admin.

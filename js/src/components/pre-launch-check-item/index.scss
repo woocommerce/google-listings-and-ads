@@ -1,0 +1,22 @@
+.gla-pre-launch-checklist {
+	.components-panel {
+		flex: 1 1;
+
+		&__row {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 1em;
+		}
+
+		.components-panel__body-title {
+			.components-panel__body-toggle.components-button {
+				color: #007cba;
+			}
+		}
+	}
+	.gla-pre-launch-checklist__checkbox {
+		display: flex;
+		justify-content: stretch;
+	}
+}
