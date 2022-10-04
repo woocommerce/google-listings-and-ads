@@ -118,11 +118,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - WooCommerce 6.7 compatibility issues.
 * Tweak - WC 6.9 compatibility.
 
-= 2.1.1 - 2022-09-06 =
-* Dev - Run PHPCS checks for unit tests.
-* Fix - A compatibility issue with WooCommerce 6.9 which prevents interaction with the input field of the paid campaign budget.
-* Fix - Fatal error if a null rate specified for flat rate methods with shipping classes.
-* Tweak - Add a filter to disable GTag tracking.
-* Tweak - Updated plugin icons.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
