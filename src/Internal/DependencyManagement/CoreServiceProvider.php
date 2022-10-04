@@ -17,6 +17,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Variati
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
@@ -46,6 +48,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DeprecatedFilters;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
@@ -60,6 +63,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\GLAChannel;
+use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\MarketingChannelRegistrar;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
@@ -198,6 +203,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ShippingZone::class                => true,
 		AdsAccountService::class           => true,
 		MerchantAccountService::class      => true,
+		MarketingChannelRegistrar::class   => true,
 	];
 
 	/**
@@ -390,5 +396,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ShippingZone::class, WC::class, ZoneLocationsParser::class, ZoneMethodsParser::class, LocationRatesProcessor::class );
 		$this->share_with_tags( ShippingSuggestionService::class, ShippingZone::class, WC::class );
 		$this->share_with_tags( RequestReviewStatuses::class );
+
+		$this->share_with_tags( GLAChannel::class, MerchantCenterService::class, AdsCampaign::class, Ads::class, MerchantStatuses::class, ProductSyncStats::class );
+		$this->share_with_tags( MarketingChannelRegistrar::class, GLAChannel::class );
 	}
 }

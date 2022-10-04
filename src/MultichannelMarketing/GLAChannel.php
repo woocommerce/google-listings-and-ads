@@ -1,0 +1,178 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing;
+
+use Automattic\WooCommerce\Admin\Marketing\MarketingCampaign;
+use Automattic\WooCommerce\Admin\Marketing\MarketingChannelInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Exception;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class GLAChannel
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing
+ *
+ * @since   x.x.x
+ */
+class GLAChannel implements MarketingChannelInterface {
+	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
+	 * @var AdsCampaign
+	 */
+	protected $ads_campaign;
+
+	/**
+	 * @var Ads
+	 */
+	protected $ads;
+
+	/**
+	 * @var MerchantStatuses
+	 */
+	protected $merchant_statuses;
+
+	/**
+	 * @var ProductSyncStats
+	 */
+	protected $product_sync_stats;
+
+	/**
+	 * GLAChannel constructor.
+	 *
+	 * @param MerchantCenterService $merchant_center
+	 * @param AdsCampaign           $ads_campaign
+	 * @param Ads                   $ads
+	 * @param MerchantStatuses      $merchant_statuses
+	 * @param ProductSyncStats      $product_sync_stats
+	 */
+	public function __construct( MerchantCenterService $merchant_center, AdsCampaign $ads_campaign, Ads $ads, MerchantStatuses $merchant_statuses, ProductSyncStats $product_sync_stats ) {
+		$this->merchant_center    = $merchant_center;
+		$this->ads_campaign       = $ads_campaign;
+		$this->ads                = $ads;
+		$this->merchant_statuses  = $merchant_statuses;
+		$this->product_sync_stats = $product_sync_stats;
+	}
+
+	/**
+	 * Returns the unique identifier string for the marketing channel extension, also known as the plugin slug.
+	 *
+	 * @return string
+	 */
+	public function get_slug(): string {
+		return 'google-listings-and-ads';
+	}
+
+	/**
+	 * Returns the name of the marketing channel.
+	 *
+	 * @return string
+	 */
+	public function get_name(): string {
+		return __( 'Google Listings & Ads', 'google-listings-and-ads' );
+	}
+
+	/**
+	 * Returns the description of the marketing channel.
+	 *
+	 * @return string
+	 */
+	public function get_description(): string {
+		return __( 'Native integration with Google that allows merchants to easily display their products across Google’s network.', 'google-listings-and-ads' );
+	}
+
+	/**
+	 * Returns the path to the channel icon.
+	 *
+	 * @return string
+	 */
+	public function get_icon_url(): string {
+		return 'https://woocommerce.com/wp-content/uploads/2021/06/woo-GoogleListingsAds-jworee.png';
+	}
+
+	/**
+	 * Returns the setup status of the marketing channel.
+	 *
+	 * @return bool
+	 */
+	public function is_setup_completed(): bool {
+		return $this->merchant_center->is_setup_complete();
+	}
+
+	/**
+	 * Returns the URL to the settings page, or the link to complete the setup/onboarding if the channel has not been set up yet.
+	 *
+	 * @return string
+	 */
+	public function get_setup_url(): string {
+		if ( ! $this->is_setup_completed() ) {
+			return admin_url( 'admin.php?page=wc-admin&path=/google/start' );
+		}
+
+		return admin_url( 'admin.php?page=wc-admin&path=/google/settings' );
+	}
+
+	/**
+	 * Returns the status of the marketing channel's product listings.
+	 *
+	 * @return string
+	 */
+	public function get_product_listings_status(): string {
+		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
+			return self::PRODUCT_LISTINGS_NOT_APPLICABLE;
+		}
+
+		return $this->product_sync_stats->get_count() > 0 ? self::PRODUCT_LISTINGS_SYNC_IN_PROGRESS : self::PRODUCT_LISTINGS_SYNCED;
+	}
+
+	/**
+	 * Returns the number of channel issues/errors (e.g. account-related errors, product synchronization issues, etc.).
+	 *
+	 * @return int The number of issues to resolve, or 0 if there are no issues with the channel.
+	 */
+	public function get_errors_no(): int {
+		try {
+			return $this->merchant_statuses->get_issues()['total'];
+		} catch ( Exception $e ) {
+			return 0;
+		}
+	}
+
+	/**
+	 * Returns an array of the channel's marketing campaigns.
+	 *
+	 * @return MarketingCampaign[]
+	 */
+	public function get_campaigns(): array {
+		if ( ! $this->ads->ads_id_exists() ) {
+			return [];
+		}
+
+		try {
+			return array_map(
+				function ( array $campaign_data ) {
+					return new MarketingCampaign(
+						(string) $campaign_data['id'],
+						$campaign_data['name'],
+						admin_url( 'admin.php?page=wc-admin&path=/google/settings&subpath=/campaigns/edit' ),
+						(string) $campaign_data['amount'] ?? null,
+					);
+				},
+				$this->ads_campaign->get_campaigns()
+			);
+		} catch ( ExceptionWithResponseData $e ) {
+			return [];
+		}
+	}
+}
