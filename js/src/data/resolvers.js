@@ -149,6 +149,30 @@ export function* getMCCountriesAndContinents() {
 	}
 }
 
+/**
+ * Fetch policy info for checking merchant onboarding policy setting.
+ */
+export function* getPolicyCheck() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/policy_check`,
+		} );
+
+		return {
+			type: TYPES.POLICY_CHECK,
+			data: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading policy check details.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* getTargetAudience() {
 	yield fetchTargetAudience();
 }
