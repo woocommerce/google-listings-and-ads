@@ -117,7 +117,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 					200,
 					[
 						'X-WP-Total'      => $total_rules,
-						'X-WP-TotalPages' => $total_rules / $per_page,
+						'X-WP-TotalPages' => ceil( $total_rules / $per_page ),
 					]
 				);
 
