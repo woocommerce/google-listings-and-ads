@@ -1,6 +1,6 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
-= 2.1.4 - 2022-xx-xx =
+= 2.1.4 - 2022-10-04 =
 * Add - Policy Compliance Checks in the onboarding flow.
 * Tweak - WC 7.0 compatibility.
 
