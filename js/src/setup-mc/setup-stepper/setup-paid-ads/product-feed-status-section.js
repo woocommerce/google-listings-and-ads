@@ -2,23 +2,21 @@
  * External dependencies
  */
 import { sprintf, __, _n } from '@wordpress/i18n';
+import { useEffect } from '@wordpress/element';
 import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
+import { Spinner } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import SyncIcon from '.~/components/sync-icon';
+import SuccessIcon from '.~/components/success-icon';
 import AppTooltip from '.~/components/app-tooltip';
-import getNumberOfSyncProducts from '.~/utils/getNumberOfSyncProducts';
+import useSyncableProductsCalculation from '.~/hooks/useSyncableProductsCalculation';
 import './product-feed-status-section.scss';
 
 function ProductQuantity( { quantity } ) {
-	if ( ! Number.isInteger( quantity ) ) {
-		return null;
-	}
-
 	const text = sprintf(
 		// translators: %d: number of products will be synced to Google Merchant Center.
 		_n( '%d product', '%d products', quantity, 'google-listings-and-ads' ),
@@ -51,25 +49,14 @@ function ProductQuantity( { quantity } ) {
  * and show the number of products will be synced to Google Merchant Center.
  */
 export default function ProductFeedStatusSection() {
-	/*
-	const { data, hasFinishedResolution } = useAppSelectDispatch(
-		'getMCProductStatistics'
-	);
-	*/
-	// TODO: Replace the dummy data with the above code later to use the adjusted API.
-	const data = {
-		statistics: {
-			active: 1,
-			expiring: 2,
-			pending: 3,
-			disapproved: 4,
-			not_synced: 5,
-		},
-	};
-	const hasFinishedResolution = true;
-	const productQuantity = hasFinishedResolution
-		? getNumberOfSyncProducts( data.statistics )
-		: null;
+	const { retrieve, count } = useSyncableProductsCalculation();
+
+	// Retrieve the result of calculation that was requested when entering the Get Started page.
+	useEffect( () => {
+		retrieve();
+	}, [ retrieve ] );
+
+	const isReady = Number.isInteger( count );
 
 	return (
 		<Section
@@ -89,15 +76,28 @@ export default function ProductFeedStatusSection() {
 				<Section.Card.Body>
 					<Flex align="flex-start" gap={ 3 }>
 						<FlexItem>
-							<SyncIcon />
+							{ isReady ? (
+								<SuccessIcon size={ 20 } />
+							) : (
+								<Spinner />
+							) }
 						</FlexItem>
 						<FlexBlock>
 							<Section.Card.Title>
-								{ __(
-									'Your product listings are being uploaded',
-									'google-listings-and-ads'
+								{ isReady ? (
+									<>
+										{ __(
+											'Your product listings are ready to be uploaded',
+											'google-listings-and-ads'
+										) }
+										<ProductQuantity quantity={ count } />
+									</>
+								) : (
+									__(
+										'Preparing your product listings',
+										'google-listings-and-ads'
+									)
 								) }
-								<ProductQuantity quantity={ productQuantity } />
 							</Section.Card.Title>
 							{ __(
 								'Google will review your product listings within 3-5 days. Once approved, your products will automatically be live and searchable on Google. You’ll be notified if there are any product feed issues.',
