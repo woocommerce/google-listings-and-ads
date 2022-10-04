@@ -32,6 +32,7 @@ const DEFAULT_STATE = {
 		mapping: {
 			attributes: [],
 			sources: {}, // Todo: Change to [] after finishing the fix in backend
+			rules: [],
 		},
 	},
 	ads_campaigns: null,
@@ -385,6 +386,34 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				[ 'mc', 'mapping', 'sources', attributeKey ],
 				sources
 			);
+		}
+
+		case TYPES.RECEIVE_MAPPING_RULES: {
+			return setIn( state, 'mc.mapping.rules', action.rules );
+		}
+
+		case TYPES.UPSERT_MAPPING_RULE: {
+			const { rule } = action;
+			const newRulesState = [ ...state.mc.mapping.rules ];
+
+			const ruleIndex = state.mc.mapping.rules.findIndex(
+				( el ) => el.id === rule.id
+			);
+
+			if ( ruleIndex ) {
+				newRulesState[ ruleIndex ] = rule;
+			} else {
+				newRulesState.push( rule );
+			}
+
+			return setIn( state, 'mc.mapping.rules', newRulesState );
+		}
+
+		case TYPES.DELETE_MAPPING_RULE: {
+			const rules = state.mc.mapping.rules.filter(
+				( el ) => el.id !== action.rule.id
+			);
+			return setIn( state, 'mc.mapping.rules', rules );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

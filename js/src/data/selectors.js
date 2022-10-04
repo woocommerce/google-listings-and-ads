@@ -281,3 +281,7 @@ export const getMappingAttributes = ( state ) => {
 export const getMappingSources = ( state, attributeKey ) => {
 	return state.mc.mapping.sources[ attributeKey ];
 };
+
+export const getMappingRules = ( state ) => {
+	return state.mc.mapping.rules;
+};

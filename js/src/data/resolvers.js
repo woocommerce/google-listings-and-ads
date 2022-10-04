@@ -41,6 +41,7 @@ import {
 	receiveMCReviewRequest,
 	receiveMappingSources,
 	receiveMappingAttributes,
+	receiveMappingRules,
 } from './actions';
 
 export function* getShippingRates() {
@@ -336,7 +337,9 @@ export function* getMappingSources( attributeKey ) {
 		}
 
 		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/mapping/sources?attribute=${ attributeKey }`,
+			path: addQueryArgs( `${ API_NAMESPACE }/mc/mapping/sources`, {
+				attribute: attributeKey,
+			} ),
 		} );
 
 		yield receiveMappingSources( response.data, attributeKey );
@@ -350,3 +353,39 @@ export function* getMappingSources( attributeKey ) {
 		);
 	}
 }
+
+/**
+ * Fetches the Attribute Mapping Rules and calls receive action
+ *
+ * @see AttributeMappingRulesController.php
+ */
+export function* getMappingRules() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/rules`,
+		} );
+
+		yield receiveMappingRules( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading the mapping rules.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Refresh if some UPSERT or DELETE action for mapping rules happens in the APP.
+ *
+ * @param {Object} action The performed action
+ * @return {boolean} True if the action should be invalidated
+ */
+getMappingRules.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.UPSERT_MAPPING_RULE ||
+		action.type === TYPES.DELETE_MAPPING_RULE
+	);
+};

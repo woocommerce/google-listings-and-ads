@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { noop } from 'lodash';
+import { isEqual, noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -18,6 +18,18 @@ import AttributeMappingFieldSourcesControl from './attribute-mapping-field-sourc
 import AttributeMappingSourceTypeSelector from './attribute-mapping-source-type-selector';
 import AttributeMappingCategoryControl from '.~/attribute-mapping/attribute-mapping-category-control';
 import AppSpinner from '.~/components/app-spinner';
+import { useAppDispatch } from '.~/data';
+import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
+
+const enumSelectorLabel = __(
+	'Select default value',
+	'google-listings-and-ads'
+);
+
+const attributeSelectorLabel = __(
+	'Select a Google attribute that you want to manage',
+	'google-listings-and-ads'
+);
 
 /**
  * Renders a modal showing a form for editing or creating an Attribute Mapping rule
@@ -27,17 +39,24 @@ import AppSpinner from '.~/components/app-spinner';
  * @param {Function} [props.onRequestClose] Callback on closing the modal
  */
 const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
-	const [ selectedAttribute, setSelectedAttribute ] = useState( '' );
+	const [ newRule, setNewRule ] = useState(
+		rule
+			? { ...rule }
+			: { category_condition_type: CATEGORY_CONDITION_SELECT_TYPES.ALL }
+	);
+	const [ saving, setSaving ] = useState( false );
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
+
+	const { updateMappingRule, createMappingRule } = useAppDispatch();
 
 	const { data: attributes } = useMappingAttributes();
 	const {
 		data: sources = {},
 		hasFinishedResolution: sourcesHasFinishedResolution,
-	} = useMappingAttributesSources( selectedAttribute );
+	} = useMappingAttributesSources( newRule.attribute );
 
 	const isEnum =
-		attributes.find( ( { id } ) => id === selectedAttribute )?.enum ||
+		attributes.find( ( { id } ) => id === newRule.attribute )?.enum ||
 		false;
 
 	const sourcesOptions = [
@@ -50,10 +69,6 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 		} ),
 	];
 
-	const attributeSelectorLabel = __(
-		'Select a Google attribute that you want to manage',
-		'google-listings-and-ads'
-	);
 	const attributesOptions = [
 		{
 			value: '',
@@ -66,6 +81,42 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 			};
 		} ),
 	];
+
+	const isValidRule =
+		newRule.hasOwnProperty( 'source' ) &&
+		newRule.hasOwnProperty( 'attribute' ) &&
+		( newRule.category_condition_type ===
+			CATEGORY_CONDITION_SELECT_TYPES.ALL ||
+			newRule.categories?.length > 0 ) &&
+		! isEqual( newRule, rule );
+
+	const getParsedRule = () => {
+		const parsedRule = { ...newRule };
+		if ( ! parsedRule.categories?.length ) {
+			delete parsedRule.categories;
+		}
+
+		return parsedRule;
+	};
+
+	const onSave = async () => {
+		setSaving( true );
+
+		try {
+			if ( rule ) {
+				await updateMappingRule( getParsedRule() );
+			} else {
+				await createMappingRule( getParsedRule() );
+			}
+			onRequestClose();
+		} catch ( error ) {
+			setSaving( false );
+		}
+	};
+
+	const onSourceUpdate = ( source ) => {
+		setNewRule( { ...newRule, source } );
+	};
 
 	return (
 		<AppModal
@@ -84,13 +135,19 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
+					disabled={ ! isValidRule || saving }
 					key="save-rule"
 					isPrimary
-					text={ __( 'Save rule', 'google-listings-and-ads' ) }
+					text={
+						saving
+							? __( 'Saving…', 'google-listings-and-ads' )
+							: __( 'Save rule', 'google-listings-and-ads' )
+					}
 					eventName="gla_attribute_mapping_save_rule"
 					eventProps={ {
 						context: 'attribute-mapping-rule-modal',
 					} }
+					onClick={ onSave }
 				/>,
 			] }
 		>
@@ -102,8 +159,11 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 					{ attributeSelectorLabel }
 				</Subsection.Subtitle>
 				<AppSelectControl
+					value={ newRule.attribute }
 					aria-label={ attributeSelectorLabel }
-					onChange={ setSelectedAttribute }
+					onChange={ ( attribute ) => {
+						setNewRule( { ...newRule, attribute } );
+					} }
 					options={ attributesOptions }
 				/>
 			</Subsection>
@@ -115,10 +175,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 					<Subsection>
 						<Subsection.Title>
 							{ isEnum
-								? __(
-										'Select default value',
-										'google-listings-and-ads'
-								  )
+								? enumSelectorLabel
 								: __(
 										'Assign value',
 										'google-listings-and-ads'
@@ -128,10 +185,15 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 						{ isEnum ? (
 							<AttributeMappingFieldSourcesControl
 								sources={ sourcesOptions }
+								onChange={ onSourceUpdate }
+								value={ newRule.source }
+								aria-label={ enumSelectorLabel }
 							/>
 						) : (
 							<AttributeMappingSourceTypeSelector
 								sources={ sourcesOptions }
+								onChange={ onSourceUpdate }
+								value={ newRule.source }
 							/>
 						) }
 					</Subsection>
@@ -141,6 +203,24 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 						</Subsection.Title>
 						<AttributeMappingCategoryControl
 							onCategorySelectorOpen={ setDropdownVisible }
+							selectedConditionalType={
+								newRule.category_condition_type
+							}
+							selectedCategories={
+								newRule.categories?.split( ',' ) || []
+							}
+							onConditionalTypeChange={ ( type ) => {
+								setNewRule( {
+									...newRule,
+									category_condition_type: type,
+								} );
+							} }
+							onCategoriesChange={ ( categories ) => {
+								setNewRule( {
+									...newRule,
+									categories: categories.join( ',' ),
+								} );
+							} }
 						/>
 					</Subsection>
 				</>
