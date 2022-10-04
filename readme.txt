@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 2.1.3
+Stable tag: 2.1.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.1.4 - 2022-10-04 =
+* Add - Policy Compliance Checks in the onboarding flow.
+* Tweak - WC 7.0 compatibility.
+
 = 2.1.3 - 2022-09-27 =
 * Fix - Avoid truncate for issues with more than 100 characters length.
 * Fix - Update Size Type Attribute available values.
@@ -117,12 +121,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 = 2.1.2 - 2022-09-15 =
 * Fix - WooCommerce 6.7 compatibility issues.
 * Tweak - WC 6.9 compatibility.
-
-= 2.1.1 - 2022-09-06 =
-* Dev - Run PHPCS checks for unit tests.
-* Fix - A compatibility issue with WooCommerce 6.9 which prevents interaction with the input field of the paid campaign budget.
-* Fix - Fatal error if a null rate specified for flat rate methods with shipping classes.
-* Tweak - Add a filter to disable GTag tracking.
-* Tweak - Updated plugin icons.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
