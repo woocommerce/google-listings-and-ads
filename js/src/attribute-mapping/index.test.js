@@ -162,7 +162,6 @@ describe( 'Attribute Mapping', () => {
 	} );
 
 	test( 'Add new Attribute mapping - Field / Fixed value', async () => {
-		jest.setTimeout( 10000 );
 		const { queryByText, findByRole } = render( <AttributeMapping /> );
 
 		// Modal is open when clicking th button
@@ -272,7 +271,7 @@ describe( 'Attribute Mapping', () => {
 		expect( queryByText( 'All except' ) ).toBeTruthy();
 		const category = queryByText( '1 category' );
 		expect( category ).toBeTruthy();
-		fireEvent.mouseOver( category );
+		userEvent.hover( category );
 		await findByText( 'Category 1' );
 	} );
 
@@ -287,7 +286,7 @@ describe( 'Attribute Mapping', () => {
 		expect( queryByText( 'Only in' ) ).toBeTruthy();
 		const categories = queryByText( '12 categories' );
 		expect( categories ).toBeTruthy();
-		fireEvent.mouseOver( categories );
+		userEvent.hover( categories );
 		await findByText(
 			'Category 1, Category 2, Category 3, Category 1, Category 2'
 		);
