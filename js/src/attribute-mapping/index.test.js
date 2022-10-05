@@ -45,7 +45,10 @@ jest.mock( '.~/hooks/useMappingAttributesSources', () => ( {
 		.mockImplementation( () => {
 			return {
 				hasFinishedResolution: true,
-				data: { yes: 'Yes', no: 'No' },
+				data: [
+					{ id: 'yes', label: 'Yes' },
+					{ id: 'no', label: 'No' },
+				],
 			};
 		} ),
 } ) );
@@ -217,6 +220,7 @@ describe( 'Attribute Mapping', () => {
 			id: 1,
 			attribute: 'adult',
 			source: 'no',
+			categories: null,
 			category_condition_type: 'ALL',
 		} );
 	} );

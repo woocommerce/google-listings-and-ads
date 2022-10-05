@@ -32,6 +32,22 @@ const attributeSelectorLabel = __(
 );
 
 /**
+ * Map the format received from the backend into the format needed in the SelectControl
+ *
+ * @param {{id: string, label: string}[]} data The array with the values from the backend
+ * @return {{label: string, value: string}[]} The data formatted
+ */
+const mapOptions = ( data = [] ) => {
+	return [
+		...data.map( ( attribute ) => {
+			return {
+				value: attribute.id,
+				label: attribute.label,
+			};
+		} ),
+	];
+};
+/**
  * Renders a modal showing a form for editing or creating an Attribute Mapping rule
  *
  * @param {Object} props React props
@@ -51,7 +67,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 
 	const { data: attributes } = useMappingAttributes();
 	const {
-		data: sources = {},
+		data: sources = [],
 		hasFinishedResolution: sourcesHasFinishedResolution,
 	} = useMappingAttributesSources( newRule.attribute );
 
@@ -59,54 +75,32 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 		attributes.find( ( { id } ) => id === newRule.attribute )?.enum ||
 		false;
 
-	const sourcesOptions = [
-		// Todo: Check this in the future. (Due to an error on my side returning object in the backend)
-		...Object.keys( sources ).map( ( sourceKey ) => {
-			return {
-				value: sourceKey,
-				label: sources[ sourceKey ],
-			};
-		} ),
-	];
+	const sourcesOptions = mapOptions( sources );
 
 	const attributesOptions = [
 		{
 			value: '',
 			label: __( 'Select one attribute', 'google-listings-and-ads' ),
 		},
-		...attributes.map( ( attribute ) => {
-			return {
-				value: attribute.id,
-				label: attribute.label,
-			};
-		} ),
+		...mapOptions( attributes ),
 	];
 
 	const isValidRule =
-		newRule.hasOwnProperty( 'source' ) &&
-		newRule.hasOwnProperty( 'attribute' ) &&
+		newRule.source &&
+		newRule.attribute &&
 		( newRule.category_condition_type ===
 			CATEGORY_CONDITION_SELECT_TYPES.ALL ||
 			newRule.categories?.length > 0 ) &&
 		! isEqual( newRule, rule );
-
-	const getParsedRule = () => {
-		const parsedRule = { ...newRule };
-		if ( ! parsedRule.categories?.length ) {
-			delete parsedRule.categories;
-		}
-
-		return parsedRule;
-	};
 
 	const onSave = async () => {
 		setSaving( true );
 
 		try {
 			if ( rule ) {
-				await updateMappingRule( getParsedRule() );
+				await updateMappingRule( newRule );
 			} else {
-				await createMappingRule( getParsedRule() );
+				await createMappingRule( newRule );
 			}
 			onRequestClose();
 		} catch ( error ) {
@@ -207,7 +201,9 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 								newRule.category_condition_type
 							}
 							selectedCategories={
-								newRule.categories?.split( ',' ) || []
+								newRule.categories?.length
+									? newRule.categories.split( ',' )
+									: []
 							}
 							onConditionalTypeChange={ ( type ) => {
 								setNewRule( {

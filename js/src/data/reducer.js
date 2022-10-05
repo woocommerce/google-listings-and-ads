@@ -31,7 +31,7 @@ const DEFAULT_STATE = {
 		contact: null,
 		mapping: {
 			attributes: [],
-			sources: {}, // Todo: Change to [] after finishing the fix in backend
+			sources: {},
 			rules: {
 				items: [],
 				total: null,
