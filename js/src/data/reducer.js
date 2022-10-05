@@ -400,7 +400,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				( el ) => el.id === rule.id
 			);
 
-			if ( ruleIndex ) {
+			if ( ruleIndex >= 0 ) {
 				newRulesState[ ruleIndex ] = rule;
 			} else {
 				newRulesState.push( rule );
