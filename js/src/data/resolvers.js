@@ -355,13 +355,6 @@ export function* getMappingSources( attributeKey ) {
 	}
 }
 
-const awaitPromise = function ( promise ) {
-	return {
-		type: 'GLA_AWAIT_PROMISE',
-		promise,
-	};
-};
-
 /**
  * Fetches the Attribute Mapping Rules and calls receive action
  *
