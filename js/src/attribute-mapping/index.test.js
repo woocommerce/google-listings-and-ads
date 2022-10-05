@@ -58,30 +58,33 @@ jest.mock( '.~/hooks/useMappingRules', () => ( {
 		.mockImplementation( () => {
 			return {
 				hasFinishedResolution: true,
-				data: [
-					{
-						id: 1,
-						attribute: 'adult',
-						source: 'yes',
-						category_condition_type: 'ALL',
-						categories: null,
-					},
-					{
-						id: 2,
-						attribute: 'brands',
-						source: 'taxonomy:product_brands',
-						category_condition_type: 'EXCEPT',
-						categories: '1',
-					},
-					{
-						id: 3,
-						attribute: 'color',
-						source: 'attribute:color',
-						category_condition_type: 'ONLY',
-						categories:
-							'1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3',
-					},
-				],
+				data: {
+					rules: [
+						{
+							id: 1,
+							attribute: 'adult',
+							source: 'yes',
+							category_condition_type: 'ALL',
+							categories: null,
+						},
+						{
+							id: 2,
+							attribute: 'brands',
+							source: 'taxonomy:product_brands',
+							category_condition_type: 'EXCEPT',
+							categories: '1',
+						},
+						{
+							id: 3,
+							attribute: 'color',
+							source: 'attribute:color',
+							category_condition_type: 'ONLY',
+							categories:
+								'1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3',
+						},
+					],
+					total: 6,
+				},
 			};
 		} ),
 } ) );

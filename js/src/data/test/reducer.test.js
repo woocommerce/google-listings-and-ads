@@ -37,7 +37,7 @@ describe( 'reducer', () => {
 				},
 				mapping: {
 					attributes: [],
-					rules: [],
+					rules: { items: [], pages: null, total: null },
 					sources: {}, // Todo: Change to [] after finishing the fix in backend
 				},
 				contact: null,
