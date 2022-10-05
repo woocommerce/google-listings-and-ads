@@ -2,8 +2,9 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
+import { isEqual } from 'lodash';
 
 /**
  * Internal dependencies
@@ -19,6 +20,7 @@ import ContactInformation from '.~/components/contact-information';
 import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
 import PreLaunchChecklist from './pre-launch-checklist';
+import usePolicyCheck from '.~/hooks/usePolicyCheck';
 import checkErrors from './pre-launch-checklist/checkErrors';
 
 /**
@@ -32,6 +34,7 @@ export default function StoreRequirements( { onContinue } ) {
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: address } = useStoreAddress();
 	const { settings } = useSettings();
+	const { data: policyCheckData } = usePolicyCheck();
 
 	/**
 	 * Since it still lacking the phone verification state,
@@ -39,6 +42,7 @@ export default function StoreRequirements( { onContinue } ) {
 	 */
 	const [ isPhoneNumberReady, setPhoneNumberReady ] = useState( false );
 	const [ settingsSaved, setSettingsSaved ] = useState( true );
+	const [ preprocessed, setPreprocessed ] = useState( false );
 	const [ completing, setCompleting ] = useState( false );
 
 	const handleChangeCallback = async ( _, values ) => {
@@ -79,7 +83,48 @@ export default function StoreRequirements( { onContinue } ) {
 		}
 	};
 
-	if ( ! settings ) {
+	// Preprocess the auto-checked state and data saving.
+	useEffect( () => {
+		if ( preprocessed || ! settings || ! policyCheckData ) {
+			return;
+		}
+
+		const newSettings = { ...settings };
+
+		const websiteLive =
+			policyCheckData.allowed_countries &&
+			! policyCheckData.robots_restriction &&
+			! policyCheckData.page_not_found_error &&
+			! policyCheckData.page_redirects;
+
+		if ( websiteLive !== settings.website_live ) {
+			newSettings.website_live = websiteLive;
+		}
+
+		if ( policyCheckData.store_ssl !== settings.checkout_process_secure ) {
+			newSettings.checkout_process_secure = policyCheckData.store_ssl;
+		}
+
+		if ( policyCheckData.refund_returns !== settings.refund_tos_visible ) {
+			newSettings.refund_tos_visible = policyCheckData.refund_returns;
+		}
+
+		if (
+			policyCheckData.payment_gateways !==
+			newSettings.payment_methods_visible
+		) {
+			newSettings.payment_methods_visible =
+				policyCheckData.payment_gateways;
+		}
+
+		const promise = isEqual( newSettings, settings )
+			? Promise.resolve()
+			: saveSettings( newSettings );
+
+		promise.finally( () => setPreprocessed( true ) );
+	}, [ preprocessed, policyCheckData, settings, saveSettings ] );
+
+	if ( ! preprocessed ) {
 		return <AppSpinner />;
 	}
 

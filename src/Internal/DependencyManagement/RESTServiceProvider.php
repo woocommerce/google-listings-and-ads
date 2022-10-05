@@ -23,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ConnectionController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ContactInformationController as MerchantCenterContactInformationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\IssuesController as MerchantCenterIssuesController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PolicyComplianceCheckController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PhoneVerificationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ProductFeedController as MerchantCenterProductFeedController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ProductStatisticsController as MerchantCenterProductStatsController;
@@ -50,6 +51,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -116,6 +118,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( DisconnectController::class );
 		$this->share( SetupCompleteController::class );
 		$this->share( SyncableProductsCountController::class, JobRepository::class );
+		$this->share( PolicyComplianceCheckController::class, PolicyComplianceCheck::class );
 	}
 
 	/**
