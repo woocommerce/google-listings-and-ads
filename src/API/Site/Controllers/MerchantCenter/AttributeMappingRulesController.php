@@ -256,6 +256,10 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 * @throw Exception when invalid categories are provided
 	 */
 	public function validate_categories_param( string $categories ) {
+		if ( $categories === '' ) {
+			return true;
+		}
+
 		$categories_array = explode( ',', $categories );
 
 		foreach ( $categories_array as $category ) {

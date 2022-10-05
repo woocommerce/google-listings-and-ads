@@ -125,7 +125,7 @@ class AttributeMappingDataController extends BaseOptionsController {
 	protected function get_schema_properties(): array {
 		return [
 			'data' => [
-				'type'        => 'object',
+				'type'        => 'array',
 				'description' => __( 'The list of attributes or attribute sources.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
