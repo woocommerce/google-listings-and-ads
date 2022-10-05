@@ -282,6 +282,19 @@ export const getMappingSources = ( state, attributeKey ) => {
 	return state.mc.mapping.sources[ attributeKey ];
 };
 
-export const getMappingRules = ( state ) => {
-	return state.mc.mapping.rules;
-};
+export const getMappingRules = createSelector(
+	( state, pagination ) => {
+		const stateRules = state.mc.mapping.rules;
+		const { page, perPage } = pagination;
+
+		const start = ( page - 1 ) * perPage;
+		const end = start + perPage;
+
+		return {
+			rules: stateRules?.items.slice( start, end ) || [],
+			total: stateRules.total,
+			pages: stateRules.pages,
+		};
+	},
+	( state ) => [ state.mc.mapping.rules ]
+);

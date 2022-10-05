@@ -17,6 +17,7 @@ import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
 import { adaptAdsCampaign } from './adapters';
+import { fetchWithHeaders } from './controls';
 
 import {
 	handleFetchError,
@@ -354,18 +355,38 @@ export function* getMappingSources( attributeKey ) {
 	}
 }
 
+const awaitPromise = function ( promise ) {
+	return {
+		type: 'GLA_AWAIT_PROMISE',
+		promise,
+	};
+};
+
 /**
  * Fetches the Attribute Mapping Rules and calls receive action
  *
+ * @param {Object} pagination Object containing client pagination parameters like page and per_page
  * @see AttributeMappingRulesController.php
  */
-export function* getMappingRules() {
+export function* getMappingRules( pagination ) {
 	try {
-		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/mapping/rules`,
+		const response = yield fetchWithHeaders( {
+			path: addQueryArgs( `${ API_NAMESPACE }/mc/mapping/rules`, {
+				page: pagination.page,
+				per_page: pagination.perPage,
+			} ),
+			parse: false,
 		} );
 
-		yield receiveMappingRules( response );
+		const total = parseInt( response.headers.get( 'x-wp-total' ), 10 );
+		const pages = parseInt( response.headers.get( 'x-wp-totalpages' ), 10 );
+		const rules = response.data;
+
+		yield receiveMappingRules( rules, {
+			...pagination,
+			total,
+			pages,
+		} );
 	} catch ( error ) {
 		yield handleFetchError(
 			error,

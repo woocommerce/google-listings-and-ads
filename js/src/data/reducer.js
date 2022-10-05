@@ -32,7 +32,11 @@ const DEFAULT_STATE = {
 		mapping: {
 			attributes: [],
 			sources: {}, // Todo: Change to [] after finishing the fix in backend
-			rules: [],
+			rules: {
+				items: [],
+				total: null,
+				pages: null,
+			},
 		},
 	},
 	ads_campaigns: null,
@@ -389,31 +393,49 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_MAPPING_RULES: {
-			return setIn( state, 'mc.mapping.rules', action.rules );
+			const { rules, pagination } = action;
+			const newRulesState = [ ...state.mc.mapping.rules.items ];
+
+			const start = ( pagination.page - 1 ) * pagination.perPage;
+			const end = pagination.perPage;
+			newRulesState.splice( start, end, ...rules );
+
+			return chainState( state, 'mc.mapping.rules' )
+				.setIn( 'items', newRulesState )
+				.setIn( 'total', pagination.total )
+				.setIn( 'pages', pagination.pages )
+				.end();
 		}
 
 		case TYPES.UPSERT_MAPPING_RULE: {
 			const { rule } = action;
-			const newRulesState = [ ...state.mc.mapping.rules ];
+			const newRulesState = [ ...state.mc.mapping.rules.items ];
 
-			const ruleIndex = state.mc.mapping.rules.findIndex(
+			const ruleIndex = newRulesState.findIndex(
 				( el ) => el.id === rule.id
 			);
 
-			if ( ruleIndex ) {
+			if ( ruleIndex >= 0 ) {
 				newRulesState[ ruleIndex ] = rule;
 			} else {
 				newRulesState.push( rule );
 			}
 
-			return setIn( state, 'mc.mapping.rules', newRulesState );
+			return chainState( state, 'mc.mapping.rules' )
+				.setIn( 'items', newRulesState )
+				.setIn( 'total', newRulesState.length )
+				.end();
 		}
 
 		case TYPES.DELETE_MAPPING_RULE: {
-			const rules = state.mc.mapping.rules.filter(
+			const rules = state.mc.mapping.rules.items.filter(
 				( el ) => el.id !== action.rule.id
 			);
-			return setIn( state, 'mc.mapping.rules', rules );
+
+			return chainState( state, 'mc.mapping.rules' )
+				.setIn( 'items', rules )
+				.setIn( 'total', rules.length )
+				.end();
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Table, TablePlaceholder } from '@woocommerce/components';
+import { Pagination, Table, TablePlaceholder } from '@woocommerce/components';
 import { CardBody, CardFooter, Flex, FlexItem } from '@wordpress/components';
 
 /**
@@ -11,12 +11,14 @@ import { CardBody, CardFooter, Flex, FlexItem } from '@wordpress/components';
 import Card from '.~/wcdl/section/card';
 import AppButton from '.~/components/app-button';
 import AppTableCardDiv from '.~/components/app-table-card-div';
-import AttributeMappingTableCategories from './attribute-mapping-table-categories';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
-import AttributeMappingRuleModal from '.~/attribute-mapping/attribute-mapping-rule-modal';
+import AttributeMappingTableCategories from './attribute-mapping-table-categories';
+import AttributeMappingRuleModal from './attribute-mapping-rule-modal';
+import AttributeMappingDeleteRuleModal from './attribute-mapping-delete-rule-modal';
 import useMappingAttributes from '.~/hooks/useMappingAttributes';
 import useMappingRules from '.~/hooks/useMappingRules';
-import AttributeMappingDeleteRuleModal from '.~/attribute-mapping/attribute-mapping-delete-rule-modal';
+import usePagination from '.~/hooks/usePagination';
+import { recordTablePageEvent } from '.~/utils/recordEvent';
 
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	{
@@ -50,10 +52,12 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
  * @return {JSX.Element} The component
  */
 const AttributeMappingTable = () => {
+	const { page, setPage } = usePagination( 'attribute-mapping' );
+
 	const {
-		data: rules,
+		data: { rules, total },
 		hasFinishedResolution: rulesHasFinishedResolution,
-	} = useMappingRules();
+	} = useMappingRules( { page } );
 
 	const {
 		data: attributes,
@@ -65,6 +69,11 @@ const AttributeMappingTable = () => {
 
 	const isLoading =
 		! attributesHasFinishedResolution || ! rulesHasFinishedResolution;
+
+	const handlePageChange = ( newPage, direction ) => {
+		setPage( newPage );
+		recordTablePageEvent( `attribute-mapping-rules`, newPage, direction );
+	};
 
 	return (
 		<AppTableCardDiv>
@@ -168,7 +177,7 @@ const AttributeMappingTable = () => {
 					) }
 				</CardBody>
 				<CardFooter
-					align="start"
+					align="between"
 					className="gla-attribute-mapping__table-footer"
 				>
 					<AppButtonModalTrigger
@@ -186,6 +195,14 @@ const AttributeMappingTable = () => {
 							/>
 						}
 						modal={ <AttributeMappingRuleModal /> }
+					/>
+					<Pagination
+						page={ page }
+						perPage={ 10 }
+						total={ total }
+						showPagePicker={ false }
+						showPerPagePicker={ false }
+						onPageChange={ handlePageChange }
 					/>
 				</CardFooter>
 			</Card>

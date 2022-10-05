@@ -980,11 +980,13 @@ export function* receiveMappingSources( sources, attributeKey ) {
  * Receive Mapping Rules action
  *
  * @param {Array} rules The rules to update in the state.
+ * @param {Object} pagination Containing parameters like page or per_page.
  */
-export function* receiveMappingRules( rules ) {
+export function* receiveMappingRules( rules, pagination ) {
 	return {
 		type: TYPES.RECEIVE_MAPPING_RULES,
 		rules,
+		pagination,
 	};
 }
 
