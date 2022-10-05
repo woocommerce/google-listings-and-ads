@@ -82,24 +82,13 @@ export function ContactInformationPreview() {
  * Renders a contact information section with specified initial state and texts.
  *
  * @param {Object} props React props.
- * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified.
+ * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified or has been verified.
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
  * @fires gla_documentation_link_click with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
  * @fires gla_documentation_link_click with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
  */
 const ContactInformation = ( { onPhoneNumberVerified } ) => {
 	const phone = useGoogleMCPhoneNumber();
-
-	/**
-	 * Since it is still lacking the phone verification state,
-	 * all onboarding accounts are considered unverified phone numbers.
-	 *
-	 * TODO: replace the code at next line back to the original logic with
-	 * `const initEditing = null;`
-	 * after the phone verification state can be detected.
-	 */
-	const initEditing = true;
-
 	const title = mcTitle;
 	const trackContext = 'setup-mc-contact-information';
 
@@ -127,7 +116,7 @@ const ContactInformation = ( { onPhoneNumberVerified } ) => {
 				<PhoneNumberCard
 					view="setup-mc"
 					phoneNumber={ phone }
-					initEditing={ initEditing }
+					initEditing={ null }
 					onPhoneNumberVerified={ onPhoneNumberVerified }
 				/>
 				<StoreAddressCard />
