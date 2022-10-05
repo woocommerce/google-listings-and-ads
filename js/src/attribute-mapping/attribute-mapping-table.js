@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { Pagination, Table, TablePlaceholder } from '@woocommerce/components';
 import { CardBody, CardFooter, Flex, FlexItem } from '@wordpress/components';
+import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -74,6 +75,17 @@ const AttributeMappingTable = () => {
 		setPage( newPage );
 		recordTablePageEvent( `attribute-mapping-rules`, newPage, direction );
 	};
+
+	/**
+	 * Prevent to stay in a page without rules.
+	 * This is because maybe the user is in the page 2 which has only one rule.
+	 * If the user deletes that rule we don't want to stay in page 2 anymore, since it doesn't exists.
+	 */
+	useEffect( () => {
+		if ( rulesHasFinishedResolution && rules?.length === 0 && page > 1 ) {
+			setPage( page - 1 );
+		}
+	}, [ page, rules, rulesHasFinishedResolution ] );
 
 	return (
 		<AppTableCardDiv>
