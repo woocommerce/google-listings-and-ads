@@ -358,7 +358,7 @@ export function* getMappingSources( attributeKey ) {
 /**
  * Fetches the Attribute Mapping Rules and calls receive action
  *
- * @param {Object} pagination Object containing client pagination parameters like page and per_page
+ * @param {Object} pagination Object containing client pagination parameters like page and perPage
  * @see AttributeMappingRulesController.php
  */
 export function* getMappingRules( pagination ) {
