@@ -47,6 +47,7 @@ const mapOptions = ( data = [] ) => {
 		} ),
 	];
 };
+
 /**
  * Renders a modal showing a form for editing or creating an Attribute Mapping rule
  *
@@ -85,6 +86,17 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 		...mapOptions( attributes ),
 	];
 
+	const prepareRule = () => {
+		return {
+			...newRule,
+			categories:
+				newRule.category_condition_type ===
+				CATEGORY_CONDITION_SELECT_TYPES.ALL
+					? ''
+					: newRule.categories,
+		};
+	};
+
 	const isValidRule =
 		newRule.source &&
 		newRule.attribute &&
@@ -98,9 +110,9 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 
 		try {
 			if ( rule ) {
-				await updateMappingRule( newRule );
+				await updateMappingRule( prepareRule() );
 			} else {
-				await createMappingRule( newRule );
+				await createMappingRule( prepareRule() );
 			}
 			onRequestClose();
 		} catch ( error ) {
@@ -112,12 +124,17 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 		setNewRule( { ...newRule, source } );
 	};
 
+	const handleClose = () => {
+		if ( saving ) return;
+		onRequestClose();
+	};
+
 	return (
 		<AppModal
 			overflow="visible"
 			shouldCloseOnEsc={ ! dropdownVisible }
 			shouldCloseOnClickOutside={ ! dropdownVisible }
-			onRequestClose={ onRequestClose }
+			onRequestClose={ handleClose }
 			className="gla-attribute-mapping__rule-modal"
 			title={
 				rule
@@ -125,7 +142,12 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 					: __( 'Create attribute rule', ' google-listings-and-ads' )
 			}
 			buttons={ [
-				<AppButton key="cancel" isLink onClick={ onRequestClose }>
+				<AppButton
+					disabled={ saving }
+					key="cancel"
+					isLink
+					onClick={ handleClose }
+				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
@@ -156,7 +178,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 					value={ newRule.attribute }
 					aria-label={ attributeSelectorLabel }
 					onChange={ ( attribute ) => {
-						setNewRule( { ...newRule, attribute } );
+						setNewRule( { ...newRule, attribute, source: '' } );
 					} }
 					options={ attributesOptions }
 				/>

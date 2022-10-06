@@ -164,6 +164,7 @@ describe( 'Attribute Mapping', () => {
 			attribute: 'adult',
 			source: 'no',
 			category_condition_type: 'ALL',
+			categories: '',
 		} );
 	} );
 
@@ -220,7 +221,7 @@ describe( 'Attribute Mapping', () => {
 			id: 1,
 			attribute: 'adult',
 			source: 'no',
-			categories: null,
+			categories: '',
 			category_condition_type: 'ALL',
 		} );
 	} );

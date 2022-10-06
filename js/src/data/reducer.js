@@ -397,8 +397,8 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const newRulesState = [ ...state.mc.mapping.rules.items ];
 
 			const start = ( pagination.page - 1 ) * pagination.perPage;
-			const end = pagination.perPage;
-			newRulesState.splice( start, end, ...rules );
+			const deleteCount = pagination.perPage;
+			newRulesState.splice( start, deleteCount, ...rules );
 
 			return chainState( state, 'mc.mapping.rules' )
 				.setIn( 'items', newRulesState )
@@ -421,10 +421,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				newRulesState.push( rule );
 			}
 
-			return chainState( state, 'mc.mapping.rules' )
-				.setIn( 'items', newRulesState )
-				.setIn( 'total', newRulesState.length )
-				.end();
+			return setIn( state, 'mc.mapping.rules.items', newRulesState );
 		}
 
 		case TYPES.DELETE_MAPPING_RULE: {
@@ -432,10 +429,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				( el ) => el.id !== action.rule.id
 			);
 
-			return chainState( state, 'mc.mapping.rules' )
-				.setIn( 'items', rules )
-				.setIn( 'total', rules.length )
-				.end();
+			return setIn( state, 'mc.mapping.rules.items', rules );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

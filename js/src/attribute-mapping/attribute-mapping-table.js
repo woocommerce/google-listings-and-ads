@@ -21,6 +21,7 @@ import useMappingRules from '.~/hooks/useMappingRules';
 import usePagination from '.~/hooks/usePagination';
 import { recordTablePageEvent } from '.~/utils/recordEvent';
 
+const PER_PAGE = 10;
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	{
 		key: 'attribute',
@@ -58,7 +59,7 @@ const AttributeMappingTable = () => {
 	const {
 		data: { rules, total },
 		hasFinishedResolution: rulesHasFinishedResolution,
-	} = useMappingRules( { page } );
+	} = useMappingRules( { page, perPage: PER_PAGE } );
 
 	const {
 		data: attributes,
@@ -85,7 +86,7 @@ const AttributeMappingTable = () => {
 		if ( rulesHasFinishedResolution && rules?.length === 0 && page > 1 ) {
 			setPage( page - 1 );
 		}
-	}, [ page, rules, rulesHasFinishedResolution ] );
+	}, [ page, rules, rulesHasFinishedResolution, setPage ] );
 
 	return (
 		<AppTableCardDiv>
@@ -144,7 +145,7 @@ const AttributeMappingTable = () => {
 																'Manage',
 																'google-listings-and-ads'
 															) }
-															eventName="gla_attribute_mapping_new_rule_click"
+															eventName="gla_attribute_mapping_manage_rule_click"
 															eventProps={ {
 																context:
 																	'attribute-mapping-table',
@@ -200,7 +201,7 @@ const AttributeMappingTable = () => {
 									'Create attribute rule',
 									'google-listings-and-ads'
 								) }
-								eventName="gla_attribute_mapping_new_rule_click"
+								eventName="gla_attribute_mapping_create_rule_click"
 								eventProps={ {
 									context: 'attribute-mapping-table',
 								} }
@@ -210,7 +211,7 @@ const AttributeMappingTable = () => {
 					/>
 					<Pagination
 						page={ page }
-						perPage={ 10 }
+						perPage={ PER_PAGE }
 						total={ total }
 						showPagePicker={ false }
 						showPerPagePicker={ false }

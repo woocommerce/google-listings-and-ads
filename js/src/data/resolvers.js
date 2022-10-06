@@ -368,7 +368,6 @@ export function* getMappingRules( pagination ) {
 				page: pagination.page,
 				per_page: pagination.perPage,
 			} ),
-			parse: false,
 		} );
 
 		const total = parseInt( response.headers.get( 'x-wp-total' ), 10 );

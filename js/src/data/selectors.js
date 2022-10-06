@@ -284,7 +284,7 @@ export const getMappingSources = ( state, attributeKey ) => {
 
 export const getMappingRules = createSelector(
 	( state, pagination ) => {
-		const stateRules = state.mc.mapping.rules;
+		const stateRules = { ...state.mc.mapping.rules };
 		const { page, perPage } = pagination;
 
 		const start = ( page - 1 ) * perPage;

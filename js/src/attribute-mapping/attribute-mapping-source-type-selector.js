@@ -49,6 +49,11 @@ const AttributeMappingSourceTypeSelector = ( {
 			: SOURCE_TYPES.FIXED
 	);
 
+	const handleSourceTypeChange = ( type ) => {
+		onChange( '' );
+		setSourceType( type );
+	};
+
 	return (
 		<>
 			<Subsection.Subtitle className="gla_attribute_mapping_helper-text">
@@ -83,7 +88,7 @@ const AttributeMappingSourceTypeSelector = ( {
 						</HelpPopover>
 					</>
 				}
-				onChange={ setSourceType }
+				onChange={ handleSourceTypeChange }
 				value={ SOURCE_TYPES.FIELD }
 				selected={ sourceType }
 				collapsible
@@ -140,7 +145,7 @@ const AttributeMappingSourceTypeSelector = ( {
 						</HelpPopover>
 					</>
 				}
-				onChange={ setSourceType }
+				onChange={ handleSourceTypeChange }
 				value={ SOURCE_TYPES.FIXED }
 				selected={ sourceType }
 				collapsible
