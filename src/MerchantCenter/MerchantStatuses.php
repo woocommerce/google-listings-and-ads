@@ -230,15 +230,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		/** @var ProductMetaQueryHelper $product_meta_query_helper */
 		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
 
-		// Get only synced simple and variations, and group variation products if they have the same parent
-		/** @var ProductHelper $product_helper */
-		$product_helper       = $this->container->get( ProductHelper::class );
+		// Get only synced simple and variations
 		$args['type']         = array_diff( ProductSyncer::get_supported_product_types(), [ 'variable' ] );
-		$filtered_product_ids = array_flip(
-			$product_helper->maybe_swap_for_parent_ids(
-				$product_repository->find_synced_product_ids( $args )
-			)
-		);
+		$filtered_product_ids = array_flip( $product_repository->find_synced_product_ids( $args ) );
 		$all_google_ids       = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_GOOGLE_IDS );
 		$filtered_google_ids  = [];
 		foreach ( array_intersect_key( $all_google_ids, $filtered_product_ids ) as $product_ids ) {
