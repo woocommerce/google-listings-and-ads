@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -49,7 +49,7 @@ class AttributeMappingDataController extends BaseOptionsController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_mappping_attributes_read_callback(),
+					'callback'            => $this->get_mapping_attributes_read_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -84,7 +84,7 @@ class AttributeMappingDataController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	protected function get_mappping_attributes_read_callback(): callable {
+	protected function get_mapping_attributes_read_callback(): callable {
 		return function ( Request $request ) {
 			try {
 				return $this->prepare_item_for_response( $this->get_attributes(), $request );
@@ -142,7 +142,7 @@ class AttributeMappingDataController extends BaseOptionsController {
 	 * @return string
 	 */
 	protected function get_schema_title(): string {
-		return 'attribute_mapping';
+		return 'attribute_mapping_data';
 	}
 
 	/**

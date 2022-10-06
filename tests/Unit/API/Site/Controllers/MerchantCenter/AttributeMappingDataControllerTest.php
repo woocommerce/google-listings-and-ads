@@ -3,7 +3,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AttributeMappingDataController;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 
 /**
@@ -22,8 +22,6 @@ class AttributeMappingDataControllerTest extends RESTControllerUnitTest {
 	 * @var AttributeMappingHelper
 	 */
 	private AttributeMappingHelper $attribute_mapping_helper;
-
-
 
 
 	public function setUp(): void {

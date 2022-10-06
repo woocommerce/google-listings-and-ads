@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\ConditionInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\Traits\IsEnumTrait;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -73,16 +74,6 @@ class Condition extends AbstractAttribute implements WithValueOptionsInterface, 
 	 */
 	public static function get_name(): string {
 		return __( 'Condition', 'google-listings-and-ads' );
-	}
-
-
-	/**
-	 * Returns the attribute sources
-	 *
-	 * @return array
-	 */
-	public static function get_sources(): array {
-		return self::get_value_options();
 	}
 
 }
