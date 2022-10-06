@@ -151,8 +151,6 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 		// Syncable products count: 0, total products count: 0
 		$batch_c = new FilteredProductList( [], 0 );
 
-		$syncable_products = [ ...$batch_a->get_product_ids(), ...$batch_b->get_product_ids() ];
-
 		$this->action_scheduler->expects( $this->exactly( 5 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
@@ -178,15 +176,15 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 			->with( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA )
 			->willReturnOnConsecutiveCalls(
 				null,
-				$batch_a->get_product_ids(),
-				$syncable_products
+				[ 12345 ],
+				[ 12345, 23456 ]
 			);
 
 		$this->options->expects( $this->exactly( 3 ) )
 			->method( 'update' )
 			->withConsecutive(
-				[ OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA, $batch_a->get_product_ids() ],
-				[ OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA, $syncable_products ],
+				[ OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA, [ 12345 ] ],
+				[ OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA, [ 12345, 23456 ] ],
 				[ OptionsInterface::SYNCABLE_PRODUCTS_COUNT, 2 ]
 			);
 
