@@ -59,6 +59,6 @@ class MPN extends AbstractAttribute implements WithMappingInterface {
 	 * @return string
 	 */
 	public static function get_name(): string {
-		return __( 'GTIN', 'google-listings-and-ads' );
+		return __( 'MPN', 'google-listings-and-ads' );
 	}
 }
