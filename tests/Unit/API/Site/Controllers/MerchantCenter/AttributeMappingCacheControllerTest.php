@@ -37,7 +37,7 @@ class AttributeMappingCacheControllerTest extends RESTControllerUnitTest {
 
 	public function test_flush_cache() {
 		$this->transients->expects( $this->once() )
-			->method( 'delete' )->with(TransientsInterface::ATTRIBUTE_MAPPING_META_FIELDS);
+			->method( 'delete' )->with( TransientsInterface::ATTRIBUTE_MAPPING_META_FIELDS );
 
 		$response = $this->do_request( self::ROUTE, 'DELETE' );
 
