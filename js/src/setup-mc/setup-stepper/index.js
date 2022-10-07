@@ -13,11 +13,7 @@ import useMCSetup from '.~/hooks/useMCSetup';
 import stepNameKeyMap from './stepNameKeyMap';
 
 const SetupStepper = () => {
-	const {
-		hasFinishedResolution,
-		data: mcSetup,
-		invalidateResolution: mcSetupInvalidateResolution,
-	} = useMCSetup();
+	const { hasFinishedResolution, data: mcSetup } = useMCSetup();
 
 	if ( ! hasFinishedResolution && ! mcSetup ) {
 		return <AppSpinner />;
@@ -36,16 +32,7 @@ const SetupStepper = () => {
 		return null;
 	}
 
-	const handleRefetchSavedStep = () => {
-		mcSetupInvalidateResolution();
-	};
-
-	return (
-		<SavedSetupStepper
-			savedStep={ stepNameKeyMap[ step ] }
-			onRefetchSavedStep={ handleRefetchSavedStep }
-		/>
-	);
+	return <SavedSetupStepper savedStep={ stepNameKeyMap[ step ] } />;
 };
 
 export default SetupStepper;
