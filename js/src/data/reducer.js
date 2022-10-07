@@ -55,6 +55,7 @@ const DEFAULT_STATE = {
 	},
 	mc_product_feed: null,
 	report: {},
+	categoryTree: [],
 };
 
 /**
@@ -430,6 +431,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 
 			return setIn( state, 'mc.mapping.rules.items', rules );
+		}
+
+		case TYPES.RECEIVE_CATEGORY_TREE: {
+			const { categoryTree } = action;
+			return setIn( state, 'categoryTree', categoryTree );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

@@ -43,6 +43,7 @@ import {
 	receiveMappingSources,
 	receiveMappingAttributes,
 	receiveMappingRules,
+	receiveCategoryTree,
 } from './actions';
 
 export function* getShippingRates() {
@@ -402,3 +403,25 @@ getMappingRules.shouldInvalidate = ( action ) => {
 		action.type === TYPES.DELETE_MAPPING_RULE
 	);
 };
+
+/**
+ * Resolver for getting the Store categories in tree format.
+ */
+export function* getCategoryTree() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/categories`,
+		} );
+
+		yield receiveCategoryTree( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error getting the store categories.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}

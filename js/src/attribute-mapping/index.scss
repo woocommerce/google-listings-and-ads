@@ -34,10 +34,16 @@
 		}
 
 		.woocommerce-tree-select-control {
+
+
 			&__control,
 			&__tree {
 				padding: $grid-unit-05 $grid-unit;
 				border-color: $gray-700;
+			}
+
+			&__tree {
+				max-height: 250px;
 			}
 
 			&__tags {
