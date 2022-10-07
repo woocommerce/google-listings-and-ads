@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -34,10 +35,24 @@ const selectFieldControlLabel = __(
  *
  * @param { Object } props The component props
  * @param { Array } props.sources The sources available for the selector
+ * @param { Function } props.onChange Callback when the field changes
  */
 
-const AttributeMappingSourceTypeSelector = ( { sources = [] } ) => {
-	const [ sourceType, setSourceType ] = useState( SOURCE_TYPES.FIELD );
+const AttributeMappingSourceTypeSelector = ( {
+	sources = [],
+	onChange = noop,
+	value,
+} ) => {
+	const [ sourceType, setSourceType ] = useState(
+		! value || value?.includes( ':' )
+			? SOURCE_TYPES.FIELD
+			: SOURCE_TYPES.FIXED
+	);
+
+	const handleSourceTypeChange = ( type ) => {
+		onChange( '' );
+		setSourceType( type );
+	};
 
 	return (
 		<>
@@ -73,12 +88,14 @@ const AttributeMappingSourceTypeSelector = ( { sources = [] } ) => {
 						</HelpPopover>
 					</>
 				}
-				onChange={ setSourceType }
+				onChange={ handleSourceTypeChange }
 				value={ SOURCE_TYPES.FIELD }
 				selected={ sourceType }
 				collapsible
 			>
 				<AttributeMappingFieldSourcesControl
+					value={ value }
+					onChange={ onChange }
 					aria-label={ selectFieldControlLabel }
 					sources={ sources }
 					help={
@@ -128,12 +145,15 @@ const AttributeMappingSourceTypeSelector = ( { sources = [] } ) => {
 						</HelpPopover>
 					</>
 				}
-				onChange={ setSourceType }
+				onChange={ handleSourceTypeChange }
 				value={ SOURCE_TYPES.FIXED }
 				selected={ sourceType }
 				collapsible
 			>
 				<AppInputControl
+					value={ value }
+					maxLength={ 100 }
+					onChange={ onChange }
 					aria-label={ fixedValueControlLabel }
 					placeholder={ __(
 						'Enter a value',

@@ -2,20 +2,26 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Table, TablePlaceholder } from '@woocommerce/components';
-import { CardBody, CardFooter, Flex } from '@wordpress/components';
-import GridiconTrash from 'gridicons/dist/trash';
+import { Pagination, Table, TablePlaceholder } from '@woocommerce/components';
+import { CardBody, CardFooter, Flex, FlexItem } from '@wordpress/components';
+import { useEffect } from '@wordpress/element';
+
 /**
  * Internal dependencies
  */
 import Card from '.~/wcdl/section/card';
 import AppButton from '.~/components/app-button';
 import AppTableCardDiv from '.~/components/app-table-card-div';
-import AttributeMappingTableCategories from './attribute-mapping-table-categories';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
-import AttributeMappingRuleModal from '.~/attribute-mapping/attribute-mapping-rule-modal';
+import AttributeMappingTableCategories from './attribute-mapping-table-categories';
+import AttributeMappingRuleModal from './attribute-mapping-rule-modal';
+import AttributeMappingDeleteRuleModal from './attribute-mapping-delete-rule-modal';
 import useMappingAttributes from '.~/hooks/useMappingAttributes';
+import useMappingRules from '.~/hooks/useMappingRules';
+import usePagination from '.~/hooks/usePagination';
+import { recordTablePageEvent } from '.~/utils/recordEvent';
 
+const PER_PAGE = 10;
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	{
 		key: 'attribute',
@@ -45,11 +51,16 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 /**
  * Renders the Attribute Mapping table component
  *
- * @param {Object} props The component props
- * @param {Object} props.rules The rules to show in the table
  * @return {JSX.Element} The component
  */
-const AttributeMappingTable = ( { rules } ) => {
+const AttributeMappingTable = () => {
+	const { page, setPage } = usePagination( 'attribute-mapping' );
+
+	const {
+		data: { rules, total },
+		hasFinishedResolution: rulesHasFinishedResolution,
+	} = useMappingRules( { page, perPage: PER_PAGE } );
+
 	const {
 		data: attributes,
 		hasFinishedResolution: attributesHasFinishedResolution,
@@ -58,7 +69,24 @@ const AttributeMappingTable = ( { rules } ) => {
 	const parseDestinationName = ( destination ) =>
 		attributes.find( ( e ) => e.id === destination )?.label || '';
 
-	const isLoading = ! attributesHasFinishedResolution; // Todo: Add here rulesHasFinishedResolution for Rules after implementation
+	const isLoading =
+		! attributesHasFinishedResolution || ! rulesHasFinishedResolution;
+
+	const handlePageChange = ( newPage, direction ) => {
+		setPage( newPage );
+		recordTablePageEvent( `attribute-mapping-rules`, newPage, direction );
+	};
+
+	/**
+	 * Prevent to stay in a page without rules.
+	 * This is because maybe the user is in the page 2 which has only one rule.
+	 * If the user deletes that rule we don't want to stay in page 2 anymore, since it doesn't exists.
+	 */
+	useEffect( () => {
+		if ( rulesHasFinishedResolution && rules?.length === 0 && page > 1 ) {
+			setPage( page - 1 );
+		}
+	}, [ page, rules, rulesHasFinishedResolution, setPage ] );
 
 	return (
 		<AppTableCardDiv>
@@ -82,13 +110,14 @@ const AttributeMappingTable = ( { rules } ) => {
 							rows={ rules.map( ( rule ) => [
 								{
 									display: parseDestinationName(
-										rule.destination
+										rule.attribute
 									),
 								},
 								{
+									// TODO: replace with source_name after implementation
 									display: (
 										<span className="gla-attribute-mapping__table-label">
-											{ rule.source_name }
+											{ rule.source }
 										</span>
 									),
 								},
@@ -98,7 +127,7 @@ const AttributeMappingTable = ( { rules } ) => {
 											<AttributeMappingTableCategories
 												categories={ rule.categories }
 												condition={
-													rule.category_conditional_type
+													rule.category_condition_type
 												}
 											/>
 										</span>
@@ -107,15 +136,52 @@ const AttributeMappingTable = ( { rules } ) => {
 								{
 									display: (
 										<Flex justify="end">
-											<AppButton isLink>
-												{ __(
-													'Manage',
-													'google-listings-and-ads'
-												) }
-											</AppButton>
-											<AppButton
-												icon={ <GridiconTrash /> }
-											/>
+											<FlexItem>
+												<AppButtonModalTrigger
+													button={
+														<AppButton
+															isLink
+															text={ __(
+																'Manage',
+																'google-listings-and-ads'
+															) }
+															eventName="gla_attribute_mapping_manage_rule_click"
+															eventProps={ {
+																context:
+																	'attribute-mapping-table',
+															} }
+														/>
+													}
+													modal={
+														<AttributeMappingRuleModal
+															rule={ rule }
+														/>
+													}
+												/>
+											</FlexItem>
+											<FlexItem>
+												<AppButtonModalTrigger
+													button={
+														<AppButton
+															isLink
+															text={ __(
+																'Delete',
+																'google-listings-and-ads'
+															) }
+															eventName="gla_attribute_mapping_delete_rule_click"
+															eventProps={ {
+																context:
+																	'attribute-mapping-table',
+															} }
+														/>
+													}
+													modal={
+														<AttributeMappingDeleteRuleModal
+															rule={ rule }
+														/>
+													}
+												/>
+											</FlexItem>
 										</Flex>
 									),
 								},
@@ -124,7 +190,7 @@ const AttributeMappingTable = ( { rules } ) => {
 					) }
 				</CardBody>
 				<CardFooter
-					align="start"
+					align="between"
 					className="gla-attribute-mapping__table-footer"
 				>
 					<AppButtonModalTrigger
@@ -135,13 +201,21 @@ const AttributeMappingTable = ( { rules } ) => {
 									'Create attribute rule',
 									'google-listings-and-ads'
 								) }
-								eventName="gla_attribute_mapping_new_rule_click"
+								eventName="gla_attribute_mapping_create_rule_click"
 								eventProps={ {
 									context: 'attribute-mapping-table',
 								} }
 							/>
 						}
 						modal={ <AttributeMappingRuleModal /> }
+					/>
+					<Pagination
+						page={ page }
+						perPage={ PER_PAGE }
+						total={ total }
+						showPagePicker={ false }
+						showPerPagePicker={ false }
+						onPageChange={ handlePageChange }
 					/>
 				</CardFooter>
 			</Card>

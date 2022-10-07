@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import TYPES from './action-types';
-import { API_NAMESPACE } from './constants';
+import { API_NAMESPACE, REQUEST_ACTIONS } from './constants';
 import { adaptAdsCampaign } from './adapters';
 
 export function handleFetchError( error, message ) {
@@ -974,4 +974,105 @@ export function* receiveMappingSources( sources, attributeKey ) {
 		sources,
 		attributeKey,
 	};
+}
+
+/**
+ * Receive Mapping Rules action
+ *
+ * @param {Array} rules The rules to update in the state.
+ * @param {Object} pagination Containing parameters like page or per_page.
+ */
+export function* receiveMappingRules( rules, pagination ) {
+	return {
+		type: TYPES.RECEIVE_MAPPING_RULES,
+		rules,
+		pagination,
+	};
+}
+
+/**
+ * Creates a Mapping Rule action
+ *
+ * @param {Object} rule The rule to create in the state.
+ */
+export function* createMappingRule( rule ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/rules`,
+			method: 'POST',
+			data: rule,
+		} );
+
+		return {
+			type: TYPES.UPSERT_MAPPING_RULE,
+			rule: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error creating the rule.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Updates a Mapping Rule action
+ *
+ * @param {Object} rule The rule to update in the state.
+ */
+export function* updateMappingRule( rule ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/rules/${ rule.id }`,
+			method: REQUEST_ACTIONS.POST,
+			data: rule,
+		} );
+
+		return {
+			type: TYPES.UPSERT_MAPPING_RULE,
+			rule: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error updating the rule.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Delete Mapping Rule action
+ *
+ * @param {Object} rule The rule to be deleted.
+ */
+export function* deleteMappingRule( rule ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/rules/${ rule.id }`,
+			method: REQUEST_ACTIONS.DELETE,
+			data: rule,
+		} );
+
+		return {
+			type: TYPES.DELETE_MAPPING_RULE,
+			rule: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error deleting the rule.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
 }
