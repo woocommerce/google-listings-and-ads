@@ -2,7 +2,13 @@
  * External dependencies
  */
 import { _x } from '@wordpress/i18n';
-import { useState, useCallback, useEffect } from '@wordpress/element';
+import {
+	useState,
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	forwardRef,
+} from '@wordpress/element';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import CurrencyFactory from '@woocommerce/currency';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
@@ -26,6 +32,9 @@ import './campaign-preview.scss';
 
 /**
  * @typedef { import("./index.js").AdPreviewData } AdPreviewData
+ *
+ * @typedef {Object} CampaignPreviewHandler
+ * @property {(step: number) => void} moveBy Move the currently displayed preview ad by how many steps, e.g. 1 for moving to the next and -1 for the previous.
  */
 
 /**
@@ -91,13 +100,22 @@ function resolvePreviewProduct( products = [] ) {
 	return previewProduct;
 }
 
-export default function CampaignPreview() {
+/**
+ * Renders a set of mockups to preview the paid ads shown on Google services.
+ *
+ * @param {Object} props React props.
+ * @param {boolean} [props.autoplay=true] Whether enable the autoplay.
+ * @param {import('react').MutableRefObject<CampaignPreviewHandler>} ref React ref to be attached to the handler of this component.
+ */
+function CampaignPreview( { autoplay = true }, ref ) {
 	const [ index, setIndex ] = useState( 0 );
 	const { second, callCount, startCountdown } = useCountdown();
 	const { hasFinishedResolution, data } = useAppSelectDispatch(
 		'getMCProductFeed',
 		bestsellingQuery
 	);
+
+	const shouldAutoplay = autoplay && hasFinishedResolution;
 
 	const moveBy = useCallback( ( step ) => {
 		setIndex( ( currentIndex ) => {
@@ -106,13 +124,17 @@ export default function CampaignPreview() {
 	}, [] );
 
 	useEffect( () => {
-		if ( hasFinishedResolution && second === 0 ) {
+		if ( shouldAutoplay && second === 0 ) {
 			if ( callCount > 0 ) {
 				moveBy( 1 );
 			}
 			startCountdown( 5 );
 		}
-	}, [ hasFinishedResolution, second, callCount, startCountdown, moveBy ] );
+	}, [ shouldAutoplay, second, callCount, startCountdown, moveBy ] );
+
+	useImperativeHandle( ref, () => ( {
+		moveBy,
+	} ) );
 
 	if ( ! hasFinishedResolution ) {
 		return (
@@ -137,3 +159,5 @@ export default function CampaignPreview() {
 		</TransitionGroup>
 	);
 }
+
+export default forwardRef( CampaignPreview );
