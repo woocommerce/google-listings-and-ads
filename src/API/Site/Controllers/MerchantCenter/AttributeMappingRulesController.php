@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_Error;
 use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -55,6 +56,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_rule_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_collection_params(),
 				],
 				[
 					'methods'             => TransportMethods::CREATABLE,
@@ -92,9 +94,33 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_rule_callback(): callable {
-		return function() {
+		return function( Request $request ) {
 			try {
-				return $this->prepare_response_for_collection( $this->attribute_mapping_rules_query->get_results() );
+				$page     = $request->get_param( 'page' );
+				$per_page = $request->get_param( 'per_page' );
+
+				$this->attribute_mapping_rules_query->set_limit( $per_page );
+				$this->attribute_mapping_rules_query->set_offset( $per_page * ( $page - 1 ) );
+
+				$rules       = $this->attribute_mapping_rules_query->get_results();
+				$total_rules = $this->attribute_mapping_rules_query->get_count();
+
+				$response_data = [];
+
+				foreach ( $rules as $rule ) {
+					$item_data       = $this->prepare_item_for_response( $rule, $request );
+					$response_data[] = $this->prepare_response_for_collection( $item_data );
+				}
+
+				return new Response(
+					$response_data,
+					200,
+					[
+						'X-WP-Total'      => $total_rules,
+						'X-WP-TotalPages' => ceil( $total_rules / $per_page ),
+					]
+				);
+
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -210,6 +236,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 			],
 		];
 	}
+
 
 	/**
 	 * Get the item schema name for the controller.

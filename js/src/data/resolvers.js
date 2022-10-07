@@ -17,6 +17,7 @@ import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
 import { adaptAdsCampaign } from './adapters';
+import { fetchWithHeaders } from './controls';
 
 import {
 	handleFetchError,
@@ -41,6 +42,7 @@ import {
 	receiveMCReviewRequest,
 	receiveMappingSources,
 	receiveMappingAttributes,
+	receiveMappingRules,
 } from './actions';
 
 export function* getShippingRates() {
@@ -336,7 +338,9 @@ export function* getMappingSources( attributeKey ) {
 		}
 
 		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/mapping/sources?attribute=${ attributeKey }`,
+			path: addQueryArgs( `${ API_NAMESPACE }/mc/mapping/sources`, {
+				attribute: attributeKey,
+			} ),
 		} );
 
 		yield receiveMappingSources( response.data, attributeKey );
@@ -350,3 +354,51 @@ export function* getMappingSources( attributeKey ) {
 		);
 	}
 }
+
+/**
+ * Fetches the Attribute Mapping Rules and calls receive action
+ *
+ * @param {Object} pagination Object containing client pagination parameters like page and perPage
+ * @see AttributeMappingRulesController.php
+ */
+export function* getMappingRules( pagination ) {
+	try {
+		const response = yield fetchWithHeaders( {
+			path: addQueryArgs( `${ API_NAMESPACE }/mc/mapping/rules`, {
+				page: pagination.page,
+				per_page: pagination.perPage,
+			} ),
+		} );
+
+		const total = parseInt( response.headers.get( 'x-wp-total' ), 10 );
+		const pages = parseInt( response.headers.get( 'x-wp-totalpages' ), 10 );
+		const rules = response.data;
+
+		yield receiveMappingRules( rules, {
+			...pagination,
+			total,
+			pages,
+		} );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading the mapping rules.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Refresh if some UPSERT or DELETE action for mapping rules happens in the APP.
+ *
+ * @param {Object} action The performed action
+ * @return {boolean} True if the action should be invalidated
+ */
+getMappingRules.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.UPSERT_MAPPING_RULE ||
+		action.type === TYPES.DELETE_MAPPING_RULE
+	);
+};

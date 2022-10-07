@@ -37,7 +37,8 @@ const AttributeMappingTableCategories = ( { categories, condition } ) => {
 		return __( 'All', 'google-listings-and-ads' );
 	}
 
-	const categoryArray = categories.split( ',' );
+	const categoryArray = categories?.split( ',' ) || [];
+
 	const categoryNames = categoryArray
 		.slice( 0, CATEGORIES_TO_SHOW )
 		.map( ( category ) => {
