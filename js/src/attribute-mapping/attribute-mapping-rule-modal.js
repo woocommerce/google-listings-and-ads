@@ -48,6 +48,17 @@ const mapOptions = ( data = [] ) => {
 	];
 };
 
+const prepareRule = ( newRule ) => {
+	return {
+		...newRule,
+		categories:
+			newRule.category_condition_type ===
+			CATEGORY_CONDITION_SELECT_TYPES.ALL
+				? ''
+				: newRule.categories,
+	};
+};
+
 /**
  * Renders a modal showing a form for editing or creating an Attribute Mapping rule
  *
@@ -61,6 +72,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 			? { ...rule }
 			: { category_condition_type: CATEGORY_CONDITION_SELECT_TYPES.ALL }
 	);
+
 	const [ saving, setSaving ] = useState( false );
 	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
@@ -86,17 +98,6 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 		...mapOptions( attributes ),
 	];
 
-	const prepareRule = () => {
-		return {
-			...newRule,
-			categories:
-				newRule.category_condition_type ===
-				CATEGORY_CONDITION_SELECT_TYPES.ALL
-					? ''
-					: newRule.categories,
-		};
-	};
-
 	const isValidRule =
 		newRule.source &&
 		newRule.attribute &&
@@ -110,9 +111,9 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 
 		try {
 			if ( rule ) {
-				await updateMappingRule( prepareRule() );
+				await updateMappingRule( newRule );
 			} else {
-				await createMappingRule( prepareRule() );
+				await createMappingRule( newRule );
 			}
 			onRequestClose();
 		} catch ( error ) {
@@ -120,8 +121,12 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 		}
 	};
 
+	const updateRule = ( data ) => {
+		setNewRule( prepareRule( data ) );
+	};
+
 	const onSourceUpdate = ( source ) => {
-		setNewRule( { ...newRule, source } );
+		updateRule( { ...newRule, source } );
 	};
 
 	const handleClose = () => {
@@ -178,7 +183,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 					value={ newRule.attribute }
 					aria-label={ attributeSelectorLabel }
 					onChange={ ( attribute ) => {
-						setNewRule( { ...newRule, attribute, source: '' } );
+						updateRule( { ...newRule, attribute, source: '' } );
 					} }
 					options={ attributesOptions }
 				/>
@@ -228,13 +233,13 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 									: []
 							}
 							onConditionalTypeChange={ ( type ) => {
-								setNewRule( {
+								updateRule( {
 									...newRule,
 									category_condition_type: type,
 								} );
 							} }
 							onCategoriesChange={ ( categories ) => {
-								setNewRule( {
+								updateRule( {
 									...newRule,
 									categories: categories.join( ',' ),
 								} );
