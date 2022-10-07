@@ -11,13 +11,7 @@ import {
 	CATEGORIES_TO_SHOW_IN_TOOLTIP,
 	CATEGORY_CONDITION_SELECT_TYPES,
 } from '.~/constants';
-import useCategoryTree from '.~/hooks/useCategoryTree';
-
-const SEPARATOR = _x(
-	', ',
-	'the separator for concatenating the categories where the Attribute mapping rule is applied.',
-	'google-listings-and-ads'
-);
+import useCategories from '.~/hooks/useCategories';
 
 /**
  * Show a text with the number of categories
@@ -54,7 +48,7 @@ const CategoryHelperText = ( { categories } ) => {
  */
 const AttributeMappingTableCategories = ( { categories, condition } ) => {
 	const categoryArray = categories?.split( ',' ) || [];
-	const { names } = useCategoryTree( categoryArray );
+	const { names } = useCategories( categoryArray );
 
 	if ( condition === CATEGORY_CONDITION_SELECT_TYPES.ALL ) {
 		return __( 'All', 'google-listings-and-ads' );

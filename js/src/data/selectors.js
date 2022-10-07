@@ -299,6 +299,6 @@ export const getMappingRules = createSelector(
 	( state ) => [ state.mc.mapping.rules ]
 );
 
-export const getCategoryTree = ( state ) => {
-	return state.categoryTree;
+export const getStoreCategories = ( state ) => {
+	return state.categories;
 };

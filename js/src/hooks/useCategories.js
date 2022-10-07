@@ -22,9 +22,9 @@ const SEPARATOR = _x(
  * @param {Array} [selected] The selected category ID's
  * @return {{tree: *[], names: string, hasFinishedResolution: *}} The tree ready to insert in Tree Select Control, the categories separated by commas and the resolution state
  */
-const useCategoryTree = ( selected = [] ) => {
+const useCategories = ( selected = [] ) => {
 	const { data, hasFinishedResolution } = useAppSelectDispatch(
-		'getCategoryTree'
+		'getCategories'
 	);
 
 	if ( ! hasFinishedResolution ) {
@@ -83,7 +83,8 @@ const getSelectedNames = ( selected, allCategories ) => {
 		.slice( 0, CATEGORIES_TO_SHOW_IN_TOOLTIP )
 		.map( ( category ) => {
 			return (
-				allCategories.find( ( e ) => e.id.toString() === category )?.name ||
+				allCategories.find( ( e ) => e.id.toString() === category )
+					?.name ||
 				sprintf(
 					// translators: %d: number of categories.
 					'Category ID %s (deleted)',
@@ -96,4 +97,4 @@ const getSelectedNames = ( selected, allCategories ) => {
 		.join( SEPARATOR );
 };
 
-export default useCategoryTree;
+export default useCategories;

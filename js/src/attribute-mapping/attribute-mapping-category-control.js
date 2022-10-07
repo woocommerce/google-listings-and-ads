@@ -9,7 +9,7 @@ import { noop } from 'lodash';
  */
 import AppSelectControl from '.~/components/app-select-control';
 import TreeSelectControl from '.~/components/tree-select-control';
-import useCategoryTree from '.~/hooks/useCategoryTree';
+import useCategories from '.~/hooks/useCategories';
 import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
 
 const getTree = ( allCategories, parent = 0 ) => {
@@ -46,7 +46,7 @@ const AttributeMappingCategoryControl = ( {
 	onCategoriesChange = noop,
 	onCategorySelectorOpen = noop,
 } ) => {
-	const { tree } = useCategoryTree( selectedCategories );
+	const { tree } = useCategories( selectedCategories );
 
 	return (
 		<>

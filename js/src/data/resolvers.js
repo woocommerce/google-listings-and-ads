@@ -43,7 +43,7 @@ import {
 	receiveMappingSources,
 	receiveMappingAttributes,
 	receiveMappingRules,
-	receiveCategoryTree,
+	receiveStoreCategories,
 } from './actions';
 
 export function* getShippingRates() {
@@ -405,15 +405,15 @@ getMappingRules.shouldInvalidate = ( action ) => {
 };
 
 /**
- * Resolver for getting the Store categories in tree format.
+ * Resolver for getting the Store categories.
  */
-export function* getCategoryTree() {
+export function* getStoreCategories() {
 	try {
 		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/mapping/categories`,
 		} );
 
-		yield receiveCategoryTree( response );
+		yield receiveStoreCategories( response );
 	} catch ( error ) {
 		yield handleFetchError(
 			error,

@@ -1078,13 +1078,13 @@ export function* deleteMappingRule( rule ) {
 }
 
 /**
- * Action to receive the Store categories in tree format.
+ * Action to receive the Store categories.
  *
- * @param {Array} categoryTree List of categories in tree format
+ * @param {Array} categories List of categories
  */
-export function* receiveCategoryTree( categoryTree ) {
+export function* receiveStoreCategories( categories ) {
 	return {
-		type: TYPES.RECEIVE_CATEGORY_TREE,
-		categoryTree,
+		type: TYPES.RECEIVE_STORE_CATEGORIES,
+		categories,
 	};
 }
