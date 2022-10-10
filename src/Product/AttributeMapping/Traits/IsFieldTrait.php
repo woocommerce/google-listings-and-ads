@@ -29,6 +29,14 @@ trait IsFieldTrait {
 	 * @return array The available sources
 	 */
 	public static function get_sources(): array {
-		return AttributeMappingHelper::get_fields( self::get_id() );
+		return apply_filters(
+			'woocommerce_gla_attribute_mapping_sources',
+			array_merge(
+				AttributeMappingHelper::get_source_product_fields(),
+				AttributeMappingHelper::get_source_taxonomies(),
+				AttributeMappingHelper::get_source_custom_attributes()
+			),
+			self::get_id()
+		);
 	}
 }

@@ -34,15 +34,4 @@ class AttributeMappingCacheControllerTest extends RESTControllerUnitTest {
 	public function test_register_route() {
 		$this->assertArrayHasKey( self::ROUTE, $this->server->get_routes() );
 	}
-
-	public function test_flush_cache() {
-		$this->transients->expects( $this->once() )
-			->method( 'delete' )->with( TransientsInterface::ATTRIBUTE_MAPPING_META_FIELDS );
-
-		$response = $this->do_request( self::ROUTE, 'DELETE' );
-
-		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( 'Attribute Mapping cache was flushed', $response->get_data()['message'] );
-	}
-
 }

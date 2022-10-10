@@ -65,7 +65,6 @@ class AttributeMappingCacheController extends BaseOptionsController {
 	protected function delete_mapping_attributes_cache_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$this->transients->delete( TransientsInterface::ATTRIBUTE_MAPPING_META_FIELDS );
 				return $this->prepare_item_for_response( [ 'message' => __( 'Attribute Mapping cache was flushed', 'google-listings-and-ads' ) ], $request );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );

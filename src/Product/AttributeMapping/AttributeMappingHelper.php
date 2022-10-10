@@ -4,8 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
@@ -55,11 +53,6 @@ class AttributeMappingHelper implements Service {
 	public const CATEGORY_CONDITION_TYPE_ALL    = 'ALL';
 	public const CATEGORY_CONDITION_TYPE_ONLY   = 'ONLY';
 	public const CATEGORY_CONDITION_TYPE_EXCEPT = 'EXCEPT';
-
-	/**
-	 * @var Transients|null
-	 */
-	private static ?Transients $transients = null;
 
 	/**
 	 * Gets all the available attributes for mapping
@@ -118,42 +111,30 @@ class AttributeMappingHelper implements Service {
 	}
 
 	/**
-	 * Returns a single instance of Transients
-	 *
-	 * @return Transients A single instance of Transients
-	 */
-	public static function get_transients_object(): Transients {
-		if ( is_null( self::$transients ) ) {
-			self::$transients = new Transients();
-		}
-
-		return self::$transients;
-	}
-	/**
 	 * Gets the taxonomies and global attributes to render them as options in the frontend.
 	 *
 	 * @return array An array with the taxonomies and global attributes
 	 */
 	public static function get_source_taxonomies(): array {
-		$taxonomies        = get_object_taxonomies( 'product', 'objects' );
-		$parsed_taxonomies = [];
+		$object_taxonomies = get_object_taxonomies( 'product', 'objects' );
+		$taxonomies        = [];
 		$attributes        = [];
 		$sources           = [];
 
-		foreach ( $taxonomies as $taxonomy ) {
+		foreach ( $object_taxonomies as $taxonomy ) {
 			if ( taxonomy_is_product_attribute( $taxonomy->name ) ) {
 				$attributes[ 'taxonomy:' . $taxonomy->name ] = $taxonomy->label;
 				continue;
 			}
 
-			$parsed_taxonomies[ 'taxonomy:' . $taxonomy->name ] = $taxonomy->label;
+			$taxonomies[ 'taxonomy:' . $taxonomy->name ] = $taxonomy->label;
 		}
 
-		asort( $parsed_taxonomies );
+		asort( $taxonomies );
 		asort( $attributes );
 
-		$attributes        = apply_filters( 'woocommerce_gla_attribute_mapping_fields_global_attributes', $attributes );
-		$parsed_taxonomies = apply_filters( 'woocommerce_gla_attribute_mapping_fields_taxonomies', $parsed_taxonomies );
+		$attributes = apply_filters( 'woocommerce_gla_attribute_mapping_sources_global_attributes', $attributes );
+		$taxonomies = apply_filters( 'woocommerce_gla_attribute_mapping_sources_taxonomies', $taxonomies );
 
 		if ( ! empty( $attributes ) ) {
 			$sources = array_merge(
@@ -164,13 +145,13 @@ class AttributeMappingHelper implements Service {
 			);
 		}
 
-		if ( ! empty( $parsed_taxonomies ) ) {
+		if ( ! empty( $taxonomies ) ) {
 			$sources = array_merge(
 				$sources,
 				[
 					'disabled:taxonomies' => __( '- Taxonomies -', 'google-listings-and-ads' ),
 				],
-				$parsed_taxonomies
+				$taxonomies
 			);
 		}
 
@@ -178,9 +159,9 @@ class AttributeMappingHelper implements Service {
 	}
 
 	/**
-	 * Get a list of the available product fields.
+	 * Get a list of the available product sources.
 	 *
-	 * @return array An array with the available product fields.
+	 * @return array An array with the available product sources.
 	 */
 	public static function get_source_product_fields() {
 		$fields = [
@@ -203,59 +184,7 @@ class AttributeMappingHelper implements Service {
 			$fields
 		);
 
-		return apply_filters( 'woocommerce_gla_attribute_mapping_fields_product_fields', $fields );
-	}
-
-	/**
-	 * Returns the available meta (non system) metas
-	 *
-	 * @return array The available metas
-	 */
-	public static function get_source_custom_fields() {
-		global $wpdb;
-		$transients = self::get_transients_object();
-
-		$cached_metas = $transients->get(
-			TransientsInterface::ATTRIBUTE_MAPPING_META_FIELDS,
-		);
-
-		if ( $cached_metas ) {
-			return $cached_metas;
-		}
-
-		$sources = [];
-
-		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
-		$sql = $wpdb->prepare(
-			"SELECT DISTINCT {$wpdb->postmeta}.meta_key
-		                FROM {$wpdb->posts}
-			       LEFT JOIN {$wpdb->postmeta}
-			              ON {$wpdb->posts}.ID = {$wpdb->postmeta}.post_id AND {$wpdb->postmeta}.meta_key NOT LIKE %s
-				       WHERE {$wpdb->posts}.post_type IN ( %s, %s )",
-			[ $wpdb->esc_like( '_' ) . '%', 'product_variation', 'product' ]
-		);
-
-		$meta_keys = $wpdb->get_col( $sql );
-		foreach ( $meta_keys as $meta_key ) {
-			$sources[ 'meta:' . $meta_key ] = $meta_key;
-		}
-
-		if ( ! empty( $sources ) ) {
-			$sources = array_merge(
-				[
-					'disabled:meta' => __( '- Custom fields -', 'google-listings-and-ads' ),
-				],
-				$sources
-			);
-		}
-
-		$transients->set(
-			TransientsInterface::ATTRIBUTE_MAPPING_META_FIELDS,
-			$sources,
-			HOUR_IN_SECONDS
-		);
-
-		return apply_filters( 'woocommerce_gla_attribute_mapping_fields_custom_fields', $sources );
+		return apply_filters( 'woocommerce_gla_attribute_mapping_sources_product_fields', $fields );
 	}
 
 	/**
@@ -265,7 +194,7 @@ class AttributeMappingHelper implements Service {
 	 */
 	public static function get_source_custom_attributes() {
 		$attributes     = [];
-		$attribute_keys = apply_filters( 'woocommerce_gla_attribute_mapping_fields_custom_attributes', [] );
+		$attribute_keys = apply_filters( 'woocommerce_gla_attribute_mapping_sources_custom_attributes', [] );
 		foreach ( $attribute_keys as $key ) {
 			$attributes[ 'attribute:' . $key ] = $key;
 		}
@@ -295,22 +224,4 @@ class AttributeMappingHelper implements Service {
 		];
 	}
 
-	/**
-	 * Returns all the available fields
-	 *
-	 * @param string $attribute_id The attribute ID to get the fields for
-	 * @return array The available fields
-	 */
-	public static function get_fields( $attribute_id ): array {
-		return apply_filters(
-			'woocommerce_gla_attribute_mapping_fields',
-			array_merge(
-				self::get_source_product_fields(),
-				self::get_source_taxonomies(),
-				self::get_source_custom_fields(),
-				self::get_source_custom_attributes()
-			),
-			$attribute_id
-		);
-	}
 }
