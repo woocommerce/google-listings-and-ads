@@ -76,13 +76,13 @@ class AttributeMappingCategoriesController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id'    => [
+			'id'     => [
 				'description'       => __( 'The Category ID.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 				'readonly'          => true,
 			],
-			'name'    => [
+			'name'   => [
 				'description'       => __( 'The category name.', 'google-listings-and-ads' ),
 				'type'              => 'integer',
 				'validate_callback' => 'rest_validate_request_arg',
@@ -114,7 +114,6 @@ class AttributeMappingCategoriesController extends BaseOptionsController {
 	 * @return array The categories
 	 */
 	private function get_category_tree(): array {
-
 		$categories = get_categories(
 			[
 				'taxonomy'   => 'product_cat',
@@ -122,13 +121,16 @@ class AttributeMappingCategoriesController extends BaseOptionsController {
 			]
 		);
 
-		return array_map( function ( $category ) {
-			return [
-				'id' => $category->term_id,
-				'name' => $category->name,
-				'parent' => $category->parent
-			];
-		}, $categories);
+		return array_map(
+			function ( $category ) {
+				return [
+					'id'     => $category->term_id,
+					'name'   => $category->name,
+					'parent' => $category->parent,
+				];
+			},
+			$categories
+		);
 	}
 
 
