@@ -20,7 +20,7 @@ class AttributeMappingCategoriesController extends BaseOptionsController {
 
 
 	/**
-	 * AttributeMappingController constructor.
+	 * AttributeMappingCategoriesController constructor.
 	 *
 	 * @param RESTServer $server
 	 */
@@ -76,21 +76,21 @@ class AttributeMappingCategoriesController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'value'    => [
+			'id'     => [
 				'description'       => __( 'The Category ID.', 'google-listings-and-ads' ),
-				'type'              => 'integer',
-				'validate_callback' => 'rest_validate_request_arg',
-				'readonly'          => true,
-			],
-			'label'    => [
-				'description'       => __( 'The category name.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 				'readonly'          => true,
 			],
-			'children' => [
-				'description'       => __( 'The category children.', 'google-listings-and-ads' ),
-				'type'              => 'array',
+			'name'   => [
+				'description'       => __( 'The category name.', 'google-listings-and-ads' ),
+				'type'              => 'integer',
+				'validate_callback' => 'rest_validate_request_arg',
+				'readonly'          => true,
+			],
+			'parent' => [
+				'description'       => __( 'The category parent.', 'google-listings-and-ads' ),
+				'type'              => 'integer',
 				'validate_callback' => 'rest_validate_request_arg',
 				'readonly'          => true,
 			],
@@ -105,36 +105,32 @@ class AttributeMappingCategoriesController extends BaseOptionsController {
 	 * @return string
 	 */
 	protected function get_schema_title(): string {
-		return 'attribute_mapping_rules';
+		return 'attribute_mapping_categories';
 	}
 
 	/**
-	 * Function to get all the categories in a hierarchy
+	 * Function to get all the categories
 	 *
-	 * @param int $parent The category to get descendants
 	 * @return array The categories
 	 */
-	private function get_category_tree( int $parent = 0 ): array {
-		$categories_hierarchy = [];
-
+	private function get_category_tree(): array {
 		$categories = get_categories(
 			[
 				'taxonomy'   => 'product_cat',
 				'hide_empty' => false,
-				'parent'     => $parent,
 			]
 		);
 
-		foreach ( $categories as $category ) {
-			$category_with_children = [
-				'value'    => $category->term_id,
-				'label'    => $category->name,
-				'children' => $this->get_category_tree( $category->term_id ),
-			];
-			array_push( $categories_hierarchy, $category_with_children );
-		}
-
-		return $categories_hierarchy;
+		return array_map(
+			function ( $category ) {
+				return [
+					'id'     => $category->term_id,
+					'name'   => $category->name,
+					'parent' => $category->parent,
+				];
+			},
+			$categories
+		);
 	}
 
 
