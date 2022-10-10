@@ -15,6 +15,15 @@ const SEPARATOR = _x(
 	'google-listings-and-ads'
 );
 
+const getDeletedCategoryName = ( categoryId ) => {
+	return sprintf(
+		// translators: %d: number of categories.
+		'Category ID %s (deleted)',
+		[ categoryId ],
+		'google-listings-and-ads'
+	);
+};
+
 /**
  * Returns the category tree used for Tree Select Control
  * It also maps the deleted (and previously selected) categories
@@ -24,7 +33,7 @@ const SEPARATOR = _x(
  */
 const useCategories = ( selected = [] ) => {
 	const { data, hasFinishedResolution } = useAppSelectDispatch(
-		'getCategories'
+		'getStoreCategories'
 	);
 
 	if ( ! hasFinishedResolution ) {
@@ -35,6 +44,7 @@ const useCategories = ( selected = [] ) => {
 		};
 	}
 
+	// Parse deleted categories previously selected in a rule
 	const deletedCategories = selected
 		.filter(
 			( category ) => ! data.find( ( e ) => e.id.toString() === category )
@@ -42,12 +52,7 @@ const useCategories = ( selected = [] ) => {
 		.map( ( category ) => {
 			return {
 				id: category,
-				name: sprintf(
-					// Translators: %s The category id
-					'Category ID %s (deleted)',
-					[ category ],
-					'google-listings-and-ads'
-				),
+				name: getDeletedCategoryName( category ),
 				parent: 0,
 			};
 		} );
@@ -61,6 +66,13 @@ const useCategories = ( selected = [] ) => {
 	};
 };
 
+/**
+ * Get the categories in hierarchical tree format
+ *
+ * @param {Array} allCategories Array with all the categories
+ * @param {number} [parent=0] The ID for the parent categories to get the leaf tree. By default 0 (root)
+ * @return {Array} The categories formatted as a tree
+ */
 const getTree = ( allCategories = [], parent = 0 ) => {
 	const currentCategories = [];
 	const categories = allCategories.filter( ( cat ) => cat.parent === parent );
@@ -78,19 +90,20 @@ const getTree = ( allCategories = [], parent = 0 ) => {
 	return currentCategories;
 };
 
+/**
+ * Get the names of the selected categories separated by commas
+ *
+ * @param {Array} selected Selected category IDs
+ * @param {Array} allCategories All the categories available
+ * @return {string} The selected category names separated by comma
+ */
 const getSelectedNames = ( selected, allCategories ) => {
 	return selected
 		.slice( 0, CATEGORIES_TO_SHOW_IN_TOOLTIP )
 		.map( ( category ) => {
 			return (
 				allCategories.find( ( e ) => e.id.toString() === category )
-					?.name ||
-				sprintf(
-					// translators: %d: number of categories.
-					'Category ID %s (deleted)',
-					[ category ],
-					'google-listings-and-ads'
-				)
+					?.name || getDeletedCategoryName( category )
 			);
 		} )
 		.filter( ( x ) => x !== undefined )

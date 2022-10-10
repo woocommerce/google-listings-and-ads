@@ -300,5 +300,5 @@ export const getMappingRules = createSelector(
 );
 
 export const getStoreCategories = ( state ) => {
-	return state.categories;
+	return state.store_categories;
 };

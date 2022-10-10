@@ -1080,11 +1080,11 @@ export function* deleteMappingRule( rule ) {
 /**
  * Action to receive the Store categories.
  *
- * @param {Array} categories List of categories
+ * @param {Array} storeCategories List of categories
  */
-export function* receiveStoreCategories( categories ) {
+export function* receiveStoreCategories( storeCategories ) {
 	return {
 		type: TYPES.RECEIVE_STORE_CATEGORIES,
-		categories,
+		storeCategories,
 	};
 }

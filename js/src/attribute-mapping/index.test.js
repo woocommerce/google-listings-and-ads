@@ -20,6 +20,24 @@ jest.mock( '.~/data/actions', () => ( {
 		} ),
 } ) );
 
+jest.mock( '.~/hooks/useAppSelectDispatch', () => ( {
+	__esModule: true,
+	default: jest
+		.fn()
+		.mockName( 'useAppSelectDispatch' )
+		.mockImplementation( () => {
+			return {
+				hasFinishedResolution: true,
+				data: [
+					{ id: 1, name: 'Category 1', parent: 0 },
+					{ id: 2, name: 'Category 2', parent: 0 },
+					{ id: 3, name: 'Category 3', parent: 0 },
+					{ id: 4, name: 'Category 3.1', parent: 3 },
+				],
+			};
+		} ),
+} ) );
+
 jest.mock( '.~/hooks/useMappingAttributes', () => ( {
 	__esModule: true,
 	default: jest
@@ -299,6 +317,21 @@ describe( 'Attribute Mapping', () => {
 			'Category 1, Category 2, Category 3, Category 1, Category 2'
 		);
 		await findByText( '+ 7 more' );
+	} );
+
+	test( 'Shows deleted categories', async () => {
+		const { queryByText, findByText } = render(
+			<AttributeMappingTableCategories
+				categories={ '1,6' }
+				condition="ONLY"
+			/>
+		);
+
+		expect( queryByText( 'Only in' ) ).toBeTruthy();
+		const categories = queryByText( '2 categories' );
+		expect( categories ).toBeTruthy();
+		userEvent.hover( categories );
+		await findByText( 'Category 1, Category ID 6 (deleted)' );
 	} );
 
 	test( 'Renders placeholder table when data is has not finished resolution', () => {
