@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
 
 /**
@@ -11,23 +11,6 @@ import AppSelectControl from '.~/components/app-select-control';
 import TreeSelectControl from '.~/components/tree-select-control';
 import useCategories from '.~/hooks/useCategories';
 import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
-
-const getTree = ( allCategories, parent = 0 ) => {
-	const currentCategories = [];
-	const categories = allCategories.filter( ( cat ) => cat.parent === parent );
-
-	for ( const category of categories ) {
-		const categoryWithChildren = {
-			value: category.id,
-			label: category.name,
-			children: getTree( allCategories, category.id ),
-		};
-
-		currentCategories.push( categoryWithChildren );
-	}
-
-	return currentCategories;
-};
 
 /**
  * Renders the selectors relative to the categories

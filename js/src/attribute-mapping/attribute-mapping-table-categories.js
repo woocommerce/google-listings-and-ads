@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { _n, sprintf, __, _x } from '@wordpress/i18n';
+import { _n, sprintf, __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
