@@ -77,11 +77,11 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 				'categories'              => '',
 			],
 			[
-				'id'              => 2,
-				'attribute'       => 'brand',
-				'source'          => 'taxonomy:product_brand',
-				'categories_type' => 'ONLY',
-				'categories'      => '1,2,3',
+				'id'                      => 2,
+				'attribute'               => 'brand',
+				'source'                  => 'taxonomy:product_brand',
+				'category_condition_type' => 'ONLY',
+				'categories'              => '1,2,3',
 			],
 		];
 
@@ -92,6 +92,75 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( $data, $response->get_data() );
+	}
+
+	public function test_get_rules_pagination() {
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 3 ) )
+			->method( 'get_results' )->willReturn( [] );
+
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 3 ) )
+			->method( 'get_count' )->willReturn( 2 );
+
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 3 ) )
+			->method( 'set_limit' )->withConsecutive( [ 1 ], [ 2 ], [ 10 ] );
+
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 3 ) )
+			->method( 'set_offset' )->withConsecutive( [ 1 ], [ 0 ], [ 10 ] );
+
+		$response = $this->do_request(
+			self::ROUTE_RULES,
+			'GET',
+			[
+				'page'     => 2,
+				'per_page' => 1,
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals(
+			[
+				'X-WP-Total'      => 2,
+				'X-WP-TotalPages' => 2,
+			],
+			$response->get_headers()
+		);
+
+		$response = $this->do_request(
+			self::ROUTE_RULES,
+			'GET',
+			[
+				'page'     => 1,
+				'per_page' => 2,
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals(
+			[
+				'X-WP-Total'      => 2,
+				'X-WP-TotalPages' => 1,
+			],
+			$response->get_headers()
+		);
+
+		$response = $this->do_request(
+			self::ROUTE_RULES,
+			'GET',
+			[
+				'page'     => 2,
+				'per_page' => 10,
+			]
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals(
+			[
+				'X-WP-Total'      => 2,
+				'X-WP-TotalPages' => 1,
+			],
+			$response->get_headers()
+		);
+
 	}
 
 	public function test_create_rule_route() {

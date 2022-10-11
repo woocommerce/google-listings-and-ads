@@ -1,3 +1,25 @@
+jest.mock( '.~/data/actions', () => ( {
+	__esModule: true,
+	createMappingRule: jest
+		.fn()
+		.mockName( 'createMappingRule' )
+		.mockImplementation( ( args ) => {
+			return { ...args };
+		} ),
+	updateMappingRule: jest
+		.fn()
+		.mockName( 'updateMappingRule' )
+		.mockImplementation( ( args ) => {
+			return { ...args };
+		} ),
+	deleteMappingRule: jest
+		.fn()
+		.mockName( 'deleteMappingRule' )
+		.mockImplementation( ( args ) => {
+			return { ...args };
+		} ),
+} ) );
+
 jest.mock( '.~/hooks/useMappingAttributes', () => ( {
 	__esModule: true,
 	default: jest
@@ -7,9 +29,9 @@ jest.mock( '.~/hooks/useMappingAttributes', () => ( {
 			return {
 				hasFinishedResolution: true,
 				data: [
-					{ id: 'adult', label: 'Adult', is_enum: true },
-					{ id: 'brands', label: 'Brands', is_enum: false },
-					{ id: 'color', label: 'Color', is_enum: false },
+					{ id: 'adult', label: 'Adult', enum: true },
+					{ id: 'brands', label: 'Brands', enum: false },
+					{ id: 'color', label: 'Color', enum: false },
 				],
 			};
 		} ),
@@ -23,7 +45,49 @@ jest.mock( '.~/hooks/useMappingAttributesSources', () => ( {
 		.mockImplementation( () => {
 			return {
 				hasFinishedResolution: true,
-				data: { yes: 'Yes', no: 'No' },
+				data: [
+					{ id: 'yes', label: 'Yes' },
+					{ id: 'no', label: 'No' },
+				],
+			};
+		} ),
+} ) );
+
+jest.mock( '.~/hooks/useMappingRules', () => ( {
+	__esModule: true,
+	default: jest
+		.fn()
+		.mockName( 'useMappingRules' )
+		.mockImplementation( () => {
+			return {
+				hasFinishedResolution: true,
+				data: {
+					rules: [
+						{
+							id: 1,
+							attribute: 'adult',
+							source: 'yes',
+							category_condition_type: 'ALL',
+							categories: null,
+						},
+						{
+							id: 2,
+							attribute: 'brands',
+							source: 'taxonomy:product_brands',
+							category_condition_type: 'EXCEPT',
+							categories: '1',
+						},
+						{
+							id: 3,
+							attribute: 'color',
+							source: 'attribute:color',
+							category_condition_type: 'ONLY',
+							categories:
+								'1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3',
+						},
+					],
+					total: 6,
+				},
 			};
 		} ),
 } ) );
@@ -42,30 +106,11 @@ import AttributeMapping from './index';
 import AttributeMappingTable from '.~/attribute-mapping/attribute-mapping-table';
 import AttributeMappingTableCategories from '.~/attribute-mapping/attribute-mapping-table-categories';
 import useMappingAttributes from '.~/hooks/useMappingAttributes';
-
-const DUMMY_TABLE_DATA = [
-	{
-		destination: 'adult',
-		source: 'yes',
-		source_name: 'Yes',
-		category_conditional_type: 'ALL',
-	},
-	{
-		destination: 'brands',
-		source: 'taxonomy:product_brands',
-		source_name: 'Taxonomy - Product Brands',
-		category_conditional_type: 'EXCEPT',
-		categories: '1',
-	},
-	{
-		destination: 'color',
-		source: 'attribute:color',
-		source_name: 'Attribute - Color',
-		category_conditional_type: 'ONLY',
-		categories:
-			'1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3',
-	},
-];
+import {
+	createMappingRule,
+	deleteMappingRule,
+	updateMappingRule,
+} from '.~/data/actions';
 
 describe( 'Attribute Mapping', () => {
 	test( 'Renders table', () => {
@@ -77,9 +122,7 @@ describe( 'Attribute Mapping', () => {
 	} );
 
 	test( 'Renders table data', () => {
-		const { queryByText } = render(
-			<AttributeMappingTable rules={ DUMMY_TABLE_DATA } />
-		);
+		const { queryByText } = render( <AttributeMappingTable /> );
 
 		expect( queryByText( 'Adult' ) ).toBeTruthy();
 		expect( queryByText( 'Brands' ) ).toBeTruthy();
@@ -92,9 +135,7 @@ describe( 'Attribute Mapping', () => {
 	} );
 
 	test( 'Add new Attribute mapping - Enum', async () => {
-		const { queryByText, findByRole, findByText } = render(
-			<AttributeMapping />
-		);
+		const { queryByText, findByRole } = render( <AttributeMapping /> );
 
 		// Modal is open when clicking th button
 		const button = queryByText( 'Create attribute rule' );
@@ -105,18 +146,29 @@ describe( 'Attribute Mapping', () => {
 		const select = await findByRole( 'combobox', {
 			name: 'Select a Google attribute that you want to manage',
 		} );
-		userEvent.selectOptions( select, 'adult' );
-		await findByText( 'Select one option' );
 
-		// Show type selector when no enum is selected
-		userEvent.selectOptions( select, 'brands' );
-		await findByText(
-			'Choose how to assign a value to the target attribute'
-		);
+		const buttonSave = queryByText( 'Save rule' );
+		expect( buttonSave ).toBeTruthy();
+		expect( buttonSave ).toBeDisabled();
+
+		userEvent.selectOptions( select, 'adult' );
+		const enumSelect = await findByRole( 'combobox', {
+			name: 'Select default value',
+		} );
+		userEvent.selectOptions( enumSelect, 'no' );
+
+		expect( buttonSave ).toBeEnabled();
+		fireEvent.click( buttonSave );
+
+		expect( createMappingRule ).toHaveBeenCalledWith( {
+			attribute: 'adult',
+			source: 'no',
+			category_condition_type: 'ALL',
+			categories: '',
+		} );
 	} );
 
 	test( 'Add new Attribute mapping - Field / Fixed value', async () => {
-		jest.setTimeout( 10000 );
 		const { queryByText, findByRole } = render( <AttributeMapping /> );
 
 		// Modal is open when clicking th button
@@ -143,6 +195,54 @@ describe( 'Attribute Mapping', () => {
 		userEvent.click( setFieldRadio );
 		await findByRole( 'combobox', {
 			name: 'Use value from existing product field.',
+		} );
+	} );
+
+	test( 'Update Attribute mapping Rule', async () => {
+		const { queryAllByText, queryByText, findByRole } = render(
+			<AttributeMapping />
+		);
+
+		const button = queryAllByText( 'Manage' )[ 0 ];
+		expect( button ).toBeTruthy();
+		fireEvent.click( button );
+
+		const enumSelect = await findByRole( 'combobox', {
+			name: 'Select default value',
+		} );
+
+		const buttonSave = queryByText( 'Save rule' );
+		expect( buttonSave ).toBeDisabled();
+		userEvent.selectOptions( enumSelect, 'no' );
+		expect( buttonSave ).toBeEnabled();
+		fireEvent.click( buttonSave );
+
+		expect( updateMappingRule ).toHaveBeenCalledWith( {
+			id: 1,
+			attribute: 'adult',
+			source: 'no',
+			categories: '',
+			category_condition_type: 'ALL',
+		} );
+	} );
+
+	test( 'Delete Attribute mapping Rule', async () => {
+		const { queryAllByText, queryByText } = render( <AttributeMapping /> );
+
+		const button = queryAllByText( 'Delete' )[ 0 ];
+		expect( button ).toBeTruthy();
+		fireEvent.click( button );
+
+		const buttonDelete = queryByText( 'Delete attribute rule' );
+		expect( buttonDelete ).toBeTruthy();
+		fireEvent.click( buttonDelete );
+
+		expect( deleteMappingRule ).toHaveBeenCalledWith( {
+			id: 1,
+			attribute: 'adult',
+			source: 'yes',
+			category_condition_type: 'ALL',
+			categories: null,
 		} );
 	} );
 
@@ -179,7 +279,7 @@ describe( 'Attribute Mapping', () => {
 		expect( queryByText( 'All except' ) ).toBeTruthy();
 		const category = queryByText( '1 category' );
 		expect( category ).toBeTruthy();
-		fireEvent.mouseOver( category );
+		userEvent.hover( category );
 		await findByText( 'Category 1' );
 	} );
 
@@ -194,7 +294,7 @@ describe( 'Attribute Mapping', () => {
 		expect( queryByText( 'Only in' ) ).toBeTruthy();
 		const categories = queryByText( '12 categories' );
 		expect( categories ).toBeTruthy();
-		fireEvent.mouseOver( categories );
+		userEvent.hover( categories );
 		await findByText(
 			'Category 1, Category 2, Category 3, Category 1, Category 2'
 		);
