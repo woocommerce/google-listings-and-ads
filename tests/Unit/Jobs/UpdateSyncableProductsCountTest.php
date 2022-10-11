@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use PHPUnit\Framework\MockObject\MockObject;
+use WC_Helper_Product;
 
 /**
  * Class UpdateSyncableProductsCountTest
@@ -264,6 +265,85 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 
 		do_action( self::CREATE_BATCH_HOOK, 1 );
 		do_action( self::CREATE_BATCH_HOOK, 2 );
+		do_action( self::CREATE_BATCH_HOOK, 3 );
+	}
+
+	public function test_update_syncable_products_count_product_gets_deleted_after_batches_get_created() {
+		// This is a product in the first batch that will be deteled after the first batch gets created.
+		$product_to_be_deleted = WC_Helper_Product::create_simple_product( true, [ 'status' => 'publish' ] );
+
+		// syncable products count: 2, total products count: 2
+		$batch_a = new filteredproductlist(
+			[
+				$product_to_be_deleted,
+				$this->generate_simple_product_mock( 23456 ),
+			],
+			2
+		);
+
+		// Syncable products count: 2, total products count: 2
+		$batch_b = new filteredproductlist(
+			[
+				$this->generate_simple_product_mock( 34567 ),
+				$this->generate_simple_product_mock( 45678 ),
+			],
+			2
+		);
+
+		// Syncable products count: 0, total products count: 0
+		$batch_c = new FilteredProductList( [], 0 );
+
+		$this->action_scheduler->expects( $this->exactly( 5 ) )
+			->method( 'schedule_immediate' )
+			->withConsecutive(
+				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids() ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2 ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids() ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3 ] ],
+			);
+
+		$this->product_repository->expects( $this->exactly( 3 ) )
+			->method( 'find_sync_ready_products' )
+			->withConsecutive( [ [], self::BATCH_SIZE, 0 ], [ [], self::BATCH_SIZE, 2 ], [ [], self::BATCH_SIZE, 4 ] )
+			->willReturnOnConsecutiveCalls( $batch_a, $batch_b, $batch_c );
+
+		$this->product_helper->expects( $this->exactly( 2 ) )
+			->method( 'maybe_swap_for_parent_ids' )
+			->withConsecutive( [ $batch_a->get_product_ids(), true ], [ $batch_b->get_product_ids(), true ] )
+			->willReturnOnConsecutiveCalls(
+				// The first product gets deleted after the first batch gets created,
+				// so only return the second product of batch a after calling maybe_swap_for_parent_ids.
+				[ $batch_a->get_product_ids()[1] ],
+				$batch_b->get_product_ids()
+			);
+
+		$this->options->expects( $this->exactly( 3 ) )
+			->method( 'get' )
+			->with( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA )
+			->willReturnOnConsecutiveCalls(
+				null,
+				[ 23456 ],
+				[ 23456, 34567, 45678 ]
+			);
+
+		$this->options->expects( $this->exactly( 3 ) )
+			->method( 'update' )
+			->withConsecutive(
+				[ OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA, [ 23456 ] ],
+				[ OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA, [ 23456, 34567, 45678 ] ],
+				[ OptionsInterface::SYNCABLE_PRODUCTS_COUNT, 3 ]
+			);
+
+		$this->job->schedule();
+
+		do_action( self::CREATE_BATCH_HOOK, 1 );
+		wp_trash_post( $product_to_be_deleted->get_id() );
+		$product_to_be_deleted->set_status( 'trash' );
+		$product_to_be_deleted->save();
+		do_action( self::PROCESS_ITEM_HOOK, $batch_a->get_product_ids() );
+		do_action( self::CREATE_BATCH_HOOK, 2 );
+		do_action( self::PROCESS_ITEM_HOOK, $batch_b->get_product_ids() );
 		do_action( self::CREATE_BATCH_HOOK, 3 );
 	}
 }
