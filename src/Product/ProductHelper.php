@@ -468,18 +468,35 @@ class ProductHelper implements Service {
 	/**
 	 * If an item from the provided list of products has a parent, replace it with the parent ID.
 	 *
-	 * @param int[] $product_ids A list of WooCommerce product ID.
+	 * @param int[] $product_ids                        A list of WooCommerce product ID.
+	 * @param bool  $check_product_status    (Optional) Check if the product status is publish.
+	 * @param bool  $ignore_product_on_error (Optional) Ignore the product when invalid value error occurs.
 	 *
 	 * @return int[] A list of parent ID or product ID if it doesn't have a parent.
 	 *
-	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
-	 *                      valid parent ID (i.e. it's an orphan).
+	 * @throws InvalidValue If the given param ignore_product_on_error is false and any of a given ID doesn't reference a valid product.
+	 *                      Or if a variation product does not have a valid parent ID (i.e. it's an orphan).
+	 *
+	 * @since x.x.x
 	 */
-	public function maybe_swap_for_parent_ids( array $product_ids ) {
+	public function maybe_swap_for_parent_ids( array $product_ids, bool $check_product_status = true, bool $ignore_product_on_error = true ) {
+		$new_product_ids = [];
+
 		foreach ( $product_ids as $index => $product_id ) {
-			$product_ids[ $index ] = $this->maybe_swap_for_parent_id( $product_id );
+			try {
+				$product     = $this->get_wc_product( $product_id );
+				$new_product = $this->maybe_swap_for_parent( $product );
+				if ( ! $check_product_status || 'publish' === $new_product->get_status() ) {
+					$new_product_ids[ $index ] = $new_product->get_id();
+				}
+			} catch ( InvalidValue $exception ) {
+				if ( ! $ignore_product_on_error ) {
+					throw $exception;
+				}
+			}
 		}
-		return array_unique( $product_ids );
+
+		return array_unique( $new_product_ids );
 	}
 
 	/**
