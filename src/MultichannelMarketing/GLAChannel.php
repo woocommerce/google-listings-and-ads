@@ -5,12 +5,14 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing;
 
 use Automattic\WooCommerce\Admin\Marketing\MarketingCampaign;
 use Automattic\WooCommerce\Admin\Marketing\MarketingChannelInterface;
+use Automattic\WooCommerce\Admin\Marketing\Price;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -49,6 +51,11 @@ class GLAChannel implements MarketingChannelInterface {
 	protected $product_sync_stats;
 
 	/**
+	 * @var WC
+	 */
+	protected $wc;
+
+	/**
 	 * GLAChannel constructor.
 	 *
 	 * @param MerchantCenterService $merchant_center
@@ -56,13 +63,15 @@ class GLAChannel implements MarketingChannelInterface {
 	 * @param Ads                   $ads
 	 * @param MerchantStatuses      $merchant_statuses
 	 * @param ProductSyncStats      $product_sync_stats
+	 * @param WC                    $wc
 	 */
-	public function __construct( MerchantCenterService $merchant_center, AdsCampaign $ads_campaign, Ads $ads, MerchantStatuses $merchant_statuses, ProductSyncStats $product_sync_stats ) {
+	public function __construct( MerchantCenterService $merchant_center, AdsCampaign $ads_campaign, Ads $ads, MerchantStatuses $merchant_statuses, ProductSyncStats $product_sync_stats, WC $wc ) {
 		$this->merchant_center    = $merchant_center;
 		$this->ads_campaign       = $ads_campaign;
 		$this->ads                = $ads;
 		$this->merchant_statuses  = $merchant_statuses;
 		$this->product_sync_stats = $product_sync_stats;
+		$this->wc                 = $wc;
 	}
 
 	/**
@@ -160,13 +169,20 @@ class GLAChannel implements MarketingChannelInterface {
 		}
 
 		try {
+			$currency = $this->wc->get_woocommerce_currency();
+
 			return array_map(
-				function ( array $campaign_data ) {
+				function ( array $campaign_data ) use ( $currency ) {
+					$cost = null;
+					if ( isset( $campaign_data['amount'] ) ) {
+						$cost = new Price( (string) $campaign_data['amount'], $currency );
+					}
+
 					return new MarketingCampaign(
 						(string) $campaign_data['id'],
 						$campaign_data['name'],
 						admin_url( 'admin.php?page=wc-admin&path=/google/settings&subpath=/campaigns/edit' ),
-						(string) $campaign_data['amount'] ?? null,
+						$cost,
 					);
 				},
 				$this->ads_campaign->get_campaigns()
