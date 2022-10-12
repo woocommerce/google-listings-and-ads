@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_Error;
 use WP_REST_Request as Request;
@@ -265,7 +265,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 		foreach ( $categories_array as $category ) {
 			if ( ! is_numeric( $category ) ) {
 				return new WP_Error(
-					'gla_attribute_mapping_invalid_categories_schema',
+					'woocommerce_gla_attribute_mapping_invalid_categories_schema',
 					'categories should be a string of category IDs separated by commas.',
 					[
 						'categories' => $categories,
