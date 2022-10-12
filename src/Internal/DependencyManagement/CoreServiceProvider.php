@@ -397,7 +397,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ShippingSuggestionService::class, ShippingZone::class, WC::class );
 		$this->share_with_tags( RequestReviewStatuses::class );
 
-		$this->share_with_tags( GLAChannel::class, MerchantCenterService::class, AdsCampaign::class, Ads::class, MerchantStatuses::class, ProductSyncStats::class, WC::class );
-		$this->share_with_tags( MarketingChannelRegistrar::class, GLAChannel::class );
+		if ( defined( 'WC_MCM_EXISTS' ) ) {
+			$this->share_with_tags( GLAChannel::class, MerchantCenterService::class, AdsCampaign::class, Ads::class, MerchantStatuses::class, ProductSyncStats::class, WC::class );
+			$this->share_with_tags( MarketingChannelRegistrar::class, GLAChannel::class );
+		}
 	}
 }
