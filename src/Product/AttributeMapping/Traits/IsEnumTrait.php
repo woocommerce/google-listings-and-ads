@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-	namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\Traits;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\Traits;
 
 defined( 'ABSPATH' ) || exit;
 
