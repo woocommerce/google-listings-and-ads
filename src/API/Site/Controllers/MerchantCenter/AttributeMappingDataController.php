@@ -71,6 +71,7 @@ class AttributeMappingDataController extends BaseOptionsController {
 							'description'       => __( 'The attribute key to get the sources.', 'google-listings-and-ads' ),
 							'type'              => 'string',
 							'validate_callback' => 'rest_validate_request_arg',
+							'required'			=> true
 						],
 					],
 				],
@@ -103,14 +104,9 @@ class AttributeMappingDataController extends BaseOptionsController {
 		return function( Request $request ) {
 			try {
 				$attribute = $request->get_param( 'attribute' );
-
-				if ( ! $attribute ) {
-					return [
-						'data' => [],
-					];
-				}
-
-				return $this->get_sources_for_attribute( $attribute );
+				return [
+					'data' => $this->attribute_mapping_helper->get_sources_for_attribute( $attribute )
+				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -153,19 +149,6 @@ class AttributeMappingDataController extends BaseOptionsController {
 	private function get_attributes(): array {
 		return [
 			'data' => $this->attribute_mapping_helper->get_attributes(),
-		];
-	}
-
-	/**
-	 * Sources getter
-	 *
-	 * @param string $attribute The attribute to get the sources for
-	 * @return array[] Array with sources
-	 */
-	private function get_sources_for_attribute( string $attribute ): array {
-		$sources = $this->attribute_mapping_helper->get_sources();
-		return [
-			'data' => $sources[ $attribute ] ?? [],
 		];
 	}
 }

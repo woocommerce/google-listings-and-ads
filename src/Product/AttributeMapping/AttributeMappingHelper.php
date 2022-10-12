@@ -80,34 +80,55 @@ class AttributeMappingHelper implements Service {
 	}
 
 	/**
-	 * Gets all the available sources identified by attribute key
+	 * Get the attribute class based on attribute ID.
 	 *
-	 * @return array
+	 * @param string $attribute_id  The attribute ID to get the class
+	 * @return string|null The attribute class path or null if it's not found
 	 */
-	public function get_sources(): array {
-		$sources = [];
+	private function get_attribute_by_id( string $attribute_id ): ?string {
+
+		// Find the attribute class by id using a filter since PHP doesn't support user defined functions for comparison.
+		// array_values is there because array_filter preserves keys index
+		$attribute = array_values( array_filter( self::ATTRIBUTES_AVAILABLE_FOR_MAPPING, function ( $class ) use ( $attribute_id ) {
+			/**
+			 * @var AttributeInterface $class
+			 */
+			return $class::get_id() === $attribute_id;
+		}));
+
+		return ! empty( $attribute ) ? $attribute[0] : null;
+	}
+
+	/**
+	 * Get the sources for an attribute
+	 *
+	 * @param string $attribute_id The attribute ID to get the sources from.
+	 * @return array The sources for the attribute
+	 */
+	public function get_sources_for_attribute( string $attribute_id ): array {
 
 		/**
 		 * @var AttributeInterface $attribute
 		 */
-		foreach ( self::ATTRIBUTES_AVAILABLE_FOR_MAPPING as $attribute ) {
+		$attribute = self::get_attribute_by_id( $attribute_id );
+		$attribute_sources = [];
 
-			$attribute_sources = [];
-
-			foreach ( $attribute::get_sources() as $key => $value ) {
-				array_push(
-					$attribute_sources,
-					[
-						'id'    => $key,
-						'label' => $value,
-					]
-				);
-			}
-
-			$sources[ $attribute::get_id() ] = $attribute_sources;
+		if ( is_null( $attribute ) ) {
+			return $attribute_sources;
 		}
 
-		return $sources;
+		foreach ( $attribute::get_sources() as $key => $value ) {
+			array_push(
+				$attribute_sources,
+				[
+					'id'    => $key,
+					'label' => $value,
+				]
+			);
+		}
+
+		return $attribute_sources;
+
 	}
 
 	/**
