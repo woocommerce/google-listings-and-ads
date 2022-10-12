@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
-class AgeGroup extends AbstractAttribute implements WithValueOptionsInterface {
+class AgeGroup extends AbstractAttribute implements WithValueOptionsInterface, WithMappingInterface {
 
 	use IsEnumTrait;
 
