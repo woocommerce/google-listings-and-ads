@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Condition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeType;
@@ -89,6 +90,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$this->wc_product        = $array['wc_product'];
 		$this->parent_wc_product = $array['parent_wc_product'] ?? null;
 
+		$this->attribute_mapping( $array['mapping_rules'] ?? []);
 		$this->map_gla_attributes( $array['gla_attributes'] ?? [] );
 
 		// Google doesn't expect extra fields, so it's best to remove them
@@ -902,5 +904,61 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		// product shipping information is also country based
 		$this->map_wc_product_shipping();
+	}
+
+	protected function attribute_mapping( array $mapping_rules ) {
+
+		$attributes = [];
+
+		foreach ($mapping_rules as $mapping_rule) {
+			if ( $this->rule_match_conditions( $mapping_rule ) ) {
+				$attributes[ $mapping_rule['attribute'] ] = $this->get_source( $mapping_rule['source'] );
+			}
+		}
+	}
+
+	protected function get_source( string $source ): string {
+		$source_type = null;
+
+		if ( strpos( $source, ':') ) {
+			$source_parts = explode(':', $source);
+			$source_type = $source_parts[0];
+			$source_value = $source_parts[1];
+		}
+
+
+		switch ($source_type) {
+			case 'product':
+				return AttributeMappingHelper::get_product_field( $source_value, $this->wc_product );
+			case 'taxonomy':
+				return AttributeMappingHelper::get_product_taxonomy( $source_value, $this->wc_product );
+			case 'attribute':
+				return AttributeMappingHelper::get_product_attribute($source_value, $this->wc_product);
+			default:
+				return $source;
+		}
+
+	}
+
+	protected function rule_match_conditions( array $rule ): bool {
+		$attribute = $rule['attribute'];
+		$category_condition_type = $rule['category_condition_type'];
+		$categories = explode( ',', $rule['categories']);
+		$wc_product = $this->get_wc_product();
+		$wc_product_categories = wp_list_pluck( get_the_terms( $wc_product->get_id() , 'product_cat'), 'term_id' );
+		$contains_rules_categories = ! empty(array_intersect($categories, $wc_product_categories));
+
+		if ( ! property_exists( $this, $attribute ) ) {
+			return false;
+		}
+
+		switch ($category_condition_type) {
+			case AttributeMappingHelper::CATEGORY_CONDITION_TYPE_ONLY:
+				return $contains_rules_categories;
+			case AttributeMappingHelper::CATEGORY_CONDITION_TYPE_EXCEPT:
+				return !$contains_rules_categories;
+			default:
+				return true;
+		}
 	}
 }

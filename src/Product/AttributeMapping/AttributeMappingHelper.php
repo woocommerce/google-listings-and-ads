@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Size;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\WithMappingInterface;
+use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -166,12 +167,12 @@ class AttributeMappingHelper implements Service {
 	public static function get_source_product_fields() {
 		$fields = [
 			'product:backorders'       => __( 'Allow backorders setting', 'google-listings-and-ads' ),
-			'product:product_title'    => __( 'Product title', 'google-listings-and-ads' ),
+			'product:title'            => __( 'Product title', 'google-listings-and-ads' ),
 			'product:sku'              => __( 'SKU', 'google-listings-and-ads' ),
-			'product:stock_qty'        => __( 'Stock Qty', 'google-listings-and-ads' ),
+			'product:stock_quantity'   => __( 'Stock Qty', 'google-listings-and-ads' ),
 			'product:stock_status'     => __( 'Stock Status', 'google-listings-and-ads' ),
 			'product:tax_class'        => __( 'Tax class', 'google-listings-and-ads' ),
-			'product:variation_title'  => __( 'Variation title', 'google-listings-and-ads' ),
+			'product:variation_title'  => __( 'Variation title (Product title for non variable Products)', 'google-listings-and-ads' ),
 			'product:weight'           => __( 'Weight (raw value, no units)', 'google-listings-and-ads' ),
 			'product:weight_with_unit' => __( 'Weight (with units)', 'google-listings-and-ads' ),
 		];
@@ -222,6 +223,34 @@ class AttributeMappingHelper implements Service {
 			self::CATEGORY_CONDITION_TYPE_EXCEPT,
 			self::CATEGORY_CONDITION_TYPE_ONLY,
 		];
+	}
+
+	public static function get_product_taxonomy( $taxonomy, WC_Product $product ): string {
+		$values = get_the_terms( $product->get_id() , $taxonomy);
+		return implode('|', wp_list_pluck( $values, 'name' ) );
+	}
+
+	public static function get_product_attribute( $attribute, WC_Product $product ): string {
+		return $product->get_attribute( $attribute );
+	}
+
+	public static function get_product_field( $field, WC_Product $product): ?string {
+		if ( 'variation_title' === $field ) {
+			$product->get_title();
+		}
+
+		if ( 'weight_with_unit' === $field ) {
+			$weight = $product->get_weight();
+			return $weight . ' ' . get_option( 'woocommerce_weight_unit' );
+		}
+
+		if ( is_callable( [ $product, 'get_' . $field ] ) ) {
+			$getter = 'get_' . $field;
+
+			return $product->$getter();
+		}
+
+		return null;
 	}
 
 }
