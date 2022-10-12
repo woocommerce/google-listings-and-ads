@@ -86,7 +86,7 @@ class AttributeMappingHelper implements Service {
 	 * @param string $attribute_id  The attribute ID to get the class
 	 * @return string|null The attribute class path or null if it's not found
 	 */
-	private function get_attribute_by_id( string $attribute_id ): ?string {
+	public static function get_attribute_by_id( string $attribute_id ): ?string {
 		// Find the attribute class by id using a filter since PHP doesn't support user defined functions for comparison.
 		// array_values is there because array_filter preserves keys index
 		$attribute = array_values(
@@ -146,34 +146,6 @@ class AttributeMappingHelper implements Service {
 			self::CATEGORY_CONDITION_TYPE_EXCEPT,
 			self::CATEGORY_CONDITION_TYPE_ONLY,
 		];
-	}
-
-	public static function get_product_taxonomy( $taxonomy, WC_Product $product ): string {
-		$values = get_the_terms( $product->get_id() , $taxonomy);
-		return implode('|', wp_list_pluck( $values, 'name' ) );
-	}
-
-	public static function get_product_attribute( $attribute, WC_Product $product ): string {
-		return $product->get_attribute( $attribute );
-	}
-
-	public static function get_product_field( $field, WC_Product $product): ?string {
-		if ( 'variation_title' === $field ) {
-			$product->get_title();
-		}
-
-		if ( 'weight_with_unit' === $field ) {
-			$weight = $product->get_weight();
-			return $weight . ' ' . get_option( 'woocommerce_weight_unit' );
-		}
-
-		if ( is_callable( [ $product, 'get_' . $field ] ) ) {
-			$getter = 'get_' . $field;
-
-			return $product->$getter();
-		}
-
-		return null;
 	}
 
 }

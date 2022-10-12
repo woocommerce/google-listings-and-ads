@@ -11,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntr
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Google\Service\ShoppingContent\Product as GoogleProduct;
@@ -65,11 +64,12 @@ class BatchProductHelper implements Service {
 	/**
 	 * BatchProductHelper constructor.
 	 *
-	 * @param ProductMetaHandler $meta_handler
-	 * @param ProductHelper      $product_helper
-	 * @param ValidatorInterface $validator
-	 * @param ProductFactory     $product_factory
-	 * @param TargetAudience     $target_audience
+	 * @param ProductMetaHandler         $meta_handler
+	 * @param ProductHelper              $product_helper
+	 * @param ValidatorInterface         $validator
+	 * @param ProductFactory             $product_factory
+	 * @param TargetAudience             $target_audience
+	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
@@ -79,11 +79,11 @@ class BatchProductHelper implements Service {
 		TargetAudience $target_audience,
 		AttributeMappingRulesQuery $attribute_mapping_rules_query
 	) {
-		$this->meta_handler    = $meta_handler;
-		$this->product_helper  = $product_helper;
-		$this->validator       = $validator;
-		$this->product_factory = $product_factory;
-		$this->target_audience = $target_audience;
+		$this->meta_handler                  = $meta_handler;
+		$this->product_helper                = $product_helper;
+		$this->validator                     = $validator;
+		$this->product_factory               = $product_factory;
+		$this->target_audience               = $target_audience;
 		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
 	}
 

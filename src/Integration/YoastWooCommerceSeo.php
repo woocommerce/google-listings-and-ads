@@ -96,7 +96,7 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	 * @return mixed
 	 */
 	protected function get_mpn( $value, WC_Product $product ) {
-		if ( self::VALUE_KEY === $value ) {
+		if ( str_contains( $value, self::VALUE_KEY ) ) {
 			$value = $this->get_identifier_value( 'mpn', $product );
 		}
 
@@ -110,7 +110,7 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	 * @return mixed
 	 */
 	protected function get_gtin( $value, WC_Product $product ) {
-		if ( self::VALUE_KEY === $value ) {
+		if ( str_contains( $value, self::VALUE_KEY ) ) {
 			$gtin_values = [
 				$this->get_identifier_value( 'isbn', $product ),
 				$this->get_identifier_value( 'gtin8', $product ),
@@ -179,7 +179,7 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	 * @return array The GTIN sources
 	 */
 	protected function get_yoast_seo_attribute_mapping_gtin_sources(): array {
-		return array_merge( self::get_yoast_seo_attribute_mapping_group_source(), [ 'yoast:gtin' => __( 'GTIN Field', 'google-listings-and-ads' ) ] );
+		return array_merge( self::get_yoast_seo_attribute_mapping_group_source(), [ self::VALUE_KEY . ':gtin' => __( 'GTIN Field', 'google-listings-and-ads' ) ] );
 	}
 
 	/**
@@ -188,6 +188,6 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	 * @return array The MPN sources
 	 */
 	protected function get_yoast_seo_attribute_mapping_mpn_sources(): array {
-		return array_merge( self::get_yoast_seo_attribute_mapping_group_source(), [ 'yoast:mpn' => __( 'MPN Field', 'google-listings-and-ads' ) ] );
+		return array_merge( self::get_yoast_seo_attribute_mapping_group_source(), [ self::VALUE_KEY . ':mpn' => __( 'MPN Field', 'google-listings-and-ads' ) ] );
 	}
 }

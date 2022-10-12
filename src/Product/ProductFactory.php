@@ -72,7 +72,7 @@ class ProductFactory {
 				'parent_wc_product' => $parent_product,
 				'targetCountry'     => $target_country,
 				'gla_attributes'    => $attributes,
-				'mapping_rules'		=> $mapping_rules
+				'mapping_rules'     => $mapping_rules,
 			]
 		);
 	}
