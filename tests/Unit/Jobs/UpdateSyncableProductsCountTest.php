@@ -269,7 +269,7 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 	}
 
 	public function test_update_syncable_products_count_product_gets_deleted_after_batches_get_created() {
-		// This is a product in the first batch that will be deteled after the first batch gets created.
+		// This is a product in the first batch that will be deleted after the first batch gets created.
 		$product_to_be_deleted = WC_Helper_Product::create_simple_product( true, [ 'status' => 'publish' ] );
 
 		// syncable products count: 2, total products count: 2
