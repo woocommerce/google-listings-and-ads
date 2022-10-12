@@ -81,135 +81,58 @@ class AttributeMappingHelper implements Service {
 	}
 
 	/**
-	 * Gets all the available sources identified by attribute key
+	 * Get the attribute class based on attribute ID.
 	 *
-	 * @return array
+	 * @param string $attribute_id  The attribute ID to get the class
+	 * @return string|null The attribute class path or null if it's not found
 	 */
-	public function get_sources(): array {
-		$sources = [];
+	private function get_attribute_by_id( string $attribute_id ): ?string {
+		// Find the attribute class by id using a filter since PHP doesn't support user defined functions for comparison.
+		// array_values is there because array_filter preserves keys index
+		$attribute = array_values(
+			array_filter(
+				self::ATTRIBUTES_AVAILABLE_FOR_MAPPING,
+				function ( $class ) use ( $attribute_id ) {
+					/**
+					 * @var AttributeInterface $class
+					 */
+					return $class::get_id() === $attribute_id;
+				}
+			)
+		);
 
+		return ! empty( $attribute ) ? $attribute[0] : null;
+	}
+
+	/**
+	 * Get the sources for an attribute
+	 *
+	 * @param string $attribute_id The attribute ID to get the sources from.
+	 * @return array The sources for the attribute
+	 */
+	public function get_sources_for_attribute( string $attribute_id ): array {
 		/**
 		 * @var AttributeInterface $attribute
 		 */
-		foreach ( self::ATTRIBUTES_AVAILABLE_FOR_MAPPING as $attribute ) {
+		$attribute         = self::get_attribute_by_id( $attribute_id );
+		$attribute_sources = [];
 
-			$attribute_sources = [];
-
-			foreach ( $attribute::get_sources() as $key => $value ) {
-				array_push(
-					$attribute_sources,
-					[
-						'id'    => $key,
-						'label' => $value,
-					]
-				);
-			}
-
-			$sources[ $attribute::get_id() ] = $attribute_sources;
+		if ( is_null( $attribute ) ) {
+			return $attribute_sources;
 		}
 
-		return $sources;
-	}
-
-	/**
-	 * Gets the taxonomies and global attributes to render them as options in the frontend.
-	 *
-	 * @return array An array with the taxonomies and global attributes
-	 */
-	public static function get_source_taxonomies(): array {
-		$object_taxonomies = get_object_taxonomies( 'product', 'objects' );
-		$taxonomies        = [];
-		$attributes        = [];
-		$sources           = [];
-
-		foreach ( $object_taxonomies as $taxonomy ) {
-			if ( taxonomy_is_product_attribute( $taxonomy->name ) ) {
-				$attributes[ 'taxonomy:' . $taxonomy->name ] = $taxonomy->label;
-				continue;
-			}
-
-			$taxonomies[ 'taxonomy:' . $taxonomy->name ] = $taxonomy->label;
-		}
-
-		asort( $taxonomies );
-		asort( $attributes );
-
-		$attributes = apply_filters( 'woocommerce_gla_attribute_mapping_sources_global_attributes', $attributes );
-		$taxonomies = apply_filters( 'woocommerce_gla_attribute_mapping_sources_taxonomies', $taxonomies );
-
-		if ( ! empty( $attributes ) ) {
-			$sources = array_merge(
+		foreach ( $attribute::get_sources() as $key => $value ) {
+			array_push(
+				$attribute_sources,
 				[
-					'disabled:attributes' => __( '- Global attributes -', 'google-listings-and-ads' ),
-				],
-				$attributes
+					'id'    => $key,
+					'label' => $value,
+				]
 			);
 		}
 
-		if ( ! empty( $taxonomies ) ) {
-			$sources = array_merge(
-				$sources,
-				[
-					'disabled:taxonomies' => __( '- Taxonomies -', 'google-listings-and-ads' ),
-				],
-				$taxonomies
-			);
-		}
+		return $attribute_sources;
 
-		return $sources;
-	}
-
-	/**
-	 * Get a list of the available product sources.
-	 *
-	 * @return array An array with the available product sources.
-	 */
-	public static function get_source_product_fields() {
-		$fields = [
-			'product:backorders'       => __( 'Allow backorders setting', 'google-listings-and-ads' ),
-			'product:title'            => __( 'Product title', 'google-listings-and-ads' ),
-			'product:sku'              => __( 'SKU', 'google-listings-and-ads' ),
-			'product:stock_quantity'   => __( 'Stock Qty', 'google-listings-and-ads' ),
-			'product:stock_status'     => __( 'Stock Status', 'google-listings-and-ads' ),
-			'product:tax_class'        => __( 'Tax class', 'google-listings-and-ads' ),
-			'product:variation_title'  => __( 'Variation title (Product title for non variable Products)', 'google-listings-and-ads' ),
-			'product:weight'           => __( 'Weight (raw value, no units)', 'google-listings-and-ads' ),
-			'product:weight_with_unit' => __( 'Weight (with units)', 'google-listings-and-ads' ),
-		];
-		asort( $fields );
-
-		$fields = array_merge(
-			[
-				'disabled:product' => __( '- Product fields -', 'google-listings-and-ads' ),
-			],
-			$fields
-		);
-
-		return apply_filters( 'woocommerce_gla_attribute_mapping_sources_product_fields', $fields );
-	}
-
-	/**
-	 * Allowing to register custom attributes by using a filter.
-	 *
-	 * @return array The custom attributes
-	 */
-	public static function get_source_custom_attributes() {
-		$attributes     = [];
-		$attribute_keys = apply_filters( 'woocommerce_gla_attribute_mapping_sources_custom_attributes', [] );
-		foreach ( $attribute_keys as $key ) {
-			$attributes[ 'attribute:' . $key ] = $key;
-		}
-
-		if ( ! empty( $attributes ) ) {
-			$attributes = array_merge(
-				[
-					'disabled:attribute' => __( '- Custom Attributes -', 'google-listings-and-ads' ),
-				],
-				$attributes
-			);
-		}
-
-		return $attributes;
 	}
 
 	/**

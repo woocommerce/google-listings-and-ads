@@ -49,14 +49,19 @@ class AttributeMappingDataControllerTest extends RESTControllerUnitTest {
 
 	public function test_sources_route() {
 		$this->attribute_mapping_helper->expects( $this->once() )
-			->method( 'get_sources' )
+			->method( 'get_sources_for_attribute' )
+			->with( 'adult' )
 			->willReturn(
 				[
-					'adult' => [
-						'yes' => 'Yes',
-						'no'  => 'No',
+					[
+						'id'    => 'yes',
+						'label' => 'Yes',
 					],
-				],
+					[
+						'id'    => 'no',
+						'label' => 'No',
+					],
+				]
 			);
 
 		$response = $this->do_request( self::ROUTE_REQUEST_SOURCES, 'GET', [ 'attribute' => 'adult' ] );
@@ -65,8 +70,14 @@ class AttributeMappingDataControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals(
 			[
 				'data' => [
-					'yes' => 'Yes',
-					'no'  => 'No',
+					[
+						'id'    => 'yes',
+						'label' => 'Yes',
+					],
+					[
+						'id'    => 'no',
+						'label' => 'No',
+					],
 				],
 			],
 			$response->get_data()
