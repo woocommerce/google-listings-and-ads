@@ -28,10 +28,9 @@ import stepNameKeyMap from './stepNameKeyMap';
 /**
  * @param {Object} props React props
  * @param {string} [props.savedStep] A saved step overriding the current step
- * @param {Function} [props.onRefetchSavedStep] Callback when Saved Step is updated
  * @fires gla_setup_mc with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
  */
-const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
+const SavedSetupStepper = ( { savedStep } ) => {
 	const [ step, setStep ] = useState( savedStep );
 
 	const { settings } = useSettings();
@@ -83,7 +82,6 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 			trigger: 'click',
 		} );
 		setStep( stepNameKeyMap.product_listings );
-		onRefetchSavedStep();
 	};
 
 	const handleSetupListingsContinue = () => {
@@ -92,7 +90,6 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 			trigger: 'click',
 		} );
 		setStep( stepNameKeyMap.store_requirements );
-		onRefetchSavedStep();
 	};
 
 	const handleStoreRequirementsContinue = () => {
@@ -101,11 +98,11 @@ const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 			trigger: 'click',
 		} );
 		setStep( stepNameKeyMap.paid_ads );
-		onRefetchSavedStep();
 	};
 
 	const handleStepClick = ( stepKey ) => {
-		if ( Number( stepKey ) <= Number( savedStep ) ) {
+		// Only allow going back to the previous steps.
+		if ( Number( stepKey ) < Number( step ) ) {
 			setStep( stepKey );
 		}
 	};
