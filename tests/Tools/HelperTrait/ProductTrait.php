@@ -90,14 +90,16 @@ trait ProductTrait {
 	/**
 	 * Generates and returns a mock of a simple WC_Product object
 	 *
+	 * @param int|null $product_id
+	 *
 	 * @return MockObject|WC_Product
 	 */
-	public function generate_simple_product_mock() {
+	public function generate_simple_product_mock( $product_id = null ) {
 		$product = $this->createMock( WC_Product::class );
 
 		$product->expects( $this->any() )
 				->method( 'get_id' )
-				->willReturn( rand() );
+				->willReturn( $product_id ?: rand() );
 
 		$product->expects( $this->any() )
 				->method( 'get_type' )
@@ -320,6 +322,10 @@ trait ProductTrait {
 	 * @return WC_Product[]
 	 */
 	protected function generate_simple_product_mocks_set( int $number ) {
-		return array_fill( 0, $number, $this->generate_simple_product_mock() );
+		$products = [];
+		for ( $i = 0; $i < $number; ++$i ) {
+			$products[] = $this->generate_simple_product_mock();
+		}
+		return $products;
 	}
 }
