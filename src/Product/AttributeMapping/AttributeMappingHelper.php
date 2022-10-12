@@ -86,15 +86,19 @@ class AttributeMappingHelper implements Service {
 	 * @return string|null The attribute class path or null if it's not found
 	 */
 	private function get_attribute_by_id( string $attribute_id ): ?string {
-
 		// Find the attribute class by id using a filter since PHP doesn't support user defined functions for comparison.
 		// array_values is there because array_filter preserves keys index
-		$attribute = array_values( array_filter( self::ATTRIBUTES_AVAILABLE_FOR_MAPPING, function ( $class ) use ( $attribute_id ) {
-			/**
-			 * @var AttributeInterface $class
-			 */
-			return $class::get_id() === $attribute_id;
-		}));
+		$attribute = array_values(
+			array_filter(
+				self::ATTRIBUTES_AVAILABLE_FOR_MAPPING,
+				function ( $class ) use ( $attribute_id ) {
+					/**
+					 * @var AttributeInterface $class
+					 */
+					return $class::get_id() === $attribute_id;
+				}
+			)
+		);
 
 		return ! empty( $attribute ) ? $attribute[0] : null;
 	}
@@ -106,11 +110,10 @@ class AttributeMappingHelper implements Service {
 	 * @return array The sources for the attribute
 	 */
 	public function get_sources_for_attribute( string $attribute_id ): array {
-
 		/**
 		 * @var AttributeInterface $attribute
 		 */
-		$attribute = self::get_attribute_by_id( $attribute_id );
+		$attribute         = self::get_attribute_by_id( $attribute_id );
 		$attribute_sources = [];
 
 		if ( is_null( $attribute ) ) {
