@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
-class Color extends AbstractAttribute {
+class Color extends AbstractAttribute implements WithMappingInterface {
 
 	use IsFieldTrait;
 
