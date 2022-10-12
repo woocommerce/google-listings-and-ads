@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\T
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Trait for enums
+ * Trait for fields
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\Traits
  */
