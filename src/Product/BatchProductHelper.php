@@ -193,6 +193,7 @@ class BatchProductHelper implements Service {
 	 */
 	public function validate_and_generate_update_request_entries( array $products ): array {
 		$request_entries = [];
+		$mapping_rules       = $this->attribute_mapping_rules_query->get_results();
 
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
@@ -215,7 +216,6 @@ class BatchProductHelper implements Service {
 
 				$target_countries    = $this->target_audience->get_target_countries();
 				$main_target_country = $this->target_audience->get_main_target_country();
-				$mapping_rules       = $this->attribute_mapping_rules_query->get_results();
 
 				// validate the product
 				$adapted_product   = $this->product_factory->create( $product, $main_target_country, $mapping_rules );
