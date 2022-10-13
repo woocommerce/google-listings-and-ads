@@ -935,8 +935,6 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$this->setSizes( [ $attributes['size'] ] );
 		}
 
-		$this->setGtin( '012345678905' );
-
 		return $this;
 	}
 
