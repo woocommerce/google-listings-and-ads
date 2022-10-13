@@ -101,8 +101,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		parent::mapTypes( $array );
 		$this->map_woocommerce_product();
-
-		$this->attribute_mapping( $mapping_rules );
+		$this->map_attribute_mapping_rules( $mapping_rules );
 		$this->map_gla_attributes( $gla_attributes );
 
 		// Allow users to override the product's attributes using a WordPress filter.
@@ -915,8 +914,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 *
 	 * @param array $mapping_rules The set of rules to apply
 	 */
-	protected function attribute_mapping( array $mapping_rules ) {
+	protected function map_attribute_mapping_rules( array $mapping_rules ) {
 		$attributes = [];
+
+		if ( empty( $mapping_rules ) ) {
+			return $this;
+		}
 
 		foreach ( $mapping_rules as $mapping_rule ) {
 			if ( $this->rule_match_conditions( $mapping_rule ) ) {
@@ -926,6 +929,15 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		}
 
 		parent::mapTypes( $attributes );
+
+		// Size
+		if ( ! empty( $attributes['size'] ) ) {
+			$this->setSizes( [ $attributes['size'] ] );
+		}
+
+		$this->setGtin( '012345678905' );
+
+		return $this;
 	}
 
 	/**
@@ -970,7 +982,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$wc_product_categories     = wp_list_pluck( get_the_terms( $wc_product->get_id(), 'product_cat' ), 'term_id' );
 		$contains_rules_categories = ! empty( array_intersect( $categories, $wc_product_categories ) );
 
-		if ( ! property_exists( $this, $attribute ) ) {
+		// size is not the real attribute, the real attribute is sizes
+		if ( ! property_exists( $this, $attribute ) && $attribute !== 'size' ) {
 			return false;
 		}
 
