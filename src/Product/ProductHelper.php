@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Google\Service\ShoppingContent\Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variation;
+use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -287,6 +288,17 @@ class ProductHelper implements Service {
 	 */
 	public function get_wc_product( int $product_id ): WC_Product {
 		return $this->wc->get_product( $product_id );
+	}
+
+	/**
+	 * Get WooCommerce product by WP get_post
+	 *
+	 * @param int $product_id
+	 *
+	 * @return WP_Post
+	 */
+	public function get_wc_product_by_wp_post( int $product_id ): WP_Post {
+		return get_post( $product_id );
 	}
 
 	/**

@@ -350,7 +350,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				continue;
 			}
 
-			$wc_product = get_post( $wc_product_id );
+			$wc_product = $product_helper->get_wc_product_by_wp_post( $wc_product_id );
 			if ( ! $wc_product || 'product' !== substr( $wc_product->post_type, 0, 7 ) ) {
 				// Should never reach here since the products IDS are retrieved from postmeta.
 				do_action(
