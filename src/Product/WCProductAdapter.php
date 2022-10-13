@@ -979,7 +979,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$category_condition_type   = $rule['category_condition_type'];
 		$categories                = explode( ',', $rule['categories'] );
 		$wc_product                = $this->get_wc_product();
-		$wc_product_categories     = wp_list_pluck( get_the_terms( $wc_product->get_id(), 'product_cat' ), 'term_id' );
+		$terms                     = get_the_terms( $wc_product->get_id(), 'product_cat' );
+		$wc_product_categories     = $terms ? wp_list_pluck( $terms, 'term_id' ) : [];
 		$contains_rules_categories = ! empty( array_intersect( $categories, $wc_product_categories ) );
 
 		// size is not the real attribute, the real attribute is sizes
