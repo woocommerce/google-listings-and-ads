@@ -25,7 +25,6 @@ use WC_Tax;
  * Class WCProductAdapterTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
- * @group AttributeMapping
  */
 class WCProductAdapterTest extends UnitTest {
 	use ProductTrait;
