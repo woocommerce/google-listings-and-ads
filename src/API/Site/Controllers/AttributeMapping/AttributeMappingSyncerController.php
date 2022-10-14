@@ -14,7 +14,7 @@ use Exception;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class for handling API requests for getting teh current Syncing state
+ * Class for handling API requests for getting the current Syncing state
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\AttributeMapping
  */
