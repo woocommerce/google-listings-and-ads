@@ -109,7 +109,16 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	 */
 	protected function process_items( array $items ) {
 		$products = $this->product_repository->find_by_ids( $items );
-
 		$this->product_syncer->update( $products );
+	}
+
+	public function schedule_delayed( int $delay ) {
+		if ( $this->can_schedule( [ 1 ] ) ) {
+			$this->action_scheduler->schedule_single( gmdate( 'U' ) + $delay, $this->get_create_batch_hook(), [ 1 ] );
+		}
+	}
+
+	public function is_syncing() {
+		return $this->is_running( [ 1 ] );
 	}
 }

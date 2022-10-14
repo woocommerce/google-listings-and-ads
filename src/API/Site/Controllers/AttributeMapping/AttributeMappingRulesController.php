@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\AttributeMapping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class for handling API requests for getting source and destination data for Attribute Mapping
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\AttributeMapping
  */
 class AttributeMappingRulesController extends BaseOptionsController {
 
@@ -139,8 +139,9 @@ class AttributeMappingRulesController extends BaseOptionsController {
 					return $this->response_from_exception( new Exception( 'Unable to create the new rule.' ) );
 				}
 
-				return $this->prepare_item_for_response( $this->attribute_mapping_rules_query->get_rule( $this->attribute_mapping_rules_query->last_insert_id() ), $request );
-
+				$response = $this->prepare_item_for_response( $this->attribute_mapping_rules_query->get_rule( $this->attribute_mapping_rules_query->last_insert_id() ), $request );
+				do_action('woocommerce_gla_rules_change');
+				return $response;
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -161,8 +162,9 @@ class AttributeMappingRulesController extends BaseOptionsController {
 					return $this->response_from_exception( new Exception( 'Unable to update the new rule.' ) );
 				}
 
-				return $this->prepare_item_for_response( $this->attribute_mapping_rules_query->get_rule( $rule_id ), $request );
-
+				$response = $this->prepare_item_for_response( $this->attribute_mapping_rules_query->get_rule( $rule_id ), $request );
+				do_action('woocommerce_gla_rules_change');
+				return $response;
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -183,6 +185,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 					return $this->response_from_exception( new Exception( 'Unable to delete the rule' ) );
 				}
 
+				do_action('woocommerce_gla_rules_change');
 				return [
 					'id' => $rule_id,
 				];
