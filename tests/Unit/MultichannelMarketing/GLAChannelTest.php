@@ -102,8 +102,14 @@ class GLAChannelTest extends UnitTest {
 			->willReturn(
 				[
 					'issues' => [
-						[ 'type' => 'account', 'issue' => 'test issue #1' ],
-						[ 'type' => 'product', 'issue' => 'test issue #2' ],
+						[
+							'type' => 'account',
+							'issue' => 'test issue #1',
+						],
+						[
+							'type' => 'product',
+							'issue' => 'test issue #2',
+						],
 					],
 					'total'  => 2,
 				]
