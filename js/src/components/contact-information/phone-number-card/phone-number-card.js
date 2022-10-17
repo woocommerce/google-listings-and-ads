@@ -134,10 +134,10 @@ const PhoneNumberCard = ( {
 	// after the phone number is verified. If `initEditing` is false or null, this useEffect handles
 	// the call of `onPhoneNumberVerified` when the loaded phone number has already been verified.
 	useEffect( () => {
-		if ( loaded && initEditing !== true && isVerified ) {
+		if ( initEditing !== true && isVerified ) {
 			onPhoneNumberVerifiedRef.current();
 		}
-	}, [ loaded, isVerified, initEditing ] );
+	}, [ initEditing, isVerified ] );
 
 	// Return a simple loading AccountCard since the initial edit state is unknown before loaded.
 	if ( isEditing === null ) {
