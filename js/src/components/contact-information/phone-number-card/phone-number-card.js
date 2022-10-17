@@ -99,8 +99,8 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberVerified } ) {
  * @param {string} props.view The view the card is in.
  * @param {PhoneNumber} props.phoneNumber Phone number data.
  * @param {boolean|null} [props.initEditing=null] Specify the inital UI state.
- *     `true`: initialize with the editing UI.
- *     `false`: initialize with the viewing UI.
+ *     `true`: initialize with the editing UI for entering the phone number and proceeding with verification.
+ *     `false`: initialize with the non-editing UI viewing the phone number and a button for switching to the editing UI.
  *     `null`: determine the initial UI state according to the `data.isVerified` after the `phoneNumber` loaded.
  * @param {Function} [props.onEditClick] Called when clicking on "Edit" button.
  *     If this callback is omitted, it will enter edit mode when clicking on "Edit" button.
@@ -122,8 +122,8 @@ const PhoneNumberCard = ( {
 
 	const { isVerified } = data;
 
-	// Handle the initial UI state of `initEditing = null`.
-	// The `isEditing` state is on hold. Determine it after the `phoneNumber` loaded.
+	// If the initial value of `isEditing` got from `initEditing` is null, then the `isEditing` state
+	// is determined after the `phoneNumber` is loaded.
 	useEffect( () => {
 		if ( loaded && isEditing === null ) {
 			setEditing( ! isVerified );
