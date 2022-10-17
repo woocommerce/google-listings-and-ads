@@ -104,7 +104,7 @@ class UpdateAllProductsTest extends UnitTest {
 		 * the batch and no calls further since batch is empty.
 		 */
 		$this->action_scheduler->expects( $this->once() )
-			->method( 'has_scheduled_action' )->willReturn(false);
+			->method( 'has_scheduled_action' )->willReturn( false );
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
