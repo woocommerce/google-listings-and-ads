@@ -22,7 +22,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class UpdateProductsTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
- *
+
  * @property MockObject|ActionScheduler           $action_scheduler
  * @property MockObject|ActionSchedulerJobMonitor $monitor
  * @property MockObject|ProductSyncer             $product_syncer
@@ -61,10 +61,6 @@ class UpdateAllProductsTest extends UnitTest {
 			$this->merchant_center
 		);
 
-		$this->action_scheduler
-			->method( 'has_scheduled_action' )
-			->willReturn( false );
-
 		$this->merchant_center
 			->method( 'is_ready_for_syncing' )
 			->willReturn( true );
@@ -99,6 +95,10 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'find_sync_ready_products' )
 			->willReturn( $filtered_product_list );
 
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
 		/*
 		 * We expect only single call to `has_scheduled_action` when scheduling
 		 * the batch and no calls further since batch is empty.
@@ -124,7 +124,7 @@ class UpdateAllProductsTest extends UnitTest {
 			->willReturn( $filtered_product_list );
 		$this->action_scheduler->expects( $this->exactly( 2 ) )
 			->method( 'has_scheduled_action' );
-		$this->action_scheduler->expects( $this->exactly( 2 ) )
+		$this->action_scheduler->expects( $this->exactly( 2 ) )->willReturn( false )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
 				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
@@ -159,6 +159,10 @@ class UpdateAllProductsTest extends UnitTest {
 			->withConsecutive( [ [], 2, 0 ], [ [], 2, 2 ], [ [], 2, 4 ] )
 			->willReturnOnConsecutiveCalls( $batch_a, $batch_b, $batch_c );
 
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
 		$this->job->schedule();
 
 		do_action( self::CREATE_BATCH_HOOK, 1 );
@@ -189,6 +193,10 @@ class UpdateAllProductsTest extends UnitTest {
 			->withConsecutive( [ [], 2, 0 ], [ [], 2, 2 ], [ [], 2, 4 ] )
 			->willReturnOnConsecutiveCalls( $batch_a, $batch_b, $batch_c );
 
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
 		$this->job->schedule();
 
 		do_action( self::CREATE_BATCH_HOOK, 1 );
@@ -204,6 +212,10 @@ class UpdateAllProductsTest extends UnitTest {
 		$batch_a = new FilteredProductList( [], 2 );
 		$batch_b = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 2 );
 		$batch_c = new FilteredProductList( [], 0 );
+
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
 
 		$this->action_scheduler->expects( $this->exactly( 4 ) )
 			->method( 'schedule_immediate' )
@@ -234,6 +246,10 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'find_by_ids' )
 			->with( $filtered_product_list->get_product_ids() )
 			->willReturn( $filtered_product_list->get() );
+
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
 
 		$this->product_syncer
 			->expects( $this->once() )
@@ -266,8 +282,43 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'schedule_immediate' )
 			->with( self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] );
 
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
 		$this->expectException( ProductSyncerException::class );
 
 		do_action( self::PROCESS_ITEM_HOOK, $filtered_product_list->get_product_ids() );
+	}
+
+	public function test_delayed_schedule() {
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
+		$this->action_scheduler
+			->expects( $this->once() )
+			->method( 'schedule_single' )
+			->with( gmdate( 'U' ) + 100, self::CREATE_BATCH_HOOK, [ 1 ] );
+
+		$this->job->schedule_delayed( 100 );
+	}
+
+	public function test_is_syncing() {
+		$this->action_scheduler
+			->expects( $this->once() )
+			->method( 'has_scheduled_action' )
+			->willReturn( true );
+
+		$this->assertTrue( $this->job->is_syncing() );
+	}
+
+	public function test_is_not_syncing() {
+		$this->action_scheduler
+			->expects( $this->once() )
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
+		$this->assertFalse( $this->job->is_syncing() );
 	}
 }
