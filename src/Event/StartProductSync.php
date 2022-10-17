@@ -61,8 +61,11 @@ class StartProductSync implements Registerable, Service {
 		$update->schedule();
 	}
 
+	/**
+	 * Creates a Job for updating all products with a 30 minutes delay.
+	 */
 	protected function on_rules_change() {
 		$update = $this->job_repository->get( UpdateAllProducts::class );
-		$update->schedule_delayed(1800); // 30 minutes
+		$update->schedule_delayed( 1800 ); // 30 minutes
 	}
 }

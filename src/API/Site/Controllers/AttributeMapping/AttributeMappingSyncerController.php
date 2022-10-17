@@ -28,12 +28,12 @@ class AttributeMappingSyncerController extends BaseController {
 	/**
 	 * AttributeMappingSyncerController constructor.
 	 *
-	 * @param RESTServer $server
+	 * @param RESTServer    $server
 	 * @param JobRepository $job_repository
 	 */
 	public function __construct( RESTServer $server, JobRepository $job_repository ) {
 		parent::__construct( $server );
-		$this->job_repository      = $job_repository;
+		$this->job_repository = $job_repository;
 	}
 
 	/**
@@ -62,9 +62,9 @@ class AttributeMappingSyncerController extends BaseController {
 	protected function get_sync_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$updateAllProductsJob = $this->job_repository->get( UpdateAllProducts::class );
-				$state = [
-					'is_syncing' => $updateAllProductsJob->is_syncing()
+				$update_all_products_job = $this->job_repository->get( UpdateAllProducts::class );
+				$state                   = [
+					'is_syncing' => $update_all_products_job->is_syncing(),
 				];
 				return $this->prepare_item_for_response( $state, $request );
 			} catch ( Exception $e ) {
@@ -81,7 +81,7 @@ class AttributeMappingSyncerController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'is_syncing'                      => [
+			'is_syncing' => [
 				'description'       => __( 'Indicates if the products are currently syncing', 'google-listings-and-ads' ),
 				'type'              => 'boolean',
 				'validate_callback' => 'rest_validate_request_arg',

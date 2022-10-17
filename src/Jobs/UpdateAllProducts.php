@@ -112,13 +112,23 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 		$this->product_syncer->update( $products );
 	}
 
+	/**
+	 * Schedules a delayed batched job
+	 *
+	 * @param int $delay The delay time in seconds
+	 */
 	public function schedule_delayed( int $delay ) {
 		if ( $this->can_schedule( [ 1 ] ) ) {
 			$this->action_scheduler->schedule_single( gmdate( 'U' ) + $delay, $this->get_create_batch_hook(), [ 1 ] );
 		}
 	}
 
-	public function is_syncing() {
+	/**
+	 * Check if the current job is currently running
+	 *
+	 * @return bool True if the job is running.
+	 */
+	public function is_syncing(): bool {
 		return $this->is_running( [ 1 ] );
 	}
 }
