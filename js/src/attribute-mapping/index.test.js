@@ -92,6 +92,19 @@ jest.mock( '.~/hooks/useMappingRules', () => ( {
 		} ),
 } ) );
 
+jest.mock( '.~/hooks/usePolling', () => ( {
+	__esModule: true,
+	default: jest
+		.fn()
+		.mockName( 'usePolling' )
+		.mockImplementation( () => {
+			return {
+				start: () => {},
+				data: { is_syncing: false },
+			};
+		} ),
+} ) );
+
 /**
  * External dependencies
  */
@@ -111,6 +124,8 @@ import {
 	deleteMappingRule,
 	updateMappingRule,
 } from '.~/data/actions';
+import AttributeMappingSync from '.~/attribute-mapping/attribute-mapping-sync';
+import usePolling from '.~/hooks/usePolling';
 
 describe( 'Attribute Mapping', () => {
 	test( 'Renders table', () => {
@@ -309,5 +324,24 @@ describe( 'Attribute Mapping', () => {
 
 		const { queryByText } = render( <AttributeMapping /> );
 		expect( queryByText( 'Loading Attribute Mapping rules' ) ).toBeTruthy();
+	} );
+
+	test( 'Syncer is not syncing', () => {
+		const { queryByText } = render( <AttributeMappingSync /> );
+		expect(
+			queryByText( 'Your products are synced with your rules' )
+		).toBeTruthy();
+	} );
+
+	test( 'Syncer is syncing', () => {
+		usePolling.mockReturnValue( {
+			start: () => {},
+			data: { is_syncing: true },
+		} );
+
+		const { queryByText } = render( <AttributeMappingSync /> );
+		expect(
+			queryByText( 'Your products are being synced with your rules' )
+		).toBeTruthy();
 	} );
 } );
