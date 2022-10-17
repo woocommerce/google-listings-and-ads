@@ -104,7 +104,8 @@ class UpdateAllProductsTest extends UnitTest {
 		 * the batch and no calls further since batch is empty.
 		 */
 		$this->action_scheduler->expects( $this->once() )
-			->method( 'has_scheduled_action' );
+			->method( 'has_scheduled_action' )->willReturn(false);
+
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
 			->with( self::CREATE_BATCH_HOOK, [ 1 ] );
@@ -122,9 +123,11 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->product_repository->expects( $this->once() )
 			->method( 'find_sync_ready_products' )
 			->willReturn( $filtered_product_list );
+
 		$this->action_scheduler->expects( $this->exactly( 2 ) )
-			->method( 'has_scheduled_action' );
-		$this->action_scheduler->expects( $this->exactly( 2 ) )->willReturn( false )
+			->method( 'has_scheduled_action' )->willReturn( false );
+
+		$this->action_scheduler->expects( $this->exactly( 2 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
 				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
