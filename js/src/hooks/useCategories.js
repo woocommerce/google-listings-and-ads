@@ -28,7 +28,7 @@ const getDeletedCategoryName = ( categoryId ) => {
  * Returns the category tree used for Tree Select Control
  * It also maps the deleted (and previously selected) categories
  *
- * @param {Array} [selected] The selected category ID's
+ * @param {Array<string>} [selected] The selected category ID's
  * @return {{tree: *[], names: string, hasFinishedResolution: *}} The tree ready to insert in Tree Select Control, the categories separated by commas and the resolution state
  */
 const useCategories = ( selected = [] ) => {
