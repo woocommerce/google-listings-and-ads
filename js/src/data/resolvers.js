@@ -422,6 +422,5 @@ export function* getStoreCategories() {
 				'google-listings-and-ads'
 			)
 		);
-		throw error;
 	}
 }

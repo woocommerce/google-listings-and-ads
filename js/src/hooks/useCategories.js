@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { _x, sprintf } from '@wordpress/i18n';
+import { _x, __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -18,9 +18,8 @@ const SEPARATOR = _x(
 const getDeletedCategoryName = ( categoryId ) => {
 	return sprintf(
 		// translators: %d: number of categories.
-		'Category ID %s (deleted)',
-		[ categoryId ],
-		'google-listings-and-ads'
+		__( 'Category ID %s (deleted)', 'google-listings-and-ads' ),
+		[ categoryId ]
 	);
 };
 
@@ -29,7 +28,7 @@ const getDeletedCategoryName = ( categoryId ) => {
  * It also maps the deleted (and previously selected) categories
  *
  * @param {Array<string>} [selected] The selected category ID's
- * @return {{tree: *[], names: string, hasFinishedResolution: *}} The tree ready to insert in Tree Select Control, the categories separated by commas and the resolution state
+ * @return {{tree: *[], names: string, hasFinishedResolution: boolean}} The tree ready to insert in Tree Select Control, the categories separated by commas and the resolution state
  */
 const useCategories = ( selected = [] ) => {
 	const { data, hasFinishedResolution } = useAppSelectDispatch(
@@ -106,7 +105,6 @@ const getSelectedNames = ( selected, allCategories ) => {
 					?.name || getDeletedCategoryName( category )
 			);
 		} )
-		.filter( ( x ) => x !== undefined )
 		.join( SEPARATOR );
 };
 

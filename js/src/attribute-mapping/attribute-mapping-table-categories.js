@@ -70,20 +70,16 @@ const AttributeMappingTableCategories = ( { categories, condition } ) => {
 					? __( 'Only in', 'google-listings-and-ads' )
 					: __( 'All except', 'google-listings-and-ads' ) }
 			</span>
-			{ names.length ? (
-				<AppTooltip
-					text={
-						<div className="gla-attribute-mapping__table-categories-tooltip">
-							{ names }
-							{ more && <span>{ more }</span> }
-						</div>
-					}
-				>
-					<CategoryHelperText categories={ categoryArray } />
-				</AppTooltip>
-			) : (
+			<AppTooltip
+				text={
+					<div className="gla-attribute-mapping__table-categories-tooltip">
+						{ names }
+						{ more && <span>{ more }</span> }
+					</div>
+				}
+			>
 				<CategoryHelperText categories={ categoryArray } />
-			) }
+			</AppTooltip>
 		</>
 	);
 };
