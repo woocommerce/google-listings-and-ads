@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.4
-Stable tag: 2.1.4
+Stable tag: 2.2.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,27 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.2.0 - 2022-10-18 =
+* Add - Ad previews in the post-onboarding ads setup flow.
+* Add - Combine the audience and shipping steps for the onboarding flow and the editing free listings page.
+* Add - Streamlined Free Listings + Paid Ads for the onboarding flow.
+* Add - The disclaimer of Comparison Shopping Service of the accounts setup of onboarding flow.
+* Add - The submission success modal on the Product Feed page after the onboarding is completed along with paid ads setup.
+* Fix - A validateDOMNesting warning in the accounts setup step of the onboarding flow.
+* Fix - Free Listings + Paid Ads: Add the paid ads previews to the boost product listings section.
+* Fix - Remove - Support for WC < 6.8.
+* Fix - Shipping time values flash during the onboarding setup.
+* Fix - Steppers on the onboarding flow allow switching to later steps when the current step is not yet finished.
+* Fix - The "Or, create a new Google Ads account" button at the footer of the Google Ads account setup is clickable when connecting an existing account.
+* Fix - The incorrect active status style for a disabled button.
+* Tweak - Use different titles for the free listings setup of the onboarding and editing pages.
+* Update - Change the steppers in the onboarding flow to only allow going back to the previous steps.
+* Update - Detect the verification status of the phone number in the contact information settings.
+* Update - Layouts and copywriting of the Get Started page and the onboarding flow.
+* Update - Logos of Google Merchant Center and Google Ads.
+* Update - Open the billing setup page of Google Ads via a popup window and add an alternative hyperlink to open the same setup page.
+* Update - The FAQs in the paid ads setup and the campaign setup page.
+
 = 2.1.4 - 2022-10-04 =
 * Add - Policy Compliance Checks in the onboarding flow.
 * Tweak - WC 7.0 compatibility.
@@ -117,9 +138,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Avoid truncate for issues with more than 100 characters length.
 * Fix - Update Size Type Attribute available values.
 * Tweak - Update Website not Claimed issue information.
-
-= 2.1.2 - 2022-09-15 =
-* Fix - WooCommerce 6.7 compatibility issues.
-* Tweak - WC 6.9 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
