@@ -209,7 +209,7 @@ const TreeSelectControl = ( {
 				/**
 				 * Returns whether this option is the root.
 				 *
-				 * @return {boolean} Trie if the option is the root.
+				 * @return {boolean} True if the option is the root.
 				 */
 				get() {
 					return this.value === ROOT_VALUE;
