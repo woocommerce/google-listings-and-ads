@@ -69,6 +69,7 @@ const AttributeMappingCategoryControl = ( {
 					options={ tree }
 					onChange={ onCategoriesChange }
 					value={ selectedCategories }
+					selectAllLabel={ false }
 					allowsSelectParents={ true }
 					placeholder={ __(
 						'Select categories',

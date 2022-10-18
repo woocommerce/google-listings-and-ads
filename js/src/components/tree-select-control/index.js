@@ -297,22 +297,42 @@ const TreeSelectControl = ( {
 		};
 
 		const reduceOptions = ( acc, { children = [], ...option } ) => {
+			let match = 0;
+
+			// its a searchable option if this two conditions apply:
+			// 1. its not Root and
+			// 2. is a leaf or selecting parents is allowed.
+			const isSearchable =
+				( ! option.children || allowsSelectParents ) &&
+				option.value !== ROOT_VALUE;
+
 			if ( children.length ) {
+				// Iterate over the children to find a match on each child recursively
 				option.children = children.reduce( reduceOptions, [] );
 
-				if ( ! option.children.length ) {
+				// If the option.children property is empty here, it means there is no matches in the children neither.
+				// So in case we don't allow parent selection, we can return the empty acc for this option as it shouldn't show in the tree.
+				if ( ! option.children.length && ! allowsSelectParents ) {
 					return acc;
 				}
-			} else if ( isSearching ) {
-				const match = option.label.toLowerCase().indexOf( filter );
-				if ( match === -1 ) {
-					return acc;
-				}
-				option.label = highlightOptionLabel( option.label, match );
 			}
 
-			Object.defineProperties( option, descriptors );
-			acc.push( option );
+			if ( isSearching ) {
+				match = option.label.toLowerCase().indexOf( filter );
+
+				if ( match >= 0 && isSearchable ) {
+					// only highlight the label if there is a match or its a searchable option
+					option.label = highlightOptionLabel( option.label, match );
+				}
+			}
+
+			if ( ( match >= 0 && isSearchable ) || option.children?.length ) {
+				// only add the option to the tree if:
+				// a. there are matching children for this option.
+				// b. there is a match for the option itself, and its a searchable option.
+				Object.defineProperties( option, descriptors );
+				acc.push( option );
+			}
 
 			return acc;
 		};
@@ -321,7 +341,7 @@ const TreeSelectControl = ( {
 		cache.filteredOptionsMap.set( filter, filteredTreeOptions );
 
 		return filteredTreeOptions;
-	}, [ treeOptions, filter ] );
+	}, [ treeOptions, filter, allowsSelectParents ] );
 
 	const onKeyDown = ( event ) => {
 		if ( disabled ) return;
@@ -435,12 +455,28 @@ const TreeSelectControl = ( {
 		// If allowsSelectParents is true we allow the parent key to be selected and we don't select the children, we just expand the node.
 		if ( allowsSelectParents && ! option.isRoot ) {
 			handleSingleChange( checked, option );
-			handleToggleExpanded( option );
+			if ( ! option.expanded ) {
+				handleToggleExpanded( option );
+			}
 			return;
 		}
 
+		const flattenChildren = ( children ) =>
+			Array.prototype.concat.apply(
+				children,
+				children.map( ( child ) =>
+					flattenChildren( child.children || [] )
+				)
+			);
+
 		let newValue;
-		const changedValues = option.leaves
+		const selectableValues = allowsSelectParents
+			? flattenChildren( option.children ).map(
+					( child ) => delete child.children && child
+			  )
+			: option.leaves;
+
+		const changedValues = selectableValues
 			.filter( ( opt ) => opt.checked !== checked )
 			.map( ( opt ) => opt.value );
 
