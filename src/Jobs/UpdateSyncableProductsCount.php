@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  * Get the number of syncable products (i.e. product ready to be synced to Google Merchant Center) and update it in the DB.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
- * @since x.x.x
+ * @since 2.2.0
  */
 class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob implements OptionsAwareInterface {
 	use OptionsAwareTrait;

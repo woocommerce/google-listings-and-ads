@@ -335,7 +335,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 *
 	 * @return bool If all required items in the pre-launch checklist have been checked.
 	 *
-	 * @since x.x.x
+	 * @since 2.2.0
 	 */
 	protected function checked_pre_launch_checklist(): bool {
 		$settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );

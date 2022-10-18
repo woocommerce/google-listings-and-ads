@@ -11,7 +11,7 @@ use WC_Product;
 /*
  * Contains AbstractBatchedActionSchedulerJob methods.
  *
- * @since x.x.x
+ * @since 2.2.0
  */
 trait SyncableProductsBatchedActionSchedulerJobTrait {
 
