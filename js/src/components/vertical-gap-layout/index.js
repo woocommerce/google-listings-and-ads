@@ -11,6 +11,7 @@ import './index.scss';
 // The `normal` gap is the default style, and no need to append any additional class name.
 const sizeClassName = {
 	normal: false,
+	medium: 'gla-vertical-gap-layout__medium',
 	large: 'gla-vertical-gap-layout__large',
 	overlap: 'gla-vertical-gap-layout__overlap',
 };
@@ -20,8 +21,9 @@ const sizeClassName = {
  *
  * @param {Object} props React props.
  * @param {string} [props.className] Additional CSS class name to be appended.
- * @param {'normal'|'large'|'overlap'} [props.size='normal'] Indicate the gap between children.
+ * @param {'normal'|'medium'|'large'|'overlap'} [props.size='normal'] Indicate the gap between children.
  *     'normal': A normal gap.
+ *     'medium': A medium gap.
  *     'large': A large gap.
  *     'overlap': Overlap the back child on the front child with -1 pixel spacing.
  */

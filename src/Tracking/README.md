@@ -98,7 +98,7 @@ Clicking on the button to create a new Google Ads account, after agreeing to the
 #### Emitters
 - [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L32) When agreed by clicking "Create account".
 
-### [`gla_ads_set_up_billing_click`](../../js/src/setup-ads/ads-stepper/setup-billing/setup-card/index.js#L18)
+### [`gla_ads_set_up_billing_click`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L36)
 "Set up billing" button for Google Ads account is clicked.
 #### Properties
 | name | type | description |
@@ -107,7 +107,7 @@ Clicking on the button to create a new Google Ads account, after agreeing to the
 `link_id` | `string` | A unique ID for the button within the context, e.g. `set-up-billing`.
 `href` | `string` | Indicates the destination where the users is directed to.
 #### Emitters
-- [`SetupCard`](../../js/src/setup-ads/ads-stepper/setup-billing/setup-card/index.js#L34) with `{ context: 'setup-ads', link_id: 'set-up-billing',	href: billingUrl }`
+- [`BillingSetupCard`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L52) with `{ context: 'setup-ads', link_id: 'set-up-billing',	href: billingUrl }`
 
 ### [`gla_bulk_edit_click`](../../js/src/product-feed/product-feed-table-card/index.js#L41)
 Triggered when the product feed "bulk edit" functionality is being used
@@ -120,25 +120,25 @@ Triggered when the product feed "bulk edit" functionality is being used
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/product-feed/product-feed-table-card/index.js#L66) with `context: 'product-feed'`
 
-### [`gla_ces_feedback`](../../js/src/components/customer-effort-score-prompt/index.js#L29)
+### [`gla_ces_feedback`](../../js/src/components/customer-effort-score-prompt/index.js#L38)
 CES feedback recorded
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L49) whenever the CES feedback is recorded
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L58) whenever the CES feedback is recorded
 
-### [`gla_ces_modal_open`](../../js/src/components/customer-effort-score-prompt/index.js#L24)
+### [`gla_ces_modal_open`](../../js/src/components/customer-effort-score-prompt/index.js#L33)
 CES modal open
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L49) whenever the CES modal is open
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L58) whenever the CES modal is open
 
-### [`gla_ces_snackbar_closed`](../../js/src/components/customer-effort-score-prompt/index.js#L19)
+### [`gla_ces_snackbar_closed`](../../js/src/components/customer-effort-score-prompt/index.js#L28)
 CES prompt snackbar closed
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L49) whenever the CES snackbar (notice) is closed
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L58) whenever the CES snackbar (notice) is closed
 
-### [`gla_ces_snackbar_open`](../../js/src/components/customer-effort-score-prompt/index.js#L14)
+### [`gla_ces_snackbar_open`](../../js/src/components/customer-effort-score-prompt/index.js#L23)
 CES prompt snackbar open
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L49) whenever the CES snackbar (notice) is open
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L58) whenever the CES snackbar (notice) is open
 
 ### [`gla_chart_tab_click`](../../js/src/reports/summary-section.js#L20)
 Triggered when a chart tab is clicked
@@ -181,7 +181,7 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/settings/linked-accounts.js#L28)
+### [`gla_disconnected_accounts`](../../js/src/settings/linked-accounts.js#L31)
 Accounts are disconnected from the Setting page
 #### Properties
 | name | type | description |
@@ -198,15 +198,15 @@ When a documentation link is clicked.
 `href` | `string` | link's URL
 #### Emitters
 - [`AppDocumentationLink`](../../js/src/components/app-documentation-link/index.js#L29)
-- [`ContactInformation`](../../js/src/components/contact-information/index.js#L78)
+- [`ContactInformation`](../../js/src/components/contact-information/index.js#L90)
 	- with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
 	- with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
 	- with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
-- [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L27)
+- [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
-- [`FormContent`](../../js/src/components/free-listings/choose-audience/form-content.js#L31) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
+- [`ChooseAudienceSection`](../../js/src/components/free-listings/choose-audience-section/choose-audience-section.js#L30) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`ShippingTimeSection`](../../js/src/components/free-listings/configure-product-listings/shipping-time-section.js#L17) with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 - [`TaxRate`](../../js/src/components/free-listings/configure-product-listings/tax-rate.js#L21)
 	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-read-more', href: 'https://support.google.com/merchants/answer/160162' }`
@@ -231,7 +231,7 @@ When a documentation link is clicked.
 	- with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
 	- with `{ context: 'faqs', linkId: 'terms-and-conditions-of-google-ads-coupons', href: 'https://www.google.com/ads/coupons/terms/' }`.
 - [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L27) with `{ context: 'get-started', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
-- [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L30) with `{ context: 'get-started-with-video', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
+- [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L28) with `{ context: 'get-started-with-video', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
 - [`UnsupportedLanguage`](../../js/src/get-started-page/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`UnsupportedCountry`](../../js/src/get-started-page/unsupported-notices/index.js#L75) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`CreatePaidAdsCampaignForm`](../../js/src/pages/create-paid-ads-campaign/create-paid-ads-campaign-form.js#L29) with `{ context: 'create-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
@@ -242,7 +242,6 @@ When a documentation link is clicked.
 - [`EditStoreAddress`](../../js/src/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
 - [`CreateCampaign`](../../js/src/setup-ads/ads-stepper/create-campaign/index.js#L21) with `{ context: 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 - [`FreeAdCredit`](../../js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L27) with `{ context: 'setup-ads', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
-- [`FormContent`](../../js/src/setup-mc/setup-stepper/choose-audience/form-content.js#L31) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L69) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
 
 ### [`gla_edit_mc_phone_number`](../../js/src/components/contact-information/phone-number-card/phone-number-card-preview.js#L13)
@@ -352,10 +351,10 @@ Clicking on the link to view free ad credit value by country.
 #### Emitters
 - [`FreeAdCredit`](../../js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L27) with `{ context: 'setup-ads' }`.
 
-### [`gla_free_campaign_edited`](../../js/src/edit-free-campaign/index.js#L48)
+### [`gla_free_campaign_edited`](../../js/src/edit-free-campaign/index.js#L30)
 Saving changes to the free campaign.
 #### Emitters
-- [`EditFreeCampaign`](../../js/src/edit-free-campaign/index.js#L64)
+- [`EditFreeCampaign`](../../js/src/edit-free-campaign/index.js#L46)
 
 ### [`gla_google_account_connect_button_click`](../../js/src/utils/recordEvent.js#L92)
 Clicking on the button to connect Google account.
@@ -371,7 +370,7 @@ Clicking on the button to connect Google account.
 - [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26)
 	- with `{ action: 'scope', context: 'reconnect' }`
 	- with `{ action: 'scope', context: 'setup-mc' }`
-- [`AuthorizeAds`](../../js/src/components/google-ads-account-card/authorize-ads.js#L21) with `{ action: 'scope', context: 'setup-ads' }`
+- [`AuthorizeAds`](../../js/src/components/google-ads-account-card/authorize-ads.js#L20) with `{ action: 'scope', context: 'setup-ads' }`
 
 ### [`gla_google_account_connect_different_account_button_click`](../../js/src/components/google-account-card/connected-google-account-card.js#L15)
 Clicking on the "connect to a different Google account" button.
@@ -488,7 +487,7 @@ A modal is closed.
 `context` | `string` | Indicates which modal is closed
 `action` | `string` | Indicates the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked
 #### Emitters
-- [`Dashboard`](../../js/src/dashboard/index.js#L33) when CES modal is closed.
+- [`Dashboard`](../../js/src/dashboard/index.js#L34) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L160) with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
 
@@ -511,6 +510,32 @@ A modal is opend
 #### Emitters
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L160) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+
+### [`gla_onboarding_complete_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L45)
+Clicking on the skip paid ads button to complete the onboarding flow.
+ The 'unknown' value of properties may means:
+ - the paid ads setup is not opened
+ - the final status has not yet been resolved when recording this event
+ - the status is not available, for example, the billing status is unknown if Google Ads account is not yet connected
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`opened_paid_ads_setup` | `string` | Whether the paid ads setup is opened, e.g. 'yes', 'no'
+`google_ads_account_status` | `string` | The connection status of merchant's Google Ads addcount, e.g. 'unknown', 'connected', 'disconnected', 'incomplete'
+`billing_method_status` | `string` | aaa, The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
+`campaign_form_validation` | `string` | Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
+#### Emitters
+- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L67)
+
+### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L39)
+Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
+#### Emitters
+- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L67)
+
+### [`gla_onboarding_open_paid_ads_setup_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L33)
+Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
+#### Emitters
+- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L67)
 
 ### [`gla_request_review`](../../js/src/product-feed/review-request/review-request-modal.js#L19)
 Triggered when request review button is clicked
@@ -566,8 +591,8 @@ Setup Merchant Center
 `context` | `string` | Indicates which CTA is clicked
 #### Emitters
 - [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L27) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started' }`.
-- [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L30) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started-with-video' }`.
-- [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L25) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
+- [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L28) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started-with-video' }`.
+- [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L34) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
 - [`SetupMCTopBar`](../../js/src/setup-mc/top-bar/index.js#L17) with `{ target: 'back', trigger: 'click' }`.
 
 ### [`gla_table_go_to_page`](../../js/src/utils/recordEvent.js#L10)

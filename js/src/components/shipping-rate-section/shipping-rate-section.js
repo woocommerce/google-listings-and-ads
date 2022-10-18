@@ -45,7 +45,7 @@ const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 				<div>
 					<p>
 						{ __(
-							'Your shipping rates will be shown to potential customers on Google.',
+							'Your estimated shipping rates and times will be shown to potential customers on Google.',
 							'google-listings-and-ads'
 						) }
 					</p>

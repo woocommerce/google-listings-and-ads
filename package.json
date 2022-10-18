@@ -101,8 +101,7 @@
 		"libphonenumber-js": "^1.9.22",
 		"lodash": "^4.17.20",
 		"prop-types": "^15.7.2",
-		"rememo": "^3.0.0",
-		"use-debounce": "^5.2.0"
+		"rememo": "^3.0.0"
 	},
 	"config": {
 		"wp_org_slug": "google-listings-and-ads",
@@ -133,7 +132,7 @@
 			},
 			{
 				"path": "./js/build/index.css",
-				"maxSize": "10 kB"
+				"maxSize": "12 kB"
 			},
 			{
 				"path": "./google-listings-and-ads.zip",

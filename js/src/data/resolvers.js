@@ -99,13 +99,27 @@ export function* getGoogleAdsAccount() {
 	yield fetchGoogleAdsAccount();
 }
 
+getGoogleAdsAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS &&
+		action.invalidateRelatedState
+	);
+};
+
 export function* getGoogleAdsAccountBillingStatus() {
 	yield fetchGoogleAdsAccountBillingStatus();
 }
 
+getGoogleAdsAccountBillingStatus.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS;
+};
+
 export function* getExistingGoogleAdsAccounts() {
 	yield fetchExistingGoogleAdsAccounts();
 }
+
+getExistingGoogleAdsAccounts.shouldInvalidate =
+	getGoogleAdsAccount.shouldInvalidate;
 
 export function* getGoogleMCContactInformation() {
 	try {

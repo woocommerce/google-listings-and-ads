@@ -3,7 +3,8 @@
 	flex-direction: column;
 	margin-bottom: var(--large-gap);
 
-	&--is-disabled {
+	&--is-disabled,
+	&--is-disabled-left header {
 		opacity: 0.5;
 	}
 
@@ -26,8 +27,8 @@
 			padding: 0;
 		}
 
-		> p {
-			margin: 0 0 1em;
+		p {
+			margin: 0 0 $grid-unit;
 			line-height: $gla-line-height-smaller;
 		}
 	}

@@ -21,12 +21,24 @@ const learnMoreLinkId = 'contact-information-read-more';
 const learnMoreUrl =
 	'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information';
 
-const description = __(
-	'Your contact information is required by Google for verification purposes. It will be shared with the Google Merchant Center and will not be displayed to customers.',
-	'google-listings-and-ads'
+const description = (
+	<>
+		<p>
+			{ __(
+				'Your contact information is required for verification by Google.',
+				'google-listings-and-ads'
+			) }
+		</p>
+		<p>
+			{ __(
+				'It would be shared with Google Merchant Center for store verification and would not be displayed to customers.',
+				'google-listings-and-ads'
+			) }
+		</p>
+	</>
 );
 
-const mcTitle = __( 'Enter contact information', 'google-listings-and-ads' );
+const mcTitle = __( 'Verify contact information', 'google-listings-and-ads' );
 const settingsTitle = __( 'Contact information', 'google-listings-and-ads' );
 
 /**
@@ -70,24 +82,13 @@ export function ContactInformationPreview() {
  * Renders a contact information section with specified initial state and texts.
  *
  * @param {Object} props React props.
- * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified.
+ * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified or has been verified.
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
  * @fires gla_documentation_link_click with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
  * @fires gla_documentation_link_click with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
  */
 const ContactInformation = ( { onPhoneNumberVerified } ) => {
 	const phone = useGoogleMCPhoneNumber();
-
-	/**
-	 * Since it is still lacking the phone verification state,
-	 * all onboarding accounts are considered unverified phone numbers.
-	 *
-	 * TODO: replace the code at next line back to the original logic with
-	 * `const initEditing = null;`
-	 * after the phone verification state can be detected.
-	 */
-	const initEditing = true;
-
 	const title = mcTitle;
 	const trackContext = 'setup-mc-contact-information';
 
@@ -98,7 +99,7 @@ const ContactInformation = ( { onPhoneNumberVerified } ) => {
 			title={ title }
 			description={
 				<div>
-					<p>{ description }</p>
+					{ description }
 					<p>
 						<AppDocumentationLink
 							context={ trackContext }
@@ -115,7 +116,7 @@ const ContactInformation = ( { onPhoneNumberVerified } ) => {
 				<PhoneNumberCard
 					view="setup-mc"
 					phoneNumber={ phone }
-					initEditing={ initEditing }
+					initEditing={ null }
 					onPhoneNumberVerified={ onPhoneNumberVerified }
 				/>
 				<StoreAddressCard />

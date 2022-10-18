@@ -3,16 +3,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
 import { Form } from '@woocommerce/components';
-import { getNewPath } from '@woocommerce/navigation';
 import { isEqual } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
-import useAdminUrl from '.~/hooks/useAdminUrl';
 import useStoreAddress from '.~/hooks/useStoreAddress';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
@@ -26,8 +23,13 @@ import PreLaunchChecklist from './pre-launch-checklist';
 import usePolicyCheck from '.~/hooks/usePolicyCheck';
 import checkErrors from './pre-launch-checklist/checkErrors';
 
-export default function StoreRequirements() {
-	const adminUrl = useAdminUrl();
+/**
+ * Step for the store requirements in the onboarding flow.
+ *
+ * @param {Object} props React props.
+ * @param {() => void} props.onContinue Callback called once continue button is clicked.
+ */
+export default function StoreRequirements( { onContinue } ) {
 	const { updateGoogleMCContactInformation, saveSettings } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: address } = useStoreAddress();
@@ -67,25 +69,14 @@ export default function StoreRequirements() {
 			setCompleting( true );
 
 			await updateGoogleMCContactInformation();
-
-			await apiFetch( {
-				path: '/wc/gla/mc/settings/sync',
-				method: 'POST',
-			} );
-
-			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
-			const path = getNewPath(
-				{ guide: 'submission-success' },
-				'/google/product-feed'
-			);
-			window.location.href = adminUrl + path;
+			onContinue();
 		} catch ( error ) {
 			setCompleting( false );
 
 			createNotice(
 				'error',
 				__(
-					'Unable to complete your setup. Please try again later.',
+					'Unable to update your contact information. Please try again later.',
 					'google-listings-and-ads'
 				)
 			);
@@ -186,7 +177,7 @@ export default function StoreRequirements() {
 									onClick={ handleSubmit }
 								>
 									{ __(
-										'Complete setup',
+										'Continue',
 										'google-listings-and-ads'
 									) }
 								</AppButton>
