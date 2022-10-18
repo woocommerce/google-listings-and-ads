@@ -924,7 +924,14 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		foreach ( $mapping_rules as $mapping_rule ) {
 			if ( $this->rule_match_conditions( $mapping_rule ) ) {
 				$attribute_id                = $mapping_rule['attribute'];
-				$attributes[ $attribute_id ] = self::format_attribute( apply_filters( "woocommerce_gla_product_attribute_value_{$attribute_id}", $this->get_source( $mapping_rule['source'] ), $this->get_wc_product() ), $attribute_id );
+				$attributes[ $attribute_id ] = self::format_attribute(
+					apply_filters(
+						"woocommerce_gla_product_attribute_value_{$attribute_id}",
+						$this->get_source( $mapping_rule['source'] ),
+						$this->get_wc_product()
+					),
+					$attribute_id
+				);
 			}
 		}
 
