@@ -118,8 +118,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Update Size Type Attribute available values.
 * Tweak - Update Website not Claimed issue information.
 
-= 2.1.2 - 2022-09-15 =
-* Fix - WooCommerce 6.7 compatibility issues.
-* Tweak - WC 6.9 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
