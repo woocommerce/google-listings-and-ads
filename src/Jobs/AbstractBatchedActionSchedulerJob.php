@@ -81,10 +81,10 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 			// if items, schedule the process action
 			$this->schedule_process_action( $items );
 
-			if ( count( $items ) >= $this->get_batch_size() ) {
-				// if there might be more items, add another "create_batch" action to handle them
-				$this->schedule_create_batch_action( $batch_number + 1 );
-			}
+			// Add another "create_batch" action to handle unfiltered items.
+			// The last batch created here will be an empty batch, it
+			// will call "handle_complete" to finish the job.
+			$this->schedule_create_batch_action( $batch_number + 1 );
 		}
 
 		$this->monitor->detach_timeout_monitor( $create_batch_hook, $create_batch_args );

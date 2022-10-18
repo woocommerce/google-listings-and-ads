@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { APPEARANCE } from '.~/components/account-card';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import ContactInformationPreviewCard from '../contact-information-preview-card';
+import './phone-number-card-preview.scss';
 
 /**
  * Triggered when phone number edit button is clicked.
@@ -35,7 +36,21 @@ export function PhoneNumberCardPreview( { editHref, learnMore } ) {
 
 	if ( loaded ) {
 		if ( data.isValid ) {
-			content = data.display;
+			const verificationStatus = data.isVerified ? (
+				<div className="gla-phone-number-card-preview__verified-status">
+					{ __( 'Verified', 'google-listings-and-ads' ) }
+				</div>
+			) : (
+				<div className="gla-phone-number-card-preview__unverified-status">
+					{ __( 'Unverified', 'google-listings-and-ads' ) }
+				</div>
+			);
+			content = (
+				<>
+					{ data.display }
+					{ verificationStatus }
+				</>
+			);
 		} else {
 			warning = __(
 				'Please add your phone number',

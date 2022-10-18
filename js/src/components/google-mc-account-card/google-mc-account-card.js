@@ -8,18 +8,17 @@ import DisabledCard from './disabled-card';
 import NonConnected from './non-connected';
 
 const GoogleMCAccountCard = () => {
-	const { hasFinishedResolution, googleMCAccount } = useGoogleMCAccount();
+	const {
+		hasFinishedResolution,
+		isPreconditionReady,
+		googleMCAccount,
+	} = useGoogleMCAccount();
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
 	}
 
-	/**
-	 * If there is no googleMCAccount, this means users have not connected their Google account,
-	 * or have not granted necessary access permissions for Google Merchant Center,
-	 * so we show a DisabledCard here.
-	 */
-	if ( ! googleMCAccount ) {
+	if ( ! isPreconditionReady ) {
 		return <DisabledCard />;
 	}
 
