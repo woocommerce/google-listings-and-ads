@@ -69,6 +69,7 @@ const AttributeMappingCategoryControl = ( {
 					options={ tree }
 					onChange={ onCategoriesChange }
 					value={ selectedCategories }
+					allowsSelectParents={ true }
 					placeholder={ __(
 						'Select categories',
 						'google-listings-and-ads'

@@ -63,6 +63,7 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @typedef {Object} BaseInnerOption
  * @property {string|JSX.Element} label The label string or label with highlighted react element for the option.
  * @property {InnerOption[]|undefined} children The children options. The options are filtered if in searching.
+ * @property {boolean} isRoot Whether this option is the root.
  * @property {boolean} hasChildren Whether this option has children.
  * @property {InnerOption[]} leaves All leaf options that are flattened under this option. The options are filtered if in searching.
  * @property {boolean} checked Whether this option is checked.
@@ -87,6 +88,7 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @param {Option[]} [props.options] Options to show in the component
  * @param {string[]} [props.value] Selected values
  * @param {number} [props.maxVisibleTags] The maximum number of tags to show. Undefined, 0 or less than 0 evaluates to "Show All".
+ * @param {boolean} [props.allowsSelectParents=false] If true, when selecting a parent it also adds its key in the onChange callback.
  * @param {Function} [props.onChange] Callback when the selector changes
  * @param {(visible: boolean) => void} [props.onDropdownVisibilityChange] Callback when the visibility of the dropdown options is changed.
  * @return {JSX.Element} The component
@@ -102,6 +104,7 @@ const TreeSelectControl = ( {
 	options = [],
 	value = [],
 	maxVisibleTags,
+	allowsSelectParents = false,
 	onChange = () => {},
 	onDropdownVisibilityChange = noop,
 } ) => {
@@ -202,6 +205,16 @@ const TreeSelectControl = ( {
 		};
 
 		const descriptors = {
+			isRoot: {
+				/**
+				 * Returns whether this option is the root.
+				 *
+				 * @return {boolean} Trie if the option is the root.
+				 */
+				get() {
+					return this.value === ROOT_VALUE;
+				},
+			},
 			hasChildren: {
 				/**
 				 * Returns whether this option has children.
@@ -231,12 +244,16 @@ const TreeSelectControl = ( {
 				/**
 				 * Returns whether this option is checked.
 				 * A leaf option is checked if its value is selected.
-				 * A parent option is checked if all leaves are checked.
+				 * When allowsSelectParents is false. Then a parent option is checked if all leaves are checked.
+				 * When allowsSelectParents is true. Then a parent option is checked if its value is selected.
 				 *
 				 * @return {boolean} True if checked, false otherwise.
 				 */
 				get() {
-					if ( this.hasChildren ) {
+					if (
+						this.hasChildren &&
+						( ! allowsSelectParents || this.isRoot )
+					) {
 						return this.leaves.every( ( opt ) => opt.checked );
 					}
 					return cache.selectedValues.includes( this.value );
@@ -272,7 +289,7 @@ const TreeSelectControl = ( {
 				get() {
 					return (
 						isSearching ||
-						this.value === ROOT_VALUE ||
+						this.isRoot ||
 						cache.expandedValues.includes( this.value )
 					);
 				},
@@ -415,6 +432,13 @@ const TreeSelectControl = ( {
 	 * @param {InnerOption} option The option to change
 	 */
 	const handleParentChange = ( checked, option ) => {
+		// If allowsSelectParents is true we allow the parent key to be selected and we don't select the children, we just expand the node.
+		if ( allowsSelectParents && ! option.isRoot ) {
+			handleSingleChange( checked, option );
+			handleToggleExpanded( option );
+			return;
+		}
+
 		let newValue;
 		const changedValues = option.leaves
 			.filter( ( opt ) => opt.checked !== checked )
