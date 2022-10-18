@@ -170,7 +170,7 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	 * @return array The disabled group option
 	 */
 	protected function get_yoast_seo_attribute_mapping_group_source(): array {
-		return [ 'disabled:yoast' => __( '- Yoast SEO -', 'google-listings-and-ads' ) ];
+		return [ 'disabled:' . self::VALUE_KEY => __( '- Yoast SEO -', 'google-listings-and-ads' ) ];
 	}
 
 	/**

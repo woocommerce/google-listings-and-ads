@@ -386,7 +386,7 @@ trait ProductTrait {
 			],
 			[
 				'attribute'               => 'multipack',
-				'source'                  => '0',
+				'source'                  => '2',
 				'category_condition_type' => 'ALL',
 				'categories'              => '',
 			],

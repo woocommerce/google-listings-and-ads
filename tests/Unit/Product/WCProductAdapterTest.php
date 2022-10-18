@@ -110,7 +110,7 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( $this->get_rule_attribute( 'material' ), $adapted_product->getMaterial() );
 		$this->assertEquals( $this->get_rule_attribute( 'pattern' ), $adapted_product->getPattern() );
 		$this->assertEquals( $this->get_rule_attribute( 'ageGroup' ), $adapted_product->getAgeGroup() );
-		$this->assertEquals( 0, $adapted_product->getMultipack() );
+		$this->assertEquals( 2, $adapted_product->getMultipack() );
 		$this->assertEquals( true, $adapted_product->getIsBundle() );
 		$this->assertEquals( true, $adapted_product->getAdult() );
 	}

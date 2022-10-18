@@ -63,6 +63,11 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected $tax_excluded;
 
 	/**
+	 * @var array Product category ids
+	 */
+	protected $product_category_ids;
+
+	/**
 	 * Initialize this object's properties from an array.
 	 *
 	 * @param array $array Used to seed this object's properties.
@@ -921,10 +926,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			return $this;
 		}
 
+		$this->set_product_category_ids();
+
 		foreach ( $mapping_rules as $mapping_rule ) {
 			if ( $this->rule_match_conditions( $mapping_rule ) ) {
 				$attribute_id                = $mapping_rule['attribute'];
-				$attributes[ $attribute_id ] = self::format_attribute(
+				$attributes[ $attribute_id ] = $this->format_attribute(
 					apply_filters(
 						"woocommerce_gla_product_attribute_value_{$attribute_id}",
 						$this->get_source( $mapping_rule['source'] ),
@@ -946,6 +953,14 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
+	 * Set the product category ids property
+	 */
+	protected function set_product_category_ids() {
+		$terms                      = get_the_terms( $this->get_wc_product()->get_id(), 'product_cat' );
+		$this->product_category_ids = $terms ? wp_list_pluck( $terms, 'term_id' ) : [];
+	}
+
+	/**
 	 * Get a source value for attribute mapping
 	 *
 	 * @param string $source The source to get the value
@@ -954,19 +969,20 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected function get_source( string $source ) {
 		$source_type = null;
 
-		if ( strpos( $source, ':' ) ) {
-			$source_parts = explode( ':', $source );
-			$source_type  = $source_parts[0];
-			$source_value = $source_parts[1];
+		$type_separator = strpos( $source, ':' );
+
+		if ( $type_separator ) {
+			$source_type  = substr( $source, 0, $type_separator );
+			$source_value = substr( $source, $type_separator + 1 );
 		}
 
 		switch ( $source_type ) {
 			case 'product':
-				return self::get_product_field( $source_value );
+				return $this->get_product_field( $source_value );
 			case 'taxonomy':
-				return self::get_product_taxonomy( $source_value );
+				return $this->get_product_taxonomy( $source_value );
 			case 'attribute':
-				return $this->wc_product->get_meta( $source_value );
+				return $this->get_wc_product()->get_meta( $source_value );
 			default:
 				return $source;
 		}
@@ -980,27 +996,26 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return bool True if the rule is applicable
 	 */
 	protected function rule_match_conditions( array $rule ): bool {
-		$attribute                 = $rule['attribute'];
-		$category_condition_type   = $rule['category_condition_type'];
-		$categories                = explode( ',', $rule['categories'] );
-		$wc_product                = $this->get_wc_product();
-		$terms                     = get_the_terms( $wc_product->get_id(), 'product_cat' );
-		$wc_product_categories     = $terms ? wp_list_pluck( $terms, 'term_id' ) : [];
-		$contains_rules_categories = ! empty( array_intersect( $categories, $wc_product_categories ) );
+		$attribute               = $rule['attribute'];
+		$category_condition_type = $rule['category_condition_type'];
+
+		if ( $category_condition_type === AttributeMappingHelper::CATEGORY_CONDITION_TYPE_ALL ) {
+			return true;
+		}
 
 		// size is not the real attribute, the real attribute is sizes
 		if ( ! property_exists( $this, $attribute ) && $attribute !== 'size' ) {
 			return false;
 		}
 
-		switch ( $category_condition_type ) {
-			case AttributeMappingHelper::CATEGORY_CONDITION_TYPE_ONLY:
-				return $contains_rules_categories;
-			case AttributeMappingHelper::CATEGORY_CONDITION_TYPE_EXCEPT:
-				return ! $contains_rules_categories;
-			default:
-				return true;
+		$categories                = explode( ',', $rule['categories'] );
+		$contains_rules_categories = ! empty( array_intersect( $categories, $this->product_category_ids ) );
+
+		if ( $category_condition_type === AttributeMappingHelper::CATEGORY_CONDITION_TYPE_ONLY ) {
+			return $contains_rules_categories;
 		}
+
+		return ! $contains_rules_categories;
 	}
 
 	/**
