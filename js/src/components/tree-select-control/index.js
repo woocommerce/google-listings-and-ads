@@ -88,7 +88,7 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @param {Option[]} [props.options] Options to show in the component
  * @param {string[]} [props.value] Selected values
  * @param {number} [props.maxVisibleTags] The maximum number of tags to show. Undefined, 0 or less than 0 evaluates to "Show All".
- * @param {boolean} [props.allowsSelectParents=false] If true, when selecting a parent it also adds its key in the onChange callback.
+ * @param {boolean} [props.allowsSelectParents=false] If true, when selecting a parent it also adds its value in the onChange callback.
  * @param {Function} [props.onChange] Callback when the selector changes
  * @param {(visible: boolean) => void} [props.onDropdownVisibilityChange] Callback when the visibility of the dropdown options is changed.
  * @return {JSX.Element} The component
