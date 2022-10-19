@@ -7,7 +7,7 @@ import { useEffect, useCallback } from '@wordpress/element';
  * Internal dependencies
  */
 import useApiFetchCallback from './useApiFetchCallback';
-import useCountdown from '.~/components/contact-information/phone-number-card/useCountdown';
+import useCountdown from '.~/hooks/useCountdown';
 
 /**
  * A hook for polling to an API Endpoint on intervals
@@ -19,23 +19,27 @@ import useCountdown from '.~/components/contact-information/phone-number-card/us
  */
 export default function usePolling(
 	options,
-	delay = 5,
+	delay = 10,
 	stopOnResolved = false
 ) {
 	const { second, callCount, startCountdown } = useCountdown();
 	const [ fetch, { data } ] = useApiFetchCallback( options );
 
-	const start = useCallback( () => {
-		const promise = fetch();
-		promise.finally( () => startCountdown( delay ) );
-		return promise;
-	}, [ fetch, startCountdown, delay ] );
+	const start = useCallback(
+		( shouldRun = true ) => {
+			if ( ! shouldRun ) return;
+			const promise = fetch();
+			promise.finally( () => startCountdown( delay ) );
+			return promise;
+		},
+		[ fetch, startCountdown, delay ]
+	);
 
 	useEffect( () => {
-		if ( second === 0 && callCount > 0 && ( ! data || ! stopOnResolved ) ) {
-			start();
+		if ( second === 0 && callCount > 0 ) {
+			start( ! data || ! stopOnResolved );
 		}
-	}, [ second, callCount, start, stopOnResolved, data ] );
+	}, [ second, callCount, start, stopOnResolved ] );
 
 	return {
 		start,
