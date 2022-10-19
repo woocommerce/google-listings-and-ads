@@ -7,6 +7,7 @@ module.exports = {
 	testEnvironment: 'jsdom',
 	setupFiles: [ 'core-js' ],
 	moduleNameMapper: {
+		'\\.png$': '<rootDir>/tests/mocks/assets/imageMock.js',
 		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
 		// Transform our `.~/` alias.

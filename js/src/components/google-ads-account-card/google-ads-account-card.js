@@ -7,6 +7,7 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleAdsAccountCard from './connected-google-ads-account-card';
 import NonConnected from './non-connected';
 import AuthorizeAds from './authorize-ads';
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 export default function GoogleAdsAccountCard() {
 	const { google, scope } = useGoogleAccount();
@@ -20,7 +21,7 @@ export default function GoogleAdsAccountCard() {
 		return <AuthorizeAds additionalScopeEmail={ google.email } />;
 	}
 
-	if ( googleAdsAccount.status === 'disconnected' ) {
+	if ( googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ) {
 		return <NonConnected />;
 	}
 

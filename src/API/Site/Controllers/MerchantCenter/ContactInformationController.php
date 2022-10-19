@@ -124,35 +124,40 @@ class ContactInformationController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id'                      => [
+			'id'                        => [
 				'type'              => 'integer',
 				'description'       => __( 'The Merchant Center account ID.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'phone_number'            => [
+			'phone_number'              => [
 				'type'        => 'string',
 				'description' => __( 'The phone number associated with the Merchant Center account.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
-			'mc_address'              => [
+			'phone_verification_status' => [
+				'type'        => 'string',
+				'description' => __( 'The verification status of the phone number associated with the Merchant Center account.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'mc_address'                => [
 				'type'        => 'object',
 				'description' => __( 'The address associated with the Merchant Center account.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'properties'  => $this->get_address_schema(),
 			],
-			'wc_address'              => [
+			'wc_address'                => [
 				'type'        => 'object',
 				'description' => __( 'The WooCommerce store address.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'properties'  => $this->get_address_schema(),
 			],
-			'is_mc_address_different' => [
+			'is_mc_address_different'   => [
 				'type'        => 'boolean',
 				'description' => __( 'Whether the Merchant Center account address is different than the WooCommerce store address.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
-			'wc_address_errors'       => [
+			'wc_address_errors'         => [
 				'type'        => 'array',
 				'description' => __( 'The errors associated with the WooCommerce address', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
@@ -215,10 +220,11 @@ class ContactInformationController extends BaseOptionsController {
 	 * @return Response
 	 */
 	protected function get_contact_information_response( ?AccountBusinessInformation $contact_information, Request $request ): Response {
-		$phone_number    = null;
-		$mc_address      = null;
-		$wc_address      = null;
-		$is_address_diff = false;
+		$phone_number              = null;
+		$phone_verification_status = null;
+		$mc_address                = null;
+		$wc_address                = null;
+		$is_address_diff           = false;
 
 		if ( $this->settings->get_store_address() instanceof AccountAddress ) {
 			$wc_address      = $this->settings->get_store_address();
@@ -228,7 +234,8 @@ class ContactInformationController extends BaseOptionsController {
 		if ( $contact_information instanceof AccountBusinessInformation ) {
 			if ( ! empty( $contact_information->getPhoneNumber() ) ) {
 				try {
-					$phone_number = PhoneNumber::cast( $contact_information->getPhoneNumber() )->get();
+					$phone_number              = PhoneNumber::cast( $contact_information->getPhoneNumber() )->get();
+					$phone_verification_status = strtolower( $contact_information->getPhoneVerificationStatus() );
 				} catch ( InvalidValue $exception ) {
 					// log and fail silently
 					do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
@@ -249,12 +256,13 @@ class ContactInformationController extends BaseOptionsController {
 
 		return $this->prepare_item_for_response(
 			[
-				'id'                      => $this->options->get_merchant_id(),
-				'phone_number'            => $phone_number,
-				'mc_address'              => self::serialize_address( $mc_address ),
-				'wc_address'              => self::serialize_address( $wc_address ),
-				'is_mc_address_different' => $is_address_diff,
-				'wc_address_errors'       => $wc_address_errors,
+				'id'                        => $this->options->get_merchant_id(),
+				'phone_number'              => $phone_number,
+				'phone_verification_status' => $phone_verification_status,
+				'mc_address'                => self::serialize_address( $mc_address ),
+				'wc_address'                => self::serialize_address( $wc_address ),
+				'is_mc_address_different'   => $is_address_diff,
+				'wc_address_errors'         => $wc_address_errors,
 			],
 			$request
 		);

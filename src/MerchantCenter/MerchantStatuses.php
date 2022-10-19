@@ -814,12 +814,20 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		 *
 		 * TODO: Remove the condition of matching the $issue['issue']
 		 *       if its issue code is the same as 'merchant_quality_low'
-		 *       after Free and Enhanced Listings merge.
+		 *       after Google replaces the issue title on their side.
 		 */
 		if ( 'merchant_quality_low' === $issue['code'] || "Account isn't eligible for free listings" === $issue['issue'] ) {
 			$issue['issue']      = 'Show products on additional surfaces across Google through free listings';
 			$issue['severity']   = self::SEVERITY_WARNING;
 			$issue['action_url'] = 'https://support.google.com/merchants/answer/9199328?hl=en';
+		}
+
+		/**
+		 * Reference: https://github.com/woocommerce/google-listings-and-ads/issues/1688
+		 */
+		if ( 'home_page_issue' === $issue['code'] ) {
+			$issue['issue']      = 'Website claim is lost, need to re verify and claim your website. Please reference the support link';
+			$issue['action_url'] = 'https://woocommerce.com/document/google-listings-and-ads-faqs/#reverify-website';
 		}
 
 		return $issue;

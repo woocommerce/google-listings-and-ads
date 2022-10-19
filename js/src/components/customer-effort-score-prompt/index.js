@@ -2,9 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import CustomerEffortScoreDefault, {
-	CustomerEffortScore,
-} from '@woocommerce/customer-effort-score';
+import { CustomerEffortScore } from '@woocommerce/customer-effort-score';
 import { recordEvent } from '@woocommerce/tracks';
 
 /**
@@ -13,12 +11,6 @@ import { recordEvent } from '@woocommerce/tracks';
 import { LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
 import useEffectRemoveNotice from '.~/hooks/useEffectRemoveNotice';
-
-// WC 6.6.0 updated the package @woocommerce/customer-effort-score, which does not include a default export anymore, therefore
-// breaking the page for newer versions of WC. This is a temporal workaround to be compatible with older WC versions
-// and with our L-2 policy.
-// See  https://github.com/woocommerce/woocommerce/blob/6.6.0/packages/js/customer-effort-score/src/index.ts
-const CESComponent = CustomerEffortScoreDefault || CustomerEffortScore;
 
 /**
  * CES prompt snackbar open
@@ -95,7 +87,7 @@ const CustomerEffortScorePrompt = ( { eventContext, label } ) => {
 	};
 
 	return (
-		<CESComponent
+		<CustomerEffortScore
 			label={ label }
 			recordScoreCallback={ recordScore }
 			onNoticeShownCallback={ onNoticeShown }

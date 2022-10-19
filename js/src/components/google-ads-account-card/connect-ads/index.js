@@ -3,7 +3,7 @@
  */
 import { useState, createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Button, CardDivider } from '@wordpress/components';
+import { CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -79,6 +79,7 @@ const ConnectAds = ( props ) => {
 	return (
 		<AccountCard
 			className="gla-connect-ads"
+			alignIcon="top"
 			appearance={ APPEARANCE.GOOGLE_ADS }
 		>
 			<CardDivider />
@@ -134,12 +135,16 @@ const ConnectAds = ( props ) => {
 				</ContentButtonLayout>
 			</Section.Card.Body>
 			<Section.Card.Footer>
-				<Button isLink onClick={ onCreateNew }>
+				<AppButton
+					isTertiary
+					disabled={ isLoading }
+					onClick={ onCreateNew }
+				>
 					{ __(
 						'Or, create a new Google Ads account',
 						'google-listings-and-ads'
 					) }
-				</Button>
+				</AppButton>
 			</Section.Card.Footer>
 		</AccountCard>
 	);

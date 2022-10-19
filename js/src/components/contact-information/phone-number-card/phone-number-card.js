@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 import { CardDivider } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
 
@@ -101,10 +101,10 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberVerified } ) {
  * @param {boolean|null} [props.initEditing=null] Specify the inital UI state.
  *     `true`: initialize with the editing UI.
  *     `false`: initialize with the viewing UI.
- *     `null`: determine the initial UI state according to the `data.isValid` after the `phoneNumber` loaded.
+ *     `null`: determine the initial UI state according to the `data.isVerified` after the `phoneNumber` loaded.
  * @param {Function} [props.onEditClick] Called when clicking on "Edit" button.
  *     If this callback is omitted, it will enter edit mode when clicking on "Edit" button.
- * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified in edit mode.
+ * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified or has been verified.
  *
  * @fires gla_mc_phone_number_edit_button_click
  */
@@ -117,14 +117,27 @@ const PhoneNumberCard = ( {
 } ) => {
 	const { loaded, data } = phoneNumber;
 	const [ isEditing, setEditing ] = useState( initEditing );
+	const onPhoneNumberVerifiedRef = useRef();
+	onPhoneNumberVerifiedRef.current = onPhoneNumberVerified;
+
+	const { isVerified } = data;
 
 	// Handle the initial UI state of `initEditing = null`.
 	// The `isEditing` state is on hold. Determine it after the `phoneNumber` loaded.
 	useEffect( () => {
 		if ( loaded && isEditing === null ) {
-			setEditing( ! data.isValid );
+			setEditing( ! isVerified );
 		}
-	}, [ loaded, data.isValid, isEditing ] );
+	}, [ loaded, isVerified, isEditing ] );
+
+	// If `initEditing` is true, EditPhoneNumberCard takes care of the call of `onPhoneNumberVerified`
+	// after the phone number is verified. If `initEditing` is false or null, this useEffect handles
+	// the call of `onPhoneNumberVerified` when the loaded phone number has already been verified.
+	useEffect( () => {
+		if ( loaded && initEditing !== true && isVerified ) {
+			onPhoneNumberVerifiedRef.current();
+		}
+	}, [ loaded, isVerified, initEditing ] );
 
 	// Return a simple loading AccountCard since the initial edit state is unknown before loaded.
 	if ( isEditing === null ) {

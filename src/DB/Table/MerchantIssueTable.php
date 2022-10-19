@@ -31,7 +31,7 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     `code` varchar(100) NOT NULL,
     `severity` varchar(20) NOT NULL DEFAULT 'warning',
     `product` varchar(100) NOT NULL,
-    `action` varchar(100) NOT NULL,
+    `action` text NOT NULL,
     `action_url` varchar(1024) NOT NULL,
     `applicable_countries` text NOT NULL,
     `source` varchar(10) NOT NULL DEFAULT 'mc',

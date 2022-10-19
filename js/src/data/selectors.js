@@ -10,6 +10,10 @@ import createSelector from 'rememo';
 import { STORE_KEY } from './constants';
 import { getReportQuery, getReportKey, getPerformanceQuery } from './utils';
 
+/**
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
+
 export const getShippingRates = ( state ) => {
 	return state.mc.shipping.rates;
 };
@@ -28,6 +32,12 @@ export const getSettings = ( state ) => {
  * @property {'yes'|'no'} owner Whether the current admin user is the jetpack owner.
  * @property {string|''} email Owner email. Available for jetpack owner.
  * @property {string|''} displayName Owner name. Available for jetpack owner.
+ */
+
+/**
+ * @typedef {Object} GoogleMCAccount
+ * @property {number} id Account ID. It's 0 if not yet connected.
+ * @property {string} status Connection status.
  */
 
 /**
@@ -68,11 +78,42 @@ export const getExistingGoogleAdsAccounts = ( state ) => {
 	return state.mc.accounts.existing_ads;
 };
 
+/**
+ * @typedef {Object} Address
+ * @property {string|null} street_address Street-level part of the address. `null` when empty.
+ * @property {string|null} locality City, town or commune. `null` when empty.
+ * @property {string|null} region Top-level administrative subdivision of the country. `null` when empty.
+ * @property {string|null} postal_code Postal code or ZIP. `null` when empty.
+ * @property {CountryCode} country Two-letter country code in ISO 3166-1 alpha-2 format. Example: 'US'.
+ *
+ * @typedef {Object} ContactInformation
+ * @property {number} id The Google Merchant Center account ID.
+ * @property {string|null} phone_number The phone number in international format associated with the Google Merchant Center account. Example: '+12133734253'. `null` if the phone number is not yet set.
+ * @property {'verified'|'unverified'|null} phone_verification_status The verification status of the phone number associated with the Google Merchant Center account. `null` if the phone number is not yet set.
+ * @property {Address|null} mc_address The address associated with the Google Merchant Center account. `null` if the address is not yet set.
+ * @property {Address|null} wc_address The WooCommerce store address. `null` if the address is not yet set.
+ * @property {boolean} is_mc_address_different Whether the Google Merchant Center account address is different than the WooCommerce store address.
+ * @property {string[]} wc_address_errors The errors associated with the WooCommerce store address.
+ */
+
+/**
+ * Select the state of contact information associated with the Google Merchant Center account.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {ContactInformation|null} The contact information associated with the Google Merchant Center account. It would return `null` before the data is fetched.
+ */
 export const getGoogleMCContactInformation = ( state ) => {
 	return state.mc.contact;
 };
 
-// Create another selector to separate the `hasFinishedResolution` state with `getGoogleMCContactInformation`.
+/**
+ * Select the state of phone number associated with the Google Merchant Center account.
+ *
+ * Create another selector to separate the `hasFinishedResolution` state with `getGoogleMCContactInformation`.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {{ data: ContactInformation|null, loaded: boolean }} The payload of contact information associated with the Google Merchant Center account and its loaded state.
+ */
 export const getGoogleMCPhoneNumber = createRegistrySelector(
 	( select ) => ( state ) => {
 		const selector = select( STORE_KEY );
@@ -129,12 +170,27 @@ export const getMCSetup = ( state ) => {
 	return state.mc_setup;
 };
 
+/**
+ * @typedef {import('.~/data/actions').ProductStatistics } ProductStatistics
+ */
+
+/**
+ * Get the MC product statistics data.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ *
+ * @return {ProductStatistics|null} The MC product statistics data. Returns `null` if data have not yet loaded.
+ */
 export const getMCProductStatistics = ( state ) => {
 	return state.mc_product_statistics;
 };
 
 export const getMCReviewRequest = ( state ) => {
 	return state.mc_review_request;
+};
+
+export const getPolicyCheck = ( state ) => {
+	return state.mc.policy_check;
 };
 
 // note: we use rememo createSelector here to cache the sliced issues array,

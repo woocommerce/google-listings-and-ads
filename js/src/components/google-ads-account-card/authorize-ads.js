@@ -10,8 +10,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAuthorization from '.~/hooks/useGoogleAuthorization';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
-
-const pageName = 'setup-ads';
+import { glaData } from '.~/constants';
 
 /**
  * @param {Object} props React props
@@ -19,9 +18,10 @@ const pageName = 'setup-ads';
  * @fires gla_google_account_connect_button_click with `{ action: 'scope', context: 'setup-ads' }`
  */
 const AuthorizeAds = ( { additionalScopeEmail } ) => {
+	const nextPageName = glaData.mcSetupComplete ? 'setup-ads' : 'setup-mc';
 	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchGoogleConnect, { loading, data } ] = useGoogleAuthorization(
-		pageName,
+		nextPageName,
 		additionalScopeEmail
 	);
 
@@ -44,6 +44,7 @@ const AuthorizeAds = ( { additionalScopeEmail } ) => {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_ADS }
+			alignIcon="top"
 			indicator={
 				<AppButton
 					isSecondary
@@ -54,7 +55,7 @@ const AuthorizeAds = ( { additionalScopeEmail } ) => {
 						'google-listings-and-ads'
 					) }
 					eventName="gla_google_account_connect_button_click"
-					eventProps={ { context: pageName, action: 'scope' } }
+					eventProps={ { context: 'setup-ads', action: 'scope' } }
 				/>
 			}
 		/>

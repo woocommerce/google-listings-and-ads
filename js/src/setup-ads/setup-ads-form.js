@@ -14,8 +14,8 @@ import { recordEvent } from '@woocommerce/tracks';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import SetupAdsFormContent from './setup-ads-form-content';
-import useSetupCompleteCallback from './useSetupCompleteCallback';
 import validateForm from '.~/utils/paid-ads/validateForm';
 
 /**
@@ -24,7 +24,7 @@ import validateForm from '.~/utils/paid-ads/validateForm';
 const SetupAdsForm = () => {
 	const [ didFormChanged, setFormChanged ] = useState( false );
 	const [ isSubmitted, setSubmitted ] = useState( false );
-	const [ handleSetupComplete, isSubmitting ] = useSetupCompleteCallback();
+	const [ handleSetupComplete, isSubmitting ] = useAdsSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
 
@@ -68,7 +68,14 @@ const SetupAdsForm = () => {
 	};
 
 	const handleChange = ( _, values ) => {
-		setFormChanged( ! isEqual( initialValues, values ) );
+		const args = [ initialValues, values ].map(
+			( { countryCodes, ...v } ) => {
+				v.countrySet = new Set( countryCodes );
+				return v;
+			}
+		);
+
+		setFormChanged( ! isEqual( ...args ) );
 	};
 
 	if ( ! targetAudience ) {
