@@ -2,7 +2,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	max-width: 487px;
+	max-width: $gla-width-large;
 	text-align: center;
 	margin: auto;
 	gap: $grid-unit-15;
@@ -10,13 +10,10 @@
 
 	h1 {
 		font-size: $gla-font-large;
-		font-weight: 400;
 		padding: 0;
 	}
 
-	.description {
-		font-size: $default-font-size;
-		font-weight: 400;
-		margin: 0;
+	&__description {
+		line-height: $gla-line-height-smaller;
 	}
 }

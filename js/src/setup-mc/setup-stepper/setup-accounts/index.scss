@@ -1,0 +1,20 @@
+.gla-wp-google-accounts-section {
+	margin-bottom: var(--main-gap);
+}
+
+.gla-google-mc-account-section {
+	header {
+		border-top: 1px solid $gray-300;
+
+		p {
+			margin-bottom: 1.5em;
+			font-style: italic;
+			font-size: $gla-font-smaller;
+			color: $gray-700;
+		}
+	}
+
+	.gla-account-card {
+		margin-bottom: var(--large-gap);
+	}
+}

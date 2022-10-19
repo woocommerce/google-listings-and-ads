@@ -124,10 +124,10 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'find_sync_ready_products' )
 			->willReturn( $filtered_product_list );
 
-		$this->action_scheduler->expects( $this->exactly( 2 ) )
+		$this->action_scheduler->expects( $this->exactly( 3 ) )
 			->method( 'has_scheduled_action' )->willReturn( false );
 
-		$this->action_scheduler->expects( $this->exactly( 2 ) )
+		$this->action_scheduler->expects( $this->exactly( 3 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
 				[ self::CREATE_BATCH_HOOK, [ 1 ] ],

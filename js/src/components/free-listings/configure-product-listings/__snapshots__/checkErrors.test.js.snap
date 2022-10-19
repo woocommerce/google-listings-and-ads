@@ -1,5 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`checkErrors Audience When the audience countries array is empty and the value of audience location option is 'selected', should not pass 1`] = `"Please select at least one country."`;
+
+exports[`checkErrors Audience When the audience location option is an invalid value or missing, should not pass 1`] = `"Please select a location option."`;
+
+exports[`checkErrors Audience When the audience location option is an invalid value or missing, should not pass 2`] = `"Please select a location option."`;
+
 exports[`checkErrors For tax rate, if selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 1`] = `"Please specify tax rate option."`;
 
 exports[`checkErrors For tax rate, if selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 2`] = `"Please specify tax rate option."`;

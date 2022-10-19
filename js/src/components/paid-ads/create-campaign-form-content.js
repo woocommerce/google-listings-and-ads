@@ -6,8 +6,14 @@ import BudgetSection from '.~/components/paid-ads/budget-section';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 import './campaign-form-content.scss';
 
-const CreateCampaignFormContent = ( props ) => {
-	const { formProps } = props;
+/**
+ * Renders the audience and budget sections for creating a new campaign.
+ *
+ * @param {Object} props React props.
+ * @param {Object} props.formProps Form props forwarded from `Form` component.
+ * @param {JSX.Element} [props.budgetSectionChildren] The children to be rendered in the budget section.
+ */
+const CreateCampaignFormContent = ( { formProps, budgetSectionChildren } ) => {
 	const disabledBudgetSection = ! formProps.values.countryCodes.length;
 
 	return (
@@ -16,7 +22,9 @@ const CreateCampaignFormContent = ( props ) => {
 			<BudgetSection
 				formProps={ formProps }
 				disabled={ disabledBudgetSection }
-			/>
+			>
+				{ budgetSectionChildren }
+			</BudgetSection>
 			<FaqsSection />
 		</div>
 	);

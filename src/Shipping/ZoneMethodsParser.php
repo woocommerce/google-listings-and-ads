@@ -71,7 +71,7 @@ class ZoneMethodsParser implements Service {
 					return [];
 				}
 
-				$shipping_rates[] = new ShippingRate( $flat_rate );
+				$shipping_rates[] = new ShippingRate( (float) $flat_rate );
 
 				if ( ! empty( $shipping_class_rates ) ) {
 					foreach ( $shipping_class_rates as ['class' => $class, 'rate' => $rate] ) {

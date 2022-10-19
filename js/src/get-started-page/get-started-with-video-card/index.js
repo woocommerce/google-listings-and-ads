@@ -3,7 +3,6 @@
  */
 import {
 	Card,
-	CardHeader,
 	CardBody,
 	FlexBlock,
 	Tip,
@@ -19,7 +18,6 @@ import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import WistiaVideo from '.~/components/wistia-video';
-import googleLogoURL from '.~/images/google-logo.svg';
 import { getSetupMCUrl } from '.~/utils/urls';
 import './index.scss';
 
@@ -32,20 +30,6 @@ const GetStartedWithVideoCard = () => {
 
 	return (
 		<Card className="gla-get-started-with-video-card" isBorderless>
-			<CardHeader>
-				<p>
-					{ __(
-						'The official extension for WooCommerce, built in collaboration with',
-						'google-listings-and-ads'
-					) }
-				</p>
-				<img
-					src={ googleLogoURL }
-					alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
-					width="71"
-					height="24"
-				/>
-			</CardHeader>
 			<FlexBlock className="motivation-video">
 				<WistiaVideo
 					id="lpvgtsjwrg"
@@ -55,11 +39,20 @@ const GetStartedWithVideoCard = () => {
 			</FlexBlock>
 			<CardBody>
 				<Text
+					variant="caption"
+					className="gla-get-started-with-video-card__caption"
+				>
+					{ __(
+						'The official extension for WooCommerce, built in collaboration with Google',
+						'google-listings-and-ads'
+					) }
+				</Text>
+				<Text
 					variant="title.medium"
 					className="gla-get-started-with-video-card__title"
 				>
 					{ __(
-						'Reach new customers across Google with free product listings and paid ads',
+						'Reach millions of shoppers with product listings on Google',
 						'google-listings-and-ads'
 					) }
 				</Text>
@@ -68,7 +61,7 @@ const GetStartedWithVideoCard = () => {
 					className="gla-get-started-with-video-card__description"
 				>
 					{ __(
-						'Sync your products directly to Google, manage your product feed, and create Google Ad campaigns–without leaving your WooCommerce dashboard. The official extension, built in collaboration with Google.',
+						'Sync your products directly to Google, manage your product feed, and create Google Ad campaigns — all without leaving your WooCommerce dashboard.',
 						'google-listings-and-ads'
 					) }
 				</Text>

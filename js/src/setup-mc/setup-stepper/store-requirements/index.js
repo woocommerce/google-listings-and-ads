@@ -2,16 +2,14 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
+import { useState, useEffect } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
-import { getNewPath } from '@woocommerce/navigation';
+import { isEqual } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
-import useAdminUrl from '.~/hooks/useAdminUrl';
 import useStoreAddress from '.~/hooks/useStoreAddress';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
@@ -22,14 +20,21 @@ import ContactInformation from '.~/components/contact-information';
 import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
 import PreLaunchChecklist from './pre-launch-checklist';
+import usePolicyCheck from '.~/hooks/usePolicyCheck';
 import checkErrors from './pre-launch-checklist/checkErrors';
 
-export default function StoreRequirements() {
-	const adminUrl = useAdminUrl();
+/**
+ * Step for the store requirements in the onboarding flow.
+ *
+ * @param {Object} props React props.
+ * @param {() => void} props.onContinue Callback called once continue button is clicked.
+ */
+export default function StoreRequirements( { onContinue } ) {
 	const { updateGoogleMCContactInformation, saveSettings } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: address } = useStoreAddress();
 	const { settings } = useSettings();
+	const { data: policyCheckData } = usePolicyCheck();
 
 	/**
 	 * Since it still lacking the phone verification state,
@@ -37,6 +42,7 @@ export default function StoreRequirements() {
 	 */
 	const [ isPhoneNumberReady, setPhoneNumberReady ] = useState( false );
 	const [ settingsSaved, setSettingsSaved ] = useState( true );
+	const [ preprocessed, setPreprocessed ] = useState( false );
 	const [ completing, setCompleting ] = useState( false );
 
 	const handleChangeCallback = async ( _, values ) => {
@@ -63,32 +69,62 @@ export default function StoreRequirements() {
 			setCompleting( true );
 
 			await updateGoogleMCContactInformation();
-
-			await apiFetch( {
-				path: '/wc/gla/mc/settings/sync',
-				method: 'POST',
-			} );
-
-			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
-			const path = getNewPath(
-				{ guide: 'submission-success' },
-				'/google/product-feed'
-			);
-			window.location.href = adminUrl + path;
+			onContinue();
 		} catch ( error ) {
 			setCompleting( false );
 
 			createNotice(
 				'error',
 				__(
-					'Unable to complete your setup. Please try again later.',
+					'Unable to update your contact information. Please try again later.',
 					'google-listings-and-ads'
 				)
 			);
 		}
 	};
 
-	if ( ! settings ) {
+	// Preprocess the auto-checked state and data saving.
+	useEffect( () => {
+		if ( preprocessed || ! settings || ! policyCheckData ) {
+			return;
+		}
+
+		const newSettings = { ...settings };
+
+		const websiteLive =
+			policyCheckData.allowed_countries &&
+			! policyCheckData.robots_restriction &&
+			! policyCheckData.page_not_found_error &&
+			! policyCheckData.page_redirects;
+
+		if ( websiteLive !== settings.website_live ) {
+			newSettings.website_live = websiteLive;
+		}
+
+		if ( policyCheckData.store_ssl !== settings.checkout_process_secure ) {
+			newSettings.checkout_process_secure = policyCheckData.store_ssl;
+		}
+
+		if ( policyCheckData.refund_returns !== settings.refund_tos_visible ) {
+			newSettings.refund_tos_visible = policyCheckData.refund_returns;
+		}
+
+		if (
+			policyCheckData.payment_gateways !==
+			newSettings.payment_methods_visible
+		) {
+			newSettings.payment_methods_visible =
+				policyCheckData.payment_gateways;
+		}
+
+		const promise = isEqual( newSettings, settings )
+			? Promise.resolve()
+			: saveSettings( newSettings );
+
+		promise.finally( () => setPreprocessed( true ) );
+	}, [ preprocessed, policyCheckData, settings, saveSettings ] );
+
+	if ( ! preprocessed ) {
 		return <AppSpinner />;
 	}
 
@@ -141,7 +177,7 @@ export default function StoreRequirements() {
 									onClick={ handleSubmit }
 								>
 									{ __(
-										'Complete setup',
+										'Continue',
 										'google-listings-and-ads'
 									) }
 								</AppButton>

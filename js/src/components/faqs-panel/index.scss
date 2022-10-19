@@ -1,6 +1,7 @@
 .gla-faqs-panel {
 	.components-panel__row {
-		display: block;
+		flex-direction: column;
+		gap: 1.5em;
 	}
 
 	.components-panel__body-title {

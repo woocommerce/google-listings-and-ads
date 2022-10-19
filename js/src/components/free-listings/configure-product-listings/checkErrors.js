@@ -8,12 +8,28 @@ import { __ } from '@wordpress/i18n';
  */
 import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
 
+const validlocationSet = new Set( [ 'all', 'selected' ] );
 const validShippingRateSet = new Set( [ 'automatic', 'flat', 'manual' ] );
 const validShippingTimeSet = new Set( [ 'flat', 'manual' ] );
 const validTaxRateSet = new Set( [ 'destination', 'manual' ] );
 
 const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	const errors = {};
+
+	// Check audience.
+	if ( ! validlocationSet.has( values.location ) ) {
+		errors.location = __(
+			'Please select a location option.',
+			'google-listings-and-ads'
+		);
+	}
+
+	if ( values.location === 'selected' && values.countries.length === 0 ) {
+		errors.countries = __(
+			'Please select at least one country.',
+			'google-listings-and-ads'
+		);
+	}
 
 	/**
 	 * Check shipping rates.
