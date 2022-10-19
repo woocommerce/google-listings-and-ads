@@ -36,6 +36,8 @@ const defaultFormValues = {
 describe( 'checkErrors', () => {
 	it( 'When all checks are passed, should return an empty object', () => {
 		const values = {
+			location: 'selected',
+			countries: [ 'US', 'JP' ],
 			shipping_rate: 'flat',
 			shipping_time: 'flat',
 			tax_rate: 'manual',
@@ -55,6 +57,59 @@ describe( 'checkErrors', () => {
 
 		expect( errors ).toHaveProperty( 'shipping_rate' );
 		expect( errors ).toHaveProperty( 'shipping_time' );
+	} );
+
+	describe( 'Audience', () => {
+		it( 'When the audience location option is an invalid value or missing, should not pass', () => {
+			// Not set yet
+			let errors = checkErrors( {}, [], [] );
+
+			expect( errors ).toHaveProperty( 'location' );
+			expect( errors.location ).toMatchSnapshot();
+
+			// Invalid value
+			errors = checkErrors( { location: true }, [], [] );
+
+			expect( errors ).toHaveProperty( 'location' );
+			expect( errors.location ).toMatchSnapshot();
+		} );
+
+		it( 'When the audience location option is a valid value, should pass', () => {
+			// Selected all countries
+			let errors = checkErrors( { location: 'all' }, [], [] );
+
+			expect( errors ).not.toHaveProperty( 'location' );
+
+			// Selected "selected countries only"
+			const values = {
+				location: 'selected',
+				countries: [],
+			};
+			errors = checkErrors( values, [], [] );
+
+			expect( errors ).not.toHaveProperty( 'location' );
+		} );
+
+		it( `When the audience countries array is empty and the value of audience location option is 'selected', should not pass`, () => {
+			const values = {
+				location: 'selected',
+				countries: [],
+			};
+			const errors = checkErrors( values, [], [] );
+
+			expect( errors ).toHaveProperty( 'countries' );
+			expect( errors.countries ).toMatchSnapshot();
+		} );
+
+		it( `When the audience countries array is not empty and the value of audience location option is 'selected', should pass`, () => {
+			const values = {
+				location: 'selected',
+				countries: [ '' ],
+			};
+			const errors = checkErrors( values, [], [] );
+
+			expect( errors ).not.toHaveProperty( 'countries' );
+		} );
 	} );
 
 	describe( 'Shipping rates', () => {

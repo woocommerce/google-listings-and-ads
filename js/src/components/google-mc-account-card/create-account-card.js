@@ -20,7 +20,7 @@ const CreateAccountCard = ( props ) => {
 					isSecondary
 					onCreateAccount={ onCreateAccount }
 				>
-					{ __( 'Create Account', 'google-listings-and-ads' ) }
+					{ __( 'Create account', 'google-listings-and-ads' ) }
 				</CreateAccountButton>
 			}
 		/>

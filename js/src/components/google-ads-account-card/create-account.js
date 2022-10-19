@@ -65,6 +65,7 @@ const CreateAccount = ( props ) => {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_ADS }
+			alignIcon="top"
 			indicator={ <ClaimTermsAndCreateAccountButton /> }
 		>
 			{ allowShowExisting && (

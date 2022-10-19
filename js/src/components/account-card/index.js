@@ -13,6 +13,8 @@ import { Icon, store as storeIcon } from '@wordpress/icons';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import googleLogoURL from './gogole-g-logo.svg';
+import googleMCLogoURL from './google-merchant-center-logo.svg';
+import googleAdsLogoURL from './google-ads-logo.svg';
 import wpLogoURL from './wp-logo.svg';
 import './index.scss';
 
@@ -40,6 +42,24 @@ const googleLogo = (
 	/>
 );
 
+const googleMCLogo = (
+	<img
+		src={ googleMCLogoURL }
+		alt={ __( 'Google Merchant Center Logo', 'google-listings-and-ads' ) }
+		width="40"
+		height="40"
+	/>
+);
+
+const googleAdsLogo = (
+	<img
+		src={ googleAdsLogoURL }
+		alt={ __( 'Google Ads Logo', 'google-listings-and-ads' ) }
+		width="40"
+		height="40"
+	/>
+);
+
 const wpLogo = (
 	<img
 		src={ wpLogoURL }
@@ -60,18 +80,18 @@ const appearanceDict = {
 		title: __( 'Google', 'google-listings-and-ads' ),
 	},
 	[ APPEARANCE.GOOGLE_MERCHANT_CENTER ]: {
-		icon: googleLogo,
+		icon: googleMCLogo,
 		title: __( 'Google Merchant Center', 'google-listings-and-ads' ),
 		description: __(
-			'Required to sync products and list on Google Shopping',
+			'Required to sync products and list on Google',
 			'google-listings-and-ads'
 		),
 	},
 	[ APPEARANCE.GOOGLE_ADS ]: {
-		icon: googleLogo,
+		icon: googleAdsLogo,
 		title: __( 'Google Ads', 'google-listings-and-ads' ),
 		description: __(
-			'Required to create paid campaigns with your product listings',
+			'Connect with millions of shoppers who are searching for products like yours and drive sales with Google.',
 			'google-listings-and-ads'
 		),
 	},

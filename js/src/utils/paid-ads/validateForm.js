@@ -25,7 +25,7 @@ const validateForm = ( values ) => {
 		);
 	}
 
-	if ( values.amount <= 0 ) {
+	if ( ! Number.isFinite( values.amount ) || values.amount <= 0 ) {
 		errors.amount = __(
 			'Please make sure daily average cost is greater than 0.',
 			'google-listings-and-ads'
