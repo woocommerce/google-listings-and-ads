@@ -32,29 +32,6 @@
 				height: 40px;
 			}
 		}
-
-		.woocommerce-tree-select-control {
-
-
-			&__control,
-			&__tree {
-				padding: $grid-unit-05 $grid-unit;
-				border-color: $gray-700;
-			}
-
-			&__tree {
-				max-height: 250px;
-			}
-
-			&__tags {
-				font-size: 11px;
-			}
-
-			&__option,
-			.components-base-control .woocommerce-tree-select-control__control-input {
-				font-size: $default-font-size;
-			}
-		}
 	}
 
 	&__table-label {
