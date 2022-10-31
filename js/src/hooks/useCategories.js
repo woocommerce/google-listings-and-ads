@@ -24,11 +24,11 @@ const getDeletedCategoryName = ( categoryId ) => {
 };
 
 /**
- * Returns the category tree used for Tree Select Control
+ * Returns the categories and selected categories in the SelectControl format and also the categories in string format
  * It also maps the deleted (and previously selected) categories
  *
  * @param {Array<string>} [selected] The selected category ID's
- * @return {{tree: *[], names: string, hasFinishedResolution: boolean}} The tree ready to insert in Tree Select Control, the categories separated by commas and the resolution state
+ * @return {{categories: Array, selected: Array, names: string, hasFinishedResolution: boolean}} The categories ready to insert in Select Control as well as the selected categories and the categories separated by commas together with the resolution state
  */
 const useCategories = ( selected = [] ) => {
 	const { data, hasFinishedResolution } = useAppSelectDispatch(
@@ -38,7 +38,8 @@ const useCategories = ( selected = [] ) => {
 	if ( ! hasFinishedResolution ) {
 		return {
 			hasFinishedResolution,
-			tree: [],
+			categories: [],
+			selected: [],
 			names: '',
 		};
 	}
@@ -57,55 +58,67 @@ const useCategories = ( selected = [] ) => {
 		} );
 
 	const categories = [ ...data, ...deletedCategories ];
+	const selectedCategories = getSelected( selected, categories );
 
 	return {
 		hasFinishedResolution,
-		tree: getTree( categories ),
-		names: getSelectedNames( selected, categories ),
+		selected: selectedCategories,
+		categories: formatCategoriesForSelectControl( categories ),
+		names: getCategoryNames( selectedCategories ),
 	};
 };
 
 /**
- * Get the categories in hierarchical tree format
+ * Format the categories for showing it in SelectControl
  *
  * @param {Array} allCategories Array with all the categories
- * @param {number} [parent=0] The ID for the parent categories to get the leaf tree. By default 0 (root)
- * @return {Array} The categories formatted as a tree
+ * @return {Array} The categories formatted for being used in SelectControl
  */
-const getTree = ( allCategories = [], parent = 0 ) => {
-	const currentCategories = [];
-	const categories = allCategories.filter( ( cat ) => cat.parent === parent );
-
-	for ( const category of categories ) {
-		const categoryWithChildren = {
-			value: category.id.toString(),
-			label: category.name,
-			children: getTree( allCategories, category.id ),
-		};
-
-		currentCategories.push( categoryWithChildren );
-	}
-
-	return currentCategories;
+const formatCategoriesForSelectControl = ( allCategories = [] ) => {
+	return allCategories.map( getSelectControlFormat );
 };
 
 /**
- * Get the names of the selected categories separated by commas
+ * Get the names of the categories separated by commas
+ *
+ * @param {Array} categories  The categories to render as a name string
+ * @return {string} The category names separated by comma
+ */
+const getCategoryNames = ( categories ) => {
+	return categories
+		.slice( 0, CATEGORIES_TO_SHOW_IN_TOOLTIP )
+		.map( ( category ) => category.label )
+		.join( SEPARATOR );
+};
+
+/**
+ * Get the selected Categories in SelectControl Format
  *
  * @param {Array} selected Selected category IDs
  * @param {Array} allCategories All the categories available
- * @return {string} The selected category names separated by comma
+ * @return {Array} The selected categories in SelectControl format
  */
-const getSelectedNames = ( selected, allCategories ) => {
-	return selected
-		.slice( 0, CATEGORIES_TO_SHOW_IN_TOOLTIP )
-		.map( ( category ) => {
-			return (
-				allCategories.find( ( e ) => e.id.toString() === category )
-					?.name || getDeletedCategoryName( category )
-			);
-		} )
-		.join( SEPARATOR );
+const getSelected = ( selected, allCategories ) => {
+	return selected.map( ( selectedCategory ) => {
+		const categoryData = allCategories.find(
+			( category ) => category.id.toString() === selectedCategory
+		);
+		return getSelectControlFormat( categoryData );
+	} );
+};
+
+/**
+ * Return a category in SelectControl format
+ *
+ * @param {Object} category The category to be formatted
+ * @return {{label, value, key}} The category formatted in SelectControl format
+ */
+const getSelectControlFormat = ( category ) => {
+	return {
+		key: category.id,
+		label: category.name,
+		value: category.id,
+	};
 };
 
 export default useCategories;
