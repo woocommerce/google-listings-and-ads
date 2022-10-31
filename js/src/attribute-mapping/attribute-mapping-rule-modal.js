@@ -74,7 +74,6 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 	);
 
 	const [ saving, setSaving ] = useState( false );
-	const [ dropdownVisible, setDropdownVisible ] = useState( false );
 
 	const { updateMappingRule, createMappingRule } = useAppDispatch();
 
@@ -137,8 +136,6 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 	return (
 		<AppModal
 			overflow="visible"
-			shouldCloseOnEsc={ ! dropdownVisible }
-			shouldCloseOnClickOutside={ ! dropdownVisible }
 			onRequestClose={ handleClose }
 			className="gla-attribute-mapping__rule-modal"
 			title={
@@ -223,7 +220,6 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 							{ __( 'Categories', 'google-listings-and-ads' ) }
 						</Subsection.Title>
 						<AttributeMappingCategoryControl
-							onCategorySelectorOpen={ setDropdownVisible }
 							selectedConditionalType={
 								newRule.category_condition_type
 							}
@@ -241,7 +237,9 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 							onCategoriesChange={ ( categories ) => {
 								updateRule( {
 									...newRule,
-									categories: categories.join( ',' ),
+									categories: categories
+										.map( ( category ) => category.value )
+										.join( ',' ),
 								} );
 							} }
 						/>
