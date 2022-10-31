@@ -63,7 +63,6 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @typedef {Object} BaseInnerOption
  * @property {string|JSX.Element} label The label string or label with highlighted react element for the option.
  * @property {InnerOption[]|undefined} children The children options. The options are filtered if in searching.
- * @property {boolean} isRoot Whether this option is the root.
  * @property {boolean} hasChildren Whether this option has children.
  * @property {InnerOption[]} leaves All leaf options that are flattened under this option. The options are filtered if in searching.
  * @property {boolean} checked Whether this option is checked.
@@ -88,7 +87,6 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * @param {Option[]} [props.options] Options to show in the component
  * @param {string[]} [props.value] Selected values
  * @param {number} [props.maxVisibleTags] The maximum number of tags to show. Undefined, 0 or less than 0 evaluates to "Show All".
- * @param {boolean} [props.allowsSelectParents=false] If true, when selecting a parent it also adds its value in the onChange callback.
  * @param {Function} [props.onChange] Callback when the selector changes
  * @param {(visible: boolean) => void} [props.onDropdownVisibilityChange] Callback when the visibility of the dropdown options is changed.
  * @return {JSX.Element} The component
@@ -104,7 +102,6 @@ const TreeSelectControl = ( {
 	options = [],
 	value = [],
 	maxVisibleTags,
-	allowsSelectParents = false,
 	onChange = () => {},
 	onDropdownVisibilityChange = noop,
 } ) => {
@@ -205,16 +202,6 @@ const TreeSelectControl = ( {
 		};
 
 		const descriptors = {
-			isRoot: {
-				/**
-				 * Returns whether this option is the root.
-				 *
-				 * @return {boolean} True if the option is the root.
-				 */
-				get() {
-					return this.value === ROOT_VALUE;
-				},
-			},
 			hasChildren: {
 				/**
 				 * Returns whether this option has children.
@@ -244,16 +231,12 @@ const TreeSelectControl = ( {
 				/**
 				 * Returns whether this option is checked.
 				 * A leaf option is checked if its value is selected.
-				 * When allowsSelectParents is false. Then a parent option is checked if all leaves are checked.
-				 * When allowsSelectParents is true. Then a parent option is checked if its value is selected.
+				 * A parent option is checked if all leaves are checked.
 				 *
 				 * @return {boolean} True if checked, false otherwise.
 				 */
 				get() {
-					if (
-						this.hasChildren &&
-						( ! allowsSelectParents || this.isRoot )
-					) {
+					if ( this.hasChildren ) {
 						return this.leaves.every( ( opt ) => opt.checked );
 					}
 					return cache.selectedValues.includes( this.value );
@@ -289,7 +272,7 @@ const TreeSelectControl = ( {
 				get() {
 					return (
 						isSearching ||
-						this.isRoot ||
+						this.value === ROOT_VALUE ||
 						cache.expandedValues.includes( this.value )
 					);
 				},
@@ -297,42 +280,22 @@ const TreeSelectControl = ( {
 		};
 
 		const reduceOptions = ( acc, { children = [], ...option } ) => {
-			let match = 0;
-
-			// its a searchable option if this two conditions apply:
-			// 1. its not Root and
-			// 2. is a leaf or selecting parents is allowed.
-			const isSearchable =
-				( ! option.children || allowsSelectParents ) &&
-				option.value !== ROOT_VALUE;
-
 			if ( children.length ) {
-				// Iterate over the children to find a match on each child recursively
 				option.children = children.reduce( reduceOptions, [] );
 
-				// If the option.children property is empty here, it means there is no matches in the children neither.
-				// So in case we don't allow parent selection, we can return the empty acc for this option as it shouldn't show in the tree.
-				if ( ! option.children.length && ! allowsSelectParents ) {
+				if ( ! option.children.length ) {
 					return acc;
 				}
-			}
-
-			if ( isSearching ) {
-				match = option.label.toLowerCase().indexOf( filter );
-
-				if ( match >= 0 && isSearchable ) {
-					// only highlight the label if there is a match or its a searchable option
-					option.label = highlightOptionLabel( option.label, match );
+			} else if ( isSearching ) {
+				const match = option.label.toLowerCase().indexOf( filter );
+				if ( match === -1 ) {
+					return acc;
 				}
+				option.label = highlightOptionLabel( option.label, match );
 			}
 
-			if ( ( match >= 0 && isSearchable ) || option.children?.length ) {
-				// only add the option to the tree if:
-				// a. there are matching children for this option.
-				// b. there is a match for the option itself, and its a searchable option.
-				Object.defineProperties( option, descriptors );
-				acc.push( option );
-			}
+			Object.defineProperties( option, descriptors );
+			acc.push( option );
 
 			return acc;
 		};
@@ -341,7 +304,7 @@ const TreeSelectControl = ( {
 		cache.filteredOptionsMap.set( filter, filteredTreeOptions );
 
 		return filteredTreeOptions;
-	}, [ treeOptions, filter, allowsSelectParents ] );
+	}, [ treeOptions, filter ] );
 
 	const onKeyDown = ( event ) => {
 		if ( disabled ) return;
@@ -452,31 +415,8 @@ const TreeSelectControl = ( {
 	 * @param {InnerOption} option The option to change
 	 */
 	const handleParentChange = ( checked, option ) => {
-		// If allowsSelectParents is true we allow the parent key to be selected and we don't select the children, we just expand the node.
-		if ( allowsSelectParents && ! option.isRoot ) {
-			handleSingleChange( checked, option );
-			if ( ! option.expanded ) {
-				handleToggleExpanded( option );
-			}
-			return;
-		}
-
-		const flattenChildren = ( children ) =>
-			Array.prototype.concat.apply(
-				children,
-				children.map( ( child ) =>
-					flattenChildren( child.children || [] )
-				)
-			);
-
 		let newValue;
-		const selectableValues = allowsSelectParents
-			? flattenChildren( option.children ).map(
-					( child ) => delete child.children && child
-			  )
-			: option.leaves;
-
-		const changedValues = selectableValues
+		const changedValues = option.leaves
 			.filter( ( opt ) => opt.checked !== checked )
 			.map( ( opt ) => opt.value );
 
