@@ -64,6 +64,7 @@ const webpackConfig = {
 			 * And `postcss` requires the `path` module, so here needs a polyfill.
 			 */
 			path: require.resolve( 'path-browserify' ),
+			fs: false,
 		},
 	},
 	plugins: [

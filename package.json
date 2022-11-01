@@ -47,6 +47,7 @@
 		"test-proxy": "node ./tests/proxy"
 	},
 	"devDependencies": {
+		"@automattic/calypso-color-schemes": "^2.1.1",
 		"@hapi/h2o2": "^9.1.0",
 		"@hapi/hapi": "^20.2.2",
 		"@testing-library/jest-dom": "^5.16.5",
@@ -73,6 +74,7 @@
 		"woocommerce-grow-storybook": "https://gitpkg.now.sh/woocommerce/grow/packages/js/storybook?fecfad52db350afd3550842e2374dee8dbc587ea"
 	},
 	"dependencies": {
+		"@automattic/tour-kit": "^1.1.1",
 		"@woocommerce/components": "8.1.0",
 		"@woocommerce/currency": "^3.2.1",
 		"@woocommerce/customer-effort-score": "^1.1.0",

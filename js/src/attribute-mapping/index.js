@@ -11,6 +11,7 @@ import AttributeMappingDescription from './attribute-mapping-description';
 import AttributeMappingTable from './attribute-mapping-table';
 import NavigationClassic from '.~/components/navigation-classic';
 import './index.scss';
+import AttributeMappingTour from '.~/attribute-mapping/attribute-mapping-tour';
 
 /**
  * Renders the Attribute Mapping Page
@@ -27,6 +28,7 @@ const AttributeMapping = () => {
 			>
 				<AttributeMappingTable />
 			</Section>
+			<AttributeMappingTour />
 		</div>
 	);
 };

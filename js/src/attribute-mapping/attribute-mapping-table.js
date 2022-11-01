@@ -102,6 +102,7 @@ const AttributeMappingTable = () => {
 						/>
 					) : (
 						<Table
+							className="gla-attribute-mapping__table"
 							caption={ __(
 								'Attribute Mapping configuration',
 								'google-listings-and-ads'
