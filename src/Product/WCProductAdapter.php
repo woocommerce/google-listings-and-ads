@@ -967,6 +967,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$source_value = substr( $source, $type_separator + 1 );
 		}
 
+		// Detect if the source_type is kind of product, taxonomy or attribute. Otherwise, we take it the full source as a static value.
 		switch ( $source_type ) {
 			case 'product':
 				return $this->get_product_field( $source_value );
@@ -1018,7 +1019,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected function get_product_taxonomy( $taxonomy ) {
 		$product = $this->get_wc_product();
 		$values  = get_the_terms( $product->get_id(), $taxonomy );
-		return implode( '|', wp_list_pluck( $values, 'name' ) );
+
+		if ( ! $values ) {
+			return null;
+		}
+
+		return wp_list_pluck( $values, 'name' )[0];
 	}
 
 	/**
