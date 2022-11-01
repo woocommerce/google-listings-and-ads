@@ -298,3 +298,7 @@ export const getMappingRules = createSelector(
 	},
 	( state ) => [ state.mc.mapping.rules ]
 );
+
+export const getStoreCategories = ( state ) => {
+	return state.store_categories;
+};
