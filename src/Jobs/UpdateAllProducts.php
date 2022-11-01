@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SyncableProductsBatchedActionSchedulerJobTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 
 defined( 'ABSPATH' ) || exit;
@@ -15,7 +17,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
+class UpdateAllProducts extends AbstractProductSyncerBatchedJob implements OptionsAwareInterface {
+	use OptionsAwareTrait;
 	use SyncableProductsBatchedActionSchedulerJobTrait;
 
 	/**
@@ -51,11 +54,12 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	}
 
 	/**
-	 * Check if the current job is currently running
+	 * Called when the job is completed.
 	 *
-	 * @return bool True if the job is running.
+	 * @param int $final_batch_number The final batch number when the job was completed.
+	 *                                If equal to 1 then no items were processed by the job.
 	 */
-	public function is_syncing(): bool {
-		return $this->is_running( [ 1 ] );
+	protected function handle_complete( int $final_batch_number ) {
+		$this->options->update( OptionsInterface::UPDATE_ALL_PRODUCTS_LAST_SYNC, strtotime( 'now' ) );
 	}
 }

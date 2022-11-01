@@ -140,7 +140,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 				}
 
 				$response = $this->prepare_item_for_response( $this->attribute_mapping_rules_query->get_rule( $this->attribute_mapping_rules_query->last_insert_id() ), $request );
-				do_action( 'woocommerce_gla_rules_change' );
+				do_action( 'woocommerce_gla_mapping_rules_change' );
 				return $response;
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -163,7 +163,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 				}
 
 				$response = $this->prepare_item_for_response( $this->attribute_mapping_rules_query->get_rule( $rule_id ), $request );
-				do_action( 'woocommerce_gla_rules_change' );
+				do_action( 'woocommerce_gla_mapping_rules_change' );
 				return $response;
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -185,7 +185,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 					return $this->response_from_exception( new Exception( 'Unable to delete the rule' ) );
 				}
 
-				do_action( 'woocommerce_gla_rules_change' );
+				do_action( 'woocommerce_gla_mapping_rules_change' );
 				return [
 					'id' => $rule_id,
 				];

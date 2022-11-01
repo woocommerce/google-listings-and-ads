@@ -128,7 +128,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( AttributeMappingDataController::class, AttributeMappingHelper::class );
 		$this->share( AttributeMappingRulesController::class, AttributeMappingHelper::class, AttributeMappingRulesQuery::class );
 		$this->share( AttributeMappingCategoriesController::class );
-		$this->share( AttributeMappingSyncerController::class, JobRepository::class );
+		$this->share( AttributeMappingSyncerController::class, ProductSyncStats::class );
 	}
 
 	/**
