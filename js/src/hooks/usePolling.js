@@ -24,22 +24,19 @@ export default function usePolling(
 ) {
 	const { second, callCount, startCountdown } = useCountdown();
 	const [ fetch, { data } ] = useApiFetchCallback( options );
+	const shouldRun = ! data || ! stopOnResolved;
 
-	const start = useCallback(
-		( shouldRun = true ) => {
-			if ( ! shouldRun ) return;
-			const promise = fetch();
-			promise.finally( () => startCountdown( delay ) );
-			return promise;
-		},
-		[ fetch, startCountdown, delay ]
-	);
+	const start = useCallback( () => {
+		const promise = fetch();
+		promise.finally( () => startCountdown( delay ) );
+		return promise;
+	}, [ fetch, startCountdown, delay ] );
 
 	useEffect( () => {
-		if ( second === 0 && callCount > 0 ) {
-			start( ! data || ! stopOnResolved );
+		if ( second === 0 && callCount > 0 && shouldRun ) {
+			start();
 		}
-	}, [ second, callCount, start, stopOnResolved ] );
+	}, [ second, callCount, start, shouldRun ] );
 
 	return {
 		start,

@@ -4,14 +4,14 @@
 import { useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Flex } from '@wordpress/components';
+import { format as formatDate } from '@wordpress/date';
 
 /**
  * Internal dependencies
  */
-import SyncIcon from '.~/components/sync-icon';
-import SuccessIcon from '.~/components/success-icon';
 import usePolling from '.~/hooks/usePolling';
 import { API_NAMESPACE } from '.~/data/constants';
+import glaDateTimeFormat from '.~/utils/date';
 
 const AttributeMappingSync = () => {
 	const { data, start } = usePolling( {
@@ -26,24 +26,18 @@ const AttributeMappingSync = () => {
 		return null;
 	}
 
+	const scheduled = __( 'Scheduled for sync', 'google-listings-and-ads' );
+	const lastSync = data.last_sync
+		? formatDate(
+				glaDateTimeFormat,
+				new Date( data.last_sync * 1000 ).toString()
+		  )
+		: __( 'Never', 'google-listings-and-ads' );
+
 	return (
 		<Flex justify="start" align="center">
-			{ data.is_syncing ? (
-				<SyncIcon size={ 14 } />
-			) : (
-				<SuccessIcon size={ 14 } />
-			) }
-			<p className="gla-attribute-mapping__syncing">
-				{ data.is_syncing
-					? __(
-							'Your products are being synced with your rules',
-							'google-listings-and-ads'
-					  )
-					: __(
-							'Your products are synced with your rules',
-							'google-listings-and-ads'
-					  ) }
-			</p>
+			<span>{ __( 'Last sync:', 'google-listings-and-ads' ) }</span>
+			<span>{ data.is_scheduled ? scheduled : lastSync }</span>
 		</Flex>
 	);
 };

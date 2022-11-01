@@ -16,6 +16,7 @@ import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import AttributeMappingTableCategories from './attribute-mapping-table-categories';
 import AttributeMappingRuleModal from './attribute-mapping-rule-modal';
 import AttributeMappingDeleteRuleModal from './attribute-mapping-delete-rule-modal';
+import AttributeMappingSync from './attribute-mapping-sync';
 import useMappingAttributes from '.~/hooks/useMappingAttributes';
 import useMappingRules from '.~/hooks/useMappingRules';
 import usePagination from '.~/hooks/usePagination';
@@ -217,6 +218,7 @@ const AttributeMappingTable = () => {
 						showPerPagePicker={ false }
 						onPageChange={ handlePageChange }
 					/>
+					<AttributeMappingSync />
 				</CardFooter>
 			</Card>
 		</AppTableCardDiv>

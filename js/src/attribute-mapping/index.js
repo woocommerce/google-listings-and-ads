@@ -9,7 +9,6 @@ import { __ } from '@wordpress/i18n';
 import Section from '.~/wcdl/section';
 import AttributeMappingDescription from './attribute-mapping-description';
 import AttributeMappingTable from './attribute-mapping-table';
-import AttributeMappingSync from './attribute-mapping-sync';
 import NavigationClassic from '.~/components/navigation-classic';
 import './index.scss';
 
@@ -27,7 +26,6 @@ const AttributeMapping = () => {
 				description={ <AttributeMappingDescription /> }
 			>
 				<AttributeMappingTable />
-				<AttributeMappingSync />
 			</Section>
 		</div>
 	);
