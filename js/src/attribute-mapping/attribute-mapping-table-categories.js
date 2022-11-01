@@ -1,27 +1,41 @@
 /**
  * External dependencies
  */
-import { _n, sprintf, _x, __ } from '@wordpress/i18n';
+import { _n, sprintf, __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import AppTooltip from '.~/components/app-tooltip';
-import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
+import {
+	CATEGORIES_TO_SHOW_IN_TOOLTIP,
+	CATEGORY_CONDITION_SELECT_TYPES,
+} from '.~/constants';
+import useCategories from '.~/hooks/useCategories';
 
-const DUMMY_CATEGORIES = [
-	{ id: 1, name: 'Category 1' },
-	{ id: 2, name: 'Category 2' },
-	{ id: 3, name: 'Category 3' },
-];
-
-const SEPARATOR = _x(
-	', ',
-	'the separator for concatenating the categories where the Attribute mapping rule is applied.',
-	'google-listings-and-ads'
-);
-
-const CATEGORIES_TO_SHOW = 5;
+/**
+ * Show a text with the number of categories
+ *
+ * @param {Object} props The component props
+ * @param {Array} props.categories The categories to show the number
+ * @return {JSX.Element} The component
+ */
+const CategoryHelperText = ( { categories } ) => {
+	return (
+		<div className="gla-attribute-mapping__table-categories-help">
+			{ sprintf(
+				// translators: %d: number of categories.
+				_n(
+					'%d category',
+					'%d categories',
+					categories.length,
+					'google-listings-and-ads'
+				),
+				categories.length
+			) }
+		</div>
+	);
+};
 
 /**
  * Renders a text and maybe a tooltip showing the categories for an Attribute Mapping rule
@@ -33,27 +47,19 @@ const CATEGORIES_TO_SHOW = 5;
  * @return {JSX.Element|string} The component
  */
 const AttributeMappingTableCategories = ( { categories, condition } ) => {
+	const categoryArray = categories?.split( ',' ) || [];
+	const { names } = useCategories( categoryArray );
+
 	if ( condition === CATEGORY_CONDITION_SELECT_TYPES.ALL ) {
 		return __( 'All', 'google-listings-and-ads' );
 	}
 
-	const categoryArray = categories?.split( ',' ) || [];
-
-	const categoryNames = categoryArray
-		.slice( 0, CATEGORIES_TO_SHOW )
-		.map( ( category ) => {
-			return DUMMY_CATEGORIES.find(
-				( e ) => e.id === parseInt( category, 10 )
-			).name;
-		} )
-		.join( SEPARATOR );
-
 	const more =
-		categoryArray.length > CATEGORIES_TO_SHOW
+		categoryArray.length > CATEGORIES_TO_SHOW_IN_TOOLTIP
 			? sprintf(
 					// translators: %d: The number of categories.
 					__( '+ %d more', 'google-listings-and-ads' ),
-					categoryArray.length - CATEGORIES_TO_SHOW
+					categoryArray.length - CATEGORIES_TO_SHOW_IN_TOOLTIP
 			  )
 			: '';
 
@@ -67,23 +73,12 @@ const AttributeMappingTableCategories = ( { categories, condition } ) => {
 			<AppTooltip
 				text={
 					<div className="gla-attribute-mapping__table-categories-tooltip">
-						{ categoryNames }
+						{ names }
 						{ more && <span>{ more }</span> }
 					</div>
 				}
 			>
-				<div className="gla-attribute-mapping__table-categories-help">
-					{ sprintf(
-						// translators: %d: number of categories.
-						_n(
-							'%d category',
-							'%d categories',
-							categoryArray.length,
-							'google-listings-and-ads'
-						),
-						categoryArray.length
-					) }
-				</div>
+				<CategoryHelperText categories={ categoryArray } />
 			</AppTooltip>
 		</>
 	);

@@ -51,9 +51,25 @@ export const ISSUE_TYPE_ACCOUNT = 'account';
 export const REQUEST_REVIEW = 'request-review';
 export const ISSUE_TABLE_PER_PAGE = 5;
 
+// Account status related
+export const GOOGLE_ADS_ACCOUNT_STATUS = {
+	CONNECTED: 'connected',
+	DISCONNECTED: 'disconnected',
+	INCOMPLETE: 'incomplete',
+};
+
+export const GOOGLE_ADS_BILLING_STATUS = {
+	UNKNOWN: 'unknown',
+	PENDING: 'pending',
+	APPROVED: 'approved',
+	CANCELLED: 'cancelled',
+};
+
 // Attribute Mapping
 export const CATEGORY_CONDITION_SELECT_TYPES = {
 	ALL: 'ALL',
 	EXCEPT: 'EXCEPT',
 	ONLY: 'ONLY',
 };
+
+export const CATEGORIES_TO_SHOW_IN_TOOLTIP = 5;

@@ -12,6 +12,7 @@ const DEFAULT_STATE = {
 	mc: {
 		target_audience: null,
 		countries: null,
+		policy_check: null,
 		continents: null,
 		shipping: {
 			rates: [],
@@ -55,6 +56,7 @@ const DEFAULT_STATE = {
 	},
 	mc_product_feed: null,
 	report: {},
+	store_categories: [],
 };
 
 /**
@@ -378,6 +380,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, [ 'report', reportKey ], data );
 		}
 
+		case TYPES.POLICY_CHECK: {
+			const { data } = action;
+			return setIn( state, 'mc.policy_check', data );
+		}
+
 		case TYPES.RECEIVE_MAPPING_ATTRIBUTES: {
 			return setIn( state, 'mc.mapping.attributes', action.attributes );
 		}
@@ -430,6 +437,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 
 			return setIn( state, 'mc.mapping.rules.items', rules );
+		}
+
+		case TYPES.RECEIVE_STORE_CATEGORIES: {
+			const { storeCategories } = action;
+			return setIn( state, 'store_categories', storeCategories );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

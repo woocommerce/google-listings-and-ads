@@ -1,27 +1,38 @@
 .gla-budget-recommendation {
-	font-style: italic;
-
-	&__recommendation,
 	&__low-budget {
 		display: flex;
+		align-items: center;
 		gap: calc(var(--main-gap) / 3);
+		margin-bottom: calc(var(--main-gap) / 2);
+		font-style: italic;
 
 		> svg {
-			flex: 1 0 auto;
+			flex: 0 0 auto;
 		}
 	}
 
-	&__recommendation {
-		margin-bottom: calc(var(--main-gap) / 2);
+	.components-tip {
+		padding: $grid-unit-15 $grid-unit-20;
+		background-color: #f0f6fc;
 
-		svg {
-			fill: $gray-600;
+		> p {
+			line-height: $gla-line-height-medium;
+			font-size: inherit;
+		}
+
+		> svg {
+			align-self: initial;
+			margin: $grid-unit-05 $grid-unit-05 * 2.5 0 0;
 		}
 	}
 
+	.components-tip,
 	&__low-budget {
-		svg {
-			fill: $alert-yellow;
+		font-size: $gla-font-smaller;
+		color: $black;
+
+		> svg {
+			fill: $gray-900;
 		}
 	}
 }
