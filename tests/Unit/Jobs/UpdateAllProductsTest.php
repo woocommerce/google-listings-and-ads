@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -27,6 +28,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  * @property MockObject|ActionSchedulerJobMonitor $monitor
  * @property MockObject|ProductSyncer             $product_syncer
  * @property MockObject|ProductRepository         $product_repository
+ * @property MockObject|OptionsInterface         $options
  * @property MockObject|BatchProductHelper        $product_helper
  * @property MockObject|MerchantCenterService     $merchant_center
  * @property UpdateAllProducts                    $job
@@ -46,6 +48,7 @@ class UpdateAllProductsTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->options            = $this->createMock( OptionsInterface::class );
 		$this->action_scheduler   = $this->createMock( ActionSchedulerInterface::class );
 		$this->monitor            = $this->createMock( ActionSchedulerJobMonitor::class );
 		$this->product_syncer     = $this->createMock( ProductSyncer::class );
@@ -78,6 +81,7 @@ class UpdateAllProductsTest extends UnitTest {
 			2
 		);
 
+		$this->job->set_options_object( $this->options );
 		$this->job->init();
 	}
 
@@ -305,23 +309,5 @@ class UpdateAllProductsTest extends UnitTest {
 			->with( gmdate( 'U' ) + 100, self::CREATE_BATCH_HOOK, [ 1 ] );
 
 		$this->job->schedule_delayed( 100 );
-	}
-
-	public function test_is_syncing() {
-		$this->action_scheduler
-			->expects( $this->once() )
-			->method( 'has_scheduled_action' )
-			->willReturn( true );
-
-		$this->assertTrue( $this->job->is_syncing() );
-	}
-
-	public function test_is_not_syncing() {
-		$this->action_scheduler
-			->expects( $this->once() )
-			->method( 'has_scheduled_action' )
-			->willReturn( false );
-
-		$this->assertFalse( $this->job->is_syncing() );
 	}
 }

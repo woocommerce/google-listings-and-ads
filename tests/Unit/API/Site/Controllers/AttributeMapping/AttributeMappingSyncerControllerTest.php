@@ -3,8 +3,9 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\AttributeMapping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\AttributeMapping\AttributeMappingSyncerController;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 
 /**
@@ -19,9 +20,14 @@ class AttributeMappingSyncerControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_REQUEST_SYNCER = '/wc/gla/mc/mapping/sync';
 
 	/**
-	 * @var JobRepository
+	 * @var ProductSyncStats
 	 */
-	private JobRepository $job_repository;
+	private ProductSyncStats $sync_stats;
+
+	/**
+	 * @var OptionsInterface
+	 */
+	private OptionsInterface $options;
 
 	/**
 	 * @var UpdateAllProducts
@@ -32,8 +38,11 @@ class AttributeMappingSyncerControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		$this->update_all_products_job = $this->createMock( UpdateAllProducts::class );
-		$this->job_repository          = $this->createMock( JobRepository::class );
-		$this->controller              = new AttributeMappingSyncerController( $this->server, $this->job_repository );
+		$this->sync_stats              = $this->createMock( ProductSyncStats::class );
+		$this->options                 = $this->createMock( OptionsInterface::class );
+
+		$this->controller = new AttributeMappingSyncerController( $this->server, $this->sync_stats );
+		$this->controller->set_options_object( $this->options );
 		$this->controller->register();
 	}
 
@@ -42,31 +51,56 @@ class AttributeMappingSyncerControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( self::ROUTE_REQUEST_SYNCER, $this->server->get_routes() );
 	}
 
-	public function test_is_syncing_route_true() {
-		$this->job_repository->expects( $this->once() )
-			->method( 'get' )->willReturn( $this->update_all_products_job );
-
-		$this->update_all_products_job->expects( $this->once() )
-			->method( 'is_syncing' )->willReturn( true );
+	public function test_is_syncing_route_scheduled_true() {
+		$this->sync_stats->expects( $this->once() )
+			->method( 'get_count' )->willReturn( 4 );
 
 		$response = $this->do_request( self::ROUTE_REQUEST_SYNCER );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( [ 'is_syncing' => true ], $response->get_data() );
+		$this->assertEquals(
+			[
+				'is_scheduled' => true,
+				'last_sync'    => null,
+			],
+			$response->get_data()
+		);
 	}
 
 
-	public function test_is_syncing_route_false() {
-		$this->job_repository->expects( $this->once() )
-			->method( 'get' )->willReturn( $this->update_all_products_job );
-
-		$this->update_all_products_job->expects( $this->once() )
-			->method( 'is_syncing' )->willReturn( false );
+	public function test_is_syncing_route_scheduled_false() {
+		$this->sync_stats->expects( $this->once() )
+			->method( 'get_count' )->willReturn( 0 );
 
 		$response = $this->do_request( self::ROUTE_REQUEST_SYNCER );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( [ 'is_syncing' => false ], $response->get_data() );
+		$this->assertEquals(
+			[
+				'is_scheduled' => false,
+				'last_sync'    => null,
+			],
+			$response->get_data()
+		);
+	}
+
+	public function test_is_syncing_route_last_sync() {
+		$this->sync_stats->expects( $this->once() )
+			->method( 'get_count' )->willReturn( 0 );
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )->with( OptionsInterface::UPDATE_ALL_PRODUCTS_LAST_SYNC )->willReturn( '123' );
+
+		$response = $this->do_request( self::ROUTE_REQUEST_SYNCER );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals(
+			[
+				'is_scheduled' => false,
+				'last_sync'    => '123',
+			],
+			$response->get_data()
+		);
 	}
 
 }

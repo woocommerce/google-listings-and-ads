@@ -59,6 +59,7 @@ describe( 'reducer', () => {
 			},
 			mc_product_feed: null,
 			report: {},
+			store_categories: [],
 		} );
 
 		prepareState = prepareImmutableStateWithRefCheck.bind(
@@ -764,6 +765,7 @@ describe( 'reducer', () => {
 			[ TYPES.RECEIVE_MC_SETUP, 'mcSetup', 'mc_setup' ],
 			[ TYPES.RECEIVE_MC_PRODUCT_STATISTICS, 'mcProductStatistics', 'mc_product_statistics' ],
 			[ TYPES.POLICY_CHECK, 'data', 'mc.policy_check' ],
+			[ TYPES.RECEIVE_STORE_CATEGORIES, 'storeCategories', 'store_categories' ],
 		];
 		/* eslint-enable prettier/prettier */
 

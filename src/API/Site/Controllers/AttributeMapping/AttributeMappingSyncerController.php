@@ -5,8 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Attri
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use Exception;
@@ -18,22 +20,24 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\AttributeMapping
  */
-class AttributeMappingSyncerController extends BaseController {
+class AttributeMappingSyncerController extends BaseController implements OptionsAwareInterface {
+
+	use OptionsAwareTrait;
 
 	/**
-	 * @var JobRepository
+	 * @var ProductSyncStats
 	 */
-	protected $job_repository;
+	protected $sync_stats;
 
 	/**
 	 * AttributeMappingSyncerController constructor.
 	 *
-	 * @param RESTServer    $server
-	 * @param JobRepository $job_repository
+	 * @param RESTServer       $server
+	 * @param ProductSyncStats $sync_stats
 	 */
-	public function __construct( RESTServer $server, JobRepository $job_repository ) {
+	public function __construct( RESTServer $server, ProductSyncStats $sync_stats ) {
 		parent::__construct( $server );
-		$this->job_repository = $job_repository;
+		$this->sync_stats = $sync_stats;
 	}
 
 	/**
@@ -62,9 +66,9 @@ class AttributeMappingSyncerController extends BaseController {
 	protected function get_sync_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$update_all_products_job = $this->job_repository->get( UpdateAllProducts::class );
-				$state                   = [
-					'is_syncing' => $update_all_products_job->is_syncing(),
+				$state = [
+					'is_scheduled' => (bool) $this->sync_stats->get_count(),
+					'last_sync'    => $this->options->get( OptionsInterface::UPDATE_ALL_PRODUCTS_LAST_SYNC ),
 				];
 				return $this->prepare_item_for_response( $state, $request );
 			} catch ( Exception $e ) {
@@ -81,9 +85,16 @@ class AttributeMappingSyncerController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'is_syncing' => [
+			'is_scheduled' => [
 				'description'       => __( 'Indicates if the products are currently syncing', 'google-listings-and-ads' ),
 				'type'              => 'boolean',
+				'validate_callback' => 'rest_validate_request_arg',
+				'readonly'          => true,
+				'context'           => [ 'view' ],
+			],
+			'last_sync'    => [
+				'description'       => __( 'Timestamp with the last sync.', 'google-listings-and-ads' ),
+				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 				'readonly'          => true,
 				'context'           => [ 'view' ],
