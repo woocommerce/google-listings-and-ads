@@ -194,7 +194,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 */
 	protected function map_product_categories() {
 		// set product type using merchants defined product categories
-		$base_product_id      = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
+		$base_product_id            = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
 		$this->product_category_ids = wc_get_product_cat_ids( $base_product_id );
 		if ( ! empty( $this->product_category_ids ) ) {
 			$google_product_types = self::convert_product_types( $this->product_category_ids );
