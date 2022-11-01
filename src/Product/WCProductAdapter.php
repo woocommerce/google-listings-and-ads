@@ -195,9 +195,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected function map_product_categories() {
 		// set product type using merchants defined product categories
 		$base_product_id      = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
-		$product_category_ids = wc_get_product_cat_ids( $base_product_id );
-		if ( ! empty( $product_category_ids ) ) {
-			$google_product_types = self::convert_product_types( $product_category_ids );
+		$this->product_category_ids = wc_get_product_cat_ids( $base_product_id );
+		if ( ! empty( $this->product_category_ids ) ) {
+			$google_product_types = self::convert_product_types( $this->product_category_ids );
 			do_action(
 				'woocommerce_gla_debug_message',
 				sprintf(
@@ -926,8 +926,6 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			return $this;
 		}
 
-		$this->set_product_category_ids();
-
 		foreach ( $mapping_rules as $mapping_rule ) {
 			if ( $this->rule_match_conditions( $mapping_rule ) ) {
 				$attribute_id                = $mapping_rule['attribute'];
@@ -952,13 +950,6 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		return $this;
 	}
 
-	/**
-	 * Set the product category ids property
-	 */
-	protected function set_product_category_ids() {
-		$terms                      = get_the_terms( $this->get_wc_product()->get_id(), 'product_cat' );
-		$this->product_category_ids = $terms ? wp_list_pluck( $terms, 'term_id' ) : [];
-	}
 
 	/**
 	 * Get a source value for attribute mapping
