@@ -211,6 +211,7 @@ const AttributeMappingTable = () => {
 						modal={ <AttributeMappingRuleModal /> }
 					/>
 					<Pagination
+						className="gla-attribute-mapping__pagination"
 						page={ page }
 						perPage={ PER_PAGE }
 						total={ total }

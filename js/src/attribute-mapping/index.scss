@@ -1,5 +1,14 @@
 .gla-attribute-mapping {
 
+	&__pagination {
+		width: 100%;
+	}
+
+	&__sync-status {
+		font-size: 13px;
+		color: $gray-700;
+	}
+
 	&__table-footer {
 		padding: $grid-unit-20;
 	}

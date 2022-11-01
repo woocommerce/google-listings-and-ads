@@ -118,7 +118,7 @@ jest.mock( '.~/hooks/usePolling', () => ( {
 		.mockImplementation( () => {
 			return {
 				start: () => {},
-				data: { is_syncing: false },
+				data: { is_scheduled: false, last_sync: null },
 			};
 		} ),
 } ) );
@@ -359,22 +359,27 @@ describe( 'Attribute Mapping', () => {
 		expect( queryByText( 'Loading Attribute Mapping rules' ) ).toBeTruthy();
 	} );
 
-	test( 'Syncer is not syncing', () => {
+	test( 'Syncer is never', () => {
 		const { queryByText } = render( <AttributeMappingSync /> );
-		expect(
-			queryByText( 'Your products are synced with your rules' )
-		).toBeTruthy();
+		expect( queryByText( 'Never' ) ).toBeTruthy();
 	} );
 
-	test( 'Syncer is syncing', () => {
+	test( 'Syncer is on a valid date', () => {
 		usePolling.mockReturnValue( {
 			start: () => {},
-			data: { is_syncing: true },
+			data: { is_scheduled: false, last_sync: 1667338631 },
+		} );
+		const { queryByText } = render( <AttributeMappingSync /> );
+		expect( queryByText( 'November 1, 2022, 10:37 pm' ) ).toBeTruthy();
+	} );
+
+	test( 'Syncer is scheduled for syncing', () => {
+		usePolling.mockReturnValue( {
+			start: () => {},
+			data: { is_scheduled: true, last_sync: 1667338631 },
 		} );
 
 		const { queryByText } = render( <AttributeMappingSync /> );
-		expect(
-			queryByText( 'Your products are being synced with your rules' )
-		).toBeTruthy();
+		expect( queryByText( 'Scheduled for sync' ) ).toBeTruthy();
 	} );
 } );
