@@ -1108,3 +1108,15 @@ export function* deleteMappingRule( rule ) {
 		throw error;
 	}
 }
+
+/**
+ * Action to receive the Store categories.
+ *
+ * @param {Array} storeCategories List of categories
+ */
+export function* receiveStoreCategories( storeCategories ) {
+	return {
+		type: TYPES.RECEIVE_STORE_CATEGORIES,
+		storeCategories,
+	};
+}

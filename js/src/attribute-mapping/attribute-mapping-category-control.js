@@ -7,10 +7,10 @@ import { noop } from 'lodash';
 /**
  * Internal dependencies
  */
-import AppSelectControl from '.~/components/app-select-control';
-import TreeSelectControl from '.~/components/tree-select-control';
-import useCategoryTree from '.~/hooks/useCategoryTree';
+import useCategories from '.~/hooks/useCategories';
 import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
+import SelectControl from '.~/wcdl/select-control';
+import AppSelectControl from '.~/components/app-select-control';
 
 /**
  * Renders the selectors relative to the categories
@@ -20,17 +20,14 @@ import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
  * @param {'ALL'|'EXCEPT'|'ONLY'} props.selectedConditionalType Selected conditional type
  * @param {Function} props.onConditionalTypeChange Callback when the conditional type changes
  * @param {Function} props.onCategoriesChange Callback when the categories change
- * @param {Function} props.onCategorySelectorOpen Callback when the categories dropdown is open
  */
 const AttributeMappingCategoryControl = ( {
 	selectedConditionalType = CATEGORY_CONDITION_SELECT_TYPES.ALL,
 	selectedCategories,
 	onConditionalTypeChange = noop,
 	onCategoriesChange = noop,
-	onCategorySelectorOpen = noop,
 } ) => {
-	const { data: categories } = useCategoryTree();
-
+	const { categories, selected } = useCategories( selectedCategories );
 	return (
 		<>
 			<AppSelectControl
@@ -64,15 +61,21 @@ const AttributeMappingCategoryControl = ( {
 				CATEGORY_CONDITION_SELECT_TYPES.ONLY ||
 				selectedConditionalType ===
 					CATEGORY_CONDITION_SELECT_TYPES.EXCEPT ) && (
-				<TreeSelectControl
-					onDropdownVisibilityChange={ onCategorySelectorOpen }
+				<SelectControl
 					options={ categories }
-					onChange={ onCategoriesChange }
-					value={ selectedCategories }
+					isSearchable
 					placeholder={ __(
-						'Select categories',
+						'Type for search',
 						'google-listings-and-ads'
 					) }
+					selected={ selected }
+					onChange={ ( values ) =>
+						onCategoriesChange(
+							values.map( ( category ) => category.value )
+						)
+					}
+					multiple={ true }
+					inlineTags={ true }
 				/>
 			) }
 		</>

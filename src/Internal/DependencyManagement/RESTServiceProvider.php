@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectC
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\AccountController as GoogleAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack\AccountController as JetpackAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountController as MerchantCenterAccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AttributeMappingCategoriesController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AttributeMappingDataController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AttributeMappingRulesController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\RequestReviewController as MerchantCenterRequestReviewController;
@@ -125,6 +126,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( PolicyComplianceCheckController::class, PolicyComplianceCheck::class );
 		$this->share( AttributeMappingDataController::class, AttributeMappingHelper::class );
 		$this->share( AttributeMappingRulesController::class, AttributeMappingHelper::class, AttributeMappingRulesQuery::class );
+		$this->share( AttributeMappingCategoriesController::class );
 	}
 
 	/**

@@ -43,6 +43,7 @@ import {
 	receiveMappingSources,
 	receiveMappingAttributes,
 	receiveMappingRules,
+	receiveStoreCategories,
 } from './actions';
 
 export function* getShippingRates() {
@@ -440,3 +441,24 @@ getMappingRules.shouldInvalidate = ( action ) => {
 		action.type === TYPES.DELETE_MAPPING_RULE
 	);
 };
+
+/**
+ * Resolver for getting the Store categories.
+ */
+export function* getStoreCategories() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/categories`,
+		} );
+
+		yield receiveStoreCategories( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error getting the store categories.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
