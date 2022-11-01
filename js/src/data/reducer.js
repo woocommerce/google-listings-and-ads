@@ -12,6 +12,7 @@ const DEFAULT_STATE = {
 	mc: {
 		target_audience: null,
 		countries: null,
+		policy_check: null,
 		continents: null,
 		shipping: {
 			rates: [],
@@ -377,6 +378,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_REPORT: {
 			const { reportKey, data } = action;
 			return setIn( state, [ 'report', reportKey ], data );
+		}
+
+		case TYPES.POLICY_CHECK: {
+			const { data } = action;
+			return setIn( state, 'mc.policy_check', data );
 		}
 
 		case TYPES.RECEIVE_MAPPING_ATTRIBUTES: {

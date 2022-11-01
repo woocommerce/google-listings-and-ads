@@ -47,7 +47,7 @@ const CustomerQuotesCard = () => {
 					variant="title.medium"
 				>
 					{ __(
-						'21,000+ WooCommerce store owners like you already list products on Google for free',
+						'21,000+ WooCommerce store owners like you already list products with Google',
 						'google-listings-and-ads'
 					) }
 				</Text>

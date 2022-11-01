@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -49,7 +49,7 @@ class AttributeMappingDataController extends BaseOptionsController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_mappping_attributes_read_callback(),
+					'callback'            => $this->get_mapping_attributes_read_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -71,6 +71,7 @@ class AttributeMappingDataController extends BaseOptionsController {
 							'description'       => __( 'The attribute key to get the sources.', 'google-listings-and-ads' ),
 							'type'              => 'string',
 							'validate_callback' => 'rest_validate_request_arg',
+							'required'          => true,
 						],
 					],
 				],
@@ -84,7 +85,7 @@ class AttributeMappingDataController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	protected function get_mappping_attributes_read_callback(): callable {
+	protected function get_mapping_attributes_read_callback(): callable {
 		return function ( Request $request ) {
 			try {
 				return $this->prepare_item_for_response( $this->get_attributes(), $request );
@@ -103,14 +104,9 @@ class AttributeMappingDataController extends BaseOptionsController {
 		return function( Request $request ) {
 			try {
 				$attribute = $request->get_param( 'attribute' );
-
-				if ( ! $attribute ) {
-					return [
-						'data' => [],
-					];
-				}
-
-				return $this->get_sources_for_attribute( $attribute );
+				return [
+					'data' => $this->attribute_mapping_helper->get_sources_for_attribute( $attribute ),
+				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -142,7 +138,7 @@ class AttributeMappingDataController extends BaseOptionsController {
 	 * @return string
 	 */
 	protected function get_schema_title(): string {
-		return 'attribute_mapping';
+		return 'attribute_mapping_data';
 	}
 
 	/**
@@ -153,19 +149,6 @@ class AttributeMappingDataController extends BaseOptionsController {
 	private function get_attributes(): array {
 		return [
 			'data' => $this->attribute_mapping_helper->get_attributes(),
-		];
-	}
-
-	/**
-	 * Sources getter
-	 *
-	 * @param string $attribute The attribute to get the sources for
-	 * @return array[] Array with sources
-	 */
-	private function get_sources_for_attribute( string $attribute ): array {
-		$sources = $this->attribute_mapping_helper->get_sources();
-		return [
-			'data' => $sources[ $attribute ] ?? [],
 		];
 	}
 }

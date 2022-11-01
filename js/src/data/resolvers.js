@@ -104,13 +104,27 @@ export function* getGoogleAdsAccount() {
 	yield fetchGoogleAdsAccount();
 }
 
+getGoogleAdsAccount.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS &&
+		action.invalidateRelatedState
+	);
+};
+
 export function* getGoogleAdsAccountBillingStatus() {
 	yield fetchGoogleAdsAccountBillingStatus();
 }
 
+getGoogleAdsAccountBillingStatus.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS;
+};
+
 export function* getExistingGoogleAdsAccounts() {
 	yield fetchExistingGoogleAdsAccounts();
 }
+
+getExistingGoogleAdsAccounts.shouldInvalidate =
+	getGoogleAdsAccount.shouldInvalidate;
 
 export function* getGoogleMCContactInformation() {
 	try {
@@ -148,6 +162,30 @@ export function* getMCCountriesAndContinents() {
 			error,
 			__(
 				'There was an error loading supported country details.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Fetch policy info for checking merchant onboarding policy setting.
+ */
+export function* getPolicyCheck() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/policy_check`,
+		} );
+
+		return {
+			type: TYPES.POLICY_CHECK,
+			data: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading policy check details.',
 				'google-listings-and-ads'
 			)
 		);

@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\ColorInput;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMappingHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\Traits\IsFieldTrait;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -13,7 +13,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
-class Color extends AbstractAttribute {
+class Color extends AbstractAttribute implements WithMappingInterface {
+
+	use IsFieldTrait;
 
 	/**
 	 * Returns the attribute ID.
@@ -58,24 +60,4 @@ class Color extends AbstractAttribute {
 	public static function get_name(): string {
 		return __( 'Color', 'google-listings-and-ads' );
 	}
-
-	/**
-	 * Returns the attribute sources
-	 *
-	 * @return array
-	 */
-	public static function get_sources(): array {
-		return AttributeMappingHelper::get_source_taxonomies();
-	}
-
-	/**
-	 * Defines is_enum property for this Attribute
-	 *
-	 * @return bool False for Color attribute
-	 */
-	public static function is_enum(): bool {
-		// Todo: TBD. Replace with some trait or other solution avoiding override
-		return false;
-	}
-
 }

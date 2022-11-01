@@ -71,7 +71,7 @@ class CleanupSyncedProductsTest extends UnitTest {
 			->method( 'find_synced_product_ids' )
 			->willReturn( $ids );
 
-		$this->action_scheduler->expects( $this->exactly( 2 ) )
+		$this->action_scheduler->expects( $this->exactly( 3 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
 				[ self::CREATE_BATCH_HOOK, [ 1 ] ],

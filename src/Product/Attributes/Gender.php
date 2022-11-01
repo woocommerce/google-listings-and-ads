@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\GenderInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\Traits\IsEnumTrait;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -73,14 +74,5 @@ class Gender extends AbstractAttribute implements WithValueOptionsInterface, Wit
 	 */
 	public static function get_name(): string {
 		return __( 'Gender', 'google-listings-and-ads' );
-	}
-
-	/**
-	 * Returns the attribute sources
-	 *
-	 * @return array
-	 */
-	public static function get_sources(): array {
-		return self::get_value_options();
 	}
 }

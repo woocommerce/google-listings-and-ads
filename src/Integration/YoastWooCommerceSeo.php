@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 use WC_Product;
 use WC_Product_Variation;
 
@@ -61,6 +63,15 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 			'woocommerce_gla_product_attribute_value_gtin',
 			function ( $value, WC_Product $product ) {
 				return $this->get_gtin( $value, $product );
+			},
+			10,
+			2
+		);
+
+		add_filter(
+			'woocommerce_gla_attribute_mapping_sources',
+			function ( $sources, $attribute_id ) {
+				return $this->load_yoast_seo_attribute_mapping_sources( $sources, $attribute_id );
 			},
 			10,
 			2
@@ -131,5 +142,52 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 		}
 
 		return ! empty( $this->yoast_global_identifiers[ $product_id ][ $key ] ) ? $this->yoast_global_identifiers[ $product_id ][ $key ] : null;
+	}
+
+	/**
+	 *
+	 * Merge the YOAST Fields with the Attribute Mapping available sources
+	 *
+	 * @param array  $sources The current sources
+	 * @param string $attribute_id The Attribute ID
+	 * @return array The merged sources
+	 */
+	protected function load_yoast_seo_attribute_mapping_sources( array $sources, string $attribute_id ): array {
+		if ( $attribute_id === GTIN::get_id() ) {
+			return array_merge( self::get_yoast_seo_attribute_mapping_gtin_sources(), $sources );
+		}
+
+		if ( $attribute_id === MPN::get_id() ) {
+			return array_merge( self::get_yoast_seo_attribute_mapping_mpn_sources(), $sources );
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * Load the group disabled option for Attribute mapping YOAST SEO
+	 *
+	 * @return array The disabled group option
+	 */
+	protected function get_yoast_seo_attribute_mapping_group_source(): array {
+		return [ 'disabled:yoast' => __( '- Yoast SEO -', 'google-listings-and-ads' ) ];
+	}
+
+	/**
+	 * Load the GTIN Fields for Attribute mapping YOAST SEO
+	 *
+	 * @return array The GTIN sources
+	 */
+	protected function get_yoast_seo_attribute_mapping_gtin_sources(): array {
+		return array_merge( self::get_yoast_seo_attribute_mapping_group_source(), [ 'yoast:gtin' => __( 'GTIN Field', 'google-listings-and-ads' ) ] );
+	}
+
+	/**
+	 * Load the MPN Fields for Attribute mapping YOAST SEO
+	 *
+	 * @return array The MPN sources
+	 */
+	protected function get_yoast_seo_attribute_mapping_mpn_sources(): array {
+		return array_merge( self::get_yoast_seo_attribute_mapping_group_source(), [ 'yoast:mpn' => __( 'MPN Field', 'google-listings-and-ads' ) ] );
 	}
 }

@@ -8,14 +8,18 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '.~/data/constants';
 
+const selectorName = 'getGoogleAdsAccountBillingStatus';
+
 const useGoogleAdsAccountBillingStatus = () => {
 	return useSelect( ( select ) => {
-		const billingStatus = select(
-			STORE_KEY
-		).getGoogleAdsAccountBillingStatus();
+		const selector = select( STORE_KEY );
 
 		return {
-			billingStatus,
+			billingStatus: selector[ selectorName ](),
+			hasFinishedResolution: selector.hasFinishedResolution(
+				selectorName,
+				[]
+			),
 		};
 	}, [] );
 };

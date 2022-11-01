@@ -26,17 +26,21 @@ const nonInteractableProps = {
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
+ * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
-const BudgetSection = ( props ) => {
-	const {
-		formProps: { getInputProps, setValue, values },
-		disabled = false,
-	} = props;
+const BudgetSection = ( { formProps, disabled = false, children } ) => {
+	const { getInputProps, setValue, values } = formProps;
 	const { countryCodes, amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
+
+	// Wrapping `useRef` is because since WC 6.9, the reference of `setValue` may be changed
+	// after calling itself and further leads to an infinite re-rendering loop if used in a
+	// `useEffect`.
+	const setValueRef = useRef();
+	setValueRef.current = setValue;
 
 	/**
 	 * In addition to the initial value setting during initialization, when `disabled` changes
@@ -46,36 +50,18 @@ const BudgetSection = ( props ) => {
 	const initialAmountRef = useRef( amount );
 	useEffect( () => {
 		const nextAmount = disabled ? undefined : initialAmountRef.current;
-		setValue( 'amount', nextAmount );
-	}, [ disabled, setValue ] );
+		setValueRef.current( 'amount', nextAmount );
+	}, [ disabled ] );
 
 	return (
 		<div className="gla-budget-section">
 			<Section
 				disabled={ disabled }
-				title={ __( 'Budget', 'google-listings-and-ads' ) }
-				description={
-					<>
-						<p>
-							{ __(
-								'Enter a daily average cost that works best for your business and the results that you want. You can change your budget or cancel your ad at any time.',
-								'google-listings-and-ads'
-							) }
-						</p>
-						<p>
-							{ __(
-								'You will be billed directly by Google Ads.',
-								'google-listings-and-ads'
-							) }
-						</p>
-						<p>
-							{ __(
-								'Google will optimize your ads to maximize performance across your selected country(s).',
-								'google-listings-and-ads'
-							) }
-						</p>
-					</>
-				}
+				title={ __( 'Set your budget', 'google-listings-and-ads' ) }
+				description={ __(
+					'With Performance Max campaigns, you can set your own budget and Google’s Smart Bidding technology will serve the most appropriate ad, with the optimal bid, to maximize campaign performance.',
+					'google-listings-and-ads'
+				) }
 			>
 				<Section.Card>
 					<Section.Card.Body className="gla-budget-section__card-body">
@@ -92,7 +78,7 @@ const BudgetSection = ( props ) => {
 							<AppInputPriceControl
 								disabled
 								label={ __(
-									'Monthly max, estimated ',
+									'Monthly max, estimated',
 									'google-listings-and-ads'
 								) }
 								suffix={ currency }
@@ -107,6 +93,7 @@ const BudgetSection = ( props ) => {
 						) }
 					</Section.Card.Body>
 				</Section.Card>
+				{ children }
 			</Section>
 		</div>
 	);

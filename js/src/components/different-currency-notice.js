@@ -11,6 +11,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 /**
  * Shows warning {@link Notice}
@@ -31,7 +32,7 @@ const DifferentCurrencyNotice = ( { context } ) => {
 	// Do not render if data is not available, account not connected, or the same currencies are used.
 	if (
 		! googleAdsAccount ||
-		googleAdsAccount.status !== 'connected' ||
+		googleAdsAccount.status !== GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
 		googleAdsAccount.currency === storeCurrency
 	) {
 		return null;
