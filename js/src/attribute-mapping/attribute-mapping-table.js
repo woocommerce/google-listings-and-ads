@@ -89,7 +89,7 @@ const AttributeMappingTable = () => {
 	}, [ page, rules, rulesHasFinishedResolution, setPage ] );
 
 	return (
-		<AppTableCardDiv>
+		<AppTableCardDiv className="gla-attribute-mapping__table">
 			<Card>
 				<CardBody size={ null }>
 					{ isLoading ? (
@@ -102,7 +102,6 @@ const AttributeMappingTable = () => {
 						/>
 					) : (
 						<Table
-							className="gla-attribute-mapping__table"
 							caption={ __(
 								'Attribute Mapping configuration',
 								'google-listings-and-ads'

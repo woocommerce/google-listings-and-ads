@@ -1,8 +1,9 @@
 /**
  * External dependencies
  */
-import Tour from '@automattic/tour-kit';
+import { TourKit } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 const AttributeMappingTour = () => {
 	const [ showTour, setShowTour ] = useState( true );
@@ -13,42 +14,21 @@ const AttributeMappingTour = () => {
 					desktop: '.gla-attribute-mapping__table',
 				},
 				meta: {
-					description: 'Lorem ipsum dolor sit amet.',
+					heading: 'Test',
+					descriptions: {
+						desktop: 'Lorem ipsum dolor sit amet.',
+					},
+					primaryButton: {
+						text: __( 'Got it', 'google-listings-and-ads' ),
+					},
 				},
 			},
 		],
-		renderers: {
-			tourStep: ( {
-				steps,
-				currentStepIndex,
-				setInitialFocusedElement,
-				onNext,
-				onPrevious,
-				onDismiss,
-			} ) => {
-				return (
-					<>
-						<button onClick={ onPrevious }>Previous</button>
-						<button
-							onClick={ onNext }
-							ref={ setInitialFocusedElement }
-						>
-							Next
-						</button>
-						<button onClick={ onDismiss( 'close-btn' ) }>
-							Close
-						</button>
-						<p>{ steps[ currentStepIndex ].meta.description }</p>
-					</>
-				);
-			},
-			tourMinimized: <div />,
-		},
+		placement: 'left',
 		closeHandler: () => setShowTour( false ),
-		options: {},
 	};
 
-	return showTour && <Tour config={ config } />;
+	return showTour && <TourKit config={ config } placement={ 'left' } />;
 };
 
 export default AttributeMappingTour;

@@ -44,7 +44,7 @@ const AttributeMappingTableCategories = ( { categories, condition } ) => {
 		.map( ( category ) => {
 			return DUMMY_CATEGORIES.find(
 				( e ) => e.id === parseInt( category, 10 )
-			).name;
+			)?.name;
 		} )
 		.join( SEPARATOR );
 
