@@ -237,9 +237,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 							onCategoriesChange={ ( categories ) => {
 								updateRule( {
 									...newRule,
-									categories: categories
-										.map( ( category ) => category.value )
-										.join( ',' ),
+									categories: categories.join( ',' ),
 								} );
 							} }
 						/>

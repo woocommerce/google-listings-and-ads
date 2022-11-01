@@ -69,7 +69,11 @@ const AttributeMappingCategoryControl = ( {
 						'google-listings-and-ads'
 					) }
 					selected={ selected }
-					onChange={ onCategoriesChange }
+					onChange={ ( values ) =>
+						onCategoriesChange(
+							values.map( ( category ) => category.value )
+						)
+					}
 					multiple={ true }
 					inlineTags={ true }
 				/>
