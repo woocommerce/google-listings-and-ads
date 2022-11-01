@@ -96,7 +96,7 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	 * @return mixed
 	 */
 	protected function get_mpn( $value, WC_Product $product ) {
-		if ( str_contains( $value, self::VALUE_KEY ) ) {
+		if ( strpos( $value, self::VALUE_KEY ) === 0 ) {
 			$value = $this->get_identifier_value( 'mpn', $product );
 		}
 
