@@ -110,7 +110,7 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	 * @return mixed
 	 */
 	protected function get_gtin( $value, WC_Product $product ) {
-		if ( str_contains( $value, self::VALUE_KEY ) ) {
+		if ( strpos( $value, self::VALUE_KEY ) === 0 ) {
 			$gtin_values = [
 				$this->get_identifier_value( 'isbn', $product ),
 				$this->get_identifier_value( 'gtin8', $product ),
