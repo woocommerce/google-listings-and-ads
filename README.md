@@ -160,6 +160,10 @@ To remove the Docker container and images (this will **delete everything** in th
 
 `npm run docker:down`
 
+### Linux Troubleshooting
+
+If you encounter problems starting your `test:e2e`, like `No usable sandbox!` or `UnhandledPromiseRejectionWarning: Error: Page crashed!`, you may try disabling the Chromium sandbox by adding `--no-sandbox` to `launch.args` in [`/tests/e2e/config/jest-puppeteer.config.js#L7`](https://github.com/woocommerce/google-listings-and-ads/blob/develop/tests/e2e/config/jest-puppeteer.config.js#L7).
+
 ## Docs
 
 - [Usage Tracking](./src/Tracking/README.md)
