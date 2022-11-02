@@ -4,7 +4,6 @@
 [![JavaScript Unit Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml)
 [![PHP Coding Standards](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-coding-standards.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-coding-standards.yml)
 [![JavaScript and CSS Linting](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml)
-[![E2E Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/e2e-tests.yml)
 [![Bundle Size](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml)
 
 A native integration with Google offering free listings and Performance Max ads to WooCommerce merchants.
@@ -159,6 +158,8 @@ Run E2E testing:
 To remove the Docker container and images (this will **delete everything** in the WordPress Docker container):
 
 `npm run docker:down`
+
+:warning: Currently, the E2E testing on GitHub Actions is only run automatically after opening a PR with `release/*` branches or pushing changes to `release/*` branches. To run it manually, please visit [here](../../actions/workflows/e2e-tests.yml) and follow [this instruction](https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow?tool=webui) to do so.
 
 ## Docs
 
