@@ -27,7 +27,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  * @property MockObject|ActionSchedulerJobMonitor $monitor
  * @property MockObject|ProductSyncer             $product_syncer
  * @property MockObject|ProductRepository         $product_repository
- * @property MockObject|BatchProductHelper		  $product_helper
+ * @property MockObject|BatchProductHelper        $product_helper
  * @property MockObject|MerchantCenterService     $merchant_center
  * @property UpdateAllProducts                    $job
  */
@@ -98,6 +98,7 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->product_repository->expects( $this->once() )
 			->method( 'find_sync_ready_products' )
 			->willReturn( $filtered_product_list );
+
 		/*
 		 * We expect only single call to `has_scheduled_action` when scheduling
 		 * the batch and no calls further since batch is empty.
@@ -121,9 +122,9 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->product_repository->expects( $this->once() )
 			->method( 'find_sync_ready_products' )
 			->willReturn( $filtered_product_list );
-		$this->action_scheduler->expects( $this->exactly( 2 ) )
+		$this->action_scheduler->expects( $this->exactly( 3 ) )
 			->method( 'has_scheduled_action' );
-		$this->action_scheduler->expects( $this->exactly( 2 ) )
+		$this->action_scheduler->expects( $this->exactly( 3 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
 				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
@@ -139,7 +140,6 @@ class UpdateAllProductsTest extends UnitTest {
 	 * We test two fully loaded batches to make sure batch and process item actions are correctly scheduled
 	 */
 	public function test_multiple_full_batches() {
-
 		$batch_a = new FilteredProductList( $this->generate_simple_product_mocks_set( 2 ), 2 );
 		$batch_b = new FilteredProductList( $this->generate_simple_product_mocks_set( 2 ), 2 );
 		$batch_c = new FilteredProductList( [], 0 );
@@ -170,7 +170,6 @@ class UpdateAllProductsTest extends UnitTest {
 	 * We test two half filled batches to make sure corresponding jobs are scheduled even if we have filtered out items
 	 */
 	public function test_multiple_incomplete_batches() {
-
 		$batch_a = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 2 );
 		$batch_b = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 2 );
 		$batch_c = new FilteredProductList( [], 0 );
@@ -202,7 +201,6 @@ class UpdateAllProductsTest extends UnitTest {
 	 * items get processed properly after the first empty batch of items
 	 */
 	public function test_multiple_semi_empty_batches() {
-
 		$batch_a = new FilteredProductList( [], 2 );
 		$batch_b = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 2 );
 		$batch_c = new FilteredProductList( [], 0 );

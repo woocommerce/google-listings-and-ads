@@ -1,35 +1,6 @@
 .gla-get-started-with-video-card {
 	flex-direction: column;
 
-	.components-flex {
-		// Adjust <CardHeader> imported from @wordpress/components.
-		&.components-card__header {
-			justify-content: flex-end;
-			padding: $grid-unit * 2.5;
-
-			& > p {
-				margin: 0 1em;
-				line-height: $gla-line-height-smaller;
-				font-size: $helptext-font-size;
-				color: $gray-600;
-			}
-
-			@media (max-width: $break-small) {
-				justify-content: center;
-				text-align: center;
-				padding: $grid-unit-20;
-
-				& > p::after {
-					content: " Google";
-				}
-
-				& > img {
-					display: none;
-				}
-			}
-		}
-	}
-
 	.motivation-video {
 		min-width: 100%;
 		margin: 0;
@@ -42,7 +13,7 @@
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		margin: calc(var(--main-gap) * 1.67) calc(var(--main-gap) * 4.67);
+		margin: calc(var(--main-gap) * 1.67) 0 var(--main-gap);
 		padding: 0;
 
 		@media (max-width: $break-small) {
@@ -50,16 +21,20 @@
 		}
 	}
 
+	& &__caption {
+		margin-bottom: $grid-unit-20;
+		color: $gray-600;
+	}
+
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__title {
-		padding: 0 $grid-unit-30;
-		margin-bottom: $grid-unit-15;
+		margin-bottom: $grid-unit-20;
 	}
 
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__description {
-		margin-bottom: $grid-unit-40;
-		padding: 0 $grid-unit-10;
+		max-width: $gla-width-large;
+		margin-bottom: $grid-unit-30;
 	}
 
 	// Use more specific rules to make it higher priority to override <AppButton> component.
@@ -76,7 +51,7 @@
 	& &__hint {
 		font-size: $helptext-font-size;
 		color: $gray-400;
-		margin-bottom: $grid-unit-40;
+		margin-bottom: $grid-unit-30;
 	}
 
 	// Use more specific rules to make it higher priority to override <Text> component.

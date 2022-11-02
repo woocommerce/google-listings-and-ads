@@ -460,6 +460,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @return bool True if the Global Site Tag framework should be included.
 	 */
 	public static function is_needed(): bool {
+		if ( apply_filters( 'woocommerce_gla_disable_gtag_tracking', false ) ) {
+			return false;
+		}
+
 		return true;
 	}
 

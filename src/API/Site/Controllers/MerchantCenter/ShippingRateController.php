@@ -180,9 +180,8 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 			try {
 				$data    = $this->prepare_item_for_database( $request );
 				$country = $data['country'];
-				$method  = $data['method'];
 
-				$existing_query = $this->create_query()->where( 'country', $country )->where( 'method', $method );
+				$existing_query = $this->create_query()->where( 'country', $country );
 				$existing       = ! empty( $existing_query->get_results() );
 
 				if ( $existing ) {

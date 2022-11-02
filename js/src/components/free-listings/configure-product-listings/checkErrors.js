@@ -6,14 +6,30 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
+import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
 
+const validlocationSet = new Set( [ 'all', 'selected' ] );
 const validShippingRateSet = new Set( [ 'automatic', 'flat', 'manual' ] );
 const validShippingTimeSet = new Set( [ 'flat', 'manual' ] );
 const validTaxRateSet = new Set( [ 'destination', 'manual' ] );
 
 const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	const errors = {};
+
+	// Check audience.
+	if ( ! validlocationSet.has( values.location ) ) {
+		errors.location = __(
+			'Please select a location option.',
+			'google-listings-and-ads'
+		);
+	}
+
+	if ( values.location === 'selected' && values.countries.length === 0 ) {
+		errors.countries = __(
+			'Please select at least one country.',
+			'google-listings-and-ads'
+		);
+	}
 
 	/**
 	 * Check shipping rates.
@@ -42,7 +58,7 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	if ( values.shipping_rate === 'flat' ) {
 		if (
 			values.offer_free_shipping === undefined &&
-			values.shipping_country_rates.some( isNonFreeFlatShippingRate )
+			values.shipping_country_rates.some( isNonFreeShippingRate )
 		) {
 			errors.offer_free_shipping = __(
 				'Please select an option for whether to offer free shipping.',

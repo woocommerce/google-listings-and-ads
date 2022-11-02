@@ -12,7 +12,6 @@ describe( 'getHandlers', () => {
 			{
 				id: '1',
 				country: 'US',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 				options: {},
@@ -20,7 +19,6 @@ describe( 'getHandlers', () => {
 			{
 				id: '2',
 				country: 'AU',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 				options: {
@@ -30,7 +28,6 @@ describe( 'getHandlers', () => {
 			{
 				id: '3',
 				country: 'CN',
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
 				options: {
@@ -50,7 +47,6 @@ describe( 'getHandlers', () => {
 		it( 'returns value with the newly added group', () => {
 			const newGroup = {
 				countries: [ 'MY', 'SG' ],
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 30,
 			};
@@ -63,7 +59,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 20,
 					options: {},
@@ -71,7 +66,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '2',
 					country: 'AU',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 20,
 					options: {
@@ -81,7 +75,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '3',
 					country: 'CN',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {
@@ -90,14 +83,12 @@ describe( 'getHandlers', () => {
 				},
 				{
 					country: 'MY',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 30,
 					options: {},
 				},
 				{
 					country: 'SG',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 30,
 					options: {},
@@ -110,7 +101,6 @@ describe( 'getHandlers', () => {
 		it( 'returns value updated based on changed group rate', () => {
 			const oldGroup = {
 				countries: [ 'US', 'AU' ],
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 			};
@@ -127,7 +117,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {},
@@ -135,7 +124,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '2',
 					country: 'AU',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {
@@ -145,7 +133,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '3',
 					country: 'CN',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {
@@ -158,7 +145,6 @@ describe( 'getHandlers', () => {
 		it( 'returns value with no free_shipping_threshold if the group rate is updated to 0', () => {
 			const oldGroup = {
 				countries: [ 'US', 'AU' ],
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 			};
@@ -175,7 +161,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 0,
 					options: {
@@ -185,7 +170,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '2',
 					country: 'AU',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 0,
 					options: {
@@ -195,7 +179,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '3',
 					country: 'CN',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {
@@ -208,7 +191,6 @@ describe( 'getHandlers', () => {
 		it( 'returns value updated based on removed and added countries', () => {
 			const oldGroup = {
 				countries: [ 'US', 'AU' ],
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 			};
@@ -226,7 +208,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '1',
 					country: 'US',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 20,
 					options: {},
@@ -234,7 +215,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '3',
 					country: 'CN',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {
@@ -243,7 +223,6 @@ describe( 'getHandlers', () => {
 				},
 				{
 					country: 'LK',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 20,
 					options: {},
@@ -254,7 +233,6 @@ describe( 'getHandlers', () => {
 		it( 'returns value updated based on all changed countries and rate', () => {
 			const oldGroup = {
 				countries: [ 'US', 'AU' ],
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 			};
@@ -273,7 +251,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '3',
 					country: 'CN',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {
@@ -282,14 +259,12 @@ describe( 'getHandlers', () => {
 				},
 				{
 					country: 'VN',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 35,
 					options: {},
 				},
 				{
 					country: 'TH',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 35,
 					options: {},
@@ -302,7 +277,6 @@ describe( 'getHandlers', () => {
 		it( 'returns value without the deleted group', () => {
 			const oldGroup = {
 				countries: [ 'US', 'AU' ],
-				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
 			};
@@ -315,7 +289,6 @@ describe( 'getHandlers', () => {
 				{
 					id: '3',
 					country: 'CN',
-					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
 					options: {

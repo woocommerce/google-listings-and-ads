@@ -129,6 +129,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 				'enableReports'            => $this->enableReports(),
 				'dateFormat'               => get_option( 'date_format' ),
 				'timeFormat'               => get_option( 'time_format' ),
+				'siteLogoUrl'              => wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
 
 			]
 		);

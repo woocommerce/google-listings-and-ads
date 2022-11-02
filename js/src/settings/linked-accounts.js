@@ -24,6 +24,9 @@ import { ConnectedGoogleAdsAccountCard } from '.~/components/google-ads-account-
 import Section from '.~/wcdl/section';
 import LinkedAccountsSectionWrapper from './linked-accounts-section-wrapper';
 import DisconnectModal, { ALL_ACCOUNTS, ADS_ACCOUNT } from './disconnect-modal';
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
+
+const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
 
 /**
  * Accounts are disconnected from the Setting page
@@ -48,7 +51,7 @@ export default function LinkedAccounts() {
 		googleMCAccount &&
 		googleAdsAccount
 	);
-	const hasAdsAccount = [ 'connected', 'incomplete' ].includes(
+	const hasAdsAccount = [ CONNECTED, INCOMPLETE ].includes(
 		googleAdsAccount?.status
 	);
 
@@ -96,6 +99,7 @@ export default function LinkedAccounts() {
 					{ hasAdsAccount && (
 						<ConnectedGoogleAdsAccountCard
 							googleAdsAccount={ googleAdsAccount }
+							hideAccountSwitch
 						>
 							<Section.Card.Footer>
 								<Button

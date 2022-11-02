@@ -60,6 +60,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
@@ -93,7 +94,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRatesProcessor;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneMethodsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\ActivatedEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
@@ -175,6 +180,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		DebugLogger::class                 => true,
 		MerchantStatuses::class            => true,
 		PhoneVerification::class           => true,
+		PolicyComplianceCheck::class       => true,
 		ContactInformation::class          => true,
 		MerchantCenterService::class       => true,
 		TargetAudience::class              => true,
@@ -186,6 +192,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		AttributesTab::class               => true,
 		VariationsAttributes::class        => true,
 		DeprecatedFilters::class           => true,
+		ZoneLocationsParser::class         => true,
+		ZoneMethodsParser::class           => true,
+		LocationRatesProcessor::class      => true,
 		ShippingZone::class                => true,
 		AdsAccountService::class           => true,
 		MerchantAccountService::class      => true,
@@ -304,6 +313,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( MerchantStatuses::class );
 		$this->share_with_tags( PhoneVerification::class, Merchant::class, WP::class, ISOUtility::class );
+		$this->share_with_tags( PolicyComplianceCheck::class, WC::class, GoogleHelper::class, TargetAudience::class );
 		$this->share_with_tags( ContactInformation::class, Merchant::class, GoogleSettings::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, TargetAudience::class );
@@ -374,8 +384,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		$this->share_with_tags( DeprecatedFilters::class );
 
-		$this->share_with_tags( ShippingZone::class, WC::class, GoogleHelper::class );
+		$this->share_with_tags( LocationRatesProcessor::class );
+		$this->share_with_tags( ZoneLocationsParser::class, GoogleHelper::class );
+		$this->share_with_tags( ZoneMethodsParser::class, WC::class );
+		$this->share_with_tags( ShippingZone::class, WC::class, ZoneLocationsParser::class, ZoneMethodsParser::class, LocationRatesProcessor::class );
+		$this->share_with_tags( ShippingSuggestionService::class, ShippingZone::class, WC::class );
 		$this->share_with_tags( RequestReviewStatuses::class );
-
 	}
 }

@@ -107,14 +107,14 @@ class SiteVerificationTest extends UnitTest {
 					[
 						'verified' => SiteVerification::VERIFICATION_STATUS_UNVERIFIED,
 						'meta_tag' => self::TEST_META_TAG,
-					]
+					],
 				],
 				[
 					OptionsInterface::SITE_VERIFICATION,
 					[
 						'verified' => SiteVerification::VERIFICATION_STATUS_VERIFIED,
 						'meta_tag' => self::TEST_META_TAG,
-					]
+					],
 				]
 			);
 

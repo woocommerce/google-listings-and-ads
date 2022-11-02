@@ -2,7 +2,7 @@
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
 	"license": "GPL-3.0-or-later",
-	"version": "2.0.4",
+	"version": "2.2.0",
 	"description": "google-listings-and-ads",
 	"repository": {
 		"type": "git",
@@ -29,6 +29,8 @@
 		"lint:md:docs": "wp-scripts lint-md-docs",
 		"lint:md:js": "wp-scripts lint-md-js",
 		"lint:php": "vendor/bin/phpcs",
+		"lint:php-tests": "vendor/bin/phpcs --standard=tests/phpcs.xml.dist",
+		"lint:fix:php": "vendor/bin/phpcbf; vendor/bin/phpcbf --standard=tests/phpcs.xml.dist",
 		"lint:pkg-json": "wp-scripts lint-pkg-json",
 		"outdated:dewp": "npm outdated `cat .externalized.json | sed 's/[][\",]/ /g'` || true",
 		"outdated:nondewp": "npm outdated --color=always | grep --color=never --invert -E \"^(.\\[31m|.\\[33m)?(`cat .externalized.json | sed 's/[][\"]//g'| sed 's/,/|/g'`)\"",
@@ -45,24 +47,24 @@
 		"test-proxy": "node ./tests/proxy"
 	},
 	"devDependencies": {
-		"@hapi/hapi": "^20.1.3",
-		"@testing-library/jest-dom": "^5.16.1",
-		"@testing-library/react": "^12.1.3",
-		"@testing-library/react-hooks": "^5.1.1",
+		"@hapi/h2o2": "^9.1.0",
+		"@hapi/hapi": "^20.2.2",
+		"@testing-library/jest-dom": "^5.16.5",
+		"@testing-library/react": "^12.1.5",
+		"@testing-library/react-hooks": "^8.0.1",
 		"@testing-library/user-event": "^13.5.0",
-		"@types/jest": "^27.4.0",
-		"@types/puppeteer": "^5.4.4",
+		"@types/jest": "^27.5.2",
+		"@types/puppeteer": "^5.4.6",
 		"@woocommerce/dependency-extraction-webpack-plugin": "^2.0.0",
 		"@woocommerce/e2e-environment": "^0.3.0",
 		"@woocommerce/e2e-utils": "^0.2.0",
 		"@woocommerce/eslint-plugin": "^1.2.0",
 		"@wordpress/prettier-config": "^1.1.2",
 		"@wordpress/scripts": "~22.1.0",
-		"bundlewatch": "^0.3.2",
+		"bundlewatch": "^0.3.3",
 		"eslint": "^7.17.0",
 		"eslint-import-resolver-webpack": "^0.13.1",
 		"eslint-plugin-import": "^2.25.4",
-		"h2o2": "^8.2.0",
 		"jest-environment-jsdom": "^27.5.1",
 		"path-browserify": "^1.0.1",
 		"prettier": "npm:wp-prettier@2.2.1-beta-1",
@@ -99,8 +101,7 @@
 		"libphonenumber-js": "^1.9.22",
 		"lodash": "^4.17.20",
 		"prop-types": "^15.7.2",
-		"rememo": "^3.0.0",
-		"use-debounce": "^5.2.0"
+		"rememo": "^3.0.0"
 	},
 	"config": {
 		"wp_org_slug": "google-listings-and-ads",
@@ -131,7 +132,7 @@
 			},
 			{
 				"path": "./js/build/index.css",
-				"maxSize": "10 kB"
+				"maxSize": "12 kB"
 			},
 			{
 				"path": "./google-listings-and-ads.zip",

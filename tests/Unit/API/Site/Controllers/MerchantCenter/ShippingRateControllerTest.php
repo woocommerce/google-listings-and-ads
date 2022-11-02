@@ -30,24 +30,23 @@ class ShippingRateControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_all_rates() {
 		$this->shipping_rate_query->expects( $this->once() )
-								  ->method( 'set_order' )
-								  ->willReturn( $this->shipping_rate_query );
+			->method( 'set_order' )
+			->willReturn( $this->shipping_rate_query );
 		$this->shipping_rate_query->expects( $this->once() )
-								  ->method( 'get_results' )
-								  ->willReturn(
-									  [
-										  [
-											  'id'       => '123',
-											  'country'  => 'US',
-											  'currency' => 'USD',
-											  'rate'     => '5.00',
-											  'method'   => 'flat_rate',
-											  'options'  => [
-												  'free_shipping_threshold' => '100',
-											  ],
-										  ],
-									  ]
-								  );
+			->method( 'get_results' )
+			->willReturn(
+				[
+					[
+						'id'       => '123',
+						'country'  => 'US',
+						'currency' => 'USD',
+						'rate'     => '5.00',
+						'options'  => [
+							'free_shipping_threshold' => '100',
+						],
+					],
+				]
+			);
 
 		$response = $this->do_request( self::ROUTE_RATES, 'GET' );
 		$this->assertEquals( 200, $response->get_status() );
@@ -59,28 +58,27 @@ class ShippingRateControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'US', $data[0]['country'] );
 		$this->assertEquals( 'USD', $data[0]['currency'] );
 		$this->assertEquals( '5.00', $data[0]['rate'] );
-		$this->assertEquals( 'flat_rate', $data[0]['method'] );
 		$this->assertEquals( 100, $data[0]['options']['free_shipping_threshold'] );
 	}
 
 	public function test_empty_options_array_is_returned_as_object() {
 		$this->shipping_rate_query->expects( $this->once() )
-								  ->method( 'set_order' )
-								  ->willReturn( $this->shipping_rate_query );
+			->method( 'set_order' )
+			->willReturn( $this->shipping_rate_query );
 		$this->shipping_rate_query->expects( $this->once() )
-								  ->method( 'get_results' )
-								  ->willReturn(
-									  [
-										  [
-											  'id'       => '123',
-											  'country'  => 'US',
-											  'currency' => 'USD',
-											  'rate'     => '5.00',
-											  'method'   => 'flat_rate',
-											  'options'  => [],
-										  ],
-									  ]
-								  );
+			->method( 'get_results' )
+			->willReturn(
+				[
+					[
+						'id'       => '123',
+						'country'  => 'US',
+						'currency' => 'USD',
+						'rate'     => '5.00',
+						'method'   => 'flat_rate',
+						'options'  => [],
+					],
+				]
+			);
 
 		$response = $this->do_request( self::ROUTE_RATES, 'GET' );
 		$this->assertEquals( 200, $response->get_status() );

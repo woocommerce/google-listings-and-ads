@@ -111,9 +111,8 @@ trait GoogleAdsClientTrait {
 			->method( 'mutate' )
 			->willReturnCallback(
 				function( int $ads_id, array $operations ) use ( $type, $response ) {
-
 					// Assert that the campaign operation is the right type.
-					foreach( $operations as $operation ) {
+					foreach ( $operations as $operation ) {
 						if ( 'campaign_operation' === $operation->getOperation() ) {
 							$operation = $operation->getCampaignOperation();
 							$this->assertEquals( $type, $operation->getOperation() );
@@ -207,7 +206,7 @@ trait GoogleAdsClientTrait {
 
 		$this->generate_ads_query_mock(
 			[
-				( new GoogleAdsRow )->setCampaign( $campaign ),
+				( new GoogleAdsRow() )->setCampaign( $campaign ),
 			]
 		);
 	}
@@ -223,7 +222,7 @@ trait GoogleAdsClientTrait {
 
 		$this->generate_ads_query_mock(
 			[
-				( new GoogleAdsRow )->setBillingSetup( $billing_setup ),
+				( new GoogleAdsRow() )->setBillingSetup( $billing_setup ),
 			]
 		);
 	}
@@ -241,7 +240,7 @@ trait GoogleAdsClientTrait {
 
 		$this->generate_ads_query_mock(
 			[
-				( new GoogleAdsRow )->setCustomerUserAccess( $access ),
+				( new GoogleAdsRow() )->setCustomerUserAccess( $access ),
 			]
 		);
 	}
@@ -267,7 +266,7 @@ trait GoogleAdsClientTrait {
 		$budget = $this->createMock( CampaignBudget::class );
 		$budget->method( 'getAmountMicros' )->willReturn( $this->to_micro( $data['amount'] ) );
 
-		return ( new GoogleAdsRow )
+		return ( new GoogleAdsRow() )
 			->setCampaign( $campaign )
 			->setCampaignBudget( $budget );
 	}
@@ -289,7 +288,7 @@ trait GoogleAdsClientTrait {
 		$campaign_criterion = $this->createMock( CampaignCriterion::class );
 		$campaign_criterion->method( 'getLocation' )->willReturn( $location_info );
 
-		return ( new GoogleAdsRow )
+		return ( new GoogleAdsRow() )
 			->setCampaign( $campaign )
 			->setCampaignCriterion( $campaign_criterion );
 	}
@@ -353,7 +352,7 @@ trait GoogleAdsClientTrait {
 			if ( isset( $data['currency'] ) ) {
 				$customer->method( 'getCurrencyCode' )->willReturn( $data['currency'] );
 			}
-			$customers[ $key ] = [ ( new GoogleAdsRow )->setCustomer( $customer ) ];
+			$customers[ $key ] = [ ( new GoogleAdsRow() )->setCustomer( $customer ) ];
 		}
 
 		$this->generate_ads_multiple_query_mock( $customers );
@@ -435,9 +434,8 @@ trait GoogleAdsClientTrait {
 			->method( 'mutateConversionActions' )
 			->willReturnCallback(
 				function( int $ads_id, array $operations ) use ( $type, $response ) {
-
 					// Assert that the operation is the right type.
-					foreach( $operations as $operation ) {
+					foreach ( $operations as $operation ) {
 						if ( 'conversion_action_operation' === $operation->getOperation() ) {
 							$operation = $operation->getConversionActionOperation();
 							$this->assertEquals( $type, $operation->getOperation() );
@@ -468,7 +466,7 @@ trait GoogleAdsClientTrait {
 
 		$this->generate_ads_query_mock(
 			[
-				( new GoogleAdsRow )->setConversionAction( $conversion_action ),
+				( new GoogleAdsRow() )->setConversionAction( $conversion_action ),
 			]
 		);
 	}
@@ -485,9 +483,9 @@ trait GoogleAdsClientTrait {
 	/**
 	 * Generates mocked report data.
 	 *
-	 * @param array $data      Report rows.
-	 * @param array $args      Report arguments.
-	 * @param array $next_page Token for the next page.
+	 * @param array  $data      Report rows.
+	 * @param array  $args      Report arguments.
+	 * @param string $next_page Token for the next page.
 	 */
 	protected function generate_ads_report_query_mock( array $data, array $args = [], string $next_page = '' ) {
 		$page = $this->createMock( Page::class );

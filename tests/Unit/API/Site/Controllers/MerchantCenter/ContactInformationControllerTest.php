@@ -32,7 +32,7 @@ class ContactInformationControllerTest extends ContainerAwareUnitTest {
 
 	use MerchantTrait;
 
-	const ROUTE = '/wc/gla/mc/contact-information';
+	protected const ROUTE = '/wc/gla/mc/contact-information';
 
 	/**
 	 * Runs before each test is executed.

@@ -47,11 +47,12 @@ class WC {
 	 * @param WC_Countries|null $countries
 	 */
 	public function __construct( ?WC_Countries $countries = null ) {
-		$countries          = $countries ?? new WC_Countries();
-		$this->wc_countries = $countries;
-		$this->base_country = $countries->get_base_country() ?? 'US';
-		$this->countries    = $countries->get_countries() ?? [];
-		$this->continents   = $countries->get_continents() ?? [];
+		$countries               = $countries ?? new WC_Countries();
+		$this->wc_countries      = $countries;
+		$this->base_country      = $countries->get_base_country() ?? 'US';
+		$this->countries         = $countries->get_countries() ?? [];
+		$this->allowed_countries = $countries->get_allowed_countries() ?? [];
+		$this->continents        = $countries->get_continents() ?? [];
 	}
 
 	/**
@@ -61,6 +62,15 @@ class WC {
 	 */
 	public function get_countries(): array {
 		return $this->countries;
+	}
+
+	/**
+	 * Get WooCommerce allowed countries.
+	 *
+	 * @return array
+	 */
+	public function get_allowed_countries(): array {
+		return $this->allowed_countries;
 	}
 
 	/**
@@ -183,5 +193,12 @@ class WC {
 	 */
 	public function get_woocommerce_currency(): string {
 		return get_woocommerce_currency();
+	}
+
+	/**
+	 * Get available payment gateways.
+	 */
+	public function get_available_payment_gateways(): array {
+		return WCCore()->payment_gateways->get_available_payment_gateways();
 	}
 }

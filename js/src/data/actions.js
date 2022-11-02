@@ -36,10 +36,9 @@ export function handleFetchError( error, message ) {
  * @typedef {Object} ShippingRate
  * @property {string} id id.
  * @property {CountryCode} country Destination country code.
- * @property {string} method Shipping method, e.g. "flat_rate".
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
- * @property {Object} options options depending on the shipping method.
+ * @property {Object} options Options, such as `free_shipping_threshold`.
  */
 
 /**
@@ -93,6 +92,24 @@ export function handleFetchError( error, message ) {
  * @property {boolean} [payment_methods_visible] Whether the payment methods are visible on the website.
  * @property {boolean} [refund_tos_visible] Whether the refund policy and terms of service are visible on the website.
  * @property {boolean} [contact_info_visible] Whether the phone number, email, and/or address are visible on the website.
+ */
+
+/**
+ * @typedef {Object} ProductStatisticsDetails
+ * @property {number} active Number of active products.
+ * @property {number} expiring Number of expiring products.
+ * @property {number} pending Number of pending products.
+ * @property {number} disapproved Number of disapproved products.
+ * @property {number} not_synced Number of not synced products.
+ */
+
+/**
+ * Product status statistics on Google Merchant Center
+ *
+ * @typedef {Object} ProductStatistics
+ * @property {number} scheduled_sync Number of scheduled jobs which will sync products to Google.
+ * @property {number} timestamp Timestamp reflecting when the product status statistics were last generated.
+ * @property {ProductStatisticsDetails} statistics Statistics information of product status on Google Merchant Center.
  */
 
 /**
@@ -461,7 +478,13 @@ export function* disconnectGoogleAccount() {
 	}
 }
 
-export function* disconnectGoogleAdsAccount() {
+/**
+ * Disconnect the connected Google Ads account.
+ *
+ * @param {boolean} [invalidateRelatedState=false] Whether to invalidate related state in wp-data store.
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectGoogleAdsAccount( invalidateRelatedState = false ) {
 	try {
 		yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/connection`,
@@ -470,6 +493,7 @@ export function* disconnectGoogleAdsAccount() {
 
 		return {
 			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS,
+			invalidateRelatedState,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
@@ -871,6 +895,13 @@ export function* receiveMCSetup( mcSetup ) {
 	};
 }
 
+/**
+ * Creates a wp-data action with data payload to be dispatched the received
+ * MC product statistics to wp-data store.
+ *
+ * @param {ProductStatistics} mcProductStatistics The received MC product statistics data.
+ * @yield {Object} The wp-data action with data payload.
+ */
 export function* receiveMCProductStatistics( mcProductStatistics ) {
 	return {
 		type: TYPES.RECEIVE_MC_PRODUCT_STATISTICS,

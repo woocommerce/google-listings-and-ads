@@ -29,7 +29,7 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
 
 -   WordPress 5.7+
--   WooCommerce 6.0+
+-   WooCommerce 6.8+
 -   PHP 7.4+
 
 ## Browsers supported
@@ -160,6 +160,10 @@ To remove the Docker container and images (this will **delete everything** in th
 `npm run docker:down`
 
 :warning: Currently, the E2E testing on GitHub Actions is only run automatically after opening a PR with `release/*` branches or pushing changes to `release/*` branches. To run it manually, please visit [here](../../actions/workflows/e2e-tests.yml) and follow [this instruction](https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow?tool=webui) to do so.
+
+### Linux Troubleshooting
+
+If you encounter problems starting your `test:e2e`, like `No usable sandbox!` or `UnhandledPromiseRejectionWarning: Error: Page crashed!`, you may try disabling the Chromium sandbox by adding `--no-sandbox` to `launch.args` in [`/tests/e2e/config/jest-puppeteer.config.js#L7`](https://github.com/woocommerce/google-listings-and-ads/blob/develop/tests/e2e/config/jest-puppeteer.config.js#L7).
 
 ## Docs
 

@@ -1,0 +1,18 @@
+.gla-google-ads-billing-setup-card {
+	.components-card__body {
+		display: flex;
+		gap: $grid-unit-20;
+	}
+
+	&__description {
+		display: flex;
+		flex-direction: column;
+		gap: $grid-unit-20;
+		color: $black;
+
+		&__helper {
+			font-style: italic;
+			color: $gray-700;
+		}
+	}
+}

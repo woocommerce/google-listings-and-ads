@@ -21,11 +21,11 @@
 
 		.hero-text__body {
 			font-size: $gla-font-small;
-			margin-bottom: var(--main-gap);
+			margin-bottom: $grid-unit-05;
 		}
 	}
 
-	.hero-image {
-		margin-bottom: -#{$grid-unit-05};
+	&__image {
+		max-width: 100%;
 	}
 }

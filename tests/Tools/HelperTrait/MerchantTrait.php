@@ -17,7 +17,7 @@ use Google\Service\ShoppingContent\AccountStatus;
 trait MerchantTrait {
 
 	protected $valid_account_phone_number = '+18008675309';
-	protected $valid_account_id = '123581321';
+	protected $valid_account_id           = '123581321';
 
 	public function get_account_exception( int $code = 400 ): MerchantApiException {
 		return MerchantApiException::account_retrieve_failed( $code );
@@ -39,7 +39,7 @@ trait MerchantTrait {
 	}
 
 	public function get_valid_account(): Account {
-		$account       = new Account();
+		$account = new Account();
 		$account->setBusinessInformation( $this->get_valid_business_info() );
 
 		return $account;
@@ -48,6 +48,7 @@ trait MerchantTrait {
 	public function get_valid_business_info(): AccountBusinessInformation {
 		$business_info = new AccountBusinessInformation();
 		$business_info->setPhoneNumber( $this->valid_account_phone_number );
+		$business_info->setPhoneVerificationStatus( 'VERIFIED' );
 		$business_info->setAddress( $this->get_sample_address() );
 
 		return $business_info;

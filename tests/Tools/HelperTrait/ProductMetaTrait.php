@@ -20,7 +20,7 @@ trait ProductMetaTrait {
 		$base_methods = [
 			'update',
 			'delete',
-			'get'
+			'get',
 		];
 
 		$product_meta_class = new \ReflectionClass( ProductMetaHandler::class );

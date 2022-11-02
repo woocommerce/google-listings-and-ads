@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -45,8 +46,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$google_product = $this->generate_google_product_mock();
 
 		$this->target_audience->expects( $this->any() )
-							  ->method( 'get_target_countries' )
-							  ->willReturn( [ $this->get_sample_target_country() ] );
+			->method( 'get_target_countries' )
+			->willReturn( [ $this->get_sample_target_country() ] );
 
 		// add some random errors residue from previous sync attempts
 		$this->product_meta->update_errors( $product, [ 'Error 1', 'Error 2' ] );
@@ -78,10 +79,11 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 		$this->assertEqualSets(
 			[
-				'AU' => 'online:en:AU:gla_1',
+				'AU'                                => 'online:en:AU:gla_1',
 				$google_product->getTargetCountry() => $google_product->getId(),
 			],
-			$this->product_meta->get_google_ids( $product ) );
+			$this->product_meta->get_google_ids( $product )
+		);
 	}
 
 	/**
@@ -198,7 +200,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_mark_as_unsynced_updates_both_variation_and_parent() {
-		$parent = WC_Helper_Product::create_variation_product();
+		$parent    = WC_Helper_Product::create_variation_product();
 		$variation = $this->wc->get_product( $parent->get_children()[0] );
 
 		// First mark the product as synced to update its meta data
@@ -220,7 +222,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_mark_as_unsynced_does_not_update_parent_if_orphan_variation() {
-		$parent = WC_Helper_Product::create_variation_product();
+		$parent    = WC_Helper_Product::create_variation_product();
 		$variation = $this->wc->get_product( $parent->get_children()[0] );
 
 		// First mark the product as synced to update its meta data
@@ -269,7 +271,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	 * @dataProvider return_test_products
 	 */
 	public function test_remove_google_id_marks_as_unsynced_if_empty_ids( WC_Product $product ) {
-		$this->product_meta->update_google_ids( $product, [ 'US' => 'online:en:US:gla_1', ] );
+		$this->product_meta->update_google_ids( $product, [ 'US' => 'online:en:US:gla_1' ] );
 
 		$this->product_helper->remove_google_id( $product, 'online:en:US:gla_1' );
 
@@ -490,7 +492,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	 */
 	public function test_is_product_synced_return_false_if_no_google_id( WC_Product $product ) {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
-		$this->product_meta->delete_google_ids($product);
+		$this->product_meta->delete_google_ids( $product );
 		$is_product_synced = $this->product_helper->is_product_synced( $product );
 		$this->assertFalse( $is_product_synced );
 	}
@@ -502,7 +504,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	 */
 	public function test_is_product_synced_return_false_if_no_synced_at( WC_Product $product ) {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
-		$this->product_meta->delete_synced_at($product);
+		$this->product_meta->delete_synced_at( $product );
 		$is_product_synced = $this->product_helper->is_product_synced( $product );
 		$this->assertFalse( $is_product_synced );
 	}
@@ -645,7 +647,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_is_sync_ready_variation_parent_not_visible_but_published() {
-		$parent    = WC_Helper_Product::create_variation_product();
+		$parent = WC_Helper_Product::create_variation_product();
 		$parent->set_status( 'publish' );
 		$parent->save();
 		$this->product_meta->update_visibility( $parent, ChannelVisibility::DONT_SYNC_AND_SHOW );
@@ -658,7 +660,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_is_sync_ready_variation_parent_visible_but_not_published() {
-		$parent    = WC_Helper_Product::create_variation_product();
+		$parent = WC_Helper_Product::create_variation_product();
 		$parent->set_status( 'draft' );
 		$parent->save();
 		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
@@ -672,7 +674,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_is_sync_ready_variation_parent_hidden_in_catalog() {
-		$parent    = WC_Helper_Product::create_variation_product();
+		$parent = WC_Helper_Product::create_variation_product();
 		$parent->set_status( 'publish' );
 		$parent->set_catalog_visibility( 'hidden' );
 		$parent->save();
@@ -686,7 +688,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_is_sync_ready_variation_returns_false_if_orphan() {
-		$parent    = WC_Helper_Product::create_variation_product();
+		$parent = WC_Helper_Product::create_variation_product();
 		$parent->set_status( 'publish' );
 		$parent->save();
 		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
@@ -812,6 +814,55 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$variation->save();
 
 		$this->assertNull( $this->product_helper->get_mc_status( $variation ) );
+	}
+
+	public function test_maybe_swap_for_parent_ids() {
+		$simple_publish = WC_Helper_Product::create_simple_product();
+		$simple_trash   = WC_Helper_Product::create_simple_product( true, [ 'status' => 'trash' ] );
+		$variable       = WC_Helper_Product::create_variation_product();
+		$variation      = $this->wc->get_product( $variable->get_children()[0] );
+
+		$product_ids = [
+			$simple_publish->get_id(),
+			$simple_trash->get_id(),
+			$variable->get_id(),
+			$variation->get_id(),
+			999999, // not exist
+		];
+
+		// - Check product status
+		// - Ignore product on error
+		$new_product_ids = $this->product_helper->maybe_swap_for_parent_ids( $product_ids );
+		$this->assertEquals(
+			[
+				$simple_publish->get_id(),
+				$variable->get_id(),
+			],
+			array_values( $new_product_ids ),
+		);
+
+		// - Do not check product status
+		// - Ignore product on error
+		$new_product_ids = $this->product_helper->maybe_swap_for_parent_ids( $product_ids, false );
+		$this->assertEquals(
+			[
+				$simple_publish->get_id(),
+				$simple_trash->get_id(),
+				$variable->get_id(),
+			],
+			array_values( $new_product_ids ),
+		);
+
+		// - Do not check product status
+		// - Do not ignore product on error
+		try {
+			$new_product_ids = $this->product_helper->maybe_swap_for_parent_ids( $product_ids, false, false );
+		} catch ( InvalidValue $exception ) {
+			$this->assertEquals(
+				'Invalid product ID: 999999',
+				$exception->getMessage()
+			);
+		}
 	}
 
 	public function test_maybe_swap_for_parent_id() {

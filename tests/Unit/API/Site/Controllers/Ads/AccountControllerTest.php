@@ -38,16 +38,16 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	];
 	protected const TEST_NO_ACCOUNTS         = [];
 	protected const TEST_ACCOUNT_CREATE_DATA = [
-		'id'          => SELF::TEST_ACCOUNT_ID,
-		'billing_url' => SELF::TEST_BILLING_URL,
+		'id'          => self::TEST_ACCOUNT_ID,
+		'billing_url' => self::TEST_BILLING_URL,
 	];
 	protected const TEST_ACCOUNT_LINK_ARGS   = [ 'id' => self::TEST_ACCOUNT_ID ];
 	protected const TEST_ACCOUNT_LINK_DATA   = [
-		'id'          => SELF::TEST_ACCOUNT_ID,
+		'id'          => self::TEST_ACCOUNT_ID,
 		'billing_url' => null,
 	];
 	protected const TEST_CONNECTED_DATA      = [
-		'id'       => SELF::TEST_ACCOUNT_ID,
+		'id'       => self::TEST_ACCOUNT_ID,
 		'currency' => 'EUR',
 		'symbol'   => '€',
 		'status'   => 'connected',
@@ -124,8 +124,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 					428,
 					null,
 					[
-						'billing_url'    => SELF::TEST_BILLING_URL,
-						'billing_status' => SELF::TEST_BILLING_STATUS,
+						'billing_url'    => self::TEST_BILLING_URL,
+						'billing_status' => self::TEST_BILLING_STATUS,
 					]
 				)
 			);
@@ -133,8 +133,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'POST' );
 
 		$this->assertEquals( 'error', $response->get_data()['message'] );
-		$this->assertEquals( SELF::TEST_BILLING_URL, $response->get_data()['billing_url'] );
-		$this->assertEquals( SELF::TEST_BILLING_STATUS, $response->get_data()['billing_status'] );
+		$this->assertEquals( self::TEST_BILLING_URL, $response->get_data()['billing_url'] );
+		$this->assertEquals( self::TEST_BILLING_STATUS, $response->get_data()['billing_status'] );
 		$this->assertEquals( 428, $response->get_status() );
 	}
 
@@ -152,7 +152,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	public function test_link_account() {
 		$this->account->expects( $this->once() )
 			->method( 'use_existing_account' )
-			->with( self::TEST_ACCOUNT_ID);
+			->with( self::TEST_ACCOUNT_ID );
 
 		$this->account->expects( $this->once() )
 			->method( 'setup_account' )
