@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Condition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeType;
@@ -62,6 +63,11 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected $tax_excluded;
 
 	/**
+	 * @var array Product category ids
+	 */
+	protected $product_category_ids;
+
+	/**
 	 * Initialize this object's properties from an array.
 	 *
 	 * @param array $array Used to seed this object's properties.
@@ -89,16 +95,19 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$this->wc_product        = $array['wc_product'];
 		$this->parent_wc_product = $array['parent_wc_product'] ?? null;
 
-		$this->map_gla_attributes( $array['gla_attributes'] ?? [] );
+		$mapping_rules  = $array['mapping_rules'] ?? [];
+		$gla_attributes = $array['gla_attributes'] ?? [];
 
 		// Google doesn't expect extra fields, so it's best to remove them
 		unset( $array['wc_product'] );
 		unset( $array['parent_wc_product'] );
 		unset( $array['gla_attributes'] );
+		unset( $array['mapping_rules'] );
 
 		parent::mapTypes( $array );
-
 		$this->map_woocommerce_product();
+		$this->map_attribute_mapping_rules( $mapping_rules );
+		$this->map_gla_attributes( $gla_attributes );
 
 		// Allow users to override the product's attributes using a WordPress filter.
 		$this->override_attributes();
@@ -185,10 +194,10 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 */
 	protected function map_product_categories() {
 		// set product type using merchants defined product categories
-		$base_product_id      = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
-		$product_category_ids = wc_get_product_cat_ids( $base_product_id );
-		if ( ! empty( $product_category_ids ) ) {
-			$google_product_types = self::convert_product_types( $product_category_ids );
+		$base_product_id            = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
+		$this->product_category_ids = wc_get_product_cat_ids( $base_product_id );
+		if ( ! empty( $this->product_category_ids ) ) {
+			$google_product_types = self::convert_product_types( $this->product_category_ids );
 			do_action(
 				'woocommerce_gla_debug_message',
 				sprintf(
@@ -902,5 +911,164 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		// product shipping information is also country based
 		$this->map_wc_product_shipping();
+	}
+
+	/**
+	 * Performs the attribute mapping.
+	 * This function applies rules setting values for the different attributes in the product.
+	 *
+	 * @param array $mapping_rules The set of rules to apply
+	 */
+	protected function map_attribute_mapping_rules( array $mapping_rules ) {
+		$attributes = [];
+
+		if ( empty( $mapping_rules ) ) {
+			return $this;
+		}
+
+		foreach ( $mapping_rules as $mapping_rule ) {
+			if ( $this->rule_match_conditions( $mapping_rule ) ) {
+				$attribute_id                = $mapping_rule['attribute'];
+				$attributes[ $attribute_id ] = $this->format_attribute(
+					apply_filters(
+						"woocommerce_gla_product_attribute_value_{$attribute_id}",
+						$this->get_source( $mapping_rule['source'] ),
+						$this->get_wc_product()
+					),
+					$attribute_id
+				);
+			}
+		}
+
+		parent::mapTypes( $attributes );
+
+		// Size
+		if ( ! empty( $attributes['size'] ) ) {
+			$this->setSizes( [ $attributes['size'] ] );
+		}
+
+		return $this;
+	}
+
+
+	/**
+	 * Get a source value for attribute mapping
+	 *
+	 * @param string $source The source to get the value
+	 * @return string|null The source value for this product
+	 */
+	protected function get_source( string $source ) {
+		$source_type = null;
+
+		$type_separator = strpos( $source, ':' );
+
+		if ( $type_separator ) {
+			$source_type  = substr( $source, 0, $type_separator );
+			$source_value = substr( $source, $type_separator + 1 );
+		}
+
+		// Detect if the source_type is kind of product, taxonomy or attribute. Otherwise, we take it the full source as a static value.
+		switch ( $source_type ) {
+			case 'product':
+				return $this->get_product_field( $source_value );
+			case 'taxonomy':
+				return $this->get_product_taxonomy( $source_value );
+			case 'attribute':
+				return $this->get_wc_product()->get_meta( $source_value );
+			default:
+				return $source;
+		}
+	}
+
+	/**
+	 * Check if the current product match the conditions for applying the Attribute mapping rule.
+	 * For now the conditions are just matching with the product category conditions.
+	 *
+	 * @param array $rule The attribute mapping rule
+	 * @return bool True if the rule is applicable
+	 */
+	protected function rule_match_conditions( array $rule ): bool {
+		$attribute               = $rule['attribute'];
+		$category_condition_type = $rule['category_condition_type'];
+
+		if ( $category_condition_type === AttributeMappingHelper::CATEGORY_CONDITION_TYPE_ALL ) {
+			return true;
+		}
+
+		// size is not the real attribute, the real attribute is sizes
+		if ( ! property_exists( $this, $attribute ) && $attribute !== 'size' ) {
+			return false;
+		}
+
+		$categories                = explode( ',', $rule['categories'] );
+		$contains_rules_categories = ! empty( array_intersect( $categories, $this->product_category_ids ) );
+
+		if ( $category_condition_type === AttributeMappingHelper::CATEGORY_CONDITION_TYPE_ONLY ) {
+			return $contains_rules_categories;
+		}
+
+		return ! $contains_rules_categories;
+	}
+
+	/**
+	 * Get taxonomy source type for attribute mapping
+	 *
+	 * @param string $taxonomy The taxonomy to get
+	 * @return string The taxonomy value
+	 */
+	protected function get_product_taxonomy( $taxonomy ) {
+		$product = $this->get_wc_product();
+		$values  = get_the_terms( $product->get_id(), $taxonomy );
+
+		if ( ! $values ) {
+			return null;
+		}
+
+		return wp_list_pluck( $values, 'name' )[0];
+	}
+
+	/**
+	 * Get product source type  for attribute mapping.
+	 * Those are fields belonging to the product core data. Like title, weight, SKU...
+	 *
+	 * @param string $field The field to get
+	 * @return string|null The field value (null if data is not available)
+	 */
+	protected function get_product_field( $field ) {
+		$product = $this->get_wc_product();
+
+		if ( 'weight_with_unit' === $field ) {
+			$weight = $product->get_weight();
+			return $weight ? $weight . ' ' . get_option( 'woocommerce_weight_unit' ) : null;
+		}
+
+		if ( is_callable( [ $product, 'get_' . $field ] ) ) {
+			$getter = 'get_' . $field;
+			return $product->$getter();
+		}
+
+		return null;
+	}
+
+	/**
+	 *
+	 * Formats the attribute for sending it via Google API
+	 *
+	 * @param string $value The value to format
+	 * @param string $attribute_id The attribute ID for which this value belongs
+	 * @return string|bool|int The attribute formatted based on theit attribute type
+	 */
+	protected function format_attribute( $value, $attribute_id ) {
+		$attribute = AttributeMappingHelper::get_attribute_by_id( $attribute_id );
+
+		if ( in_array( $attribute::get_value_type(), [ 'bool', 'boolean' ], true ) ) {
+			return wc_string_to_bool( $value );
+		}
+
+		if ( in_array( $attribute::get_value_type(), [ 'int', 'integer' ], true ) ) {
+			return (int) $value;
+		}
+
+		return $value;
 	}
 }

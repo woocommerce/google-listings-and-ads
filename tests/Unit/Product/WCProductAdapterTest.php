@@ -86,12 +86,42 @@ class WCProductAdapterTest extends UnitTest {
 		);
 	}
 
-	public function test_maps_extra_attributes() {
+	public function test_maps_rules_attributes() {
+		$rules = $this->get_sample_rules();
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'     => WC_Helper_Product::create_simple_product( false ),
+				'mapping_rules'  => $rules,
+				'gla_attributes' => [],
+				'targetCountry'  => 'US',
+			]
+		);
+
+		$this->assertEquals( $this->get_rule_attribute( 'gtin' ), $adapted_product->getGtin() );
+		$this->assertEquals( $this->get_rule_attribute( 'mpn' ), $adapted_product->getMpn() );
+		$this->assertEquals( $this->get_rule_attribute( 'brand' ), $adapted_product->getBrand() );
+		$this->assertEquals( $this->get_rule_attribute( 'condition' ), $adapted_product->getCondition() );
+		$this->assertEquals( $this->get_rule_attribute( 'gender' ), $adapted_product->getGender() );
+		$this->assertContains( $this->get_rule_attribute( 'size' ), $adapted_product->getSizes() );
+		$this->assertEquals( $this->get_rule_attribute( 'sizeSystem' ), $adapted_product->getSizeSystem() );
+		$this->assertEquals( $this->get_rule_attribute( 'sizeType' ), $adapted_product->getSizeType() );
+		$this->assertEquals( $this->get_rule_attribute( 'color' ), $adapted_product->getColor() );
+		$this->assertEquals( $this->get_rule_attribute( 'material' ), $adapted_product->getMaterial() );
+		$this->assertEquals( $this->get_rule_attribute( 'pattern' ), $adapted_product->getPattern() );
+		$this->assertEquals( $this->get_rule_attribute( 'ageGroup' ), $adapted_product->getAgeGroup() );
+		$this->assertEquals( 2, $adapted_product->getMultipack() );
+		$this->assertEquals( true, $adapted_product->getIsBundle() );
+		$this->assertEquals( true, $adapted_product->getAdult() );
+	}
+
+	public function test_maps_extra_gla_attributes() {
 		$attributes = $this->get_sample_attributes();
 
 		$adapted_product = new WCProductAdapter(
 			[
 				'wc_product'     => WC_Helper_Product::create_simple_product( false ),
+				'mapping_rules'  => [],
 				'gla_attributes' => $attributes,
 				'targetCountry'  => 'US',
 			]
@@ -112,6 +142,22 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( $attributes['multipack'], $adapted_product->getMultipack() );
 		$this->assertEquals( $attributes['isBundle'], $adapted_product->getIsBundle() );
 		$this->assertEquals( $attributes['adult'], $adapted_product->getAdult() );
+	}
+
+	public function test_gla_attribute_has_priority_over_rules() {
+		$rules = $this->get_sample_rules();
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'     => WC_Helper_Product::create_simple_product( false ),
+				'mapping_rules'  => $rules,
+				'gla_attributes' => [ 'gender' => 'man' ],
+				'targetCountry'  => 'US',
+			]
+		);
+
+		$this->assertEquals( $this->get_rule_attribute( 'condition' ), $adapted_product->getCondition() );
+		$this->assertEquals( 'man', $adapted_product->getGender() );
 	}
 
 	public function test_attribute_value_can_be_overridden_via_filter() {
