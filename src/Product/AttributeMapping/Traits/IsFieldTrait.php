@@ -94,12 +94,12 @@ trait IsFieldTrait {
 	public static function get_source_product_fields(): array {
 		$fields = [
 			'product:backorders'       => __( 'Allow backorders setting', 'google-listings-and-ads' ),
-			'product:product_title'    => __( 'Product title', 'google-listings-and-ads' ),
+			'product:title'            => __( 'Product title', 'google-listings-and-ads' ),
 			'product:sku'              => __( 'SKU', 'google-listings-and-ads' ),
-			'product:stock_qty'        => __( 'Stock Qty', 'google-listings-and-ads' ),
+			'product:stock_quantity'   => __( 'Stock Qty', 'google-listings-and-ads' ),
 			'product:stock_status'     => __( 'Stock Status', 'google-listings-and-ads' ),
 			'product:tax_class'        => __( 'Tax class', 'google-listings-and-ads' ),
-			'product:variation_title'  => __( 'Variation title', 'google-listings-and-ads' ),
+			'product:name'             => __( 'Variation title', 'google-listings-and-ads' ),
 			'product:weight'           => __( 'Weight (raw value, no units)', 'google-listings-and-ads' ),
 			'product:weight_with_unit' => __( 'Weight (with units)', 'google-listings-and-ads' ),
 		];

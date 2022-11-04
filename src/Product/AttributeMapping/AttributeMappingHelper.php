@@ -85,7 +85,7 @@ class AttributeMappingHelper implements Service {
 	 * @param string $attribute_id  The attribute ID to get the class
 	 * @return string|null The attribute class path or null if it's not found
 	 */
-	private function get_attribute_by_id( string $attribute_id ): ?string {
+	public static function get_attribute_by_id( string $attribute_id ): ?string {
 		foreach ( self::ATTRIBUTES_AVAILABLE_FOR_MAPPING as $class ) {
 			if ( $class::get_id() === $attribute_id ) {
 				return $class;

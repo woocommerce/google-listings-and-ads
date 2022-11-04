@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\SyncableProductsBatchedActionSchedulerJobTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 
 defined( 'ABSPATH' ) || exit;
@@ -15,7 +17,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
+class UpdateAllProducts extends AbstractProductSyncerBatchedJob implements OptionsAwareInterface {
+	use OptionsAwareTrait;
 	use SyncableProductsBatchedActionSchedulerJobTrait;
 
 	/**
@@ -36,7 +39,27 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	 */
 	protected function process_items( array $items ) {
 		$products = $this->product_repository->find_by_ids( $items );
-
 		$this->product_syncer->update( $products );
+	}
+
+	/**
+	 * Schedules a delayed batched job
+	 *
+	 * @param int $delay The delay time in seconds
+	 */
+	public function schedule_delayed( int $delay ) {
+		if ( $this->can_schedule( [ 1 ] ) ) {
+			$this->action_scheduler->schedule_single( gmdate( 'U' ) + $delay, $this->get_create_batch_hook(), [ 1 ] );
+		}
+	}
+
+	/**
+	 * Called when the job is completed.
+	 *
+	 * @param int $final_batch_number The final batch number when the job was completed.
+	 *                                If equal to 1 then no items were processed by the job.
+	 */
+	protected function handle_complete( int $final_batch_number ) {
+		$this->options->update( OptionsInterface::UPDATE_ALL_PRODUCTS_LAST_SYNC, strtotime( 'now' ) );
 	}
 }

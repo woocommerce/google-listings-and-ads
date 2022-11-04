@@ -316,6 +316,120 @@ trait ProductTrait {
 	}
 
 	/**
+	 * @return array
+	 */
+	public function get_sample_rules(): array {
+		return [
+			[
+				'attribute'               => 'gtin',
+				'source'                  => '012345678905',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'mpn',
+				'source'                  => 'GO54321OOGLE',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'brand',
+				'source'                  => 'acme',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'condition',
+				'source'                  => 'new',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'gender',
+				'source'                  => 'unisex',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'size',
+				'source'                  => 'M',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'sizeSystem',
+				'source'                  => 'US',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'sizeType',
+				'source'                  => 'regular',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'color',
+				'source'                  => 'blue',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'pattern',
+				'source'                  => 'squares',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'ageGroup',
+				'source'                  => 'newborn',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'multipack',
+				'source'                  => '2',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'isBundle',
+				'source'                  => 'yes',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'adult',
+				'source'                  => 'yes',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => 'material',
+				'source'                  => 'cotton',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+	}
+
+
+	/**
+	 * Return a specific rule by Attribute ID
+	 *
+	 * @param string $id rule attribute id
+	 * @return string|null The source for the found attribute or null
+	 */
+	public function get_rule_attribute( $id ) {
+		$rules     = $this->get_sample_rules();
+		$attribute = array_search( $id, array_column( $rules, 'attribute' ), true );
+		if ( $attribute === false || ! $rules[ $attribute ] ) {
+			return 'not found';
+		}
+
+		return $rules[ $attribute ]['source'];
+	}
+	/**
 	 * Helper function to create an array filled with product mocks for test purposes
 	 *
 	 * @param int $number Number of elements to fill an array with.

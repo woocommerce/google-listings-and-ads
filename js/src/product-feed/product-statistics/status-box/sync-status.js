@@ -9,10 +9,10 @@ import { format as formatDate } from '@wordpress/date';
  */
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import Status from '.~/product-feed/product-statistics/status-box/status';
-import { glaData } from '.~/constants';
 import SyncIcon from '.~/components/sync-icon';
 import SuccessIcon from '.~/components/success-icon';
 import getNumberOfSyncProducts from '.~/utils/getNumberOfSyncProducts';
+import glaDateTimeFormat from '.~/utils/date';
 
 /**
  * @typedef {import('.~/data/actions').ProductStatistics } ProductStatistics
@@ -54,14 +54,7 @@ function getSyncResult( {
 				totalSynced,
 				'google-listings-and-ads'
 			),
-			formatDate(
-				glaData.dateFormat +
-					( glaData.dateFormat.trim() && glaData.timeFormat.trim()
-						? ', '
-						: '' ) +
-					glaData.timeFormat,
-				new Date( timestamp * 1000 )
-			),
+			formatDate( glaDateTimeFormat, new Date( timestamp * 1000 ) ),
 			totalSynced
 		),
 	};
