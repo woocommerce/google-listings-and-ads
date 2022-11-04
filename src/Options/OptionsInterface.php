@@ -38,6 +38,7 @@ interface OptionsInterface {
 	public const SYNCABLE_PRODUCTS_COUNT                   = 'syncable_products_count';
 	public const SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA = 'syncable_products_count_intermediate_data';
 	public const TARGET_AUDIENCE                           = 'target_audience';
+	public const UPDATE_ALL_PRODUCTS_LAST_SYNC             = 'update_all_products_last_sync';
 	public const WP_TOS_ACCEPTED                           = 'wp_tos_accepted';
 
 	public const VALID_OPTIONS = [
@@ -67,6 +68,7 @@ interface OptionsInterface {
 		self::SYNCABLE_PRODUCTS_COUNT                   => true,
 		self::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA => true,
 		self::TARGET_AUDIENCE                           => true,
+		self::UPDATE_ALL_PRODUCTS_LAST_SYNC             => true,
 		self::WP_TOS_ACCEPTED                           => true,
 	];
 
