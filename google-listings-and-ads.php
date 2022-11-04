@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\PluginValidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\VersionValidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
+use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -48,6 +49,16 @@ register_activation_hook(
 	__FILE__,
 	function () {
 		PluginFactory::instance()->activate();
+	}
+);
+
+// HPOS compatibility declaration.
+add_action(
+	'before_woocommerce_init',
+	function () {
+		if ( class_exists( FeaturesUtil::class ) ) {
+			FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__ );
+		}
 	}
 );
 
