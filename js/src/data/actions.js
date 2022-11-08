@@ -1120,3 +1120,44 @@ export function* receiveStoreCategories( storeCategories ) {
 		storeCategories,
 	};
 }
+
+/**
+ * Action to receive the Tours.
+ *
+ * @param {Array} tour The tour to receive
+ */
+export function* receiveTour( tour ) {
+	return {
+		type: TYPES.RECEIVE_TOUR,
+		tour,
+	};
+}
+
+/**
+ * Updates/Inserts a Tour action
+ *
+ * @param {Object} tour The tour to update in the state.
+ */
+export function* upsertTour( tour ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/tours`,
+			method: REQUEST_ACTIONS.POST,
+			data: tour,
+		} );
+
+		return {
+			type: TYPES.UPSERT_TOUR,
+			tour: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error updating the tour.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}

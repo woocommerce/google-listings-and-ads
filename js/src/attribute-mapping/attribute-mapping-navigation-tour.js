@@ -2,16 +2,35 @@
  * External dependencies
  */
 import { TourKit } from '@woocommerce/components';
-import { useState } from '@wordpress/element';
+import { updateQueryString } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import useTour from '.~/hooks/useTour';
+const TOUR_ID = 'AttributeMappingNavigationTour';
+
 const AttributeMappingNavigationTour = () => {
-	const [ showTour, setShowTour ] = useState( true );
+	const [ { data: tour, hasFinishedResolution }, setTour ] = useTour(
+		TOUR_ID
+	);
+
+	const showTour = hasFinishedResolution && ! tour?.checked;
+
+	const closeHandler = async ( _data, _step, origin ) => {
+		await setTour( { id: TOUR_ID, checked: true } );
+
+		if ( origin === 'done-btn' ) {
+			updateQueryString( {}, '/google/attribute-mapping', {} );
+		}
+	};
+
 	const config = {
 		steps: [
 			{
 				referenceElements: {
-					desktop: '.gla-attribute-mapping__table',
+					desktop: '.app-tab-nav #attribute-mapping',
 				},
 				meta: {
 					heading: __(
@@ -30,8 +49,11 @@ const AttributeMappingNavigationTour = () => {
 				},
 			},
 		],
+		options: {
+			effects: { overlay: false },
+		},
 		placement: 'bottom',
-		closeHandler: () => setShowTour( false ),
+		closeHandler,
 	};
 
 	return showTour && <TourKit config={ config } />;

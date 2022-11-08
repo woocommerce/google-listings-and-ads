@@ -44,6 +44,7 @@ import {
 	receiveMappingAttributes,
 	receiveMappingRules,
 	receiveStoreCategories,
+	receiveTour,
 } from './actions';
 
 export function* getShippingRates() {
@@ -462,3 +463,26 @@ export function* getStoreCategories() {
 		);
 	}
 }
+
+/**
+ * Resolver for getting the Tours.
+ *
+ * @param {string} tourId The tour to get
+ */
+export function* getTour( tourId ) {
+	const response = yield apiFetch( {
+		path: `${ API_NAMESPACE }/tours/${ tourId }`,
+	} );
+
+	yield receiveTour( response );
+}
+
+/**
+ * Refresh getTour if UPSERT happens in the APP.
+ *
+ * @param {Object} action The performed action
+ * @return {boolean} True if the action should be invalidated
+ */
+getTour.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.UPSERT_TOUR;
+};

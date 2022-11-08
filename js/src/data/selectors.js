@@ -358,3 +358,7 @@ export const getMappingRules = createSelector(
 export const getStoreCategories = ( state ) => {
 	return state.store_categories;
 };
+
+export const getTour = ( state, tourId ) => {
+	return state.tours[ tourId ];
+};
