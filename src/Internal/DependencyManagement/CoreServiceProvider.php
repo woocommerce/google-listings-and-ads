@@ -30,6 +30,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
@@ -330,7 +331,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			ProductHelper::class,
 			ValidatorInterface::class,
 			ProductFactory::class,
-			TargetAudience::class
+			TargetAudience::class,
+			AttributeMappingRulesQuery::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,

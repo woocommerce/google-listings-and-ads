@@ -65,11 +65,11 @@ const singleAddToCartClick = function ( event ) {
 	);
 };
 
-// Register for add_to_cart click events.
+// Register for add_to_cart click events except for the buttons of Gutenberg blocks.
 document.defaultView.addEventListener( 'DOMContentLoaded', function () {
 	document
 		.querySelectorAll(
-			'.add_to_cart_button:not( .product_type_variable ):not( .product_type_grouped )'
+			'.add_to_cart_button:not( .product_type_variable ):not( .product_type_grouped ):not( .wc-block-components-product-button__button )'
 		)
 		.forEach( ( button ) => {
 			button.addEventListener( 'click', addToCartClick );
