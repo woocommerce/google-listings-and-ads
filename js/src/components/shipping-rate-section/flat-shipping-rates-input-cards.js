@@ -8,34 +8,10 @@ import MinimumOrderCard from './minimum-order-card';
 
 const FlatShippingRatesInputCards = ( props ) => {
 	const { audienceCountries, formProps } = props;
-	const { getInputProps, values, setValue } = formProps;
+	const { getInputProps, values } = formProps;
 	const displayFreeShippingCards = values.shipping_country_rates.some(
 		isNonFreeShippingRate
 	);
-
-	const getOfferFreeShippingChangeHandler = ( onChange ) => (
-		newOfferFreeShippingValue
-	) => {
-		/**
-		 * When users select 'No', we remove all the
-		 * shippingRate.options.free_shipping_threshold.
-		 */
-		if ( ! newOfferFreeShippingValue ) {
-			const newValue = values.shipping_country_rates.map( ( el ) => {
-				return {
-					...el,
-					options: {
-						...el.options,
-						free_shipping_threshold: undefined,
-					},
-				};
-			} );
-
-			setValue( 'shipping_country_rates', newValue );
-		}
-
-		onChange( newOfferFreeShippingValue );
-	};
 
 	return (
 		<>
@@ -47,9 +23,6 @@ const FlatShippingRatesInputCards = ( props ) => {
 				<>
 					<OfferFreeShippingCard
 						{ ...getInputProps( 'offer_free_shipping' ) }
-						onChange={ getOfferFreeShippingChangeHandler(
-							getInputProps( 'offer_free_shipping' ).onChange
-						) }
 					/>
 					{ values.offer_free_shipping && (
 						<MinimumOrderCard

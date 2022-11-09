@@ -123,6 +123,24 @@ const SetupFreeListings = ( {
 					formProps.setValue( 'offer_free_shipping', undefined );
 				} );
 			}
+		} else if ( change.name === 'offer_free_shipping' ) {
+			// After selecting the 'No' option of the free shipping threshold,
+			// Reset all shipping_country_rates.options.free_shipping_threshold.
+			if ( ! change.value ) {
+				const nextValue = values.shipping_country_rates.map(
+					( rate ) => ( {
+						...rate,
+						options: {
+							...rate.options,
+							free_shipping_threshold: undefined,
+						},
+					} )
+				);
+
+				formPropsDelegateeRef.current.push( ( formProps ) => {
+					formProps.setValue( 'shipping_country_rates', nextValue );
+				} );
+			}
 		} else if ( change.name === 'shipping_country_times' ) {
 			onShippingTimesChange( values.shipping_country_times );
 		} else if ( settingsFieldNames.includes( change.name ) ) {
