@@ -169,13 +169,16 @@ const SavedSetupStepper = ( { savedStep } ) => {
 									'google-listings-and-ads'
 								)
 							) }
-							onSettingsChange={ handleFormChange.bind(
-								saveSettings,
-								__(
-									'There was an error saving settings.',
-									'google-listings-and-ads'
-								)
-							) }
+							onSettingsChange={ ( val ) => {
+								console.log( 'onSettingsChange', val );
+								handleFormChange.bind(
+									saveSettings,
+									__(
+										'There was an error saving settings.',
+										'google-listings-and-ads'
+									)
+								)( val );
+							} }
 							onShippingRatesChange={ handleFormChange.bind(
 								saveShippingRates,
 								__(
