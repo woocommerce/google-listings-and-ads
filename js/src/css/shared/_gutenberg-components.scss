@@ -2,12 +2,15 @@
 @import "node_modules/@wordpress/components/src/button/style"; // required for tab-panel
 @import "node_modules/@wordpress/components/src/panel/style";
 
-// WP 5.9 Compatibility (@wordpress/components 19.2.2):
-// The style of `VisuallyHidden` component changed to apply `style` prop directly.
-// This could be removed after
-// - GLA relies on @wordpress/components >= 19.2.2
-// - or @wordpress/components is changed to be imported via (WC)DEWP.
-@import "node_modules/@wordpress/components/src/visually-hidden/style";
+// Scope the old styles of core components to GLA pages to avoid styling conflicts with other non-GLA pages.
+.gla-admin-page {
+	// WP 5.9 Compatibility (@wordpress/components 19.2.2)
+	// The style of `VisuallyHidden` component was changed to apply `style` prop directly.
+	// This import could be removed after:
+	// - GLA relies on @wordpress/components >= 19.2.2
+	// - or @wordpress/components is changed to be imported via (WC)DEWP
+	@import "node_modules/@wordpress/components/src/visually-hidden/style"; /* stylelint-disable-line no-invalid-position-at-import-rule */
+}
 
 .components-button {
 	// Hack to show correct font color for disabled primary destructive button.
