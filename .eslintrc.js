@@ -1,4 +1,4 @@
-const webpackConfig = require( './webpack.config' );
+const { webpackConfig } = require( './webpack.config' );
 
 const webpackResolver = {
 	config: {
@@ -29,6 +29,8 @@ module.exports = {
 			'@wordpress/stylelint-config',
 			'@pmmmwh/react-refresh-webpack-plugin',
 			'react-transition-group',
+			'mini-css-extract-plugin',
+			'clean-webpack-plugin',
 		],
 		'import/resolver': { webpack: webpackResolver },
 	},

@@ -4,10 +4,62 @@ const { hasArgInCLI } = require( '@wordpress/scripts/utils' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
 
 const ReactRefreshWebpackPlugin = require( '@pmmmwh/react-refresh-webpack-plugin' );
+const MiniCSSExtractPlugin = require( 'mini-css-extract-plugin' );
+const { CleanWebpackPlugin } = require( 'clean-webpack-plugin' );
+const fs = require( 'fs' );
 const path = require( 'path' );
 
 const isProduction = process.env.NODE_ENV === 'production';
 const hasReactFastRefresh = hasArgInCLI( '--hot' ) && ! isProduction;
+
+// Webpack config of prebuild style for fixing several compatible issues with core components.
+// Might be able to remove this after @wordpress/components is changed to be imported via (WC)DEWP.
+const prebuildFilename = 'prebuild.css';
+const prebuildConfig = {
+	mode: defaultConfig.mode,
+	module: defaultConfig.module,
+	plugins: [
+		new MiniCSSExtractPlugin( { filename: prebuildFilename } ),
+		new CleanWebpackPlugin( {
+			cleanOnceBeforeBuildPatterns: [
+				prebuildFilename.replace( '.css', '.*' ),
+			],
+		} ),
+	],
+	entry: {
+		prebuild: path.join( __dirname, 'js/src/css/prebuild.scss' ),
+	},
+	output: {
+		path: path.join( __dirname, 'js/build-dev' ),
+	},
+};
+
+// A webpack plugin for waiting for the dependent prebuild file to be finished.
+// Ref: https://webpack.js.org/api/compiler-hooks/#run
+class WaitForPrebuild {
+	apply( compiler ) {
+		const name = 'WaitForPrebuild';
+		const hookNames = [ 'run', 'watchRun' ];
+
+		hookNames.forEach( ( hookName ) => {
+			compiler.hooks[ hookName ].tapAsync( name, this.startPolling );
+		} );
+	}
+
+	startPolling( context, next ) {
+		const file = path.join( prebuildConfig.output.path, prebuildFilename );
+
+		function poll() {
+			if ( fs.existsSync( file ) ) {
+				next();
+			} else {
+				setTimeout( poll, 200 );
+			}
+		}
+
+		poll();
+	}
+}
 
 const requestToExternal = ( request ) => {
 	const bundledPackages = [
@@ -104,6 +156,7 @@ const webpackConfig = {
 		new webpack.ProvidePlugin( {
 			process: 'process/browser',
 		} ),
+		new WaitForPrebuild(),
 	],
 	entry: {
 		index: path.resolve( process.cwd(), 'js/src', 'index.js' ),
@@ -181,4 +234,5 @@ webpackConfig.module.rules.forEach( ( { test, use }, ruleIndex ) => {
 	}
 } );
 
-module.exports = webpackConfig;
+module.exports = [ prebuildConfig, webpackConfig ];
+module.exports.webpackConfig = webpackConfig;

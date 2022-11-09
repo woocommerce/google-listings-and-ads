@@ -1,4 +1,5 @@
 build
+build-dev
 build-module
 coverage
 languages
