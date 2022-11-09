@@ -12,6 +12,7 @@ import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
 import getOfferFreeShippingInitialValue from '.~/utils/getOfferFreeShippingInitialValue';
+import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
 import FormContent from './form-content';
 
 /**
@@ -112,6 +113,16 @@ const SetupFreeListings = ( {
 	const handleChange = ( change, values ) => {
 		if ( change.name === 'shipping_country_rates' ) {
 			onShippingRatesChange( values.shipping_country_rates );
+
+			// If all the shipping rates are free shipping,
+			// we set the offer_free_shipping to undefined,
+			// so that when users add a non-free shipping rate,
+			// they would need to choose "yes" / "no" for offer_free_shipping.
+			if ( ! change.value.some( isNonFreeShippingRate ) ) {
+				formPropsDelegateeRef.current.push( ( formProps ) => {
+					formProps.setValue( 'offer_free_shipping', undefined );
+				} );
+			}
 		} else if ( change.name === 'shipping_country_times' ) {
 			onShippingTimesChange( values.shipping_country_times );
 		} else if ( settingsFieldNames.includes( change.name ) ) {
