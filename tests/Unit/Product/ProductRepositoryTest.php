@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use WC_Helper_Product;
 use WC_Product;
 
@@ -258,14 +258,14 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
 
 		$product_2 = WC_Helper_Product::create_simple_product();
-		$this->product_meta->update_mc_status( $product_2, MCStatus::NOT_SYNCED );
+		$this->product_meta->update_sync_status( $product_2, SyncStatus::HAS_ERRORS );
 
 		WC_Helper_Product::create_simple_product();
 
 		$variable_product = WC_Helper_Product::create_variation_product();
-		$this->product_meta->update_mc_status( $variable_product, MCStatus::NOT_SYNCED );
+		$this->product_meta->update_sync_status( $variable_product, SyncStatus::NOT_SYNCED );
 		foreach ( $variable_product->get_children() as $variation_id ) {
-			$this->product_meta->update_mc_status( wc_get_product( $variation_id ), MCStatus::NOT_SYNCED );
+			$this->product_meta->update_sync_status( wc_get_product( $variation_id ), SyncStatus::NOT_SYNCED );
 		}
 
 		$this->assertEqualSets(
