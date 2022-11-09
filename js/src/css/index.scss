@@ -7,3 +7,9 @@
 
 // Import GLA-wise styling that based on woocommerce-admin styles.
 @import "./shared/woocommerce-admin";
+
+// Scope the old styles of core components to GLA pages to avoid styling conflicts with other non-GLA pages.
+.gla-admin-page {
+	/* stylelint-disable-next-line no-invalid-position-at-import-rule */
+	@import "../../build-dev/prebuild";
+}
