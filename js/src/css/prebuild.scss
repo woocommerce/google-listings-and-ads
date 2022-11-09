@@ -1,0 +1,39 @@
+// Import SCSS variables and functions used by the SCSS files in @wordpress/components.
+@import "node_modules/@wordpress/base-styles/variables";
+@import "node_modules/@wordpress/base-styles/z-index";
+
+// WP 5.9 Compatibility (@wordpress/components 19.2.2)
+// The style of `VisuallyHidden` component was changed to apply `style` prop directly.
+// This import could be removed after:
+// - GLA relies on @wordpress/components >= 19.2.2
+// - or @wordpress/components is changed to be imported via (WC)DEWP
+@import "node_modules/@wordpress/components/src/visually-hidden/style";
+
+// WP 6.1 Compatibility (@wordpress/components 21.0.6)
+// The styles of `Popover`, `Tooltip` and `DatePicker` components were significantly changed as per the new implementations.
+// These imports could be removed after:
+// - GLA relies on @wordpress/components >= 21.0.6
+// - or @wordpress/components is changed to be imported via (WC)DEWP
+@import "node_modules/@wordpress/components/src/popover/style";
+@import "node_modules/@wordpress/components/src/tooltip/style";
+@import "node_modules/@wordpress/components/src/date-time/datepicker";
+
+.components-popover {
+	// Remove the extra outline showing with the border.
+	&__content {
+		outline: none;
+	}
+
+	// Fix the incompatible arrow pseudo-elements.
+	&:not(.is-without-arrow) {
+		&::before,
+		&::after {
+			display: none;
+		}
+	}
+
+	// Fix the incorrect positioning.
+	.components-popover__content {
+		position: static;
+	}
+}
