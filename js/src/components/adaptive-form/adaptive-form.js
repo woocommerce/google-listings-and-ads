@@ -121,9 +121,12 @@ function AdaptiveForm( { children, ...props }, ref ) {
 
 				// Related to WC 6.9. Only one delegate can be consumed at a time in this render prop to
 				// ensure the updating states will always be the latest when calling.
-				//const { batchQueue } = adapterRef.current;
 				if ( batchQueue.length ) {
 					// Use `setImmediate` to avoid the warning of request state updates while rendering.
+					// Mutating a React hook state is an anti-pattern in most cases. Here is done intentionally
+					// because it's necessary to ensure this component will be triggered re-rendering through
+					// `setBatchQueue`, but also to avoid calling `settingBatchQueue` here and triggering
+					// additional rendering again.
 					setImmediate( () => setDelegation( batchQueue.shift() ) );
 				}
 
