@@ -116,7 +116,6 @@ const ContactInformation = ( { onPhoneNumberVerified } ) => {
 				<PhoneNumberCard
 					view="setup-mc"
 					phoneNumber={ phone }
-					initEditing={ null }
 					onPhoneNumberVerified={ onPhoneNumberVerified }
 				/>
 				<StoreAddressCard />

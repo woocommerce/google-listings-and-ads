@@ -34,7 +34,6 @@ let simpleProductID;
 
 describe( 'GTag events', () => {
 	beforeAll( async () => {
-		page.setDefaultTimeout( 3000 );
 		await saveConversionID();
 		await createBlockShopPage();
 		simpleProductID = await createSimpleProduct();
@@ -87,9 +86,7 @@ describe( 'GTag events', () => {
 		const event = trackGtagEvent( 'add_to_cart' );
 
 		// Go to block shop page
-		await page.goto( config.url + '/all-products-block', {
-			waitUntil: 'networkidle0',
-		} );
+		await page.goto( config.url + 'all-products-block/' );
 
 		await blockProductAddToCart();
 

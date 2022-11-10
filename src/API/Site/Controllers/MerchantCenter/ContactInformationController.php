@@ -139,6 +139,7 @@ class ContactInformationController extends BaseOptionsController {
 				'type'        => 'string',
 				'description' => __( 'The verification status of the phone number associated with the Merchant Center account.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
+				'enum'        => [ 'verified', 'unverified' ],
 			],
 			'mc_address'                => [
 				'type'        => 'object',

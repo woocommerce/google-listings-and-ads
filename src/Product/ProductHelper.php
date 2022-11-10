@@ -489,7 +489,7 @@ class ProductHelper implements Service {
 	 * @throws InvalidValue If the given param ignore_product_on_error is false and any of a given ID doesn't reference a valid product.
 	 *                      Or if a variation product does not have a valid parent ID (i.e. it's an orphan).
 	 *
-	 * @since x.x.x
+	 * @since 2.2.0
 	 */
 	public function maybe_swap_for_parent_ids( array $product_ids, bool $check_product_status = true, bool $ignore_product_on_error = true ) {
 		$new_product_ids = [];
