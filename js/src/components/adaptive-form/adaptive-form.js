@@ -23,7 +23,7 @@ function isEvent( value ) {
  */
 
 /**
- * Renders an adapted form component that wraps the `Form` of `@wordpress/element` with
+ * Renders an adapted form component that wraps the `Form` of `@woocommerce/components` with
  * several workarounds in order to be compatible with WC 6.9 to 7.1.
  *
  * @param {Object} props React props.
