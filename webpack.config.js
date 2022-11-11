@@ -78,6 +78,7 @@ const webpackConfig = {
 		...defaultConfig.resolve,
 		alias: {
 			'.~': path.resolve( process.cwd(), 'js/src/' ),
+			extracted: path.resolve( __dirname, 'node_modules' ),
 		},
 		fallback: {
 			/**
