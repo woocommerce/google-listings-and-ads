@@ -12,6 +12,7 @@ import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
 import getOfferFreeShippingInitialValue from '.~/utils/getOfferFreeShippingInitialValue';
+import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
 import FormContent from './form-content';
 
 /**
@@ -112,10 +113,60 @@ const SetupFreeListings = ( {
 	const handleChange = ( change, values ) => {
 		if ( change.name === 'shipping_country_rates' ) {
 			onShippingRatesChange( values.shipping_country_rates );
+
+			// If all the shipping rates are free shipping,
+			// we set the offer_free_shipping to undefined,
+			// so that when users add a non-free shipping rate,
+			// they would need to choose "yes" / "no" for offer_free_shipping.
+			if ( ! change.value.some( isNonFreeShippingRate ) ) {
+				formPropsDelegateeRef.current.push( ( formProps ) => {
+					formProps.setValue( 'offer_free_shipping', undefined );
+				} );
+			}
+		} else if ( change.name === 'offer_free_shipping' ) {
+			// After selecting the 'No' option of the free shipping threshold,
+			// Reset all shipping_country_rates.options.free_shipping_threshold.
+			if ( ! change.value ) {
+				const nextValue = values.shipping_country_rates.map(
+					( rate ) => ( {
+						...rate,
+						options: {
+							...rate.options,
+							free_shipping_threshold: undefined,
+						},
+					} )
+				);
+
+				formPropsDelegateeRef.current.push( ( formProps ) => {
+					formProps.setValue( 'shipping_country_rates', nextValue );
+				} );
+			}
 		} else if ( change.name === 'shipping_country_times' ) {
 			onShippingTimesChange( values.shipping_country_times );
 		} else if ( settingsFieldNames.includes( change.name ) ) {
-			onSettingsChange( getSettings( values ) );
+			// The value of `shipping_time` option is determined by the value of `shipping_rate` option.
+			// So if the current form change is considered it needs to change `shipping_time` as well,
+			// it schedules the processing with `formPropsDelegateeRef` and also skips the call of
+			// `onSettingsChange` this time, and lets the call of `onSettingsChange` be triggered
+			// when the form change of `shipping_time` happens.
+			let shouldTriggerOnChange = true;
+
+			if ( change.name === 'shipping_rate' ) {
+				// When shipping rate is 'manual', shipping time should be 'manual' as well;
+				// When shipping rate is 'automatic' or 'flat', shipping time should be 'flat'.
+				const nextValue = change.value === 'manual' ? 'manual' : 'flat';
+
+				if ( nextValue !== values.shipping_time ) {
+					shouldTriggerOnChange = false;
+					formPropsDelegateeRef.current.push( ( formProps ) =>
+						formProps.setValue( 'shipping_time', nextValue )
+					);
+				}
+			}
+
+			if ( shouldTriggerOnChange ) {
+				onSettingsChange( getSettings( values ) );
+			}
 		} else if ( targetAudienceFields.includes( change.name ) ) {
 			onTargetAudienceChange( pick( values, targetAudienceFields ) );
 
