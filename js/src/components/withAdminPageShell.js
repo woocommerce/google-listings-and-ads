@@ -4,11 +4,6 @@
 import { createHigherOrderComponent } from '@wordpress/compose';
 
 /**
- * Internal dependencies
- */
-import useLayout from '.~/hooks/useLayout';
-
-/**
  * A higher-order component for wrapping the app shell on top of the GLA admin page.
  * Cross-page shared things could be handled here.
  *
@@ -16,8 +11,12 @@ import useLayout from '.~/hooks/useLayout';
  */
 const withAdminPageShell = createHigherOrderComponent(
 	( Page ) => ( props ) => {
-		useLayout( 'admin-page' );
-		return <Page { ...props } />;
+		return (
+			// gla-admin-page is for scoping particular styles to a GLA admin page.
+			<div className="gla-admin-page">
+				<Page { ...props } />;
+			</div>
+		);
 	},
 	'withAdminPageShell'
 );
