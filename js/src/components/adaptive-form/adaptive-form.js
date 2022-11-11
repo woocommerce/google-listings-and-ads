@@ -125,8 +125,8 @@ function AdaptiveForm( { children, ...props }, ref ) {
 					// Use `setImmediate` to avoid the warning of request state updates while rendering.
 					// Mutating a React hook state is an anti-pattern in most cases. Here is done intentionally
 					// because it's necessary to ensure this component will be triggered re-rendering through
-					// `setBatchQueue`, but also to avoid calling `settingBatchQueue` here and triggering
-					// additional rendering again.
+					// `setBatchQueue`, but also to avoid calling `setBatchQueue` here and triggering additional
+					// rendering again.
 					setImmediate( () => setDelegation( batchQueue.shift() ) );
 				}
 
