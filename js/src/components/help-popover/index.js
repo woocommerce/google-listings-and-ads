@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Popover } from '@wordpress/components';
+import { Popover } from 'extracted/@wordpress/components';
 import { useState } from '@wordpress/element';
 import GridiconHelpOutline from 'gridicons/dist/help-outline';
 import { recordEvent } from '@woocommerce/tracks';
