@@ -42,6 +42,9 @@ const AppModal = ( {
 	...rest
 } ) => {
 	const modalClassName = classnames(
+		// gla-admin-page is for scoping particular styles to components that are used by
+		// a GLA admin page and are rendered via ReactDOM.createPortal.
+		'gla-admin-page',
 		'app-modal',
 		overflowStyleName[ overflow ],
 		className
