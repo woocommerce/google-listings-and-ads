@@ -98,7 +98,14 @@ class ToursControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_tour_not_found() {
-		$response = $this->do_request( self::ROUTE . '/not_exists' );
+		$response = $this->do_request( self::ROUTE . '/tour_not_exists' );
 		$this->assertEquals( 404, $response->get_status() );
+		$this->assertEquals( 'Tour not found', $response->get_data()['message'] );
+	}
+
+	public function test_get_tour_bad_pattern() {
+		$response = $this->do_request( self::ROUTE . '/$$$' );
+		$this->assertEquals( 404, $response->get_status() );
+		$this->assertEquals( 'No route was found matching the URL and request method.', $response->get_data()['message'] );
 	}
 }
