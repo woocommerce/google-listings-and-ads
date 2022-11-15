@@ -2,6 +2,16 @@
 @import "node_modules/@wordpress/components/src/button/style"; // required for tab-panel
 @import "node_modules/@wordpress/components/src/panel/style";
 
+// Scope the old styles of core components to GLA pages to avoid styling conflicts with other non-GLA pages.
+.gla-admin-page {
+	// WP 6.1 Compatibility (@wordpress/components 21.0.6 imported by @woocommerce/components)
+	// The style of `DatePicker` component was significantly changed as per the new implementations.
+	// This import could be removed after:
+	// - It's fixed from @woocommerce/components
+	// - or @wordpress/components is changed to be imported via (WC)DEWP
+	@import "node_modules/@wordpress/components/src/date-time/datepicker"; /* stylelint-disable-line no-invalid-position-at-import-rule */
+}
+
 .components-button {
 	// Hack to show correct font color for disabled primary destructive button.
 	// The color style is copied from https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/button/style.scss#L67-L72

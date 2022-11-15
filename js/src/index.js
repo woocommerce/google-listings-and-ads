@@ -11,6 +11,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
  * Internal dependencies
  */
 import './css/index.scss';
+import withAdminPageShell from '.~/components/withAdminPageShell';
 import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';
 import SetupAds from './setup-ads';
@@ -49,8 +50,7 @@ addFilter(
 			__( 'Google Listings & Ads', 'google-listings-and-ads' )
 		);
 
-		return [
-			...pages,
+		const pluginAdminPages = [
 			{
 				breadcrumbs: [ ...initialBreadcrumbs ],
 				container: GetStartedPage,
@@ -137,5 +137,11 @@ addFilter(
 				},
 			},
 		];
+
+		pluginAdminPages.forEach( ( page ) => {
+			page.container = withAdminPageShell( page.container );
+		} );
+
+		return pages.concat( pluginAdminPages );
 	}
 );
