@@ -20,7 +20,6 @@
 	 */
 class TourController extends BaseOptionsController {
 
-
 	/**
 	 * Constructor.
 	 *
@@ -38,7 +37,7 @@ class TourController extends BaseOptionsController {
 		 * GET The tour visualizations
 		 */
 		$this->register_route(
-			'/tours/(?P<id>[a-z]+)',
+			"/tours/(?P<id>{$this->get_tour_id_regex()})",
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
@@ -148,6 +147,7 @@ class TourController extends BaseOptionsController {
 				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
+				'pattern'           => "^{$this->get_tour_id_regex()}$",
 			],
 			'checked' => [
 				'description'       => __( 'Whether the tour was checked.', 'google-listings-and-ads' ),
@@ -167,5 +167,14 @@ class TourController extends BaseOptionsController {
 	 */
 	protected function get_schema_title(): string {
 		return 'tours';
+	}
+
+	/**
+	 * Get the regex used for the Tour ID
+	 *
+	 * @return string The regex
+	 */
+	private function get_tour_id_regex(): string {
+		return '[a-zA-z0-9-_]+';
 	}
 }
