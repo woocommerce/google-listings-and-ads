@@ -143,7 +143,7 @@ const AttributeMappingTable = () => {
 														<AppButton
 															isLink
 															text={ __(
-																'Manage',
+																'Edit',
 																'google-listings-and-ads'
 															) }
 															eventName="gla_attribute_mapping_manage_rule_click"

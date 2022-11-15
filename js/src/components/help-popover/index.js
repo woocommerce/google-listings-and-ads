@@ -24,7 +24,7 @@ import './index.scss';
  * @param {Array<JSX.Element>} props.children The Popover’s content
  * @fires gla_tooltip_viewed with the given `id`.
  */
-const HelpPopover = ( { id, children } ) => {
+const HelpPopover = ( { id, children, ...props } ) => {
 	const [ showPopover, setShowPopover ] = useState( false );
 
 	const handleButtonClick = () => {
@@ -47,6 +47,7 @@ const HelpPopover = ( { id, children } ) => {
 				<Popover
 					focusOnMount="container"
 					onClose={ handlePopoverClose }
+					{ ...props }
 				>
 					{ children }
 				</Popover>

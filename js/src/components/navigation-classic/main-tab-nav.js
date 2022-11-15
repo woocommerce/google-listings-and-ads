@@ -29,7 +29,7 @@ let tabs = [
 	},
 	{
 		key: 'attribute-mapping',
-		title: __( 'Attribute Mapping', 'google-listings-and-ads' ),
+		title: __( 'Attributes', 'google-listings-and-ads' ),
 		href: getNewPath( {}, '/google/attribute-mapping', {} ),
 	},
 	{

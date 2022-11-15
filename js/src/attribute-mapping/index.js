@@ -22,7 +22,7 @@ const AttributeMapping = () => {
 		<div className="gla-attribute-mapping">
 			<NavigationClassic />
 			<Section
-				title={ __( 'Attribute Mapping', 'google-listings-and-ads' ) }
+				title={ __( 'Manage attributes', 'google-listings-and-ads' ) }
 				description={ <AttributeMappingDescription /> }
 			>
 				<AttributeMappingTable />
