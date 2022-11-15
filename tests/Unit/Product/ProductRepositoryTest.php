@@ -309,10 +309,14 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$this->product_helper->mark_as_synced( $product_2, $this->generate_google_product_mock() );
 		$this->product_meta->update_failed_delete_attempts( $product_2, 5 );
 
-		$ids = [ $product_1->get_id(), $product_2->get_id() ];
+		// A trashed product that is marked as not_synced in SyncStatus.
+		$product_3 = WC_Helper_Product::create_simple_product( true, [ 'status' => 'trash' ] );
+		$this->product_helper->mark_as_unsynced( $product_3 );
+
+		$ids = [ $product_1->get_id(), $product_2->get_id(), $product_3->get_id() ];
 
 		$this->assertEquals(
-			[ $product_1->get_id() ],
+			[ $product_3->get_id() ],
 			$this->product_repository->find_delete_product_ids( $ids )
 		);
 	}
