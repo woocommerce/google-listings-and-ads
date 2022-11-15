@@ -3,9 +3,11 @@ name: E2E Tests
 on:
   push:
     branches:
-      - trunk
-      - develop
+      - "release/**"
   pull_request:
+    branches:
+      - "release/**"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -1,5 +1,21 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 2.2.1 - 2022-11-15 =
+* Add - Declare compatibility for High Performance Order Storage.
+* Dev - Selectively externalize bundled packages.
+* Fix - E2E Testing: Reduce the false positive rate and adjust the running events on GitHub Actions.
+* Fix - Move the order of Google Listings & Ads below the Coupons in the Marketing menu of WooCommerce admin page.
+* Fix - WC 6.9 compatibility: Shipping time settings should not appear after selecting the "complex" shipping option.
+* Fix - WC 6.9 compatibility: The free shipping threshold should be cleared after selecting the "No" free shipping option.
+* Fix - WC 6.9 compatibility: The selected free shipping option should be reset after setting all shipping rates to 0.
+* Fix - WC 7.1 compatibility: Fixing the forms in the free listings setup may cause infinite requesting state updates which lead to a blank page or issue a lot of API requests.
+* Fix - WordPress 5.9 Compatibility: Visually hide descriptions of external link icons.
+* Fix - WordPress 6.1 Compatibility: Popover and Tooltip components should be displayed as floating.
+* Fix - WordPress 6.1 Compatibility: The size of navigation icons in Datepicker component should not be a giant size.
+* Tweak - WC 7.1 compatibility.
+* Tweak - WP 6.1 compatibility.
+* Update - ISO3166 package version 4.1.
+
 = 2.2.0 - 2022-10-18 =
 * Add - Ad previews in the post-onboarding ads setup flow.
 * Add - Combine the audience and shipping steps for the onboarding flow and the editing free listings page.

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Tooltip } from '@wordpress/components';
+import { Tooltip } from 'extracted/@wordpress/components';
 
 /**
  * Internal dependencies
