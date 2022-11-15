@@ -4,7 +4,11 @@ const defaultConfig = require( '@wordpress/scripts/config/jest-unit.config' );
 
 module.exports = {
 	...defaultConfig,
+	verbose: true,
 	testEnvironment: 'jsdom',
+	transformIgnorePatterns: [
+		'.*/node_modules/.*/node_modules/(?!(is-plain-obj)/)',
+	],
 	setupFiles: [ 'core-js' ],
 	moduleNameMapper: {
 		'\\.png$': '<rootDir>/tests/mocks/assets/imageMock.js',
