@@ -103,6 +103,11 @@ class ToursControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'Tour not found', $response->get_data()['message'] );
 	}
 
+	public function test_post_tour_invalid_name() {
+		$response = $this->do_request( self::ROUTE, 'POST', [ 'id' => '$$$', 'checked' => true] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_get_tour_bad_pattern() {
 		$response = $this->do_request( self::ROUTE . '/$$$' );
 		$this->assertEquals( 404, $response->get_status() );

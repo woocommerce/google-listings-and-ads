@@ -20,12 +20,6 @@
 	 */
 class TourController extends BaseOptionsController {
 
-
-	/**
-	 * Defines the regex to be used for the Tour ID
-	 */
-	private const TOUR_REGEX = '[a-zA-z0-9-_]+';
-
 	/**
 	 * Constructor.
 	 *
@@ -153,7 +147,7 @@ class TourController extends BaseOptionsController {
 				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
-				'pattern'           => $this->get_tour_id_regex(),
+				'pattern'           => "^{$this->get_tour_id_regex()}$",
 			],
 			'checked' => [
 				'description'       => __( 'Whether the tour was checked.', 'google-listings-and-ads' ),
