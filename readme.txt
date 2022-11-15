@@ -2,9 +2,9 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
-Tested up to: 6.0
+Tested up to: 6.1
 Requires PHP: 7.4
-Stable tag: 2.2.0
+Stable tag: 2.2.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -108,6 +108,22 @@ Performance Max campaigns are pay-per-click, meaning you only pay when someone c
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.
 
 == Changelog ==
+
+= 2.2.1 - 2022-11-15 =
+* Add - Declare compatibility for High Performance Order Storage.
+* Dev - Selectively externalize bundled packages.
+* Fix - E2E Testing: Reduce the false positive rate and adjust the running events on GitHub Actions.
+* Fix - Move the order of Google Listings & Ads below the Coupons in the Marketing menu of WooCommerce admin page.
+* Fix - WC 6.9 compatibility: Shipping time settings should not appear after selecting the "complex" shipping option.
+* Fix - WC 6.9 compatibility: The free shipping threshold should be cleared after selecting the "No" free shipping option.
+* Fix - WC 6.9 compatibility: The selected free shipping option should be reset after setting all shipping rates to 0.
+* Fix - WC 7.1 compatibility: Fixing the forms in the free listings setup may cause infinite requesting state updates which lead to a blank page or issue a lot of API requests.
+* Fix - WordPress 5.9 Compatibility: Visually hide descriptions of external link icons.
+* Fix - WordPress 6.1 Compatibility: Popover and Tooltip components should be displayed as floating.
+* Fix - WordPress 6.1 Compatibility: The size of navigation icons in Datepicker component should not be a giant size.
+* Tweak - WC 7.1 compatibility.
+* Tweak - WP 6.1 compatibility.
+* Update - ISO3166 package version 4.1.
 
 = 2.2.0 - 2022-10-18 =
 * Add - Ad previews in the post-onboarding ads setup flow.
