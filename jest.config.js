@@ -19,6 +19,8 @@ module.exports = {
 		'^extracted/(.*)$': '$1',
 		'@woocommerce/settings':
 			'<rootDir>/js/src/tests/dependencies/woocommerce/settings',
+		'@wordpress/viewport':
+			'<rootDir>/js/src/tests/dependencies/wordpress/viewport',
 	},
 	// Exclude e2e tests from unit testing.
 	testPathIgnorePatterns: [
