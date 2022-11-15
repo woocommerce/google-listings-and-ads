@@ -12,6 +12,7 @@ module.exports = {
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
 		// Transform our `.~/` alias.
 		'^\\.~/(.*)$': '<rootDir>/js/src/$1',
+		'^extracted/(.*)$': '$1',
 		'@woocommerce/settings':
 			'<rootDir>/js/src/tests/dependencies/woocommerce/settings',
 	},

@@ -59,6 +59,7 @@
 		"@woocommerce/e2e-environment": "^0.3.0",
 		"@woocommerce/e2e-utils": "^0.2.0",
 		"@woocommerce/eslint-plugin": "^1.2.0",
+		"@wordpress/dependency-extraction-webpack-plugin": "^4.4.0",
 		"@wordpress/prettier-config": "^1.1.2",
 		"@wordpress/scripts": "~22.1.0",
 		"bundlewatch": "^0.3.3",
@@ -132,7 +133,7 @@
 			},
 			{
 				"path": "./js/build/index.css",
-				"maxSize": "12 kB"
+				"maxSize": "15.4 kB"
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
