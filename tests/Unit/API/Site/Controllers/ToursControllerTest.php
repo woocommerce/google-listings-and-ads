@@ -104,7 +104,14 @@ class ToursControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_post_tour_invalid_name() {
-		$response = $this->do_request( self::ROUTE, 'POST', [ 'id' => '$$$', 'checked' => true] );
+		$response = $this->do_request(
+			self::ROUTE,
+			'POST',
+			[
+				'id'      => '$$$',
+				'checked' => true,
+			]
+		);
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
