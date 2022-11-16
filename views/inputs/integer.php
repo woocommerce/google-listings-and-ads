@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 $input = $this->input;
 
 $input['type'] = 'number';
-// Not so "custom" but standard `<input type="numer">` attribute.
+// Not so "custom" but standard `<input type="number">` attribute.
 $input['custom_attributes'] = [
 	'min' => '0',
 ];
