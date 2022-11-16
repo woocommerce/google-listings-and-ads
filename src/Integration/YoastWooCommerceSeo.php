@@ -151,7 +151,7 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 		if ( $product instanceof WC_Product_Variation ) {
 			$identifiers = $product->get_meta( 'wpseo_variation_global_identifiers_values', true );
 
-			if ( empty( $identifiers ) ) {
+			if ( ! is_array( $identifiers ) || empty( array_filter( $identifiers ) ) ) {
 				$parent_product = wc_get_product( $product->get_parent_id() );
 				$identifiers    = $this->get_identifier_meta( $parent_product );
 			}
