@@ -79,7 +79,7 @@
 		"@woocommerce/customer-effort-score": "^2.2.0",
 		"@woocommerce/data": "1.4.0",
 		"@woocommerce/date": "^3.1.0",
-		"@woocommerce/navigation": "6.1.0",
+		"@woocommerce/navigation": "8.1.0",
 		"@woocommerce/number": "^2.1.0",
 		"@woocommerce/tracks": "^1.0.0",
 		"@wordpress/api-fetch": "^5.1.1",
