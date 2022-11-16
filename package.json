@@ -61,7 +61,7 @@
 		"@woocommerce/eslint-plugin": "^1.2.0",
 		"@wordpress/dependency-extraction-webpack-plugin": "^4.4.0",
 		"@wordpress/prettier-config": "^1.1.2",
-		"@wordpress/scripts": "~22.1.0",
+		"@wordpress/scripts": "^24.6.0",
 		"bundlewatch": "^0.3.3",
 		"eslint": "^7.17.0",
 		"eslint-import-resolver-webpack": "^0.13.1",
