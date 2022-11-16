@@ -47,7 +47,7 @@ There is no published table of those, and finding them usually requires quite a 
 - `npm run dewps:woo 6.9.4` - where `6.9.4` is the version of WooCommerce you would like to check.
 
 Please note this simple script still have several limitations.
-1. It works for WooCommerce deps only. WordPress ones are more tricky to get, as the list of packages is less static and regular. Theoretically, we should be able to [use dist-tags](https://github.com/WordPress/gutenberg/issues/24376), like `npm install @wordpress/components@wp-6.1.0`.
+1. It works for WooCommerce deps only. WordPress ones are more tricky to get, as the list of packages is less static and regular. Theoretically, we should be able to [use dist-tags](https://github.com/WordPress/gutenberg/issues/24376), like `npm install @wordpress/components@wp-6.1.0` or `npx wp-scripts packages-update --dist-tag=wp-5.8`.
 2. It assumes all packages are prefixed with `@woocommerce/`
 3. You need to provide the exact full version. The latest, or `x.y` tree lines are not being resolved automatically.
 4. Some packages externalized by DEWP, are not packages we could find neither in npm nor in [`woocommerce/woocommerce/packages/js`](https://github.com/woocommerce/woocommerce/commits/trunk/packages/js/) 🤷
