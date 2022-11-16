@@ -145,6 +145,39 @@ class YoastWooCommerceSeoTest extends UnitTest {
 		$this->assertEquals( self::TEST_GTIN, $adapted_product->getGtin() );
 	}
 
+	public function test_get_gtin_variation_product_parent_fallback_empty_array() {
+		$variable  = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $variable->get_children()[0] );
+
+		// Set empty set of identifiers in variation meta.
+		$variation->update_meta_data(
+			'wpseo_variation_global_identifiers_values',
+			[
+				'gtin8'  => '',
+				'gtin13' => '',
+			]
+		);
+		$variation->save();
+
+		// Set identifier meta in parent product.
+		$variable->update_meta_data(
+			'wpseo_global_identifier_values',
+			[ 'gtin8' => self::TEST_GTIN ]
+		);
+		$variable->save();
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $variation,
+				'parent_wc_product' => $variable,
+				'gla_attributes'    => [ 'gtin' => 'yoast_seo' ],
+				'targetCountry'     => 'US',
+			]
+		);
+
+		$this->assertEquals( self::TEST_GTIN, $adapted_product->getGtin() );
+	}
+
 	public function test_get_gtin_multiple_products() {
 		$product_one = WC_Helper_Product::create_simple_product( false );
 		$product_one->update_meta_data(
