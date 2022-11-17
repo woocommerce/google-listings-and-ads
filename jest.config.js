@@ -19,6 +19,8 @@ module.exports = {
 		'^extracted/(.*)$': '$1',
 		'@woocommerce/settings':
 			'<rootDir>/js/src/tests/dependencies/woocommerce/settings',
+		'@automattic/calypso-config':
+			'<rootDir>/js/src/tests/dependencies/automattic/calypso-config',
 	},
 	// Exclude e2e tests from unit testing.
 	testPathIgnorePatterns: [
