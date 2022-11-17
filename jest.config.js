@@ -6,6 +6,10 @@ module.exports = {
 	...defaultConfig,
 	testEnvironment: 'jsdom',
 	setupFiles: [ 'core-js', '<rootDir>/js/src/tests/jest-unit.setup.js' ],
+	transformIgnorePatterns: [
+		// Fix that `is-plain-obj@4.1.0` doesn't provide the CommonJS build, so it needs to be transformed.
+		'<rootDir>/node_modules/(?!is-plain-obj/)',
+	],
 	moduleNameMapper: {
 		'\\.png$': '<rootDir>/tests/mocks/assets/imageMock.js',
 		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
