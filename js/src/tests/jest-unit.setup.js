@@ -7,3 +7,14 @@ global.window.matchMedia = function ( mediaQueryString ) {
 	mediaQueryList.addEventListener = mediaQueryList.addListener;
 	return mediaQueryList;
 };
+
+// Fix "ResizeObserver is not defined" issue caused by `@floating-ui/dom`,
+// which is one of `@wordpress/components@19.17.0`'s dependencies.
+global.ResizeObserver = jest
+	.fn()
+	.mockName( 'ResizeObserver' )
+	.mockImplementation( () => ( {
+		observe: jest.fn().mockName( 'resizeObserver.observe' ),
+		unobserve: jest.fn().mockName( 'resizeObserver.unobserve' ),
+		disconnect: jest.fn().mockName( 'resizeObserver.disconnect' ),
+	} ) );
