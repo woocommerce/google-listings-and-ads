@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { Pagination, Table, TablePlaceholder } from '@woocommerce/components';
 import { CardBody, CardFooter, Flex, FlexItem } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -21,6 +22,21 @@ import useMappingAttributes from '.~/hooks/useMappingAttributes';
 import useMappingRules from '.~/hooks/useMappingRules';
 import usePagination from '.~/hooks/usePagination';
 import { recordTablePageEvent } from '.~/utils/recordEvent';
+
+/**
+ * Modal is closed
+ *
+ * @event gla_modal_closed
+ * @property {string} context Indicates which modal is closed
+ * @property {'confirm'|'dismiss'} action Indicates how the modal was closed. If closed after confirmation, then action is 'confirm', otherwise, action is 'dismiss'
+ */
+
+/**
+ * Modal is opened
+ *
+ * @event gla_modal_open
+ * @property {string} context Indicates which modal is opened
+ */
 
 const PER_PAGE = 10;
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
@@ -52,6 +68,8 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 /**
  * Renders the Attribute Mapping table component
  *
+ * @fires gla_modal_closed When any of the modals is closed
+ * @fires gla_modal_open When any of the modals is open
  * @return {JSX.Element} The component
  */
 const AttributeMappingTable = () => {
@@ -146,16 +164,28 @@ const AttributeMappingTable = () => {
 																'Manage',
 																'google-listings-and-ads'
 															) }
-															eventName="gla_attribute_mapping_manage_rule_click"
+															eventName="gla_modal_open"
 															eventProps={ {
 																context:
-																	'attribute-mapping-table',
+																	'attribute-mapping-manage-rule-modal',
 															} }
 														/>
 													}
 													modal={
 														<AttributeMappingRuleModal
 															rule={ rule }
+															onRequestClose={ (
+																action
+															) => {
+																recordEvent(
+																	'gla_modal_closed',
+																	{
+																		context:
+																			'attribute-mapping-manage-rule-modal',
+																		action,
+																	}
+																);
+															} }
 														/>
 													}
 												/>
@@ -169,16 +199,28 @@ const AttributeMappingTable = () => {
 																'Delete',
 																'google-listings-and-ads'
 															) }
-															eventName="gla_attribute_mapping_delete_rule_click"
+															eventName="gla_modal_open"
 															eventProps={ {
 																context:
-																	'attribute-mapping-table',
+																	'attribute-mapping-delete-rule-modal',
 															} }
 														/>
 													}
 													modal={
 														<AttributeMappingDeleteRuleModal
 															rule={ rule }
+															onRequestClose={ (
+																action
+															) => {
+																recordEvent(
+																	'gla_modal_closed',
+																	{
+																		context:
+																			'attribute-mapping-delete-rule-modal',
+																		action,
+																	}
+																);
+															} }
 														/>
 													}
 												/>
@@ -202,13 +244,24 @@ const AttributeMappingTable = () => {
 									'Create attribute rule',
 									'google-listings-and-ads'
 								) }
-								eventName="gla_attribute_mapping_create_rule_click"
+								eventName="gla_modal_open"
 								eventProps={ {
-									context: 'attribute-mapping-table',
+									context:
+										'attribute-mapping-create-rule-modal',
 								} }
 							/>
 						}
-						modal={ <AttributeMappingRuleModal /> }
+						modal={
+							<AttributeMappingRuleModal
+								onRequestClose={ ( action ) => {
+									recordEvent( 'gla_modal_closed', {
+										context:
+											'attribute-mapping-create-rule-modal',
+										action,
+									} );
+								} }
+							/>
+						}
 					/>
 					<Pagination
 						className="gla-attribute-mapping__pagination"
