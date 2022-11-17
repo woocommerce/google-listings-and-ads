@@ -295,9 +295,9 @@ class ProductHelper implements Service {
 	 *
 	 * @param int $product_id
 	 *
-	 * @return WP_Post
+	 * @return WP_Post|null
 	 */
-	public function get_wc_product_by_wp_post( int $product_id ): WP_Post {
+	public function get_wc_product_by_wp_post( int $product_id ): ?WP_Post {
 		return get_post( $product_id );
 	}
 
