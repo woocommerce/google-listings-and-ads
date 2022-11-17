@@ -32,10 +32,10 @@ import { recordTablePageEvent } from '.~/utils/recordEvent';
  */
 
 /**
- * Modal is opened
+ * Modal is open
  *
  * @event gla_modal_open
- * @property {string} context Indicates which modal is opened
+ * @property {string} context Indicates which modal is open
  */
 
 const PER_PAGE = 10;
