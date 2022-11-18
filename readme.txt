@@ -54,7 +54,7 @@ Create a new Google Ads account through Google Listings & Ads and a promotional 
 = Minimum Requirements =
 
 * WordPress 5.7 or greater
-* WooCommerce 6.8 or greater
+* WooCommerce 6.9 or greater
 * PHP version 7.4 or greater
 * MySQL version 5.6 or greater
 
