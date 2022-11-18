@@ -42,6 +42,7 @@ class AttributeMappingNewFeatureTest extends UnitTest {
 		$this->assertEquals( 'gla-attribute-mapping-new-feature', $note->get_name() );
 		$this->assertEquals( 'gla', $note->get_source() );
 		$this->assertEquals( 'learn-more-attribute-mapping', $note->get_actions()[0]->name );
+		$this->assertContains( 'admin.php?page=wc-admin&path=/google/attribute-mapping', $note->get_actions()[0]->query );
 	}
 
 	public function test_should_be_added_when_existing_user_and_not_already_added() {

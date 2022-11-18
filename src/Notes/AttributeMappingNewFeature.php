@@ -53,7 +53,7 @@ class AttributeMappingNewFeature extends AbstractNote implements OptionsAwareInt
 		$note->add_action(
 			'learn-more-attribute-mapping',
 			__( 'Learn more', 'google-listings-and-ads' ),
-			'admin.php?page=wc-admin&path=/google/attribute-mapping'
+			$this->get_attribute_mapping_url()
 		);
 
 		return $note;
