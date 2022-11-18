@@ -19,31 +19,31 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 
-	protected const ROUTE_PAGE_SUGGESTIONS   = '/wc/gla/assets/page/suggestions';
-	protected const TEST_PAGE_SUGGESTIONS            = [
+	protected const ROUTE_PAGE_SUGGESTIONS = '/wc/gla/assets/page/suggestions';
+	protected const TEST_PAGE_SUGGESTIONS  = [
 		[
-			'id'   => 1,
-			'type' => 'post',
+			'id'        => 1,
+			'type'      => 'post',
 			'post_type' => 'product',
-			'title' => 'Beanie with Logo',
-			'url' => 'http://localhost:8082/shop/clothing/accessories/beanie-with-logo/',			
+			'title'     => 'Beanie with Logo',
+			'url'       => 'http://localhost:8082/shop/clothing/accessories/beanie-with-logo/',
 		],
 		[
-			'id'   => 2,
-			'type' => 'term',
+			'id'        => 2,
+			'type'      => 'term',
 			'post_type' => null,
-			'title' => 'Clothing',
-			'url' => 'http://localhost:8082/product-category/clothing/',	
-		],		
+			'title'     => 'Clothing',
+			'url'       => 'http://localhost:8082/product-category/clothing/',
+		],
 
 	];
-	protected const TEST_NO_PAGE_SUGGESTIONS         = [];
+	protected const TEST_NO_PAGE_SUGGESTIONS = [];
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->asset_suggestion    = $this->createMock( AssetSuggestionsService::class );
-		$this->controller = new AssetSuggestionsController( $this->server, $this->asset_suggestion );
+		$this->asset_suggestion = $this->createMock( AssetSuggestionsService::class );
+		$this->controller       = new AssetSuggestionsController( $this->server, $this->asset_suggestion );
 		$this->controller->register();
 	}
 
