@@ -245,7 +245,7 @@ describe( 'Attribute Mapping', () => {
 			<AttributeMapping />
 		);
 
-		const button = queryAllByText( 'Manage' )[ 0 ];
+		const button = queryAllByText( 'Edit' )[ 0 ];
 		expect( button ).toBeTruthy();
 		fireEvent.click( button );
 
@@ -288,27 +288,14 @@ describe( 'Attribute Mapping', () => {
 		} );
 	} );
 
-	test( 'Renders Section title, description and documentation link', () => {
+	test( 'Renders Section title and description.', () => {
 		const { queryByText } = render( <AttributeMapping /> );
-		expect( queryByText( 'Attribute Mapping' ) ).toBeTruthy();
+		expect( queryByText( 'Manage attributes' ) ).toBeTruthy();
 		expect(
 			queryByText(
-				"Automatically populate Google’s required attributes by mapping them to your store's existing product fields. Whenever you make changes to the value of your product fields, it instantly updates where it’s referenced."
+				'Create attribute rules to control what product data gets sent to Google and to manage product attributes in bulk.'
 			)
 		).toBeTruthy();
-		expect(
-			queryByText(
-				'You can override default values at specific product (or variant) level to give you the most flexibility.'
-			)
-		).toBeTruthy();
-
-		const button = queryByText( 'Learn more about attribute mapping' );
-
-		expect( button ).toBeTruthy();
-		expect( button ).toHaveAttribute(
-			'href',
-			'https://support.google.com/'
-		); // TODO: Update link
 	} );
 
 	test( 'Renders categories helper', async () => {

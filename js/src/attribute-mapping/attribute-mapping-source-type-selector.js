@@ -70,21 +70,12 @@ const AttributeMappingSourceTypeSelector = ( {
 						<HelpPopover
 							id={ `${ SOURCE_TYPES.FIELD }-helper-popover` }
 						>
-							{ createInterpolateElement(
-								__(
-									'Create a connection between the target attribute and an existing product field to auto-populate the target attribute with with the value of the field it is linked to. <link>Learn more</link>',
+							<div>
+								{ __(
+									'Create a connection between the target attribute and an existing product field to auto-populate the target attribute with with the value of the field it is linked to.',
 									'google-listings-and-ads'
-								),
-								{
-									link: (
-										<AppDocumentationLink
-											context="attribute-mapping"
-											linkId="learn-more-about-field-values"
-											href="https://example.com" // todo: check link
-										/>
-									),
-								}
-							) }
+								) }
+							</div>
 						</HelpPopover>
 					</>
 				}
@@ -127,21 +118,12 @@ const AttributeMappingSourceTypeSelector = ( {
 						<HelpPopover
 							id={ `${ SOURCE_TYPES.FIXED }-helper-popover` }
 						>
-							{ createInterpolateElement(
-								__(
-									'Use fixed values to populate the target attribute with a value you specify. For example, you can enter a fixed value of White to specify a single color for all your products. <link>Learn more about fixed values</link>',
+							<div>
+								{ __(
+									'Use fixed values to populate the target attribute with a value you specify. For example, you can enter a fixed value of White to specify a single color for all your products.',
 									'google-listings-and-ads'
-								),
-								{
-									link: (
-										<AppDocumentationLink
-											context="attribute-mapping"
-											linkId="clearn-more-about-fixed-values"
-											href="https://example.com" // Todo: Check link
-										/>
-									),
-								}
-							) }
+								) }
+							</div>
 						</HelpPopover>
 					</>
 				}
