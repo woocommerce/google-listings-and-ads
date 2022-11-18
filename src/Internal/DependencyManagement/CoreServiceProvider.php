@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Variati
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
@@ -245,6 +246,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getLeagueContainer()
 			 ->inflector( AdsAwareInterface::class )
 			 ->invokeMethod( 'set_ads_object', [ AdsService::class ] );
+		$this->share_with_tags( AssetSuggestionsService::class, WP::class );
 
 		// Set up the installer.
 		$installer_definition = $this->share_with_tags(
