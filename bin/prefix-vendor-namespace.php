@@ -45,6 +45,9 @@ $direct_replacements = [
 // Read our composer.json file into an array.
 $composer_json = json_decode( file_get_contents( dirname( __DIR__ ) . '/composer.json' ), true );
 
+// Flag modified files that maybe should have been modified more.
+$file_notices = [];
+
 foreach ( $replacements as $namespace => $path ) {
 	$files = find_files( $path );
 
@@ -57,39 +60,51 @@ foreach ( $replacements as $namespace => $path ) {
 			continue 2;
 		}
 
+		$namespace_change = 0;
+		$uses_change      = 0;
+
 		$contents =	preg_replace(
 			"#^(\s*)(namespace)\s*({$quoted}[\\\\|;])#m",
 			"\$1\$2 {$new_namespace}\\\\\$3",
-			$contents
+			$contents,
+			-1,
+			$namespace_change
 		);
 
 		$contents =	preg_replace(
 			"#^(\s*)(use)\s*({$quoted}\\\\)#m",
 			"\$1\$2 {$new_namespace}\\\\\$3",
-			$contents
+			$contents,
+			-1,
+			$uses_change
 		);
 
 		if ( ! empty( $direct_replacements[ $path ] ) ) {
 			foreach ( $direct_replacements[ $path ] as $replace ) {
-				$replace  = preg_quote( $replace, '#' );
-				$contents =	preg_replace(
+				$direct_change = 0;
+				$replace       = preg_quote( $replace, '#' );
+				$contents      = preg_replace(
 					"#({$replace})#m",
 					"{$new_namespace}\\\\\$1",
-					$contents
+					$contents,
+					-1,
+					$direct_change
 				);
+				if ( 0 < $direct_change ) {
+					$uses_change += $direct_change;
+				}
 			}
+		}
+		if ( 0 === $namespace_change && 0 < $uses_change ) {
+			$file_notices[] = $file;
 		}
 
 		file_put_contents( $file, $contents );
 	}
 
 	// Update the namespace in the composer.json files.
-	$composer_files = array_filter(
-		explode(
-			"\n",
-			`find "{$vendor_dir}/{$path}" -iname 'composer.json'`
-		)
-	);
+
+	$composer_files = get_dir_contents($vendor_dir . DIRECTORY_SEPARATOR . $path, '/composer.json/');
 
 	array_map(
 		function( $file ) use ( $namespace, $new_namespace ) {
@@ -110,6 +125,43 @@ foreach ( $replacements as $namespace => $path ) {
 	);
 }
 
+if ( 0 < count( $file_notices ) ) {
+	printf(
+		'Several files were modified without changes to namespace: %s' . PHP_EOL,
+		implode('; ', $file_notices)
+	);
+}
+
+/**
+ * Find a list of files in a path matching a pattern.
+ *
+ * @since 2.2.2
+ *
+ * @param string $path Package path
+ * @param string $match Regex pattern to match
+ * @return array Matching files
+ */
+function get_dir_contents($path, $match) {
+	try {
+		$rdi = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS);
+	} catch ( Exception  $e ) {
+		printf(
+			'Expected directory "%s" was not found' . PHP_EOL,
+			$path
+		);
+		exit( 1 );
+	}
+
+	$rii = new RecursiveIteratorIterator($rdi);
+    $rri = new RegexIterator($rii, $match);
+    $files = [];
+    foreach ($rri as $file) {
+		$files[] = $file->getPathname();
+	}
+
+    return $files;
+}
+
 /**
  * Find a list of PHP files for this package, and append a list of dependent
  * files that use the package.
@@ -122,21 +174,11 @@ foreach ( $replacements as $namespace => $path ) {
 function find_files( string $path ): array {
 	global $vendor_dir, $dependencies;
 
-	$files = array_filter(
-		explode(
-			"\n",
-			`find "{$vendor_dir}/{$path}" -iname '*.php'`
-		)
-	);
+	$files = get_dir_contents($vendor_dir . DIRECTORY_SEPARATOR . $path, '/\.php$/i');
 
 	if ( ! empty( $dependencies[ $path ] ) ) {
 		foreach ( $dependencies[ $path ] as $dependency ) {
-			$dependent_files = array_filter(
-				explode(
-					"\n",
-					`find "{$vendor_dir}/{$dependency}" -iname '*.php'`
-				)
-			);
+			$dependent_files = get_dir_contents($vendor_dir . DIRECTORY_SEPARATOR . $dependency, '/\.php$/i');
 			$files = array_merge( $files, $dependent_files );
 		}
 	}
