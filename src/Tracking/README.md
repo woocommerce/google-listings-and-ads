@@ -109,6 +109,65 @@ Clicking on the button to create a new Google Ads account, after agreeing to the
 #### Emitters
 - [`BillingSetupCard`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L52) with `{ context: 'setup-ads', link_id: 'set-up-billing',	href: billingUrl }`
 
+### [`gla_attribute_mapping_create_rule`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L37)
+Creates the rule successfully
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates where this event happened
+`attribute` | `string` | Rule attribute
+`source` | `string` | Rule source
+`category_condition_type` | `string` | Rule category condition type
+`categories` | `string` | Rule categories
+#### Emitters
+- [`AttributeMappingRuleModal`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L103) When the rule is successfully created
+
+### [`gla_attribute_mapping_delete_rule`](../../js/src/attribute-mapping/attribute-mapping-delete-rule-modal.js#L16)
+Deletes the rule successfully
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates where this event happened
+`id` | `string` | Rule id
+`attribute` | `string` | Rule attribute
+`source` | `string` | Rule source
+`category_condition_type` | `string` | Rule category condition type
+`categories` | `string` | Rule categories
+#### Emitters
+- [`AttributeMappingDeleteRuleModal`](../../js/src/attribute-mapping/attribute-mapping-delete-rule-modal.js#L44) When the rule is successfully deleted
+
+### [`gla_attribute_mapping_delete_rule_click`](../../js/src/attribute-mapping/attribute-mapping-delete-rule-modal.js#L28)
+Clicks on delete rule button
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates where this event happened
+#### Emitters
+- [`AttributeMappingDeleteRuleModal`](../../js/src/attribute-mapping/attribute-mapping-delete-rule-modal.js#L44) When user clicks on delete rule button
+
+### [`gla_attribute_mapping_save_rule_click`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L48)
+Clicks on save rule button
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates where this event happened
+#### Emitters
+- [`AttributeMappingRuleModal`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L103) When user clicks on save rule button
+
+### [`gla_attribute_mapping_update_rule`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L25)
+Updates the rule successfully
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates where this event happened
+`id` | `string` | Rule id
+`attribute` | `string` | Rule attribute
+`source` | `string` | Rule source
+`category_condition_type` | `string` | Rule category condition type
+`categories` | `string` | Rule categories
+#### Emitters
+- [`AttributeMappingRuleModal`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L103) When the rule is successfully updated
+
 ### [`gla_bulk_edit_click`](../../js/src/product-feed/product-feed-table-card/index.js#L41)
 Triggered when the product feed "bulk edit" functionality is being used
 #### Properties
@@ -120,25 +179,25 @@ Triggered when the product feed "bulk edit" functionality is being used
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/product-feed/product-feed-table-card/index.js#L66) with `context: 'product-feed'`
 
-### [`gla_ces_feedback`](../../js/src/components/customer-effort-score-prompt/index.js#L38)
+### [`gla_ces_feedback`](../../js/src/components/customer-effort-score-prompt/index.js#L30)
 CES feedback recorded
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L58) whenever the CES feedback is recorded
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES feedback is recorded
 
-### [`gla_ces_modal_open`](../../js/src/components/customer-effort-score-prompt/index.js#L33)
+### [`gla_ces_modal_open`](../../js/src/components/customer-effort-score-prompt/index.js#L25)
 CES modal open
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L58) whenever the CES modal is open
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES modal is open
 
-### [`gla_ces_snackbar_closed`](../../js/src/components/customer-effort-score-prompt/index.js#L28)
+### [`gla_ces_snackbar_closed`](../../js/src/components/customer-effort-score-prompt/index.js#L20)
 CES prompt snackbar closed
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L58) whenever the CES snackbar (notice) is closed
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES snackbar (notice) is closed
 
-### [`gla_ces_snackbar_open`](../../js/src/components/customer-effort-score-prompt/index.js#L23)
+### [`gla_ces_snackbar_open`](../../js/src/components/customer-effort-score-prompt/index.js#L15)
 CES prompt snackbar open
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L58) whenever the CES snackbar (notice) is open
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES snackbar (notice) is open
 
 ### [`gla_chart_tab_click`](../../js/src/reports/summary-section.js#L20)
 Triggered when a chart tab is clicked
@@ -240,11 +299,14 @@ When a documentation link is clicked.
 - [`ProductStatusHelpPopover`](../../js/src/product-feed/product-statistics/product-status-help-popover/index.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
 - [`EditPhoneNumber`](../../js/src/settings/edit-phone-number.js#L29) with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
 - [`EditStoreAddress`](../../js/src/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
-- [`CreateCampaign`](../../js/src/setup-ads/ads-stepper/create-campaign/index.js#L21) with `{ context: 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+- [`CreateCampaign`](../../js/src/setup-ads/ads-stepper/create-campaign/index.js#L22) with `{ context: 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 - [`FreeAdCredit`](../../js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L27) with `{ context: 'setup-ads', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
-- [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L69) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
+- [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L68) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
+- [`GoogleMCDisclaimer`](../../js/src/setup-mc/setup-stepper/setup-accounts/index.js#L33)
+	- with `{ context: 'setup-mc-accounts', link_id: 'comparison-shopping-services', href: 'https://support.google.com/merchants/topic/9080307' }`
+	- with `{ context: 'setup-mc-accounts', link_id: 'comparison-shopping-partners-find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
 
-### [`gla_edit_mc_phone_number`](../../js/src/components/contact-information/phone-number-card/phone-number-card-preview.js#L13)
+### [`gla_edit_mc_phone_number`](../../js/src/components/contact-information/phone-number-card/phone-number-card-preview.js#L14)
 Triggered when phone number edit button is clicked.
 #### Properties
 | name | type | description |
@@ -252,7 +314,7 @@ Triggered when phone number edit button is clicked.
 `path` | `string` | The path used in the page, e.g. `"/google/settings"`.
 `subpath` | `string` | The subpath used in the page, or `undefined` when there is no subpath.
 #### Emitters
-- [`PhoneNumberCardPreview`](../../js/src/components/contact-information/phone-number-card/phone-number-card-preview.js#L32) Whenever "Edit" is clicked.
+- [`PhoneNumberCardPreview`](../../js/src/components/contact-information/phone-number-card/phone-number-card-preview.js#L33) Whenever "Edit" is clicked.
 
 ### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L126)
 Trigger when store address edit button is clicked.
@@ -322,7 +384,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'get-started', id: 'can-i-run-both-shopping-ads-and-free-listings-campaigns', action: 'collapse' }`.
 	- with `{ context: 'get-started', id: 'how-can-i-get-the-ad-credit-offer', action: 'expand' }`.
 	- with `{ context: 'get-started', id: 'how-can-i-get-the-ad-credit-offer', action: 'collapse' }`.
-- [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L69)
+- [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L68)
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-wp-account', action: 'expand' }`.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-wp-account', action: 'collapse' }`.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'expand' }`.
@@ -485,11 +547,12 @@ A modal is closed.
 | name | type | description |
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates which modal is closed
-`action` | `string` | Indicates the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked
+`action` | `string` | Indicates the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, generic "Cancel" button, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked    - `confirm` is used when the button "Confirm", "Save"  or similar generic "Accept" button is clicked
 #### Emitters
+- [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L60) When any of the modals is closed
 - [`Dashboard`](../../js/src/dashboard/index.js#L34) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L160) with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
+- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L155) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
 
 ### [`gla_modal_content_link_click`](../../js/src/components/guide-page-content/index.js#L28)
 Clicking on a text link within the modal content
@@ -501,15 +564,16 @@ Clicking on a text link within the modal content
 #### Emitters
 - [`ContentLink`](../../js/src/components/guide-page-content/index.js#L46) with given `context, href`
 
-### [`gla_modal_open`](../../js/src/product-feed/submission-success-guide/index.js#L144)
-A modal is opend
+### [`gla_modal_open`](../../js/src/utils/recordEvent.js#L123)
+A modal is open
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | Indicates which modal is opened
+`context` | `string` | Indicates which modal is open
 #### Emitters
+- [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L60) When any of the modals is open
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L160) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L155) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
 ### [`gla_onboarding_complete_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L45)
 Clicking on the skip paid ads button to complete the onboarding flow.
@@ -571,15 +635,15 @@ Triggered on events during ads setup and editing
 #### Emitters
 - [`SetupAdsTopBar`](../../js/src/setup-ads/top-bar/index.js#L25) with given `{ target: 'back', trigger: 'click' }` when back button is clicked.
 
-### [`gla_setup_ads_faq`](../../js/src/components/paid-ads/faqs-section.js#L13)
-Clicking on faq items to collapse or expand it in the Setup Ads page
+### [`gla_setup_ads_faq`](../../js/src/components/paid-ads/faqs-section.js#L76)
+Clicking on faq items to collapse or expand it in the Onboarding Flow or creating/editing a campaign
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `id` | `string` | FAQ identifier
 `action` | `string` | (`expand`\|`collapse`)
 #### Emitters
-- [`FaqsSection`](../../js/src/components/paid-ads/faqs-section.js#L24)
+- [`FaqsSection`](../../js/src/components/paid-ads/faqs-section.js#L89)
 
 ### [`gla_setup_mc`](../../js/src/utils/recordEvent.js#L75)
 Setup Merchant Center
@@ -592,7 +656,7 @@ Setup Merchant Center
 #### Emitters
 - [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L27) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started' }`.
 - [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L28) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started-with-video' }`.
-- [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L34) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
+- [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L33) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
 - [`SetupMCTopBar`](../../js/src/setup-mc/top-bar/index.js#L17) with `{ target: 'back', trigger: 'click' }`.
 
 ### [`gla_table_go_to_page`](../../js/src/utils/recordEvent.js#L10)
