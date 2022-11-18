@@ -270,6 +270,11 @@ class ProductRepository implements Service {
 					'compare' => '!=',
 					'value'   => SyncStatus::SYNCED,
 				],
+				[
+					'key'     => ProductMetaHandler::KEY_VISIBILITY,
+					'compare' => '=',
+					'value'   => ChannelVisibility::SYNC_AND_SHOW,
+				],
 			],
 		];
 

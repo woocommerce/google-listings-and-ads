@@ -259,13 +259,20 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 
 		$product_2 = WC_Helper_Product::create_simple_product();
 		$this->product_meta->update_sync_status( $product_2, SyncStatus::HAS_ERRORS );
+		$this->product_meta->update_visibility( $product_2, ChannelVisibility::SYNC_AND_SHOW );
+
+		$product_3 = WC_Helper_Product::create_simple_product();
+		$this->product_meta->update_sync_status( $product_3, SyncStatus::HAS_ERRORS );
+		$this->product_meta->update_visibility( $product_3, ChannelVisibility::DONT_SYNC_AND_SHOW );
 
 		WC_Helper_Product::create_simple_product();
 
 		$variable_product = WC_Helper_Product::create_variation_product();
 		$this->product_meta->update_sync_status( $variable_product, SyncStatus::NOT_SYNCED );
+		$this->product_meta->update_visibility( $variable_product, ChannelVisibility::SYNC_AND_SHOW );
 		foreach ( $variable_product->get_children() as $variation_id ) {
 			$this->product_meta->update_sync_status( wc_get_product( $variation_id ), SyncStatus::NOT_SYNCED );
+			$this->product_meta->update_visibility( wc_get_product( $variation_id ), ChannelVisibility::SYNC_AND_SHOW );
 		}
 
 		$this->assertEqualSets(
