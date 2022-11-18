@@ -120,7 +120,7 @@ Creates the rule successfully
 `category_condition_type` | `string` | Rule category condition type
 `categories` | `string` | Rule categories
 #### Emitters
-- [`AttributeMappingRuleModal`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L103) When the rule is successfully created
+- [`AttributeMappingRuleModal`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L103) When the rule is successfully created  with `context: attribute-mapping-create-rule-modal`
 
 ### [`gla_attribute_mapping_delete_rule`](../../js/src/attribute-mapping/attribute-mapping-delete-rule-modal.js#L16)
 Deletes the rule successfully
@@ -134,7 +134,7 @@ Deletes the rule successfully
 `category_condition_type` | `string` | Rule category condition type
 `categories` | `string` | Rule categories
 #### Emitters
-- [`AttributeMappingDeleteRuleModal`](../../js/src/attribute-mapping/attribute-mapping-delete-rule-modal.js#L44) When the rule is successfully deleted
+- [`AttributeMappingDeleteRuleModal`](../../js/src/attribute-mapping/attribute-mapping-delete-rule-modal.js#L44) When the rule is successfully deleted with `context: attribute-mapping-delete-rule-modal`
 
 ### [`gla_attribute_mapping_delete_rule_click`](../../js/src/attribute-mapping/attribute-mapping-delete-rule-modal.js#L28)
 Clicks on delete rule button
@@ -143,7 +143,7 @@ Clicks on delete rule button
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates where this event happened
 #### Emitters
-- [`AttributeMappingDeleteRuleModal`](../../js/src/attribute-mapping/attribute-mapping-delete-rule-modal.js#L44) When user clicks on delete rule button
+- [`AttributeMappingDeleteRuleModal`](../../js/src/attribute-mapping/attribute-mapping-delete-rule-modal.js#L44) When user clicks on delete rule button with `context: attribute-mapping-delete-rule-modal`
 
 ### [`gla_attribute_mapping_save_rule_click`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L48)
 Clicks on save rule button
@@ -152,7 +152,7 @@ Clicks on save rule button
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates where this event happened
 #### Emitters
-- [`AttributeMappingRuleModal`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L103) When user clicks on save rule button
+- [`AttributeMappingRuleModal`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L103) When user clicks on save rule button  with `context: attribute-mapping-manage-rule-modal|attribute-mapping-create-rule-modal`
 
 ### [`gla_attribute_mapping_update_rule`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L25)
 Updates the rule successfully
@@ -166,7 +166,7 @@ Updates the rule successfully
 `category_condition_type` | `string` | Rule category condition type
 `categories` | `string` | Rule categories
 #### Emitters
-- [`AttributeMappingRuleModal`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L103) When the rule is successfully updated
+- [`AttributeMappingRuleModal`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L103) When the rule is successfully updated  with `context: attribute-mapping-manage-rule-modal`
 
 ### [`gla_bulk_edit_click`](../../js/src/product-feed/product-feed-table-card/index.js#L41)
 Triggered when the product feed "bulk edit" functionality is being used
@@ -571,7 +571,7 @@ A modal is open
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates which modal is open
 #### Emitters
-- [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L60) When any of the modals is open
+- [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L60) When any of the modals is open with `context: attribute-mapping-manage-rule-modal`
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L155) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 

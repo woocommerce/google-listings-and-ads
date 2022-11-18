@@ -38,8 +38,8 @@ import { useAppDispatch } from '.~/data';
  * @param {Object} props Component props
  * @param {Function} props.onRequestClose Callback function when the modal is closed
  * @param {Object} props.rule The rule to be deleted
- * @fires gla_attribute_mapping_delete_rule When the rule is successfully deleted
- * @fires gla_attribute_mapping_delete_rule_click When user clicks on delete rule button
+ * @fires gla_attribute_mapping_delete_rule When the rule is successfully deleted with `context: attribute-mapping-delete-rule-modal`
+ * @fires gla_attribute_mapping_delete_rule_click When user clicks on delete rule button with `context: attribute-mapping-delete-rule-modal`
  */
 const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 	const [ deleting, setDeleting ] = useState( false );

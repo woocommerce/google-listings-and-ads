@@ -96,9 +96,9 @@ const prepareRule = ( newRule ) => {
  * @param {Object} props React props
  * @param {Object} [props.rule] Optional rule to manage
  * @param {Function} [props.onRequestClose] Callback on closing the modal
- * @fires gla_attribute_mapping_update_rule When the rule is successfully updated
- * @fires gla_attribute_mapping_create_rule When the rule is successfully created
- * @fires gla_attribute_mapping_save_rule_click When user clicks on save rule button
+ * @fires gla_attribute_mapping_update_rule When the rule is successfully updated  with `context: attribute-mapping-manage-rule-modal`
+ * @fires gla_attribute_mapping_create_rule When the rule is successfully created  with `context: attribute-mapping-create-rule-modal`
+ * @fires gla_attribute_mapping_save_rule_click When user clicks on save rule button  with `context: attribute-mapping-manage-rule-modal|attribute-mapping-create-rule-modal`
  */
 const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 	const [ newRule, setNewRule ] = useState(
