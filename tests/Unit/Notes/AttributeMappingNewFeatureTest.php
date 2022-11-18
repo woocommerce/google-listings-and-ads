@@ -47,16 +47,16 @@ class AttributeMappingNewFeatureTest extends UnitTest {
 	public function test_should_be_added_when_existing_user_and_not_already_added() {
 		$this->options->expects( $this->once() )
 			->method( 'get' )
-			->with( OptionsInterface::FILE_VERSION )
-			->willReturn( '2.1.0' );
+			->with( OptionsInterface::INSTALL_TIMESTAMP )
+			->willReturn( '1669730000' ); // Tue Nov 29 2022
 		$this->assertTrue( $this->note->should_be_added() );
 	}
 
 	public function test_should_not_be_added_when_new_user() {
 		$this->options->expects( $this->once() )
 			->method( 'get' )
-			->with( OptionsInterface::FILE_VERSION )
-			->willReturn( '2.4.0' );
+			->with( OptionsInterface::INSTALL_TIMESTAMP )
+			->willReturn( '1669900000' ); // Thu Dec 01 2022
 
 		$this->assertFalse( $this->note->should_be_added() );
 	}

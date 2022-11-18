@@ -61,12 +61,13 @@ class AttributeMappingNewFeature extends AbstractNote implements OptionsAwareInt
 
 
 	/**
-	 * Checks if a note should be added and the user is an existing user.
+	 * Checks if a note should be added and the user is an existing user. We consider an existing user at this point if
+	 * the user have the plugin installed until 30/11/2022 00:00:00 GMT. (When the feature was announced in WNWW - What's New With WooCommerce)
 	 *
 	 * @return bool
 	 */
 	public function should_be_added(): bool {
-		return ! $this->has_been_added() && $this->options->get( OptionsInterface::FILE_VERSION ) <= '2.2.1';
+		return ! $this->has_been_added() && $this->options->get( OptionsInterface::INSTALL_TIMESTAMP ) <= '1669766400';
 
 	}
 }
