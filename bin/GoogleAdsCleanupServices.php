@@ -179,6 +179,35 @@ class GoogleAdsCleanupServices {
 	}
 
 	/**
+	 * Find a list of files in a path matching a pattern.
+	 *
+	 * @param string $path Package path
+	 * @param string $match Regex pattern to match
+	 * @return array Matching files
+	 */
+	protected function get_dir_contents($path, $match) {
+		try {
+			$rdi = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS);
+		} catch ( Exception  $e ) {
+			printf(
+				'Expected directory "%s" was not found' . PHP_EOL,
+				$path
+			);
+			exit( 1 );
+		}
+
+		$rii = new \RecursiveIteratorIterator($rdi);
+		$rri = new \RegexIterator($rii, $match);
+		$files = [];
+		foreach ($rri as $file) {
+			$files[] = $file->getPathname();
+		}
+
+		return $files;
+	}
+
+
+	/**
 	 * Find a specific pattern used within the extension.
 	 *
 	 * @param string $pattern Regexp pattern to match.
@@ -186,24 +215,22 @@ class GoogleAdsCleanupServices {
 	 * @return array List of names that match.
 	 */
 	protected function find_used_pattern( string $pattern ): array {
-		$command = "grep -rE --include=*.php '{$pattern}' {$this->code_path}";
-
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec
-		exec( $command, $output );
+		$files  = $this->get_dir_contents( $this->code_path,  '/\.php$/i');
+		$output = [];
+		foreach ( $files AS $file) {
+			preg_match_all( '/' . $pattern . '/', file_get_contents( $file ), $matches);
+			if ( isset( $matches[1] ) ) {
+				foreach ($matches[1] AS $match) {
+					$output[] = $match;
+				}
+			}
+		}
 
 		if ( empty( $output ) ) {
 			return [];
 		}
 
-		return array_unique(
-			array_map(
-				function( $line ) use ( $pattern ) {
-					preg_match( "/{$pattern}/", $line, $matches );
-					return $matches[1];
-				},
-				$output
-			)
-		);
+		return array_unique($output);
 	}
 
 	/**
