@@ -23,21 +23,6 @@ import useMappingRules from '.~/hooks/useMappingRules';
 import usePagination from '.~/hooks/usePagination';
 import { recordTablePageEvent } from '.~/utils/recordEvent';
 
-/**
- * Modal is closed
- *
- * @event gla_modal_closed
- * @property {string} context Indicates which modal is closed
- * @property {'confirm'|'dismiss'} action Indicates how the modal was closed. If closed after confirmation, then action is 'confirm', otherwise, action is 'dismiss'
- */
-
-/**
- * Modal is open
- *
- * @event gla_modal_open
- * @property {string} context Indicates which modal is open
- */
-
 const PER_PAGE = 10;
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
 	{

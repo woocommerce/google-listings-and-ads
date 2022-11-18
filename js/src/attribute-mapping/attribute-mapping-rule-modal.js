@@ -65,8 +65,8 @@ const attributeSelectorLabel = __(
 /**
  * Map the format received from the backend into the format needed in the SelectControl
  *
- * @param {{id: string, label: string}[]} data The array with the values from the backend
- * @return {{label: string, value: string}[]} The data formatted
+ * @param {Array} data The array with the values from the backend
+ * @return {Array} The data formatted
  */
 const mapOptions = ( data = [] ) => {
 	return [
