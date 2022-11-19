@@ -12,7 +12,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class AccountServiceTest
+ * Class AssetSuggestionsServiceTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Ads
  *
@@ -94,15 +94,14 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->method( 'get_post_types' )
 			->willReturn( self::TEST_POST_TYPES );
 
-		// Should be called without the attachment type
 		$this->wp->expects( $this->once() )
 			->method( 'get_posts' )
 			->willReturn( [] );
 
-			$this->wp->expects( $this->once() )
+		$this->wp->expects( $this->once() )
 			->method( 'get_taxonomies' );
 
-			$this->wp->expects( $this->once() )
+		$this->wp->expects( $this->once() )
 			->method( 'get_terms' )
 			->willReturn( [ $this->term ] );
 
@@ -119,10 +118,10 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->method( 'get_posts' )
 			->willReturn( [ $this->post ] );
 
-			$this->wp->expects( $this->once() )
+		$this->wp->expects( $this->once() )
 			->method( 'get_taxonomies' );
 
-			$this->wp->expects( $this->once() )
+		$this->wp->expects( $this->once() )
 			->method( 'get_terms' )
 			->willReturn( [ $this->term ] );
 
