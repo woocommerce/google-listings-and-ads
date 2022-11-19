@@ -70,14 +70,15 @@ class AssetSuggestionsService implements Service {
 		$taxonomies = $this->wp->get_taxonomies(
 			[
 				'public'       => true,
-				'show_in_menu' => false,
+				'show_in_menu' => true,
 			],
 		);
 
+		// Skip empty terms
 		$terms = $this->wp->get_terms(
 			[
 				'taxonomy'   => $taxonomies,
-				'hide_empty' => false,
+				'hide_empty' => true,
 			]
 		);
 
