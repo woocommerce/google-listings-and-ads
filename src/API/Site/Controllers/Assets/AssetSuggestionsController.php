@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
-use WP_REST_Response as Response;
+use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
 class AssetSuggestionsController extends BaseController {
 
 	/**
-	 * Service used to access / update Ads account data.
+	 * Service used to populate ads suggestions data.
 	 *
 	 * @var AssetSuggestionsService
 	 */
@@ -60,9 +60,16 @@ class AssetSuggestionsController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_pages_suggestions_callback(): callable {
-		return function() {
+		return function( Request $request ) {
 			try {
-				return new Response( $this->asset_group->get_pages_suggestions() );
+				return array_map(
+					function( $page ) use ( $request ) {
+						$data = $this->prepare_item_for_response( $page, $request );
+						return $this->prepare_response_for_collection( $data );
+					},
+					$this->asset_group->get_pages_suggestions()
+				);
+
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -94,7 +101,7 @@ class AssetSuggestionsController extends BaseController {
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'name'      => [
+			'title'     => [
 				'type'        => 'string',
 				'description' => __( 'The post or term title', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
@@ -102,10 +109,11 @@ class AssetSuggestionsController extends BaseController {
 			],
 			'url'       => [
 				'type'        => 'string',
-				'description' => __( 'The URL linked to the post/taxonomy', 'google-listings-and-ads' ),
+				'description' => __( 'The URL linked to the post/term', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
+
 		];
 
 	}
