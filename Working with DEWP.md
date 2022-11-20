@@ -39,14 +39,14 @@ In a regular project to track outdated packages, you would use `npm outdated`. H
 ### What is the version of the DEWPed package?
 
 As we externalize packages we lose control of the version of the package that will run in the wild (on WordPress instance).
-However, with the current platform, we not only loos control, but we also lose the information of what is actually the range of package we should expect.
+However, with the current platform, we not only lose control, but we also lose the actual information on the range of package we should expect.
 So, even if we know we support WooCommerce 6.9+, what are the `@woocommerce/components` there?
 
 There is no published table of those, and finding them usually requires quite a lot of manual digging. To mitigate that we created another script.
 
 - `npm run dewps:woo 6.9.4` - where `6.9.4` is the version of WooCommerce you would like to check.
 
-Please note this simple script still have several limitations.
+Please note this simple script still has several limitations.
 1. It works for WooCommerce deps only. WordPress ones are more tricky to get, as the list of packages is less static and regular. Theoretically, we should be able to [use dist-tags](https://github.com/WordPress/gutenberg/issues/24376), like `npm install @wordpress/components@wp-6.1.0` or `npx wp-scripts packages-update --dist-tag=wp-5.8`.
 2. It assumes all packages are prefixed with `@woocommerce/`
 3. You need to provide the exact full version. The latest, or `x.y` tree lines are not being resolved automatically.
