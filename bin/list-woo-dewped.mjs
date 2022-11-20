@@ -17,6 +17,15 @@ if ( ! wcTag || ! wcTag.match( /^(\d+).(\d+).(\d+).*/ ) ) {
 	);
 }
 
+// Warn about the needed fetch, available since Node 18+, or 17 behind the flag.
+const majorNodeVersion = Number( process.versions.node.match( /^(\d+)\./ )[ 1 ] );
+if( majorNodeVersion < 18 ) {
+	// eslint-disable-next-line no-console
+	console.warn(
+		"Warning: Please use the Node version that supports `fetch`, like 18+."
+	);
+}
+
 const externalizedList = JSON.parse( fs.readFileSync( externalizedListPath ) );
 // Filter only packages externalized by `@woocommerce/dependency-extraction-webpack-plugin`.
 const wooDependencies = externalizedList.filter( ( dependency ) =>

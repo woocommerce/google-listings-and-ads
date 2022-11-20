@@ -51,5 +51,5 @@ Please note this simple script still has several limitations.
 2. It assumes all packages are prefixed with `@woocommerce/`
 3. You need to provide the exact full version. The latest, or `x.y` tree lines are not being resolved automatically.
 4. Some packages externalized by DEWP, are not packages we could find neither in npm nor in [`woocommerce/woocommerce/packages/js`](https://github.com/woocommerce/woocommerce/commits/trunk/packages/js/) 🤷
-5. It requires at least Node 17 to run.
+5. It requires at least Node 18 to run.
 
