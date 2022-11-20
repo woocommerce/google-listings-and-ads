@@ -15,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class AssetSuggestionsController
  *
+ * @since x.x.x
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
 class AssetSuggestionsController extends BaseController {
@@ -87,12 +89,12 @@ class AssetSuggestionsController extends BaseController {
 				'type'        => 'number',
 				'description' => __( 'Post ID or Term ID', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
-				'required'    => false,
 			],
 			'type'      => [
 				'type'        => 'string',
 				'description' => __( 'Post or term', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
+				'enum'        => [ 'post', 'term' ],
 				'readonly'    => true,
 			],
 			'post_type' => [
