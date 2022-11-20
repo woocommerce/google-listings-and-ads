@@ -10,9 +10,11 @@ const wooPackage = ( tag, packageName ) =>
 
 const myArgs = process.argv.slice( 2 );
 const wcTag = myArgs[ 0 ];
-if ( ! wcTag || ! wcTag.match( /(\d+).(\d+).(\d+).*/ ) ) {
+if ( ! wcTag || ! wcTag.match( /^(\d+).(\d+).(\d+).*/ ) ) {
 	// eslint-disable-next-line no-console
-	console.warn( "Warning: It seems you didn't provide a valid WooCommerce tag." );
+	console.warn(
+		"Warning: It seems you didn't provide a valid WooCommerce tag."
+	);
 }
 
 const externalizedList = JSON.parse( fs.readFileSync( externalizedListPath ) );
