@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since x.x.x
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Assets
  */
 class AssetSuggestionsController extends BaseController {
 

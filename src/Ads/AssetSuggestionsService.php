@@ -9,6 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 /**
  * Class AssetSuggestionsService
  *
+ * Suggest assets and possible final URLs.
+ *
  * @since x.x.x
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Ads
