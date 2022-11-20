@@ -29,6 +29,10 @@
 		"wp-coding-standards/wpcs": "^2.3",
 		"yoast/phpunit-polyfills": "^1.0"
 	},
+	"replace" : {
+		"google/grpc-gcp": "*",
+		"grpc/grpc": "*"
+	},
 	"license": "GPL-3.0",
 	"autoload": {
 		"psr-4": {

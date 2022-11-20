@@ -14,7 +14,7 @@ const withAdminPageShell = createHigherOrderComponent(
 		return (
 			// gla-admin-page is for scoping particular styles to a GLA admin page.
 			<div className="gla-admin-page">
-				<Page { ...props } />;
+				<Page { ...props } />
 			</div>
 		);
 	},
