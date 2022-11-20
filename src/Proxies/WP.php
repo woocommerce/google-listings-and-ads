@@ -247,7 +247,7 @@ class WP {
 	 *                                                  or WP_Error if any of the taxonomies do not exist.
 	 *                                                  See the function description for more information.
 	 */
-	public function get_terms( $args = [], $deprecated = '' ): array {
+	public function get_terms( $args = [], $deprecated = '' ) {
 		return get_terms( $args, $deprecated );
 	}
 }

@@ -66,7 +66,7 @@ class AssetSuggestionsService implements Service {
 	protected function get_terms_suggestion(): array {
 		$terms_suggestions = [];
 
-		// Get all taxonomies that are public, show_in_menu = true helps to exclude taxonomies such as "product_shipping_class"
+		// Get all taxonomies that are public, show_in_menu = true helps to exclude taxonomies such as "product_shipping_class".
 		$taxonomies = $this->wp->get_taxonomies(
 			[
 				'public'       => true,
@@ -96,7 +96,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array Array of pages
 	 */
-	public function get_pages_suggestions(): array {
+	public function get_page_suggestions(): array {
 		$posts = $this->get_post_suggestions();
 		$terms = $this->get_terms_suggestion();
 		return array_merge( $posts, $terms );

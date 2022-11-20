@@ -49,7 +49,7 @@ class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_page_suggestions() {
 		$this->asset_suggestion->expects( $this->once() )
-			->method( 'get_pages_suggestions' )
+			->method( 'get_page_suggestions' )
 			->willReturn( self::TEST_PAGE_SUGGESTIONS );
 
 		$response = $this->do_request( self::ROUTE_PAGE_SUGGESTIONS, 'GET' );
@@ -60,23 +60,12 @@ class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_page_suggestion_empty_set() {
 		$this->asset_suggestion->expects( $this->once() )
-			->method( 'get_pages_suggestions' )
+			->method( 'get_page_suggestions' )
 			->willReturn( self::TEST_NO_PAGE_SUGGESTIONS );
 
 		$response = $this->do_request( self::ROUTE_PAGE_SUGGESTIONS, 'GET' );
 
 		$this->assertEquals( self::TEST_NO_PAGE_SUGGESTIONS, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
-	}
-
-	public function test_get_page_with_api_exception() {
-		$this->asset_suggestion->expects( $this->once() )
-			->method( 'get_pages_suggestions' )
-			->willThrowException( new Exception( 'error', 401 ) );
-
-		$response = $this->do_request( self::ROUTE_PAGE_SUGGESTIONS, 'GET' );
-
-		$this->assertEquals( 'error', $response->get_data()['message'] );
-		$this->assertEquals( 401, $response->get_status() );
 	}
 }

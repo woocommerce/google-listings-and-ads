@@ -63,20 +63,16 @@ class AssetSuggestionsController extends BaseController {
 	 */
 	protected function get_pages_suggestions_callback(): callable {
 		return function( Request $request ) {
-			try {
 				return array_map(
 					function( $page ) use ( $request ) {
 						$data = $this->prepare_item_for_response( $page, $request );
 						return $this->prepare_response_for_collection( $data );
 					},
-					$this->asset_group->get_pages_suggestions()
+					$this->asset_group->get_page_suggestions()
 				);
-
-			} catch ( Exception $e ) {
-				return $this->response_from_exception( $e );
-			}
 		};
 	}
+
 
 	/**
 	 * Get the item schema for the controller.
