@@ -79,8 +79,7 @@ class AssetSuggestionsService implements Service {
 		// Skip empty terms
 		$terms = $this->wp->get_terms(
 			[
-				'taxonomy'   => $taxonomies,
-				'hide_empty' => true,
+				'taxonomy' => $taxonomies,
 			]
 		);
 
