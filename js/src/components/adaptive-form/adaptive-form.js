@@ -27,7 +27,7 @@ function isEvent( value ) {
  * several workarounds in order to be compatible with WC 6.9 to 7.1.
  *
  * @param {Object} props React props.
- * @param {JSX.Element | Function} props.children Children to be rendered. Could be a render prop function.
+ * @param {(formProps: Object) => JSX.Element | JSX.Element} props.children Children to be rendered. Could be a render prop function.
  * @param {import('react').MutableRefObject<AdaptiveFormHandler>} ref React ref to be attached to the handler of this component.
  */
 function AdaptiveForm( { children, ...props }, ref ) {
