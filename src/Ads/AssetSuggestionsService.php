@@ -54,7 +54,7 @@ class AssetSuggestionsService implements Service {
 		$posts = $this->wp->get_posts( $args );
 
 		foreach ( $posts as $post ) {
-			$post_suggestions[] = $this->format_page_response( $post->ID, 'post', $post->post_type, $post->post_title, get_permalink( $post->ID ) );
+			$post_suggestions[] = $this->format_final_url_response( $post->ID, 'post', $post->post_type, $post->post_title, get_permalink( $post->ID ) );
 		}
 
 		return $post_suggestions;
@@ -85,7 +85,7 @@ class AssetSuggestionsService implements Service {
 		);
 
 		foreach ( $terms as $term ) {
-				$terms_suggestions[] = $this->format_page_response( $term->term_id, 'term', null, $term->name, get_term_link( $term->term_id, $term->taxonomy ) );
+				$terms_suggestions[] = $this->format_final_url_response( $term->term_id, 'term', null, $term->name, get_term_link( $term->term_id, $term->taxonomy ) );
 		}
 
 		return $terms_suggestions;
@@ -94,11 +94,11 @@ class AssetSuggestionsService implements Service {
 
 
 	/**
-	 * Return a list of pages that can be used to suggest assets.
+	 * Return a list of final urls that can be used to suggest assets.
 	 *
-	 * @return array Array of pages
+	 * @return array Array of final urls with their title, id & type.
 	 */
-	public function get_page_suggestions(): array {
+	public function get_final_urls_suggestions(): array {
 		$posts = $this->get_post_suggestions();
 		$terms = $this->get_terms_suggestion();
 		return array_merge( $posts, $terms );
@@ -115,7 +115,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array
 	 */
-	protected function format_page_response( $id, $type, $post_type, $title, $url ): array {
+	protected function format_final_url_response( $id, $type, $post_type, $title, $url ): array {
 		return [
 			'id'        => $id,
 			'type'      => $type,

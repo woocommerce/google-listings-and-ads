@@ -25,7 +25,7 @@ class AssetSuggestionsController extends BaseController {
 	 *
 	 * @var AssetSuggestionsService
 	 */
-	protected $asset_group;
+	protected $asset_suggestion_service;
 
 	/**
 	 * AssetSuggestionsController constructor.
@@ -35,7 +35,7 @@ class AssetSuggestionsController extends BaseController {
 	 */
 	public function __construct( RESTServer $server, AssetSuggestionsService $asset_suggestion ) {
 		parent::__construct( $server );
-		$this->asset_group = $asset_suggestion;
+		$this->asset_suggestion_service = $asset_suggestion;
 	}
 
 	/**
@@ -43,11 +43,11 @@ class AssetSuggestionsController extends BaseController {
 	 */
 	public function register_routes(): void {
 		$this->register_route(
-			'assets/page/suggestions',
+			'assets/final-url/suggestions',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_pages_suggestions_callback(),
+					'callback'            => $this->get_final_urls_suggestions_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -60,14 +60,14 @@ class AssetSuggestionsController extends BaseController {
 	 *
 	 * @return callable
 	 */
-	protected function get_pages_suggestions_callback(): callable {
+	protected function get_final_urls_suggestions_callback(): callable {
 		return function( Request $request ) {
 				return array_map(
 					function( $page ) use ( $request ) {
 						$data = $this->prepare_item_for_response( $page, $request );
 						return $this->prepare_response_for_collection( $data );
 					},
-					$this->asset_group->get_page_suggestions()
+					$this->asset_suggestion_service->get_final_urls_suggestions()
 				);
 		};
 	}
@@ -124,7 +124,7 @@ class AssetSuggestionsController extends BaseController {
 	 * @return string
 	 */
 	protected function get_schema_title(): string {
-		return 'asset_suggestions';
+		return 'asset_final_urls_suggestions';
 	}
 
 }

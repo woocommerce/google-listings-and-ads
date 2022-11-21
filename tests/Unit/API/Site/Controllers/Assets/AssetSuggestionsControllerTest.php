@@ -18,7 +18,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 
-	protected const ROUTE_PAGE_SUGGESTIONS = '/wc/gla/assets/page/suggestions';
+	protected const ROUTE_PAGE_SUGGESTIONS = '/wc/gla/assets/final-url/suggestions';
 	protected const TEST_PAGE_SUGGESTIONS  = [
 		[
 			'id'        => 1,
@@ -46,9 +46,9 @@ class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 		$this->controller->register();
 	}
 
-	public function test_get_page_suggestions() {
+	public function test_get_final_urls_suggestions() {
 		$this->asset_suggestion->expects( $this->once() )
-			->method( 'get_page_suggestions' )
+			->method( 'get_final_urls_suggestions' )
 			->willReturn( self::TEST_PAGE_SUGGESTIONS );
 
 		$response = $this->do_request( self::ROUTE_PAGE_SUGGESTIONS, 'GET' );
@@ -57,9 +57,9 @@ class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_get_page_suggestion_empty_set() {
+	public function test_get_final_urls_suggestions_empty_set() {
 		$this->asset_suggestion->expects( $this->once() )
-			->method( 'get_page_suggestions' )
+			->method( 'get_final_urls_suggestions' )
 			->willReturn( self::TEST_NO_PAGE_SUGGESTIONS );
 
 		$response = $this->do_request( self::ROUTE_PAGE_SUGGESTIONS, 'GET' );

@@ -86,7 +86,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->method( 'get_terms' )
 			->willReturn( [] );
 
-		$this->assertEquals( [ $this->suggested_post ], $this->asset_suggestions->get_page_suggestions() );
+		$this->assertEquals( [ $this->suggested_post ], $this->asset_suggestions->get_final_urls_suggestions() );
 	}
 
 	public function test_get_term_suggestions() {
@@ -105,7 +105,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->method( 'get_terms' )
 			->willReturn( [ $this->term ] );
 
-		$this->assertEquals( [ $this->suggested_term ], $this->asset_suggestions->get_page_suggestions() );
+		$this->assertEquals( [ $this->suggested_term ], $this->asset_suggestions->get_final_urls_suggestions() );
 	}
 
 	public function test_get_all_suggestions() {
@@ -125,6 +125,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->method( 'get_terms' )
 			->willReturn( [ $this->term ] );
 
-		$this->assertEquals( [ $this->suggested_post, $this->suggested_term ], $this->asset_suggestions->get_page_suggestions() );
+		$this->assertEquals( [ $this->suggested_post, $this->suggested_term ], $this->asset_suggestions->get_final_urls_suggestions() );
 	}
 }
