@@ -54,7 +54,7 @@ const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
  * Renders the Attribute Mapping table component
  *
  * @fires gla_modal_closed When any of the modals is closed
- * @fires gla_modal_open When any of the modals is open with `context: attribute-mapping-manage-rule-modal` | attribute-mapping-create-rule-modal`
+ * @fires gla_modal_open When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
  * @return {JSX.Element} The component
  */
 const AttributeMappingTable = () => {
