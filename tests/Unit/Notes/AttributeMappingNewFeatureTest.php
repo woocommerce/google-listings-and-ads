@@ -49,7 +49,7 @@ class AttributeMappingNewFeatureTest extends UnitTest {
 		$this->options->expects( $this->once() )
 			->method( 'get' )
 			->with( OptionsInterface::INSTALL_TIMESTAMP )
-			->willReturn( '1669730000' ); // Tue Nov 29 2022
+			->willReturn( '1668816000' ); // Tue Nov 19 2022
 		$this->assertTrue( $this->note->should_be_added() );
 	}
 
