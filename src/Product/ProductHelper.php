@@ -103,7 +103,11 @@ class ProductHelper implements Service {
 	 */
 	public function mark_as_unsynced( WC_Product $product ) {
 		$this->meta_handler->delete_synced_at( $product );
-		$this->meta_handler->update_sync_status( $product, SyncStatus::NOT_SYNCED );
+		if ( ! $this->is_sync_ready( $product ) ) {
+			$this->meta_handler->delete_sync_status( $product );
+		} else {
+			$this->meta_handler->update_sync_status( $product, SyncStatus::NOT_SYNCED );
+		}
 		$this->meta_handler->delete_google_ids( $product );
 		$this->meta_handler->delete_errors( $product );
 		$this->meta_handler->delete_failed_sync_attempts( $product );
