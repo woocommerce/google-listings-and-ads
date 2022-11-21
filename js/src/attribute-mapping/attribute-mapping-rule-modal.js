@@ -27,11 +27,6 @@ import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
  *
  * @event gla_attribute_mapping_update_rule
  * @property {string} context Indicates where this event happened
- * @property {string} id Rule id
- * @property {string} attribute Rule attribute
- * @property {string} source Rule source
- * @property {string} category_condition_type Rule category condition type
- * @property {string} categories Rule categories
  */
 
 /**
@@ -39,10 +34,6 @@ import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
  *
  * @event gla_attribute_mapping_create_rule
  * @property {string} context Indicates where this event happened
- * @property {string} attribute Rule attribute
- * @property {string} source Rule source
- * @property {string} category_condition_type Rule category condition type
- * @property {string} categories Rule categories
  */
 
 /**
@@ -65,9 +56,10 @@ const attributeSelectorLabel = __(
 /**
  * Map the format received from the backend into the format needed in the SelectControl
  *
- * @param {Array} data The array with the values from the backend
- * @return {Array} The data formatted
+ * @param {Array<{id: string, label: string}>} data The array with the values from the backend
+ * @return {Array<{label: string, value: string}>} The data formatted
  */
+
 const mapOptions = ( data = [] ) => {
 	return [
 		...data.map( ( attribute ) => {
@@ -147,13 +139,11 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 				await updateMappingRule( newRule );
 				recordEvent( 'gla_attribute_mapping_update_rule', {
 					context: 'attribute-mapping-manage-rule-modal',
-					...newRule,
 				} );
 			} else {
 				await createMappingRule( newRule );
 				recordEvent( 'gla_attribute_mapping_create_rule', {
 					context: 'attribute-mapping-create-rule-modal',
-					...newRule,
 				} );
 			}
 			onRequestClose( 'confirm' );

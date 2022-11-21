@@ -18,11 +18,6 @@ import { useAppDispatch } from '.~/data';
  *
  * @event gla_attribute_mapping_delete_rule
  * @property {string} context Indicates where this event happened
- * @property {string} id Rule id
- * @property {string} attribute Rule attribute
- * @property {string} source Rule source
- * @property {string} category_condition_type Rule category condition type
- * @property {string} categories Rule categories
  */
 
 /**
@@ -52,7 +47,6 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 			await deleteMappingRule( rule );
 			recordEvent( 'gla_attribute_mapping_delete_rule', {
 				context: 'attribute-mapping-delete-rule-modal',
-				...rule,
 			} );
 			onRequestClose( 'confirm' );
 		} catch ( error ) {

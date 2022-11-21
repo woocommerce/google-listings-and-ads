@@ -78,13 +78,13 @@ class AttributeMappingCategoriesController extends BaseController {
 		return [
 			'id'     => [
 				'description'       => __( 'The Category ID.', 'google-listings-and-ads' ),
-				'type'              => 'string',
+				'type'              => 'integer',
 				'validate_callback' => 'rest_validate_request_arg',
 				'readonly'          => true,
 			],
 			'name'   => [
 				'description'       => __( 'The category name.', 'google-listings-and-ads' ),
-				'type'              => 'integer',
+				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 				'readonly'          => true,
 			],
