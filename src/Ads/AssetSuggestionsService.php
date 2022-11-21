@@ -54,7 +54,7 @@ class AssetSuggestionsService implements Service {
 		$posts = $this->wp->get_posts( $args );
 
 		foreach ( $posts as $post ) {
-			$post_suggestions[] = $this->format_final_url_response( $post->ID, 'post', $post->post_type, $post->post_title, get_permalink( $post->ID ) );
+			$post_suggestions[] = $this->format_final_url_response( $post->ID, 'post', $post->post_title, get_permalink( $post->ID ) );
 		}
 
 		return $post_suggestions;
@@ -84,7 +84,7 @@ class AssetSuggestionsService implements Service {
 		);
 
 		foreach ( $terms as $term ) {
-				$terms_suggestions[] = $this->format_final_url_response( $term->term_id, 'term', null, $term->name, get_term_link( $term->term_id, $term->taxonomy ) );
+				$terms_suggestions[] = $this->format_final_url_response( $term->term_id, 'term', $term->name, get_term_link( $term->term_id, $term->taxonomy ) );
 		}
 
 		return $terms_suggestions;
@@ -108,19 +108,17 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @param int    $id post|term ID
 	 * @param string $type post|term
-	 * @param string $post_type Post type if exists
 	 * @param string $title page|term title
 	 * @param string $url page|term url
 	 *
 	 * @return array
 	 */
-	protected function format_final_url_response( $id, $type, $post_type, $title, $url ): array {
+	protected function format_final_url_response( $id, $type, $title, $url ): array {
 		return [
-			'id'        => $id,
-			'type'      => $type,
-			'post_type' => $post_type,
-			'title'     => $title,
-			'url'       => $url,
+			'id'    => $id,
+			'type'  => $type,
+			'title' => $title,
+			'url'   => $url,
 		];
 
 	}

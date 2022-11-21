@@ -80,31 +80,25 @@ class AssetSuggestionsController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id'        => [
+			'id'    => [
 				'type'        => 'number',
 				'description' => __( 'Post ID or Term ID', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
-			'type'      => [
+			'type'  => [
 				'type'        => 'string',
 				'description' => __( 'Post or term', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'enum'        => [ 'post', 'term' ],
 				'readonly'    => true,
 			],
-			'post_type' => [
-				'type'        => 'string',
-				'description' => __( 'The post type', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
-			'title'     => [
+			'title' => [
 				'type'        => 'string',
 				'description' => __( 'The post or term title', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'url'       => [
+			'url'   => [
 				'type'        => 'string',
 				'description' => __( 'The URL linked to the post/term', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],

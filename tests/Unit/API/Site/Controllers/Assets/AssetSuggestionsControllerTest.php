@@ -21,18 +21,16 @@ class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_FINAL_URL_SUGGESTIONS = '/wc/gla/assets/final-url/suggestions';
 	protected const TEST_FINAL_URL_SUGGESTIONS  = [
 		[
-			'id'        => 1,
-			'type'      => 'post',
-			'post_type' => 'product',
-			'title'     => 'Beanie with Logo',
-			'url'       => 'http://localhost:8082/shop/clothing/accessories/beanie-with-logo/',
+			'id'    => 1,
+			'type'  => 'post',
+			'title' => 'Beanie with Logo',
+			'url'   => 'http://localhost:8082/shop/clothing/accessories/beanie-with-logo/',
 		],
 		[
-			'id'        => 2,
-			'type'      => 'term',
-			'post_type' => null,
-			'title'     => 'Clothing',
-			'url'       => 'http://localhost:8082/product-category/clothing/',
+			'id'    => 2,
+			'type'  => 'term',
+			'title' => 'Clothing',
+			'url'   => 'http://localhost:8082/product-category/clothing/',
 		],
 
 	];

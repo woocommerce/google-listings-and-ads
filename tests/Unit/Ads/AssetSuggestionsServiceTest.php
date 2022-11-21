@@ -45,19 +45,17 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$this->term = $this->factory()->term->create_and_get();
 
 		$this->suggested_post = [
-			'id'        => $this->post->ID,
-			'type'      => 'post',
-			'post_type' => $this->post->post_type,
-			'title'     => $this->post->post_title,
-			'url'       => get_permalink( $this->post->ID ),
+			'id'    => $this->post->ID,
+			'type'  => 'post',
+			'title' => $this->post->post_title,
+			'url'   => get_permalink( $this->post->ID ),
 		];
 
 		$this->suggested_term = [
-			'id'        => $this->term->term_id,
-			'type'      => 'term',
-			'post_type' => null,
-			'title'     => $this->term->name,
-			'url'       => get_term_link( $this->term->term_id, $this->term->taxonomy ),
+			'id'    => $this->term->term_id,
+			'type'  => 'term',
+			'title' => $this->term->name,
+			'url'   => get_term_link( $this->term->term_id, $this->term->taxonomy ),
 		];
 
 	}
