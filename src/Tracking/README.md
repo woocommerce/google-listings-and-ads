@@ -143,7 +143,7 @@ Clicks on save rule button
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates where this event happened
 #### Emitters
-- [`AttributeMappingRuleModal`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L95) When user clicks on save rule button  with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal'`
+- [`AttributeMappingRuleModal`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L95) When user clicks on save rule button  with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 
 ### [`gla_attribute_mapping_update_rule`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L25)
 Updates the rule successfully
@@ -557,7 +557,7 @@ A modal is open
 | ---- | ---- | ----------- |
 `context` | `string` | Indicates which modal is open
 #### Emitters
-- [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L60) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal'}`
+- [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L60) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L155) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
