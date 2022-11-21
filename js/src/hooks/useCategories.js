@@ -111,7 +111,7 @@ const getSelected = ( selected, allCategories ) => {
  * Return a category in SelectControl format
  *
  * @param {Object} category The category to be formatted
- * @return {{label, value, key}} The category formatted in SelectControl format
+ * @return {{label: string, value: number, key: number}} The category formatted in SelectControl format
  */
 const getSelectControlFormat = ( category ) => {
 	return {

@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { isEqual, noop } from 'lodash';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -21,6 +22,27 @@ import AppSpinner from '.~/components/app-spinner';
 import { useAppDispatch } from '.~/data';
 import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
 
+/**
+ * Updates the rule successfully
+ *
+ * @event gla_attribute_mapping_update_rule
+ * @property {string} context Indicates where this event happened
+ */
+
+/**
+ * Creates the rule successfully
+ *
+ * @event gla_attribute_mapping_create_rule
+ * @property {string} context Indicates where this event happened
+ */
+
+/**
+ * Clicks on save rule button
+ *
+ * @event gla_attribute_mapping_save_rule_click
+ * @property {string} context Indicates where this event happened
+ */
+
 const enumSelectorLabel = __(
 	'Select default value',
 	'google-listings-and-ads'
@@ -34,9 +56,10 @@ const attributeSelectorLabel = __(
 /**
  * Map the format received from the backend into the format needed in the SelectControl
  *
- * @param {{id: string, label: string}[]} data The array with the values from the backend
- * @return {{label: string, value: string}[]} The data formatted
+ * @param {Array<{id: string, label: string}>} data The array with the values from the backend
+ * @return {Array<{label: string, value: string}>} The data formatted
  */
+
 const mapOptions = ( data = [] ) => {
 	return [
 		...data.map( ( attribute ) => {
@@ -65,6 +88,9 @@ const prepareRule = ( newRule ) => {
  * @param {Object} props React props
  * @param {Object} [props.rule] Optional rule to manage
  * @param {Function} [props.onRequestClose] Callback on closing the modal
+ * @fires gla_attribute_mapping_update_rule When the rule is successfully updated  with `{ context: 'attribute-mapping-manage-rule-modal' }`
+ * @fires gla_attribute_mapping_create_rule When the rule is successfully created  with `{ context: 'attribute-mapping-create-rule-modal' }`
+ * @fires gla_attribute_mapping_save_rule_click When user clicks on save rule button  with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
  */
 const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 	const [ newRule, setNewRule ] = useState(
@@ -111,10 +137,16 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 		try {
 			if ( rule ) {
 				await updateMappingRule( newRule );
+				recordEvent( 'gla_attribute_mapping_update_rule', {
+					context: 'attribute-mapping-manage-rule-modal',
+				} );
 			} else {
 				await createMappingRule( newRule );
+				recordEvent( 'gla_attribute_mapping_create_rule', {
+					context: 'attribute-mapping-create-rule-modal',
+				} );
 			}
-			onRequestClose();
+			onRequestClose( 'confirm' );
 		} catch ( error ) {
 			setSaving( false );
 		}
@@ -130,7 +162,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 
 	const handleClose = () => {
 		if ( saving ) return;
-		onRequestClose();
+		onRequestClose( 'dismiss' );
 	};
 
 	return (
@@ -161,9 +193,11 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 							? __( 'Saving…', 'google-listings-and-ads' )
 							: __( 'Save rule', 'google-listings-and-ads' )
 					}
-					eventName="gla_attribute_mapping_save_rule"
+					eventName="gla_attribute_mapping_save_rule_click"
 					eventProps={ {
-						context: 'attribute-mapping-rule-modal',
+						context: rule
+							? 'attribute-mapping-manage-rule-modal'
+							: 'attribute-mapping-create-rule-modal',
 					} }
 					onClick={ onSave }
 				/>,
