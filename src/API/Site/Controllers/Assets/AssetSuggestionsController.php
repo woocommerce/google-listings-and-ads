@@ -63,8 +63,8 @@ class AssetSuggestionsController extends BaseController {
 	protected function get_final_urls_suggestions_callback(): callable {
 		return function( Request $request ) {
 				return array_map(
-					function( $page ) use ( $request ) {
-						$data = $this->prepare_item_for_response( $page, $request );
+					function( $item ) use ( $request ) {
+						$data = $this->prepare_item_for_response( $item, $request );
 						return $this->prepare_response_for_collection( $data );
 					},
 					$this->asset_suggestion_service->get_final_urls_suggestions()

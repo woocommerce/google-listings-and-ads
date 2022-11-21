@@ -18,8 +18,8 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 
-	protected const ROUTE_PAGE_SUGGESTIONS = '/wc/gla/assets/final-url/suggestions';
-	protected const TEST_PAGE_SUGGESTIONS  = [
+	protected const ROUTE_FINAL_URL_SUGGESTIONS = '/wc/gla/assets/final-url/suggestions';
+	protected const TEST_FINAL_URL_SUGGESTIONS  = [
 		[
 			'id'        => 1,
 			'type'      => 'post',
@@ -36,7 +36,7 @@ class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 		],
 
 	];
-	protected const TEST_NO_PAGE_SUGGESTIONS = [];
+	protected const TEST_NO_FINAL_URL_SUGGESTIONS = [];
 
 	public function setUp(): void {
 		parent::setUp();
@@ -49,22 +49,22 @@ class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 	public function test_get_final_urls_suggestions() {
 		$this->asset_suggestion->expects( $this->once() )
 			->method( 'get_final_urls_suggestions' )
-			->willReturn( self::TEST_PAGE_SUGGESTIONS );
+			->willReturn( self::TEST_FINAL_URL_SUGGESTIONS );
 
-		$response = $this->do_request( self::ROUTE_PAGE_SUGGESTIONS, 'GET' );
+		$response = $this->do_request( self::ROUTE_FINAL_URL_SUGGESTIONS, 'GET' );
 
-		$this->assertEquals( self::TEST_PAGE_SUGGESTIONS, $response->get_data() );
+		$this->assertEquals( self::TEST_FINAL_URL_SUGGESTIONS, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_get_final_urls_suggestions_empty_set() {
 		$this->asset_suggestion->expects( $this->once() )
 			->method( 'get_final_urls_suggestions' )
-			->willReturn( self::TEST_NO_PAGE_SUGGESTIONS );
+			->willReturn( self::TEST_NO_FINAL_URL_SUGGESTIONS );
 
-		$response = $this->do_request( self::ROUTE_PAGE_SUGGESTIONS, 'GET' );
+		$response = $this->do_request( self::ROUTE_FINAL_URL_SUGGESTIONS, 'GET' );
 
-		$this->assertEquals( self::TEST_NO_PAGE_SUGGESTIONS, $response->get_data() );
+		$this->assertEquals( self::TEST_NO_FINAL_URL_SUGGESTIONS, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 }
