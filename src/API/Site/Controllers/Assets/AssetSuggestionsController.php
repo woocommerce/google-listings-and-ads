@@ -49,10 +49,40 @@ class AssetSuggestionsController extends BaseController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_final_urls_suggestions_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+	}
+
+	/**
+	 * Get the query params for collections.
+	 *
+	 * @return array
+	 */
+	public function get_collection_params(): array {
+		return [
+			'search'   => [
+				'description'       => __( 'Search for post title or term name', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'default'           => '',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'per_page' => [
+				'description'       => __( 'The number of items to be return', 'google-listings-and-ads' ),
+				'type'              => 'number',
+				'default'           => 30,
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'order_by' => [
+				'description'       => __( 'Sort retrieved items by parameter', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'default'           => 'title',
+				'enum'              => [ 'id', 'type', 'title', 'url' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
 	}
 
 	/**
@@ -62,15 +92,19 @@ class AssetSuggestionsController extends BaseController {
 	 */
 	protected function get_final_urls_suggestions_callback(): callable {
 		return function( Request $request ) {
-				return array_map(
-					function( $item ) use ( $request ) {
-						$data = $this->prepare_item_for_response( $item, $request );
-						return $this->prepare_response_for_collection( $data );
-					},
-					$this->asset_suggestion_service->get_final_urls_suggestions()
-				);
+			$search   = $request->get_param( 'search' );
+			$per_page = $request->get_param( 'per_page' );
+			$order_by = $request->get_param( 'order_by' );
+			return array_map(
+				function( $item ) use ( $request ) {
+					$data = $this->prepare_item_for_response( $item, $request );
+					return $this->prepare_response_for_collection( $data );
+				},
+				$this->asset_suggestion_service->get_final_urls_suggestions( $search, $per_page, $order_by )
+			);
 		};
 	}
+
 
 
 	/**
