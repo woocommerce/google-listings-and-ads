@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Google\Service\ShoppingContent\Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variation;
+use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -102,7 +103,11 @@ class ProductHelper implements Service {
 	 */
 	public function mark_as_unsynced( WC_Product $product ) {
 		$this->meta_handler->delete_synced_at( $product );
-		$this->meta_handler->update_sync_status( $product, SyncStatus::NOT_SYNCED );
+		if ( ! $this->is_sync_ready( $product ) ) {
+			$this->meta_handler->delete_sync_status( $product );
+		} else {
+			$this->meta_handler->update_sync_status( $product, SyncStatus::NOT_SYNCED );
+		}
 		$this->meta_handler->delete_google_ids( $product );
 		$this->meta_handler->delete_errors( $product );
 		$this->meta_handler->delete_failed_sync_attempts( $product );
@@ -287,6 +292,17 @@ class ProductHelper implements Service {
 	 */
 	public function get_wc_product( int $product_id ): WC_Product {
 		return $this->wc->get_product( $product_id );
+	}
+
+	/**
+	 * Get WooCommerce product by WP get_post
+	 *
+	 * @param int $product_id
+	 *
+	 * @return WP_Post|null
+	 */
+	public function get_wc_product_by_wp_post( int $product_id ): ?WP_Post {
+		return get_post( $product_id );
 	}
 
 	/**
