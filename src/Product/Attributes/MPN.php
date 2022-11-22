@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\MPNInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\Traits\IsFieldTrait;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -12,7 +13,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
-class MPN extends AbstractAttribute {
+class MPN extends AbstractAttribute implements WithMappingInterface {
+
+	use IsFieldTrait;
 
 	/**
 	 * Returns the attribute ID.
@@ -49,4 +52,12 @@ class MPN extends AbstractAttribute {
 		return MPNInput::class;
 	}
 
+	/**
+	 * Returns the attribute name
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return __( 'MPN', 'google-listings-and-ads' );
+	}
 }
