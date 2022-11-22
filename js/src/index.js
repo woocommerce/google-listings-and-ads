@@ -19,6 +19,7 @@ import Dashboard from './dashboard';
 import Reports from './pages/reports';
 import ProductFeed from './product-feed';
 import Settings from './settings';
+import AttributeMapping from '.~/attribute-mapping';
 import './data';
 import isWCNavigationEnabled from './utils/isWCNavigationEnabled';
 
@@ -109,6 +110,18 @@ addFilter(
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 				navArgs: {
 					id: 'google-product-feed',
+				},
+			},
+			{
+				breadcrumbs: [
+					...initialBreadcrumbs,
+					__( 'Attribute Mapping', 'google-listings-and-ads' ),
+				],
+				container: AttributeMapping,
+				path: '/google/attribute-mapping',
+				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+				navArgs: {
+					id: 'google-attribute-mapping',
 				},
 			},
 			{

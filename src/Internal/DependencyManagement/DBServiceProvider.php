@@ -10,10 +10,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\MigrationVersion141
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductMetaQueryHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\AttributeMappingRulesTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\BudgetRecommendationTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
@@ -45,18 +47,19 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		ShippingRateTable::class         => true,
-		ShippingRateQuery::class         => true,
-		ShippingTimeTable::class         => true,
-		ShippingTimeQuery::class         => true,
-		BudgetRecommendationTable::class => true,
-		BudgetRecommendationQuery::class => true,
-		MerchantIssueTable::class        => true,
-		MerchantIssueQuery::class        => true,
-		ProductFeedQueryHelper::class    => true,
-		ProductMetaQueryHelper::class    => true,
-		MigrationInterface::class        => true,
-		Migrator::class                  => true,
+		AttributeMappingRulesTable::class => true,
+		ShippingRateTable::class          => true,
+		ShippingRateQuery::class          => true,
+		ShippingTimeTable::class          => true,
+		ShippingTimeQuery::class          => true,
+		BudgetRecommendationTable::class  => true,
+		BudgetRecommendationQuery::class  => true,
+		MerchantIssueTable::class         => true,
+		MerchantIssueQuery::class         => true,
+		ProductFeedQueryHelper::class     => true,
+		ProductMetaQueryHelper::class     => true,
+		MigrationInterface::class         => true,
+		Migrator::class                   => true,
 	];
 
 	/**
@@ -79,6 +82,8 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register() {
+		$this->share_table_class( AttributeMappingRulesTable::class );
+		$this->add_query_class( AttributeMappingRulesQuery::class, AttributeMappingRulesTable::class );
 		$this->share_table_class( BudgetRecommendationTable::class );
 		$this->add_query_class( BudgetRecommendationQuery::class, BudgetRecommendationTable::class );
 		$this->share_table_class( ShippingRateTable::class );

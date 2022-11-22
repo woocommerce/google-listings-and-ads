@@ -1,10 +1,10 @@
 === Google Listings & Ads ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
-Requires at least: 5.7
+Requires at least: 5.8
 Tested up to: 6.1
 Requires PHP: 7.4
-Stable tag: 2.2.1
+Stable tag: 2.3.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -54,7 +54,7 @@ Create a new Google Ads account through Google Listings & Ads and a promotional 
 = Minimum Requirements =
 
 * WordPress 5.7 or greater
-* WooCommerce 6.8 or greater
+* WooCommerce 6.9 or greater
 * PHP version 7.4 or greater
 * MySQL version 5.6 or greater
 
@@ -109,6 +109,16 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.3.1 - 2022-11-22 =
+* Add -  Attribute Mapping Feature.
+* Dev - Add script to list DEWPed dependencies' versions for a given WC version.
+* Fix - Incorrect product statistics count.
+* Fix - Yoast global identifiers for variable products.
+* Tweak - Remove unused GRPC packages.
+* Tweak - WC 7.1 compatibility.
+* Update - Change multipack attribute input to be native number input, to improve accessibility.
+* Update - Drop support for WC < 6.9.
+
 = 2.2.1 - 2022-11-15 =
 * Add - Declare compatibility for High Performance Order Storage.
 * Dev - Selectively externalize bundled packages.
@@ -145,14 +155,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Logos of Google Merchant Center and Google Ads.
 * Update - Open the billing setup page of Google Ads via a popup window and add an alternative hyperlink to open the same setup page.
 * Update - The FAQs in the paid ads setup and the campaign setup page.
-
-= 2.1.4 - 2022-10-04 =
-* Add - Policy Compliance Checks in the onboarding flow.
-* Tweak - WC 7.0 compatibility.
-
-= 2.1.3 - 2022-09-27 =
-* Fix - Avoid truncate for issues with more than 100 characters length.
-* Fix - Update Size Type Attribute available values.
-* Tweak - Update Website not Claimed issue information.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

@@ -11,13 +11,13 @@ import { API_RESPONSE_CODES } from '.~/constants';
 import useLegacyMenuEffect from '.~/hooks/useLegacyMenuEffect';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import { subpaths, getReconnectAccountUrl } from '.~/utils/urls';
-import NavigationClassic from '.~/components/navigation-classic';
 import { ContactInformationPreview } from '.~/components/contact-information';
 import LinkedAccounts from './linked-accounts';
 import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
+import NavigationClassic from '.~/components/navigation-classic';
 import './index.scss';
 
 const pageClassName = 'gla-settings';

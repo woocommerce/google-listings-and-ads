@@ -14,7 +14,6 @@ import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 const useAppSelectDispatch = ( selector, ...args ) => {
 	const { invalidateResolution } = useAppDispatch();
 	const argsRefValue = useIsEqualRefValue( args );
-
 	const invalidateResolutionCallback = useCallback( () => {
 		invalidateResolution( selector, argsRefValue );
 	}, [ invalidateResolution, selector, argsRefValue ] );

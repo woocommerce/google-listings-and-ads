@@ -3,12 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
@@ -41,6 +41,7 @@ use WC_Product_Variation;
  * @property ProductFactory                $product_factory
  * @property MockObject|TargetAudience     $target_audience
  * @property BatchProductHelper            $batch_product_helper
+ * @property AttributeMappingRulesQuery    $rules_query
  */
 class BatchProductHelperTest extends ContainerAwareUnitTest {
 
@@ -179,6 +180,10 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 						->method( 'validate' )
 						->willReturn( [] );
 
+		$this->rules_query->expects( $this->any() )
+			->method( 'get_results' )
+			->willReturn( [] );
+
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
 
 		// the number of results can be bigger because of variable products
@@ -228,6 +233,10 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 							}
 						);
 
+		$this->rules_query->expects( $this->any() )
+			->method( 'get_results' )
+			->willReturn( [] );
+
 		$this->target_audience->expects( $this->any() )
 							  ->method( 'get_main_target_country' )
 							  ->willReturn( 'US' );
@@ -261,6 +270,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->validator->expects( $this->any() )
 						->method( 'validate' )
 						->willReturn( [] );
+		$this->rules_query->expects( $this->any() )
+			->method( 'get_results' )
+			->willReturn( [] );
 
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
 
@@ -360,10 +372,11 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		parent::setUp();
 		$this->target_audience      = $this->createMock( TargetAudience::class );
 		$this->validator            = $this->createMock( ValidatorInterface::class );
+		$this->rules_query          = $this->createMock( AttributeMappingRulesQuery::class );
 		$this->product_meta         = $this->container->get( ProductMetaHandler::class );
 		$this->product_factory      = $this->container->get( ProductFactory::class );
 		$this->wc                   = $this->container->get( WC::class );
 		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience );
-		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->target_audience );
+		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->target_audience, $this->rules_query );
 	}
 }

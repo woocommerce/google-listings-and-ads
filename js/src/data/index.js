@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { controls } from '@wordpress/data-controls';
 import { registerStore, useDispatch } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 import { getHistory } from '@woocommerce/navigation';
@@ -14,6 +13,7 @@ import { STORE_KEY } from './constants';
 import * as actions from './actions';
 import * as selectors from './selectors';
 import * as resolvers from './resolvers';
+import { controls } from './controls';
 import reducer from './reducer';
 import { createErrorResponseCatcher } from './api-fetch-middlewares';
 import { getReconnectAccountUrl } from '.~/utils/urls';

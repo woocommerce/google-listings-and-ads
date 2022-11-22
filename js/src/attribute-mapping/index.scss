@@ -1,0 +1,80 @@
+.gla-attribute-mapping {
+
+	&__pagination {
+		width: 100%;
+	}
+
+	&__sync-status {
+		font-size: 13px;
+		color: $gray-700;
+	}
+
+	&__table-footer {
+		padding: $grid-unit-20;
+	}
+
+	&__radio-control {
+		margin-top: $grid-unit-20;
+		.help-popover {
+			margin-left: $grid-unit;
+
+			// hack for positioning correctly the popover in the modal radio control
+			.components-popover {
+				position: absolute;
+			}
+		}
+	}
+
+	&__rule-modal {
+
+		.app-select-control {
+			margin-bottom: $grid-unit;
+			select.components-select-control__input {
+				height: 40px;
+				max-width: 100%;
+			}
+		}
+
+		.app-input-control {
+			margin-bottom: $grid-unit;
+			input.components-input-control__input {
+				height: 40px;
+			}
+		}
+	}
+
+	&__table-label {
+		background: $gray-100;
+		padding: $grid-unit-05 $grid-unit-10;
+		border-radius: 2px;
+		font-size: $gla-font-smaller;
+		line-height: 16px;
+	}
+
+	&__table-categories {
+		color: $gray-700;
+	}
+
+	&__table-categories-tooltip {
+		font-weight: 600;
+		width: 150px;
+		white-space: break-spaces;
+		display: block;
+
+		span {
+			font-weight: normal;
+			margin-left: $grid-unit-05;
+		}
+	}
+
+	&__table-categories-help {
+		border-bottom: 1px dashed;
+		margin-left: $grid-unit-05;
+		word-wrap: break-word;
+	}
+
+	&__syncing {
+		font-size: 11px;
+		color: $gray-700;
+	}
+}

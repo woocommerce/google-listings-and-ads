@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\AttributeMappingRulesTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\BudgetRecommendationTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
@@ -23,10 +24,11 @@ class TableManager {
 	use ValidateInterface;
 
 	protected const VALID_TABLES = [
-		BudgetRecommendationTable::class => true,
-		MerchantIssueTable::class        => true,
-		ShippingRateTable::class         => true,
-		ShippingTimeTable::class         => true,
+		AttributeMappingRulesTable::class => true,
+		BudgetRecommendationTable::class  => true,
+		MerchantIssueTable::class         => true,
+		ShippingRateTable::class          => true,
+		ShippingTimeTable::class          => true,
 	];
 
 	/**

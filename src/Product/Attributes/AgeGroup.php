@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\AgeGroupInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\Traits\IsEnumTrait;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -12,7 +13,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
-class AgeGroup extends AbstractAttribute implements WithValueOptionsInterface {
+class AgeGroup extends AbstractAttribute implements WithValueOptionsInterface, WithMappingInterface {
+
+	use IsEnumTrait;
 
 	/**
 	 * Returns the attribute ID.
@@ -66,4 +69,13 @@ class AgeGroup extends AbstractAttribute implements WithValueOptionsInterface {
 		return AgeGroupInput::class;
 	}
 
+
+	/**
+	 * Returns the attribute name
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return __( 'Age group', 'google-listings-and-ads' );
+	}
 }
