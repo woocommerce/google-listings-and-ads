@@ -148,7 +148,7 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	 * Get identifier meta from product.
 	 * For variations fallback to parent product if meta is empty.
 	 *
-	 * @since x.x.x
+	 * @since 2.3.1
 	 *
 	 * @param WC_Product $product
 	 *

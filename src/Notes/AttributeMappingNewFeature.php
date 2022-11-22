@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  *
- * @since x.x.x
+ * @since 2.3.1
  */
 class AttributeMappingNewFeature extends AbstractNote implements OptionsAwareInterface {
 
