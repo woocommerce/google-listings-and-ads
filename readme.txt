@@ -1,7 +1,7 @@
 === Google Listings & Ads ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
-Requires at least: 5.7
+Requires at least: 5.8
 Tested up to: 6.1
 Requires PHP: 7.4
 Stable tag: 2.2.1
@@ -145,14 +145,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Logos of Google Merchant Center and Google Ads.
 * Update - Open the billing setup page of Google Ads via a popup window and add an alternative hyperlink to open the same setup page.
 * Update - The FAQs in the paid ads setup and the campaign setup page.
-
-= 2.1.4 - 2022-10-04 =
-* Add - Policy Compliance Checks in the onboarding flow.
-* Tweak - WC 7.0 compatibility.
-
-= 2.1.3 - 2022-09-27 =
-* Fix - Avoid truncate for issues with more than 100 characters length.
-* Fix - Update Size Type Attribute available values.
-* Tweak - Update Website not Claimed issue information.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
