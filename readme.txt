@@ -109,6 +109,16 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.3.1 - 2022-11-22 =
+* Add -  Attribute Mapping Feature.
+* Dev - Add script to list DEWPed dependencies' versions for a given WC version.
+* Fix - Incorrect product statistics count.
+* Fix - Yoast global identifiers for variable products.
+* Tweak - Remove unused GRPC packages.
+* Tweak - WC 7.1 compatibility.
+* Update - Change multipack attribute input to be native number input, to improve accessibility.
+* Update - Drop support for WC < 6.9.
+
 = 2.2.1 - 2022-11-15 =
 * Add - Declare compatibility for High Performance Order Storage.
 * Dev - Selectively externalize bundled packages.
