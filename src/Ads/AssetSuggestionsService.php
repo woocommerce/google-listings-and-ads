@@ -83,7 +83,6 @@ class AssetSuggestionsService implements Service {
 			],
 		);
 
-		// Skip empty terms
 		$terms = $this->wp->get_terms(
 			[
 				'taxonomy'   => $taxonomies,
@@ -125,14 +124,14 @@ class AssetSuggestionsService implements Service {
 		// If not posts results, try to get all results from terms.
 		if ( count( $posts ) === 0 ) {
 			$result = $this->get_terms_suggestion( $search, $per_page );
-			return $this->order_results( $result, $order_by );
+			return $this->sort_results( $result, $order_by );
 		}
 
 		// Try to get more results using the terms
 		$terms  = $this->get_terms_suggestion( $search, $per_page_terms );
 		$result = array_merge( $posts, $terms );
 
-		return $this->order_results( $result, $order_by );
+		return $this->sort_results( $result, $order_by );
 
 	}
 
@@ -142,7 +141,7 @@ class AssetSuggestionsService implements Service {
 	 *  @param array  $array associative array
 	 *  @param string $field Sort by a specific field
 	 */
-	public function order_results( $array, $field ) {
+	protected function sort_results( $array, $field ) {
 		usort(
 			$array,
 			function ( $a, $b ) use ( $field ) {
