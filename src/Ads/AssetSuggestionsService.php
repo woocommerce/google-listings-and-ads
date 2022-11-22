@@ -117,8 +117,8 @@ class AssetSuggestionsService implements Service {
 		}
 
 		// Split possible results between posts and terms.
-		$per_page_posts = ceil( $per_page / 2 );
-		$per_page_terms = $per_page - $per_page_posts;
+		$per_page_posts = (int) ceil( $per_page / 2 );
+		$per_page_terms = (int) $per_page - $per_page_posts;
 
 		$posts = $this->get_post_suggestions( $search, $per_page_posts );
 
