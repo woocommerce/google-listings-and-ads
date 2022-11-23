@@ -31,7 +31,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @param string $search The search query.
 	 * @param int    $per_page Number of items per page.
-	 * @param int    $offset used in the get_posts query.
+	 * @param int    $offset Used in the get_posts query.
 	 *
 	 * @return array
 	 */
@@ -138,7 +138,7 @@ class AssetSuggestionsService implements Service {
 
 		// Try to get more results using posts
 		if ( $pending_results > 0 && count( $posts ) === $per_page_posts ) {
-			$offset       = $per_page - count( $posts ) + 1;
+			$offset       = $per_page_posts + 1;
 			$more_results = $this->get_post_suggestions( $search, $pending_results, $offset );
 		}
 
