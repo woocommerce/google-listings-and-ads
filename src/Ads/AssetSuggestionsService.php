@@ -113,10 +113,6 @@ class AssetSuggestionsService implements Service {
 	 * @return array Array of final urls with their title, id & type.
 	 */
 	public function get_final_urls_suggestions( $search = '', $per_page = 30, $order_by = 'title' ): array {
-		if ( $per_page <= 0 ) {
-			return [];
-		}
-
 		if ( empty( $search ) ) {
 			return $this->get_defaults_final_urls_suggestions();
 		}
@@ -128,7 +124,14 @@ class AssetSuggestionsService implements Service {
 
 		// Try to get more results using the terms
 		$per_page_terms = $per_page - count( $posts );
-		$terms          = $this->get_terms_suggestion( $search, $per_page_terms );
+
+		$terms = [];
+
+		// get_terms  evaluates $per_page_terms = 0 as a falsy, therefore it will not add the LIMIT clausure returning all the results.
+		// See: https://github.com/WordPress/WordPress/blob/abe134c2090e84080adc46187884201a4badd649/wp-includes/class-wp-term-query.php#L868
+		if ( $per_page_terms > 0 ) {
+			$terms = $this->get_terms_suggestion( $search, $per_page_terms );
+		}
 
 		$pending_results = $per_page - count( $posts ) - count( $terms );
 		$more_results    = [];
