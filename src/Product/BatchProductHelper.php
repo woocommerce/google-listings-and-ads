@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\GoogleListingsAndAdsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
@@ -10,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntr
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Google\Service\ShoppingContent\Product as GoogleProduct;
@@ -57,26 +57,34 @@ class BatchProductHelper implements Service {
 	protected $target_audience;
 
 	/**
+	 * @var AttributeMappingRulesQuery
+	 */
+	protected $attribute_mapping_rules_query;
+
+	/**
 	 * BatchProductHelper constructor.
 	 *
-	 * @param ProductMetaHandler $meta_handler
-	 * @param ProductHelper      $product_helper
-	 * @param ValidatorInterface $validator
-	 * @param ProductFactory     $product_factory
-	 * @param TargetAudience     $target_audience
+	 * @param ProductMetaHandler         $meta_handler
+	 * @param ProductHelper              $product_helper
+	 * @param ValidatorInterface         $validator
+	 * @param ProductFactory             $product_factory
+	 * @param TargetAudience             $target_audience
+	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
 		ProductHelper $product_helper,
 		ValidatorInterface $validator,
 		ProductFactory $product_factory,
-		TargetAudience $target_audience
+		TargetAudience $target_audience,
+		AttributeMappingRulesQuery $attribute_mapping_rules_query
 	) {
-		$this->meta_handler    = $meta_handler;
-		$this->product_helper  = $product_helper;
-		$this->validator       = $validator;
-		$this->product_factory = $product_factory;
-		$this->target_audience = $target_audience;
+		$this->meta_handler                  = $meta_handler;
+		$this->product_helper                = $product_helper;
+		$this->validator                     = $validator;
+		$this->product_factory               = $product_factory;
+		$this->target_audience               = $target_audience;
+		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
 	}
 
 	/**
@@ -185,6 +193,7 @@ class BatchProductHelper implements Service {
 	 */
 	public function validate_and_generate_update_request_entries( array $products ): array {
 		$request_entries = [];
+		$mapping_rules   = $this->attribute_mapping_rules_query->get_results();
 
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
@@ -209,7 +218,7 @@ class BatchProductHelper implements Service {
 				$main_target_country = $this->target_audience->get_main_target_country();
 
 				// validate the product
-				$adapted_product   = $this->product_factory->create( $product, $main_target_country );
+				$adapted_product   = $this->product_factory->create( $product, $main_target_country, $mapping_rules );
 				$validation_result = $this->validate_product( $adapted_product );
 				if ( $validation_result instanceof BatchInvalidProductEntry ) {
 					$this->mark_as_invalid( $validation_result );

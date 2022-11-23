@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
@@ -22,6 +23,7 @@ use WC_Product;
  * @property MockObject|AttributeManager $attribute_manager
  * @property WC                          $wc
  * @property ProductFactory              $product_factory
+ * @property AttributeMappingRulesQuery  $rules_query
  */
 class ProductFactoryTest extends ContainerAwareUnitTest {
 
@@ -35,7 +37,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 								->method( 'get_all_values' )
 								->willReturn( $attributes );
 
-		$adapted_product = $this->product_factory->create( $product, 'US' );
+		$adapted_product = $this->product_factory->create( $product, 'US', [] );
 
 		$this->assertInstanceOf( WCProductAdapter::class, $adapted_product );
 
@@ -87,7 +89,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 									}
 								);
 
-		$adapted_product = $this->product_factory->create( $variation, 'US' );
+		$adapted_product = $this->product_factory->create( $variation, 'US', [] );
 
 		$this->assertInstanceOf( WCProductAdapter::class, $adapted_product );
 
@@ -101,7 +103,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 	public function test_create_variable_product_fails() {
 		$variable = WC_Helper_Product::create_variation_product();
 		$this->expectException( InvalidClass::class );
-		$this->product_factory->create( $variable, 'US' );
+		$this->product_factory->create( $variable, 'US', [] );
 	}
 
 	/**
@@ -110,6 +112,7 @@ class ProductFactoryTest extends ContainerAwareUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		$this->attribute_manager = $this->createMock( AttributeManager::class );
+		$this->rules_query       = $this->createMock( AttributeMappingRulesQuery::class );
 		$this->wc                = $this->container->get( WC::class );
 		$this->product_factory   = new ProductFactory( $this->attribute_manager, $this->wc );
 	}

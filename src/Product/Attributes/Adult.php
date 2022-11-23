@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\AdultInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\Traits\IsEnumTrait;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -12,7 +13,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
-class Adult extends AbstractAttribute {
+class Adult extends AbstractAttribute implements WithMappingInterface {
+
+	use IsEnumTrait;
 
 	/**
 	 * Returns the attribute ID.
@@ -58,5 +61,26 @@ class Adult extends AbstractAttribute {
 	 */
 	public static function get_input_type(): string {
 		return AdultInput::class;
+	}
+
+	/**
+	 * Returns the attribute name
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return __( 'Adult', 'google-listings-and-ads' );
+	}
+
+	/**
+	 * Returns the attribute sources
+	 *
+	 * @return array
+	 */
+	public static function get_sources(): array {
+		return [
+			'yes' => __( 'Yes', 'google-listings-and-ads' ),
+			'no'  => __( 'No', 'google-listings-and-ads' ),
+		];
 	}
 }

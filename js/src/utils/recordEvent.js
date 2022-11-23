@@ -114,7 +114,15 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @property {string} context Indicates which modal is closed
  * @property {string} action Indicates the modal is closed by what action (e.g. `maybe-later`|`dismiss` | `create-another-campaign`)
  *   - `maybe-later` is used when the "Maybe later" button on the modal is clicked
- *   - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC
+ *   - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, generic "Cancel" button, or pressing ESC
  *   - `create-another-campaign` is used when the button "Create another campaign" is clicked
  *   - `create-paid-campaign` is used when the button "Create paid campaign" is clicked
+ *   - `confirm` is used when the button "Confirm", "Save"  or similar generic "Accept" button is clicked
+ */
+
+/**
+ * A modal is open
+ *
+ * @event gla_modal_open
+ * @property {string} context Indicates which modal is open
  */

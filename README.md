@@ -62,6 +62,10 @@ Now you can build the files using one of these commands:
 -   `npm run start` : Build a development version, watch files for changes
 -   `npm run start:hot` : Build a development version in Fast Refresh mode, watch files for changes.
 
+## Working with DEWP
+
+The Dependency Extraction Webpack Plugin makes working with frontend dependencies not so obvious, check [`Working with DEWP.md`](Working with DEWP.md) for more details.
+
 ## Helper Scripts
 
 There are a number of helper scripts exposed via our package.json (below list is not exhaustive, you can view the [package.json file directly](https://github.com/woocommerce/google-listings-and-ads/blob/trunk/package.json#L11) to see all):

@@ -144,13 +144,6 @@ const handleGuideFinish = ( e ) => {
 };
 
 /**
- * A modal is opend
- *
- * @event gla_modal_open
- * @property {string} context Indicates which modal is opened
- */
-
-/**
  * Modal window to greet the user at Product Feed, after successful completion of onboarding.
  *
  * Show this guide modal by visiting the path with a specific query `guide=submission-success`.

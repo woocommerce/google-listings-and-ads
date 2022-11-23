@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
@@ -41,6 +42,7 @@ use WC_Product;
  * @property ProductHelper                    $product_helper
  * @property WC                               $wc
  * @property ProductSyncer                    $product_syncer
+ * @property AttributeMappingRulesQuery       $rules_query
  */
 class ProductSyncerTest extends ContainerAwareUnitTest {
 
@@ -58,6 +60,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$validator,
 										$product_factory,
 										$this->target_audience,
+										$this->rules_query,
 									]
 								)
 								->getMock();
@@ -366,6 +369,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 							  ->willReturn( true );
 
 		$this->google_service = $this->createMock( GoogleProductService::class );
+		$this->rules_query    = $this->createMock( AttributeMappingRulesQuery::class );
 
 		$this->product_meta   = $this->container->get( ProductMetaHandler::class );
 		$this->batch_helper   = $this->container->get( BatchProductHelper::class );

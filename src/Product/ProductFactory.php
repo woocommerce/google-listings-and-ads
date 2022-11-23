@@ -46,12 +46,13 @@ class ProductFactory {
 	/**
 	 * @param WC_Product $product
 	 * @param string     $target_country
+	 * @param array      $mapping_rules The mapping rules setup by the user
 	 *
 	 * @return WCProductAdapter
 	 *
 	 * @throws InvalidValue When the product is a variation and its parent does not exist.
 	 */
-	public function create( WC_Product $product, string $target_country ): WCProductAdapter {
+	public function create( WC_Product $product, string $target_country, array $mapping_rules ): WCProductAdapter {
 		// We do not support syncing the parent variable product. Each variation is synced individually instead.
 		$this->validate_not_instanceof( $product, WC_Product_Variable::class );
 
@@ -71,6 +72,7 @@ class ProductFactory {
 				'parent_wc_product' => $parent_product,
 				'targetCountry'     => $target_country,
 				'gla_attributes'    => $attributes,
+				'mapping_rules'     => $mapping_rules,
 			]
 		);
 	}

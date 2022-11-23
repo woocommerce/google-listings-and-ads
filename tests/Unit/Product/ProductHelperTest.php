@@ -199,6 +199,23 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
 	}
 
+	public function test_mark_as_unsynced_remove_sync_status_for_unsyncable_products() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+		$product->set_status( 'publish' );
+		$product->save();
+		$this->product_meta->update_visibility( $product, ChannelVisibility::DONT_SYNC_AND_SHOW );
+
+		$this->product_helper->mark_as_unsynced( $product );
+
+		$this->assertEmpty( $this->product_meta->get_synced_at( $product ) );
+		$this->assertEquals( null, $this->product_meta->get_sync_status( $product ) );
+		$this->assertEmpty( $this->product_meta->get_google_ids( $product ) );
+		$this->assertEmpty( $this->product_meta->get_errors( $product ) );
+		$this->assertEmpty( $this->product_meta->get_failed_sync_attempts( $product ) );
+		$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
+	}
+
 	public function test_mark_as_unsynced_updates_both_variation_and_parent() {
 		$parent    = WC_Helper_Product::create_variation_product();
 		$variation = $this->wc->get_product( $parent->get_children()[0] );
@@ -238,7 +255,9 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$parent = $this->wc->get_product( $parent->get_id() );
 
 		$this->assertEmpty( $this->product_meta->get_synced_at( $variation ) );
-		$this->assertEquals( SyncStatus::NOT_SYNCED, $this->product_meta->get_sync_status( $variation ) );
+		// Orphaned variation is not syncable so the sync status
+		// will be deleted when calling mark_as_unsynced.
+		$this->assertEquals( null, $this->product_meta->get_sync_status( $variation ) );
 		$this->assertEmpty( $this->product_meta->get_google_ids( $variation ) );
 
 		$this->assertNotEmpty( $this->product_meta->get_synced_at( $parent ) );

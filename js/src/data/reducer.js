@@ -30,6 +30,15 @@ const DEFAULT_STATE = {
 			google_access: null,
 		},
 		contact: null,
+		mapping: {
+			attributes: [],
+			sources: {},
+			rules: {
+				items: [],
+				total: null,
+				pages: null,
+			},
+		},
 	},
 	ads_campaigns: null,
 	all_ads_campaigns: null,
@@ -47,6 +56,7 @@ const DEFAULT_STATE = {
 	},
 	mc_product_feed: null,
 	report: {},
+	store_categories: [],
 };
 
 /**
@@ -373,6 +383,65 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.POLICY_CHECK: {
 			const { data } = action;
 			return setIn( state, 'mc.policy_check', data );
+		}
+
+		case TYPES.RECEIVE_MAPPING_ATTRIBUTES: {
+			return setIn( state, 'mc.mapping.attributes', action.attributes );
+		}
+
+		case TYPES.RECEIVE_MAPPING_SOURCES: {
+			const { attributeKey, sources } = action;
+
+			return setIn(
+				state,
+				[ 'mc', 'mapping', 'sources', attributeKey ],
+				sources
+			);
+		}
+
+		case TYPES.RECEIVE_MAPPING_RULES: {
+			const { rules, pagination } = action;
+			const newRulesState = [ ...state.mc.mapping.rules.items ];
+
+			const start = ( pagination.page - 1 ) * pagination.perPage;
+			const deleteCount = pagination.perPage;
+			newRulesState.splice( start, deleteCount, ...rules );
+
+			return chainState( state, 'mc.mapping.rules' )
+				.setIn( 'items', newRulesState )
+				.setIn( 'total', pagination.total )
+				.setIn( 'pages', pagination.pages )
+				.end();
+		}
+
+		case TYPES.UPSERT_MAPPING_RULE: {
+			const { rule } = action;
+			const newRulesState = [ ...state.mc.mapping.rules.items ];
+
+			const ruleIndex = newRulesState.findIndex(
+				( el ) => el.id === rule.id
+			);
+
+			if ( ruleIndex >= 0 ) {
+				newRulesState[ ruleIndex ] = rule;
+			} else {
+				newRulesState.push( rule );
+			}
+
+			return setIn( state, 'mc.mapping.rules.items', newRulesState );
+		}
+
+		case TYPES.DELETE_MAPPING_RULE: {
+			const rules = state.mc.mapping.rules.items.filter(
+				( el ) => el.id !== action.rule.id
+			);
+
+			return setIn( state, 'mc.mapping.rules.items', rules );
+		}
+
+		case TYPES.RECEIVE_STORE_CATEGORIES: {
+			const { storeCategories } = action;
+			return setIn( state, 'store_categories', storeCategories );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
