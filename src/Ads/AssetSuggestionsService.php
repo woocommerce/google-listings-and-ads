@@ -110,7 +110,7 @@ class AssetSuggestionsService implements Service {
 	 * @param int    $per_page Number of items per page
 	 * @param string $order_by Order by: id, type, title, url
 	 *
-	 * @return array Array of final urls with their title, id & type.
+	 * @return array final urls with their title, id & type.
 	 */
 	public function get_final_urls_suggestions( $search = '', $per_page = 30, $order_by = 'title' ): array {
 		if ( empty( $search ) ) {
