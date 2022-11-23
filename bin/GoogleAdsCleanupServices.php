@@ -4,6 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Util;
 
 use Composer\Script\Event;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RegexIterator;
+use UnexpectedValueException;
 
 /**
  * Utilities to remove Google Ads API services in the library.
@@ -179,27 +183,27 @@ class GoogleAdsCleanupServices {
 	}
 
 	/**
-	 * Find a list of files in a path matching a pattern.
+	 * Find a list of files in a path, including subdirectories, matching a pattern.
 	 *
 	 * @param string $path Package path
 	 * @param string $match Regex pattern to match
 	 * @return array Matching files
 	 */
-	protected function get_dir_contents($path, $match) {
+	protected function get_dir_contents( $path, $match ) {
 		try {
-			$rdi = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS);
-		} catch ( Exception  $e ) {
-			printf(
-				'Expected directory "%s" was not found' . PHP_EOL,
+			$rdi = new RecursiveDirectoryIterator( $path );
+		} catch ( UnexpectedValueException $e ) {
+			$this->output_text( sprintf(
+				'Expected directory "%s" was not found',
 				$path
-			);
+			) );
 			exit( 1 );
 		}
 
-		$rii = new \RecursiveIteratorIterator($rdi);
-		$rri = new \RegexIterator($rii, $match);
+		$rii = new RecursiveIteratorIterator( $rdi );
+		$rri = new RegexIterator( $rii, $match );
 		$files = [];
-		foreach ($rri as $file) {
+		foreach ( $rri as $file ) {
 			$files[] = $file->getPathname();
 		}
 
@@ -217,8 +221,8 @@ class GoogleAdsCleanupServices {
 	protected function find_used_pattern( string $pattern ): array {
 		$files  = $this->get_dir_contents( $this->code_path,  '/\.php$/i');
 		$output = [];
-		foreach ( $files AS $file) {
-			preg_match_all( '/' . $pattern . '/', file_get_contents( $file ), $matches);
+		foreach ( $files as $file) {
+			preg_match_all( '/' . $pattern . '/', file_get_contents( $file ), $matches); // phpcs:ignore WordPress.WP.AlternativeFunctions
 			if ( isset( $matches[1] ) ) {
 				foreach ($matches[1] AS $match) {
 					$output[] = $match;

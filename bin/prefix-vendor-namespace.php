@@ -90,21 +90,20 @@ foreach ( $replacements as $namespace => $path ) {
 					-1,
 					$direct_change
 				);
-				if ( 0 < $direct_change ) {
+				if ( $direct_change ) {
 					$uses_change += $direct_change;
 				}
 			}
 		}
-		if ( 0 === $namespace_change && 0 < $uses_change ) {
+		if ( ! $namespace_change && $uses_change ) {
 			$file_notices[] = $file;
 		}
 
 		file_put_contents( $file, $contents );
 	}
 
-	// Update the namespace in the composer.json files.
-
-	$composer_files = get_dir_contents($vendor_dir . DIRECTORY_SEPARATOR . $path, '/composer.json/');
+	// Update the namespace in the composer.json files, recursively finding all files named explicitly "composer.json".
+	$composer_files = get_dir_contents($vendor_dir . '/' . $path, '/' . preg_quote(DIRECTORY_SEPARATOR . 'composer.json') . '$/');
 
 	array_map(
 		function( $file ) use ( $namespace, $new_namespace ) {
@@ -125,7 +124,7 @@ foreach ( $replacements as $namespace => $path ) {
 	);
 }
 
-if ( 0 < count( $file_notices ) ) {
+if ( count( $file_notices ) ) {
 	printf(
 		'Several files were modified without changes to namespace: %s' . PHP_EOL,
 		implode('; ', $file_notices)
@@ -141,10 +140,10 @@ if ( 0 < count( $file_notices ) ) {
  * @param string $match Regex pattern to match
  * @return array Matching files
  */
-function get_dir_contents($path, $match) {
+function get_dir_contents( $path, $match ) {
 	try {
-		$rdi = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS);
-	} catch ( Exception  $e ) {
+		$rdi = new RecursiveDirectoryIterator( $path );
+	} catch ( UnexpectedValueException  $e ) {
 		printf(
 			'Expected directory "%s" was not found' . PHP_EOL,
 			$path
@@ -174,11 +173,11 @@ function get_dir_contents($path, $match) {
 function find_files( string $path ): array {
 	global $vendor_dir, $dependencies;
 
-	$files = get_dir_contents($vendor_dir . DIRECTORY_SEPARATOR . $path, '/\.php$/i');
+	$files = get_dir_contents($vendor_dir . '/' . $path, '/\.php$/i');
 
 	if ( ! empty( $dependencies[ $path ] ) ) {
 		foreach ( $dependencies[ $path ] as $dependency ) {
-			$dependent_files = get_dir_contents($vendor_dir . DIRECTORY_SEPARATOR . $dependency, '/\.php$/i');
+			$dependent_files = get_dir_contents($vendor_dir . '/' . $dependency, '/\.php$/i');
 			$files = array_merge( $files, $dependent_files );
 		}
 	}
@@ -235,7 +234,7 @@ function remove_file_autoloads( string $file, array $composer_autoload, string $
 
 	$modified = false;
 	foreach ( $json['packages'] as $key => $package ) {
-		if ( 0 !== strpos( $package['name'], $package_name ) ) {
+		if ( strpos( $package['name'], $package_name ) ) {
 			continue;
 		}
 
