@@ -121,19 +121,13 @@ class AssetSuggestionsService implements Service {
 
 		// Split possible results between posts and terms.
 		$per_page_posts = (int) ceil( $per_page / 2 );
-		$per_page_terms = (int) $per_page - $per_page_posts;
 
 		$posts = $this->get_post_suggestions( $search, $per_page_posts );
 
-		// If not posts results, try to get all results from terms.
-		if ( count( $posts ) === 0 ) {
-			$result = $this->get_terms_suggestion( $search, $per_page );
-			return $this->sort_results( $result, $order_by );
-		}
-
 		// Try to get more results using the terms
-		$terms  = $this->get_terms_suggestion( $search, $per_page_terms );
-		$result = array_merge( $posts, $terms );
+		$per_page_terms = $per_page - count( $posts );
+		$terms          = $this->get_terms_suggestion( $search, $per_page_terms );
+		$result         = array_merge( $posts, $terms );
 
 		return $this->sort_results( $result, $order_by );
 

@@ -22,7 +22,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 	protected const DEFAULT_PER_PAGE       = 30;
 	protected const DEFAULT_PER_PAGE_POSTS = 15;
-	protected const DEFAULT_PER_PAGE_TERMS = 15;
 	protected const EMPTY_SEARCH           = '';
 	protected const TEST_SEARCH            = 'mySearch';
 
@@ -126,7 +125,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 				[
 					'taxonomy'   => self::TEST_TAXONOMIES,
 					'hide_empty' => false,
-					'number'     => self::DEFAULT_PER_PAGE_TERMS,
+					'number'     => self::DEFAULT_PER_PAGE - 1,
 					'name__like' => self::TEST_SEARCH,
 				]
 			)
