@@ -92,6 +92,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 					'posts_per_page' => self::DEFAULT_PER_PAGE_POSTS,
 					'post_status'    => 'publish',
 					's'              => self::TEST_SEARCH,
+					'offset'         => 0,
 				]
 			)
 			->willReturn( [ $this->post ] );
@@ -205,5 +206,39 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			);
 
 		$this->assertEquals( [ $this->format_url_post_item( $homepage ), $this->format_url_post_item( $shop ) ], $this->asset_suggestions->get_final_urls_suggestions() );
+	}
+
+
+	public function test_get_extra_urls_results() {
+		$per_page       = 5;
+		$per_page_posts = 3;
+		$post           = $this->factory()->post->create_and_get();
+		$posts_ids      = $this->factory()->post->create_many( $per_page_posts );
+
+		$this->wp->expects( $this->exactly( 2 ) )
+			->method( 'get_posts' )
+			->willReturnOnConsecutiveCalls(
+				get_posts(
+					[
+						'include' => $posts_ids,
+					]
+				),
+				[ $post ]
+			);
+
+		// Should try to retrieve all results from the terms
+		$this->wp->expects( $this->once() )
+			->method( 'get_terms' )
+			->willReturn(
+				[]
+			);
+
+		$expected = [ $this->format_url_post_item( $post ) ];
+
+		foreach ( $posts_ids as $post_id ) {
+			$expected[] = $this->format_url_post_item( get_post( $post_id ) );
+		}
+
+		$this->assertEquals( $expected, $this->asset_suggestions->get_final_urls_suggestions( self::TEST_SEARCH, $per_page ) );
 	}
 }

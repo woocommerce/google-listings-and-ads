@@ -35,7 +35,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array
 	 */
-	protected function get_post_suggestions( $search, $per_page ): array {
+	protected function get_post_suggestions( $search, $per_page, $offset = 0 ): array {
 		$post_suggestions    = [];
 		$excluded_post_types = [ 'attachment' ];
 
@@ -54,6 +54,7 @@ class AssetSuggestionsService implements Service {
 			'posts_per_page' => $per_page,
 			'post_status'    => 'publish',
 			's'              => $search,
+			'offset'         => $offset,
 		];
 
 		$posts = $this->wp->get_posts( $args );
@@ -128,7 +129,17 @@ class AssetSuggestionsService implements Service {
 		// Try to get more results using the terms
 		$per_page_terms = $per_page - count( $posts );
 		$terms          = $this->get_terms_suggestion( $search, $per_page_terms );
-		$result         = array_merge( $posts, $terms );
+
+		$pending_results = $per_page - count( $posts ) - count( $terms );
+		$more_results    = [];
+
+		// Try to get more results using posts
+		if ( $pending_results > 0 && count( $posts ) === $per_page_posts ) {
+			$offset       = $per_page - count( $posts ) + 1;
+			$more_results = $this->get_post_suggestions( $search, $pending_results, $offset );
+		}
+
+		$result = array_merge( $posts, $terms, $more_results );
 
 		return $this->sort_results( $result, $order_by );
 
@@ -137,10 +148,10 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get defaults final urls suggestions.
 	 *
-	 * @return array Return Array with the default final urls
+	 * @return array default final urls.
 	 */
 	protected function get_defaults_final_urls_suggestions(): array {
-		// We can only offer assets if the page is static.
+		// We can only offer assets if the homepage is static.
 		$home_page = $this->wp->get_static_homepage();
 		$shop_page = $this->wp->get_shop_page();
 		$defaults  = [];
