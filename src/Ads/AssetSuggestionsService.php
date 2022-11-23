@@ -178,7 +178,6 @@ class AssetSuggestionsService implements Service {
 	 * @return array response sorted alphabetically
 	 */
 	protected function sort_results( $array, $field ): array {
-		// return $array;
 		usort(
 			$array,
 			function ( $a, $b ) use ( $field ) {
