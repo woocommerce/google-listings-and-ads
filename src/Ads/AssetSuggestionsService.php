@@ -29,8 +29,9 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get posts that can be used to suggest assets
 	 *
-	 * @param string $search The search query
-	 * @param int    $per_page Number of items per page
+	 * @param string $search The search query.
+	 * @param int    $per_page Number of items per page.
+	 * @param int    $offset used in the get_posts query.
 	 *
 	 * @return array
 	 */
@@ -160,6 +161,8 @@ class AssetSuggestionsService implements Service {
 	 *
 	 *  @param array  $array associative array
 	 *  @param string $field Sort by a specific field
+	 *
+	 * @return array array sorted alphabetically
 	 */
 	protected function sort_results( $array, $field ): array {
 		usort(
@@ -181,7 +184,7 @@ class AssetSuggestionsService implements Service {
 	 * @param string $title page|term title
 	 * @param string $url page|term url
 	 *
-	 * @return array
+	 * @return array response formated.
 	 */
 	protected function format_final_url_response( $id, $type, $title, $url ): array {
 		return [

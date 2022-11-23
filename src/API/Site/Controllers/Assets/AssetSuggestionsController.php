@@ -25,7 +25,7 @@ class AssetSuggestionsController extends BaseController {
 	 *
 	 * @var AssetSuggestionsService
 	 */
-	protected $asset_suggestion_service;
+	protected $asset_suggestions_service;
 
 	/**
 	 * AssetSuggestionsController constructor.
@@ -35,7 +35,7 @@ class AssetSuggestionsController extends BaseController {
 	 */
 	public function __construct( RESTServer $server, AssetSuggestionsService $asset_suggestion ) {
 		parent::__construct( $server );
-		$this->asset_suggestion_service = $asset_suggestion;
+		$this->asset_suggestions_service = $asset_suggestion;
 	}
 
 	/**
@@ -100,7 +100,7 @@ class AssetSuggestionsController extends BaseController {
 					$data = $this->prepare_item_for_response( $item, $request );
 					return $this->prepare_response_for_collection( $data );
 				},
-				$this->asset_suggestion_service->get_final_urls_suggestions( $search, $per_page, $order_by )
+				$this->asset_suggestions_service->get_final_urls_suggestions( $search, $per_page, $order_by )
 			);
 		};
 	}
