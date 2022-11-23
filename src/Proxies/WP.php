@@ -250,4 +250,42 @@ class WP {
 	public function get_terms( $args = [], $deprecated = '' ) {
 		return get_terms( $args, $deprecated );
 	}
+
+	/**
+	 * Get static homepage
+	 *
+	 * @since x.x.x
+	 *
+	 * @see https://wordpress.org/support/article/creating-a-static-front-page/
+	 *
+	 * @return WP_Post|null Returns the Homepage post if it is set as a static otherwise null.
+	 */
+	public function get_static_homepage() {
+		$post_id = (int) get_option( 'page_on_front' );
+
+		// The front page contains a static home page
+		if ( $post_id > 0 ) {
+			return get_post( $post_id );
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get Shop page
+	 *
+	 * @since x.x.x
+	 *
+	 * @return WP_Post|null Returns the Homepage post if it is set as a static otherwise null.
+	 */
+	public function get_shop_page() {
+		$post_id = wc_get_page_id( 'shop' );
+
+		if ( $post_id > 0 ) {
+			return get_post( $post_id );
+		}
+
+		return null;
+
+	}
 }

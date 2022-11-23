@@ -115,6 +115,10 @@ class AssetSuggestionsService implements Service {
 			return [];
 		}
 
+		if ( empty( $search ) ) {
+			return $this->get_defaults_final_urls_suggestions();
+		}
+
 		// Split possible results between posts and terms.
 		$per_page_posts = (int) ceil( $per_page / 2 );
 		$per_page_terms = (int) $per_page - $per_page_posts;
@@ -136,12 +140,34 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
+	 * Get defaults final urls suggestions.
+	 *
+	 * @return array Return Array with the default final urls
+	 */
+	protected function get_defaults_final_urls_suggestions(): array {
+		// We can only offer assets if the page is static.
+		$home_page = $this->wp->get_static_homepage();
+		$shop_page = $this->wp->get_shop_page();
+		$defaults  = [];
+
+		if ( $home_page ) {
+			$defaults[] = $this->format_final_url_response( $home_page->ID, 'post', 'Homepage', get_permalink( $home_page->ID ) );
+		}
+
+		if ( $shop_page ) {
+			$defaults[] = $this->format_final_url_response( $shop_page->ID, 'post', $shop_page->post_title, get_permalink( $shop_page->ID ) );
+		}
+
+		return $defaults;
+	}
+
+	/**
 	 *  Order suggestions alphabetically
 	 *
 	 *  @param array  $array associative array
 	 *  @param string $field Sort by a specific field
 	 */
-	protected function sort_results( $array, $field ) {
+	protected function sort_results( $array, $field ): array {
 		usort(
 			$array,
 			function ( $a, $b ) use ( $field ) {

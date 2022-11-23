@@ -92,7 +92,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 					'post_type'      => self::TEST_POST_TYPES_NO_ATTACHMENT,
 					'posts_per_page' => self::DEFAULT_PER_PAGE_POSTS,
 					'post_status'    => 'publish',
-					's'              => self::EMPTY_SEARCH,
+					's'              => self::TEST_SEARCH,
 				]
 			)
 			->willReturn( [ $this->post ] );
@@ -104,7 +104,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->method( 'get_terms' )
 			->willReturn( [] );
 
-		$this->assertEquals( [ $this->suggested_post ], $this->asset_suggestions->get_final_urls_suggestions() );
+		$this->assertEquals( [ $this->suggested_post ], $this->asset_suggestions->get_final_urls_suggestions( self::TEST_SEARCH ) );
 	}
 
 	public function test_get_term_suggestions() {
@@ -127,12 +127,12 @@ class AssetSuggestionsServiceTest extends UnitTest {
 					'taxonomy'   => self::TEST_TAXONOMIES,
 					'hide_empty' => false,
 					'number'     => self::DEFAULT_PER_PAGE_TERMS,
-					'name__like' => self::EMPTY_SEARCH,
+					'name__like' => self::TEST_SEARCH,
 				]
 			)
 			->willReturn( [ $this->term ] );
 
-		$this->assertEquals( [ $this->suggested_post, $this->suggested_term ], $this->asset_suggestions->get_final_urls_suggestions() );
+		$this->assertEquals( [ $this->suggested_post, $this->suggested_term ], $this->asset_suggestions->get_final_urls_suggestions( self::TEST_SEARCH ) );
 	}
 
 	public function test_get_urls_suggestions_with_no_posts_results() {
@@ -186,6 +186,25 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			);
 
 		// Term item should go first
-		$this->assertEquals( [ $this->format_url_term_item( $term ), $this->format_url_post_item( $post ) ], $this->asset_suggestions->get_final_urls_suggestions() );
+		$this->assertEquals( [ $this->format_url_term_item( $term ), $this->format_url_post_item( $post ) ], $this->asset_suggestions->get_final_urls_suggestions( self::TEST_SEARCH ) );
+	}
+
+	public function test_get_default_urls() {
+		$homepage = $this->factory()->post->create_and_get( [ 'post_title' => 'Homepage' ] );
+		$shop     = $this->factory()->post->create_and_get( [ 'post_title' => 'Shop' ] );
+
+		$this->wp->expects( $this->once() )
+			->method( 'get_static_homepage' )
+			->willReturn(
+				$homepage
+			);
+
+		$this->wp->expects( $this->once() )
+			->method( 'get_shop_page' )
+			->willReturn(
+				$shop
+			);
+
+		$this->assertEquals( [ $this->format_url_post_item( $homepage ), $this->format_url_post_item( $shop ) ], $this->asset_suggestions->get_final_urls_suggestions() );
 	}
 }
