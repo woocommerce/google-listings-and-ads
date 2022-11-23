@@ -114,7 +114,7 @@ class AssetSuggestionsService implements Service {
 	 */
 	public function get_final_urls_suggestions( $search = '', $per_page = 30, $order_by = 'title' ): array {
 		if ( empty( $search ) ) {
-			return $this->get_defaults_final_urls_suggestions();
+			 return $this->get_defaults_final_urls_suggestions();
 		}
 
 		// Split possible results between posts and terms.
@@ -138,8 +138,7 @@ class AssetSuggestionsService implements Service {
 
 		// Try to get more results using posts
 		if ( $pending_results > 0 && count( $posts ) === $per_page_posts ) {
-			$offset       = $per_page_posts + 1;
-			$more_results = $this->get_post_suggestions( $search, $pending_results, $offset );
+			$more_results = $this->get_post_suggestions( $search, $pending_results, $per_page_posts );
 		}
 
 		$result = array_merge( $posts, $terms, $more_results );
@@ -179,6 +178,7 @@ class AssetSuggestionsService implements Service {
 	 * @return array response sorted alphabetically
 	 */
 	protected function sort_results( $array, $field ): array {
+		// return $array;
 		usort(
 			$array,
 			function ( $a, $b ) use ( $field ) {
