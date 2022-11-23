@@ -176,7 +176,7 @@ class AssetSuggestionsService implements Service {
 	 *  @param array  $array associative array
 	 *  @param string $field Sort by a specific field
 	 *
-	 * @return array array sorted alphabetically
+	 * @return array response sorted alphabetically
 	 */
 	protected function sort_results( $array, $field ): array {
 		usort(
