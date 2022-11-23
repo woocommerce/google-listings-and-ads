@@ -210,7 +210,7 @@ class WP {
 	 *                               must match; 'not' means no elements may match. Default 'and'.
 	 * @return string[]|WP_Post_Type[] An array of post type names or objects.
 	 */
-	public function get_post_types( array $args = [], string $output = 'names', string $operator = 'and' ): array {
+	public function get_post_types( $args = [], string $output = 'names', string $operator = 'and' ): array {
 		return get_post_types( $args, $output, $operator );
 	}
 
