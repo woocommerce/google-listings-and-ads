@@ -3,12 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { format as formatDate } from '@wordpress/date';
-import {
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-	__experimentalText as Text,
-	Flex,
-	FlexItem,
-} from '@wordpress/components';
+import { Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -16,6 +11,7 @@ import {
 import AppButton from '.~/components/app-button';
 import REVIEW_STATUSES from './review-request-statuses';
 import { glaData } from '.~/constants';
+import Text from '.~/components/app-text';
 
 const ReviewRequestNotice = ( {
 	account,

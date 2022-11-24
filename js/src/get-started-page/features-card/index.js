@@ -2,13 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CardHeader,
-	Flex,
-	FlexBlock,
-	__experimentalText as Text,
-} from '@wordpress/components';
+import { Card, CardHeader, Flex, FlexBlock } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
@@ -18,6 +12,7 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import freeListingsImageURL from './img-free-listings.svg';
 import productPromotionImageURL from './img-product-promotion.svg';
 import dashboardImageURL from './img-dashboard.svg';
+import Text from '.~/components/app-text';
 import './index.scss';
 
 const LearnMoreLink = ( { linkId, href } ) => {
@@ -53,7 +48,7 @@ const FeaturesCard = () => {
 			<CardHeader>
 				<Text
 					className="gla-get-started-features-card__title"
-					variant="title.medium"
+					variant="title-medium"
 				>
 					{ __(
 						'49% of shoppers surveyed say they use Google to discover or find a new item or product',
