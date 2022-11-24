@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -42,6 +43,7 @@ use WC_Product;
  * @property ProductHelper                    $product_helper
  * @property WC                               $wc
  * @property ProductSyncer                    $product_syncer
+ * @property ProductRepository                $product_repository
  * @property AttributeMappingRulesQuery       $rules_query
  */
 class ProductSyncerTest extends ContainerAwareUnitTest {
@@ -82,7 +84,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		[ $synced_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 2 );
 
 		$this->mock_google_service( $synced_products, $rejected_products );
-		$product_syncer = new ProductSyncer( $this->google_service, $batch_helper, $this->product_helper, $this->merchant_center, $this->wc );
+		$product_syncer = $this->get_product_syncer( [ 'batch_helper' => $batch_helper ] );
 
 		$products = array_merge( $synced_products, $rejected_products );
 		$results  = $product_syncer->update( $products );
@@ -258,7 +260,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$merchant_center->expects( $this->any() )
 						->method( 'is_connected' )
 						->willReturn( false );
-		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
+		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
 		$this->expectException( ProductSyncerException::class );
 		$this->product_syncer->update( [ $product ] );
@@ -271,7 +273,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$merchant_center->expects( $this->any() )
 						->method( 'is_connected' )
 						->willReturn( false );
-		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
+		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
 		$this->expectException( ProductSyncerException::class );
 		$this->product_syncer->update_by_batch_requests( [ new BatchProductRequestEntry( $product->get_id(), $this->generate_adapted_product( $product ) ) ] );
@@ -284,7 +286,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$merchant_center->expects( $this->any() )
 						->method( 'is_connected' )
 						->willReturn( false );
-		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
+		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
 		$this->expectException( ProductSyncerException::class );
 		$this->product_syncer->delete( [ $product ] );
@@ -297,7 +299,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$merchant_center->expects( $this->any() )
 						->method( 'is_connected' )
 						->willReturn( false );
-		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
+		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
 		$this->expectException( ProductSyncerException::class );
 		$this->product_syncer->delete_by_batch_requests( [ new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) ) ] );
@@ -358,6 +360,27 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	}
 
 	/**
+	 * Function to return an instance of ProductSyncer.
+	 */
+	private function get_product_syncer( $args = [] ): ProductSyncer {
+		$args['google_service']     = $args['google_service'] ?? $this->google_service;
+		$args['batch_helper']       = $args['batch_helper'] ?? $this->batch_helper;
+		$args['product_helper']     = $args['product_helper'] ?? $this->product_helper;
+		$args['merchant_center']    = $args['merchant_center'] ?? $this->merchant_center;
+		$args['wc']                 = $args['wc'] ?? $this->wc;
+		$args['product_repository'] = $args['product_repository'] ?? $this->product_repository;
+
+		return new ProductSyncer(
+			$args['google_service'],
+			$args['batch_helper'],
+			$args['product_helper'],
+			$args['merchant_center'],
+			$args['wc'],
+			$args['product_repository'],
+		);
+	}
+
+	/**
 	 * Runs before each test is executed.
 	 */
 	public function setUp(): void {
@@ -371,10 +394,11 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$this->google_service = $this->createMock( GoogleProductService::class );
 		$this->rules_query    = $this->createMock( AttributeMappingRulesQuery::class );
 
-		$this->product_meta   = $this->container->get( ProductMetaHandler::class );
-		$this->batch_helper   = $this->container->get( BatchProductHelper::class );
-		$this->product_helper = $this->container->get( ProductHelper::class );
-		$this->wc             = $this->container->get( WC::class );
-		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $this->merchant_center, $this->wc );
+		$this->product_meta       = $this->container->get( ProductMetaHandler::class );
+		$this->batch_helper       = $this->container->get( BatchProductHelper::class );
+		$this->product_helper     = $this->container->get( ProductHelper::class );
+		$this->wc                 = $this->container->get( WC::class );
+		$this->product_repository = $this->container->get( ProductRepository::class );
+		$this->product_syncer     = $this->get_product_syncer();
 	}
 }
