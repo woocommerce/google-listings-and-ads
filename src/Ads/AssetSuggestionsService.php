@@ -74,7 +74,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array
 	 */
-	protected function get_terms_suggestion( $search, $per_page ): array {
+	protected function get_terms_suggestions( $search, $per_page ): array {
 		$terms_suggestions = [];
 
 		// Get all taxonomies that are public, show_in_menu = true helps to exclude taxonomies such as "product_shipping_class".
@@ -112,9 +112,9 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array final urls with their title, id & type.
 	 */
-	public function get_final_urls_suggestions( $search = '', $per_page = 30, $order_by = 'title' ): array {
+	public function get_final_url_suggestions( $search = '', $per_page = 30, $order_by = 'title' ): array {
 		if ( empty( $search ) ) {
-			 return $this->get_defaults_final_urls_suggestions();
+			 return $this->get_defaults_final_url_suggestions();
 		}
 
 		// Split possible results between posts and terms.
@@ -130,7 +130,7 @@ class AssetSuggestionsService implements Service {
 		// get_terms  evaluates $per_page_terms = 0 as a falsy, therefore it will not add the LIMIT clausure returning all the results.
 		// See: https://github.com/WordPress/WordPress/blob/abe134c2090e84080adc46187884201a4badd649/wp-includes/class-wp-term-query.php#L868
 		if ( $per_page_terms > 0 ) {
-			$terms = $this->get_terms_suggestion( $search, $per_page_terms );
+			$terms = $this->get_terms_suggestions( $search, $per_page_terms );
 		}
 
 		$pending_results = $per_page - count( $posts ) - count( $terms );
@@ -152,7 +152,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array default final urls.
 	 */
-	protected function get_defaults_final_urls_suggestions(): array {
+	protected function get_defaults_final_url_suggestions(): array {
 		// We can only offer assets if the homepage is static.
 		$home_page = $this->wp->get_static_homepage();
 		$shop_page = $this->wp->get_shop_page();

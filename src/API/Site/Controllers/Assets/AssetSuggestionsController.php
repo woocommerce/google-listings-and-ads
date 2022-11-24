@@ -31,11 +31,11 @@ class AssetSuggestionsController extends BaseController {
 	 * AssetSuggestionsController constructor.
 	 *
 	 * @param RESTServer              $server
-	 * @param AssetSuggestionsService $asset_suggestion
+	 * @param AssetSuggestionsService $asset_suggestions
 	 */
-	public function __construct( RESTServer $server, AssetSuggestionsService $asset_suggestion ) {
+	public function __construct( RESTServer $server, AssetSuggestionsService $asset_suggestions ) {
 		parent::__construct( $server );
-		$this->asset_suggestions_service = $asset_suggestion;
+		$this->asset_suggestions_service = $asset_suggestions;
 	}
 
 	/**
@@ -47,7 +47,7 @@ class AssetSuggestionsController extends BaseController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_final_urls_suggestions_callback(),
+					'callback'            => $this->get_final_url_suggestions_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_collection_params(),
 				],
@@ -94,7 +94,7 @@ class AssetSuggestionsController extends BaseController {
 	 *
 	 * @return callable
 	 */
-	protected function get_final_urls_suggestions_callback(): callable {
+	protected function get_final_url_suggestions_callback(): callable {
 		return function( Request $request ) {
 			$search   = $request->get_param( 'search' );
 			$per_page = $request->get_param( 'per_page' );
@@ -104,7 +104,7 @@ class AssetSuggestionsController extends BaseController {
 					$data = $this->prepare_item_for_response( $item, $request );
 					return $this->prepare_response_for_collection( $data );
 				},
-				$this->asset_suggestions_service->get_final_urls_suggestions( $search, $per_page, $order_by )
+				$this->asset_suggestions_service->get_final_url_suggestions( $search, $per_page, $order_by )
 			);
 		};
 	}
@@ -156,7 +156,7 @@ class AssetSuggestionsController extends BaseController {
 	 * @return string
 	 */
 	protected function get_schema_title(): string {
-		return 'asset_final_urls_suggestions';
+		return 'asset_final_url_suggestions';
 	}
 
 }

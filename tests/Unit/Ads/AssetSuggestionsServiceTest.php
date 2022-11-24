@@ -104,7 +104,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->method( 'get_terms' )
 			->willReturn( [] );
 
-		$this->assertEquals( [ $this->suggested_post ], $this->asset_suggestions->get_final_urls_suggestions( self::TEST_SEARCH ) );
+		$this->assertEquals( [ $this->suggested_post ], $this->asset_suggestions->get_final_url_suggestions( self::TEST_SEARCH ) );
 	}
 
 	public function test_get_term_suggestions() {
@@ -132,7 +132,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			)
 			->willReturn( [ $this->term ] );
 
-		$this->assertEquals( [ $this->suggested_post, $this->suggested_term ], $this->asset_suggestions->get_final_urls_suggestions( self::TEST_SEARCH ) );
+		$this->assertEquals( [ $this->suggested_post, $this->suggested_term ], $this->asset_suggestions->get_final_url_suggestions( self::TEST_SEARCH ) );
 	}
 
 	public function test_get_urls_suggestions_with_no_posts_results() {
@@ -161,7 +161,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			)
 			->willReturn( [ $this->term ] );
 
-		$this->assertEquals( [ $this->suggested_term ], $this->asset_suggestions->get_final_urls_suggestions( self::TEST_SEARCH ) );
+		$this->assertEquals( [ $this->suggested_term ], $this->asset_suggestions->get_final_url_suggestions( self::TEST_SEARCH ) );
 	}
 
 	public function test_get_urls_suggestions_order_by_title() {
@@ -186,7 +186,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			);
 
 		// Term item should go first
-		$this->assertEquals( [ $this->format_url_term_item( $term ), $this->format_url_post_item( $post ) ], $this->asset_suggestions->get_final_urls_suggestions( self::TEST_SEARCH ) );
+		$this->assertEquals( [ $this->format_url_term_item( $term ), $this->format_url_post_item( $post ) ], $this->asset_suggestions->get_final_url_suggestions( self::TEST_SEARCH ) );
 	}
 
 	public function test_get_default_urls() {
@@ -205,7 +205,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 				$shop
 			);
 
-		$this->assertEquals( [ $this->format_url_post_item( $homepage ), $this->format_url_post_item( $shop ) ], $this->asset_suggestions->get_final_urls_suggestions() );
+		$this->assertEquals( [ $this->format_url_post_item( $homepage ), $this->format_url_post_item( $shop ) ], $this->asset_suggestions->get_final_url_suggestions() );
 	}
 
 
@@ -239,6 +239,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			$expected[] = $this->format_url_post_item( get_post( $post_id ) );
 		}
 
-		$this->assertEquals( $expected, $this->asset_suggestions->get_final_urls_suggestions( self::TEST_SEARCH, $per_page ) );
+		$this->assertEquals( $expected, $this->asset_suggestions->get_final_url_suggestions( self::TEST_SEARCH, $per_page ) );
 	}
 }

@@ -39,14 +39,14 @@ class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->asset_suggestion = $this->createMock( AssetSuggestionsService::class );
-		$this->controller       = new AssetSuggestionsController( $this->server, $this->asset_suggestion );
+		$this->asset_suggestions = $this->createMock( AssetSuggestionsService::class );
+		$this->controller       = new AssetSuggestionsController( $this->server, $this->asset_suggestions );
 		$this->controller->register();
 	}
 
-	public function test_get_final_urls_suggestions() {
-		$this->asset_suggestion->expects( $this->once() )
-			->method( 'get_final_urls_suggestions' )
+	public function test_get_final_url_suggestions() {
+		$this->asset_suggestions->expects( $this->once() )
+			->method( 'get_final_url_suggestions' )
 			->willReturn( self::TEST_FINAL_URL_SUGGESTIONS );
 
 		$response = $this->do_request( self::ROUTE_FINAL_URL_SUGGESTIONS, 'GET' );
@@ -55,9 +55,9 @@ class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_get_final_urls_suggestions_empty_set() {
-		$this->asset_suggestion->expects( $this->once() )
-			->method( 'get_final_urls_suggestions' )
+	public function test_get_final_url_suggestions_empty_set() {
+		$this->asset_suggestions->expects( $this->once() )
+			->method( 'get_final_url_suggestions' )
 			->willReturn( self::TEST_NO_FINAL_URL_SUGGESTIONS );
 
 		$response = $this->do_request( self::ROUTE_FINAL_URL_SUGGESTIONS, 'GET' );
