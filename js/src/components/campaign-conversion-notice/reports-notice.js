@@ -1,15 +1,11 @@
 /**
- * External dependencies
- */
-import { __experimentalText as Text } from '@wordpress/components';
-
-/**
  * Internal dependencies
  */
 import { glaData } from '.~/constants';
 import CONVERSION_STATUSES from './conversion-statuses';
 import getConversionCampaignStatusNotice from '.~/utils/getConversionCampaignStatusNotice';
 import DismissibleNotice from '.~/components/dismissible-notice';
+import Text from '.~/components/app-text';
 import './reports-notice.scss';
 
 /**
