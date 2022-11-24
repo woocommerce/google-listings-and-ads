@@ -181,7 +181,7 @@ class AssetSuggestionsService implements Service {
 		usort(
 			$array,
 			function ( $a, $b ) use ( $field ) {
-				return strcmp( (string) $a[ $field ], (string) $b[ $field ] );
+				return strcmp( strtolower( (string) $a[ $field ] ), strtolower( (string) $b[ $field ] ) );
 			}
 		);
 

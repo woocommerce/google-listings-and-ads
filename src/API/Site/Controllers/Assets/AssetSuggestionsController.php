@@ -83,7 +83,7 @@ class AssetSuggestionsController extends BaseController {
 				'type'              => 'string',
 				'default'           => 'title',
 				'sanitize_callback' => 'sanitize_text_field',
-				'enum'              => [ 'id', 'type', 'title', 'url' ],
+				'enum'              => [ 'type', 'title', 'url' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
