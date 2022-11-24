@@ -77,6 +77,12 @@ class AssetSuggestionsService implements Service {
 	protected function get_terms_suggestions( $search, $per_page ): array {
 		$terms_suggestions = [];
 
+		// get_terms  evaluates $per_page_terms = 0 as a falsy, therefore it will not add the LIMIT clausure returning all the results.
+		// See: https://github.com/WordPress/WordPress/blob/abe134c2090e84080adc46187884201a4badd649/wp-includes/class-wp-term-query.php#L868
+		if ( $per_page <= 0 ) {
+			return [];
+		}
+
 		// Get all taxonomies that are public, show_in_menu = true helps to exclude taxonomies such as "product_shipping_class".
 		$taxonomies = $this->wp->get_taxonomies(
 			[
@@ -125,13 +131,7 @@ class AssetSuggestionsService implements Service {
 		// Try to get more results using the terms
 		$per_page_terms = $per_page - count( $posts );
 
-		$terms = [];
-
-		// get_terms  evaluates $per_page_terms = 0 as a falsy, therefore it will not add the LIMIT clausure returning all the results.
-		// See: https://github.com/WordPress/WordPress/blob/abe134c2090e84080adc46187884201a4badd649/wp-includes/class-wp-term-query.php#L868
-		if ( $per_page_terms > 0 ) {
-			$terms = $this->get_terms_suggestions( $search, $per_page_terms );
-		}
+		$terms = $this->get_terms_suggestions( $search, $per_page_terms );
 
 		$pending_results = $per_page - count( $posts ) - count( $terms );
 		$more_results    = [];
