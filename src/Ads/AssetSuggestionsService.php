@@ -35,7 +35,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array formatted post suggestions
 	 */
-	protected function get_post_suggestions( $search, $per_page, $offset = 0 ): array {
+	protected function get_post_suggestions( string $search, int $per_page, int $offset = 0 ): array {
 		$post_suggestions    = [];
 		$excluded_post_types = [ 'attachment' ];
 
@@ -74,7 +74,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array formatted terms suggestions
 	 */
-	protected function get_terms_suggestions( $search, $per_page ): array {
+	protected function get_terms_suggestions( string $search, int $per_page ): array {
 		$terms_suggestions = [];
 
 		// get_terms  evaluates $per_page_terms = 0 as a falsy, therefore it will not add the LIMIT clausure returning all the results.
@@ -118,7 +118,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array final urls with their title, id & type.
 	 */
-	public function get_final_url_suggestions( $search = '', $per_page = 30, $order_by = 'title' ): array {
+	public function get_final_url_suggestions( string $search = '', int $per_page = 30, string $order_by = 'title' ): array {
 		if ( empty( $search ) ) {
 			 return $this->get_defaults_final_url_suggestions();
 		}
@@ -177,7 +177,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array response sorted alphabetically
 	 */
-	protected function sort_results( $array, $field ): array {
+	protected function sort_results( array $array, string $field ): array {
 		usort(
 			$array,
 			function ( $a, $b ) use ( $field ) {
@@ -199,7 +199,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array response formated.
 	 */
-	protected function format_final_url_response( $id, $type, $title, $url ): array {
+	protected function format_final_url_response( int $id, string $type, string $title, string $url ): array {
 		return [
 			'id'    => $id,
 			'type'  => $type,
