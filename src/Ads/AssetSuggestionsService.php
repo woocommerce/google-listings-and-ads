@@ -33,7 +33,7 @@ class AssetSuggestionsService implements Service {
 	 * @param int    $per_page Number of items per page.
 	 * @param int    $offset Used in the get_posts query.
 	 *
-	 * @return array
+	 * @return array formatted post suggestions
 	 */
 	protected function get_post_suggestions( $search, $per_page, $offset = 0 ): array {
 		$post_suggestions    = [];
@@ -72,7 +72,7 @@ class AssetSuggestionsService implements Service {
 	 * @param string $search The search query
 	 * @param int    $per_page Number of items per page
 	 *
-	 * @return array
+	 * @return array formatted terms suggestions
 	 */
 	protected function get_terms_suggestions( $search, $per_page ): array {
 		$terms_suggestions = [];
@@ -114,7 +114,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @param string $search The search query
 	 * @param int    $per_page Number of items per page
-	 * @param string $order_by Order by: id, type, title, url
+	 * @param string $order_by Order by: type, title, url
 	 *
 	 * @return array final urls with their title, id & type.
 	 */

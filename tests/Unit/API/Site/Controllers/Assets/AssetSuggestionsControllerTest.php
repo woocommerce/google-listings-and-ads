@@ -14,7 +14,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
  *
  * @property RESTServer                         $rest_server
- * @property AssetSuggestionsService|MockObject $asset_suggestion
+ * @property AssetSuggestionsService|MockObject $asset_suggestions
  */
 class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 
