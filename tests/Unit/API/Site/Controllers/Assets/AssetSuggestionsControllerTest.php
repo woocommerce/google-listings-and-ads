@@ -40,7 +40,7 @@ class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		$this->asset_suggestions = $this->createMock( AssetSuggestionsService::class );
-		$this->controller       = new AssetSuggestionsController( $this->server, $this->asset_suggestions );
+		$this->controller        = new AssetSuggestionsController( $this->server, $this->asset_suggestions );
 		$this->controller->register();
 	}
 
