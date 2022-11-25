@@ -9,6 +9,7 @@ use WP as WPCore;
 use WP_Error;
 use WP_Post;
 use WP_Term;
+use WP_Taxonomy;
 use function dbDelta;
 use function get_locale;
 use function plugins_url;
@@ -176,5 +177,115 @@ class WP {
 	 */
 	public function wp_doing_ajax(): bool {
 		return wp_doing_ajax();
+	}
+
+	/**
+	 * Retrieves an array of the latest posts, or posts matching the given criteria.
+	 *
+	 * @since x.x.x
+	 *
+	 * @see WP_Query
+	 * @see WP_Query::parse_query()
+	 *
+	 * @param array $args {
+	 *     Arguments to retrieve posts. See WP_Query::parse_query() for all available arguments.
+	 * }
+	 * @return WP_Post[]|int[] Array of post objects or post IDs.
+	 */
+	public function get_posts( array $args ): array {
+		return get_posts( $args );
+	}
+
+	/**
+	 * Gets a list of all registered post type objects.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param array|string $args     Optional. An array of key => value arguments to match against
+	 *                               the post type objects. Default empty array.
+	 * @param string       $output   Optional. The type of output to return. Accepts post type 'names'
+	 *                               or 'objects'. Default 'names'.
+	 * @param string       $operator Optional. The logical operation to perform. 'or' means only one
+	 *                               element from the array needs to match; 'and' means all elements
+	 *                               must match; 'not' means no elements may match. Default 'and'.
+	 * @return string[]|WP_Post_Type[] An array of post type names or objects.
+	 */
+	public function get_post_types( $args = [], string $output = 'names', string $operator = 'and' ): array {
+		return get_post_types( $args, $output, $operator );
+	}
+
+	/**
+	 * Retrieves a list of registered taxonomy names or objects.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param array  $args     Optional. An array of `key => value` arguments to match against the taxonomy objects.
+	 *                         Default empty array.
+	 * @param string $output   Optional. The type of output to return in the array. Accepts either taxonomy 'names'
+	 *                         or 'objects'. Default 'names'.
+	 * @param string $operator Optional. The logical operation to perform. Accepts 'and' or 'or'. 'or' means only
+	 *                         one element from the array needs to match; 'and' means all elements must match.
+	 *                         Default 'and'.
+	 * @return string[]|WP_Taxonomy[] An array of taxonomy names or objects.
+	 */
+	public function get_taxonomies( array $args = [], string $output = 'names', string $operator = 'and' ): array {
+		return get_taxonomies( $args, $output, $operator );
+	}
+
+	/**
+	 * Retrieves the terms in a given taxonomy or list of taxonomies.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param array|string $args       Optional. Array or string of arguments. See WP_Term_Query::__construct()
+	 *                                 for information on accepted arguments. Default empty array.
+	 * @param array|string $deprecated Optional. Argument array, when using the legacy function parameter format.
+	 *                                 If present, this parameter will be interpreted as `$args`, and the first
+	 *                                 function parameter will be parsed as a taxonomy or array of taxonomies.
+	 *                                 Default empty.
+	 * @return WP_Term[]|int[]|string[]|string|WP_Error Array of terms, a count thereof as a numeric string,
+	 *                                                  or WP_Error if any of the taxonomies do not exist.
+	 *                                                  See the function description for more information.
+	 */
+	public function get_terms( $args = [], $deprecated = '' ) {
+		return get_terms( $args, $deprecated );
+	}
+
+	/**
+	 * Get static homepage
+	 *
+	 * @since x.x.x
+	 *
+	 * @see https://wordpress.org/support/article/creating-a-static-front-page/
+	 *
+	 * @return WP_Post|null Returns the Homepage post if it is set as a static otherwise null.
+	 */
+	public function get_static_homepage() {
+		$post_id = (int) get_option( 'page_on_front' );
+
+		// The front page contains a static home page
+		if ( $post_id > 0 ) {
+			return get_post( $post_id );
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get Shop page
+	 *
+	 * @since x.x.x
+	 *
+	 * @return WP_Post|null Returns the Homepage post if it is set as a static otherwise null.
+	 */
+	public function get_shop_page() {
+		$post_id = wc_get_page_id( 'shop' );
+
+		if ( $post_id > 0 ) {
+			return get_post( $post_id );
+		}
+
+		return null;
+
 	}
 }
