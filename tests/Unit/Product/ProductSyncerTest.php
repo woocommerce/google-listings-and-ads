@@ -327,6 +327,36 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$this->product_syncer->delete_by_batch_requests( [ new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) ) ] );
 	}
 
+	public function test_delete_by_batch_requests_no_retry_if_product_is_unavailable_in_database() {
+		// $deleted_products:  products that were successfully synced and then deleted from Merchant Center
+		// $rejected_products: products that were synced but deleting them resulted in errors and were rejected by Google API
+		[ $deleted_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 1 );
+
+		$this->mock_google_service( $deleted_products, $rejected_products );
+
+		$products = array_merge( $deleted_products, $rejected_products );
+
+		// first we force delete all products
+		array_walk(
+			$products,
+			function ( WC_Product $product ) {
+				$product->delete( true );
+				$product->save();
+			}
+		);
+
+		// generate delete request entries
+		$product_entries = array_map(
+			function ( WC_Product $product ) {
+				return new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) );
+			},
+			$products
+		);
+
+		$this->product_syncer->delete_by_batch_requests( $product_entries );
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_batch_retry_delete_products' ) );
+	}
+
 	protected function mock_google_service( $successful_products, $failed_products ): void {
 		$callback = function ( array $product_entries ) use ( $successful_products, $failed_products ) {
 			$errors  = [];
@@ -361,6 +391,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 	/**
 	 * Function to return an instance of ProductSyncer.
+	 *
+	 * @param object[] $arg
 	 */
 	private function get_product_syncer( $args = [] ): ProductSyncer {
 		$args['google_service']     = $args['google_service'] ?? $this->google_service;
