@@ -392,7 +392,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	/**
 	 * Function to return an instance of ProductSyncer.
 	 *
-	 * @param object[] $arg
+	 * @param object[] $args
 	 */
 	private function get_product_syncer( $args = [] ): ProductSyncer {
 		$args['google_service']     = $args['google_service'] ?? $this->google_service;
