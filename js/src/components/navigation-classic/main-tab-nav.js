@@ -28,6 +28,11 @@ let tabs = [
 		href: getNewPath( {}, '/google/product-feed', {} ),
 	},
 	{
+		key: 'attribute-mapping',
+		title: __( 'Attributes', 'google-listings-and-ads' ),
+		href: getNewPath( {}, '/google/attribute-mapping', {} ),
+	},
+	{
 		key: 'settings',
 		title: __( 'Settings', 'google-listings-and-ads' ),
 		href: getNewPath( {}, '/google/settings', {} ),

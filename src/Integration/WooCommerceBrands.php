@@ -93,7 +93,7 @@ class WooCommerceBrands implements IntegrationInterface {
 			}
 		}
 
-		return null;
+		return self::VALUE_KEY === $value ? null : $value;
 	}
 
 	/**

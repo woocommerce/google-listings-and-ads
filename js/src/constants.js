@@ -64,3 +64,12 @@ export const GOOGLE_ADS_BILLING_STATUS = {
 	APPROVED: 'approved',
 	CANCELLED: 'cancelled',
 };
+
+// Attribute Mapping
+export const CATEGORY_CONDITION_SELECT_TYPES = {
+	ALL: 'ALL',
+	EXCEPT: 'EXCEPT',
+	ONLY: 'ONLY',
+};
+
+export const CATEGORIES_TO_SHOW_IN_TOOLTIP = 5;
