@@ -8,7 +8,6 @@ import { getHistory, getNewPath } from '@woocommerce/navigation';
  */
 import AppSpinner from '.~/components/app-spinner';
 import SavedSetupStepper from './saved-setup-stepper';
-import './index.scss';
 import useMCSetup from '.~/hooks/useMCSetup';
 import stepNameKeyMap from './stepNameKeyMap';
 
