@@ -36,6 +36,10 @@ class AssetSuggestionsService implements Service {
 	 * @return array formatted post suggestions
 	 */
 	protected function get_post_suggestions( string $search, int $per_page, int $offset = 0 ): array {
+		if ( $per_page <= 0 ) {
+			return [];
+		}
+
 		$post_suggestions    = [];
 		$excluded_post_types = [ 'attachment' ];
 
