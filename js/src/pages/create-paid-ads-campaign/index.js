@@ -19,10 +19,10 @@ import validateForm from '.~/utils/paid-ads/validateForm';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import AdaptiveForm from '.~/components/adaptive-form';
+import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import AssetGroup, {
 	ACTION_COMPLETE,
 } from '.~/components/paid-ads/asset-group';
-import CreatePaidAdsCampaignForm from './create-paid-ads-campaign-form';
 import { CAMPAIGN_STEP as STEP } from '.~/constants';
 
 const dashboardURL = getDashboardUrl();
@@ -102,7 +102,7 @@ const CreatePaidAdsCampaign = () => {
 								'google-listings-and-ads'
 							),
 							content: (
-								<CreatePaidAdsCampaignForm
+								<AdsCampaign
 									onContinue={ () =>
 										setStep( STEP.ASSET_GROUP )
 									}

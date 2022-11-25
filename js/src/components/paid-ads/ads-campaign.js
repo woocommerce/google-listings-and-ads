@@ -26,7 +26,7 @@ import CreateCampaignFormContent from '.~/components/paid-ads/create-campaign-fo
  * @param {Object} props React props.
  * @param {() => void} props.onContinue Callback called once continue button is clicked.
  */
-const CreatePaidAdsCampaignForm = ( { onContinue } ) => {
+export default function AdsCampaign( { onContinue } ) {
 	const formContext = useAdaptiveFormContext();
 	const { isValidForm } = formContext;
 
@@ -65,6 +65,4 @@ const CreatePaidAdsCampaignForm = ( { onContinue } ) => {
 			</StepContentFooter>
 		</StepContent>
 	);
-};
-
-export default CreatePaidAdsCampaignForm;
+}
