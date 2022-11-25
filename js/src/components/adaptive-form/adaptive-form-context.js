@@ -10,8 +10,15 @@ import { createContext, useContext } from '@wordpress/element';
  * @property {*} selected Form value.
  * @property {(value: Event<HTMLInputElement> | *) => void} onChange Function to handle onChange event.
  * @property {() => void} onBlur Function to handle onBlur event.
- * @property {'has-error'|undefined} className 'has-error' if the form value is invalid and marked as touched. `undefined` otherwise.
- * @property {string|undefined|null} help The corresponding value in form `errors` if the form value is marked as touched. `null` otherwise.
+ * @property {'has-error' | undefined} className 'has-error' if the form value is invalid and marked as touched. `undefined` otherwise.
+ * @property {string | undefined | null} help The corresponding value in form `errors` if the form value is marked as touched. `null` otherwise.
+ */
+
+/**
+ * @typedef {Object} AdaptiveFormContextAdapter
+ * @property {boolean} isSubmitting `true` if the form is currently being submitted.
+ * @property {boolean} isSubmitted Set to `true` after the form is submitted. Initial value and during submission are set to `false`.
+ * @property { HTMLElement | null} submitter Set to the element triggering the `handleSubmit` callback until the processing of `onSubmit` is completed. `null` otherwise.
  */
 
 /**
@@ -26,6 +33,7 @@ import { createContext, useContext } from '@wordpress/element';
  * @property {() => Promise<Object>} handleSubmit Function to trigger form submission.
  * @property {(initialValues: Object) => void} resetForm Function to reset form with given initial values.
  * @property {(currentTouched: Object) => void} setTouched Function to update the `touched` state.
+ * @property {AdaptiveFormContextAdapter} adapter Additional enhancements to AdaptiveForm.
  */
 
 export const AdaptiveFormContext = createContext( {} );

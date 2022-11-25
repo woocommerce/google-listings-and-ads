@@ -15,6 +15,7 @@ import { get } from 'lodash';
 /**
  * Internal dependencies
  */
+import useIsMounted from '.~/hooks/useIsMounted';
 import { AdaptiveFormContext } from './adaptive-form-context';
 
 function isEvent( value ) {
@@ -32,12 +33,13 @@ function isEvent( value ) {
  * several workarounds in order to be compatible with WC 6.9 to 7.1.
  *
  * @param {Object} props React props.
+ * @param {(values: Object) => void} [props.onSubmit] Function to call when a form is requesting submission.
  * @param {(formContext: Object) => JSX.Element | JSX.Element} props.children Children to be rendered. Could be a render prop function.
  * @param {import('react').MutableRefObject<AdaptiveFormHandler>} ref React ref to be attached to the handler of this component.
  */
-function AdaptiveForm( { children, ...props }, ref ) {
+function AdaptiveForm( { onSubmit, children, ...props }, ref ) {
 	const formRef = useRef();
-	const adapterRef = useRef( {} );
+	const adapterRef = useRef( { submitter: null } );
 	const [ batchQueue, setBatchQueue ] = useState( [] );
 	const [ delegation, setDelegation ] = useState();
 
@@ -61,9 +63,35 @@ function AdaptiveForm( { children, ...props }, ref ) {
 		...formRef.current,
 	} ) );
 
+	// Enhancements related.
+	// Additional enhancements to make AdaptiveForm have more useful or reusable features.
+	// It could also be the playground of the practical instances before pushing them upstream.
+	const isMounted = useIsMounted();
+	const [ submission, setSubmission ] = useState( [ false, false ] );
+	const [ isSubmitting, isSubmitted ] = submission;
+
+	if ( onSubmit ) {
+		props.onSubmit = async function ( values ) {
+			setSubmission( [ true, false ] );
+
+			await onSubmit.call( this, values, adapterRef.current.submitter );
+
+			if ( isMounted() ) {
+				setSubmission( [ false, true ] );
+				adapterRef.current.submitter = null;
+			}
+		};
+	}
+
 	return (
 		<Form { ...props } ref={ formRef }>
-			{ ( { setValue, setValues, getInputProps, ...formContext } ) => {
+			{ ( {
+				setValue,
+				setValues,
+				getInputProps,
+				handleSubmit,
+				...formContext
+			} ) => {
 				// Since WC 6.9, the original Form is re-implemented as Functional component from
 				// Class component. But when `setValue` is called, the closure of `values` is
 				// referenced to the currently rendered snapshot states instead of a reference
@@ -134,6 +162,18 @@ function AdaptiveForm( { children, ...props }, ref ) {
 					// rendering again.
 					setImmediate( () => setDelegation( batchQueue.shift() ) );
 				}
+
+				// Enhancements related.
+				formContext.handleSubmit = function ( event ) {
+					adapterRef.current.submitter = event.currentTarget;
+					return handleSubmit.call( this, event );
+				};
+
+				formContext.adapter = {
+					isSubmitting,
+					isSubmitted,
+					submitter: adapterRef.current.submitter,
+				};
 
 				// Since WC 6.9, it added the ability to obtain Form context via `useFormContext` hook.
 				// However, if a component uses that hook, the compatible fixes in this component won't
