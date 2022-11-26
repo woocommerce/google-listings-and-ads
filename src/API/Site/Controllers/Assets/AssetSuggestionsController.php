@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -131,9 +132,13 @@ class AssetSuggestionsController extends BaseController {
 	 */
 	protected function get_assets_suggestions_callback(): callable {
 		return function( Request $request ) {
-			$id   = $request->get_param( 'id' );
-			$type = $request->get_param( 'type' );
-			return $this->asset_suggestions_service->get_assets_suggestions( $id, $type );
+			try {
+				$id   = $request->get_param( 'id' );
+				$type = $request->get_param( 'type' );
+				return $this->asset_suggestions_service->get_assets_suggestions( $id, $type );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
 		};
 	}
 
