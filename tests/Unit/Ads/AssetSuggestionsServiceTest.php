@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\DataTrait;
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 
@@ -66,7 +67,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 	}
 
-	public function format_url_post_item( $post ) {
+	protected function format_url_post_item( $post ) {
 		return [
 			'id'    => $post->ID,
 			'type'  => 'post',
@@ -75,13 +76,25 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		];
 	}
 
-	public function format_url_term_item( $term ) {
+	protected function format_url_term_item( $term ) {
 		return [
 			'id'    => $term->term_id,
 			'type'  => 'term',
 			'title' => $term->name,
 			'url'   => get_term_link( $term->term_id, $term->taxonomy ),
 		];
+	}
+
+	protected function format_post_asset_response( $post, $square_marketing_images = [] ) {
+		return [
+			'headline'                => [ $post->post_title ],
+			'long_headline'           => [ $post->post_title ],
+			'description'             => [ $post->post_excerpt ],
+			'square_marketing_images' => $square_marketing_images,
+			'final_url'               => get_permalink( $post->ID ),
+			'business_name'           => get_bloginfo( 'name' ),
+		];
+
 	}
 
 	public function test_get_post_suggestions() {
@@ -249,12 +262,11 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	}
 
 	public function test_get_post_assets() {
-		$post     = $this->factory()->post->create_and_get();
-		$image_id = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ), $post->ID );
+		$image_id = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ), $this->post->ID );
 
 		$this->wp->expects( $this->once() )
 			->method( 'get_post' )
-			->willReturn( $post );
+			->willReturn( $this->post );
 
 		$this->wp->expects( $this->once() )
 			->method( 'get_posts' )
@@ -264,25 +276,16 @@ class AssetSuggestionsServiceTest extends UnitTest {
 					'post_mime_type' => 'image',
 					'numberposts'    => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
 					'fields'         => 'ids',
-					'post_parent'    => $post->ID,
+					'post_parent'    => $this->post->ID,
 				]
 			)->willReturn( [ $image_id ] );
 
-		$expected = [
-			'headline'                => [ $post->post_title ],
-			'long_headline'           => [ $post->post_title ],
-			'description'             => [ $post->post_excerpt ],
-			'square_marketing_images' => [ wp_get_attachment_image_url( $image_id ) ],
-			'final_url'               => get_permalink( $post->ID ),
-			'business_name'           => get_bloginfo( 'name' ),
-		];
-
-		$this->assertEquals( $expected, $this->asset_suggestions->get_assets_suggestions( $post->ID, 'post' ) );
+		$this->assertEquals( $this->format_post_asset_response( $this->post, [ wp_get_attachment_image_url( $image_id ) ] ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 	}
 
 	public function test_get_post_assets_for_products() {
 		$post     = $this->factory()->post->create_and_get( [ 'post_type' => 'product' ] );
-		$image_id = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ), $post->ID );
+		$image_id = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
 
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_gallery_image_ids( [ $image_id ] );
@@ -295,16 +298,35 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->method( 'maybe_get_product' )
 			->willReturn( $product );
 
-		$expected = [
-			'headline'                => [ $post->post_title ],
-			'long_headline'           => [ $post->post_title ],
-			'description'             => [ $post->post_excerpt ],
-			'square_marketing_images' => [ wp_get_attachment_image_url( $image_id ) ],
-			'final_url'               => get_permalink( $post->ID ),
-			'business_name'           => get_bloginfo( 'name' ),
-		];
+		$this->assertEquals( $this->format_post_asset_response( $post, [ wp_get_attachment_image_url( $image_id ) ] ), $this->asset_suggestions->get_assets_suggestions( $post->ID, 'post' ) );
 
-		$this->assertEquals( $expected, $this->asset_suggestions->get_assets_suggestions( $post->ID, 'post' ) );
+	}
+
+	public function test_get_shop_assets() {
+		$image_id       = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
+		$this->post->ID = wc_get_page_id( 'shop' );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_gallery_image_ids( [ $image_id ] );
+
+		$this->wp->expects( $this->once() )
+			->method( 'get_post' )
+			->willReturn( $this->post );
+
+		$this->wp->expects( $this->exactly( 3 ) )
+			->method( 'get_posts' )
+			->willReturnOnConsecutiveCalls( [ $image_id ], [ $product->get_id() ], [ $image_id ] );
+
+		$this->assertEquals( $this->format_post_asset_response( $this->post, [ wp_get_attachment_image_url( $image_id ), wp_get_attachment_image_url( $image_id ) ] ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+	}
+
+	public function test_get_invalid_post_id() {
+		$this->wp->expects( $this->once() )
+			->method( 'get_post' )
+			->willReturn( null );
+
+			$this->expectException( Exception::class );
+			$this->asset_suggestions->get_assets_suggestions( 123456, 'post' );
 
 	}
 
