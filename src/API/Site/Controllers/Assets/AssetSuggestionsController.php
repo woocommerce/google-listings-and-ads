@@ -110,7 +110,7 @@ class AssetSuggestionsController extends BaseController {
 		return [
 			'id'   => [
 				'description'       => __( 'Post ID or Term ID.', 'google-listings-and-ads' ),
-				'type'              => 'string',
+				'type'              => 'number',
 				'default'           => '',
 				'sanitize_callback' => 'absint',
 				'validate_callback' => 'rest_validate_request_arg',
