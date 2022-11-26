@@ -27,6 +27,45 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
+	 * Get assets from specific post or term or final urls in other Ads campaigns.
+	 *
+	 * @param int    $id Post or Term ID.
+	 * @param string $type Only possible values are post or term.
+	 */
+	public function get_assets_suggestions( int $id, string $type ): array {
+		return array_merge( $this->get_wp_assets( $id, $type ), $this->get_assets_from_others_campaigns() );
+	}
+
+	/**
+	 * Get assets from specific post or term.
+	 *
+	 * @param int    $id Post or Term ID.
+	 * @param string $type Only possible values are post or term.
+	 *
+	 * @return array All assets available for specific term or post.
+	 */
+	public function get_wp_assets( int $id, string $type ) {
+		if ( $type === 'post' ) {
+			return [];
+		}
+
+		return [];
+
+	}
+
+	/**
+	 * Get Assets from others campaigns using a specific final url.
+	 *
+	 * @param string $final_url URL used to search for other assets in other campaigns.
+	 *
+	 * @return array Assets fetch from other campaigns
+	 */
+	public function get_assets_from_others_campaigns( string $final_url = '' ): array {
+		// TO BE IMPLEMENTED IN THE FOLLOWING PR
+		return [];
+	}
+
+	/**
 	 * Get posts that can be used to suggest assets
 	 *
 	 * @param string $search The search query.
