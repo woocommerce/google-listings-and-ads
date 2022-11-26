@@ -42,7 +42,8 @@ class AssetSuggestionsService implements Service {
 	 * @param string $type Only possible values are post or term.
 	 */
 	public function get_assets_suggestions( int $id, string $type ): array {
-		return array_merge( $this->get_wp_assets( $id, $type ), $this->get_assets_from_others_campaigns() );
+		// TODO: Fetch assets from others campaigns and merge the result with the WP Assets.
+		return $this->get_wp_assets( $id, $type );
 	}
 
 	/**
@@ -53,7 +54,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array All assets available for specific term or post.
 	 */
-	public function get_wp_assets( int $id, string $type ) {
+	protected function get_wp_assets( int $id, string $type ) {
 		if ( $type === 'post' ) {
 			return $this->get_post_assets( $id );
 		}
@@ -75,7 +76,7 @@ class AssetSuggestionsService implements Service {
 
 		if ( ! $post ) {
 			throw new Exception(
-				/* translators: 1: is a string representing an unknown Post ID */
+				/* translators: 1: is a integer representing an unknown Post ID */
 				sprintf( __( 'Invalid Post ID %1$d', 'google-listings-and-ads' ), $id )
 			);
 		}
@@ -85,10 +86,13 @@ class AssetSuggestionsService implements Service {
 
 		$attachments_ids = $this->get_post_attachments(
 			[
-				'fields'      => 'ids',
 				'post_parent' => $id,
 			]
 		);
+
+		if ( $id === wc_get_page_id( 'shop' ) ) {
+			$attachments_ids = array_merge( $attachments_ids, $this->get_shop_attachments() );
+		}
 
 		if ( $post->post_type === 'product' ) {
 			$product         = $this->wc->maybe_get_product( $id );
@@ -106,6 +110,38 @@ class AssetSuggestionsService implements Service {
 			'final_url'               => get_permalink( $id ),
 			'business_name'           => get_bloginfo( 'name' ),
 		];
+	}
+
+	/**
+	 * Get attachments related to the products.
+	 *
+	 * @return array Shop attachments.
+	 */
+	protected function get_shop_attachments() {
+		return $this->get_post_attachments(
+			[
+				'post_parent__in' => $this->get_shop_products(),
+			]
+		);
+	}
+
+	/**
+	 *
+	 * Get products that will be use to offer image assets.
+	 *
+	 * @param array $args See WP_Query::parse_query() for all available arguments.
+	 * @return array Shop products.
+	 */
+	protected function get_shop_products( array $args = [] ) {
+		$defaults = [
+			'post_type'   => 'product',
+			'numberposts' => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
+			'fields'      => 'ids',
+		];
+
+		$args = wp_parse_args( $args, $defaults );
+
+		return $this->wp->get_posts( $args );
 	}
 
 	/**
@@ -146,24 +182,13 @@ class AssetSuggestionsService implements Service {
 		$defaults = [
 			'post_type'      => 'attachment',
 			'post_mime_type' => 'image',
+			'fields'         => 'ids',
 			'numberposts'    => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
 		];
 
 		$args = wp_parse_args( $args, $defaults );
 
 		return $this->wp->get_posts( $args );
-	}
-
-	/**
-	 * Get Assets from others campaigns using a specific final url.
-	 *
-	 * @param string $final_url URL used to search for other assets in other campaigns.
-	 *
-	 * @return array Assets fetch from other campaigns
-	 */
-	public function get_assets_from_others_campaigns( string $final_url = '' ): array {
-		// TO BE IMPLEMENTED IN THE FOLLOWING PR
-		return [];
 	}
 
 	/**
