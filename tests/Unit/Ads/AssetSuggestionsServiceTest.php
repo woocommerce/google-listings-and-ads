@@ -92,7 +92,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
 			'description'             => [ $post->post_excerpt ],
 			'business_name'           => get_bloginfo( 'name' ),
-			'display_url'             => [ $post->post_name ],
+			'display_url_path'        => [ $post->post_name ],
 			'logo'                    => [],
 			'square_marketing_images' => $marketing_images,
 			'marketing_images'        => $marketing_images,
@@ -306,11 +306,12 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	}
 
 	public function test_get_shop_assets() {
-		$image_id       = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
+		$image_post     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
+		$image_product  = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
 		$this->post->ID = wc_get_page_id( 'shop' );
 
 		$product = WC_Helper_Product::create_simple_product();
-		$product->set_gallery_image_ids( [ $image_id ] );
+		$product->set_gallery_image_ids( [ $image_product ] );
 
 		$this->wp->expects( $this->once() )
 			->method( 'get_post' )
@@ -318,9 +319,9 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		$this->wp->expects( $this->exactly( 3 ) )
 			->method( 'get_posts' )
-			->willReturnOnConsecutiveCalls( [ $image_id ], [ $product->get_id() ], [ $image_id ] );
+			->willReturnOnConsecutiveCalls( [ $image_post ], [ $product->get_id() ], [ $image_product ] );
 
-		$this->assertEquals( $this->format_post_asset_response( $this->post, [ wp_get_attachment_image_url( $image_id ), wp_get_attachment_image_url( $image_id ) ] ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+		$this->assertEquals( $this->format_post_asset_response( $this->post, [ wp_get_attachment_image_url( $image_post ), wp_get_attachment_image_url( $image_product ) ] ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 	}
 
 	public function test_get_invalid_post_id() {

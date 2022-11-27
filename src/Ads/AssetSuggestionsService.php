@@ -91,9 +91,9 @@ class AssetSuggestionsService implements Service {
 			$attachments_ids = array_merge( $attachments_ids, $this->get_shop_attachments() );
 		}
 
-		if ( $post->post_type === 'product' ) {
+		if ( $post->post_type === 'product' || $post->post_type === 'product_variation' ) {
 			$product         = $this->wc->maybe_get_product( $id );
-			$attachments_ids = array_merge( $attachments_ids, $product->get_gallery_image_ids() );
+			$attachments_ids = array_merge( $attachments_ids, $product->get_gallery_image_ids(), [ $product->get_image_id() ] );
 		}
 
 		$gallery_images_urls = get_post_gallery_images( $id );
@@ -107,7 +107,7 @@ class AssetSuggestionsService implements Service {
 			'logo'                    => $this->remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
 			'final_url'               => get_permalink( $id ),
 			'business_name'           => get_bloginfo( 'name' ),
-			'display_url'             => [ $post->post_name ],
+			'display_url_path'        => [ $post->post_name ],
 			'square_marketing_images' => $marketing_images,
 			'marketing_images'        => $marketing_images,
 		];
@@ -164,6 +164,8 @@ class AssetSuggestionsService implements Service {
 	 * @return array A list of attachments urls.
 	 */
 	protected function get_url_attachments_by_ids( array $ids ) {
+		$ids = array_unique( $this->remove_empty_values( $ids ) );
+
 		$square_marketing_images = [];
 		foreach ( $ids as $id ) {
 			$square_marketing_images[] = wp_get_attachment_image_url( $id );
