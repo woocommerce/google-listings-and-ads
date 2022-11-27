@@ -98,6 +98,7 @@ class AssetSuggestionsService implements Service {
 
 		$gallery_images_urls = get_post_gallery_images( $id );
 		$marketing_images    = array_merge( $this->get_url_attachments_by_ids( $attachments_ids ), $gallery_images_urls );
+		$marketing_images    = array_slice( $marketing_images, 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
 		$long_headline       = get_bloginfo( 'name' ) . ': ' . $post->post_title;
 
 		return [
