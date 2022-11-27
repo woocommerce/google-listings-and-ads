@@ -102,7 +102,7 @@ class AssetSuggestionsController extends BaseController {
 	}
 
 	/**
-	 * Get the assets suggestions params for collections.
+	 * Get the assets suggestions params.
 	 *
 	 * @return array
 	 */
@@ -111,7 +111,6 @@ class AssetSuggestionsController extends BaseController {
 			'id'   => [
 				'description'       => __( 'Post ID or Term ID.', 'google-listings-and-ads' ),
 				'type'              => 'number',
-				'default'           => '',
 				'sanitize_callback' => 'absint',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
@@ -126,7 +125,7 @@ class AssetSuggestionsController extends BaseController {
 	}
 
 	/**
-	 * Get the callback function for the list of final-url suggestions request.
+	 * Get the callback function for the assets suggestions request.
 	 *
 	 * @return callable
 	 */

@@ -36,7 +36,7 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
-	 * Get assets from specific post or term or final urls in other Ads campaigns.
+	 * Get assets from specific post or term.
 	 *
 	 * @param int    $id Post or Term ID.
 	 * @param string $type Only possible values are post or term.
@@ -114,7 +114,7 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
-	 * Get attachments related to the products.
+	 * Get attachments related to the shop page.
 	 *
 	 * @return array Shop attachments.
 	 */
@@ -157,7 +157,7 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
-	 * Remove empty values from array.
+	 * Get URL for each attachment using an array of attachment ids.
 	 *
 	 * @param array $ids A list of attachments ids.
 	 *
