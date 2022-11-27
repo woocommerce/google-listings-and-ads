@@ -54,7 +54,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array All assets available for specific term or post.
 	 */
-	protected function get_wp_assets( int $id, string $type ) {
+	protected function get_wp_assets( int $id, string $type ): array {
 		if ( $type === 'post' ) {
 			return $this->get_post_assets( $id );
 		}
@@ -71,7 +71,7 @@ class AssetSuggestionsService implements Service {
 	 * @return array All assets for specific post.
 	 * @throws Exception If the Post ID is invalid.
 	 */
-	protected function get_post_assets( int $id ) {
+	protected function get_post_assets( int $id ): array {
 		$post = $this->wp->get_post( $id );
 
 		if ( ! $post ) {
@@ -118,7 +118,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array Shop attachments.
 	 */
-	protected function get_shop_attachments() {
+	protected function get_shop_attachments(): array {
 		return $this->get_post_attachments(
 			[
 				'post_parent__in' => $this->get_shop_products(),
@@ -133,7 +133,7 @@ class AssetSuggestionsService implements Service {
 	 * @param array $args See WP_Query::parse_query() for all available arguments.
 	 * @return array Shop products.
 	 */
-	protected function get_shop_products( array $args = [] ) {
+	protected function get_shop_products( array $args = [] ): array {
 		$defaults = [
 			'post_type'   => 'product',
 			'numberposts' => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
@@ -152,7 +152,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array A list of strings without empty strings.
 	 */
-	protected function remove_empty_values( array $array ) {
+	protected function remove_empty_values( array $array ): array {
 		return array_values( array_filter( $array ) );
 	}
 
@@ -163,14 +163,14 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array A list of attachments urls.
 	 */
-	protected function get_url_attachments_by_ids( array $ids ) {
+	protected function get_url_attachments_by_ids( array $ids ): array {
 		$ids = array_unique( $this->remove_empty_values( $ids ) );
 
-		$square_marketing_images = [];
+		$marketing_images = [];
 		foreach ( $ids as $id ) {
-			$square_marketing_images[] = wp_get_attachment_image_url( $id );
+			$marketing_images[] = wp_get_attachment_image_url( $id );
 		}
-		return $square_marketing_images;
+		return $marketing_images;
 	}
 
 
@@ -181,7 +181,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array List of attachments
 	 */
-	protected function get_post_attachments( array $args = [] ) {
+	protected function get_post_attachments( array $args = [] ): array {
 		$defaults = [
 			'post_type'      => 'attachment',
 			'post_mime_type' => 'image',
