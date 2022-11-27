@@ -81,9 +81,6 @@ class AssetSuggestionsService implements Service {
 			);
 		}
 
-		$title   = $post->post_title;
-		$excerpt = $post->post_excerpt;
-
 		$attachments_ids = $this->get_post_attachments(
 			[
 				'post_parent' => $id,
@@ -99,16 +96,20 @@ class AssetSuggestionsService implements Service {
 			$attachments_ids = array_merge( $attachments_ids, $product->get_gallery_image_ids() );
 		}
 
-		$gallery_images_urls     = get_post_gallery_images( $id );
-		$square_marketing_images = array_merge( $this->get_url_attachments_by_ids( $attachments_ids ), $gallery_images_urls );
+		$gallery_images_urls = get_post_gallery_images( $id );
+		$marketing_images    = array_merge( $this->get_url_attachments_by_ids( $attachments_ids ), $gallery_images_urls );
+		$long_headline       = get_bloginfo( 'name' ) . ': ' . $post->post_title;
 
 		return [
-			'headline'                => [ $title ],
-			'long_headline'           => [ $title ],
-			'description'             => $this->remove_empty_strings( [ $excerpt, get_bloginfo( 'description' ) ] ),
-			'square_marketing_images' => $square_marketing_images,
+			'headline'                => [ $post->post_title ],
+			'long_headline'           => [ $long_headline ],
+			'description'             => $this->remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
+			'logo'                    => $this->remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
 			'final_url'               => get_permalink( $id ),
 			'business_name'           => get_bloginfo( 'name' ),
+			'display_url'             => [ $post->post_name ],
+			'square_marketing_images' => $marketing_images,
+			'marketing_images'        => $marketing_images,
 		];
 	}
 
@@ -151,7 +152,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array A list of strings without empty strings.
 	 */
-	protected function remove_empty_strings( array $array ) {
+	protected function remove_empty_values( array $array ) {
 		return array_values( array_filter( $array ) );
 	}
 

@@ -85,14 +85,17 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		];
 	}
 
-	protected function format_post_asset_response( $post, $square_marketing_images = [] ) {
+	protected function format_post_asset_response( $post, $marketing_images = [] ) {
 		return [
-			'headline'                => [ $post->post_title ],
-			'long_headline'           => [ $post->post_title ],
-			'description'             => [ $post->post_excerpt ],
-			'square_marketing_images' => $square_marketing_images,
 			'final_url'               => get_permalink( $post->ID ),
+			'headline'                => [ $post->post_title ],
+			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
+			'description'             => [ $post->post_excerpt ],
 			'business_name'           => get_bloginfo( 'name' ),
+			'display_url'             => [ $post->post_name ],
+			'logo'                    => [],
+			'square_marketing_images' => $marketing_images,
+			'marketing_images'        => $marketing_images,
 		];
 
 	}
