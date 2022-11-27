@@ -329,8 +329,8 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->method( 'get_post' )
 			->willReturn( null );
 
-			$this->expectException( Exception::class );
-			$this->asset_suggestions->get_assets_suggestions( 123456, 'post' );
+		$this->expectException( Exception::class );
+		$this->asset_suggestions->get_assets_suggestions( 123456, 'post' );
 
 	}
 
