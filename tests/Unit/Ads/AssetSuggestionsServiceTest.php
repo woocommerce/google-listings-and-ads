@@ -90,7 +90,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			'final_url'               => get_permalink( $post->ID ),
 			'headline'                => [ $post->post_title ],
 			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
-			'description'             => [ $post->post_excerpt ],
+			'description'             =>  array_values( array_filter( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ) ) ,
 			'business_name'           => get_bloginfo( 'name' ),
 			'display_url_path'        => [ $post->post_name ],
 			'logo'                    => [],
