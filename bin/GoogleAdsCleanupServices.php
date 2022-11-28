@@ -193,15 +193,17 @@ class GoogleAdsCleanupServices {
 		try {
 			$rdi = new RecursiveDirectoryIterator( $path );
 		} catch ( UnexpectedValueException $e ) {
-			$this->output_text( sprintf(
-				'Expected directory "%s" was not found',
-				$path
-			) );
+			$this->output_text(
+				sprintf(
+					'Expected directory "%s" was not found',
+					$path
+				)
+			);
 			exit( 1 );
 		}
 
-		$rii = new RecursiveIteratorIterator( $rdi );
-		$rri = new RegexIterator( $rii, $match );
+		$rii   = new RecursiveIteratorIterator( $rdi );
+		$rri   = new RegexIterator( $rii, $match );
 		$files = [];
 		foreach ( $rri as $file ) {
 			$files[] = $file->getPathname();
@@ -219,12 +221,12 @@ class GoogleAdsCleanupServices {
 	 * @return array List of names that match.
 	 */
 	protected function find_used_pattern( string $pattern ): array {
-		$files  = $this->get_dir_contents( $this->code_path,  '/\.php$/i');
+		$files  = $this->get_dir_contents( $this->code_path, '/\.php$/i' );
 		$output = [];
-		foreach ( $files as $file) {
-			preg_match_all( '/' . $pattern . '/', file_get_contents( $file ), $matches); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		foreach ( $files as $file ) {
+			preg_match_all( "/{$pattern}/", file_get_contents( $file ), $matches ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 			if ( isset( $matches[1] ) ) {
-				foreach ($matches[1] AS $match) {
+				foreach ( $matches[1] as $match ) {
 					$output[] = $match;
 				}
 			}
@@ -234,7 +236,7 @@ class GoogleAdsCleanupServices {
 			return [];
 		}
 
-		return array_unique($output);
+		return array_unique( $output );
 	}
 
 	/**

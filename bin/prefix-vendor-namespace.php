@@ -103,7 +103,10 @@ foreach ( $replacements as $namespace => $path ) {
 	}
 
 	// Update the namespace in the composer.json files, recursively finding all files named explicitly "composer.json".
-	$composer_files = get_dir_contents($vendor_dir . '/' . $path, '/' . preg_quote(DIRECTORY_SEPARATOR . 'composer.json') . '$/');
+	$composer_files = get_dir_contents(
+		"{$vendor_dir}/{$path}",
+		'/' . preg_quote( DIRECTORY_SEPARATOR, '/') . 'composer.json$/'
+	);
 
 	array_map(
 		function( $file ) use ( $namespace, $new_namespace ) {
@@ -234,7 +237,7 @@ function remove_file_autoloads( string $file, array $composer_autoload, string $
 
 	$modified = false;
 	foreach ( $json['packages'] as $key => $package ) {
-		if ( strpos( $package['name'], $package_name ) ) {
+		if ( 0 !== strpos( $package['name'], $package_name ) ) {
 			continue;
 		}
 
