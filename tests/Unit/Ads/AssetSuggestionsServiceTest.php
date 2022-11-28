@@ -96,6 +96,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			'logo'                    => [],
 			'square_marketing_images' => $marketing_images,
 			'marketing_images'        => $marketing_images,
+			'call_to_action'          => null,
 		];
 
 	}

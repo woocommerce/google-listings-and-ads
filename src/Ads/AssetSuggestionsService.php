@@ -111,6 +111,7 @@ class AssetSuggestionsService implements Service {
 			'display_url_path'        => [ $post->post_name ],
 			'square_marketing_images' => $marketing_images,
 			'marketing_images'        => $marketing_images,
+			'call_to_action'          => null,
 		];
 	}
 
