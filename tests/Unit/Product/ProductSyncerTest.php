@@ -336,15 +336,6 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$products = array_merge( $deleted_products, $rejected_products );
 
-		// first we force delete all products
-		array_walk(
-			$products,
-			function ( WC_Product $product ) {
-				$product->delete( true );
-				$product->save();
-			}
-		);
-
 		// generate delete request entries
 		$product_entries = array_map(
 			function ( WC_Product $product ) {
@@ -353,8 +344,28 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			$products
 		);
 
-		$this->product_syncer->delete_by_batch_requests( $product_entries );
+		// force delete all products
+		array_walk(
+			$products,
+			function ( WC_Product $product ) {
+				$product->delete( true );
+				$product->save();
+			}
+		);
+
+		$results = $this->product_syncer->delete_by_batch_requests( $product_entries );
 		$this->assertEquals( 0, did_action( 'woocommerce_gla_batch_retry_delete_products' ) );
+
+		$result_product_ids = array_map(
+			function ( $product_entry ) {
+				return $product_entry->get_wc_product_id();
+			},
+			$results->get_products()
+		);
+
+		$delete_ready_product_ids = array_keys( $deleted_products );
+
+		$this->assertEqualsCanonicalizing( $result_product_ids, $delete_ready_product_ids );
 	}
 
 	protected function mock_google_service( $successful_products, $failed_products ): void {
