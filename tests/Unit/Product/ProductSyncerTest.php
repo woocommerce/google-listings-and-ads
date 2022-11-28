@@ -368,6 +368,135 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$this->assertEqualsCanonicalizing( $result_product_ids, $delete_ready_product_ids );
 	}
 
+	public function test_delete_by_batch_requests_should_delete_trashed_product() {
+		// $deleted_products:  products that were successfully synced and then deleted from Merchant Center
+		// $rejected_products: products that were synced but deleting them resulted in errors and were rejected by Google API
+		[ $deleted_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 1 );
+
+		$this->mock_google_service( $deleted_products, $rejected_products );
+
+		$products = array_merge( $deleted_products, $rejected_products );
+
+		// generate delete request entries
+		$product_entries = array_map(
+			function ( WC_Product $product ) {
+				return new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) );
+			},
+			$products
+		);
+
+		// first we mark all products as synced and
+		// set the product status to trash
+		array_walk(
+			$products,
+			function ( WC_Product $product ) {
+				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+				$product->set_status( 'trash' );
+				$product->save();
+			}
+		);
+
+		$results = $this->product_syncer->delete_by_batch_requests( $product_entries );
+
+		$result_product_ids = array_map(
+			function ( $product_entry ) {
+				return $product_entry->get_wc_product_id();
+			},
+			$results->get_products()
+		);
+
+		$delete_ready_product_ids = array_keys( $deleted_products );
+
+		$this->assertEqualsCanonicalizing( $result_product_ids, $delete_ready_product_ids );
+		$this->assert_delete_results_are_valid( $results, $deleted_products, $rejected_products );
+	}
+
+	public function test_delete_by_batch_requests_should_delete_catalog_visibility_hidden_product() {
+		// $deleted_products:  products that were successfully synced and then deleted from Merchant Center
+		// $rejected_products: products that were synced but deleting them resulted in errors and were rejected by Google API
+		[ $deleted_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 1 );
+
+		$this->mock_google_service( $deleted_products, $rejected_products );
+
+		$products = array_merge( $deleted_products, $rejected_products );
+
+		// generate delete request entries
+		$product_entries = array_map(
+			function ( WC_Product $product ) {
+				return new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) );
+			},
+			$products
+		);
+
+		// first we mark all products as synced and
+		// set the product's catalog visibility to hidden
+		array_walk(
+			$products,
+			function ( WC_Product $product ) {
+				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+				$product->set_catalog_visibility( 'hidden' );
+				$product->save();
+			}
+		);
+
+		$results = $this->product_syncer->delete_by_batch_requests( $product_entries );
+
+		$result_product_ids = array_map(
+			function ( $product_entry ) {
+				return $product_entry->get_wc_product_id();
+			},
+			$results->get_products()
+		);
+
+		$delete_ready_product_ids = array_keys( $deleted_products );
+
+		$this->assertEqualsCanonicalizing( $result_product_ids, $delete_ready_product_ids );
+		$this->assert_delete_results_are_valid( $results, $deleted_products, $rejected_products );
+	}
+
+	public function test_delete_by_batch_requests_should_delete_draft_product() {
+		// $deleted_products:  products that were successfully synced and then deleted from Merchant Center
+		// $rejected_products: products that were synced but deleting them resulted in errors and were rejected by Google API
+		[ $deleted_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 1 );
+
+		$this->mock_google_service( $deleted_products, $rejected_products );
+
+		$products = array_merge( $deleted_products, $rejected_products );
+
+		// generate delete request entries
+		$product_entries = array_map(
+			function ( WC_Product $product ) {
+				return new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) );
+			},
+			$products
+		);
+
+		// first we mark all products as synced and
+		// set the product status to draft
+		array_walk(
+			$products,
+			function ( WC_Product $product ) {
+				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+				$product->set_status( 'draft' );
+				$product->save();
+			}
+		);
+
+		$results = $this->product_syncer->delete_by_batch_requests( $product_entries );
+
+		$result_product_ids = array_map(
+			function ( $product_entry ) {
+				return $product_entry->get_wc_product_id();
+			},
+			$results->get_products()
+		);
+
+		$delete_ready_product_ids = array_keys( $deleted_products );
+
+		$this->assertEqualsCanonicalizing( $result_product_ids, $delete_ready_product_ids );
+		$this->assert_delete_results_are_valid( $results, $deleted_products, $rejected_products );
+	}
+
 	protected function mock_google_service( $successful_products, $failed_products ): void {
 		$callback = function ( array $product_entries ) use ( $successful_products, $failed_products ) {
 			$errors  = [];
