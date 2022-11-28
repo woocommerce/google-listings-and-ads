@@ -343,7 +343,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			BatchProductHelper::class,
 			ProductHelper::class,
 			MerchantCenterService::class,
-			WC::class
+			WC::class,
+			ProductRepository::class
 		);
 
 		// Coupon management classes
