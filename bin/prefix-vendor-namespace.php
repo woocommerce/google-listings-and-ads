@@ -154,14 +154,14 @@ function get_dir_contents( $path, $match ) {
 		exit( 1 );
 	}
 
-	$rii = new RecursiveIteratorIterator($rdi);
-    $rri = new RegexIterator($rii, $match);
-    $files = [];
-    foreach ($rri as $file) {
+	$rii = new RecursiveIteratorIterator( $rdi );
+	$rri = new RegexIterator( $rii, $match );
+	$files = [];
+	foreach ( $rri as $file ) {
 		$files[] = $file->getPathname();
 	}
 
-    return $files;
+	return $files;
 }
 
 /**
@@ -176,11 +176,11 @@ function get_dir_contents( $path, $match ) {
 function find_files( string $path ): array {
 	global $vendor_dir, $dependencies;
 
-	$files = get_dir_contents($vendor_dir . '/' . $path, '/\.php$/i');
+	$files = get_dir_contents( "{$vendor_dir}/{$path}", '/\.php$/i' );
 
 	if ( ! empty( $dependencies[ $path ] ) ) {
 		foreach ( $dependencies[ $path ] as $dependency ) {
-			$dependent_files = get_dir_contents($vendor_dir . '/' . $dependency, '/\.php$/i');
+			$dependent_files = get_dir_contents( "{$vendor_dir}/{$dependency}", '/\.php$/i' );
 			$files = array_merge( $files, $dependent_files );
 		}
 	}
