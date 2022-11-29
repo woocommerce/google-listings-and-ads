@@ -140,7 +140,7 @@ class AssetSuggestionsService implements Service {
 
 		return [
 			'headline'                => [ $term->name ],
-			'long_headline'           => [ $term->name ],
+			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
 			'description'             => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
 			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
 			'final_url'               => get_term_link( $term->term_id ),
