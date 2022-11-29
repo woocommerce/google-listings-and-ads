@@ -60,7 +60,7 @@ class AssetSuggestionsService implements Service {
 			return $this->get_post_assets( $id );
 		}
 
-		return [];
+		return $this->get_term_assets( $id );
 
 	}
 
@@ -114,6 +114,68 @@ class AssetSuggestionsService implements Service {
 			'marketing_images'        => $marketing_images,
 			'call_to_action'          => null,
 		];
+	}
+
+	/**
+	 * Get assets from specific term.
+	 *
+	 * @param int $id Term ID.
+	 *
+	 * @return array All assets for specific term.
+	 * @throws Exception If the Term ID is invalid.
+	 */
+	protected function get_term_assets( int $id ) {
+		$term = get_term( $id );
+
+		if ( ! $term ) {
+			throw new Exception(
+				/* translators: 1: is an integer representing an unknown Post ID */
+				sprintf( __( 'Invalid Term ID %1$d', 'google-listings-and-ads' ), $id )
+			);
+		}
+
+		$posts_ids_assigned_to_term = $this->get_posts_assigned_to_a_term( $term->term_id, $term->taxonomy );
+		$attachments_ids            = $this->get_post_image_attachments( [ 'post_parent__in' => $posts_ids_assigned_to_term ] );
+		$marketing_images           = $this->get_url_attachments_by_ids( $attachments_ids );
+
+		return [
+			'headline'                => [ $term->name ],
+			'long_headline'           => [ $term->name ],
+			'description'             => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
+			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
+			'final_url'               => get_term_link( $term->term_id ),
+			'business_name'           => get_bloginfo( 'name' ),
+			'display_url_path'        => [ $term->slug ],
+			'square_marketing_images' => $marketing_images,
+			'marketing_images'        => $marketing_images,
+			'call_to_action'          => null,
+		];
+	}
+
+	/**
+	 * Get posts linked to a specific term.
+	 *
+	 * @param int    $term_id Term ID.
+	 * @param string $taxonomy_name Taxonomy name.
+	 *
+	 * @return array List of attachments
+	 */
+	protected function get_posts_assigned_to_a_term( int $term_id, string $taxonomy_name ) {
+		$args = [
+			'post_type'   => 'any',
+			'numberposts' => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
+			'fields'      => 'ids',
+			'tax_query'   => [
+				[
+					'taxonomy'         => $taxonomy_name,
+					'terms'            => $term_id,
+					'field'            => 'term_id',
+					'include_children' => false,
+				],
+			],
+		];
+
+		return $this->wp->get_posts( $args );
 	}
 
 	/**
