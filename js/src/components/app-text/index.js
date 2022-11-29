@@ -21,20 +21,28 @@ import './index.scss';
  * @param {Object} props Component props
  * @param {string} [props.variant] The variant to use for the text
  * @param {string} [props.className] Custom classname for this component
+ * @param {keyof JSX.IntrinsicElements} [props.as] as Custom HTML tag for the component (by default <p>)
  * @param {JSX.Element} props.children The content for this component
  * @param {Object} [props.rest] Params to be forworded to the component
  * @return {JSX.Element} The component
  */
-const AppText = ( { variant, className = '', children, ...rest } ) => {
+const AppText = ( {
+	variant,
+	className = '',
+	children,
+	as = 'p',
+	...rest
+} ) => {
+	const AsTag = as;
 	return (
-		<p
+		<AsTag
 			{ ...rest }
 			className={ classnames( 'gla-app-text', className, {
 				[ `gla-app-text--${ variant }` ]: variant,
 			} ) }
 		>
 			{ children }
-		</p>
+		</AsTag>
 	);
 };
 
