@@ -42,14 +42,11 @@
 		}
 
 		.components-card {
-			display: flex;
-			flex-direction: column;
 			flex: 1;
 
 			> div:first-of-type {
 				display: flex;
 				flex-direction: column;
-				flex: 1;
 			}
 		}
 	}
