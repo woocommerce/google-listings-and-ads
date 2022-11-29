@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ArrayUtil;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Exception;
@@ -36,7 +37,7 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
-	 * Get assets from specific post or term.
+	 * Get WP and other campaigns' assets from the specific post or term.
 	 *
 	 * @param int    $id Post or Term ID.
 	 * @param string $type Only possible values are post or term.
@@ -76,12 +77,12 @@ class AssetSuggestionsService implements Service {
 
 		if ( ! $post ) {
 			throw new Exception(
-				/* translators: 1: is a integer representing an unknown Post ID */
+				/* translators: 1: is an integer representing an unknown Post ID */
 				sprintf( __( 'Invalid Post ID %1$d', 'google-listings-and-ads' ), $id )
 			);
 		}
 
-		$attachments_ids = $this->get_post_attachments(
+		$attachments_ids = $this->get_post_image_attachments(
 			[
 				'post_parent' => $id,
 			]
@@ -93,7 +94,7 @@ class AssetSuggestionsService implements Service {
 
 		if ( $post->post_type === 'product' || $post->post_type === 'product_variation' ) {
 			$product         = $this->wc->maybe_get_product( $id );
-			$attachments_ids = array_merge( $attachments_ids, $product->get_gallery_image_ids(), [ $product->get_image_id() ] );
+			$attachments_ids = [ ...$attachments_ids, ...$product->get_gallery_image_ids(), $product->get_image_id() ];
 		}
 
 		$gallery_images_urls = get_post_gallery_images( $id );
@@ -104,8 +105,8 @@ class AssetSuggestionsService implements Service {
 		return [
 			'headline'                => [ $post->post_title ],
 			'long_headline'           => [ $long_headline ],
-			'description'             => $this->remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
-			'logo'                    => $this->remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
+			'description'             => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
+			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
 			'final_url'               => get_permalink( $id ),
 			'business_name'           => get_bloginfo( 'name' ),
 			'display_url_path'        => [ $post->post_name ],
@@ -121,7 +122,7 @@ class AssetSuggestionsService implements Service {
 	 * @return array Shop attachments.
 	 */
 	protected function get_shop_attachments(): array {
-		return $this->get_post_attachments(
+		return $this->get_post_image_attachments(
 			[
 				'post_parent__in' => $this->get_shop_products(),
 			]
@@ -148,17 +149,6 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
-	 * Remove empty values from array.
-	 *
-	 * @param array $array A list of strings.
-	 *
-	 * @return array A list of strings without empty strings.
-	 */
-	protected function remove_empty_values( array $array ): array {
-		return array_values( array_filter( $array ) );
-	}
-
-	/**
 	 * Get URL for each attachment using an array of attachment ids.
 	 *
 	 * @param array $ids A list of attachments ids.
@@ -166,7 +156,7 @@ class AssetSuggestionsService implements Service {
 	 * @return array A list of attachments urls.
 	 */
 	protected function get_url_attachments_by_ids( array $ids ): array {
-		$ids = array_unique( $this->remove_empty_values( $ids ) );
+		$ids = array_unique( ArrayUtil::remove_empty_values( $ids ) );
 
 		$marketing_images = [];
 		foreach ( $ids as $id ) {
@@ -183,7 +173,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array List of attachments
 	 */
-	protected function get_post_attachments( array $args = [] ): array {
+	protected function get_post_image_attachments( array $args = [] ): array {
 		$defaults = [
 			'post_type'      => 'attachment',
 			'post_mime_type' => 'image',
