@@ -91,7 +91,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			'final_url'               => get_permalink( $post->ID ),
 			'headline'                => [ $post->post_title ],
 			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
-			'description'             => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ) ,
+			'description'             => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
 			'business_name'           => get_bloginfo( 'name' ),
 			'display_url_path'        => [ $post->post_name ],
 			'logo'                    => [],
@@ -106,7 +106,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		return [
 			'final_url'               => get_term_link( $term->term_id ),
 			'headline'                => [ $term->name ],
-			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' .$term->name ],
+			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
 			'description'             => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
 			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
 			'business_name'           => get_bloginfo( 'name' ),
@@ -116,7 +116,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			'call_to_action'          => null,
 		];
 
-	}	
+	}
 
 	public function test_get_post_suggestions() {
 		$this->wp->expects( $this->once() )
@@ -353,13 +353,12 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	}
 
 	public function test_get_term() {
-
 		$image_post_1     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
 		$image_post_2     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
-		$image_post_3     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );		
-		$marketing_images = [  wp_get_attachment_image_url( $image_post_1 ),  wp_get_attachment_image_url( $image_post_2 ),  wp_get_attachment_image_url( $image_post_3 )   ];
+		$image_post_3     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
+		$marketing_images = [ wp_get_attachment_image_url( $image_post_1 ), wp_get_attachment_image_url( $image_post_2 ), wp_get_attachment_image_url( $image_post_3 ) ];
 
-		$posts_ids_assigned_to_term = [1,2,3];
+		$posts_ids_assigned_to_term = [ 1, 2, 3 ];
 
 		$args_posts_assigned_to_term = [
 			'post_type'   => 'any',
@@ -374,13 +373,13 @@ class AssetSuggestionsServiceTest extends UnitTest {
 				],
 			],
 		];
-		
+
 		$args_post_image_attachments = [
-			'post_type'      => 'attachment',
-			'post_mime_type' => 'image',
-			'fields'         => 'ids',
-			'numberposts'    => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
-			'post_parent__in' => $posts_ids_assigned_to_term 		
+			'post_type'       => 'attachment',
+			'post_mime_type'  => 'image',
+			'fields'          => 'ids',
+			'numberposts'     => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
+			'post_parent__in' => $posts_ids_assigned_to_term,
 		];
 
 		$this->wp->expects( $this->exactly( 2 ) )
@@ -389,16 +388,15 @@ class AssetSuggestionsServiceTest extends UnitTest {
 				[ $args_posts_assigned_to_term ],
 				[ $args_post_image_attachments ],
 			)
-			->willReturnOnConsecutiveCalls( $posts_ids_assigned_to_term , [ $image_post_1, $image_post_2, $image_post_3] );
-		
-		$this->assertEquals($this->format_term_asset_response( $this->term, $marketing_images ), $this->asset_suggestions->get_assets_suggestions( $this->term->term_id, 'term' ));
+			->willReturnOnConsecutiveCalls( $posts_ids_assigned_to_term, [ $image_post_1, $image_post_2, $image_post_3 ] );
+
+		$this->assertEquals( $this->format_term_asset_response( $this->term, $marketing_images ), $this->asset_suggestions->get_assets_suggestions( $this->term->term_id, 'term' ) );
 
 	}
 
 	public function test_get_invalid_term_id() {
 		$this->expectException( Exception::class );
 		$this->asset_suggestions->get_assets_suggestions( 123456, 'term' );
-
-	}	
+	}
 
 }
