@@ -129,14 +129,28 @@ class AssetSuggestionsService implements Service {
 
 		if ( ! $term ) {
 			throw new Exception(
-				/* translators: 1: is an integer representing an unknown Post ID */
+				/* translators: 1: is an integer representing an unknown Term ID */
 				sprintf( __( 'Invalid Term ID %1$d', 'google-listings-and-ads' ), $id )
 			);
 		}
 
-		$posts_ids_assigned_to_term = $this->get_posts_assigned_to_a_term( $term->term_id, $term->taxonomy );
-		$attachments_ids            = $this->get_post_image_attachments( [ 'post_parent__in' => $posts_ids_assigned_to_term ] );
-		$marketing_images           = $this->get_url_attachments_by_ids( $attachments_ids );
+		$posts_assigned_to_term     = $this->get_posts_assigned_to_a_term( $term->term_id, $term->taxonomy );
+		$posts_ids_assigned_to_term = [];
+		$attachments_ids            = [];
+
+		foreach ( $posts_assigned_to_term as $post ) {
+
+			if ( $post->post_type === 'product' ) {
+				$product           = $this->wc->maybe_get_product( $post->ID );
+				$attachments_ids[] = $product->get_image_id();
+			}
+
+			$posts_ids_assigned_to_term[] = $post->ID;
+		}
+
+		$attachments_ids  = [ ...$this->get_post_image_attachments( [ 'post_parent__in' => $posts_ids_assigned_to_term ] ), ...$attachments_ids ];
+		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
+		$marketing_images = array_slice( $marketing_images, 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
 
 		return [
 			'headline'                => [ $term->name ],
@@ -164,7 +178,6 @@ class AssetSuggestionsService implements Service {
 		$args = [
 			'post_type'   => 'any',
 			'numberposts' => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
-			'fields'      => 'ids',
 			'tax_query'   => [
 				[
 					'taxonomy'         => $taxonomy_name,

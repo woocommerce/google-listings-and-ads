@@ -353,17 +353,24 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	}
 
 	public function test_get_term() {
+		$post             = $this->factory()->post->create_and_get( [ 'post_type' => 'product' ] );
 		$image_post_1     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
 		$image_post_2     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
-		$image_post_3     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
-		$marketing_images = [ wp_get_attachment_image_url( $image_post_1 ), wp_get_attachment_image_url( $image_post_2 ), wp_get_attachment_image_url( $image_post_3 ) ];
+		$marketing_images = [ wp_get_attachment_image_url( $image_post_1 ), wp_get_attachment_image_url( $image_post_2 ) ];
 
-		$posts_ids_assigned_to_term = [ 1, 2, 3 ];
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_image_id( $image_post_2 );
+		$post->ID = $product->get_id();
+
+		$posts_ids_assigned_to_term = [ $this->post, $post ];
+
+		$this->wc->expects( $this->once() )
+			->method( 'maybe_get_product' )
+			->willReturn( $product );
 
 		$args_posts_assigned_to_term = [
 			'post_type'   => 'any',
 			'numberposts' => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
-			'fields'      => 'ids',
 			'tax_query'   => [
 				[
 					'taxonomy'         => $this->term->taxonomy,
@@ -379,7 +386,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			'post_mime_type'  => 'image',
 			'fields'          => 'ids',
 			'numberposts'     => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
-			'post_parent__in' => $posts_ids_assigned_to_term,
+			'post_parent__in' => [ $this->post->ID, $product->get_id() ],
 		];
 
 		$this->wp->expects( $this->exactly( 2 ) )
@@ -388,7 +395,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 				[ $args_posts_assigned_to_term ],
 				[ $args_post_image_attachments ],
 			)
-			->willReturnOnConsecutiveCalls( $posts_ids_assigned_to_term, [ $image_post_1, $image_post_2, $image_post_3 ] );
+			->willReturnOnConsecutiveCalls( $posts_ids_assigned_to_term, [ $image_post_1, $image_post_2 ] );
 
 		$this->assertEquals( $this->format_term_asset_response( $this->term, $marketing_images ), $this->asset_suggestions->get_assets_suggestions( $this->term->term_id, 'term' ) );
 
