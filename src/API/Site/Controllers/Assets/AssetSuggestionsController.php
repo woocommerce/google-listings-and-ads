@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -42,6 +43,17 @@ class AssetSuggestionsController extends BaseController {
 	 * Register rest routes with WordPress.
 	 */
 	public function register_routes(): void {
+		$this->register_route(
+			'assets/suggestions',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_assets_suggestions_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_assets_suggestions_params(),
+				],
+			]
+		);
 		$this->register_route(
 			'assets/final-url/suggestions',
 			[
@@ -87,6 +99,46 @@ class AssetSuggestionsController extends BaseController {
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
+	}
+
+	/**
+	 * Get the assets suggestions params.
+	 *
+	 * @return array
+	 */
+	public function get_assets_suggestions_params(): array {
+		return [
+			'id'   => [
+				'description'       => __( 'Post ID or Term ID.', 'google-listings-and-ads' ),
+				'type'              => 'number',
+				'sanitize_callback' => 'absint',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'type' => [
+				'description'       => __( 'Type linked to the id.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'enum'              => [ 'post', 'term' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
+	}
+
+	/**
+	 * Get the callback function for the assets suggestions request.
+	 *
+	 * @return callable
+	 */
+	protected function get_assets_suggestions_callback(): callable {
+		return function( Request $request ) {
+			try {
+				$id   = $request->get_param( 'id' );
+				$type = $request->get_param( 'type' );
+				return $this->asset_suggestions_service->get_assets_suggestions( $id, $type );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
 	}
 
 	/**

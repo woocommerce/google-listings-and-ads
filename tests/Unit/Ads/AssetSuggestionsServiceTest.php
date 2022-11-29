@@ -5,9 +5,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\DataTrait;
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
+use WC_Helper_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,10 +23,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class AssetSuggestionsServiceTest extends UnitTest {
 
-	protected const DEFAULT_PER_PAGE       = 30;
-	protected const DEFAULT_PER_PAGE_POSTS = 15;
-	protected const EMPTY_SEARCH           = '';
-	protected const TEST_SEARCH            = 'mySearch';
+	use DataTrait;
+
+	protected const DEFAULT_PER_PAGE                 = 30;
+	protected const DEFAULT_PER_PAGE_POSTS           = 15;
+	protected const EMPTY_SEARCH                     = '';
+	protected const TEST_SEARCH                      = 'mySearch';
+	protected const DEFAULT_MAXIMUM_MARKETING_IMAGES = 20;
 
 	protected const TEST_POST_TYPES               = [
 		'post',
@@ -50,7 +56,8 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		parent::setUp();
 
 		$this->wp                = $this->createMock( WP::class );
-		$this->asset_suggestions = new AssetSuggestionsService( $this->wp );
+		$this->wc                = $this->createMock( WC::class );
+		$this->asset_suggestions = new AssetSuggestionsService( $this->wp, $this->wc );
 
 		$this->post = $this->factory()->post->create_and_get( [ 'post_title' => 'Abcd' ] );
 		$this->term = $this->factory()->term->create_and_get( [ 'name' => 'bcde' ] );
@@ -60,7 +67,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 	}
 
-	public function format_url_post_item( $post ) {
+	protected function format_url_post_item( $post ) {
 		return [
 			'id'    => $post->ID,
 			'type'  => 'post',
@@ -69,13 +76,29 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		];
 	}
 
-	public function format_url_term_item( $term ) {
+	protected function format_url_term_item( $term ) {
 		return [
 			'id'    => $term->term_id,
 			'type'  => 'term',
 			'title' => $term->name,
 			'url'   => get_term_link( $term->term_id, $term->taxonomy ),
 		];
+	}
+
+	protected function format_post_asset_response( $post, $marketing_images = [] ) {
+		return [
+			'final_url'               => get_permalink( $post->ID ),
+			'headline'                => [ $post->post_title ],
+			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
+			'description'             => array_values( array_filter( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ) ),
+			'business_name'           => get_bloginfo( 'name' ),
+			'display_url_path'        => [ $post->post_name ],
+			'logo'                    => [],
+			'square_marketing_images' => $marketing_images,
+			'marketing_images'        => $marketing_images,
+			'call_to_action'          => null,
+		];
+
 	}
 
 	public function test_get_post_suggestions() {
@@ -241,4 +264,75 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		$this->assertEquals( $expected, $this->asset_suggestions->get_final_url_suggestions( self::TEST_SEARCH, $per_page ) );
 	}
+
+	public function test_get_post_assets() {
+		$image_id = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ), $this->post->ID );
+
+		$this->wp->expects( $this->once() )
+			->method( 'get_post' )
+			->willReturn( $this->post );
+
+		$this->wp->expects( $this->once() )
+			->method( 'get_posts' )
+			->with(
+				[
+					'post_type'      => 'attachment',
+					'post_mime_type' => 'image',
+					'numberposts'    => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
+					'fields'         => 'ids',
+					'post_parent'    => $this->post->ID,
+				]
+			)->willReturn( [ $image_id ] );
+
+		$this->assertEquals( $this->format_post_asset_response( $this->post, [ wp_get_attachment_image_url( $image_id ) ] ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+	}
+
+	public function test_get_post_assets_for_products() {
+		$post     = $this->factory()->post->create_and_get( [ 'post_type' => 'product' ] );
+		$image_id = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_gallery_image_ids( [ $image_id ] );
+
+		$this->wp->expects( $this->once() )
+			->method( 'get_post' )
+			->willReturn( $post );
+
+		$this->wc->expects( $this->once() )
+			->method( 'maybe_get_product' )
+			->willReturn( $product );
+
+		$this->assertEquals( $this->format_post_asset_response( $post, [ wp_get_attachment_image_url( $image_id ) ] ), $this->asset_suggestions->get_assets_suggestions( $post->ID, 'post' ) );
+
+	}
+
+	public function test_get_shop_assets() {
+		$image_post     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
+		$image_product  = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
+		$this->post->ID = wc_get_page_id( 'shop' );
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_gallery_image_ids( [ $image_product ] );
+
+		$this->wp->expects( $this->once() )
+			->method( 'get_post' )
+			->willReturn( $this->post );
+
+		$this->wp->expects( $this->exactly( 3 ) )
+			->method( 'get_posts' )
+			->willReturnOnConsecutiveCalls( [ $image_post ], [ $product->get_id() ], [ $image_product ] );
+
+		$this->assertEquals( $this->format_post_asset_response( $this->post, [ wp_get_attachment_image_url( $image_post ), wp_get_attachment_image_url( $image_product ) ] ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+	}
+
+	public function test_get_invalid_post_id() {
+		$this->wp->expects( $this->once() )
+			->method( 'get_post' )
+			->willReturn( null );
+
+		$this->expectException( Exception::class );
+		$this->asset_suggestions->get_assets_suggestions( 123456, 'post' );
+
+	}
+
 }

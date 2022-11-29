@@ -4,7 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ArrayUtil;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Exception;
 
 /**
  * Class AssetSuggestionsService
@@ -18,12 +21,169 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 class AssetSuggestionsService implements Service {
 
 	/**
+	 * Default maximum marketing images.
+	 */
+	protected const DEFAULT_MAXIMUM_MARKETING_IMAGES = 20;
+
+	/**
 	 * AssetSuggestionsService constructor.
 	 *
-	 * @param WP $wp
+	 * @param WP $wp WP Proxy.
+	 * @param WC $wc WC Proxy.
 	 */
-	public function __construct( WP $wp ) {
+	public function __construct( WP $wp, WC $wc ) {
 		$this->wp = $wp;
+		$this->wc = $wc;
+	}
+
+	/**
+	 * Get WP and other campaigns' assets from the specific post or term.
+	 *
+	 * @param int    $id Post or Term ID.
+	 * @param string $type Only possible values are post or term.
+	 */
+	public function get_assets_suggestions( int $id, string $type ): array {
+		// TODO: Fetch assets from others campaigns and merge the result with the WP Assets.
+		return $this->get_wp_assets( $id, $type );
+	}
+
+	/**
+	 * Get assets from specific post or term.
+	 *
+	 * @param int    $id Post or Term ID.
+	 * @param string $type Only possible values are post or term.
+	 *
+	 * @return array All assets available for specific term or post.
+	 */
+	protected function get_wp_assets( int $id, string $type ): array {
+		if ( $type === 'post' ) {
+			return $this->get_post_assets( $id );
+		}
+
+		return [];
+
+	}
+
+	/**
+	 * Get assets from specific post.
+	 *
+	 * @param int $id Post ID.
+	 *
+	 * @return array All assets for specific post.
+	 * @throws Exception If the Post ID is invalid.
+	 */
+	protected function get_post_assets( int $id ): array {
+		$post = $this->wp->get_post( $id );
+
+		if ( ! $post ) {
+			throw new Exception(
+				/* translators: 1: is an integer representing an unknown Post ID */
+				sprintf( __( 'Invalid Post ID %1$d', 'google-listings-and-ads' ), $id )
+			);
+		}
+
+		$attachments_ids = $this->get_post_image_attachments(
+			[
+				'post_parent' => $id,
+			]
+		);
+
+		if ( $id === wc_get_page_id( 'shop' ) ) {
+			$attachments_ids = array_merge( $attachments_ids, $this->get_shop_attachments() );
+		}
+
+		if ( $post->post_type === 'product' || $post->post_type === 'product_variation' ) {
+			$product         = $this->wc->maybe_get_product( $id );
+			$attachments_ids = [ ...$attachments_ids, ...$product->get_gallery_image_ids(), $product->get_image_id() ];
+		}
+
+		$gallery_images_urls = get_post_gallery_images( $id );
+		$marketing_images    = array_merge( $this->get_url_attachments_by_ids( $attachments_ids ), $gallery_images_urls );
+		$marketing_images    = array_slice( $marketing_images, 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
+		$long_headline       = get_bloginfo( 'name' ) . ': ' . $post->post_title;
+
+		return [
+			'headline'                => [ $post->post_title ],
+			'long_headline'           => [ $long_headline ],
+			'description'             => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
+			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
+			'final_url'               => get_permalink( $id ),
+			'business_name'           => get_bloginfo( 'name' ),
+			'display_url_path'        => [ $post->post_name ],
+			'square_marketing_images' => $marketing_images,
+			'marketing_images'        => $marketing_images,
+			'call_to_action'          => null,
+		];
+	}
+
+	/**
+	 * Get attachments related to the shop page.
+	 *
+	 * @return array Shop attachments.
+	 */
+	protected function get_shop_attachments(): array {
+		return $this->get_post_image_attachments(
+			[
+				'post_parent__in' => $this->get_shop_products(),
+			]
+		);
+	}
+
+	/**
+	 *
+	 * Get products that will be use to offer image assets.
+	 *
+	 * @param array $args See WP_Query::parse_query() for all available arguments.
+	 * @return array Shop products.
+	 */
+	protected function get_shop_products( array $args = [] ): array {
+		$defaults = [
+			'post_type'   => 'product',
+			'numberposts' => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
+			'fields'      => 'ids',
+		];
+
+		$args = wp_parse_args( $args, $defaults );
+
+		return $this->wp->get_posts( $args );
+	}
+
+	/**
+	 * Get URL for each attachment using an array of attachment ids.
+	 *
+	 * @param array $ids A list of attachments ids.
+	 *
+	 * @return array A list of attachments urls.
+	 */
+	protected function get_url_attachments_by_ids( array $ids ): array {
+		$ids = array_unique( ArrayUtil::remove_empty_values( $ids ) );
+
+		$marketing_images = [];
+		foreach ( $ids as $id ) {
+			$marketing_images[] = wp_get_attachment_image_url( $id );
+		}
+		return $marketing_images;
+	}
+
+
+	/**
+	 * Get Attachmets for specific posts.
+	 *
+	 * @param array $args See WP_Query::parse_query() for all available arguments.
+	 *
+	 * @return array List of attachments
+	 */
+	protected function get_post_image_attachments( array $args = [] ): array {
+		$defaults = [
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'image',
+			'fields'         => 'ids',
+			'numberposts'    => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
+		];
+
+		$args = wp_parse_args( $args, $defaults );
+
+		return $this->wp->get_posts( $args );
 	}
 
 	/**

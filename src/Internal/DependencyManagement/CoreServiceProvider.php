@@ -252,7 +252,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getLeagueContainer()
 			 ->inflector( AdsAwareInterface::class )
 			 ->invokeMethod( 'set_ads_object', [ AdsService::class ] );
-		$this->share_with_tags( AssetSuggestionsService::class, WP::class );
+		$this->share_with_tags( AssetSuggestionsService::class, WP::class, WC::class );
 
 		// Set up the installer.
 		$installer_definition = $this->share_with_tags(
