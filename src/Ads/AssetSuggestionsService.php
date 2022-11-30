@@ -148,7 +148,10 @@ class AssetSuggestionsService implements Service {
 			$posts_ids_assigned_to_term[] = $post->ID;
 		}
 
-		$attachments_ids  = [ ...$this->get_post_image_attachments( [ 'post_parent__in' => $posts_ids_assigned_to_term ] ), ...$attachments_ids ];
+		if ( count( $posts_assigned_to_term ) ) {
+			$attachments_ids = [ ...$this->get_post_image_attachments( [ 'post_parent__in' => $posts_ids_assigned_to_term ] ), ...$attachments_ids ];
+		}
+
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
 		$marketing_images = array_slice( $marketing_images, 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
 
