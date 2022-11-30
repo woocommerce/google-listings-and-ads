@@ -32,6 +32,10 @@ function isEvent( value ) {
  * Renders an adapted form component that wraps the `Form` of `@woocommerce/components` with
  * several workarounds in order to be compatible with WC 6.9 to 7.1.
  *
+ * This component includes additional enhancements to make AdaptiveForm have more useful or
+ * reusable features. It could also be the playground of the practical instances before pushing
+ * them upstream.
+ *
  * @param {Object} props React props.
  * @param {(values: Object) => void} [props.onSubmit] Function to call when a form is requesting submission.
  * @param {(formContext: Object) => JSX.Element | JSX.Element} props.children Children to be rendered. Could be a render prop function.
@@ -63,10 +67,13 @@ function AdaptiveForm( { onSubmit, children, ...props }, ref ) {
 		...formRef.current,
 	} ) );
 
-	// Enhancements related.
-	// Additional enhancements to make AdaptiveForm have more useful or reusable features.
-	// It could also be the playground of the practical instances before pushing them upstream.
+	/* === Start of enhancement-related codes === */
+
 	const isMounted = useIsMounted();
+
+	// Add `isSubmitting` and `isSubmitted` states for facilitating across multiple layers of
+	// component controlling, such as disabling inputs or buttons. They are composed in a tuple
+	// to reduce the number of triggered re-rendering.
 	const [ submission, setSubmission ] = useState( [ false, false ] );
 	const [ isSubmitting, isSubmitted ] = submission;
 
@@ -82,6 +89,8 @@ function AdaptiveForm( { onSubmit, children, ...props }, ref ) {
 			}
 		};
 	}
+
+	/* === End of enhancement-related codes === */
 
 	return (
 		<Form { ...props } ref={ formRef }>
@@ -163,7 +172,10 @@ function AdaptiveForm( { onSubmit, children, ...props }, ref ) {
 					setImmediate( () => setDelegation( batchQueue.shift() ) );
 				}
 
-				// Enhancements related.
+				/* === Start of enhancement-related codes === */
+
+				// Keep the target element for identifying which one triggered the submission when
+				// there are multiple submit buttons.
 				formContext.handleSubmit = function ( event ) {
 					adapterRef.current.submitter = event.currentTarget;
 					return handleSubmit.call( this, event );
@@ -174,6 +186,8 @@ function AdaptiveForm( { onSubmit, children, ...props }, ref ) {
 					isSubmitted,
 					submitter: adapterRef.current.submitter,
 				};
+
+				/* === End of enhancement-related codes === */
 
 				// Since WC 6.9, it added the ability to obtain Form context via `useFormContext` hook.
 				// However, if a component uses that hook, the compatible fixes in this component won't
