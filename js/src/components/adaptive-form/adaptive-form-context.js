@@ -23,16 +23,16 @@ import { createContext, useContext } from '@wordpress/element';
 
 /**
  * @typedef {Object} AdaptiveFormContext
- * @property {Object} values Form values.
- * @property {Object} errors Object with key-value pairs representing errors for form values. Empty object if no errors.
- * @property {Object} touched Object with key-value pairs representing form values is touched.
+ * @property {Object} values Form values, e.g. `{ nickname: '' age: 0 }`.
+ * @property {Object} errors Object with key-value pairs representing errors for form values. Empty object if no errors. For example, `{ nickname: 'Nickname is required.' }`.
+ * @property {Object} touched Object with key-value pairs representing the corresponding input fields of the form values have received focus, e.g. `{ nickname: true }`.
  * @property {boolean} isValidForm `true` if form values pass the validation.
  * @property {boolean} isDirty `true` after any of the form values is modified.
  * @property {(name: string, value: *) => void} setValue Function to set a form value.
  * @property {(name: string) => InputProps} getInputProps Function to get the corresponding input props by the name of a form value.
  * @property {() => Promise<Object>} handleSubmit Function to trigger form submission.
  * @property {(initialValues: Object) => void} resetForm Function to reset form with given initial values.
- * @property {(currentTouched: Object) => void} setTouched Function to update the `touched` state.
+ * @property {(nextTouched: Object) => void | (updater: (currentTouched: Object) => Object) => void} setTouched Function to update the `touched` state, e.g. `setTouched( { nickname: false } )`. The function signature is the same as the updating function of `React.useState`.
  * @property {AdaptiveFormContextAdapter} adapter Additional enhancements to AdaptiveForm.
  */
 
