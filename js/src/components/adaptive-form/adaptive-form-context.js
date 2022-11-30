@@ -29,7 +29,7 @@ import { createContext, useContext } from '@wordpress/element';
  * @property {boolean} isValidForm `true` if form values pass the validation.
  * @property {boolean} isDirty `true` after any of the form values is modified.
  * @property {(name: string, value: *) => void} setValue Function to set a form value.
- * @property {(name: string) => InputProps} getInputProps Function to get the corresponding input props by the name of a form value.
+ * @property {(name: string) => InputProps} getInputProps Function to get the corresponding input props by a name of the form `values`. The returned props is usually used to assign to input field.
  * @property {() => Promise<Object>} handleSubmit Function to trigger form submission.
  * @property {(initialValues: Object) => void} resetForm Function to reset form with given initial values.
  * @property {(nextTouched: Object) => void | (updater: (currentTouched: Object) => Object) => void} setTouched Function to update the `touched` state, e.g. `setTouched( { nickname: false } )`. The function signature is the same as the updating function of `React.useState`.
