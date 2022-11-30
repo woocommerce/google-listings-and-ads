@@ -164,7 +164,8 @@ class ProductRepository implements Service {
 	 * @return array
 	 */
 	public function find_delete_product_ids( array $ids, int $limit = - 1, int $offset = 0 ): array {
-		$args    = [ 'status' => 'trash' ];
+		// Default status query args in WC_Product_Query plus status trash.
+		$args    = [ 'status' => [ 'draft', 'pending', 'private', 'publish', 'trash' ] ];
 		$results = $this->find_by_ids( $ids, $args, $limit, $offset );
 		return $this->product_filter->filter_products_for_delete( $results )->get_product_ids();
 	}

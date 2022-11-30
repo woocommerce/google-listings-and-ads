@@ -114,7 +114,11 @@ class BatchProductHelper implements Service {
 	 * @param BatchProductEntry $product_entry
 	 */
 	public function mark_as_unsynced( BatchProductEntry $product_entry ) {
-		$wc_product = $this->product_helper->get_wc_product( $product_entry->get_wc_product_id() );
+		try {
+			$wc_product = $this->product_helper->get_wc_product( $product_entry->get_wc_product_id() );
+		} catch ( InvalidValue $exception ) {
+			return;
+		}
 
 		$this->product_helper->mark_as_unsynced( $wc_product );
 	}

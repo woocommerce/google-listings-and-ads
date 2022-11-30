@@ -4,6 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Util;
 
 use Composer\Script\Event;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RegexIterator;
+use UnexpectedValueException;
 
 /**
  * Utilities to remove Google Ads API services in the library.
@@ -179,6 +183,37 @@ class GoogleAdsCleanupServices {
 	}
 
 	/**
+	 * Find a list of files in a path, including subdirectories, matching a pattern.
+	 *
+	 * @param string $path Package path
+	 * @param string $match Regex pattern to match
+	 * @return array Matching files
+	 */
+	protected function get_dir_contents( $path, $match ) {
+		try {
+			$rdi = new RecursiveDirectoryIterator( $path );
+		} catch ( UnexpectedValueException $e ) {
+			$this->output_text(
+				sprintf(
+					'Expected directory "%s" was not found',
+					$path
+				)
+			);
+			exit( 1 );
+		}
+
+		$rii   = new RecursiveIteratorIterator( $rdi );
+		$rri   = new RegexIterator( $rii, $match );
+		$files = [];
+		foreach ( $rri as $file ) {
+			$files[] = $file->getPathname();
+		}
+
+		return $files;
+	}
+
+
+	/**
 	 * Find a specific pattern used within the extension.
 	 *
 	 * @param string $pattern Regexp pattern to match.
@@ -186,24 +221,22 @@ class GoogleAdsCleanupServices {
 	 * @return array List of names that match.
 	 */
 	protected function find_used_pattern( string $pattern ): array {
-		$command = "grep -rE --include=*.php '{$pattern}' {$this->code_path}";
-
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.system_calls_exec
-		exec( $command, $output );
+		$files  = $this->get_dir_contents( $this->code_path, '/\.php$/i' );
+		$output = [];
+		foreach ( $files as $file ) {
+			preg_match_all( "/{$pattern}/", file_get_contents( $file ), $matches ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+			if ( isset( $matches[1] ) ) {
+				foreach ( $matches[1] as $match ) {
+					$output[] = $match;
+				}
+			}
+		}
 
 		if ( empty( $output ) ) {
 			return [];
 		}
 
-		return array_unique(
-			array_map(
-				function( $line ) use ( $pattern ) {
-					preg_match( "/{$pattern}/", $line, $matches );
-					return $matches[1];
-				},
-				$output
-			)
-		);
+		return array_unique( $output );
 	}
 
 	/**

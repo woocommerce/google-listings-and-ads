@@ -37,12 +37,6 @@ class DeleteProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
 	public function process_items( array $product_id_map ) {
-		$product_ids = array_values( $product_id_map );
-		$ready_ids   = $this->product_repository->find_delete_product_ids( $product_ids );
-
-		// Exclude any ID's which are not ready to delete.
-		$product_id_map = array_intersect( $product_id_map, $ready_ids );
-
 		$product_entries = BatchProductIDRequestEntry::create_from_id_map( new ProductIDMap( $product_id_map ) );
 		$this->product_syncer->delete_by_batch_requests( $product_entries );
 	}
