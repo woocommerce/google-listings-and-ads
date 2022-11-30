@@ -20,11 +20,11 @@ export default function AssetGroupSection() {
 			className=".gla-asset-group-section"
 			title={ createInterpolateElement(
 				__(
-					'Add assets <gray>(Optional)</gray>',
+					'Add assets <optional>(Optional)</optional>',
 					'google-listings-and-ads'
 				),
 				{
-					gray: (
+					optional: (
 						<span className="gla-asset-group-section__optional-label" />
 					),
 				}
