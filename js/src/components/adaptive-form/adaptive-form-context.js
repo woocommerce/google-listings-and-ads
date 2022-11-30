@@ -4,6 +4,10 @@
 import { createContext, useContext } from '@wordpress/element';
 
 /**
+ * @typedef {import('react').React} React
+ */
+
+/**
  * @typedef {Object} InputProps
  * @property {*} value Form value.
  * @property {boolean} checked Form value converted to boolean.
@@ -32,7 +36,7 @@ import { createContext, useContext } from '@wordpress/element';
  * @property {(name: string) => InputProps} getInputProps Function to get the corresponding input props by a name of the form `values`. The returned props is usually used to assign to input field.
  * @property {() => Promise<Object>} handleSubmit Function to trigger form submission.
  * @property {(initialValues: Object) => void} resetForm Function to reset form with given initial values.
- * @property {(nextTouched: Object) => void | (updater: (currentTouched: Object) => Object) => void} setTouched Function to update the `touched` state, e.g. `setTouched( { nickname: false } )`. The function signature is the same as the updating function of `React.useState`.
+ * @property {React.Dispatch<React.SetStateAction<Object>>} setTouched Function to update the `touched` state, e.g. `setTouched( { nickname: false } )`.
  * @property {AdaptiveFormContextAdapter} adapter Additional enhancements to AdaptiveForm.
  */
 
