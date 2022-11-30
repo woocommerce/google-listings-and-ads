@@ -1,10 +1,15 @@
 /**
  * External dependencies
  */
-import { __experimentalText as Text, Button } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { recordEvent } from '@woocommerce/tracks';
+
+/**
+ * Internal dependencies
+ */
+import Text from '.~/components/app-text';
 
 const COLLAPSED_ISSUES_SIZE = 5;
 

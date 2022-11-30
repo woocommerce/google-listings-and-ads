@@ -1,13 +1,7 @@
 /**
  * External dependencies
  */
-import {
-	Card,
-	CardBody,
-	FlexBlock,
-	Tip,
-	__experimentalText as Text,
-} from '@wordpress/components';
+import { Card, CardBody, FlexBlock, Tip } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -16,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
+import Text from '.~/components/app-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import WistiaVideo from '.~/components/wistia-video';
 import { getSetupMCUrl } from '.~/utils/urls';
@@ -48,7 +43,7 @@ const GetStartedWithVideoCard = () => {
 					) }
 				</Text>
 				<Text
-					variant="title.medium"
+					variant="title-medium"
 					className="gla-get-started-with-video-card__title"
 				>
 					{ __(

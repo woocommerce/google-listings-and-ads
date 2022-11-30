@@ -15,24 +15,16 @@ import {
 	CardBody,
 	CardFooter,
 	CardHeader,
-	__experimentalText as Text,
 } from '@wordpress/components';
 import { isEqual, isFunction } from 'lodash';
 import PropTypes from 'prop-types';
 import { getIdsFromQuery, updateQueryString } from '@woocommerce/navigation';
-
-// /**
-//  * Internal dependencies
-//  */
-// import CompareButton from './button';
-// import Search from '../search';
-
-// export { default as CompareButton } from './button';
+import { CompareButton, Search } from '@woocommerce/components';
 
 /**
- * External dependencies
+ * Internal dependencies
  */
-import { CompareButton, Search } from '@woocommerce/components';
+import Text from '.~/components/app-text';
 
 export { CompareButton };
 
@@ -109,7 +101,7 @@ class CompareFilter extends Component {
 		return (
 			<Card className="woocommerce-filters__compare">
 				<CardHeader>
-					<Text variant="subtitle.small">{ labels.title }</Text>
+					<Text variant="subtitle-small">{ labels.title }</Text>
 				</CardHeader>
 				<CardBody>
 					<Search
