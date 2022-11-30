@@ -124,7 +124,7 @@ class AssetSuggestionsService implements Service {
 	 * @return array All assets for specific term.
 	 * @throws Exception If the Term ID is invalid.
 	 */
-	protected function get_term_assets( int $id ) {
+	protected function get_term_assets( int $id ): array {
 		$term = get_term( $id );
 
 		if ( ! $term ) {
@@ -172,9 +172,9 @@ class AssetSuggestionsService implements Service {
 	 * @param int    $term_id Term ID.
 	 * @param string $taxonomy_name Taxonomy name.
 	 *
-	 * @return array List of attachments
+	 * @return array List of posts assigned to the term.
 	 */
-	protected function get_posts_assigned_to_a_term( int $term_id, string $taxonomy_name ) {
+	protected function get_posts_assigned_to_a_term( int $term_id, string $taxonomy_name ): array {
 		$args = [
 			'post_type'   => 'any',
 			'numberposts' => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
