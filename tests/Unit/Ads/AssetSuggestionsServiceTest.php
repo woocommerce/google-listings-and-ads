@@ -352,7 +352,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 	}
 
-	public function test_get_term() {
+	public function test_get_term_with_product() {
 		$post             = $this->factory()->post->create_and_get( [ 'post_type' => 'product' ] );
 		$image_post_1     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
 		$image_post_2     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
@@ -398,6 +398,39 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->willReturnOnConsecutiveCalls( $posts_ids_assigned_to_term, [ $image_post_1, $image_post_2 ] );
 
 		$this->assertEquals( $this->format_term_asset_response( $this->term, $marketing_images ), $this->asset_suggestions->get_assets_suggestions( $this->term->term_id, 'term' ) );
+
+	}
+
+	public function test_get_term_without_product() {
+		$post             = $this->factory()->post->create_and_get();
+		$image_post_1     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
+		$image_post_2     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
+		$marketing_images = [ wp_get_attachment_image_url( $image_post_1 ), wp_get_attachment_image_url( $image_post_2 ) ];
+
+		$posts_ids_assigned_to_term = [ $this->post, $post ];
+
+		$this->wc->expects( $this->never() )
+			->method( 'maybe_get_product' );
+
+		$this->wp->expects( $this->exactly( 2 ) )
+			->method( 'get_posts' )
+			->willReturnOnConsecutiveCalls( $posts_ids_assigned_to_term, [ $image_post_1, $image_post_2 ] );
+
+		$this->assertEquals( $this->format_term_asset_response( $this->term, $marketing_images ), $this->asset_suggestions->get_assets_suggestions( $this->term->term_id, 'term' ) );
+
+	}
+
+	public function test_get_term_without_assigned_posts() {
+		$posts_ids_assigned_to_term = [];
+
+		$this->wc->expects( $this->never() )
+			->method( 'maybe_get_product' );
+
+		$this->wp->expects( $this->exactly( 1 ) )
+			->method( 'get_posts' )
+			->willReturnOnConsecutiveCalls( $posts_ids_assigned_to_term );
+
+		$this->assertEquals( $this->format_term_asset_response( $this->term, [] ), $this->asset_suggestions->get_assets_suggestions( $this->term->term_id, 'term' ) );
 
 	}
 
