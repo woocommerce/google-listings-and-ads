@@ -28,6 +28,9 @@ function isEvent( value ) {
  * @property {(name: string, value: *) => void} setValue Set the `name` field of the form states to the given `value`.
  */
 
+const SUBMITTING = 'submitting';
+const SUBMITTED = 'submitted';
+
 /**
  * Renders an adapted form component that wraps the `Form` of `@woocommerce/components` with
  * several workarounds in order to be compatible with WC 6.9 to 7.1.
@@ -72,19 +75,19 @@ function AdaptiveForm( { onSubmit, children, ...props }, ref ) {
 	const isMounted = useIsMounted();
 
 	// Add `isSubmitting` and `isSubmitted` states for facilitating across multiple layers of
-	// component controlling, such as disabling inputs or buttons. They are composed in a tuple
-	// to reduce the number of triggered re-rendering.
-	const [ submission, setSubmission ] = useState( [ false, false ] );
-	const [ isSubmitting, isSubmitted ] = submission;
+	// component controlling, such as disabling inputs or buttons.
+	const [ submission, setSubmission ] = useState( null );
+	const isSubmitting = submission === SUBMITTING;
+	const isSubmitted = submission === SUBMITTED;
 
 	if ( onSubmit ) {
 		props.onSubmit = async function ( values ) {
-			setSubmission( [ true, false ] );
+			setSubmission( SUBMITTING );
 
 			await onSubmit.call( this, values, adapterRef.current.submitter );
 
 			if ( isMounted() ) {
-				setSubmission( [ false, true ] );
+				setSubmission( SUBMITTED );
 				adapterRef.current.submitter = null;
 			}
 		};
