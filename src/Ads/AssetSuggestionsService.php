@@ -73,7 +73,7 @@ class AssetSuggestionsService implements Service {
 	 * @throws Exception If the Post ID is invalid.
 	 */
 	protected function get_post_assets( int $id ): array {
-		$post = $this->wp->get_post( $id );
+		$post = get_post( $id );
 
 		if ( ! $post || $post->post_status === 'trash' ) {
 			throw new Exception(
@@ -89,7 +89,7 @@ class AssetSuggestionsService implements Service {
 		);
 
 		if ( $id === wc_get_page_id( 'shop' ) ) {
-			$attachments_ids = array_merge( $attachments_ids, $this->get_shop_attachments() );
+			$attachments_ids = [ ...$attachments_ids, ...$this->get_shop_attachments() ];
 		}
 
 		if ( $post->post_type === 'product' || $post->post_type === 'product_variation' ) {
@@ -98,7 +98,7 @@ class AssetSuggestionsService implements Service {
 		}
 
 		$gallery_images_urls = get_post_gallery_images( $id );
-		$marketing_images    = array_merge( $this->get_url_attachments_by_ids( $attachments_ids ), $gallery_images_urls );
+		$marketing_images    = [ ...$this->get_url_attachments_by_ids( $attachments_ids ), ...$gallery_images_urls ];
 		$marketing_images    = array_slice( $marketing_images, 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
 		$long_headline       = get_bloginfo( 'name' ) . ': ' . $post->post_title;
 
