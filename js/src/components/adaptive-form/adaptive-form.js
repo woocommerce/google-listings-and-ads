@@ -12,6 +12,12 @@ import {
 import { Form } from '@woocommerce/components';
 import { get } from 'lodash';
 
+/**
+ * Internal dependencies
+ */
+import useIsMounted from '.~/hooks/useIsMounted';
+import { AdaptiveFormContext } from './adaptive-form-context';
+
 function isEvent( value ) {
 	return ( value?.nativeEvent || value ) instanceof Event;
 }
@@ -22,17 +28,25 @@ function isEvent( value ) {
  * @property {(name: string, value: *) => void} setValue Set the `name` field of the form states to the given `value`.
  */
 
+const SUBMITTING = 'submitting';
+const SUBMITTED = 'submitted';
+
 /**
  * Renders an adapted form component that wraps the `Form` of `@woocommerce/components` with
  * several workarounds in order to be compatible with WC 6.9 to 7.1.
  *
+ * This component includes additional enhancements to make AdaptiveForm have more useful or
+ * reusable features. It could also be the playground of the practical instances before pushing
+ * them upstream.
+ *
  * @param {Object} props React props.
- * @param {(formProps: Object) => JSX.Element | JSX.Element} props.children Children to be rendered. Could be a render prop function.
+ * @param {(values: Object) => void} [props.onSubmit] Function to call when a form is requesting submission.
+ * @param {(formContext: Object) => JSX.Element | JSX.Element} props.children Children to be rendered. Could be a render prop function.
  * @param {import('react').MutableRefObject<AdaptiveFormHandler>} ref React ref to be attached to the handler of this component.
  */
-function AdaptiveForm( { children, ...props }, ref ) {
+function AdaptiveForm( { onSubmit, children, ...props }, ref ) {
 	const formRef = useRef();
-	const adapterRef = useRef( {} );
+	const adapterRef = useRef( { submitter: null } );
 	const [ batchQueue, setBatchQueue ] = useState( [] );
 	const [ delegation, setDelegation ] = useState();
 
@@ -56,9 +70,40 @@ function AdaptiveForm( { children, ...props }, ref ) {
 		...formRef.current,
 	} ) );
 
+	/* === Start of enhancement-related codes === */
+
+	const isMounted = useIsMounted();
+
+	// Add `isSubmitting` and `isSubmitted` states for facilitating across multiple layers of
+	// component controlling, such as disabling inputs or buttons.
+	const [ submission, setSubmission ] = useState( null );
+	const isSubmitting = submission === SUBMITTING;
+	const isSubmitted = submission === SUBMITTED;
+
+	if ( onSubmit ) {
+		props.onSubmit = async function ( values ) {
+			setSubmission( SUBMITTING );
+
+			await onSubmit.call( this, values, adapterRef.current.submitter );
+
+			if ( isMounted() ) {
+				setSubmission( SUBMITTED );
+				adapterRef.current.submitter = null;
+			}
+		};
+	}
+
+	/* === End of enhancement-related codes === */
+
 	return (
 		<Form { ...props } ref={ formRef }>
-			{ ( { setValue, setValues, getInputProps, ...formProps } ) => {
+			{ ( {
+				setValue,
+				setValues,
+				getInputProps,
+				handleSubmit,
+				...formContext
+			} ) => {
 				// Since WC 6.9, the original Form is re-implemented as Functional component from
 				// Class component. But when `setValue` is called, the closure of `values` is
 				// referenced to the currently rendered snapshot states instead of a reference
@@ -87,10 +132,10 @@ function AdaptiveForm( { children, ...props }, ref ) {
 					}
 				};
 
-				// WC 6.9 workaround makes the reference of `formProps.setValue` stable to prevent
+				// WC 6.9 workaround makes the reference of `formContext.setValue` stable to prevent
 				// an infinite re-rendering loop when using `setValue` within `useEffect`.
 				// Ref: https://github.com/woocommerce/woocommerce/blob/6.9.0/packages/js/components/src/form/form.tsx#L177
-				formProps.setValue = queueSetValue;
+				formContext.setValue = queueSetValue;
 
 				// The same WC 7.1 workaround as `setValueCompatibly` above, avoiding the
 				// `getInputProps(name).onChange` calling the problematic `setValue`.
@@ -98,7 +143,7 @@ function AdaptiveForm( { children, ...props }, ref ) {
 				// Ref:
 				// - https://github.com/woocommerce/woocommerce/blob/7.1.0/packages/js/components/src/form/form.tsx#L291-L293
 				// - https://github.com/woocommerce/woocommerce/blob/7.1.0/packages/js/components/src/form/form.tsx#L215-L232
-				formProps.getInputProps = ( name ) => {
+				formContext.getInputProps = ( name ) => {
 					const inputProps = getInputProps( name );
 
 					function onChange( value ) {
@@ -130,7 +175,35 @@ function AdaptiveForm( { children, ...props }, ref ) {
 					setImmediate( () => setDelegation( batchQueue.shift() ) );
 				}
 
-				return children( formProps );
+				/* === Start of enhancement-related codes === */
+
+				// Keep the target element for identifying which one triggered the submission when
+				// there are multiple submit buttons.
+				formContext.handleSubmit = function ( event ) {
+					adapterRef.current.submitter = event.currentTarget;
+					return handleSubmit.call( this, event );
+				};
+
+				formContext.adapter = {
+					isSubmitting,
+					isSubmitted,
+					submitter: adapterRef.current.submitter,
+				};
+
+				/* === End of enhancement-related codes === */
+
+				// Since WC 6.9, it added the ability to obtain Form context via `useFormContext` hook.
+				// However, if a component uses that hook, the compatible fixes in this component won't
+				// be applied to form context. Therefore, here creates a context as well to make
+				// AdaptiveForm's context also apply compatible fixes.
+				// Ref: https://github.com/woocommerce/woocommerce/blob/6.9.0/packages/js/components/src/form/form.tsx#L277-L317
+				return (
+					<AdaptiveFormContext.Provider value={ formContext }>
+						{ typeof children === 'function'
+							? children( formContext )
+							: children }
+					</AdaptiveFormContext.Provider>
+				);
 			} }
 		</Form>
 	);

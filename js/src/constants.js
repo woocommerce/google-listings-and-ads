@@ -45,6 +45,12 @@ export const CAMPAIGN_ADS_MIGRATION = {
 	MAXIMUM_MONTHS_TO_DISPLAY_NOTICE: 1,
 };
 
+// Stepper key related
+export const CAMPAIGN_STEP = {
+	CAMPAIGN: 'campaign',
+	ASSET_GROUP: 'asset-group',
+};
+
 // MC Issues Related
 export const ISSUE_TYPE_PRODUCT = 'product';
 export const ISSUE_TYPE_ACCOUNT = 'account';

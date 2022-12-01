@@ -11,7 +11,6 @@ import { useState } from '@wordpress/element';
 import SetupAccounts from './setup-accounts';
 import CreateCampaign from './create-campaign';
 import SetupBilling from './setup-billing';
-import './index.scss';
 
 const AdsStepper = ( props ) => {
 	const { formProps } = props;
