@@ -17,12 +17,22 @@ export const ACTION_COMPLETE = 'submit-complete';
 export const ACTION_SKIP_ASSETS = 'submit-with-skipping-assets';
 
 /**
+ * @typedef {import('.~/data/actions').Campaign} Campaign
+ */
+
+/**
  * Renders the form container for managing an asset group of a campaign.
  *
  * Please note that this component relies on an AdaptiveForm's context, so it expects
  * a context provider component (`AdaptiveForm`) to existing in its parents.
+ *
+ * @param {Object} props React props.
+ * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  */
-export default function AssetGroup() {
+export default function AssetGroup( { campaign } ) {
+	const isCreation = ! campaign;
+	// TODO: When editing, it needs to distinguish whether the given asset group is empty. Will be implemented later.
+	const isEmptyAssetGroup = true;
 	const { isValidForm, handleSubmit, adapter } = useAdaptiveFormContext();
 	const { isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
@@ -38,22 +48,27 @@ export default function AssetGroup() {
 			/>
 			<AssetGroupSection />
 			<StepContentFooter>
-				<AppButton
-					isTertiary
-					data-action={ ACTION_SKIP_ASSETS }
-					disabled={
-						// TODO: Change to only validate campaign data.
-						! isValidForm ||
-						isSubmitted ||
-						currentAction === ACTION_COMPLETE
-					}
-					loading={
-						isSubmitting && currentAction === ACTION_SKIP_ASSETS
-					}
-					onClick={ handleSubmit }
-				>
-					{ __( 'Skip adding assets', 'google-listings-and-ads' ) }
-				</AppButton>
+				{ ( isCreation || isEmptyAssetGroup ) && (
+					<AppButton
+						isTertiary
+						data-action={ ACTION_SKIP_ASSETS }
+						disabled={
+							// TODO: Change to only validate campaign data.
+							! isValidForm ||
+							isSubmitted ||
+							currentAction === ACTION_COMPLETE
+						}
+						loading={
+							isSubmitting && currentAction === ACTION_SKIP_ASSETS
+						}
+						onClick={ handleSubmit }
+					>
+						{ __(
+							'Skip adding assets',
+							'google-listings-and-ads'
+						) }
+					</AppButton>
+				) }
 				<AppButton
 					isPrimary
 					data-action={ ACTION_COMPLETE }
@@ -67,7 +82,12 @@ export default function AssetGroup() {
 					}
 					onClick={ handleSubmit }
 				>
-					{ __( 'Launch paid campaign', 'google-listings-and-ads' ) }
+					{ isCreation
+						? __(
+								'Launch paid campaign',
+								'google-listings-and-ads'
+						  )
+						: __( 'Save changes', 'google-listings-and-ads' ) }
 				</AppButton>
 			</StepContentFooter>
 		</StepContent>
