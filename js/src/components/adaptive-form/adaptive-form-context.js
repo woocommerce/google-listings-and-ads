@@ -40,15 +40,22 @@ import { createContext, useContext } from '@wordpress/element';
  * @property {AdaptiveFormContextAdapter} adapter Additional enhancements to AdaptiveForm.
  */
 
-export const AdaptiveFormContext = createContext( {} );
+export const AdaptiveFormContext = createContext( null );
 
 /**
  * AdaptiveForm's context hook.
  *
  * @return {AdaptiveFormContext} AdaptiveForm's context.
+ * @throws Will throw an error if its context provider is not existing in its parents.
  */
 export function useAdaptiveFormContext() {
 	const adaptiveFormContext = useContext( AdaptiveFormContext );
+
+	if ( adaptiveFormContext === null ) {
+		throw new Error(
+			'useAdaptiveFormContext was used outside of its context provider AdaptiveForm.'
+		);
+	}
 
 	return adaptiveFormContext;
 }
