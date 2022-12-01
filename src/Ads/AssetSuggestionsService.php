@@ -75,7 +75,7 @@ class AssetSuggestionsService implements Service {
 	protected function get_post_assets( int $id ): array {
 		$post = $this->wp->get_post( $id );
 
-		if ( ! $post ) {
+		if ( ! $post || $post->post_status === 'trash' ) {
 			throw new Exception(
 				/* translators: 1: is an integer representing an unknown Post ID */
 				sprintf( __( 'Invalid Post ID %1$d', 'google-listings-and-ads' ), $id )
