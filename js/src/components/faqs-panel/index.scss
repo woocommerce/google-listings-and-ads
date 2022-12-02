@@ -2,6 +2,7 @@
 	.components-panel__row {
 		flex-direction: column;
 		gap: 1.5em;
+
 		// overrides new styles in .components-panel__row which defined align-items: center;
 		align-items: flex-start;
 
