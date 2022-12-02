@@ -12,7 +12,7 @@
 	&__table-footer {
 		padding: $grid-unit-20;
 
-		// hack for fixing min-width: 0 in new CardFooter.View
+		// Overrides min-width: 0 in new CardFooter.View
 		.components-button {
 			min-width: auto;
 		}
