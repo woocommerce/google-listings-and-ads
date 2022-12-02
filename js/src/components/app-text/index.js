@@ -9,7 +9,7 @@ import classnames from 'classnames';
 import './index.scss';
 
 /**
- * Renders a paragraph with some predefined styles based on the variant
+ * Renders a paragraph or given element with some predefined styles based on the variant
  *
  *
  * ```jsx
