@@ -11,6 +11,11 @@
 
 	&__table-footer {
 		padding: $grid-unit-20;
+
+		// hack for fixing min-width: 0 in new CardFooter.View
+		.components-button {
+			min-width: auto;
+		}
 	}
 
 	&__radio-control {
@@ -18,7 +23,7 @@
 		.help-popover {
 			margin-left: $grid-unit;
 
-			// hack for positioning correctly the popover in the modal radio control
+			// hack for positioning Kcorrectly the popover in the modal radio control
 			.components-popover {
 				position: absolute;
 			}
