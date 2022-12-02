@@ -19,7 +19,7 @@ import './index.scss';
  * ```
  *
  * @param {Object} props Component props
- * @param {string} [props.variant] The variant to use for the text
+ * @param {'body'|'caption'|'label'|'title-small'|'title-medium'|'subtitle'|'subtitle-small'} [props.variant] The variant to use for the text
  * @param {string} [props.className] Custom classname for this component
  * @param {string} [props.as='p'] as Custom HTML tag name for the component. For example: p, h1, h2, h3, span…
  * @param {JSX.Element} props.children The content for this component
