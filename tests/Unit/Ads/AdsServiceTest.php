@@ -35,41 +35,34 @@ class AdsServiceTest extends UnitTest {
 
 	}
 
-	public function test_convert_status_is_not_set() {
+	public function test_is_setup_started() {
+		$this->state->method( 'last_incomplete_step' )->willReturn( 'abc' );
 		$this->options->method( 'get' )
-			->with( OptionsInterface::CAMPAIGN_CONVERT_STATUS )
+			->with( OptionsInterface::ADS_SETUP_COMPLETED_AT )
 			->willReturn( null );
 
-		$this->assertEquals( $this->ads_service->is_migration_completed(), false );
+		$this->assertTrue( $this->ads_service->is_setup_started() );
 
 	}
 
-	public function test_convert_status_property_is_not_set() {
+	public function test_is_setup_started_last_incomplete_step_is_empty() {
+		$this->state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->options->method( 'get' )
-			->with( OptionsInterface::CAMPAIGN_CONVERT_STATUS )
-			->willReturn( [ 'updated' => '123456789' ] );
+			->with( OptionsInterface::ADS_SETUP_COMPLETED_AT )
+			->willReturn( null );
 
-		$this->assertEquals( $this->ads_service->is_migration_completed(), false );
+		$this->assertFalse( $this->ads_service->is_setup_started() );
 
 	}
 
-	public function test_convert_status_is_unconverted() {
+	public function test_is_setup_started_already_completed() {
+		$this->state->method( 'last_incomplete_step' )->willReturn( 'abc' );
 		$this->options->method( 'get' )
-			->with( OptionsInterface::CAMPAIGN_CONVERT_STATUS )
-			->willReturn( [ 'status' => 'unconverted' ] );
+			->with( OptionsInterface::ADS_SETUP_COMPLETED_AT )
+			->willReturn( 123 );
 
-		$this->assertEquals( $this->ads_service->is_migration_completed(), false );
-
-	}
-
-	public function test_convert_status_is_converted() {
-		$this->options->method( 'get' )
-			->with( OptionsInterface::CAMPAIGN_CONVERT_STATUS )
-			->willReturn( [ 'status' => 'converted' ] );
-
-		$this->assertEquals( $this->ads_service->is_migration_completed(), true );
+		$this->assertFalse( $this->ads_service->is_setup_started() );
 
 	}
-
 }
 
