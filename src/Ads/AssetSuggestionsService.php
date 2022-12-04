@@ -133,10 +133,7 @@ class AssetSuggestionsService implements Service {
 			$attachments_ids = [ ...$attachments_ids, ...$product->get_gallery_image_ids(), $product->get_image_id() ];
 		}
 
-		$gallery_images_urls = get_post_gallery_images( $id );
-		$marketing_images    = [ ...$this->get_url_attachments_by_ids( $attachments_ids ), ...$gallery_images_urls ];
-		$marketing_images    = array_slice( $marketing_images, 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
-		$long_headline       = get_bloginfo( 'name' ) . ': ' . $post->post_title;
+		$attachments_ids  = [ ...$attachments_ids, ...$this->get_gallery_images_ids( $id ) ];
 
 		return [
 			'headline'                => [ $post->post_title ],
@@ -260,6 +257,23 @@ class AssetSuggestionsService implements Service {
 		$args = wp_parse_args( $args, $defaults );
 
 		return $this->wp->get_posts( $args );
+	}
+
+	/**
+	 * Get gallery images ids.
+	 *
+	 * @param int $post_id Post ID that contains the gallery.
+	 *
+	 * @return array List of gallery images ids.
+	 */
+	protected function get_gallery_images_ids( int $post_id ): array {
+		$gallery = get_post_gallery( $post_id, false );
+
+		if ( ! $gallery || ! isset( $gallery['ids'] ) ) {
+			return [];
+		}
+
+		return explode( ',', $gallery['ids'] );
 	}
 
 	/**
