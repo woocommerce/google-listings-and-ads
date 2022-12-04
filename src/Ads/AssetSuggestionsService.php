@@ -24,6 +24,37 @@ class AssetSuggestionsService implements Service {
 	 * Default maximum marketing images.
 	 */
 	protected const DEFAULT_MAXIMUM_MARKETING_IMAGES = 20;
+	/**
+	 * The subsize key for the square marketing image.
+	 */
+	protected const SQUARE_MARKETING_IMAGE_KEY = 'gla_square_marketing';
+	/**
+	 * The subsize key for the marketing image.
+	 */
+	protected const MARKETING_IMAGE_KEY = 'gla_marketing';
+	/**
+	 * The subsize key for the marketing image.
+	 */
+	protected const LOGO_IMAGE_KEY = 'gla_logo';
+	/**
+	 * The minimum size for a square marketing image. The first value is the width and the second is the height.
+	 */
+	protected const MARKETING_SQUARE_IMAGE_MINIMUM_SIZE = [ 300, 300 ];
+	/**
+	 * The minimum size for a marketing image. The first value is the width and the second is the height.
+	 */
+	protected const MARKETING_IMAGE_MINIMUM_SIZE = [ 600, 314 ];
+	/**
+	 * The minimum size for the logo image. The first value is the width and the second is the height.
+	 */
+	protected const LOGO_IMAGE_MINIMUM_SIZE = [ 128, 128 ];
+
+	/**
+	 * Minimum image requirements.
+	 *
+	 * @var array
+	 */
+	protected $minimum_image_requirements;
 
 	/**
 	 * AssetSuggestionsService constructor.
