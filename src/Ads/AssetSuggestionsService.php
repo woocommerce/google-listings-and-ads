@@ -141,7 +141,7 @@ class AssetSuggestionsService implements Service {
 			'headline'                => [ $post->post_title ],
 			'long_headline'           => [ $long_headline ],
 			'description'             => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
-			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
+			'logo'                    => $this->get_logo_images(),
 			'final_url'               => get_permalink( $id ),
 			'business_name'           => get_bloginfo( 'name' ),
 			'display_url_path'        => [ $post->post_name ],
@@ -188,13 +188,12 @@ class AssetSuggestionsService implements Service {
 		}
 
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
-		$logo_images      = $this->get_url_attachments_by_ids( [ get_theme_mod( 'custom_logo' ) ], [ self::LOGO_IMAGE_KEY ] );
 
 		return [
 			'headline'                => [ $term->name ],
 			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
 			'description'             => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
-			'logo'                    => $logo_images[ self::LOGO_IMAGE_KEY ] ?? [],
+			'logo'                    => $this->get_logo_images(),
 			'final_url'               => get_term_link( $term->term_id ),
 			'business_name'           => get_bloginfo( 'name' ),
 			'display_url_path'        => [ $term->slug ],
@@ -202,6 +201,16 @@ class AssetSuggestionsService implements Service {
 			'marketing_images'        => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
 			'call_to_action'          => null,
 		];
+	}
+
+	/**
+	 * Get logo images urls.
+	 *
+	 * @return array Logo images URLS.
+	 */
+	protected function get_logo_images(): array {
+		$logo_images = $this->get_url_attachments_by_ids( [ get_theme_mod( 'custom_logo' ) ], [ self::LOGO_IMAGE_KEY ] );
+		return $logo_images[ self::LOGO_IMAGE_KEY ] ?? [];
 	}
 
 	/**
