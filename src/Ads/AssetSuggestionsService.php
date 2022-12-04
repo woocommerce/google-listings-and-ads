@@ -133,7 +133,7 @@ class AssetSuggestionsService implements Service {
 			$attachments_ids = [ ...$attachments_ids, ...$product->get_gallery_image_ids(), $product->get_image_id() ];
 		}
 
-		$attachments_ids  = [ ...$attachments_ids, ...$this->get_gallery_images_ids( $id ) ];
+		$attachments_ids  = array_slice( [ ...$attachments_ids, ...$this->get_gallery_images_ids( $id ) ], 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
 		$long_headline    = get_bloginfo( 'name' ) . ': ' . $post->post_title;
 
@@ -187,6 +187,7 @@ class AssetSuggestionsService implements Service {
 			$attachments_ids = [ ...$this->get_post_image_attachments( [ 'post_parent__in' => $posts_ids_assigned_to_term ] ), ...$attachments_ids ];
 		}
 
+		$attachments_ids  = array_slice( $attachments_ids, 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
 
 		return [
