@@ -65,6 +65,11 @@ class AssetSuggestionsService implements Service {
 	public function __construct( WP $wp, WC $wc ) {
 		$this->wp = $wp;
 		$this->wc = $wc;
+
+		$this->minimum_image_requirements[ self::MARKETING_IMAGE_KEY ]        = self::MARKETING_IMAGE_MINIMUM_SIZE;
+		$this->minimum_image_requirements[ self::SQUARE_MARKETING_IMAGE_KEY ] = self::MARKETING_SQUARE_IMAGE_MINIMUM_SIZE;
+		$this->minimum_image_requirements[ self::LOGO_IMAGE_KEY ]             = self::LOGO_IMAGE_MINIMUM_SIZE;
+
 	}
 
 	/**
