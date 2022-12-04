@@ -437,11 +437,9 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	}
 
 	public function test_get_term_without_product() {
-		$post             = $this->factory()->post->create_and_get();
-		$image_post_1     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
-		$image_post_2     = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
-		$marketing_images = [ wp_get_attachment_image_url( $image_post_1 ), wp_get_attachment_image_url( $image_post_2 ) ];
-
+		$post                       = $this->factory()->post->create_and_get();
+		$image_post_1               = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
+		$image_post_2               = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ) );
 		$posts_ids_assigned_to_term = [ $this->post, $post ];
 
 		$this->update_size_image( $image_post_1, [ 1200, 1200 ], self::SQUARE_MARKETING_IMAGE_KEY );
