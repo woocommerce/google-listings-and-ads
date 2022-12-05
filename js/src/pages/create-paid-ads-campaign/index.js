@@ -21,7 +21,7 @@ import HelpIconButton from '.~/components/help-icon-button';
 import AdaptiveForm from '.~/components/adaptive-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import AssetGroup, {
-	ACTION_COMPLETE,
+	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '.~/components/paid-ads/asset-group';
 import { CAMPAIGN_STEP as STEP } from '.~/constants';
 
@@ -52,7 +52,7 @@ const CreatePaidAdsCampaign = () => {
 
 			await createAdsCampaign( amount, countryCodes );
 
-			if ( action === ACTION_COMPLETE ) {
+			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
 				// TODO: Save asset group
 			}
 
