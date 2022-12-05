@@ -33,10 +33,7 @@ const AudienceSection = ( props ) => {
 		formProps: { getInputProps },
 		multiple = true,
 		disabled = false,
-		countrySelectHelperText = __(
-			'You can only choose from countries you’ve selected during product listings configuration.',
-			'google-listings-and-ads'
-		),
+		countrySelectHelperText,
 	} = props;
 
 	const countryNameMap = useCountryKeyNameMap();

@@ -127,6 +127,7 @@ const EditPaidAdsCampaign = () => {
 							content: (
 								<AdsCampaign
 									campaign={ campaign }
+									trackingContext="edit-ads"
 									onContinue={ () =>
 										setStep( STEP.ASSET_GROUP )
 									}

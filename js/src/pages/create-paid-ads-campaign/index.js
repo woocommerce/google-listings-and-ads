@@ -103,6 +103,7 @@ const CreatePaidAdsCampaign = () => {
 							),
 							content: (
 								<AdsCampaign
+									trackingContext="create-ads"
 									onContinue={ () =>
 										setStep( STEP.ASSET_GROUP )
 									}
