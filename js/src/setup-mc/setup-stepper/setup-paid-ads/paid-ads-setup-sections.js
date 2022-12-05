@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
 
@@ -163,6 +164,10 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 						<AudienceSection
 							formProps={ formProps }
 							disabled={ disabledAudience }
+							countrySelectHelperText={ __(
+								'You can only choose from countries you’ve selected during product listings configuration.',
+								'google-listings-and-ads'
+							) }
 						/>
 						<BudgetSection
 							formProps={ formProps }

@@ -4,7 +4,6 @@
 import { isEqual } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import { Form } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
 import { recordEvent } from '@woocommerce/tracks';
 
@@ -15,7 +14,9 @@ import useAdminUrl from '.~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
-import SetupAdsFormContent from './setup-ads-form-content';
+import AdaptiveForm from '.~/components/adaptive-form';
+import AdsStepper from './ads-stepper';
+import SetupAdsTopBar from './top-bar';
 import validateForm from '.~/utils/paid-ads/validateForm';
 
 /**
@@ -83,7 +84,7 @@ const SetupAdsForm = () => {
 	}
 
 	return (
-		<Form
+		<AdaptiveForm
 			initialValues={ initialValues }
 			validate={ validateForm }
 			onChange={ handleChange }
@@ -95,9 +96,14 @@ const SetupAdsForm = () => {
 					// TODO: maybe move all API calls in useSetupCompleteCallback to ~./data
 					isSubmitting,
 				};
-				return <SetupAdsFormContent formProps={ mixedFormProps } />;
+				return (
+					<>
+						<SetupAdsTopBar />
+						<AdsStepper formProps={ mixedFormProps } />
+					</>
+				);
 			} }
-		</Form>
+		</AdaptiveForm>
 	);
 };
 
