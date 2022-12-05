@@ -13,8 +13,8 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppButton from '.~/components/app-button';
 import AssetGroupSection from './asset-group-section';
 
-export const ACTION_COMPLETE = 'submit-complete';
-export const ACTION_SKIP_ASSETS = 'submit-with-skipping-assets';
+export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
+export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -51,15 +51,16 @@ export default function AssetGroup( { campaign } ) {
 				{ ( isCreation || isEmptyAssetGroup ) && (
 					<AppButton
 						isTertiary
-						data-action={ ACTION_SKIP_ASSETS }
+						data-action={ ACTION_SUBMIT_CAMPAIGN_ONLY }
 						disabled={
 							// TODO: Change to only validate campaign data.
 							! isValidForm ||
 							isSubmitted ||
-							currentAction === ACTION_COMPLETE
+							currentAction === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
 						}
 						loading={
-							isSubmitting && currentAction === ACTION_SKIP_ASSETS
+							isSubmitting &&
+							currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
 						}
 						onClick={ handleSubmit }
 					>
@@ -71,14 +72,15 @@ export default function AssetGroup( { campaign } ) {
 				) }
 				<AppButton
 					isPrimary
-					data-action={ ACTION_COMPLETE }
+					data-action={ ACTION_SUBMIT_CAMPAIGN_AND_ASSETS }
 					disabled={
 						! isValidForm ||
 						isSubmitted ||
-						currentAction === ACTION_SKIP_ASSETS
+						currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
 					}
 					loading={
-						isSubmitting && currentAction === ACTION_COMPLETE
+						isSubmitting &&
+						currentAction === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
 					}
 					onClick={ handleSubmit }
 				>
