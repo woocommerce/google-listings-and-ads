@@ -9,7 +9,6 @@ import { __ } from '@wordpress/i18n';
 import AudienceSection from '.~/components/paid-ads/audience-section';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 import BudgetSection from '.~/components/paid-ads/budget-section';
-import './campaign-form-content.scss';
 
 /**
  * Renders the camapign edit form content.

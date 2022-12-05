@@ -4,7 +4,6 @@
 import AudienceSection from '.~/components/paid-ads/audience-section';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
-import './campaign-form-content.scss';
 
 /**
  * Renders the audience and budget sections for creating a new campaign.

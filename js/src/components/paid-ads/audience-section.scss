@@ -1,4 +1,4 @@
-.gla-campaign-form-content {
+.gla-audience-section {
 	// Adjust <SelectControl> imported from @wordpress/components.
 	// Repeat selector to make it higher priority.
 	.components-input-control__container.components-input-control__container {
@@ -6,9 +6,6 @@
 			min-height: $gla-size-control-height;
 			padding-left: $grid-unit-20;
 		}
-	}
-	.components-input-control__suffix {
-		margin-right: $grid-unit-20;
 	}
 
 	// Adjust labels of <SelectControl> imported from @wordpress/components.
