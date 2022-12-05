@@ -12,11 +12,11 @@ import GridiconChevronRight from 'gridicons/dist/chevron-right';
  */
 import Section from '.~/wcdl/section';
 import AppButton from '.~/components/app-button';
-import CampaignPreview from '.~/components/paid-ads/campaign-preview';
+import CampaignPreview from './campaign-preview';
 import './campaign-preview-card.scss';
 
 /**
- * @typedef { import(".~/components/paid-ads/campaign-preview/campaign-preview.js").CampaignPreviewHandler } CampaignPreviewHandler
+ * @typedef { import("./campaign-preview.js").CampaignPreviewHandler } CampaignPreviewHandler
  */
 
 /**

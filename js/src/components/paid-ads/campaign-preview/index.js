@@ -1,4 +1,5 @@
 export { default } from './campaign-preview';
+export { default as CampaignPreviewCard } from './campaign-preview-card';
 
 /**
  * Data for compositing ad preview mockups.
