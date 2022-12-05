@@ -103,11 +103,11 @@ class GLAChannelTest extends UnitTest {
 				[
 					'issues' => [
 						[
-							'type' => 'account',
+							'type'  => 'account',
 							'issue' => 'test issue #1',
 						],
 						[
-							'type' => 'product',
+							'type'  => 'product',
 							'issue' => 'test issue #2',
 						],
 					],
