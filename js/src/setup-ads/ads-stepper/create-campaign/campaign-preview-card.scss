@@ -1,0 +1,13 @@
+.gla-campaign-preview-card {
+	.wcdl-section-card-title {
+		margin-bottom: $grid-unit-10;
+	}
+
+	&__moving-button.components-button.has-icon {
+		height: auto;
+		min-width: 0;
+		padding: $grid-unit-05;
+		border-radius: 50%;
+		background-color: $gray-100;
+	}
+}

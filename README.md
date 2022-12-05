@@ -4,7 +4,6 @@
 [![JavaScript Unit Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml)
 [![PHP Coding Standards](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-coding-standards.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-coding-standards.yml)
 [![JavaScript and CSS Linting](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml)
-[![E2E Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/e2e-tests.yml)
 [![Bundle Size](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml)
 
 A native integration with Google offering free listings and Performance Max ads to WooCommerce merchants.
@@ -30,7 +29,7 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
 
 -   WordPress 5.7+
--   WooCommerce 6.0+
+-   WooCommerce 6.9+
 -   PHP 7.4+
 
 ## Browsers supported
@@ -62,6 +61,10 @@ Now you can build the files using one of these commands:
 -   `npm run dev` : Build a development version
 -   `npm run start` : Build a development version, watch files for changes
 -   `npm run start:hot` : Build a development version in Fast Refresh mode, watch files for changes.
+
+## Working with DEWP
+
+The Dependency Extraction Webpack Plugin makes working with frontend dependencies not so obvious, check [`Working with DEWP.md`](Working with DEWP.md) for more details.
 
 ## Helper Scripts
 
@@ -159,6 +162,12 @@ Run E2E testing:
 To remove the Docker container and images (this will **delete everything** in the WordPress Docker container):
 
 `npm run docker:down`
+
+:warning: Currently, the E2E testing on GitHub Actions is only run automatically after opening a PR with `release/*` branches or pushing changes to `release/*` branches. To run it manually, please visit [here](../../actions/workflows/e2e-tests.yml) and follow [this instruction](https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow?tool=webui) to do so.
+
+### Linux Troubleshooting
+
+If you encounter problems starting your `test:e2e`, like `No usable sandbox!` or `UnhandledPromiseRejectionWarning: Error: Page crashed!`, you may try disabling the Chromium sandbox by adding `--no-sandbox` to `launch.args` in [`/tests/e2e/config/jest-puppeteer.config.js#L7`](https://github.com/woocommerce/google-listings-and-ads/blob/develop/tests/e2e/config/jest-puppeteer.config.js#L7).
 
 ## Docs
 

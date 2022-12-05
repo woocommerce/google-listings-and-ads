@@ -17,8 +17,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Variati
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
@@ -32,6 +30,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
@@ -48,8 +47,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DeprecatedFilters;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\AttributeMapping;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
@@ -66,6 +65,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\GLAChannel;
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\MarketingChannelRegistrar;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\AttributeMappingNewFeature as AttributeMappingNewFeatureNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
@@ -76,8 +76,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterConversions as 
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as SetupCampaign2Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCouponSharing as SetupCouponSharingNote;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notes\BeforeCampaignMigration as BeforeCampaignMigrationNote;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notes\AfterCampaignMigration as AfterCampaignMigrationNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
@@ -87,6 +85,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
@@ -132,78 +131,78 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Installer::class                   => true,
-		ActivationRedirect::class          => true,
-		Admin::class                       => true,
-		AddressUtility::class              => true,
-		Reports::class                     => true,
-		AssetsHandlerInterface::class      => true,
-		BulkEditInitializer::class         => true,
-		ContactInformationNote::class      => true,
-		CompleteSetup::class               => true,
-		CompleteSetupNote::class           => true,
-		CouponBulkEdit::class              => true,
-		CouponHelper::class                => true,
-		CouponMetaHandler::class           => true,
-		CouponSyncer::class                => true,
-		Dashboard::class                   => true,
-		DateTimeUtility::class             => true,
-		EventTracking::class               => true,
-		GetStarted::class                  => true,
-		GlobalSiteTag::class               => true,
-		ISOUtility::class                  => true,
-		SiteVerificationEvents::class      => true,
-		OptionsInterface::class            => true,
-		TransientsInterface::class         => true,
-		ProductFeed::class                 => true,
-		ReconnectWordPressNote::class      => true,
-		ReviewAfterClicksNote::class       => true,
-		RESTControllers::class             => true,
-		Service::class                     => true,
-		Settings::class                    => true,
-		SetupAds::class                    => true,
-		SetupMerchantCenter::class         => true,
-		SetupCampaignNote::class           => true,
-		BeforeCampaignMigrationNote::class => true,
-		AfterCampaignMigrationNote::class  => true,
-		SetupCampaign2Note::class          => true,
-		SetupCouponSharingNote::class      => true,
-		TableManager::class                => true,
-		TrackerSnapshot::class             => true,
-		Tracks::class                      => true,
-		TracksInterface::class             => true,
-		ProductSyncer::class               => true,
-		ProductHelper::class               => true,
-		ProductMetaHandler::class          => true,
-		SiteVerificationMeta::class        => true,
-		BatchProductHelper::class          => true,
-		ProductFilter::class               => true,
-		ProductRepository::class           => true,
-		MetaBoxInterface::class            => true,
-		MetaBoxInitializer::class          => true,
-		ViewFactory::class                 => true,
-		DebugLogger::class                 => true,
-		MerchantStatuses::class            => true,
-		PhoneVerification::class           => true,
-		PolicyComplianceCheck::class       => true,
-		ContactInformation::class          => true,
-		MerchantCenterService::class       => true,
-		TargetAudience::class              => true,
-		MerchantAccountState::class        => true,
-		AdsAccountState::class             => true,
-		DBInstaller::class                 => true,
-		AttributeManager::class            => true,
-		ProductFactory::class              => true,
-		AttributesTab::class               => true,
-		VariationsAttributes::class        => true,
-		DeprecatedFilters::class           => true,
-		ZoneLocationsParser::class         => true,
-		ZoneMethodsParser::class           => true,
-		LocationRatesProcessor::class      => true,
-		ShippingZone::class                => true,
-		AdsAccountService::class           => true,
-		MerchantAccountService::class      => true,
-		MarketingChannelRegistrar::class   => true,
+		Installer::class                      => true,
+		ActivationRedirect::class             => true,
+		Admin::class                          => true,
+		AddressUtility::class                 => true,
+		Reports::class                        => true,
+		AssetsHandlerInterface::class         => true,
+		BulkEditInitializer::class            => true,
+		ContactInformationNote::class         => true,
+		CompleteSetup::class                  => true,
+		CompleteSetupNote::class              => true,
+		CouponBulkEdit::class                 => true,
+		CouponHelper::class                   => true,
+		CouponMetaHandler::class              => true,
+		CouponSyncer::class                   => true,
+		Dashboard::class                      => true,
+		DateTimeUtility::class                => true,
+		EventTracking::class                  => true,
+		GetStarted::class                     => true,
+		GlobalSiteTag::class                  => true,
+		ISOUtility::class                     => true,
+		SiteVerificationEvents::class         => true,
+		OptionsInterface::class               => true,
+		TransientsInterface::class            => true,
+		ProductFeed::class                    => true,
+		ReconnectWordPressNote::class         => true,
+		ReviewAfterClicksNote::class          => true,
+		RESTControllers::class                => true,
+		Service::class                        => true,
+		Settings::class                       => true,
+		SetupAds::class                       => true,
+		SetupMerchantCenter::class            => true,
+		SetupCampaignNote::class              => true,
+		SetupCampaign2Note::class             => true,
+		SetupCouponSharingNote::class         => true,
+		TableManager::class                   => true,
+		TrackerSnapshot::class                => true,
+		Tracks::class                         => true,
+		TracksInterface::class                => true,
+		ProductSyncer::class                  => true,
+		ProductHelper::class                  => true,
+		ProductMetaHandler::class             => true,
+		SiteVerificationMeta::class           => true,
+		BatchProductHelper::class             => true,
+		ProductFilter::class                  => true,
+		ProductRepository::class              => true,
+		MetaBoxInterface::class               => true,
+		MetaBoxInitializer::class             => true,
+		ViewFactory::class                    => true,
+		DebugLogger::class                    => true,
+		MerchantStatuses::class               => true,
+		PhoneVerification::class              => true,
+		PolicyComplianceCheck::class          => true,
+		ContactInformation::class             => true,
+		MerchantCenterService::class          => true,
+		TargetAudience::class                 => true,
+		MerchantAccountState::class           => true,
+		AdsAccountState::class                => true,
+		DBInstaller::class                    => true,
+		AttributeManager::class               => true,
+		ProductFactory::class                 => true,
+		AttributesTab::class                  => true,
+		VariationsAttributes::class           => true,
+		DeprecatedFilters::class              => true,
+		ZoneLocationsParser::class            => true,
+		ZoneMethodsParser::class              => true,
+		LocationRatesProcessor::class         => true,
+		ShippingZone::class                   => true,
+		AdsAccountService::class              => true,
+		MerchantAccountService::class         => true,
+		AttributeMapping::class               => true,
+		AttributeMappingNewFeatureNote::class => true,
+		MarketingChannelRegistrar::class      => true,
 	];
 
 	/**
@@ -285,6 +284,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( Dashboard::class );
 		$this->conditionally_share_with_tags( Reports::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
+		$this->conditionally_share_with_tags( AttributeMapping::class );
 		$this->conditionally_share_with_tags( Settings::class );
 		$this->conditionally_share_with_tags( TrackerSnapshot::class );
 		$this->conditionally_share_with_tags( EventTracking::class, ContainerInterface::class );
@@ -305,10 +305,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ReviewAfterClicksNote::class, MerchantMetrics::class, WP::class );
 		$this->share_with_tags( ReviewAfterConversionsNote::class, MerchantMetrics::class, WP::class );
 		$this->share_with_tags( SetupCampaignNote::class, MerchantCenterService::class );
-		$this->share_with_tags( BeforeCampaignMigrationNote::class );
-		$this->share_with_tags( AfterCampaignMigrationNote::class );
 		$this->share_with_tags( SetupCampaign2Note::class, MerchantCenterService::class );
 		$this->share_with_tags( SetupCouponSharingNote::class, MerchantStatuses::class );
+		$this->share_with_tags( AttributeMappingNewFeatureNote::class );
 		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class );
 
 		// Product attributes
@@ -332,7 +331,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			ProductHelper::class,
 			ValidatorInterface::class,
 			ProductFactory::class,
-			TargetAudience::class
+			TargetAudience::class,
+			AttributeMappingRulesQuery::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,
@@ -340,7 +340,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			BatchProductHelper::class,
 			ProductHelper::class,
 			MerchantCenterService::class,
-			WC::class
+			WC::class,
+			ProductRepository::class
 		);
 
 		// Coupon management classes
@@ -396,6 +397,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ShippingZone::class, WC::class, ZoneLocationsParser::class, ZoneMethodsParser::class, LocationRatesProcessor::class );
 		$this->share_with_tags( ShippingSuggestionService::class, ShippingZone::class, WC::class );
 		$this->share_with_tags( RequestReviewStatuses::class );
+
+		// Share Attribute Mapping related classes
+		$this->share_with_tags( AttributeMappingHelper::class );
 
 		if ( defined( 'WC_MCM_EXISTS' ) ) {
 			$this->share_with_tags( GLAChannel::class, MerchantCenterService::class, AdsCampaign::class, Ads::class, MerchantStatuses::class, ProductSyncStats::class, WC::class );

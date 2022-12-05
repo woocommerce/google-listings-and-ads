@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { getHistory, getNewPath } from '@woocommerce/navigation';
+import { getHistory } from '@woocommerce/navigation';
 import {
 	createInterpolateElement,
 	useEffect,
@@ -19,19 +19,14 @@ import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
-import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
+import { glaData, GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
+import { getProductFeedUrl } from '.~/utils/urls';
 import wooLogoURL from './woocommerce-logo.svg';
 import googleLogoURL from '.~/images/google-logo.svg';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';
-const LATER_BUTTON_CLASS = 'components-guide__finish-button';
-
-const productFeedPath = getNewPath(
-	{ guide: undefined },
-	'/google/product-feed'
-);
 
 const image = (
 	<div className="gla-submission-success-guide__logo-block">
@@ -61,31 +56,36 @@ const pages = [
 		content: (
 			<GuidePageContent
 				title={ __(
-					'You have successfully set up Google Listings & Ads! 🎉',
+					'You’ve successfully set up Google Listings & Ads! 🎉',
 					'google-listings-and-ads'
 				) }
 			>
 				<p>
 					{ __(
-						'Google reviews product listings in 3-5 days. If approved, your products will automatically be live and searchable on Google.',
+						'Your products are being synced and reviewed. Google reviews product listings in 3-5 days.',
 						'google-listings-and-ads'
 					) }
 				</p>
 				<p>
-					{ createInterpolateElement(
-						__(
-							'<productFeedLink>Manage and edit your product feed in WooCommerce.</productFeedLink> We will also notify you of any product feed issues to ensure your products get approved and perform well on Google.',
-							'google-listings-and-ads'
-						),
-						{
-							productFeedLink: (
-								<ContentLink
-									href={ productFeedPath }
-									context="product-feed"
-								/>
-							),
-						}
-					) }
+					{ glaData.adsSetupComplete
+						? __(
+								'No ads will launch yet and you won’t be charged until Google approves your listings. Updates are available in your WooCommerce dashboard.',
+								'google-listings-and-ads'
+						  )
+						: createInterpolateElement(
+								__(
+									'<productFeedLink>Manage and edit your product feed in WooCommerce.</productFeedLink> We will also notify you of any product feed issues to ensure your products get approved and perform well on Google.',
+									'google-listings-and-ads'
+								),
+								{
+									productFeedLink: (
+										<ContentLink
+											href={ getProductFeedUrl() }
+											context="product-feed"
+										/>
+									),
+								}
+						  ) }
 				</p>
 			</GuidePageContent>
 		),
@@ -126,15 +126,17 @@ const pages = [
 	},
 ];
 
+if ( glaData.adsSetupComplete ) {
+	pages.pop();
+}
+
 const handleGuideFinish = ( e ) => {
-	getHistory().replace( productFeedPath );
+	getHistory().replace( getProductFeedUrl() );
 
 	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
-	// here is a workaround by identifying the close button's class name.
+	// here is a workaround by identifying the close button's data-aciton attribute.
 	const target = e.currentTarget || e.target;
-	const action = target.classList.contains( LATER_BUTTON_CLASS )
-		? 'maybe-later'
-		: 'dismiss';
+	const action = target.dataset.action || 'dismiss';
 	recordEvent( EVENT_NAME, {
 		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 		action,
@@ -142,19 +144,12 @@ const handleGuideFinish = ( e ) => {
 };
 
 /**
- * A modal is opend
- *
- * @event gla_modal_open
- * @property {string} context Indicates which modal is opened
- */
-
-/**
  * Modal window to greet the user at Product Feed, after successful completion of onboarding.
  *
  * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
  * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
  *
- * @fires gla_modal_closed with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
+ * @fires gla_modal_closed with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
  * @fires gla_modal_open with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
  */
 const SubmissionSuccessGuide = () => {
@@ -172,12 +167,24 @@ const SubmissionSuccessGuide = () => {
 	}, [] );
 
 	const renderFinish = useCallback( () => {
+		if ( glaData.adsSetupComplete ) {
+			return (
+				<Button
+					isPrimary
+					data-action="view-product-feed"
+					onClick={ handleGuideFinish }
+				>
+					{ __( 'View product feed', 'google-listings-and-ads' ) }
+				</Button>
+			);
+		}
+
 		return (
 			<>
 				<div className="gla-submission-success-guide__space_holder" />
 				<Button
 					isSecondary
-					className={ LATER_BUTTON_CLASS }
+					data-action="maybe-later"
 					onClick={ handleGuideFinish }
 				>
 					{ __( 'Maybe later', 'google-listings-and-ads' ) }

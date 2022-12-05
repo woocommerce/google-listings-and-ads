@@ -1,0 +1,15 @@
+.gla-contact-info-preview-card {
+	.gla-account-card__description {
+		gap: $grid-unit-05;
+	}
+}
+
+.gla-phone-number-card-preview {
+	&__verified-status {
+		color: $alert-green;
+	}
+
+	&__unverified-status {
+		color: $alert-red;
+	}
+}

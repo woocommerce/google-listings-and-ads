@@ -11,6 +11,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
  * Internal dependencies
  */
 import './css/index.scss';
+import withAdminPageShell from '.~/components/withAdminPageShell';
 import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';
 import SetupAds from './setup-ads';
@@ -18,6 +19,7 @@ import Dashboard from './dashboard';
 import Reports from './pages/reports';
 import ProductFeed from './product-feed';
 import Settings from './settings';
+import AttributeMapping from '.~/attribute-mapping';
 import './data';
 import isWCNavigationEnabled from './utils/isWCNavigationEnabled';
 
@@ -48,8 +50,7 @@ addFilter(
 			__( 'Google Listings & Ads', 'google-listings-and-ads' )
 		);
 
-		return [
-			...pages,
+		const pluginAdminPages = [
 			{
 				breadcrumbs: [ ...initialBreadcrumbs ],
 				container: GetStartedPage,
@@ -114,6 +115,18 @@ addFilter(
 			{
 				breadcrumbs: [
 					...initialBreadcrumbs,
+					__( 'Attribute Mapping', 'google-listings-and-ads' ),
+				],
+				container: AttributeMapping,
+				path: '/google/attribute-mapping',
+				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+				navArgs: {
+					id: 'google-attribute-mapping',
+				},
+			},
+			{
+				breadcrumbs: [
+					...initialBreadcrumbs,
 					__( 'Settings', 'google-listings-and-ads' ),
 				],
 				container: Settings,
@@ -124,5 +137,11 @@ addFilter(
 				},
 			},
 		];
+
+		pluginAdminPages.forEach( ( page ) => {
+			page.container = withAdminPageShell( page.container );
+		} );
+
+		return pages.concat( pluginAdminPages );
 	}
 );

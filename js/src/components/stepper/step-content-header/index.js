@@ -9,7 +9,9 @@ const StepContentHeader = ( props ) => {
 	return (
 		<header className={ `gla-step-content-header ${ className }` }>
 			<h1>{ title }</h1>
-			<div className="description">{ description }</div>
+			<div className="gla-step-content-header__description">
+				{ description }
+			</div>
 		</header>
 	);
 };

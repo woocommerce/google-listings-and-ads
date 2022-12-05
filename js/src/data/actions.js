@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import TYPES from './action-types';
-import { API_NAMESPACE } from './constants';
+import { API_NAMESPACE, REQUEST_ACTIONS } from './constants';
 import { adaptAdsCampaign } from './adapters';
 
 export function handleFetchError( error, message ) {
@@ -92,6 +92,24 @@ export function handleFetchError( error, message ) {
  * @property {boolean} [payment_methods_visible] Whether the payment methods are visible on the website.
  * @property {boolean} [refund_tos_visible] Whether the refund policy and terms of service are visible on the website.
  * @property {boolean} [contact_info_visible] Whether the phone number, email, and/or address are visible on the website.
+ */
+
+/**
+ * @typedef {Object} ProductStatisticsDetails
+ * @property {number} active Number of active products.
+ * @property {number} expiring Number of expiring products.
+ * @property {number} pending Number of pending products.
+ * @property {number} disapproved Number of disapproved products.
+ * @property {number} not_synced Number of not synced products.
+ */
+
+/**
+ * Product status statistics on Google Merchant Center
+ *
+ * @typedef {Object} ProductStatistics
+ * @property {number} scheduled_sync Number of scheduled jobs which will sync products to Google.
+ * @property {number} timestamp Timestamp reflecting when the product status statistics were last generated.
+ * @property {ProductStatisticsDetails} statistics Statistics information of product status on Google Merchant Center.
  */
 
 /**
@@ -460,7 +478,13 @@ export function* disconnectGoogleAccount() {
 	}
 }
 
-export function* disconnectGoogleAdsAccount() {
+/**
+ * Disconnect the connected Google Ads account.
+ *
+ * @param {boolean} [invalidateRelatedState=false] Whether to invalidate related state in wp-data store.
+ * @throws Will throw an error if the request failed.
+ */
+export function* disconnectGoogleAdsAccount( invalidateRelatedState = false ) {
 	try {
 		yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/connection`,
@@ -469,6 +493,7 @@ export function* disconnectGoogleAdsAccount() {
 
 		return {
 			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS,
+			invalidateRelatedState,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
@@ -870,6 +895,13 @@ export function* receiveMCSetup( mcSetup ) {
 	};
 }
 
+/**
+ * Creates a wp-data action with data payload to be dispatched the received
+ * MC product statistics to wp-data store.
+ *
+ * @param {ProductStatistics} mcProductStatistics The received MC product statistics data.
+ * @yield {Object} The wp-data action with data payload.
+ */
 export function* receiveMCProductStatistics( mcProductStatistics ) {
 	return {
 		type: TYPES.RECEIVE_MC_PRODUCT_STATISTICS,
@@ -948,4 +980,143 @@ export function* sendMCReviewRequest() {
 		yield handleFetchError( error, error?.message );
 		throw error;
 	}
+}
+
+/**
+ * Receive Mapping Attributes action
+ *
+ * @param {Array} attributes The attributes to update in the state.
+ */
+export function* receiveMappingAttributes( attributes ) {
+	return {
+		type: TYPES.RECEIVE_MAPPING_ATTRIBUTES,
+		attributes,
+	};
+}
+
+/**
+ * Receive Mapping Sources action
+ *
+ * @param {Array} sources The sources to update in the state.
+ * @param {string} attributeKey The key for the attribute we are querying the sources.
+ */
+export function* receiveMappingSources( sources, attributeKey ) {
+	return {
+		type: TYPES.RECEIVE_MAPPING_SOURCES,
+		sources,
+		attributeKey,
+	};
+}
+
+/**
+ * Receive Mapping Rules action
+ *
+ * @param {Array} rules The rules to update in the state.
+ * @param {Object} pagination Containing parameters like page or per_page.
+ */
+export function* receiveMappingRules( rules, pagination ) {
+	return {
+		type: TYPES.RECEIVE_MAPPING_RULES,
+		rules,
+		pagination,
+	};
+}
+
+/**
+ * Creates a Mapping Rule action
+ *
+ * @param {Object} rule The rule to create in the state.
+ */
+export function* createMappingRule( rule ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/rules`,
+			method: 'POST',
+			data: rule,
+		} );
+
+		return {
+			type: TYPES.UPSERT_MAPPING_RULE,
+			rule: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error creating the rule.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Updates a Mapping Rule action
+ *
+ * @param {Object} rule The rule to update in the state.
+ */
+export function* updateMappingRule( rule ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/rules/${ rule.id }`,
+			method: REQUEST_ACTIONS.POST,
+			data: rule,
+		} );
+
+		return {
+			type: TYPES.UPSERT_MAPPING_RULE,
+			rule: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error updating the rule.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Delete Mapping Rule action
+ *
+ * @param {Object} rule The rule to be deleted.
+ */
+export function* deleteMappingRule( rule ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/rules/${ rule.id }`,
+			method: REQUEST_ACTIONS.DELETE,
+			data: rule,
+		} );
+
+		return {
+			type: TYPES.DELETE_MAPPING_RULE,
+			rule: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error deleting the rule.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+/**
+ * Action to receive the Store categories.
+ *
+ * @param {Array} storeCategories List of categories
+ */
+export function* receiveStoreCategories( storeCategories ) {
+	return {
+		type: TYPES.RECEIVE_STORE_CATEGORIES,
+		storeCategories,
+	};
 }

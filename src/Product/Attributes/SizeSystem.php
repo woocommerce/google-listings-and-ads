@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\SizeSystemInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\Traits\IsEnumTrait;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -12,7 +13,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
  */
-class SizeSystem extends AbstractAttribute implements WithValueOptionsInterface {
+class SizeSystem extends AbstractAttribute implements WithValueOptionsInterface, WithMappingInterface {
+
+	use IsEnumTrait;
 
 	/**
 	 * Returns the attribute ID.
@@ -70,6 +73,15 @@ class SizeSystem extends AbstractAttribute implements WithValueOptionsInterface 
 	 */
 	public static function get_input_type(): string {
 		return SizeSystemInput::class;
+	}
+
+	/**
+	 * Returns the attribute name
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return __( 'Size System', 'google-listings-and-ads' );
 	}
 
 }

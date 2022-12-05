@@ -32,7 +32,10 @@ const AudienceSection = ( props ) => {
 		formProps: { getInputProps },
 		multiple = true,
 		disabled = false,
-		countrySelectHelperText,
+		countrySelectHelperText = __(
+			'You can only choose from countries you’ve selected during product listings configuration.',
+			'google-listings-and-ads'
+		),
 	} = props;
 
 	const countryNameMap = useCountryKeyNameMap();
@@ -40,7 +43,7 @@ const AudienceSection = ( props ) => {
 
 	const selector = multiple ? (
 		<AudienceCountrySelect
-			label={ __( 'Select countries', 'google-listings-and-ads' ) }
+			label={ __( 'Select country/s', 'google-listings-and-ads' ) }
 			help={ countrySelectHelperText }
 			disabled={ disabled }
 			value={ inputProps.value }
@@ -61,11 +64,12 @@ const AudienceSection = ( props ) => {
 
 	return (
 		<Section
-			title={ __( 'Audience', 'google-listings-and-ads' ) }
+			disabled={ disabled }
+			title={ __( 'Ads audience', 'google-listings-and-ads' ) }
 			description={
 				<p>
 					{ __(
-						'Choose where do you want your product ads to appear.',
+						'Choose where you want your product ads to appear',
 						'google-listings-and-ads'
 					) }
 				</p>

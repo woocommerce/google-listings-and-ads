@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -198,6 +199,23 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
 	}
 
+	public function test_mark_as_unsynced_remove_sync_status_for_unsyncable_products() {
+		$product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+		$product->set_status( 'publish' );
+		$product->save();
+		$this->product_meta->update_visibility( $product, ChannelVisibility::DONT_SYNC_AND_SHOW );
+
+		$this->product_helper->mark_as_unsynced( $product );
+
+		$this->assertEmpty( $this->product_meta->get_synced_at( $product ) );
+		$this->assertEquals( null, $this->product_meta->get_sync_status( $product ) );
+		$this->assertEmpty( $this->product_meta->get_google_ids( $product ) );
+		$this->assertEmpty( $this->product_meta->get_errors( $product ) );
+		$this->assertEmpty( $this->product_meta->get_failed_sync_attempts( $product ) );
+		$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
+	}
+
 	public function test_mark_as_unsynced_updates_both_variation_and_parent() {
 		$parent    = WC_Helper_Product::create_variation_product();
 		$variation = $this->wc->get_product( $parent->get_children()[0] );
@@ -237,7 +255,9 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$parent = $this->wc->get_product( $parent->get_id() );
 
 		$this->assertEmpty( $this->product_meta->get_synced_at( $variation ) );
-		$this->assertEquals( SyncStatus::NOT_SYNCED, $this->product_meta->get_sync_status( $variation ) );
+		// Orphaned variation is not syncable so the sync status
+		// will be deleted when calling mark_as_unsynced.
+		$this->assertEquals( null, $this->product_meta->get_sync_status( $variation ) );
 		$this->assertEmpty( $this->product_meta->get_google_ids( $variation ) );
 
 		$this->assertNotEmpty( $this->product_meta->get_synced_at( $parent ) );
@@ -813,6 +833,55 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$variation->save();
 
 		$this->assertNull( $this->product_helper->get_mc_status( $variation ) );
+	}
+
+	public function test_maybe_swap_for_parent_ids() {
+		$simple_publish = WC_Helper_Product::create_simple_product();
+		$simple_trash   = WC_Helper_Product::create_simple_product( true, [ 'status' => 'trash' ] );
+		$variable       = WC_Helper_Product::create_variation_product();
+		$variation      = $this->wc->get_product( $variable->get_children()[0] );
+
+		$product_ids = [
+			$simple_publish->get_id(),
+			$simple_trash->get_id(),
+			$variable->get_id(),
+			$variation->get_id(),
+			999999, // not exist
+		];
+
+		// - Check product status
+		// - Ignore product on error
+		$new_product_ids = $this->product_helper->maybe_swap_for_parent_ids( $product_ids );
+		$this->assertEquals(
+			[
+				$simple_publish->get_id(),
+				$variable->get_id(),
+			],
+			array_values( $new_product_ids ),
+		);
+
+		// - Do not check product status
+		// - Ignore product on error
+		$new_product_ids = $this->product_helper->maybe_swap_for_parent_ids( $product_ids, false );
+		$this->assertEquals(
+			[
+				$simple_publish->get_id(),
+				$simple_trash->get_id(),
+				$variable->get_id(),
+			],
+			array_values( $new_product_ids ),
+		);
+
+		// - Do not check product status
+		// - Do not ignore product on error
+		try {
+			$new_product_ids = $this->product_helper->maybe_swap_for_parent_ids( $product_ids, false, false );
+		} catch ( InvalidValue $exception ) {
+			$this->assertEquals(
+				'Invalid product ID: 999999',
+				$exception->getMessage()
+			);
+		}
 	}
 
 	public function test_maybe_swap_for_parent_id() {

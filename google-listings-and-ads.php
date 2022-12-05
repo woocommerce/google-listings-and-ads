@@ -3,16 +3,16 @@
  * Plugin Name: Google Listings and Ads
  * Plugin URL: https://wordpress.org/plugins/google-listings-and-ads/
  * Description: Native integration with Google that allows merchants to easily display their products across Google’s network.
- * Version: 2.1.4
+ * Version: 2.3.1
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/
  * Text Domain: google-listings-and-ads
- * Requires at least: 5.7
- * Tested up to: 6.0
+ * Requires at least: 5.8
+ * Tested up to: 6.1
  * Requires PHP: 7.4
  *
- * WC requires at least: 6.0
- * WC tested up to: 7.0
+ * WC requires at least: 6.9
+ * WC tested up to: 7.1
  * Woo:
  *
  * @package WooCommerce\Admin
@@ -24,13 +24,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\PluginValidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\VersionValidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
+use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WC_GLA_VERSION', '2.1.4' ); // WRCS: DEFINED_VERSION.
+define( 'WC_GLA_VERSION', '2.3.1' ); // WRCS: DEFINED_VERSION.
 define( 'WC_GLA_MIN_PHP_VER', '7.4' );
-define( 'WC_GLA_MIN_WC_VER', '6.0' );
+define( 'WC_GLA_MIN_WC_VER', '6.9' );
 
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
@@ -48,6 +49,16 @@ register_activation_hook(
 	__FILE__,
 	function () {
 		PluginFactory::instance()->activate();
+	}
+);
+
+// HPOS compatibility declaration.
+add_action(
+	'before_woocommerce_init',
+	function () {
+		if ( class_exists( FeaturesUtil::class ) ) {
+			FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__ );
+		}
 	}
 );
 

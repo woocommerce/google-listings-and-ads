@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\TaskList;
 
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\TaskLists;
-use Automattic\WooCommerce\Admin\Loader;
 use Automattic\WooCommerce\Admin\PageController;
 
 /**
@@ -20,11 +19,7 @@ trait TaskListTrait {
 	 * @return bool
 	 */
 	protected function should_register_tasks(): bool {
-		if ( method_exists( PageController::class, 'is_admin_page' ) ) {
-			return PageController::is_admin_page() && $this->check_should_show_tasks();
-		}
-
-		return class_exists( Loader::class ) && Loader::is_admin_page() && $this->check_should_show_tasks();
+		return PageController::is_admin_page() && $this->check_should_show_tasks();
 	}
 
 	/**

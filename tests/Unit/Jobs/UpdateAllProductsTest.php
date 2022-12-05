@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -22,11 +23,12 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class UpdateProductsTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
- *
+
  * @property MockObject|ActionScheduler           $action_scheduler
  * @property MockObject|ActionSchedulerJobMonitor $monitor
  * @property MockObject|ProductSyncer             $product_syncer
  * @property MockObject|ProductRepository         $product_repository
+ * @property MockObject|OptionsInterface         $options
  * @property MockObject|BatchProductHelper        $product_helper
  * @property MockObject|MerchantCenterService     $merchant_center
  * @property UpdateAllProducts                    $job
@@ -46,6 +48,7 @@ class UpdateAllProductsTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->options            = $this->createMock( OptionsInterface::class );
 		$this->action_scheduler   = $this->createMock( ActionSchedulerInterface::class );
 		$this->monitor            = $this->createMock( ActionSchedulerJobMonitor::class );
 		$this->product_syncer     = $this->createMock( ProductSyncer::class );
@@ -60,10 +63,6 @@ class UpdateAllProductsTest extends UnitTest {
 			$this->product_helper,
 			$this->merchant_center
 		);
-
-		$this->action_scheduler
-			->method( 'has_scheduled_action' )
-			->willReturn( false );
 
 		$this->merchant_center
 			->method( 'is_ready_for_syncing' )
@@ -82,6 +81,7 @@ class UpdateAllProductsTest extends UnitTest {
 			2
 		);
 
+		$this->job->set_options_object( $this->options );
 		$this->job->init();
 	}
 
@@ -99,12 +99,17 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'find_sync_ready_products' )
 			->willReturn( $filtered_product_list );
 
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
 		/*
 		 * We expect only single call to `has_scheduled_action` when scheduling
 		 * the batch and no calls further since batch is empty.
 		 */
 		$this->action_scheduler->expects( $this->once() )
-			->method( 'has_scheduled_action' );
+			->method( 'has_scheduled_action' )->willReturn( false );
+
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
 			->with( self::CREATE_BATCH_HOOK, [ 1 ] );
@@ -122,9 +127,11 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->product_repository->expects( $this->once() )
 			->method( 'find_sync_ready_products' )
 			->willReturn( $filtered_product_list );
-		$this->action_scheduler->expects( $this->exactly( 2 ) )
-			->method( 'has_scheduled_action' );
-		$this->action_scheduler->expects( $this->exactly( 2 ) )
+
+		$this->action_scheduler->expects( $this->exactly( 3 ) )
+			->method( 'has_scheduled_action' )->willReturn( false );
+
+		$this->action_scheduler->expects( $this->exactly( 3 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
 				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
@@ -159,6 +166,10 @@ class UpdateAllProductsTest extends UnitTest {
 			->withConsecutive( [ [], 2, 0 ], [ [], 2, 2 ], [ [], 2, 4 ] )
 			->willReturnOnConsecutiveCalls( $batch_a, $batch_b, $batch_c );
 
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
 		$this->job->schedule();
 
 		do_action( self::CREATE_BATCH_HOOK, 1 );
@@ -189,6 +200,10 @@ class UpdateAllProductsTest extends UnitTest {
 			->withConsecutive( [ [], 2, 0 ], [ [], 2, 2 ], [ [], 2, 4 ] )
 			->willReturnOnConsecutiveCalls( $batch_a, $batch_b, $batch_c );
 
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
 		$this->job->schedule();
 
 		do_action( self::CREATE_BATCH_HOOK, 1 );
@@ -204,6 +219,10 @@ class UpdateAllProductsTest extends UnitTest {
 		$batch_a = new FilteredProductList( [], 2 );
 		$batch_b = new FilteredProductList( $this->generate_simple_product_mocks_set( 1 ), 2 );
 		$batch_c = new FilteredProductList( [], 0 );
+
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
 
 		$this->action_scheduler->expects( $this->exactly( 4 ) )
 			->method( 'schedule_immediate' )
@@ -234,6 +253,10 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'find_by_ids' )
 			->with( $filtered_product_list->get_product_ids() )
 			->willReturn( $filtered_product_list->get() );
+
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
 
 		$this->product_syncer
 			->expects( $this->once() )
@@ -266,8 +289,25 @@ class UpdateAllProductsTest extends UnitTest {
 			->method( 'schedule_immediate' )
 			->with( self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] );
 
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
 		$this->expectException( ProductSyncerException::class );
 
 		do_action( self::PROCESS_ITEM_HOOK, $filtered_product_list->get_product_ids() );
+	}
+
+	public function test_delayed_schedule() {
+		$this->action_scheduler
+			->method( 'has_scheduled_action' )
+			->willReturn( false );
+
+		$this->action_scheduler
+			->expects( $this->once() )
+			->method( 'schedule_single' )
+			->with( gmdate( 'U' ) + 100, self::CREATE_BATCH_HOOK, [ 1 ] );
+
+		$this->job->schedule_delayed( 100 );
 	}
 }

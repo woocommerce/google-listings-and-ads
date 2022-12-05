@@ -1,4 +1,8 @@
 .gla-step-content-footer {
 	display: flex;
 	justify-content: flex-end;
+
+	&[hidden] {
+		display: none;
+	}
 }

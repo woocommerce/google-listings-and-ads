@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
@@ -15,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -41,6 +43,8 @@ use WC_Product;
  * @property ProductHelper                    $product_helper
  * @property WC                               $wc
  * @property ProductSyncer                    $product_syncer
+ * @property ProductRepository                $product_repository
+ * @property AttributeMappingRulesQuery       $rules_query
  */
 class ProductSyncerTest extends ContainerAwareUnitTest {
 
@@ -58,6 +62,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$validator,
 										$product_factory,
 										$this->target_audience,
+										$this->rules_query,
 									]
 								)
 								->getMock();
@@ -79,7 +84,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		[ $synced_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 2 );
 
 		$this->mock_google_service( $synced_products, $rejected_products );
-		$product_syncer = new ProductSyncer( $this->google_service, $batch_helper, $this->product_helper, $this->merchant_center, $this->wc );
+		$product_syncer = $this->get_product_syncer( [ 'batch_helper' => $batch_helper ] );
 
 		$products = array_merge( $synced_products, $rejected_products );
 		$results  = $product_syncer->update( $products );
@@ -255,7 +260,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$merchant_center->expects( $this->any() )
 						->method( 'is_connected' )
 						->willReturn( false );
-		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
+		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
 		$this->expectException( ProductSyncerException::class );
 		$this->product_syncer->update( [ $product ] );
@@ -268,7 +273,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$merchant_center->expects( $this->any() )
 						->method( 'is_connected' )
 						->willReturn( false );
-		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
+		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
 		$this->expectException( ProductSyncerException::class );
 		$this->product_syncer->update_by_batch_requests( [ new BatchProductRequestEntry( $product->get_id(), $this->generate_adapted_product( $product ) ) ] );
@@ -281,7 +286,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$merchant_center->expects( $this->any() )
 						->method( 'is_connected' )
 						->willReturn( false );
-		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
+		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
 		$this->expectException( ProductSyncerException::class );
 		$this->product_syncer->delete( [ $product ] );
@@ -294,7 +299,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$merchant_center->expects( $this->any() )
 						->method( 'is_connected' )
 						->willReturn( false );
-		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
+		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
 		$this->expectException( ProductSyncerException::class );
 		$this->product_syncer->delete_by_batch_requests( [ new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) ) ] );
@@ -320,6 +325,176 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$this->expectException( ProductSyncerException::class );
 		$this->product_syncer->delete_by_batch_requests( [ new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) ) ] );
+	}
+
+	public function test_delete_by_batch_requests_no_retry_if_product_is_unavailable_in_database() {
+		// $deleted_products:  products that were successfully synced and then deleted from Merchant Center
+		// $rejected_products: products that were synced but deleting them resulted in errors and were rejected by Google API
+		[ $deleted_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 1 );
+
+		$this->mock_google_service( $deleted_products, $rejected_products );
+
+		$products = array_merge( $deleted_products, $rejected_products );
+
+		// generate delete request entries
+		$product_entries = array_map(
+			function ( WC_Product $product ) {
+				return new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) );
+			},
+			$products
+		);
+
+		// force delete all products
+		array_walk(
+			$products,
+			function ( WC_Product $product ) {
+				$product->delete( true );
+				$product->save();
+			}
+		);
+
+		$results = $this->product_syncer->delete_by_batch_requests( $product_entries );
+		$this->assertEquals( 0, did_action( 'woocommerce_gla_batch_retry_delete_products' ) );
+
+		$result_product_ids = array_map(
+			function ( $product_entry ) {
+				return $product_entry->get_wc_product_id();
+			},
+			$results->get_products()
+		);
+
+		$delete_ready_product_ids = array_keys( $deleted_products );
+
+		$this->assertEqualsCanonicalizing( $result_product_ids, $delete_ready_product_ids );
+	}
+
+	public function test_delete_by_batch_requests_should_delete_trashed_product() {
+		// $deleted_products:  products that were successfully synced and then deleted from Merchant Center
+		// $rejected_products: products that were synced but deleting them resulted in errors and were rejected by Google API
+		[ $deleted_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 1 );
+
+		$this->mock_google_service( $deleted_products, $rejected_products );
+
+		$products = array_merge( $deleted_products, $rejected_products );
+
+		// generate delete request entries
+		$product_entries = array_map(
+			function ( WC_Product $product ) {
+				return new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) );
+			},
+			$products
+		);
+
+		// first we mark all products as synced and
+		// set the product status to trash
+		array_walk(
+			$products,
+			function ( WC_Product $product ) {
+				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+				$product->set_status( 'trash' );
+				$product->save();
+			}
+		);
+
+		$results = $this->product_syncer->delete_by_batch_requests( $product_entries );
+
+		$result_product_ids = array_map(
+			function ( $product_entry ) {
+				return $product_entry->get_wc_product_id();
+			},
+			$results->get_products()
+		);
+
+		$delete_ready_product_ids = array_keys( $deleted_products );
+
+		$this->assertEqualsCanonicalizing( $result_product_ids, $delete_ready_product_ids );
+		$this->assert_delete_results_are_valid( $results, $deleted_products, $rejected_products );
+	}
+
+	public function test_delete_by_batch_requests_should_delete_catalog_visibility_hidden_product() {
+		// $deleted_products:  products that were successfully synced and then deleted from Merchant Center
+		// $rejected_products: products that were synced but deleting them resulted in errors and were rejected by Google API
+		[ $deleted_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 1 );
+
+		$this->mock_google_service( $deleted_products, $rejected_products );
+
+		$products = array_merge( $deleted_products, $rejected_products );
+
+		// generate delete request entries
+		$product_entries = array_map(
+			function ( WC_Product $product ) {
+				return new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) );
+			},
+			$products
+		);
+
+		// first we mark all products as synced and
+		// set the product's catalog visibility to hidden
+		array_walk(
+			$products,
+			function ( WC_Product $product ) {
+				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+				$product->set_catalog_visibility( 'hidden' );
+				$product->save();
+			}
+		);
+
+		$results = $this->product_syncer->delete_by_batch_requests( $product_entries );
+
+		$result_product_ids = array_map(
+			function ( $product_entry ) {
+				return $product_entry->get_wc_product_id();
+			},
+			$results->get_products()
+		);
+
+		$delete_ready_product_ids = array_keys( $deleted_products );
+
+		$this->assertEqualsCanonicalizing( $result_product_ids, $delete_ready_product_ids );
+		$this->assert_delete_results_are_valid( $results, $deleted_products, $rejected_products );
+	}
+
+	public function test_delete_by_batch_requests_should_delete_draft_product() {
+		// $deleted_products:  products that were successfully synced and then deleted from Merchant Center
+		// $rejected_products: products that were synced but deleting them resulted in errors and were rejected by Google API
+		[ $deleted_products, $rejected_products ] = $this->create_multiple_simple_product_sets( 2, 1 );
+
+		$this->mock_google_service( $deleted_products, $rejected_products );
+
+		$products = array_merge( $deleted_products, $rejected_products );
+
+		// generate delete request entries
+		$product_entries = array_map(
+			function ( WC_Product $product ) {
+				return new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) );
+			},
+			$products
+		);
+
+		// first we mark all products as synced and
+		// set the product status to draft
+		array_walk(
+			$products,
+			function ( WC_Product $product ) {
+				$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
+				$product->set_status( 'draft' );
+				$product->save();
+			}
+		);
+
+		$results = $this->product_syncer->delete_by_batch_requests( $product_entries );
+
+		$result_product_ids = array_map(
+			function ( $product_entry ) {
+				return $product_entry->get_wc_product_id();
+			},
+			$results->get_products()
+		);
+
+		$delete_ready_product_ids = array_keys( $deleted_products );
+
+		$this->assertEqualsCanonicalizing( $result_product_ids, $delete_ready_product_ids );
+		$this->assert_delete_results_are_valid( $results, $deleted_products, $rejected_products );
 	}
 
 	protected function mock_google_service( $successful_products, $failed_products ): void {
@@ -355,6 +530,29 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	}
 
 	/**
+	 * Function to return an instance of ProductSyncer.
+	 *
+	 * @param object[] $args
+	 */
+	private function get_product_syncer( $args = [] ): ProductSyncer {
+		$args['google_service']     = $args['google_service'] ?? $this->google_service;
+		$args['batch_helper']       = $args['batch_helper'] ?? $this->batch_helper;
+		$args['product_helper']     = $args['product_helper'] ?? $this->product_helper;
+		$args['merchant_center']    = $args['merchant_center'] ?? $this->merchant_center;
+		$args['wc']                 = $args['wc'] ?? $this->wc;
+		$args['product_repository'] = $args['product_repository'] ?? $this->product_repository;
+
+		return new ProductSyncer(
+			$args['google_service'],
+			$args['batch_helper'],
+			$args['product_helper'],
+			$args['merchant_center'],
+			$args['wc'],
+			$args['product_repository'],
+		);
+	}
+
+	/**
 	 * Runs before each test is executed.
 	 */
 	public function setUp(): void {
@@ -366,11 +564,13 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 							  ->willReturn( true );
 
 		$this->google_service = $this->createMock( GoogleProductService::class );
+		$this->rules_query    = $this->createMock( AttributeMappingRulesQuery::class );
 
-		$this->product_meta   = $this->container->get( ProductMetaHandler::class );
-		$this->batch_helper   = $this->container->get( BatchProductHelper::class );
-		$this->product_helper = $this->container->get( ProductHelper::class );
-		$this->wc             = $this->container->get( WC::class );
-		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $this->merchant_center, $this->wc );
+		$this->product_meta       = $this->container->get( ProductMetaHandler::class );
+		$this->batch_helper       = $this->container->get( BatchProductHelper::class );
+		$this->product_helper     = $this->container->get( ProductHelper::class );
+		$this->wc                 = $this->container->get( WC::class );
+		$this->product_repository = $this->container->get( ProductRepository::class );
+		$this->product_syncer     = $this->get_product_syncer();
 	}
 }

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -18,6 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @property MockObject|Connection $connection
  * @property OptionsInterface      $options
+ * @property MerchantCenterService $merchant_center
  * @property ReconnectWordPress    $note
  */
 class ReconnectWordPressTest extends UnitTest {
@@ -27,11 +29,13 @@ class ReconnectWordPressTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->connection = $this->createMock( Connection::class );
-		$this->options    = $this->createMock( OptionsInterface::class );
+		$this->connection      = $this->createMock( Connection::class );
+		$this->options         = $this->createMock( OptionsInterface::class );
+		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 
 		$this->note = new ReconnectWordPress( $this->connection );
 		$this->note->set_options_object( $this->options );
+		$this->note->set_merchant_center_object( $this->merchant_center );
 	}
 
 	public function test_name() {
@@ -52,11 +56,25 @@ class ReconnectWordPressTest extends UnitTest {
 		$this->assertFalse( $this->note->should_be_added() );
 	}
 
+	public function test_should_add_not_added_and_mc_setup_not_complete() {
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( false );
+
+		$this->assertFalse( $this->note->should_be_added() );
+	}
+
+	public function test_should_add_not_added_and_mc_setup_complete() {
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
+
+		$this->assertTrue( $this->note->should_be_added() );
+	}
+
 	public function test_should_add_connected() {
 		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->with( OptionsInterface::JETPACK_CONNECTED )
 			->willReturn( true );
+
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
 
 		$this->assertFalse( $this->note->should_be_added() );
 	}
@@ -66,6 +84,8 @@ class ReconnectWordPressTest extends UnitTest {
 			->method( 'get' )
 			->with( OptionsInterface::JETPACK_CONNECTED )
 			->willReturn( false );
+
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
 
 		$this->connection->expects( $this->never() )
 			->method( 'get_status' );
@@ -78,6 +98,8 @@ class ReconnectWordPressTest extends UnitTest {
 			->method( 'get' )
 			->with( OptionsInterface::JETPACK_CONNECTED )
 			->will( $this->onConsecutiveCalls( true, false ) );
+
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
 
 		$this->connection->expects( $this->once() )
 			->method( 'get_status' );

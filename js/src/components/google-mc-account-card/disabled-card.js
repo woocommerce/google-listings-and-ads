@@ -16,7 +16,7 @@ const DisabledCard = () => {
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
 			indicator={
 				<Button isSecondary disabled>
-					{ __( 'Create Account', 'google-listings-and-ads' ) }
+					{ __( 'Create account', 'google-listings-and-ads' ) }
 				</Button>
 			}
 		/>

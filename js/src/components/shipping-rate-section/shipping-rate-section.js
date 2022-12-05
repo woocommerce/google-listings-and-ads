@@ -20,23 +20,8 @@ import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
  */
 
 const ShippingRateSection = ( { formProps, audienceCountries } ) => {
-	const { getInputProps, values, setValue } = formProps;
+	const { getInputProps, values } = formProps;
 	const inputProps = getInputProps( 'shipping_rate' );
-
-	const getShippingRateOptionChangeHandler = ( onChange ) => ( value ) => {
-		switch ( value ) {
-			case 'automatic':
-			case 'flat':
-				setValue( 'shipping_time', 'flat' );
-				break;
-
-			case 'manual':
-				setValue( 'shipping_time', 'manual' );
-				break;
-		}
-
-		onChange( value );
-	};
 
 	return (
 		<Section
@@ -45,7 +30,7 @@ const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 				<div>
 					<p>
 						{ __(
-							'Your shipping rates will be shown to potential customers on Google.',
+							'Your estimated shipping rates and times will be shown to potential customers on Google.',
 							'google-listings-and-ads'
 						) }
 					</p>
@@ -78,9 +63,6 @@ const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 								) }
 								value="automatic"
 								collapsible
-								onChange={ getShippingRateOptionChangeHandler(
-									inputProps.onChange
-								) }
 							>
 								<RadioHelperText>
 									{ __(
@@ -97,9 +79,6 @@ const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 								) }
 								value="flat"
 								collapsible
-								onChange={ getShippingRateOptionChangeHandler(
-									inputProps.onChange
-								) }
 							/>
 							<AppRadioContentControl
 								{ ...inputProps }
@@ -109,9 +88,6 @@ const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 								) }
 								value="manual"
 								collapsible
-								onChange={ getShippingRateOptionChangeHandler(
-									inputProps.onChange
-								) }
 							>
 								<RadioHelperText>
 									{ createInterpolateElement(

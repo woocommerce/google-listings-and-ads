@@ -7,10 +7,12 @@ module.exports = {
 	testEnvironment: 'jsdom',
 	setupFiles: [ 'core-js' ],
 	moduleNameMapper: {
+		'\\.png$': '<rootDir>/tests/mocks/assets/imageMock.js',
 		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
 		// Transform our `.~/` alias.
 		'^\\.~/(.*)$': '<rootDir>/js/src/$1',
+		'^extracted/(.*)$': '$1',
 		'@woocommerce/settings':
 			'<rootDir>/js/src/tests/dependencies/woocommerce/settings',
 	},
@@ -31,6 +33,9 @@ module.exports = {
 		'<rootDir>/js/build-dev',
 	],
 	globals: {
+		wcAdminFeatures: {
+			navigation: true,
+		},
 		glaData: {
 			mcSetupComplete: true,
 			mcSupportedCountry: true,

@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Google\Service\ShoppingContent\Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variation;
+use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -102,7 +103,11 @@ class ProductHelper implements Service {
 	 */
 	public function mark_as_unsynced( WC_Product $product ) {
 		$this->meta_handler->delete_synced_at( $product );
-		$this->meta_handler->update_sync_status( $product, SyncStatus::NOT_SYNCED );
+		if ( ! $this->is_sync_ready( $product ) ) {
+			$this->meta_handler->delete_sync_status( $product );
+		} else {
+			$this->meta_handler->update_sync_status( $product, SyncStatus::NOT_SYNCED );
+		}
 		$this->meta_handler->delete_google_ids( $product );
 		$this->meta_handler->delete_errors( $product );
 		$this->meta_handler->delete_failed_sync_attempts( $product );
@@ -290,6 +295,17 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Get WooCommerce product by WP get_post
+	 *
+	 * @param int $product_id
+	 *
+	 * @return WP_Post|null
+	 */
+	public function get_wc_product_by_wp_post( int $product_id ): ?WP_Post {
+		return get_post( $product_id );
+	}
+
+	/**
 	 * @param WC_Product $product
 	 *
 	 * @return bool
@@ -466,11 +482,45 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * If an item from the provided list of products has a parent, replace it with the parent ID.
+	 *
+	 * @param int[] $product_ids                        A list of WooCommerce product ID.
+	 * @param bool  $check_product_status    (Optional) Check if the product status is publish.
+	 * @param bool  $ignore_product_on_error (Optional) Ignore the product when invalid value error occurs.
+	 *
+	 * @return int[] A list of parent ID or product ID if it doesn't have a parent.
+	 *
+	 * @throws InvalidValue If the given param ignore_product_on_error is false and any of a given ID doesn't reference a valid product.
+	 *                      Or if a variation product does not have a valid parent ID (i.e. it's an orphan).
+	 *
+	 * @since 2.2.0
+	 */
+	public function maybe_swap_for_parent_ids( array $product_ids, bool $check_product_status = true, bool $ignore_product_on_error = true ) {
+		$new_product_ids = [];
+
+		foreach ( $product_ids as $index => $product_id ) {
+			try {
+				$product     = $this->get_wc_product( $product_id );
+				$new_product = $this->maybe_swap_for_parent( $product );
+				if ( ! $check_product_status || 'publish' === $new_product->get_status() ) {
+					$new_product_ids[ $index ] = $new_product->get_id();
+				}
+			} catch ( InvalidValue $exception ) {
+				if ( ! $ignore_product_on_error ) {
+					throw $exception;
+				}
+			}
+		}
+
+		return array_unique( $new_product_ids );
+	}
+
+	/**
 	 * If the provided product has a parent, return its ID. Otherwise, return the given (valid product) ID.
 	 *
 	 * @param int $product_id WooCommerce product ID.
 	 *
-	 * @return int The parent ID or product ID of it doesn't have a parent.
+	 * @return int The parent ID or product ID if it doesn't have a parent.
 	 *
 	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
 	 *                      valid parent ID (i.e. it's an orphan).
