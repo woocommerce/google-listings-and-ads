@@ -296,21 +296,18 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array A list of attachments urls.
 	 */
-	protected function get_url_attachments_by_ids( array $ids, $size_keys = [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY ] ): array {
+	protected function get_url_attachments_by_ids( array $ids, array $size_keys = [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY ] ): array {
 		$ids = array_unique( ArrayUtil::remove_empty_values( $ids ) );
 		$ids = array_map( 'intval', $ids );
 
 		$marketing_images = [];
-
-		// Add the filter with the possible missing subsizes.
-		$this->add_filter_missing_subsize( $size_keys );
 
 		foreach ( $ids as $id ) {
 			$metadata = wp_get_attachment_metadata( $id );
 			foreach ( $size_keys as $size_key ) {
 				if ( isset( $metadata['sizes'][ $size_key ] ) ) {
 					$marketing_images[ $size_key ][] = wp_get_attachment_image_url( $id, $size_key );
-				} elseif ( $this->check_image_size( [ $metadata['width'], $metadata['height'] ], $this->minimum_image_requirements[ $size_key ] ) && $this->try_resize_image( $id, $size_key ) ) {
+				} elseif ( $this->check_image_size( [ $metadata['width'], $metadata['height'] ], $this->minimum_image_requirements[ $size_key ] ) && self::try_add_subsize_image( $id, $size_key, $this->minimum_image_requirements[ $size_key ][0], $this->minimum_image_requirements[ $size_key ][1] ) ) {
 					$marketing_images[ $size_key ][] = wp_get_attachment_image_url( $id, $size_key );
 				} else {
 					continue;
@@ -322,47 +319,33 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
-	 * Try to resize the image with the missing subsizes.
+	 * Try to add a new subsize image.
 	 *
 	 * @param int    $attachment_id Attachment ID.
-	 * @param string $subsize The subsize that we are trying to generate.
+	 * @param string $subsize_key The subsize key that we are trying to generate.
+	 * @param int    $width Image width in pixels.
+	 * @param int    $height Image height in pixels.
+	 * @param bool   $crop Whether to crop the image.
 	 *
 	 * @return bool True if the subsize has been added to the attachment metadata otherwise false.
 	 */
-	protected function try_resize_image( int $attachment_id, string $subsize ): bool {
+	public static function try_add_subsize_image( int $attachment_id, string $subsize_key, int $width, int $height, bool $crop = true ): bool {
 		// It is required as wp_update_image_subsizes is not loaded automatically.
 		if ( ! function_exists( 'wp_update_image_subsizes' ) ) {
 			include ABSPATH . 'wp-admin/includes/image.php';
 		}
 
+		add_image_size( $subsize_key, $width, $height, $crop );
+
 		$metadata = wp_update_image_subsizes( $attachment_id );
+
+		remove_image_size( $subsize_key );
 
 		if ( is_wp_error( $metadata ) ) {
 			return false;
 		}
 
-		return isset( $metadata['sizes'][ $subsize ] );
-	}
-
-	/**
-	 * Adds or removes the filter with the missing subsizes.
-	 *
-	 * @param array $subisize_keys List of subsizes keys that we want to generate.
-	 */
-	protected function add_filter_missing_subsize( array $subisize_keys ): void {
-			$callback = function() use ( $subisize_keys ) {
-				foreach ( $subisize_keys as $subsize_key ) {
-					$new_sizes[ $subsize_key ] = [
-						'width'  => $this->minimum_image_requirements[ $subsize_key ][0],
-						'height' => $this->minimum_image_requirements[ $subsize_key ][1],
-						'crop'   => true,
-					];
-				}
-
-				return $new_sizes;
-			};
-
-			add_filter( 'wp_get_missing_image_subsizes', $callback );
+		return isset( $metadata['sizes'][ $subsize_key ] );
 	}
 
 	/**
