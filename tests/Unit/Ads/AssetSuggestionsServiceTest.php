@@ -56,6 +56,13 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	];
 
 	/**
+	 * Minimum image requirements.
+	 *
+	 * @var array
+	 */
+	protected $minimum_image_requirements;	
+
+	/**
 	 * Runs before each test is executed.
 	 */
 	public function setUp(): void {
@@ -70,7 +77,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		$this->suggested_post = $this->format_url_post_item( $this->post );
 		$this->suggested_term = $this->format_url_term_item( $this->term );
-
+	
 		$this->minimum_image_requirements[ self::MARKETING_IMAGE_KEY ]        = self::MARKETING_IMAGE_MINIMUM_SIZE;
 		$this->minimum_image_requirements[ self::SQUARE_MARKETING_IMAGE_KEY ] = self::MARKETING_SQUARE_IMAGE_MINIMUM_SIZE;
 
