@@ -308,6 +308,7 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		);
 	}
 	public function test_find_delete_product_ids() {
+		// A simple synced product.
 		$product_1 = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
 
@@ -320,10 +321,16 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$product_3 = WC_Helper_Product::create_simple_product( true, [ 'status' => 'trash' ] );
 		$this->product_helper->mark_as_unsynced( $product_3 );
 
-		$ids = [ $product_1->get_id(), $product_2->get_id(), $product_3->get_id() ];
+		// A simple product with status publish which its catalog visibility is hidden.
+		$product_4 = WC_Helper_Product::create_simple_product( true, [ 'status' => 'publish' ] );
+		$product_4->set_catalog_visibility( 'hidden' );
+		$product_4->save();
+		$this->product_helper->mark_as_unsynced( $product_4 );
+
+		$ids = [ $product_1->get_id(), $product_2->get_id(), $product_3->get_id(), $product_4->get_id() ];
 
 		$this->assertEquals(
-			[ $product_3->get_id() ],
+			[ $product_1->get_id(), $product_3->get_id(), $product_4->get_id() ],
 			$this->product_repository->find_delete_product_ids( $ids )
 		);
 	}

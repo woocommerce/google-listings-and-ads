@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.8
 Tested up to: 6.1
 Requires PHP: 7.4
-Stable tag: 2.3.1
+Stable tag: 2.3.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -108,6 +108,12 @@ Performance Max campaigns are pay-per-click, meaning you only pay when someone c
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.
 
 == Changelog ==
+
+= 2.3.2 - 2022-12-06 =
+* Dev - Adjusted parts of the post-install process to work on machines without `grep` and `find`. .
+* Dev - Adjusted post-install process to mention when files have their class-expectations modified but retain their original namespace.
+* Fix - Certain inbox notifications were shown before setup completed.
+* Fix - Delete products in GMC when force delete a product or change catalog visibility to hidden.
 
 = 2.3.1 - 2022-11-22 =
 * Add -  Attribute Mapping Feature.
