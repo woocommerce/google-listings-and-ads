@@ -33,7 +33,7 @@ class AssetSuggestionsService implements Service {
 	 */
 	protected const MARKETING_IMAGE_KEY = 'gla_marketing';
 	/**
-	 * The subsize key for the marketing image.
+	 * The subsize key for the logo image.
 	 */
 	protected const LOGO_IMAGE_KEY = 'gla_logo';
 	/**
@@ -289,10 +289,10 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
-	 * Get URL for each attachment using an array of attachment ids.
+	 * Get URL for each attachment using an array of attachment ids and a list of subsizes.
 	 *
 	 * @param array $ids Attachments ids.
-	 * @param array $size_keys Subsize keys that we would like to create.
+	 * @param array $size_keys Image subsize keys.
 	 *
 	 * @return array A list of attachments urls.
 	 */

@@ -486,33 +486,23 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	}
 
 
-	public function test_resize_image() {
+	public function test_add_subsize_image() {
+		// Image size: 64x64px.
 		$image_id = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ), $this->post->ID );
 
-		$this->update_size_image( $image_id, [ 300, 300 ] );
+		$metadata = wp_get_attachment_metadata( $image_id );
 
-		$this->wp->expects( $this->once() )
-			->method( 'get_posts' )
-			->willReturn( [ $image_id ] );
+		$this->assertArrayNotHasKey( self::SQUARE_MARKETING_IMAGE_KEY, $metadata['sizes'] );
 
-		// As the file test-image-1.png is only 64x64 we tweak the code, so it seems that the image has been resize to 300x300 px.
-		add_filter(
-			'wp_generate_attachment_metadata',
-			function ( $metadata ) use ( $image_id ) {
-				$metadata['sizes'][ self::SQUARE_MARKETING_IMAGE_KEY ] = [
-					'file'   => basename( get_attached_file( $image_id ) ),
-					'width'  => $this->minimum_image_requirements[ self::SQUARE_MARKETING_IMAGE_KEY ][0],
-					'height' => $this->minimum_image_requirements[ self::SQUARE_MARKETING_IMAGE_KEY ][1],
-				];
+		// Add subsize of 20x20px
+		$this->asset_suggestions::try_add_subsize_image( $image_id, self::SQUARE_MARKETING_IMAGE_KEY, 20, 20 );
 
-				return $metadata;
-			}
-		);
+		$metadata_updated = wp_get_attachment_metadata( $image_id );
 
-		$images[ self::SQUARE_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id, self::SQUARE_MARKETING_IMAGE_KEY ) ];
-		$images[ self::MARKETING_IMAGE_KEY ]        = [];
+		$this->assertArrayHasKey( self::SQUARE_MARKETING_IMAGE_KEY, $metadata_updated['sizes'] );
 
-		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 	}
+
+
 
 }
