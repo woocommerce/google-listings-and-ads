@@ -2,22 +2,26 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { useState, createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import FinalUrlCard from './final-url-card';
 import './asset-group-section.scss';
 
 /**
  * Renders the form content for managing an asset group of a campaign with Section UI.
  */
 export default function AssetGroupSection() {
+	const [ assetGroup, setAssetGroup ] = useState( null );
+
 	return (
 		<Section
-			className=".gla-asset-group-section"
+			className="gla-asset-group-section"
 			title={ createInterpolateElement(
 				__(
 					'Add assets <optional>(Optional)</optional>',
@@ -49,9 +53,12 @@ export default function AssetGroupSection() {
 				</>
 			}
 		>
-			<Section.Card>
-				<Section.Card.Body>Final URL</Section.Card.Body>
-			</Section.Card>
+			<VerticalGapLayout size="medium">
+				<FinalUrlCard onAssetsChange={ setAssetGroup } />
+				<div>Assets card will be added here</div>
+			</VerticalGapLayout>
+			<h3>Temporary demo for showing the current assets data:</h3>
+			<pre>{ JSON.stringify( assetGroup, null, 2 ) }</pre>
 		</Section>
 	);
 }
