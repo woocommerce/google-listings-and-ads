@@ -1,0 +1,14 @@
+.gla-final-url-card {
+	.components-card__body,
+	.components-card__footer {
+		padding: $grid-unit-40;
+	}
+
+	&--has-selected-url .components-card__footer {
+		padding: $grid-unit-30;
+	}
+
+	.gla-account-card__description {
+		color: $gray-700;
+	}
+}
