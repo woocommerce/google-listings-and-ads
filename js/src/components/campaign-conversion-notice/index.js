@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Icon, __experimentalText as Text } from '@wordpress/components';
+import { Icon } from '@wordpress/components';
 import { external as externalIcon } from '@wordpress/icons';
 
 /**
@@ -12,6 +12,7 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import CONVERSION_STATUSES from './conversion-statuses';
 import getConversionCampaignStatusNotice from '.~/utils/getConversionCampaignStatusNotice';
 import DismissibleNotice from '.~/components/dismissible-notice';
+import Text from '.~/components/app-text';
 import './index.scss';
 
 const ExternalIcon = () => (
@@ -49,7 +50,7 @@ const CampaignConversionDashboardNotice = ( { context } ) => {
 			localStorageKey={ status.localStorageKey }
 		>
 			<Text
-				variant="subtitle.small"
+				variant="subtitle-small"
 				className="gla-campaign-conversion-status-notice__title"
 				data-testid="gla-campaign-conversion-dashboard-notice"
 			>

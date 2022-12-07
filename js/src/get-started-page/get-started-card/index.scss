@@ -1,11 +1,14 @@
 .gla-get-started-card {
-	display: flex;
-	flex-direction: row-reverse;
-	padding: $grid-unit-50 $grid-unit-50 $grid-unit-20;
 
-	@media (max-width: $break-small) {
-		flex-direction: column;
-		padding: $grid-unit-30;
+	> div:first-of-type {
+		display: flex;
+		flex-direction: row-reverse;
+		padding: $grid-unit-50 $grid-unit-50 $grid-unit-20;
+
+		@media (max-width: $break-small) {
+			flex-direction: column;
+			padding: $grid-unit-30;
+		}
 	}
 
 	.motivation-image {

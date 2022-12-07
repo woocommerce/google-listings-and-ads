@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 defined( 'ABSPATH' ) || exit;
@@ -19,10 +21,11 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class ReconnectWordPress extends AbstractNote {
+class ReconnectWordPress extends AbstractNote implements MerchantCenterAwareInterface {
 
 	use PluginHelper;
 	use Utilities;
+	use MerchantCenterAwareTrait;
 
 	/**
 	 * @var Connection
@@ -80,7 +83,7 @@ class ReconnectWordPress extends AbstractNote {
 	 * @return bool
 	 */
 	public function should_be_added(): bool {
-		if ( $this->has_been_added() ) {
+		if ( $this->has_been_added() || ! $this->merchant_center->is_setup_complete() ) {
 			return false;
 		}
 

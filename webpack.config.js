@@ -72,6 +72,12 @@ const webpackConfig = {
 					filename: 'images/[path]/[contenthash].[name][ext]',
 				},
 			},
+			// Fix module not found problem for `process/browser`.
+			// Ref: https://webpack.js.org/configuration/module/#resolvefullyspecified
+			{
+				test: /\.m?js$/,
+				resolve: { fullySpecified: false },
+			},
 		],
 	},
 	resolve: {

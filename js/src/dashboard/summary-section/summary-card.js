@@ -1,15 +1,12 @@
 /**
  * External dependencies
  */
-import {
-	Card,
-	CardHeader,
-	__experimentalText as Text,
-} from '@wordpress/components';
+import { Card, CardHeader } from '@wordpress/components';
 /**
  * Internal dependencies
  */
 import './summary-card.scss';
+import Text from '.~/components/app-text';
 
 /**
  * Returns a Card with the given content.
@@ -24,7 +21,7 @@ const SummaryCard = ( { title, children } ) => {
 	return (
 		<Card className="gla-summary-card">
 			<CardHeader size="medium">
-				<Text variant="title.small">{ title }</Text>
+				<Text variant="title-small">{ title }</Text>
 			</CardHeader>
 			{ children }
 		</Card>

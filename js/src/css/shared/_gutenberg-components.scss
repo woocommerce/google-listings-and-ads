@@ -9,7 +9,7 @@
 	// This import could be removed after:
 	// - It's fixed from @woocommerce/components
 	// - or @wordpress/components is changed to be imported via (WC)DEWP
-	@import "node_modules/@wordpress/components/src/date-time/datepicker"; /* stylelint-disable-line no-invalid-position-at-import-rule */
+	@import "node_modules/@wordpress/components/src/date-time/date/datepicker"; /* stylelint-disable-line no-invalid-position-at-import-rule */
 }
 
 .components-button {

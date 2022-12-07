@@ -2,19 +2,14 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CardHeader,
-	Flex,
-	FlexBlock,
-	__experimentalText as Text,
-} from '@wordpress/components';
+import { Card, CardHeader, Flex, FlexBlock } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import './index.scss';
 import quoteImageURL from './img-quote.svg';
+import Text from '.~/components/app-text';
 
 const Quote = ( { quote, name } ) => {
 	return (
@@ -44,7 +39,7 @@ const CustomerQuotesCard = () => {
 			<CardHeader>
 				<Text
 					className="gla-get-started-customer-quotes-card__title"
-					variant="title.medium"
+					variant="title-medium"
 				>
 					{ __(
 						'21,000+ WooCommerce store owners like you already list products with Google',

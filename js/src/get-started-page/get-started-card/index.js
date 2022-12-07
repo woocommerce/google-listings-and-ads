@@ -1,12 +1,7 @@
 /**
  * External dependencies
  */
-import {
-	Card,
-	CardBody,
-	FlexItem,
-	__experimentalText as Text,
-} from '@wordpress/components';
+import { Card, CardBody, FlexItem } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -17,6 +12,7 @@ import { glaData } from '.~/constants';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import motivationImageURL from './image.svg';
 import './index.scss';
+import Text from '.~/components/app-text';
 import AppButton from '.~/components/app-button';
 import { getSetupMCUrl } from '.~/utils/urls';
 
@@ -42,7 +38,7 @@ const GetStartedCard = () => {
 			</FlexItem>
 			<CardBody>
 				<Text
-					variant="title.medium"
+					variant="title-medium"
 					className="gla-get-started-card__title"
 				>
 					{ __(
