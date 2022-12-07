@@ -11,6 +11,11 @@
 
 	&__table-footer {
 		padding: $grid-unit-20;
+
+		// Compatibility with wordpress/components v19.17.0. Overrides min-width: 0 in CardFooter.View
+		.components-button {
+			min-width: auto;
+		}
 	}
 
 	&__radio-control {
@@ -18,7 +23,7 @@
 		.help-popover {
 			margin-left: $grid-unit;
 
-			// hack for positioning correctly the popover in the modal radio control
+			// hack for positioning the popover correctly in the modal radio control
 			.components-popover {
 				position: absolute;
 			}

@@ -2,18 +2,14 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CardBody,
-	FlexItem,
-	__experimentalText as Text,
-} from '@wordpress/components';
+import { Card, CardBody, FlexItem } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import benefitsImageURL from './image.png';
+import Text from '.~/components/app-text';
 import './index.scss';
 
 const BenefitsCard = () => {
@@ -33,7 +29,7 @@ const BenefitsCard = () => {
 				</div>
 				<FlexItem>
 					<Text
-						variant="title.medium"
+						variant="title-medium"
 						className="gla-get-started-benefits-card__title"
 					>
 						{ createInterpolateElement(
