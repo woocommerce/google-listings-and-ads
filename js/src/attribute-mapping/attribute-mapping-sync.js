@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { createInterpolateElement, useEffect } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Flex } from '@wordpress/components';
 import { format as formatDate } from '@wordpress/date';
@@ -12,7 +12,6 @@ import { format as formatDate } from '@wordpress/date';
 import usePolling from '.~/hooks/usePolling';
 import { API_NAMESPACE } from '.~/data/constants';
 import glaDateTimeFormat from '.~/utils/date';
-import AppDocumentationLink from '.~/components/app-documentation-link';
 import HelpPopover from '.~/components/help-popover';
 
 const AttributeMappingSync = () => {
@@ -41,22 +40,14 @@ const AttributeMappingSync = () => {
 			</span>
 			<HelpPopover
 				id={ `gla-attribute-mapping-last-sync-helper-popover` }
+				position="bottom left"
 			>
-				{ createInterpolateElement(
-					__(
-						'When an attribute rule is added or changed, data will be synced to Google Merchant Center via an async job. Note that it may take a while for the update to show up on Merchant Center, especially if it involves products that have not been synced and approved before. <link>Find out more about how sync works.</link>',
+				<div>
+					{ __(
+						'When an attribute rule is added or changed, data will be synced to Google Merchant Center via an async job. Note that it may take a while for the update to show up on Merchant Center, especially if it involves products that have not been synced and approved before.',
 						'google-listings-and-ads'
-					),
-					{
-						link: (
-							<AppDocumentationLink
-								context="attribute-mapping"
-								linkId="learn-more-how-sync-works"
-								href="https://example.com" // todo: check link
-							/>
-						),
-					}
-				) }
+					) }
+				</div>
 			</HelpPopover>
 		</Flex>
 	);

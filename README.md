@@ -28,8 +28,8 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 
 We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
 
--   WordPress 5.7+
--   WooCommerce 6.8+
+-   WordPress 5.9+
+-   WooCommerce 6.9+
 -   PHP 7.4+
 
 ## Browsers supported
@@ -61,6 +61,10 @@ Now you can build the files using one of these commands:
 -   `npm run dev` : Build a development version
 -   `npm run start` : Build a development version, watch files for changes
 -   `npm run start:hot` : Build a development version in Fast Refresh mode, watch files for changes.
+
+## Working with DEWP
+
+The Dependency Extraction Webpack Plugin makes working with frontend dependencies not so obvious, check [`Working with DEWP.md`](Working with DEWP.md) for more details.
 
 ## Helper Scripts
 

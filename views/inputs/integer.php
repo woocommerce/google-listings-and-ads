@@ -12,7 +12,10 @@ defined( 'ABSPATH' ) || exit;
  */
 $input = $this->input;
 
-$input['type']  = 'text';
-$input['class'] = sprintf( '%s %s', $input['class'] ?? '', 'gla-input-integer' );
+$input['type'] = 'number';
+// Not so "custom" but standard `<input type="number">` attribute.
+$input['custom_attributes'] = [
+	'min' => '0',
+];
 
 woocommerce_wp_text_input( $input );

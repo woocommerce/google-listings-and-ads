@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
 import { useState } from '@wordpress/element';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -12,6 +13,29 @@ import AppModal from '.~/components/app-modal';
 import AppButton from '.~/components/app-button';
 import { useAppDispatch } from '.~/data';
 
+/**
+ * Deletes the rule successfully
+ *
+ * @event gla_attribute_mapping_delete_rule
+ * @property {string} context Indicates where this event happened
+ */
+
+/**
+ * Clicks on delete rule button
+ *
+ * @event gla_attribute_mapping_delete_rule_click
+ * @property {string} context Indicates where this event happened
+ */
+
+/**
+ * Renders a Modal to confirm Attribute Mapping Rule deletion
+ *
+ * @param {Object} props Component props
+ * @param {Function} props.onRequestClose Callback function when the modal is closed
+ * @param {Object} props.rule The rule to be deleted
+ * @fires gla_attribute_mapping_delete_rule When the rule is successfully deleted with `{ context: 'attribute-mapping-delete-rule-modal'}`
+ * @fires gla_attribute_mapping_delete_rule_click When user clicks on delete rule button with `{ context: 'attribute-mapping-delete-rule-modal' }`
+ */
 const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 	const [ deleting, setDeleting ] = useState( false );
 	const { deleteMappingRule } = useAppDispatch();
@@ -21,7 +45,10 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 
 		try {
 			await deleteMappingRule( rule );
-			onRequestClose();
+			recordEvent( 'gla_attribute_mapping_delete_rule', {
+				context: 'attribute-mapping-delete-rule-modal',
+			} );
+			onRequestClose( 'confirm' );
 		} catch ( error ) {
 			setDeleting( false );
 		}
@@ -29,7 +56,7 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 
 	const handleClose = () => {
 		if ( deleting ) return;
-		onRequestClose();
+		onRequestClose( 'dismiss' );
 	};
 
 	return (
@@ -57,9 +84,9 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 									'google-listings-and-ads'
 							  )
 					}
-					eventName="gla_attribute_mapping_delete_rule"
+					eventName="gla_attribute_mapping_delete_rule_click"
 					eventProps={ {
-						context: 'attribute-mapping-rule-modal',
+						context: 'attribute-mapping-delete-rule-modal',
 					} }
 					onClick={ onDelete }
 				/>,

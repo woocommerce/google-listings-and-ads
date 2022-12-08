@@ -4,12 +4,12 @@ const defaultConfig = require( '@wordpress/scripts/config/jest-unit.config' );
 
 module.exports = {
 	...defaultConfig,
-	verbose: true,
 	testEnvironment: 'jsdom',
+	setupFiles: [ 'core-js', '<rootDir>/js/src/tests/jest-unit.setup.js' ],
 	transformIgnorePatterns: [
-		'.*/node_modules/.*/node_modules/(?!(is-plain-obj)/)',
+		// Fix that `is-plain-obj@4.1.0` doesn't provide the CommonJS build, so it needs to be transformed.
+		'<rootDir>/node_modules/(?!is-plain-obj/)',
 	],
-	setupFiles: [ 'core-js' ],
 	moduleNameMapper: {
 		'\\.png$': '<rootDir>/tests/mocks/assets/imageMock.js',
 		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
@@ -19,8 +19,8 @@ module.exports = {
 		'^extracted/(.*)$': '$1',
 		'@woocommerce/settings':
 			'<rootDir>/js/src/tests/dependencies/woocommerce/settings',
-		'@wordpress/viewport':
-			'<rootDir>/js/src/tests/dependencies/wordpress/viewport',
+		'@automattic/calypso-config':
+			'<rootDir>/js/src/tests/dependencies/automattic/calypso-config',
 	},
 	// Exclude e2e tests from unit testing.
 	testPathIgnorePatterns: [

@@ -127,6 +127,8 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	}
 
 	/**
+	 * Get the identifier value from cache or product meta.
+	 *
 	 * @param string     $key
 	 * @param WC_Product $product
 	 *
@@ -136,12 +138,39 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 		$product_id = $product->get_id();
 
 		if ( ! isset( $this->yoast_global_identifiers[ $product_id ] ) ) {
-			$product = $product instanceof WC_Product_Variation ? wc_get_product( $product->get_parent_id() ) : $product;
-
-			$this->yoast_global_identifiers[ $product_id ] = $product->get_meta( 'wpseo_global_identifier_values', true );
+			$this->yoast_global_identifiers[ $product_id ] = $this->get_identifier_meta( $product );
 		}
 
 		return ! empty( $this->yoast_global_identifiers[ $product_id ][ $key ] ) ? $this->yoast_global_identifiers[ $product_id ][ $key ] : null;
+	}
+
+	/**
+	 * Get identifier meta from product.
+	 * For variations fallback to parent product if meta is empty.
+	 *
+	 * @since 2.3.1
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return mixed|null
+	 */
+	protected function get_identifier_meta( WC_Product $product ) {
+		if ( ! $product ) {
+			return null;
+		}
+
+		if ( $product instanceof WC_Product_Variation ) {
+			$identifiers = $product->get_meta( 'wpseo_variation_global_identifiers_values', true );
+
+			if ( ! is_array( $identifiers ) || empty( array_filter( $identifiers ) ) ) {
+				$parent_product = wc_get_product( $product->get_parent_id() );
+				$identifiers    = $this->get_identifier_meta( $parent_product );
+			}
+
+			return $identifiers;
+		}
+
+		return $product->get_meta( 'wpseo_global_identifier_values', true );
 	}
 
 	/**

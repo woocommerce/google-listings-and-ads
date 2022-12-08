@@ -3,11 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import {
-	Card,
-	CardHeader,
-	__experimentalText as Text,
-} from '@wordpress/components';
+import { Card, CardHeader } from '@wordpress/components';
 import classnames from 'classnames';
 
 /**
@@ -21,6 +17,7 @@ import IssuesTypeNavigation from '.~/product-feed/issues-table-card/issues-type-
 import ReviewRequest from '.~/product-feed/review-request';
 import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import Text from '.~/components/app-text';
 import './index.scss';
 
 const actions = (
@@ -83,7 +80,7 @@ const IssuesTableCard = () => {
 			>
 				<CardHeader>
 					{ /* We use this Text component to make it similar to TableCard component. */ }
-					<Text variant="title.small" as="h2">
+					<Text variant="title-small" as="h2">
 						{ __( 'Issues to resolve', 'google-listings-and-ads' ) }
 					</Text>
 					{ /* This is also similar to TableCard component implementation. */ }
