@@ -2,11 +2,6 @@
 	&.wcdl-select-control {
 		flex-grow: 1;
 
-		&__label {
-			padding-bottom: $grid-unit-10;
-			color: $black;
-		}
-
 		.components-base-control {
 			display: flex;
 			flex-direction: row-reverse;
@@ -30,6 +25,11 @@
 				color: inherit;
 			}
 		}
+	}
+
+	.wcdl-select-control__label {
+		padding-bottom: $grid-unit-10;
+		color: $black;
 	}
 
 	&__option-title {
