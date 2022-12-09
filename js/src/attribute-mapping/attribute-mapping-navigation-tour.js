@@ -12,11 +12,11 @@ import useTour from '.~/hooks/useTour';
 const TOUR_ID = 'AttributeMappingNavigationTour';
 
 const AttributeMappingNavigationTour = () => {
-	const [ { data: tour, hasFinishedResolution }, setTour ] = useTour(
-		TOUR_ID
-	);
+	const {
+		setTour,
+		showTour
+	} = useTour( TOUR_ID );
 
-	const showTour = hasFinishedResolution && ! tour?.checked;
 
 	const closeHandler = async ( _data, _step, origin ) => {
 		await setTour( { id: TOUR_ID, checked: true } );
@@ -56,7 +56,7 @@ const AttributeMappingNavigationTour = () => {
 		closeHandler,
 	};
 
-	return showTour && <TourKit config={ config } />;
+	return showTour ? <TourKit config={ config } /> : null;
 };
 
 export default AttributeMappingNavigationTour;
