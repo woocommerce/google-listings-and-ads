@@ -19,13 +19,10 @@ import './assets-loader.scss';
  * @typedef {import('.~/data/types.js').AssetGroup} AssetGroup
  */
 
-function allowSuggestedPages( search ) {
-	// Querying with empty `search` means getting the suggestion pages by default.
-	// Make it result in `new RegExp('.', 'i')` to avoid the default results being filtered out.
-	if ( search === '' ) {
-		return '.';
-	}
-	return search;
+function allowAllResults() {
+	// Make it result in `new RegExp('.', 'i')` to avoid any custom results in
+	// the mapFinalUrlsToOptions function being filtered out.
+	return '.';
 }
 
 function fetchFinalUrls( search ) {
@@ -59,13 +56,23 @@ function mapFinalUrlsToOptions( finalUrls, search ) {
 
 	// Querying with empty `search` means getting the suggestion pages by default.
 	// Prepend a label to indicate that the results are suggestions.
-	if ( search === '' ) {
+	if ( search === '' && finalUrls.length ) {
 		options.unshift( {
-			key: 'disabled-option',
+			key: 'disabled-option-suggestion',
 			label: __( 'SUGGESTIONS', 'google-listings-and-ads' ),
 			isDisabled: true,
 		} );
 	}
+
+	if ( finalUrls.length === 0 ) {
+		options.unshift( {
+			key: 'disabled-option-no-results',
+			label: __( 'No matching results', 'google-listings-and-ads' ),
+			keywords: [ search ],
+			isDisabled: true,
+		} );
+	}
+
 	return options;
 }
 
@@ -140,7 +147,7 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 				selected={ selectedOptions }
 				onSearch={ handleSearch }
 				onChange={ handleChange }
-				getSearchExpression={ allowSuggestedPages }
+				getSearchExpression={ allowAllResults }
 			/>
 			<AppButton
 				isSecondary
