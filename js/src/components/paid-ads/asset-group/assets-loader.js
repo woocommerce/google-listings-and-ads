@@ -88,7 +88,7 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 
 	const handleSearch = ( _, rawSearch ) => {
 		const cache = cacheRef.current;
-		const search = rawSearch.trim();
+		const search = rawSearch.trim().toLowerCase();
 
 		cache[ search ] ??= fetchFinalUrls( search ).then( ( finalUrls ) =>
 			mapFinalUrlsToOptions( finalUrls, search )
