@@ -28,8 +28,17 @@
 	}
 
 	.wcdl-select-control__label {
+		display: flex;
+		align-items: center;
+		gap: $grid-unit-10;
 		padding-bottom: $grid-unit-10;
 		color: $black;
+
+		.woocommerce-spinner {
+			width: 1em;
+			height: 1em;
+			min-width: unset;
+		}
 	}
 
 	&__option-title {
