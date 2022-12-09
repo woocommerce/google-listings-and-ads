@@ -5,6 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ArrayUtil;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Exception;
@@ -27,48 +29,59 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * The subsize key for the square marketing image.
 	 */
-	protected const SQUARE_MARKETING_IMAGE_KEY = 'gla_square_marketing';
+	protected const SQUARE_MARKETING_IMAGE_KEY = 'gla_square_marketing_asset';
 	/**
 	 * The subsize key for the marketing image.
 	 */
-	protected const MARKETING_IMAGE_KEY = 'gla_marketing';
+	protected const MARKETING_IMAGE_KEY = 'gla_marketing_asset';
 	/**
 	 * The subsize key for the logo image.
 	 */
-	protected const LOGO_IMAGE_KEY = 'gla_logo';
+	protected const LOGO_IMAGE_KEY = 'gla_logo_asset';
 	/**
-	 * The minimum size for a square marketing image. The first value is the width and the second is the height.
+	 * The minimum and recommended size for a square marketing image. The first value is the width and the second is the height.
 	 */
-	protected const MARKETING_SQUARE_IMAGE_MINIMUM_SIZE = [ 300, 300 ];
+	protected const MARKETING_SQUARE_IMAGE_SIZES = [
+		'minimum'     => [ 300, 300 ],
+		'recommended' => [ 1200, 1200 ],
+	];
 	/**
-	 * The minimum size for a marketing image. The first value is the width and the second is the height.
+	 * The minimum and recommended size for a marketing image. The first value is the width and the second is the height.
 	 */
-	protected const MARKETING_IMAGE_MINIMUM_SIZE = [ 600, 314 ];
+	protected const MARKETING_IMAGE_SIZES = [
+		'minimum'     => [ 600, 314 ],
+		'recommended' => [ 1200, 628 ],
+	];
 	/**
-	 * The minimum size for the logo image. The first value is the width and the second is the height.
+	 * The minimum and recommended size for the logo image. The first value is the width and the second is the height.
 	 */
-	protected const LOGO_IMAGE_MINIMUM_SIZE = [ 128, 128 ];
+	protected const LOGO_IMAGE_SIZES = [
+		'minimum'     => [ 128, 128 ],
+		'recommended' => [ 1200, 1200 ],
+	];
 
 	/**
 	 * Minimum image requirements.
 	 *
 	 * @var array
 	 */
-	protected $minimum_image_requirements;
+	protected $image_requirements;
 
 	/**
 	 * AssetSuggestionsService constructor.
 	 *
-	 * @param WP $wp WP Proxy.
-	 * @param WC $wc WC Proxy.
+	 * @param WP           $wp WP Proxy.
+	 * @param WC           $wc WC Proxy.
+	 * @param ImageUtility $image_utility WC Proxy.
 	 */
-	public function __construct( WP $wp, WC $wc ) {
-		$this->wp = $wp;
-		$this->wc = $wc;
+	public function __construct( WP $wp, WC $wc, ImageUtility $image_utility ) {
+		$this->wp            = $wp;
+		$this->wc            = $wc;
+		$this->image_utility = $image_utility;
 
-		$this->minimum_image_requirements[ self::MARKETING_IMAGE_KEY ]        = self::MARKETING_IMAGE_MINIMUM_SIZE;
-		$this->minimum_image_requirements[ self::SQUARE_MARKETING_IMAGE_KEY ] = self::MARKETING_SQUARE_IMAGE_MINIMUM_SIZE;
-		$this->minimum_image_requirements[ self::LOGO_IMAGE_KEY ]             = self::LOGO_IMAGE_MINIMUM_SIZE;
+		$this->image_requirements[ self::MARKETING_IMAGE_KEY ]        = self::MARKETING_IMAGE_SIZES;
+		$this->image_requirements[ self::SQUARE_MARKETING_IMAGE_KEY ] = self::MARKETING_SQUARE_IMAGE_SIZES;
+		$this->image_requirements[ self::LOGO_IMAGE_KEY ]             = self::LOGO_IMAGE_SIZES;
 
 	}
 
@@ -303,11 +316,24 @@ class AssetSuggestionsService implements Service {
 		$marketing_images = [];
 
 		foreach ( $ids as $id ) {
+
 			$metadata = wp_get_attachment_metadata( $id );
+
 			foreach ( $size_keys as $size_key ) {
-				if ( isset( $metadata['sizes'][ $size_key ] ) ) {
+
+				$minimum_size    = new DimensionUtility( ...$this->image_requirements[ $size_key ]['minimum'] );
+				$recomended_size = new DimensionUtility( ...$this->image_requirements[ $size_key ]['recommended'] );
+				$image_size      = new DimensionUtility( $metadata['width'], $metadata['height'] );
+				$suggested_size  = $this->image_utility->recommend_size( $image_size, $recomended_size, $minimum_size );
+
+				// If the original size matches the recommendation with a precision of +-1px.
+				if ( wp_fuzzy_number_match( $suggested_size->x, $image_size->x ) && wp_fuzzy_number_match( $suggested_size->y, $image_size->y ) ) {
+					$marketing_images[ $size_key ][] = wp_get_attachment_url( $id, $size_key );
+				} elseif ( isset( $metadata['sizes'][ $size_key ] ) ) {
+					// use the sub size.
 					$marketing_images[ $size_key ][] = wp_get_attachment_image_url( $id, $size_key );
-				} elseif ( $this->check_image_size( [ $metadata['width'], $metadata['height'] ], $this->minimum_image_requirements[ $size_key ] ) && self::try_add_subsize_image( $id, $size_key, $this->minimum_image_requirements[ $size_key ][0], $this->minimum_image_requirements[ $size_key ][1] ) ) {
+				} elseif ( $suggested_size && $this->image_utility->try_add_subsize_image( $id, $size_key, $suggested_size ) ) {
+					// use the resized image.
 					$marketing_images[ $size_key ][] = wp_get_attachment_image_url( $id, $size_key );
 				} else {
 					continue;
@@ -317,49 +343,6 @@ class AssetSuggestionsService implements Service {
 
 		return $marketing_images;
 	}
-
-	/**
-	 * Try to add a new subsize image.
-	 *
-	 * @param int    $attachment_id Attachment ID.
-	 * @param string $subsize_key The subsize key that we are trying to generate.
-	 * @param int    $width Image width in pixels.
-	 * @param int    $height Image height in pixels.
-	 * @param bool   $crop Whether to crop the image.
-	 *
-	 * @return bool True if the subsize has been added to the attachment metadata otherwise false.
-	 */
-	public static function try_add_subsize_image( int $attachment_id, string $subsize_key, int $width, int $height, bool $crop = true ): bool {
-		// It is required as wp_update_image_subsizes is not loaded automatically.
-		if ( ! function_exists( 'wp_update_image_subsizes' ) ) {
-			include ABSPATH . 'wp-admin/includes/image.php';
-		}
-
-		add_image_size( $subsize_key, $width, $height, $crop );
-
-		$metadata = wp_update_image_subsizes( $attachment_id );
-
-		remove_image_size( $subsize_key );
-
-		if ( is_wp_error( $metadata ) ) {
-			return false;
-		}
-
-		return isset( $metadata['sizes'][ $subsize_key ] );
-	}
-
-	/**
-	 * Checks image size
-	 *
-	 * @param array $size Width and height values in pixels (in that order).
-	 * @param array $minimum Minimum width and height values in pixels (in that order).
-	 *
-	 * @return bool true if the image size fulfils the minimum requirements otherwise false.
-	 */
-	protected function check_image_size( array $size, array $minimum ): bool {
-		return $size[0] >= $minimum[0] && $size[1] >= $minimum[1];
-	}
-
 
 
 	/**
