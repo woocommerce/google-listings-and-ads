@@ -115,6 +115,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
@@ -252,7 +253,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getLeagueContainer()
 			 ->inflector( AdsAwareInterface::class )
 			 ->invokeMethod( 'set_ads_object', [ AdsService::class ] );
-		$this->share_with_tags( AssetSuggestionsService::class, WP::class, WC::class );
+		$this->share_with_tags( AssetSuggestionsService::class, WP::class, WC::class, ImageUtility::class );
 
 		// Set up the installer.
 		$installer_definition = $this->share_with_tags(
@@ -270,6 +271,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Share utility classes
 		$this->share_with_tags( AddressUtility::class );
 		$this->share_with_tags( DateTimeUtility::class );
+		$this->share_with_tags( ImageUtility::class );
 		$this->share_with_tags( ISOUtility::class, ISO3166DataProvider::class );
 
 		// Share our regular service classes.
