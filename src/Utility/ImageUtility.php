@@ -51,7 +51,7 @@ class ImageUtility implements Service {
 	 * @return DimensionUtility|bool False if does not fulfil the minimum size otherwise returns the suggested size.
 	 */
 	public function recommend_size( DimensionUtility $size, DimensionUtility $recommended, DimensionUtility $minimum ) {
-		if ( ! $this->check_minimum_image_size( $size, $minimum ) ) {
+		if ( ! $this->is_bigger( $size, $minimum ) ) {
 			return false;
 		}
 
@@ -70,15 +70,15 @@ class ImageUtility implements Service {
 	}
 
 	/**
-	 * Checks minimum image size
+	 * Checks if the first image is bigger than the other one.
 	 *
-	 * @param DimensionUtility $size Width and height values in pixels (in that order).
-	 * @param DimensionUtility $recommended Minimum width and height values in pixels (in that order).
+	 * @param DimensionUtility $image First image.
+	 * @param DimensionUtility $target The image to be compared.
 	 *
-	 * @return bool true if the image size fulfils the minimum requirements otherwise false.
+	 * @return bool true if the first image is bigger than the other one otherwise false.
 	 */
-	public function check_minimum_image_size( DimensionUtility $size, DimensionUtility $recommended ): bool {
-		return $size->x >= $recommended->x && $size->y >= $recommended->y;
+	public function is_bigger( DimensionUtility $image, DimensionUtility $target ): bool {
+		return $image->x >= $target->x && $image->y >= $target->y;
 	}
 
 
