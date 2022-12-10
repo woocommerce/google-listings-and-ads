@@ -72,7 +72,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @param WP           $wp WP Proxy.
 	 * @param WC           $wc WC Proxy.
-	 * @param ImageUtility $image_utility WC Proxy.
+	 * @param ImageUtility $image_utility Image utility.
 	 */
 	public function __construct( WP $wp, WC $wc, ImageUtility $image_utility ) {
 		$this->wp            = $wp;
