@@ -17,7 +17,7 @@ class ImageUtility implements Service {
 	 *
 	 * @param int              $attachment_id Attachment ID.
 	 * @param string           $subsize_key The subsize key that we are trying to generate.
-	 * @param DimensionUtility $size Image width in pixels.
+	 * @param DimensionUtility $size The new size for the subsize key.
 	 * @param bool             $crop Whether to crop the image.
 	 *
 	 * @return bool True if the subsize has been added to the attachment metadata otherwise false.
@@ -42,7 +42,7 @@ class ImageUtility implements Service {
 	}
 
 	/**
-	 * Try to add a new subsize image.
+	 * Try to recommend a size using the real size, the recommended and the minimum.
 	 *
 	 * @param DimensionUtility $size Image size.
 	 * @param DimensionUtility $recommended Recommended image size.

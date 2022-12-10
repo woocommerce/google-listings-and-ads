@@ -570,6 +570,30 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 	}
 
+	public function tests_assets_image_too_small_size() {
+		$image_id = $this->get_test_image();
+
+		$this->update_size_image( $image_id, $this->suggested_image_square );
+
+		$this->image_utility->expects( $this->exactly( 2 ) )
+		->method( 'recommend_size' )
+		->willReturn( false );
+
+		// It should not create a subsize because the original image already has the suggested size.
+		$this->image_utility->expects( $this->exactly( 0 ) )
+		->method( 'try_add_subsize_image' );
+
+		$this->wp->expects( $this->exactly( 1 ) )
+		->method( 'get_posts' )
+		->willReturn( [ $image_id ] );
+
+		$images[ self::SQUARE_MARKETING_IMAGE_KEY ] = [];
+		$images[ self::MARKETING_IMAGE_KEY ]        = [];
+
+		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+
+	}
+
 
 
 }

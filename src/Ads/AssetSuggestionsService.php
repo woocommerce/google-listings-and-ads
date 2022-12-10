@@ -61,11 +61,11 @@ class AssetSuggestionsService implements Service {
 	];
 
 	/**
-	 * Minimum image requirements.
+	 * Image requirements.
 	 *
 	 * @var array
 	 */
-	protected $image_requirements;
+	protected $image_requirements = [];
 
 	/**
 	 * AssetSuggestionsService constructor.
@@ -220,7 +220,7 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get logo images urls.
 	 *
-	 * @return array Logo images URLS.
+	 * @return array Logo images urls.
 	 */
 	protected function get_logo_images(): array {
 		$logo_images = $this->get_url_attachments_by_ids( [ get_theme_mod( 'custom_logo' ) ], [ self::LOGO_IMAGE_KEY ] );
@@ -326,8 +326,8 @@ class AssetSuggestionsService implements Service {
 				$image_size      = new DimensionUtility( $metadata['width'], $metadata['height'] );
 				$suggested_size  = $this->image_utility->recommend_size( $image_size, $recomended_size, $minimum_size );
 
-				// If the original size matches the recommendation with a precision of +-1px.
-				if ( wp_fuzzy_number_match( $suggested_size->x, $image_size->x ) && wp_fuzzy_number_match( $suggested_size->y, $image_size->y ) ) {
+				// If the original size matches the suggested size with a precision of +-1px.
+				if ( $suggested_size && wp_fuzzy_number_match( $suggested_size->x, $image_size->x ) && wp_fuzzy_number_match( $suggested_size->y, $image_size->y ) ) {
 					$marketing_images[ $size_key ][] = wp_get_attachment_url( $id, $size_key );
 				} elseif ( isset( $metadata['sizes'][ $size_key ] ) ) {
 					// use the sub size.
