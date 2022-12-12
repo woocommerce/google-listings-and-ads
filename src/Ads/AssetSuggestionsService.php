@@ -10,6 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Exception;
+use WP_Query;
+use wpdb;
 
 /**
  * Class AssetSuggestionsService
@@ -42,6 +44,13 @@ class AssetSuggestionsService implements Service {
 	 * @var ImageUtility
 	 */
 	protected $image_utility;
+
+	/**
+	 * WordPress database access abstraction class.
+	 *
+	 * @var wpdb
+	 */
+	protected $wpdb;
 
 	/**
 	 * Default maximum marketing images.
@@ -99,10 +108,12 @@ class AssetSuggestionsService implements Service {
 	 * @param WP           $wp WP Proxy.
 	 * @param WC           $wc WC Proxy.
 	 * @param ImageUtility $image_utility Image utility.
+	 * @param wpdb         $wpdb WordPress database access abstraction class.
 	 */
-	public function __construct( WP $wp, WC $wc, ImageUtility $image_utility ) {
+	public function __construct( WP $wp, WC $wc, ImageUtility $image_utility, wpdb $wpdb ) {
 		$this->wp            = $wp;
 		$this->wc            = $wc;
+		$this->wpdb          = $wpdb;
 		$this->image_utility = $image_utility;
 	}
 
