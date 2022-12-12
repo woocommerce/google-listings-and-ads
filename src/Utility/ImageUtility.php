@@ -18,7 +18,7 @@ class ImageUtility implements Service {
 	 *
 	 * @var WP
 	 */
-	protected $wp;
+	protected WP $wp;
 
 	/**
 	 * AssetSuggestionsService constructor.

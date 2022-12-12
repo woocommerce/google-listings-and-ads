@@ -27,21 +27,33 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @var WP
 	 */
-	protected $wp;
+	protected WP $wp;
 
 	/**
 	 * WC Proxy
 	 *
 	 * @var WC
 	 */
-	protected $wc;
+	protected WC $wc;
 
 	/**
 	 * Image utilities.
 	 *
 	 * @var ImageUtility
 	 */
-	protected $image_utility;
+	protected ImageUtility $image_utility;
+
+	/**
+	 * Image requirements.
+	 *
+	 * @var array
+	 */
+	protected array $image_requirements = [
+		self::MARKETING_IMAGE_KEY        => self::MARKETING_IMAGE_SIZES,
+		self::SQUARE_MARKETING_IMAGE_KEY => self::MARKETING_SQUARE_IMAGE_SIZES,
+		self::LOGO_IMAGE_KEY             => self::LOGO_IMAGE_SIZES,
+
+	];
 
 	/**
 	 * Default maximum marketing images.
@@ -79,18 +91,6 @@ class AssetSuggestionsService implements Service {
 	protected const LOGO_IMAGE_SIZES = [
 		'minimum'     => [ 128, 128 ],
 		'recommended' => [ 1200, 1200 ],
-	];
-
-	/**
-	 * Image requirements.
-	 *
-	 * @var array
-	 */
-	protected array $image_requirements = [
-		self::MARKETING_IMAGE_KEY        => self::MARKETING_IMAGE_SIZES,
-		self::SQUARE_MARKETING_IMAGE_KEY => self::MARKETING_SQUARE_IMAGE_SIZES,
-		self::LOGO_IMAGE_KEY             => self::LOGO_IMAGE_SIZES,
-
 	];
 
 	/**
