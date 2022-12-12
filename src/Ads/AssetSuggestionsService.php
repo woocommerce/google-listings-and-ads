@@ -317,12 +317,12 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
-	 * Get unique attachments ids converted to int values if needed.
+	 * Get unique attachments ids converted to int values.
 	 *
 	 * @param array $ids Attachments ids.
 	 * @param int   $maximum_images Maximum number of images to return.
 	 *
-	 * @return array List of unique attachments ids and converted to int values.
+	 * @return array List of unique attachments ids converted to int values.
 	 */
 	protected function prepare_image_ids( array $ids, int $maximum_images = self::DEFAULT_MAXIMUM_MARKETING_IMAGES ): array {
 		$ids = array_unique( ArrayUtil::remove_empty_values( $ids ) );

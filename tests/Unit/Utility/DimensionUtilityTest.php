@@ -4,12 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Utility;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\DataTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 
 /**
- * Class ImageUtilityTest
+ * Class DimensionUtilityTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Utility
  */
