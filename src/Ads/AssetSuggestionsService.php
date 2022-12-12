@@ -65,7 +65,12 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @var array
 	 */
-	protected $image_requirements = [];
+	protected $image_requirements = [
+		self::MARKETING_IMAGE_KEY        => self::MARKETING_IMAGE_SIZES,
+		self::SQUARE_MARKETING_IMAGE_KEY => self::MARKETING_SQUARE_IMAGE_SIZES,
+		self::LOGO_IMAGE_KEY             => self::LOGO_IMAGE_SIZES,
+
+	];
 
 	/**
 	 * AssetSuggestionsService constructor.
@@ -78,11 +83,6 @@ class AssetSuggestionsService implements Service {
 		$this->wp            = $wp;
 		$this->wc            = $wc;
 		$this->image_utility = $image_utility;
-
-		$this->image_requirements[ self::MARKETING_IMAGE_KEY ]        = self::MARKETING_IMAGE_SIZES;
-		$this->image_requirements[ self::SQUARE_MARKETING_IMAGE_KEY ] = self::MARKETING_SQUARE_IMAGE_SIZES;
-		$this->image_requirements[ self::LOGO_IMAGE_KEY ]             = self::LOGO_IMAGE_SIZES;
-
 	}
 
 	/**
