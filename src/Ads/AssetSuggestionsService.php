@@ -23,6 +23,27 @@ use Exception;
 class AssetSuggestionsService implements Service {
 
 	/**
+	 * WP Proxy
+	 *
+	 * @var WP
+	 */
+	protected $wp;
+
+	/**
+	 * WC Proxy
+	 *
+	 * @var WC
+	 */
+	protected $wc;
+
+	/**
+	 * Image utilities.
+	 *
+	 * @var ImageUtility
+	 */
+	protected $image_utility;
+
+	/**
 	 * Default maximum marketing images.
 	 */
 	protected const DEFAULT_MAXIMUM_MARKETING_IMAGES = 20;
