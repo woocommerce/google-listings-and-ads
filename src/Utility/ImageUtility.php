@@ -22,7 +22,7 @@ class ImageUtility implements Service {
 	 *
 	 * @return bool True if the subsize has been added to the attachment metadata otherwise false.
 	 */
-	public function try_add_subsize_image( int $attachment_id, string $subsize_key, DimensionUtility $size, bool $crop = true ): bool {
+	public function maybe_add_subsize_image( int $attachment_id, string $subsize_key, DimensionUtility $size, bool $crop = true ): bool {
 		// It is required as wp_update_image_subsizes is not loaded automatically.
 		if ( ! function_exists( 'wp_update_image_subsizes' ) ) {
 			include ABSPATH . 'wp-admin/includes/image.php';

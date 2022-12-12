@@ -332,7 +332,7 @@ class AssetSuggestionsService implements Service {
 				} elseif ( isset( $metadata['sizes'][ $size_key ] ) ) {
 					// use the sub size.
 					$marketing_images[ $size_key ][] = wp_get_attachment_image_url( $id, $size_key );
-				} elseif ( $suggested_size && $this->image_utility->try_add_subsize_image( $id, $size_key, $suggested_size ) ) {
+				} elseif ( $suggested_size && $this->image_utility->maybe_add_subsize_image( $id, $size_key, $suggested_size ) ) {
 					// use the resized image.
 					$marketing_images[ $size_key ][] = wp_get_attachment_image_url( $id, $size_key );
 				} else {

@@ -42,7 +42,7 @@ class ImageUtilityTest extends UnitTest {
 
 		// Add subsize of 20x20px
 		$new_subisze = new DimensionUtility( 20, 20 );
-		$this->image_utility->try_add_subsize_image( $image_id, self::SUBSIZE_IMAGE_KEY, $new_subisze );
+		$this->image_utility->maybe_add_subsize_image( $image_id, self::SUBSIZE_IMAGE_KEY, $new_subisze );
 
 		$metadata_updated = wp_get_attachment_metadata( $image_id );
 
