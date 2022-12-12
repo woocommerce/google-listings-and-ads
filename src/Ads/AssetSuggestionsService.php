@@ -321,10 +321,10 @@ class AssetSuggestionsService implements Service {
 
 			foreach ( $size_keys as $size_key ) {
 
-				$minimum_size    = new DimensionUtility( ...$this->image_requirements[ $size_key ]['minimum'] );
-				$recomended_size = new DimensionUtility( ...$this->image_requirements[ $size_key ]['recommended'] );
-				$image_size      = new DimensionUtility( $metadata['width'], $metadata['height'] );
-				$suggested_size  = $this->image_utility->recommend_size( $image_size, $recomended_size, $minimum_size );
+				$minimum_size     = new DimensionUtility( ...$this->image_requirements[ $size_key ]['minimum'] );
+				$recommended_size = new DimensionUtility( ...$this->image_requirements[ $size_key ]['recommended'] );
+				$image_size       = new DimensionUtility( $metadata['width'], $metadata['height'] );
+				$suggested_size   = $this->image_utility->recommend_size( $image_size, $recommended_size, $minimum_size );
 
 				// If the original size matches the suggested size with a precision of +-1px.
 				if ( $suggested_size && wp_fuzzy_number_match( $suggested_size->x, $image_size->x ) && wp_fuzzy_number_match( $suggested_size->y, $image_size->y ) ) {
