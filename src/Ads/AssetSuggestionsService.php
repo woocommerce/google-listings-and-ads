@@ -167,7 +167,7 @@ class AssetSuggestionsService implements Service {
 			$attachments_ids = [ ...$attachments_ids, ...$product->get_gallery_image_ids() ];
 		}
 
-		$attachments_ids  = array_slice( [ ...$attachments_ids, ...$this->get_gallery_images_ids( $id ), get_post_thumbnail_id( $id ) ], 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
+		$attachments_ids  = [ ...$attachments_ids, ...$this->get_gallery_images_ids( $id ), get_post_thumbnail_id( $id ) ];
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
 		$long_headline    = get_bloginfo( 'name' ) . ': ' . $post->post_title;
 
@@ -216,7 +216,6 @@ class AssetSuggestionsService implements Service {
 			$attachments_ids = [ ...$this->get_post_image_attachments( [ 'post_parent__in' => $posts_ids_assigned_to_term ] ), ...$attachments_ids ];
 		}
 
-		$attachments_ids  = array_slice( $attachments_ids, 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
 
 		return [
@@ -318,16 +317,30 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
+	 * Get unique attachments ids converted to int values if needed.
+	 *
+	 * @param array $ids Attachments ids.
+	 * @param int   $maximum_images Maximum number of images to return.
+	 *
+	 * @return array List of unique attachments ids and converted to int values.
+	 */
+	protected function prepare_image_ids( array $ids, int $maximum_images = self::DEFAULT_MAXIMUM_MARKETING_IMAGES ): array {
+		$ids = array_unique( ArrayUtil::remove_empty_values( $ids ) );
+		$ids = array_map( 'intval', $ids );
+		return array_slice( $ids, 0, $maximum_images );
+	}
+
+	/**
 	 * Get URL for each attachment using an array of attachment ids and a list of subsizes.
 	 *
 	 * @param array $ids Attachments ids.
 	 * @param array $size_keys Image subsize keys.
+	 * @param int   $maximum_images Maximum number of images to return.
 	 *
 	 * @return array A list of attachments urls.
 	 */
-	protected function get_url_attachments_by_ids( array $ids, array $size_keys = [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY ] ): array {
-		$ids = array_unique( ArrayUtil::remove_empty_values( $ids ) );
-		$ids = array_map( 'intval', $ids );
+	protected function get_url_attachments_by_ids( array $ids, array $size_keys = [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY ], $maximum_images = self::DEFAULT_MAXIMUM_MARKETING_IMAGES ): array {
+		$ids = $this->prepare_image_ids( $ids, $maximum_images );
 
 		$marketing_images = [];
 
