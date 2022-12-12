@@ -446,10 +446,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		$posts_ids_assigned_to_term = [ $this->post, $post ];
 
-		$this->wc->expects( $this->once() )
-			->method( 'maybe_get_product' )
-			->willReturn( $product );
-
 		$args_posts_assigned_to_term = [
 			'post_type'   => 'any',
 			'numberposts' => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,

@@ -164,10 +164,10 @@ class AssetSuggestionsService implements Service {
 
 		if ( $post->post_type === 'product' || $post->post_type === 'product_variation' ) {
 			$product         = $this->wc->maybe_get_product( $id );
-			$attachments_ids = [ ...$attachments_ids, ...$product->get_gallery_image_ids(), $product->get_image_id() ];
+			$attachments_ids = [ ...$attachments_ids, ...$product->get_gallery_image_ids() ];
 		}
 
-		$attachments_ids  = array_slice( [ ...$attachments_ids, ...$this->get_gallery_images_ids( $id ) ], 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
+		$attachments_ids  = array_slice( [ ...$attachments_ids, ...$this->get_gallery_images_ids( $id ), get_post_thumbnail_id( $id ) ], 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
 		$long_headline    = get_bloginfo( 'name' ) . ': ' . $post->post_title;
 
@@ -208,12 +208,7 @@ class AssetSuggestionsService implements Service {
 		$attachments_ids            = [];
 
 		foreach ( $posts_assigned_to_term as $post ) {
-
-			if ( $post->post_type === 'product' ) {
-				$product           = $this->wc->maybe_get_product( $post->ID );
-				$attachments_ids[] = $product->get_image_id();
-			}
-
+			$attachments_ids[]            = get_post_thumbnail_id( $post->ID );
 			$posts_ids_assigned_to_term[] = $post->ID;
 		}
 
