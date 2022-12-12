@@ -65,7 +65,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @var array
 	 */
-	protected $image_requirements = [
+	protected array $image_requirements = [
 		self::MARKETING_IMAGE_KEY        => self::MARKETING_IMAGE_SIZES,
 		self::SQUARE_MARKETING_IMAGE_KEY => self::MARKETING_SQUARE_IMAGE_SIZES,
 		self::LOGO_IMAGE_KEY             => self::LOGO_IMAGE_SIZES,
