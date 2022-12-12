@@ -30,7 +30,7 @@ class ImageUtility implements Service {
 	}
 
 	/**
-	 * Try to add a new subsize image.
+	 * Maybe add a new subsize image.
 	 *
 	 * @param int              $attachment_id Attachment ID.
 	 * @param string           $subsize_key The subsize key that we are trying to generate.
