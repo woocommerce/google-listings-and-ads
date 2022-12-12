@@ -328,7 +328,7 @@ class AssetSuggestionsService implements Service {
 
 				// If the original size matches the suggested size with a precision of +-1px.
 				if ( $suggested_size && wp_fuzzy_number_match( $suggested_size->x, $image_size->x ) && wp_fuzzy_number_match( $suggested_size->y, $image_size->y ) ) {
-					$marketing_images[ $size_key ][] = wp_get_attachment_url( $id, $size_key );
+					$marketing_images[ $size_key ][] = wp_get_attachment_url( $id );
 				} elseif ( isset( $metadata['sizes'][ $size_key ] ) ) {
 					// use the sub size.
 					$marketing_images[ $size_key ][] = wp_get_attachment_image_url( $id, $size_key );
