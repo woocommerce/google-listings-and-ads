@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Utility;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 /**
  * A class of utilities for dealing with images.
@@ -11,6 +12,22 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
  * @since x.x.x
  */
 class ImageUtility implements Service {
+
+	/**
+	 * The WP Proxy.
+	 *
+	 * @var WP
+	 */
+	protected $wp;
+
+	/**
+	 * AssetSuggestionsService constructor.
+	 *
+	 * @param WP $wp WP Proxy.
+	 */
+	public function __construct( WP $wp ) {
+		$this->wp = $wp;
+	}
 
 	/**
 	 * Try to add a new subsize image.
@@ -23,14 +40,9 @@ class ImageUtility implements Service {
 	 * @return bool True if the subsize has been added to the attachment metadata otherwise false.
 	 */
 	public function maybe_add_subsize_image( int $attachment_id, string $subsize_key, DimensionUtility $size, bool $crop = true ): bool {
-		// It is required as wp_update_image_subsizes is not loaded automatically.
-		if ( ! function_exists( 'wp_update_image_subsizes' ) ) {
-			include ABSPATH . 'wp-admin/includes/image.php';
-		}
-
 		add_image_size( $subsize_key, $size->x, $size->y, $crop );
 
-		$metadata = wp_update_image_subsizes( $attachment_id );
+		$metadata = $this->wp->wp_update_image_subsizes( $attachment_id );
 
 		remove_image_size( $subsize_key );
 
@@ -51,7 +63,7 @@ class ImageUtility implements Service {
 	 * @return DimensionUtility|bool False if does not fulfil the minimum size otherwise returns the suggested size.
 	 */
 	public function recommend_size( DimensionUtility $size, DimensionUtility $recommended, DimensionUtility $minimum ) {
-		if ( ! $this->is_bigger( $size, $minimum ) ) {
+		if ( ! $size->is_bigger( $minimum ) ) {
 			return false;
 		}
 
@@ -69,17 +81,7 @@ class ImageUtility implements Service {
 		return new DimensionUtility( $x, $y );
 	}
 
-	/**
-	 * Checks if the first image is bigger than the other one.
-	 *
-	 * @param DimensionUtility $image First image.
-	 * @param DimensionUtility $target The image to be compared.
-	 *
-	 * @return bool true if the first image is bigger than the other one otherwise false.
-	 */
-	public function is_bigger( DimensionUtility $image, DimensionUtility $target ): bool {
-		return $image->x >= $target->x && $image->y >= $target->y;
-	}
+
 
 
 }

@@ -271,7 +271,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Share utility classes
 		$this->share_with_tags( AddressUtility::class );
 		$this->share_with_tags( DateTimeUtility::class );
-		$this->share_with_tags( ImageUtility::class );
+		$this->share_with_tags( ImageUtility::class, WP::class );
 		$this->share_with_tags( ISOUtility::class, ISO3166DataProvider::class );
 
 		// Share our regular service classes.

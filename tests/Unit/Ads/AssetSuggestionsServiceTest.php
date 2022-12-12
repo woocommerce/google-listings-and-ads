@@ -332,7 +332,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		// Both images should be resized
 		$this->image_utility->expects( $this->exactly( 2 ) )
-		->method( 'try_add_subsize_image' )
+		->method( 'maybe_add_subsize_image' )
 		->willReturn( true );
 
 		$this->wp->expects( $this->once() )
@@ -366,7 +366,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		// Should not create any subsize because already exists
 		$this->image_utility->expects( $this->exactly( 0 ) )->
-		method( 'try_add_subsize_image' );
+		method( 'maybe_add_subsize_image' );
 
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_gallery_image_ids( [ $image_id ] );
@@ -397,7 +397,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		// Should not create any subsize because already exists
 		$this->image_utility->expects( $this->exactly( 0 ) )->
-		method( 'try_add_subsize_image' );
+		method( 'maybe_add_subsize_image' );
 
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_gallery_image_ids( [ $image_product_id ] );
@@ -437,7 +437,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		// One image is too small and the other one is ok.
 		$this->image_utility->expects( $this->exactly( 4 ) )
-		->method( 'try_add_subsize_image' )
+		->method( 'maybe_add_subsize_image' )
 		->willReturnOnConsecutiveCalls( false, false, true, true );
 
 		$product = WC_Helper_Product::create_simple_product();
@@ -536,7 +536,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		->willReturn( $this->suggested_image_square );
 
 		$this->image_utility->expects( $this->exactly( 1 ) )
-		->method( 'try_add_subsize_image' )
+		->method( 'maybe_add_subsize_image' )
 		->willReturn( true );
 
 		$images[ self::LOGO_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id ) ];
@@ -557,7 +557,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		// It should not create a subsize because the original image already has the suggested size.
 		$this->image_utility->expects( $this->exactly( 0 ) )
-		->method( 'try_add_subsize_image' );
+		->method( 'maybe_add_subsize_image' );
 
 		$this->wp->expects( $this->exactly( 1 ) )
 		->method( 'get_posts' )
@@ -581,7 +581,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		// It should not create a subsize because the original image already has the suggested size.
 		$this->image_utility->expects( $this->exactly( 0 ) )
-		->method( 'try_add_subsize_image' );
+		->method( 'maybe_add_subsize_image' );
 
 		$this->wp->expects( $this->exactly( 1 ) )
 		->method( 'get_posts' )

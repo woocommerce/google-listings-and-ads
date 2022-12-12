@@ -288,4 +288,24 @@ class WP {
 		return null;
 
 	}
+
+	/**
+	 * If any of the currently registered image sub-sizes are missing,
+	 * create them and update the image meta data.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param int $attachment_id The image attachment post ID.
+	 * @return array|WP_Error The updated image meta data array or WP_Error object
+	 *                        if both the image meta and the attached file are missing.
+	 */
+	public function wp_update_image_subsizes( int $attachment_id ) {
+		// It is required as wp_update_image_subsizes is not loaded automatically.
+		if ( ! function_exists( 'wp_update_image_subsizes' ) ) {
+			include ABSPATH . 'wp-admin/includes/image.php';
+		}
+
+		return wp_update_image_subsizes( $attachment_id );
+
+	}
 }

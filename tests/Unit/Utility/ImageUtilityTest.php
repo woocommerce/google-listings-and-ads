@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\DataTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 /**
  * Class ImageUtilityTest
@@ -24,7 +25,8 @@ class ImageUtilityTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->image_utility = new ImageUtility();
+		$this->wp = new WP();
+		$this->image_utility = new ImageUtility( $this->wp );
 	}
 
 	protected function assert_aspect_rate_tolerance( DimensionUtility $suggested, DimensionUtility $recommended, float $tolerance = 0.01 ) {
@@ -113,23 +115,7 @@ class ImageUtilityTest extends UnitTest {
 
 		$suggested_size = $this->image_utility->recommend_size( $real_size, $recommended_size, $minimum_size );
 
-		$this->assertFalse( $suggested_size );
-
-	}
-
-	public function test_image_is_bigger() {
-		$image_1 = new DimensionUtility( 650, 400 );
-		$image_2 = new DimensionUtility( 600, 300 );
-
-		$this->assertTrue( $this->image_utility->is_bigger( $image_1, $image_2 ) );
-
-	}
-
-	public function test_image_is_smaller() {
-		$image_1 = new DimensionUtility( 300, 400 );
-		$image_2 = new DimensionUtility( 600, 300 );
-
-		$this->assertFalse( $this->image_utility->is_bigger( $image_1, $image_2 ) );
+		$this->assertFalse( $suggested_size);
 
 	}
 
