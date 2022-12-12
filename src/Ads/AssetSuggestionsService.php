@@ -439,6 +439,24 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
+	 * Filter for the posts_where hook, adds WHERE clause to search
+	 * for the 'search_title' parameter in the post titles (when present).
+	 *
+	 * @param string   $where The WHERE clause of the query.
+	 * @param WP_Query $wp_query The WP_Query instance (passed by reference).
+	 *
+	 * @return string The updated WHERE clause.
+	 */
+	public function title_filter( string $where, WP_Query $wp_query ): string {
+		$search_title = $wp_query->get( 'search_title' );
+		if ( $search_title ) {
+			$title_search = '%' . $this->wpdb->esc_like( $search_title ) . '%';
+			$where       .= $this->wpdb->prepare( " AND `{$this->wpdb->posts}`.`post_title` LIKE %s", $title_search ); // phpcs:ignore WordPress.DB.PreparedSQL
+		}
+		return $where;
+	}
+
+	/**
 	 * Get terms that can be used to suggest assets
 	 *
 	 * @param string $search The search query
