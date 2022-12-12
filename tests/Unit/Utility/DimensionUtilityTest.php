@@ -44,7 +44,7 @@ class DimensionUtilityTest extends UnitTest {
 
 		$this->assertTrue( $image_1->equals( $image_2 ) );
 
-	}	
+	}
 
 	public function test_image_is_equal_with_precision_of_2() {
 		$image_1 = new DimensionUtility( 300, 400 );
@@ -52,7 +52,7 @@ class DimensionUtilityTest extends UnitTest {
 
 		$this->assertTrue( $image_1->equals( $image_2, 2 ) );
 
-	}		
+	}
 
 	public function test_image_is_not_equal() {
 		$image_1 = new DimensionUtility( 300, 400 );
@@ -60,7 +60,7 @@ class DimensionUtilityTest extends UnitTest {
 
 		$this->assertFalse( $image_1->equals( $image_2 ) );
 
-	}	
+	}
 
 
 }

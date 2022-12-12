@@ -25,7 +25,7 @@ class ImageUtilityTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->wp = new WP();
+		$this->wp            = new WP();
 		$this->image_utility = new ImageUtility( $this->wp );
 	}
 
@@ -115,7 +115,7 @@ class ImageUtilityTest extends UnitTest {
 
 		$suggested_size = $this->image_utility->recommend_size( $real_size, $recommended_size, $minimum_size );
 
-		$this->assertFalse( $suggested_size);
+		$this->assertFalse( $suggested_size );
 
 	}
 
