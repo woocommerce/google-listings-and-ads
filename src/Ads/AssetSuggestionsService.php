@@ -433,14 +433,19 @@ class AssetSuggestionsService implements Service {
 		$filtered_post_types = array_diff( $post_types, $excluded_post_types );
 
 		$args = [
-			'post_type'      => $filtered_post_types,
-			'posts_per_page' => $per_page,
-			'post_status'    => 'publish',
-			's'              => $search,
-			'offset'         => $offset,
+			'post_type'        => $filtered_post_types,
+			'posts_per_page'   => $per_page,
+			'post_status'      => 'publish',
+			'search_title'     => $search,
+			'offset'           => $offset,
+			'suppress_filters' => false,
 		];
 
+		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
+
 		$posts = $this->wp->get_posts( $args );
+
+		remove_filter( 'posts_where', [ $this, 'title_filter' ] );
 
 		foreach ( $posts as $post ) {
 			$post_suggestions[] = $this->format_final_url_response( $post->ID, 'post', $post->post_title, get_permalink( $post->ID ) );
