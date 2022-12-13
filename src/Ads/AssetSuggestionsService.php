@@ -49,12 +49,20 @@ class AssetSuggestionsService implements Service {
 	 * @var array
 	 */
 	protected array $image_requirements = [
-		self::MARKETING_IMAGE_KEY        => self::MARKETING_IMAGE_SIZES,
-		self::SQUARE_MARKETING_IMAGE_KEY => self::MARKETING_SQUARE_IMAGE_SIZES,
-		self::LOGO_IMAGE_KEY             => self::LOGO_IMAGE_SIZES,
+		self::MARKETING_IMAGE_KEY        => [
+			'minimum'     => [ 600, 314 ],
+			'recommended' => [ 1200, 628 ],
+		],
+		self::SQUARE_MARKETING_IMAGE_KEY => [
+			'minimum'     => [ 300, 300 ],
+			'recommended' => [ 1200, 1200 ],
+		],
+		self::LOGO_IMAGE_KEY             => [
+			'minimum'     => [ 128, 128 ],
+			'recommended' => [ 1200, 1200 ],
+		],
 
 	];
-
 	/**
 	 * Default maximum marketing images.
 	 */
@@ -71,27 +79,6 @@ class AssetSuggestionsService implements Service {
 	 * The subsize key for the logo image.
 	 */
 	protected const LOGO_IMAGE_KEY = 'gla_logo_asset';
-	/**
-	 * The minimum and recommended size for a square marketing image. The first value is the width and the second is the height.
-	 */
-	protected const MARKETING_SQUARE_IMAGE_SIZES = [
-		'minimum'     => [ 300, 300 ],
-		'recommended' => [ 1200, 1200 ],
-	];
-	/**
-	 * The minimum and recommended size for a marketing image. The first value is the width and the second is the height.
-	 */
-	protected const MARKETING_IMAGE_SIZES = [
-		'minimum'     => [ 600, 314 ],
-		'recommended' => [ 1200, 628 ],
-	];
-	/**
-	 * The minimum and recommended size for the logo image. The first value is the width and the second is the height.
-	 */
-	protected const LOGO_IMAGE_SIZES = [
-		'minimum'     => [ 128, 128 ],
-		'recommended' => [ 1200, 1200 ],
-	];
 
 	/**
 	 * AssetSuggestionsService constructor.
@@ -364,8 +351,6 @@ class AssetSuggestionsService implements Service {
 				} elseif ( $suggested_size && $this->image_utility->maybe_add_subsize_image( $id, $size_key, $suggested_size ) ) {
 					// use the resized image.
 					$marketing_images[ $size_key ][] = wp_get_attachment_image_url( $id, $size_key );
-				} else {
-					continue;
 				}
 			}
 		}
