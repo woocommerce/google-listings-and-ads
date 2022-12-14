@@ -109,6 +109,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.3.3 - 2022-12-14 =
+* Fix - Tours API Endpoint.
+* Tweak - WC 7.2 compatibility.
+* Update - Drop support for WordPress < 5.9.
+
 = 2.3.2 - 2022-12-06 =
 * Dev - Adjusted parts of the post-install process to work on machines without `grep` and `find`. .
 * Dev - Adjusted post-install process to mention when files have their class-expectations modified but retain their original namespace.
