@@ -52,7 +52,7 @@ class AssetSuggestionsService implements Service {
 	 */
 	protected $wpdb;
 
-  /**
+	/**
 	 * Image requirements.
 	 */
 	protected const IMAGE_REQUIREMENTS = [
