@@ -121,6 +121,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166Dat
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use wpdb;
 
 /**
  * Class CoreServiceProvider
@@ -253,7 +254,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getLeagueContainer()
 			 ->inflector( AdsAwareInterface::class )
 			 ->invokeMethod( 'set_ads_object', [ AdsService::class ] );
-		$this->share_with_tags( AssetSuggestionsService::class, WP::class, WC::class, ImageUtility::class );
+		$this->share_with_tags( AssetSuggestionsService::class, WP::class, WC::class, ImageUtility::class, wpdb::class );
 
 		// Set up the installer.
 		$installer_definition = $this->share_with_tags(

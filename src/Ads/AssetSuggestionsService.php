@@ -10,6 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Exception;
+use WP_Query;
+use wpdb;
 
 /**
  * Class AssetSuggestionsService
@@ -44,6 +46,13 @@ class AssetSuggestionsService implements Service {
 	protected ImageUtility $image_utility;
 
 	/**
+	 * WordPress database access abstraction class.
+	 *
+	 * @var wpdb
+	 */
+	protected $wpdb;
+
+	/**
 	 * Image requirements.
 	 */
 	protected const IMAGE_REQUIREMENTS = [
@@ -61,6 +70,7 @@ class AssetSuggestionsService implements Service {
 		],
 
 	];
+
 	/**
 	 * Default maximum marketing images.
 	 */
@@ -84,10 +94,12 @@ class AssetSuggestionsService implements Service {
 	 * @param WP           $wp WP Proxy.
 	 * @param WC           $wc WC Proxy.
 	 * @param ImageUtility $image_utility Image utility.
+	 * @param wpdb         $wpdb WordPress database access abstraction class.
 	 */
-	public function __construct( WP $wp, WC $wc, ImageUtility $image_utility ) {
+	public function __construct( WP $wp, WC $wc, ImageUtility $image_utility, wpdb $wpdb ) {
 		$this->wp            = $wp;
 		$this->wc            = $wc;
+		$this->wpdb          = $wpdb;
 		$this->image_utility = $image_utility;
 	}
 
@@ -405,20 +417,43 @@ class AssetSuggestionsService implements Service {
 		$filtered_post_types = array_diff( $post_types, $excluded_post_types );
 
 		$args = [
-			'post_type'      => $filtered_post_types,
-			'posts_per_page' => $per_page,
-			'post_status'    => 'publish',
-			's'              => $search,
-			'offset'         => $offset,
+			'post_type'        => $filtered_post_types,
+			'posts_per_page'   => $per_page,
+			'post_status'      => 'publish',
+			'search_title'     => $search,
+			'offset'           => $offset,
+			'suppress_filters' => false,
 		];
 
+		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
+
 		$posts = $this->wp->get_posts( $args );
+
+		remove_filter( 'posts_where', [ $this, 'title_filter' ] );
 
 		foreach ( $posts as $post ) {
 			$post_suggestions[] = $this->format_final_url_response( $post->ID, 'post', $post->post_title, get_permalink( $post->ID ) );
 		}
 
 		return $post_suggestions;
+	}
+
+	/**
+	 * Filter for the posts_where hook, adds WHERE clause to search
+	 * for the 'search_title' parameter in the post titles (when present).
+	 *
+	 * @param string   $where The WHERE clause of the query.
+	 * @param WP_Query $wp_query The WP_Query instance (passed by reference).
+	 *
+	 * @return string The updated WHERE clause.
+	 */
+	public function title_filter( string $where, WP_Query $wp_query ): string {
+		$search_title = $wp_query->get( 'search_title' );
+		if ( $search_title ) {
+			$title_search = '%' . $this->wpdb->esc_like( $search_title ) . '%';
+			$where       .= $this->wpdb->prepare( " AND `{$this->wpdb->posts}`.`post_title` LIKE %s", $title_search ); // phpcs:ignore WordPress.DB.PreparedSQL
+		}
+		return $where;
 	}
 
 	/**

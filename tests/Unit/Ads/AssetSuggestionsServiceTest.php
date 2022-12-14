@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
 use WC_Helper_Product;
+use wpdb;
 
 
 defined( 'ABSPATH' ) || exit;
@@ -67,8 +68,9 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$this->wp            = $this->createMock( WP::class );
 		$this->wc            = $this->createMock( WC::class );
 		$this->image_utility = $this->createMock( ImageUtility::class );
+		$this->wpdb          = $this->createMock( wpdb::class );
 
-		$this->asset_suggestions = new AssetSuggestionsService( $this->wp, $this->wc, $this->image_utility );
+		$this->asset_suggestions = new AssetSuggestionsService( $this->wp, $this->wc, $this->image_utility, $this->wpdb );
 
 		$this->post = $this->factory()->post->create_and_get( [ 'post_title' => 'Abcd' ] );
 		$this->term = $this->factory()->term->create_and_get( [ 'name' => 'bcde' ] );
@@ -167,11 +169,13 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		->method( 'get_posts' )
 		->with(
 			[
-				'post_type'      => self::TEST_POST_TYPES_NO_ATTACHMENT,
-				'posts_per_page' => self::DEFAULT_PER_PAGE_POSTS,
-				'post_status'    => 'publish',
-				's'              => self::TEST_SEARCH,
-				'offset'         => 0,
+				'post_type'        => self::TEST_POST_TYPES_NO_ATTACHMENT,
+				'posts_per_page'   => self::DEFAULT_PER_PAGE_POSTS,
+				'post_status'      => 'publish',
+				'search_title'     => self::TEST_SEARCH,
+				'offset'           => 0,
+				'suppress_filters' => false,
+
 			]
 		)
 		->willReturn( [ $this->post ] );
