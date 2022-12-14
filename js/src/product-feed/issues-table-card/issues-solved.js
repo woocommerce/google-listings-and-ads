@@ -3,13 +3,14 @@
  */
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { __experimentalText as Text, Dashicon } from '@wordpress/components';
+import { Dashicon } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import useActiveIssueType from '.~/hooks/useActiveIssueType';
 import { ISSUE_TYPE_PRODUCT, ISSUE_TYPE_ACCOUNT } from '.~/constants';
+import Text from '.~/components/app-text';
 
 /**
  * This component renders a message when no issues of the

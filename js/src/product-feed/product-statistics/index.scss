@@ -29,7 +29,7 @@
 				margin: $grid-unit-15 0;
 			}
 
-			.components-flex__item:not(:first-child) {
+			.components-flex-item:not(:first-child) {
 				margin-top: $grid-unit-10;
 				margin-left: $grid-unit-20;
 			}
@@ -43,7 +43,7 @@
 			margin-top: $grid-unit-10;
 		}
 
-		.components-flex__item {
+		.components-flex-item {
 			color: $gray-900;
 			padding-top: 0.25 * $grid-unit;
 

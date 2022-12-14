@@ -1,9 +1,4 @@
 /**
- * We use the __experimentalText component to make the card header
- * looks the same as other card headers on the Product Feed page.
- */
-
-/**
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
@@ -12,7 +7,6 @@ import {
 	CardHeader,
 	CardBody,
 	CardFooter,
-	__experimentalText as Text,
 	FlexItem,
 } from '@wordpress/components';
 
@@ -30,6 +24,7 @@ import ProductStatusHelpPopover from './product-status-help-popover';
 import SyncStatus from '.~/product-feed/product-statistics/status-box/sync-status';
 import FeedStatus from '.~/product-feed/product-statistics/status-box/feed-status';
 import AccountStatus from '.~/product-feed/product-statistics/status-box/account-status';
+import Text from '.~/components/app-text';
 import './index.scss';
 
 const ProductStatistics = () => {
@@ -39,7 +34,7 @@ const ProductStatistics = () => {
 		<Card className="gla-product-statistics">
 			<CardHeader justify="normal">
 				<FlexItem>
-					<Text variant="title.small" as="h2">
+					<Text variant="title-small" as="h2">
 						{ __( 'Overview', 'google-listings-and-ads' ) }
 					</Text>
 				</FlexItem>
