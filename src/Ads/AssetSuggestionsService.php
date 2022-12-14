@@ -45,10 +45,8 @@ class AssetSuggestionsService implements Service {
 
 	/**
 	 * Image requirements.
-	 *
-	 * @var array
 	 */
-	protected array $image_requirements = [
+	protected const IMAGE_REQUIREMENTS = [
 		self::MARKETING_IMAGE_KEY        => [
 			'minimum'     => [ 600, 314 ],
 			'recommended' => [ 1200, 628 ],
@@ -337,8 +335,8 @@ class AssetSuggestionsService implements Service {
 
 			foreach ( $size_keys as $size_key ) {
 
-				$minimum_size     = new DimensionUtility( ...$this->image_requirements[ $size_key ]['minimum'] );
-				$recommended_size = new DimensionUtility( ...$this->image_requirements[ $size_key ]['recommended'] );
+				$minimum_size     = new DimensionUtility( ...self::IMAGE_REQUIREMENTS[ $size_key ]['minimum'] );
+				$recommended_size = new DimensionUtility( ...self::IMAGE_REQUIREMENTS[ $size_key ]['recommended'] );
 				$image_size       = new DimensionUtility( $metadata['width'], $metadata['height'] );
 				$suggested_size   = $this->image_utility->recommend_size( $image_size, $recommended_size, $minimum_size );
 
