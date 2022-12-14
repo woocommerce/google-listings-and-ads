@@ -206,6 +206,20 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * @return array The asset groups for the campaign.
 	 */
 	public function get_asset_groups( int $campaign_id ): array {
-		return [];
+		$asset_groups        = [];
+		$asset_group_results = ( new AdsAssetGroupQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'campaign.id', $campaign_id )
+			->where( 'asset_group.status', 'REMOVED', '!=' )
+			->get_results();
+
+		/** @var GoogleAdsRow $row */
+		foreach ( $asset_group_results->iterateAllElements() as $row ) {
+			$resource_name  = $row->getAssetGroup()->getResourceName();
+			$asset_groups[] = $resource_name;
+
+		}
+
+		return $asset_groups;
 	}
 }
