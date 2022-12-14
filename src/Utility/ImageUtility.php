@@ -18,7 +18,7 @@ class ImageUtility implements Service {
 	 *
 	 * @var WP
 	 */
-	protected $wp;
+	protected WP $wp;
 
 	/**
 	 * AssetSuggestionsService constructor.
@@ -63,7 +63,7 @@ class ImageUtility implements Service {
 	 * @return DimensionUtility|bool False if does not fulfil the minimum size otherwise returns the suggested size.
 	 */
 	public function recommend_size( DimensionUtility $size, DimensionUtility $recommended, DimensionUtility $minimum ) {
-		if ( ! $size->is_bigger( $minimum ) ) {
+		if ( ! $size->is_minimum_size( $minimum ) ) {
 			return false;
 		}
 
