@@ -1577,6 +1577,34 @@ DESCRIPTION;
 		$this->assertNull( $violation );
 	}
 
+	public function test_urlencoding_image_names() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$main_image = $this->generate_mock_image_attachment( $product->get_id(), '600-×-300.png' );
+
+		$additional_images = [ $this->generate_mock_image_attachment( $product->get_id(), 'æą€.png' ) ];
+
+		$product->set_image_id( $main_image );
+		$product->set_gallery_image_ids( $additional_images );
+		$product->save();
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals( 'http://example.org/wp-content/uploads/600-%C3%97-300.png', $adapted_product->getImageLink() );
+		$this->assertEqualSets(
+			[ 'http://example.org/wp-content/uploads/%C3%A6%C4%85%E2%82%AC.png' ],
+			$adapted_product->getAdditionalImageLinks()
+		);
+
+		$this->assertNull( $this->validate_product_property( $adapted_product, 'imageLink' ) );
+		$this->assertNull( $this->validate_product_property( $adapted_product, 'additionalImageLinks' ) );
+	}
+
 	/**
 	 * Validate a product property and return the first violation.
 	 *
