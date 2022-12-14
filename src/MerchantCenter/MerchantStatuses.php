@@ -799,7 +799,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	protected function parse_presync_issue_text( string $text ): array {
 		$matches = [];
-		preg_match( '/^\[([^\]]+)\]\s*(.+)$/', $text, $matches );
+		preg_match( '/^\[([^\]]+\]?)\]\s*(.+)$/', $text, $matches );
 		if ( count( $matches ) !== 3 ) {
 			return [
 				'code'  => 'presync_error_attrib_' . md5( $text ),
@@ -811,6 +811,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		if ( 'imageLink' === $matches[1] ) {
 			$matches[1] = 'image';
 		}
+
+		// Convert additionalImageLinks[] to galleryImage.
+		if ( str_starts_with( $matches[1], 'additionalImageLinks' ) ) {
+			$matches[1] = 'galleryImage';
+		}
+
 		$matches[2] = trim( $matches[2], ' .' );
 		return [
 			'code'  => 'presync_error_' . $matches[1],
