@@ -12,11 +12,7 @@ import useTour from '.~/hooks/useTour';
 const TOUR_ID = 'AttributeMappingNavigationTour';
 
 const AttributeMappingNavigationTour = () => {
-	const {
-		setTour,
-		showTour
-	} = useTour( TOUR_ID );
-
+	const { setTour, showTour } = useTour( TOUR_ID );
 
 	const closeHandler = async ( _data, _step, origin ) => {
 		await setTour( { id: TOUR_ID, checked: true } );

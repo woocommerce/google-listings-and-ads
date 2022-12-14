@@ -1140,7 +1140,7 @@ export function* receiveTour( tour ) {
  */
 export function* upsertTour( tour ) {
 	try {
-		const response = yield apiFetch( {
+		yield apiFetch( {
 			path: `${ API_NAMESPACE }/tours`,
 			method: REQUEST_ACTIONS.POST,
 			data: tour,
@@ -1148,7 +1148,7 @@ export function* upsertTour( tour ) {
 
 		return {
 			type: TYPES.UPSERT_TOUR,
-			tour: response,
+			tour,
 		};
 	} catch ( error ) {
 		yield handleFetchError(

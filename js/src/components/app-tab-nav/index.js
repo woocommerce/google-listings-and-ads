@@ -55,7 +55,9 @@ const AppTabNav = ( props ) => {
 					</TabLink>
 				) ) }
 			</NavigableMenu>
-			<AttributeMappingNavigationTour />
+			{ selectedKey !== 'attribute-mapping' && (
+				<AttributeMappingNavigationTour />
+			) }
 		</div>
 	);
 };
