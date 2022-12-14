@@ -366,12 +366,14 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		// set main image
 		$image_link = wp_get_attachment_image_url( $image_id, $image_size, false );
-		$this->setImageLink( $image_link );
+		$this->setImageLink( $this->encode_image_url( $image_link ) );
 
 		// set additional images
 		$gallery_image_links = array_map(
 			function ( $gallery_image_id ) use ( $image_size ) {
-				return wp_get_attachment_image_url( $gallery_image_id, $image_size, false );
+				return $this->encode_image_url(
+					wp_get_attachment_image_url( $gallery_image_id, $image_size, false )
+				);
 			},
 			$gallery_image_ids
 		);
@@ -384,6 +386,23 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$this->setAdditionalImageLinks( $gallery_image_links );
 
 		return $this;
+	}
+
+	/**
+	 * URL encodes only the image name.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string|bool $url Original image URL.
+	 * @return string|bool
+	 */
+	protected function encode_image_url( $url ) {
+		if ( ! $url ) {
+			return $url;
+		}
+
+		$name = wp_basename( $url );
+		return str_replace( $name, rawurlencode( $name ), $url );
 	}
 
 	/**
