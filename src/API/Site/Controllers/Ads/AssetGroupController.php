@@ -45,7 +45,7 @@ class AssetGroupController extends BaseController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_asset_groups_callback(),
+					'callback'            => $this->get_asset_groups_assets_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -57,10 +57,10 @@ class AssetGroupController extends BaseController {
 	/**
 	 * @return callable
 	 */
-	protected function get_asset_groups_callback(): callable {
+	protected function get_asset_groups_assets_callback(): callable {
 		return function( Request $request ) {
 			$campaign_id = absint( $request['id'] );
-			return $this->ads_asset_group->get_asset_groups( $campaign_id );
+			return $this->ads_asset_group->get_asset_groups_assets( $campaign_id );
 		};
 	}
 

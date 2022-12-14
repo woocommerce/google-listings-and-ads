@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupAssetQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsListingGroupFilterQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -14,10 +15,15 @@ use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterTypeEnum\ListingGroupFilter
 use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterVerticalEnum\ListingGroupFilterVertical;
 use Google\Ads\GoogleAds\V11\Resources\AssetGroup;
 use Google\Ads\GoogleAds\V11\Resources\AssetGroupListingGroupFilter;
+use Google\Ads\GoogleAds\V11\Resources\Asset;
+use Google\Ads\GoogleAds\V11\Resources\AssetGroupAsset;
 use Google\Ads\GoogleAds\V11\Services\AssetGroupListingGroupFilterOperation;
 use Google\Ads\GoogleAds\V11\Services\AssetGroupOperation;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
+use Google\Ads\GoogleAds\V11\Enums\AssetTypeEnum\AssetType;
+use Google\Ads\GoogleAds\V11\Enums\AssetFieldTypeEnum\AssetFieldType;
+
 
 /**
  * Class AdsAssetGroup
@@ -205,8 +211,10 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 *
 	 * @return array The asset groups for the campaign.
 	 */
-	public function get_asset_groups( int $campaign_id ): array {
-		$asset_groups        = [];
+	protected function get_asset_groups_by_campaign_id( int $campaign_id ): array {
+		$asset_groups = [];
+
+		// TODO: LIMIT NUMBER OF RESULTS.
 		$asset_group_results = ( new AdsAssetGroupQuery() )
 			->set_client( $this->client, $this->options->get_ads_id() )
 			->where( 'campaign.id', $campaign_id )
@@ -221,5 +229,56 @@ class AdsAssetGroup implements OptionsAwareInterface {
 		}
 
 		return $asset_groups;
+	}
+
+	/**
+	 * Get Asset Group Assets for a specific campaign.
+	 *
+	 * @param int $campaign_id The campaign ID.
+	 *
+	 * @return array The asset group assets for the campaign.
+	 */
+	public function get_asset_groups_assets( int $campaign_id ): array {
+		$asset_groups = $this->get_asset_groups_by_campaign_id( $campaign_id );
+
+		$asset_group_assets = [];
+		$asset_results      = ( new AdsAssetGroupAssetQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'asset_group.resource_name', $asset_groups, 'IN' )
+			->get_results();
+
+		/** @var GoogleAdsRow $row */
+		foreach ( $asset_results->iterateAllElements() as $row ) {
+
+			$data = '';
+
+			/** @var Asset $asset */
+			$asset = $row->getAsset();
+
+			/** @var AssetGroupAsset $asset_group_asset */
+			$asset_group_asset = $row->getAssetGroupAsset();
+
+			$field_type = strtolower( AssetFieldType::name( $asset_group_asset->getFieldType() ) );
+
+			// TODO: HANDLE CONTENT IN A DIFFERENT FUNCTION.
+			switch ( $asset->getType() ) {
+				case AssetType::IMAGE:
+					$data = $asset->getImageAsset()->getFullSize()->getUrl();
+					break;
+				case AssetType::TEXT:
+					$data = $asset->getTextAsset()->getText();
+					break;
+			}
+
+			$asset_data = [
+				'id'      => $asset->getId(),
+				'content' => $data,
+			];
+
+			$asset_group_assets[ $row->getAssetGroup()->getId() ]['assets'][ $field_type ][] = $asset_data;
+
+		}
+
+		return array_values( $asset_group_assets );
 	}
 }
