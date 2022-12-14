@@ -7,6 +7,20 @@ jest.mock( '@wordpress/date', () => {
 	};
 } );
 
+jest.mock( '.~/hooks/useTour', () => ( {
+	__esModule: true,
+	default: jest
+		.fn()
+		.mockName( 'useTour' )
+		.mockImplementation( () => {
+			return {
+				tour: undefined,
+				showTour: false,
+				setTour: jest.fn(),
+			};
+		} ),
+} ) );
+
 jest.mock( '.~/data/actions', () => ( {
 	__esModule: true,
 	createMappingRule: jest
@@ -135,7 +149,7 @@ jest.mock( '.~/hooks/usePolling', () => ( {
 /**
  * External dependencies
  */
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 
@@ -153,6 +167,7 @@ import {
 } from '.~/data/actions';
 import AttributeMappingSync from '.~/attribute-mapping/attribute-mapping-sync';
 import usePolling from '.~/hooks/usePolling';
+import useTour from '.~/hooks/useTour';
 
 describe( 'Attribute Mapping', () => {
 	test( 'Renders table', () => {
