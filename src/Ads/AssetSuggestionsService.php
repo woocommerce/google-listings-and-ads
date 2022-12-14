@@ -5,9 +5,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ArrayUtil;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Exception;
+use WP_Query;
+use wpdb;
 
 /**
  * Class AssetSuggestionsService
@@ -21,19 +25,82 @@ use Exception;
 class AssetSuggestionsService implements Service {
 
 	/**
+	 * WP Proxy
+	 *
+	 * @var WP
+	 */
+	protected WP $wp;
+
+	/**
+	 * WC Proxy
+	 *
+	 * @var WC
+	 */
+	protected WC $wc;
+
+	/**
+	 * Image utilities.
+	 *
+	 * @var ImageUtility
+	 */
+	protected ImageUtility $image_utility;
+
+	/**
+	 * WordPress database access abstraction class.
+	 *
+	 * @var wpdb
+	 */
+	protected $wpdb;
+
+	/**
+	 * Image requirements.
+	 */
+	protected const IMAGE_REQUIREMENTS = [
+		self::MARKETING_IMAGE_KEY        => [
+			'minimum'     => [ 600, 314 ],
+			'recommended' => [ 1200, 628 ],
+		],
+		self::SQUARE_MARKETING_IMAGE_KEY => [
+			'minimum'     => [ 300, 300 ],
+			'recommended' => [ 1200, 1200 ],
+		],
+		self::LOGO_IMAGE_KEY             => [
+			'minimum'     => [ 128, 128 ],
+			'recommended' => [ 1200, 1200 ],
+		],
+
+	];
+
+	/**
 	 * Default maximum marketing images.
 	 */
 	protected const DEFAULT_MAXIMUM_MARKETING_IMAGES = 20;
+	/**
+	 * The subsize key for the square marketing image.
+	 */
+	protected const SQUARE_MARKETING_IMAGE_KEY = 'gla_square_marketing_asset';
+	/**
+	 * The subsize key for the marketing image.
+	 */
+	protected const MARKETING_IMAGE_KEY = 'gla_marketing_asset';
+	/**
+	 * The subsize key for the logo image.
+	 */
+	protected const LOGO_IMAGE_KEY = 'gla_logo_asset';
 
 	/**
 	 * AssetSuggestionsService constructor.
 	 *
-	 * @param WP $wp WP Proxy.
-	 * @param WC $wc WC Proxy.
+	 * @param WP           $wp WP Proxy.
+	 * @param WC           $wc WC Proxy.
+	 * @param ImageUtility $image_utility Image utility.
+	 * @param wpdb         $wpdb WordPress database access abstraction class.
 	 */
-	public function __construct( WP $wp, WC $wc ) {
-		$this->wp = $wp;
-		$this->wc = $wc;
+	public function __construct( WP $wp, WC $wc, ImageUtility $image_utility, wpdb $wpdb ) {
+		$this->wp            = $wp;
+		$this->wc            = $wc;
+		$this->wpdb          = $wpdb;
+		$this->image_utility = $image_utility;
 	}
 
 	/**
@@ -94,24 +161,23 @@ class AssetSuggestionsService implements Service {
 
 		if ( $post->post_type === 'product' || $post->post_type === 'product_variation' ) {
 			$product         = $this->wc->maybe_get_product( $id );
-			$attachments_ids = [ ...$attachments_ids, ...$product->get_gallery_image_ids(), $product->get_image_id() ];
+			$attachments_ids = [ ...$attachments_ids, ...$product->get_gallery_image_ids() ];
 		}
 
-		$gallery_images_urls = get_post_gallery_images( $id );
-		$marketing_images    = [ ...$this->get_url_attachments_by_ids( $attachments_ids ), ...$gallery_images_urls ];
-		$marketing_images    = array_slice( $marketing_images, 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
-		$long_headline       = get_bloginfo( 'name' ) . ': ' . $post->post_title;
+		$attachments_ids  = [ ...$attachments_ids, ...$this->get_gallery_images_ids( $id ), get_post_thumbnail_id( $id ) ];
+		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
+		$long_headline    = get_bloginfo( 'name' ) . ': ' . $post->post_title;
 
 		return [
 			'headline'                => [ $post->post_title ],
 			'long_headline'           => [ $long_headline ],
 			'description'             => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
-			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
+			'logo'                    => $this->get_logo_images(),
 			'final_url'               => get_permalink( $id ),
 			'business_name'           => get_bloginfo( 'name' ),
 			'display_url_path'        => [ $post->post_name ],
-			'square_marketing_images' => $marketing_images,
-			'marketing_images'        => $marketing_images,
+			'square_marketing_images' => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
+			'marketing_images'        => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
 			'call_to_action'          => null,
 		];
 	}
@@ -139,12 +205,7 @@ class AssetSuggestionsService implements Service {
 		$attachments_ids            = [];
 
 		foreach ( $posts_assigned_to_term as $post ) {
-
-			if ( $post->post_type === 'product' ) {
-				$product           = $this->wc->maybe_get_product( $post->ID );
-				$attachments_ids[] = $product->get_image_id();
-			}
-
+			$attachments_ids[]            = get_post_thumbnail_id( $post->ID );
 			$posts_ids_assigned_to_term[] = $post->ID;
 		}
 
@@ -153,20 +214,29 @@ class AssetSuggestionsService implements Service {
 		}
 
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
-		$marketing_images = array_slice( $marketing_images, 0, self::DEFAULT_MAXIMUM_MARKETING_IMAGES );
 
 		return [
 			'headline'                => [ $term->name ],
 			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
 			'description'             => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
-			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
+			'logo'                    => $this->get_logo_images(),
 			'final_url'               => get_term_link( $term->term_id ),
 			'business_name'           => get_bloginfo( 'name' ),
 			'display_url_path'        => [ $term->slug ],
-			'square_marketing_images' => $marketing_images,
-			'marketing_images'        => $marketing_images,
+			'square_marketing_images' => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
+			'marketing_images'        => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
 			'call_to_action'          => null,
 		];
+	}
+
+	/**
+	 * Get logo images urls.
+	 *
+	 * @return array Logo images urls.
+	 */
+	protected function get_logo_images(): array {
+		$logo_images = $this->get_url_attachments_by_ids( [ get_theme_mod( 'custom_logo' ) ], [ self::LOGO_IMAGE_KEY ] );
+		return $logo_images[ self::LOGO_IMAGE_KEY ] ?? [];
 	}
 
 	/**
@@ -227,19 +297,74 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
-	 * Get URL for each attachment using an array of attachment ids.
+	 * Get gallery images ids.
 	 *
-	 * @param array $ids A list of attachments ids.
+	 * @param int $post_id Post ID that contains the gallery.
+	 *
+	 * @return array List of gallery images ids.
+	 */
+	protected function get_gallery_images_ids( int $post_id ): array {
+		$gallery = get_post_gallery( $post_id, false );
+
+		if ( ! $gallery || ! isset( $gallery['ids'] ) ) {
+			return [];
+		}
+
+		return explode( ',', $gallery['ids'] );
+	}
+
+	/**
+	 * Get unique attachments ids converted to int values.
+	 *
+	 * @param array $ids Attachments ids.
+	 * @param int   $maximum_images Maximum number of images to return.
+	 *
+	 * @return array List of unique attachments ids converted to int values.
+	 */
+	protected function prepare_image_ids( array $ids, int $maximum_images = self::DEFAULT_MAXIMUM_MARKETING_IMAGES ): array {
+		$ids = array_unique( ArrayUtil::remove_empty_values( $ids ) );
+		$ids = array_map( 'intval', $ids );
+		return array_slice( $ids, 0, $maximum_images );
+	}
+
+	/**
+	 * Get URL for each attachment using an array of attachment ids and a list of subsizes.
+	 *
+	 * @param array $ids Attachments ids.
+	 * @param array $size_keys Image subsize keys.
+	 * @param int   $maximum_images Maximum number of images to return.
 	 *
 	 * @return array A list of attachments urls.
 	 */
-	protected function get_url_attachments_by_ids( array $ids ): array {
-		$ids = array_unique( ArrayUtil::remove_empty_values( $ids ) );
+	protected function get_url_attachments_by_ids( array $ids, array $size_keys = [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY ], $maximum_images = self::DEFAULT_MAXIMUM_MARKETING_IMAGES ): array {
+		$ids = $this->prepare_image_ids( $ids, $maximum_images );
 
 		$marketing_images = [];
+
 		foreach ( $ids as $id ) {
-			$marketing_images[] = wp_get_attachment_image_url( $id );
+
+			$metadata = wp_get_attachment_metadata( $id );
+
+			foreach ( $size_keys as $size_key ) {
+
+				$minimum_size     = new DimensionUtility( ...self::IMAGE_REQUIREMENTS[ $size_key ]['minimum'] );
+				$recommended_size = new DimensionUtility( ...self::IMAGE_REQUIREMENTS[ $size_key ]['recommended'] );
+				$image_size       = new DimensionUtility( $metadata['width'], $metadata['height'] );
+				$suggested_size   = $this->image_utility->recommend_size( $image_size, $recommended_size, $minimum_size );
+
+				// If the original size matches the suggested size with a precision of +-1px.
+				if ( $suggested_size && $suggested_size->equals( $image_size ) ) {
+					$marketing_images[ $size_key ][] = wp_get_attachment_url( $id );
+				} elseif ( isset( $metadata['sizes'][ $size_key ] ) ) {
+					// use the sub size.
+					$marketing_images[ $size_key ][] = wp_get_attachment_image_url( $id, $size_key );
+				} elseif ( $suggested_size && $this->image_utility->maybe_add_subsize_image( $id, $size_key, $suggested_size ) ) {
+					// use the resized image.
+					$marketing_images[ $size_key ][] = wp_get_attachment_image_url( $id, $size_key );
+				}
+			}
 		}
+
 		return $marketing_images;
 	}
 
@@ -292,20 +417,43 @@ class AssetSuggestionsService implements Service {
 		$filtered_post_types = array_diff( $post_types, $excluded_post_types );
 
 		$args = [
-			'post_type'      => $filtered_post_types,
-			'posts_per_page' => $per_page,
-			'post_status'    => 'publish',
-			's'              => $search,
-			'offset'         => $offset,
+			'post_type'        => $filtered_post_types,
+			'posts_per_page'   => $per_page,
+			'post_status'      => 'publish',
+			'search_title'     => $search,
+			'offset'           => $offset,
+			'suppress_filters' => false,
 		];
 
+		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
+
 		$posts = $this->wp->get_posts( $args );
+
+		remove_filter( 'posts_where', [ $this, 'title_filter' ] );
 
 		foreach ( $posts as $post ) {
 			$post_suggestions[] = $this->format_final_url_response( $post->ID, 'post', $post->post_title, get_permalink( $post->ID ) );
 		}
 
 		return $post_suggestions;
+	}
+
+	/**
+	 * Filter for the posts_where hook, adds WHERE clause to search
+	 * for the 'search_title' parameter in the post titles (when present).
+	 *
+	 * @param string   $where The WHERE clause of the query.
+	 * @param WP_Query $wp_query The WP_Query instance (passed by reference).
+	 *
+	 * @return string The updated WHERE clause.
+	 */
+	public function title_filter( string $where, WP_Query $wp_query ): string {
+		$search_title = $wp_query->get( 'search_title' );
+		if ( $search_title ) {
+			$title_search = '%' . $this->wpdb->esc_like( $search_title ) . '%';
+			$where       .= $this->wpdb->prepare( " AND `{$this->wpdb->posts}`.`post_title` LIKE %s", $title_search ); // phpcs:ignore WordPress.DB.PreparedSQL
+		}
+		return $where;
 	}
 
 	/**
