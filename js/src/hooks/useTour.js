@@ -29,14 +29,8 @@ const useTour = ( tourId ) => {
 	const tour = useAppSelectDispatch( 'getTour', tourId );
 	const { upsertTour } = useAppDispatch();
 
-	const showTour =
-		tour.hasFinishedResolution && !! tour.data && ! tour.data.checked;
+	const showTour = tour.hasFinishedResolution && ! tour.data?.checked;
 
-	console.log( tourId, {
-		tour,
-		setTour: upsertTour,
-		showTour,
-	} );
 	return {
 		tour,
 		setTour: upsertTour,

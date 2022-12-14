@@ -60,7 +60,7 @@ describe( 'reducer', () => {
 			mc_product_feed: null,
 			report: {},
 			store_categories: [],
-			tours: [],
+			tours: {},
 		} );
 
 		prepareState = prepareImmutableStateWithRefCheck.bind(
