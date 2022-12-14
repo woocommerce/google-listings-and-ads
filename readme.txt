@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.9
 Tested up to: 6.1
 Requires PHP: 7.4
-Stable tag: 2.3.2
+Stable tag: 2.3.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.3.3 - 2022-12-14 =
+* Fix - Tours API Endpoint.
+* Tweak - WC 7.2 compatibility.
+* Update - Drop support for WordPress < 5.9.
+
 = 2.3.2 - 2022-12-06 =
 * Dev - Adjusted parts of the post-install process to work on machines without `grep` and `find`. .
 * Dev - Adjusted post-install process to mention when files have their class-expectations modified but retain their original namespace.
@@ -124,42 +129,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WC 7.1 compatibility.
 * Update - Change multipack attribute input to be native number input, to improve accessibility.
 * Update - Drop support for WC < 6.9.
-
-= 2.2.1 - 2022-11-15 =
-* Add - Declare compatibility for High Performance Order Storage.
-* Dev - Selectively externalize bundled packages.
-* Fix - E2E Testing: Reduce the false positive rate and adjust the running events on GitHub Actions.
-* Fix - Move the order of Google Listings & Ads below the Coupons in the Marketing menu of WooCommerce admin page.
-* Fix - WC 6.9 compatibility: Shipping time settings should not appear after selecting the "complex" shipping option.
-* Fix - WC 6.9 compatibility: The free shipping threshold should be cleared after selecting the "No" free shipping option.
-* Fix - WC 6.9 compatibility: The selected free shipping option should be reset after setting all shipping rates to 0.
-* Fix - WC 7.1 compatibility: Fixing the forms in the free listings setup may cause infinite requesting state updates which lead to a blank page or issue a lot of API requests.
-* Fix - WordPress 5.9 Compatibility: Visually hide descriptions of external link icons.
-* Fix - WordPress 6.1 Compatibility: Popover and Tooltip components should be displayed as floating.
-* Fix - WordPress 6.1 Compatibility: The size of navigation icons in Datepicker component should not be a giant size.
-* Tweak - WC 7.1 compatibility.
-* Tweak - WP 6.1 compatibility.
-* Update - ISO3166 package version 4.1.
-
-= 2.2.0 - 2022-10-18 =
-* Add - Ad previews in the post-onboarding ads setup flow.
-* Add - Combine the audience and shipping steps for the onboarding flow and the editing free listings page.
-* Add - Streamlined Free Listings + Paid Ads for the onboarding flow.
-* Add - The disclaimer of Comparison Shopping Service of the accounts setup of onboarding flow.
-* Add - The submission success modal on the Product Feed page after the onboarding is completed along with paid ads setup.
-* Fix - A validateDOMNesting warning in the accounts setup step of the onboarding flow.
-* Fix - Free Listings + Paid Ads: Add the paid ads previews to the boost product listings section.
-* Fix - Remove - Support for WC < 6.8.
-* Fix - Shipping time values flash during the onboarding setup.
-* Fix - Steppers on the onboarding flow allow switching to later steps when the current step is not yet finished.
-* Fix - The "Or, create a new Google Ads account" button at the footer of the Google Ads account setup is clickable when connecting an existing account.
-* Fix - The incorrect active status style for a disabled button.
-* Tweak - Use different titles for the free listings setup of the onboarding and editing pages.
-* Update - Change the steppers in the onboarding flow to only allow going back to the previous steps.
-* Update - Detect the verification status of the phone number in the contact information settings.
-* Update - Layouts and copywriting of the Get Started page and the onboarding flow.
-* Update - Logos of Google Merchant Center and Google Ads.
-* Update - Open the billing setup page of Google Ads via a popup window and add an alternative hyperlink to open the same setup page.
-* Update - The FAQs in the paid ads setup and the campaign setup page.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
