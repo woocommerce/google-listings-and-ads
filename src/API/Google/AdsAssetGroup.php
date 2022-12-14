@@ -190,11 +190,22 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Return a temporary resource name for the campaign.
+	 * Return a temporary resource name for the asset group.
 	 *
 	 * @return string
 	 */
 	protected function temporary_resource_name() {
 		return ResourceNames::forAssetGroup( $this->options->get_ads_id(), self::TEMPORARY_ID );
+	}
+
+	/**
+	 * Get Asset Groups for a specific campaign.
+	 *
+	 * @param int $campaign_id The campaign ID.
+	 *
+	 * @return array The asset groups for the campaign.
+	 */
+	public function get_asset_groups( int $campaign_id ): array {
+		return [];
 	}
 }

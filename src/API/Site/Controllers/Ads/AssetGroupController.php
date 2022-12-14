@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
@@ -18,12 +19,21 @@ defined( 'ABSPATH' ) || exit;
 class AssetGroupController extends BaseController {
 
 	/**
+	 * The AdsAssetGroup class.
+	 *
+	 * @var AdsAssetGroup $ads_asset_group
+	 */
+	protected $ads_asset_group;
+
+	/**
 	 * BudgetRecommendationController constructor.
 	 *
-	 * @param RESTServer $rest_server
+	 * @param RESTServer    $rest_server
+	 * @param AdsAssetGroup $ads_asset_group
 	 */
-	public function __construct( RESTServer $rest_server ) {
+	public function __construct( RESTServer $rest_server, AdsAssetGroup $ads_asset_group ) {
 		parent::__construct( $rest_server );
+		$this->ads_asset_group = $ads_asset_group;
 	}
 
 	/**
@@ -49,7 +59,8 @@ class AssetGroupController extends BaseController {
 	 */
 	protected function get_asset_groups_callback(): callable {
 		return function( Request $request ) {
-			return absint( $request['id'] );
+			$campaign_id = absint( $request['id'] );
+			return $this->ads_asset_group->get_asset_groups( $campaign_id );
 		};
 	}
 
