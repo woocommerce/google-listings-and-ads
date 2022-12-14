@@ -20,19 +20,19 @@ class DimensionUtilityTest extends UnitTest {
 		parent::setUp();
 	}
 
-	public function test_image_is_bigger() {
+	public function test_image_is_minimum_size() {
 		$image_1 = new DimensionUtility( 650, 400 );
 		$image_2 = new DimensionUtility( 600, 300 );
 
-		$this->assertTrue( $image_1->is_bigger( $image_2 ) );
+		$this->assertTrue( $image_1->is_minimum_size( $image_2 ) );
 
 	}
 
-	public function test_image_is_smaller() {
+	public function test_image_is_smaller_than_the_minimum_size() {
 		$image_1 = new DimensionUtility( 300, 400 );
 		$image_2 = new DimensionUtility( 600, 300 );
 
-		$this->assertFalse( $image_1->is_bigger( $image_2 ) );
+		$this->assertFalse( $image_1->is_minimum_size( $image_2 ) );
 
 	}
 

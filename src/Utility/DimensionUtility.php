@@ -34,14 +34,14 @@ class DimensionUtility {
 	}
 
 	/**
-	 * Checks if the dimension is bigger or equal than the other one.
+	 * Checks if the dimension fulfils the minimum size.
 	 *
-	 * @param DimensionUtility $target The dimension to be compared.
+	 * @param DimensionUtility $minimum_size The minimum size.
 	 *
-	 * @return bool true if the dimension is bigger or equal than the other one otherwise false.
+	 * @return bool true if the dimension is bigger or equal than the the minimum size otherwise false.
 	 */
-	public function is_bigger( DimensionUtility $target ): bool {
-		return $this->x >= $target->x && $this->y >= $target->y;
+	public function is_minimum_size( DimensionUtility $minimum_size ): bool {
+		return $this->x >= $minimum_size->x && $this->y >= $minimum_size->y;
 	}
 
 	/**
