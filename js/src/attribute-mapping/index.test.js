@@ -149,7 +149,7 @@ jest.mock( '.~/hooks/usePolling', () => ( {
 /**
  * External dependencies
  */
-import { render, fireEvent, screen } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 
@@ -167,7 +167,6 @@ import {
 } from '.~/data/actions';
 import AttributeMappingSync from '.~/attribute-mapping/attribute-mapping-sync';
 import usePolling from '.~/hooks/usePolling';
-import useTour from '.~/hooks/useTour';
 
 describe( 'Attribute Mapping', () => {
 	test( 'Renders table', () => {
