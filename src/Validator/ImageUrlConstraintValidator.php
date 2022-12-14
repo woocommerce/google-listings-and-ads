@@ -21,8 +21,8 @@ class ImageUrlConstraintValidator extends UrlConstraintValidator {
 	/**
 	 * Checks if the passed value is valid.
 	 *
-	 * @param GooglePrice $value The value that should be validated
-	 * @param Constraint  $constraint
+	 * @param string     $value The value that should be validated
+	 * @param Constraint $constraint
 	 *
 	 * @throws UnexpectedTypeException If invalid constraint provided.
 	 * @throws UnexpectedValueException If invalid value provided.
