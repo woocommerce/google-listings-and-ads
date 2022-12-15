@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Enums\AssetTypeEnum\AssetType;
 use Google\Ads\GoogleAds\V11\Enums\CallToActionTypeEnum\CallToActionType;
-
+use Google\Ads\GoogleAds\V11\Resources\Asset;
 
 /**
  * Class AdsAsset
@@ -28,6 +28,7 @@ class AdsAsset {
 	 * @return array
 	 */
 	public function convert_asset( GoogleAdsRow $row ): array {
+		/** @var Asset $asset */
 		$asset = $row->getAsset();
 
 		switch ( $asset->getType() ) {

@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Enums\AssetFieldTypeEnum\AssetFieldType;
+use Google\Ads\GoogleAds\V11\Resources\AssetGroupAsset;
 
 
 
@@ -65,7 +66,11 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 
 		/** @var GoogleAdsRow $row */
 		foreach ( $asset_results->iterateAllElements() as $row ) {
-			$field_type = strtolower( AssetFieldType::name( $row->getAssetGroupAsset()->getFieldType() ) );
+
+			/** @var AssetGroupAsset $asset_group_asset */
+			$asset_group_asset = $row->getAssetGroupAsset();
+
+			$field_type = strtolower( AssetFieldType::name( $asset_group_asset->getFieldType() ) );
 			$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ][] = $this->asset->convert_asset( $row );
 		}
 
