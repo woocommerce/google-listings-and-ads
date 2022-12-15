@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use WP_REST_Request as Request;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -59,8 +60,13 @@ class AssetGroupController extends BaseController {
 	 */
 	protected function get_asset_groups_assets_callback(): callable {
 		return function( Request $request ) {
-			$campaign_id = absint( $request['id'] );
-			return $this->ads_asset_group->get_asset_groups_assets( $campaign_id );
+			try {
+				$campaign_id = absint( $request['id'] );
+				return $this->ads_asset_group->get_asset_groups_by_campaign_id( $campaign_id );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+
 		};
 	}
 
