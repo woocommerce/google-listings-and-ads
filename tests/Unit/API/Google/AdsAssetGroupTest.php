@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
@@ -28,6 +29,7 @@ class AdsAssetGroupTest extends UnitTest {
 
 	protected const TEST_CAMPAIGN_ID      = 1234567890;
 	protected const TEST_ASSET_GROUP_ID   = 5566778899;
+	protected const TEST_ASSET_GROUP_ID_2 = 5566778777;
 	protected const TEST_LISTING_GROUP_ID = 6677889911;
 
 	/**
@@ -38,10 +40,11 @@ class AdsAssetGroupTest extends UnitTest {
 
 		$this->ads_client_setup();
 
-		$this->options = $this->createMock( OptionsInterface::class );
+		$this->asset_group_asset = $this->createMock( AdsAssetGroupAsset::class );
+		$this->options           = $this->createMock( OptionsInterface::class );
 		$this->options->method( 'get_ads_id' )->willReturn( $this->ads_id );
 
-		$this->asset_group = new AdsAssetGroup( $this->client );
+		$this->asset_group = new AdsAssetGroup( $this->client, $this->asset_group_asset );
 		$this->asset_group->set_options_object( $this->options );
 	}
 
@@ -72,5 +75,72 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->assertEquals( ListingGroupFilterType::UNIT_INCLUDED, $listing_group->getType() );
 		$this->assertEquals( ListingGroupFilterVertical::SHOPPING, $listing_group->getVertical() );
 	}
+
+	public function test_get_asset_groups_by_campaign_id_with_assets() {
+		$assets_data = [
+			self::TEST_ASSET_GROUP_ID   => [
+				'description' => [
+					'id'      => 22222,
+					'content' => 'description 1',
+				],
+
+			],
+			self::TEST_ASSET_GROUP_ID_2 => [
+				'headline' => [
+					'id'      => 33333,
+					'content' => 'description 1',
+				],
+			],
+		];
+
+		$asset_group_data = [
+			[
+				'id'               => self::TEST_ASSET_GROUP_ID,
+				'final_urls'       => [ 'https://www.example.com' ],
+				'display_url_path' => [ 'mypath1', 'mypath2' ],
+				'assets'           => $assets_data[ self::TEST_ASSET_GROUP_ID ],
+			],
+			[
+				'id'               => self::TEST_ASSET_GROUP_ID_2,
+				'final_urls'       => [ 'https://www.example2.com' ],
+				'display_url_path' => [ 'mypath2_example1', 'mypath2_example2' ],
+				'assets'           => $assets_data[ self::TEST_ASSET_GROUP_ID_2 ],
+			],
+		];
+
+		$this->asset_group_asset->expects( $this->exactly( 1 ) )
+			->method( 'get_asset_group_assets' )
+			->with( [ self::TEST_ASSET_GROUP_ID, self::TEST_ASSET_GROUP_ID_2 ] )
+			->willReturn( $assets_data );
+
+		$this->generate_ads_asset_groups_query_mock( $asset_group_data );
+		$this->assertEquals( $asset_group_data, $this->asset_group->get_asset_groups_by_campaign_id( self::TEST_CAMPAIGN_ID ) );
+
+	}
+
+	public function test_get_asset_groups_by_campaign_id_without_assets() {
+		$include_assets   = false;
+		$asset_group_data = [
+			[
+				'id'               => self::TEST_ASSET_GROUP_ID,
+				'final_urls'       => [ 'https://www.example.com' ],
+				'display_url_path' => [ 'mypath1', 'mypath2' ],
+			],
+			[
+				'id'               => self::TEST_ASSET_GROUP_ID_2,
+				'final_urls'       => [ 'https://www.example2.com' ],
+				'display_url_path' => [ 'mypath2_example1', 'mypath2_example2' ],
+			],
+		];
+
+		$this->asset_group_asset->expects( $this->exactly( 0 ) )
+			->method( 'get_asset_group_assets' );
+
+		$this->generate_ads_asset_groups_query_mock( $asset_group_data );
+		$this->assertEquals( $asset_group_data, $this->asset_group->get_asset_groups_by_campaign_id( self::TEST_CAMPAIGN_ID, $include_assets ) );
+
+	}
+
+
 
 }
