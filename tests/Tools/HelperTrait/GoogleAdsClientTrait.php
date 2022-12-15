@@ -13,6 +13,9 @@ use Google\Ads\GoogleAds\V11\Common\LocationInfo;
 use Google\Ads\GoogleAds\V11\Common\Metrics;
 use Google\Ads\GoogleAds\V11\Common\Segments;
 use Google\Ads\GoogleAds\V11\Common\TagSnippet;
+use Google\Ads\GoogleAds\V11\Common\ImageAsset;
+use Google\Ads\GoogleAds\V11\Common\TextAsset;
+use Google\Ads\GoogleAds\V11\Common\ImageDimension;
 use Google\Ads\GoogleAds\V11\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V11\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
 use Google\Ads\GoogleAds\V11\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
@@ -20,6 +23,9 @@ use Google\Ads\GoogleAds\V11\Enums\TrackingCodePageFormatEnum\TrackingCodePageFo
 use Google\Ads\GoogleAds\V11\Enums\TrackingCodeTypeEnum\TrackingCodeType;
 use Google\Ads\GoogleAds\V11\Resources\BillingSetup;
 use Google\Ads\GoogleAds\V11\Resources\Campaign;
+use Google\Ads\GoogleAds\V11\Resources\Asset;
+use Google\Ads\GoogleAds\V11\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V11\Resources\AssetGroupAsset;
 use Google\Ads\GoogleAds\V11\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V11\Resources\CampaignCriterion;
 use Google\Ads\GoogleAds\V11\Resources\Campaign\ShoppingSetting;
@@ -605,5 +611,51 @@ trait GoogleAdsClientTrait {
 
 		return $metrics;
 	}
+
+	/**
+	 * Converts asset group assets data to a mocked GoogleAdsRow.
+	 *
+	 * @param array $data AssetGroupAsset data to convert.
+	 *
+	 * @return GoogleAdsRow
+	 */
+	protected function generate_asset_group_asset_row_mock( array $data ): GoogleAdsRow {
+		$asset_group_asset = $this->createMock( AssetGroupAsset::class );
+		$asset_group_asset->method( 'getFieldType' )->willReturn( $data['field_type'] );
+
+		$asset = $this->createMock( Asset::class );
+		$asset->method( 'getId' )->willReturn( $data['asset']['id'] );
+		$asset->method( 'getType' )->willReturn( $data['asset']['type'] );
+		$asset->method( 'getImageAsset' )->willReturn( new ImageAsset( [ 'full_size' => new ImageDimension( [ 'url' => $data['asset']['image_url'] ?? '' ] ) ] ) );
+		$asset->method( 'getTextAsset' )->willReturn( new TextAsset( [ 'text' => $data['asset']['text'] ?? '' ] ) );
+
+		$asset_group = $this->createMock( AssetGroup::class );
+		$asset_group->method( 'getId' )->willReturn( $data['asset_group_id'] );
+
+		return ( new GoogleAdsRow() )
+			->setAssetGroupAsset( $asset_group_asset )
+			->setAssetGroup( $asset_group )
+			->setAsset( $asset );
+	}
+
+	/**
+	 * Generates mocked AdsAssetGroupAssetQuery response.
+	 *
+	 * @param array $asset_group_asset_responses Set of campaign data to convert.
+	 */
+	protected function generate_ads_asset_group_asset_query_mock( array $asset_group_asset_responses ) {
+		$asset_group_asset_row_mock = array_map( [ $this, 'generate_asset_group_asset_row_mock' ], $asset_group_asset_responses );
+
+		$list_response = $this->createMock( PagedListResponse::class );
+		$list_response->method( 'iterateAllElements' )->willReturn(
+			$asset_group_asset_row_mock
+		);
+
+		$this->service_client->method( 'search' )->willReturn( $list_response );
+	}
+
+
+
+
 
 }
