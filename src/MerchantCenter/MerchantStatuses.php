@@ -793,6 +793,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Parse the code and formatted issue text out of the presync validation error text.
 	 *
+	 * Converts the error strings:
+	 * "[attribute] Error message." > "Error message [attribute]"
+	 *
+	 * Note:
+	 * If attribute is an array the name can be "[attribute[0]]".
+	 * So we need to match the additional set of square brackets.
+	 *
 	 * @param string $text
 	 *
 	 * @return string[] With indexes `code` and `issue`
@@ -807,12 +814,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			];
 		}
 
-		// Convert imageLink to image
+		// Convert attribute name "imageLink" to "image".
 		if ( 'imageLink' === $matches[1] ) {
 			$matches[1] = 'image';
 		}
 
-		// Convert additionalImageLinks[] to galleryImage.
+		// Convert attribute name "additionalImageLinks[]" to "galleryImage".
 		if ( str_starts_with( $matches[1], 'additionalImageLinks' ) ) {
 			$matches[1] = 'galleryImage';
 		}
