@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupAssetQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsListingGroupFilterQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -15,14 +15,10 @@ use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterTypeEnum\ListingGroupFilter
 use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterVerticalEnum\ListingGroupFilterVertical;
 use Google\Ads\GoogleAds\V11\Resources\AssetGroup;
 use Google\Ads\GoogleAds\V11\Resources\AssetGroupListingGroupFilter;
-use Google\Ads\GoogleAds\V11\Resources\Asset;
-use Google\Ads\GoogleAds\V11\Resources\AssetGroupAsset;
 use Google\Ads\GoogleAds\V11\Services\AssetGroupListingGroupFilterOperation;
 use Google\Ads\GoogleAds\V11\Services\AssetGroupOperation;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
-use Google\Ads\GoogleAds\V11\Enums\AssetTypeEnum\AssetType;
-use Google\Ads\GoogleAds\V11\Enums\AssetFieldTypeEnum\AssetFieldType;
 
 
 /**
@@ -55,6 +51,13 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	protected $client;
 
 	/**
+	 * The AdsAssetGroupAsset class.
+	 *
+	 * @var AdsAssetGroupAsset
+	 */
+	protected $asset_group_asset;
+
+	/**
 	 * List of asset group resource names.
 	 *
 	 * @var string[]
@@ -64,10 +67,12 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	/**
 	 * AdsAssetGroup constructor.
 	 *
-	 * @param GoogleAdsClient $client
+	 * @param GoogleAdsClient    $client
+	 * @param AdsAssetGroupAsset $asset_group_asset
 	 */
-	public function __construct( GoogleAdsClient $client ) {
-		$this->client = $client;
+	public function __construct( GoogleAdsClient $client, AdsAssetGroupAsset $asset_group_asset ) {
+		$this->client            = $client;
+		$this->asset_group_asset = $asset_group_asset;
 	}
 
 	/**
@@ -207,78 +212,69 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	/**
 	 * Get Asset Groups for a specific campaign.
 	 *
-	 * @param int $campaign_id The campaign ID.
+	 * @since x.x.x
+	 *
+	 * @param int  $campaign_id The campaign ID.
+	 * @param bool $include_assets Whether to include the assets in the response.
 	 *
 	 * @return array The asset groups for the campaign.
 	 */
-	protected function get_asset_groups_by_campaign_id( int $campaign_id ): array {
-		$asset_groups = [];
+	public function get_asset_groups_by_campaign_id( int $campaign_id, bool $include_assets = true ): array {
+		$asset_groups_converted = [];
 
-		// TODO: LIMIT NUMBER OF RESULTS.
 		$asset_group_results = ( new AdsAssetGroupQuery() )
 			->set_client( $this->client, $this->options->get_ads_id() )
+			->columns( [ 'asset_group.resource_name', 'asset_group.path1', 'asset_group.path2', 'asset_group.id', 'asset_group.final_urls' ] )
 			->where( 'campaign.id', $campaign_id )
 			->where( 'asset_group.status', 'REMOVED', '!=' )
 			->get_results();
 
 		/** @var GoogleAdsRow $row */
 		foreach ( $asset_group_results->iterateAllElements() as $row ) {
-			$resource_name  = $row->getAssetGroup()->getResourceName();
-			$asset_groups[] = $resource_name;
+			$asset_groups_converted[ $row->getAssetGroup()->getId() ] = $this->convert_asset_group( $row );
+		}
 
+		if ( $include_assets ) {
+			return array_values( $this->add_assets( $asset_groups_converted ) );
+		}
+
+		return array_values( $asset_groups_converted );
+	}
+
+	/**
+	 * Add assets to the asset groups.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param array $asset_groups The asset groups converted.
+	 *
+	 * @return array The asset groups with assets.
+	 */
+	protected function add_assets( array $asset_groups ): array {
+		$asset_group_ids    = array_keys( $asset_groups );
+		$asset_group_assets = $this->asset_group_asset->get_asset_group_assets( $asset_group_ids );
+
+		foreach ( $asset_group_ids as $asset_group_id ) {
+			$asset_groups[ $asset_group_id ]['assets'] = $asset_group_assets[ $asset_group_id ] ?? [];
 		}
 
 		return $asset_groups;
 	}
 
 	/**
-	 * Get Asset Group Assets for a specific campaign.
+	 * Convert Asset Group data to an array.
 	 *
-	 * @param int $campaign_id The campaign ID.
+	 * @since x.x.x
 	 *
-	 * @return array The asset group assets for the campaign.
+	 * @param GoogleAdsRow $row Data row returned from a query request.
+	 *
+	 * @return array
 	 */
-	public function get_asset_groups_assets( int $campaign_id ): array {
-		$asset_groups = $this->get_asset_groups_by_campaign_id( $campaign_id );
-
-		$asset_group_assets = [];
-		$asset_results      = ( new AdsAssetGroupAssetQuery() )
-			->set_client( $this->client, $this->options->get_ads_id() )
-			->where( 'asset_group.resource_name', $asset_groups, 'IN' )
-			->get_results();
-
-		/** @var GoogleAdsRow $row */
-		foreach ( $asset_results->iterateAllElements() as $row ) {
-
-			$data = '';
-
-			/** @var Asset $asset */
-			$asset = $row->getAsset();
-
-			/** @var AssetGroupAsset $asset_group_asset */
-			$asset_group_asset = $row->getAssetGroupAsset();
-
-			$field_type = strtolower( AssetFieldType::name( $asset_group_asset->getFieldType() ) );
-
-			// TODO: HANDLE CONTENT IN A DIFFERENT FUNCTION.
-			switch ( $asset->getType() ) {
-				case AssetType::IMAGE:
-					$data = $asset->getImageAsset()->getFullSize()->getUrl();
-					break;
-				case AssetType::TEXT:
-					$data = $asset->getTextAsset()->getText();
-					break;
-			}
-
-			$asset_data = [
-				'id'      => $asset->getId(),
-				'content' => $data,
-			];
-
-			$asset_group_assets[ $row->getAssetGroup()->getId() ]['assets'][ $field_type ][] = $asset_data;
-
-		}
-
-		return array_values( $asset_group_assets );
+	protected function convert_asset_group( GoogleAdsRow $row ): array {
+		return [
+			'id'               => $row->getAssetGroup()->getId(),
+			'final_urls'       => iterator_to_array( $row->getAssetGroup()->getFinalUrls() ),
+			'display_url_path' => [ $row->getAssetGroup()->getPath1(), $row->getAssetGroup()->getPath2() ],
+		];
 	}
 }
