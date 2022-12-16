@@ -27,7 +27,7 @@ class AssetGroupController extends BaseController {
 	protected $ads_asset_group;
 
 	/**
-	 * BudgetRecommendationController constructor.
+	 * AssetGroupController constructor.
 	 *
 	 * @param RESTServer    $rest_server
 	 * @param AdsAssetGroup $ads_asset_group
@@ -46,7 +46,7 @@ class AssetGroupController extends BaseController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_asset_groups_assets_callback(),
+					'callback'            => $this->get_asset_groups_by_campaign_id_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_asset_group_params(),
 				],
@@ -56,7 +56,7 @@ class AssetGroupController extends BaseController {
 	}
 
 	/**
-	 * Get the assets suggestions params.
+	 * Get the assets groups params.
 	 *
 	 * @return array
 	 */
@@ -75,7 +75,7 @@ class AssetGroupController extends BaseController {
 	/**
 	 * @return callable
 	 */
-	protected function get_asset_groups_assets_callback(): callable {
+	protected function get_asset_groups_by_campaign_id_callback(): callable {
 		return function( Request $request ) {
 			try {
 				$campaign_id = $request['id'];
@@ -108,9 +108,8 @@ class AssetGroupController extends BaseController {
 			],
 			'final_url'        => [
 				'type'        => 'string',
-				'description' => __( 'A list of final URLs', 'google-listings-and-ads' ),
+				'description' => __( 'Final URL', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
-				'enum'        => [ 'post', 'term' ],
 
 			],
 			'display_url_path' => [
@@ -120,7 +119,7 @@ class AssetGroupController extends BaseController {
 			],
 			'assets'           => [
 				'type'        => 'array',
-				'description' => __( 'Asset is a part of an ad which can be shared across multiple ads. It can be an image (ImageAsset), headlines, descriptions, etc.', 'google-listings-and-ads' ),
+				'description' => __( 'Asset is a part of an ad which can be shared across multiple ads. It can be an image, headlines, descriptions, etc.', 'google-listings-and-ads' ),
 				'items'       => [
 					'type'       => 'object',
 					'properties' => [
