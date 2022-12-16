@@ -83,6 +83,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		$asset_group_assets = [];
 		$asset_results      = ( new AdsAssetGroupAssetQuery() )
 			->set_client( $this->client, $this->options->get_ads_id() )
+			->add_columns( [ 'asset_group.id' ] )
 			->where( 'asset_group.id', $asset_groups_ids, 'IN' )
 			->where( 'asset_group_asset.field_type', $this->asset_field_types, 'IN' )
 			->where( 'asset_group_asset.status', 'REMOVED', '!=' )
