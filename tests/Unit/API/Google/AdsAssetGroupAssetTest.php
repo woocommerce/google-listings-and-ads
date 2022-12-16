@@ -95,6 +95,10 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 	}
 
+	public function test_asset_group_assets_without_asset_groups() {
+		$this->assertEquals( [], $this->asset_group_asset->get_asset_group_assets( [] ) );
+	}
+
 
 
 }
