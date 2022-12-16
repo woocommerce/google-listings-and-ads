@@ -41,6 +41,8 @@ class AdsAsset {
 			case AssetType::CALL_TO_ACTION:
 				$data = CallToActionType::name( $asset->getCallToActionAsset()->getCallToAction() );
 				break;
+			default:
+				$data = '';
 		}
 
 		return [
