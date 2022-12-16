@@ -636,10 +636,13 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_ads_asset_groups_query_mock( array $asset_group_responses ) {
 		$asset_group_row_mock = array_map( [ $this, 'generate_asset_group_row_mock' ], $asset_group_responses );
+		$page                 = $this->createMock( Page::class );
+
+		$page->method( 'getIterator' )->willReturn( $asset_group_row_mock );
 
 		$list_response = $this->createMock( PagedListResponse::class );
-		$list_response->method( 'iterateAllElements' )->willReturn(
-			$asset_group_row_mock
+		$list_response->method( 'getPage' )->willReturn(
+			$page
 		);
 
 		$this->service_client->method( 'search' )->willReturn( $list_response );
