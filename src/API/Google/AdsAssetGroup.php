@@ -44,6 +44,11 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	protected const TEMPORARY_ID = -3;
 
 	/**
+	 *  The page size for the AdsAssetGroupQuery.
+	 */
+	protected const PAGE_SIZE = 1;
+
+	/**
 	 * The Google Ads Client.
 	 *
 	 * @var GoogleAdsClient
@@ -222,15 +227,15 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	public function get_asset_groups_by_campaign_id( int $campaign_id, bool $include_assets = true ): array {
 		$asset_groups_converted = [];
 
-		$asset_group_results = ( new AdsAssetGroupQuery() )
+		$asset_group_results = ( new AdsAssetGroupQuery( [ 'pageSize' => self::PAGE_SIZE ] ) )
 			->set_client( $this->client, $this->options->get_ads_id() )
-			->columns( [ 'asset_group.resource_name', 'asset_group.path1', 'asset_group.path2', 'asset_group.id', 'asset_group.final_urls' ] )
+			->add_columns( [ 'asset_group.path1', 'asset_group.path2', 'asset_group.id', 'asset_group.final_urls' ] )
 			->where( 'campaign.id', $campaign_id )
 			->where( 'asset_group.status', 'REMOVED', '!=' )
 			->get_results();
 
 		/** @var GoogleAdsRow $row */
-		foreach ( $asset_group_results->iterateAllElements() as $row ) {
+		foreach ( $asset_group_results->getPage()->getIterator() as $row ) {
 			$asset_groups_converted[ $row->getAssetGroup()->getId() ] = $this->convert_asset_group( $row );
 		}
 
