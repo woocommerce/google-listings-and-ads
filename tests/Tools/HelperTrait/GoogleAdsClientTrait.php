@@ -613,6 +613,40 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Converts asset group data to a mocked GoogleAdsRow.
+	 *
+	 * @param array $data AssetGroupAsset data to convert.
+	 *
+	 * @return GoogleAdsRow
+	 */
+	protected function generate_asset_group_row_mock( array $data ): GoogleAdsRow {
+		$asset_group = $this->createMock( AssetGroup::class );
+		$asset_group->method( 'getId' )->willReturn( $data['id'] );
+		$asset_group->method( 'getFinalUrls' )->willReturn( new \ArrayIterator( $data['final_urls'] ) );
+		$asset_group->method( 'getPath1' )->willReturn( $data['display_url_path'][0] ?? '' );
+		$asset_group->method( 'getPath2' )->willReturn( $data['display_url_path'] [1] ?? '' );
+
+		return ( new GoogleAdsRow() )->setAssetGroup( $asset_group );
+	}
+
+	/**
+	 * Generates mocked AdsAssetGroupQuery response.
+	 *
+	 * @param array $asset_group_responses Set of campaign data to convert.
+	 */
+	protected function generate_ads_asset_groups_query_mock( array $asset_group_responses ) {
+		$asset_group_row_mock = array_map( [ $this, 'generate_asset_group_row_mock' ], $asset_group_responses );
+
+		$list_response = $this->createMock( PagedListResponse::class );
+		$list_response->method( 'iterateAllElements' )->willReturn(
+			$asset_group_row_mock
+		);
+
+		$this->service_client->method( 'search' )->willReturn( $list_response );
+	}
+
+
+	/**
 	 * Converts asset group assets data to a mocked GoogleAdsRow.
 	 *
 	 * @param array $data AssetGroupAsset data to convert.
