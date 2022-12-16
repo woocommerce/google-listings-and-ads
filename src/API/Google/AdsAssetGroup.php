@@ -273,7 +273,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	protected function convert_asset_group( GoogleAdsRow $row ): array {
 		return [
 			'id'               => $row->getAssetGroup()->getId(),
-			'final_urls'       => iterator_to_array( $row->getAssetGroup()->getFinalUrls() ),
+			'final_url'        => iterator_to_array( $row->getAssetGroup()->getFinalUrls() )[0] ?? '',
 			'display_url_path' => [ $row->getAssetGroup()->getPath1(), $row->getAssetGroup()->getPath2() ],
 		];
 	}

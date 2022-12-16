@@ -96,13 +96,13 @@ class AdsAssetGroupTest extends UnitTest {
 		$asset_group_data = [
 			[
 				'id'               => self::TEST_ASSET_GROUP_ID,
-				'final_urls'       => [ 'https://www.example.com' ],
+				'final_url'        => 'https://www.example.com',
 				'display_url_path' => [ 'mypath1', 'mypath2' ],
 				'assets'           => $assets_data[ self::TEST_ASSET_GROUP_ID ],
 			],
 			[
 				'id'               => self::TEST_ASSET_GROUP_ID_2,
-				'final_urls'       => [ 'https://www.example2.com' ],
+				'final_url'        => 'https://www.example2.com',
 				'display_url_path' => [ 'mypath2_example1', 'mypath2_example2' ],
 				'assets'           => $assets_data[ self::TEST_ASSET_GROUP_ID_2 ],
 			],
@@ -123,12 +123,12 @@ class AdsAssetGroupTest extends UnitTest {
 		$asset_group_data = [
 			[
 				'id'               => self::TEST_ASSET_GROUP_ID,
-				'final_urls'       => [ 'https://www.example.com' ],
+				'final_url'        => 'https://www.example.com',
 				'display_url_path' => [ 'mypath1', 'mypath2' ],
 			],
 			[
 				'id'               => self::TEST_ASSET_GROUP_ID_2,
-				'final_urls'       => [ 'https://www.example2.com' ],
+				'final_url'        => 'https://www.example2.com',
 				'display_url_path' => [ 'mypath2_example1', 'mypath2_example2' ],
 			],
 		];

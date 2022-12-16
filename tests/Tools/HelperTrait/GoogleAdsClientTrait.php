@@ -622,7 +622,7 @@ trait GoogleAdsClientTrait {
 	protected function generate_asset_group_row_mock( array $data ): GoogleAdsRow {
 		$asset_group = $this->createMock( AssetGroup::class );
 		$asset_group->method( 'getId' )->willReturn( $data['id'] );
-		$asset_group->method( 'getFinalUrls' )->willReturn( new \ArrayIterator( $data['final_urls'] ) );
+		$asset_group->method( 'getFinalUrls' )->willReturn( new \ArrayIterator( [ $data['final_url'] ] ) );
 		$asset_group->method( 'getPath1' )->willReturn( $data['display_url_path'][0] ?? '' );
 		$asset_group->method( 'getPath2' )->willReturn( $data['display_url_path'] [1] ?? '' );
 
