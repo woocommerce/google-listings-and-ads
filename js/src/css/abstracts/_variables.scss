@@ -1,6 +1,10 @@
 // Import Gutenberg variables
 @import "node_modules/@wordpress/base-styles/variables";
 
+// Gutenberg Missing Styles
+// $gray-500 is not declared in Gutenberg.
+$gray-500: #bbb;
+
 // Add other variables or adjustments we want below
 
 // Typography
