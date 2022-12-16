@@ -40,13 +40,6 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	protected $asset;
 
 	/**
-	 * The asset field types to use for the asset group assets.
-	 *
-	 * @var string[]
-	 */
-	protected array $asset_field_types;
-
-	/**
 	 * AdsAssetGroup constructor.
 	 *
 	 * @param GoogleAdsClient $client
@@ -55,8 +48,15 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	public function __construct( GoogleAdsClient $client, AdsAsset $asset ) {
 		$this->client = $client;
 		$this->asset  = $asset;
+	}
 
-		$this->asset_field_types = [
+	/**
+	 * Get the asset field types to use for the asset group assets query.
+	 *
+	 * @return string[]
+	 */
+	protected function get_asset_field_types(): array {
+		return [
 			AssetFieldType::name( AssetFieldType::BUSINESS_NAME ),
 			AssetFieldType::name( AssetFieldType::CALL_TO_ACTION_SELECTION ),
 			AssetFieldType::name( AssetFieldType::DESCRIPTION ),
@@ -85,7 +85,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			->set_client( $this->client, $this->options->get_ads_id() )
 			->add_columns( [ 'asset_group.id' ] )
 			->where( 'asset_group.id', $asset_groups_ids, 'IN' )
-			->where( 'asset_group_asset.field_type', $this->asset_field_types, 'IN' )
+			->where( 'asset_group_asset.field_type', $this->get_asset_field_types(), 'IN' )
 			->where( 'asset_group_asset.status', 'REMOVED', '!=' )
 			->get_results();
 
