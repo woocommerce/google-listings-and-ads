@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V11\Enums\AssetFieldTypeEnum\AssetFieldType;
 use Google\Ads\GoogleAds\V11\Resources\AssetGroupAsset;
 
 
@@ -55,7 +54,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 *
 	 * @return string[]
 	 */
-	protected function get_asset_field_types(): array {
+	protected function get_asset_field_types_query(): array {
 		return [
 			AssetFieldType::name( AssetFieldType::BUSINESS_NAME ),
 			AssetFieldType::name( AssetFieldType::CALL_TO_ACTION_SELECTION ),
@@ -69,13 +68,13 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get Asset Group Assets for specific asset groups ids.
+	 * Get Assets for specific asset groups ids.
 	 *
 	 * @param array $asset_groups_ids The asset groups ids.
 	 *
-	 * @return array The asset group assets for the asset groups.
+	 * @return array The assets for the asset groups.
 	 */
-	public function get_asset_group_assets( array $asset_groups_ids ): array {
+	public function get_assets_by_asset_group_ids( array $asset_groups_ids ): array {
 		if ( empty( $asset_groups_ids ) ) {
 			return [];
 		}
@@ -85,7 +84,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			->set_client( $this->client, $this->options->get_ads_id() )
 			->add_columns( [ 'asset_group.id' ] )
 			->where( 'asset_group.id', $asset_groups_ids, 'IN' )
-			->where( 'asset_group_asset.field_type', $this->get_asset_field_types(), 'IN' )
+			->where( 'asset_group_asset.field_type', $this->get_asset_field_types_query(), 'IN' )
 			->where( 'asset_group_asset.status', 'REMOVED', '!=' )
 			->get_results();
 
@@ -95,7 +94,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			/** @var AssetGroupAsset $asset_group_asset */
 			$asset_group_asset = $row->getAssetGroupAsset();
 
-			$field_type = strtolower( AssetFieldType::name( $asset_group_asset->getFieldType() ) );
+			$field_type = AssetFieldType::label( $asset_group_asset->getFieldType() );
 			$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ][] = $this->asset->convert_asset( $row );
 		}
 
