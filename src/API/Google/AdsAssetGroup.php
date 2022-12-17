@@ -20,7 +20,6 @@ use Google\Ads\GoogleAds\V11\Services\AssetGroupOperation;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
 
-
 /**
  * Class AdsAssetGroup
  *
@@ -240,14 +239,14 @@ class AdsAssetGroup implements OptionsAwareInterface {
 		}
 
 		if ( $include_assets ) {
-			return array_values( $this->add_assets( $asset_groups_converted ) );
+			return array_values( $this->get_assets( $asset_groups_converted ) );
 		}
 
 		return array_values( $asset_groups_converted );
 	}
 
 	/**
-	 * Add assets to the asset groups.
+	 * Get assets for asset groups.
 	 *
 	 * @since x.x.x
 	 *
@@ -255,12 +254,12 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 *
 	 * @return array The asset groups with assets.
 	 */
-	protected function add_assets( array $asset_groups ): array {
-		$asset_group_ids    = array_keys( $asset_groups );
-		$asset_group_assets = $this->asset_group_asset->get_asset_group_assets( $asset_group_ids );
+	protected function get_assets( array $asset_groups ): array {
+		$asset_group_ids = array_keys( $asset_groups );
+		$assets          = $this->asset_group_asset->get_assets_by_asset_group_ids( $asset_group_ids );
 
 		foreach ( $asset_group_ids as $asset_group_id ) {
-			$asset_groups[ $asset_group_id ]['assets'] = $asset_group_assets[ $asset_group_id ] ?? [];
+			$asset_groups[ $asset_group_id ]['assets'] = $assets[ $asset_group_id ] ?? [];
 		}
 
 		return $asset_groups;

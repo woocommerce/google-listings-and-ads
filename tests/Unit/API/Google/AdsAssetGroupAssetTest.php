@@ -91,12 +91,12 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		];
 
 		$this->generate_ads_asset_group_asset_query_mock( $asset_group_asset_data );
-		$this->assertEquals( $expected, $this->asset_group_asset->get_asset_group_assets( [ self::TEST_CAMPAIGN_ID ] ) );
+		$this->assertEquals( $expected, $this->asset_group_asset->get_assets_by_asset_group_ids( [ self::TEST_CAMPAIGN_ID ] ) );
 
 	}
 
 	public function test_asset_group_assets_without_asset_groups() {
-		$this->assertEquals( [], $this->asset_group_asset->get_asset_group_assets( [] ) );
+		$this->assertEquals( [], $this->asset_group_asset->get_assets_by_asset_group_ids( [] ) );
 	}
 
 

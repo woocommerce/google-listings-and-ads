@@ -109,7 +109,7 @@ class AdsAssetGroupTest extends UnitTest {
 		];
 
 		$this->asset_group_asset->expects( $this->exactly( 1 ) )
-			->method( 'get_asset_group_assets' )
+			->method( 'get_assets_by_asset_group_ids' )
 			->with( [ self::TEST_ASSET_GROUP_ID, self::TEST_ASSET_GROUP_ID_2 ] )
 			->willReturn( $assets_data );
 
@@ -134,7 +134,7 @@ class AdsAssetGroupTest extends UnitTest {
 		];
 
 		$this->asset_group_asset->expects( $this->exactly( 0 ) )
-			->method( 'get_asset_group_assets' );
+			->method( 'get_assets_by_asset_group_ids' );
 
 		$this->generate_ads_asset_groups_query_mock( $asset_group_data );
 		$this->assertEquals( $asset_group_data, $this->asset_group->get_asset_groups_by_campaign_id( self::TEST_CAMPAIGN_ID, $include_assets ) );
