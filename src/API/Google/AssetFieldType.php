@@ -10,7 +10,7 @@ use UnexpectedValueException;
 
 /**
  * Mapping between Google and internal AssetFieldTypes
- * https://developers.google.com/google-ads/api/reference/rpc/v12/AssetFieldTypeEnum.AssetFieldType
+ * https://developers.google.com/google-ads/api/reference/rpc/v11/AssetFieldTypeEnum.AssetFieldType
  *
  * @since x.x.x
  *
@@ -89,6 +89,34 @@ class AssetFieldType extends StatusMapping {
 	public const CALL_TO_ACTION_SELECTION = 'call_to_action_selection';
 
 	/**
+	 * The asset is linked for use as a portrait marketing image.
+	 *
+	 * @var string
+	 */
+	public const PORTRAIT_MARKETING_IMAGE = 'portrait_marketing_image';
+
+	/**
+	 * The asset is linked for use as a landscape logo.
+	 *
+	 * @var string
+	 */
+	public const LANDSCAPE_LOGO = 'landscape_logo';
+
+	/**
+	 * The asset is linked for use as a YouTube video.
+	 *
+	 * @var string
+	 */
+	public const YOUTUBE_VIDEO = 'youtube_video';
+
+	/**
+	 * The asset is linked for use as a media bundle.
+	 *
+	 * @var string
+	 */
+	public const MEDIA_BUNDLE = 'media_bundle';
+
+	/**
 	 * Mapping between status number and it's label.
 	 *
 	 * @var string
@@ -104,6 +132,11 @@ class AssetFieldType extends StatusMapping {
 		AdsAssetFieldType::SQUARE_MARKETING_IMAGE   => self::SQUARE_MARKETING_IMAGE,
 		AdsAssetFieldType::LOGO                     => self::LOGO,
 		AdsAssetFieldType::CALL_TO_ACTION_SELECTION => self::CALL_TO_ACTION_SELECTION,
+		AdsAssetFieldType::PORTRAIT_MARKETING_IMAGE => self::PORTRAIT_MARKETING_IMAGE,
+		AdsAssetFieldType::LANDSCAPE_LOGO           => self::LANDSCAPE_LOGO,
+		AdsAssetFieldType::YOUTUBE_VIDEO            => self::YOUTUBE_VIDEO,
+		AdsAssetFieldType::MEDIA_BUNDLE             => self::MEDIA_BUNDLE,
+
 	];
 
 	/**
