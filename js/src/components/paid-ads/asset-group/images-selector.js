@@ -36,7 +36,8 @@ export default function ImagesSelector( {
 } ) {
 	const [ replacingImage, setReplacingImage ] = useState( null );
 	const [ images, setImages ] = useState( () =>
-		initialImageUrls.map( ( url ) => ( { url, alt: '' } ) )
+		// The asset images fetched from Google Ads are only URLs.
+		initialImageUrls.map( ( url ) => ( { url, id: url, alt: '' } ) )
 	);
 
 	const removeImage = ( deletedImage ) => {
