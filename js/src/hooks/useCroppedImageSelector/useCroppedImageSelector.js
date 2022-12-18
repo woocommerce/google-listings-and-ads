@@ -93,7 +93,12 @@ export function calcRatioPercentError(
 ) {
 	const imageRatio = width / height;
 	const expectedRatio = expectedWidth / expectedHeight;
-	return Math.abs( ( imageRatio - expectedRatio ) / expectedRatio ) * 100;
+	const errorRatio =
+		imageRatio > expectedRatio
+			? imageRatio / expectedRatio
+			: expectedRatio / imageRatio;
+
+	return ( errorRatio - 1 ) * 100;
 }
 
 /**
