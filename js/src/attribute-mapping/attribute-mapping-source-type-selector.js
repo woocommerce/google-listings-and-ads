@@ -72,7 +72,7 @@ const AttributeMappingSourceTypeSelector = ( {
 						>
 							<div>
 								{ __(
-									'Create a connection between the target attribute and an existing product field to auto-populate the target attribute with with the value of the field it is linked to.',
+									'Auto-populate the target attribute with the value of the field you link it to.',
 									'google-listings-and-ads'
 								) }
 							</div>
@@ -119,9 +119,14 @@ const AttributeMappingSourceTypeSelector = ( {
 							id={ `${ SOURCE_TYPES.FIXED }-helper-popover` }
 						>
 							<div>
-								{ __(
-									'Use fixed values to populate the target attribute with a value you specify. For example, you can enter a fixed value of White to specify a single color for all your products.',
-									'google-listings-and-ads'
+								{ createInterpolateElement(
+									__(
+										"Use fixed values to populate the target attribute with a value you specify. For example, you can enter a fixed value of <em>'White'</em> to specify a single color for all your products.",
+										'google-listings-and-ads'
+									),
+									{
+										em: <em />,
+									}
 								) }
 							</div>
 						</HelpPopover>
