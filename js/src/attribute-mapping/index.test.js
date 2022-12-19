@@ -225,18 +225,18 @@ describe( 'Attribute Mapping', () => {
 
 		// Show fixed value when we check "Set a fixed value" radio
 		const setFixedRadio = await findByRole( 'radio', {
-			name: 'Set a fixed value.',
+			name: 'Set a fixed value',
 		} );
 		userEvent.click( setFixedRadio );
 		await findByRole( 'textbox' );
 
 		// Show selector value when we check "Use value from existing product field" radio
 		const setFieldRadio = await findByRole( 'radio', {
-			name: 'Use value from existing product field.',
+			name: 'Use value from existing product field',
 		} );
 		userEvent.click( setFieldRadio );
 		await findByRole( 'combobox', {
-			name: 'Use value from existing product field.',
+			name: 'Use value from existing product field',
 		} );
 	} );
 
