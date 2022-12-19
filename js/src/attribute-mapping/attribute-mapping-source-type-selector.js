@@ -21,12 +21,12 @@ const SOURCE_TYPES = {
 };
 
 const fixedValueControlLabel = __(
-	'Set a fixed value.',
+	'Set a fixed value',
 	'google-listings-and-ads'
 );
 
 const selectFieldControlLabel = __(
-	'Use value from existing product field.',
+	'Use value from existing product field',
 	'google-listings-and-ads'
 );
 
@@ -93,7 +93,7 @@ const AttributeMappingSourceTypeSelector = ( {
 						<Subsection.HelperText className="gla-attribute-mapping__help-text">
 							{ createInterpolateElement(
 								__(
-									'Can’t find an appropriate field?. <link>Create a new attribute</link>',
+									'Can’t find an appropriate field? <link>Create a new attribute</link>',
 									'google-listings-and-ads'
 								),
 								{
