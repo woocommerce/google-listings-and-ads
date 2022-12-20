@@ -1,5 +1,8 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 2.3.4 - 2022-12-20 =
+* Tweak - Improve image validation error messages.
+
 = 2.3.3 - 2022-12-14 =
 * Fix - Tours API Endpoint.
 * Tweak - WC 7.2 compatibility.
