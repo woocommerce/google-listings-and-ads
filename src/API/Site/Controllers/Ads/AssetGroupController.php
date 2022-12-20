@@ -78,7 +78,7 @@ class AssetGroupController extends BaseController {
 	protected function get_asset_groups_by_campaign_id_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$campaign_id = $request['id'];
+				$campaign_id = $request->get_param( 'id' );
 				return array_map(
 					function( $item ) use ( $request ) {
 						$data = $this->prepare_item_for_response( $item, $request );
