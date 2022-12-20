@@ -43,7 +43,7 @@ class AssetGroupController extends BaseController {
 	 */
 	public function register_routes(): void {
 		$this->register_route(
-			'ads/campaigns/(?P<id>[\d]+)/assetgroups',
+			'ads/campaigns/(?P<id>[\d]+)/asset-groups',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,

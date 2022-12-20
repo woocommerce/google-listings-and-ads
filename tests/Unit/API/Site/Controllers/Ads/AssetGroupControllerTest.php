@@ -21,7 +21,7 @@ class AssetGroupControllerTest extends RESTControllerUnitTest {
 
 	protected const TEST_CAMPAIGN_ID       = 1234567890;
 	protected const TEST_ASSET_GROUP_ID    = 9876543210;
-	protected const ROUTE_ASSET_GROUPS     = '/wc/gla/ads/campaigns/' . self::TEST_CAMPAIGN_ID . '/assetgroups';
+	protected const ROUTE_ASSET_GROUPS     = '/wc/gla/ads/campaigns/' . self::TEST_CAMPAIGN_ID . '/asset-groups';
 	protected const TEST_NO_ASSET_GROUPS   = [];
 	protected const TEST_ASSET_GROUPS_DATA = [
 		[
