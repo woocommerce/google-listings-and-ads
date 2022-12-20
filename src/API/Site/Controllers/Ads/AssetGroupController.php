@@ -13,7 +13,8 @@ use Exception;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class AssetGroupController
+ * Class for handling API requests related to the asset groups.
+ * See https://developers.google.com/google-ads/api/reference/rpc/v11/AssetGroup
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
