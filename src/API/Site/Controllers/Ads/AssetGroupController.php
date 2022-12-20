@@ -124,50 +124,31 @@ class AssetGroupController extends BaseController {
 				'items'       => [
 					'type'       => 'object',
 					'properties' => [
-						'square_marketing_image'   => [
-							'type'     => 'array',
-							'items'    => $this->get_schema_asset(),
-							'required' => false,
-						],
-						'marketing_image'          => [
-							'type'     => 'array',
-							'items'    => $this->get_schema_asset(),
-							'required' => false,
-						],
-						'logo'                     => [
-							'type'     => 'array',
-							'items'    => $this->get_schema_asset(),
-							'required' => false,
-						],
-						'business_name'            => [
-							'type'     => 'array',
-							'items'    => $this->get_schema_asset(),
-							'required' => false,
-						],
-						'headline'                 => [
-							'type'     => 'array',
-							'items'    => $this->get_schema_asset(),
-							'required' => false,
-						],
-						'description'              => [
-							'type'     => 'array',
-							'items'    => $this->get_schema_asset(),
-							'required' => false,
-						],
-						'long_headline'            => [
-							'type'     => 'array',
-							'items'    => $this->get_schema_asset(),
-							'required' => false,
-						],
-						'call_to_action_selection' => [
-							'type'     => 'array',
-							'items'    => $this->get_schema_asset(),
-							'required' => false,
-						],
+						'square_marketing_image'   => $this->get_schema_field_type_asset(),
+						'marketing_image'          => $this->get_schema_field_type_asset(),
+						'logo'                     => $this->get_schema_field_type_asset(),
+						'business_name'            => $this->get_schema_field_type_asset(),
+						'headline'                 => $this->get_schema_field_type_asset(),
+						'description'              => $this->get_schema_field_type_asset(),
+						'long_headline'            => $this->get_schema_field_type_asset(),
+						'call_to_action_selection' => $this->get_schema_field_type_asset(),
 					],
 				],
 			],
 
+		];
+	}
+
+	/**
+	 * Get the item schema for the field type asset.
+	 *
+	 * @return array the field type asset schema.
+	 */
+	protected function get_schema_field_type_asset(): array {
+		return [
+			'type'     => 'array',
+			'items'    => $this->get_schema_asset(),
+			'required' => false,
 		];
 	}
 
