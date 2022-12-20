@@ -16,6 +16,9 @@ use Google\Ads\GoogleAds\V11\Resources\AssetGroupAsset;
 /**
  * Class AdsAssetGroupAsset
  *
+ * Use to get assets group assets for specific asset groups.
+ * https://developers.google.com/google-ads/api/fields/v11/asset_group_asset
+ *
  * @since x.x.x
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
