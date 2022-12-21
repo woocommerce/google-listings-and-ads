@@ -26,6 +26,10 @@
 			// hack for positioning the popover correctly in the modal radio control
 			.components-popover {
 				position: absolute;
+
+				&__content {
+					max-width: 350px;
+				}
 			}
 		}
 	}

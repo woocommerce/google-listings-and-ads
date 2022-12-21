@@ -118,7 +118,7 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 	const attributesOptions = [
 		{
 			value: '',
-			label: __( 'Select one attribute', 'google-listings-and-ads' ),
+			label: __( 'Select an attribute', 'google-listings-and-ads' ),
 		},
 		...mapOptions( attributes ),
 	];
