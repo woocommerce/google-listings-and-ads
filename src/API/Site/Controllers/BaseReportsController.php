@@ -39,7 +39,7 @@ abstract class BaseReportsController extends BaseController {
 	 * @return array
 	 */
 	public function get_collection_params(): array {
-		$params = [
+		return [
 			'context'   => $this->get_context_param( [ 'default' => 'view' ] ),
 			'after'     => [
 				'description'       => __( 'Limit response to data after a given ISO8601 compliant date.', 'google-listings-and-ads' ),
@@ -100,18 +100,7 @@ abstract class BaseReportsController extends BaseController {
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
-
-		return $this->add_collection_parameters( $params );
 	}
-
-	/**
-	 * Add collection parameters.
-	 *
-	 * @param array $params Initial set of collection parameters.
-	 *
-	 * @return array
-	 */
-	abstract protected function add_collection_parameters( array $params ): array;
 
 	/**
 	 * Maps query arguments from the REST request.
