@@ -18,7 +18,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\Campaig
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\ReportsController as AdsReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\SetupCompleteController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetGroupController as AdsAssetGroupController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Assets\AssetSuggestionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetSuggestionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\AccountController as GoogleAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack\AccountController as JetpackAccountController;
