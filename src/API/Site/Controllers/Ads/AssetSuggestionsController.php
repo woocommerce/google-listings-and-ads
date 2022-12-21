@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Assets;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since x.x.x
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Assets
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
 class AssetSuggestionsController extends BaseController {
 

@@ -3,7 +3,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Assets\AssetSuggestionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetSuggestionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;

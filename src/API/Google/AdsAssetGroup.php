@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsListingGroupFilterQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -18,6 +19,8 @@ use Google\Ads\GoogleAds\V11\Services\AssetGroupListingGroupFilterOperation;
 use Google\Ads\GoogleAds\V11\Services\AssetGroupOperation;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
+use Google\ApiCore\ApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 
 /**
  * Class AdsAssetGroup
@@ -32,6 +35,7 @@ use Google\Ads\GoogleAds\V11\Services\MutateOperation;
 class AdsAssetGroup implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+	use ApiExceptionTrait;
 
 	/**
 	 * Temporary ID to use within a batch job.
@@ -42,11 +46,23 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	protected const TEMPORARY_ID = -3;
 
 	/**
+	 *  The page size for the AdsAssetGroupQuery.
+	 */
+	protected const PAGE_SIZE = 1;
+
+	/**
 	 * The Google Ads Client.
 	 *
 	 * @var GoogleAdsClient
 	 */
 	protected $client;
+
+	/**
+	 * The AdsAssetGroupAsset class.
+	 *
+	 * @var AdsAssetGroupAsset
+	 */
+	protected $asset_group_asset;
 
 	/**
 	 * List of asset group resource names.
@@ -58,10 +74,12 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	/**
 	 * AdsAssetGroup constructor.
 	 *
-	 * @param GoogleAdsClient $client
+	 * @param GoogleAdsClient    $client
+	 * @param AdsAssetGroupAsset $asset_group_asset
 	 */
-	public function __construct( GoogleAdsClient $client ) {
-		$this->client = $client;
+	public function __construct( GoogleAdsClient $client, AdsAssetGroupAsset $asset_group_asset ) {
+		$this->client            = $client;
+		$this->asset_group_asset = $asset_group_asset;
 	}
 
 	/**
@@ -190,11 +208,95 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Return a temporary resource name for the campaign.
+	 * Return a temporary resource name for the asset group.
 	 *
 	 * @return string
 	 */
 	protected function temporary_resource_name() {
 		return ResourceNames::forAssetGroup( $this->options->get_ads_id(), self::TEMPORARY_ID );
+	}
+
+	/**
+	 * Get Asset Groups for a specific campaign.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param int  $campaign_id The campaign ID.
+	 * @param bool $include_assets Whether to include the assets in the response.
+	 *
+	 * @return array The asset groups for the campaign.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function get_asset_groups_by_campaign_id( int $campaign_id, bool $include_assets = true ): array {
+		try {
+			$asset_groups_converted = [];
+
+			$asset_group_results = ( new AdsAssetGroupQuery( [ 'pageSize' => self::PAGE_SIZE ] ) )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->add_columns( [ 'asset_group.path1', 'asset_group.path2', 'asset_group.id', 'asset_group.final_urls' ] )
+				->where( 'campaign.id', $campaign_id )
+				->where( 'asset_group.status', 'REMOVED', '!=' )
+				->get_results();
+
+			/** @var GoogleAdsRow $row */
+			foreach ( $asset_group_results->getPage()->getIterator() as $row ) {
+				$asset_groups_converted[ $row->getAssetGroup()->getId() ] = $this->convert_asset_group( $row );
+			}
+
+			if ( $include_assets ) {
+				return array_values( $this->get_assets( $asset_groups_converted ) );
+			}
+
+			return array_values( $asset_groups_converted );
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_api_exception_errors( $e );
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving asset groups: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
+
+	}
+
+	/**
+	 * Get assets for asset groups.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param array $asset_groups The asset groups converted.
+	 *
+	 * @return array The asset groups with assets.
+	 */
+	protected function get_assets( array $asset_groups ): array {
+		$asset_group_ids = array_keys( $asset_groups );
+		$assets          = $this->asset_group_asset->get_assets_by_asset_group_ids( $asset_group_ids );
+
+		foreach ( $asset_group_ids as $asset_group_id ) {
+			$asset_groups[ $asset_group_id ]['assets'] = $assets[ $asset_group_id ] ?? [];
+		}
+
+		return $asset_groups;
+	}
+
+	/**
+	 * Convert Asset Group data to an array.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param GoogleAdsRow $row Data row returned from a query request.
+	 *
+	 * @return array
+	 */
+	protected function convert_asset_group( GoogleAdsRow $row ): array {
+		return [
+			'id'               => $row->getAssetGroup()->getId(),
+			'final_url'        => iterator_to_array( $row->getAssetGroup()->getFinalUrls() )[0] ?? '',
+			'display_url_path' => [ $row->getAssetGroup()->getPath1(), $row->getAssetGroup()->getPath2() ],
+		];
 	}
 }

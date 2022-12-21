@@ -16,9 +16,12 @@ class AdsAssetGroupQuery extends AdsQuery {
 
 	/**
 	 * Query constructor.
+	 *
+	 * @param array $search_args List of search args, such as pageSize.
 	 */
-	public function __construct() {
+	public function __construct( array $search_args = [] ) {
 		parent::__construct( 'asset_group' );
 		$this->columns( [ 'asset_group.resource_name' ] );
+		$this->search_args = $search_args;
 	}
 }
