@@ -122,6 +122,29 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 
 	}
 	/**
+	 * Send a batch of operations to mutate a asset group.
+	 *
+	 * @param MutateOperation[] $operations
+	 *
+	 * @return int Campaign ID from the MutateOperationResponse.
+	 * @throws ApiException If any of the operations fail.
+	 */
+	protected function mutate( array $operations ): int {
+		$responses = $this->client->getGoogleAdsServiceClient()->mutate(
+			$this->options->get_ads_id(),
+			$operations
+		);
+
+		foreach ( $responses->getMutateOperationResponses() as $response ) {
+			$p = $response->getResponse();
+		}
+
+		// When editing only the budget there is no campaign mutate result.
+		return 0;
+	}
+
+
+	/**
 	 * Creates an operation for an asset group asset.
 	 *
 	 * @param int    $asset_group_id The ID of the asset group.
