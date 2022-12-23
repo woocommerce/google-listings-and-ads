@@ -293,6 +293,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function edit_asset_group( int $asset_group_id, array $params ): int {
+		$this->asset_group_asset->edit_assets_group_assets( $asset_group_id, $params['assets'] );
 		return $asset_group_id;
 	}
 
