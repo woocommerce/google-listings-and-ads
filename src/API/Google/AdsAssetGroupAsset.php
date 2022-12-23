@@ -141,73 +141,36 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @param int   $asset_group_id The asset group id.
 	 * @param array $assets The assets to create.
 	 *
-	 * @return int The asset group id.
-	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 * @return array The asset group asset operations.
 	 */
-	public function edit_assets_group_assets( int $asset_group_id, array $assets ): int {
-		try {
+	public function edit_operations_assets_group_assets( int $asset_group_id, array $assets ): array {
+		if ( empty( $assets ) ) {
+			return [];
+		}
 
-			$assets_operations                    = [];
-			$asset_group_assets_operations        = [];
-			$delete_asset_group_assets_operations = [];
+		$assets_operations                    = [];
+		$asset_group_assets_operations        = [];
+		$delete_asset_group_assets_operations = [];
 
-			foreach ( $assets as $asset ) {
+		foreach ( $assets as $asset ) {
 
-				// If content exists create asset and asset group asset.
-				if ( $asset['content'] ) {
-					$assets_operations[]             = $this->asset->create_operation_asset( $asset, self::$temporary_id );
-					$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $asset['field_type'], self::$temporary_id-- );
-				}
-
-				// As Assets are inmmutable, we need to delete the link between the asset and the asset group.
-				if ( $asset['id'] ) {
-					$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
-				}
+			// If content exists create asset and asset group asset.
+			if ( $asset['content'] ) {
+				$assets_operations[]             = $this->asset->create_operation_asset( $asset, self::$temporary_id );
+				$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $asset['field_type'], self::$temporary_id-- );
 			}
 
-			// Delete asset group assets operations must be executed last so we are never under the minimum quantity.
-			$operations = array_merge( $assets_operations, $asset_group_assets_operations, $delete_asset_group_assets_operations );
-
-			$this->mutate( $operations );
-
-			return $asset_group_id;
-		} catch ( ApiException $e ) {
-			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-
-			$errors = $this->get_api_exception_errors( $e );
-			/* translators: %s Error message */
-			$message = sprintf( __( 'Error updating asset group: %s', 'google-listings-and-ads' ), reset( $errors ) );
-
-			throw new ExceptionWithResponseData(
-				$message,
-				$this->map_grpc_code_to_http_status_code( $e ),
-				null,
-				[ 'errors' => $errors ]
-			);
+			// As Assets are inmmutable, we delete the link between the asset and the asset group.
+			if ( $asset['id'] ) {
+				$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
+			}
 		}
 
-	}
+		// Delete asset group assets operations must be executed last so we are never under the minimum quantity.
+		$operations = array_merge( $assets_operations, $asset_group_assets_operations, $delete_asset_group_assets_operations );
 
-	/**
-	 * Send a batch of operations to mutate a asset group.
-	 *
-	 * @param MutateOperation[] $operations
-	 *
-	 * @return int Campaign ID from the MutateOperationResponse.
-	 * @throws ApiException If any of the operations fail.
-	 */
-	protected function mutate( array $operations ): int {
-		$responses = $this->client->getGoogleAdsServiceClient()->mutate(
-			$this->options->get_ads_id(),
-			$operations
-		);
+		return $operations;
 
-		foreach ( $responses->getMutateOperationResponses() as $response ) {
-			$p = $response->getResponse();
-		}
-
-		// When editing only the budget there is no campaign mutate result.
-		return 0;
 	}
 
 

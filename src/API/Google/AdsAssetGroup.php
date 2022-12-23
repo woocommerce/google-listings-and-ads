@@ -19,6 +19,7 @@ use Google\Ads\GoogleAds\V11\Services\AssetGroupListingGroupFilterOperation;
 use Google\Ads\GoogleAds\V11\Services\AssetGroupOperation;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
+use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\ApiCore\ApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 
@@ -293,8 +294,59 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function edit_asset_group( int $asset_group_id, array $params ): int {
-		$this->asset_group_asset->edit_assets_group_assets( $asset_group_id, $params['assets'] );
-		return $asset_group_id;
+		try {
+			$asset_group_fields = [];
+			$operations         = $this->asset_group_asset->edit_operations_assets_group_assets( $asset_group_id, $params['assets'] );
+
+			if ( $params['path1'] ) {
+				$asset_group_fields['path1'] = $params['path1'];
+			}
+			if ( $params['path2'] ) {
+				$asset_group_fields['path2'] = $params['path2'];
+			}
+
+			if ( ! empty( $asset_group_fields ) ) {
+				$operations[] = $this->edit_operation( $asset_group_id, $asset_group_fields );
+			}
+
+			if ( ! empty( $operations ) ) {
+				$this->client->getGoogleAdsServiceClient()->mutate( $this->options->get_ads_id(), $operations );
+			}
+
+			return $asset_group_id;
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_api_exception_errors( $e );
+			throw new ExceptionWithResponseData(
+			/* translators: %s Error message */
+				sprintf( __( 'Error editing asset group: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[
+					'errors' => $errors,
+					'id'     => $asset_group_id,
+				]
+			);
+		}
+	}
+
+	/**
+	 * Returns a asset group edit operation.
+	 *
+	 * @param integer $asset_group_id
+	 * @param array   $fields
+	 *
+	 * @return MutateOperation
+	 */
+	protected function edit_operation( int $asset_group_id, array $fields ): MutateOperation {
+		$fields['resource_name'] = ResourceNames::forAssetGroup( $this->options->get_ads_id(), $asset_group_id );
+
+		$asset_group = new AssetGroup( $fields );
+		$operation   = new AssetGroupOperation();
+		$operation->setUpdate( $asset_group );
+		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $asset_group ) );
+		return ( new MutateOperation() )->setAssetGroupOperation( $operation );
 	}
 
 	/**
