@@ -117,8 +117,12 @@ class AssetGroupController extends BaseController {
 	public function edit_asset_group_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$asset_group = $this->ads_asset_group->edit_asset_group( $request->get_param( 'id' ), $request->get_params() );
-				return $this->prepare_item_for_response( $asset_group, $request );
+				$asset_group_id = $this->ads_asset_group->edit_asset_group( (int) $request->get_param( 'id' ), $request->get_params() );
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully edited asset group.', 'google-listings-and-ads' ),
+					'id'      => $asset_group_id,
+				];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
