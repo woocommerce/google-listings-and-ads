@@ -43,6 +43,18 @@ class AssetGroupController extends BaseController {
 	 */
 	public function register_routes(): void {
 		$this->register_route(
+			'ads/asset-groups/(?P<id>[\d]+)',
+			[
+				[
+					'methods'             => TransportMethods::EDITABLE,
+					'callback'            => $this->edit_asset_group_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_schema_properties(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+		$this->register_route(
 			'ads/campaigns/(?P<id>[\d]+)/asset-groups',
 			[
 				[
@@ -74,6 +86,8 @@ class AssetGroupController extends BaseController {
 
 
 	/**
+	 * Get Asset Groups by Campaign ID.
+	 *
 	 * @return callable
 	 */
 	protected function get_asset_groups_by_campaign_id_callback(): callable {
@@ -92,6 +106,22 @@ class AssetGroupController extends BaseController {
 				return $this->response_from_exception( $e );
 			}
 
+		};
+	}
+
+	/**
+	 * Edit asset group.
+	 *
+	 * @return callable
+	 */
+	public function edit_asset_group_callback(): callable {
+		return function( Request $request ) {
+			try {
+				$asset_group = $this->ads_asset_group->edit_asset_group( $request->get_param( 'id' ), $request->get_params() );
+				return $this->prepare_item_for_response( $asset_group, $request );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
 		};
 	}
 

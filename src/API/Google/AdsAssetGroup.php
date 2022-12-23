@@ -284,6 +284,19 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get an asset group by ID.
+	 *
+	 * @param int   $asset_group_id The asset group ID.
+	 * @param array $params The request parameters.
+	 *
+	 * @return int The asset group ID.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function edit_asset_group( int $asset_group_id, array $params ): int {
+		return $asset_group_id;
+	}
+
+	/**
 	 * Convert Asset Group data to an array.
 	 *
 	 * @since x.x.x
