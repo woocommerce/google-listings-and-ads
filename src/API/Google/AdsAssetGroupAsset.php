@@ -12,6 +12,10 @@ use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Resources\AssetGroupAsset;
 use Google\ApiCore\ApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Google\Ads\GoogleAds\V11\Services\MutateOperation;
+use Google\Ads\GoogleAds\V11\Services\AssetGroupAssetOperation;
+use Google\Ads\GoogleAds\Util\V11\ResourceNames;
+
 
 
 
@@ -43,6 +47,14 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @var AdsAsset
 	 */
 	protected $asset;
+
+	/**
+	 * Temporary ID to use within a batch job.
+	 * A negative number which is unique for all the created resources.
+	 *
+	 * @var int
+	 */
+	protected static $temporary_id = -4;
 
 	/**
 	 * AdsAssetGroup constructor.
