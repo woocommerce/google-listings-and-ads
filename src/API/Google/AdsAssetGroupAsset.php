@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
 use Google\Ads\GoogleAds\V11\Services\AssetGroupAssetOperation;
 use Google\Ads\GoogleAds\Util\V11\ResourceNames;
+use Google\Ads\GoogleAds\V11\Enums\AssetTypeEnum\AssetType;
 
 
 
@@ -143,36 +144,26 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @return int The asset group id.
 	 */
 	public function edit_assets_group_assets( int $asset_group_id, array $assets ): int {
-		$assets_operations                   = [];
-		$asset_group_operations              = [];
-		$delete_asset_group_asset_operations = [];
+		$assets_operations                    = [];
+		$asset_group_assets_operations        = [];
+		$delete_asset_group_assets_operations = [];
 
 		foreach ( $assets as $asset ) {
-			switch ( $asset['field_type'] ) {
-				case AssetFieldType::LOGO:
-				case AssetFieldType::MARKETING_IMAGE:
-				case AssetFieldType::SQUARE_MARKETING_IMAGE:
-					break;
 
-				case AssetFieldType::HEADLINE:
-				case AssetFieldType::LONG_HEADLINE:
-				case AssetFieldType::DESCRIPTION:
-				case AssetFieldType::BUSINESS_NAME:
-					$assets_operations[]      = $this->asset->create_operation_text_asset( $asset, self::$temporary_id );
-					$asset_group_operations[] = $this->create_operation( $asset_group_id, $asset['field_type'], self::$temporary_id-- );
-					break;
-				case AssetFieldType::CALL_TO_ACTION_SELECTION:
-					break;
-				default:
-					break;
+			// If content exists create asset and asset group asset.
+			if ( $asset['content'] ) {
+					$assets_operations[]             = $this->asset->create_operation_asset( $asset, self::$temporary_id );
+					$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $asset['field_type'], self::$temporary_id-- );
 			}
 
+			// As Assets are inmmutable, we need to delete the link between the asset and the asset group.
 			if ( $asset['id'] ) {
-				$delete_asset_group_asset_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
+				$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
 			}
 		}
 
-		$operations = array_merge( $assets_operations, $asset_group_operations, $delete_asset_group_asset_operations );
+		// Delete asset group assets operations must be executed last so we are never under the minimum quantity.
+		$operations = array_merge( $assets_operations, $asset_group_assets_operations, $delete_asset_group_assets_operations );
 
 		$this->mutate( $operations );
 
