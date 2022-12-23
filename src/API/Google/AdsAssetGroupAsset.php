@@ -121,4 +121,24 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		}
 
 	}
+	/**
+	 * Creates an operation for an asset group asset.
+	 *
+	 * @param int    $asset_group_id The ID of the asset group.
+	 * @param string $asset_field_type The field type of the asset.
+	 * @param int    $asset_id The ID of the asset.
+	 * @return AssetGroupAssetOperation The operation for the asset group asset.
+	 */
+	protected function create_operation( int $asset_group_id, string $asset_field_type, int $asset_id ): MutateOperation {
+		$operation             = new AssetGroupAssetOperation();
+		$new_asset_group_asset = new AssetGroupAsset(
+			[
+				'asset'       => ResourceNames::forAsset( $this->options->get_ads_id(), $asset_id ),
+				'asset_group' => ResourceNames::forAssetGroup( $this->options->get_ads_id(), $asset_group_id ),
+				'field_type'  => AssetFieldType::number( $asset_field_type ),
+			]
+		);
+
+		return ( new MutateOperation() )->setAssetGroupAssetOperation( $operation->setCreate( $new_asset_group_asset ) );
+	}
 }
