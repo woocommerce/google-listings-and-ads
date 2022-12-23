@@ -121,6 +121,53 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		}
 
 	}
+
+	/**
+	 * Edit assets group assets.
+	 *
+	 * @param int   $asset_group_id The asset group id.
+	 * @param array $assets The assets to create.
+	 *
+	 * @return int The asset group id.
+	 */
+	public function edit_assets_group_assets( int $asset_group_id, array $assets ): int {
+		$assets_operations                   = [];
+		$asset_group_operations              = [];
+		$delete_asset_group_asset_operations = [];
+
+		foreach ( $assets as $asset ) {
+			switch ( $asset['field_type'] ) {
+				case AssetFieldType::LOGO:
+				case AssetFieldType::MARKETING_IMAGE:
+				case AssetFieldType::SQUARE_MARKETING_IMAGE:
+					break;
+
+				case AssetFieldType::HEADLINE:
+				case AssetFieldType::LONG_HEADLINE:
+				case AssetFieldType::DESCRIPTION:
+				case AssetFieldType::BUSINESS_NAME:
+					$assets_operations[]      = $this->asset->create_operation_text_asset( $asset, self::$temporary_id );
+					$asset_group_operations[] = $this->create_operation( $asset_group_id, $asset['field_type'], self::$temporary_id-- );
+					break;
+				case AssetFieldType::CALL_TO_ACTION_SELECTION:
+					break;
+				default:
+					break;
+			}
+
+			if ( $asset['id'] ) {
+				$delete_asset_group_asset_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
+			}
+		}
+
+		$operations = array_merge( $assets_operations, $asset_group_operations, $delete_asset_group_asset_operations );
+
+		$this->mutate( $operations );
+
+		return $asset_group_id;
+
+	}
+
 	/**
 	 * Send a batch of operations to mutate a asset group.
 	 *
