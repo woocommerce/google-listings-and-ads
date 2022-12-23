@@ -141,4 +141,23 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 
 		return ( new MutateOperation() )->setAssetGroupAssetOperation( $operation->setCreate( $new_asset_group_asset ) );
 	}
+
+	/**
+	 * Returns a campaign delete operation.
+	 *
+	 * @param int    $asset_group_id The ID of the asset group.
+	 * @param string $asset_field_type The field type of the asset.
+	 * @param int    $asset_id The ID of the asset.
+	 *
+	 * @return MutateOperation The remove operation for the asset group asset.
+	 */
+	protected function delete_operation( int $asset_group_id, string $asset_field_type, int $asset_id ): MutateOperation {
+		$asset_group_asset_resource_name = ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), $asset_group_id, $asset_id, AssetFieldType::name( $asset_field_type ) );
+		$operation                       = ( new AssetGroupAssetOperation() )->setRemove( $asset_group_asset_resource_name );
+		return ( new MutateOperation() )->setAssetGroupAssetOperation( $operation );
+	}
+
+
+
+
 }
