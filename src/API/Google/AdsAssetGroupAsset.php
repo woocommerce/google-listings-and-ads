@@ -154,14 +154,14 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 
 		foreach ( $assets as $asset ) {
 
-			// If content exists create asset and asset group asset.
-			if ( $asset['content'] ) {
+			// If content exists, create asset and asset group asset.
+			if ( ! empty( $asset['content'] ) ) {
 				$assets_operations[]             = $this->asset->create_operation_asset( $asset, self::$temporary_id );
 				$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $asset['field_type'], self::$temporary_id-- );
 			}
 
-			// As Assets are inmmutable, we delete the link between the asset and the asset group.
-			if ( $asset['id'] ) {
+			// As Assets are inmmutable, we delete the old link between the asset and the asset group if exists.
+			if ( ! empty( $asset['id'] ) ) {
 				$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
 			}
 		}

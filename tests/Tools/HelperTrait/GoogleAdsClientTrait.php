@@ -46,6 +46,7 @@ use Google\Ads\GoogleAds\V11\Services\MutateConversionActionResult;
 use Google\Ads\GoogleAds\V11\Services\MutateConversionActionsResponse;
 use Google\Ads\GoogleAds\V11\Services\MutateGoogleAdsResponse;
 use Google\Ads\GoogleAds\V11\Services\MutateOperationResponse;
+use Google\Ads\GoogleAds\V11\Services\MutateAssetGroupResult;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
@@ -691,7 +692,50 @@ trait GoogleAdsClientTrait {
 		$this->service_client->method( 'search' )->willReturn( $list_response );
 	}
 
+	/**
+	 * Generate a mocked mutate asset group response.
+	 * Asserts that set of operations contains an operation with the expected type.
+	 *
+	 * @param string $type            Mutation type we are expecting (create/update/remove).
+	 * @param int    $asset_group_id  Asset Group ID we expect to see in the mutate result.
+	 */
+	protected function generate_asset_group_mutate_mock( string $type, int $asset_group_id ) {
+		$asset_group_result = $this->createMock( MutateAssetGroupResult::class );
+		$asset_group_result->method( 'getResourceName' )->willReturn(
+			ResourceNames::forCampaign( $this->ads_id, $asset_group_id )
+		);
 
+		$response = ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
+			[
+				( new MutateOperationResponse() )->setAssetGroupResult( $asset_group_result ),
+			]
+		);
+
+		$this->service_client->expects( $this->once() )
+			->method( 'mutate' )
+			->willReturnCallback(
+				function( int $ads_id, array $operations ) use ( $type, $response ) {
+					// Assert that the asset group operation is the right type.
+					foreach ( $operations as $operation ) {
+							$this->assertEquals( 'asset_group_operation', $operation->getOperation() );
+							$asset_group_operation = $operation->getAssetGroupOperation();
+							$this->assertEquals( $type, $asset_group_operation->getOperation() );
+					}
+
+					return $response;
+				}
+			);
+
+	}
+
+	/**
+	 * Generates a mocked exception when an resource is mutated.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_mutate_mock_exception( ApiException $exception ) {
+		$this->service_client->method( 'mutate' )->willThrowException( $exception );
+	}
 
 
 

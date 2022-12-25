@@ -296,12 +296,12 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	public function edit_asset_group( int $asset_group_id, array $params ): int {
 		try {
 			$asset_group_fields = [];
-			$operations         = $this->asset_group_asset->edit_operations_assets_group_assets( $asset_group_id, $params['assets'] );
+			$operations         = $this->asset_group_asset->edit_operations_assets_group_assets( $asset_group_id, $params['assets'] ?? [] );
 
-			if ( $params['path1'] ) {
+			if ( ! empty( $params['path1'] ) ) {
 				$asset_group_fields['path1'] = $params['path1'];
 			}
-			if ( $params['path2'] ) {
+			if ( ! empty( $params['path2'] ) ) {
 				$asset_group_fields['path2'] = $params['path2'];
 			}
 
@@ -341,9 +341,8 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 */
 	protected function edit_operation( int $asset_group_id, array $fields ): MutateOperation {
 		$fields['resource_name'] = ResourceNames::forAssetGroup( $this->options->get_ads_id(), $asset_group_id );
-
-		$asset_group = new AssetGroup( $fields );
-		$operation   = new AssetGroupOperation();
+		$asset_group             = new AssetGroup( $fields );
+		$operation               = new AssetGroupOperation();
 		$operation->setUpdate( $asset_group );
 		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $asset_group ) );
 		return ( new MutateOperation() )->setAssetGroupOperation( $operation );

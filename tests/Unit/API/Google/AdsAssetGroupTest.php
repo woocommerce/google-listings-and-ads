@@ -12,6 +12,8 @@ use Google\Ads\GoogleAds\V11\Enums\AssetGroupStatusEnum\AssetGroupStatus;
 use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
 use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterVerticalEnum\ListingGroupFilterVertical;
 use PHPUnit\Framework\MockObject\MockObject;
+use Google\ApiCore\ApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -139,6 +141,42 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->generate_ads_asset_groups_query_mock( $asset_group_data );
 		$this->assertEquals( $asset_group_data, $this->asset_group->get_asset_groups_by_campaign_id( self::TEST_CAMPAIGN_ID, $include_assets ) );
 
+	}
+
+	public function test_edit_asset_group_without_assets() {
+		$asset_group_data = [
+			'path1' => 'mypath1',
+			'path2' => 'mypath2',
+		];
+
+		$this->generate_asset_group_mutate_mock( 'update', self::TEST_ASSET_GROUP_ID );
+
+		$this->assertEquals(
+			self::TEST_ASSET_GROUP_ID,
+			$this->asset_group->edit_asset_group( self::TEST_ASSET_GROUP_ID, $asset_group_data )
+		);
+	}
+
+	public function test_edit_asset_group_exception() {
+		$asset_group_data = [
+			'path2' => 123456,
+		];
+
+		$this->generate_mutate_mock_exception( new ApiException( 'invalid', 3, 'INVALID_ARGUMENT' ) );
+
+		try {
+			$this->asset_group->edit_asset_group( self::TEST_ASSET_GROUP_ID, $asset_group_data );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals(
+				[
+					'message' => 'Error editing asset group: invalid',
+					'errors'  => [ 'INVALID_ARGUMENT' => 'invalid' ],
+					'id'      => self::TEST_ASSET_GROUP_ID,
+				],
+				$e->get_response_data( true )
+			);
+			$this->assertEquals( 400, $e->getCode() );
+		}
 	}
 
 
