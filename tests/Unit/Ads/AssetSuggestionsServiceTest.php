@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\DataTrai
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ArrayUtil;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
 use WC_Helper_Product;
@@ -109,32 +110,32 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 	protected function format_post_asset_response( $post, array $marketing_images = [] ): array {
 		return [
-			'final_url'               => get_permalink( $post->ID ),
-			'headline'                => [ $post->post_title ],
-			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
-			'description'             => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
-			'business_name'           => get_bloginfo( 'name' ),
-			'display_url_path'        => [ $post->post_name ],
-			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
-			'square_marketing_images' => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			'marketing_images'        => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
-			'call_to_action'          => null,
+			AssetFieldType::HEADLINE                 => [ $post->post_title ],
+			AssetFieldType::LONG_HEADLINE            => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
+			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::LOGO                     => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::MARKETING_IMAGE          => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+			'display_url_path'                       => [ $post->post_name ],
+			'final_url'                              => get_permalink( $post->ID ),
 		];
 
 	}
 
 	protected function format_term_asset_response( $term, array $marketing_images = [] ): array {
 		return [
-			'final_url'               => get_term_link( $term->term_id ),
-			'headline'                => [ $term->name ],
-			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
-			'description'             => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
-			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
-			'business_name'           => get_bloginfo( 'name' ),
-			'display_url_path'        => [ $term->slug ],
-			'square_marketing_images' => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			'marketing_images'        => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
-			'call_to_action'          => null,
+			AssetFieldType::HEADLINE                 => [ $term->name ],
+			AssetFieldType::LONG_HEADLINE            => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
+			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
+			AssetFieldType::LOGO                     => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::MARKETING_IMAGE          => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+			'display_url_path'                       => [ $term->slug ],
+			'final_url'                              => get_term_link( $term->term_id ),
 		];
 
 	}
