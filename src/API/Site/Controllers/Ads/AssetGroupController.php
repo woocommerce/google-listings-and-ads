@@ -43,7 +43,7 @@ class AssetGroupController extends BaseController {
 	 */
 	public function register_routes(): void {
 		$this->register_route(
-			'ads/asset-groups/(?P<id>[\d]+)',
+			'ads/campaigns/asset-groups/(?P<id>[\d]+)',
 			[
 				[
 					'methods'             => TransportMethods::EDITABLE,
@@ -51,7 +51,6 @@ class AssetGroupController extends BaseController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
 				],
-				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 		$this->register_route(
