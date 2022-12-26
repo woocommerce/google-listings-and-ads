@@ -157,12 +157,34 @@ export default function useCroppedImageSelector( {
 				const width = attachment.get( 'width' );
 				const height = attachment.get( 'height' );
 				const args = [ width, height, minWidth, minHeight ];
-				const ratioPercentError = calcRatioPercentError( ...args );
+				const options = getSelectionOptions( ...args );
 
 				if ( calcRatioPercentError( ...args ) < ratioPercentError ) {
 					controller.set( 'canSkipCrop', true );
+
+					const setCropButtonDisabled = ( disabled ) => {
+						controller.frame.toolbar
+							.get()
+							.get( 'insert' )
+							.model.set( 'disabled', disabled );
+					};
+					// If the crop can be skipped, then since the default is the maximum selection during
+					// initialization, it also means the initial state of crop button should be disabled.
+					// And, it needs to wait for the toolbar view of Cropper (CustomizeImageCropper) controller
+					// to be created in order to disable the button.
+					// Ref: https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/media/controllers/cropper.js#L69
+					controller.cropperView.once( 'image-loaded', () => {
+						setCropButtonDisabled( true );
+					} );
+
+					options.onSelectEnd = ( _, selection ) => {
+						setCropButtonDisabled(
+							selection.width === options.imageWidth &&
+								selection.height === options.imageHeight
+						);
+					};
 				}
-				return getSelectionOptions( ...args );
+				return options;
 			};
 
 			// Ref:
