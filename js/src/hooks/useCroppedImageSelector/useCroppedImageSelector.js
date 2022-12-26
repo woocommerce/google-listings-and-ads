@@ -120,7 +120,7 @@ export function calcRatioPercentError(
  * @param {number} options.suggestedHeight The suggested height showing on the modal.
  * @param {(image: ImageMedia) => void} options.onSelect Callback when an image is selected.
  * @param {(image: ImageMedia) => void} options.onDelete Callback when an image is deleted.
- * @param {number} [options.allowedRatioPercentError=1] The percent error of the aspect ratio.
+ * @param {number} [options.ratioPercentError=1] The percent error of the aspect ratio.
  * @return {CroppedImageSelector} The handle of this hook.
  */
 export default function useCroppedImageSelector( {
@@ -130,7 +130,7 @@ export default function useCroppedImageSelector( {
 	suggestedHeight,
 	onSelect,
 	onDelete,
-	allowedRatioPercentError = 1,
+	ratioPercentError = 1,
 } ) {
 	const callbackRef = useRef( {} );
 	callbackRef.current.onSelect = onSelect;
@@ -159,7 +159,7 @@ export default function useCroppedImageSelector( {
 				const args = [ width, height, minWidth, minHeight ];
 				const ratioPercentError = calcRatioPercentError( ...args );
 
-				if ( ratioPercentError < allowedRatioPercentError ) {
+				if ( calcRatioPercentError( ...args ) < ratioPercentError ) {
 					controller.set( 'canSkipCrop', true );
 				}
 				return getSelectionOptions( ...args );
@@ -288,7 +288,7 @@ export default function useCroppedImageSelector( {
 			minHeight,
 			suggestedWidth,
 			suggestedHeight,
-			allowedRatioPercentError,
+			ratioPercentError,
 		]
 	);
 
