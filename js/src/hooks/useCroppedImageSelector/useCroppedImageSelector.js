@@ -27,7 +27,12 @@ import './useCroppedImageSelector.scss';
  * @param {number} heightScale The scale of height.
  * @return {[number, number]} The tuple of cropped width and height.
  */
-export function cropByFixedRatio( width, height, widthScale, heightScale ) {
+export function calcMaxCroppingByFixedRatio(
+	width,
+	height,
+	widthScale,
+	heightScale
+) {
 	const ratio = widthScale / heightScale;
 
 	if ( width / height > ratio ) {
@@ -50,7 +55,9 @@ export function cropByFixedRatio( width, height, widthScale, heightScale ) {
  * @return {Object} The options to be used with the jQuery plugin `imgAreaSelect`.
  */
 export function getSelectionOptions( width, height, minWidth, minHeight ) {
-	const [ croppedWidth, croppedHeight ] = cropByFixedRatio( ...arguments );
+	const [ croppedWidth, croppedHeight ] = calcMaxCroppingByFixedRatio(
+		...arguments
+	);
 	const x1 = ( width - croppedWidth ) / 2;
 	const y1 = ( height - croppedHeight ) / 2;
 
