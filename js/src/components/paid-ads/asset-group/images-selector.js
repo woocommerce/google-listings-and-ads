@@ -41,6 +41,9 @@ export default function ImagesSelector( {
 	);
 
 	const removeImage = ( deletedImage ) => {
+		if ( deletedImage.id === awaitingActionImage?.id ) {
+			setAwaitingActionImage( null );
+		}
 		setImages( images.filter( ( { id } ) => id !== deletedImage.id ) );
 	};
 
