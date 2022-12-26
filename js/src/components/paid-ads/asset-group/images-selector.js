@@ -34,7 +34,7 @@ export default function ImagesSelector( {
 	initialImageUrls = [],
 	maxNumberOfImages = 0,
 } ) {
-	const [ replacingImage, setReplacingImage ] = useState( null );
+	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
 	const [ images, setImages ] = useState( () =>
 		// The asset images fetched from Google Ads are only URLs.
 		initialImageUrls.map( ( url ) => ( { url, id: url, alt: '' } ) )
@@ -53,13 +53,13 @@ export default function ImagesSelector( {
 			// Find if there is a duplicate image first.
 			let index = nextImages.findIndex( ( { id } ) => id === image.id );
 
-			if ( replacingImage ) {
-				if ( index !== -1 && image.id !== replacingImage.id ) {
+			if ( awaitingActionImage ) {
+				if ( index !== -1 && image.id !== awaitingActionImage.id ) {
 					// If the selected image already exists while replacing, it's considered a swap position.
-					nextImages.splice( index, 1, { ...replacingImage } );
+					nextImages.splice( index, 1, { ...awaitingActionImage } );
 				}
 				// If index gets -1 here, it means the image to be replaced has been removed via the `onDelete` callback.
-				index = nextImages.indexOf( replacingImage );
+				index = nextImages.indexOf( awaitingActionImage );
 			}
 
 			if ( index === -1 ) {
@@ -68,13 +68,13 @@ export default function ImagesSelector( {
 				nextImages.splice( index, 1, image );
 			}
 
-			setReplacingImage( null );
+			setAwaitingActionImage( null );
 			setImages( nextImages );
 		},
 	} );
 
 	const handleUpsertImageClick = ( event, image = null ) => {
-		setReplacingImage( image );
+		setAwaitingActionImage( image );
 		handle.openSelector( image?.id );
 	};
 
