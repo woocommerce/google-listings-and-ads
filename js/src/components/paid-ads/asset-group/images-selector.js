@@ -61,7 +61,7 @@ export default function ImagesSelector( {
 					// If the selected image already exists while replacing, it's considered a swap position.
 					nextImages.splice( index, 1, { ...awaitingActionImage } );
 				}
-				// If index gets -1 here, it means the image to be replaced has been removed via the `onDelete` callback.
+				// Find the index to be replaced with the selected image.
 				index = nextImages.indexOf( awaitingActionImage );
 			}
 
