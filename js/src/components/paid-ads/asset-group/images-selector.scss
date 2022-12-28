@@ -1,0 +1,56 @@
+.gla-images-selector {
+	&__image-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $grid-unit-15;
+	}
+
+	&__image-item {
+		position: relative;
+		display: flex;
+	}
+
+	&__replace-image-button {
+		width: 100px;
+		height: 100px;
+		padding: 0;
+		border: 1px solid $gray-200;
+		border-radius: 2px;
+		overflow: hidden;
+		background-color: $white;
+	}
+
+	&__image {
+		max-width: 100%;
+		max-height: 100%;
+	}
+
+	&__add-image-button.has-icon {
+		margin-top: $grid-unit-20;
+		padding: $grid-unit-05;
+	}
+
+	&__remove-image-button {
+		display: none;
+		position: absolute;
+		top: 0;
+		right: 0;
+		transform: translate(50%, -50%);
+		color: $gray-500;
+
+		// Fill in the background color under the SVG icon.
+		&::after {
+			content: "";
+			position: absolute;
+			z-index: -1;
+			width: 30%;
+			height: 30%;
+			margin: auto;
+			background-color: $white;
+		}
+	}
+
+	&__image-item:hover &__remove-image-button {
+		display: flex;
+	}
+}

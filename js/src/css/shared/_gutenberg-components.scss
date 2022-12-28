@@ -39,6 +39,11 @@
 
 	&.is-link {
 		text-decoration: none;
+
+		// Hack to show correct font color for disabled link button.
+		&:disabled {
+			color: initial;
+		}
 	}
 
 	// Fix that the panel title is rendered under the button with dropdown arrow.
