@@ -180,6 +180,7 @@ class GLAChannel implements MarketingChannelInterface {
 
 					return new MarketingCampaign(
 						(string) $campaign_data['id'],
+						$this,
 						$campaign_data['name'],
 						admin_url( 'admin.php?page=wc-admin&path=/google/settings&subpath=/campaigns/edit' ),
 						$cost,
