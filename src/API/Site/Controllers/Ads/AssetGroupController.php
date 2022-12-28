@@ -49,7 +49,7 @@ class AssetGroupController extends BaseController {
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->edit_asset_group_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_schema_properties(),
+					'args'                => $this->get_edit_params(),
 				],
 			]
 		);
@@ -68,6 +68,35 @@ class AssetGroupController extends BaseController {
 	}
 
 	/**
+	 * Get the edit params to update an asset group.
+	 */
+	public function get_edit_params() {
+		return [
+			'id'     => [
+				'description' => __( 'Asset Group ID.', 'google-listings-and-ads' ),
+				'type'        => 'integer',
+				'required'    => true,
+
+			],
+			'path1'  => [
+				'description'       => __( 'Asset Group path 1.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+			],
+			'path2'  => [
+				'description'       => __( 'Asset Group path 2.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+			],
+			'assets' => [
+				'type'        => 'array',
+				'description' => __( 'List of asset to be edited.', 'google-listings-and-ads' ),
+				'items'       => $this->get_schema_asset(),
+			],
+		];
+	}
+
+	/**
 	 * Get the assets groups params.
 	 *
 	 * @return array
@@ -76,8 +105,7 @@ class AssetGroupController extends BaseController {
 		return [
 			'id' => [
 				'description'       => __( 'Campaign ID.', 'google-listings-and-ads' ),
-				'type'              => 'number',
-				'sanitize_callback' => 'absint',
+				'type'              => 'integer',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
@@ -116,7 +144,7 @@ class AssetGroupController extends BaseController {
 	public function edit_asset_group_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$asset_group_id = $this->ads_asset_group->edit_asset_group( (int) $request->get_param( 'id' ), $request->get_params() );
+				$asset_group_id = $this->ads_asset_group->edit_asset_group( $request->get_param( 'id' ), $request->get_params() );
 				return [
 					'status'  => 'success',
 					'message' => __( 'Successfully edited asset group.', 'google-listings-and-ads' ),
@@ -194,13 +222,18 @@ class AssetGroupController extends BaseController {
 		return [
 			'type'       => 'object',
 			'properties' => [
-				'id'      => [
-					'type'        => 'number',
+				'id'         => [
+					'type'        => [ 'integer', 'null' ],
 					'description' => __( 'Asset ID', 'google-listings-and-ads' ),
 				],
-				'content' => [
+				'content'    => [
+					'type'              => [ 'string', 'null' ],
+					'description'       => __( 'Asset content', 'google-listings-and-ads' ),
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+				'field_type' => [
 					'type'        => 'string',
-					'description' => __( 'Asset content', 'google-listings-and-ads' ),
+					'description' => __( 'Asset field type', 'google-listings-and-ads' ),
 				],
 			],
 		];
