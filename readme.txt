@@ -109,6 +109,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.3.5 - 2022-xx-xx =
+* Tweak - Adjust copy in Attribute Mapping section.
+* Tweak - Retrieve a published product as a landing page URL.
+* Tweak - Simplify report controller parameters.
+
 = 2.3.4 - 2022-12-20 =
 * Tweak - Improve image validation error messages.
 
