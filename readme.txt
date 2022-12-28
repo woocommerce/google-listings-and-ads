@@ -117,20 +117,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WC 7.2 compatibility.
 * Update - Drop support for WordPress < 5.9.
 
-= 2.3.2 - 2022-12-06 =
-* Dev - Adjusted parts of the post-install process to work on machines without `grep` and `find`. .
-* Dev - Adjusted post-install process to mention when files have their class-expectations modified but retain their original namespace.
-* Fix - Certain inbox notifications were shown before setup completed.
-* Fix - Delete products in GMC when force delete a product or change catalog visibility to hidden.
-
-= 2.3.1 - 2022-11-22 =
-* Add -  Attribute Mapping Feature.
-* Dev - Add script to list DEWPed dependencies' versions for a given WC version.
-* Fix - Incorrect product statistics count.
-* Fix - Yoast global identifiers for variable products.
-* Tweak - Remove unused GRPC packages.
-* Tweak - WC 7.1 compatibility.
-* Update - Change multipack attribute input to be native number input, to improve accessibility.
-* Update - Drop support for WC < 6.9.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
