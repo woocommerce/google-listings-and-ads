@@ -1,6 +1,6 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
-= 2.3.5 - 2022-xx-xx =
+= 2.3.5 - 2022-12-28 =
 * Tweak - Adjust copy in Attribute Mapping section.
 * Tweak - Retrieve a published product as a landing page URL.
 * Tweak - Simplify report controller parameters.

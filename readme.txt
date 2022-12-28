@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.9
 Tested up to: 6.1
 Requires PHP: 7.4
-Stable tag: 2.3.4
+Stable tag: 2.3.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,7 +109,7 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 2.3.5 - 2022-xx-xx =
+= 2.3.5 - 2022-12-28 =
 * Tweak - Adjust copy in Attribute Mapping section.
 * Tweak - Retrieve a published product as a landing page URL.
 * Tweak - Simplify report controller parameters.
