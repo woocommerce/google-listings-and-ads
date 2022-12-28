@@ -15,7 +15,7 @@ import './useCroppedImageSelector.scss';
 
 /**
  * @typedef {Object} CroppedImageSelector
- * @property {(preselectedId: number) => void} openSelector Function to open the selector modal.
+ * @property {(preTickedId: number) => void} openSelector Function to open the selector modal.
  */
 
 /**
@@ -111,7 +111,7 @@ export function calcRatioPercentError(
 /**
  * Hook for opening a modal to select images with fixed aspect ratio via
  * WordPress Media library. It will request cropping when the size of the
- * selected image doesn't match the given aspect ratio.
+ * ticked image doesn't match the given aspect ratio.
  *
  * @param {Object} options
  * @param {number} options.minWidth The minimum width and also the width to be calculated as the aspect ratio.
@@ -137,7 +137,7 @@ export default function useCroppedImageSelector( {
 	callbackRef.current.onDelete = onDelete;
 
 	const openSelector = useCallback(
-		( preselectedId ) => {
+		( preTickedId ) => {
 			const { media } = wp;
 			const sizeErrorMessage = sprintf(
 				// translators: 1: Minimum width, 2: Minimum height.
@@ -191,22 +191,32 @@ export default function useCroppedImageSelector( {
 			// - https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/wp/media/models.js#L36
 			// - https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/media/views/frame/select.js
 			const frame = media( {
+				// `button` is the options for Toolbar.Select view.
+				// Ref: https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/media/views/frame/select.js#L178
 				button: {
 					text: __( 'Select', 'google-listings-and-ads' ),
+					// Don't close the frame after clicking the "Select" button.
 					close: false,
 				},
+				// `states` option indicates the steps of the workflow in the frame. Each state is implemented
+				// as a controller for compositing other views to be rendered as the content of the frame.
 				states: [
+					// Library controller is for choosing an image.
 					// Ref: https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/media/controllers/library.js
 					new media.controller.Library( {
 						title: __(
 							'Select or upload image',
 							'google-listings-and-ads'
 						),
+						// The following are options for AttachmentsBrowser view.
+						// Ref: https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/media/views/frame/select.js#L145-L151
 						library: media.query( { type: 'image' } ),
 						date: false,
 						suggestedWidth,
 						suggestedHeight,
 					} ),
+					// CustomizeImageCropper controller is for cropping an image via the WP core AJAX handler "crop-image".
+					// Ref: https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/media/controllers/customize-image-cropper.js
 					new media.controller.CustomizeImageCropper( {
 						imgSelectOptions,
 						// Ignores the adjustment of the flexible sides.
@@ -217,10 +227,10 @@ export default function useCroppedImageSelector( {
 			} );
 
 			function handlePreselect( library ) {
-				if ( ! preselectedId ) {
+				if ( ! preTickedId ) {
 					return;
 				}
-				const attachment = library.get( preselectedId );
+				const attachment = library.get( preTickedId );
 				if ( attachment ) {
 					frame.state().get( 'selection' ).reset( [ attachment ] );
 				}
@@ -230,6 +240,11 @@ export default function useCroppedImageSelector( {
 				callbackRef.current.onDelete( attachment );
 			}
 
+			/**
+			 * Handler for checking if the width and height of the ticked image are valid,
+			 * and for toggling the error message and the disabled state of the "Select" button
+			 * in the toolbar.
+			 */
 			function handleSelectionToggle() {
 				// Workaround to update the disabled state of button after uploading a new image
 				// since `toolbar` will be triggered the refresh event at the end, so this function
@@ -264,7 +279,7 @@ export default function useCroppedImageSelector( {
 				frame.setState( 'cropper' );
 			}
 
-			function handleCrop( image ) {
+			function handleSelectedImage( image ) {
 				// 'skippedcrop' will pass an attachment model.
 				if ( image instanceof media.model.Attachment ) {
 					image = image.toJSON();
@@ -284,7 +299,7 @@ export default function useCroppedImageSelector( {
 
 			frame
 				.on( 'select', handleSelectButtonClick, frame )
-				.on( 'cropped skippedcrop', handleCrop, frame )
+				.on( 'cropped skippedcrop', handleSelectedImage, frame )
 				.on( 'close', handleClose, frame );
 
 			frame
