@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Enums\AssetTypeEnum\AssetType;
-use Google\Ads\GoogleAds\V11\Enums\CallToActionTypeEnum\CallToActionType;
 use Google\Ads\GoogleAds\V11\Resources\Asset;
 use Google\Ads\GoogleAds\V11\Services\AssetOperation;
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
@@ -93,7 +92,7 @@ class AdsAsset implements OptionsAwareInterface {
 
 		switch ( $this->get_asset_type_by_field_type( $data['field_type'] ) ) {
 			case AssetType::CALL_TO_ACTION:
-				$asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => $data['content'] ] ) );
+				$asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $data['content'] ) ] ) );
 				break;
 			case AssetType::IMAGE:
 				$asset->setImageAsset( new ImageAsset( [ 'data' => wp_remote_get( $data['content'] )['body'] ] ) );
@@ -130,7 +129,7 @@ class AdsAsset implements OptionsAwareInterface {
 				$data = $asset->getTextAsset()->getText();
 				break;
 			case AssetType::CALL_TO_ACTION:
-				$data = CallToActionType::name( $asset->getCallToActionAsset()->getCallToAction() );
+				$data = CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
 				break;
 			default:
 				$data = '';
