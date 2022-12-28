@@ -27,7 +27,7 @@ const AttributeMappingFieldSourcesControl = ( {
 					{
 						value: '',
 						label: __(
-							'Select one option',
+							'Select an option',
 							'google-listings-and-ads'
 						),
 					},

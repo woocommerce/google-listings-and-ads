@@ -35,21 +35,21 @@ const AttributeMappingCategoryControl = ( {
 					{
 						value: CATEGORY_CONDITION_SELECT_TYPES.ALL,
 						label: __(
-							'Apply to All categories',
+							'Apply to all categories',
 							'google-listings-and-ads'
 						),
 					},
 					{
 						value: CATEGORY_CONDITION_SELECT_TYPES.EXCEPT,
 						label: __(
-							'Apply to All categories EXCEPT',
+							'Apply to all categories EXCEPT',
 							'google-listings-and-ads'
 						),
 					},
 					{
 						value: CATEGORY_CONDITION_SELECT_TYPES.ONLY,
 						label: __(
-							'Apply ONLY to this categories',
+							'Apply ONLY to these categories',
 							'google-listings-and-ads'
 						),
 					},
