@@ -80,7 +80,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @param array $data The assets to use the text asset.
 	 * @param int   $temporary_id The temporary ID to use for the asset.
-	 * @return MutateOperation The text asset mutation.
+	 * @return MutateOperation The create asset operation.
 	 * @throws Exception If the asset type is not supported or if the image url is not a valid url.
 	 */
 	public function create_operation( array $data, int $temporary_id = self::TEMPORARY_ID ): MutateOperation {
@@ -95,13 +95,13 @@ class AdsAsset implements OptionsAwareInterface {
 				$asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $data['content'] ) ] ) );
 				break;
 			case AssetType::IMAGE:
-				$data = wp_remote_get( $data['content'] );
+				$image_data = wp_remote_get( $data['content'] );
 
-				if ( is_wp_error( $data ) ) {
+				if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {
 					throw new Exception( 'Incorrect image asset url.' );
 				}
 
-				$asset->setImageAsset( new ImageAsset( [ 'data' => wp_remote_get( $data['content'] )['body'] ] ) );
+				$asset->setImageAsset( new ImageAsset( [ 'data' => $image_data['body'] ] ) );
 				$asset->setName( basename( $data['content'] ) );
 				break;
 			case AssetType::TEXT:

@@ -76,7 +76,6 @@ class AssetGroupController extends BaseController {
 				'description' => __( 'Asset Group ID.', 'google-listings-and-ads' ),
 				'type'        => 'integer',
 				'required'    => true,
-
 			],
 			'path1'  => [
 				'description'       => __( 'Asset Group path 1.', 'google-listings-and-ads' ),
@@ -227,9 +226,8 @@ class AssetGroupController extends BaseController {
 					'description' => __( 'Asset ID', 'google-listings-and-ads' ),
 				],
 				'content'    => [
-					'type'              => [ 'string', 'null' ],
-					'description'       => __( 'Asset content', 'google-listings-and-ads' ),
-					'sanitize_callback' => 'sanitize_text_field',
+					'type'        => [ 'string', 'null' ],
+					'description' => __( 'Asset content', 'google-listings-and-ads' ),
 				],
 				'field_type' => [
 					'type'        => 'string',

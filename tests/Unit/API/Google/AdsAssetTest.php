@@ -10,7 +10,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAd
 use PHPUnit\Framework\MockObject\MockObject;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CallToActionType;
-use Google\Ads\GoogleAds\V11\Enums\AssetTypeEnum\AssetType;
 use Google\Ads\GoogleAds\Util\V11\ResourceNames;
 use Exception;
 
