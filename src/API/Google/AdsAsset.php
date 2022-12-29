@@ -83,7 +83,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @return MutateOperation The text asset mutation.
 	 * @throws Exception If the asset type is not supported.
 	 */
-	public function create_operation_asset( array $data, int $temporary_id = self::TEMPORARY_ID ): MutateOperation {
+	public function create_operation( array $data, int $temporary_id = self::TEMPORARY_ID ): MutateOperation {
 		$asset = new Asset(
 			[
 				'resource_name' => $this->temporary_resource_name( $temporary_id ),

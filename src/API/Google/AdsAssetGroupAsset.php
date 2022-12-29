@@ -15,7 +15,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
 use Google\Ads\GoogleAds\V11\Services\AssetGroupAssetOperation;
 use Google\Ads\GoogleAds\Util\V11\ResourceNames;
-use Google\Ads\GoogleAds\V11\Enums\AssetTypeEnum\AssetType;
 
 
 
@@ -156,7 +155,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 
 			// If content exists, create asset and asset group asset.
 			if ( ! empty( $asset['content'] ) ) {
-				$assets_operations[]             = $this->asset->create_operation_asset( $asset, self::$temporary_id );
+				$assets_operations[]             = $this->asset->create_operation( $asset, self::$temporary_id );
 				$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $asset['field_type'], self::$temporary_id-- );
 			}
 
