@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CallToActionType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
@@ -15,6 +17,7 @@ use Google\Ads\GoogleAds\V11\Common\Segments;
 use Google\Ads\GoogleAds\V11\Common\TagSnippet;
 use Google\Ads\GoogleAds\V11\Common\ImageAsset;
 use Google\Ads\GoogleAds\V11\Common\TextAsset;
+use Google\Ads\GoogleAds\V11\Common\CallToActionAsset;
 use Google\Ads\GoogleAds\V11\Common\ImageDimension;
 use Google\Ads\GoogleAds\V11\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V11\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
@@ -46,6 +49,8 @@ use Google\Ads\GoogleAds\V11\Services\MutateConversionActionResult;
 use Google\Ads\GoogleAds\V11\Services\MutateConversionActionsResponse;
 use Google\Ads\GoogleAds\V11\Services\MutateGoogleAdsResponse;
 use Google\Ads\GoogleAds\V11\Services\MutateOperationResponse;
+use Google\Ads\GoogleAds\V11\Services\MutateOperation;
+use Google\Ads\GoogleAds\V11\Services\AssetOperation;
 use Google\Ads\GoogleAds\V11\Services\MutateAssetGroupResult;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
@@ -666,7 +671,6 @@ trait GoogleAdsClientTrait {
 		$asset->method( 'getType' )->willReturn( $data['asset']['type'] );
 		$asset->method( 'getImageAsset' )->willReturn( new ImageAsset( [ 'full_size' => new ImageDimension( [ 'url' => $data['asset']['image_url'] ?? '' ] ) ] ) );
 		$asset->method( 'getTextAsset' )->willReturn( new TextAsset( [ 'text' => $data['asset']['text'] ?? '' ] ) );
-
 		$asset_group = $this->createMock( AssetGroup::class );
 		$asset_group->method( 'getId' )->willReturn( $data['asset_group_id'] );
 
@@ -735,6 +739,45 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_mutate_mock_exception( ApiException $exception ) {
 		$this->service_client->method( 'mutate' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generate asset operations
+	 *
+	 * @param array $assets list of assets
+	 */
+	private function generate_asset_operations( $assets = [] ) {
+		foreach ( $assets as $asset ) {
+
+			$ads_asset = new Asset();
+
+			switch ( $asset['field_type'] ) {
+				case AssetFieldType::LOGO:
+				case AssetFieldType::MARKETING_IMAGE:
+				case AssetFieldType::SQUARE_MARKETING_IMAGE:
+					$ads_asset->setImageAsset( new ImageAsset( [ 'data' => $asset['content'] ] ) );
+					$asset_operation = ( new MutateOperation() )->setAssetOperation( ( new AssetOperation() )->setCreate( $ads_asset ) );
+					break;
+				case AssetFieldType::HEADLINE:
+				case AssetFieldType::LONG_HEADLINE:
+				case AssetFieldType::DESCRIPTION:
+				case AssetFieldType::BUSINESS_NAME:
+					$ads_asset->setTextAsset( new TextAsset( [ 'text' => $asset['content'] ] ) );
+					$asset_operation = ( new MutateOperation() )->setAssetOperation( ( new AssetOperation() )->setCreate( $ads_asset ) );
+					break;
+				case AssetFieldType::CALL_TO_ACTION_SELECTION:
+					return $ads_asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $asset['content'] ) ] ) );
+				default:
+					$asset_operation = null;
+					break;
+			}
+
+			if ( $asset_operation ) {
+				$asset_operations[] = $asset_operation;
+			}
+		}
+
+		return $asset_operations;
 	}
 
 
