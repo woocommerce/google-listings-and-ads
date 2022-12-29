@@ -9,8 +9,8 @@ import { __ } from '@wordpress/i18n';
 import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
 
 const validlocationSet = new Set( [ 'all', 'selected' ] );
-const validShippingRateSet = new Set( [ 'automatic', 'flat', 'manual' ] );
-const validShippingTimeSet = new Set( [ 'flat', 'manual' ] );
+const shippingRateConfigTypesSet = new Set( [ 'automatic', 'flat', 'manual' ] );
+const shippingTimeConfigTypesSet = new Set( [ 'flat', 'automatic' ] );
 const validTaxRateSet = new Set( [ 'destination', 'manual' ] );
 
 const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
@@ -32,30 +32,33 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	}
 
 	/**
-	 * Check shipping rates.
+	 * Check shipping config type.
 	 */
-	if ( ! validShippingRateSet.has( values.shipping_rate ) ) {
-		errors.shipping_rate = __(
-			'Please select a shipping rate option.',
+	if ( ! shippingRateConfigTypesSet.has( values.shippingConfigType ) ) {
+		errors.shippingConfigType = __(
+			'Please select a shipping option.',
 			'google-listings-and-ads'
 		);
 	}
 
+	/**
+	 * Check shipping rates.
+	 */
 	if (
-		values.shipping_rate === 'flat' &&
+		values.shippingConfigType === 'flat' &&
 		( values.shipping_country_rates.length < finalCountryCodes.length ||
 			values.shipping_country_rates.some( ( el ) => el.rate < 0 ) )
 	) {
-		errors.shipping_rate = __(
+		errors.shippingConfigType = __(
 			'Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0.',
 			'google-listings-and-ads'
 		);
 	}
 
 	/**
-	 * Check offer free shipping, only when shipping_rate is 'flat'.
+	 * Check offer free shipping, only when shippingConfigType is 'flat'.
 	 */
-	if ( values.shipping_rate === 'flat' ) {
+	if ( values.shippingConfigType === 'flat' ) {
 		if (
 			values.offer_free_shipping === undefined &&
 			values.shipping_country_rates.some( isNonFreeShippingRate )
@@ -83,19 +86,12 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	/**
 	 * Check shipping times.
 	 */
-	if ( ! validShippingTimeSet.has( values.shipping_time ) ) {
-		errors.shipping_time = __(
-			'Please select a shipping time option.',
-			'google-listings-and-ads'
-		);
-	}
-
 	if (
-		values.shipping_time === 'flat' &&
+		shippingTimeConfigTypesSet.has( values.shippingConfigType ) &&
 		( shippingTimes.length < finalCountryCodes.length ||
 			shippingTimes.some( ( el ) => el.time < 0 ) )
 	) {
-		errors.shipping_time = __(
+		errors.shippingConfigType = __(
 			'Please specify shipping times for all the countries. And the estimated shipping time cannot be less than 0.',
 			'google-listings-and-ads'
 		);

@@ -30,8 +30,7 @@ const targetAudienceFields = [ 'locale', 'language', 'location', 'countries' ];
  * If we are adding a new settings field, it should be added into this array.
  */
 const settingsFieldNames = [
-	'shipping_rate',
-	'shipping_time',
+	'shippingConfigType',
 	'tax_rate',
 	'website_live',
 	'checkout_process_secure',
@@ -142,27 +141,7 @@ const SetupFreeListings = ( {
 		} else if ( change.name === 'shipping_country_times' ) {
 			onShippingTimesChange( values.shipping_country_times );
 		} else if ( settingsFieldNames.includes( change.name ) ) {
-			// The value of `shipping_time` option is determined by the value of `shipping_rate` option.
-			// So if the current form change is considered it needs to change `shipping_time` as well,
-			// it schedules the processing with `formPropsDelegateeRef` and also skips the call of
-			// `onSettingsChange` this time, and lets the call of `onSettingsChange` be triggered
-			// when the form change of `shipping_time` happens.
-			let shouldTriggerOnChange = true;
-
-			if ( change.name === 'shipping_rate' ) {
-				// When shipping rate is 'manual', shipping time should be 'manual' as well;
-				// When shipping rate is 'automatic' or 'flat', shipping time should be 'flat'.
-				const nextValue = change.value === 'manual' ? 'manual' : 'flat';
-
-				if ( nextValue !== values.shipping_time ) {
-					shouldTriggerOnChange = false;
-					setValue( 'shipping_time', nextValue );
-				}
-			}
-
-			if ( shouldTriggerOnChange ) {
-				onSettingsChange( getSettings( values ) );
-			}
+			onSettingsChange( getSettings( values ) );
 		} else if ( targetAudienceFields.includes( change.name ) ) {
 			onTargetAudienceChange( pick( values, targetAudienceFields ) );
 
@@ -194,8 +173,7 @@ const SetupFreeListings = ( {
 					location: targetAudience.location,
 					countries: targetAudience.countries || [],
 					// These are the fields for settings.
-					shipping_rate: settings.shipping_rate,
-					shipping_time: settings.shipping_time,
+					shippingConfigType: settings.shippingConfigType,
 					tax_rate: settings.tax_rate,
 					website_live: settings.website_live,
 					checkout_process_secure: settings.checkout_process_secure,

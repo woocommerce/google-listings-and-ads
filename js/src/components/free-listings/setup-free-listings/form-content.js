@@ -36,8 +36,12 @@ const FormContent = ( {
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
 } ) => {
 	const { values, isValidForm, handleSubmit } = formProps;
+	const { shippingConfigType } = values;
 	const shouldDisplayTaxRate = useDisplayTaxRate( countries );
-	const shouldDisplayShippingTime = values.shipping_time === 'flat';
+	// Currently, the automatic application of shipping time config is not supported,
+	// so the user is still required to enter the config.
+	const shouldDisplayShippingTime =
+		shippingConfigType === 'flat' || shippingConfigType === 'automatic';
 	const isCompleteSetupDisabled =
 		shouldDisplayTaxRate === null || ! isValidForm;
 

@@ -21,7 +21,7 @@ import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
 
 const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 	const { getInputProps, values } = formProps;
-	const inputProps = getInputProps( 'shipping_rate' );
+	const inputProps = getInputProps( 'shippingConfigType' );
 
 	return (
 		<Section
@@ -110,7 +110,7 @@ const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 						</VerticalGapLayout>
 					</Section.Card.Body>
 				</Section.Card>
-				{ values.shipping_rate === 'flat' && (
+				{ values.shippingConfigType === 'flat' && (
 					<FlatShippingRatesInputCards
 						audienceCountries={ audienceCountries }
 						formProps={ formProps }

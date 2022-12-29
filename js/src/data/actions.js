@@ -84,8 +84,7 @@ export function handleFetchError( error, message ) {
  *
  * @typedef {Object} SettingsData
  * @property {boolean} [offer_free_shipping] Whether if the merchant offers free shipping.
- * @property {'automatic'|'flat'|'manual'} [shipping_rate] Type of the shipping rate.
- * @property {'flat'|'manual'} [shipping_time] Type of the shipping time.
+ * @property {'automatic'|'flat'|'manual'} [shippingConfigType] Type of the shipping config to be set up.
  * @property {string|null} [tax_rate] Type of tax rate, There are two possible values if US is selected: 'destination' and 'manual' otherwise will be null.
  * @property {boolean} [website_live] Whether the store website is live.
  * @property {boolean} [checkout_process_secure] Whether the checkout process is complete and secure.
@@ -310,9 +309,20 @@ export function* fetchSettings() {
 			path: `${ API_NAMESPACE }/mc/settings`,
 		} );
 
+		const settings = {
+			...response,
+			shippingConfigType: response.shipping_rate,
+		};
+
+		// It doesn't have to be deleted and can be kept. The consideration here is to avoid
+		// possible confusion when seeing `shipping_rate` and `shipping_time` when inspecting
+		// `settings` in the application layer.
+		delete settings.shipping_rate;
+		delete settings.shipping_time;
+
 		return {
 			type: TYPES.RECEIVE_SETTINGS,
-			settings: response,
+			settings,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
@@ -332,10 +342,20 @@ export function* fetchSettings() {
  * @return {Object} Action object to save target audience.
  */
 export function* saveSettings( settings ) {
+	const { shippingConfigType, ...data } = settings;
+
+	data.shipping_rate = shippingConfigType;
+
+	// Currently, the automatic application of shipping time config is not supported,
+	// therefore, when shipping config type is 'automatic', the value of `shipping_time`
+	// for calling API needs to be converted to 'flat'.
+	data.shipping_time =
+		shippingConfigType === 'automatic' ? 'flat' : shippingConfigType;
+
 	yield apiFetch( {
 		path: `${ API_NAMESPACE }/mc/settings`,
 		method: 'POST',
-		data: settings,
+		data,
 	} );
 
 	return {
