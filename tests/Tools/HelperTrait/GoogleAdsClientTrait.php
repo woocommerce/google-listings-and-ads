@@ -22,6 +22,7 @@ use Google\Ads\GoogleAds\V11\Common\ImageDimension;
 use Google\Ads\GoogleAds\V11\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V11\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
 use Google\Ads\GoogleAds\V11\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
+use Google\Ads\GoogleAds\V11\Enums\AssetTypeEnum\AssetType;
 use Google\Ads\GoogleAds\V11\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
 use Google\Ads\GoogleAds\V11\Enums\TrackingCodeTypeEnum\TrackingCodeType;
 use Google\Ads\GoogleAds\V11\Resources\BillingSetup;
@@ -666,18 +667,12 @@ trait GoogleAdsClientTrait {
 		$asset_group_asset = $this->createMock( AssetGroupAsset::class );
 		$asset_group_asset->method( 'getFieldType' )->willReturn( $data['field_type'] );
 
-		$asset = $this->createMock( Asset::class );
-		$asset->method( 'getId' )->willReturn( $data['asset']['id'] );
-		$asset->method( 'getType' )->willReturn( $data['asset']['type'] );
-		$asset->method( 'getImageAsset' )->willReturn( new ImageAsset( [ 'full_size' => new ImageDimension( [ 'url' => $data['asset']['image_url'] ?? '' ] ) ] ) );
-		$asset->method( 'getTextAsset' )->willReturn( new TextAsset( [ 'text' => $data['asset']['text'] ?? '' ] ) );
 		$asset_group = $this->createMock( AssetGroup::class );
 		$asset_group->method( 'getId' )->willReturn( $data['asset_group_id'] );
 
 		return ( new GoogleAdsRow() )
 			->setAssetGroupAsset( $asset_group_asset )
-			->setAssetGroup( $asset_group )
-			->setAsset( $asset );
+			->setAssetGroup( $asset_group );
 	}
 
 	/**
@@ -742,42 +737,75 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates a Asset resource.
+	 *
+	 * @param array $asset The asset data.
+	 * @return Asset|null The generated asset.
+	 */
+	protected function generate_asset( $asset ) {
+		$ads_asset = new Asset();
+
+		switch ( $asset['field_type'] ) {
+			case AssetFieldType::LOGO:
+			case AssetFieldType::MARKETING_IMAGE:
+			case AssetFieldType::SQUARE_MARKETING_IMAGE:
+				$image_asset = new ImageAsset( [ 'data' => $asset['content'] ] );
+				$image_asset->setFullSize(
+					new ImageDimension(
+						[
+							'url' => $asset['content'],
+						]
+					)
+				);
+				$ads_asset->setImageAsset( $image_asset );
+				$ads_asset->setType( AssetType::IMAGE );
+				return $ads_asset;
+			case AssetFieldType::HEADLINE:
+			case AssetFieldType::LONG_HEADLINE:
+			case AssetFieldType::DESCRIPTION:
+			case AssetFieldType::BUSINESS_NAME:
+				$ads_asset->setTextAsset( new TextAsset( [ 'text' => $asset['content'] ] ) );
+				$ads_asset->setType( AssetType::TEXT );
+				return $ads_asset;
+			case AssetFieldType::CALL_TO_ACTION_SELECTION:
+				$ads_asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $asset['content'] ) ] ) );
+				$ads_asset->setType( AssetType::CALL_TO_ACTION );
+				return $ads_asset;
+			default:
+				return null;
+		}
+
+	}
+
+	/**
 	 * Generate asset operations
 	 *
 	 * @param array $assets list of assets
 	 */
-	private function generate_asset_operations( $assets = [] ) {
+	private function generate_crate_asset_operations( $assets = [] ) {
 		foreach ( $assets as $asset ) {
 
-			$ads_asset = new Asset();
+			$ads_asset = $this->generate_asset( $asset );
 
-			switch ( $asset['field_type'] ) {
-				case AssetFieldType::LOGO:
-				case AssetFieldType::MARKETING_IMAGE:
-				case AssetFieldType::SQUARE_MARKETING_IMAGE:
-					$ads_asset->setImageAsset( new ImageAsset( [ 'data' => $asset['content'] ] ) );
-					$asset_operation = ( new MutateOperation() )->setAssetOperation( ( new AssetOperation() )->setCreate( $ads_asset ) );
-					break;
-				case AssetFieldType::HEADLINE:
-				case AssetFieldType::LONG_HEADLINE:
-				case AssetFieldType::DESCRIPTION:
-				case AssetFieldType::BUSINESS_NAME:
-					$ads_asset->setTextAsset( new TextAsset( [ 'text' => $asset['content'] ] ) );
-					$asset_operation = ( new MutateOperation() )->setAssetOperation( ( new AssetOperation() )->setCreate( $ads_asset ) );
-					break;
-				case AssetFieldType::CALL_TO_ACTION_SELECTION:
-					return $ads_asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $asset['content'] ) ] ) );
-				default:
-					$asset_operation = null;
-					break;
-			}
-
-			if ( $asset_operation ) {
-				$asset_operations[] = $asset_operation;
+			if ( $ads_asset ) {
+				$asset_operations[] = ( new MutateOperation() )->setAssetOperation( ( new AssetOperation() )->setCreate( $ads_asset ) );
 			}
 		}
 
 		return $asset_operations;
+	}
+
+	/**
+	 * Generates Assets GoogleAdsRow.
+	 *
+	 * @param array $data AssetGroupAsset data to convert.
+	 *
+	 * @return GoogleAdsRow
+	 */
+	public function generate_asset_row_mock( array $data ): GoogleAdsRow {
+		$asset = $this->generate_asset( $data );
+		$asset->setId( $data['id'] );
+		return ( new GoogleAdsRow() )->setAsset( $asset );
 	}
 
 

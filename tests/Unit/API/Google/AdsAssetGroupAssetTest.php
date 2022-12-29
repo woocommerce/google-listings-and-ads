@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  *
  * @property MockObject|OptionsInterface $options
- * @property AdsAssetGroup               $asset_group
+ * @property AdsAssetGroupAsset          $asset_group_asset
  */
 class AdsAssetGroupAssetTest extends UnitTest {
 
@@ -126,7 +126,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		$this->asset->expects( $this->exactly( 2 ) )
 		->method( 'create_operation' )
-		->willReturnOnConsecutiveCalls( ...$this->generate_asset_operations( $assets ) );
+		->willReturnOnConsecutiveCalls( ...$this->generate_crate_asset_operations( $assets ) );
 
 		$grouped_operations = $this->group_operations(
 			$this->asset_group_asset->edit_operations_assets_group_assets( self::TEST_ASSET_GROUP_ID, $assets )
@@ -169,7 +169,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		$this->asset->expects( $this->exactly( 2 ) )
 		->method( 'create_operation' )
-		->willReturnOnConsecutiveCalls( ...$this->generate_asset_operations( $assets ) );
+		->willReturnOnConsecutiveCalls( ...$this->generate_crate_asset_operations( $assets ) );
 
 		$grouped_operations = $this->group_operations(
 			$this->asset_group_asset->edit_operations_assets_group_assets( self::TEST_ASSET_GROUP_ID, $assets )
@@ -184,6 +184,8 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		$this->assertEquals( $assets[1]['content'], ( $grouped_operations['asset_operation']['create'][1] )->getCreate()->getTextAsset()->getText() );
 
 		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['create'] ) );
+		$this->assertEquals( AssetFieldType::number( AssetFieldType::DESCRIPTION ), ( $grouped_operations['asset_group_asset_operation']['create'][0] )->getCreate()->getFieldType() );
+		$this->assertEquals( AssetFieldType::number( AssetFieldType::HEADLINE ), ( $grouped_operations['asset_group_asset_operation']['create'][1] )->getCreate()->getFieldType() );
 
 		// We should not remove old assets.
 		$this->assertArrayNotHasKey( 'remove', $grouped_operations['asset_group_asset_operation'] );
@@ -216,7 +218,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		$this->assertArrayNotHasKey( 'asset_operation', $grouped_operations );
 
-		// We should have two delete assets asset_group_asset_operation.
+		// We should have two delete  asset_group_asset_operation.
 		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['remove'] ) );
 		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[0]['id'], AssetFieldType::name( $assets[0]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][0] )->getRemove() );
 		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[1]['id'], AssetFieldType::name( $assets[1]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][1] )->getRemove() );
