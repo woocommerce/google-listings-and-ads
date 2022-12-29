@@ -19,11 +19,12 @@ use Exception;
  */
 class AssetGroupControllerTest extends RESTControllerUnitTest {
 
-	protected const TEST_CAMPAIGN_ID       = 1234567890;
-	protected const TEST_ASSET_GROUP_ID    = 9876543210;
-	protected const ROUTE_ASSET_GROUPS     = '/wc/gla/ads/campaigns/' . self::TEST_CAMPAIGN_ID . '/asset-groups';
-	protected const TEST_NO_ASSET_GROUPS   = [];
-	protected const TEST_ASSET_GROUPS_DATA = [
+	protected const TEST_CAMPAIGN_ID            = 1234567890;
+	protected const TEST_ASSET_GROUP_ID         = 9876543210;
+	protected const ROUTE_ASSET_GROUPS          = '/wc/gla/ads/campaigns/asset-groups/' . self::TEST_ASSET_GROUP_ID;
+	protected const ROUTE_CAMPAIGN_ASSET_GROUPS = '/wc/gla/ads/campaigns/' . self::TEST_CAMPAIGN_ID . '/asset-groups';
+	protected const TEST_NO_ASSET_GROUPS        = [];
+	protected const TEST_ASSET_GROUPS_DATA      = [
 		[
 			'id'               => self::TEST_ASSET_GROUP_ID,
 			'final_url'        => 'https://test.com/shop',
@@ -52,7 +53,7 @@ class AssetGroupControllerTest extends RESTControllerUnitTest {
 			->with( self::TEST_CAMPAIGN_ID )
 			->willReturn( self::TEST_ASSET_GROUPS_DATA );
 
-		$response = $this->do_request( self::ROUTE_ASSET_GROUPS, 'GET' );
+		$response = $this->do_request( self::ROUTE_CAMPAIGN_ASSET_GROUPS, 'GET' );
 
 		$this->assertEquals( self::TEST_ASSET_GROUPS_DATA, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
@@ -64,7 +65,7 @@ class AssetGroupControllerTest extends RESTControllerUnitTest {
 			->with( self::TEST_CAMPAIGN_ID )
 			->willReturn( self::TEST_NO_ASSET_GROUPS );
 
-		$response = $this->do_request( self::ROUTE_ASSET_GROUPS, 'GET' );
+		$response = $this->do_request( self::ROUTE_CAMPAIGN_ASSET_GROUPS, 'GET' );
 
 		$this->assertEquals( self::TEST_NO_ASSET_GROUPS, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
@@ -75,9 +76,43 @@ class AssetGroupControllerTest extends RESTControllerUnitTest {
 			->method( 'get_asset_groups_by_campaign_id' )
 			->willThrowException( new Exception( 'Account not connected' ) );
 
-		$response = $this->do_request( self::ROUTE_ASSET_GROUPS, 'GET' );
+		$response = $this->do_request( self::ROUTE_CAMPAIGN_ASSET_GROUPS, 'GET' );
 
 		$this->assertEquals( 'Account not connected', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_edit_asset_group() {
+		$this->asset_group
+			->method( 'edit_asset_group' )
+			->willReturn( self::TEST_ASSET_GROUP_ID );
+
+		$response = $this->do_request( self::ROUTE_ASSET_GROUPS, 'PUT' );
+		$this->assertEquals(
+			[
+				'status'  => 'success',
+				'message' => 'Successfully edited asset group.',
+				'id'      => self::TEST_ASSET_GROUP_ID,
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_asset_group_with_api_exception() {
+		$asset_group_data = [
+			'id'    => self::TEST_ASSET_GROUP_ID,
+			'path1' => 'test path1',
+		];
+
+		$this->asset_group->expects( $this->once() )
+			->method( 'edit_asset_group' )
+			->with( self::TEST_ASSET_GROUP_ID, $asset_group_data )
+			->willThrowException( new Exception( 'error', 400 ) );
+
+		$response = $this->do_request( self::ROUTE_ASSET_GROUPS, 'POST', $asset_group_data );
+
+		$this->assertEquals( 'error', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
