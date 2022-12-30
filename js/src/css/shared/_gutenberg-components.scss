@@ -12,34 +12,6 @@
 }
 
 .components-button {
-	// Hack to show correct font color for disabled primary destructive button.
-	// The color style is copied from https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/button/style.scss#L67-L72
-	&.is-primary.is-destructive:disabled {
-		color: rgba($white, 0.4);
-	}
-
-	// hack to fix tertiary destructive button.
-	&.is-tertiary.is-destructive {
-		box-shadow: none;
-
-		&:hover:not(:disabled) {
-			box-shadow: none;
-		}
-	}
-
-	&.is-link.is-destructive:focus {
-		box-shadow: none;
-		color: $alert-red;
-
-		&:not(:disabled) {
-			color: $alert-red;
-		}
-	}
-
-	&.is-link {
-		text-decoration: none;
-	}
-
 	// Fix that the panel title is rendered under the button with dropdown arrow.
 	&.components-panel__body-toggle {
 		padding-right: $grid-unit-60;
