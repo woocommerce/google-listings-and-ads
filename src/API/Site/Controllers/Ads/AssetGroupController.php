@@ -73,22 +73,30 @@ class AssetGroupController extends BaseController {
 	 */
 	public function get_edit_params() {
 		return [
-			'id'     => [
+			'id'        => [
 				'description' => __( 'Asset Group ID.', 'google-listings-and-ads' ),
 				'type'        => 'integer',
 				'required'    => true,
 			],
-			'path1'  => [
+			'final_url' => [
+				'description'       => __( 'Final URL.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'sanitize_callback' => 'esc_url_raw',
+				'validate_callback' => function( $url ) {
+					return filter_var( $url, FILTER_VALIDATE_URL );
+				},
+			],
+			'path1'     => [
 				'description'       => __( 'Asset Group path 1.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_text_field',
 			],
-			'path2'  => [
+			'path2'     => [
 				'description'       => __( 'Asset Group path 2.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_text_field',
 			],
-			'assets' => [
+			'assets'    => [
 				'type'        => 'array',
 				'description' => __( 'List of asset to be edited.', 'google-listings-and-ads' ),
 				'items'       => $this->get_schema_asset(),

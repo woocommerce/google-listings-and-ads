@@ -304,6 +304,9 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			if ( ! empty( $params['path2'] ) ) {
 				$asset_group_fields['path2'] = $params['path2'];
 			}
+			if ( ! empty( $params['final_url'] ) ) {
+				$asset_group_fields['final_urls'] = [ $params['final_url'] ];
+			}
 
 			if ( ! empty( $asset_group_fields ) ) {
 				$operations[] = $this->edit_operation( $asset_group_id, $asset_group_fields );
