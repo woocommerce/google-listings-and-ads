@@ -11,11 +11,12 @@
 import classnames from 'classnames';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Modal, KeyboardShortcuts, Button } from '@wordpress/components';
+import { Modal, KeyboardShortcuts } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import PageControl from './page-control';
 import FinishButton from './finish-button';
 
@@ -119,20 +120,20 @@ export default function Guide( {
 
 				<div className="components-guide__footer">
 					{ canGoBack && (
-						<Button
+						<AppButton
 							className="components-guide__back-button"
 							onClick={ goBack }
 						>
 							{ backButtonText || __( 'Previous' ) }
-						</Button>
+						</AppButton>
 					) }
 					{ canGoForward && (
-						<Button
+						<AppButton
 							className="components-guide__forward-button"
 							onClick={ goForward }
 						>
 							{ __( 'Next' ) }
-						</Button>
+						</AppButton>
 					) }
 					{ finishBlock }
 				</div>
