@@ -285,7 +285,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get an asset group by ID.
+	 * Edit an asset group.
 	 *
 	 * @param int   $asset_group_id The asset group ID.
 	 * @param array $params The request parameters.
@@ -332,10 +332,10 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Returns a asset group edit operation.
+	 * Returns an asset group edit operation.
 	 *
-	 * @param integer $asset_group_id
-	 * @param array   $fields
+	 * @param integer $asset_group_id The Asset Group ID
+	 * @param array   $fields The fields to update.
 	 *
 	 * @return MutateOperation
 	 */

@@ -179,7 +179,8 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @param int    $asset_group_id The ID of the asset group.
 	 * @param string $asset_field_type The field type of the asset.
 	 * @param int    $asset_id The ID of the asset.
-	 * @return AssetGroupAssetOperation The operation for the asset group asset.
+	 *
+	 * @return AssetGroupAssetOperation The create operation for the asset group asset.
 	 */
 	protected function create_operation( int $asset_group_id, string $asset_field_type, int $asset_id ): MutateOperation {
 		$operation             = new AssetGroupAssetOperation();

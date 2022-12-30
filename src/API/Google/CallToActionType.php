@@ -25,7 +25,7 @@ class CallToActionType extends StatusMapping {
 	public const UNSPECIFIED = 'unspecified';
 
 	/**
-	 * Used for return value only. Represents value unknown in this version.
+	 * Represents value unknown in this version.
 	 *
 	 * @var string
 	 */

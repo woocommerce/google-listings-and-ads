@@ -42,9 +42,10 @@ class AdsAsset implements OptionsAwareInterface {
 	 * Return a temporary resource name for the asset.
 	 *
 	 * @param int $temporary_id The temporary ID to use for the asset.
-	 * @return string
+	 *
+	 * @return string The Asset resource name.
 	 */
-	protected function temporary_resource_name( $temporary_id = self::TEMPORARY_ID ) {
+	protected function temporary_resource_name( $temporary_id = self::TEMPORARY_ID ): string {
 		return ResourceNames::forAsset( $this->options->get_ads_id(), $temporary_id );
 	}
 
@@ -76,10 +77,11 @@ class AdsAsset implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Returns an operations to create a text asset.
+	 * Returns an operation to create a text asset.
 	 *
 	 * @param array $data The assets to use the text asset.
 	 * @param int   $temporary_id The temporary ID to use for the asset.
+	 *
 	 * @return MutateOperation The create asset operation.
 	 * @throws Exception If the asset type is not supported or if the image url is not a valid url.
 	 */
