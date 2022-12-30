@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import GridiconPlusSmall from 'gridicons/dist/plus-small';
@@ -9,6 +8,7 @@ import GridiconPlusSmall from 'gridicons/dist/plus-small';
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import AddTimeModal from './add-time-modal';
 
 /**
@@ -30,13 +30,13 @@ const AddTimeButton = ( props ) => {
 
 	return (
 		<>
-			<Button
+			<AppButton
 				isSecondary
 				icon={ <GridiconPlusSmall /> }
 				onClick={ handleClick }
 			>
 				{ __( 'Add another time', 'google-listings-and-ads' ) }
-			</Button>
+			</AppButton>
 			{ isOpen && (
 				<AddTimeModal
 					onRequestClose={ handleModalRequestClose }
