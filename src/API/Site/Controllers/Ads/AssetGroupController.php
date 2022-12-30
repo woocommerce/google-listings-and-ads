@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use WP_REST_Request as Request;
 use Exception;
 
@@ -232,6 +233,16 @@ class AssetGroupController extends BaseController {
 				'field_type' => [
 					'type'        => 'string',
 					'description' => __( 'Asset field type', 'google-listings-and-ads' ),
+					'enum'        => [
+						AssetFieldType::HEADLINE,
+						AssetFieldType::LONG_HEADLINE,
+						AssetFieldType::DESCRIPTION,
+						AssetFieldType::BUSINESS_NAME,
+						AssetFieldType::MARKETING_IMAGE,
+						AssetFieldType::SQUARE_MARKETING_IMAGE,
+						AssetFieldType::LOGO,
+						AssetFieldType::CALL_TO_ACTION_SELECTION,
+					],
 				],
 			],
 		];
