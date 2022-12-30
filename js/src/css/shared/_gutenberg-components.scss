@@ -11,13 +11,6 @@
 	@import "node_modules/@wordpress/components/src/date-time/date/datepicker"; /* stylelint-disable-line no-invalid-position-at-import-rule */
 }
 
-.components-button {
-	// Fix that the panel title is rendered under the button with dropdown arrow.
-	&.components-panel__body-toggle {
-		padding-right: $grid-unit-60;
-	}
-}
-
 // hack to fix radio button selected style bug caused by woocommerce-admin.
 .components-radio-control__input[type="radio"]:checked::before {
 	border: none;
