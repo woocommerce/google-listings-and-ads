@@ -73,7 +73,9 @@ const Dashboard = () => {
 	const ReportsLink = () => {
 		return (
 			<Link href={ getNewPath( null, '/google/reports' ) }>
-				<Button isPrimary>View Reports</Button>
+				<Button isPrimary>
+					{ __( 'View Reports', 'google-listings-and-ads' ) }
+				</Button>
 			</Link>
 		);
 	};
