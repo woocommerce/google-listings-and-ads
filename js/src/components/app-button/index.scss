@@ -14,17 +14,17 @@
 		}
 	}
 
-	&.is-link.is-destructive:focus {
-		box-shadow: none;
-		color: $alert-red;
-
-		&:not(:disabled) {
-			color: $alert-red;
-		}
-	}
-
 	&.is-link {
 		text-decoration: none;
+
+		&.is-destructive:focus {
+			box-shadow: none;
+			color: $alert-red;
+
+			&:not(:disabled) {
+				color: $alert-red;
+			}
+		}
 	}
 
 	white-space: nowrap;
