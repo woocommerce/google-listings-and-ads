@@ -84,16 +84,51 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Create an asset group.
+	 *
+	 * @param int $campaign_id
+	 *
+	 * @return int The asset group ID.
+	 * @throws ExceptionWithResponseData ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function create_asset_group( $campaign_id ): int {
+		try {
+			$campaign_resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
+			$name                   = ( new \DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
+
+			$operations = $this->create_operations( $campaign_resource_name, $name );
+			$this->client->getGoogleAdsServiceClient()->mutate( $this->options->get_ads_id(), $operations );
+
+			return 1;
+
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_api_exception_errors( $e );
+			throw new ExceptionWithResponseData(
+			/* translators: %s Error message */
+				sprintf( __( 'Error creating asset group: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[
+					'errors' => $errors,
+					'id'     => $campaign_id,
+				]
+			);
+		}
+	}
+
+	/**
 	 * Returns a set of operations to create an asset group.
 	 *
 	 * @param string $campaign_resource_name
-	 * @param string $campaign_name
+	 * @param string $name The asset group name.
 	 * @return array
 	 */
-	public function create_operations( string $campaign_resource_name, string $campaign_name ): array {
+	public function create_operations( string $campaign_resource_name, string $name ): array {
 		// Asset must be created before listing group.
 		return [
-			$this->asset_group_create_operation( $campaign_resource_name, $campaign_name ),
+			$this->asset_group_create_operation( $campaign_resource_name, $name ),
 			$this->listing_group_create_operation(),
 		];
 	}
