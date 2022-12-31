@@ -110,15 +110,14 @@ class AssetSuggestionsController extends BaseController {
 		return [
 			'id'   => [
 				'description'       => __( 'Post ID or Term ID.', 'google-listings-and-ads' ),
-				'type'              => 'number',
-				'sanitize_callback' => 'absint',
+				'type'              => [ 'integer', 'null' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'type' => [
 				'description'       => __( 'Type linked to the id.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_text_field',
-				'enum'              => [ 'post', 'term' ],
+				'enum'              => [ 'post', 'term', 'homepage' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];

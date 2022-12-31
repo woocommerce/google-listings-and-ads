@@ -117,8 +117,8 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get WP and other campaigns' assets from the specific post or term.
 	 *
-	 * @param int    $id Post or Term ID.
-	 * @param string $type Only possible values are post or term.
+	 * @param int|null $id Post ID, Term ID or null if it's the homepage.
+	 * @param string   $type Only possible values are post or term.
 	 */
 	public function get_assets_suggestions( $id, string $type ): array {
 		$wp_assets = $this->get_wp_assets( $id, $type );
@@ -156,17 +156,40 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get assets from specific post or term.
 	 *
-	 * @param int    $id Post or Term ID.
-	 * @param string $type Only possible values are post or term.
+	 * @param int|null $id Post or Term ID or null f it's the homepage.
+	 * @param string   $type Only possible values are post or term.
 	 *
 	 * @return array All assets available for specific term or post.
 	 */
-	protected function get_wp_assets( int $id, string $type ): array {
+	protected function get_wp_assets( $id, string $type ): array {
 		if ( $type === 'post' ) {
 			return $this->get_post_assets( $id );
+		} elseif ( $type === 'term' ) {
+			return $this->get_term_assets( $id );
+		} else {
+			return $this->get_homepage_assets();
 		}
 
-		return $this->get_term_assets( $id );
+	}
+
+	/**
+	 * Get assets from the homepage without static page.
+	 *
+	 * @return array Assets available for the homepage.
+	 */
+	protected function get_homepage_assets() {
+		return [
+			AssetFieldType::HEADLINE                 => [ __( 'Homepage', 'google-listings-and-ads' ) ],
+			AssetFieldType::LONG_HEADLINE            => [],
+			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
+			AssetFieldType::LOGO                     => $this->get_logo_images(),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => [],
+			AssetFieldType::MARKETING_IMAGE          => [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+			'display_url_path'                       => [],
+			'final_url'                              => get_bloginfo( 'url' ),
+		];
 
 	}
 
@@ -554,6 +577,12 @@ class AssetSuggestionsService implements Service {
 
 		// Split possible results between posts and terms.
 		$per_page_posts = (int) ceil( $per_page / 2 );
+		$homepage       = [];
+
+		if ( strpos( 'homepage', $search ) !== false ) {
+			$homepage[] = $this->get_homepage_final_url();
+			$per_page_posts--;
+		}
 
 		$posts = $this->get_post_suggestions( $search, $per_page_posts );
 
@@ -570,10 +599,25 @@ class AssetSuggestionsService implements Service {
 			$more_results = $this->get_post_suggestions( $search, $pending_results, $per_page_posts );
 		}
 
-		$result = array_merge( $posts, $terms, $more_results );
+		$result = array_merge( $homepage, $posts, $terms, $more_results );
 
 		return $this->sort_results( $result, $order_by );
 
+	}
+
+	/**
+	 * Get the final url for the homepage.
+	 *
+	 * @return array final url for the homepage.
+	 */
+	protected function get_homepage_final_url(): array {
+		$home_page = $this->wp->get_static_homepage();
+
+		if ( $home_page ) {
+			return $this->format_final_url_response( $home_page->ID, 'post', __( 'Homepage', 'google-listings-and-ads' ), get_permalink( $home_page->ID ) );
+		} else {
+			return $this->format_final_url_response( null, 'homepage', __( 'Homepage', 'google-listings-and-ads' ), get_bloginfo( 'url' ) );
+		}
 	}
 
 	/**
@@ -582,14 +626,8 @@ class AssetSuggestionsService implements Service {
 	 * @return array default final urls.
 	 */
 	protected function get_defaults_final_url_suggestions(): array {
-		// We can only offer assets if the homepage is static.
-		$home_page = $this->wp->get_static_homepage();
 		$shop_page = $this->wp->get_shop_page();
-		$defaults  = [];
-
-		if ( $home_page ) {
-			$defaults[] = $this->format_final_url_response( $home_page->ID, 'post', 'Homepage', get_permalink( $home_page->ID ) );
-		}
+		$defaults  = [ $this->get_homepage_final_url() ];
 
 		if ( $shop_page ) {
 			$defaults[] = $this->format_final_url_response( $shop_page->ID, 'post', $shop_page->post_title, get_permalink( $shop_page->ID ) );
@@ -621,14 +659,14 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Return an assotiave array with the page suggestion response format.
 	 *
-	 * @param int    $id post|term ID
-	 * @param string $type post|term
-	 * @param string $title page|term title
-	 * @param string $url page|term url
+	 * @param int|null $id post|term ID|null if it's the homepage.
+	 * @param string   $type post|term
+	 * @param string   $title page|term title
+	 * @param string   $url page|term url
 	 *
 	 * @return array response formated.
 	 */
-	protected function format_final_url_response( int $id, string $type, string $title, string $url ): array {
+	protected function format_final_url_response( $id, string $type, string $title, string $url ): array {
 		return [
 			'id'    => $id,
 			'type'  => $type,
