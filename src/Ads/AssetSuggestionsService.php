@@ -120,13 +120,37 @@ class AssetSuggestionsService implements Service {
 	 * @param int    $id Post or Term ID.
 	 * @param string $type Only possible values are post or term.
 	 */
-	public function get_assets_suggestions( int $id, string $type ): array {
+	public function get_assets_suggestions( $id, string $type ): array {
 		$wp_assets = $this->get_wp_assets( $id, $type );
-		$url       = $wp_assets['final_url'];
 
-		$assets_from_other_campaings = $this->asset_group_asset->get_assets_by_url( $url );
+		return $this->combine_results_wp_assets_groups( $wp_assets, $this->asset_group_asset->get_assets_by_url( $wp_assets['final_url'] ) );
+	}
 
-		return array_merge( $wp_assets, $assets_from_other_campaings );
+	/**
+	 * Combine the results from the WP assets and the assets from other campaigns.
+	 *
+	 * @param array $wp_assets The WordPress Assets .
+	 * @param array $asset_group_assets The Asset Group Assets.
+	 *
+	 * @return array The combined results.
+	 */
+	protected function combine_results_wp_assets_groups( array $wp_assets, array $asset_group_assets ): array {
+		foreach ( $wp_assets as $key => $value ) {
+			switch ( $key ) {
+
+				case AssetFieldType::HEADLINE:
+				case AssetFieldType::LONG_HEADLINE:
+				case AssetFieldType::DESCRIPTION:
+				case AssetFieldType::SQUARE_MARKETING_IMAGE:
+				case AssetFieldType::MARKETING_IMAGE:
+					$wp_assets[ $key ] = array_merge( $value, $asset_group_assets[ $key ] ?? [] );
+					break;
+				default:
+					$wp_assets[ $key ] = $value;
+			}
+		}
+
+		return $wp_assets;
 	}
 
 	/**
