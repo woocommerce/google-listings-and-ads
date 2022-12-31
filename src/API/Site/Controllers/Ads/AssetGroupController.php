@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use WP_REST_Request as Request;
 use Exception;
+use Google\ApiCore\Call;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -49,6 +50,23 @@ class AssetGroupController extends BaseController {
 				[
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->edit_asset_group_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_edit_params(),
+				],
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->create_assset_group(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_edit_params(),
+				],
+			]
+		);
+		$this->register_route(
+			'ads/campaigns/asset-groups',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->create_assset_group(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_edit_params(),
 				],
@@ -141,6 +159,21 @@ class AssetGroupController extends BaseController {
 				return $this->response_from_exception( $e );
 			}
 
+		};
+	}
+
+	public function create_assset_group(): callable {
+		return function( Request $request ) {
+			try {
+				$asset_group_id = $this->ads_asset_group->create_asset_group( $request->get_param( 'id' ) );
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully created asset group.', 'google-listings-and-ads' ),
+					'id'      => $asset_group_id,
+				];
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
 		};
 	}
 
