@@ -1,0 +1,14 @@
+// Pseudo-element for showing error message at the left side of the primary block
+// in the footer of Media Modal.
+// The values of float, height, and margin-top are referred from:
+// - https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/wp-includes/css/buttons.css#L74
+// - https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/wp-includes/css/media-views.css#L330-L331
+.gla-decorated-error-message[data-error-message]::before {
+	content: attr(data-error-message);
+	float: left;
+	height: 32px;
+	margin-top: 15px;
+	line-height: 32px;
+	font-size: $gla-font-small;
+	color: $alert-red;
+}
