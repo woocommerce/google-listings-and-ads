@@ -135,6 +135,51 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get Assets for specific final URL.
+	 *
+	 * @param string $url The final url.
+	 *
+	 * @return array The assets for the asset groups with a specific final url.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function get_assets_by_url( string $url ): array {
+		try {
+
+			$asset_group_assets = [];
+			$asset_results      = ( new AdsAssetGroupAssetQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'asset_group.final_urls', [ $url ], 'CONTAINS ANY' )
+				->where( 'asset_group_asset.field_type', $this->get_asset_field_types_query(), 'IN' )
+				->where( 'asset_group_asset.status', 'REMOVED', '!=' )
+				->get_results();
+
+			/** @var GoogleAdsRow $row */
+			foreach ( $asset_results->iterateAllElements() as $row ) {
+
+				/** @var AssetGroupAsset $asset_group_asset */
+				$asset_group_asset = $row->getAssetGroupAsset();
+
+				$field_type                          = AssetFieldType::label( $asset_group_asset->getFieldType() );
+				$asset_group_assets[ $field_type ][] = $this->asset->get_asset_content( $row );
+			}
+
+			return $asset_group_assets;
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_api_exception_errors( $e );
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving asset groups assets: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
+
+	}
+
+	/**
 	 * Edit assets group assets.
 	 *
 	 * @param int   $asset_group_id The asset group id.
