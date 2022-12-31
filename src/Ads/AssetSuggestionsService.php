@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Exception;
 use WP_Query;
 use wpdb;
@@ -44,6 +45,13 @@ class AssetSuggestionsService implements Service {
 	 * @var ImageUtility
 	 */
 	protected ImageUtility $image_utility;
+
+	/**
+	 * The AdsAssetGroupAsset class.
+	 *
+	 * @var AdsAssetGroupAsset
+	 */
+	protected $asset_group_asset;
 
 	/**
 	 * WordPress database access abstraction class.
@@ -91,16 +99,18 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * AssetSuggestionsService constructor.
 	 *
-	 * @param WP           $wp WP Proxy.
-	 * @param WC           $wc WC Proxy.
-	 * @param ImageUtility $image_utility Image utility.
-	 * @param wpdb         $wpdb WordPress database access abstraction class.
+	 * @param WP                 $wp WP Proxy.
+	 * @param WC                 $wc WC Proxy.
+	 * @param ImageUtility       $image_utility Image utility.
+	 * @param wpdb               $wpdb WordPress database access abstraction class.
+	 * @param AdsAssetGroupAsset $asset_group_asset The AdsAssetGroupAsset class.
 	 */
-	public function __construct( WP $wp, WC $wc, ImageUtility $image_utility, wpdb $wpdb ) {
-		$this->wp            = $wp;
-		$this->wc            = $wc;
-		$this->wpdb          = $wpdb;
-		$this->image_utility = $image_utility;
+	public function __construct( WP $wp, WC $wc, ImageUtility $image_utility, wpdb $wpdb, AdsAssetGroupAsset $asset_group_asset ) {
+		$this->wp                = $wp;
+		$this->wc                = $wc;
+		$this->wpdb              = $wpdb;
+		$this->image_utility     = $image_utility;
+		$this->asset_group_asset = $asset_group_asset;
 	}
 
 	/**
@@ -110,8 +120,12 @@ class AssetSuggestionsService implements Service {
 	 * @param string $type Only possible values are post or term.
 	 */
 	public function get_assets_suggestions( int $id, string $type ): array {
-		// TODO: Fetch assets from others campaigns and merge the result with the WP Assets.
-		return $this->get_wp_assets( $id, $type );
+		$wp_assets = $this->get_wp_assets( $id, $type );
+		$url       = $wp_assets['final_url'];
+
+		$assets_from_other_campaings = $this->asset_group_asset->get_assets_by_url( $url );
+
+		return array_merge( $wp_assets, $assets_from_other_campaings );
 	}
 
 	/**
