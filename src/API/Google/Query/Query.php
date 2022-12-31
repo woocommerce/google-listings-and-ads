@@ -238,6 +238,7 @@ abstract class Query implements QueryInterface {
 			case 'NOT IN':
 			case 'BETWEEN':
 			case 'IS NOT NULL':
+			case 'CONTAINS ANY':
 				// These are all valid.
 				return;
 
@@ -319,7 +320,7 @@ abstract class Query implements QueryInterface {
 			$column  = $where['column'];
 			$compare = $where['compare'];
 
-			if ( 'IN' === $compare || 'NOT_IN' === $compare ) {
+			if ( 'IN' === $compare || 'NOT_IN' === $compare || 'CONTAINS ANY' === $compare ) {
 				$value = sprintf(
 					"('%s')",
 					join(
