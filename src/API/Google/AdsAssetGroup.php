@@ -288,24 +288,24 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * Edit an asset group.
 	 *
 	 * @param int   $asset_group_id The asset group ID.
-	 * @param array $params The request parameters.
+	 * @param array $data The asset group data.
 	 *
 	 * @return int The asset group ID.
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function edit_asset_group( int $asset_group_id, array $params ): int {
+	public function edit_asset_group( int $asset_group_id, array $data ): int {
 		try {
 			$asset_group_fields = [];
-			$operations         = $this->asset_group_asset->edit_operations_assets_group_assets( $asset_group_id, $params['assets'] ?? [] );
+			$operations         = $this->asset_group_asset->edit_operations_assets_group_assets( $asset_group_id, $data['assets'] ?? [] );
 
-			if ( ! empty( $params['path1'] ) ) {
-				$asset_group_fields['path1'] = $params['path1'];
+			if ( ! empty( $data['path1'] ) ) {
+				$asset_group_fields['path1'] = $data['path1'];
 			}
-			if ( ! empty( $params['path2'] ) ) {
-				$asset_group_fields['path2'] = $params['path2'];
+			if ( ! empty( $data['path2'] ) ) {
+				$asset_group_fields['path2'] = $data['path2'];
 			}
-			if ( ! empty( $params['final_url'] ) ) {
-				$asset_group_fields['final_urls'] = [ $params['final_url'] ];
+			if ( ! empty( $data['final_url'] ) ) {
+				$asset_group_fields['final_urls'] = [ $data['final_url'] ];
 			}
 
 			if ( ! empty( $asset_group_fields ) ) {

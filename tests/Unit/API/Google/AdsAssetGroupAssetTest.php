@@ -1,5 +1,5 @@
 <?php
-declare( strict_types=0 );
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
@@ -213,12 +213,12 @@ class AdsAssetGroupAssetTest extends UnitTest {
 			$this->asset_group_asset->edit_operations_assets_group_assets( self::TEST_ASSET_GROUP_ID, $assets )
 		);
 
-		// We should have two type of operations: asset_operation and asset_group_asset_operation
+		// We should have one type of operations: asset_operation.
 		$this->assertEquals( 1, count( $grouped_operations ) );
 
 		$this->assertArrayNotHasKey( 'asset_operation', $grouped_operations );
 
-		// We should have two delete  asset_group_asset_operation.
+		// We should have two delete asset_group_asset_operation.
 		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['remove'] ) );
 		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[0]['id'], AssetFieldType::name( $assets[0]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][0] )->getRemove() );
 		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[1]['id'], AssetFieldType::name( $assets[1]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][1] )->getRemove() );
