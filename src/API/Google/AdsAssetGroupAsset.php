@@ -142,7 +142,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @return array The assets for the asset groups with a specific final url.
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_assets_by_url( string $url ): array {
+	public function get_assets_by_final_url( string $url ): array {
 		try {
 
 			$asset_group_assets = [];
@@ -170,7 +170,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			$errors = $this->get_api_exception_errors( $e );
 			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
-				sprintf( __( 'Error retrieving asset groups assets: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				sprintf( __( 'Error retrieving asset groups assets by final url: %s', 'google-listings-and-ads' ), reset( $errors ) ),
 				$this->map_grpc_code_to_http_status_code( $e ),
 				null,
 				[ 'errors' => $errors ]
