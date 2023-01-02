@@ -523,39 +523,51 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$this->asset_suggestions->get_assets_suggestions( self::INVALID_ID, 'term' );
 	}
 
+
+
 	public function test_combine_asset_results() {
+		$asset_1 = $this->generate_random_converted_asset();
+		$asset_2 = $this->generate_random_converted_asset();
+
 		$this->asset_group_asset->expects( $this->once() )
 			->method( 'get_assets_by_final_url' )
 			->with( get_permalink( $this->post->ID ) )
 			->willReturn(
 				[
-					AssetFieldType::DESCRIPTION => [ 'desc1', 'desc2' ],
-					AssetFieldType::HEADLINE    => [ 'headline1' ],
+					AssetFieldType::DESCRIPTION => [ $asset_1 ],
+					AssetFieldType::HEADLINE    => [ $asset_2 ],
 				]
 			);
 
 		$wp_asset                                = $this->format_post_asset_response( $this->post );
-		$wp_asset[ AssetFieldType::DESCRIPTION ] = [ 'desc1', 'desc2', ...$wp_asset[ AssetFieldType::DESCRIPTION ] ];
-		$wp_asset[ AssetFieldType::HEADLINE ]    = [ 'headline1', ...$wp_asset[ AssetFieldType::HEADLINE ] ];
+		$wp_asset[ AssetFieldType::DESCRIPTION ] = [ $asset_1['content'], ...$wp_asset[ AssetFieldType::DESCRIPTION ] ];
+		$wp_asset[ AssetFieldType::HEADLINE ]    = [ $asset_2['content'], ...$wp_asset[ AssetFieldType::HEADLINE ] ];
 
 		$this->assertEquals( $wp_asset, $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 
 	}
 
 	public function test_combine_asset_max_results() {
+		$asset_1 = $this->generate_random_converted_asset();
+		$asset_2 = $this->generate_random_converted_asset();
+		$asset_3 = $this->generate_random_converted_asset();
+		$asset_4 = $this->generate_random_converted_asset();
+		$asset_5 = $this->generate_random_converted_asset();
+		$asset_6 = $this->generate_random_converted_asset();
+
 		$this->asset_group_asset->expects( $this->once() )
 			->method( 'get_assets_by_final_url' )
 			->with( get_permalink( $this->post->ID ) )
 			->willReturn(
 				[
-					AssetFieldType::DESCRIPTION => [ 'desc1', 'desc2', 'desc3', 'desc4', 'desc5' ],
-					AssetFieldType::HEADLINE    => [ 'headline1' ],
+					AssetFieldType::DESCRIPTION => [ $asset_1, $asset_2, $asset_3, $asset_4, $asset_5 ],
+					AssetFieldType::HEADLINE    => [ $asset_6 ],
 				]
 			);
 
 		$wp_asset                                = $this->format_post_asset_response( $this->post );
-		$wp_asset[ AssetFieldType::DESCRIPTION ] = [ 'desc1', 'desc2', 'desc3', 'desc4', 'desc5' ];
-		$wp_asset[ AssetFieldType::HEADLINE ]    = [ 'headline1', ...$wp_asset[ AssetFieldType::HEADLINE ] ];
+		$wp_asset[ AssetFieldType::DESCRIPTION ] = [ $asset_1['content'], $asset_2['content'], $asset_3['content'], $asset_4['content'], $asset_5['content'] ];
+		$wp_asset[ AssetFieldType::HEADLINE ]    = [ $asset_6['content'], ...$wp_asset[ AssetFieldType::HEADLINE ] ];
 
 		$this->assertEquals( $wp_asset, $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 
@@ -633,6 +645,18 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 
+	}
+
+	/**
+	 * Generates a random converted asset.
+	 *
+	 * @return array The random converted asset.
+	 */
+	private function generate_random_converted_asset(): array {
+		return [
+			'id'      => rand(),
+			'content' => 'random content' . rand(),
+		];
 	}
 
 }

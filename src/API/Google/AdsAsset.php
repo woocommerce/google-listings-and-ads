@@ -125,7 +125,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @return string The asset content.
 	 */
-	public function get_asset_content( GoogleAdsRow $row ): string {
+	protected function get_asset_content( GoogleAdsRow $row ): string {
 		/** @var Asset $asset */
 		$asset = $row->getAsset();
 

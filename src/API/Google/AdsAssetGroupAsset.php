@@ -162,7 +162,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 				$asset_group_asset = $row->getAssetGroupAsset();
 
 				$field_type                          = AssetFieldType::label( $asset_group_asset->getFieldType() );
-				$asset_group_assets[ $field_type ][] = $this->asset->get_asset_content( $row );
+				$asset_group_assets[ $field_type ][] = $this->asset->convert_asset( $row );
 			}
 
 			return $asset_group_assets;

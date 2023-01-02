@@ -174,21 +174,27 @@ class AssetSuggestionsService implements Service {
 	 */
 	protected function combine_results_wp_assets_groups( array $asset_group_assets, array $wp_assets ): array {
 		foreach ( $asset_group_assets as $key => $value ) {
+			$contents = array_column( $value, 'content' );
 			switch ( $key ) {
 				case AssetFieldType::HEADLINE:
 				case AssetFieldType::LONG_HEADLINE:
 				case AssetFieldType::DESCRIPTION:
 				case AssetFieldType::SQUARE_MARKETING_IMAGE:
 				case AssetFieldType::MARKETING_IMAGE:
-					// Add the assets if we have less than the maximum allowed.
-					if ( count( $asset_group_assets[ $key ] ) < self::FIELD_TYPE_REQUIREMENTS[ $key ]['max'] ) {
-						$wp_assets[ $key ] = array_merge( $value, $wp_assets[ $key ] ?? [] );
+				case AssetFieldType::LOGO:
+					// if we have less than the maximum allowed, add more assets from the WP assets.
+					if ( count( $contents ) < self::FIELD_TYPE_REQUIREMENTS[ $key ]['max'] ) {
+						$wp_assets[ $key ] = array_merge( $contents, $wp_assets[ $key ] ?? [] );
 						break;
 					}
-					$wp_assets[ $key ] = $value;
+					$wp_assets[ $key ] = $contents;
+					break;
+				case AssetFieldType::BUSINESS_NAME:
+				case AssetFieldType::CALL_TO_ACTION_SELECTION:
+					$wp_assets[ $key ] = $contents[0] ?? $wp_assets[ $key ] ?? '';
 					break;
 				default:
-					$wp_assets[ $key ] = $value;
+					$wp_assets[ $key ] = $contents;
 			}
 		}
 
