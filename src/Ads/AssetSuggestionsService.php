@@ -84,6 +84,44 @@ class AssetSuggestionsService implements Service {
 	 * Default maximum marketing images.
 	 */
 	protected const DEFAULT_MAXIMUM_MARKETING_IMAGES = 20;
+
+	/**
+	 * Field type requirements.
+	 */
+	protected const FIELD_TYPE_REQUIREMENTS = [
+		AssetFieldType::HEADLINE                 => [
+			'min' => 3,
+			'max' => 5,
+		],
+		AssetFieldType::LONG_HEADLINE            => [
+			'min' => 1,
+			'max' => 5,
+		],
+		AssetFieldType::DESCRIPTION              => [
+			'min' => 2,
+			'max' => 5,
+		],
+		AssetFieldType::BUSINESS_NAME            => [
+			'min' => 1,
+			'max' => 1,
+		],
+		AssetFieldType::MARKETING_IMAGE          => [
+			'min' => 1,
+			'max' => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
+		],
+		AssetFieldType::SQUARE_MARKETING_IMAGE   => [
+			'min' => 1,
+			'max' => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
+		],
+		AssetFieldType::LOGO                     => [
+			'min' => 1,
+			'max' => 5,
+		],
+		AssetFieldType::CALL_TO_ACTION_SELECTION => [
+			'min' => 0,
+			'max' => 1,
+		],
+	];
 	/**
 	 * The subsize key for the square marketing image.
 	 */
@@ -123,27 +161,31 @@ class AssetSuggestionsService implements Service {
 	public function get_assets_suggestions( $id, string $type ): array {
 		$wp_assets = $this->get_wp_assets( $id, $type );
 
-		return $this->combine_results_wp_assets_groups( $wp_assets, $this->asset_group_asset->get_assets_by_url( $wp_assets['final_url'] ) );
+		return $this->combine_results_wp_assets_groups( $this->asset_group_asset->get_assets_by_final_url( $wp_assets['final_url'] ), $wp_assets );
 	}
 
 	/**
-	 * Combine the results from the WP assets and the assets from other campaigns.
+	 * Combine the results from the WP assets and the assets from other campaigns with the same final url.
 	 *
-	 * @param array $wp_assets The WordPress Assets .
 	 * @param array $asset_group_assets The Asset Group Assets.
+	 * @param array $wp_assets The WordPress Assets.
 	 *
 	 * @return array The combined results.
 	 */
-	protected function combine_results_wp_assets_groups( array $wp_assets, array $asset_group_assets ): array {
-		foreach ( $wp_assets as $key => $value ) {
+	protected function combine_results_wp_assets_groups( array $asset_group_assets, array $wp_assets ): array {
+		foreach ( $asset_group_assets as $key => $value ) {
 			switch ( $key ) {
-
 				case AssetFieldType::HEADLINE:
 				case AssetFieldType::LONG_HEADLINE:
 				case AssetFieldType::DESCRIPTION:
 				case AssetFieldType::SQUARE_MARKETING_IMAGE:
 				case AssetFieldType::MARKETING_IMAGE:
-					$wp_assets[ $key ] = array_merge( $value, $asset_group_assets[ $key ] ?? [] );
+					// Add the assets if we have less than the maximum allowed.
+					if ( count( $asset_group_assets[ $key ] ) < self::FIELD_TYPE_REQUIREMENTS[ $key ]['max'] ) {
+						$wp_assets[ $key ] = array_merge( $value, $wp_assets[ $key ] ?? [] );
+						break;
+					}
+					$wp_assets[ $key ] = $value;
 					break;
 				default:
 					$wp_assets[ $key ] = $value;
