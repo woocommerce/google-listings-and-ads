@@ -156,7 +156,7 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get assets from specific post or term.
 	 *
-	 * @param int|null $id Post or Term ID or null f it's the homepage.
+	 * @param int|null $id Post or Term ID or null if it's not a static homepage.
 	 * @param string   $type Only possible values are post or term.
 	 *
 	 * @return array All assets available for specific term or post.
