@@ -146,9 +146,11 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		try {
 
 			$asset_group_assets = [];
-			$asset_results      = ( new AdsAssetGroupAssetQuery() )
+
+			// Search urls with and without trailing slash.
+			$asset_results = ( new AdsAssetGroupAssetQuery() )
 				->set_client( $this->client, $this->options->get_ads_id() )
-				->where( 'asset_group.final_urls', [ $url ], 'CONTAINS ANY' )
+				->where( 'asset_group.final_urls', [ rtrim( $url, '/' ), rtrim( $url, '/' ) . '/' ], 'CONTAINS ANY' )
 				->where( 'asset_group_asset.field_type', $this->get_asset_field_types_query(), 'IN' )
 				->where( 'asset_group_asset.status', 'REMOVED', '!=' )
 				->get_results();
