@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ArrayUtil;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
 use WC_Helper_Product;
@@ -66,12 +67,13 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->wp            = $this->createMock( WP::class );
-		$this->wc            = $this->createMock( WC::class );
-		$this->image_utility = $this->createMock( ImageUtility::class );
-		$this->wpdb          = $this->createMock( wpdb::class );
+		$this->wp                = $this->createMock( WP::class );
+		$this->wc                = $this->createMock( WC::class );
+		$this->image_utility     = $this->createMock( ImageUtility::class );
+		$this->wpdb              = $this->createMock( wpdb::class );
+		$this->asset_group_asset = $this->createMock( AdsAssetGroupAsset::class );
 
-		$this->asset_suggestions = new AssetSuggestionsService( $this->wp, $this->wc, $this->image_utility, $this->wpdb );
+		$this->asset_suggestions = new AssetSuggestionsService( $this->wp, $this->wc, $this->image_utility, $this->wpdb, $this->asset_group_asset );
 
 		$this->post = $this->factory()->post->create_and_get( [ 'post_title' => 'Abcd' ] );
 		$this->term = $this->factory()->term->create_and_get( [ 'name' => 'bcde' ] );
@@ -521,6 +523,44 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$this->asset_suggestions->get_assets_suggestions( self::INVALID_ID, 'term' );
 	}
 
+	public function test_combine_asset_results() {
+		$this->asset_group_asset->expects( $this->once() )
+			->method( 'get_assets_by_final_url' )
+			->with( get_permalink( $this->post->ID ) )
+			->willReturn(
+				[
+					AssetFieldType::DESCRIPTION => [ 'desc1', 'desc2' ],
+					AssetFieldType::HEADLINE    => [ 'headline1' ],
+				]
+			);
+
+		$wp_asset                                = $this->format_post_asset_response( $this->post );
+		$wp_asset[ AssetFieldType::DESCRIPTION ] = [ 'desc1', 'desc2', ...$wp_asset[ AssetFieldType::DESCRIPTION ] ];
+		$wp_asset[ AssetFieldType::HEADLINE ]    = [ 'headline1', ...$wp_asset[ AssetFieldType::HEADLINE ] ];
+
+		$this->assertEquals( $wp_asset, $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+
+	}
+
+	public function test_combine_asset_max_results() {
+		$this->asset_group_asset->expects( $this->once() )
+			->method( 'get_assets_by_final_url' )
+			->with( get_permalink( $this->post->ID ) )
+			->willReturn(
+				[
+					AssetFieldType::DESCRIPTION => [ 'desc1', 'desc2', 'desc3', 'desc4', 'desc5' ],
+					AssetFieldType::HEADLINE    => [ 'headline1' ],
+				]
+			);
+
+		$wp_asset                                = $this->format_post_asset_response( $this->post );
+		$wp_asset[ AssetFieldType::DESCRIPTION ] = [ 'desc1', 'desc2', 'desc3', 'desc4', 'desc5' ];
+		$wp_asset[ AssetFieldType::HEADLINE ]    = [ 'headline1', ...$wp_asset[ AssetFieldType::HEADLINE ] ];
+
+		$this->assertEquals( $wp_asset, $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+
+	}
+
 	public function test_assets_with_logo() {
 		$image_id = $this->get_test_image();
 
@@ -594,7 +634,5 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 
 	}
-
-
 
 }
