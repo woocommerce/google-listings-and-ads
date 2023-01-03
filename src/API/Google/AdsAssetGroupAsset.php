@@ -196,7 +196,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Returns a campaign delete operation.
+	 * Returns a delete operation for asset group asset.
 	 *
 	 * @param int    $asset_group_id The ID of the asset group.
 	 * @param string $asset_field_type The field type of the asset.
