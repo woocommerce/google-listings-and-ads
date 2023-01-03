@@ -144,6 +144,10 @@ class AssetSuggestionsService implements Service {
 			$final_url = get_term_link( $id );
 		}
 
+		if ( $final_url === false || is_wp_error( $final_url ) ) {
+			return [];
+		}
+
 		$assets = $this->asset_group_asset->get_assets_by_final_url( $final_url );
 
 		if ( empty( $assets ) ) {
