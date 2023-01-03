@@ -150,6 +150,10 @@ class AssetSuggestionsService implements Service {
 			return [];
 		}
 
+		if ( ! isset( $assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] ) ) {
+			$assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] = null;
+		}
+
 		return array_merge( [ 'final_url' => $final_url ], $assets );
 
 	}
