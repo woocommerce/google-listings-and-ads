@@ -189,7 +189,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 *
 	 * @return array The asset group asset operations.
 	 */
-	public function edit_operations_assets_group_assets( int $asset_group_id, array $assets ): array {
+	public function edit_operations( int $asset_group_id, array $assets ): array {
 		if ( empty( $assets ) ) {
 			return [];
 		}
@@ -243,7 +243,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Returns a campaign delete operation.
+	 * Returns a delete operation for asset group asset.
 	 *
 	 * @param int    $asset_group_id The ID of the asset group.
 	 * @param string $asset_field_type The field type of the asset.

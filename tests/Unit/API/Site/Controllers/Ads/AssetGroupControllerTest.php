@@ -101,13 +101,16 @@ class AssetGroupControllerTest extends RESTControllerUnitTest {
 
 	public function test_edit_asset_group_with_api_exception() {
 		$asset_group_data = [
-			'id'    => self::TEST_ASSET_GROUP_ID,
-			'path1' => 'test path1',
+			'id'          => self::TEST_ASSET_GROUP_ID,
+			'path1'       => 'test path1',
+			'wrong_field' => 'should not be here',
 		];
+
+		$expected_asset_group_data = [ 'path1' => 'test path1' ];
 
 		$this->asset_group->expects( $this->once() )
 			->method( 'edit_asset_group' )
-			->with( self::TEST_ASSET_GROUP_ID, $asset_group_data )
+			->with( self::TEST_ASSET_GROUP_ID, $expected_asset_group_data, [] )
 			->willThrowException( new Exception( 'error', 400 ) );
 
 		$response = $this->do_request( self::ROUTE_ASSET_GROUPS, 'POST', $asset_group_data );

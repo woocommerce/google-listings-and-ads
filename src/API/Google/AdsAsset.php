@@ -57,7 +57,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @return int The asset type.
 	 * @throws Exception If the field type is not supported.
 	 */
-	protected function get_asset_type_by_field_type( $field_type ): int {
+	protected function get_asset_type_by_field_type( string $field_type ): int {
 		switch ( $field_type ) {
 			case AssetFieldType::LOGO:
 			case AssetFieldType::MARKETING_IMAGE:
@@ -79,7 +79,7 @@ class AdsAsset implements OptionsAwareInterface {
 	/**
 	 * Returns an operation to create a text asset.
 	 *
-	 * @param array $data The assets to use the text asset.
+	 * @param array $data The asset data.
 	 * @param int   $temporary_id The temporary ID to use for the asset.
 	 *
 	 * @return MutateOperation The create asset operation.
@@ -135,6 +135,10 @@ class AdsAsset implements OptionsAwareInterface {
 			case AssetType::TEXT:
 				return $asset->getTextAsset()->getText();
 			case AssetType::CALL_TO_ACTION:
+				// When CallToActionType::UNSPECIFIED is returned, does not have a CallToActionAsset.
+				if ( ! $asset->getCallToActionAsset() ) {
+					return CallToActionType::UNSPECIFIED;
+				}
 				return CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
 			default:
 				return '';
