@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MultichannelMarketing;
 
 use Automattic\WooCommerce\Admin\Marketing\MarketingCampaign;
+use Automattic\WooCommerce\Admin\Marketing\MarketingCampaignType;
 use Automattic\WooCommerce\Admin\Marketing\MarketingChannelInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
@@ -124,6 +125,13 @@ class GLAChannelTest extends UnitTest {
 			->willThrowException( new Exception( 'Error retrieving issues!' ) );
 
 		$this->assertEquals( 0, $this->gla_channel->get_errors_count() );
+	}
+
+	public function test_get_supported_campaign_types_returns_ads_campaign() {
+		$this->assertCount( 1, $this->gla_channel->get_supported_campaign_types() );
+		$this->assertContainsOnlyInstancesOf( MarketingCampaignType::class, $this->gla_channel->get_supported_campaign_types() );
+		$this->assertArrayHasKey( 'google-ads', $this->gla_channel->get_supported_campaign_types() );
+		$this->assertEquals( 'google-ads', $this->gla_channel->get_supported_campaign_types()['google-ads']->get_id() );
 	}
 
 	public function test_get_campaigns_returns_empty_if_no_ads_id_exists() {

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing;
 
 use Automattic\WooCommerce\Admin\Marketing\MarketingCampaign;
+use Automattic\WooCommerce\Admin\Marketing\MarketingCampaignType;
 use Automattic\WooCommerce\Admin\Marketing\MarketingChannelInterface;
 use Automattic\WooCommerce\Admin\Marketing\Price;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
@@ -56,6 +57,11 @@ class GLAChannel implements MarketingChannelInterface {
 	protected $wc;
 
 	/**
+	 * @var MarketingCampaignType[]
+	 */
+	protected $campaign_types;
+
+	/**
 	 * GLAChannel constructor.
 	 *
 	 * @param MerchantCenterService $merchant_center
@@ -72,6 +78,7 @@ class GLAChannel implements MarketingChannelInterface {
 		$this->merchant_statuses  = $merchant_statuses;
 		$this->product_sync_stats = $product_sync_stats;
 		$this->wc                 = $wc;
+		$this->campaign_types     = $this->generate_campaign_types();
 	}
 
 	/**
@@ -159,6 +166,15 @@ class GLAChannel implements MarketingChannelInterface {
 	}
 
 	/**
+	 * Returns an array of marketing campaign types that the channel supports.
+	 *
+	 * @return MarketingCampaignType[] Array of marketing campaign type objects.
+	 */
+	public function get_supported_campaign_types(): array {
+		return $this->campaign_types;
+	}
+
+	/**
 	 * Returns an array of the channel's marketing campaigns.
 	 *
 	 * @return MarketingCampaign[]
@@ -180,7 +196,7 @@ class GLAChannel implements MarketingChannelInterface {
 
 					return new MarketingCampaign(
 						(string) $campaign_data['id'],
-						$this,
+						$this->campaign_types['google-ads'],
 						$campaign_data['name'],
 						admin_url( 'admin.php?page=wc-admin&path=/google/settings&subpath=/campaigns/edit' ),
 						$cost,
@@ -191,5 +207,23 @@ class GLAChannel implements MarketingChannelInterface {
 		} catch ( ExceptionWithResponseData $e ) {
 			return [];
 		}
+	}
+
+	/**
+	 * Generate an array of supported marketing campaign types.
+	 *
+	 * @return MarketingCampaignType[]
+	 */
+	protected function generate_campaign_types(): array {
+		return [
+			'google-ads' => new MarketingCampaignType(
+				'google-ads',
+				$this,
+				'Google Ads',
+				'Boost your product listings with a campaign that is automatically optimized to meet your goals.',
+				admin_url( 'admin.php?page=wc-admin&path=/google/settings&subpath=/campaigns/create' ),
+				$this->get_icon_url()
+			),
+		];
 	}
 }
