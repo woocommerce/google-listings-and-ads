@@ -150,6 +150,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			// Search urls with and without trailing slash.
 			$asset_results = ( new AdsAssetGroupAssetQuery() )
 				->set_client( $this->client, $this->options->get_ads_id() )
+				->add_columns( [ 'asset_group.path1', 'asset_group.path2' ] )
 				->where( 'asset_group.final_urls', [ rtrim( $url, '/' ), rtrim( $url, '/' ) . '/' ], 'CONTAINS ANY' )
 				->where( 'asset_group_asset.field_type', $this->get_asset_field_types_query(), 'IN' )
 				->where( 'asset_group_asset.status', 'REMOVED', '!=' )
@@ -161,8 +162,19 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 				/** @var AssetGroupAsset $asset_group_asset */
 				$asset_group_asset = $row->getAssetGroupAsset();
 
-				$field_type                          = AssetFieldType::label( $asset_group_asset->getFieldType() );
-				$asset_group_assets[ $field_type ][] = $this->asset->convert_asset( $row );
+				$field_type = AssetFieldType::label( $asset_group_asset->getFieldType() );
+				switch ( $field_type ) {
+					case AssetFieldType::BUSINESS_NAME:
+					case AssetFieldType::CALL_TO_ACTION_SELECTION:
+						$asset_group_assets[ $field_type ] = $this->asset->convert_asset( $row )['content'];
+						break;
+					default:
+						$asset_group_assets[ $field_type ][] = $this->asset->convert_asset( $row )['content'];
+				}
+
+				$asset_group_assets = $this->add_url_paths( $row->getAssetGroup()->getPath1(), $asset_group_assets );
+				$asset_group_assets = $this->add_url_paths( $row->getAssetGroup()->getPath2(), $asset_group_assets );
+
 			}
 
 			return $asset_group_assets;
@@ -178,6 +190,25 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 				[ 'errors' => $errors ]
 			);
 		}
+
+	}
+
+	/**
+	 * Add url path to asset group assets.
+	 *
+	 * @param string $path The url path.
+	 * @param array  $asset_group_assets The asset group assets.
+	 * @param int    $max_number The max number of url paths to add.
+	 *
+	 * @return array The asset group assets.
+	 */
+	protected function add_url_paths( string $path, array $asset_group_assets, int $max_number = 2 ): array {
+		if ( count( $asset_group_assets['display_url_path'] ?? [] ) >= $max_number || in_array( $path, $asset_group_assets['display_url_path'] ?? [], true ) ) {
+			return $asset_group_assets;
+		}
+
+		$asset_group_assets['display_url_path'][] = $path;
+		return $asset_group_assets;
 
 	}
 
