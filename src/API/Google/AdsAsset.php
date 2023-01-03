@@ -137,6 +137,11 @@ class AdsAsset implements OptionsAwareInterface {
 				$data = $asset->getTextAsset()->getText();
 				break;
 			case AssetType::CALL_TO_ACTION:
+				// When CallToActionType::UNSPECIFIED is returned, does not have a CallToActionAsset.
+				if ( ! $asset->getCallToActionAsset() ) {
+					$data = CallToActionType::UNSPECIFIED;
+					break;
+				}
 				$data = CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
 				break;
 			default:
