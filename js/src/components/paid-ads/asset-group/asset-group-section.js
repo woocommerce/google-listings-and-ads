@@ -11,6 +11,7 @@ import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import FinalUrlCard from './final-url-card';
+import ImagesSelector from './images-selector';
 import './asset-group-section.scss';
 
 /**
@@ -56,6 +57,34 @@ export default function AssetGroupSection() {
 			<VerticalGapLayout size="medium">
 				<FinalUrlCard onAssetsChange={ setAssetGroup } />
 				<div>Assets card will be added here</div>
+				<Section.Card>
+					<Section.Card.Body>
+						<h3>Temporary demo of rectangular images selector</h3>
+						<ImagesSelector
+							maxNumberOfImages={ 3 }
+							imageConfig={ {
+								minWidth: 600,
+								minHeight: 314,
+								suggestedWidth: 1200,
+								suggestedHeight: 628,
+							} }
+						/>
+					</Section.Card.Body>
+				</Section.Card>
+				<Section.Card>
+					<Section.Card.Body>
+						<h3>Temporary demo of square image selector</h3>
+						<ImagesSelector
+							maxNumberOfImages={ 20 }
+							imageConfig={ {
+								minWidth: 300,
+								minHeight: 300,
+								suggestedWidth: 1200,
+								suggestedHeight: 1200,
+							} }
+						/>
+					</Section.Card.Body>
+				</Section.Card>
 			</VerticalGapLayout>
 			<h3>Temporary demo for showing the current assets data:</h3>
 			<pre>{ JSON.stringify( assetGroup, null, 2 ) }</pre>

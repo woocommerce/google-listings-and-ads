@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Exception;
 use WP_Query;
 use wpdb;
@@ -169,16 +170,16 @@ class AssetSuggestionsService implements Service {
 		$long_headline    = get_bloginfo( 'name' ) . ': ' . $post->post_title;
 
 		return [
-			'headline'                => [ $post->post_title ],
-			'long_headline'           => [ $long_headline ],
-			'description'             => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
-			'logo'                    => $this->get_logo_images(),
-			'final_url'               => get_permalink( $id ),
-			'business_name'           => get_bloginfo( 'name' ),
-			'display_url_path'        => [ $post->post_name ],
-			'square_marketing_images' => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			'marketing_images'        => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
-			'call_to_action'          => null,
+			AssetFieldType::HEADLINE                 => [ $post->post_title ],
+			AssetFieldType::LONG_HEADLINE            => [ $long_headline ],
+			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
+			AssetFieldType::LOGO                     => $this->get_logo_images(),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::MARKETING_IMAGE          => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+			'display_url_path'                       => [ $post->post_name ],
+			'final_url'                              => get_permalink( $id ),
 		];
 	}
 
@@ -216,16 +217,16 @@ class AssetSuggestionsService implements Service {
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
 
 		return [
-			'headline'                => [ $term->name ],
-			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
-			'description'             => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
-			'logo'                    => $this->get_logo_images(),
-			'final_url'               => get_term_link( $term->term_id ),
-			'business_name'           => get_bloginfo( 'name' ),
-			'display_url_path'        => [ $term->slug ],
-			'square_marketing_images' => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			'marketing_images'        => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
-			'call_to_action'          => null,
+			AssetFieldType::HEADLINE                 => [ $term->name ],
+			AssetFieldType::LONG_HEADLINE            => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
+			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
+			AssetFieldType::LOGO                     => $this->get_logo_images(),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::MARKETING_IMAGE          => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+			'display_url_path'                       => [ $term->slug ],
+			'final_url'                              => get_term_link( $term->term_id ),
 		];
 	}
 
