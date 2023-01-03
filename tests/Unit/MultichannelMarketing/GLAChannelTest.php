@@ -95,7 +95,7 @@ class GLAChannelTest extends UnitTest {
 		$this->assertEquals( MarketingChannelInterface::PRODUCT_LISTINGS_SYNCED, $this->gla_channel->get_product_listings_status() );
 	}
 
-	public function test_get_errors_no_returns_total_number_of_issues() {
+	public function test_get_errors_count_returns_total_number_of_issues() {
 		$this->merchant_statuses
 			->expects( $this->once() )
 			->method( 'get_issues' )
@@ -114,16 +114,16 @@ class GLAChannelTest extends UnitTest {
 					'total'  => 2,
 				]
 			);
-		$this->assertEquals( 2, $this->gla_channel->get_errors_no() );
+		$this->assertEquals( 2, $this->gla_channel->get_errors_count() );
 	}
 
-	public function test_get_errors_no_returns_zero_if_there_is_an_exception_getting_the_issues() {
+	public function test_get_errors_count_returns_zero_if_there_is_an_exception_getting_the_issues() {
 		$this->merchant_statuses
 			->expects( $this->once() )
 			->method( 'get_issues' )
 			->willThrowException( new Exception( 'Error retrieving issues!' ) );
 
-		$this->assertEquals( 0, $this->gla_channel->get_errors_no() );
+		$this->assertEquals( 0, $this->gla_channel->get_errors_count() );
 	}
 
 	public function test_get_campaigns_returns_empty_if_no_ads_id_exists() {
