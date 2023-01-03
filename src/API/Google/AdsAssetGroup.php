@@ -296,7 +296,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 */
 	public function edit_asset_group( int $asset_group_id, array $data, array $assets = [] ): int {
 		try {
-			$operations = $this->asset_group_asset->edit_operations_assets_group_assets( $asset_group_id, $assets );
+			$operations = $this->asset_group_asset->edit_operations( $asset_group_id, $assets );
 
 			// PMax only supports one final URL but it is required to be an array.
 			if ( ! empty( $data['final_url'] ) ) {

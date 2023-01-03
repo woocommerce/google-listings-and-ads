@@ -142,7 +142,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 *
 	 * @return array The asset group asset operations.
 	 */
-	public function edit_operations_assets_group_assets( int $asset_group_id, array $assets ): array {
+	public function edit_operations( int $asset_group_id, array $assets ): array {
 		if ( empty( $assets ) ) {
 			return [];
 		}

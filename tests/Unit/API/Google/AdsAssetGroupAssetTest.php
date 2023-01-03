@@ -107,7 +107,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 	}
 
 	public function test_edit_asset_group_assets_with_empty_assets() {
-		$this->assertEquals( [], $this->asset_group_asset->edit_operations_assets_group_assets( self::TEST_ASSET_GROUP_ID, [] ) );
+		$this->assertEquals( [], $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, [] ) );
 	}
 
 	public function test_edit_asset_group_assets_with_update_assets() {
@@ -129,7 +129,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		->willReturnOnConsecutiveCalls( ...$this->generate_crate_asset_operations( $assets ) );
 
 		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations_assets_group_assets( self::TEST_ASSET_GROUP_ID, $assets )
+			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
 		);
 
 		// We should have two type of operations: asset_operation and asset_group_asset_operation
@@ -172,7 +172,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		->willReturnOnConsecutiveCalls( ...$this->generate_crate_asset_operations( $assets ) );
 
 		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations_assets_group_assets( self::TEST_ASSET_GROUP_ID, $assets )
+			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
 		);
 
 		// We should have two type of operations: asset_operation and asset_group_asset_operation
@@ -210,7 +210,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		->method( 'create_operation' );
 
 		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations_assets_group_assets( self::TEST_ASSET_GROUP_ID, $assets )
+			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
 		);
 
 		// We should have one type of operations: asset_operation.
