@@ -76,3 +76,8 @@
 		}
 	}
 }
+
+// FIX in WC 7.3 for adding margin in the first question label
+.wp-admin .woocommerce-customer-effort-score__intro {
+	margin-bottom: 1em;
+}

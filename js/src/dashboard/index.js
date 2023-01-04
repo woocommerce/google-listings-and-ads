@@ -118,6 +118,10 @@ const Dashboard = () => {
 						'How easy was it to create a Google Ad campaign?',
 						'google-listings-and-ads'
 					) }
+					secondLabel={ __(
+						'How easy was it to understand the requirements for the Google Ad campaign creation?',
+						'google-listings-and-ads'
+					) }
 					eventContext={ GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS }
 				/>
 			) }
