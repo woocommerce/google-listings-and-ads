@@ -121,7 +121,7 @@ class AssetSuggestionsService implements Service {
 	 * @param int    $id Post or Term ID.
 	 * @param string $type Only possible values are post or term.
 	 */
-	public function get_assets_suggestions( $id, string $type ): array {
+	public function get_assets_suggestions( int $id, string $type ): array {
 		$asset_group_assets = $this->get_asset_group_asset_suggestions( $id, $type );
 
 		if ( ! empty( $asset_group_assets ) ) {
