@@ -132,33 +132,57 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
+	 * Get URL for a specific post or term.
+	 *
+	 * @param int    $id Post or Term ID.
+	 * @param string $type Only possible values are post or term.
+	 *
+	 * @return string The URL.
+	 * @throws Exception If the ID is invalid.
+	 */
+	protected function get_url( int $id, string $type ): string {
+		if ( $type === 'post' ) {
+			$url = get_permalink( $id );
+		} else {
+			$url = get_term_link( $id );
+		}
+
+		if ( $url === false || is_wp_error( $url ) ) {
+			throw new Exception(
+				/* translators: 1: is an integer representing an unknown Term ID */
+				sprintf( __( 'Invalid Term ID or Post ID %1$d', 'google-listings-and-ads' ), $id )
+			);
+		}
+
+		return $url;
+
+	}
+
+
+
+	/**
 	 * Get other campaigns' assets from the specific url.
 	 *
 	 * @param int    $id Post or Term ID.
 	 * @param string $type Only possible values are post or term.
 	 */
-	public function get_asset_group_asset_suggestions( int $id, string $type ): array {
-		if ( $type === 'post' ) {
-			$final_url = get_permalink( $id );
-		} else {
-			$final_url = get_term_link( $id );
-		}
+	protected function get_asset_group_asset_suggestions( int $id, string $type ): array {
+		$final_url = $this->get_url( $id, $type );
 
-		if ( $final_url === false || is_wp_error( $final_url ) ) {
+		$assets = array_values( $this->asset_group_asset->get_assets_by_final_url( $final_url ) );
+
+		// Suggest the assets from the first asset group if exists.
+		$asset_group_assets = array_shift( $assets );
+
+		if ( $asset_group_assets === null ) {
 			return [];
 		}
 
-		$assets = $this->asset_group_asset->get_assets_by_final_url( $final_url );
-
-		if ( empty( $assets ) ) {
-			return [];
+		if ( ! isset( $asset_group_assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] ) ) {
+			$asset_group_assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] = null;
 		}
 
-		if ( ! isset( $assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] ) ) {
-			$assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] = null;
-		}
-
-		return array_merge( [ 'final_url' => $final_url ], $assets );
+		return array_merge( [ 'final_url' => $final_url ], $asset_group_assets );
 
 	}
 
