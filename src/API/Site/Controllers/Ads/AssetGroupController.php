@@ -253,6 +253,8 @@ class AssetGroupController extends BaseController {
 				'field_type' => [
 					'type'        => 'string',
 					'description' => __( 'Asset field type', 'google-listings-and-ads' ),
+					'required'    => true,
+					'context'     => [ 'edit' ],
 					'enum'        => [
 						AssetFieldType::HEADLINE,
 						AssetFieldType::LONG_HEADLINE,
