@@ -130,7 +130,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 				'path2'          => 'path2',
 			],
 			[
-				'asset_group_id' => self::TEST_ASSET_GROUP_ID,
+				'asset_group_id' => self::TEST_ASSET_GROUP_ID_2,
 				'field_type'     => AssetFieldType::number( AssetFieldType::MARKETING_IMAGE ),
 				'asset'          => array_merge( $asset_2, [ 'type' => AssetType::IMAGE ] ),
 				'path1'          => 'path11',
@@ -139,13 +139,19 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		];
 
 		$expected = [
-			AssetFieldType::DESCRIPTION     => [
-				$asset_1['content'],
+			self::TEST_ASSET_GROUP_ID   => [
+				AssetFieldType::DESCRIPTION => [
+					$asset_1['content'],
+				],
+				'display_url_path'          => [ 'path1', 'path2' ],
 			],
-			AssetFieldType::MARKETING_IMAGE => [
-				$asset_2['content'],
+			self::TEST_ASSET_GROUP_ID_2 => [
+				AssetFieldType::MARKETING_IMAGE => [
+					$asset_2['content'],
+				],
+				'display_url_path'              => [ 'path11', 'path22' ],
 			],
-			'display_url_path'              => [ 'path1', 'path2' ],
+
 		];
 
 		$this->generate_ads_asset_group_asset_query_mock( $asset_group_asset_data );
