@@ -216,7 +216,7 @@ class AssetSuggestionsService implements Service {
 
 		if ( ! $post || $post->post_status === 'trash' ) {
 			throw new Exception(
-			/* translators: 1: is an integer representing an unknown Post ID */
+				/* translators: 1: is an integer representing an unknown Post ID */
 				sprintf( __( 'Invalid Post ID %1$d', 'google-listings-and-ads' ), $id )
 			);
 		}
@@ -267,7 +267,7 @@ class AssetSuggestionsService implements Service {
 
 		if ( ! $term ) {
 			throw new Exception(
-			/* translators: 1: is an integer representing an unknown Term ID */
+				/* translators: 1: is an integer representing an unknown Term ID */
 				sprintf( __( 'Invalid Term ID %1$d', 'google-listings-and-ads' ), $id )
 			);
 		}
