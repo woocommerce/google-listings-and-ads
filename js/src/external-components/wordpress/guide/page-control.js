@@ -10,11 +10,11 @@
  */
 import { times } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import AppButton from '.~/components/app-button';
 import { PageControlIcon } from './icons';
 
 export default function PageControl( {
@@ -33,7 +33,7 @@ export default function PageControl( {
 					// Set aria-current="step" on the active page, see https://www.w3.org/TR/wai-aria-1.1/#aria-current
 					aria-current={ page === currentPage ? 'step' : undefined }
 				>
-					<AppButton
+					<Button
 						key={ page }
 						icon={
 							<PageControlIcon

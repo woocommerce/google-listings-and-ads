@@ -9,11 +9,7 @@
  * External dependencies
  */
 import { useRef, useLayoutEffect } from '@wordpress/element';
-
-/**
- * Internal dependencies
- */
-import AppButton from '.~/components/app-button';
+import { Button } from '@wordpress/components';
 
 export default function FinishButton( props ) {
 	const ref = useRef();
@@ -29,5 +25,5 @@ export default function FinishButton( props ) {
 		}
 	}, [] );
 
-	return <AppButton { ...props } ref={ ref } />;
+	return <Button { ...props } ref={ ref } />;
 }

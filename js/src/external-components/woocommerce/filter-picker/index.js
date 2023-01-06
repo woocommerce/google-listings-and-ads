@@ -8,7 +8,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Dropdown } from '@wordpress/components';
+import { Button, Dropdown } from '@wordpress/components';
 import { focus } from '@wordpress/dom';
 import classnames from 'classnames';
 import { Component } from '@wordpress/element';
@@ -36,11 +36,6 @@ import {
 	DropdownButton,
 	Search,
 } from '@woocommerce/components';
-
-/**
- * Internal dependencies
- */
-import AppButton from '.~/components/app-button';
 
 export const DEFAULT_FILTER = 'all';
 
@@ -236,12 +231,12 @@ class FilterPicker extends Component {
 		};
 
 		return (
-			<AppButton
+			<Button
 				className="woocommerce-filters-filter__button"
 				onClick={ onClick }
 			>
 				{ filter.label }
-			</AppButton>
+			</Button>
 		);
 	}
 
@@ -297,13 +292,13 @@ class FilterPicker extends Component {
 								<ul className="woocommerce-filters-filter__content-list">
 									{ parentFilter && (
 										<li className="woocommerce-filters-filter__content-list-item">
-											<AppButton
+											<Button
 												className="woocommerce-filters-filter__button"
 												onClick={ this.goBack }
 											>
 												<Icon icon={ chevronLeft } />
 												{ parentFilter.label }
-											</AppButton>
+											</Button>
 										</li>
 									) }
 									{ visibleFilters.map( ( filter ) => (
