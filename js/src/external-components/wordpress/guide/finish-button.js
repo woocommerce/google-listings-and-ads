@@ -9,7 +9,7 @@
  * External dependencies
  */
 import { useRef, useLayoutEffect } from '@wordpress/element';
-import { Button } from '@wordpress/components';
+import { Button } from 'extracted/@wordpress/components';
 
 export default function FinishButton( props ) {
 	const ref = useRef();
