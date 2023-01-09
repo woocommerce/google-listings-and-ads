@@ -288,28 +288,24 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * Edit an asset group.
 	 *
 	 * @param int   $asset_group_id The asset group ID.
-	 * @param array $params The request parameters.
+	 * @param array $data The asset group data.
+	 * @param array $assets A list of assets data.
 	 *
 	 * @return int The asset group ID.
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function edit_asset_group( int $asset_group_id, array $params ): int {
+	public function edit_asset_group( int $asset_group_id, array $data, array $assets = [] ): int {
 		try {
-			$asset_group_fields = [];
-			$operations         = $this->asset_group_asset->edit_operations_assets_group_assets( $asset_group_id, $params['assets'] ?? [] );
+			$operations = $this->asset_group_asset->edit_operations( $asset_group_id, $assets );
 
-			if ( ! empty( $params['path1'] ) ) {
-				$asset_group_fields['path1'] = $params['path1'];
-			}
-			if ( ! empty( $params['path2'] ) ) {
-				$asset_group_fields['path2'] = $params['path2'];
-			}
-			if ( ! empty( $params['final_url'] ) ) {
-				$asset_group_fields['final_urls'] = [ $params['final_url'] ];
+			// PMax only supports one final URL but it is required to be an array.
+			if ( ! empty( $data['final_url'] ) ) {
+				$data['final_urls'] = [ $data['final_url'] ];
+				unset( $data['final_url'] );
 			}
 
-			if ( ! empty( $asset_group_fields ) ) {
-				$operations[] = $this->edit_operation( $asset_group_id, $asset_group_fields );
+			if ( ! empty( $data ) ) {
+				$operations[] = $this->edit_operation( $asset_group_id, $data );
 			}
 
 			if ( ! empty( $operations ) ) {

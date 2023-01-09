@@ -138,17 +138,21 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * Get Assets for specific final URL.
 	 *
 	 * @param string $url The final url.
+	 * @param bool   $only_first_asset_group Whether to return only the first asset group found.
 	 *
 	 * @return array The assets for the asset groups with a specific final url.
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_assets_by_url( string $url ): array {
+	public function get_assets_by_final_url( string $url, bool $only_first_asset_group = false ): array {
 		try {
 
 			$asset_group_assets = [];
-			$asset_results      = ( new AdsAssetGroupAssetQuery() )
+
+			// Search urls with and without trailing slash.
+			$asset_results = ( new AdsAssetGroupAssetQuery() )
 				->set_client( $this->client, $this->options->get_ads_id() )
-				->where( 'asset_group.final_urls', [ $url ], 'CONTAINS ANY' )
+				->add_columns( [ 'asset_group.id', 'asset_group.path1', 'asset_group.path2' ] )
+				->where( 'asset_group.final_urls', [ trailingslashit( $url ), untrailingslashit( $url ) ], 'CONTAINS ANY' )
 				->where( 'asset_group_asset.field_type', $this->get_asset_field_types_query(), 'IN' )
 				->where( 'asset_group_asset.status', 'REMOVED', '!=' )
 				->get_results();
@@ -159,8 +163,24 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 				/** @var AssetGroupAsset $asset_group_asset */
 				$asset_group_asset = $row->getAssetGroupAsset();
 
-				$field_type                          = AssetFieldType::label( $asset_group_asset->getFieldType() );
-				$asset_group_assets[ $field_type ][] = $this->asset->get_asset_content( $row );
+				$field_type = AssetFieldType::label( $asset_group_asset->getFieldType() );
+				switch ( $field_type ) {
+					case AssetFieldType::BUSINESS_NAME:
+					case AssetFieldType::CALL_TO_ACTION_SELECTION:
+						$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ] = $this->asset->convert_asset( $row )['content'];
+						break;
+					default:
+						$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ][] = $this->asset->convert_asset( $row )['content'];
+				}
+
+				$asset_group_assets[ $row->getAssetGroup()->getId() ]['display_url_path'] = [
+					$row->getAssetGroup()->getPath1(),
+					$row->getAssetGroup()->getPath2(),
+				];
+			}
+
+			if ( $only_first_asset_group ) {
+				return reset( $asset_group_assets ) ?: [];
 			}
 
 			return $asset_group_assets;
@@ -170,7 +190,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			$errors = $this->get_api_exception_errors( $e );
 			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
-				sprintf( __( 'Error retrieving asset groups assets: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				sprintf( __( 'Error retrieving asset groups assets by final url: %s', 'google-listings-and-ads' ), reset( $errors ) ),
 				$this->map_grpc_code_to_http_status_code( $e ),
 				null,
 				[ 'errors' => $errors ]
@@ -187,7 +207,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 *
 	 * @return array The asset group asset operations.
 	 */
-	public function edit_operations_assets_group_assets( int $asset_group_id, array $assets ): array {
+	public function edit_operations( int $asset_group_id, array $assets ): array {
 		if ( empty( $assets ) ) {
 			return [];
 		}
@@ -241,7 +261,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Returns a campaign delete operation.
+	 * Returns a delete operation for asset group asset.
 	 *
 	 * @param int    $asset_group_id The ID of the asset group.
 	 * @param string $asset_field_type The field type of the asset.

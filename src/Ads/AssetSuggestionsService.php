@@ -84,6 +84,7 @@ class AssetSuggestionsService implements Service {
 	 * Default maximum marketing images.
 	 */
 	protected const DEFAULT_MAXIMUM_MARKETING_IMAGES = 20;
+
 	/**
 	 * The subsize key for the square marketing image.
 	 */
@@ -120,37 +121,67 @@ class AssetSuggestionsService implements Service {
 	 * @param int|null $id Post ID, Term ID or null if it's the homepage.
 	 * @param string   $type Only possible values are post or term.
 	 */
-	public function get_assets_suggestions( $id, string $type ): array {
-		$wp_assets = $this->get_wp_assets( $id, $type );
+	public function get_assets_suggestions( int $id, string $type ): array {
+		$asset_group_assets = $this->get_asset_group_asset_suggestions( $id, $type );
 
-		return $this->combine_results_wp_assets_groups( $wp_assets, $this->asset_group_asset->get_assets_by_url( $wp_assets['final_url'] ) );
+		if ( ! empty( $asset_group_assets ) ) {
+			return $asset_group_assets;
+		}
+
+		return $this->get_wp_assets( $id, $type );
 	}
 
 	/**
-	 * Combine the results from the WP assets and the assets from other campaigns.
+	 * Get URL for a specific post or term.
 	 *
-	 * @param array $wp_assets The WordPress Assets .
-	 * @param array $asset_group_assets The Asset Group Assets.
+	 * @param int    $id Post or Term ID.
+	 * @param string $type Only possible values are post or term.
 	 *
-	 * @return array The combined results.
+	 * @return string The URL.
+	 * @throws Exception If the ID is invalid.
 	 */
-	protected function combine_results_wp_assets_groups( array $wp_assets, array $asset_group_assets ): array {
-		foreach ( $wp_assets as $key => $value ) {
-			switch ( $key ) {
-
-				case AssetFieldType::HEADLINE:
-				case AssetFieldType::LONG_HEADLINE:
-				case AssetFieldType::DESCRIPTION:
-				case AssetFieldType::SQUARE_MARKETING_IMAGE:
-				case AssetFieldType::MARKETING_IMAGE:
-					$wp_assets[ $key ] = array_merge( $value, $asset_group_assets[ $key ] ?? [] );
-					break;
-				default:
-					$wp_assets[ $key ] = $value;
-			}
+	protected function get_url( int $id, string $type ): string {
+		if ( $type === 'post' ) {
+			$url = get_permalink( $id );
+		} else {
+			$url = get_term_link( $id );
 		}
 
-		return $wp_assets;
+		if ( $url === false || is_wp_error( $url ) ) {
+			throw new Exception(
+				/* translators: 1: is an integer representing an unknown Term ID */
+				sprintf( __( 'Invalid Term ID or Post ID %1$d', 'google-listings-and-ads' ), $id )
+			);
+		}
+
+		return $url;
+
+	}
+
+
+
+	/**
+	 * Get other campaigns' assets from the specific url.
+	 *
+	 * @param int    $id Post or Term ID.
+	 * @param string $type Only possible values are post or term.
+	 */
+	protected function get_asset_group_asset_suggestions( int $id, string $type ): array {
+		$final_url = $this->get_url( $id, $type );
+
+		// Suggest the assets from the first asset group if exists.
+		$asset_group_assets = $this->asset_group_asset->get_assets_by_final_url( $final_url, true );
+
+		if ( empty( $asset_group_assets ) ) {
+			return [];
+		}
+
+		if ( ! isset( $asset_group_assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] ) ) {
+			$asset_group_assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] = null;
+		}
+
+		return array_merge( [ 'final_url' => $final_url ], $asset_group_assets );
+
 	}
 
 	/**
@@ -553,7 +584,7 @@ class AssetSuggestionsService implements Service {
 		);
 
 		foreach ( $terms as $term ) {
-				$terms_suggestions[] = $this->format_final_url_response( $term->term_id, 'term', $term->name, get_term_link( $term->term_id, $term->taxonomy ) );
+			$terms_suggestions[] = $this->format_final_url_response( $term->term_id, 'term', $term->name, get_term_link( $term->term_id, $term->taxonomy ) );
 		}
 
 		return $terms_suggestions;

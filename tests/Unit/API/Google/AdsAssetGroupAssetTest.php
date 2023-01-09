@@ -1,5 +1,5 @@
 <?php
-declare( strict_types=0 );
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
@@ -106,8 +106,107 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		$this->assertEquals( [], $this->asset_group_asset->get_assets_by_asset_group_ids( [] ) );
 	}
 
+	public function test_get_asset_groups_assets_by_final_url() {
+		$asset_1 = [
+			'id'      => self::TEST_ASSET_ID,
+			'content' => 'Test Asset',
+		];
+
+		$asset_2 = [
+			'id'      => self::TEST_ASSET_ID_2,
+			'content' => 'https://example.com/image.jpg',
+		];
+
+		$this->asset->expects( $this->exactly( 2 ) )
+		->method( 'convert_asset' )
+		->willReturnOnConsecutiveCalls( $asset_1, $asset_2 );
+
+		$asset_group_asset_data = [
+			[
+				'asset_group_id' => self::TEST_ASSET_GROUP_ID,
+				'field_type'     => AssetFieldType::number( AssetFieldType::DESCRIPTION ),
+				'asset'          => array_merge( $asset_1, [ 'type' => AssetType::TEXT ] ),
+				'path1'          => 'path1',
+				'path2'          => 'path2',
+			],
+			[
+				'asset_group_id' => self::TEST_ASSET_GROUP_ID_2,
+				'field_type'     => AssetFieldType::number( AssetFieldType::MARKETING_IMAGE ),
+				'asset'          => array_merge( $asset_2, [ 'type' => AssetType::IMAGE ] ),
+				'path1'          => 'path11',
+				'path2'          => 'path22',
+			],
+		];
+
+		$expected = [
+			self::TEST_ASSET_GROUP_ID   => [
+				AssetFieldType::DESCRIPTION => [
+					$asset_1['content'],
+				],
+				'display_url_path'          => [ 'path1', 'path2' ],
+			],
+			self::TEST_ASSET_GROUP_ID_2 => [
+				AssetFieldType::MARKETING_IMAGE => [
+					$asset_2['content'],
+				],
+				'display_url_path'              => [ 'path11', 'path22' ],
+			],
+
+		];
+
+		$this->generate_ads_asset_group_asset_query_mock( $asset_group_asset_data );
+		$this->assertEquals( $expected, $this->asset_group_asset->get_assets_by_final_url( 'https://example.com' ) );
+
+	}
+
+	public function test_get_asset_groups_assets_by_final_url_firt_result() {
+		$asset_1 = [
+			'id'      => self::TEST_ASSET_ID,
+			'content' => 'Test Asset',
+		];
+
+		$asset_2 = [
+			'id'      => self::TEST_ASSET_ID_2,
+			'content' => 'https://example.com/image.jpg',
+		];
+
+		$this->asset->expects( $this->exactly( 2 ) )
+		->method( 'convert_asset' )
+		->willReturnOnConsecutiveCalls( $asset_1, $asset_2 );
+
+		$asset_group_asset_data = [
+			[
+				'asset_group_id' => self::TEST_ASSET_GROUP_ID,
+				'field_type'     => AssetFieldType::number( AssetFieldType::DESCRIPTION ),
+				'asset'          => array_merge( $asset_1, [ 'type' => AssetType::TEXT ] ),
+				'path1'          => 'path1',
+				'path2'          => 'path2',
+			],
+			[
+				'asset_group_id' => self::TEST_ASSET_GROUP_ID_2,
+				'field_type'     => AssetFieldType::number( AssetFieldType::MARKETING_IMAGE ),
+				'asset'          => array_merge( $asset_2, [ 'type' => AssetType::IMAGE ] ),
+				'path1'          => 'path11',
+				'path2'          => 'path22',
+			],
+		];
+
+		$expected = [
+			AssetFieldType::DESCRIPTION => [
+				$asset_1['content'],
+			],
+			'display_url_path'          => [ 'path1', 'path2' ],
+		];
+
+		$this->generate_ads_asset_group_asset_query_mock( $asset_group_asset_data );
+		$this->assertEquals( $expected, $this->asset_group_asset->get_assets_by_final_url( 'https://example.com', true ) );
+
+	}
+
+
+
 	public function test_edit_asset_group_assets_with_empty_assets() {
-		$this->assertEquals( [], $this->asset_group_asset->edit_operations_assets_group_assets( self::TEST_ASSET_GROUP_ID, [] ) );
+		$this->assertEquals( [], $this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, [] ) );
 	}
 
 	public function test_edit_asset_group_assets_with_update_assets() {
@@ -129,7 +228,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		->willReturnOnConsecutiveCalls( ...$this->generate_crate_asset_operations( $assets ) );
 
 		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations_assets_group_assets( self::TEST_ASSET_GROUP_ID, $assets )
+			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
 		);
 
 		// We should have two type of operations: asset_operation and asset_group_asset_operation
@@ -172,7 +271,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		->willReturnOnConsecutiveCalls( ...$this->generate_crate_asset_operations( $assets ) );
 
 		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations_assets_group_assets( self::TEST_ASSET_GROUP_ID, $assets )
+			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
 		);
 
 		// We should have two type of operations: asset_operation and asset_group_asset_operation
@@ -210,15 +309,15 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		->method( 'create_operation' );
 
 		$grouped_operations = $this->group_operations(
-			$this->asset_group_asset->edit_operations_assets_group_assets( self::TEST_ASSET_GROUP_ID, $assets )
+			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
 		);
 
-		// We should have two type of operations: asset_operation and asset_group_asset_operation
+		// We should have one type of operations: asset_operation.
 		$this->assertEquals( 1, count( $grouped_operations ) );
 
 		$this->assertArrayNotHasKey( 'asset_operation', $grouped_operations );
 
-		// We should have two delete  asset_group_asset_operation.
+		// We should have two delete asset_group_asset_operation.
 		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['remove'] ) );
 		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[0]['id'], AssetFieldType::name( $assets[0]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][0] )->getRemove() );
 		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[1]['id'], AssetFieldType::name( $assets[1]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][1] )->getRemove() );
