@@ -99,6 +99,11 @@ class AssetSuggestionsService implements Service {
 	protected const LOGO_IMAGE_KEY = 'gla_logo_asset';
 
 	/**
+	 * The homepage ID if it is not a static page.
+	 */
+	protected const HOMEPAGE_NON_STATIC_ID = 0;
+
+	/**
 	 * AssetSuggestionsService constructor.
 	 *
 	 * @param WP                 $wp WP Proxy.
@@ -118,8 +123,8 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get WP and other campaigns' assets from the specific post or term.
 	 *
-	 * @param int|null $id Post ID, Term ID or null if it's the homepage.
-	 * @param string   $type Only possible values are post or term.
+	 * @param int    $id Post ID, Term ID or null if it's the homepage.
+	 * @param string $type Only possible values are post, term and homepage.
 	 */
 	public function get_assets_suggestions( int $id, string $type ): array {
 		$asset_group_assets = $this->get_asset_group_asset_suggestions( $id, $type );
@@ -135,7 +140,7 @@ class AssetSuggestionsService implements Service {
 	 * Get URL for a specific post or term.
 	 *
 	 * @param int    $id Post or Term ID.
-	 * @param string $type Only possible values are post or term.
+	 * @param string $type Only possible values are post, term and homepage.
 	 *
 	 * @return string The URL.
 	 * @throws Exception If the ID is invalid.
@@ -143,11 +148,13 @@ class AssetSuggestionsService implements Service {
 	protected function get_url( int $id, string $type ): string {
 		if ( $type === 'post' ) {
 			$url = get_permalink( $id );
-		} else {
+		} elseif ( $type === 'term' ) {
 			$url = get_term_link( $id );
+		} else {
+			$url = get_bloginfo( 'url' );
 		}
 
-		if ( $url === false || is_wp_error( $url ) ) {
+		if ( $url === false || is_wp_error( $url ) || empty( $url ) ) {
 			throw new Exception(
 				/* translators: 1: is an integer representing an unknown Term ID */
 				sprintf( __( 'Invalid Term ID or Post ID %1$d', 'google-listings-and-ads' ), $id )
@@ -187,12 +194,12 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get assets from specific post or term.
 	 *
-	 * @param int|null $id Post or Term ID or null if it's not a static homepage.
-	 * @param string   $type Only possible values are post or term.
+	 * @param int    $id Post or Term ID, or self::HOMEPAGE_NON_STATIC_ID.
+	 * @param string $type Only possible values are post or term.
 	 *
 	 * @return array All assets available for specific term or post.
 	 */
-	protected function get_wp_assets( $id, string $type ): array {
+	protected function get_wp_assets( int $id, string $type ): array {
 		if ( $type === 'post' ) {
 			return $this->get_post_assets( $id );
 		} elseif ( $type === 'term' ) {
@@ -209,6 +216,12 @@ class AssetSuggestionsService implements Service {
 	 * @return array Assets available for the homepage.
 	 */
 	protected function get_homepage_assets() {
+		$home_page = $this->wp->get_static_homepage();
+
+		if ( $home_page ) {
+			return $this->get_post_assets( $home_page->ID );
+		}
+
 		return [
 			AssetFieldType::HEADLINE                 => [ __( 'Homepage', 'google-listings-and-ads' ) ],
 			AssetFieldType::LONG_HEADLINE            => [],
@@ -647,7 +660,7 @@ class AssetSuggestionsService implements Service {
 		if ( $home_page ) {
 			return $this->format_final_url_response( $home_page->ID, 'post', __( 'Homepage', 'google-listings-and-ads' ), get_permalink( $home_page->ID ) );
 		} else {
-			return $this->format_final_url_response( null, 'homepage', __( 'Homepage', 'google-listings-and-ads' ), get_bloginfo( 'url' ) );
+			return $this->format_final_url_response( self::HOMEPAGE_NON_STATIC_ID, 'homepage', __( 'Homepage', 'google-listings-and-ads' ), get_bloginfo( 'url' ) );
 		}
 	}
 
@@ -690,14 +703,14 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Return an assotiave array with the page suggestion response format.
 	 *
-	 * @param int|null $id post|term ID|null if it's the homepage.
-	 * @param string   $type post|term
-	 * @param string   $title page|term title
-	 * @param string   $url page|term url
+	 * @param int    $id post id, term id or self::HOMEPAGE_NON_STATIC_ID.
+	 * @param string $type post|term
+	 * @param string $title page|term title
+	 * @param string $url page|term url
 	 *
 	 * @return array response formated.
 	 */
-	protected function format_final_url_response( $id, string $type, string $title, string $url ): array {
+	protected function format_final_url_response( int $id, string $type, string $title, string $url ): array {
 		return [
 			'id'    => $id,
 			'type'  => $type,
