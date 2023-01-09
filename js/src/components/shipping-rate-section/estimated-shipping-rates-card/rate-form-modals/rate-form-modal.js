@@ -16,7 +16,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import SupportedCountrySelect from '.~/components/supported-country-select';
 
 /**
- * @typedef { import("@wordpress/components").Button } Button
+ * @typedef { import(".~/components/app-button").default } AppButton
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  * @typedef { import("../typedefs.js").ShippingRateGroup } ShippingRateGroup
  */
@@ -29,7 +29,7 @@ import SupportedCountrySelect from '.~/components/supported-country-select';
  * @param {Object} props
  * @param {Array<CountryCode>} props.countryOptions Array of country codes, to be used as options in SupportedCountrySelect.
  * @param {ShippingRateGroup} props.initialValues Initial values for the form.
- * @param {(formProps: Object) => Array<Button>} props.renderButtons Function to render buttons for the modal. `formProps` will be passed into this render function.
+ * @param {(formProps: Object) => Array<AppButton>} props.renderButtons Function to render buttons for the modal. `formProps` will be passed into this render function.
  * @param {(values: ShippingRateGroup) => void} props.onSubmit Called with submitted value.
  * @param {() => void} props.onRequestClose Callback to close the modal.
  */

@@ -1,12 +1,12 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import MinimumOrderFormModal from './minimum-order-form-modal';
 
 /**
@@ -46,14 +46,14 @@ const AddMinimumOrderFormModal = ( {
 				};
 
 				return [
-					<Button
+					<AppButton
 						key="save"
 						isPrimary
 						disabled={ ! isValidForm }
 						onClick={ handleAddClick }
 					>
 						{ __( 'Add minimum order', 'google-listings-and-ads' ) }
-					</Button>,
+					</AppButton>,
 				];
 			} }
 			onSubmit={ onSubmit }

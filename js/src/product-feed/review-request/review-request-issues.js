@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { recordEvent } from '@woocommerce/tracks';
@@ -9,6 +8,7 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import Text from '.~/components/app-text';
 
 const COLLAPSED_ISSUES_SIZE = 5;
@@ -42,7 +42,7 @@ const ReviewRequestIssues = ( { issues = [] } ) => {
 				) ) }
 			</ul>
 			{ issues.length > COLLAPSED_ISSUES_SIZE && (
-				<Button isTertiary onClick={ toggleExpanded }>
+				<AppButton isTertiary onClick={ toggleExpanded }>
 					{ expanded
 						? __( 'Show less', 'google-listing-and-ads' )
 						: sprintf(
@@ -53,7 +53,7 @@ const ReviewRequestIssues = ( { issues = [] } ) => {
 								),
 								issues.length - COLLAPSED_ISSUES_SIZE
 						  ) }
-				</Button>
+				</AppButton>
 			) }
 		</>
 	);

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
+import { Button } from 'extracted/@wordpress/components';
 import { Spinner } from '@woocommerce/components';
 import { recordEvent } from '@woocommerce/tracks';
 import classnames from 'classnames';

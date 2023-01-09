@@ -1,12 +1,12 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import AppModal from '.~/components/app-modal';
 import './index.scss';
 
@@ -34,12 +34,20 @@ const PauseProgramModal = ( props ) => {
 			className="gla-pause-program-modal"
 			title={ __( 'Before you pause…', 'google-listings-and-ads' ) }
 			buttons={ [
-				<Button key="1" isSecondary onClick={ handleKeepActiveClick }>
+				<AppButton
+					key="1"
+					isSecondary
+					onClick={ handleKeepActiveClick }
+				>
 					{ __( 'Keep Active', 'google-listings-and-ads' ) }
-				</Button>,
-				<Button key="2" isPrimary onClick={ handlePauseCampaignClick }>
+				</AppButton>,
+				<AppButton
+					key="2"
+					isPrimary
+					onClick={ handlePauseCampaignClick }
+				>
 					{ __( 'Pause Campaign', 'google-listings-and-ads' ) }
-				</Button>,
+				</AppButton>,
 			] }
 			onRequestClose={ onRequestClose }
 		>

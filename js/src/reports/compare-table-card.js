@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useMemo } from '@wordpress/element';
-import { CheckboxControl, Button } from '@wordpress/components';
+import { CheckboxControl } from '@wordpress/components';
 import { onQueryChange } from '@woocommerce/navigation';
 
 /**
@@ -11,6 +11,7 @@ import { onQueryChange } from '@woocommerce/navigation';
  */
 import { getIdsFromQuery } from './utils';
 import useUrlQuery from '.~/hooks/useUrlQuery';
+import AppButton from '.~/components/app-button';
 import AppTableCard from '.~/components/app-table-card';
 
 /**
@@ -176,14 +177,14 @@ const CompareTableCard = ( {
 	return (
 		<AppTableCard
 			actions={
-				<Button
+				<AppButton
 					isSecondary
 					disabled={ isLoading || selectedRows.size <= 1 }
 					title={ compareButonTitle }
 					onClick={ compareSelected }
 				>
 					{ __( 'Compare', 'google-listings-and-ads' ) }
-				</Button>
+				</AppButton>
 			}
 			isLoading={ isLoading }
 			headers={ getHeaders( data ) }

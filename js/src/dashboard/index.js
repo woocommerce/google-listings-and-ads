@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { useState, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
@@ -11,6 +10,7 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import DifferentCurrencyNotice from '.~/components/different-currency-notice';
 import CampaignConversionDashboardNotice from '.~/components/campaign-conversion-notice';
 import NavigationClassic from '.~/components/navigation-classic';
@@ -73,9 +73,9 @@ const Dashboard = () => {
 	const ReportsLink = () => {
 		return (
 			<Link href={ getNewPath( null, '/google/reports' ) }>
-				<Button isPrimary>
+				<AppButton isPrimary>
 					{ __( 'View Reports', 'google-listings-and-ads' ) }
-				</Button>
+				</AppButton>
 			</Link>
 		);
 	};
