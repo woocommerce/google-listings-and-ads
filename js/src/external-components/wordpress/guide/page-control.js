@@ -10,7 +10,7 @@
  */
 import { times } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
+import { Button } from 'extracted/@wordpress/components';
 
 /**
  * Internal dependencies

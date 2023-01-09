@@ -1,12 +1,12 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
@@ -65,13 +65,13 @@ const SetupAccounts = ( props ) => {
 				</VerticalGapLayout>
 			</Section>
 			<StepContentFooter>
-				<Button
+				<AppButton
 					isPrimary
 					disabled={ isContinueButtonDisabled }
 					onClick={ onContinue }
 				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }
-				</Button>
+				</AppButton>
 			</StepContentFooter>
 		</StepContent>
 	);

@@ -96,3 +96,8 @@
 		}
 	}
 }
+
+// compatibility-code "WC >= 7.3" -- adding margin in the first question label.
+.wp-admin .woocommerce-customer-effort-score__intro {
+	margin-bottom: 1em;
+}

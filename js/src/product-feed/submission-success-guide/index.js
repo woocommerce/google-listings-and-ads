@@ -8,7 +8,6 @@ import {
 	useCallback,
 } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
 import { recordEvent } from '@woocommerce/tracks';
 
 /**
@@ -18,6 +17,7 @@ import Guide from '.~/external-components/wordpress/guide';
 import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
+import AppButton from '.~/components/app-button';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import { glaData, GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
@@ -169,26 +169,26 @@ const SubmissionSuccessGuide = () => {
 	const renderFinish = useCallback( () => {
 		if ( glaData.adsSetupComplete ) {
 			return (
-				<Button
+				<AppButton
 					isPrimary
 					data-action="view-product-feed"
 					onClick={ handleGuideFinish }
 				>
 					{ __( 'View product feed', 'google-listings-and-ads' ) }
-				</Button>
+				</AppButton>
 			);
 		}
 
 		return (
 			<>
 				<div className="gla-submission-success-guide__space_holder" />
-				<Button
+				<AppButton
 					isSecondary
 					data-action="maybe-later"
 					onClick={ handleGuideFinish }
 				>
 					{ __( 'Maybe later', 'google-listings-and-ads' ) }
-				</Button>
+				</AppButton>
 				<AddPaidCampaignButton
 					isPrimary
 					isSecondary={ false }

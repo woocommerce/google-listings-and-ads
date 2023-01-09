@@ -86,13 +86,13 @@ class ReportsController extends BaseReportsController {
 	}
 
 	/**
-	 * Add collection parameters.
-	 *
-	 * @param array $params Initial set of collection parameters.
+	 * Get the query params for collections.
 	 *
 	 * @return array
 	 */
-	protected function add_collection_parameters( array $params ): array {
+	public function get_collection_params(): array {
+		$params = parent::get_collection_params();
+
 		$params['interval'] = [
 			'description'       => __( 'Time interval to use for segments in the returned data.', 'google-listings-and-ads' ),
 			'type'              => 'string',

@@ -3,7 +3,7 @@
  */
 import { queueRecordEvent } from '@woocommerce/tracks';
 import { __ } from '@wordpress/i18n';
-import { Flex, Button } from '@wordpress/components';
+import { Flex } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 /**
@@ -15,6 +15,7 @@ import useJetpackAccount from '.~/hooks/useJetpackAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import AppButton from '.~/components/app-button';
 import SpinnerCard from '.~/components/spinner-card';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import { ConnectedWPComAccountCard } from '.~/components/wpcom-account-card';
@@ -102,7 +103,7 @@ export default function LinkedAccounts() {
 							hideAccountSwitch
 						>
 							<Section.Card.Footer>
-								<Button
+								<AppButton
 									isDestructive
 									isLink
 									onClick={ openDisconnectAdsAccountModal }
@@ -111,12 +112,12 @@ export default function LinkedAccounts() {
 										'Disconnect Google Ads account only',
 										'google-listings-and-ads'
 									) }
-								</Button>
+								</AppButton>
 							</Section.Card.Footer>
 						</ConnectedGoogleAdsAccountCard>
 					) }
 					<Flex justify="flex-end">
-						<Button
+						<AppButton
 							isPrimary
 							isDestructive
 							onClick={ openDisconnectAllAccountsModal }
@@ -125,7 +126,7 @@ export default function LinkedAccounts() {
 								'Disconnect from all accounts',
 								'google-listings-and-ads'
 							) }
-						</Button>
+						</AppButton>
 					</Flex>
 				</VerticalGapLayout>
 			) }

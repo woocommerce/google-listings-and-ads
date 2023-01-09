@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import GridiconPlusSmall from 'gridicons/dist/plus-small';
 
@@ -9,6 +8,7 @@ import GridiconPlusSmall from 'gridicons/dist/plus-small';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
+import AppButton from '.~/components/app-button';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
@@ -101,7 +101,7 @@ export default function EstimatedShippingRatesCard( {
 					<div>
 						<AppButtonModalTrigger
 							button={
-								<Button
+								<AppButton
 									isSecondary
 									icon={ <GridiconPlusSmall /> }
 								>
@@ -109,7 +109,7 @@ export default function EstimatedShippingRatesCard( {
 										'Add another rate',
 										'google-listings-and-ads'
 									) }
-								</Button>
+								</AppButton>
 							}
 							modal={
 								<AddRateFormModal
