@@ -169,12 +169,10 @@ class AssetSuggestionsService implements Service {
 	protected function get_asset_group_asset_suggestions( int $id, string $type ): array {
 		$final_url = $this->get_url( $id, $type );
 
-		$assets = array_values( $this->asset_group_asset->get_assets_by_final_url( $final_url ) );
-
 		// Suggest the assets from the first asset group if exists.
-		$asset_group_assets = array_shift( $assets );
+		$asset_group_assets = $this->asset_group_asset->get_assets_by_final_url( $final_url, true );
 
-		if ( $asset_group_assets === null ) {
+		if ( empty( $asset_group_assets ) ) {
 			return [];
 		}
 

@@ -159,6 +159,50 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 	}
 
+	public function test_get_asset_groups_assets_by_final_url_firt_result() {
+		$asset_1 = [
+			'id'      => self::TEST_ASSET_ID,
+			'content' => 'Test Asset',
+		];
+
+		$asset_2 = [
+			'id'      => self::TEST_ASSET_ID_2,
+			'content' => 'https://example.com/image.jpg',
+		];
+
+		$this->asset->expects( $this->exactly( 2 ) )
+		->method( 'convert_asset' )
+		->willReturnOnConsecutiveCalls( $asset_1, $asset_2 );
+
+		$asset_group_asset_data = [
+			[
+				'asset_group_id' => self::TEST_ASSET_GROUP_ID,
+				'field_type'     => AssetFieldType::number( AssetFieldType::DESCRIPTION ),
+				'asset'          => array_merge( $asset_1, [ 'type' => AssetType::TEXT ] ),
+				'path1'          => 'path1',
+				'path2'          => 'path2',
+			],
+			[
+				'asset_group_id' => self::TEST_ASSET_GROUP_ID_2,
+				'field_type'     => AssetFieldType::number( AssetFieldType::MARKETING_IMAGE ),
+				'asset'          => array_merge( $asset_2, [ 'type' => AssetType::IMAGE ] ),
+				'path1'          => 'path11',
+				'path2'          => 'path22',
+			],
+		];
+
+		$expected = [
+			AssetFieldType::DESCRIPTION => [
+				$asset_1['content'],
+			],
+			'display_url_path'          => [ 'path1', 'path2' ],
+		];
+
+		$this->generate_ads_asset_group_asset_query_mock( $asset_group_asset_data );
+		$this->assertEquals( $expected, $this->asset_group_asset->get_assets_by_final_url( 'https://example.com', true ) );
+
+	}
+
 
 
 	public function test_edit_asset_group_assets_with_empty_assets() {

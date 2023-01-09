@@ -624,15 +624,13 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	public function test_get_asset_suggestions_with_assets_from_asset_group() {
 		$this->asset_group_asset->expects( $this->exactly( 1 ) )
 			->method( 'get_assets_by_final_url' )
-			->with( get_permalink( $this->post->ID ) )
+			->with( get_permalink( $this->post->ID ), true )
 			->willReturn(
 				[
-					[
-						AssetFieldType::HEADLINE    => [ 'headline1', 'headline2' ],
-						AssetFieldType::DESCRIPTION => [ 'description1', 'description2' ],
-						AssetFieldType::CALL_TO_ACTION_SELECTION => 'learn_more',
-					],
-				]
+					AssetFieldType::HEADLINE    => [ 'headline1', 'headline2' ],
+					AssetFieldType::DESCRIPTION => [ 'description1', 'description2' ],
+					AssetFieldType::CALL_TO_ACTION_SELECTION => 'learn_more',
+				],
 			);
 
 			$expected = [
@@ -649,14 +647,12 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	public function test_get_asset_suggestions_with_assets_from_asset_group_empty_call_to_action() {
 		$this->asset_group_asset->expects( $this->exactly( 1 ) )
 			->method( 'get_assets_by_final_url' )
-			->with( get_permalink( $this->post->ID ) )
+			->with( get_permalink( $this->post->ID ), true )
 			->willReturn(
 				[
-					[
-						AssetFieldType::HEADLINE    => [ 'headline1', 'headline2' ],
-						AssetFieldType::DESCRIPTION => [ 'description1', 'description2' ],
-					],
-				]
+					AssetFieldType::HEADLINE    => [ 'headline1', 'headline2' ],
+					AssetFieldType::DESCRIPTION => [ 'description1', 'description2' ],
+				],
 			);
 
 			$expected = [

@@ -138,11 +138,12 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * Get Assets for specific final URL.
 	 *
 	 * @param string $url The final url.
+	 * @param bool   $only_first_asset_group Whether to return only the first asset group found.
 	 *
 	 * @return array The assets for the asset groups with a specific final url.
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_assets_by_final_url( string $url ): array {
+	public function get_assets_by_final_url( string $url, bool $only_first_asset_group = false ): array {
 		try {
 
 			$asset_group_assets = [];
@@ -176,6 +177,10 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 					$row->getAssetGroup()->getPath1(),
 					$row->getAssetGroup()->getPath2(),
 				];
+			}
+
+			if ( $only_first_asset_group ) {
+				return reset( $asset_group_assets ) ?: [];
 			}
 
 			return $asset_group_assets;
