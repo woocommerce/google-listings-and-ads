@@ -55,6 +55,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	protected const SQUARE_MARKETING_IMAGE_KEY       = 'gla_square_marketing_asset';
 	protected const MARKETING_IMAGE_KEY              = 'gla_marketing_asset';
 	protected const LOGO_IMAGE_KEY                   = 'gla_logo_asset';
+	protected const HOMEPAGE_NON_STATIC_ID           = 0;
 
 
 	protected const TEST_POST_TYPES               = [
@@ -121,6 +122,21 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			'type'  => 'term',
 			'title' => $term->name,
 			'url'   => get_term_link( $term->term_id, $term->taxonomy ),
+		];
+	}
+
+	protected function format_homepage_asset_response() {
+		return [
+			AssetFieldType::HEADLINE                 => [ 'Homepage' ],
+			AssetFieldType::LONG_HEADLINE            => [],
+			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
+			AssetFieldType::LOGO                     => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => [],
+			AssetFieldType::MARKETING_IMAGE          => [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+			'display_url_path'                       => [],
+			'final_url'                              => get_bloginfo( 'url' ),
 		];
 	}
 
@@ -340,6 +356,16 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		}
 
 		$this->assertEquals( $expected, $this->asset_suggestions->get_final_url_suggestions( self::TEST_SEARCH, $per_page ) );
+	}
+
+	public function test_get_non_static_homepage() {
+		$this->wp->expects( $this->once() )
+		->method( 'get_static_homepage' )
+		->willReturn(
+			null
+		);
+
+		$this->assertEquals( $this->format_homepage_asset_response( $this->post ), $this->asset_suggestions->get_assets_suggestions( self::HOMEPAGE_NON_STATIC_ID, 'homepage' ) );
 	}
 
 	public function test_get_post_assets() {
