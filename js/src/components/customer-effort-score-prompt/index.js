@@ -37,7 +37,8 @@ import useEffectRemoveNotice from '.~/hooks/useEffectRemoveNotice';
  * A CustomerEffortScore wrapper that uses tracks to track the selected
  * customer effort score.
  *
- * TODO: Remove Temoorary fix for WC 7.3 in which adding secondQuestion is required.
+ * compatibility-code "WC >= 7.3"
+ * TODO: Remove temporary fix for WC 7.3 in which adding `secondQuestion` is required.
  * See: https://github.com/woocommerce/google-listings-and-ads/issues/1836
  *
  * @fires gla_ces_snackbar_open whenever the CES snackbar (notice) is open
