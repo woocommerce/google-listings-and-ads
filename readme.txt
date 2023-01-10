@@ -109,6 +109,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.3.6 - 2023-01-10 =
+* Dev - Use extracted Button component from @wordpress/components package.
+* Fix - i18n for "View Reports" button.
+* Tweak - WooCommerce 7.3 Compatibility with Customer Effort Score prompt.
+
 = 2.3.5 - 2022-12-28 =
 * Tweak - Adjust copy in Attribute Mapping section.
 * Tweak - Retrieve a published product as a landing page URL.
