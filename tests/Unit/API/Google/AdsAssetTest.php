@@ -46,20 +46,22 @@ class AdsAssetTest extends UnitTest {
 		$this->asset->set_options_object( $this->options );
 	}
 
+	protected function assertAssetTypeConversion( $data ) {
+		$row      = $this->generate_asset_row_mock( $data );
+		$expected = [
+			'id'      => self::TEST_ASSET_ID,
+			'content' => $data['content'],
+		];
+		$this->assertEquals( $expected, $this->asset->convert_asset( $row ) );
+	}
+
 	public function test_convert_asset_text() {
 		$data = [
 			'field_type' => AssetFieldType::HEADLINE,
 			'content'    => 'Test headline',
 			'id'         => self::TEST_ASSET_ID,
 		];
-		$row  = $this->generate_asset_row_mock( $data );
-
-		$expected = [
-			'id'      => self::TEST_ASSET_ID,
-			'content' => $data['content'],
-		];
-
-		$this->assertEquals( $expected, $this->asset->convert_asset( $row ) );
+		$this->assertAssetTypeConversion( $data );
 	}
 
 	public function test_convert_asset_image() {
@@ -68,14 +70,8 @@ class AdsAssetTest extends UnitTest {
 			'content'    => 'https://example.com/image.jpg',
 			'id'         => self::TEST_ASSET_ID,
 		];
-		$row  = $this->generate_asset_row_mock( $data );
 
-		$expected = [
-			'id'      => self::TEST_ASSET_ID,
-			'content' => $data['content'],
-		];
-
-		$this->assertEquals( $expected, $this->asset->convert_asset( $row ) );
+		$this->assertAssetTypeConversion( $data );
 	}
 
 	public function test_convert_asset_call_action() {
@@ -84,14 +80,8 @@ class AdsAssetTest extends UnitTest {
 			'content'    => CallToActionType::SHOP_NOW,
 			'id'         => self::TEST_ASSET_ID,
 		];
-		$row  = $this->generate_asset_row_mock( $data );
 
-		$expected = [
-			'id'      => self::TEST_ASSET_ID,
-			'content' => $data['content'],
-		];
-
-		$this->assertEquals( $expected, $this->asset->convert_asset( $row ) );
+		$this->assertAssetTypeConversion( $data );
 	}
 
 	public function test_create_operation_text_asset() {
