@@ -11,7 +11,8 @@
 import classnames from 'classnames';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Modal, KeyboardShortcuts, Button } from '@wordpress/components';
+import { Modal, KeyboardShortcuts } from '@wordpress/components';
+import { Button } from 'extracted/@wordpress/components';
 
 /**
  * Internal dependencies

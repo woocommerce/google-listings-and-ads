@@ -4,7 +4,11 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { Tag } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
-import { Button } from '@wordpress/components';
+
+/**
+ * Internal dependencies
+ */
+import AppButton from '.~/components/app-button';
 
 /**
  * A list of tags to display selected items.
@@ -72,7 +76,7 @@ const Tags = ( {
 			} ) }
 
 			{ maxTags > 0 && tags.length > maxTags && (
-				<Button
+				<AppButton
 					isTertiary
 					className="woocommerce-tree-select-control__show-more"
 					onClick={ () => {
@@ -86,7 +90,7 @@ const Tags = ( {
 								__( '+ %d more', 'google-listing-and-ads' ),
 								tags.length - maxTags
 						  ) }
-				</Button>
+				</AppButton>
 			) }
 		</div>
 	);

@@ -15,7 +15,7 @@ import SupportedCountrySelect from '.~/components/supported-country-select';
 import validateMinimumOrder from './validateMinimumOrder';
 
 /**
- * @typedef { import("@wordpress/components").Button } Button
+ * @typedef { import(".~/components/app-button").default } AppButton
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  * @typedef { import("../typedefs.js").MinimumOrderGroup } MinimumOrderGroup
  */
@@ -29,7 +29,7 @@ import validateMinimumOrder from './validateMinimumOrder';
  *
  * @param {Object} props Props.
  * @param {Array<CountryCode>} props.countryOptions Array of country codes options, to be used as options in SupportedCountrySelect.
- * @param {(formProps: Object) => Array<Button>} props.renderButtons Function to render buttons for the modal. `formProps` will be passed into this render function.
+ * @param {(formProps: Object) => Array<AppButton>} props.renderButtons Function to render buttons for the modal. `formProps` will be passed into this render function.
  * @param {MinimumOrderGroup} props.initialValues Initial values for the form.
  * @param {(values: MinimumOrderGroup) => void} props.onSubmit Callback when the form is submitted, with the form value.
  * @param {() => void} props.onRequestClose Callback to close the modal.

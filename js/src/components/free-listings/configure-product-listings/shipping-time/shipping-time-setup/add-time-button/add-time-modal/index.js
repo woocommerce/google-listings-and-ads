@@ -2,13 +2,13 @@
  * External dependencies
  */
 import { useState } from '@wordpress/element';
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import AppModal from '.~/components/app-modal';
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -53,7 +53,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 							'google-listings-and-ads'
 						) }
 						buttons={ [
-							<Button
+							<AppButton
 								key="save"
 								isPrimary
 								disabled={ ! isValidForm }
@@ -63,7 +63,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 									'Add shipping time',
 									'google-listings-and-ads'
 								) }
-							</Button>,
+							</AppButton>,
 						] }
 						onRequestClose={ onRequestClose }
 					>

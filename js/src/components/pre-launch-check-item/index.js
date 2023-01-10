@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import {
-	Button,
 	CheckboxControl,
 	Panel,
 	PanelBody,
@@ -15,6 +14,7 @@ import { useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import './index.scss';
 
 const getPanelToggleHandler = ( id ) => ( isOpened ) => {
@@ -60,12 +60,12 @@ export default function PreLaunchCheckItem( {
 				>
 					<PanelRow>
 						{ children }
-						<Button
+						<AppButton
 							isPrimary
 							onClick={ () => setValue( fieldName, true ) }
 						>
 							{ __( 'Confirm', 'google-listings-and-ads' ) }
-						</Button>
+						</AppButton>
 					</PanelRow>
 				</PanelBody>
 			</Panel>

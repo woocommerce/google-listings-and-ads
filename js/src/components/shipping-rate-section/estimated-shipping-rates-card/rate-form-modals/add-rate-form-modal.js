@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import RateFormModal from './rate-form-modal.js';
 
 /**
@@ -43,14 +43,14 @@ const AddRateFormModal = ( {
 				};
 
 				return [
-					<Button
+					<AppButton
 						key="submit"
 						isPrimary
 						disabled={ ! isValidForm }
 						onClick={ handleAddClick }
 					>
 						{ __( 'Add shipping rate', 'google-listings-and-ads' ) }
-					</Button>,
+					</AppButton>,
 				];
 			} }
 			onSubmit={ onSubmit }

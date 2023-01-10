@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import EditTimeModal from './edit-time-modal';
 import './index.scss';
 
@@ -43,13 +43,13 @@ const EditTimeButton = ( { audienceCountries, time, onChange, onDelete } ) => {
 
 	return (
 		<>
-			<Button
+			<AppButton
 				className="gla-edit-time-button"
 				isTertiary
 				onClick={ handleClick }
 			>
 				{ __( 'Edit', 'google-listings-and-ads' ) }
-			</Button>
+			</AppButton>
 			{ isOpen && (
 				<EditTimeModal
 					audienceCountries={ audienceCountries }
