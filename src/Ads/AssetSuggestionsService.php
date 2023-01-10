@@ -99,9 +99,9 @@ class AssetSuggestionsService implements Service {
 	protected const LOGO_IMAGE_KEY = 'gla_logo_asset';
 
 	/**
-	 * The homepage ID if it is not a static page.
+	 * The homepage key ID.
 	 */
-	protected const HOMEPAGE_NON_STATIC_ID = 0;
+	protected const HOMEPAGE_KEY_ID = 0;
 
 	/**
 	 * AssetSuggestionsService constructor.
@@ -123,7 +123,7 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get WP and other campaigns' assets from the specific post or term.
 	 *
-	 * @param int    $id Post ID, Term ID or null if it's the homepage.
+	 * @param int    $id Post ID, Term ID or self::HOMEPAGE_KEY_ID if it's the homepage.
 	 * @param string $type Only possible values are post, term and homepage.
 	 */
 	public function get_assets_suggestions( int $id, string $type ): array {
@@ -139,7 +139,7 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get URL for a specific post or term.
 	 *
-	 * @param int    $id Post or Term ID.
+	 * @param int    $id Post ID, Term ID or self::HOMEPAGE_KEY_ID
 	 * @param string $type Only possible values are post, term and homepage.
 	 *
 	 * @return string The URL.
@@ -194,10 +194,10 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get assets from specific post or term.
 	 *
-	 * @param int    $id Post or Term ID, or self::HOMEPAGE_NON_STATIC_ID.
+	 * @param int    $id Post or Term ID, or self::HOMEPAGE_KEY_ID.
 	 * @param string $type Only possible values are post or term.
 	 *
-	 * @return array All assets available for specific term or post.
+	 * @return array All assets available for specific term, post or homepage.
 	 */
 	protected function get_wp_assets( int $id, string $type ): array {
 		if ( $type === 'post' ) {
@@ -211,17 +211,18 @@ class AssetSuggestionsService implements Service {
 	}
 
 	/**
-	 * Get assets from the homepage without static page.
+	 * Get assets from the homepage.
 	 *
 	 * @return array Assets available for the homepage.
 	 */
 	protected function get_homepage_assets() {
 		$home_page = $this->wp->get_static_homepage();
 
+		// Static homepage.
 		if ( $home_page ) {
 			return $this->get_post_assets( $home_page->ID );
 		}
-
+		// Non static homepage.
 		return [
 			AssetFieldType::HEADLINE                 => [ __( 'Homepage', 'google-listings-and-ads' ) ],
 			AssetFieldType::LONG_HEADLINE            => [],
@@ -655,13 +656,7 @@ class AssetSuggestionsService implements Service {
 	 * @return array final url for the homepage.
 	 */
 	protected function get_homepage_final_url(): array {
-		$home_page = $this->wp->get_static_homepage();
-
-		if ( $home_page ) {
-			return $this->format_final_url_response( $home_page->ID, 'post', __( 'Homepage', 'google-listings-and-ads' ), get_permalink( $home_page->ID ) );
-		} else {
-			return $this->format_final_url_response( self::HOMEPAGE_NON_STATIC_ID, 'homepage', __( 'Homepage', 'google-listings-and-ads' ), get_bloginfo( 'url' ) );
-		}
+		return $this->format_final_url_response( self::HOMEPAGE_KEY_ID, 'homepage', __( 'Homepage', 'google-listings-and-ads' ), get_bloginfo( 'url' ) );
 	}
 
 	/**
@@ -670,8 +665,8 @@ class AssetSuggestionsService implements Service {
 	 * @return array default final urls.
 	 */
 	protected function get_defaults_final_url_suggestions(): array {
-		$shop_page = $this->wp->get_shop_page();
 		$defaults  = [ $this->get_homepage_final_url() ];
+		$shop_page = $this->wp->get_shop_page();
 
 		if ( $shop_page ) {
 			$defaults[] = $this->format_final_url_response( $shop_page->ID, 'post', $shop_page->post_title, get_permalink( $shop_page->ID ) );
@@ -703,7 +698,7 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Return an assotiave array with the page suggestion response format.
 	 *
-	 * @param int    $id post id, term id or self::HOMEPAGE_NON_STATIC_ID.
+	 * @param int    $id post id, term id or self::HOMEPAGE_KEY_ID.
 	 * @param string $type post|term
 	 * @param string $title page|term title
 	 * @param string $url page|term url
