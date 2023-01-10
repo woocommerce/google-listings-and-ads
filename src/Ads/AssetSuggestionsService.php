@@ -620,14 +620,15 @@ class AssetSuggestionsService implements Service {
 			 return $this->get_defaults_final_url_suggestions();
 		}
 
-		// Split possible results between posts and terms.
-		$per_page_posts = (int) ceil( $per_page / 2 );
-		$homepage       = [];
+		$homepage = [];
 
 		if ( strpos( 'homepage', $search ) !== false ) {
 			$homepage[] = $this->get_homepage_final_url();
-			$per_page_posts--;
+			$per_page--;
 		}
+
+		// Split possible results between posts and terms.
+		$per_page_posts = (int) ceil( $per_page / 2 );
 
 		$posts = $this->get_post_suggestions( $search, $per_page_posts );
 
