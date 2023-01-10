@@ -72,8 +72,7 @@ class AssetGroupController extends BaseController {
 	 * Get the schema for the asset group.
 	 *
 	 * @return array The asset group schema.
-	 *
-	 * /
+	 */
 	public function get_asset_group_fields(): array {
 		return [
 			'final_url' => [
