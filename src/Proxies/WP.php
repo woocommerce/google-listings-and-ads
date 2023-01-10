@@ -308,4 +308,20 @@ class WP {
 		return wp_update_image_subsizes( $attachment_id );
 
 	}
+
+	/**
+	 * Performs an HTTP request using the GET method and returns its response.
+	 *
+	 * @since x.x.x
+	 *
+	 * @see wp_remote_request() For more information on the response array format.
+	 * @see WP_Http::request() For default arguments information.
+	 *
+	 * @param string $url  URL to retrieve.
+	 * @param array  $args Optional. Request arguments. Default empty array.
+	 * @return array|WP_Error The response or WP_Error on failure.
+	 */
+	public function wp_remote_get( string $url, array $args = [] ) {
+		return wp_remote_get( $url, $args );
+	}
 }
