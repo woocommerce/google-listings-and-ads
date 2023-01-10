@@ -101,9 +101,16 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 
 				/** @var AssetGroupAsset $asset_group_asset */
 				$asset_group_asset = $row->getAssetGroupAsset();
+				$field_type        = AssetFieldType::label( $asset_group_asset->getFieldType() );
 
-				$field_type = AssetFieldType::label( $asset_group_asset->getFieldType() );
-				$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ][] = $this->asset->convert_asset( $row );
+				switch ( $field_type ) {
+					case AssetFieldType::BUSINESS_NAME:
+					case AssetFieldType::CALL_TO_ACTION_SELECTION:
+						$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ] = $this->asset->convert_asset( $row );
+						break;
+					default:
+						$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ][] = $this->asset->convert_asset( $row );
+				}
 			}
 
 			return $asset_group_assets;
