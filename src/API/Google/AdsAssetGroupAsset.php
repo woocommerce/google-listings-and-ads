@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupAssetQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -166,9 +165,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		}
 
 		// Delete asset group assets operations must be executed last so we are never under the minimum quantity.
-		$operations = array_merge( $assets_operations, $asset_group_assets_operations, $delete_asset_group_assets_operations );
-
-		return $operations;
+		return array_merge( $assets_operations, $asset_group_assets_operations, $delete_asset_group_assets_operations );
 
 	}
 
@@ -180,7 +177,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @param string $asset_field_type The field type of the asset.
 	 * @param int    $asset_id The ID of the asset.
 	 *
-	 * @return AssetGroupAssetOperation The create operation for the asset group asset.
+	 * @return MutateOperation The mutate create operation for the asset group asset.
 	 */
 	protected function create_operation( int $asset_group_id, string $asset_field_type, int $asset_id ): MutateOperation {
 		$operation             = new AssetGroupAssetOperation();
