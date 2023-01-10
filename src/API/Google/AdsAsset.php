@@ -45,7 +45,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @return string The Asset resource name.
 	 */
-	protected function temporary_resource_name( $temporary_id = self::TEMPORARY_ID ): string {
+	protected function temporary_resource_name( int $temporary_id = self::TEMPORARY_ID ): string {
 		return ResourceNames::forAsset( $this->options->get_ads_id(), $temporary_id );
 	}
 
