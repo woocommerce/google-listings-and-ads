@@ -11,7 +11,9 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CallToActionType;
 use Google\Ads\GoogleAds\Util\V11\ResourceNames;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Exception;
+use WP_Error;
 
 
 defined( 'ABSPATH' ) || exit;
@@ -23,6 +25,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @property MockObject|OptionsInterface $options
  * @property AdsAsset                    $asset
+ * @property MockObject|WP               $wp
  */
 class AdsAssetTest extends UnitTest {
 
@@ -40,9 +43,10 @@ class AdsAssetTest extends UnitTest {
 		$this->ads_client_setup();
 
 		$this->options = $this->createMock( OptionsInterface::class );
+		$this->wp      = $this->createMock( WP::class );
 		$this->options->method( 'get_ads_id' )->willReturn( $this->ads_id );
 
-		$this->asset = new AdsAsset();
+		$this->asset = new AdsAsset( $this->wp );
 		$this->asset->set_options_object( $this->options );
 	}
 
@@ -53,6 +57,11 @@ class AdsAssetTest extends UnitTest {
 			'content' => $data['content'],
 		];
 		$this->assertEquals( $expected, $this->asset->convert_asset( $row ) );
+	}
+
+	protected function assertHasAssetCreateOperation( $asset_operation, $asset_id = self::TEMPORARY_ID ) {
+		$this->assertTrue( $asset_operation->hasCreate() );
+		$this->assertEquals( ResourceNames::forAsset( $this->options->get_ads_id(), $asset_id ), $asset_operation->getCreate()->getResourceName() );
 	}
 
 	public function test_convert_asset_text() {
@@ -93,8 +102,7 @@ class AdsAssetTest extends UnitTest {
 		$operation       = $this->asset->create_operation( $data, self::TEMPORARY_ID );
 		$asset_operation = $operation->getAssetOperation();
 
-		$this->assertTrue( $asset_operation->hasCreate() );
-		$this->assertEquals( ResourceNames::forAsset( $this->options->get_ads_id(), self::TEMPORARY_ID ), $asset_operation->getCreate()->getResourceName() );
+		$this->assertHasAssetCreateOperation( $asset_operation );
 		$this->assertEquals( $data['content'], $asset_operation->getCreate()->getTextAsset()->getText() );
 
 	}
@@ -108,10 +116,50 @@ class AdsAssetTest extends UnitTest {
 		$operation       = $this->asset->create_operation( $data, self::TEMPORARY_ID );
 		$asset_operation = $operation->getAssetOperation();
 
-		$this->assertTrue( $asset_operation->hasCreate() );
-		$this->assertEquals( ResourceNames::forAsset( $this->options->get_ads_id(), self::TEMPORARY_ID ), $asset_operation->getCreate()->getResourceName() );
+		$this->assertHasAssetCreateOperation( $asset_operation );
 		$this->assertEquals( CallToActionType::number( $data['content'] ), $asset_operation->getCreate()->getCallToActionAsset()->getCallToAction() );
 
+	}
+
+	public function test_create_operation_image_asset() {
+		$data = [
+			'field_type' => AssetFieldType::SQUARE_MARKETING_IMAGE,
+			'content'    => 'https://example.com/image.jpg',
+		];
+
+		$this->wp->expects( $this->exactly( 1 ) )
+			->method( 'wp_remote_get' )
+			->with( $data['content'] )
+			->willReturn(
+				[
+					'body' => $data['content'],
+				]
+			);
+
+		$operation       = $this->asset->create_operation( $data, self::TEMPORARY_ID );
+		$asset_operation = $operation->getAssetOperation();
+
+		$this->assertHasAssetCreateOperation( $asset_operation );
+		$this->assertEquals( $data['content'], $asset_operation->getCreate()->getImageAsset()->getData() );
+
+	}
+
+	public function test_create_operation_image_asset_exception() {
+		$data = [
+			'field_type' => AssetFieldType::SQUARE_MARKETING_IMAGE,
+			'content'    => 'https://incorrect_url.com/image.jpg',
+		];
+
+		$this->wp->expects( $this->exactly( 1 ) )
+			->method( 'wp_remote_get' )
+			->with( $data['content'] )
+			->willReturn(
+				new WP_Error( 'Incorrect image asset url.' )
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Incorrect image asset url.' );
+		$this->asset->create_operation( $data, self::TEMPORARY_ID );
 	}
 
 	public function test_create_operation_invalid_asset_field_type() {
