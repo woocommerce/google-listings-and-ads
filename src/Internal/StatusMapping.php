@@ -32,7 +32,7 @@ abstract class StatusMapping {
 	 */
 	public static function number( string $label ): int {
 		$key = array_search( $label, static::MAPPING, true );
-		return $key ?? 0;
+		return $key === false ? 0 : $key;
 	}
 
 	/**

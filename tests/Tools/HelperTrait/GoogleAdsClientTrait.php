@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CallToActionType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
@@ -15,10 +17,12 @@ use Google\Ads\GoogleAds\V11\Common\Segments;
 use Google\Ads\GoogleAds\V11\Common\TagSnippet;
 use Google\Ads\GoogleAds\V11\Common\ImageAsset;
 use Google\Ads\GoogleAds\V11\Common\TextAsset;
+use Google\Ads\GoogleAds\V11\Common\CallToActionAsset;
 use Google\Ads\GoogleAds\V11\Common\ImageDimension;
 use Google\Ads\GoogleAds\V11\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V11\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
 use Google\Ads\GoogleAds\V11\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
+use Google\Ads\GoogleAds\V11\Enums\AssetTypeEnum\AssetType;
 use Google\Ads\GoogleAds\V11\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
 use Google\Ads\GoogleAds\V11\Enums\TrackingCodeTypeEnum\TrackingCodeType;
 use Google\Ads\GoogleAds\V11\Resources\BillingSetup;
@@ -46,6 +50,9 @@ use Google\Ads\GoogleAds\V11\Services\MutateConversionActionResult;
 use Google\Ads\GoogleAds\V11\Services\MutateConversionActionsResponse;
 use Google\Ads\GoogleAds\V11\Services\MutateGoogleAdsResponse;
 use Google\Ads\GoogleAds\V11\Services\MutateOperationResponse;
+use Google\Ads\GoogleAds\V11\Services\MutateOperation;
+use Google\Ads\GoogleAds\V11\Services\AssetOperation;
+use Google\Ads\GoogleAds\V11\Services\MutateAssetGroupResult;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
@@ -660,19 +667,14 @@ trait GoogleAdsClientTrait {
 		$asset_group_asset = $this->createMock( AssetGroupAsset::class );
 		$asset_group_asset->method( 'getFieldType' )->willReturn( $data['field_type'] );
 
-		$asset = $this->createMock( Asset::class );
-		$asset->method( 'getId' )->willReturn( $data['asset']['id'] );
-		$asset->method( 'getType' )->willReturn( $data['asset']['type'] );
-		$asset->method( 'getImageAsset' )->willReturn( new ImageAsset( [ 'full_size' => new ImageDimension( [ 'url' => $data['asset']['image_url'] ?? '' ] ) ] ) );
-		$asset->method( 'getTextAsset' )->willReturn( new TextAsset( [ 'text' => $data['asset']['text'] ?? '' ] ) );
-
 		$asset_group = $this->createMock( AssetGroup::class );
 		$asset_group->method( 'getId' )->willReturn( $data['asset_group_id'] );
+		$asset_group->method( 'getPath1' )->willReturn( $data['path1'] ?? '' );
+		$asset_group->method( 'getPath2' )->willReturn( $data['path2'] ?? '' );
 
 		return ( new GoogleAdsRow() )
 			->setAssetGroupAsset( $asset_group_asset )
-			->setAssetGroup( $asset_group )
-			->setAsset( $asset );
+			->setAssetGroup( $asset_group );
 	}
 
 	/**
@@ -691,7 +693,122 @@ trait GoogleAdsClientTrait {
 		$this->service_client->method( 'search' )->willReturn( $list_response );
 	}
 
+	/**
+	 * Generate a mocked mutate asset group response.
+	 * Asserts that set of operations contains an operation with the expected type.
+	 *
+	 * @param string $type            Mutation type we are expecting (create/update/remove).
+	 * @param int    $asset_group_id  Asset Group ID we expect to see in the mutate result.
+	 */
+	protected function generate_asset_group_mutate_mock( string $type, int $asset_group_id ) {
+		$asset_group_result = $this->createMock( MutateAssetGroupResult::class );
+		$asset_group_result->method( 'getResourceName' )->willReturn(
+			ResourceNames::forCampaign( $this->ads_id, $asset_group_id )
+		);
 
+		$response = ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
+			[
+				( new MutateOperationResponse() )->setAssetGroupResult( $asset_group_result ),
+			]
+		);
+
+		$this->service_client->expects( $this->once() )
+			->method( 'mutate' )
+			->willReturnCallback(
+				function( int $ads_id, array $operations ) use ( $type, $response ) {
+					// Assert that the asset group operation is the right type.
+					foreach ( $operations as $operation ) {
+							$this->assertEquals( 'asset_group_operation', $operation->getOperation() );
+							$asset_group_operation = $operation->getAssetGroupOperation();
+							$this->assertEquals( $type, $asset_group_operation->getOperation() );
+					}
+
+					return $response;
+				}
+			);
+
+	}
+
+	/**
+	 * Generates a mocked exception when an resource is mutated.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_mutate_mock_exception( ApiException $exception ) {
+		$this->service_client->method( 'mutate' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generates a Asset resource.
+	 *
+	 * @param array $asset The asset data.
+	 * @return Asset|null The generated asset.
+	 */
+	protected function generate_asset( $asset ) {
+		$ads_asset = new Asset();
+
+		switch ( $asset['field_type'] ) {
+			case AssetFieldType::LOGO:
+			case AssetFieldType::MARKETING_IMAGE:
+			case AssetFieldType::SQUARE_MARKETING_IMAGE:
+				$image_asset = new ImageAsset( [ 'data' => $asset['content'] ] );
+				$image_asset->setFullSize(
+					new ImageDimension(
+						[
+							'url' => $asset['content'],
+						]
+					)
+				);
+				$ads_asset->setImageAsset( $image_asset );
+				$ads_asset->setType( AssetType::IMAGE );
+				return $ads_asset;
+			case AssetFieldType::HEADLINE:
+			case AssetFieldType::LONG_HEADLINE:
+			case AssetFieldType::DESCRIPTION:
+			case AssetFieldType::BUSINESS_NAME:
+				$ads_asset->setTextAsset( new TextAsset( [ 'text' => $asset['content'] ] ) );
+				$ads_asset->setType( AssetType::TEXT );
+				return $ads_asset;
+			case AssetFieldType::CALL_TO_ACTION_SELECTION:
+				$ads_asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $asset['content'] ) ] ) );
+				$ads_asset->setType( AssetType::CALL_TO_ACTION );
+				return $ads_asset;
+			default:
+				return null;
+		}
+
+	}
+
+	/**
+	 * Generate asset operations
+	 *
+	 * @param array $assets list of assets
+	 */
+	private function generate_crate_asset_operations( $assets = [] ) {
+		foreach ( $assets as $asset ) {
+
+			$ads_asset = $this->generate_asset( $asset );
+
+			if ( $ads_asset ) {
+				$asset_operations[] = ( new MutateOperation() )->setAssetOperation( ( new AssetOperation() )->setCreate( $ads_asset ) );
+			}
+		}
+
+		return $asset_operations;
+	}
+
+	/**
+	 * Generates Assets GoogleAdsRow.
+	 *
+	 * @param array $data AssetGroupAsset data to convert.
+	 *
+	 * @return GoogleAdsRow
+	 */
+	public function generate_asset_row_mock( array $data ): GoogleAdsRow {
+		$asset = $this->generate_asset( $data );
+		$asset->setId( $data['id'] );
+		return ( new GoogleAdsRow() )->setAsset( $asset );
+	}
 
 
 
