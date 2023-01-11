@@ -9,6 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Exception;
 use WP_Query;
 use wpdb;
@@ -46,6 +48,13 @@ class AssetSuggestionsService implements Service {
 	protected ImageUtility $image_utility;
 
 	/**
+	 * The AdsAssetGroupAsset class.
+	 *
+	 * @var AdsAssetGroupAsset
+	 */
+	protected $asset_group_asset;
+
+	/**
 	 * WordPress database access abstraction class.
 	 *
 	 * @var wpdb
@@ -75,6 +84,7 @@ class AssetSuggestionsService implements Service {
 	 * Default maximum marketing images.
 	 */
 	protected const DEFAULT_MAXIMUM_MARKETING_IMAGES = 20;
+
 	/**
 	 * The subsize key for the square marketing image.
 	 */
@@ -91,16 +101,18 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * AssetSuggestionsService constructor.
 	 *
-	 * @param WP           $wp WP Proxy.
-	 * @param WC           $wc WC Proxy.
-	 * @param ImageUtility $image_utility Image utility.
-	 * @param wpdb         $wpdb WordPress database access abstraction class.
+	 * @param WP                 $wp WP Proxy.
+	 * @param WC                 $wc WC Proxy.
+	 * @param ImageUtility       $image_utility Image utility.
+	 * @param wpdb               $wpdb WordPress database access abstraction class.
+	 * @param AdsAssetGroupAsset $asset_group_asset The AdsAssetGroupAsset class.
 	 */
-	public function __construct( WP $wp, WC $wc, ImageUtility $image_utility, wpdb $wpdb ) {
-		$this->wp            = $wp;
-		$this->wc            = $wc;
-		$this->wpdb          = $wpdb;
-		$this->image_utility = $image_utility;
+	public function __construct( WP $wp, WC $wc, ImageUtility $image_utility, wpdb $wpdb, AdsAssetGroupAsset $asset_group_asset ) {
+		$this->wp                = $wp;
+		$this->wc                = $wc;
+		$this->wpdb              = $wpdb;
+		$this->image_utility     = $image_utility;
+		$this->asset_group_asset = $asset_group_asset;
 	}
 
 	/**
@@ -110,8 +122,66 @@ class AssetSuggestionsService implements Service {
 	 * @param string $type Only possible values are post or term.
 	 */
 	public function get_assets_suggestions( int $id, string $type ): array {
-		// TODO: Fetch assets from others campaigns and merge the result with the WP Assets.
+		$asset_group_assets = $this->get_asset_group_asset_suggestions( $id, $type );
+
+		if ( ! empty( $asset_group_assets ) ) {
+			return $asset_group_assets;
+		}
+
 		return $this->get_wp_assets( $id, $type );
+	}
+
+	/**
+	 * Get URL for a specific post or term.
+	 *
+	 * @param int    $id Post or Term ID.
+	 * @param string $type Only possible values are post or term.
+	 *
+	 * @return string The URL.
+	 * @throws Exception If the ID is invalid.
+	 */
+	protected function get_url( int $id, string $type ): string {
+		if ( $type === 'post' ) {
+			$url = get_permalink( $id );
+		} else {
+			$url = get_term_link( $id );
+		}
+
+		if ( $url === false || is_wp_error( $url ) ) {
+			throw new Exception(
+				/* translators: 1: is an integer representing an unknown Term ID */
+				sprintf( __( 'Invalid Term ID or Post ID %1$d', 'google-listings-and-ads' ), $id )
+			);
+		}
+
+		return $url;
+
+	}
+
+
+
+	/**
+	 * Get other campaigns' assets from the specific url.
+	 *
+	 * @param int    $id Post or Term ID.
+	 * @param string $type Only possible values are post or term.
+	 */
+	protected function get_asset_group_asset_suggestions( int $id, string $type ): array {
+		$final_url = $this->get_url( $id, $type );
+
+		// Suggest the assets from the first asset group if exists.
+		$asset_group_assets = $this->asset_group_asset->get_assets_by_final_url( $final_url, true );
+
+		if ( empty( $asset_group_assets ) ) {
+			return [];
+		}
+
+		if ( ! isset( $asset_group_assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] ) ) {
+			$asset_group_assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] = null;
+		}
+
+		return array_merge( [ 'final_url' => $final_url ], $asset_group_assets );
+
 	}
 
 	/**
@@ -169,16 +239,16 @@ class AssetSuggestionsService implements Service {
 		$long_headline    = get_bloginfo( 'name' ) . ': ' . $post->post_title;
 
 		return [
-			'headline'                => [ $post->post_title ],
-			'long_headline'           => [ $long_headline ],
-			'description'             => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
-			'logo'                    => $this->get_logo_images(),
-			'final_url'               => get_permalink( $id ),
-			'business_name'           => get_bloginfo( 'name' ),
-			'display_url_path'        => [ $post->post_name ],
-			'square_marketing_images' => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			'marketing_images'        => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
-			'call_to_action'          => null,
+			AssetFieldType::HEADLINE                 => [ $post->post_title ],
+			AssetFieldType::LONG_HEADLINE            => [ $long_headline ],
+			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
+			AssetFieldType::LOGO                     => $this->get_logo_images(),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::MARKETING_IMAGE          => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+			'display_url_path'                       => [ $post->post_name ],
+			'final_url'                              => get_permalink( $id ),
 		];
 	}
 
@@ -216,16 +286,16 @@ class AssetSuggestionsService implements Service {
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
 
 		return [
-			'headline'                => [ $term->name ],
-			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
-			'description'             => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
-			'logo'                    => $this->get_logo_images(),
-			'final_url'               => get_term_link( $term->term_id ),
-			'business_name'           => get_bloginfo( 'name' ),
-			'display_url_path'        => [ $term->slug ],
-			'square_marketing_images' => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			'marketing_images'        => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
-			'call_to_action'          => null,
+			AssetFieldType::HEADLINE                 => [ $term->name ],
+			AssetFieldType::LONG_HEADLINE            => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
+			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
+			AssetFieldType::LOGO                     => $this->get_logo_images(),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::MARKETING_IMAGE          => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+			'display_url_path'                       => [ $term->slug ],
+			'final_url'                              => get_term_link( $term->term_id ),
 		];
 	}
 
@@ -491,7 +561,7 @@ class AssetSuggestionsService implements Service {
 		);
 
 		foreach ( $terms as $term ) {
-				$terms_suggestions[] = $this->format_final_url_response( $term->term_id, 'term', $term->name, get_term_link( $term->term_id, $term->taxonomy ) );
+			$terms_suggestions[] = $this->format_final_url_response( $term->term_id, 'term', $term->name, get_term_link( $term->term_id, $term->taxonomy ) );
 		}
 
 		return $terms_suggestions;

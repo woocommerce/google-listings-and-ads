@@ -669,6 +669,8 @@ trait GoogleAdsClientTrait {
 
 		$asset_group = $this->createMock( AssetGroup::class );
 		$asset_group->method( 'getId' )->willReturn( $data['asset_group_id'] );
+		$asset_group->method( 'getPath1' )->willReturn( $data['path1'] ?? '' );
+		$asset_group->method( 'getPath2' )->willReturn( $data['path2'] ?? '' );
 
 		return ( new GoogleAdsRow() )
 			->setAssetGroupAsset( $asset_group_asset )

@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useState } from '@wordpress/element';
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -47,14 +46,14 @@ const RemoveProgramModal = ( props ) => {
 			title={ __( 'Permanently Remove?', 'google-listings-and-ads' ) }
 			isDismissible={ ! isDeleting }
 			buttons={ [
-				<Button
+				<AppButton
 					key="keep"
 					isSecondary
 					disabled={ isDeleting }
 					onClick={ handleRequestClose }
 				>
 					{ __( 'Keep Campaign', 'google-listings-and-ads' ) }
-				</Button>,
+				</AppButton>,
 				<AppButton
 					key="remove"
 					isPrimary

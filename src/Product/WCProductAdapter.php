@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
+use Automattic\WooCommerce\GoogleListingsAndAds\Validator\ImageUrlConstraint;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
 use Google\Service\ShoppingContent\Price as GooglePrice;
@@ -761,14 +762,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$metadata->addPropertyConstraint( 'link', new Assert\Url() );
 
 		$metadata->addPropertyConstraint( 'imageLink', new Assert\NotBlank() );
-		$metadata->addPropertyConstraint( 'imageLink', new Assert\Url( [ 'normalizer' => 'Normalizer::normalize' ] ) );
+		$metadata->addPropertyConstraint( 'imageLink', new ImageUrlConstraint() );
 		$metadata->addPropertyConstraint(
 			'additionalImageLinks',
 			new Assert\All(
 				[
-					'constraints' => [
-						new Assert\Url( [ 'normalizer' => 'Normalizer::normalize' ] ),
-					],
+					'constraints' => [ new ImageUrlConstraint() ],
 				]
 			)
 		);

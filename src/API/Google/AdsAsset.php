@@ -14,6 +14,7 @@ use Google\Ads\GoogleAds\Util\V11\ResourceNames;
 use Google\Ads\GoogleAds\V11\Common\TextAsset;
 use Google\Ads\GoogleAds\V11\Common\ImageAsset;
 use Google\Ads\GoogleAds\V11\Common\CallToActionAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Exception;
 
 /**
@@ -31,6 +32,22 @@ class AdsAsset implements OptionsAwareInterface {
 	use OptionsAwareTrait;
 
 	/**
+	 * WP Proxy
+	 *
+	 * @var WP
+	 */
+	protected WP $wp;
+
+	/**
+	 * AdsAsset constructor.
+	 *
+	 * @param WP $wp The WordPress proxy.
+	 */
+	public function __construct( WP $wp ) {
+		$this->wp = $wp;
+	}
+
+	/**
 	 * Temporary ID to use within a batch job.
 	 * A negative number which is unique for all the created resources.
 	 *
@@ -45,7 +62,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @return string The Asset resource name.
 	 */
-	protected function temporary_resource_name( $temporary_id = self::TEMPORARY_ID ): string {
+	protected function temporary_resource_name( int $temporary_id = self::TEMPORARY_ID ): string {
 		return ResourceNames::forAsset( $this->options->get_ads_id(), $temporary_id );
 	}
 
@@ -57,7 +74,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @return int The asset type.
 	 * @throws Exception If the field type is not supported.
 	 */
-	protected function get_asset_type_by_field_type( $field_type ): int {
+	protected function get_asset_type_by_field_type( string $field_type ): int {
 		switch ( $field_type ) {
 			case AssetFieldType::LOGO:
 			case AssetFieldType::MARKETING_IMAGE:
@@ -79,7 +96,7 @@ class AdsAsset implements OptionsAwareInterface {
 	/**
 	 * Returns an operation to create a text asset.
 	 *
-	 * @param array $data The assets to use the text asset.
+	 * @param array $data The asset data.
 	 * @param int   $temporary_id The temporary ID to use for the asset.
 	 *
 	 * @return MutateOperation The create asset operation.
@@ -97,7 +114,7 @@ class AdsAsset implements OptionsAwareInterface {
 				$asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $data['content'] ) ] ) );
 				break;
 			case AssetType::IMAGE:
-				$image_data = wp_remote_get( $data['content'] );
+				$image_data = $this->wp->wp_remote_get( $data['content'] );
 
 				if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {
 					throw new Exception( 'Incorrect image asset url.' );
@@ -119,33 +136,43 @@ class AdsAsset implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Convert Asset data to an array.
+	 * Returns the asset content for the given row.
 	 *
 	 * @param GoogleAdsRow $row Data row returned from a query request.
 	 *
-	 * @return array
+	 * @return string The asset content.
 	 */
-	public function convert_asset( GoogleAdsRow $row ): array {
+	protected function get_asset_content( GoogleAdsRow $row ): string {
 		/** @var Asset $asset */
 		$asset = $row->getAsset();
 
 		switch ( $asset->getType() ) {
 			case AssetType::IMAGE:
-				$data = $asset->getImageAsset()->getFullSize()->getUrl();
-				break;
+				return $asset->getImageAsset()->getFullSize()->getUrl();
 			case AssetType::TEXT:
-				$data = $asset->getTextAsset()->getText();
-				break;
+				return $asset->getTextAsset()->getText();
 			case AssetType::CALL_TO_ACTION:
-				$data = CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
-				break;
+				// When CallToActionType::UNSPECIFIED is returned, does not have a CallToActionAsset.
+				if ( ! $asset->getCallToActionAsset() ) {
+					return CallToActionType::UNSPECIFIED;
+				}
+				return CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
 			default:
-				$data = '';
+				return '';
 		}
+	}
 
+	/**
+	 * Convert Asset data to an array.
+	 *
+	 * @param GoogleAdsRow $row Data row returned from a query request.
+	 *
+	 * @return array The asset data converted.
+	 */
+	public function convert_asset( GoogleAdsRow $row ): array {
 		return [
-			'id'      => $asset->getId(),
-			'content' => $data,
+			'id'      => $row->getAsset()->getId(),
+			'content' => $this->get_asset_content( $row ),
 		];
 	}
 }

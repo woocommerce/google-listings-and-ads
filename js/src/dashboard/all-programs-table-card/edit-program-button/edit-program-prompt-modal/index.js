@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
 import { recordEvent } from '@woocommerce/tracks';
@@ -10,6 +9,7 @@ import { recordEvent } from '@woocommerce/tracks';
  * Internal dependencies
  */
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
+import AppButton from '.~/components/app-button';
 import AppModal from '.~/components/app-modal';
 import './index.scss';
 import { getEditFreeListingsUrl, getEditCampaignUrl } from '.~/utils/urls';
@@ -53,12 +53,16 @@ const EditProgramPromptModal = ( { programId, onRequestClose } ) => {
 			className="gla-edit-program-prompt-modal"
 			title={ __( 'Before you edit…', 'google-listings-and-ads' ) }
 			buttons={ [
-				<Button key="no" isSecondary onClick={ handleDontEditClick }>
+				<AppButton key="no" isSecondary onClick={ handleDontEditClick }>
 					{ __( `Don't edit`, 'google-listings-and-ads' ) }
-				</Button>,
-				<Button key="yes" isPrimary onClick={ handleContinueEditClick }>
+				</AppButton>,
+				<AppButton
+					key="yes"
+					isPrimary
+					onClick={ handleContinueEditClick }
+				>
 					{ __( 'Continue to edit', 'google-listings-and-ads' ) }
-				</Button>,
+				</AppButton>,
 			] }
 			onRequestClose={ onRequestClose }
 		>

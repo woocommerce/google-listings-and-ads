@@ -11,6 +11,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\DataTrai
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ArrayUtil;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DimensionUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
 use WC_Helper_Product;
@@ -25,6 +27,20 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Ads
  *
  * @property MockObject|WP  $wp
+ * @property MockObject|WC  $wc
+ * @property MockObject|ImageUtility  $image_utility
+ * @property MockObject|wpdb  $wpdb
+ * @property MockObject|AdsAssetGroupAsset  $asset_group_asset
+ * @property AssetSuggestionsService  $asset_suggestions
+ * @property \WP_Post  $post
+ * @property \WP_Term  $term
+ * @property array  $suggested_post
+ * @property array  $suggested_term
+ * @property DimensionUtility  $big_image
+ * @property DimensionUtility  $small_image
+ * @property DimensionUtility  $normal_image
+ * @property DimensionUtility  $suggested_image_square
+ * @property DimensionUtility  $suggested_image_landscape
  */
 class AssetSuggestionsServiceTest extends UnitTest {
 
@@ -65,12 +81,13 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->wp            = $this->createMock( WP::class );
-		$this->wc            = $this->createMock( WC::class );
-		$this->image_utility = $this->createMock( ImageUtility::class );
-		$this->wpdb          = $this->createMock( wpdb::class );
+		$this->wp                = $this->createMock( WP::class );
+		$this->wc                = $this->createMock( WC::class );
+		$this->image_utility     = $this->createMock( ImageUtility::class );
+		$this->wpdb              = $this->createMock( wpdb::class );
+		$this->asset_group_asset = $this->createMock( AdsAssetGroupAsset::class );
 
-		$this->asset_suggestions = new AssetSuggestionsService( $this->wp, $this->wc, $this->image_utility, $this->wpdb );
+		$this->asset_suggestions = new AssetSuggestionsService( $this->wp, $this->wc, $this->image_utility, $this->wpdb, $this->asset_group_asset );
 
 		$this->post = $this->factory()->post->create_and_get( [ 'post_title' => 'Abcd' ] );
 		$this->term = $this->factory()->term->create_and_get( [ 'name' => 'bcde' ] );
@@ -109,32 +126,32 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 	protected function format_post_asset_response( $post, array $marketing_images = [] ): array {
 		return [
-			'final_url'               => get_permalink( $post->ID ),
-			'headline'                => [ $post->post_title ],
-			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
-			'description'             => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
-			'business_name'           => get_bloginfo( 'name' ),
-			'display_url_path'        => [ $post->post_name ],
-			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
-			'square_marketing_images' => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			'marketing_images'        => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
-			'call_to_action'          => null,
+			AssetFieldType::HEADLINE                 => [ $post->post_title ],
+			AssetFieldType::LONG_HEADLINE            => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
+			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::LOGO                     => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::MARKETING_IMAGE          => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+			'display_url_path'                       => [ $post->post_name ],
+			'final_url'                              => get_permalink( $post->ID ),
 		];
 
 	}
 
 	protected function format_term_asset_response( $term, array $marketing_images = [] ): array {
 		return [
-			'final_url'               => get_term_link( $term->term_id ),
-			'headline'                => [ $term->name ],
-			'long_headline'           => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
-			'description'             => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
-			'logo'                    => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
-			'business_name'           => get_bloginfo( 'name' ),
-			'display_url_path'        => [ $term->slug ],
-			'square_marketing_images' => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			'marketing_images'        => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
-			'call_to_action'          => null,
+			AssetFieldType::HEADLINE                 => [ $term->name ],
+			AssetFieldType::LONG_HEADLINE            => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
+			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
+			AssetFieldType::LOGO                     => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::MARKETING_IMAGE          => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+			'display_url_path'                       => [ $term->slug ],
+			'final_url'                              => get_term_link( $term->term_id ),
 		];
 
 	}
@@ -594,6 +611,59 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 	}
 
+	public function test_get_asset_suggestions_with_empty_asset_group() {
+		$this->asset_group_asset->expects( $this->exactly( 1 ) )
+			->method( 'get_assets_by_final_url' )
+			->with( get_permalink( $this->post->ID ) )
+			->willReturn( [] );
 
+			$this->assertEquals( $this->format_post_asset_response( $this->post ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+
+	}
+
+	public function test_get_asset_suggestions_with_assets_from_asset_group() {
+		$this->asset_group_asset->expects( $this->exactly( 1 ) )
+			->method( 'get_assets_by_final_url' )
+			->with( get_permalink( $this->post->ID ), true )
+			->willReturn(
+				[
+					AssetFieldType::HEADLINE    => [ 'headline1', 'headline2' ],
+					AssetFieldType::DESCRIPTION => [ 'description1', 'description2' ],
+					AssetFieldType::CALL_TO_ACTION_SELECTION => 'learn_more',
+				],
+			);
+
+			$expected = [
+				AssetFieldType::HEADLINE                 => [ 'headline1', 'headline2' ],
+				AssetFieldType::DESCRIPTION              => [ 'description1', 'description2' ],
+				AssetFieldType::CALL_TO_ACTION_SELECTION => 'learn_more',
+				'final_url'                              => get_permalink( $this->post->ID ),
+			];
+
+			$this->assertEquals( $expected, $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+
+	}
+
+	public function test_get_asset_suggestions_with_assets_from_asset_group_empty_call_to_action() {
+		$this->asset_group_asset->expects( $this->exactly( 1 ) )
+			->method( 'get_assets_by_final_url' )
+			->with( get_permalink( $this->post->ID ), true )
+			->willReturn(
+				[
+					AssetFieldType::HEADLINE    => [ 'headline1', 'headline2' ],
+					AssetFieldType::DESCRIPTION => [ 'description1', 'description2' ],
+				],
+			);
+
+			$expected = [
+				AssetFieldType::HEADLINE                 => [ 'headline1', 'headline2' ],
+				AssetFieldType::DESCRIPTION              => [ 'description1', 'description2' ],
+				AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+				'final_url'                              => get_permalink( $this->post->ID ),
+			];
+
+			$this->assertEquals( $expected, $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+
+	}
 
 }

@@ -3,13 +3,14 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import { Button, Icon } from '@wordpress/components';
+import { Icon } from '@wordpress/components';
 import { SelectControl } from '@woocommerce/components';
 import { edit as editIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import AppTooltip from '.~/components/app-tooltip';
 
 const tipText = __( 'Select channel visibility', 'google-listings-and-ads' );
@@ -90,7 +91,7 @@ export default function EditVisibilityAction( {
 				position="top center"
 				text={ tipText }
 			>
-				<Button
+				<AppButton
 					isSecondary
 					disabled={ selectedVisible === null }
 					onClick={ handleClick }
@@ -100,7 +101,7 @@ export default function EditVisibilityAction( {
 						__( 'Apply to %d selected', 'google-listings-and-ads' ),
 						selectedSize
 					) }
-				</Button>
+				</AppButton>
 			</ConditionalTooltip>
 		</>
 	);

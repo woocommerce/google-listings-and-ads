@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupAssetQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -113,9 +112,16 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 
 				/** @var AssetGroupAsset $asset_group_asset */
 				$asset_group_asset = $row->getAssetGroupAsset();
+				$field_type        = AssetFieldType::label( $asset_group_asset->getFieldType() );
 
-				$field_type = AssetFieldType::label( $asset_group_asset->getFieldType() );
-				$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ][] = $this->asset->convert_asset( $row );
+				switch ( $field_type ) {
+					case AssetFieldType::BUSINESS_NAME:
+					case AssetFieldType::CALL_TO_ACTION_SELECTION:
+						$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ] = $this->asset->convert_asset( $row );
+						break;
+					default:
+						$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ][] = $this->asset->convert_asset( $row );
+				}
 			}
 
 			return $asset_group_assets;
@@ -135,14 +141,80 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get Assets for specific final URL.
+	 *
+	 * @param string $url The final url.
+	 * @param bool   $only_first_asset_group Whether to return only the first asset group found.
+	 *
+	 * @return array The assets for the asset groups with a specific final url.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function get_assets_by_final_url( string $url, bool $only_first_asset_group = false ): array {
+		try {
+
+			$asset_group_assets = [];
+
+			// Search urls with and without trailing slash.
+			$asset_results = ( new AdsAssetGroupAssetQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->add_columns( [ 'asset_group.id', 'asset_group.path1', 'asset_group.path2' ] )
+				->where( 'asset_group.final_urls', [ trailingslashit( $url ), untrailingslashit( $url ) ], 'CONTAINS ANY' )
+				->where( 'asset_group_asset.field_type', $this->get_asset_field_types_query(), 'IN' )
+				->where( 'asset_group_asset.status', 'REMOVED', '!=' )
+				->get_results();
+
+			/** @var GoogleAdsRow $row */
+			foreach ( $asset_results->iterateAllElements() as $row ) {
+
+				/** @var AssetGroupAsset $asset_group_asset */
+				$asset_group_asset = $row->getAssetGroupAsset();
+
+				$field_type = AssetFieldType::label( $asset_group_asset->getFieldType() );
+				switch ( $field_type ) {
+					case AssetFieldType::BUSINESS_NAME:
+					case AssetFieldType::CALL_TO_ACTION_SELECTION:
+						$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ] = $this->asset->convert_asset( $row )['content'];
+						break;
+					default:
+						$asset_group_assets[ $row->getAssetGroup()->getId() ][ $field_type ][] = $this->asset->convert_asset( $row )['content'];
+				}
+
+				$asset_group_assets[ $row->getAssetGroup()->getId() ]['display_url_path'] = [
+					$row->getAssetGroup()->getPath1(),
+					$row->getAssetGroup()->getPath2(),
+				];
+			}
+
+			if ( $only_first_asset_group ) {
+				return reset( $asset_group_assets ) ?: [];
+			}
+
+			return $asset_group_assets;
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_api_exception_errors( $e );
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving asset groups assets by final url: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
+
+	}
+
+	/**
 	 * Edit assets group assets.
 	 *
 	 * @param int   $asset_group_id The asset group id.
 	 * @param array $assets The assets to create.
 	 *
 	 * @return array The asset group asset operations.
+	 * @throws Exception If the asset type is not supported.
 	 */
-	public function edit_operations_assets_group_assets( int $asset_group_id, array $assets ): array {
+	public function edit_operations( int $asset_group_id, array $assets ): array {
 		if ( empty( $assets ) ) {
 			return [];
 		}
@@ -166,9 +238,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		}
 
 		// Delete asset group assets operations must be executed last so we are never under the minimum quantity.
-		$operations = array_merge( $assets_operations, $asset_group_assets_operations, $delete_asset_group_assets_operations );
-
-		return $operations;
+		return array_merge( $assets_operations, $asset_group_assets_operations, $delete_asset_group_assets_operations );
 
 	}
 
@@ -180,7 +250,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @param string $asset_field_type The field type of the asset.
 	 * @param int    $asset_id The ID of the asset.
 	 *
-	 * @return AssetGroupAssetOperation The create operation for the asset group asset.
+	 * @return MutateOperation The mutate create operation for the asset group asset.
 	 */
 	protected function create_operation( int $asset_group_id, string $asset_field_type, int $asset_id ): MutateOperation {
 		$operation             = new AssetGroupAssetOperation();
@@ -196,7 +266,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Returns a campaign delete operation.
+	 * Returns a delete operation for asset group asset.
 	 *
 	 * @param int    $asset_group_id The ID of the asset group.
 	 * @param string $asset_field_type The field type of the asset.
