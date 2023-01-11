@@ -214,8 +214,9 @@ class AssetSuggestionsService implements Service {
 	 * Get assets from the homepage.
 	 *
 	 * @return array Assets available for the homepage.
+	 * @throws Exception If the homepage id is invalid.
 	 */
-	protected function get_homepage_assets() {
+	protected function get_homepage_assets(): array {
 		$home_page = $this->wp->get_static_homepage();
 
 		// Static homepage.
@@ -622,6 +623,7 @@ class AssetSuggestionsService implements Service {
 
 		$homepage = [];
 
+		// If the search query contains the word "homepage" add the homepage to the results.
 		if ( strpos( 'homepage', $search ) !== false ) {
 			$homepage[] = $this->get_homepage_final_url();
 			$per_page--;
