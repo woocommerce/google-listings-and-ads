@@ -136,38 +136,43 @@ class AdsAsset implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Convert Asset data to an array.
+	 * Returns the asset content for the given row.
 	 *
 	 * @param GoogleAdsRow $row Data row returned from a query request.
 	 *
-	 * @return array
+	 * @return string The asset content.
 	 */
-	public function convert_asset( GoogleAdsRow $row ): array {
+	protected function get_asset_content( GoogleAdsRow $row ): string {
 		/** @var Asset $asset */
 		$asset = $row->getAsset();
 
 		switch ( $asset->getType() ) {
 			case AssetType::IMAGE:
-				$data = $asset->getImageAsset()->getFullSize()->getUrl();
-				break;
+				return $asset->getImageAsset()->getFullSize()->getUrl();
 			case AssetType::TEXT:
-				$data = $asset->getTextAsset()->getText();
-				break;
+				return $asset->getTextAsset()->getText();
 			case AssetType::CALL_TO_ACTION:
 				// When CallToActionType::UNSPECIFIED is returned, does not have a CallToActionAsset.
 				if ( ! $asset->getCallToActionAsset() ) {
-					$data = CallToActionType::UNSPECIFIED;
-					break;
+					return CallToActionType::UNSPECIFIED;
 				}
-				$data = CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
-				break;
+				return CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
 			default:
-				$data = '';
+				return '';
 		}
+	}
 
+	/**
+	 * Convert Asset data to an array.
+	 *
+	 * @param GoogleAdsRow $row Data row returned from a query request.
+	 *
+	 * @return array The asset data converted.
+	 */
+	public function convert_asset( GoogleAdsRow $row ): array {
 		return [
-			'id'      => $asset->getId(),
-			'content' => $data,
+			'id'      => $row->getAsset()->getId(),
+			'content' => $this->get_asset_content( $row ),
 		];
 	}
 }
