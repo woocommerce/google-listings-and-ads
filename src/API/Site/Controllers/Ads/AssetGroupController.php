@@ -50,7 +50,7 @@ class AssetGroupController extends BaseController {
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->edit_asset_group_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_edit_params(),
+					'args'                => $this->edit_asset_group_params(),
 				],
 			]
 		);
@@ -71,7 +71,7 @@ class AssetGroupController extends BaseController {
 	/**
 	 * Get the schema for the asset group.
 	 *
-	 * @return array
+	 * @return array The asset group schema.
 	 */
 	public function get_asset_group_fields(): array {
 		return [
@@ -91,9 +91,11 @@ class AssetGroupController extends BaseController {
 	}
 
 	/**
-	 * Get the edit params to update an asset group.
+	 * Get the edit asset group params params to update an asset group.
+	 *
+	 * @return array The edit asset group params.
 	 */
-	public function get_edit_params() {
+	public function edit_asset_group_params(): array {
 		return array_merge(
 			[
 				'id'     => [
@@ -253,6 +255,8 @@ class AssetGroupController extends BaseController {
 				'field_type' => [
 					'type'        => 'string',
 					'description' => __( 'Asset field type', 'google-listings-and-ads' ),
+					'required'    => true,
+					'context'     => [ 'edit' ],
 					'enum'        => [
 						AssetFieldType::HEADLINE,
 						AssetFieldType::LONG_HEADLINE,

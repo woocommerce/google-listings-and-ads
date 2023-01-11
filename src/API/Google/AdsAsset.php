@@ -14,6 +14,7 @@ use Google\Ads\GoogleAds\Util\V11\ResourceNames;
 use Google\Ads\GoogleAds\V11\Common\TextAsset;
 use Google\Ads\GoogleAds\V11\Common\ImageAsset;
 use Google\Ads\GoogleAds\V11\Common\CallToActionAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Exception;
 
 /**
@@ -31,6 +32,22 @@ class AdsAsset implements OptionsAwareInterface {
 	use OptionsAwareTrait;
 
 	/**
+	 * WP Proxy
+	 *
+	 * @var WP
+	 */
+	protected WP $wp;
+
+	/**
+	 * AdsAsset constructor.
+	 *
+	 * @param WP $wp The WordPress proxy.
+	 */
+	public function __construct( WP $wp ) {
+		$this->wp = $wp;
+	}
+
+	/**
 	 * Temporary ID to use within a batch job.
 	 * A negative number which is unique for all the created resources.
 	 *
@@ -45,7 +62,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @return string The Asset resource name.
 	 */
-	protected function temporary_resource_name( $temporary_id = self::TEMPORARY_ID ): string {
+	protected function temporary_resource_name( int $temporary_id = self::TEMPORARY_ID ): string {
 		return ResourceNames::forAsset( $this->options->get_ads_id(), $temporary_id );
 	}
 
@@ -97,7 +114,7 @@ class AdsAsset implements OptionsAwareInterface {
 				$asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $data['content'] ) ] ) );
 				break;
 			case AssetType::IMAGE:
-				$image_data = wp_remote_get( $data['content'] );
+				$image_data = $this->wp->wp_remote_get( $data['content'] );
 
 				if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {
 					throw new Exception( 'Incorrect image asset url.' );
