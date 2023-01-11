@@ -26,6 +26,19 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Ads
  *
  * @property MockObject|WP  $wp
+ * @property MockObject|WC  $wc
+ * @property MockObject|wpdb $wpdb
+ * @property MockObject|ImageUtility $image_utility
+ * @property MockObject|\WP_Post $post
+ * @property MockObject|\WP_Term $term
+ * @property MockObject|AssetSuggestionsService $asset_suggestions
+ * @property MockObject|array $suggested_post
+ * @property MockObject|array $suggested_term
+ * @property MockObject|DimensionUtility $big_image
+ * @property MockObject|DimensionUtility $small_image
+ * @property MockObject|DimensionUtility $normal_image
+ * @property MockObject|DimensionUtility $suggested_image_square
+ * @property MockObject|DimensionUtility $suggested_image_landscape
  */
 class AssetSuggestionsServiceTest extends UnitTest {
 

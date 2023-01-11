@@ -140,6 +140,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @param array $assets The assets to create.
 	 *
 	 * @return array The asset group asset operations.
+	 * @throws Exception If the asset type is not supported.
 	 */
 	public function edit_operations( int $asset_group_id, array $assets ): array {
 		if ( empty( $assets ) ) {
