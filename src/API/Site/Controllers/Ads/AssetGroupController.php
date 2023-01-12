@@ -10,7 +10,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use WP_REST_Request as Request;
 use Exception;
-use Google\ApiCore\Call;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -53,31 +52,20 @@ class AssetGroupController extends BaseController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->edit_asset_group_params(),
 				],
-				[
-					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->create_assset_group(),
-					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_edit_params(),
-				],
 			]
 		);
 		$this->register_route(
 			'ads/campaigns/asset-groups',
 			[
 				[
-					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->create_assset_group(),
-					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_edit_params(),
-				],
-			]
-		);
-		$this->register_route(
-			'ads/campaigns/(?P<id>[\d]+)/asset-groups',
-			[
-				[
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_asset_groups_by_campaign_id_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_asset_group_params(),
+				],
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->create_asset_group_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_asset_group_params(),
 				],
@@ -139,7 +127,7 @@ class AssetGroupController extends BaseController {
 	 */
 	public function get_asset_group_params(): array {
 		return [
-			'id' => [
+			'campaign_id' => [
 				'description'       => __( 'Campaign ID.', 'google-listings-and-ads' ),
 				'type'              => 'integer',
 				'validate_callback' => 'rest_validate_request_arg',
@@ -156,7 +144,7 @@ class AssetGroupController extends BaseController {
 	protected function get_asset_groups_by_campaign_id_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$campaign_id = $request->get_param( 'id' );
+				$campaign_id = $request->get_param( 'campaign_id' );
 				return array_map(
 					function( $item ) use ( $request ) {
 						$data = $this->prepare_item_for_response( $item, $request );
@@ -172,7 +160,12 @@ class AssetGroupController extends BaseController {
 		};
 	}
 
-	public function create_assset_group(): callable {
+	/**
+	 * Create asset group.
+	 *
+	 * @return callable
+	 */
+	public function create_asset_group_callback(): callable {
 		return function( Request $request ) {
 			try {
 				$asset_group_id = $this->ads_asset_group->create_asset_group( $request->get_param( 'id' ) );
