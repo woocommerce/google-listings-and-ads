@@ -27,10 +27,6 @@ const MerchantCenterSelectControl = ( props ) => {
 	options.sort( ( a, b ) => {
 		return a.label.localeCompare( b.label );
 	} );
-	options.unshift( {
-		value: '',
-		label: __( 'Select one', 'google-listings-and-ads' ),
-	} );
 
 	return <AppSelectControl options={ options } { ...props } />;
 };
