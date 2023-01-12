@@ -93,7 +93,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 *
 	 * @param int $campaign_id
 	 *
-	 * @return int The asset group ID.
+	 * @return id The asset group id.
 	 * @throws ExceptionWithResponseData ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function create_asset_group( $campaign_id ): int {
@@ -101,25 +101,20 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			$campaign_resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
 			$current_date_time      = ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
 			$name                   = sprintf(
-			/* translators: %s: current date time. */
-				__( 'Asset Group %s', 'google-listings-and-ads' ),
+				/* translators: %s: current date time. */
+				__( 'PMax %s', 'google-listings-and-ads' ),
 				$current_date_time
 			);
 
-			$operations     = $this->create_operations( $campaign_resource_name, $name );
-			$asset_group_id = $this->mutate( $operations );
-
-			return [
-				'id'   => $asset_group_id,
-				'name' => $name,
-			];
+			$operations = $this->create_operations( $campaign_resource_name, $name );
+			return $this->mutate( $operations );
 
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
 			$errors = $this->get_api_exception_errors( $e );
 			throw new ExceptionWithResponseData(
-			/* translators: %s Error message */
+				/* translators: %s Error message */
 				sprintf( __( 'Error creating asset group: %s', 'google-listings-and-ads' ), reset( $errors ) ),
 				$this->map_grpc_code_to_http_status_code( $e ),
 				null,
@@ -357,7 +352,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			}
 
 			if ( ! empty( $operations ) ) {
-				$this->client->getGoogleAdsServiceClient()->mutate( $this->options->get_ads_id(), $operations );
+				$this->mutate( $operations );
 			}
 
 			return $asset_group_id;
