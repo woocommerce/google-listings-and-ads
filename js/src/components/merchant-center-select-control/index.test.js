@@ -35,4 +35,18 @@ describe( 'Merchant Center Select Control', () => {
 		expect( options ).toHaveLength( 2 );
 		expect( options[ 0 ] ).toHaveAttribute( 'value', '1' );
 	} );
+
+	test( 'Calls onChange function on init with the default value', () => {
+		const onChange = jest.fn().mockName( 'onChange' );
+		render( <MerchantCenterSelectControl onChange={ onChange } /> );
+		expect( onChange ).toHaveBeenCalledWith( 1 );
+	} );
+
+	test( 'When a value is defined, it doesnt call onChange init method', () => {
+		const onChange = jest.fn().mockName( 'onChange' );
+		render(
+			<MerchantCenterSelectControl value="2" onChange={ onChange } />
+		);
+		expect( onChange ).not.toHaveBeenCalled();
+	} );
 } );
