@@ -168,7 +168,7 @@ class AssetGroupController extends BaseController {
 	public function create_asset_group_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$asset_group_id = $this->ads_asset_group->create_asset_group( $request->get_param( 'id' ) );
+				$asset_group_id = $this->ads_asset_group->create_asset_group( $request->get_param( 'campaign_id' ) );
 				return [
 					'status'  => 'success',
 					'message' => __( 'Successfully created asset group.', 'google-listings-and-ads' ),
