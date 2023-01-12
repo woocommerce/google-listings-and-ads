@@ -624,7 +624,7 @@ class AssetSuggestionsService implements Service {
 		$homepage = [];
 
 		// If the search query contains the word "homepage" add the homepage to the results.
-		if ( strpos( 'homepage', $search ) !== false ) {
+		if ( strpos( 'homepage', strtolower( $search ) ) !== false ) {
 			$homepage[] = $this->get_homepage_final_url();
 			$per_page--;
 		}
