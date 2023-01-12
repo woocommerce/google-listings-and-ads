@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -9,9 +10,18 @@ import { __, sprintf } from '@wordpress/i18n';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 import AppSelectControl from '.~/components/app-select-control';
 
-const MerchantCenterSelectControl = ( props ) => {
+/**
+ * @param {Object} props The component props
+ * @param {string} [props.value] The selected value. IF no value is defined, then the first option is selected and onChange function is triggered.
+ * @param {Function} [props.onChange] Callback when the select value changes.
+ * @return {JSX.Element} An enhanced AppSelectControl component.
+ */
+const MerchantCenterSelectControl = ( {
+	value,
+	onChange = () => {},
+	...props
+} ) => {
 	const { data: existingAccounts = [] } = useExistingGoogleMCAccounts();
-
 	const options = existingAccounts.map( ( acc ) => {
 		return {
 			value: acc.id,
@@ -27,6 +37,13 @@ const MerchantCenterSelectControl = ( props ) => {
 	options.sort( ( a, b ) => {
 		return a.label.localeCompare( b.label );
 	} );
+
+	useEffect( () => {
+		// Triggers the onChange event in order to pre-select the initial value
+		if ( value === undefined ) {
+			onChange( options[ 0 ].value );
+		}
+	}, [ options, onChange, value ] );
 
 	return <AppSelectControl options={ options } { ...props } />;
 };
