@@ -18,8 +18,12 @@ use Google\Ads\GoogleAds\V11\Services\AssetGroupListingGroupFilterOperation;
 use Google\Ads\GoogleAds\V11\Services\AssetGroupOperation;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
+use Google\Ads\GoogleAds\V11\Services\AssetGroupServiceClient;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\ApiCore\ApiException;
+use Google\ApiCore\ValidationException;
+use Exception;
+use DateTime;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 
 /**
@@ -85,6 +89,8 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	/**
 	 * Create an asset group.
 	 *
+	 * @since x.x.x
+	 *
 	 * @param int $campaign_id
 	 *
 	 * @return int The asset group ID.
@@ -93,12 +99,20 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	public function create_asset_group( $campaign_id ): int {
 		try {
 			$campaign_resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
-			$name                   = ( new \DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
+			$current_date_time      = ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
+			$name                   = sprintf(
+			/* translators: %s: current date time. */
+				__( 'Asset Group %s', 'google-listings-and-ads' ),
+				$current_date_time
+			);
 
-			$operations = $this->create_operations( $campaign_resource_name, $name );
-			$this->client->getGoogleAdsServiceClient()->mutate( $this->options->get_ads_id(), $operations );
+			$operations     = $this->create_operations( $campaign_resource_name, $name );
+			$asset_group_id = $this->mutate( $operations );
 
-			return 1;
+			return [
+				'id'   => $asset_group_id,
+				'name' => $name,
+			];
 
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
@@ -397,4 +411,50 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			'display_url_path' => [ $row->getAssetGroup()->getPath1(), $row->getAssetGroup()->getPath2() ],
 		];
 	}
+
+	/**
+	 * Send a batch of operations to mutate an asset group.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param MutateOperation[] $operations
+	 *
+	 * @return int Asset Group ID from the MutateOperationResponse.
+	 * @throws ApiException If any of the operations fail.
+	 */
+	protected function mutate( array $operations ): int {
+		$responses = $this->client->getGoogleAdsServiceClient()->mutate(
+			$this->options->get_ads_id(),
+			$operations
+		);
+
+		foreach ( $responses->getMutateOperationResponses() as $response ) {
+			if ( 'asset_group_result' === $response->getResponse() ) {
+				$campaign_result = $response->getAssetGroupResult();
+				return $this->parse_asset_group_id( $campaign_result->getResourceName() );
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Convert ID from a resource name to an int.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $name Resource name containing ID number.
+	 *
+	 * @return int
+	 * @throws Exception When unable to parse resource ID.
+	 */
+	protected function parse_asset_group_id( string $name ): int {
+		try {
+			$parts = AssetGroupServiceClient::parseName( $name );
+			return absint( $parts['asset_group_id'] );
+		} catch ( ValidationException $e ) {
+			throw new Exception( __( 'Invalid asset group ID', 'google-listings-and-ads' ) );
+		}
+	}
+
 }
