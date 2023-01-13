@@ -20,7 +20,7 @@ jest.mock( '.~/hooks/useExistingGoogleMCAccounts', () => ( {
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 /**
@@ -48,5 +48,14 @@ describe( 'Merchant Center Select Control', () => {
 			<MerchantCenterSelectControl value="2" onChange={ onChange } />
 		);
 		expect( onChange ).not.toHaveBeenCalled();
+	} );
+
+	test( 'Call onChange method when the value changes', () => {
+		const onChange = jest.fn().mockName( 'onChange' );
+		const { queryByRole } = render(
+			<MerchantCenterSelectControl value="1" onChange={ onChange } />
+		);
+		fireEvent.change( queryByRole( 'combobox' ), { target: { value: 2 } } );
+		expect( onChange ).toHaveBeenCalledWith( '2', expect.any( Object ) );
 	} );
 } );

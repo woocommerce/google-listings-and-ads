@@ -45,7 +45,14 @@ const MerchantCenterSelectControl = ( {
 		}
 	}, [ options, onChange, value ] );
 
-	return <AppSelectControl options={ options } { ...props } />;
+	return (
+		<AppSelectControl
+			options={ options }
+			onChange={ onChange }
+			value={ value }
+			{ ...props }
+		/>
+	);
 };
 
 export default MerchantCenterSelectControl;
