@@ -113,13 +113,15 @@ class AssetSuggestionsController extends BaseController {
 				'type'              => 'number',
 				'sanitize_callback' => 'absint',
 				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => true,
 			],
 			'type' => [
 				'description'       => __( 'Type linked to the id.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_text_field',
-				'enum'              => [ 'post', 'term' ],
+				'enum'              => [ 'post', 'term', 'homepage' ],
 				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => true,
 			],
 		];
 	}
@@ -177,9 +179,9 @@ class AssetSuggestionsController extends BaseController {
 			],
 			'type'  => [
 				'type'        => 'string',
-				'description' => __( 'Post or term', 'google-listings-and-ads' ),
+				'description' => __( 'Post, term or homepage', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
-				'enum'        => [ 'post', 'term' ],
+				'enum'        => [ 'post', 'term', 'homepage' ],
 				'readonly'    => true,
 			],
 			'title' => [

@@ -99,6 +99,11 @@ class AssetSuggestionsService implements Service {
 	protected const LOGO_IMAGE_KEY = 'gla_logo_asset';
 
 	/**
+	 * The homepage key ID.
+	 */
+	protected const HOMEPAGE_KEY_ID = 0;
+
+	/**
 	 * AssetSuggestionsService constructor.
 	 *
 	 * @param WP                 $wp WP Proxy.
@@ -118,8 +123,8 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get WP and other campaigns' assets from the specific post or term.
 	 *
-	 * @param int    $id Post or Term ID.
-	 * @param string $type Only possible values are post or term.
+	 * @param int    $id Post ID, Term ID or self::HOMEPAGE_KEY_ID if it's the homepage.
+	 * @param string $type Only possible values are post, term and homepage.
 	 */
 	public function get_assets_suggestions( int $id, string $type ): array {
 		$asset_group_assets = $this->get_asset_group_asset_suggestions( $id, $type );
@@ -134,8 +139,8 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get URL for a specific post or term.
 	 *
-	 * @param int    $id Post or Term ID.
-	 * @param string $type Only possible values are post or term.
+	 * @param int    $id Post ID, Term ID or self::HOMEPAGE_KEY_ID
+	 * @param string $type Only possible values are post, term and homepage.
 	 *
 	 * @return string The URL.
 	 * @throws Exception If the ID is invalid.
@@ -143,14 +148,16 @@ class AssetSuggestionsService implements Service {
 	protected function get_url( int $id, string $type ): string {
 		if ( $type === 'post' ) {
 			$url = get_permalink( $id );
-		} else {
+		} elseif ( $type === 'term' ) {
 			$url = get_term_link( $id );
+		} else {
+			$url = get_bloginfo( 'url' );
 		}
 
-		if ( $url === false || is_wp_error( $url ) ) {
+		if ( is_wp_error( $url ) || empty( $url ) ) {
 			throw new Exception(
 				/* translators: 1: is an integer representing an unknown Term ID */
-				sprintf( __( 'Invalid Term ID or Post ID %1$d', 'google-listings-and-ads' ), $id )
+				sprintf( __( 'Invalid Term ID or Post ID or site url %1$d', 'google-listings-and-ads' ), $id )
 			);
 		}
 
@@ -187,17 +194,49 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Get assets from specific post or term.
 	 *
-	 * @param int    $id Post or Term ID.
+	 * @param int    $id Post or Term ID, or self::HOMEPAGE_KEY_ID.
 	 * @param string $type Only possible values are post or term.
 	 *
-	 * @return array All assets available for specific term or post.
+	 * @return array All assets available for specific term, post or homepage.
+	 * @throws Exception If the ID is invalid.
 	 */
 	protected function get_wp_assets( int $id, string $type ): array {
 		if ( $type === 'post' ) {
 			return $this->get_post_assets( $id );
+		} elseif ( $type === 'term' ) {
+			return $this->get_term_assets( $id );
+		} else {
+			return $this->get_homepage_assets();
 		}
 
-		return $this->get_term_assets( $id );
+	}
+
+	/**
+	 * Get assets from the homepage.
+	 *
+	 * @return array Assets available for the homepage.
+	 * @throws Exception If the homepage id is invalid.
+	 */
+	protected function get_homepage_assets(): array {
+		$home_page = $this->wp->get_static_homepage();
+
+		// Static homepage.
+		if ( $home_page ) {
+			return $this->get_post_assets( $home_page->ID );
+		}
+		// Non static homepage.
+		return [
+			AssetFieldType::HEADLINE                 => [ __( 'Homepage', 'google-listings-and-ads' ) ],
+			AssetFieldType::LONG_HEADLINE            => [],
+			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
+			AssetFieldType::LOGO                     => $this->get_logo_images(),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => [],
+			AssetFieldType::MARKETING_IMAGE          => [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
+			'display_url_path'                       => [],
+			'final_url'                              => get_bloginfo( 'url' ),
+		];
 
 	}
 
@@ -583,6 +622,14 @@ class AssetSuggestionsService implements Service {
 			 return $this->get_defaults_final_url_suggestions();
 		}
 
+		$homepage = [];
+
+		// If the search query contains the word "homepage" add the homepage to the results.
+		if ( strpos( 'homepage', strtolower( $search ) ) !== false ) {
+			$homepage[] = $this->get_homepage_final_url();
+			$per_page--;
+		}
+
 		// Split possible results between posts and terms.
 		$per_page_posts = (int) ceil( $per_page / 2 );
 
@@ -601,10 +648,19 @@ class AssetSuggestionsService implements Service {
 			$more_results = $this->get_post_suggestions( $search, $pending_results, $per_page_posts );
 		}
 
-		$result = array_merge( $posts, $terms, $more_results );
+		$result = array_merge( $homepage, $posts, $terms, $more_results );
 
 		return $this->sort_results( $result, $order_by );
 
+	}
+
+	/**
+	 * Get the final url for the homepage.
+	 *
+	 * @return array final url for the homepage.
+	 */
+	protected function get_homepage_final_url(): array {
+		return $this->format_final_url_response( self::HOMEPAGE_KEY_ID, 'homepage', __( 'Homepage', 'google-listings-and-ads' ), get_bloginfo( 'url' ) );
 	}
 
 	/**
@@ -613,14 +669,8 @@ class AssetSuggestionsService implements Service {
 	 * @return array default final urls.
 	 */
 	protected function get_defaults_final_url_suggestions(): array {
-		// We can only offer assets if the homepage is static.
-		$home_page = $this->wp->get_static_homepage();
+		$defaults  = [ $this->get_homepage_final_url() ];
 		$shop_page = $this->wp->get_shop_page();
-		$defaults  = [];
-
-		if ( $home_page ) {
-			$defaults[] = $this->format_final_url_response( $home_page->ID, 'post', 'Homepage', get_permalink( $home_page->ID ) );
-		}
 
 		if ( $shop_page ) {
 			$defaults[] = $this->format_final_url_response( $shop_page->ID, 'post', $shop_page->post_title, get_permalink( $shop_page->ID ) );
@@ -652,7 +702,7 @@ class AssetSuggestionsService implements Service {
 	/**
 	 * Return an assotiave array with the page suggestion response format.
 	 *
-	 * @param int    $id post|term ID
+	 * @param int    $id post id, term id or self::HOMEPAGE_KEY_ID.
 	 * @param string $type post|term
 	 * @param string $title page|term title
 	 * @param string $url page|term url
