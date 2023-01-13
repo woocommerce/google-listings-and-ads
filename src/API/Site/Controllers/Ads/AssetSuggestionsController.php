@@ -179,7 +179,7 @@ class AssetSuggestionsController extends BaseController {
 			],
 			'type'  => [
 				'type'        => 'string',
-				'description' => __( 'Post or term', 'google-listings-and-ads' ),
+				'description' => __( 'Post, term or homepage', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'enum'        => [ 'post', 'term', 'homepage' ],
 				'readonly'    => true,

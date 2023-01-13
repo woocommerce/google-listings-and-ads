@@ -154,10 +154,10 @@ class AssetSuggestionsService implements Service {
 			$url = get_bloginfo( 'url' );
 		}
 
-		if ( $url === false || is_wp_error( $url ) || empty( $url ) ) {
+		if ( is_wp_error( $url ) || empty( $url ) ) {
 			throw new Exception(
 				/* translators: 1: is an integer representing an unknown Term ID */
-				sprintf( __( 'Invalid Term ID or Post ID %1$d', 'google-listings-and-ads' ), $id )
+				sprintf( __( 'Invalid Term ID or Post ID or site url %1$d', 'google-listings-and-ads' ), $id )
 			);
 		}
 
@@ -198,6 +198,7 @@ class AssetSuggestionsService implements Service {
 	 * @param string $type Only possible values are post or term.
 	 *
 	 * @return array All assets available for specific term, post or homepage.
+	 * @throws Exception If the ID is invalid.
 	 */
 	protected function get_wp_assets( int $id, string $type ): array {
 		if ( $type === 'post' ) {
