@@ -96,7 +96,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * @return id The asset group id.
 	 * @throws ExceptionWithResponseData ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function create_asset_group( $campaign_id ): int {
+	public function create_asset_group( int $campaign_id ): int {
 		try {
 			$campaign_resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
 			$current_date_time      = ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
@@ -439,7 +439,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 *
 	 * @param string $name Resource name containing ID number.
 	 *
-	 * @return int
+	 * @return int The asset group ID.
 	 * @throws Exception When unable to parse resource ID.
 	 */
 	protected function parse_asset_group_id( string $name ): int {
