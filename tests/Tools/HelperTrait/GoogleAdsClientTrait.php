@@ -703,7 +703,7 @@ trait GoogleAdsClientTrait {
 	protected function generate_asset_group_mutate_mock( string $type, int $asset_group_id ) {
 		$asset_group_result = $this->createMock( MutateAssetGroupResult::class );
 		$asset_group_result->method( 'getResourceName' )->willReturn(
-			ResourceNames::forCampaign( $this->ads_id, $asset_group_id )
+			ResourceNames::forAssetGroup( $this->ads_id, $asset_group_id )
 		);
 
 		$response = ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
@@ -718,9 +718,15 @@ trait GoogleAdsClientTrait {
 				function( int $ads_id, array $operations ) use ( $type, $response ) {
 					// Assert that the asset group operation is the right type.
 					foreach ( $operations as $operation ) {
-							$this->assertEquals( 'asset_group_operation', $operation->getOperation() );
+							$operation_name = $operation->getOperation();
+						if ( 'asset_group_operation' === $operation_name ) {
 							$asset_group_operation = $operation->getAssetGroupOperation();
 							$this->assertEquals( $type, $asset_group_operation->getOperation() );
+						}
+						if ( 'asset_group_listing_group_filter_operation' === $operation_name ) {
+							$asset_group_listing_group_filter_operation = $operation->getAssetGroupListingGroupFilterOperation();
+							$this->assertEquals( $type, $asset_group_listing_group_filter_operation->getOperation() );
+						}
 					}
 
 					return $response;

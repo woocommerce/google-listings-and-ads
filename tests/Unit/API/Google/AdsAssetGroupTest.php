@@ -179,6 +179,15 @@ class AdsAssetGroupTest extends UnitTest {
 		}
 	}
 
+	public function test_create_asset_group() {
+		$this->generate_asset_group_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$this->assertEquals(
+			self::TEST_CAMPAIGN_ID,
+			$this->asset_group->create_asset_group( self::TEST_CAMPAIGN_ID )
+		);
+	}
+
 
 
 }
