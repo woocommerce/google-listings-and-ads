@@ -198,7 +198,7 @@ class GLAChannel implements MarketingChannelInterface {
 						(string) $campaign_data['id'],
 						$this->campaign_types['google-ads'],
 						$campaign_data['name'],
-						admin_url( 'admin.php?page=wc-admin&path=/google/settings&subpath=/campaigns/edit' ),
+						admin_url( 'admin.php?page=wc-admin&path=/google/dashboard&subpath=/campaigns/edit' ),
 						$cost,
 					);
 				},
@@ -221,7 +221,7 @@ class GLAChannel implements MarketingChannelInterface {
 				$this,
 				'Google Ads',
 				'Boost your product listings with a campaign that is automatically optimized to meet your goals.',
-				admin_url( 'admin.php?page=wc-admin&path=/google/settings&subpath=/campaigns/create' ),
+				admin_url( 'admin.php?page=wc-admin&path=/google/dashboard&subpath=/campaigns/create' ),
 				$this->get_icon_url()
 			),
 		];
