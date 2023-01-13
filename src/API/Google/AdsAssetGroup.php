@@ -120,7 +120,6 @@ class AdsAssetGroup implements OptionsAwareInterface {
 				null,
 				[
 					'errors' => $errors,
-					'id'     => $campaign_id,
 				]
 			);
 		}
