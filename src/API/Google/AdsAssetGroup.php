@@ -413,7 +413,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 *
 	 * @param MutateOperation[] $operations
 	 *
-	 * @return int Asset Group ID from the MutateOperationResponse.
+	 * @return int If the asset group operation is present, it will return the asset group id otherwise 0 for other operations.
 	 * @throws ApiException If any of the operations fail.
 	 */
 	protected function mutate( array $operations ): int {
@@ -424,8 +424,8 @@ class AdsAssetGroup implements OptionsAwareInterface {
 
 		foreach ( $responses->getMutateOperationResponses() as $response ) {
 			if ( 'asset_group_result' === $response->getResponse() ) {
-				$campaign_result = $response->getAssetGroupResult();
-				return $this->parse_asset_group_id( $campaign_result->getResourceName() );
+				$asset_group_result = $response->getAssetGroupResult();
+				return $this->parse_asset_group_id( $asset_group_result->getResourceName() );
 			}
 		}
 
