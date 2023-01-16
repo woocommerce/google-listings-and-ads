@@ -94,7 +94,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * @param int $campaign_id
 	 *
 	 * @return int id The asset group id.
-	 * @throws ExceptionWithResponseData ExceptionWithResponseData When an ApiException or Exception is caught.
+	 * @throws ExceptionWithResponseData When an ApiException or Exception is caught.
 	 */
 	public function create_asset_group( int $campaign_id ): int {
 		try {
