@@ -41,7 +41,7 @@ const MerchantCenterSelectControl = ( {
 	useEffect( () => {
 		// Triggers the onChange event in order to pre-select the initial value
 		if ( value === undefined ) {
-			onChange( options[ 0 ].value );
+			onChange( options[ 0 ]?.value );
 		}
 	}, [ options, onChange, value ] );
 
