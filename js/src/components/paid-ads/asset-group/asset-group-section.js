@@ -12,6 +12,7 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import FinalUrlCard from './final-url-card';
 import ImagesSelector from './images-selector';
+import AssetField from './asset-field';
 import './asset-group-section.scss';
 
 /**
@@ -57,9 +58,48 @@ export default function AssetGroupSection() {
 			<VerticalGapLayout size="medium">
 				<FinalUrlCard onAssetsChange={ setAssetGroup } />
 				<div>Assets card will be added here</div>
-				<Section.Card>
-					<Section.Card.Body>
-						<h3>Temporary demo of rectangular images selector</h3>
+				<h3>Temporary demo for AssetField:</h3>
+				<div>
+					<AssetField
+						heading={ __(
+							'Rectangular images',
+							'google-listings-and-ads'
+						) }
+						subheading={ __(
+							'At least 1 required. Add up to 20.',
+							'google-listings-and-ads'
+						) }
+						help={
+							<>
+								<p>
+									{ __(
+										'Add images that meet or can be cropped to the recommended sizes. Note: The maximum file size for any image is 5120 KB.',
+										'google-listings-and-ads'
+									) }
+								</p>
+								<p>
+									<strong>
+										{ __(
+											'Landscape image (1.91:1)',
+											'google-listings-and-ads'
+										) }
+									</strong>
+								</p>
+								<p>
+									{ __(
+										'Recommended size: 1200 x 628',
+										'google-listings-and-ads'
+									) }
+									<br />
+									{ __(
+										'Min. size: 600 x 314',
+										'google-listings-and-ads'
+									) }
+								</p>
+							</>
+						}
+						numOfIssues={ 2 }
+					>
 						<ImagesSelector
 							maxNumberOfImages={ 3 }
 							imageConfig={ {
@@ -69,22 +109,35 @@ export default function AssetGroupSection() {
 								suggestedHeight: 628,
 							} }
 						/>
-					</Section.Card.Body>
-				</Section.Card>
-				<Section.Card>
-					<Section.Card.Body>
-						<h3>Temporary demo of square image selector</h3>
-						<ImagesSelector
-							maxNumberOfImages={ 20 }
-							imageConfig={ {
-								minWidth: 300,
-								minHeight: 300,
-								suggestedWidth: 1200,
-								suggestedHeight: 1200,
-							} }
-						/>
-					</Section.Card.Body>
-				</Section.Card>
+					</AssetField>
+					<AssetField
+						heading={ __(
+							'Square images',
+							'google-listings-and-ads'
+						) }
+						subheading={ __(
+							'At least 1 required. Add up to 20.',
+							'google-listings-and-ads'
+						) }
+						numOfIssues={ 1 }
+						disabled
+					/>
+					<AssetField
+						heading={ __( 'Headline', 'google-listings-and-ads' ) }
+						subheading={ __(
+							'At least 3 required. Add up to 5.',
+							'google-listings-and-ads'
+						) }
+						help={ __(
+							'The headline is the first line of your ad and is most likely the first thing people notice, so consider including words that people may have entered in their Google search.',
+							'google-listings-and-ads'
+						) }
+						numOfIssues={ 0 }
+						initialExpanded
+					>
+						Initially expanded asset field
+					</AssetField>
+				</div>
 			</VerticalGapLayout>
 			<h3>Temporary demo for showing the current assets data:</h3>
 			<pre>{ JSON.stringify( assetGroup, null, 2 ) }</pre>
