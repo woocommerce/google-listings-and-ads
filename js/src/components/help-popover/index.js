@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import classnames from 'classnames';
 import { Popover } from 'extracted/@wordpress/components';
 import { useState } from '@wordpress/element';
 import GridiconHelpOutline from 'gridicons/dist/help-outline';
@@ -20,11 +21,19 @@ import './index.scss';
 
 /**
  * @param {Object} props React props
+ * @param {string} [props.className] Additional CSS class name to be appended.
  * @param {string} [props.id] The Popover’s ID for event tracking.
+ * @param {number} [props.iconSize=16] Size of the help icon.
  * @param {Array<JSX.Element>} props.children The Popover’s content
  * @fires gla_tooltip_viewed with the given `id`.
  */
-const HelpPopover = ( { id, children, ...props } ) => {
+const HelpPopover = ( {
+	className,
+	id,
+	iconSize = 16,
+	children,
+	...props
+} ) => {
 	const [ showPopover, setShowPopover ] = useState( false );
 
 	const handleButtonClick = () => {
@@ -40,9 +49,9 @@ const HelpPopover = ( { id, children, ...props } ) => {
 	};
 
 	return (
-		<span className="help-popover">
+		<span className={ classnames( 'help-popover', className ) }>
 			<button onClick={ handleButtonClick }>
-				<GridiconHelpOutline size={ 16 }></GridiconHelpOutline>
+				<GridiconHelpOutline size={ iconSize }></GridiconHelpOutline>
 			</button>
 			{ showPopover && (
 				<Popover

@@ -22,6 +22,7 @@ $button-color: $gray-600;
 
 	.components-popover__content {
 		width: $gla-width-medium;
+		padding: $grid-unit-20;
 
 		@include break-large {
 			width: $gla-width-medium-large;
@@ -29,11 +30,6 @@ $button-color: $gray-600;
 
 		@include break-xlarge {
 			width: $gla-width-mobile;
-		}
-
-		> div {
-			text-align: left;
-			margin: $grid-unit-20;
 		}
 	}
 }
