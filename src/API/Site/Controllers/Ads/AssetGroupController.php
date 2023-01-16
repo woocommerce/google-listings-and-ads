@@ -59,7 +59,7 @@ class AssetGroupController extends BaseController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_asset_groups_by_campaign_id_callback(),
+					'callback'            => $this->get_asset_groups_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_asset_group_params(),
 				],
@@ -142,7 +142,7 @@ class AssetGroupController extends BaseController {
 	 *
 	 * @return callable
 	 */
-	protected function get_asset_groups_by_campaign_id_callback(): callable {
+	protected function get_asset_groups_callback(): callable {
 		return function( Request $request ) {
 			try {
 				$campaign_id = $request->get_param( 'campaign_id' );
