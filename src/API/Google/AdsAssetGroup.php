@@ -100,13 +100,13 @@ class AdsAssetGroup implements OptionsAwareInterface {
 		try {
 			$campaign_resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
 			$current_date_time      = ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
-			$name                   = sprintf(
+			$asset_group_name       = sprintf(
 				/* translators: %s: current date time. */
 				__( 'PMax %s', 'google-listings-and-ads' ),
 				$current_date_time
 			);
 
-			$operations = $this->create_operations( $campaign_resource_name, $name );
+			$operations = $this->create_operations( $campaign_resource_name, $asset_group_name );
 			return $this->mutate( $operations );
 
 		} catch ( ApiException $e ) {
@@ -129,13 +129,13 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * Returns a set of operations to create an asset group.
 	 *
 	 * @param string $campaign_resource_name
-	 * @param string $name The asset group name.
+	 * @param string $asset_group_name The asset group name.
 	 * @return array
 	 */
-	public function create_operations( string $campaign_resource_name, string $name ): array {
+	public function create_operations( string $campaign_resource_name, string $asset_group_name ): array {
 		// Asset must be created before listing group.
 		return [
-			$this->asset_group_create_operation( $campaign_resource_name, $name ),
+			$this->asset_group_create_operation( $campaign_resource_name, $asset_group_name ),
 			$this->listing_group_create_operation(),
 		];
 	}
