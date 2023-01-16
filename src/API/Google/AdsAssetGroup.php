@@ -94,7 +94,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * @param int $campaign_id
 	 *
 	 * @return int id The asset group id.
-	 * @throws ExceptionWithResponseData ExceptionWithResponseData When an ApiException is caught.
+	 * @throws ExceptionWithResponseData ExceptionWithResponseData When an ApiException or Exception is caught.
 	 */
 	public function create_asset_group( int $campaign_id ): int {
 		try {
@@ -109,18 +109,27 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			$operations = $this->create_operations( $campaign_resource_name, $asset_group_name );
 			return $this->mutate( $operations );
 
-		} catch ( ApiException $e ) {
+		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+			$message = $e->getMessage();
+			$code    = $e->getCode();
+			$data    = [];
 
-			$errors = $this->get_api_exception_errors( $e );
-			throw new ExceptionWithResponseData(
+			if ( $e instanceof ApiException ) {
+				$errors = $this->get_api_exception_errors( $e );
 				/* translators: %s Error message */
-				sprintf( __( 'Error creating asset group: %s', 'google-listings-and-ads' ), reset( $errors ) ),
-				$this->map_grpc_code_to_http_status_code( $e ),
-				null,
-				[
+				$message = sprintf( __( 'Error creating asset group: %s', 'google-listings-and-ads' ), reset( $errors ) );
+				$code    = $this->map_grpc_code_to_http_status_code( $e );
+				$data    = [
 					'errors' => $errors,
-				]
+				];
+			}
+
+			throw new ExceptionWithResponseData(
+				$message,
+				$code,
+				null,
+				$data
 			);
 		}
 	}
