@@ -131,6 +131,7 @@ class AssetGroupController extends BaseController {
 				'description'       => __( 'Campaign ID.', 'google-listings-and-ads' ),
 				'type'              => 'integer',
 				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => true,
 			],
 		];
 	}
