@@ -13,9 +13,12 @@ $button-color: $gray-600;
 		background: none;
 		padding: 1px;
 		fill: $button-color;
-		cursor: pointer;
 
-		&:hover {
+		&:not(:disabled) {
+			cursor: pointer;
+		}
+
+		&:hover:not(:disabled) {
 			fill: color.adjust($button-color, $lightness: -20%);
 		}
 	}
