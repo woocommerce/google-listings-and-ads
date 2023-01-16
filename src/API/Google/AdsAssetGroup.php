@@ -415,6 +415,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 *
 	 * @return int If the asset group operation is present, it will return the asset group id otherwise 0 for other operations.
 	 * @throws ApiException If any of the operations fail.
+	 * @throws Exception If the resource name is not in the expected format.
 	 */
 	protected function mutate( array $operations ): int {
 		$responses = $this->client->getGoogleAdsServiceClient()->mutate(
