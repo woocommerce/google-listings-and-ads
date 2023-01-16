@@ -20,7 +20,7 @@ import './index.scss';
 
 /**
  * @param {Object} props React props
- * @param {string} props.id The Popover’s ID
+ * @param {string} [props.id] The Popover’s ID for event tracking.
  * @param {Array<JSX.Element>} props.children The Popover’s content
  * @fires gla_tooltip_viewed with the given `id`.
  */
@@ -29,9 +29,10 @@ const HelpPopover = ( { id, children, ...props } ) => {
 
 	const handleButtonClick = () => {
 		setShowPopover( true );
-		recordEvent( 'gla_tooltip_viewed', {
-			id,
-		} );
+
+		if ( id ) {
+			recordEvent( 'gla_tooltip_viewed', { id } );
+		}
 	};
 
 	const handlePopoverClose = () => {
