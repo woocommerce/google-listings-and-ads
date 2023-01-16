@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import GridiconPlusSmall from 'gridicons/dist/plus-small';
 import GridiconCrossCircle from 'gridicons/dist/cross-circle';
 
 /**
@@ -11,6 +10,7 @@ import GridiconCrossCircle from 'gridicons/dist/cross-circle';
  */
 import AppButton from '.~/components/app-button';
 import useCroppedImageSelector from '.~/hooks/useCroppedImageSelector';
+import AddAssetItemButton from './add-asset-item-button';
 import './images-selector.scss';
 
 /**
@@ -112,15 +112,11 @@ export default function ImagesSelector( {
 					);
 				} ) }
 			</div>
-			<AppButton
-				className="gla-images-selector__add-image-button"
-				isLink
+			<AddAssetItemButton
 				disabled={
 					maxNumberOfImages !== 0 &&
 					images.length >= maxNumberOfImages
 				}
-				icon={ <GridiconPlusSmall /> }
-				iconSize={ 16 }
 				text={ __( 'Add image', 'google-listings-and-ads' ) }
 				onClick={ handleUpsertImageClick }
 			/>
