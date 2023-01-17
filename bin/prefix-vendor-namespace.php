@@ -10,8 +10,9 @@ $replacements  = [
 	'Google\\Auth'      => 'google/auth',
 	'GuzzleHttp'        => 'guzzlehttp',
 ];
-$vendor_dir    = dirname( __DIR__ ) . '/vendor';
-$new_namespace = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';
+
+$vendor_dir       = dirname( __DIR__ ) . '/vendor';
+$namespace_prefix = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';
 
 // Vendor libraries which are dependent on a library we are prefixing.
 $dependencies = [
@@ -56,19 +57,19 @@ foreach ( $replacements as $namespace => $path ) {
 		$content_hash = md5( $contents );
 
 		// Check to see whether a replacement has already run for this namespace. Just in case.
-		if ( false !== strpos( $contents, "{$new_namespace}\\{$namespace}" ) ) {
+		if ( false !== strpos( $contents, "{$namespace_prefix}\\{$namespace}" ) ) {
 			continue 2;
 		}
 
 		$namespace_change = 0;
 		$uses_change      = 0;
-		prefix_namespace( $contents, $namespace, $new_namespace, $namespace_change );
-		prefix_imports( $contents, $namespace, $new_namespace, $uses_change );
+		prefix_namespace( $contents, $namespace, $namespace_prefix, $namespace_change );
+		prefix_imports( $contents, $namespace, $namespace_prefix, $uses_change );
 
 		if ( ! empty( $direct_replacements[ $path ] ) ) {
 			foreach ( $direct_replacements[ $path ] as $search ) {
 				$direct_change = 0;
-				prefix_string( $contents, $search, $new_namespace, $direct_change );
+				prefix_string( $contents, $search, $namespace_prefix, $direct_change );
 				if ( $direct_change ) {
 					$uses_change += $direct_change;
 				}
@@ -91,15 +92,15 @@ foreach ( $replacements as $namespace => $path ) {
 	);
 
 	array_map(
-		function( $file ) use ( $namespace, $new_namespace ) {
-			return replace_in_json_file( $file, $namespace, $new_namespace );
+		function( $file ) use ( $namespace, $namespace_prefix ) {
+			return replace_in_json_file( $file, $namespace, $namespace_prefix );
 		},
 		$composer_files
 	);
 
 	// Update the namespace in vendor/composer/installed.json
 	// This file is used to generate the classmaps.
-	replace_in_json_file( "{$vendor_dir}/composer/installed.json", $namespace, $new_namespace );
+	replace_in_json_file( "{$vendor_dir}/composer/installed.json", $namespace, $namespace_prefix );
 
 	// Remove file autoloads from vendor/composer/installed.json
 	remove_file_autoloads(
@@ -232,11 +233,11 @@ function find_files( string $path ): array {
  *
  * @since 1.2.0
  *
- * @param string $file          Filename to replace the strings
- * @param string $namespace     Namespace to search for
- * @param string $new_namespace Namespace to replace with
+ * @param string $file      Filename to replace the strings.
+ * @param string $namespace Namespace to search for.
+ * @param string $prefix    Namespace prefix to add.
  */
-function replace_in_json_file( string $file, string $namespace, string $new_namespace ) {
+function replace_in_json_file( string $file, string $namespace, string $prefix ) {
 	if ( ! file_exists( $file ) ) {
 		return;
 	}
@@ -246,7 +247,7 @@ function replace_in_json_file( string $file, string $namespace, string $new_name
 		$file,
 		str_replace(
 			addslashes( "{$namespace}\\" ),
-			addslashes( "{$new_namespace}\\{$namespace}\\" ),
+			addslashes( "{$prefix}\\{$namespace}\\" ),
 			$contents
 		)
 	);
