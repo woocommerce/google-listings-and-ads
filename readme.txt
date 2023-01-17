@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.9
 Tested up to: 6.1
 Requires PHP: 7.4
-Stable tag: 2.3.6
+Stable tag: 2.3.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.3.7 - 2023-01-17 =
+* Tweak - Pre-select a default MC account.
+
 = 2.3.6 - 2023-01-10 =
 * Dev - Use extracted Button component from @wordpress/components package.
 * Fix - i18n for "View Reports" button.
@@ -121,10 +124,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 = 2.3.4 - 2022-12-20 =
 * Tweak - Improve image validation error messages.
-
-= 2.3.3 - 2022-12-14 =
-* Fix - Tours API Endpoint.
-* Tweak - WC 7.2 compatibility.
-* Update - Drop support for WordPress < 5.9.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
