@@ -4,11 +4,34 @@ declare( strict_types=1 );
 
 // phpcs:ignoreFile
 
-$replacements = [
-	'League\\Container' => 'league/container',
-	'League\\ISO3166'   => 'league/iso3166',
-	'Google\\Auth'      => 'google/auth',
-	'GuzzleHttp'        => 'guzzlehttp',
+/**
+ * List of packages to prefix the namespace.
+ *
+ * namespace = Namespace to search for.
+ * package   = Full name of package in the vendor folder.
+ * strict    = Search for namespace prefix or full namespace to replace.
+ */
+$packages = [
+	[
+		'namespace' => 'League\\Container',
+		'package'   => 'league/container',
+		'strict'    => false,
+	],
+	[
+		'namespace' => 'League\\ISO3166',
+		'package'   => 'league/iso3166',
+		'strict'    => false,
+	],
+	[
+		'namespace' => 'Google\\Auth',
+		'package'   => 'google/auth',
+		'strict'    => false,
+	],
+	[
+		'namespace' => 'GuzzleHttp',
+		'package'   => 'guzzlehttp',
+		'strict'    => false,
+	],
 ];
 
 $vendor_dir       = dirname( __DIR__ ) . '/vendor';
@@ -49,39 +72,39 @@ $composer_json = json_decode( file_get_contents( dirname( __DIR__ ) . '/composer
 // Flag modified files that maybe should have been modified more.
 $file_notices = [];
 
-foreach ( $replacements as $namespace => $path ) {
+foreach ( $packages as $package ) {
 	// Process namespaces and uses in all package files.
-	foreach ( find_files( $path ) as $file ) {
-		process_file( $file, $namespace, $namespace_prefix, true, true );
+	foreach ( find_files( $package['package'] ) as $file ) {
+		process_file( $file, $package, $namespace_prefix, true, true );
 	}
 
 	// Process only uses in dependent package files.
-	foreach ( find_dependent_files( $path ) as $file ) {
-		process_file( $file, $namespace, $namespace_prefix, false, true );
+	foreach ( find_dependent_files( $package['package'] ) as $file ) {
+		process_file( $file, $package, $namespace_prefix, false, true );
 	}
 
 	// Update the namespace in the composer.json files, recursively finding all files named explicitly "composer.json".
 	$composer_files = get_dir_contents(
-		"{$vendor_dir}/{$path}",
+		"{$vendor_dir}/{$package['package']}",
 		'/' . preg_quote( DIRECTORY_SEPARATOR, '/' ) . 'composer.json$/'
 	);
 
 	array_map(
-		function( $file ) use ( $namespace, $namespace_prefix ) {
-			return replace_in_json_file( $file, $namespace, $namespace_prefix );
+		function( $file ) use ( $package, $namespace_prefix ) {
+			return replace_in_json_file( $file, $package['namespace'], $namespace_prefix );
 		},
 		$composer_files
 	);
 
 	// Update the namespace in vendor/composer/installed.json
 	// This file is used to generate the classmaps.
-	replace_in_json_file( "{$vendor_dir}/composer/installed.json", $namespace, $namespace_prefix );
+	replace_in_json_file( "{$vendor_dir}/composer/installed.json", $package['namespace'], $namespace_prefix );
 
 	// Remove file autoloads from vendor/composer/installed.json
 	remove_file_autoloads(
 		"{$vendor_dir}/composer/installed.json",
 		$composer_json['autoload']['files'] ?? [],
-		$path
+		$package['package']
 	);
 }
 
@@ -98,18 +121,18 @@ if ( count( $file_notices ) ) {
  * @since x.x.x
  *
  * @param string $file             File name.
- * @param string $namespace        Namespace to search for.
+ * @param string $package          Package replacement data.
  * @param string $prefix           Namespace prefix.
  * @param bool   $prefix_namespace Whether to prefix namespaces or not.
  * @param bool   $prefix_uses      Whether to prefix uses of a namespace.
  */
-function process_file( $file, $namespace, $prefix, $prefix_namespace = true, $prefix_uses = false ) {
+function process_file( $file, $package, $prefix, $prefix_namespace = true, $prefix_uses = false ) {
 	global $file_notices;
 	$contents     = file_get_contents( $file );
 	$content_hash = md5( $contents );
 
 	// Check to see whether a replacement has already run for this namespace. Just in case.
-	if ( false !== strpos( $contents, "{$prefix}\\{$namespace}" ) ) {
+	if ( false !== strpos( $contents, "{$prefix}\\{$package['namespace']}" ) ) {
 		return;
 	}
 
@@ -117,14 +140,14 @@ function process_file( $file, $namespace, $prefix, $prefix_namespace = true, $pr
 	$uses_change      = 0;
 
 	if ( $prefix_namespace ) {
-		prefix_namespace( $contents, $namespace, $prefix, $namespace_change );
+		prefix_namespace( $contents, $package['namespace'], $prefix, $namespace_change );
 	}
 
 	if ( $prefix_uses ) {
-		prefix_imports( $contents, $namespace, $prefix, $uses_change );
+		prefix_imports( $contents, $package['namespace'], $prefix, $uses_change );
 
-		if ( ! empty( $direct_replacements[ $path ] ) ) {
-			foreach ( $direct_replacements[ $path ] as $search ) {
+		if ( ! empty( $direct_replacements[ $package['package'] ] ) ) {
+			foreach ( $direct_replacements[ $package['package'] ] as $search ) {
 				$direct_change = 0;
 				prefix_string( $contents, $search, $prefix, $direct_change );
 				if ( $direct_change ) {
@@ -242,13 +265,13 @@ function get_dir_contents( $path, $match ) {
  *
  * @since 1.1.0
  *
- * @param string $path Package path
+ * @param string $package Package name.
  * @return array List of files.
  */
-function find_files( string $path ): array {
+function find_files( string $package ): array {
 	global $vendor_dir;
 
-	return get_dir_contents( "{$vendor_dir}/{$path}", '/\.php$/i' );
+	return get_dir_contents( "{$vendor_dir}/{$package}", '/\.php$/i' );
 }
 
 /**
@@ -256,20 +279,20 @@ function find_files( string $path ): array {
  *
  * @since x.x.x
  *
- * @param string $path Package path
- * @return array Merged list of files
+ * @param string $package Package name.
+ * @return array Merged list of files.
  */
-function find_dependent_files( string $path ): array {
+function find_dependent_files( string $package ): array {
 	global $vendor_dir, $dependencies;
 
-	$files = get_dir_contents( "{$vendor_dir}/{$path}", '/\.php$/i' );
+	$files = get_dir_contents( "{$vendor_dir}/{$package}", '/\.php$/i' );
 
-	if ( empty( $dependencies[ $path ] ) ) {
+	if ( empty( $dependencies[ $package ] ) ) {
 		return [];
 	}
 
 	$files = [];
-	foreach ( $dependencies[ $path ] as $dependency ) {
+	foreach ( $dependencies[ $package ] as $dependency ) {
 		$dependent_files = get_dir_contents( "{$vendor_dir}/{$dependency}", '/\.php$/i' );
 		$files           = array_merge( $files, $dependent_files );
 	}
