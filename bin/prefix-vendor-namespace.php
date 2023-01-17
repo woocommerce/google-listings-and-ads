@@ -9,7 +9,7 @@ declare( strict_types=1 );
  *
  * namespace = Namespace to search for.
  * package   = Full name of package in the vendor folder.
- * strict    = Search for namespace prefix or full namespace to replace.
+ * strict    = When true it will search matching the full namespace, false will allow matching of a namespace prefix.
  */
 $packages = [
 	[
@@ -21,6 +21,11 @@ $packages = [
 		'namespace' => 'League\\ISO3166',
 		'package'   => 'league/iso3166',
 		'strict'    => false,
+	],
+	[
+		'namespace' => 'Google',
+		'package'   => 'google/apiclient',
+		'strict'    => true,
 	],
 	[
 		'namespace' => 'Google\\Auth',
@@ -39,6 +44,9 @@ $namespace_prefix = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';
 
 // Vendor libraries which are dependent on a library we are prefixing.
 $dependencies = [
+	'google/apiclient' => [
+		'google/apiclient-services',
+	],
 	'google/auth' => [
 		'google/apiclient',
 		'google/gax',
@@ -180,9 +188,17 @@ function process_file( $file, $package, $prefix_namespace = true, $prefix_uses =
 function prefix_namespace( &$contents, $package, &$count ) {
 	global $namespace_prefix;
 
-	$quoted   = preg_quote( $package['namespace'], '#' );
+	$quoted = preg_quote( $package['namespace'], '#' );
+
+	// Match only the full namespace when strict is enabled.
+	if ( $package['strict'] ) {
+		$regex = "#^(\s*)(namespace)\s*({$quoted};)#m";
+	} else {
+		$regex = "#^(\s*)(namespace)\s*({$quoted}[\\\\|;])#m";
+	}
+
 	$contents = preg_replace(
-		"#^(\s*)(namespace)\s*({$quoted}[\\\\|;])#m",
+		$regex,
 		"\$1\$2 {$namespace_prefix}\\\\\$3",
 		$contents,
 		-1,
@@ -203,9 +219,17 @@ function prefix_namespace( &$contents, $package, &$count ) {
 function prefix_imports( &$contents, $package, &$count ) {
 	global $namespace_prefix;
 
-	$quoted   = preg_quote( $package['namespace'], '#' );
+	$quoted = preg_quote( $package['namespace'], '#' );
+
+	// Match only the full namespace when strict is enabled.
+	if ( $package['strict'] ) {
+		$regex = "#^(\s*)(use)\s*({$quoted}\\\\[a-zA-Z0-9_]+[;| ])#m";
+	} else {
+		$regex = "#^(\s*)(use)\s*({$quoted}\\\\)#m";
+	}
+
 	$contents = preg_replace(
-		"#^(\s*)(use)\s*({$quoted}\\\\)#m",
+		$regex,
 		"\$1\$2 {$namespace_prefix}\\\\\$3",
 		$contents,
 		-1,
