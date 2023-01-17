@@ -121,7 +121,7 @@ if ( count( $file_notices ) ) {
  * @since x.x.x
  *
  * @param string $file             File name.
- * @param string $package          Package replacement data.
+ * @param string $package          Package prefix configuration.
  * @param bool   $prefix_namespace Whether to prefix namespaces or not.
  * @param bool   $prefix_uses      Whether to prefix uses of a namespace.
  */
@@ -140,11 +140,11 @@ function process_file( $file, $package, $prefix_namespace = true, $prefix_uses =
 	$uses_change      = 0;
 
 	if ( $prefix_namespace ) {
-		prefix_namespace( $contents, $package['namespace'], $namespace_change );
+		prefix_namespace( $contents, $package, $namespace_change );
 	}
 
 	if ( $prefix_uses ) {
-		prefix_imports( $contents, $package['namespace'], $uses_change );
+		prefix_imports( $contents, $package, $uses_change );
 
 		if ( ! empty( $direct_replacements[ $package['package'] ] ) ) {
 			foreach ( $direct_replacements[ $package['package'] ] as $search ) {
@@ -173,13 +173,14 @@ function process_file( $file, $package, $prefix_namespace = true, $prefix_uses =
  * @since x.x.x
  *
  * @param string $contents  File contents.
+ * @param string $package   Package prefix configuration.
  * @param string $namespace Namespace to search for.
  * @param int    $count     Count of changed namespace.
  */
-function prefix_namespace( &$contents, $namespace, &$count ) {
+function prefix_namespace( &$contents, $package, &$count ) {
 	global $namespace_prefix;
 
-	$quoted   = preg_quote( $namespace, '#' );
+	$quoted   = preg_quote( $package['namespace'], '#' );
 	$contents = preg_replace(
 		"#^(\s*)(namespace)\s*({$quoted}[\\\\|;])#m",
 		"\$1\$2 {$namespace_prefix}\\\\\$3",
@@ -195,13 +196,14 @@ function prefix_namespace( &$contents, $namespace, &$count ) {
  * @since x.x.x
  *
  * @param string $contents  File contents.
+ * @param string $package   Package prefix configuration.
  * @param string $namespace Namespace to search for.
  * @param int    $count     Count of changed imports.
  */
-function prefix_imports( &$contents, $namespace, &$count ) {
+function prefix_imports( &$contents, $package, &$count ) {
 	global $namespace_prefix;
 
-	$quoted   = preg_quote( $namespace, '#' );
+	$quoted   = preg_quote( $package['namespace'], '#' );
 	$contents = preg_replace(
 		"#^(\s*)(use)\s*({$quoted}\\\\)#m",
 		"\$1\$2 {$namespace_prefix}\\\\\$3",
