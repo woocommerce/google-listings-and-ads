@@ -7,9 +7,10 @@ declare( strict_types=1 );
 /**
  * List of packages to prefix the namespace.
  *
- * namespace = Namespace to search for.
- * package   = Full name of package in the vendor folder.
- * strict    = When true it will search matching the full namespace, false will allow matching of a namespace prefix.
+ * namespace        = Namespace to search for.
+ * package          = Full name of package in the vendor folder.
+ * strict           = When true it will search matching the full namespace, false will allow matching of a namespace prefix.
+ * exclude_autoload = Array of autoload files which are not required to be included in the main composer file.
  */
 $packages = [
 	[
@@ -23,9 +24,10 @@ $packages = [
 		'strict'    => false,
 	],
 	[
-		'namespace' => 'Google',
-		'package'   => 'google/apiclient',
-		'strict'    => true,
+		'namespace'        => 'Google',
+		'package'          => 'google/apiclient',
+		'strict'           => true,
+		'exclude_autoload' => [ 'src/aliases.php' ],
 	],
 	[
 		'namespace' => 'Google\\Auth',
@@ -112,7 +114,7 @@ foreach ( $packages as $package ) {
 	remove_file_autoloads(
 		"{$vendor_dir}/composer/installed.json",
 		$composer_json['autoload']['files'] ?? [],
-		$package['package']
+		$package
 	);
 }
 
@@ -365,9 +367,9 @@ function replace_in_json_file( string $file, string $namespace ) {
  *
  * @param string $file              Generated file containing information about all the installed packages
  * @param array  $composer_autoload List of autoloaded files in composer.json
- * @param string $package_name      Name of the package we are replacing
+ * @param array  $package           Package prefix configuration.
  */
-function remove_file_autoloads( string $file, array $composer_autoload, string $package_name ) {
+function remove_file_autoloads( string $file, array $composer_autoload, array $package ) {
 	if ( ! file_exists( $file ) ) {
 		return;
 	}
@@ -378,20 +380,25 @@ function remove_file_autoloads( string $file, array $composer_autoload, string $
 	}
 
 	$modified = false;
-	foreach ( $json['packages'] as $key => $package ) {
-		if ( 0 !== strpos( $package['name'], $package_name ) ) {
+	foreach ( $json['packages'] as $key => $dep_package ) {
+		if ( $package['package'] !== $dep_package['name'] ) {
 			continue;
 		}
 
-		if ( empty( $package['autoload']['files'] ) ) {
+		if ( empty( $dep_package['autoload']['files'] ) ) {
 			continue;
 		}
 
-		foreach ( $package['autoload']['files'] as $autoload_file ) {
+		foreach ( $dep_package['autoload']['files'] as $autoload_file ) {
 
 			// Confirm we already include this autoload in the main composer file.
-			$filename = "vendor/{$package['name']}/{$autoload_file}";
+			$filename = "vendor/{$dep_package['name']}/{$autoload_file}";
 			if ( in_array( $filename, $composer_autoload, true ) ) {
+				continue;
+			}
+
+			// Confirm this file isn't being excluded.
+			if ( in_array( $autoload_file, $package['exclude_autoload'], true ) ) {
 				continue;
 			}
 
