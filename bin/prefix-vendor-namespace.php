@@ -50,39 +50,14 @@ $composer_json = json_decode( file_get_contents( dirname( __DIR__ ) . '/composer
 $file_notices = [];
 
 foreach ( $replacements as $namespace => $path ) {
-	$files = find_files( $path );
+	// Process namespaces and uses in all package files.
+	foreach ( find_files( $path ) as $file ) {
+		process_file( $file, $namespace, $namespace_prefix, true, true );
+	}
 
-	foreach ( $files as $file ) {
-		$contents     = file_get_contents( $file );
-		$content_hash = md5( $contents );
-
-		// Check to see whether a replacement has already run for this namespace. Just in case.
-		if ( false !== strpos( $contents, "{$namespace_prefix}\\{$namespace}" ) ) {
-			continue 2;
-		}
-
-		$namespace_change = 0;
-		$uses_change      = 0;
-		prefix_namespace( $contents, $namespace, $namespace_prefix, $namespace_change );
-		prefix_imports( $contents, $namespace, $namespace_prefix, $uses_change );
-
-		if ( ! empty( $direct_replacements[ $path ] ) ) {
-			foreach ( $direct_replacements[ $path ] as $search ) {
-				$direct_change = 0;
-				prefix_string( $contents, $search, $namespace_prefix, $direct_change );
-				if ( $direct_change ) {
-					$uses_change += $direct_change;
-				}
-			}
-		}
-		if ( ! $namespace_change && $uses_change ) {
-			$file_notices[] = $file;
-		}
-
-		// Only overwrite file if the contents have changed.
-		if ( $content_hash !== md5( $contents ) ) {
-			file_put_contents( $file, $contents );
-		}
+	// Process only uses in dependent package files.
+	foreach ( find_dependent_files( $path ) as $file ) {
+		process_file( $file, $namespace, $namespace_prefix, false, true );
 	}
 
 	// Update the namespace in the composer.json files, recursively finding all files named explicitly "composer.json".
@@ -115,6 +90,56 @@ if ( count( $file_notices ) ) {
 		'Several files were modified without changes to namespace: %s' . PHP_EOL,
 		implode('; ', $file_notices)
 	);
+}
+
+/**
+ * Process prefixing in a specific file.
+ *
+ * @param string $file             File name.
+ * @param string $namespace        Namespace to search for.
+ * @param string $prefix           Namespace prefix.
+ * @param bool   $prefix_namespace Whether to prefix namespaces or not.
+ * @param bool   $prefix_uses      Whether to prefix uses of a namespace.
+ */
+function process_file( $file, $namespace, $prefix, $prefix_namespace = true, $prefix_uses = false ) {
+	global $file_notices;
+	$contents     = file_get_contents( $file );
+	$content_hash = md5( $contents );
+
+	// Check to see whether a replacement has already run for this namespace. Just in case.
+	if ( false !== strpos( $contents, "{$prefix}\\{$namespace}" ) ) {
+		return;
+	}
+
+	$namespace_change = 0;
+	$uses_change      = 0;
+
+	if ( $prefix_namespace ) {
+		prefix_namespace( $contents, $namespace, $prefix, $namespace_change );
+	}
+
+	if ( $prefix_uses ) {
+		prefix_imports( $contents, $namespace, $prefix, $uses_change );
+
+		if ( ! empty( $direct_replacements[ $path ] ) ) {
+			foreach ( $direct_replacements[ $path ] as $search ) {
+				$direct_change = 0;
+				prefix_string( $contents, $search, $prefix, $direct_change );
+				if ( $direct_change ) {
+					$uses_change += $direct_change;
+				}
+			}
+		}
+	}
+
+	if ( ! $namespace_change && $uses_change ) {
+		$file_notices[] = $file;
+	}
+
+	// Only overwrite file if the contents have changed.
+	if ( $content_hash !== md5( $contents ) ) {
+		file_put_contents( $file, $contents );
+	}
 }
 
 /**
@@ -205,24 +230,40 @@ function get_dir_contents( $path, $match ) {
 }
 
 /**
- * Find a list of PHP files for this package, and append a list of dependent
- * files that use the package.
+ * Find a list of PHP files for this package.
  *
  * @since 1.1.0
  *
  * @param string $path Package path
- * @return array Merged list of files
+ * @return array List of files.
  */
 function find_files( string $path ): array {
+	global $vendor_dir;
+
+	return get_dir_contents( "{$vendor_dir}/{$path}", '/\.php$/i' );
+}
+
+/**
+ * Find a list of dependent PHP files for this package.
+ *
+ * @since x.x.x
+ *
+ * @param string $path Package path
+ * @return array Merged list of files
+ */
+function find_dependent_files( string $path ): array {
 	global $vendor_dir, $dependencies;
 
 	$files = get_dir_contents( "{$vendor_dir}/{$path}", '/\.php$/i' );
 
-	if ( ! empty( $dependencies[ $path ] ) ) {
-		foreach ( $dependencies[ $path ] as $dependency ) {
-			$dependent_files = get_dir_contents( "{$vendor_dir}/{$dependency}", '/\.php$/i' );
-			$files = array_merge( $files, $dependent_files );
-		}
+	if ( empty( $dependencies[ $path ] ) ) {
+		return [];
+	}
+
+	$files = [];
+	foreach ( $dependencies[ $path ] as $dependency ) {
+		$dependent_files = get_dir_contents( "{$vendor_dir}/{$dependency}", '/\.php$/i' );
+		$files = array_merge( $files, $dependent_files );
 	}
 
 	return $files;
