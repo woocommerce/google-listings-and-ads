@@ -8,6 +8,7 @@ declare( strict_types=1 );
  * List of packages to prefix the namespace.
  *
  * namespace        = Namespace to search for.
+ * extra_namespaces = Additional namespaces to search and prefix.
  * package          = Full name of package in the vendor folder.
  * strict           = When true it will search matching the full namespace, false will allow matching of a namespace prefix.
  * exclude_autoload = Array of autoload files which are not required to be included in the main composer file.
@@ -25,6 +26,14 @@ $packages = [
 	],
 	[
 		'namespace'        => 'Google',
+		'extra_namespaces' => [
+			'Google\\AuthHandler',
+			'Google\\AccessToken',
+			'Google\\Http',
+			'Google\\Service',
+			'Google\\Task',
+			'Google\\Utils',
+		],
 		'package'          => 'google/apiclient',
 		'strict'           => true,
 		'exclude_autoload' => [ 'src/aliases.php' ],
@@ -206,6 +215,20 @@ function prefix_namespace( &$contents, $package, &$count ) {
 		-1,
 		$count
 	);
+
+	if ( $package['strict'] && ! empty( $package['extra_namespaces'] ) ) {
+		foreach ( $package['extra_namespaces'] as $namespace ) {
+			prefix_namespace(
+				$contents,
+				[
+					'namespace' => $namespace,
+					'package'   => $package['package'],
+					'strict'    => true,
+				],
+				$count
+			);
+		}
+	}
 }
 
 /**
@@ -237,6 +260,29 @@ function prefix_imports( &$contents, $package, &$count ) {
 		-1,
 		$count
 	);
+
+	// Replace direct class extends.
+	$contents = preg_replace(
+		"#(\s*)(class .* extends)\s*(\\\\{$quoted}\\\\[a-zA-Z0-9_]+\s*\{?)$#m",
+		"\$1\$2 \\\\{$namespace_prefix}\$3",
+		$contents,
+		-1,
+		$count
+	);
+
+	if ( $package['strict'] && ! empty( $package['extra_namespaces'] ) ) {
+		foreach ( $package['extra_namespaces'] as $namespace ) {
+			prefix_imports(
+				$contents,
+				[
+					'namespace' => $namespace,
+					'package'   => $package['package'],
+					'strict'    => true,
+				],
+				$count
+			);
+		}
+	}
 }
 
 /**
