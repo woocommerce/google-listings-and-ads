@@ -53,7 +53,8 @@ foreach ( $replacements as $namespace => $path ) {
 
 	$quoted = preg_quote( $namespace, '#' );
 	foreach ( $files as $file ) {
-		$contents = file_get_contents( $file );
+		$contents     = file_get_contents( $file );
+		$content_hash = md5( $contents );
 
 		// Check to see whether a replacement has already run for this namespace. Just in case.
 		if ( false !== strpos( $contents, "{$new_namespace}\\{$namespace}" ) ) {
@@ -99,7 +100,10 @@ foreach ( $replacements as $namespace => $path ) {
 			$file_notices[] = $file;
 		}
 
-		file_put_contents( $file, $contents );
+		// Only overwrite file if the contents have changed.
+		if ( $content_hash !== md5( $contents ) ) {
+			file_put_contents( $file, $contents );
+		}
 	}
 
 	// Update the namespace in the composer.json files, recursively finding all files named explicitly "composer.json".
