@@ -703,7 +703,7 @@ trait GoogleAdsClientTrait {
 	protected function generate_asset_group_mutate_mock( string $type, int $asset_group_id ) {
 		$asset_group_result = $this->createMock( MutateAssetGroupResult::class );
 		$asset_group_result->method( 'getResourceName' )->willReturn(
-			ResourceNames::forCampaign( $this->ads_id, $asset_group_id )
+			ResourceNames::forAssetGroup( $this->ads_id, $asset_group_id )
 		);
 
 		$response = ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
@@ -716,11 +716,29 @@ trait GoogleAdsClientTrait {
 			->method( 'mutate' )
 			->willReturnCallback(
 				function( int $ads_id, array $operations ) use ( $type, $response ) {
+					$operations_names = [];
 					// Assert that the asset group operation is the right type.
 					foreach ( $operations as $operation ) {
-							$this->assertEquals( 'asset_group_operation', $operation->getOperation() );
+							$operation_name = $operation->getOperation();
+						if ( 'asset_group_operation' === $operation_name ) {
 							$asset_group_operation = $operation->getAssetGroupOperation();
 							$this->assertEquals( $type, $asset_group_operation->getOperation() );
+						}
+						if ( 'asset_group_listing_group_filter_operation' === $operation_name ) {
+							$asset_group_listing_group_filter_operation = $operation->getAssetGroupListingGroupFilterOperation();
+							$this->assertEquals( $type, $asset_group_listing_group_filter_operation->getOperation() );
+						}
+						$operations_names[] = $operation_name;
+					}
+
+					if ( $type === 'create' ) {
+						$this->assertEquals( 2, count( $operations_names ) );
+						$this->assertContains( 'asset_group_operation', $operations_names );
+						$this->assertContains( 'asset_group_listing_group_filter_operation', $operations_names );
+					}
+					if ( $type === 'update' ) {
+						$this->assertEquals( 1, count( $operations_names ) );
+						$this->assertContains( 'asset_group_operation', $operations_names );
 					}
 
 					return $response;

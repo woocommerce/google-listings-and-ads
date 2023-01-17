@@ -18,8 +18,12 @@ use Google\Ads\GoogleAds\V11\Services\AssetGroupListingGroupFilterOperation;
 use Google\Ads\GoogleAds\V11\Services\AssetGroupOperation;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
+use Google\Ads\GoogleAds\V11\Services\AssetGroupServiceClient;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\ApiCore\ApiException;
+use Google\ApiCore\ValidationException;
+use Exception;
+use DateTime;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 
 /**
@@ -83,16 +87,64 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Create an asset group.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param int $campaign_id
+	 *
+	 * @return int id The asset group id.
+	 * @throws ExceptionWithResponseData When an ApiException or Exception is caught.
+	 */
+	public function create_asset_group( int $campaign_id ): int {
+		try {
+			$campaign_resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
+			$current_date_time      = ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
+			$asset_group_name       = sprintf(
+				/* translators: %s: current date time. */
+				__( 'PMax %s', 'google-listings-and-ads' ),
+				$current_date_time
+			);
+
+			$operations = $this->create_operations( $campaign_resource_name, $asset_group_name );
+			return $this->mutate( $operations );
+
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+			$message = $e->getMessage();
+			$code    = $e->getCode();
+			$data    = [];
+
+			if ( $e instanceof ApiException ) {
+				$errors = $this->get_api_exception_errors( $e );
+				/* translators: %s Error message */
+				$message = sprintf( __( 'Error creating asset group: %s', 'google-listings-and-ads' ), reset( $errors ) );
+				$code    = $this->map_grpc_code_to_http_status_code( $e );
+				$data    = [
+					'errors' => $errors,
+				];
+			}
+
+			throw new ExceptionWithResponseData(
+				$message,
+				$code,
+				null,
+				$data
+			);
+		}
+	}
+
+	/**
 	 * Returns a set of operations to create an asset group.
 	 *
 	 * @param string $campaign_resource_name
-	 * @param string $campaign_name
+	 * @param string $asset_group_name The asset group name.
 	 * @return array
 	 */
-	public function create_operations( string $campaign_resource_name, string $campaign_name ): array {
+	public function create_operations( string $campaign_resource_name, string $asset_group_name ): array {
 		// Asset must be created before listing group.
 		return [
-			$this->asset_group_create_operation( $campaign_resource_name, $campaign_name ),
+			$this->asset_group_create_operation( $campaign_resource_name, $asset_group_name ),
 			$this->listing_group_create_operation(),
 		];
 	}
@@ -308,7 +360,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			}
 
 			if ( ! empty( $operations ) ) {
-				$this->client->getGoogleAdsServiceClient()->mutate( $this->options->get_ads_id(), $operations );
+				$this->mutate( $operations );
 			}
 
 			return $asset_group_id;
@@ -362,4 +414,51 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			'display_url_path' => [ $row->getAssetGroup()->getPath1(), $row->getAssetGroup()->getPath2() ],
 		];
 	}
+
+	/**
+	 * Send a batch of operations to mutate an asset group.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param MutateOperation[] $operations
+	 *
+	 * @return int If the asset group operation is present, it will return the asset group id otherwise 0 for other operations.
+	 * @throws ApiException If any of the operations fail.
+	 * @throws Exception If the resource name is not in the expected format.
+	 */
+	protected function mutate( array $operations ): int {
+		$responses = $this->client->getGoogleAdsServiceClient()->mutate(
+			$this->options->get_ads_id(),
+			$operations
+		);
+
+		foreach ( $responses->getMutateOperationResponses() as $response ) {
+			if ( 'asset_group_result' === $response->getResponse() ) {
+				$asset_group_result = $response->getAssetGroupResult();
+				return $this->parse_asset_group_id( $asset_group_result->getResourceName() );
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Convert ID from a resource name to an int.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $name Resource name containing ID number.
+	 *
+	 * @return int The asset group ID.
+	 * @throws Exception When unable to parse resource ID.
+	 */
+	protected function parse_asset_group_id( string $name ): int {
+		try {
+			$parts = AssetGroupServiceClient::parseName( $name );
+			return absint( $parts['asset_group_id'] );
+		} catch ( ValidationException $e ) {
+			throw new Exception( __( 'Invalid asset group ID', 'google-listings-and-ads' ) );
+		}
+	}
+
 }

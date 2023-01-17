@@ -179,6 +179,32 @@ class AdsAssetGroupTest extends UnitTest {
 		}
 	}
 
+	public function test_create_asset_group() {
+		$this->generate_asset_group_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$this->assertEquals(
+			self::TEST_CAMPAIGN_ID,
+			$this->asset_group->create_asset_group( self::TEST_CAMPAIGN_ID )
+		);
+	}
+
+	public function test_create_asset_group_exception() {
+		$this->generate_mutate_mock_exception( new ApiException( 'invalid', 3, 'INVALID_ARGUMENT' ) );
+
+		try {
+			$this->asset_group->create_asset_group( self::TEST_ASSET_GROUP_ID );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals(
+				[
+					'message' => 'Error creating asset group: invalid',
+					'errors'  => [ 'INVALID_ARGUMENT' => 'invalid' ],
+				],
+				$e->get_response_data( true )
+			);
+			$this->assertEquals( 400, $e->getCode() );
+		}
+	}
+
 
 
 }
