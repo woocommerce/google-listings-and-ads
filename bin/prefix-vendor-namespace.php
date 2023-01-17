@@ -75,12 +75,12 @@ $file_notices = [];
 foreach ( $packages as $package ) {
 	// Process namespaces and uses in all package files.
 	foreach ( find_files( $package['package'] ) as $file ) {
-		process_file( $file, $package, $namespace_prefix, true, true );
+		process_file( $file, $package, true, true );
 	}
 
 	// Process only uses in dependent package files.
 	foreach ( find_dependent_files( $package['package'] ) as $file ) {
-		process_file( $file, $package, $namespace_prefix, false, true );
+		process_file( $file, $package, false, true );
 	}
 
 	// Update the namespace in the composer.json files, recursively finding all files named explicitly "composer.json".
@@ -126,7 +126,8 @@ if ( count( $file_notices ) ) {
  * @param bool   $prefix_uses      Whether to prefix uses of a namespace.
  */
 function process_file( $file, $package, $prefix_namespace = true, $prefix_uses = false ) {
-	global $file_notices, $namespace_prefix;
+	global $direct_replacements, $file_notices, $namespace_prefix;
+
 	$contents     = file_get_contents( $file );
 	$content_hash = md5( $contents );
 
@@ -221,6 +222,7 @@ function prefix_imports( &$contents, $namespace, &$count ) {
  */
 function prefix_string( &$contents, $search, &$count ) {
 	global $namespace_prefix;
+
 	$quoted   = preg_quote( $search, '#' );
 	$contents = preg_replace(
 		"#({$quoted})#m",
