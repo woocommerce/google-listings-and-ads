@@ -51,7 +51,6 @@ $file_notices = [];
 foreach ( $replacements as $namespace => $path ) {
 	$files = find_files( $path );
 
-	$quoted = preg_quote( $namespace, '#' );
 	foreach ( $files as $file ) {
 		$contents     = file_get_contents( $file );
 		$content_hash = md5( $contents );
@@ -63,34 +62,13 @@ foreach ( $replacements as $namespace => $path ) {
 
 		$namespace_change = 0;
 		$uses_change      = 0;
-
-		$contents =	preg_replace(
-			"#^(\s*)(namespace)\s*({$quoted}[\\\\|;])#m",
-			"\$1\$2 {$new_namespace}\\\\\$3",
-			$contents,
-			-1,
-			$namespace_change
-		);
-
-		$contents =	preg_replace(
-			"#^(\s*)(use)\s*({$quoted}\\\\)#m",
-			"\$1\$2 {$new_namespace}\\\\\$3",
-			$contents,
-			-1,
-			$uses_change
-		);
+		prefix_namespace( $contents, $namespace, $new_namespace, $namespace_change );
+		prefix_imports( $contents, $namespace, $new_namespace, $uses_change );
 
 		if ( ! empty( $direct_replacements[ $path ] ) ) {
-			foreach ( $direct_replacements[ $path ] as $replace ) {
+			foreach ( $direct_replacements[ $path ] as $search ) {
 				$direct_change = 0;
-				$replace       = preg_quote( $replace, '#' );
-				$contents      = preg_replace(
-					"#({$replace})#m",
-					"{$new_namespace}\\\\\$1",
-					$contents,
-					-1,
-					$direct_change
-				);
+				prefix_string( $contents, $search, $new_namespace, $direct_change );
 				if ( $direct_change ) {
 					$uses_change += $direct_change;
 				}
@@ -135,6 +113,63 @@ if ( count( $file_notices ) ) {
 	printf(
 		'Several files were modified without changes to namespace: %s' . PHP_EOL,
 		implode('; ', $file_notices)
+	);
+}
+
+/**
+ * Prefix the namespace.
+ *
+ * @param string $contents  File contents.
+ * @param string $namespace Namespace to search for.
+ * @param string $prefix    Namespace prefix.
+ * @param int    $count     Count of changed namespace.
+ */
+function prefix_namespace( &$contents, $namespace, $prefix, &$count ) {
+	$quoted   = preg_quote( $namespace, '#' );
+	$contents =	preg_replace(
+		"#^(\s*)(namespace)\s*({$quoted}[\\\\|;])#m",
+		"\$1\$2 {$prefix}\\\\\$3",
+		$contents,
+		-1,
+		$count
+	);
+}
+
+/**
+ * Prefix any import statements.
+ *
+ * @param string $contents  File contents.
+ * @param string $namespace Namespace to search for.
+ * @param string $prefix    Namespace prefix.
+ * @param int    $count     Count of changed imports.
+ */
+function prefix_imports( &$contents, $namespace, $prefix, &$count ) {
+	$quoted   = preg_quote( $namespace, '#' );
+	$contents =	preg_replace(
+		"#^(\s*)(use)\s*({$quoted}\\\\)#m",
+		"\$1\$2 {$prefix}\\\\\$3",
+		$contents,
+		-1,
+		$count
+	);
+}
+
+/**
+ * Prefix any direct string.
+ *
+ * @param string $contents  File contents.
+ * @param string $search    String to search for.
+ * @param string $prefix    Namespace prefix.
+ * @param int    $count     Count of changed strings.
+ */
+function prefix_string( &$contents, $search, $prefix, &$count ) {
+	$quoted   = preg_quote( $search, '#' );
+	$contents = preg_replace(
+		"#({$quoted})#m",
+		"{$prefix}\\\\\$1",
+		$contents,
+		-1,
+		$count
 	);
 }
 
