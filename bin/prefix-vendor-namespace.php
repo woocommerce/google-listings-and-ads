@@ -4,7 +4,7 @@ declare( strict_types=1 );
 
 // phpcs:ignoreFile
 
-$replacements  = [
+$replacements = [
 	'League\\Container' => 'league/container',
 	'League\\ISO3166'   => 'league/iso3166',
 	'Google\\Auth'      => 'google/auth',
@@ -63,7 +63,7 @@ foreach ( $replacements as $namespace => $path ) {
 	// Update the namespace in the composer.json files, recursively finding all files named explicitly "composer.json".
 	$composer_files = get_dir_contents(
 		"{$vendor_dir}/{$path}",
-		'/' . preg_quote( DIRECTORY_SEPARATOR, '/') . 'composer.json$/'
+		'/' . preg_quote( DIRECTORY_SEPARATOR, '/' ) . 'composer.json$/'
 	);
 
 	array_map(
@@ -88,7 +88,7 @@ foreach ( $replacements as $namespace => $path ) {
 if ( count( $file_notices ) ) {
 	printf(
 		'Several files were modified without changes to namespace: %s' . PHP_EOL,
-		implode('; ', $file_notices)
+		implode( '; ', $file_notices )
 	);
 }
 
@@ -156,7 +156,7 @@ function process_file( $file, $namespace, $prefix, $prefix_namespace = true, $pr
  */
 function prefix_namespace( &$contents, $namespace, $prefix, &$count ) {
 	$quoted   = preg_quote( $namespace, '#' );
-	$contents =	preg_replace(
+	$contents = preg_replace(
 		"#^(\s*)(namespace)\s*({$quoted}[\\\\|;])#m",
 		"\$1\$2 {$prefix}\\\\\$3",
 		$contents,
@@ -177,7 +177,7 @@ function prefix_namespace( &$contents, $namespace, $prefix, &$count ) {
  */
 function prefix_imports( &$contents, $namespace, $prefix, &$count ) {
 	$quoted   = preg_quote( $namespace, '#' );
-	$contents =	preg_replace(
+	$contents = preg_replace(
 		"#^(\s*)(use)\s*({$quoted}\\\\)#m",
 		"\$1\$2 {$prefix}\\\\\$3",
 		$contents,
@@ -227,8 +227,8 @@ function get_dir_contents( $path, $match ) {
 		exit( 1 );
 	}
 
-	$rii = new RecursiveIteratorIterator( $rdi );
-	$rri = new RegexIterator( $rii, $match );
+	$rii   = new RecursiveIteratorIterator( $rdi );
+	$rri   = new RegexIterator( $rii, $match );
 	$files = [];
 	foreach ( $rri as $file ) {
 		$files[] = $file->getPathname();
@@ -271,7 +271,7 @@ function find_dependent_files( string $path ): array {
 	$files = [];
 	foreach ( $dependencies[ $path ] as $dependency ) {
 		$dependent_files = get_dir_contents( "{$vendor_dir}/{$dependency}", '/\.php$/i' );
-		$files = array_merge( $files, $dependent_files );
+		$files           = array_merge( $files, $dependent_files );
 	}
 
 	return $files;
