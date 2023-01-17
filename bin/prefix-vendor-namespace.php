@@ -95,6 +95,8 @@ if ( count( $file_notices ) ) {
 /**
  * Process prefixing in a specific file.
  *
+ * @since x.x.x
+ *
  * @param string $file             File name.
  * @param string $namespace        Namespace to search for.
  * @param string $prefix           Namespace prefix.
@@ -145,6 +147,8 @@ function process_file( $file, $namespace, $prefix, $prefix_namespace = true, $pr
 /**
  * Prefix the namespace.
  *
+ * @since x.x.x
+ *
  * @param string $contents  File contents.
  * @param string $namespace Namespace to search for.
  * @param string $prefix    Namespace prefix.
@@ -164,6 +168,8 @@ function prefix_namespace( &$contents, $namespace, $prefix, &$count ) {
 /**
  * Prefix any import statements.
  *
+ * @since x.x.x
+ *
  * @param string $contents  File contents.
  * @param string $namespace Namespace to search for.
  * @param string $prefix    Namespace prefix.
@@ -182,6 +188,8 @@ function prefix_imports( &$contents, $namespace, $prefix, &$count ) {
 
 /**
  * Prefix any direct string.
+ *
+ * @since x.x.x
  *
  * @param string $contents  File contents.
  * @param string $search    String to search for.
