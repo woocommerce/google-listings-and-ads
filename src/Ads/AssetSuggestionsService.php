@@ -312,7 +312,7 @@ class AssetSuggestionsService implements Service {
 		$dom->loadHTML( $html );
 		$images     = $dom->getElementsByTagName( 'img' );
 		$images_ids = [];
-		$pattern    = '/-\d+x\d+\.(jpg|jpeg|gif|png|svg|tiff|webp|heif|heic)$/i';
+		$pattern    = '/-\d+x\d+\.(jpg|jpeg|png)$/i';
 		foreach ( $images as $image ) {
 			$url_unscaled = preg_replace(
 				$pattern,
