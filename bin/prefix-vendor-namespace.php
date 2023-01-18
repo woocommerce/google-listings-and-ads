@@ -88,9 +88,6 @@ $direct_replacements = [
 // Read our composer.json file into an array.
 $composer_json = json_decode( file_get_contents( dirname( __DIR__ ) . '/composer.json' ), true );
 
-// Flag modified files that maybe should have been modified more.
-$file_notices = [];
-
 foreach ( $packages as $package ) {
 	// Process namespaces and uses in all package files.
 	foreach ( find_files( $package['package'] ) as $file ) {
@@ -110,12 +107,6 @@ foreach ( $packages as $package ) {
 	);
 }
 
-if ( count( $file_notices ) ) {
-	printf(
-		'Several files were modified without changes to namespace: %s' . PHP_EOL,
-		implode( '; ', $file_notices )
-	);
-}
 
 /**
  * Process prefixing in a specific file.
@@ -128,34 +119,23 @@ if ( count( $file_notices ) ) {
  * @param bool   $prefix_uses      Whether to prefix uses of a namespace.
  */
 function process_file( $file, $package, $prefix_namespace = true, $prefix_uses = false ) {
-	global $direct_replacements, $file_notices, $namespace_prefix;
+	global $direct_replacements, $namespace_prefix;
 
 	$contents     = file_get_contents( $file );
 	$content_hash = md5( $contents );
 
-	$namespace_change = 0;
-	$uses_change      = 0;
-
 	if ( $prefix_namespace ) {
-		prefix_namespace( $contents, $package, $namespace_change );
+		prefix_namespace( $contents, $package );
 	}
 
 	if ( $prefix_uses ) {
-		prefix_imports( $contents, $package, $uses_change );
+		prefix_imports( $contents, $package );
 
 		if ( ! empty( $direct_replacements[ $package['package'] ] ) ) {
 			foreach ( $direct_replacements[ $package['package'] ] as $search ) {
-				$direct_change = 0;
-				prefix_string( $contents, $search, $direct_change );
-				if ( $direct_change ) {
-					$uses_change += $direct_change;
-				}
+				prefix_string( $contents, $search );
 			}
 		}
-	}
-
-	if ( ! $namespace_change && $uses_change ) {
-		$file_notices[] = $file;
 	}
 
 	// Only overwrite file if the contents have changed.
@@ -169,12 +149,10 @@ function process_file( $file, $package, $prefix_namespace = true, $prefix_uses =
  *
  * @since x.x.x
  *
- * @param string $contents  File contents.
- * @param string $package   Package prefix configuration.
- * @param string $namespace Namespace to search for.
- * @param int    $count     Count of changed namespace.
+ * @param string $contents File contents.
+ * @param string $package  Package prefix configuration.
  */
-function prefix_namespace( &$contents, $package, &$count ) {
+function prefix_namespace( &$contents, $package ) {
 	global $namespace_prefix;
 
 	$quoted = preg_quote( $package['namespace'], '#' );
@@ -189,9 +167,7 @@ function prefix_namespace( &$contents, $package, &$count ) {
 	$contents = preg_replace(
 		$regex,
 		"\$1\$2 {$namespace_prefix}\\\\\$3",
-		$contents,
-		-1,
-		$count
+		$contents
 	);
 
 	if ( $package['strict'] && ! empty( $package['extra_namespaces'] ) ) {
@@ -202,8 +178,7 @@ function prefix_namespace( &$contents, $package, &$count ) {
 					'namespace' => $namespace,
 					'package'   => $package['package'],
 					'strict'    => true,
-				],
-				$count
+				]
 			);
 		}
 	}
@@ -214,12 +189,10 @@ function prefix_namespace( &$contents, $package, &$count ) {
  *
  * @since x.x.x
  *
- * @param string $contents  File contents.
- * @param string $package   Package prefix configuration.
- * @param string $namespace Namespace to search for.
- * @param int    $count     Count of changed imports.
+ * @param string $contents File contents.
+ * @param string $package  Package prefix configuration.
  */
-function prefix_imports( &$contents, $package, &$count ) {
+function prefix_imports( &$contents, $package ) {
 	global $namespace_prefix;
 
 	$quoted = preg_quote( $package['namespace'], '#' );
@@ -234,18 +207,14 @@ function prefix_imports( &$contents, $package, &$count ) {
 	$contents = preg_replace(
 		$regex,
 		"\$1\$2 {$namespace_prefix}\\\\\$3",
-		$contents,
-		-1,
-		$count
+		$contents
 	);
 
 	// Replace direct class extends.
 	$contents = preg_replace(
 		"#(\s*)(class .* extends)\s*(\\\\{$quoted}\\\\[a-zA-Z0-9_]+\s*\{?)$#m",
 		"\$1\$2 \\\\{$namespace_prefix}\$3",
-		$contents,
-		-1,
-		$count
+		$contents
 	);
 
 	if ( $package['strict'] && ! empty( $package['extra_namespaces'] ) ) {
@@ -256,8 +225,7 @@ function prefix_imports( &$contents, $package, &$count ) {
 					'namespace' => $namespace,
 					'package'   => $package['package'],
 					'strict'    => true,
-				],
-				$count
+				]
 			);
 		}
 	}
@@ -268,20 +236,17 @@ function prefix_imports( &$contents, $package, &$count ) {
  *
  * @since x.x.x
  *
- * @param string $contents  File contents.
- * @param string $search    String to search for.
- * @param int    $count     Count of changed strings.
+ * @param string $contents File contents.
+ * @param string $search   String to search for.
  */
-function prefix_string( &$contents, $search, &$count ) {
+function prefix_string( &$contents, $search ) {
 	global $namespace_prefix;
 
 	$quoted   = preg_quote( $search, '#' );
 	$contents = preg_replace(
 		"#({$quoted})#m",
 		"{$namespace_prefix}\\\\\$1",
-		$contents,
-		-1,
-		$count
+		$contents
 	);
 }
 
@@ -339,8 +304,6 @@ function find_files( string $package ): array {
  */
 function find_dependent_files( string $package ): array {
 	global $vendor_dir, $dependencies;
-
-	$files = get_dir_contents( "{$vendor_dir}/{$package}", '/\.php$/i' );
 
 	if ( empty( $dependencies[ $package ] ) ) {
 		return [];
