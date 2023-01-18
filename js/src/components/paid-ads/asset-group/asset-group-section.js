@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, createInterpolateElement } from '@wordpress/element';
+import { useState, useRef, createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -20,6 +20,7 @@ import './asset-group-section.scss';
  */
 export default function AssetGroupSection() {
 	const [ assetGroup, setAssetGroup ] = useState( null );
+	const fieldRef = useRef();
 
 	return (
 		<Section
@@ -141,6 +142,27 @@ export default function AssetGroupSection() {
 			</VerticalGapLayout>
 			<h3>Temporary demo for showing the current assets data:</h3>
 			<pre>{ JSON.stringify( assetGroup, null, 2 ) }</pre>
+			<div
+				style={ {
+					height: '3000px',
+					paddingTop: '1500px',
+				} }
+			>
+				<AssetField
+					ref={ fieldRef }
+					heading={ __(
+						'For testing scrollIntoComponent',
+						'google-listings-and-ads'
+					) }
+					numOfIssues={ 2 }
+				/>
+				<button
+					style={ { position: 'fixed', top: '50%', left: '200px' } }
+					onClick={ () => fieldRef.current.scrollIntoComponent() }
+				>
+					Call scrollIntoComponent()
+				</button>
+			</div>
 		</Section>
 	);
 }
