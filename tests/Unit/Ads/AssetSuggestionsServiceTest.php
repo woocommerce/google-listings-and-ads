@@ -361,7 +361,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->with(
 				[
 					'post_type'      => 'attachment',
-					'post_mime_type' => 'image',
+					'post_mime_type' => [ 'image/jpeg', 'image/png', 'image/jpg' ],
 					'numberposts'    => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
 					'fields'         => 'ids',
 					'post_parent'    => $this->post->ID,
@@ -451,7 +451,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->with(
 				[
 					'post_type'      => 'attachment',
-					'post_mime_type' => 'image',
+					'post_mime_type' => [ 'image/jpeg', 'image/png', 'image/jpg' ],
 					'numberposts'    => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
 					'fields'         => 'ids',
 					'post_parent'    => $post_html_image->ID,
@@ -513,7 +513,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		$args_post_image_attachments = [
 			'post_type'       => 'attachment',
-			'post_mime_type'  => 'image',
+			'post_mime_type'  => [ 'image/jpeg', 'image/png', 'image/jpg' ],
 			'fields'          => 'ids',
 			'numberposts'     => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
 			'post_parent__in' => [ $this->post->ID, $product->get_id() ],

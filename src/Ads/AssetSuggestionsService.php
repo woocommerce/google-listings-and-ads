@@ -491,7 +491,7 @@ class AssetSuggestionsService implements Service {
 	protected function get_post_image_attachments( array $args = [] ): array {
 		$defaults = [
 			'post_type'      => 'attachment',
-			'post_mime_type' => 'image',
+			'post_mime_type' => [ 'image/jpeg', 'image/png', 'image/jpg' ],
 			'fields'         => 'ids',
 			'numberposts'    => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
 		];
