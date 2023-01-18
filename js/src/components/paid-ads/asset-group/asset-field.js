@@ -80,7 +80,7 @@ function AssetField(
 		disabled ? 'gla-asset-field--is-disabled' : false
 	);
 
-	const shouldExpanded = isExpanded && ! disabled;
+	const shouldExpand = isExpanded && ! disabled;
 
 	return (
 		<div className={ className } ref={ containerRef }>
@@ -109,8 +109,8 @@ function AssetField(
 				<div className="gla-asset-field__toggle-button-anchor">
 					<AppButton
 						className="gla-asset-field__toggle-button"
-						icon={ shouldExpanded ? chevronUp : chevronDown }
-						aria-expanded={ shouldExpanded }
+						icon={ shouldExpand ? chevronUp : chevronDown }
+						aria-expanded={ shouldExpand }
 						aria-label={ __(
 							'Toggle asset',
 							'google-listings-and-ads'
@@ -121,7 +121,7 @@ function AssetField(
 				</div>
 			</header>
 			<div className="gla-asset-field__content">
-				{ shouldExpanded && children }
+				{ shouldExpand && children }
 			</div>
 		</div>
 	);
