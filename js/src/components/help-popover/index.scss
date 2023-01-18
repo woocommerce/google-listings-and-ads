@@ -13,15 +13,19 @@ $button-color: $gray-600;
 		background: none;
 		padding: 1px;
 		fill: $button-color;
-		cursor: pointer;
 
-		&:hover {
+		&:not(:disabled) {
+			cursor: pointer;
+		}
+
+		&:hover:not(:disabled) {
 			fill: color.adjust($button-color, $lightness: -20%);
 		}
 	}
 
 	.components-popover__content {
 		width: $gla-width-medium;
+		padding: $grid-unit-20;
 
 		@include break-large {
 			width: $gla-width-medium-large;
@@ -29,11 +33,6 @@ $button-color: $gray-600;
 
 		@include break-xlarge {
 			width: $gla-width-mobile;
-		}
-
-		> div {
-			text-align: left;
-			margin: $grid-unit-20;
 		}
 	}
 }

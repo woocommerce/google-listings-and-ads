@@ -39,7 +39,7 @@ const Section = ( {
 
 	return (
 		<section className={ sectionClassName }>
-			<header>
+			<header className="wcdl-section__header">
 				{ topContent && <p>{ topContent }</p> }
 				{ title && <h1>{ title }</h1> }
 				{ description }
