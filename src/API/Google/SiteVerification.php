@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Google\Service\Exception as GoogleException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
 use Exception;
 use Google\Service\SiteVerification as SiteVerificationService;
 use Google\Service\SiteVerification\SiteVerificationWebResourceResource as WebResource;
@@ -114,7 +114,7 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 		try {
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$response = $service->webResource->getToken( $post_body );
-		} catch ( GoogleException $e ) {
+		} catch ( GoogleServiceException $e ) {
 			do_action( 'woocommerce_gla_sv_client_exception', $e, __METHOD__ );
 			throw new Exception(
 				__( 'Unable to retrieve site verification token.', 'google-listings-and-ads' ),
@@ -150,7 +150,7 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 		try {
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$service->webResource->insert( self::VERIFICATION_METHOD, $post_body );
-		} catch ( GoogleException $e ) {
+		} catch ( GoogleServiceException $e ) {
 			do_action( 'woocommerce_gla_sv_client_exception', $e, __METHOD__ );
 			throw new Exception(
 				__( 'Unable to insert site verification.', 'google-listings-and-ads' ),

@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Google\Exception as GoogleException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Exception;
 use WC_Coupon;

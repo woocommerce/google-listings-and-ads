@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Exception as GoogleException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\Product as GoogleProduct;
 use Google\Service\ShoppingContent\ProductsCustomBatchRequest as GoogleBatchRequest;
