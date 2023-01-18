@@ -10,10 +10,10 @@ declare( strict_types=1 );
  * List of packages to prefix the namespace.
  *
  * namespace        = Namespace to search for.
- * extra_namespaces = Additional namespaces to search and prefix.
+ * extra_namespaces = Additional namespaces to search and prefix (optional).
  * package          = Full name of package in the vendor folder.
  * strict           = When true it will search matching the full namespace, false will allow matching of a namespace prefix.
- * exclude_autoload = Array of autoload files which are not required to be included in the main composer file.
+ * exclude_autoload = Array of autoload files which are not required to be included in the main composer file (optional).
  */
 $packages = [
 	[
@@ -131,7 +131,7 @@ function process_file( $file, $package, $prefix_namespace = true, $prefix_uses =
 	}
 
 	if ( $prefix_uses ) {
-		prefix_imports( $contents, $package );
+		prefix_uses( $contents, $package );
 
 		if ( ! empty( $direct_replacements[ $package['package'] ] ) ) {
 			foreach ( $direct_replacements[ $package['package'] ] as $search ) {
@@ -187,14 +187,14 @@ function prefix_namespace( &$contents, $package ) {
 }
 
 /**
- * Prefix any import statements.
+ * Prefix any import statements and direct uses of namespace.
  *
  * @since x.x.x
  *
  * @param string $contents File contents.
  * @param string $package  Package prefix configuration.
  */
-function prefix_imports( &$contents, $package ) {
+function prefix_uses( &$contents, $package ) {
 	global $namespace_prefix;
 
 	$quoted = preg_quote( $package['namespace'], '#' );
@@ -221,7 +221,7 @@ function prefix_imports( &$contents, $package ) {
 
 	if ( $package['strict'] && ! empty( $package['extra_namespaces'] ) ) {
 		foreach ( $package['extra_namespaces'] as $namespace ) {
-			prefix_imports(
+			prefix_uses(
 				$contents,
 				[
 					'namespace' => $namespace,
