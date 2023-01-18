@@ -32,8 +32,8 @@ import './asset-field.scss';
  * @param {JSX.Element} props.heading Heading.
  * @param {JSX.Element} props.subheading Subheading.
  * @param {JSX.Element} props.help Help content to be shown after clicking on the help icon.
- * @param {number} props.numOfIssues The number of issues used to label on UI. It only labels when the number is greater than 0.
- * @param {boolean} [props.initialExpanded=false] Whether the UI to initial with expanded content.
+ * @param {number} props.numOfIssues The number of issues to be marked as a label on UI. It only shows the label when the number is greater than 0.
+ * @param {boolean} [props.initialExpanded=false] Whether the UI is initialized expanded.
  * @param {boolean} [props.disabled=false] Whether display the UI in disabled style. It will collapse the content when disabled.
  * @param {JSX.Element} [props.children] Content to be rendered.
  * @param {import('react').MutableRefObject<AssetFieldHandler>} ref React ref to be attached to the handler of this component.
@@ -70,7 +70,7 @@ function AssetField(
 	};
 
 	const issuePillText = sprintf(
-		// translators: %d: number of issues in a asset field.
+		// translators: %d: number of issues in an asset field.
 		_n( '%d issue', '%d issues', numOfIssues, 'google-listings-and-ads' ),
 		numOfIssues
 	);
