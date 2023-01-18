@@ -462,7 +462,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$images[ self::MARKETING_IMAGE_KEY ]        = [ wp_get_attachment_image_url( $image_id ) ];
 
 		$this->assertEquals( $this->format_post_asset_response( $post_html_image, $images ), $this->asset_suggestions->get_assets_suggestions( $post_html_image->ID, 'post' ) );
-	}	
+	}
 
 	public function test_get_invalid_post_id() {
 		$this->expectException( Exception::class );
