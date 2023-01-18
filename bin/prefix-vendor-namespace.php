@@ -41,6 +41,12 @@ $packages = [
 		'exclude_autoload' => [ 'src/aliases.php' ],
 	],
 	[
+		'namespace'        => 'Google\\Service',
+		'package'          => 'google/apiclient-services',
+		'strict'           => false,
+		'exclude_autoload' => [ 'autoload.php' ],
+	],
+	[
 		'namespace' => 'Google\\Auth',
 		'package'   => 'google/auth',
 		'strict'    => false,
