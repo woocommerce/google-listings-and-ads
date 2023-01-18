@@ -51,7 +51,7 @@ function AssetField(
 	ref
 ) {
 	const containerRef = useRef();
-	const [ isExpanded, setExpanded ] = useState( initialExpanded );
+	const [ expanded, setExpanded ] = useState( initialExpanded );
 
 	const isReducedMotion = useReducedMotion();
 
@@ -66,7 +66,7 @@ function AssetField(
 	} ) );
 
 	const handleToggle = () => {
-		setExpanded( ! isExpanded );
+		setExpanded( ! expanded );
 	};
 
 	const issuePillText = sprintf(
@@ -80,7 +80,7 @@ function AssetField(
 		disabled ? 'gla-asset-field--is-disabled' : false
 	);
 
-	const shouldExpand = isExpanded && ! disabled;
+	const shouldExpand = expanded && ! disabled;
 
 	return (
 		<div className={ className } ref={ containerRef }>
