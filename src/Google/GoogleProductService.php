@@ -9,12 +9,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
-use Google\Service\ShoppingContent;
-use Google\Service\ShoppingContent\Product as GoogleProduct;
-use Google\Service\ShoppingContent\ProductsCustomBatchRequest as GoogleBatchRequest;
-use Google\Service\ShoppingContent\ProductsCustomBatchRequestEntry as GoogleBatchRequestEntry;
-use Google\Service\ShoppingContent\ProductsCustomBatchResponse as GoogleBatchResponse;
-use Google\Service\ShoppingContent\ProductsCustomBatchResponseEntry as GoogleBatchResponseEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductsCustomBatchRequest as GoogleBatchRequest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductsCustomBatchRequestEntry as GoogleBatchRequestEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductsCustomBatchResponse as GoogleBatchResponse;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductsCustomBatchResponseEntry as GoogleBatchResponseEntry;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -8,10 +8,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification as SiteVerificationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification\Resource\WebResource;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification\SiteVerificationWebResourceGettokenResponse;
 use Exception;
-use Google\Service\SiteVerification as SiteVerificationService;
-use Google\Service\SiteVerification\Resource\WebResource;
-use Google\Service\SiteVerification\SiteVerificationWebResourceGettokenResponse;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;

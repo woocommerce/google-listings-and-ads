@@ -10,12 +10,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification as SiteVerificationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification\SiteVerificationWebResourceResource as WebResource;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification\SiteVerificationWebResourceResourceSite as WebResourceSite;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification\SiteVerificationWebResourceGettokenRequest as GetTokenRequest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification\SiteVerificationWebResourceGettokenRequestSite as GetTokenRequestSite;
 use Exception;
-use Google\Service\SiteVerification as SiteVerificationService;
-use Google\Service\SiteVerification\SiteVerificationWebResourceResource as WebResource;
-use Google\Service\SiteVerification\SiteVerificationWebResourceResourceSite as WebResourceSite;
-use Google\Service\SiteVerification\SiteVerificationWebResourceGettokenRequest as GetTokenRequest;
-use Google\Service\SiteVerification\SiteVerificationWebResourceGettokenRequestSite as GetTokenRequestSite;
 
 defined( 'ABSPATH' ) || exit;
 
