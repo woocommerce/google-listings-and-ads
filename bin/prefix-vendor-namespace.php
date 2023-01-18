@@ -2,9 +2,11 @@
 <?php
 declare( strict_types=1 );
 
-// phpcs:ignoreFile
+// Disable phpcs rules which are not relevant to a dev script.
+// phpcs:disable WordPress.Security.EscapeOutput
+// phpcs:disable WordPress.WP.AlternativeFunctions
 
-/**
+/*
  * List of packages to prefix the namespace.
  *
  * namespace        = Namespace to search for.
@@ -58,11 +60,11 @@ $dependencies = [
 	'google/apiclient' => [
 		'google/apiclient-services',
 	],
-	'google/auth' => [
+	'google/auth'      => [
 		'google/apiclient',
 		'google/gax',
 	],
-	'guzzlehttp'  => [
+	'guzzlehttp'       => [
 		'google/apiclient',
 		'google/auth',
 		'google/gax',
@@ -363,6 +365,8 @@ function update_autoloads( string $file, array $composer_autoload, array $packag
 
 		// Remove any file autoloads and ensure they are included in the main composer file
 		if ( ! empty( $dep_package['autoload']['files'] ) ) {
+			$modified = true;
+
 			foreach ( $dep_package['autoload']['files'] as $autoload_file ) {
 
 				// Confirm we already include this autoload in the main composer file.
@@ -384,16 +388,15 @@ function update_autoloads( string $file, array $composer_autoload, array $packag
 			}
 
 			$json['packages'][ $key ]['autoload']['files'] = [];
-			$modified = true;
 		}
 
 		// Prefix any of the autoloads for this specific package.
 		foreach ( $json['packages'][ $key ]['autoload'] as $type => $mappings ) {
 			foreach ( $mappings as $namespace => $path ) {
 				if ( 0 === stripos( (string) $namespace, $package['namespace'] ) ) {
+					$modified = true;
 					unset( $json['packages'][ $key ]['autoload'][ $type ][ $namespace ] );
 					$json['packages'][ $key ]['autoload'][ $type ][ "{$namespace_prefix}\\{$namespace}" ] = $path;
-					$modified = true;
 				}
 			}
 		}
