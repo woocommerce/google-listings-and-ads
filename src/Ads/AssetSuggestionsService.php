@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 use Exception;
 use WP_Query;
 use wpdb;
+use DOMDocument;
 
 /**
  * Class AssetSuggestionsService
@@ -273,7 +274,7 @@ class AssetSuggestionsService implements Service {
 			$attachments_ids = [ ...$attachments_ids, ...$product->get_gallery_image_ids() ];
 		}
 
-		$attachments_ids  = [ ...$attachments_ids, ...$this->get_gallery_images_ids( $id ), get_post_thumbnail_id( $id ) ];
+		$attachments_ids  = [ ...$attachments_ids, ...$this->get_gallery_images_ids( $id ), ...$this->get_html_inserted_images( $post->post_content ), get_post_thumbnail_id( $id ) ];
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
 		$long_headline    = get_bloginfo( 'name' ) . ': ' . $post->post_title;
 
@@ -336,6 +337,55 @@ class AssetSuggestionsService implements Service {
 			'display_url_path'                       => [ $term->slug ],
 			'final_url'                              => get_term_link( $term->term_id ),
 		];
+	}
+
+	/**
+	 * Get inserted images from HTML.
+	 *
+	 * @param string $html HTML string.
+	 *
+	 * @return array Array of image IDs.
+	 */
+	protected function get_html_inserted_images( string $html ): array {
+		if ( empty( $html ) ) {
+			return [];
+		}
+
+		// Malformed HTML can cause DOMDocument to throw warnings. With the below line, we can suppress them and work only with the HTML that has been parsed.
+		libxml_use_internal_errors( true );
+
+		$dom = new DOMDocument();
+		if ( $dom->loadHTML( $html ) ) {
+			$images     = $dom->getElementsByTagName( 'img' );
+			$images_ids = [];
+			$pattern    = '/-\d+x\d+\.(jpg|jpeg|png)$/i';
+			foreach ( $images as $image ) {
+				$url_unscaled = preg_replace(
+					$pattern,
+					'.${1}',
+					$image->getAttribute( 'src' ),
+				);
+
+				$image_id = attachment_url_to_postid( $url_unscaled );
+
+				// Look for scaled image if the original image is not found.
+				if ( $image_id === 0 ) {
+					$url_scaled = preg_replace(
+						$pattern,
+						'-scaled.${1}',
+						$image->getAttribute( 'src' ),
+					);
+					$image_id   = attachment_url_to_postid( $url_scaled );
+				}
+
+				if ( $image_id > 0 ) {
+					$images_ids[] = $image_id;
+				}
+			}
+		}
+
+		return $images_ids;
+
 	}
 
 	/**
@@ -488,7 +538,7 @@ class AssetSuggestionsService implements Service {
 	protected function get_post_image_attachments( array $args = [] ): array {
 		$defaults = [
 			'post_type'      => 'attachment',
-			'post_mime_type' => 'image',
+			'post_mime_type' => [ 'image/jpeg', 'image/png', 'image/jpg' ],
 			'fields'         => 'ids',
 			'numberposts'    => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
 		];

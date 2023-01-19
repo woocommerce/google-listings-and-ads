@@ -401,7 +401,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->with(
 				[
 					'post_type'      => 'attachment',
-					'post_mime_type' => 'image',
+					'post_mime_type' => [ 'image/jpeg', 'image/png', 'image/jpg' ],
 					'numberposts'    => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
 					'fields'         => 'ids',
 					'post_parent'    => $this->post->ID,
@@ -473,6 +473,37 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 	}
 
+	public function test_get_post_assets_html_inserted_image() {
+		$image_id = $this->get_test_image();
+
+		$post_html_image = $this->factory()->post->create_and_get( [ 'post_content' => '<img src="' . wp_get_attachment_image_url( $image_id ) . '" />' ] );
+
+		$this->image_utility->expects( $this->exactly( 2 ) )
+		->method( 'recommend_size' )
+		->willReturnOnConsecutiveCalls( $this->suggested_image_square, $this->suggested_image_landscape );
+
+		$this->image_utility->expects( $this->exactly( 2 ) )
+		->method( 'maybe_add_subsize_image' )
+		->willReturn( true );
+
+		$this->wp->expects( $this->once() )
+			->method( 'get_posts' )
+			->with(
+				[
+					'post_type'      => 'attachment',
+					'post_mime_type' => [ 'image/jpeg', 'image/png', 'image/jpg' ],
+					'numberposts'    => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
+					'fields'         => 'ids',
+					'post_parent'    => $post_html_image->ID,
+				]
+			)->willReturn( [] );
+
+		$images[ self::SQUARE_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id ) ];
+		$images[ self::MARKETING_IMAGE_KEY ]        = [ wp_get_attachment_image_url( $image_id ) ];
+
+		$this->assertEquals( $this->format_post_asset_response( $post_html_image, $images ), $this->asset_suggestions->get_assets_suggestions( $post_html_image->ID, 'post' ) );
+	}
+
 	public function test_get_invalid_post_id() {
 		$this->expectException( Exception::class );
 		$this->asset_suggestions->get_assets_suggestions( self::INVALID_ID, 'post' );
@@ -522,7 +553,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		$args_post_image_attachments = [
 			'post_type'       => 'attachment',
-			'post_mime_type'  => 'image',
+			'post_mime_type'  => [ 'image/jpeg', 'image/png', 'image/jpg' ],
 			'fields'          => 'ids',
 			'numberposts'     => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
 			'post_parent__in' => [ $this->post->ID, $product->get_id() ],
