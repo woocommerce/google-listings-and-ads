@@ -23,7 +23,7 @@ import './texts-editor.scss';
  * @param {number|number[]} props.maxCharacterCounts Maximum number of characters for each text. If the limits are the same, a single number can be used instead of an array.
  * @param {string} props.addButtonText Text for the button to add a new text input.
  * @param {string} [props.placeholder] Placeholder text.
- * @param {Function} props.onChange Callback function to be called when the texts are changed.
+ * @param {(texts: Array<string>) => void} props.onChange Callback function to be called when the texts are changed.
  */
 export default function TextsEditor( {
 	initialTexts = [],
