@@ -46,17 +46,7 @@ export default function TextsEditor( {
 	onChange = noop,
 } ) {
 	const updateTextsRef = useRef();
-	const [ texts, setTexts ] = useState( () => {
-		const nextTexts = normalizeNumberOfTexts(
-			initialTexts,
-			minNumberOfTexts,
-			maxNumberOfTexts
-		);
-		if ( nextTexts.length !== initialTexts.length ) {
-			onChange( nextTexts );
-		}
-		return nextTexts;
-	} );
+	const [ texts, setTexts ] = useState( initialTexts );
 
 	const updateTexts = ( nextTexts ) => {
 		setTexts( nextTexts );
