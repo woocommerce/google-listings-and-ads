@@ -113,7 +113,7 @@ export default function TextsEditor( {
 			<AddAssetItemButton
 				aria-label={ __( 'Add text', 'google-listings-and-ads' ) }
 				disabled={
-					maxNumberOfTexts !== 0 && texts.length >= maxNumberOfTexts
+					maxNumberOfTexts > 0 && texts.length >= maxNumberOfTexts
 				}
 				text={ addButtonText }
 				onClick={ handleAddClick }
