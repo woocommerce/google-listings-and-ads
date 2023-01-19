@@ -308,32 +308,40 @@ class AssetSuggestionsService implements Service {
 	 * @return array Array of image IDs.
 	 */
 	protected function get_html_inserted_images( string $html ): array {
+		if ( empty( $html ) ) {
+			return [];
+		}
+
+		// Malformed HTML can cause DOMDocument to throw warnings. With the below line, we can suppress them and work only with the HTML that has been parsed.
+		libxml_use_internal_errors( true );
+
 		$dom = new DOMDocument();
-		$dom->loadHTML( $html );
-		$images     = $dom->getElementsByTagName( 'img' );
-		$images_ids = [];
-		$pattern    = '/-\d+x\d+\.(jpg|jpeg|png)$/i';
-		foreach ( $images as $image ) {
-			$url_unscaled = preg_replace(
-				$pattern,
-				'.${1}',
-				$image->getAttribute( 'src' ),
-			);
-
-			$image_id = attachment_url_to_postid( $url_unscaled );
-
-			// Look for scaled image if the original image is not found.
-			if ( $image_id === 0 ) {
-				$url_scaled = preg_replace(
+		if ( $dom->loadHTML( $html ) ) {
+			$images     = $dom->getElementsByTagName( 'img' );
+			$images_ids = [];
+			$pattern    = '/-\d+x\d+\.(jpg|jpeg|png)$/i';
+			foreach ( $images as $image ) {
+				$url_unscaled = preg_replace(
 					$pattern,
-					'-scaled.${1}',
+					'.${1}',
 					$image->getAttribute( 'src' ),
 				);
-				$image_id   = attachment_url_to_postid( $url_scaled );
-			}
 
-			if ( $image_id > 0 ) {
-				$images_ids[] = $image_id;
+				$image_id = attachment_url_to_postid( $url_unscaled );
+
+				// Look for scaled image if the original image is not found.
+				if ( $image_id === 0 ) {
+					$url_scaled = preg_replace(
+						$pattern,
+						'-scaled.${1}',
+						$image->getAttribute( 'src' ),
+					);
+					$image_id   = attachment_url_to_postid( $url_scaled );
+				}
+
+				if ( $image_id > 0 ) {
+					$images_ids[] = $image_id;
+				}
 			}
 		}
 
