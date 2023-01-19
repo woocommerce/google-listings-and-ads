@@ -44,17 +44,39 @@ describe( 'TextsEditor', () => {
 		expect( inputs[ 1 ] ).toHaveValue( initialTexts[ 1 ] );
 	} );
 
-	it( 'When `minNumberOfTexts` is specified, it should prefill empty strings as initial texts to supplement the shortage parts of `initialTexts`', () => {
+	it( 'When `minNumberOfTexts` is specified, it should prefill empty strings as initial texts to supplement the shortage parts of `initialTexts` or `texts`', () => {
 		const initialTexts = [ 'Text 1' ];
-		render(
-			<TextsEditor initialTexts={ initialTexts } minNumberOfTexts={ 3 } />
+		const onChange = jest.fn();
+		const { rerender } = render(
+			<TextsEditor
+				initialTexts={ initialTexts }
+				minNumberOfTexts={ 2 }
+				onChange={ onChange }
+			/>
 		);
-		const inputs = screen.getAllByRole( 'textbox' );
+		let inputs = screen.getAllByRole( 'textbox' );
+
+		expect( inputs ).toHaveLength( 2 );
+		expect( inputs[ 0 ] ).toHaveValue( initialTexts[ 0 ] );
+		expect( inputs[ 1 ] ).toHaveValue( '' );
+		expect( onChange ).toHaveBeenCalledTimes( 1 );
+		expect( onChange ).toHaveBeenCalledWith( [ ...initialTexts, '' ] );
+
+		rerender(
+			<TextsEditor
+				initialTexts={ initialTexts }
+				minNumberOfTexts={ 3 }
+				onChange={ onChange }
+			/>
+		);
+		inputs = screen.getAllByRole( 'textbox' );
 
 		expect( inputs ).toHaveLength( 3 );
 		expect( inputs[ 0 ] ).toHaveValue( initialTexts[ 0 ] );
 		expect( inputs[ 1 ] ).toHaveValue( '' );
 		expect( inputs[ 2 ] ).toHaveValue( '' );
+		expect( onChange ).toHaveBeenCalledTimes( 2 );
+		expect( onChange ).toHaveBeenCalledWith( [ ...initialTexts, '', '' ] );
 	} );
 
 	it( 'Inputs with sequence numbers larger than `minNumberOfTexts` should be accompanied by a delete button', () => {
@@ -103,6 +125,34 @@ describe( 'TextsEditor', () => {
 		);
 
 		expect( addButton ).toBeEnabled();
+	} );
+
+	it( 'When the length of `initialTexts` or `texts` is greater than `maxNumberOfTexts`, it should truncate the excess', () => {
+		const initialTexts = [ 'Text 1', 'Text 2', 'Text 3' ];
+		const onChange = jest.fn();
+		const { rerender } = render(
+			<TextsEditor
+				initialTexts={ initialTexts }
+				maxNumberOfTexts={ 2 }
+				onChange={ onChange }
+			/>
+		);
+
+		expect( screen.getAllByRole( 'textbox' ) ).toHaveLength( 2 );
+		expect( onChange ).toHaveBeenCalledTimes( 1 );
+		expect( onChange ).toHaveBeenCalledWith( initialTexts.slice( 0, 2 ) );
+
+		rerender(
+			<TextsEditor
+				texts={ initialTexts }
+				maxNumberOfTexts={ 1 }
+				onChange={ onChange }
+			/>
+		);
+
+		expect( screen.getAllByRole( 'textbox' ) ).toHaveLength( 1 );
+		expect( onChange ).toHaveBeenCalledTimes( 2 );
+		expect( onChange ).toHaveBeenCalledWith( initialTexts.slice( 0, 1 ) );
 	} );
 
 	it( 'When `maxCharacterCounts` is an array, it should be applied to each input fields in order of index', () => {

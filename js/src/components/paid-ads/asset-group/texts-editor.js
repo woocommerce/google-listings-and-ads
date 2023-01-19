@@ -2,7 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { noop } from 'lodash';
+import { useState, useEffect, useRef } from '@wordpress/element';
 import GridiconCrossSmall from 'gridicons/dist/cross-small';
 
 /**
@@ -12,6 +13,16 @@ import AppButton from '.~/components/app-button';
 import AppInputControl from '.~/components/app-input-control';
 import AddAssetItemButton from './add-asset-item-button';
 import './texts-editor.scss';
+
+function normalizeNumberOfTexts( texts, minNumberOfTexts, maxNumberOfTexts ) {
+	const shortage = Math.max( minNumberOfTexts - texts.length, 0 );
+	const supplement = Array.from( { length: shortage }, () => '' );
+	const sliceArgs = [ 0 ];
+	if ( maxNumberOfTexts > 0 ) {
+		sliceArgs.push( maxNumberOfTexts );
+	}
+	return texts.concat( supplement ).slice( ...sliceArgs );
+}
 
 /**
  * Renders a list of text inputs for managing the single type of asset texts.
@@ -23,7 +34,7 @@ import './texts-editor.scss';
  * @param {number|number[]} props.maxCharacterCounts Maximum number of characters for each text. If the limits are the same, a single number can be used instead of an array.
  * @param {string} props.addButtonText Text for the button to add a new text input.
  * @param {string} [props.placeholder] Placeholder text.
- * @param {(texts: Array<string>) => void} props.onChange Callback function to be called when the texts are changed.
+ * @param {(texts: Array<string>) => void} [props.onChange] Callback function to be called when the texts are changed.
  */
 export default function TextsEditor( {
 	initialTexts = [],
@@ -32,22 +43,41 @@ export default function TextsEditor( {
 	maxCharacterCounts,
 	addButtonText,
 	placeholder,
-	onChange,
+	onChange = noop,
 } ) {
+	const updateTextsRef = useRef();
 	const [ texts, setTexts ] = useState( () => {
-		const shortage = minNumberOfTexts - initialTexts.length;
-		if ( shortage <= 0 ) {
-			return initialTexts;
+		const nextTexts = normalizeNumberOfTexts(
+			initialTexts,
+			minNumberOfTexts,
+			maxNumberOfTexts
+		);
+		if ( nextTexts.length !== initialTexts.length ) {
+			onChange( nextTexts );
 		}
-
-		const supplement = Array.from( { length: shortage }, () => '' );
-		return initialTexts.concat( supplement );
+		return nextTexts;
 	} );
 
 	const updateTexts = ( nextTexts ) => {
 		setTexts( nextTexts );
 		onChange( nextTexts );
 	};
+	updateTextsRef.current = updateTexts;
+
+	useEffect( () => {
+		if (
+			( maxNumberOfTexts > 0 && texts.length > maxNumberOfTexts ) ||
+			( minNumberOfTexts > 0 && texts.length < minNumberOfTexts )
+		) {
+			updateTextsRef.current(
+				normalizeNumberOfTexts(
+					texts,
+					minNumberOfTexts,
+					maxNumberOfTexts
+				)
+			);
+		}
+	}, [ texts, maxNumberOfTexts, minNumberOfTexts ] );
 
 	const handleChange = ( text, { event } ) => {
 		const { index } = event.target.dataset;
