@@ -28,11 +28,13 @@ import './images-selector.scss';
  * @param {AssetImageConfig} props.imageConfig The config of the asset image.
  * @param {string[]} props.initialImageUrls The initial image URLs.
  * @param {number} [props.maxNumberOfImages=0] The maximum number of images. 0 by default and it means unlimited number.
+ * @param {JSX.Element} [props.children] Content to be rendered above the add button.
  */
 export default function ImagesSelector( {
 	imageConfig,
 	initialImageUrls = [],
 	maxNumberOfImages = 0,
+	children,
 } ) {
 	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
 	const [ images, setImages ] = useState( () =>
@@ -112,6 +114,7 @@ export default function ImagesSelector( {
 					);
 				} ) }
 			</div>
+			{ children }
 			<AddAssetItemButton
 				disabled={
 					maxNumberOfImages !== 0 &&
