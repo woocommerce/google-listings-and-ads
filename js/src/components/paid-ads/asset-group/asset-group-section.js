@@ -2,11 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -18,9 +19,12 @@ import './asset-group-section.scss';
 
 /**
  * Renders the form content for managing an asset group of a campaign with Section UI.
+ *
+ * Please note that this component relies on an CampaignAssetsForm's context and custom adapter,
+ * so it expects a `CampaignAssetsForm` to existing in its parents.
  */
 export default function AssetGroupSection() {
-	const [ assetGroup, setAssetGroup ] = useState( null );
+	const { values, adapter } = useAdaptiveFormContext();
 
 	return (
 		<Section
@@ -57,7 +61,10 @@ export default function AssetGroupSection() {
 			}
 		>
 			<VerticalGapLayout size="medium">
-				<FinalUrlCard onAssetsChange={ setAssetGroup } />
+				<FinalUrlCard
+					initialFinalUrl={ values.final_url }
+					onAssetsChange={ adapter.resetAssetGroup }
+				/>
 				<div>Assets card will be added here</div>
 				<h3>Temporary demo for AssetField and TextsEditor:</h3>
 				<div>

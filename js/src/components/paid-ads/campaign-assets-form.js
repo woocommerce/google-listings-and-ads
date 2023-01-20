@@ -48,12 +48,23 @@ export default function CampaignAssetsForm( {
 	initialAssetGroup = emptyAssetGroup,
 	...adaptiveFormProps
 } ) {
+	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ validationRequestCount, setValidationRequestCount ] = useState( 0 );
 
 	const extendAdapter = ( formContext ) => ( {
+		baseAssetGroup,
 		validationRequestCount,
 		isValidCampaign:
 			Object.keys( validateCampaign( formContext.values ) ).length === 0,
+		resetAssetGroup( assetGroup ) {
+			const nextAssetGroup = assetGroup || initialAssetGroup;
+
+			Object.keys( emptyAssetGroup ).forEach( ( key ) => {
+				formContext.setValue( key, nextAssetGroup[ key ] );
+			} );
+			setBaseAssetGroup( nextAssetGroup );
+			setValidationRequestCount( 0 );
+		},
 		showValidation() {
 			setValidationRequestCount( validationRequestCount + 1 );
 		},
