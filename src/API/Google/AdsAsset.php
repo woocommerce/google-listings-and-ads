@@ -122,6 +122,18 @@ class AdsAsset implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Returns a list of batches of assets.
+	 *
+	 * @param array $assets A list of assets.
+	 *
+	 * @return array A list of batches of assets.
+	 */
+	protected function create_batches( array $assets ): array {
+		$batches = [];
+		return $batches;
+	}
+
+	/**
 	 * Creates the assets so they can be used in the asset groups.
 	 *
 	 * @param array $assets The assets to create.
