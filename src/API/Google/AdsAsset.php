@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
@@ -39,12 +40,21 @@ class AdsAsset implements OptionsAwareInterface {
 	protected WP $wp;
 
 	/**
+	 * The Google Ads Client.
+	 *
+	 * @var GoogleAdsClient
+	 */
+	protected $client;
+
+	/**
 	 * AdsAsset constructor.
 	 *
-	 * @param WP $wp The WordPress proxy.
+	 * @param GoogleAdsClient $client The Google Ads client.
+	 * @param WP              $wp The WordPress proxy.
 	 */
-	public function __construct( WP $wp ) {
-		$this->wp = $wp;
+	public function __construct( GoogleAdsClient $client, WP $wp ) {
+		$this->client = $client;
+		$this->wp     = $wp;
 	}
 
 	/**
@@ -53,7 +63,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @var int
 	 */
-	protected const TEMPORARY_ID = -5;
+	protected static $temporary_id = -5;
 
 	/**
 	 * Return a temporary resource name for the asset.
@@ -62,7 +72,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @return string The Asset resource name.
 	 */
-	protected function temporary_resource_name( int $temporary_id = self::TEMPORARY_ID ): string {
+	protected function temporary_resource_name( int $temporary_id ): string {
 		return ResourceNames::forAsset( $this->options->get_ads_id(), $temporary_id );
 	}
 
@@ -94,6 +104,48 @@ class AdsAsset implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Returns the image data.
+	 *
+	 * @param string $url The image url.
+	 *
+	 * @return array The image data.
+	 * @throws Exception If the image url is not a valid url.
+	 */
+	protected function get_image_data( string $url ): array {
+		$image_data = $this->wp->wp_remote_get( $url );
+
+		if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {
+			throw new Exception( 'Incorrect image asset url.' );
+		}
+
+		return $image_data;
+	}
+
+	/**
+	 * Creates the assets so they can be used in the asset groups.
+	 *
+	 * @param array $assets The assets to create.
+	 *
+	 * @return array A list of Asset's ARN created.
+	 *
+	 * @throws Exception If the asset type is not supported or if the image url is not a valid url.
+	 * @throws ApiException If any of the operations fail.
+	 */
+	public function create_assets( array $assets ): array {
+		$operations = [];
+		foreach ( $assets as $asset ) {
+			$operations[] = $this->create_operation( $asset, self::$temporary_id-- );
+		}
+
+		if ( empty( $operations ) ) {
+			return [];
+		}
+
+		return $this->mutate( $operations );
+
+	}
+
+	/**
 	 * Returns an operation to create a text asset.
 	 *
 	 * @param array $data The asset data.
@@ -102,7 +154,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @return MutateOperation The create asset operation.
 	 * @throws Exception If the asset type is not supported or if the image url is not a valid url.
 	 */
-	public function create_operation( array $data, int $temporary_id = self::TEMPORARY_ID ): MutateOperation {
+	protected function create_operation( array $data, int $temporary_id ): MutateOperation {
 		$asset = new Asset(
 			[
 				'resource_name' => $this->temporary_resource_name( $temporary_id ),
@@ -114,12 +166,7 @@ class AdsAsset implements OptionsAwareInterface {
 				$asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $data['content'] ) ] ) );
 				break;
 			case AssetType::IMAGE:
-				$image_data = $this->wp->wp_remote_get( $data['content'] );
-
-				if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {
-					throw new Exception( 'Incorrect image asset url.' );
-				}
-
+				$image_data = $this->get_image_data( $data['content'] );
 				$asset->setImageAsset( new ImageAsset( [ 'data' => $image_data['body'] ] ) );
 				$asset->setName( basename( $data['content'] ) );
 				break;
@@ -174,5 +221,30 @@ class AdsAsset implements OptionsAwareInterface {
 			'id'      => $row->getAsset()->getId(),
 			'content' => $this->get_asset_content( $row ),
 		];
+	}
+
+	/**
+	 * Send a batch of operations to mutate assets.
+	 *
+	 * @param MutateOperation[] $operations
+	 *
+	 * @return array A list of Asset's ARN created.
+	 * @throws ApiException If any of the operations fail.
+	 */
+	protected function mutate( array $operations ): array {
+		$arns      = [];
+		$responses = $this->client->getGoogleAdsServiceClient()->mutate(
+			$this->options->get_ads_id(),
+			$operations
+		);
+
+		foreach ( $responses->getMutateOperationResponses() as $response ) {
+			if ( 'asset_result' === $response->getResponse() ) {
+				$asset_result = $response->getAssetResult();
+				$arns[]       = $asset_result->getResourceName();
+			}
+		}
+
+		return $arns;
 	}
 }
