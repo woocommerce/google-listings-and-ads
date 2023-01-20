@@ -12,9 +12,7 @@ import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import FinalUrlCard from './final-url-card';
-import ImagesSelector from './images-selector';
-import TextsEditor from './texts-editor';
-import AssetField from './asset-field';
+import AssetGroupCard from './asset-group-card';
 import './asset-group-section.scss';
 
 /**
@@ -65,153 +63,8 @@ export default function AssetGroupSection() {
 					initialFinalUrl={ values.final_url }
 					onAssetsChange={ adapter.resetAssetGroup }
 				/>
-				<div>Assets card will be added here</div>
-				<h3>Temporary demo for AssetField and TextsEditor:</h3>
-				<div>
-					<AssetField
-						heading={ __(
-							'Rectangular images',
-							'google-listings-and-ads'
-						) }
-						subheading={ __(
-							'At least 1 required. Add up to 20.',
-							'google-listings-and-ads'
-						) }
-						help={
-							<>
-								<p>
-									{ __(
-										'Add images that meet or can be cropped to the recommended sizes. Note: The maximum file size for any image is 5120 KB.',
-										'google-listings-and-ads'
-									) }
-								</p>
-								<p>
-									<strong>
-										{ __(
-											'Landscape image (1.91:1)',
-											'google-listings-and-ads'
-										) }
-									</strong>
-								</p>
-								<p>
-									{ __(
-										'Recommended size: 1200 x 628',
-										'google-listings-and-ads'
-									) }
-									<br />
-									{ __(
-										'Min. size: 600 x 314',
-										'google-listings-and-ads'
-									) }
-								</p>
-							</>
-						}
-						numOfIssues={ 2 }
-					>
-						<ImagesSelector
-							maxNumberOfImages={ 3 }
-							imageConfig={ {
-								minWidth: 600,
-								minHeight: 314,
-								suggestedWidth: 1200,
-								suggestedHeight: 628,
-							} }
-						/>
-					</AssetField>
-					<AssetField
-						heading={ __(
-							'Square images',
-							'google-listings-and-ads'
-						) }
-						subheading={ __(
-							'At least 1 required. Add up to 20.',
-							'google-listings-and-ads'
-						) }
-						numOfIssues={ 1 }
-						disabled
-					/>
-					<AssetField
-						heading={ __( 'Headline', 'google-listings-and-ads' ) }
-						subheading={ __(
-							'At least 3 required. Add up to 5.',
-							'google-listings-and-ads'
-						) }
-						help={ __(
-							'The headline is the first line of your ad and is most likely the first thing people notice, so consider including words that people may have entered in their Google search.',
-							'google-listings-and-ads'
-						) }
-						numOfIssues={ 0 }
-						initialExpanded
-					>
-						<TextsEditor
-							minNumberOfTexts={ 3 }
-							maxNumberOfTexts={ 5 }
-							maxCharacterCounts={ [ 15, 30, 30, 30, 30 ] }
-							placeholder={ __(
-								'Headline',
-								'google-listings-and-ads'
-							) }
-							addButtonText={ __(
-								'Add headline',
-								'google-listings-and-ads'
-							) }
-							initialTexts={ [ 'Hello', 'World' ] }
-							onChange={ ( v ) =>
-								// eslint-disable-next-line no-console
-								console.log( 'Headline:onChange', v )
-							}
-						/>
-					</AssetField>
-					<AssetField
-						heading={ __(
-							'Long headlines',
-							'google-listings-and-ads'
-						) }
-						subheading={ __(
-							'At least 1 required. Add up to 5.',
-							'google-listings-and-ads'
-						) }
-						help={
-							<>
-								<p>
-									{ __(
-										'The long headline is the first line of your ad, and appears instead of your short headline in larger ads. Long headlines can be up to 90 characters, and may appear with or without your description.',
-										'google-listings-and-ads'
-									) }
-								</p>
-								<p>
-									{ __(
-										'The length of the rendered headline will depend on the site it appears on. If shortened, it will end with an ellipsis(…).',
-										'google-listings-and-ads'
-									) }
-								</p>
-							</>
-						}
-						numOfIssues={ 0 }
-					>
-						<TextsEditor
-							minNumberOfTexts={ 1 }
-							maxNumberOfTexts={ 5 }
-							maxCharacterCounts={ 90 }
-							placeholder={ __(
-								'Long headlines',
-								'google-listings-and-ads'
-							) }
-							addButtonText={ __(
-								'Add long headline',
-								'google-listings-and-ads'
-							) }
-							initialTexts={ [] }
-							onChange={ ( v ) =>
-								// eslint-disable-next-line no-console
-								console.log( 'Long headlines:onChange', v )
-							}
-						/>
-					</AssetField>
-				</div>
+				<AssetGroupCard />
 			</VerticalGapLayout>
-			<h3>Temporary demo for showing the current assets data:</h3>
-			<pre>{ JSON.stringify( assetGroup, null, 2 ) }</pre>
 		</Section>
 	);
 }
