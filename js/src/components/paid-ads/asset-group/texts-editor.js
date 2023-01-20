@@ -34,6 +34,7 @@ function normalizeNumberOfTexts( texts, minNumberOfTexts, maxNumberOfTexts ) {
  * @param {number|number[]} props.maxCharacterCounts Maximum number of characters for each text. If the limits are the same, a single number can be used instead of an array.
  * @param {string} props.addButtonText Text for the button to add a new text input.
  * @param {string} [props.placeholder] Placeholder text.
+ * @param {JSX.Element} [props.children] Content to be rendered above the add button.
  * @param {(texts: Array<string>) => void} [props.onChange] Callback function to be called when the texts are changed.
  */
 export default function TextsEditor( {
@@ -43,6 +44,7 @@ export default function TextsEditor( {
 	maxCharacterCounts,
 	addButtonText,
 	placeholder,
+	children,
 	onChange = noop,
 } ) {
 	const updateTextsRef = useRef();
@@ -130,6 +132,7 @@ export default function TextsEditor( {
 					);
 				} ) }
 			</div>
+			{ children }
 			<AddAssetItemButton
 				aria-label={ __( 'Add text', 'google-listings-and-ads' ) }
 				disabled={

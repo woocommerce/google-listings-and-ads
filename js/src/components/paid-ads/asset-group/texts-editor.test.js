@@ -11,6 +11,18 @@ import userEvent from '@testing-library/user-event';
 import TextsEditor from './texts-editor';
 
 describe( 'TextsEditor', () => {
+	let onChange;
+
+	beforeEach( () => {
+		onChange = jest.fn().mockName( 'onChange' );
+	} );
+
+	it( 'Should render the children', () => {
+		render( <TextsEditor>Children</TextsEditor> );
+
+		expect( screen.getByText( 'Children' ) ).toBeInTheDocument();
+	} );
+
 	it( 'Should render addButtonText to the add button', () => {
 		render( <TextsEditor addButtonText="Add headline" /> );
 		const addButton = screen.getByRole( 'button', { name: 'Add text' } );
@@ -46,7 +58,6 @@ describe( 'TextsEditor', () => {
 
 	it( 'When `minNumberOfTexts` is specified, it should prefill empty strings as initial texts to supplement the shortage parts of `initialTexts` or `texts`', () => {
 		const initialTexts = [ 'Text 1' ];
-		const onChange = jest.fn();
 		const { rerender } = render(
 			<TextsEditor
 				initialTexts={ initialTexts }
@@ -106,11 +117,7 @@ describe( 'TextsEditor', () => {
 	it( 'When the number of texts reaches `maxNumberOfTexts`, it should disable the add button and vice versa', async () => {
 		const initialTexts = [ 'Text 1', 'Text 2' ];
 		render(
-			<TextsEditor
-				initialTexts={ initialTexts }
-				maxNumberOfTexts={ 3 }
-				onChange={ () => {} }
-			/>
+			<TextsEditor initialTexts={ initialTexts } maxNumberOfTexts={ 3 } />
 		);
 		const addButton = screen.getByRole( 'button', { name: 'Add text' } );
 
@@ -129,7 +136,6 @@ describe( 'TextsEditor', () => {
 
 	it( 'When the length of `initialTexts` or `texts` is greater than `maxNumberOfTexts`, it should truncate the excess', () => {
 		const initialTexts = [ 'Text 1', 'Text 2', 'Text 3' ];
-		const onChange = jest.fn();
 		const { rerender } = render(
 			<TextsEditor
 				initialTexts={ initialTexts }
@@ -182,11 +188,7 @@ describe( 'TextsEditor', () => {
 
 	it( 'When typing on the input field, the count of characters should be updated accordingly', async () => {
 		render(
-			<TextsEditor
-				minNumberOfTexts={ 1 }
-				maxCharacterCounts={ 10 }
-				onChange={ () => {} }
-			/>
+			<TextsEditor minNumberOfTexts={ 1 } maxCharacterCounts={ 10 } />
 		);
 		const input = screen.getByRole( 'textbox' );
 		const label = screen.getByText( /\d+\/10 characters/ );
@@ -201,7 +203,6 @@ describe( 'TextsEditor', () => {
 	} );
 
 	it( 'When the texts are changed, should trigger `onChange` callback function with the updated texts', async () => {
-		const onChange = jest.fn();
 		render( <TextsEditor minNumberOfTexts={ 1 } onChange={ onChange } /> );
 
 		await userEvent.type( screen.getByRole( 'textbox' ), 'Hello' );
@@ -226,7 +227,6 @@ describe( 'TextsEditor', () => {
 	} );
 
 	it( 'Should trim the texts for the `onChange` callback function', async () => {
-		const onChange = jest.fn();
 		render( <TextsEditor minNumberOfTexts={ 1 } onChange={ onChange } /> );
 
 		await userEvent.type( screen.getByRole( 'textbox' ), ' Hello ' );
