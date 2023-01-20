@@ -4,15 +4,13 @@
 import { __ } from '@wordpress/i18n';
 
 /**
- * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ * @typedef {import('.~/components/types.js').CampaignFormValues} CampaignFormValues
  */
 
 /**
  * Validate campaign form. Accepts the form values object and returns errors object.
  *
- * @param {Object} values Form values.
- * @param {Array<CountryCode>} values.countryCodes Selected country codes for the paid ads campaign.
- * @param {number} values.amount The daily average cost amount.
+ * @param {CampaignFormValues} values Campaign form values.
  * @return {Object} errors.
  */
 const validateCampaign = ( values ) => {

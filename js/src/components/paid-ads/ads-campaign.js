@@ -23,7 +23,7 @@ import FaqsSection from './faqs-section';
  */
 
 /**
- * Renders the form container for campaign management.
+ * Renders the container of the form content for campaign management.
  *
  * Please note that this component relies on an AdaptiveForm's context, so it expects
  * a context provider component (`AdaptiveForm`) to existing in its parents.

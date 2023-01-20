@@ -21,7 +21,7 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  */
 
 /**
- * Renders the form container for managing an asset group of a campaign.
+ * Renders the container of the form content for managing an asset group of a campaign.
  *
  * Please note that this component relies on an AdaptiveForm's context, so it expects
  * a context provider component (`AdaptiveForm`) to existing in its parents.

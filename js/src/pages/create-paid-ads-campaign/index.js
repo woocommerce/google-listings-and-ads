@@ -15,10 +15,9 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
-import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
-import AdaptiveForm from '.~/components/adaptive-form';
+import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
@@ -84,12 +83,11 @@ const CreatePaidAdsCampaign = () => {
 				helpButton={ <HelpIconButton eventContext="create-ads" /> }
 				backHref={ dashboardURL }
 			/>
-			<AdaptiveForm
-				initialValues={ {
+			<CampaignAssetsForm
+				initialCampaign={ {
 					amount: 0,
 					countryCodes: initialCountryCodes,
 				} }
-				validate={ validateCampaign }
 				onSubmit={ handleSubmit }
 			>
 				<Stepper
@@ -121,7 +119,7 @@ const CreatePaidAdsCampaign = () => {
 						},
 					] }
 				/>
-			</AdaptiveForm>
+			</CampaignAssetsForm>
 		</>
 	);
 };

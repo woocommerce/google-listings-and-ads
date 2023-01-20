@@ -13,10 +13,9 @@ import useLayout from '.~/hooks/useLayout';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
-import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
-import AdaptiveForm from '.~/components/adaptive-form';
+import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import AppSpinner from '.~/components/app-spinner';
 import AssetGroup, {
@@ -107,12 +106,11 @@ const EditPaidAdsCampaign = () => {
 				helpButton={ helpButton }
 				backHref={ dashboardURL }
 			/>
-			<AdaptiveForm
-				initialValues={ {
+			<CampaignAssetsForm
+				initialCampaign={ {
 					amount: campaign.amount,
 					countryCodes: campaign.displayCountries,
 				} }
-				validate={ validateCampaign }
 				onSubmit={ handleSubmit }
 			>
 				<Stepper
@@ -145,7 +143,7 @@ const EditPaidAdsCampaign = () => {
 						},
 					] }
 				/>
-			</AdaptiveForm>
+			</CampaignAssetsForm>
 		</>
 	);
 };
