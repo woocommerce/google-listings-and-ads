@@ -110,6 +110,10 @@ export default function ImagesSelector( {
 						>
 							<AppButton
 								className="gla-images-selector__replace-image-button"
+								aria-label={ __(
+									'Replace image',
+									'google-listings-and-ads'
+								) }
 								onClick={ () =>
 									handleUpsertImageClick( null, image )
 								}
@@ -122,6 +126,10 @@ export default function ImagesSelector( {
 							</AppButton>
 							<AppButton
 								className="gla-images-selector__remove-image-button"
+								aria-label={ __(
+									'Remove image',
+									'google-listings-and-ads'
+								) }
 								icon={ <GridiconCrossCircle /> }
 								iconSize={ 20 }
 								onClick={ () => removeImage( image ) }
