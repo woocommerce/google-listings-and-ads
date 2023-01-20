@@ -17,7 +17,7 @@ import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import AdaptiveForm from '.~/components/adaptive-form';
 import AdsStepper from './ads-stepper';
 import SetupAdsTopBar from './top-bar';
-import validateForm from '.~/utils/paid-ads/validateForm';
+import validateCampaign from '.~/components/paid-ads/validateCampaign';
 
 /**
  * @fires gla_launch_paid_campaign_button_click on submit
@@ -86,7 +86,7 @@ const SetupAdsForm = () => {
 	return (
 		<AdaptiveForm
 			initialValues={ initialValues }
-			validate={ validateForm }
+			validate={ validateCampaign }
 			onChange={ handleChange }
 			onSubmit={ handleSubmit }
 		>

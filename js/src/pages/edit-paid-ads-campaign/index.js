@@ -13,7 +13,7 @@ import useLayout from '.~/hooks/useLayout';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
-import validateForm from '.~/utils/paid-ads/validateForm';
+import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import AdaptiveForm from '.~/components/adaptive-form';
@@ -112,7 +112,7 @@ const EditPaidAdsCampaign = () => {
 					amount: campaign.amount,
 					countryCodes: campaign.displayCountries,
 				} }
-				validate={ validateForm }
+				validate={ validateCampaign }
 				onSubmit={ handleSubmit }
 			>
 				<Stepper

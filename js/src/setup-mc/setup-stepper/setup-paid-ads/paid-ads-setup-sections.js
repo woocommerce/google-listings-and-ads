@@ -15,7 +15,7 @@ import GoogleAdsAccountSection from './google-ads-account-section';
 import AudienceSection from '.~/components/paid-ads/audience-section';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
-import validateForm from '.~/utils/paid-ads/validateForm';
+import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import clientSession from './clientSession';
 import {
 	GOOGLE_ADS_ACCOUNT_STATUS,
@@ -64,7 +64,9 @@ function resolveInitialPaidAds( paidAds, targetAudience ) {
 		}
 	}
 
-	nextPaidAds.isValid = ! Object.keys( validateForm( nextPaidAds ) ).length;
+	nextPaidAds.isValid = ! Object.keys( validateCampaign( nextPaidAds ) )
+		.length;
+
 	return nextPaidAds;
 }
 
@@ -147,7 +149,7 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 			onChange={ ( _, values, isValid ) => {
 				setPaidAds( { ...paidAds, ...values, isValid } );
 			} }
-			validate={ validateForm }
+			validate={ validateCampaign }
 		>
 			{ ( formProps ) => {
 				const { countryCodes } = formProps.values;

@@ -1,13 +1,13 @@
 /**
  * Internal dependencies
  */
-import validateForm from './validateForm';
+import validateCampaign from './validateCampaign';
 
 /**
- * `validateForm` function returns an object, and if any checks are not passed,
+ * `validateCampaign` function returns an object, and if any checks are not passed,
  * set properties respectively with an error message to indicate it.
  */
-describe( 'validateForm', () => {
+describe( 'validateCampaign', () => {
 	let values;
 
 	beforeEach( () => {
@@ -16,7 +16,7 @@ describe( 'validateForm', () => {
 	} );
 
 	it( 'When all checks are passed, should return an empty object', () => {
-		const errors = validateForm( {
+		const errors = validateCampaign( {
 			countryCodes: [ 'US' ],
 			amount: 1,
 		} );
@@ -25,14 +25,14 @@ describe( 'validateForm', () => {
 	} );
 
 	it( 'should indicate multiple unpassed checks by setting properties in the returned object', () => {
-		const errors = validateForm( values );
+		const errors = validateCampaign( values );
 
 		expect( errors ).toHaveProperty( 'countryCodes' );
 		expect( errors ).toHaveProperty( 'amount' );
 	} );
 
 	it( 'When the country codes array is empty, should not pass', () => {
-		const errors = validateForm( values );
+		const errors = validateCampaign( values );
 
 		expect( errors ).toHaveProperty( 'countryCodes' );
 		expect( errors.countryCodes ).toMatchSnapshot();
@@ -42,25 +42,25 @@ describe( 'validateForm', () => {
 		let errors;
 
 		values.amount = '';
-		errors = validateForm( values );
+		errors = validateCampaign( values );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
 
 		values.amount = undefined;
-		errors = validateForm( values );
+		errors = validateCampaign( values );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
 
 		values.amount = new Date();
-		errors = validateForm( values );
+		errors = validateCampaign( values );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
 
 		values.amount = NaN;
-		errors = validateForm( values );
+		errors = validateCampaign( values );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
@@ -70,13 +70,13 @@ describe( 'validateForm', () => {
 		let errors;
 
 		values.amount = 0;
-		errors = validateForm( values );
+		errors = validateCampaign( values );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
 
 		values.amount = -0.01;
-		errors = validateForm( values );
+		errors = validateCampaign( values );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
