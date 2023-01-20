@@ -206,6 +206,38 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get assets to be deleted.
+	 *
+	 * @param array $assets A list of assets.
+	 *
+	 * @return array The assets to be deleted.
+	 */
+	public function get_assets_to_be_deleted( array $assets ): array {
+		return array_filter(
+			$assets,
+			function( $asset ) {
+				return ! empty( $asset['id'] );
+			}
+		);
+	}
+
+	/**
+	 * Get assets to be created.
+	 *
+	 * @param array $assets A list of assets.
+	 *
+	 * @return array The assets to be created.
+	 */
+	public function get_assets_to_be_created( array $assets ): array {
+		return array_filter(
+			$assets,
+			function( $asset ) {
+				return ! empty( $asset['content'] );
+			}
+		);
+	}
+
+	/**
 	 * Edit assets group assets.
 	 *
 	 * @param int   $asset_group_id The asset group id.
