@@ -140,7 +140,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @return array A list of batches of assets.
 	 * @throws Exception If the image url is not a valid url.
 	 */
-	protected function create_batches( array $assets, int $max_size = self::MAX_PAYLOAD_BYTES ): array {
+	public function create_batches( array $assets, int $max_size = self::MAX_PAYLOAD_BYTES ): array {
 		$batch_size = 0;
 		$index      = 0;
 		$batches    = [];
@@ -154,7 +154,7 @@ class AdsAsset implements OptionsAwareInterface {
 				if ( $batch_size > $max_size ) {
 					$index++;
 					$batches[ $index ][] = $asset;
-					$batch_size          = 0;
+					$batch_size          = $image_data['size'];
 					continue;
 				}
 			}
