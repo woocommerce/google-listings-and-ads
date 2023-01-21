@@ -343,6 +343,15 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates an asset resource name.
+	 *
+	 * @param int $asset_id
+	 */
+	protected function generate_asset_resource_name( int $asset_id ) {
+		return ResourceNames::forAsset( $this->ads_id, $asset_id );
+	}
+
+	/**
 	 * Generates a list of mocked AdsAccountQuery responses.
 	 *
 	 * @param array $customers List of customer data to mock.

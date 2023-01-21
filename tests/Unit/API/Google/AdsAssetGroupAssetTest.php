@@ -223,26 +223,23 @@ class AdsAssetGroupAssetTest extends UnitTest {
 			],
 		];
 
-		$this->asset->expects( $this->exactly( 2 ) )
-		->method( 'create_operation' )
-		->willReturnOnConsecutiveCalls( ...$this->generate_crate_asset_operations( $assets ) );
+		$this->asset->expects( $this->exactly( 1 ) )
+		->method( 'create_assets' )
+		->with( $assets )
+		->willReturn( [ $this->generate_asset_resource_name( self::TEST_ASSET_ID ), $this->generate_asset_resource_name( self::TEST_ASSET_ID_2 ) ] );
 
 		$grouped_operations = $this->group_operations(
 			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
 		);
 
-		// We should have two type of operations: asset_operation and asset_group_asset_operation
-		$this->assertEquals( 2, count( $grouped_operations ) );
-
-		// We should have two assets creation.
-		$this->assertEquals( 2, count( $grouped_operations['asset_operation']['create'] ) );
+		// We should have two asset links creation.
 		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['create'] ) );
 
-		$this->assertEquals( $assets[0]['content'], ( $grouped_operations['asset_operation']['create'][0] )->getCreate()->getTextAsset()->getText() );
-		$this->assertEquals( $assets[1]['content'], ( $grouped_operations['asset_operation']['create'][1] )->getCreate()->getTextAsset()->getText() );
-
 		$this->assertEquals( AssetFieldType::number( AssetFieldType::DESCRIPTION ), ( $grouped_operations['asset_group_asset_operation']['create'][0] )->getCreate()->getFieldType() );
+		$this->assertEquals( $this->generate_asset_resource_name( self::TEST_ASSET_ID ), ( $grouped_operations['asset_group_asset_operation']['create'][0] )->getCreate()->getAsset() );
+
 		$this->assertEquals( AssetFieldType::number( AssetFieldType::HEADLINE ), ( $grouped_operations['asset_group_asset_operation']['create'][1] )->getCreate()->getFieldType() );
+		$this->assertEquals( $this->generate_asset_resource_name( self::TEST_ASSET_ID_2 ), ( $grouped_operations['asset_group_asset_operation']['create'][1] )->getCreate()->getAsset() );
 
 		// We should remove the two old assets.
 		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['remove'] ) );
@@ -266,25 +263,21 @@ class AdsAssetGroupAssetTest extends UnitTest {
 			],
 		];
 
-		$this->asset->expects( $this->exactly( 2 ) )
-		->method( 'create_operation' )
-		->willReturnOnConsecutiveCalls( ...$this->generate_crate_asset_operations( $assets ) );
+		$this->asset->expects( $this->exactly( 1 ) )
+		->method( 'create_assets' )
+		->with( $assets )
+		->willReturn( [ $this->generate_asset_resource_name( self::TEST_ASSET_ID ), $this->generate_asset_resource_name( self::TEST_ASSET_ID_2 ) ] );
 
 		$grouped_operations = $this->group_operations(
 			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
 		);
 
-		// We should have two type of operations: asset_operation and asset_group_asset_operation
-		$this->assertEquals( 2, count( $grouped_operations ) );
-
-		// We should have two assets creation.
-		$this->assertEquals( 2, count( $grouped_operations['asset_operation']['create'] ) );
-		$this->assertEquals( $assets[0]['content'], ( $grouped_operations['asset_operation']['create'][0] )->getCreate()->getTextAsset()->getText() );
-		$this->assertEquals( $assets[1]['content'], ( $grouped_operations['asset_operation']['create'][1] )->getCreate()->getTextAsset()->getText() );
-
-		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['create'] ) );
+		// We should have two asset links creation.
 		$this->assertEquals( AssetFieldType::number( AssetFieldType::DESCRIPTION ), ( $grouped_operations['asset_group_asset_operation']['create'][0] )->getCreate()->getFieldType() );
+		$this->assertEquals( $this->generate_asset_resource_name( self::TEST_ASSET_ID ), ( $grouped_operations['asset_group_asset_operation']['create'][0] )->getCreate()->getAsset() );
+
 		$this->assertEquals( AssetFieldType::number( AssetFieldType::HEADLINE ), ( $grouped_operations['asset_group_asset_operation']['create'][1] )->getCreate()->getFieldType() );
+		$this->assertEquals( $this->generate_asset_resource_name( self::TEST_ASSET_ID_2 ), ( $grouped_operations['asset_group_asset_operation']['create'][1] )->getCreate()->getAsset() );
 
 		// We should not remove old assets.
 		$this->assertArrayNotHasKey( 'remove', $grouped_operations['asset_group_asset_operation'] );
@@ -305,17 +298,14 @@ class AdsAssetGroupAssetTest extends UnitTest {
 			],
 		];
 
-		$this->asset->expects( $this->exactly( 0 ) )
-		->method( 'create_operation' );
+		$this->asset->expects( $this->exactly( 1 ) )
+		->method( 'create_assets' )
+		->with( [] )
+		->willReturn( [] );
 
 		$grouped_operations = $this->group_operations(
 			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
 		);
-
-		// We should have one type of operations: asset_operation.
-		$this->assertEquals( 1, count( $grouped_operations ) );
-
-		$this->assertArrayNotHasKey( 'asset_operation', $grouped_operations );
 
 		// We should have two delete asset_group_asset_operation.
 		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['remove'] ) );
@@ -327,7 +317,14 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 	}
 
-	private function group_operations( $operations ) {
+	/**
+	 * Returns the test assets.
+	 *
+	 * @param array $operations Mutate operations.
+	 *
+	 * @return array Grouped operations by operation name and operation type.
+	 */
+	protected function group_operations( array $operations ): array {
 		$grouped_operations = [];
 
 		foreach ( $operations as $operation ) {
