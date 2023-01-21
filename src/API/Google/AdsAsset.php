@@ -47,6 +47,13 @@ class AdsAsset implements OptionsAwareInterface {
 	protected $client;
 
 	/**
+	 * Maximum payload size in bytes.
+	 *
+	 * @var int
+	 */
+	protected const MAX_PAYLOAD_BYTES = 30 * 1024 * 1024;
+
+	/**
 	 * AdsAsset constructor.
 	 *
 	 * @param GoogleAdsClient $client The Google Ads client.
@@ -118,7 +125,10 @@ class AdsAsset implements OptionsAwareInterface {
 			throw new Exception( 'Incorrect image asset url.' );
 		}
 
-		return $image_data;
+		return [
+			'body' => $image_data['body'],
+			'size' => $image_data['headers']->offsetGet( 'content-length' ),
+		];
 	}
 
 	/**
@@ -127,9 +137,30 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @param array $assets A list of assets.
 	 *
 	 * @return array A list of batches of assets.
+	 * @throws Exception If the image url is not a valid url.
 	 */
-	protected function create_batches( array $assets ): array {
-		$batches = [];
+	protected function create_batches( array $assets, int $max_size = self::MAX_PAYLOAD_BYTES ): array {
+		$batch_size = 0;
+		$index      = 0;
+		$batches    = [];
+
+		foreach ( $assets as $asset ) {
+			if ( $this->get_asset_type_by_field_type( $asset['field_type'] ) === AssetType::IMAGE ) {
+				$image_data    = $this->get_image_data( $asset['content'] );
+				$asset['body'] = $image_data['body'];
+				$batch_size   += $image_data['size'];
+
+				if ( $batch_size > $max_size ) {
+					$index++;
+					$batches[ $index ][] = $asset;
+					$batch_size          = 0;
+					continue;
+				}
+			}
+
+			$batches[ $index ][] = $asset;
+		}
+
 		return $batches;
 	}
 
@@ -144,16 +175,22 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @throws ApiException If any of the operations fail.
 	 */
 	public function create_assets( array $assets ): array {
-		$operations = [];
-		foreach ( $assets as $asset ) {
-			$operations[] = $this->create_operation( $asset, self::$temporary_id-- );
-		}
-
-		if ( empty( $operations ) ) {
+		if ( empty( $assets ) ) {
 			return [];
 		}
 
-		return $this->mutate( $operations );
+		$batches = $this->create_batches( $assets );
+		$arns    = [];
+
+		foreach ( $batches as $batch ) {
+			$operations = [];
+			foreach ( $batch as $asset ) {
+				$operations[] = $this->create_operation( $asset, self::$temporary_id-- );
+			}
+			$arns = [ ...$arns, ...$this->mutate( $operations ) ];
+		}
+
+		return $arns;
 
 	}
 
@@ -164,7 +201,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @param int   $temporary_id The temporary ID to use for the asset.
 	 *
 	 * @return MutateOperation The create asset operation.
-	 * @throws Exception If the asset type is not supported or if the image url is not a valid url.
+	 * @throws Exception If the asset type is not supported.
 	 */
 	protected function create_operation( array $data, int $temporary_id ): MutateOperation {
 		$asset = new Asset(
@@ -178,8 +215,7 @@ class AdsAsset implements OptionsAwareInterface {
 				$asset->setCallToActionAsset( new CallToActionAsset( [ 'call_to_action' => CallToActionType::number( $data['content'] ) ] ) );
 				break;
 			case AssetType::IMAGE:
-				$image_data = $this->get_image_data( $data['content'] );
-				$asset->setImageAsset( new ImageAsset( [ 'data' => $image_data['body'] ] ) );
+				$asset->setImageAsset( new ImageAsset( [ 'data' => $data['body'] ] ) );
 				$asset->setName( basename( $data['content'] ) );
 				break;
 			case AssetType::TEXT:
