@@ -14,6 +14,7 @@ use Google\Ads\GoogleAds\Util\V11\ResourceNames;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Exception;
 use WP_Error;
+use ArrayObject;
 
 
 defined( 'ABSPATH' ) || exit;
@@ -31,7 +32,7 @@ class AdsAssetTest extends UnitTest {
 
 	use GoogleAdsClientTrait;
 
-	protected const TEMPORARY_ID  = -6;
+	protected const TEMPORARY_ID  = -5;
 	protected const TEST_ASSET_ID = 6677889911;
 
 	/**
@@ -46,7 +47,7 @@ class AdsAssetTest extends UnitTest {
 		$this->wp      = $this->createMock( WP::class );
 		$this->options->method( 'get_ads_id' )->willReturn( $this->ads_id );
 
-		$this->asset = new AdsAsset( $this->wp );
+		$this->asset = new AdsAsset( $this->client, $this->wp );
 		$this->asset->set_options_object( $this->options );
 	}
 
@@ -93,38 +94,34 @@ class AdsAssetTest extends UnitTest {
 		$this->assertAssetTypeConversion( $data );
 	}
 
-	public function test_create_operation_text_asset() {
+	public function test_create_assets_text_asset() {
 		$data = [
+			'id'         => self::TEMPORARY_ID,
 			'field_type' => AssetFieldType::HEADLINE,
 			'content'    => 'Test headline',
 		];
 
-		$operation       = $this->asset->create_operation( $data, self::TEMPORARY_ID );
-		$asset_operation = $operation->getAssetOperation();
-
-		$this->assertHasAssetCreateOperation( $asset_operation );
-		$this->assertEquals( $data['content'], $asset_operation->getCreate()->getTextAsset()->getText() );
-
+		$this->generate_asset_mutate_mock( 'create', $data );
+		$this->assertEquals( $this->generate_asset_resource_name( $data['id'] ), $this->asset->create_assets( [ $data ] )[0] );
 	}
 
-	public function test_create_operation_call_to_action_asset() {
+	public function test_create_assets_call_to_action_asset() {
 		$data = [
+			'id'         => self::TEMPORARY_ID,
 			'field_type' => AssetFieldType::CALL_TO_ACTION_SELECTION,
 			'content'    => CallToActionType::SHOP_NOW,
 		];
 
-		$operation       = $this->asset->create_operation( $data, self::TEMPORARY_ID );
-		$asset_operation = $operation->getAssetOperation();
-
-		$this->assertHasAssetCreateOperation( $asset_operation );
-		$this->assertEquals( CallToActionType::number( $data['content'] ), $asset_operation->getCreate()->getCallToActionAsset()->getCallToAction() );
+		$this->generate_asset_mutate_mock( 'create', $data );
+		$this->assertEquals( $this->generate_asset_resource_name( $data['id'] ), $this->asset->create_assets( [ $data ] )[0] );
 
 	}
 
-	public function test_create_operation_image_asset() {
+	public function test_create_assets_image_asset() {
 		$data = [
+			'id'         => self::TEMPORARY_ID,
 			'field_type' => AssetFieldType::SQUARE_MARKETING_IMAGE,
-			'content'    => 'https://example.com/image.jpg',
+			'content'    => 'image.jpg',
 		];
 
 		$this->wp->expects( $this->exactly( 1 ) )
@@ -132,19 +129,17 @@ class AdsAssetTest extends UnitTest {
 			->with( $data['content'] )
 			->willReturn(
 				[
-					'body' => $data['content'],
+					'body'    => $data['content'],
+					'headers' => new ArrayObject( [ 'content-length' => 12345 ] ),
 				]
 			);
 
-		$operation       = $this->asset->create_operation( $data, self::TEMPORARY_ID );
-		$asset_operation = $operation->getAssetOperation();
-
-		$this->assertHasAssetCreateOperation( $asset_operation );
-		$this->assertEquals( $data['content'], $asset_operation->getCreate()->getImageAsset()->getData() );
+			$this->generate_asset_mutate_mock( 'create', $data );
+			$this->assertEquals( $this->generate_asset_resource_name( $data['id'] ), $this->asset->create_assets( [ $data ] )[0] );
 
 	}
 
-	public function test_create_operation_image_asset_exception() {
+	public function test_create_assets_image_asset_exception() {
 		$data = [
 			'field_type' => AssetFieldType::SQUARE_MARKETING_IMAGE,
 			'content'    => 'https://incorrect_url.com/image.jpg',
@@ -159,10 +154,10 @@ class AdsAssetTest extends UnitTest {
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Incorrect image asset url.' );
-		$this->asset->create_operation( $data, self::TEMPORARY_ID );
+		$this->asset->create_assets( [ $data ], self::TEMPORARY_ID );
 	}
 
-	public function test_create_operation_invalid_asset_field_type() {
+	public function test_create_assets_invalid_asset_field_type() {
 		$data = [
 			'field_type' => 'invalid',
 			'content'    => CallToActionType::SHOP_NOW,
@@ -171,7 +166,7 @@ class AdsAssetTest extends UnitTest {
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Asset Field type not supported' );
 
-		$this->asset->create_operation( $data, self::TEMPORARY_ID );
+		$this->asset->create_assets( [ $data ], self::TEMPORARY_ID );
 
 	}
 

@@ -135,6 +135,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 * Returns a list of batches of assets.
 	 *
 	 * @param array $assets A list of assets.
+	 * @param int   $max_size The maximum size of the payload in bytes.
 	 *
 	 * @return array A list of batches of assets.
 	 * @throws Exception If the image url is not a valid url.
