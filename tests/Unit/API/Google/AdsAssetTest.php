@@ -171,66 +171,169 @@ class AdsAssetTest extends UnitTest {
 
 	}
 
-	public function test_create_batches_multiple() {
-		$data = [
-			[
-				'field_type' => AssetFieldType::SQUARE_MARKETING_IMAGE,
-				'content'    => 'https://test.com/image1.jpg',
-			],
-			[
-				'field_type' => AssetFieldType::MARKETING_IMAGE,
-				'content'    => 'https://test.com/image2.jpg',
-			],
-			[
-				'field_type' => AssetFieldType::MARKETING_IMAGE,
-				'content'    => 'https://test.com/image3.jpg',
-			],
-			[
-				'field_type' => AssetFieldType::MARKETING_IMAGE,
-				'content'    => 'https://test.com/image4.jpg',
-			],
-		];
+	public function test_create_one_batch() {
+		// Create asset with different sizes in MB
+		$data   = $this->get_data_batches( [ 3, 3, 4, 5 ] );
+		$assets = $data['assets'];
 
-		$this->wp->expects( $this->exactly( 4 ) )
+		$this->wp->expects( $this->exactly( count( $assets ) ) )
 			->method( 'wp_remote_get' )
-			->withConsecutive( [ $data[0]['content'] ], [ $data[1]['content'] ] )
+			->withConsecutive( ...$this->get_wp_remote_get_params( $assets ) )
 			->willReturnOnConsecutiveCalls(
-				[
-					'body'    => $data[0]['content'],
-					'headers' => new ArrayObject( [ 'content-length' => 25 * 1024 * 1024 ] ),
-				],
-				[
-					'body'    => $data[1]['content'],
-					'headers' => new ArrayObject( [ 'content-length' => 3 * 1024 * 1024 ] ),
-				],
-				[
-					'body'    => $data[2]['content'],
-					'headers' => new ArrayObject( [ 'content-length' => 6 * 1024 * 1024 ] ),
-				],
-				[
-					'body'    => $data[3]['content'],
-					'headers' => new ArrayObject( [ 'content-length' => 28 * 1024 * 1024 ] ),
-				],
+				...$data['wp_remote_responses']
 			);
 
-		$batches = $this->asset->create_batches( $data, self::MAX_PAYLOAD_BYTES );
+		$assert_batches = function ( $matcher, $operations ) use ( $assets ) {
+			$index = 0;
+			if ( $matcher->getInvocationCount() === 1 ) {
+				$this->assertEquals( 4, count( $operations ) );
+			} else {
+				throw new Exception( 'Unexpected number of batches' );
+			}
 
-		$this->assertEquals( 3, count( $batches ) );
+			$this->assert_asset_content( $operations, $assets, $index );
 
-		// First Batch
-		$this->assertEquals( 2, count( $batches[0] ) );
-		$this->assertEquals( $data[0]['content'], $batches[0][0]['content'] );
-		$this->assertEquals( $data[1]['content'], $batches[0][1]['content'] );
+		};
 
-		// Second Batch
-		$this->assertEquals( 1, count( $batches[1] ) );
-		$this->assertEquals( $data[2]['content'], $batches[1][0]['content'] );
-
-		// Third Batch
-		$this->assertEquals( 1, count( $batches[1] ) );
-		$this->assertEquals( $data[3]['content'], $batches[2][0]['content'] );
+		$matcher = $this->exactly( 1 );
+		$this->generate_asset_batch_mutate_mock( $matcher, $assert_batches );
+		$this->asset->create_assets( $assets );
 
 	}
+
+	public function test_create_batches_multiple() {
+		// Create asset with different sizes in MB
+		$data   = $this->get_data_batches( [ 3, 1, 4, 4 ] );
+		$assets = $data['assets'];
+
+		$this->wp->expects( $this->exactly( count( $assets ) ) )
+			->method( 'wp_remote_get' )
+			->withConsecutive( ...$this->get_wp_remote_get_params( $assets ) )
+			->willReturnOnConsecutiveCalls(
+				...$data['wp_remote_responses']
+			);
+
+		$assert_batches = function ( $matcher, $operations ) use ( $assets ) {
+			$index = 0;
+			if ( $matcher->getInvocationCount() === 1 ) {
+				$this->assertEquals( 2, count( $operations ) );
+			} elseif ( $matcher->getInvocationCount() === 2 ) {
+				$index = 2;
+				$this->assertEquals( 1, count( $operations ) );
+			} elseif ( $matcher->getInvocationCount() === 3 ) {
+				$index = 3;
+				$this->assertEquals( 1, count( $operations ) );
+			} else {
+				throw new Exception( 'Unexpected number of batches' );
+			}
+
+			$this->assert_asset_content( $operations, $assets, $index );
+
+		};
+
+		$matcher = $this->exactly( 3 );
+		$this->generate_asset_batch_mutate_mock( $matcher, $assert_batches );
+		$this->asset->create_assets( $assets, 5 * 1024 * 1024 );
+
+	}
+
+	/**
+	 * Asserts the content of the asset.
+	 *
+	 * @param array $operations The list of operations.
+	 * @param array $assets The list of assets.
+	 * @param int   $starting_index The starting index.
+	 */
+	protected function assert_asset_content( $operations, $assets, $starting_index = 0 ) {
+		foreach ( $operations as $operation ) {
+			$this->assertEquals( $assets[ $starting_index ]['content'], $this->get_asset_content( $operation->getAssetOperation()->getCreate(), $assets[ $starting_index ]['field_type'] ) );
+			$starting_index++;
+		}
+	}
+
+	/**
+	 * Returns expected params for wp_remote_get.
+	 *
+	 * @param array $assets The list of assets.
+	 *
+	 * @return array The list of params.
+	 */
+	protected function get_wp_remote_get_params( array $assets ) {
+		return array_reduce(
+			$assets,
+			function ( $carry, $item ) {
+				$carry[] = [ 'content' => $item['content'] ];
+				return $carry;
+			},
+			[]
+		);
+	}
+
+	/**
+	 * Returns a list of test assets.
+	 *
+	 * @param array $sizes The sizes of the responses.
+	 *
+	 * @return array The list of test assets.
+	 */
+	protected function get_data_batches( array $sizes ): array {
+		$assets = $this->get_test_assets( count( $sizes ) );
+
+		return [
+			'wp_remote_responses' => $this->get_wp_remote_responses( $sizes, $assets ),
+			'assets'              => $assets,
+		];
+	}
+
+
+	/**
+	 * Returns a list of wp_remote responses.
+	 *
+	 * @param array $sizes The sizes of the responses.
+	 * @param array $data  The data to use for the responses.
+	 *
+	 * @return array The list of responses.
+	 */
+	protected function get_wp_remote_responses( array $sizes, array $data ): array {
+		$responses = [];
+		$index     = 0;
+
+		foreach ( $sizes as $size ) {
+			$responses[] = [
+				'body'    => $data[ $index ]['content'],
+				'headers' => new ArrayObject( [ 'content-length' => $size * 1024 * 1024 ] ),
+			];
+
+			$index++;
+		}
+
+		return $responses;
+
+	}
+
+
+	/**
+	 * Returns a list of test assets.
+	 *
+	 * @param int $qty The number of assets to return.
+	 *
+	 * @return array The list of assets.
+	 */
+	protected function get_test_assets( int $qty = 4 ): array {
+		$assets = [];
+
+		for ( $i = 0; $i < $qty; $i++ ) {
+			$assets[] = [
+				'id'         => null,
+				'field_type' => AssetFieldType::SQUARE_MARKETING_IMAGE,
+				'content'    => 'image' . $i . '.jpg',
+			];
+		}
+
+		return $assets;
+	}
+
+
 
 
 }

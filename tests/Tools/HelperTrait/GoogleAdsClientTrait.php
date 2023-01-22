@@ -880,6 +880,32 @@ trait GoogleAdsClientTrait {
 
 	}
 
+	protected function generate_asset_batch_mutate_mock( $matcher, $asset_batches_callback ) {
+		$this->service_client->expects( $matcher )
+		->method( 'mutate' )
+		->willReturnCallback(
+			function( int $ads_id, array $operations ) use ( $matcher, $asset_batches_callback ) {
+				$responses = [];
+
+				$asset_batches_callback( $matcher, $operations );
+
+				foreach ( $operations as $operation ) {
+					$asset_result = $this->createMock( MutateAssetResult::class );
+					$asset_result->method( 'getResourceName' )->willReturn(
+						$operation->getAssetOperation()->getCreate()->getResourceName()
+					);
+					$responses[] = ( new MutateOperationResponse() )->setAssetResult( $asset_result );
+				}
+
+				return ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
+					$responses
+				);
+
+			}
+		);
+
+	}
+
 	/**
 	 * Returns the asset content for the given row.
 	 *
