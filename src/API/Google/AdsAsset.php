@@ -54,6 +54,13 @@ class AdsAsset implements OptionsAwareInterface {
 	protected const MAX_PAYLOAD_BYTES = 30 * 1024 * 1024;
 
 	/**
+	 * Maximum image size in bytes.
+	 *
+	 * @var int
+	 */
+	protected const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
+	/**
 	 * AdsAsset constructor.
 	 *
 	 * @param GoogleAdsClient $client The Google Ads client.
@@ -116,7 +123,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @param string $url The image url.
 	 *
 	 * @return array The image data.
-	 * @throws Exception If the image url is not a valid url.
+	 * @throws Exception If the image url is not a valid url or the image size is too large.
 	 */
 	protected function get_image_data( string $url ): array {
 		$image_data = $this->wp->wp_remote_get( $url );
@@ -125,9 +132,15 @@ class AdsAsset implements OptionsAwareInterface {
 			throw new Exception( 'Incorrect image asset url.' );
 		}
 
+		$size = $image_data['headers']->offsetGet( 'content-length' );
+
+		if ( $size > self::MAX_IMAGE_SIZE ) {
+			throw new Exception( 'Image size is too large.' );
+		}
+
 		return [
 			'body' => $image_data['body'],
-			'size' => $image_data['headers']->offsetGet( 'content-length' ),
+			'size' => $size,
 		];
 	}
 
@@ -138,9 +151,9 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @param int   $max_size The maximum size of the payload in bytes.
 	 *
 	 * @return array A list of batches of assets.
-	 * @throws Exception If the image url is not a valid url.
+	 * @throws Exception If the image url is not a valid url or if the field type is not supported.
 	 */
-	public function create_batches( array $assets, int $max_size = self::MAX_PAYLOAD_BYTES ): array {
+	protected function create_batches( array $assets, int $max_size = self::MAX_PAYLOAD_BYTES ): array {
 		$batch_size = 0;
 		$index      = 0;
 		$batches    = [];
@@ -169,18 +182,19 @@ class AdsAsset implements OptionsAwareInterface {
 	 * Creates the assets so they can be used in the asset groups.
 	 *
 	 * @param array $assets The assets to create.
+	 * @param int   $batch_size The maximum size of the payload in bytes.
 	 *
 	 * @return array A list of Asset's ARN created.
 	 *
 	 * @throws Exception If the asset type is not supported or if the image url is not a valid url.
 	 * @throws ApiException If any of the operations fail.
 	 */
-	public function create_assets( array $assets ): array {
+	public function create_assets( array $assets, int $batch_size = self::MAX_PAYLOAD_BYTES ): array {
 		if ( empty( $assets ) ) {
 			return [];
 		}
 
-		$batches = $this->create_batches( $assets );
+		$batches = $this->create_batches( $assets, $batch_size );
 		$arns    = [];
 
 		foreach ( $batches as $batch ) {
