@@ -165,9 +165,8 @@ class AdsAsset implements OptionsAwareInterface {
 				$batch_size   += $image_data['size'];
 
 				if ( $batch_size > $max_size ) {
-					$index++;
-					$batches[ $index ][] = $asset;
-					$batch_size          = $image_data['size'];
+					$batches[ ++$index ][] = $asset;
+					$batch_size            = $image_data['size'];
 					continue;
 				}
 			}
