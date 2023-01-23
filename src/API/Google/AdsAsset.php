@@ -201,6 +201,8 @@ class AdsAsset implements OptionsAwareInterface {
 			foreach ( $batch as $asset ) {
 				$operations[] = $this->create_operation( $asset, self::$temporary_id-- );
 			}
+
+			// If the mutate operation fails, it will throw an exception that will be caught by the caller.
 			$arns = [ ...$arns, ...$this->mutate( $operations ) ];
 		}
 

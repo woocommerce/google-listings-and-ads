@@ -215,14 +215,14 @@ class AdsAssetTest extends UnitTest {
 
 		$assert_batches = function ( $matcher, $operations ) use ( $assets ) {
 			$index = 0;
-			//First Batch
+			// First Batch
 			if ( $matcher->getInvocationCount() === 1 ) {
 				$this->assertEquals( 2, count( $operations ) );
-			//Second Batch	
+				// Second Batch
 			} elseif ( $matcher->getInvocationCount() === 2 ) {
 				$index = 2;
 				$this->assertEquals( 1, count( $operations ) );
-			//Third Batch
+				// Third Batch
 			} elseif ( $matcher->getInvocationCount() === 3 ) {
 				$index = 3;
 				$this->assertEquals( 1, count( $operations ) );
