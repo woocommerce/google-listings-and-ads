@@ -109,6 +109,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.3.8 - 2023-01-24 =
+* Fix - Product feed table footer rendering a zero when there are no products.
+
 = 2.3.7 - 2023-01-17 =
 * Tweak - Pre-select a default MC account.
 
