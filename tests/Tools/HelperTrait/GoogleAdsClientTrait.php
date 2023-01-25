@@ -53,6 +53,7 @@ use Google\Ads\GoogleAds\V11\Services\MutateOperationResponse;
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
 use Google\Ads\GoogleAds\V11\Services\AssetOperation;
 use Google\Ads\GoogleAds\V11\Services\MutateAssetGroupResult;
+use Google\Ads\GoogleAds\V11\Services\MutateAssetResult;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
@@ -340,6 +341,15 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_asset_group_resource_name( int $asset_group_id ) {
 		return ResourceNames::forAssetGroup( $this->ads_id, $asset_group_id );
+	}
+
+	/**
+	 * Generates an asset resource name.
+	 *
+	 * @param int $asset_id
+	 */
+	protected function generate_asset_resource_name( int $asset_id ) {
+		return ResourceNames::forAsset( $this->ads_id, $asset_id );
 	}
 
 	/**
@@ -826,6 +836,104 @@ trait GoogleAdsClientTrait {
 		$asset = $this->generate_asset( $data );
 		$asset->setId( $data['id'] );
 		return ( new GoogleAdsRow() )->setAsset( $asset );
+	}
+
+	/**
+	 * Generate a mocked mutate asset response.
+	 * Asserts that set of operations contains an operation with the expected type and content.
+	 *
+	 * @param string $type   Mutation type we are expecting (create/update/remove).
+	 * @param array  $asset  The asset to see in the mutate result.
+	 */
+	protected function generate_asset_mutate_mock( string $type, array $asset ) {
+		$asset_result = $this->createMock( MutateAssetResult::class );
+		$asset_result->method( 'getResourceName' )->willReturn(
+			$this->generate_asset_resource_name( $asset['id'] )
+		);
+
+		$response = ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
+			[
+				( new MutateOperationResponse() )->setAssetResult( $asset_result ),
+			]
+		);
+
+		$this->service_client->expects( $this->once() )
+			->method( 'mutate' )
+			->willReturnCallback(
+				function( int $ads_id, array $operations ) use ( $type, $response, $asset ) {
+					// Assert that the asset group operation is the right type.
+					$operations_names = [];
+					foreach ( $operations as $operation ) {
+						$operations_names[] = $operation->getOperation();
+						if ( 'asset_operation' === $operation->getOperation() ) {
+							$asset_operation = $operation->getAssetOperation();
+							$this->assertEquals( $type, $asset_operation->getOperation() );
+							$this->assertEquals( $asset['content'], $this->get_asset_content( $asset_operation->getCreate(), $asset['field_type'] ) );
+						}
+					}
+
+					$this->assertContains( 'asset_operation', $operations_names );
+
+					return $response;
+				}
+			);
+
+	}
+
+	protected function generate_asset_batch_mutate_mock( $matcher, $asset_batches_callback ) {
+		$this->service_client->expects( $matcher )
+		->method( 'mutate' )
+		->willReturnCallback(
+			function( int $ads_id, array $operations ) use ( $matcher, $asset_batches_callback ) {
+				$responses = [];
+
+				$asset_batches_callback( $matcher, $operations );
+
+				foreach ( $operations as $operation ) {
+					$asset_result = $this->createMock( MutateAssetResult::class );
+					$asset_result->method( 'getResourceName' )->willReturn(
+						$operation->getAssetOperation()->getCreate()->getResourceName()
+					);
+					$responses[] = ( new MutateOperationResponse() )->setAssetResult( $asset_result );
+				}
+
+				return ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
+					$responses
+				);
+
+			}
+		);
+
+	}
+
+	/**
+	 * Returns the asset content for the given row.
+	 *
+	 * @param Asset  $asset Data row returned from a query request.
+	 * @param string $field_type The field type of the asset.
+	 *
+	 * @return string The asset content.
+	 */
+	protected function get_asset_content( Asset $asset, string $field_type ): string {
+		switch ( $field_type ) {
+			case AssetFieldType::LOGO:
+			case AssetFieldType::MARKETING_IMAGE:
+			case AssetFieldType::SQUARE_MARKETING_IMAGE:
+				return $asset->getName();
+			case AssetFieldType::HEADLINE:
+			case AssetFieldType::LONG_HEADLINE:
+			case AssetFieldType::DESCRIPTION:
+			case AssetFieldType::BUSINESS_NAME:
+				return $asset->getTextAsset()->getText();
+			case AssetFieldType::CALL_TO_ACTION_SELECTION:
+				// When CallToActionType::UNSPECIFIED is returned, does not have a CallToActionAsset.
+				if ( ! $asset->getCallToActionAsset() ) {
+					return CallToActionType::UNSPECIFIED;
+				}
+				return CallToActionType::label( $asset->getCallToActionAsset()->getCallToAction() );
+			default:
+				return '';
+		}
 	}
 
 

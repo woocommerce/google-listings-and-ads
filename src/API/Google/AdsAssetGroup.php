@@ -367,11 +367,18 @@ class AdsAssetGroup implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			$errors = $this->get_api_exception_errors( $e );
+			if ( $e->getCode() === 413 ) {
+				$errors = [ 'Request entity too large' ];
+				$code   = $e->getCode();
+			} else {
+				$errors = $this->get_api_exception_errors( $e );
+				$code   = $this->map_grpc_code_to_http_status_code( $e );
+			}
+
 			throw new ExceptionWithResponseData(
 			/* translators: %s Error message */
 				sprintf( __( 'Error editing asset group: %s', 'google-listings-and-ads' ), reset( $errors ) ),
-				$this->map_grpc_code_to_http_status_code( $e ),
+				$code,
 				null,
 				[
 					'errors' => $errors,

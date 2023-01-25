@@ -206,6 +206,38 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get assets to be deleted.
+	 *
+	 * @param array $assets A list of assets.
+	 *
+	 * @return array The assets to be deleted.
+	 */
+	public function get_assets_to_be_deleted( array $assets ): array {
+		return array_filter(
+			$assets,
+			function( $asset ) {
+				return ! empty( $asset['id'] );
+			}
+		);
+	}
+
+	/**
+	 * Get assets to be created.
+	 *
+	 * @param array $assets A list of assets.
+	 *
+	 * @return array The assets to be created.
+	 */
+	public function get_assets_to_be_created( array $assets ): array {
+		return array_filter(
+			$assets,
+			function( $asset ) {
+				return ! empty( $asset['content'] );
+			}
+		);
+	}
+
+	/**
 	 * Edit assets group assets.
 	 *
 	 * @param int   $asset_group_id The asset group id.
@@ -219,26 +251,25 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			return [];
 		}
 
-		$assets_operations                    = [];
 		$asset_group_assets_operations        = [];
 		$delete_asset_group_assets_operations = [];
+		$assets_for_creation                  = $this->get_assets_to_be_created( $assets );
 
-		foreach ( $assets as $asset ) {
+		$asset_arns   = $this->asset->create_assets( $assets_for_creation );
+		$total_assets = count( $assets_for_creation );
 
-			// If content exists, create asset and asset group asset.
-			if ( ! empty( $asset['content'] ) ) {
-				$assets_operations[]             = $this->asset->create_operation( $asset, self::$temporary_id );
-				$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $asset['field_type'], self::$temporary_id-- );
-			}
+		// The asset mutation operation results (ARNs) are returned in the same order as the operations are specified.
+		// See: https://youtu.be/9KaVjqW5tVM?t=103
+		for ( $i = 0; $i < $total_assets; $i++ ) {
+			$asset_group_assets_operations[] = $this->create_operation( $asset_group_id, $assets_for_creation[ $i ]['field_type'], $asset_arns[ $i ] );
+		}
 
-			// As Assets are inmmutable, we delete the old link between the asset and the asset group if exists.
-			if ( ! empty( $asset['id'] ) ) {
-				$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
-			}
+		foreach ( $this->get_assets_to_be_deleted( $assets ) as $asset ) {
+			$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
 		}
 
 		// Delete asset group assets operations must be executed last so we are never under the minimum quantity.
-		return array_merge( $assets_operations, $asset_group_assets_operations, $delete_asset_group_assets_operations );
+		return array_merge( $asset_group_assets_operations, $delete_asset_group_assets_operations );
 
 	}
 
@@ -248,15 +279,15 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 *
 	 * @param int    $asset_group_id The ID of the asset group.
 	 * @param string $asset_field_type The field type of the asset.
-	 * @param int    $asset_id The ID of the asset.
+	 * @param string $asset_arn The the asset ARN.
 	 *
 	 * @return MutateOperation The mutate create operation for the asset group asset.
 	 */
-	protected function create_operation( int $asset_group_id, string $asset_field_type, int $asset_id ): MutateOperation {
+	protected function create_operation( int $asset_group_id, string $asset_field_type, string $asset_arn ): MutateOperation {
 		$operation             = new AssetGroupAssetOperation();
 		$new_asset_group_asset = new AssetGroupAsset(
 			[
-				'asset'       => ResourceNames::forAsset( $this->options->get_ads_id(), $asset_id ),
+				'asset'       => $asset_arn,
 				'asset_group' => ResourceNames::forAssetGroup( $this->options->get_ads_id(), $asset_group_id ),
 				'field_type'  => AssetFieldType::number( $asset_field_type ),
 			]

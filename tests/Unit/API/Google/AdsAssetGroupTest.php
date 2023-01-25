@@ -179,6 +179,28 @@ class AdsAssetGroupTest extends UnitTest {
 		}
 	}
 
+	public function test_edit_asset_group_request_too_long() {
+		$asset_group_data = [
+			'path2' => 123456,
+		];
+
+		$this->generate_mutate_mock_exception( new ApiException( 'Request entity too large', 413, 'UNRECOGNIZED_STATUS' ) );
+
+		try {
+			$this->asset_group->edit_asset_group( self::TEST_ASSET_GROUP_ID, $asset_group_data );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals(
+				[
+					'message' => 'Error editing asset group: Request entity too large',
+					'errors'  => [ 'Request entity too large' ],
+					'id'      => self::TEST_ASSET_GROUP_ID,
+				],
+				$e->get_response_data( true )
+			);
+			$this->assertEquals( 413, $e->getCode() );
+		}
+	}
+
 	public function test_create_asset_group() {
 		$this->generate_asset_group_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
