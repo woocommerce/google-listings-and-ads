@@ -16,6 +16,7 @@ use Google\Ads\GoogleAds\V11\Common\TextAsset;
 use Google\Ads\GoogleAds\V11\Common\ImageAsset;
 use Google\Ads\GoogleAds\V11\Common\CallToActionAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Google\ApiCore\ApiException;
 use Exception;
 
 /**
@@ -44,7 +45,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @var GoogleAdsClient
 	 */
-	protected $client;
+	protected GoogleAdsClient $client;
 
 	/**
 	 * Maximum payload size in bytes.
@@ -58,7 +59,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 *
 	 * @var int
 	 */
-	protected const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+	protected const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 	/**
 	 * AdsAsset constructor.
@@ -129,12 +130,12 @@ class AdsAsset implements OptionsAwareInterface {
 		$image_data = $this->wp->wp_remote_get( $url );
 
 		if ( is_wp_error( $image_data ) || empty( $image_data['body'] ) ) {
-			throw new Exception( 'Incorrect image asset url.' );
+			throw new Exception( sprintf( 'There was a problem loading the url: %s', $url ) );
 		}
 
 		$size = $image_data['headers']->offsetGet( 'content-length' );
 
-		if ( $size > self::MAX_IMAGE_SIZE ) {
+		if ( $size > self::MAX_IMAGE_SIZE_BYTES ) {
 			throw new Exception( 'Image size is too large.' );
 		}
 
@@ -151,7 +152,7 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @param int   $max_size The maximum size of the payload in bytes.
 	 *
 	 * @return array A list of batches of assets.
-	 * @throws Exception If the image url is not a valid url or if the field type is not supported.
+	 * @throws Exception If the image url is not a valid url, if the field type is not supported or the image size is too big.
 	 */
 	protected function create_batches( array $assets, int $max_size = self::MAX_PAYLOAD_BYTES ): array {
 		$batch_size = 0;

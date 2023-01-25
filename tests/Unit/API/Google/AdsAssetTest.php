@@ -154,7 +154,7 @@ class AdsAssetTest extends UnitTest {
 			);
 
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Incorrect image asset url.' );
+		$this->expectExceptionMessage( sprintf( 'There was a problem loading the url: %s', $data['content'] ) );
 		$this->asset->create_assets( [ $data ], self::TEMPORARY_ID );
 	}
 
