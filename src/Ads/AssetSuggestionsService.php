@@ -66,19 +66,22 @@ class AssetSuggestionsService implements Service {
 	 * Image requirements.
 	 */
 	protected const IMAGE_REQUIREMENTS = [
-		self::MARKETING_IMAGE_KEY        => [
+		self::MARKETING_IMAGE_KEY          => [
 			'minimum'     => [ 600, 314 ],
 			'recommended' => [ 1200, 628 ],
 		],
-		self::SQUARE_MARKETING_IMAGE_KEY => [
+		self::SQUARE_MARKETING_IMAGE_KEY   => [
 			'minimum'     => [ 300, 300 ],
 			'recommended' => [ 1200, 1200 ],
 		],
-		self::LOGO_IMAGE_KEY             => [
+		self::PORTRAIT_MARKETING_IMAGE_KEY => [
+			'minimum'     => [ 480, 600 ],
+			'recommended' => [ 960, 1200 ],
+		],
+		self::LOGO_IMAGE_KEY               => [
 			'minimum'     => [ 128, 128 ],
 			'recommended' => [ 1200, 1200 ],
 		],
-
 	];
 
 	/**
@@ -94,6 +97,11 @@ class AssetSuggestionsService implements Service {
 	 * The subsize key for the marketing image.
 	 */
 	protected const MARKETING_IMAGE_KEY = 'gla_marketing_asset';
+
+	/**
+	 * The subsize key for the portrait marketing image.
+	 */
+	protected const PORTRAIT_MARKETING_IMAGE_KEY = 'gla_portrait_marketing_asset';
 	/**
 	 * The subsize key for the logo image.
 	 */
@@ -286,6 +294,7 @@ class AssetSuggestionsService implements Service {
 			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
 			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
 			AssetFieldType::MARKETING_IMAGE          => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::PORTRAIT_MARKETING_IMAGE => $marketing_images [ self::PORTRAIT_MARKETING_IMAGE_KEY ] ?? [],
 			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
 			'display_url_path'                       => [ $post->post_name ],
 			'final_url'                              => get_permalink( $id ),
@@ -333,6 +342,7 @@ class AssetSuggestionsService implements Service {
 			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
 			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
 			AssetFieldType::MARKETING_IMAGE          => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::PORTRAIT_MARKETING_IMAGE => $marketing_images [ self::PORTRAIT_MARKETING_IMAGE_KEY ] ?? [],
 			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
 			'display_url_path'                       => [ $term->slug ],
 			'final_url'                              => get_term_link( $term->term_id ),
@@ -495,7 +505,7 @@ class AssetSuggestionsService implements Service {
 	 *
 	 * @return array A list of attachments urls.
 	 */
-	protected function get_url_attachments_by_ids( array $ids, array $size_keys = [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY ], $maximum_images = self::DEFAULT_MAXIMUM_MARKETING_IMAGES ): array {
+	protected function get_url_attachments_by_ids( array $ids, array $size_keys = [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY, self::PORTRAIT_MARKETING_IMAGE_KEY ], $maximum_images = self::DEFAULT_MAXIMUM_MARKETING_IMAGES ): array {
 		$ids = $this->prepare_image_ids( $ids, $maximum_images );
 
 		$marketing_images = [];
