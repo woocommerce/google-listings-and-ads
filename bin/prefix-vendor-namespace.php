@@ -127,7 +127,7 @@ foreach ( $packages as $package ) {
  * @param bool   $prefix_uses      Whether to prefix uses of a namespace.
  */
 function process_file( $file, $package, $prefix_namespace = true, $prefix_uses = false ) {
-	global $direct_replacements, $namespace_prefix;
+	global $direct_replacements;
 
 	$contents     = file_get_contents( $file );
 	$content_hash = md5( $contents );
