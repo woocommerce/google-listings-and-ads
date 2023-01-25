@@ -236,6 +236,7 @@ class AssetGroupController extends BaseController {
 					'properties' => [
 						'square_marketing_image'   => $this->get_schema_field_type_asset(),
 						'marketing_image'          => $this->get_schema_field_type_asset(),
+						'portrait_marketing_image' => $this->get_schema_field_type_asset(),
 						'logo'                     => $this->get_schema_field_type_asset(),
 						'business_name'            => $this->get_schema_field_type_asset(),
 						'headline'                 => $this->get_schema_field_type_asset(),
@@ -293,6 +294,7 @@ class AssetGroupController extends BaseController {
 						AssetFieldType::SQUARE_MARKETING_IMAGE,
 						AssetFieldType::LOGO,
 						AssetFieldType::CALL_TO_ACTION_SELECTION,
+						AssetFieldType::PORTRAIT_MARKETING_IMAGE,
 					],
 				],
 			],
