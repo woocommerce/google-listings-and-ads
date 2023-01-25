@@ -220,7 +220,7 @@ function prefix_uses( &$contents, $package ) {
 
 	// Replace direct class extends.
 	$contents = preg_replace(
-		"#(\s*)(class .* extends)\s*(\\\\{$quoted}\\\\[a-zA-Z0-9_]+\s*\{?)$#m",
+		"#(\s*)([class|interface] .* extends)\s*(\\\\{$quoted}\\\\[a-zA-Z0-9_]+\s*\{?)$#m",
 		"\$1\$2 \\\\{$namespace_prefix}\$3",
 		$contents
 	);
