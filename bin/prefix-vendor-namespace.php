@@ -122,7 +122,7 @@ foreach ( $packages as $package ) {
  * @since x.x.x
  *
  * @param string $file             File name.
- * @param string $package          Package prefix configuration.
+ * @param array  $package          Package prefix configuration.
  * @param bool   $prefix_namespace Whether to prefix namespaces or not.
  * @param bool   $prefix_uses      Whether to prefix uses of a namespace.
  */
@@ -158,7 +158,7 @@ function process_file( $file, $package, $prefix_namespace = true, $prefix_uses =
  * @since x.x.x
  *
  * @param string $contents File contents.
- * @param string $package  Package prefix configuration.
+ * @param array  $package  Package prefix configuration.
  */
 function prefix_namespace( &$contents, $package ) {
 	global $namespace_prefix;
@@ -198,7 +198,7 @@ function prefix_namespace( &$contents, $package ) {
  * @since x.x.x
  *
  * @param string $contents File contents.
- * @param string $package  Package prefix configuration.
+ * @param array  $package  Package prefix configuration.
  */
 function prefix_uses( &$contents, $package ) {
 	global $namespace_prefix;
