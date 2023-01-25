@@ -104,6 +104,7 @@ class AdsAsset implements OptionsAwareInterface {
 			case AssetFieldType::LOGO:
 			case AssetFieldType::MARKETING_IMAGE:
 			case AssetFieldType::SQUARE_MARKETING_IMAGE:
+			case AssetFieldType::PORTRAIT_MARKETING_IMAGE:
 				return AssetType::IMAGE;
 			case AssetFieldType::CALL_TO_ACTION_SELECTION:
 				return AssetType::CALL_TO_ACTION;
