@@ -213,11 +213,13 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @return array The assets to be deleted.
 	 */
 	public function get_assets_to_be_deleted( array $assets ): array {
-		return array_filter(
-			$assets,
-			function( $asset ) {
-				return ! empty( $asset['id'] );
-			}
+		return array_values(
+			array_filter(
+				$assets,
+				function( $asset ) {
+					return ! empty( $asset['id'] );
+				}
+			)
 		);
 	}
 
@@ -229,11 +231,13 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @return array The assets to be created.
 	 */
 	public function get_assets_to_be_created( array $assets ): array {
-		return array_filter(
-			$assets,
-			function( $asset ) {
-				return ! empty( $asset['content'] );
-			}
+		return array_values(
+			array_filter(
+				$assets,
+				function( $asset ) {
+					return ! empty( $asset['content'] );
+				}
+			)
 		);
 	}
 
