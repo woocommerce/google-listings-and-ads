@@ -2,24 +2,75 @@
 <?php
 declare( strict_types=1 );
 
-// phpcs:ignoreFile
+// Disable phpcs rules which are not relevant to a dev script.
+// phpcs:disable WordPress.Security.EscapeOutput
+// phpcs:disable WordPress.WP.AlternativeFunctions
 
-$replacements  = [
-	'League\\Container' => 'league/container',
-	'League\\ISO3166'   => 'league/iso3166',
-	'Google\\Auth'      => 'google/auth',
-	'GuzzleHttp'        => 'guzzlehttp',
+/*
+ * List of packages to prefix the namespace.
+ *
+ * namespace        = Namespace to search for.
+ * extra_namespaces = Additional namespaces to search and prefix (optional).
+ * package          = Full name of package in the vendor folder.
+ * strict           = When true it will search matching the full namespace, false will allow matching of a namespace prefix.
+ * exclude_autoload = Array of autoload files which are not required to be included in the main composer file (optional).
+ */
+$packages = [
+	[
+		'namespace' => 'League\\Container',
+		'package'   => 'league/container',
+		'strict'    => false,
+	],
+	[
+		'namespace' => 'League\\ISO3166',
+		'package'   => 'league/iso3166',
+		'strict'    => false,
+	],
+	[
+		'namespace'        => 'Google',
+		'extra_namespaces' => [
+			'Google\\AuthHandler',
+			'Google\\AccessToken',
+			'Google\\Http',
+			'Google\\Service',
+			'Google\\Task',
+			'Google\\Utils',
+		],
+		'package'          => 'google/apiclient',
+		'strict'           => true,
+		'exclude_autoload' => [ 'src/aliases.php' ],
+	],
+	[
+		'namespace'        => 'Google\\Service',
+		'package'          => 'google/apiclient-services',
+		'strict'           => false,
+		'exclude_autoload' => [ 'autoload.php' ],
+	],
+	[
+		'namespace' => 'Google\\Auth',
+		'package'   => 'google/auth',
+		'strict'    => false,
+	],
+	[
+		'namespace' => 'GuzzleHttp',
+		'package'   => 'guzzlehttp',
+		'strict'    => false,
+	],
 ];
-$vendor_dir    = dirname( __DIR__ ) . '/vendor';
-$new_namespace = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';
+
+$vendor_dir       = dirname( __DIR__ ) . '/vendor';
+$namespace_prefix = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';
 
 // Vendor libraries which are dependent on a library we are prefixing.
 $dependencies = [
-	'google/auth' => [
+	'google/apiclient' => [
+		'google/apiclient-services',
+	],
+	'google/auth'      => [
 		'google/apiclient',
 		'google/gax',
 	],
-	'guzzlehttp'  => [
+	'guzzlehttp'       => [
 		'google/apiclient',
 		'google/auth',
 		'google/gax',
@@ -45,92 +96,165 @@ $direct_replacements = [
 // Read our composer.json file into an array.
 $composer_json = json_decode( file_get_contents( dirname( __DIR__ ) . '/composer.json' ), true );
 
-// Flag modified files that maybe should have been modified more.
-$file_notices = [];
-
-foreach ( $replacements as $namespace => $path ) {
-	$files = find_files( $path );
-
-	$quoted = preg_quote( $namespace, '#' );
-	foreach ( $files as $file ) {
-		$contents = file_get_contents( $file );
-
-		// Check to see whether a replacement has already run for this namespace. Just in case.
-		if ( false !== strpos( $contents, "{$new_namespace}\\{$namespace}" ) ) {
-			continue 2;
-		}
-
-		$namespace_change = 0;
-		$uses_change      = 0;
-
-		$contents =	preg_replace(
-			"#^(\s*)(namespace)\s*({$quoted}[\\\\|;])#m",
-			"\$1\$2 {$new_namespace}\\\\\$3",
-			$contents,
-			-1,
-			$namespace_change
-		);
-
-		$contents =	preg_replace(
-			"#^(\s*)(use)\s*({$quoted}\\\\)#m",
-			"\$1\$2 {$new_namespace}\\\\\$3",
-			$contents,
-			-1,
-			$uses_change
-		);
-
-		if ( ! empty( $direct_replacements[ $path ] ) ) {
-			foreach ( $direct_replacements[ $path ] as $replace ) {
-				$direct_change = 0;
-				$replace       = preg_quote( $replace, '#' );
-				$contents      = preg_replace(
-					"#({$replace})#m",
-					"{$new_namespace}\\\\\$1",
-					$contents,
-					-1,
-					$direct_change
-				);
-				if ( $direct_change ) {
-					$uses_change += $direct_change;
-				}
-			}
-		}
-		if ( ! $namespace_change && $uses_change ) {
-			$file_notices[] = $file;
-		}
-
-		file_put_contents( $file, $contents );
+foreach ( $packages as $package ) {
+	// Process namespaces and uses in all package files.
+	foreach ( find_files( $package['package'] ) as $file ) {
+		process_file( $file, $package, true, true );
 	}
 
-	// Update the namespace in the composer.json files, recursively finding all files named explicitly "composer.json".
-	$composer_files = get_dir_contents(
-		"{$vendor_dir}/{$path}",
-		'/' . preg_quote( DIRECTORY_SEPARATOR, '/') . 'composer.json$/'
-	);
+	// Process only uses in dependent package files.
+	foreach ( find_dependent_files( $package['package'] ) as $file ) {
+		process_file( $file, $package, false, true );
+	}
 
-	array_map(
-		function( $file ) use ( $namespace, $new_namespace ) {
-			return replace_in_json_file( $file, $namespace, $new_namespace );
-		},
-		$composer_files
-	);
-
-	// Update the namespace in vendor/composer/installed.json
-	// This file is used to generate the classmaps.
-	replace_in_json_file( "{$vendor_dir}/composer/installed.json", $namespace, $new_namespace );
-
-	// Remove file autoloads from vendor/composer/installed.json
-	remove_file_autoloads(
+	// Prefix autoloads and remove file autoloads from vendor/composer/installed.json
+	update_autoloads(
 		"{$vendor_dir}/composer/installed.json",
 		$composer_json['autoload']['files'] ?? [],
-		$path
+		$package
 	);
 }
 
-if ( count( $file_notices ) ) {
-	printf(
-		'Several files were modified without changes to namespace: %s' . PHP_EOL,
-		implode('; ', $file_notices)
+
+/**
+ * Process prefixing in a specific file.
+ *
+ * @since x.x.x
+ *
+ * @param string $file             File name.
+ * @param array  $package          Package prefix configuration.
+ * @param bool   $prefix_namespace Whether to prefix namespaces or not.
+ * @param bool   $prefix_uses      Whether to prefix uses of a namespace.
+ */
+function process_file( $file, $package, $prefix_namespace = true, $prefix_uses = false ) {
+	global $direct_replacements;
+
+	$contents     = file_get_contents( $file );
+	$content_hash = md5( $contents );
+
+	if ( $prefix_namespace ) {
+		prefix_namespace( $contents, $package );
+	}
+
+	if ( $prefix_uses ) {
+		prefix_uses( $contents, $package );
+
+		if ( ! empty( $direct_replacements[ $package['package'] ] ) ) {
+			foreach ( $direct_replacements[ $package['package'] ] as $search ) {
+				prefix_string( $contents, $search );
+			}
+		}
+	}
+
+	// Only overwrite file if the contents have changed.
+	if ( $content_hash !== md5( $contents ) ) {
+		file_put_contents( $file, $contents );
+	}
+}
+
+/**
+ * Prefix the namespace.
+ *
+ * @since x.x.x
+ *
+ * @param string $contents File contents.
+ * @param array  $package  Package prefix configuration.
+ */
+function prefix_namespace( &$contents, $package ) {
+	global $namespace_prefix;
+
+	$quoted = preg_quote( $package['namespace'], '#' );
+
+	// Match only the full namespace when strict is enabled.
+	if ( $package['strict'] ) {
+		$regex = "#^(\s*)(namespace)\s*({$quoted};)#m";
+	} else {
+		$regex = "#^(\s*)(namespace)\s*({$quoted}[\\\\|;])#m";
+	}
+
+	$contents = preg_replace(
+		$regex,
+		"\$1\$2 {$namespace_prefix}\\\\\$3",
+		$contents
+	);
+
+	if ( $package['strict'] && ! empty( $package['extra_namespaces'] ) ) {
+		foreach ( $package['extra_namespaces'] as $namespace ) {
+			prefix_namespace(
+				$contents,
+				[
+					'namespace' => $namespace,
+					'package'   => $package['package'],
+					'strict'    => true,
+				]
+			);
+		}
+	}
+}
+
+/**
+ * Prefix any import statements and direct uses of namespace.
+ *
+ * @since x.x.x
+ *
+ * @param string $contents File contents.
+ * @param array  $package  Package prefix configuration.
+ */
+function prefix_uses( &$contents, $package ) {
+	global $namespace_prefix;
+
+	$quoted = preg_quote( $package['namespace'], '#' );
+
+	// Match only the full namespace when strict is enabled.
+	if ( $package['strict'] ) {
+		$regex = "#^(\s*)(use)\s*({$quoted}\\\\[a-zA-Z0-9_]+[;| ])#m";
+	} else {
+		$regex = "#^(\s*)(use)\s*({$quoted}\\\\)#m";
+	}
+
+	$contents = preg_replace(
+		$regex,
+		"\$1\$2 {$namespace_prefix}\\\\\$3",
+		$contents
+	);
+
+	// Replace direct class extends.
+	$contents = preg_replace(
+		"#(\s*)([class|interface] .* extends)\s*(\\\\{$quoted}\\\\[a-zA-Z0-9_]+\s*\{?)$#m",
+		"\$1\$2 \\\\{$namespace_prefix}\$3",
+		$contents
+	);
+
+	if ( $package['strict'] && ! empty( $package['extra_namespaces'] ) ) {
+		foreach ( $package['extra_namespaces'] as $namespace ) {
+			prefix_uses(
+				$contents,
+				[
+					'namespace' => $namespace,
+					'package'   => $package['package'],
+					'strict'    => true,
+				]
+			);
+		}
+	}
+}
+
+/**
+ * Prefix any direct string.
+ *
+ * @since x.x.x
+ *
+ * @param string $contents File contents.
+ * @param string $search   String to search for.
+ */
+function prefix_string( &$contents, $search ) {
+	global $namespace_prefix;
+
+	$quoted   = preg_quote( $search, '#' );
+	$contents = preg_replace(
+		"#({$quoted})#m",
+		"{$namespace_prefix}\\\\\$1",
+		$contents
 	);
 }
 
@@ -154,8 +278,8 @@ function get_dir_contents( $path, $match ) {
 		exit( 1 );
 	}
 
-	$rii = new RecursiveIteratorIterator( $rdi );
-	$rri = new RegexIterator( $rii, $match );
+	$rii   = new RecursiveIteratorIterator( $rdi );
+	$rri   = new RegexIterator( $rii, $match );
 	$files = [];
 	foreach ( $rri as $file ) {
 		$files[] = $file->getPathname();
@@ -165,52 +289,41 @@ function get_dir_contents( $path, $match ) {
 }
 
 /**
- * Find a list of PHP files for this package, and append a list of dependent
- * files that use the package.
+ * Find a list of PHP files for this package.
  *
  * @since 1.1.0
  *
- * @param string $path Package path
- * @return array Merged list of files
+ * @param string $package Package name.
+ * @return array List of files.
  */
-function find_files( string $path ): array {
-	global $vendor_dir, $dependencies;
+function find_files( string $package ): array {
+	global $vendor_dir;
 
-	$files = get_dir_contents( "{$vendor_dir}/{$path}", '/\.php$/i' );
-
-	if ( ! empty( $dependencies[ $path ] ) ) {
-		foreach ( $dependencies[ $path ] as $dependency ) {
-			$dependent_files = get_dir_contents( "{$vendor_dir}/{$dependency}", '/\.php$/i' );
-			$files = array_merge( $files, $dependent_files );
-		}
-	}
-
-	return $files;
+	return get_dir_contents( "{$vendor_dir}/{$package}", '/\.php$/i' );
 }
 
 /**
- * Replace namespace strings with a JSON file.
+ * Find a list of dependent PHP files for this package.
  *
- * @since 1.2.0
+ * @since x.x.x
  *
- * @param string $file          Filename to replace the strings
- * @param string $namespace     Namespace to search for
- * @param string $new_namespace Namespace to replace with
+ * @param string $package Package name.
+ * @return array Merged list of files.
  */
-function replace_in_json_file( string $file, string $namespace, string $new_namespace ) {
-	if ( ! file_exists( $file ) ) {
-		return;
+function find_dependent_files( string $package ): array {
+	global $vendor_dir, $dependencies;
+
+	if ( empty( $dependencies[ $package ] ) ) {
+		return [];
 	}
 
-	$contents = file_get_contents( $file );
-	file_put_contents(
-		$file,
-		str_replace(
-			addslashes( "{$namespace}\\" ),
-			addslashes( "{$new_namespace}\\{$namespace}\\" ),
-			$contents
-		)
-	);
+	$files = [];
+	foreach ( $dependencies[ $package ] as $dependency ) {
+		$dependent_files = get_dir_contents( "{$vendor_dir}/{$dependency}", '/\.php$/i' );
+		$files           = array_merge( $files, $dependent_files );
+	}
+
+	return $files;
 }
 
 /**
@@ -219,13 +332,17 @@ function replace_in_json_file( string $file, string $namespace, string $new_name
  * using the new namespace. Autoloading the files from our main composer.json ensures we use a unique hash so
  * we don't conflict with other extensions autoloading the same files.
  *
- * @since 1.4.2
+ * The second task of this function is to prefix any autoloads with our custom namespace prefix.
+ *
+ * @since x.x.x
  *
  * @param string $file              Generated file containing information about all the installed packages
  * @param array  $composer_autoload List of autoloaded files in composer.json
- * @param string $package_name      Name of the package we are replacing
+ * @param array  $package           Package prefix configuration.
  */
-function remove_file_autoloads( string $file, array $composer_autoload, string $package_name ) {
+function update_autoloads( string $file, array $composer_autoload, array $package ) {
+	global $namespace_prefix;
+
 	if ( ! file_exists( $file ) ) {
 		return;
 	}
@@ -236,32 +353,59 @@ function remove_file_autoloads( string $file, array $composer_autoload, string $
 	}
 
 	$modified = false;
-	foreach ( $json['packages'] as $key => $package ) {
-		if ( 0 !== strpos( $package['name'], $package_name ) ) {
+	foreach ( $json['packages'] as $key => $dep_package ) {
+
+		// If strict confirm that full package name matches.
+		if ( $package['strict'] && $dep_package['name'] !== $package['package'] ) {
 			continue;
 		}
 
-		if ( empty( $package['autoload']['files'] ) ) {
+		// Check if start of package name matches.
+		if ( 0 !== stripos( $dep_package['name'], $package['package'] ) ) {
 			continue;
 		}
 
-		foreach ( $package['autoload']['files'] as $autoload_file ) {
+		if ( empty( $dep_package['autoload'] ) ) {
+			continue;
+		}
 
-			// Confirm we already include this autoload in the main composer file.
-			$filename = "vendor/{$package['name']}/{$autoload_file}";
-			if ( in_array( $filename, $composer_autoload, true ) ) {
-				continue;
+		// Remove any file autoloads and ensure they are included in the main composer file
+		if ( ! empty( $dep_package['autoload']['files'] ) ) {
+			$modified = true;
+
+			foreach ( $dep_package['autoload']['files'] as $autoload_file ) {
+
+				// Confirm we already include this autoload in the main composer file.
+				$filename = "vendor/{$dep_package['name']}/{$autoload_file}";
+				if ( in_array( $filename, $composer_autoload, true ) ) {
+					continue;
+				}
+
+				// Confirm this file isn't being excluded.
+				if ( in_array( $autoload_file, $package['exclude_autoload'], true ) ) {
+					continue;
+				}
+
+				printf(
+					'Autoloaded file "%s" should be included in composer.json' . PHP_EOL,
+					$filename
+				);
+				exit( 1 );
 			}
 
-			printf(
-				'Autoloaded file "%s" should be included in composer.json' . PHP_EOL,
-				$filename
-			);
-			exit( 1 );
+			$json['packages'][ $key ]['autoload']['files'] = [];
 		}
 
-		$json['packages'][ $key ]['autoload']['files'] = [];
-		$modified = true;
+		// Prefix any of the autoloads for this specific package.
+		foreach ( $json['packages'][ $key ]['autoload'] as $type => $mappings ) {
+			foreach ( $mappings as $namespace => $path ) {
+				if ( 0 === stripos( (string) $namespace, $package['namespace'] ) ) {
+					$modified = true;
+					unset( $json['packages'][ $key ]['autoload'][ $type ][ $namespace ] );
+					$json['packages'][ $key ]['autoload'][ $type ][ "{$namespace_prefix}\\{$namespace}" ] = $path;
+				}
+			}
+		}
 	}
 
 	if ( $modified ) {

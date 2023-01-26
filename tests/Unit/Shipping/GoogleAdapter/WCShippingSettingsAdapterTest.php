@@ -14,10 +14,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\PostcodeRange;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingRegion;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-use Google\Service\ShoppingContent\DeliveryTime;
-use Google\Service\ShoppingContent\PostalCodeGroup;
-use Google\Service\ShoppingContent\Price;
-use Google\Service\ShoppingContent\Service as GoogleShippingService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\DeliveryTime;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\PostalCodeGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Price;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Service as GoogleShippingService;
 
 /**
  * Class WCShippingSettingsAdapterTest
