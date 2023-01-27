@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidArchitecture;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidVersion;
 
 defined( 'ABSPATH' ) || exit;
@@ -13,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package AutomatticWooCommerceGoogleListingsAndAdsInternalRequirements
  */
-class PHPValidator extends RequirementValidator {
+class VersionValidator extends RequirementValidator {
 
 	/**
 	 * Validate all requirements for the plugin to function properly.
@@ -28,9 +27,6 @@ class PHPValidator extends RequirementValidator {
 		} catch ( InvalidVersion $e ) {
 			$this->add_admin_notice( $e );
 			return false;
-		} catch ( InvalidArchitecture $e ) {
-			$this->add_admin_notice( $e );
-			return true; // TODO: Change to false when this requirement is mandatory.
 		}
 	}
 
@@ -52,11 +48,11 @@ class PHPValidator extends RequirementValidator {
 	 * @see https://www.php.net/manual/en/language.types.integer.php
 	 * @since x.x.x
 	 *
-	 * @throws InvalidArchitecture When the PHP Architecture is not 64 Bits.
+	 * @throws InvalidVersion When the PHP Architecture is not 64 Bits.
 	 */
 	protected function validate_php_architecture() {
 		if ( PHP_INT_SIZE !== 8 ) {
-			throw InvalidArchitecture::invalid_architecture_bits();
+			throw InvalidVersion::invalid_architecture();
 		}
 	}
 }

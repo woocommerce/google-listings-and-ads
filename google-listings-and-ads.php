@@ -23,7 +23,7 @@ use Automattic\Jetpack\Config;
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\PluginValidator;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\PHPValidator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\VersionValidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Psr\Container\ContainerInterface;
@@ -41,7 +41,7 @@ if ( ! Autoloader::init() ) {
 }
 
 // Validate PHP Version and Architecture
-if ( ! PHPValidator::instance()->validate() ) {
+if ( ! VersionValidator::instance()->validate() ) {
 	return;
 }
 
