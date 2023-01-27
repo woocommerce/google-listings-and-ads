@@ -7,11 +7,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification as SiteVerificationService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification\Resource\WebResource;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification\SiteVerificationWebResourceGettokenResponse;
 use Exception;
-use Google\Service\Exception as GoogleException;
-use Google\Service\SiteVerification as SiteVerificationService;
-use Google\Service\SiteVerification\Resource\WebResource;
-use Google\Service\SiteVerification\SiteVerificationWebResourceGettokenResponse;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -62,7 +62,7 @@ class SiteVerificationTest extends UnitTest {
 	public function test_verify_site_token_exception() {
 		$this->verification_service->webResource
 			->method( 'getToken' )
-			->willThrowException( new GoogleException( 'error', 400 ) );
+			->willThrowException( new GoogleServiceException( 'error', 400 ) );
 
 		try {
 			$this->verification->verify_site( $this->site_url );
@@ -81,7 +81,7 @@ class SiteVerificationTest extends UnitTest {
 
 		$this->verification_service->webResource
 			->method( 'insert' )
-			->willThrowException( new GoogleException( 'error', 400 ) );
+			->willThrowException( new GoogleServiceException( 'error', 400 ) );
 
 		try {
 			$this->verification->verify_site( $this->site_url );

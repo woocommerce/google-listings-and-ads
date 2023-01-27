@@ -4,10 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
-use Google\Service\ShoppingContent\Headers;
-use Google\Service\ShoppingContent\LocationIdSet;
-use Google\Service\ShoppingContent\Row;
-use Google\Service\ShoppingContent\Table;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Headers;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\LocationIdSet;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Row;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Table;
 
 defined( 'ABSPATH' ) || exit;
 

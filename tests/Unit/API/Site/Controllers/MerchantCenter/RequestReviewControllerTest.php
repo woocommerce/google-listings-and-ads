@@ -7,10 +7,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
-use Google\Exception;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
 
 /**
- * Test suit for RequestReviewController
+ * Test suite for RequestReviewController
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
  * @group RequestReview
@@ -444,7 +444,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 	public function test_exception_in_status_route() {
 		$this->middleware->expects( $this->exactly( 2 ) )
 			->method( 'get_account_review_status' )
-			->willThrowException( new Exception( 'error', 401 ) );
+			->willThrowException( new GoogleException( 'error', 401 ) );
 
 		$responses = [ $this->do_post_request_review(), $this->do_get_request_review() ];
 		foreach ( $responses as $response ) {
@@ -472,7 +472,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 
 		$this->middleware->expects( $this->once() )
 			->method( 'account_request_review' )
-			->willThrowException( new Exception( 'error', 401 ) );
+			->willThrowException( new GoogleException( 'error', 401 ) );
 
 		$response = $this->do_post_request_review();
 		$this->assertEquals( 'error', $response->get_data()['message'] );

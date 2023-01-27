@@ -2,8 +2,7 @@
 declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\WCCouponAdapter;
-use Google\Service\ShoppingContent\Promotion as GooglePromotion;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Promotion as GooglePromotion;
 defined( 'ABSPATH' ) || exit();
 
 /**

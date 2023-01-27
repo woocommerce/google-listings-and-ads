@@ -271,11 +271,11 @@ const ProductFeedTableCard = () => {
 					) }
 				</CardBody>
 				<CardFooter justify="center">
-					{ data?.total && (
+					{ data?.total > 0 && (
 						<Pagination
 							page={ query.page }
 							perPage={ query.per_page }
-							total={ data?.total }
+							total={ data.total }
 							showPagePicker={ true }
 							showPerPagePicker={ false }
 							onPageChange={ handlePageChange }

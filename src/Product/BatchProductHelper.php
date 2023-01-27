@@ -13,7 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
-use Google\Service\ShoppingContent\Product as GoogleProduct;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
 use WC_Product_Variable;

@@ -40,5 +40,14 @@ module.exports = {
 				additionalHooks: 'useSelect',
 			},
 		],
+		// When a file imports from both `@wordpress/components` and `extracted/@wordpress/components`
+		// at the same time, it would get the "no-duplicates" warning. It should be considered a
+		// false positive when working on the externalization process. So here we temporarily change
+		// to use "no-duplicate-imports" instead.
+		//
+		// TODO: After the externalizations of `@wordpress/*` and `@woocommerce/*` are complete,
+		//       remove the following two lines of rule settings.
+		'import/no-duplicates': 'off',
+		'no-duplicate-imports': 'warn',
 	},
 };

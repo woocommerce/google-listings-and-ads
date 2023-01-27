@@ -10,12 +10,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\CountryRatesCollection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ServiceRatesCollection;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingLocation;
-use Google\Service\ShoppingContent\PostalCodeGroup;
-use Google\Service\ShoppingContent\PostalCodeRange;
-use Google\Service\ShoppingContent\Price;
-use Google\Service\ShoppingContent\RateGroup;
-use Google\Service\ShoppingContent\Service as GoogleShippingService;
-use Google\Service\ShoppingContent\Value;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\PostalCodeGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\PostalCodeRange;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Price;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RateGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Service as GoogleShippingService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Value;
 
 defined( 'ABSPATH' ) || exit;
 
