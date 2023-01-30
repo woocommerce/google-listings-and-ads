@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Utility;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Google\Service\ShoppingContent\AccountAddress;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAddress;
 
 defined( 'ABSPATH' ) || exit;
 

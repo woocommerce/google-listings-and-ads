@@ -4,7 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
-use Google\Service\ShoppingContent\Promotion as GooglePromotion;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Promotion as GooglePromotion;
 
 defined( 'ABSPATH' ) || exit();
 

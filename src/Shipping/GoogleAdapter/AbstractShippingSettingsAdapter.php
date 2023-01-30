@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping\GoogleAdapter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
-use Google\Service\ShoppingContent\DeliveryTime;
-use Google\Service\ShoppingContent\ShippingSettings as GoogleShippingSettings;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\DeliveryTime;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ShippingSettings as GoogleShippingSettings;
 
 defined( 'ABSPATH' ) || exit;
 
