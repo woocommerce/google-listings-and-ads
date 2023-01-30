@@ -225,6 +225,9 @@ const ASSET_TEXT_SPECS = [
 	},
 ];
 
+// This scoped block is to signal that dynamic initialization is handled here, and that the
+// functions inside are for initialization purposes only and are not expected to be exposed
+// outside this module.
 {
 	function getSubheading( min, max ) {
 		return sprintf(
