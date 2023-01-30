@@ -137,6 +137,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
 			AssetFieldType::SQUARE_MARKETING_IMAGE   => [],
 			AssetFieldType::MARKETING_IMAGE          => [],
+			AssetFieldType::PORTRAIT_MARKETING_IMAGE => [],
 			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
 			'display_url_path'                       => [],
 			'final_url'                              => get_bloginfo( 'url' ),
