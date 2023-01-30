@@ -12,6 +12,7 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import FinalUrlCard from './final-url-card';
 import ImagesSelector from './images-selector';
+import TextsEditor from './texts-editor';
 import AssetField from './asset-field';
 import './asset-group-section.scss';
 
@@ -58,7 +59,7 @@ export default function AssetGroupSection() {
 			<VerticalGapLayout size="medium">
 				<FinalUrlCard onAssetsChange={ setAssetGroup } />
 				<div>Assets card will be added here</div>
-				<h3>Temporary demo for AssetField:</h3>
+				<h3>Temporary demo for AssetField and TextsEditor:</h3>
 				<div>
 					<AssetField
 						heading={ __(
@@ -135,7 +136,70 @@ export default function AssetGroupSection() {
 						numOfIssues={ 0 }
 						initialExpanded
 					>
-						Initially expanded asset field
+						<TextsEditor
+							minNumberOfTexts={ 3 }
+							maxNumberOfTexts={ 5 }
+							maxCharacterCounts={ [ 15, 30, 30, 30, 30 ] }
+							placeholder={ __(
+								'Headline',
+								'google-listings-and-ads'
+							) }
+							addButtonText={ __(
+								'Add headline',
+								'google-listings-and-ads'
+							) }
+							initialTexts={ [ 'Hello', 'World' ] }
+							onChange={ ( v ) =>
+								// eslint-disable-next-line no-console
+								console.log( 'Headline:onChange', v )
+							}
+						/>
+					</AssetField>
+					<AssetField
+						heading={ __(
+							'Long headlines',
+							'google-listings-and-ads'
+						) }
+						subheading={ __(
+							'At least 1 required. Add up to 5.',
+							'google-listings-and-ads'
+						) }
+						help={
+							<>
+								<p>
+									{ __(
+										'The long headline is the first line of your ad, and appears instead of your short headline in larger ads. Long headlines can be up to 90 characters, and may appear with or without your description.',
+										'google-listings-and-ads'
+									) }
+								</p>
+								<p>
+									{ __(
+										'The length of the rendered headline will depend on the site it appears on. If shortened, it will end with an ellipsis(…).',
+										'google-listings-and-ads'
+									) }
+								</p>
+							</>
+						}
+						numOfIssues={ 0 }
+					>
+						<TextsEditor
+							minNumberOfTexts={ 1 }
+							maxNumberOfTexts={ 5 }
+							maxCharacterCounts={ 90 }
+							placeholder={ __(
+								'Long headlines',
+								'google-listings-and-ads'
+							) }
+							addButtonText={ __(
+								'Add long headline',
+								'google-listings-and-ads'
+							) }
+							initialTexts={ [] }
+							onChange={ ( v ) =>
+								// eslint-disable-next-line no-console
+								console.log( 'Long headlines:onChange', v )
+							}
+						/>
 					</AssetField>
 				</div>
 			</VerticalGapLayout>
