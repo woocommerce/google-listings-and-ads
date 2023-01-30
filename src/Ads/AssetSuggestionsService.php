@@ -69,18 +69,22 @@ class AssetSuggestionsService implements Service {
 		self::MARKETING_IMAGE_KEY          => [
 			'minimum'     => [ 600, 314 ],
 			'recommended' => [ 1200, 628 ],
+			'max_qty'     => 10,
 		],
 		self::SQUARE_MARKETING_IMAGE_KEY   => [
 			'minimum'     => [ 300, 300 ],
 			'recommended' => [ 1200, 1200 ],
+			'max_qty'     => 5,
 		],
 		self::PORTRAIT_MARKETING_IMAGE_KEY => [
 			'minimum'     => [ 480, 600 ],
 			'recommended' => [ 960, 1200 ],
+			'max_qty'     => 5,
 		],
 		self::LOGO_IMAGE_KEY               => [
 			'minimum'     => [ 128, 128 ],
 			'recommended' => [ 1200, 1200 ],
+			'max_qty'     => 20,
 		],
 	];
 
@@ -242,6 +246,7 @@ class AssetSuggestionsService implements Service {
 			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
 			AssetFieldType::SQUARE_MARKETING_IMAGE   => [],
 			AssetFieldType::MARKETING_IMAGE          => [],
+			AssetFieldType::PORTRAIT_MARKETING_IMAGE => [],
 			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
 			'display_url_path'                       => [],
 			'final_url'                              => get_bloginfo( 'url' ),
@@ -515,6 +520,10 @@ class AssetSuggestionsService implements Service {
 			$metadata = wp_get_attachment_metadata( $id );
 
 			foreach ( $size_keys as $size_key ) {
+
+				if ( isset( $marketing_images[ $size_key ] ) && count( $marketing_images[ $size_key ] ) >= self::IMAGE_REQUIREMENTS[ $size_key ]['max_qty'] ) {
+					break;
+				}
 
 				$minimum_size     = new DimensionUtility( ...self::IMAGE_REQUIREMENTS[ $size_key ]['minimum'] );
 				$recommended_size = new DimensionUtility( ...self::IMAGE_REQUIREMENTS[ $size_key ]['recommended'] );
