@@ -14,10 +14,9 @@ import useAdminUrl from '.~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
-import AdaptiveForm from '.~/components/adaptive-form';
+import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsStepper from './ads-stepper';
 import SetupAdsTopBar from './top-bar';
-import validateCampaign from '.~/components/paid-ads/validateCampaign';
 
 /**
  * @fires gla_launch_paid_campaign_button_click on submit
@@ -84,9 +83,8 @@ const SetupAdsForm = () => {
 	}
 
 	return (
-		<AdaptiveForm
-			initialValues={ initialValues }
-			validate={ validateCampaign }
+		<CampaignAssetsForm
+			initialCampaign={ initialValues }
 			onChange={ handleChange }
 			onSubmit={ handleSubmit }
 		>
@@ -103,7 +101,7 @@ const SetupAdsForm = () => {
 					</>
 				);
 			} }
-		</AdaptiveForm>
+		</CampaignAssetsForm>
 	);
 };
 

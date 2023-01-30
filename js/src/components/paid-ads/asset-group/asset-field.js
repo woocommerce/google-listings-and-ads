@@ -29,10 +29,11 @@ import './asset-field.scss';
  * Renders an expandable wrapper for editing asset fields.
  *
  * @param {Object} props React props.
+ * @param {string} [props.className] Additional CSS class name to be appended.
  * @param {JSX.Element} props.heading Heading.
- * @param {JSX.Element} props.subheading Subheading.
+ * @param {JSX.Element} [props.subheading] Subheading.
  * @param {JSX.Element} props.help Help content to be shown after clicking on the help icon.
- * @param {number} props.numOfIssues The number of issues to be marked as a label on UI. It only shows the label when the number is greater than 0.
+ * @param {number} [props.numOfIssues=0] The number of issues used to label on UI. It only labels when the number is greater than 0.
  * @param {boolean} [props.initialExpanded=false] Whether the UI is initialized expanded.
  * @param {boolean} [props.disabled=false] Whether display the UI in disabled style. It will collapse the content when disabled.
  * @param {JSX.Element} [props.children] Content to be rendered.
@@ -40,10 +41,11 @@ import './asset-field.scss';
  */
 function AssetField(
 	{
+		className,
 		heading,
 		subheading,
 		help,
-		numOfIssues,
+		numOfIssues = 0,
 		initialExpanded = false,
 		disabled = false,
 		children,
@@ -75,15 +77,16 @@ function AssetField(
 		numOfIssues
 	);
 
-	const className = classnames(
+	const wrapperClassName = classnames(
 		'gla-asset-field',
+		className,
 		disabled ? 'gla-asset-field--is-disabled' : false
 	);
 
 	const shouldExpand = expanded && ! disabled;
 
 	return (
-		<div className={ className } ref={ containerRef }>
+		<div className={ wrapperClassName } ref={ containerRef }>
 			<header className="gla-asset-field__header">
 				<div className="gla-asset-field__heading-part">
 					<h2 className="gla-asset-field__heading">
@@ -97,9 +100,11 @@ function AssetField(
 							{ help }
 						</HelpPopover>
 					</h2>
-					<h3 className="gla-asset-field__subheading">
-						{ subheading }
-					</h3>
+					{ subheading && (
+						<h3 className="gla-asset-field__subheading">
+							{ subheading }
+						</h3>
+					) }
 				</div>
 				{ numOfIssues > 0 && (
 					<Pill className="gla-asset-field__issue-pill">

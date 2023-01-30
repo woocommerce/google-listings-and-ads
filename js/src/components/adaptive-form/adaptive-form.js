@@ -41,10 +41,11 @@ const SUBMITTED = 'submitted';
  *
  * @param {Object} props React props.
  * @param {(values: Object) => void} [props.onSubmit] Function to call when a form is requesting submission.
- * @param {(formContext: Object) => JSX.Element | JSX.Element} props.children Children to be rendered. Could be a render prop function.
+ * @param {(formContext: AdaptiveFormContext) => Object} [props.extendAdapter] Function to get the custom adapter to be appended to form's adapter so that they can be accessed via formContext.adapter.
+ * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} props.children Children to be rendered. Could be a render prop function.
  * @param {import('react').MutableRefObject<AdaptiveFormHandler>} ref React ref to be attached to the handler of this component.
  */
-function AdaptiveForm( { onSubmit, children, ...props }, ref ) {
+function AdaptiveForm( { onSubmit, extendAdapter, children, ...props }, ref ) {
 	const formRef = useRef();
 	const adapterRef = useRef( { submitter: null } );
 	const [ batchQueue, setBatchQueue ] = useState( [] );
@@ -189,6 +190,11 @@ function AdaptiveForm( { onSubmit, children, ...props }, ref ) {
 					isSubmitted,
 					submitter: adapterRef.current.submitter,
 				};
+
+				if ( typeof extendAdapter === 'function' ) {
+					const customAdapter = extendAdapter( formContext );
+					Object.assign( formContext.adapter, customAdapter );
+				}
 
 				/* === End of enhancement-related codes === */
 

@@ -25,8 +25,8 @@ import FaqsSection from './faqs-section';
 /**
  * Renders the container of the form content for campaign management.
  *
- * Please note that this component relies on an AdaptiveForm's context, so it expects
- * a context provider component (`AdaptiveForm`) to existing in its parents.
+ * Please note that this component relies on an CampaignAssetsForm's context and custom adapter,
+ * so it expects a `CampaignAssetsForm` to existing in its parents.
  *
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  *
@@ -42,7 +42,7 @@ export default function AdsCampaign( {
 } ) {
 	const isCreation = ! campaign;
 	const formContext = useAdaptiveFormContext();
-	const { isValidForm } = formContext;
+	const { isValidCampaign } = formContext.adapter;
 
 	const disabledBudgetSection = ! formContext.values.countryCodes.length;
 	const helperText = isCreation
@@ -101,7 +101,7 @@ export default function AdsCampaign( {
 			<StepContentFooter>
 				<AppButton
 					isPrimary
-					disabled={ ! isValidForm }
+					disabled={ ! isValidCampaign }
 					onClick={ onContinue }
 				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }

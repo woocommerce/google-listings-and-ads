@@ -1,0 +1,98 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`validateAssetGroup Display URL paths asset When display_url_path is an array where the first element is an empty string and the second is a non-empty string, it should not pass 1`] = `
+Array [
+  "The first display URL path is incomplete",
+]
+`;
+
+exports[`validateAssetGroup Display URL paths asset When the character limit is exceeded in display_url_path, it should not pass 1`] = `
+Array [
+  "The first display URL path: Character limit exceeded",
+  "The second display URL path: Character limit exceeded",
+]
+`;
+
+exports[`validateAssetGroup Display URL paths asset When the character limit is exceeded in the index NaN of display_url_path, it should not pass 1`] = `
+Array [
+  "Headline 1: Character limit exceeded",
+  "Headline 2: Character limit exceeded",
+  "Headline 3: Character limit exceeded",
+]
+`;
+
+exports[`validateAssetGroup Display URL paths asset When the character limit is exceeded in the index NaN of display_url_path, it should not pass 2`] = `
+Array [
+  "Long headline 1: Character limit exceeded",
+]
+`;
+
+exports[`validateAssetGroup Display URL paths asset When the character limit is exceeded in the index NaN of display_url_path, it should not pass 3`] = `
+Array [
+  "Description 1: Character limit exceeded",
+  "Description 2: Character limit exceeded",
+]
+`;
+
+exports[`validateAssetGroup Image assets When the length of values.logo is less than 1, it should not pass 1`] = `"Add at least 1 logo image"`;
+
+exports[`validateAssetGroup Image assets When the length of values.marketing_image is less than 1, it should not pass 1`] = `"Add at least 1 rectangular image"`;
+
+exports[`validateAssetGroup Image assets When the length of values.square_marketing_image is less than 1, it should not pass 1`] = `"Add at least 1 square image"`;
+
+exports[`validateAssetGroup Text assets When the character limit is exceeded in values.description, it should not pass 1`] = `
+Array [
+  "Description 1: Character limit exceeded",
+  "Description 2: Character limit exceeded",
+]
+`;
+
+exports[`validateAssetGroup Text assets When the character limit is exceeded in values.headline, it should not pass 1`] = `
+Array [
+  "Headline 1: Character limit exceeded",
+  "Headline 2: Character limit exceeded",
+  "Headline 3: Character limit exceeded",
+]
+`;
+
+exports[`validateAssetGroup Text assets When the character limit is exceeded in values.long_headline, it should not pass 1`] = `
+Array [
+  "Long headline 1: Character limit exceeded",
+]
+`;
+
+exports[`validateAssetGroup Text assets When the length of values.description is less than 2 after omitting empty strings, it should not pass 1`] = `
+Array [
+  "Add at least 2 descriptions",
+]
+`;
+
+exports[`validateAssetGroup Text assets When the length of values.headline is less than 3 after omitting empty strings, it should not pass 1`] = `
+Array [
+  "Add at least 3 headlines",
+]
+`;
+
+exports[`validateAssetGroup Text assets When the length of values.long_headline is less than 1 after omitting empty strings, it should not pass 1`] = `
+Array [
+  "Add at least 1 long headline",
+]
+`;
+
+exports[`validateAssetGroup Text assets When there is duplication in values.description, it should not pass 1`] = `
+Array [
+  "Descriptions are identical",
+]
+`;
+
+exports[`validateAssetGroup Text assets When there is duplication in values.headline, it should not pass 1`] = `
+Array [
+  "Headlines are identical",
+]
+`;
+
+exports[`validateAssetGroup Text assets When there is duplication in values.long_headline, it should not pass 1`] = `
+Array [
+  "Long headlines are identical",
+]
+`;

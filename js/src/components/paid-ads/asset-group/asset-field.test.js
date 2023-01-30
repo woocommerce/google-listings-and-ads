@@ -20,13 +20,13 @@ describe( 'AssetField', () => {
 	}
 
 	it( 'Should render the heading', () => {
-		render( <AssetField heading="Heading" numOfIssues={ 0 } /> );
+		render( <AssetField heading="Heading" /> );
 
 		expect( screen.getByText( 'Heading' ) ).toBeInTheDocument();
 	} );
 
 	it( 'Should render the subheading', () => {
-		render( <AssetField subheading="Subheading" numOfIssues={ 0 } /> );
+		render( <AssetField subheading="Subheading" /> );
 
 		expect( screen.getByText( 'Subheading' ) ).toBeInTheDocument();
 	} );
@@ -48,32 +48,26 @@ describe( 'AssetField', () => {
 	} );
 
 	it( 'When not setting `initialExpanded`, it should collapse to hide the children', () => {
-		render( <AssetField numOfIssues={ 0 }>Children</AssetField> );
+		render( <AssetField>Children</AssetField> );
 
 		expect( screen.queryByText( 'Children' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'When setting `initialExpanded`, it should expand to render the children', () => {
-		render(
-			<AssetField numOfIssues={ 0 } initialExpanded>
-				Children
-			</AssetField>
-		);
+		render( <AssetField initialExpanded>Children</AssetField> );
 
 		expect( screen.getByText( 'Children' ) ).toBeInTheDocument();
 	} );
 
 	it( 'When disabling, it should also collapse to hide the children', () => {
 		const { rerender } = render(
-			<AssetField numOfIssues={ 0 } initialExpanded>
-				Children
-			</AssetField>
+			<AssetField initialExpanded>Children</AssetField>
 		);
 
 		expect( screen.getByText( 'Children' ) ).toBeInTheDocument();
 
 		rerender(
-			<AssetField numOfIssues={ 0 } initialExpanded disabled>
+			<AssetField initialExpanded disabled>
 				Children
 			</AssetField>
 		);
@@ -82,19 +76,19 @@ describe( 'AssetField', () => {
 	} );
 
 	it( 'When disabled, it should also disable the toggle button and help button', async () => {
-		const { rerender } = render( <AssetField numOfIssues={ 0 } /> );
+		const { rerender } = render( <AssetField /> );
 
 		expect( getToggleButton() ).toBeEnabled();
 		expect( getHelpButton() ).toBeEnabled();
 
-		rerender( <AssetField numOfIssues={ 0 } disabled /> );
+		rerender( <AssetField disabled /> );
 
 		expect( getToggleButton() ).toBeDisabled();
 		expect( getHelpButton() ).toBeDisabled();
 	} );
 
 	it( 'When clicking on the toggle button, it should toggle to show or hide the children', async () => {
-		render( <AssetField numOfIssues={ 0 }>Children</AssetField> );
+		render( <AssetField>Children</AssetField> );
 
 		expect( screen.queryByText( 'Children' ) ).not.toBeInTheDocument();
 
