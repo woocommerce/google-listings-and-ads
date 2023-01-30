@@ -21,6 +21,8 @@ import {
 } from '../asset-specs';
 import './asset-group-card.scss';
 
+const ASSET_KEY_DISPLAY_URL_PATH = 'display_url_path';
+
 const ctaOptions = [
 	{ label: 'Automated', value: 'UNSPECIFIED' },
 	{ label: 'Learn more', value: 'LEARN_MORE' },
@@ -183,7 +185,7 @@ export default function AssetGroupCard() {
 				/>
 			</AssetField>
 			<AssetField
-				ref={ refFirstErrorField.bind( 'display_url_path' ) }
+				ref={ refFirstErrorField.bind( ASSET_KEY_DISPLAY_URL_PATH ) }
 				className="gla-asset-field-display-url-path"
 				heading={ __( 'Display URL Path', 'google-listings-and-ads' ) }
 				subheading={ hostname }
@@ -203,12 +205,12 @@ export default function AssetGroupCard() {
 						</p>
 					</>
 				}
-				numOfIssues={ getNumOfIssues( 'display_url_path' ) }
+				numOfIssues={ getNumOfIssues( ASSET_KEY_DISPLAY_URL_PATH ) }
 				disabled={ ! isSelectedFinalUrl }
 				initialExpanded={ isSelectedFinalUrl }
 			>
 				{ ASSET_DISPLAY_URL_PATH_SPECS.map( ( spec, index ) => {
-					const paths = values.display_url_path;
+					const paths = values[ ASSET_KEY_DISPLAY_URL_PATH ];
 
 					return (
 						<Fragment key={ index }>
@@ -223,13 +225,16 @@ export default function AssetGroupCard() {
 								onChange={ ( value ) => {
 									const nextValue = paths.slice();
 									nextValue[ index ] = value;
-									setValue( 'display_url_path', nextValue );
+									setValue(
+										ASSET_KEY_DISPLAY_URL_PATH,
+										nextValue
+									);
 								} }
 							/>
 						</Fragment>
 					);
 				} ) }
-				{ renderErrors( 'display_url_path' ) }
+				{ renderErrors( ASSET_KEY_DISPLAY_URL_PATH ) }
 			</AssetField>
 		</div>
 	);
