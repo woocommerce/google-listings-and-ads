@@ -2,7 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { noop } from 'lodash';
+import { useState, useEffect, useRef } from '@wordpress/element';
 import GridiconCrossCircle from 'gridicons/dist/cross-circle';
 
 /**
@@ -28,24 +29,41 @@ import './images-selector.scss';
  * @param {AssetImageConfig} props.imageConfig The config of the asset image.
  * @param {string[]} props.initialImageUrls The initial image URLs.
  * @param {number} [props.maxNumberOfImages=0] The maximum number of images. 0 by default and it means unlimited number.
+ * @param {JSX.Element} [props.children] Content to be rendered above the add button.
+ * @param {(urls: Array<string>) => void} [props.onChange] Callback function to be called when the texts are changed.
  */
 export default function ImagesSelector( {
 	imageConfig,
 	initialImageUrls = [],
 	maxNumberOfImages = 0,
+	children,
+	onChange = noop,
 } ) {
+	const updateImagesRef = useRef();
 	const [ awaitingActionImage, setAwaitingActionImage ] = useState( null );
 	const [ images, setImages ] = useState( () =>
 		// The asset images fetched from Google Ads are only URLs.
 		initialImageUrls.map( ( url ) => ( { url, id: url, alt: '' } ) )
 	);
 
+	const updateImages = ( nextImages ) => {
+		setImages( nextImages );
+		onChange( nextImages.map( ( image ) => image.url ) );
+	};
+	updateImagesRef.current = updateImages;
+
 	const removeImage = ( deletedImage ) => {
 		if ( deletedImage.id === awaitingActionImage?.id ) {
 			setAwaitingActionImage( null );
 		}
-		setImages( images.filter( ( { id } ) => id !== deletedImage.id ) );
+		updateImages( images.filter( ( { id } ) => id !== deletedImage.id ) );
 	};
+
+	useEffect( () => {
+		if ( maxNumberOfImages > 0 && images.length > maxNumberOfImages ) {
+			updateImagesRef.current( images.slice( 0, maxNumberOfImages ) );
+		}
+	}, [ images, maxNumberOfImages ] );
 
 	const handle = useCroppedImageSelector( {
 		...imageConfig,
@@ -72,7 +90,7 @@ export default function ImagesSelector( {
 			}
 
 			setAwaitingActionImage( null );
-			setImages( nextImages );
+			updateImages( nextImages );
 		},
 	} );
 
@@ -92,6 +110,10 @@ export default function ImagesSelector( {
 						>
 							<AppButton
 								className="gla-images-selector__replace-image-button"
+								aria-label={ __(
+									'Replace image',
+									'google-listings-and-ads'
+								) }
 								onClick={ () =>
 									handleUpsertImageClick( null, image )
 								}
@@ -104,6 +126,10 @@ export default function ImagesSelector( {
 							</AppButton>
 							<AppButton
 								className="gla-images-selector__remove-image-button"
+								aria-label={ __(
+									'Remove image',
+									'google-listings-and-ads'
+								) }
 								icon={ <GridiconCrossCircle /> }
 								iconSize={ 20 }
 								onClick={ () => removeImage( image ) }
@@ -112,6 +138,7 @@ export default function ImagesSelector( {
 					);
 				} ) }
 			</div>
+			{ children }
 			<AddAssetItemButton
 				disabled={
 					maxNumberOfImages !== 0 &&
