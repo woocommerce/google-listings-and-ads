@@ -520,9 +520,8 @@ class AssetSuggestionsService implements Service {
 			$metadata = wp_get_attachment_metadata( $id );
 
 			foreach ( $size_keys as $size_key ) {
-
-				if ( isset( $marketing_images[ $size_key ] ) && count( $marketing_images[ $size_key ] ) >= self::IMAGE_REQUIREMENTS[ $size_key ]['max_qty'] ) {
-					break;
+				if ( count( $marketing_images[ $size_key ] ?? [] ) >= self::IMAGE_REQUIREMENTS[ $size_key ]['max_qty'] ) {
+					continue;
 				}
 
 				$minimum_size     = new DimensionUtility( ...self::IMAGE_REQUIREMENTS[ $size_key ]['minimum'] );
