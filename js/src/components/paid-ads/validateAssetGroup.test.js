@@ -6,7 +6,7 @@ import {
 	ASSET_IMAGE_SPECS,
 	ASSET_TEXT_SPECS,
 	ASSET_DISPLAY_URL_PATH_SPECS,
-} from './constants';
+} from './asset-specs';
 
 /**
  * `validateAssetGroup` function returns an object, and if any checks are not passed,
