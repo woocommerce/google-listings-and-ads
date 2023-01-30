@@ -4,6 +4,25 @@
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
+const ASSET_DISPLAY_URL_PATH_SPECS = [
+	{
+		maxCharacterCount: 15,
+		capitalizedName: _x(
+			'The first display URL path',
+			'Capitalized asset field name as the start of an error message',
+			'google-listings-and-ads'
+		),
+	},
+	{
+		maxCharacterCount: 15,
+		capitalizedName: _x(
+			'The second display URL path',
+			'Capitalized asset field name as the start of an error message',
+			'google-listings-and-ads'
+		),
+	},
+];
+
 const ASSET_IMAGE_SPECS = [
 	{
 		key: 'marketing_image',
@@ -259,24 +278,5 @@ const ASSET_TEXT_SPECS = [
 		spec.subheading = getSubheading( spec.min, spec.max );
 	} );
 }
-
-const ASSET_DISPLAY_URL_PATH_SPECS = [
-	{
-		maxCharacterCount: 15,
-		capitalizedName: _x(
-			'The first display URL path',
-			'Capitalized asset field name as the start of an error message',
-			'google-listings-and-ads'
-		),
-	},
-	{
-		maxCharacterCount: 15,
-		capitalizedName: _x(
-			'The second display URL path',
-			'Capitalized asset field name as the start of an error message',
-			'google-listings-and-ads'
-		),
-	},
-];
 
 export { ASSET_IMAGE_SPECS, ASSET_TEXT_SPECS, ASSET_DISPLAY_URL_PATH_SPECS };
