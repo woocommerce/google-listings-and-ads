@@ -282,12 +282,18 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			return [];
 		}
 
-		$asset_group_assets_operations        = [];
-		$delete_asset_group_assets_operations = [];
-		$assets_for_creation                  = $this->get_assets_to_be_created( $assets );
+		$asset_group_assets_operations = [];
+		$assets_for_creation           = $this->get_assets_to_be_created( $assets );
+		$asset_arns                    = $this->asset->create_assets( $assets_for_creation );
+		$total_assets                  = count( $assets_for_creation );
 
-		$asset_arns   = $this->asset->create_assets( $assets_for_creation );
-		$total_assets = count( $assets_for_creation );
+		// As we are not working with the LANDSCAPE_LOGO, we delete it so it does not interfere with the maximum quantities of logos.
+		$delete_asset_group_assets_operations = array_map(
+			function( $asset ) use ( $asset_group_id ) {
+				return $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
+			},
+			$this->get_specific_assets( $asset_group_id, [ AssetFieldType::name( AssetFieldType::LANDSCAPE_LOGO ) ] )
+		);
 
 		// The asset mutation operation results (ARNs) are returned in the same order as the operations are specified.
 		// See: https://youtu.be/9KaVjqW5tVM?t=103
