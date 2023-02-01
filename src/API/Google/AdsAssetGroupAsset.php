@@ -88,14 +88,19 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * Get Assets for specific asset groups ids.
 	 *
 	 * @param array $asset_groups_ids The asset groups ids.
+	 * @param array $fields           The asset field types to get.
 	 *
 	 * @return array The assets for the asset groups.
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_assets_by_asset_group_ids( array $asset_groups_ids ): array {
+	public function get_assets_by_asset_group_ids( array $asset_groups_ids, array $fields = [] ): array {
 		try {
 			if ( empty( $asset_groups_ids ) ) {
 				return [];
+			}
+
+			if ( empty( $fields ) ) {
+				$fields = $this->get_asset_field_types_query();
 			}
 
 			$asset_group_assets = [];
@@ -103,7 +108,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 				->set_client( $this->client, $this->options->get_ads_id() )
 				->add_columns( [ 'asset_group.id' ] )
 				->where( 'asset_group.id', $asset_groups_ids, 'IN' )
-				->where( 'asset_group_asset.field_type', $this->get_asset_field_types_query(), 'IN' )
+				->where( 'asset_group_asset.field_type', $fields, 'IN' )
 				->where( 'asset_group_asset.status', 'REMOVED', '!=' )
 				->get_results();
 
@@ -239,6 +244,28 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 				}
 			)
 		);
+	}
+
+	/**
+	 * Get assets ids for specific asset types
+	 *
+	 * @param int   $asset_group_id The asset group id.
+	 * @param array $asset_types The asset types.
+	 *
+	 * @return array The assets ids.
+	 */
+	protected function get_specific_assets( int $asset_group_id, array $asset_types ): array {
+		$result             = $this->get_assets_by_asset_group_ids( [ $asset_group_id ], $asset_types );
+		$asset_group_assets = $result[ $asset_group_id ] ?? [];
+		$assets             = [];
+
+		foreach ( $asset_group_assets as $field_type => $asset_type ) {
+			foreach ( $asset_type as $asset ) {
+				$assets[] = array_merge( $asset, [ 'field_type' => $field_type ] );
+			}
+		}
+
+		return $assets;
 	}
 
 	/**
