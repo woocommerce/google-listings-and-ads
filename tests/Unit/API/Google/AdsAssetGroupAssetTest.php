@@ -228,6 +228,9 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		->with( $assets )
 		->willReturn( [ $this->generate_asset_resource_name( self::TEST_ASSET_ID ), $this->generate_asset_resource_name( self::TEST_ASSET_ID_2 ) ] );
 
+		// Generates a overridable landscape logo
+		$this->generate_overridable_asset();
+
 		$grouped_operations = $this->group_operations(
 			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
 		);
@@ -241,11 +244,12 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		$this->assertEquals( AssetFieldType::number( AssetFieldType::HEADLINE ), ( $grouped_operations['asset_group_asset_operation']['create'][1] )->getCreate()->getFieldType() );
 		$this->assertEquals( $this->generate_asset_resource_name( self::TEST_ASSET_ID_2 ), ( $grouped_operations['asset_group_asset_operation']['create'][1] )->getCreate()->getAsset() );
 
-		// We should remove the two old assets.
-		$this->assertEquals( 2, count( $grouped_operations['asset_group_asset_operation']['remove'] ) );
+		// We should remove the two old assets + the landscape logo.
+		$this->assertEquals( 3, count( $grouped_operations['asset_group_asset_operation']['remove'] ) );
 
-		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[0]['id'], AssetFieldType::name( $assets[0]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][0] )->getRemove() );
-		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[1]['id'], AssetFieldType::name( $assets[1]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][1] )->getRemove() );
+		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, self::TEST_ASSET_ID, AssetFieldType::name( AssetFieldType::LANDSCAPE_LOGO ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][0] )->getRemove() );
+		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[0]['id'], AssetFieldType::name( $assets[0]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][1] )->getRemove() );
+		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[1]['id'], AssetFieldType::name( $assets[1]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][2] )->getRemove() );
 
 	}
 
@@ -267,6 +271,9 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		->method( 'create_assets' )
 		->with( $assets )
 		->willReturn( [ $this->generate_asset_resource_name( self::TEST_ASSET_ID ), $this->generate_asset_resource_name( self::TEST_ASSET_ID_2 ) ] );
+
+		// In the case, that there are not assets to be overridden.
+		$this->generate_ads_asset_group_asset_query_mock( [] );
 
 		$grouped_operations = $this->group_operations(
 			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
@@ -303,6 +310,9 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		->with( [] )
 		->willReturn( [] );
 
+		// In the case, that there are not assets to be overridden.
+		$this->generate_ads_asset_group_asset_query_mock( [] );
+
 		$grouped_operations = $this->group_operations(
 			$this->asset_group_asset->edit_operations( self::TEST_ASSET_GROUP_ID, $assets )
 		);
@@ -315,6 +325,31 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		// We should not create assets.
 		$this->assertArrayNotHasKey( 'create', $grouped_operations['asset_group_asset_operation'] );
 
+	}
+
+	protected function generate_overridable_asset(): void {
+		$asset_group_asset_data = [
+			[
+				'asset_group_id' => self::TEST_ASSET_GROUP_ID,
+				'field_type'     => AssetFieldType::number( AssetFieldType::LANDSCAPE_LOGO ),
+				'asset'          => [
+					'id'      => self::TEST_ASSET_ID,
+					'content' => 'Test Asset',
+					'type'    => AssetType::IMAGE,
+				],
+			],
+		];
+
+		$this->asset->expects( $this->exactly( 1 ) )
+		->method( 'convert_asset' )
+		->willReturn(
+			[
+				'id'      => self::TEST_ASSET_ID,
+				'content' => 'Test Asset',
+			]
+		);
+
+		$this->generate_ads_asset_group_asset_query_mock( $asset_group_asset_data );
 	}
 
 	/**
