@@ -30,7 +30,7 @@ We aim to support the latest two minor versions of WordPress, WooCommerce, and P
 
 -   WordPress 5.9+
 -   WooCommerce 6.9+
--   PHP 7.4+
+-   PHP 7.4+ (64 bits)
 
 ## Browsers supported
 

@@ -10,6 +10,7 @@
  * Requires at least: 5.9
  * Tested up to: 6.1
  * Requires PHP: 7.4
+ * Requires PHP Architecture: 64 bits
  *
  * WC requires at least: 6.9
  * WC tested up to: 7.3
@@ -39,7 +40,7 @@ if ( ! Autoloader::init() ) {
 	return;
 }
 
-// Validate the required versions of everything our plugin depends on.
+// Validate PHP Version and Architecture
 if ( ! VersionValidator::instance()->validate() ) {
 	return;
 }
