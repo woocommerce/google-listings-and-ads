@@ -252,7 +252,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * @param int   $asset_group_id The asset group id.
 	 * @param array $asset_types The asset types.
 	 *
-	 * @return array The assets ids.
+	 * @return array The assets.
 	 */
 	protected function get_specific_assets( int $asset_group_id, array $asset_types ): array {
 		$result             = $this->get_assets_by_asset_group_ids( [ $asset_group_id ], $asset_types );
