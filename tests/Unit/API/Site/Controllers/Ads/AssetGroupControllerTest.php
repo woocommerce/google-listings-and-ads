@@ -86,7 +86,13 @@ class AssetGroupControllerTest extends RESTControllerUnitTest {
 			->method( 'edit_asset_group' )
 			->willReturn( self::TEST_ASSET_GROUP_ID );
 
-		$response = $this->do_request( self::ROUTE_ASSET_GROUPS . '/' . self::TEST_ASSET_GROUP_ID, 'PUT' );
+		$response = $this->do_request(
+			self::ROUTE_ASSET_GROUPS . '/' . self::TEST_ASSET_GROUP_ID,
+			'PUT',
+			[
+				'path1' => 'test path1',
+			]
+		);
 		$this->assertEquals(
 			[
 				'status'  => 'success',
@@ -96,6 +102,21 @@ class AssetGroupControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_asset_group_without_body() {
+		$this->asset_group
+			->method( 'edit_asset_group' )
+			->willReturn( self::TEST_ASSET_GROUP_ID );
+
+		$response = $this->do_request(
+			self::ROUTE_ASSET_GROUPS . '/' . self::TEST_ASSET_GROUP_ID,
+			'PUT',
+			[]
+		);
+
+		$this->assertEquals( 'No asset group fields to update.', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_edit_asset_group_with_api_exception() {
