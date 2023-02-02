@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidVersion;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class PHPValidator. Validates PHP Requirements like the version or the architecture.
+ * Class VersionValidator. Validates PHP Requirements like the version and the architecture.
  *
  * @package AutomatticWooCommerceGoogleListingsAndAdsInternalRequirements
  */
@@ -43,7 +43,7 @@ class VersionValidator extends RequirementValidator {
 
 	/**
 	 * Validate the PHP Architecture being 64 Bits.
-	 * This is done by checking PHP_INT_SIZE. In 32 bits this will be 4. In 64 Bits this will be 8
+	 * This is done by checking PHP_INT_SIZE. In 32 bits this will be 4 Bytes. In 64 Bits this will be 8 Bytes
 	 *
 	 * @see https://www.php.net/manual/en/language.types.integer.php
 	 * @since x.x.x

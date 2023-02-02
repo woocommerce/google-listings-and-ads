@@ -61,7 +61,7 @@ class InvalidVersion extends RuntimeException implements GoogleListingsAndAdsExc
 	 * Create a new instance of the exception when an invalid architecture is detected.
 	 *
 	 * @since x.x.x
-	 * @return static
+	 * @return InvalidVersion
 	 */
 	public static function invalid_architecture(): InvalidVersion {
 		return new static(
