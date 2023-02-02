@@ -247,7 +247,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get assets ids for specific asset types
+	 * Get specific assets by asset types.
 	 *
 	 * @param int   $asset_group_id The asset group id.
 	 * @param array $asset_types The asset types.
