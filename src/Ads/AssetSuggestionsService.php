@@ -238,19 +238,16 @@ class AssetSuggestionsService implements Service {
 			return $this->get_post_assets( $home_page->ID );
 		}
 		// Non static homepage.
-		return [
-			AssetFieldType::HEADLINE                 => [ __( 'Homepage', 'google-listings-and-ads' ) ],
-			AssetFieldType::LONG_HEADLINE            => [],
-			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
-			AssetFieldType::LOGO                     => $this->get_logo_images(),
-			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
-			AssetFieldType::SQUARE_MARKETING_IMAGE   => [],
-			AssetFieldType::MARKETING_IMAGE          => [],
-			AssetFieldType::PORTRAIT_MARKETING_IMAGE => [],
-			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
-			'display_url_path'                       => [],
-			'final_url'                              => get_bloginfo( 'url' ),
-		];
+		return array_merge(
+			[
+				AssetFieldType::HEADLINE      => [ __( 'Homepage', 'google-listings-and-ads' ) ],
+				AssetFieldType::LONG_HEADLINE => [],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
+				'display_url_path'            => [],
+				'final_url'                   => get_bloginfo( 'url' ),
+			],
+			$this->get_suggestions_common_fields( [] )
+		);
 
 	}
 
@@ -291,19 +288,16 @@ class AssetSuggestionsService implements Service {
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
 		$long_headline    = get_bloginfo( 'name' ) . ': ' . $post->post_title;
 
-		return [
-			AssetFieldType::HEADLINE                 => [ $post->post_title ],
-			AssetFieldType::LONG_HEADLINE            => [ $long_headline ],
-			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
-			AssetFieldType::LOGO                     => $this->get_logo_images(),
-			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
-			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			AssetFieldType::MARKETING_IMAGE          => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
-			AssetFieldType::PORTRAIT_MARKETING_IMAGE => $marketing_images [ self::PORTRAIT_MARKETING_IMAGE_KEY ] ?? [],
-			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
-			'display_url_path'                       => [ $post->post_name ],
-			'final_url'                              => get_permalink( $id ),
-		];
+		return array_merge(
+			[
+				AssetFieldType::HEADLINE      => [ $post->post_title ],
+				AssetFieldType::LONG_HEADLINE => [ $long_headline ],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
+				'display_url_path'            => [ $post->post_name ],
+				'final_url'                   => get_permalink( $id ),
+			],
+			$this->get_suggestions_common_fields( $marketing_images )
+		);
 	}
 
 	/**
@@ -339,19 +333,17 @@ class AssetSuggestionsService implements Service {
 
 		$marketing_images = $this->get_url_attachments_by_ids( $attachments_ids );
 
-		return [
-			AssetFieldType::HEADLINE                 => [ $term->name ],
-			AssetFieldType::LONG_HEADLINE            => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
-			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
-			AssetFieldType::LOGO                     => $this->get_logo_images(),
-			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
-			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			AssetFieldType::MARKETING_IMAGE          => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
-			AssetFieldType::PORTRAIT_MARKETING_IMAGE => $marketing_images [ self::PORTRAIT_MARKETING_IMAGE_KEY ] ?? [],
-			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
-			'display_url_path'                       => [ $term->slug ],
-			'final_url'                              => get_term_link( $term->term_id ),
-		];
+		return array_merge(
+			[
+				AssetFieldType::HEADLINE      => [ $term->name ],
+				AssetFieldType::LONG_HEADLINE => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
+				'display_url_path'            => [ $term->slug ],
+				'final_url'                   => get_term_link( $term->term_id ),
+			],
+			$this->get_suggestions_common_fields( $marketing_images )
+		);
+
 	}
 
 	/**
@@ -783,6 +775,25 @@ class AssetSuggestionsService implements Service {
 			'type'  => $type,
 			'title' => $title,
 			'url'   => $url,
+		];
+
+	}
+
+	/**
+	 * Get the suggested common fieds.
+	 *
+	 * @param array $marketing_images Marketing images.
+	 *
+	 * @return array Suggested common fields.
+	 */
+	protected function get_suggestions_common_fields( array $marketing_images ): array {
+		return [
+			AssetFieldType::LOGO                     => $this->get_logo_images(),
+			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::MARKETING_IMAGE          => $marketing_images [ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::PORTRAIT_MARKETING_IMAGE => $marketing_images [ self::PORTRAIT_MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
 		];
 
 	}

@@ -129,51 +129,54 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	}
 
 	protected function format_homepage_asset_response() {
-		return [
-			AssetFieldType::HEADLINE                 => [ 'Homepage' ],
-			AssetFieldType::LONG_HEADLINE            => [],
-			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
-			AssetFieldType::LOGO                     => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
-			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
-			AssetFieldType::SQUARE_MARKETING_IMAGE   => [],
-			AssetFieldType::MARKETING_IMAGE          => [],
-			AssetFieldType::PORTRAIT_MARKETING_IMAGE => [],
-			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
-			'display_url_path'                       => [],
-			'final_url'                              => get_bloginfo( 'url' ),
-		];
+		return array_merge(
+			[
+				AssetFieldType::HEADLINE      => [ 'Homepage' ],
+				AssetFieldType::LONG_HEADLINE => [],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
+				'display_url_path'            => [],
+				'final_url'                   => get_bloginfo( 'url' ),
+			],
+			$this->get_suggestions_common_fields( [] )
+		);
 	}
 
 	protected function format_post_asset_response( $post, array $marketing_images = [] ): array {
-		return [
-			AssetFieldType::HEADLINE                 => [ $post->post_title ],
-			AssetFieldType::LONG_HEADLINE            => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
-			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
-			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
-			AssetFieldType::LOGO                     => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
-			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			AssetFieldType::MARKETING_IMAGE          => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
-			AssetFieldType::PORTRAIT_MARKETING_IMAGE => $marketing_images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] ?? [],
-			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
-			'display_url_path'                       => [ $post->post_name ],
-			'final_url'                              => get_permalink( $post->ID ),
-		];
+		return array_merge(
+			[
+				AssetFieldType::HEADLINE      => [ $post->post_title ],
+				AssetFieldType::LONG_HEADLINE => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
+				'display_url_path'            => [ $post->post_name ],
+				'final_url'                   => get_permalink( $post->ID ),
+			],
+			$this->get_suggestions_common_fields( $marketing_images )
+		);
 
 	}
 
 	protected function format_term_asset_response( $term, array $marketing_images = [] ): array {
+		return array_merge(
+			[
+				AssetFieldType::HEADLINE      => [ $term->name ],
+				AssetFieldType::LONG_HEADLINE => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
+				'display_url_path'            => [ $term->slug ],
+				'final_url'                   => get_term_link( $term->term_id ),
+			],
+			$this->get_suggestions_common_fields( $marketing_images )
+		);
+
+	}
+
+	protected function get_suggestions_common_fields( $marketing_images ) {
 		return [
-			AssetFieldType::HEADLINE                 => [ $term->name ],
-			AssetFieldType::LONG_HEADLINE            => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
-			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
 			AssetFieldType::LOGO                     => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
 			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
 			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
 			AssetFieldType::MARKETING_IMAGE          => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
 			AssetFieldType::PORTRAIT_MARKETING_IMAGE => $marketing_images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] ?? [],
 			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
-			'display_url_path'                       => [ $term->slug ],
-			'final_url'                              => get_term_link( $term->term_id ),
 		];
 
 	}
