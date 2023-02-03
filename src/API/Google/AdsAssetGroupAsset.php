@@ -269,6 +269,35 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Check if a asset type will be edited.
+	 *
+	 * @param string $field_type The asset field type.
+	 * @param array  $assets The assets.
+	 *
+	 * @return bool True if the asset type is edited.
+	 */
+	protected function maybe_asset_type_is_edited( string $field_type, array $assets ): bool {
+		return in_array( $field_type, array_column( $assets, 'field_type' ), true );
+	}
+
+	/**
+	 * Get override asset operations.
+	 *
+	 * @param int   $asset_group_id The asset group id.
+	 * @param array $asset_field_types The asset field types.
+	 *
+	 * @return array The asset group asset operations.
+	 */
+	protected function get_override_operations( int $asset_group_id, array $asset_field_types ): array {
+		return array_map(
+			function( $asset ) use ( $asset_group_id ) {
+				return $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
+			},
+			$this->get_specific_assets( $asset_group_id, $asset_field_types )
+		);
+	}
+
+	/**
 	 * Edit assets group assets.
 	 *
 	 * @param int   $asset_group_id The asset group id.
@@ -282,18 +311,16 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			return [];
 		}
 
-		$asset_group_assets_operations = [];
-		$assets_for_creation           = $this->get_assets_to_be_created( $assets );
-		$asset_arns                    = $this->asset->create_assets( $assets_for_creation );
-		$total_assets                  = count( $assets_for_creation );
+		$asset_group_assets_operations        = [];
+		$assets_for_creation                  = $this->get_assets_to_be_created( $assets );
+		$asset_arns                           = $this->asset->create_assets( $assets_for_creation );
+		$total_assets                         = count( $assets_for_creation );
+		$delete_asset_group_assets_operations = [];
 
-		// As we are not working with the LANDSCAPE_LOGO, we delete it so it does not interfere with the maximum quantities of logos.
-		$delete_asset_group_assets_operations = array_map(
-			function( $asset ) use ( $asset_group_id ) {
-				return $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
-			},
-			$this->get_specific_assets( $asset_group_id, [ AssetFieldType::name( AssetFieldType::LANDSCAPE_LOGO ) ] )
-		);
+		if ( $this->maybe_asset_type_is_edited( AssetFieldType::LOGO, $assets ) ) {
+			// As we are not working with the LANDSCAPE_LOGO, we delete it so it does not interfere with the maximum quantities of logos.
+			$delete_asset_group_assets_operations = $this->get_override_operations( $asset_group_id, [ AssetFieldType::name( AssetFieldType::LANDSCAPE_LOGO ) ] );
+		}
 
 		// The asset mutation operation results (ARNs) are returned in the same order as the operations are specified.
 		// See: https://youtu.be/9KaVjqW5tVM?t=103

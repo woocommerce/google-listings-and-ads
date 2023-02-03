@@ -218,7 +218,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 			],
 			[
 				'id'         => self::TEST_ASSET_ID_2,
-				'field_type' => AssetFieldType::HEADLINE,
+				'field_type' => AssetFieldType::LOGO,
 				'content'    => 'https://example.com/image.jpg',
 			],
 		];
@@ -241,7 +241,7 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		$this->assertEquals( AssetFieldType::number( AssetFieldType::DESCRIPTION ), ( $grouped_operations['asset_group_asset_operation']['create'][0] )->getCreate()->getFieldType() );
 		$this->assertEquals( $this->generate_asset_resource_name( self::TEST_ASSET_ID ), ( $grouped_operations['asset_group_asset_operation']['create'][0] )->getCreate()->getAsset() );
 
-		$this->assertEquals( AssetFieldType::number( AssetFieldType::HEADLINE ), ( $grouped_operations['asset_group_asset_operation']['create'][1] )->getCreate()->getFieldType() );
+		$this->assertEquals( AssetFieldType::number( AssetFieldType::LOGO ), ( $grouped_operations['asset_group_asset_operation']['create'][1] )->getCreate()->getFieldType() );
 		$this->assertEquals( $this->generate_asset_resource_name( self::TEST_ASSET_ID_2 ), ( $grouped_operations['asset_group_asset_operation']['create'][1] )->getCreate()->getAsset() );
 
 		// We should remove the two old assets + the landscape logo.
