@@ -332,8 +332,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
 		}
 
-		// Delete asset group assets operations must be executed last so we are never under the minimum quantity.
-		return array_merge( $asset_group_assets_operations, $delete_asset_group_assets_operations );
+		return array_merge( $delete_asset_group_assets_operations, $asset_group_assets_operations );
 
 	}
 
