@@ -81,6 +81,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			AssetFieldType::name( AssetFieldType::LONG_HEADLINE ),
 			AssetFieldType::name( AssetFieldType::MARKETING_IMAGE ),
 			AssetFieldType::name( AssetFieldType::SQUARE_MARKETING_IMAGE ),
+			AssetFieldType::name( AssetFieldType::PORTRAIT_MARKETING_IMAGE ),
 		];
 	}
 

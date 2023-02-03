@@ -41,6 +41,7 @@ defined( 'ABSPATH' ) || exit;
  * @property DimensionUtility  $normal_image
  * @property DimensionUtility  $suggested_image_square
  * @property DimensionUtility  $suggested_image_landscape
+ * @property DimensionUtility  $suggested_image_portrait
  */
 class AssetSuggestionsServiceTest extends UnitTest {
 
@@ -54,6 +55,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	protected const INVALID_ID                       = 123456;
 	protected const SQUARE_MARKETING_IMAGE_KEY       = 'gla_square_marketing_asset';
 	protected const MARKETING_IMAGE_KEY              = 'gla_marketing_asset';
+	protected const PORTRAIT_MARKETING_IMAGE_KEY     = 'gla_portrait_marketing_asset';
 	protected const LOGO_IMAGE_KEY                   = 'gla_logo_asset';
 	protected const HOMEPAGE_KEY_ID                  = 0;
 
@@ -101,6 +103,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$this->normal_image              = new DimensionUtility( 600, 600 );
 		$this->suggested_image_square    = new DimensionUtility( 1200, 1200 );
 		$this->suggested_image_landscape = new DimensionUtility( 1200, 628 );
+		$this->suggested_image_portrait  = new DimensionUtility( 480, 600 );
 
 		// Disable logo image by default. There is a specific test for the logo asset.
 		add_filter( 'theme_mod_custom_logo', '__return_false' );
@@ -126,48 +129,54 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	}
 
 	protected function format_homepage_asset_response() {
-		return [
-			AssetFieldType::HEADLINE                 => [ 'Homepage' ],
-			AssetFieldType::LONG_HEADLINE            => [],
-			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
-			AssetFieldType::LOGO                     => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
-			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
-			AssetFieldType::SQUARE_MARKETING_IMAGE   => [],
-			AssetFieldType::MARKETING_IMAGE          => [],
-			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
-			'display_url_path'                       => [],
-			'final_url'                              => get_bloginfo( 'url' ),
-		];
+		return array_merge(
+			[
+				AssetFieldType::HEADLINE      => [ 'Homepage' ],
+				AssetFieldType::LONG_HEADLINE => [],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
+				'display_url_path'            => [],
+				'final_url'                   => get_bloginfo( 'url' ),
+			],
+			$this->get_suggestions_common_fields( [] )
+		);
 	}
 
 	protected function format_post_asset_response( $post, array $marketing_images = [] ): array {
-		return [
-			AssetFieldType::HEADLINE                 => [ $post->post_title ],
-			AssetFieldType::LONG_HEADLINE            => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
-			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
-			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
-			AssetFieldType::LOGO                     => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
-			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
-			AssetFieldType::MARKETING_IMAGE          => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
-			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
-			'display_url_path'                       => [ $post->post_name ],
-			'final_url'                              => get_permalink( $post->ID ),
-		];
+		return array_merge(
+			[
+				AssetFieldType::HEADLINE      => [ $post->post_title ],
+				AssetFieldType::LONG_HEADLINE => [ get_bloginfo( 'name' ) . ': ' . $post->post_title ],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ $post->post_excerpt, get_bloginfo( 'description' ) ] ),
+				'display_url_path'            => [ $post->post_name ],
+				'final_url'                   => get_permalink( $post->ID ),
+			],
+			$this->get_suggestions_common_fields( $marketing_images )
+		);
 
 	}
 
 	protected function format_term_asset_response( $term, array $marketing_images = [] ): array {
+		return array_merge(
+			[
+				AssetFieldType::HEADLINE      => [ $term->name ],
+				AssetFieldType::LONG_HEADLINE => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
+				'display_url_path'            => [ $term->slug ],
+				'final_url'                   => get_term_link( $term->term_id ),
+			],
+			$this->get_suggestions_common_fields( $marketing_images )
+		);
+
+	}
+
+	protected function get_suggestions_common_fields( $marketing_images ) {
 		return [
-			AssetFieldType::HEADLINE                 => [ $term->name ],
-			AssetFieldType::LONG_HEADLINE            => [ get_bloginfo( 'name' ) . ': ' . $term->name ],
-			AssetFieldType::DESCRIPTION              => ArrayUtil::remove_empty_values( [ wp_strip_all_tags( $term->description ), get_bloginfo( 'description' ) ] ),
 			AssetFieldType::LOGO                     => ArrayUtil::remove_empty_values( [ wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ) ) ] ),
 			AssetFieldType::BUSINESS_NAME            => get_bloginfo( 'name' ),
 			AssetFieldType::SQUARE_MARKETING_IMAGE   => $marketing_images[ self::SQUARE_MARKETING_IMAGE_KEY ] ?? [],
 			AssetFieldType::MARKETING_IMAGE          => $marketing_images[ self::MARKETING_IMAGE_KEY ] ?? [],
+			AssetFieldType::PORTRAIT_MARKETING_IMAGE => $marketing_images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] ?? [],
 			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
-			'display_url_path'                       => [ $term->slug ],
-			'final_url'                              => get_term_link( $term->term_id ),
 		];
 
 	}
@@ -387,12 +396,12 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		$this->update_size_image( $image_id, $this->big_image );
 
-		$this->image_utility->expects( $this->exactly( 2 ) )
+		$this->image_utility->expects( $this->exactly( 3 ) )
 		->method( 'recommend_size' )
-		->willReturnOnConsecutiveCalls( $this->suggested_image_square, $this->suggested_image_landscape );
+		->willReturnOnConsecutiveCalls( $this->suggested_image_square, $this->suggested_image_landscape, $this->suggested_image_portrait );
 
 		// Both images should be resized
-		$this->image_utility->expects( $this->exactly( 2 ) )
+		$this->image_utility->expects( $this->exactly( 3 ) )
 		->method( 'maybe_add_subsize_image' )
 		->willReturn( true );
 
@@ -408,8 +417,9 @@ class AssetSuggestionsServiceTest extends UnitTest {
 				]
 			)->willReturn( [ $image_id ] );
 
-		$images[ self::SQUARE_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id ) ];
-		$images[ self::MARKETING_IMAGE_KEY ]        = [ wp_get_attachment_image_url( $image_id ) ];
+		$images[ self::SQUARE_MARKETING_IMAGE_KEY ]   = [ wp_get_attachment_image_url( $image_id ) ];
+		$images[ self::MARKETING_IMAGE_KEY ]          = [ wp_get_attachment_image_url( $image_id ) ];
+		$images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id ) ];
 
 		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 	}
@@ -419,11 +429,11 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$image_id = $this->get_test_image();
 
 		// Update size and create both subsize.
-		$this->update_size_image( $image_id, $this->normal_image, [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY ] );
+		$this->update_size_image( $image_id, $this->normal_image, [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY, self::PORTRAIT_MARKETING_IMAGE_KEY ] );
 
-		$this->image_utility->expects( $this->exactly( 2 ) )
+		$this->image_utility->expects( $this->exactly( 3 ) )
 		->method( 'recommend_size' )
-		->willReturnOnConsecutiveCalls( $this->suggested_image_square, $this->suggested_image_landscape );
+		->willReturnOnConsecutiveCalls( $this->suggested_image_square, $this->suggested_image_landscape, $this->suggested_image_portrait );
 
 		// Should not create any subsize because already exists
 		$this->image_utility->expects( $this->exactly( 0 ) )->
@@ -436,8 +446,9 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->method( 'maybe_get_product' )
 			->willReturn( $product );
 
-		$images[ self::SQUARE_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id, self::SQUARE_MARKETING_IMAGE_KEY ) ];
-		$images[ self::MARKETING_IMAGE_KEY ]        = [ wp_get_attachment_image_url( $image_id, self::MARKETING_IMAGE_KEY ) ];
+		$images[ self::SQUARE_MARKETING_IMAGE_KEY ]   = [ wp_get_attachment_image_url( $image_id, self::SQUARE_MARKETING_IMAGE_KEY ) ];
+		$images[ self::MARKETING_IMAGE_KEY ]          = [ wp_get_attachment_image_url( $image_id, self::MARKETING_IMAGE_KEY ) ];
+		$images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id, self::PORTRAIT_MARKETING_IMAGE_KEY ) ];
 
 		$this->assertEquals( $this->format_post_asset_response( $post, $images ), $this->asset_suggestions->get_assets_suggestions( $post->ID, 'post' ) );
 
@@ -447,12 +458,12 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$image_post_id    = $this->get_test_image();
 		$image_product_id = $this->get_test_image();
 
-		$this->update_size_image( $image_post_id, $this->normal_image, [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY ] );
-		$this->update_size_image( $image_product_id, $this->normal_image, [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY ] );
+		$this->update_size_image( $image_post_id, $this->normal_image, [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY, self::PORTRAIT_MARKETING_IMAGE_KEY ] );
+		$this->update_size_image( $image_product_id, $this->normal_image, [ self::SQUARE_MARKETING_IMAGE_KEY, self::MARKETING_IMAGE_KEY, self::PORTRAIT_MARKETING_IMAGE_KEY ] );
 
 		update_option( 'woocommerce_shop_page_id', $this->post->ID );
 
-		$this->image_utility->expects( $this->exactly( 4 ) )
+		$this->image_utility->expects( $this->exactly( 6 ) )
 		->method( 'recommend_size' )
 		->willReturn( $this->suggested_image_square );
 
@@ -467,8 +478,9 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->method( 'get_posts' )
 			->willReturnOnConsecutiveCalls( [ $image_post_id ], [ $product->get_id() ], [ $image_product_id ] );
 
-		$images[ self::SQUARE_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_post_id, self::SQUARE_MARKETING_IMAGE_KEY ), wp_get_attachment_image_url( $image_product_id, self::SQUARE_MARKETING_IMAGE_KEY ) ];
-		$images[ self::MARKETING_IMAGE_KEY ]        = [ wp_get_attachment_image_url( $image_post_id, self::MARKETING_IMAGE_KEY ), wp_get_attachment_image_url( $image_product_id, self::MARKETING_IMAGE_KEY ) ];
+		$images[ self::SQUARE_MARKETING_IMAGE_KEY ]   = [ wp_get_attachment_image_url( $image_post_id, self::SQUARE_MARKETING_IMAGE_KEY ), wp_get_attachment_image_url( $image_product_id, self::SQUARE_MARKETING_IMAGE_KEY ) ];
+		$images[ self::MARKETING_IMAGE_KEY ]          = [ wp_get_attachment_image_url( $image_post_id, self::MARKETING_IMAGE_KEY ), wp_get_attachment_image_url( $image_product_id, self::MARKETING_IMAGE_KEY ) ];
+		$images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_post_id, self::PORTRAIT_MARKETING_IMAGE_KEY ), wp_get_attachment_image_url( $image_product_id, self::PORTRAIT_MARKETING_IMAGE_KEY ) ];
 
 		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 	}
@@ -478,11 +490,11 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		$post_html_image = $this->factory()->post->create_and_get( [ 'post_content' => '<img src="' . wp_get_attachment_image_url( $image_id ) . '" />' ] );
 
-		$this->image_utility->expects( $this->exactly( 2 ) )
+		$this->image_utility->expects( $this->exactly( 3 ) )
 		->method( 'recommend_size' )
-		->willReturnOnConsecutiveCalls( $this->suggested_image_square, $this->suggested_image_landscape );
+		->willReturnOnConsecutiveCalls( $this->suggested_image_square, $this->suggested_image_landscape, $this->suggested_image_portrait );
 
-		$this->image_utility->expects( $this->exactly( 2 ) )
+		$this->image_utility->expects( $this->exactly( 3 ) )
 		->method( 'maybe_add_subsize_image' )
 		->willReturn( true );
 
@@ -498,8 +510,9 @@ class AssetSuggestionsServiceTest extends UnitTest {
 				]
 			)->willReturn( [] );
 
-		$images[ self::SQUARE_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id ) ];
-		$images[ self::MARKETING_IMAGE_KEY ]        = [ wp_get_attachment_image_url( $image_id ) ];
+		$images[ self::SQUARE_MARKETING_IMAGE_KEY ]   = [ wp_get_attachment_image_url( $image_id ) ];
+		$images[ self::MARKETING_IMAGE_KEY ]          = [ wp_get_attachment_image_url( $image_id ) ];
+		$images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id ) ];
 
 		$this->assertEquals( $this->format_post_asset_response( $post_html_image, $images ), $this->asset_suggestions->get_assets_suggestions( $post_html_image->ID, 'post' ) );
 	}
@@ -523,14 +536,14 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$this->update_size_image( $image_post_1, $this->small_image );
 		$this->update_size_image( $image_post_2, $this->normal_image );
 
-		$this->image_utility->expects( $this->exactly( 4 ) )
+		$this->image_utility->expects( $this->exactly( 6 ) )
 		->method( 'recommend_size' )
 		->willReturn( $this->suggested_image_square );
 
 		// One image is too small and the other one is ok.
-		$this->image_utility->expects( $this->exactly( 4 ) )
+		$this->image_utility->expects( $this->exactly( 6 ) )
 		->method( 'maybe_add_subsize_image' )
-		->willReturnOnConsecutiveCalls( false, false, true, true );
+		->willReturnOnConsecutiveCalls( false, false, false, true, true, true );
 
 		$product = WC_Helper_Product::create_simple_product();
 		$product->set_image_id( $image_post_2 );
@@ -567,8 +580,9 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			)
 			->willReturnOnConsecutiveCalls( $posts_ids_assigned_to_term, [ $image_post_1, $image_post_2 ] );
 
-		$images[ self::SQUARE_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_post_2 ) ];
-		$images[ self::MARKETING_IMAGE_KEY ]        = [ wp_get_attachment_image_url( $image_post_2 ) ];
+		$images[ self::SQUARE_MARKETING_IMAGE_KEY ]   = [ wp_get_attachment_image_url( $image_post_2 ) ];
+		$images[ self::MARKETING_IMAGE_KEY ]          = [ wp_get_attachment_image_url( $image_post_2 ) ];
+		$images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_post_2 ) ];
 
 		$this->assertEquals( $this->format_term_asset_response( $this->term, $images ), $this->asset_suggestions->get_assets_suggestions( $this->term->term_id, 'term' ) );
 
@@ -639,7 +653,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		$this->update_size_image( $image_id, $this->suggested_image_square );
 
-		$this->image_utility->expects( $this->exactly( 2 ) )
+		$this->image_utility->expects( $this->exactly( 3 ) )
 		->method( 'recommend_size' )
 		->willReturn( $this->suggested_image_square );
 
@@ -651,8 +665,9 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		->method( 'get_posts' )
 		->willReturn( [ $image_id ] );
 
-		$images[ self::SQUARE_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id ) ];
-		$images[ self::MARKETING_IMAGE_KEY ]        = [ wp_get_attachment_image_url( $image_id ) ];
+		$images[ self::SQUARE_MARKETING_IMAGE_KEY ]   = [ wp_get_attachment_image_url( $image_id ) ];
+		$images[ self::MARKETING_IMAGE_KEY ]          = [ wp_get_attachment_image_url( $image_id ) ];
+		$images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id ) ];
 
 		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 
@@ -663,7 +678,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		$this->update_size_image( $image_id, $this->suggested_image_square );
 
-		$this->image_utility->expects( $this->exactly( 2 ) )
+		$this->image_utility->expects( $this->exactly( 3 ) )
 		->method( 'recommend_size' )
 		->willReturn( false );
 
@@ -675,8 +690,9 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		->method( 'get_posts' )
 		->willReturn( [ $image_id ] );
 
-		$images[ self::SQUARE_MARKETING_IMAGE_KEY ] = [];
-		$images[ self::MARKETING_IMAGE_KEY ]        = [];
+		$images[ self::SQUARE_MARKETING_IMAGE_KEY ]   = [];
+		$images[ self::MARKETING_IMAGE_KEY ]          = [];
+		$images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] = [];
 
 		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 

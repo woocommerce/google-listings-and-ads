@@ -193,7 +193,12 @@ class AssetGroupController extends BaseController {
 					$request->get_params(),
 					$this->get_asset_group_fields()
 				);
-				$asset_group_id     = $this->ads_asset_group->edit_asset_group( $request->get_param( 'id' ), $asset_group_fields, $request->get_param( 'assets' ) );
+
+				if ( empty( $asset_group_fields ) && empty( $request->get_param( 'assets' ) ) ) {
+					throw new Exception( __( 'No asset group fields to update.', 'google-listings-and-ads' ) );
+				}
+
+				$asset_group_id = $this->ads_asset_group->edit_asset_group( $request->get_param( 'id' ), $asset_group_fields, $request->get_param( 'assets' ) );
 				return [
 					'status'  => 'success',
 					'message' => __( 'Successfully edited asset group.', 'google-listings-and-ads' ),
@@ -234,14 +239,15 @@ class AssetGroupController extends BaseController {
 				'items'       => [
 					'type'       => 'object',
 					'properties' => [
-						'square_marketing_image'   => $this->get_schema_field_type_asset(),
-						'marketing_image'          => $this->get_schema_field_type_asset(),
-						'logo'                     => $this->get_schema_field_type_asset(),
-						'business_name'            => $this->get_schema_field_type_asset(),
-						'headline'                 => $this->get_schema_field_type_asset(),
-						'description'              => $this->get_schema_field_type_asset(),
-						'long_headline'            => $this->get_schema_field_type_asset(),
-						'call_to_action_selection' => $this->get_schema_field_type_asset(),
+						AssetFieldType::SQUARE_MARKETING_IMAGE => $this->get_schema_field_type_asset(),
+						AssetFieldType::MARKETING_IMAGE => $this->get_schema_field_type_asset(),
+						AssetFieldType::PORTRAIT_MARKETING_IMAGE => $this->get_schema_field_type_asset(),
+						AssetFieldType::LOGO            => $this->get_schema_field_type_asset(),
+						AssetFieldType::BUSINESS_NAME   => $this->get_schema_field_type_asset(),
+						AssetFieldType::HEADLINE        => $this->get_schema_field_type_asset(),
+						AssetFieldType::DESCRIPTION     => $this->get_schema_field_type_asset(),
+						AssetFieldType::LONG_HEADLINE   => $this->get_schema_field_type_asset(),
+						AssetFieldType::CALL_TO_ACTION_SELECTION => $this->get_schema_field_type_asset(),
 					],
 				],
 			],
@@ -293,6 +299,7 @@ class AssetGroupController extends BaseController {
 						AssetFieldType::SQUARE_MARKETING_IMAGE,
 						AssetFieldType::LOGO,
 						AssetFieldType::CALL_TO_ACTION_SELECTION,
+						AssetFieldType::PORTRAIT_MARKETING_IMAGE,
 					],
 				],
 			],
