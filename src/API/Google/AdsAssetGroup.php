@@ -401,6 +401,8 @@ class AdsAssetGroup implements OptionsAwareInterface {
 		$asset_group             = new AssetGroup( $fields );
 		$operation               = new AssetGroupOperation();
 		$operation->setUpdate( $asset_group );
+		// We create the FieldMask manually because empty paths (path1 and path2) are not processed by the library.
+		// See similar issue here: https://github.com/googleads/google-ads-php/issues/487
 		$operation->setUpdateMask( ( new FieldMask() )->setPaths( [ 'resource_name', ...array_keys( $fields ) ] ) );
 		return ( new MutateOperation() )->setAssetGroupOperation( $operation );
 	}
