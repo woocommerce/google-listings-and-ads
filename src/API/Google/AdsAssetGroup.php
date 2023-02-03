@@ -19,9 +19,9 @@ use Google\Ads\GoogleAds\V11\Services\AssetGroupOperation;
 use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V11\Services\MutateOperation;
 use Google\Ads\GoogleAds\V11\Services\AssetGroupServiceClient;
-use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
+use Google\Protobuf\FieldMask;
 use Exception;
 use DateTime;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -401,7 +401,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 		$asset_group             = new AssetGroup( $fields );
 		$operation               = new AssetGroupOperation();
 		$operation->setUpdate( $asset_group );
-		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $asset_group ) );
+		$operation->setUpdateMask( ( new FieldMask() )->setPaths( [ 'resource_name', ...array_keys( $fields ) ] ) );
 		return ( new MutateOperation() )->setAssetGroupOperation( $operation );
 	}
 
