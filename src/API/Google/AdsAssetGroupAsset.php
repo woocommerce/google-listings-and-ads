@@ -332,6 +332,8 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
 		}
 
+		// The delete operations must be executed first otherwise will cause a conflict with existing assets with identical content.
+		// See here: https://github.com/woocommerce/google-listings-and-ads/pull/1870
 		return array_merge( $delete_asset_group_assets_operations, $asset_group_assets_operations );
 
 	}
