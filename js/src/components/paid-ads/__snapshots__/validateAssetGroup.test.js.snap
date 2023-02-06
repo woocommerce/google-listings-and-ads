@@ -13,27 +13,6 @@ Array [
 ]
 `;
 
-exports[`validateAssetGroup Display URL paths asset When the character limit is exceeded in the index NaN of display_url_path, it should not pass 1`] = `
-Array [
-  "Headline 1: Character limit exceeded",
-  "Headline 2: Character limit exceeded",
-  "Headline 3: Character limit exceeded",
-]
-`;
-
-exports[`validateAssetGroup Display URL paths asset When the character limit is exceeded in the index NaN of display_url_path, it should not pass 2`] = `
-Array [
-  "Long headline 1: Character limit exceeded",
-]
-`;
-
-exports[`validateAssetGroup Display URL paths asset When the character limit is exceeded in the index NaN of display_url_path, it should not pass 3`] = `
-Array [
-  "Description 1: Character limit exceeded",
-  "Description 2: Character limit exceeded",
-]
-`;
-
 exports[`validateAssetGroup Image assets When the length of values.logo is less than 1, it should not pass 1`] = `"Add at least 1 logo image"`;
 
 exports[`validateAssetGroup Image assets When the length of values.marketing_image is less than 1, it should not pass 1`] = `"Add at least 1 rectangular image"`;

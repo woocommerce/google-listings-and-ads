@@ -140,24 +140,6 @@ describe( 'validateAssetGroup', () => {
 			expect( error.display_url_path ).toMatchSnapshot();
 		} );
 
-		it.each( ASSET_TEXT_SPECS.map( ( spec ) => [ spec.key, spec ] ) )(
-			'When the character limit is exceeded in the index %d of display_url_path, it should not pass',
-			( key, spec ) => {
-				values[ key ] = Array.from( { length: spec.min }, ( _, i ) => {
-					const limit =
-						spec.maxCharacterCounts?.[ i ] ??
-						spec.maxCharacterCounts;
-					return i.toString().repeat( limit + 1 );
-				} );
-				const error = validateAssetGroup( values );
-
-				expect( error ).toHaveProperty( key );
-				expect( Array.isArray( error[ key ] ) ).toBe( true );
-				expect( error[ key ] ).toHaveLength( spec.min );
-				expect( error[ key ] ).toMatchSnapshot();
-			}
-		);
-
 		it( 'When the character limit is exceeded in display_url_path, it should not pass', () => {
 			const specs = ASSET_DISPLAY_URL_PATH_SPECS;
 			const { length } = specs;
