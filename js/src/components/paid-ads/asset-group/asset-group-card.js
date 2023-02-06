@@ -23,16 +23,16 @@ import {
 import './asset-group-card.scss';
 
 const ctaOptions = [
-	{ label: 'Automated', value: 'UNSPECIFIED' },
-	{ label: 'Learn more', value: 'LEARN_MORE' },
-	{ label: 'Get quote', value: 'GET_QUOTE' },
-	{ label: 'Apply now', value: 'APPLY_NOW' },
-	{ label: 'Sign up', value: 'SIGN_UP' },
-	{ label: 'Contact us', value: 'CONTACT_US' },
-	{ label: 'Subscribe', value: 'SUBSCRIBE' },
-	{ label: 'Download', value: 'DOWNLOAD' },
-	{ label: 'Book now', value: 'BOOK_NOW' },
-	{ label: 'Shop now', value: 'SHOP_NOW' },
+	{ label: 'Automated', value: '' },
+	{ label: 'Learn more', value: 'learn_more' },
+	{ label: 'Get quote', value: 'get_quote' },
+	{ label: 'Apply now', value: 'apply_now' },
+	{ label: 'Sign up', value: 'sign_up' },
+	{ label: 'Contact us', value: 'contact_us' },
+	{ label: 'Subscribe', value: 'subscribe' },
+	{ label: 'Download', value: 'download' },
+	{ label: 'Book now', value: 'book_now' },
+	{ label: 'Shop now', value: 'shop_now' },
 ];
 
 /**
