@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, useMemo } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -14,6 +14,7 @@ import validateAssetGroup from '.~/components/paid-ads/validateAssetGroup';
 /**
  * @typedef {import('.~/components/types.js').CampaignFormValues} CampaignFormValues
  * @typedef {import('.~/components/types.js').AssetGroupFormValues} AssetGroupFormValues
+ * @typedef {import('.~/data/types.js').AssetEntityGroup} AssetEntityGroup
  */
 
 const emptyAssetGroup = {
@@ -30,18 +31,49 @@ const emptyAssetGroup = {
 };
 
 /**
+ * Converts the asset entity group data to the assets form values.
+ *
+ * @param  {AssetEntityGroup} [assetEntityGroup={}] Asset entity group data to be converted.
+ * @return {AssetGroupFormValues} Assets form values.
+ */
+function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
+	const { assets = {} } = assetEntityGroup;
+	const formValues = { ...emptyAssetGroup };
+
+	Object.keys( emptyAssetGroup ).forEach( ( key ) => {
+		if ( assetEntityGroup.hasOwnProperty( key ) ) {
+			formValues[ key ] = assetEntityGroup[ key ];
+		} else if ( assets.hasOwnProperty( key ) ) {
+			const asset = assets[ key ];
+
+			if ( Array.isArray( asset ) ) {
+				formValues[ key ] = asset.map( ( { content } ) => content );
+			} else {
+				formValues[ key ] = asset.content;
+			}
+		}
+	} );
+
+	return formValues;
+}
+
+/**
  * Renders a form based on AdaptiveForm for managing campaign and assets.
  *
  * @augments AdaptiveForm
  * @param {Object} props React props.
  * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
- * @param {AssetGroupFormValues} [props.initialAssetGroup] Initial asset group values. It will be the internal `emptyAssetGroup` by default.
+ * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
  */
 export default function CampaignAssetsForm( {
 	initialCampaign,
-	initialAssetGroup = emptyAssetGroup,
+	assetEntityGroup,
 	...adaptiveFormProps
 } ) {
+	const initialAssetGroup = useMemo( () => {
+		return convertAssetEntityGroupToFormValues( assetEntityGroup );
+	}, [ assetEntityGroup ] );
+
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ validationRequestCount, setValidationRequestCount ] = useState( 0 );
 

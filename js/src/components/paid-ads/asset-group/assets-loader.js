@@ -17,7 +17,7 @@ import { API_NAMESPACE } from '.~/data/constants';
 import './assets-loader.scss';
 
 /**
- * @typedef {import('.~/data/types.js').AssetGroup} AssetGroup
+ * @typedef {import('.~/data/types.js').SuggestedAssets} SuggestedAssets
  */
 
 function allowAllResults() {
@@ -82,7 +82,7 @@ function mapFinalUrlsToOptions( finalUrls, search ) {
  * and then loading the suggested assets.
  *
  * @param {Object} props React props.
- * @param {(assetGroup: AssetGroup) => void} props.onAssetsLoaded Callback function when the suggested assets are loaded.
+ * @param {(suggestedAssets: SuggestedAssets) => void} props.onAssetsLoaded Callback function when the suggested assets are loaded.
  */
 export default function AssetsLoader( { onAssetsLoaded } ) {
 	const cacheRef = useRef( {} );

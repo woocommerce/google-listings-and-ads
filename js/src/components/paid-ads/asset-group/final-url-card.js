@@ -17,14 +17,14 @@ import AssetsLoader from './assets-loader';
 import './final-url-card.scss';
 
 /**
- * @typedef {import('.~/data/types.js').AssetGroup} AssetGroup
+ * @typedef {import('.~/data/types.js').SuggestedAssets} SuggestedAssets
  */
 
 /**
  * Renders the Card UI for managing the final URL and getting the suggested assets.
  *
  * @param {Object} props React props.
- * @param {(assetGroup: AssetGroup | null) => void} props.onAssetsChange Callback function when the suggested assets are changed or reset to `null`.
+ * @param {(suggestedAssets: SuggestedAssets | null) => void} props.onAssetsChange Callback function when the suggested assets are changed or reset to `null`.
  * @param {string} [props.initialFinalUrl] The initial final URL.
  * @param {boolean} [props.hideFooter=false] Whether to hide the card footer.
  */
@@ -44,9 +44,9 @@ export default function FinalUrlCard( {
 		)
 	);
 
-	const handleAssetsLoaded = ( assetGroup ) => {
-		setFinalUrl( assetGroup[ ASSET_GROUP_KEY.FINAL_URL ] );
-		onAssetsChange( assetGroup );
+	const handleAssetsLoaded = ( suggestedAssets ) => {
+		setFinalUrl( suggestedAssets[ ASSET_GROUP_KEY.FINAL_URL ] );
+		onAssetsChange( suggestedAssets );
 	};
 
 	const handleReselectClick = () => {
