@@ -14,14 +14,13 @@ import AppInputControl from '.~/components/app-input-control';
 import ImagesSelector from './images-selector';
 import TextsEditor from './texts-editor';
 import AssetField from './asset-field';
+import { ASSET_FORM_KEY } from '.~/constants';
 import {
 	ASSET_IMAGE_SPECS,
 	ASSET_TEXT_SPECS,
 	ASSET_DISPLAY_URL_PATH_SPECS,
 } from '../assetSpecs';
 import './asset-group-card.scss';
-
-const ASSET_KEY_DISPLAY_URL_PATH = 'display_url_path';
 
 const ctaOptions = [
 	{ label: 'Automated', value: 'UNSPECIFIED' },
@@ -50,10 +49,10 @@ export default function AssetGroupCard() {
 		getInputProps,
 		adapter: { baseAssetGroup, validationRequestCount, assetGroupErrors },
 	} = useAdaptiveFormContext();
-	const finalUrl = baseAssetGroup.final_url;
+	const finalUrl = baseAssetGroup[ ASSET_FORM_KEY.FINAL_URL ];
 	const hostname = finalUrl ? new URL( finalUrl ).hostname : '';
 	const isSelectedFinalUrl = Boolean( finalUrl );
-	const ctaProps = getInputProps( 'call_to_action_selection' );
+	const ctaProps = getInputProps( ASSET_FORM_KEY.CALL_TO_ACTION_SELECTION );
 
 	firstErrorRef.current = null;
 
@@ -183,7 +182,9 @@ export default function AssetGroupCard() {
 				/>
 			</AssetField>
 			<AssetField
-				ref={ refFirstErrorField.bind( ASSET_KEY_DISPLAY_URL_PATH ) }
+				ref={ refFirstErrorField.bind(
+					ASSET_FORM_KEY.DISPLAY_URL_PATH
+				) }
 				className="gla-asset-field-display-url-path"
 				heading={ __( 'Display URL Path', 'google-listings-and-ads' ) }
 				subheading={ hostname }
@@ -203,12 +204,14 @@ export default function AssetGroupCard() {
 						</p>
 					</>
 				}
-				numOfIssues={ getNumOfIssues( ASSET_KEY_DISPLAY_URL_PATH ) }
+				numOfIssues={ getNumOfIssues(
+					ASSET_FORM_KEY.DISPLAY_URL_PATH
+				) }
 				disabled={ ! isSelectedFinalUrl }
 				initialExpanded={ isSelectedFinalUrl }
 			>
 				{ ASSET_DISPLAY_URL_PATH_SPECS.map( ( spec, index ) => {
-					const paths = values[ ASSET_KEY_DISPLAY_URL_PATH ];
+					const paths = values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ];
 
 					return (
 						<Fragment key={ index }>
@@ -224,7 +227,7 @@ export default function AssetGroupCard() {
 									const nextValue = paths.slice();
 									nextValue[ index ] = value;
 									setValue(
-										ASSET_KEY_DISPLAY_URL_PATH,
+										ASSET_FORM_KEY.DISPLAY_URL_PATH,
 										nextValue
 									);
 								} }
@@ -232,7 +235,7 @@ export default function AssetGroupCard() {
 						</Fragment>
 					);
 				} ) }
-				{ renderErrors( ASSET_KEY_DISPLAY_URL_PATH ) }
+				{ renderErrors( ASSET_FORM_KEY.DISPLAY_URL_PATH ) }
 			</AssetField>
 		</div>
 	);

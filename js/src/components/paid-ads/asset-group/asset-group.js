@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { ASSET_FORM_KEY } from '.~/constants';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
@@ -81,7 +82,7 @@ export default function AssetGroup( { campaign } ) {
 					isPrimary
 					data-action={ ACTION_SUBMIT_CAMPAIGN_AND_ASSETS }
 					disabled={
-						! adapter.baseAssetGroup.final_url ||
+						! adapter.baseAssetGroup[ ASSET_FORM_KEY.FINAL_URL ] ||
 						isSubmitted ||
 						currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
 					}

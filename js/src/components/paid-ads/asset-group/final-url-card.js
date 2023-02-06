@@ -9,6 +9,7 @@ import { ExternalLink } from 'extracted/@wordpress/components';
 /**
  * Internal dependencies
  */
+import { ASSET_GROUP_KEY } from '.~/constants';
 import Section from '.~/wcdl/section';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
@@ -44,7 +45,7 @@ export default function FinalUrlCard( {
 	);
 
 	const handleAssetsLoaded = ( assetGroup ) => {
-		setFinalUrl( assetGroup.final_url );
+		setFinalUrl( assetGroup[ ASSET_GROUP_KEY.FINAL_URL ] );
 		onAssetsChange( assetGroup );
 	};
 

@@ -6,6 +6,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { ASSET_FORM_KEY } from '.~/constants';
 import AdaptiveForm from '.~/components/adaptive-form';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '.~/components/paid-ads/validateAssetGroup';
@@ -16,16 +17,16 @@ import validateAssetGroup from '.~/components/paid-ads/validateAssetGroup';
  */
 
 const emptyAssetGroup = {
-	final_url: null,
-	business_name: null,
-	marketing_image: [],
-	square_marketing_image: [],
-	logo: [],
-	headline: [],
-	long_headline: [],
-	description: [],
-	call_to_action_selection: null,
-	display_url_path: [],
+	[ ASSET_FORM_KEY.FINAL_URL ]: null,
+	[ ASSET_FORM_KEY.BUSINESS_NAME ]: null,
+	[ ASSET_FORM_KEY.MARKETING_IMAGE ]: [],
+	[ ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE ]: [],
+	[ ASSET_FORM_KEY.LOGO ]: [],
+	[ ASSET_FORM_KEY.HEADLINE ]: [],
+	[ ASSET_FORM_KEY.LONG_HEADLINE ]: [],
+	[ ASSET_FORM_KEY.DESCRIPTION ]: [],
+	[ ASSET_FORM_KEY.CALL_TO_ACTION_SELECTION ]: null,
+	[ ASSET_FORM_KEY.DISPLAY_URL_PATH ]: [],
 };
 
 /**

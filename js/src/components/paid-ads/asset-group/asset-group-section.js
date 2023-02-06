@@ -7,6 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { ASSET_FORM_KEY } from '.~/constants';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
@@ -60,7 +61,9 @@ export default function AssetGroupSection() {
 		>
 			<VerticalGapLayout size="medium">
 				<FinalUrlCard
-					initialFinalUrl={ values.final_url }
+					initialFinalUrl={
+						adapter.baseAssetGroup[ ASSET_FORM_KEY.FINAL_URL ]
+					}
 					onAssetsChange={ adapter.resetAssetGroup }
 				/>
 				<AssetGroupCard />

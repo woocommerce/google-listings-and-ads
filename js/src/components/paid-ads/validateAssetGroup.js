@@ -7,6 +7,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import getCharacterCounter from '.~/utils/getCharacterCounter';
+import { ASSET_FORM_KEY } from '.~/constants';
 import {
 	ASSET_IMAGE_SPECS,
 	ASSET_TEXT_SPECS,
@@ -104,7 +105,7 @@ export default function validateAssetGroup( values ) {
 		}
 	} );
 
-	const displayUrlPaths = values.display_url_path;
+	const displayUrlPaths = values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ];
 
 	if ( displayUrlPaths.length ) {
 		const messages = [];
@@ -137,7 +138,7 @@ export default function validateAssetGroup( values ) {
 		} );
 
 		if ( messages.length ) {
-			error.display_url_path = messages;
+			error[ ASSET_FORM_KEY.DISPLAY_URL_PATH ] = messages;
 		}
 	}
 

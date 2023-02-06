@@ -4,6 +4,11 @@
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
+/**
+ * Internal dependencies
+ */
+import { ASSET_FORM_KEY } from '.~/constants';
+
 const ASSET_DISPLAY_URL_PATH_SPECS = [
 	{
 		maxCharacterCount: 15,
@@ -25,7 +30,7 @@ const ASSET_DISPLAY_URL_PATH_SPECS = [
 
 const ASSET_IMAGE_SPECS = [
 	{
-		key: 'marketing_image',
+		key: ASSET_FORM_KEY.MARKETING_IMAGE,
 		min: 1,
 		max: 20,
 		imageConfig: {
@@ -51,7 +56,7 @@ const ASSET_IMAGE_SPECS = [
 		),
 	},
 	{
-		key: 'square_marketing_image',
+		key: ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE,
 		min: 1,
 		max: 20,
 		imageConfig: {
@@ -77,7 +82,7 @@ const ASSET_IMAGE_SPECS = [
 		),
 	},
 	{
-		key: 'logo',
+		key: ASSET_FORM_KEY.LOGO,
 		min: 1,
 		max: 5,
 		imageConfig: {
@@ -106,7 +111,7 @@ const ASSET_IMAGE_SPECS = [
 
 const ASSET_TEXT_SPECS = [
 	{
-		key: 'headline',
+		key: ASSET_FORM_KEY.HEADLINE,
 		min: 3,
 		max: 5,
 		maxCharacterCounts: [ 15, 30, 30, 30, 30 ],
@@ -137,7 +142,7 @@ const ASSET_TEXT_SPECS = [
 		),
 	},
 	{
-		key: 'long_headline',
+		key: ASSET_FORM_KEY.LONG_HEADLINE,
 		min: 1,
 		max: 5,
 		maxCharacterCounts: 90,
@@ -181,7 +186,7 @@ const ASSET_TEXT_SPECS = [
 	},
 
 	{
-		key: 'description',
+		key: ASSET_FORM_KEY.DESCRIPTION,
 		min: 2,
 		max: 5,
 		maxCharacterCounts: [ 60, 90, 90, 90, 90 ],
