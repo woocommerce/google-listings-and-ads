@@ -11,7 +11,7 @@ import {
 	ASSET_IMAGE_SPECS,
 	ASSET_TEXT_SPECS,
 	ASSET_DISPLAY_URL_PATH_SPECS,
-} from './asset-specs';
+} from './assetSpecs';
 
 /**
  * @typedef {import('.~/components/types.js').AssetGroupFormValues} AssetGroupFormValues

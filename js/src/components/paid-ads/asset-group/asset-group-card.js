@@ -18,7 +18,7 @@ import {
 	ASSET_IMAGE_SPECS,
 	ASSET_TEXT_SPECS,
 	ASSET_DISPLAY_URL_PATH_SPECS,
-} from '../asset-specs';
+} from '../assetSpecs';
 import './asset-group-card.scss';
 
 const ASSET_KEY_DISPLAY_URL_PATH = 'display_url_path';
