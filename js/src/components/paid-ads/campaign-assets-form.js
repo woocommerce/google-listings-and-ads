@@ -28,13 +28,6 @@ const emptyAssetGroup = {
 	display_url_path: [],
 };
 
-function handleValidate( values ) {
-	return {
-		...validateCampaign( values ),
-		...validateAssetGroup( values ),
-	};
-}
-
 /**
  * Renders a form based on AdaptiveForm for managing campaign and assets.
  *
@@ -51,24 +44,28 @@ export default function CampaignAssetsForm( {
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ validationRequestCount, setValidationRequestCount ] = useState( 0 );
 
-	const extendAdapter = ( formContext ) => ( {
-		baseAssetGroup,
-		validationRequestCount,
-		isValidCampaign:
-			Object.keys( validateCampaign( formContext.values ) ).length === 0,
-		resetAssetGroup( assetGroup ) {
-			const nextAssetGroup = assetGroup || initialAssetGroup;
+	const extendAdapter = ( formContext ) => {
+		const assetGroupErrors = validateAssetGroup( formContext.values );
 
-			Object.keys( emptyAssetGroup ).forEach( ( key ) => {
-				formContext.setValue( key, nextAssetGroup[ key ] );
-			} );
-			setBaseAssetGroup( nextAssetGroup );
-			setValidationRequestCount( 0 );
-		},
-		showValidation() {
-			setValidationRequestCount( validationRequestCount + 1 );
-		},
-	} );
+		return {
+			baseAssetGroup,
+			validationRequestCount,
+			assetGroupErrors,
+			isValidAssetGroup: Object.keys( assetGroupErrors ).length === 0,
+			resetAssetGroup( assetGroup ) {
+				const nextAssetGroup = assetGroup || initialAssetGroup;
+
+				Object.keys( emptyAssetGroup ).forEach( ( key ) => {
+					formContext.setValue( key, nextAssetGroup[ key ] );
+				} );
+				setBaseAssetGroup( nextAssetGroup );
+				setValidationRequestCount( 0 );
+			},
+			showValidation() {
+				setValidationRequestCount( validationRequestCount + 1 );
+			},
+		};
+	};
 
 	return (
 		<AdaptiveForm
@@ -76,7 +73,7 @@ export default function CampaignAssetsForm( {
 				...initialCampaign,
 				...initialAssetGroup,
 			} }
-			validate={ handleValidate }
+			validate={ validateCampaign }
 			extendAdapter={ extendAdapter }
 			{ ...adaptiveFormProps }
 		/>

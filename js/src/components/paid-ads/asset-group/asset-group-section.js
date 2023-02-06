@@ -22,7 +22,7 @@ import './asset-group-section.scss';
  * so it expects a `CampaignAssetsForm` to existing in its parents.
  */
 export default function AssetGroupSection() {
-	const { values, adapter } = useAdaptiveFormContext();
+	const { adapter } = useAdaptiveFormContext();
 
 	return (
 		<Section

@@ -48,10 +48,8 @@ export default function AssetGroupCard() {
 		values,
 		setValue,
 		getInputProps,
-		errors,
-		adapter,
+		adapter: { baseAssetGroup, validationRequestCount, assetGroupErrors },
 	} = useAdaptiveFormContext();
-	const { baseAssetGroup, validationRequestCount } = adapter;
 	const finalUrl = baseAssetGroup.final_url;
 	const hostname = finalUrl ? new URL( finalUrl ).hostname : '';
 	const isSelectedFinalUrl = Boolean( finalUrl );
@@ -70,7 +68,7 @@ export default function AssetGroupCard() {
 			return 0;
 		}
 
-		const messages = errors[ key ];
+		const messages = assetGroupErrors[ key ];
 
 		if ( Array.isArray( messages ) ) {
 			return messages.length;
@@ -85,7 +83,7 @@ export default function AssetGroupCard() {
 
 		return (
 			<ul className="gla-asset-group-card__error-list">
-				{ [ errors[ key ] ].flat().map( ( message ) => (
+				{ [ assetGroupErrors[ key ] ].flat().map( ( message ) => (
 					<li key={ message }>{ message }</li>
 				) ) }
 			</ul>

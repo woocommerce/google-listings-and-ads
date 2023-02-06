@@ -34,11 +34,11 @@ export default function AssetGroup( { campaign } ) {
 	// TODO: When editing, it needs to distinguish whether the given asset group is empty. Will be implemented later.
 	const isEmptyAssetGroup = true;
 	const { isValidForm, handleSubmit, adapter } = useAdaptiveFormContext();
-	const { isValidCampaign, isSubmitting, isSubmitted, submitter } = adapter;
+	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
 
 	const handleLaunchClick = ( ...args ) => {
-		if ( isValidForm ) {
+		if ( isValidAssetGroup ) {
 			handleSubmit( ...args );
 		} else {
 			adapter.showValidation();
@@ -61,7 +61,7 @@ export default function AssetGroup( { campaign } ) {
 						isTertiary
 						data-action={ ACTION_SUBMIT_CAMPAIGN_ONLY }
 						disabled={
-							! isValidCampaign ||
+							! isValidForm ||
 							isSubmitted ||
 							currentAction === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
 						}

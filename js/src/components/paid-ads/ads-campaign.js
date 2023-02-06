@@ -42,7 +42,7 @@ export default function AdsCampaign( {
 } ) {
 	const isCreation = ! campaign;
 	const formContext = useAdaptiveFormContext();
-	const { isValidCampaign } = formContext.adapter;
+	const { isValidForm } = formContext;
 
 	const disabledBudgetSection = ! formContext.values.countryCodes.length;
 	const helperText = isCreation
@@ -101,7 +101,7 @@ export default function AdsCampaign( {
 			<StepContentFooter>
 				<AppButton
 					isPrimary
-					disabled={ ! isValidCampaign }
+					disabled={ ! isValidForm }
 					onClick={ onContinue }
 				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }
