@@ -89,14 +89,19 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * Get Assets for specific asset groups ids.
 	 *
 	 * @param array $asset_groups_ids The asset groups ids.
+	 * @param array $fields           The asset field types to get.
 	 *
 	 * @return array The assets for the asset groups.
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_assets_by_asset_group_ids( array $asset_groups_ids ): array {
+	public function get_assets_by_asset_group_ids( array $asset_groups_ids, array $fields = [] ): array {
 		try {
 			if ( empty( $asset_groups_ids ) ) {
 				return [];
+			}
+
+			if ( empty( $fields ) ) {
+				$fields = $this->get_asset_field_types_query();
 			}
 
 			$asset_group_assets = [];
@@ -104,7 +109,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 				->set_client( $this->client, $this->options->get_ads_id() )
 				->add_columns( [ 'asset_group.id' ] )
 				->where( 'asset_group.id', $asset_groups_ids, 'IN' )
-				->where( 'asset_group_asset.field_type', $this->get_asset_field_types_query(), 'IN' )
+				->where( 'asset_group_asset.field_type', $fields, 'IN' )
 				->where( 'asset_group_asset.status', 'REMOVED', '!=' )
 				->get_results();
 
@@ -243,6 +248,57 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get specific assets by asset types.
+	 *
+	 * @param int   $asset_group_id The asset group id.
+	 * @param array $asset_field_types The asset field types types.
+	 *
+	 * @return array The assets.
+	 */
+	protected function get_specific_assets( int $asset_group_id, array $asset_field_types ): array {
+		$result             = $this->get_assets_by_asset_group_ids( [ $asset_group_id ], $asset_field_types );
+		$asset_group_assets = $result[ $asset_group_id ] ?? [];
+		$specific_assets    = [];
+
+		foreach ( $asset_group_assets as $field_type => $assets ) {
+			foreach ( $assets as $asset ) {
+				$specific_assets[] = array_merge( $asset, [ 'field_type' => $field_type ] );
+			}
+		}
+
+		return $specific_assets;
+	}
+
+	/**
+	 * Check if a asset type will be edited.
+	 *
+	 * @param string $field_type The asset field type.
+	 * @param array  $assets The assets.
+	 *
+	 * @return bool True if the asset type is edited.
+	 */
+	protected function maybe_asset_type_is_edited( string $field_type, array $assets ): bool {
+		return in_array( $field_type, array_column( $assets, 'field_type' ), true );
+	}
+
+	/**
+	 * Get override asset operations.
+	 *
+	 * @param int   $asset_group_id The asset group id.
+	 * @param array $asset_field_types The asset field types.
+	 *
+	 * @return array The asset group asset operations.
+	 */
+	protected function get_override_operations( int $asset_group_id, array $asset_field_types ): array {
+		return array_map(
+			function( $asset ) use ( $asset_group_id ) {
+				return $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
+			},
+			$this->get_specific_assets( $asset_group_id, $asset_field_types )
+		);
+	}
+
+	/**
 	 * Edit assets group assets.
 	 *
 	 * @param int   $asset_group_id The asset group id.
@@ -257,11 +313,15 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		}
 
 		$asset_group_assets_operations        = [];
-		$delete_asset_group_assets_operations = [];
 		$assets_for_creation                  = $this->get_assets_to_be_created( $assets );
+		$asset_arns                           = $this->asset->create_assets( $assets_for_creation );
+		$total_assets                         = count( $assets_for_creation );
+		$delete_asset_group_assets_operations = [];
 
-		$asset_arns   = $this->asset->create_assets( $assets_for_creation );
-		$total_assets = count( $assets_for_creation );
+		if ( $this->maybe_asset_type_is_edited( AssetFieldType::LOGO, $assets ) ) {
+			// As we are not working with the LANDSCAPE_LOGO, we delete it so it does not interfere with the maximum quantities of logos.
+			$delete_asset_group_assets_operations = $this->get_override_operations( $asset_group_id, [ AssetFieldType::name( AssetFieldType::LANDSCAPE_LOGO ) ] );
+		}
 
 		// The asset mutation operation results (ARNs) are returned in the same order as the operations are specified.
 		// See: https://youtu.be/9KaVjqW5tVM?t=103
@@ -273,8 +333,9 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 			$delete_asset_group_assets_operations[] = $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
 		}
 
-		// Delete asset group assets operations must be executed last so we are never under the minimum quantity.
-		return array_merge( $asset_group_assets_operations, $delete_asset_group_assets_operations );
+		// The delete operations must be executed first otherwise will cause a conflict with existing assets with identical content.
+		// See here: https://github.com/woocommerce/google-listings-and-ads/pull/1870
+		return array_merge( $delete_asset_group_assets_operations, $asset_group_assets_operations );
 
 	}
 
