@@ -329,7 +329,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 		$assets          = $this->asset_group_asset->get_assets_by_asset_group_ids( $asset_group_ids );
 
 		foreach ( $asset_group_ids as $asset_group_id ) {
-			$asset_groups[ $asset_group_id ]['assets'] = $assets[ $asset_group_id ] ?? [];
+			$asset_groups[ $asset_group_id ]['assets'] = $assets[ $asset_group_id ] ?? (object) [];
 		}
 
 		return $asset_groups;
