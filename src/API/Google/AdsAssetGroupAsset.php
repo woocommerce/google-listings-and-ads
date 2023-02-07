@@ -250,22 +250,22 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 * Get specific assets by asset types.
 	 *
 	 * @param int   $asset_group_id The asset group id.
-	 * @param array $asset_types The asset types.
+	 * @param array $asset_field_types The asset field types types.
 	 *
 	 * @return array The assets.
 	 */
-	protected function get_specific_assets( int $asset_group_id, array $asset_types ): array {
-		$result             = $this->get_assets_by_asset_group_ids( [ $asset_group_id ], $asset_types );
+	protected function get_specific_assets( int $asset_group_id, array $asset_field_types ): array {
+		$result             = $this->get_assets_by_asset_group_ids( [ $asset_group_id ], $asset_field_types );
 		$asset_group_assets = $result[ $asset_group_id ] ?? [];
-		$assets             = [];
+		$specific_assets    = [];
 
-		foreach ( $asset_group_assets as $field_type => $asset_type ) {
-			foreach ( $asset_type as $asset ) {
-				$assets[] = array_merge( $asset, [ 'field_type' => $field_type ] );
+		foreach ( $asset_group_assets as $field_type => $assets ) {
+			foreach ( $assets as $asset ) {
+				$specific_assets[] = array_merge( $asset, [ 'field_type' => $field_type ] );
 			}
 		}
 
-		return $assets;
+		return $specific_assets;
 	}
 
 	/**
