@@ -7,6 +7,7 @@
  * @property {string[]} description The descriptive text for the ad to provide additional context or details.
  * @property {string[]} marketing_images The URLs of the landscape images.
  * @property {string[]} square_marketing_images The URLs of the square images.
+ * @property {string[]} portrait_marketing_image The URLs of the portrait images.
  * @property {string[]} logo The URLs of the logo images.
  * @property {string[]} display_url_path The path part of the display URL on the ad.
  * @property {string | null} call_to_action_selection The call-to-action text on the ad to let users know what the ad will get them to do. `null` if not selected.
@@ -26,6 +27,7 @@
  * @property {AssetEntity[]} [description] The descriptive text for the ad to provide additional context or details.
  * @property {AssetEntity[]} [marketing_images] The URLs of the landscape images.
  * @property {AssetEntity[]} [square_marketing_images] The URLs of the square images.
+ * @property {AssetEntity[]} [portrait_marketing_image] The URLs of the portrait images.
  * @property {AssetEntity[]} [logo] The URLs of the logo images.
  * @property {AssetEntity} [call_to_action_selection] The call-to-action text on the ad to let users know what the ad will get them to do. `null` if not selected.
  */
