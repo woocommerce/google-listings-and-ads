@@ -329,6 +329,20 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 		}
 
+		case TYPES.CREATE_CAMPAIGN_ASSET_GROUP: {
+			const { campaignId, assetGroup } = action;
+			const assetGroups = [
+				...( state.campaign_asset_groups[ campaignId ] || [] ),
+				assetGroup,
+			];
+
+			return setIn(
+				state,
+				[ 'campaign_asset_groups', campaignId ],
+				assetGroups
+			);
+		}
+
 		case TYPES.RECEIVE_MC_SETUP: {
 			return setIn( state, 'mc_setup', action.mcSetup );
 		}

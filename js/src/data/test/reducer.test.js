@@ -538,6 +538,31 @@ describe( 'reducer', () => {
 			expect( secondState ).toHaveProperty( `${ path }.123`, groupsA );
 			expect( secondState ).toHaveProperty( `${ path }.456`, groupsB );
 		} );
+
+		it( 'should push the newly created asset group into the specific asset group by the given `campaignId` and return with updated asset groups', () => {
+			const groupA = { id: 1 };
+			const groupB = { id: 2 };
+			const firstState = reducer( prepareState(), {
+				type: TYPES.CREATE_CAMPAIGN_ASSET_GROUP,
+				campaignId: 123,
+				assetGroup: groupA,
+			} );
+
+			firstState.assertConsistentRef();
+			expect( firstState ).toHaveProperty( `${ path }.123`, [ groupA ] );
+
+			const secondState = reducer( firstState, {
+				type: TYPES.CREATE_CAMPAIGN_ASSET_GROUP,
+				campaignId: 123,
+				assetGroup: groupB,
+			} );
+
+			secondState.assertConsistentRef();
+			expect( secondState ).toHaveProperty( `${ path }.123`, [
+				groupA,
+				groupB,
+			] );
+		} );
 	} );
 
 	describe( 'Merchant Center issues', () => {

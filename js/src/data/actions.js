@@ -9,7 +9,11 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import TYPES from './action-types';
-import { API_NAMESPACE, REQUEST_ACTIONS } from './constants';
+import {
+	API_NAMESPACE,
+	REQUEST_ACTIONS,
+	EMPTY_ASSET_ENTITY_GROUP,
+} from './constants';
 import { adaptAdsCampaign } from './adapters';
 
 export function handleFetchError( error, message ) {
@@ -858,6 +862,42 @@ export function* deleteAdsCampaign( id ) {
 				'google-listings-and-ads'
 			)
 		);
+		throw error;
+	}
+}
+
+/**
+ * Creates an asset group under the given Google Ads campaign.
+ *
+ * @param {number} campaignId The ID of the campaign to be created the asset group.
+ * @yield {Object} The wp-data action with data payload.
+ * @throws { { message: string } } Will throw an error if the creation fails.
+ */
+export function* createCampaignAssetGroup( campaignId ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns/asset-groups`,
+			method: 'POST',
+			data: { campaign_id: campaignId },
+		} );
+
+		return {
+			type: TYPES.CREATE_CAMPAIGN_ASSET_GROUP,
+			campaignId,
+			assetGroup: {
+				...EMPTY_ASSET_ENTITY_GROUP,
+				id: response.id,
+			},
+		};
+	} catch ( error ) {
+		const message =
+			error.message ||
+			__(
+				'There was an error creating the assets of the campaign.',
+				'google-listings-and-ads'
+			);
+
+		yield handleFetchError( error, message );
 		throw error;
 	}
 }
