@@ -241,8 +241,8 @@ class AssetSuggestionsService implements Service {
 		return array_merge(
 			[
 				AssetFieldType::HEADLINE      => [ __( 'Homepage', 'google-listings-and-ads' ) ],
-				AssetFieldType::LONG_HEADLINE => [],
-				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
+				AssetFieldType::LONG_HEADLINE => [ get_bloginfo( 'name' ) . ': ' . __( 'Homepage', 'google-listings-and-ads' ) ],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ __( 'Homepage', 'google-listings-and-ads' ), get_bloginfo( 'description' ) ] ),
 				'display_url_path'            => [],
 				'final_url'                   => get_bloginfo( 'url' ),
 			],
