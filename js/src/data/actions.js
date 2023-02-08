@@ -29,6 +29,10 @@ export function handleFetchError( error, message ) {
 }
 
 /**
+ * @typedef {import('.~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
+ */
+
+/**
  * CountryCode
  *
  * @typedef {string} CountryCode Two-letter country code in ISO 3166-1 alpha-2 format. Example: 'US'.
@@ -894,6 +898,39 @@ export function* createCampaignAssetGroup( campaignId ) {
 			error.message ||
 			__(
 				'There was an error creating the assets of the campaign.',
+				'google-listings-and-ads'
+			);
+
+		yield handleFetchError( error, message );
+		throw error;
+	}
+}
+
+/**
+ * Updates the asset group of the Google Ads campaign.
+ *
+ * @param {number} assetGroupId The ID of the asset group to be updated.
+ * @param {AssetEntityGroupUpdateBody} body The body of the updating request.
+ * @yield {Object} The wp-data action with data payload.
+ * @throws { { message: string } } Will throw an error if the update fails.
+ */
+export function* updateCampaignAssetGroup( assetGroupId, body ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns/asset-groups/${ assetGroupId }`,
+			method: 'PUT',
+			data: body,
+		} );
+
+		return {
+			type: TYPES.UPDATE_CAMPAIGN_ASSET_GROUP,
+			assetGroupId,
+		};
+	} catch ( error ) {
+		const message =
+			error.message ||
+			__(
+				'There was an error updating the assets of the campaign.',
 				'google-listings-and-ads'
 			);
 
