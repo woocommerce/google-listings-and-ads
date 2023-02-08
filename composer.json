@@ -63,7 +63,7 @@
 			"Google\\Task\\Composer::cleanup",
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\SymfonyPolyfillCleanup::remove",
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\GoogleAdsCleanupServices::remove",
-			"composer run-script remove-google-ads-api-version-support -- 8 9 10",
+			"composer run-script remove-google-ads-api-version-support -- 9 10 11",
 			"php ./bin/prefix-vendor-namespace.php",
 			"bash ./bin/cleanup-vendor-files.sh",
 			"composer dump-autoload"
