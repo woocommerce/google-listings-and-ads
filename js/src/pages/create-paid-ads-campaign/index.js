@@ -39,8 +39,8 @@ const CreatePaidAdsCampaign = () => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: initialCountryCodes } = useTargetAudienceFinalCountryCodes();
 
-	const handleSubmit = async ( values, submitter ) => {
-		const { action } = submitter.dataset;
+	const handleSubmit = async ( values, enhancer ) => {
+		const { action } = enhancer.submitter.dataset;
 
 		try {
 			const { amount, countryCodes } = values;
@@ -63,6 +63,7 @@ const CreatePaidAdsCampaign = () => {
 				)
 			);
 		} catch ( e ) {
+			enhancer.signalFailedSubmission();
 			return;
 		}
 

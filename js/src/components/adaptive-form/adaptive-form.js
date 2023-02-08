@@ -28,6 +28,12 @@ function isEvent( value ) {
  * @property {(name: string, value: *) => void} setValue Set the `name` field of the form states to the given `value`.
  */
 
+/**
+ * @typedef {Object} AdaptiveFormSubmissionEnhancer
+ * @property {HTMLElement} submitter The element triggering the `handleSubmit` callback.
+ * @property {() => void} signalFailedSubmission Function to signal AdaptiveForm that the submission is failed so that the AdaptiveForm will reset the submission states.
+ */
+
 const SUBMITTING = 'submitting';
 const SUBMITTED = 'submitted';
 
@@ -40,7 +46,7 @@ const SUBMITTED = 'submitted';
  * them upstream.
  *
  * @param {Object} props React props.
- * @param {(values: Object) => void} [props.onSubmit] Function to call when a form is requesting submission.
+ * @param {(values: Object, submissionEnhancer: AdaptiveFormSubmissionEnhancer) => void} [props.onSubmit] Function to call when a form is requesting submission.
  * @param {(formContext: AdaptiveFormContext) => Object} [props.extendAdapter] Function to get the custom adapter to be appended to form's adapter so that they can be accessed via formContext.adapter.
  * @param {(formContext: AdaptiveFormContext) => JSX.Element | JSX.Element} props.children Children to be rendered. Could be a render prop function.
  * @param {import('react').MutableRefObject<AdaptiveFormHandler>} ref React ref to be attached to the handler of this component.
@@ -85,10 +91,23 @@ function AdaptiveForm( { onSubmit, extendAdapter, children, ...props }, ref ) {
 		props.onSubmit = async function ( values ) {
 			setSubmission( SUBMITTING );
 
-			await onSubmit.call( this, values, adapterRef.current.submitter );
+			let shouldResetSubmission = false;
+			const submissionEnhancer = {
+				submitter: adapterRef.current.submitter,
+				signalFailedSubmission() {
+					shouldResetSubmission = true;
+				},
+			};
+
+			await onSubmit.call( this, values, submissionEnhancer );
 
 			if ( isMounted() ) {
-				setSubmission( SUBMITTED );
+				if ( shouldResetSubmission ) {
+					setSubmission( null );
+				} else {
+					setSubmission( SUBMITTED );
+				}
+
 				adapterRef.current.submitter = null;
 			}
 		};

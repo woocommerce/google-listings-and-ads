@@ -81,8 +81,8 @@ const EditPaidAdsCampaign = () => {
 		);
 	}
 
-	const handleSubmit = async ( values, submitter ) => {
-		const { action } = submitter.dataset;
+	const handleSubmit = async ( values, enhancer ) => {
+		const { action } = enhancer.submitter.dataset;
 		const { amount } = values;
 
 		try {
@@ -92,6 +92,7 @@ const EditPaidAdsCampaign = () => {
 				// TODO: Save asset group
 			}
 		} catch ( e ) {
+			enhancer.signalFailedSubmission();
 			return;
 		}
 
