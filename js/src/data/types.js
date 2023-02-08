@@ -40,5 +40,20 @@
  * @property {string[]} display_url_path The path part of the display URL on the ad.
  */
 
+/**
+ * @typedef {Object} AssetOperations
+ * @property {number | null} id The ID of the asset. Set `null` to indicate the asset creation operation.
+ * @property {string | null} content The content of the asset. Set `null` to indicate the asset deletion operation.
+ * @property {string} field_type The enum field type of the asset.
+ */
+
+/**
+ * @typedef {Object} AssetEntityGroupUpdateBody
+ * @property {string} final_url The page URL on merchant's website that people reach when they click the ad.
+ * @property {string} path1 The first path of the display URL on the ad.
+ * @property {string} path2 The second path of the display URL on the ad.
+ * @property {AssetOperations[]} assets The creation and deletion operations for updating the asset group.
+ */
+
 // This export is required for JSDoc in other files to import the type definitions from this file.
 export default {};
