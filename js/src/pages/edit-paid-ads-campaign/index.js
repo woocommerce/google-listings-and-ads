@@ -10,8 +10,10 @@ import { getQuery, getHistory, getNewPath } from '@woocommerce/navigation';
  */
 import useLayout from '.~/hooks/useLayout';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
+import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
+import convertToAssetGroupUpdateBody from '.~/components/paid-ads/convertToAssetGroupUpdateBody';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
@@ -39,18 +41,28 @@ function getCurrentStep() {
 const EditPaidAdsCampaign = () => {
 	useLayout( 'full-content' );
 
-	const { updateAdsCampaign } = useAppDispatch();
+	const {
+		updateAdsCampaign,
+		createCampaignAssetGroup,
+		updateCampaignAssetGroup,
+	} = useAppDispatch();
 
 	const id = Number( getQuery().programId );
 	const { loaded, data: campaigns } = useAdsCampaigns();
+	const {
+		hasFinishedResolution: hasResolvedAssetEntityGroups,
+		invalidateResolution: invalidateResolvedAssetEntityGroups,
+		data: assetEntityGroups,
+	} = useAppSelectDispatch( 'getCampaignAssetGroups', id );
 	const campaign = campaigns?.find( ( el ) => el.id === id );
+	const assetEntityGroup = assetEntityGroups?.at( 0 );
 
 	const setStep = ( step ) => {
 		const url = getNewPath( { ...getQuery(), step } );
 		getHistory().push( url );
 	};
 
-	if ( ! loaded ) {
+	if ( ! loaded || ! hasResolvedAssetEntityGroups ) {
 		return (
 			<>
 				<TopBar
@@ -89,7 +101,21 @@ const EditPaidAdsCampaign = () => {
 			await updateAdsCampaign( campaign.id, { amount } );
 
 			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
-				// TODO: Save asset group
+				let existingAssetEntityGroup = assetEntityGroup;
+
+				if ( ! existingAssetEntityGroup ) {
+					const actionPayload = await createCampaignAssetGroup( id );
+					existingAssetEntityGroup = actionPayload.assetGroup;
+				}
+
+				const assetGroupId = existingAssetEntityGroup.id;
+				const body = convertToAssetGroupUpdateBody(
+					existingAssetEntityGroup,
+					values
+				);
+
+				await updateCampaignAssetGroup( assetGroupId, body );
+				invalidateResolvedAssetEntityGroups();
 			}
 		} catch ( e ) {
 			enhancer.signalFailedSubmission();
@@ -115,6 +141,7 @@ const EditPaidAdsCampaign = () => {
 					amount: campaign.amount,
 					countryCodes: campaign.displayCountries,
 				} }
+				assetEntityGroup={ assetEntityGroup }
 				onSubmit={ handleSubmit }
 			>
 				<Stepper
