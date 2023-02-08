@@ -6,7 +6,7 @@ import { useState, useMemo } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { ASSET_FORM_KEY } from '.~/constants';
+import { ASSET_GROUP_KEY, ASSET_FORM_KEY } from '.~/constants';
 import AdaptiveForm from '.~/components/adaptive-form';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '.~/components/paid-ads/validateAssetGroup';
@@ -80,8 +80,13 @@ export default function CampaignAssetsForm( {
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
+		const finalUrl = assetEntityGroup?.[ ASSET_GROUP_KEY.FINAL_URL ];
 
 		return {
+			// Currently, the PMax Assets feature in this extension has functional limits, therefore,
+			// it needs to distinguish whether the `assetEntityGroup` is "empty" or not in order to
+			// provide different special business logic.
+			isEmptyAssetEntityGroup: ! finalUrl,
 			baseAssetGroup,
 			validationRequestCount,
 			assetGroupErrors,
