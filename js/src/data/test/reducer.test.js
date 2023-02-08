@@ -45,6 +45,7 @@ describe( 'reducer', () => {
 			},
 			ads_campaigns: null,
 			all_ads_campaigns: null,
+			campaign_asset_groups: {},
 			mc_setup: null,
 			mc_review_request: {
 				issues: null,
@@ -508,6 +509,34 @@ describe( 'reducer', () => {
 
 			state.assertConsistentRef();
 			expect( state ).toHaveProperty( pathAllAds, action.adsCampaigns );
+		} );
+	} );
+
+	describe( 'Campaign asset groups', () => {
+		const path = 'campaign_asset_groups';
+
+		it( 'should store asset groups individually by the given `campaignId` and return with received asset groups', () => {
+			const groupsA = [ { id: 1 }, { id: 2 } ];
+			const groupsB = [ { id: 3 }, { id: 4 } ];
+			const firstState = reducer( prepareState(), {
+				type: TYPES.RECEIVE_CAMPAIGN_ASSET_GROUPS,
+				campaignId: 123,
+				assetGroups: groupsA,
+			} );
+
+			firstState.assertConsistentRef();
+			expect( firstState ).toHaveProperty( `${ path }.123`, groupsA );
+
+			// Store other asset groups individually.
+			const secondState = reducer( firstState, {
+				type: TYPES.RECEIVE_CAMPAIGN_ASSET_GROUPS,
+				campaignId: 456,
+				assetGroups: groupsB,
+			} );
+
+			secondState.assertConsistentRef();
+			expect( secondState ).toHaveProperty( `${ path }.123`, groupsA );
+			expect( secondState ).toHaveProperty( `${ path }.456`, groupsB );
 		} );
 	} );
 
