@@ -237,6 +237,9 @@ class AssetSuggestionsService implements Service {
 		if ( $home_page ) {
 			return $this->get_post_assets( $home_page->ID );
 		}
+
+		$marketing_images = $this->get_url_attachments_by_ids( $this->get_post_image_attachments() );
+
 		// Non static homepage.
 		return array_merge(
 			[
@@ -246,7 +249,7 @@ class AssetSuggestionsService implements Service {
 				'display_url_path'            => [],
 				'final_url'                   => get_bloginfo( 'url' ),
 			],
-			$this->get_suggestions_common_fields( [] )
+			$this->get_suggestions_common_fields( $marketing_images )
 		);
 
 	}
