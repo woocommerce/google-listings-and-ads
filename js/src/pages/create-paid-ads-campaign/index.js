@@ -2,8 +2,9 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 import { Stepper } from '@woocommerce/components';
-import { useState } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 import { getHistory } from '@woocommerce/navigation';
 import { recordEvent } from '@woocommerce/tracks';
 
@@ -15,6 +16,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
+import convertToAssetGroupUpdateBody from '.~/components/paid-ads/convertToAssetGroupUpdateBody';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
@@ -23,6 +25,7 @@ import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '.~/components/paid-ads/asset-group';
 import { CAMPAIGN_STEP as STEP } from '.~/constants';
+import { API_NAMESPACE } from '.~/data/constants';
 
 const dashboardURL = getDashboardUrl();
 
@@ -35,7 +38,8 @@ const CreatePaidAdsCampaign = () => {
 	useLayout( 'full-content' );
 
 	const [ step, setStep ] = useState( STEP.CAMPAIGN );
-	const { createAdsCampaign } = useAppDispatch();
+	const createdCampaignIdRef = useRef( null );
+	const { createAdsCampaign, updateCampaignAssetGroup } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: initialCountryCodes } = useTargetAudienceFinalCountryCodes();
 
@@ -49,10 +53,24 @@ const CreatePaidAdsCampaign = () => {
 				budget: amount,
 			} );
 
-			await createAdsCampaign( amount, countryCodes );
+			// Avoid re-creating a new campaign if the subsequent asset group update is failed.
+			if ( createdCampaignIdRef.current === null ) {
+				const payload = await createAdsCampaign( amount, countryCodes );
+				createdCampaignIdRef.current = payload.createdCampaign.id;
+			}
 
 			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
-				// TODO: Save asset group
+				const id = createdCampaignIdRef.current;
+				const path = `${ API_NAMESPACE }/ads/campaigns/asset-groups?campaign_id=${ id }`;
+
+				const [ assetEntityGroup ] = await apiFetch( { path } );
+
+				const body = convertToAssetGroupUpdateBody(
+					assetEntityGroup,
+					values
+				);
+
+				await updateCampaignAssetGroup( assetEntityGroup.id, body );
 			}
 
 			createNotice(
