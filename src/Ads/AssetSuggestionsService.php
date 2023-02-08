@@ -69,17 +69,17 @@ class AssetSuggestionsService implements Service {
 		self::MARKETING_IMAGE_KEY          => [
 			'minimum'     => [ 600, 314 ],
 			'recommended' => [ 1200, 628 ],
-			'max_qty'     => 10,
+			'max_qty'     => 8,
 		],
 		self::SQUARE_MARKETING_IMAGE_KEY   => [
 			'minimum'     => [ 300, 300 ],
 			'recommended' => [ 1200, 1200 ],
-			'max_qty'     => 5,
+			'max_qty'     => 8,
 		],
 		self::PORTRAIT_MARKETING_IMAGE_KEY => [
 			'minimum'     => [ 480, 600 ],
 			'recommended' => [ 960, 1200 ],
-			'max_qty'     => 5,
+			'max_qty'     => 4,
 		],
 		self::LOGO_IMAGE_KEY               => [
 			'minimum'     => [ 128, 128 ],
