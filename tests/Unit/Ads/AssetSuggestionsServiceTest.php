@@ -378,6 +378,12 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			null
 		);
 
+		$this->wp->expects( $this->once( 1 ) )
+		->method( 'get_posts' )
+		->willReturn(
+			[]
+		);
+
 		$this->assertEquals( $this->format_homepage_asset_response(), $this->asset_suggestions->get_assets_suggestions( self::HOMEPAGE_KEY_ID, 'homepage' ) );
 	}
 
