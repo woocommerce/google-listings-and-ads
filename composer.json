@@ -6,21 +6,20 @@
 	"minimum-stability": "dev",
 	"require": {
 		"php": ">=7.4",
+		"ext-json": "*",
 		"automattic/jetpack-autoloader": "^2.4",
 		"automattic/jetpack-config": "^1.4",
 		"automattic/jetpack-connection": "^1.40",
-		"google/apiclient": "^2.12",
-		"google/apiclient-services": "~0.258",
-		"googleads/google-ads-php": "^16.0",
+		"google/apiclient": "^2.13",
+		"google/apiclient-services": "~0.286",
+		"googleads/google-ads-php": "^17.0",
 		"league/container": "^3.3",
 		"league/iso3166": "^4.1",
 		"phpseclib/bcmath_compat": "^2.0",
 		"psr/container": "^1.0",
-		"symfony/validator": "^5.2",
-		"ext-json": "*",
 		"symfony/polyfill-intl-normalizer": "^1.26",
-		"symfony/polyfill-mbstring": "^1.26"
-		
+		"symfony/polyfill-mbstring": "^1.26",
+		"symfony/validator": "^5.2"
 	},
 	"require-dev": {
 		"dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
