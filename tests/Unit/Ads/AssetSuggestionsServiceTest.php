@@ -132,8 +132,8 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		return array_merge(
 			[
 				AssetFieldType::HEADLINE      => [ 'Homepage' ],
-				AssetFieldType::LONG_HEADLINE => [],
-				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
+				AssetFieldType::LONG_HEADLINE => [ get_bloginfo( 'name' ) . ': Homepage' ],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ 'Homepage', get_bloginfo( 'description' ) ] ),
 				'display_url_path'            => [],
 				'final_url'                   => get_bloginfo( 'url' ),
 			],
