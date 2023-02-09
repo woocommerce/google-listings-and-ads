@@ -378,10 +378,25 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			null
 		);
 
-		$this->wp->expects( $this->once( 1 ) )
+		$this->wp->expects( $this->exactly( 2 ) )
 		->method( 'get_posts' )
-		->willReturn(
-			[]
+		->withConsecutive(
+			[
+				[],
+			],
+			[
+				[
+					'post_type'       => 'attachment',
+					'post_mime_type'  => [ 'image/jpeg', 'image/png', 'image/jpg' ],
+					'fields'          => 'ids',
+					'numberposts'     => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
+					'post_parent__in' => [ $this->post->ID ],
+				],
+			]
+		)
+		->willReturnOnConsecutiveCalls(
+			[ $this->post ],
+			[],
 		);
 
 		$this->assertEquals( $this->format_homepage_asset_response(), $this->asset_suggestions->get_assets_suggestions( self::HOMEPAGE_KEY_ID, 'homepage' ) );

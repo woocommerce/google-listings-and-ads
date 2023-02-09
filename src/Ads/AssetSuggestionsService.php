@@ -234,8 +234,11 @@ class AssetSuggestionsService implements Service {
 			return $this->get_post_assets( $home_page->ID );
 		}
 
-		// Get images from the last posts.
-		$marketing_images = $this->get_url_attachments_by_ids( $this->get_post_image_attachments() );
+		// Get images from the latest posts.
+		$posts               = $this->wp->get_posts( [] );
+		$inserted_images_ids = array_map( [ $this, 'get_html_inserted_images' ], array_column( $posts, 'post_content' ) );
+		$ids                 = array_merge( $this->get_post_image_attachments( [ 'post_parent__in' => array_column( $posts, 'ID' ) ] ), ...$inserted_images_ids );
+		$marketing_images    = $this->get_url_attachments_by_ids( $ids );
 
 		// Non static homepage.
 		return array_merge(
@@ -510,6 +513,10 @@ class AssetSuggestionsService implements Service {
 		foreach ( $ids as $id ) {
 
 			$metadata = wp_get_attachment_metadata( $id );
+
+			if ( ! $metadata ) {
+				continue;
+			}
 
 			foreach ( $size_keys as $size_key ) {
 				if ( count( $marketing_images[ $size_key ] ?? [] ) >= self::IMAGE_REQUIREMENTS[ $size_key ]['max_qty'] ) {
