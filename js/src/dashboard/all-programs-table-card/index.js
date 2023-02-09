@@ -3,7 +3,6 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery, onQueryChange } from '@woocommerce/navigation';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -17,11 +16,10 @@ import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import useAdsCurrency from '.~/hooks/useAdsCurrency';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AppSpinner from '.~/components/app-spinner';
-import { FREE_LISTINGS_PROGRAM_ID, CAMPAIGN_STEP } from '.~/constants';
+import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
-import { getEditCampaignUrl } from '.~/utils/urls';
 
 const headers = [
 	{
@@ -38,10 +36,6 @@ const headers = [
 	{
 		key: 'dailyBudget',
 		label: __( 'Daily budget', 'google-listings-and-ads' ),
-	},
-	{
-		key: 'assets',
-		label: __( 'Assets', 'google-listings-and-ads' ),
 	},
 	{
 		key: 'enabled',
@@ -127,12 +121,6 @@ const AllProgramsTableCard = ( props ) => {
 			}
 			headers={ headers }
 			rows={ data.map( ( el ) => {
-				const isPaidCampaign = el.id !== FREE_LISTINGS_PROGRAM_ID;
-				const editingAssetsPath = getEditCampaignUrl(
-					el.id,
-					CAMPAIGN_STEP.ASSET_GROUP
-				);
-
 				// Since the <Table> component uses array index as key to render rows,
 				// it might cause incorrect state control if a column has an internal state.
 				// So we have to specific `key` prop on some components of the `display` to work around it.
@@ -142,23 +130,18 @@ const AllProgramsTableCard = ( props ) => {
 					{ display: el.country },
 					{ display: el.dailyBudget },
 					{
-						display: isPaidCampaign && (
-							// TODO: Revisit this temporary demo since the spec of assets column is not yet decided.
-							<Link href={ editingAssetsPath }>Edit</Link>
-						),
-					},
-					{
-						display: isPaidCampaign ? (
-							<ProgramToggle key={ el.id } program={ el } />
-						) : (
-							<FreeListingsDisabledToggle />
-						),
+						display:
+							el.id === FREE_LISTINGS_PROGRAM_ID ? (
+								<FreeListingsDisabledToggle />
+							) : (
+								<ProgramToggle key={ el.id } program={ el } />
+							),
 					},
 					{
 						display: (
 							<div className="program-actions" key={ el.id }>
 								<EditProgramButton programId={ el.id } />
-								{ isPaidCampaign && (
+								{ el.id !== FREE_LISTINGS_PROGRAM_ID && (
 									<RemoveProgramButton programId={ el.id } />
 								) }
 							</div>
