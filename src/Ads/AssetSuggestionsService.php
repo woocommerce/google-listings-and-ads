@@ -196,11 +196,7 @@ class AssetSuggestionsService implements Service {
 			return [];
 		}
 
-		if ( ! isset( $asset_group_assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] ) ) {
-			$asset_group_assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] = null;
-		}
-
-		return array_merge( [ 'final_url' => $final_url ], $asset_group_assets );
+		return array_merge( $this->get_suggestions_common_fields( [] ), [ 'final_url' => $final_url ], $asset_group_assets );
 
 	}
 
@@ -238,6 +234,7 @@ class AssetSuggestionsService implements Service {
 			return $this->get_post_assets( $home_page->ID );
 		}
 
+		// Get images from the last posts.
 		$marketing_images = $this->get_url_attachments_by_ids( $this->get_post_image_attachments() );
 
 		// Non static homepage.
