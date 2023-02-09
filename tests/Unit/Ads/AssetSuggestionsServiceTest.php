@@ -733,7 +733,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 				'final_url'                              => get_permalink( $this->post->ID ),
 			];
 
-			$this->assertEquals( $expected, $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+			$this->assertEquals( array_merge( $this->get_suggestions_common_fields( [] ), $expected ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 
 	}
 
@@ -755,7 +755,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 				'final_url'                              => get_permalink( $this->post->ID ),
 			];
 
-			$this->assertEquals( $expected, $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+			$this->assertEquals( array_merge( $this->get_suggestions_common_fields( [] ), $expected ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 
 	}
 
