@@ -1124,7 +1124,7 @@ export function* receiveStoreCategories( storeCategories ) {
 /**
  * Action to receive the Tours.
  *
- * @param {Array} tour The tour to receive
+ * @param {Object} tour The tour to receive.
  */
 export function* receiveTour( tour ) {
 	return {

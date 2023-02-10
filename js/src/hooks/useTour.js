@@ -5,17 +5,13 @@ import { useAppDispatch } from '.~/data';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 
 /**
- * @typedef {import('react').React} React
- */
-
-/**
  * @typedef {import('.~/data/selectors').Tour} Tour
  */
 
 /**
  * @typedef {Object} TourHook
  * @property { { data: Tour, hasFinishedResolution: boolean, isResolving: boolean, invalidateResolution: Function } } tour The tour object
- * @property {React.Dispatch<React.SetStateAction<Tour>>} setTour Setter for the hook
+ * @property {(tour: Tour) => Promise<{tour: Tour}>} setTour Setter for the hook
  * @property {boolean} showTour Indicates if the tour should be shown based on it's checked prop
  */
 
