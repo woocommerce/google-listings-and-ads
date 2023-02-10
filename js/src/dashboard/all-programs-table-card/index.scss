@@ -7,7 +7,7 @@
 
 	.program-actions {
 		display: flex;
-		justify-content: flex-end;
+		justify-content: space-between;
 		gap: $grid-unit-15;
 	}
 }
