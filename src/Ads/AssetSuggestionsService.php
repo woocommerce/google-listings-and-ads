@@ -69,17 +69,17 @@ class AssetSuggestionsService implements Service {
 		self::MARKETING_IMAGE_KEY          => [
 			'minimum'     => [ 600, 314 ],
 			'recommended' => [ 1200, 628 ],
-			'max_qty'     => 10,
+			'max_qty'     => 8,
 		],
 		self::SQUARE_MARKETING_IMAGE_KEY   => [
 			'minimum'     => [ 300, 300 ],
 			'recommended' => [ 1200, 1200 ],
-			'max_qty'     => 5,
+			'max_qty'     => 8,
 		],
 		self::PORTRAIT_MARKETING_IMAGE_KEY => [
 			'minimum'     => [ 480, 600 ],
 			'recommended' => [ 960, 1200 ],
-			'max_qty'     => 5,
+			'max_qty'     => 4,
 		],
 		self::LOGO_IMAGE_KEY               => [
 			'minimum'     => [ 128, 128 ],
@@ -196,11 +196,7 @@ class AssetSuggestionsService implements Service {
 			return [];
 		}
 
-		if ( ! isset( $asset_group_assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] ) ) {
-			$asset_group_assets[ AssetFieldType::CALL_TO_ACTION_SELECTION ] = null;
-		}
-
-		return array_merge( [ 'final_url' => $final_url ], $asset_group_assets );
+		return array_merge( $this->get_suggestions_common_fields( [] ), [ 'final_url' => $final_url ], $asset_group_assets );
 
 	}
 
@@ -237,16 +233,23 @@ class AssetSuggestionsService implements Service {
 		if ( $home_page ) {
 			return $this->get_post_assets( $home_page->ID );
 		}
+
+		// Get images from the latest posts.
+		$posts               = $this->wp->get_posts( [] );
+		$inserted_images_ids = array_map( [ $this, 'get_html_inserted_images' ], array_column( $posts, 'post_content' ) );
+		$ids                 = array_merge( $this->get_post_image_attachments( [ 'post_parent__in' => array_column( $posts, 'ID' ) ] ), ...$inserted_images_ids );
+		$marketing_images    = $this->get_url_attachments_by_ids( $ids );
+
 		// Non static homepage.
 		return array_merge(
 			[
 				AssetFieldType::HEADLINE      => [ __( 'Homepage', 'google-listings-and-ads' ) ],
-				AssetFieldType::LONG_HEADLINE => [],
-				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
+				AssetFieldType::LONG_HEADLINE => [ get_bloginfo( 'name' ) . ': ' . __( 'Homepage', 'google-listings-and-ads' ) ],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ __( 'Homepage', 'google-listings-and-ads' ), get_bloginfo( 'description' ) ] ),
 				'display_url_path'            => [],
 				'final_url'                   => get_bloginfo( 'url' ),
 			],
-			$this->get_suggestions_common_fields( [] )
+			$this->get_suggestions_common_fields( $marketing_images )
 		);
 
 	}
@@ -510,6 +513,10 @@ class AssetSuggestionsService implements Service {
 		foreach ( $ids as $id ) {
 
 			$metadata = wp_get_attachment_metadata( $id );
+
+			if ( ! $metadata ) {
+				continue;
+			}
 
 			foreach ( $size_keys as $size_key ) {
 				if ( count( $marketing_images[ $size_key ] ?? [] ) >= self::IMAGE_REQUIREMENTS[ $size_key ]['max_qty'] ) {

@@ -132,8 +132,8 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		return array_merge(
 			[
 				AssetFieldType::HEADLINE      => [ 'Homepage' ],
-				AssetFieldType::LONG_HEADLINE => [],
-				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ get_bloginfo( 'description' ) ] ),
+				AssetFieldType::LONG_HEADLINE => [ get_bloginfo( 'name' ) . ': Homepage' ],
+				AssetFieldType::DESCRIPTION   => ArrayUtil::remove_empty_values( [ 'Homepage', get_bloginfo( 'description' ) ] ),
 				'display_url_path'            => [],
 				'final_url'                   => get_bloginfo( 'url' ),
 			],
@@ -376,6 +376,27 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		->method( 'get_static_homepage' )
 		->willReturn(
 			null
+		);
+
+		$this->wp->expects( $this->exactly( 2 ) )
+		->method( 'get_posts' )
+		->withConsecutive(
+			[
+				[],
+			],
+			[
+				[
+					'post_type'       => 'attachment',
+					'post_mime_type'  => [ 'image/jpeg', 'image/png', 'image/jpg' ],
+					'fields'          => 'ids',
+					'numberposts'     => self::DEFAULT_MAXIMUM_MARKETING_IMAGES,
+					'post_parent__in' => [ $this->post->ID ],
+				],
+			]
+		)
+		->willReturnOnConsecutiveCalls(
+			[ $this->post ],
+			[],
 		);
 
 		$this->assertEquals( $this->format_homepage_asset_response(), $this->asset_suggestions->get_assets_suggestions( self::HOMEPAGE_KEY_ID, 'homepage' ) );
@@ -727,7 +748,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 				'final_url'                              => get_permalink( $this->post->ID ),
 			];
 
-			$this->assertEquals( $expected, $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+			$this->assertEquals( array_merge( $this->get_suggestions_common_fields( [] ), $expected ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 
 	}
 
@@ -749,7 +770,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 				'final_url'                              => get_permalink( $this->post->ID ),
 			];
 
-			$this->assertEquals( $expected, $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
+			$this->assertEquals( array_merge( $this->get_suggestions_common_fields( [] ), $expected ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
 
 	}
 
