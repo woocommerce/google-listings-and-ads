@@ -495,13 +495,3 @@ export function* getTour( tourId ) {
 		);
 	}
 }
-
-/**
- * Refresh getTour if UPSERT happens in the APP.
- *
- * @param {Object} action The performed action
- * @return {boolean} True if the action should be invalidated
- */
-getTour.shouldInvalidate = ( action ) => {
-	return action.type === TYPES.UPSERT_TOUR;
-};
