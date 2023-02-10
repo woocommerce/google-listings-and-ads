@@ -3,8 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Stepper } from '@woocommerce/components';
-import { useState } from '@wordpress/element';
-import { getQuery, getHistory } from '@woocommerce/navigation';
+import { getQuery, getHistory, getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -26,10 +25,10 @@ import { CAMPAIGN_STEP as STEP } from '.~/constants';
 const dashboardURL = getDashboardUrl();
 const helpButton = <HelpIconButton eventContext="edit-ads" />;
 
-function getInitialStep() {
-	const { initialStep } = getQuery();
-	if ( Object.values( STEP ).includes( initialStep ) ) {
-		return initialStep;
+function getCurrentStep() {
+	const { step } = getQuery();
+	if ( Object.values( STEP ).includes( step ) ) {
+		return step;
 	}
 	return STEP.CAMPAIGN;
 }
@@ -40,12 +39,16 @@ function getInitialStep() {
 const EditPaidAdsCampaign = () => {
 	useLayout( 'full-content' );
 
-	const [ step, setStep ] = useState( getInitialStep );
 	const { updateAdsCampaign } = useAppDispatch();
 
 	const id = Number( getQuery().programId );
 	const { loaded, data: campaigns } = useAdsCampaigns();
 	const campaign = campaigns?.find( ( el ) => el.id === id );
+
+	const setStep = ( step ) => {
+		const url = getNewPath( { ...getQuery(), step } );
+		getHistory().push( url );
+	};
 
 	if ( ! loaded ) {
 		return (
@@ -114,7 +117,7 @@ const EditPaidAdsCampaign = () => {
 				onSubmit={ handleSubmit }
 			>
 				<Stepper
-					currentStep={ step }
+					currentStep={ getCurrentStep() }
 					steps={ [
 						{
 							key: STEP.CAMPAIGN,
