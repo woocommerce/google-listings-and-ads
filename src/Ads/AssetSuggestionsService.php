@@ -196,6 +196,17 @@ class AssetSuggestionsService implements Service {
 			return [];
 		}
 
+		// Limit the number of marketing images.
+		$limits = [
+			AssetFieldType::MARKETING_IMAGE          => self::IMAGE_REQUIREMENTS[ self::MARKETING_IMAGE_KEY ]['max_qty'],
+			AssetFieldType::SQUARE_MARKETING_IMAGE   => self::IMAGE_REQUIREMENTS[ self::SQUARE_MARKETING_IMAGE_KEY ]['max_qty'],
+			AssetFieldType::PORTRAIT_MARKETING_IMAGE => self::IMAGE_REQUIREMENTS[ self::PORTRAIT_MARKETING_IMAGE_KEY ]['max_qty'],
+		];
+
+		foreach ( $limits as $asset_type => $limit ) {
+			 $asset_group_assets[ $asset_type ] = array_slice( $asset_group_assets[ $asset_type ] ?? [], 0, $limit );
+		}
+
 		return array_merge( $this->get_suggestions_common_fields( [] ), [ 'final_url' => $final_url ], $asset_group_assets );
 
 	}
