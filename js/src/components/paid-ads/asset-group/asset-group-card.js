@@ -110,6 +110,7 @@ export default function AssetGroupCard() {
 						subheading={ spec.subheading }
 						help={ spec.help }
 						numOfIssues={ getNumOfIssues( spec.key ) }
+						markOptional={ spec.min === 0 }
 						disabled={ ! isSelectedFinalUrl }
 						initialExpanded={ isSelectedFinalUrl }
 					>
@@ -207,6 +208,7 @@ export default function AssetGroupCard() {
 				numOfIssues={ getNumOfIssues(
 					ASSET_FORM_KEY.DISPLAY_URL_PATH
 				) }
+				markOptional
 				disabled={ ! isSelectedFinalUrl }
 				initialExpanded={ isSelectedFinalUrl }
 			>
