@@ -10,7 +10,6 @@ import { createInterpolateElement } from '@wordpress/element';
 import { ASSET_FORM_KEY } from '.~/constants';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import Section from '.~/wcdl/section';
-import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import FinalUrlCard from './final-url-card';
 import AssetGroupCard from './asset-group-card';
@@ -30,7 +29,7 @@ export default function AssetGroupSection() {
 			className="gla-asset-group-section"
 			title={ createInterpolateElement(
 				__(
-					'Add assets <optional>(Optional)</optional>',
+					'Add dynamic ad assets <optional>(Optional)</optional>',
 					'google-listings-and-ads'
 				),
 				{
@@ -40,23 +39,12 @@ export default function AssetGroupSection() {
 				}
 			) }
 			description={
-				<>
-					<p className="gla-asset-group-section__primary-description">
-						{ __(
-							'Upload additional creative assets and Google will mix and match these assets to build ads that lead to a page in your site. Adding more assets typically boosts your campaign’s performance.',
-							'google-listings-and-ads'
-						) }
-					</p>
-					<p>
-						<AppDocumentationLink
-							context="manage-campaign-asset-group"
-							linkId="about-campaign-assets"
-							href="https://support.google.com/google-ads/answer/7331111"
-						>
-							{ __( 'Learn more', 'google-listings-and-ads' ) }
-						</AppDocumentationLink>
-					</p>
-				</>
+				<p className="gla-asset-group-section__primary-description">
+					{ __(
+						'Create ads that effectively boost visibility and generate maximum conversions. Google will mix and match assets to create optimized ads— maximizing your campaign’s performance.',
+						'google-listings-and-ads'
+					) }
+				</p>
 			}
 		>
 			<VerticalGapLayout size="medium">

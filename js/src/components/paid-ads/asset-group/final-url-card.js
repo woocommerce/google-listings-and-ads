@@ -79,7 +79,7 @@ export default function FinalUrlCard( {
 					<AppButton
 						isTertiary
 						text={ __(
-							'Or, select another page',
+							'Or, select a different Final URL',
 							'google-listings-and-ads'
 						) }
 						eventName="gla_reselect_another_final_url_button_click"

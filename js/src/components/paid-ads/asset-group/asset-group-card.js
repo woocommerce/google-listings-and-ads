@@ -139,7 +139,7 @@ export default function AssetGroupCard() {
 								{ index === 0 && isSelectedFinalUrl && (
 									<ExternalLink href="https://support.google.com/google-ads/answer/6167101">
 										{ __(
-											'Learn how to write effective ad copy',
+											'Learn how to write effective ads',
 											'google-listings-and-ads'
 										) }
 									</ExternalLink>

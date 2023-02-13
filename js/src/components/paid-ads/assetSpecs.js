@@ -40,7 +40,7 @@ const ASSET_IMAGE_SPECS = [
 			suggestedHeight: 628,
 		},
 		heading: _x(
-			'Rectangular images',
+			'Landscape images',
 			'Plural asset field name as the heading',
 			'google-listings-and-ads'
 		),
@@ -50,7 +50,7 @@ const ASSET_IMAGE_SPECS = [
 			'google-listings-and-ads'
 		),
 		lowercaseName: _x(
-			'rectangular',
+			'landscape',
 			'Lowercase asset field name',
 			'google-listings-and-ads'
 		),
@@ -123,7 +123,7 @@ const ASSET_IMAGE_SPECS = [
 			'google-listings-and-ads'
 		),
 		helpSubheading: _x(
-			'Square logo (1:1)',
+			'Logo (1:1)',
 			'Asset field name with its aspect ratio as the subheading within a help tip',
 			'google-listings-and-ads'
 		),
