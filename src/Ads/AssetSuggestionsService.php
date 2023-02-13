@@ -196,7 +196,7 @@ class AssetSuggestionsService implements Service {
 			return [];
 		}
 
-		// Limit the number of marketing images. This can be remove when the front-end supports multiple combinations of marketing images.
+		// Limit the number of marketing images. This code can be removed when the front end supports multiple combinations of marketing images.
 		// Currently the only combination possible is 8 marketing images, 8 square marketing images and 4 portrait marketing images, making a total of 20 marketing images.
 		$limits = [
 			AssetFieldType::MARKETING_IMAGE          => self::IMAGE_REQUIREMENTS[ self::MARKETING_IMAGE_KEY ]['max_qty'],
