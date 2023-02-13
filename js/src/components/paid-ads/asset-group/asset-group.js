@@ -14,6 +14,7 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppButton from '.~/components/app-button';
 import AssetGroupSection from './asset-group-section';
+import FaqsSection from './faqs-section';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
 export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
@@ -114,6 +115,7 @@ export default function AssetGroup( { campaign } ) {
 				) }
 			/>
 			<AssetGroupSection />
+			<FaqsSection />
 			<StepContentFooter>
 				{ ( isCreation || adapter.isEmptyAssetEntityGroup ) && (
 					// Currently, the PMax Assets feature in this extension doesn't offer the function
