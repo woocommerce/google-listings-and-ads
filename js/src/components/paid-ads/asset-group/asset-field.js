@@ -2,7 +2,7 @@
  * External dependencies
  */
 import classnames from 'classnames';
-import { __, _n, sprintf } from '@wordpress/i18n';
+import { __, _x, _n, sprintf } from '@wordpress/i18n';
 import { useReducedMotion } from '@wordpress/compose';
 import {
 	useState,
@@ -35,6 +35,7 @@ import './asset-field.scss';
  * @param {JSX.Element} props.help Help content to be shown after clicking on the help icon.
  * @param {number} [props.numOfIssues=0] The number of issues used to label on UI. It only labels when the number is greater than 0.
  * @param {boolean} [props.initialExpanded=false] Whether the UI is initialized expanded.
+ * @param {boolean} [props.markOptional=false] Whether mark this field as optional.
  * @param {boolean} [props.disabled=false] Whether display the UI in disabled style. It will collapse the content when disabled.
  * @param {JSX.Element} [props.children] Content to be rendered.
  * @param {import('react').MutableRefObject<AssetFieldHandler>} ref React ref to be attached to the handler of this component.
@@ -47,6 +48,7 @@ function AssetField(
 		help,
 		numOfIssues = 0,
 		initialExpanded = false,
+		markOptional = false,
 		disabled = false,
 		children,
 	},
@@ -91,6 +93,15 @@ function AssetField(
 				<div className="gla-asset-field__heading-part">
 					<h2 className="gla-asset-field__heading">
 						{ heading }
+						{ markOptional && (
+							<span className="gla-asset-field__optional-label">
+								{ _x(
+									'(Optional)',
+									'A label behind the heading to indicate a field is optional',
+									'google-listings-and-ads'
+								) }
+							</span>
+						) }
 						<HelpPopover
 							className="gla-asset-field__help-popover"
 							position="top"

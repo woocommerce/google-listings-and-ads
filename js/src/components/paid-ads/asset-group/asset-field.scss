@@ -34,6 +34,13 @@
 		color: $gray-700;
 	}
 
+	&__optional-label {
+		margin-left: $grid-unit-05;
+		font-weight: normal;
+		font-size: $gla-font-smaller;
+		color: $gray-700;
+	}
+
 	&__help-popover {
 		margin-left: $grid-unit-05;
 

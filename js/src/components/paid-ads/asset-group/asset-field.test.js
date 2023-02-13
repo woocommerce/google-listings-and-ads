@@ -47,6 +47,18 @@ describe( 'AssetField', () => {
 		expect( screen.queryByText( '0 issues' ) ).not.toBeInTheDocument();
 	} );
 
+	it( 'When not setting `markOptional`, it should not render the optional label', () => {
+		render( <AssetField /> );
+
+		expect( screen.queryByText( '(Optional)' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'When setting `markOptional`, it should render the optional label', () => {
+		render( <AssetField markOptional /> );
+
+		expect( screen.getByText( '(Optional)' ) ).toBeInTheDocument();
+	} );
+
 	it( 'When not setting `initialExpanded`, it should collapse to hide the children', () => {
 		render( <AssetField>Children</AssetField> );
 
