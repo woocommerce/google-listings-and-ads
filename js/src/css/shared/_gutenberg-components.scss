@@ -1,6 +1,3 @@
-// Import Gutenberg components that aren't already imported in the lowest WC Admin version we support
-@import "node_modules/@wordpress/components/src/panel/style";
-
 // Scope the old styles of core components to GLA pages to avoid styling conflicts with other non-GLA pages.
 .gla-admin-page {
 	// WP 6.1 Compatibility (@wordpress/components 21.0.6 imported by @woocommerce/components)
