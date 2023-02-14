@@ -14,6 +14,7 @@ import { ASSET_FORM_KEY } from '.~/constants';
  * set properties respectively with an error message to indicate it.
  */
 describe( 'validateAssetGroup', () => {
+	const charTable = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	let values;
 
 	function toUrl( _, index ) {
@@ -111,17 +112,20 @@ describe( 'validateAssetGroup', () => {
 		it.each( ASSET_TEXT_SPECS.map( ( spec ) => [ spec.key, spec ] ) )(
 			'When the character limit is exceeded in values.%s, it should not pass',
 			( key, spec ) => {
-				values[ key ] = Array.from( { length: spec.min }, ( _, i ) => {
+				const length = spec.min;
+				const exceededStrings = Array.from( { length }, ( _, i ) => {
 					const limit =
 						spec.maxCharacterCounts?.[ i ] ??
 						spec.maxCharacterCounts;
-					return i.toString().repeat( limit + 1 );
+					const exceededCount = limit + 1;
+					return charTable.charAt( i ).repeat( exceededCount );
 				} );
+				values[ key ] = exceededStrings;
 				const error = validateAssetGroup( values );
 
 				expect( error ).toHaveProperty( key );
 				expect( Array.isArray( error[ key ] ) ).toBe( true );
-				expect( error[ key ] ).toHaveLength( spec.min );
+				expect( error[ key ] ).toHaveLength( length );
 				expect( error[ key ] ).toMatchSnapshot();
 			}
 		);
@@ -151,20 +155,17 @@ describe( 'validateAssetGroup', () => {
 
 		it( `When the character limit is exceeded in values.${ ASSET_FORM_KEY.DISPLAY_URL_PATH }, it should not pass`, () => {
 			const specs = ASSET_DISPLAY_URL_PATH_SPECS;
-			const { length } = specs;
-			values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ] = Array.from(
-				{ length },
-				( _, i ) => {
-					const limit = specs[ i ].maxCharacterCount;
-					return i.toString().repeat( limit + 1 );
-				}
-			);
+			const exceededStrings = specs.map( ( spec, i ) => {
+				const exceededCount = spec.maxCharacterCount + 1;
+				return charTable.charAt( i ).repeat( exceededCount );
+			} );
+			values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ] = exceededStrings;
 			const error = validateAssetGroup( values );
 			const messages = error[ ASSET_FORM_KEY.DISPLAY_URL_PATH ];
 
 			expect( error ).toHaveProperty( ASSET_FORM_KEY.DISPLAY_URL_PATH );
 			expect( Array.isArray( messages ) ).toBe( true );
-			expect( messages ).toHaveLength( length );
+			expect( messages ).toHaveLength( specs.length );
 			expect( messages ).toMatchSnapshot();
 		} );
 	} );
