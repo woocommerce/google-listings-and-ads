@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { ASSET_FORM_KEY } from '.~/constants';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
@@ -34,11 +35,11 @@ export default function AssetGroup( { campaign } ) {
 	// TODO: When editing, it needs to distinguish whether the given asset group is empty. Will be implemented later.
 	const isEmptyAssetGroup = true;
 	const { isValidForm, handleSubmit, adapter } = useAdaptiveFormContext();
-	const { isValidCampaign, isSubmitting, isSubmitted, submitter } = adapter;
+	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
 
 	const handleLaunchClick = ( ...args ) => {
-		if ( isValidForm ) {
+		if ( isValidAssetGroup ) {
 			handleSubmit( ...args );
 		} else {
 			adapter.showValidation();
@@ -61,7 +62,7 @@ export default function AssetGroup( { campaign } ) {
 						isTertiary
 						data-action={ ACTION_SUBMIT_CAMPAIGN_ONLY }
 						disabled={
-							! isValidCampaign ||
+							! isValidForm ||
 							isSubmitted ||
 							currentAction === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS
 						}
@@ -81,7 +82,7 @@ export default function AssetGroup( { campaign } ) {
 					isPrimary
 					data-action={ ACTION_SUBMIT_CAMPAIGN_AND_ASSETS }
 					disabled={
-						! adapter.baseAssetGroup.final_url ||
+						! adapter.baseAssetGroup[ ASSET_FORM_KEY.FINAL_URL ] ||
 						isSubmitted ||
 						currentAction === ACTION_SUBMIT_CAMPAIGN_ONLY
 					}

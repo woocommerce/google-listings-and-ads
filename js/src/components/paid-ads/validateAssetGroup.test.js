@@ -6,13 +6,15 @@ import {
 	ASSET_IMAGE_SPECS,
 	ASSET_TEXT_SPECS,
 	ASSET_DISPLAY_URL_PATH_SPECS,
-} from './asset-specs';
+} from './assetSpecs';
+import { ASSET_FORM_KEY } from '.~/constants';
 
 /**
  * `validateAssetGroup` function returns an object, and if any checks are not passed,
  * set properties respectively with an error message to indicate it.
  */
 describe( 'validateAssetGroup', () => {
+	const charTable = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	let values;
 
 	function toUrl( _, index ) {
@@ -26,13 +28,20 @@ describe( 'validateAssetGroup', () => {
 	beforeEach( () => {
 		// Valid values
 		values = {
-			marketing_image: [ 'https://image_1' ],
-			square_marketing_image: [ 'https://image_1' ],
-			logo: [ 'https://logo_1' ],
-			headline: [ 'headline 1', 'headline 2', 'headline 3' ],
-			long_headline: [ 'long_headline 1' ],
-			description: [ 'description 1', 'description 2' ],
-			display_url_path: [ 'foo', 'bar' ],
+			[ ASSET_FORM_KEY.MARKETING_IMAGE ]: [ 'https://image_1' ],
+			[ ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE ]: [ 'https://image_1' ],
+			[ ASSET_FORM_KEY.LOGO ]: [ 'https://logo_1' ],
+			[ ASSET_FORM_KEY.HEADLINE ]: [
+				'headline 1',
+				'headline 2',
+				'headline 3',
+			],
+			[ ASSET_FORM_KEY.LONG_HEADLINE ]: [ 'long_headline 1' ],
+			[ ASSET_FORM_KEY.DESCRIPTION ]: [
+				'description 1',
+				'description 2',
+			],
+			[ ASSET_FORM_KEY.DISPLAY_URL_PATH ]: [ 'foo', 'bar' ],
 		};
 	} );
 
@@ -103,74 +112,61 @@ describe( 'validateAssetGroup', () => {
 		it.each( ASSET_TEXT_SPECS.map( ( spec ) => [ spec.key, spec ] ) )(
 			'When the character limit is exceeded in values.%s, it should not pass',
 			( key, spec ) => {
-				values[ key ] = Array.from( { length: spec.min }, ( _, i ) => {
+				const length = spec.min;
+				const exceededStrings = Array.from( { length }, ( _, i ) => {
 					const limit =
 						spec.maxCharacterCounts?.[ i ] ??
 						spec.maxCharacterCounts;
-					return i.toString().repeat( limit + 1 );
+					const exceededCount = limit + 1;
+					return charTable.charAt( i ).repeat( exceededCount );
 				} );
+				values[ key ] = exceededStrings;
 				const error = validateAssetGroup( values );
 
 				expect( error ).toHaveProperty( key );
 				expect( Array.isArray( error[ key ] ) ).toBe( true );
-				expect( error[ key ] ).toHaveLength( spec.min );
+				expect( error[ key ] ).toHaveLength( length );
 				expect( error[ key ] ).toMatchSnapshot();
 			}
 		);
 	} );
 
 	describe( 'Display URL paths asset', () => {
-		it( 'When display_url_path is an empty array or an array with all empty string elements, it should pass', () => {
-			values.display_url_path = [];
+		it( `When values.${ ASSET_FORM_KEY.DISPLAY_URL_PATH } is an empty array or an array with all empty string elements, it should pass`, () => {
+			values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ] = [];
 
 			expect( validateAssetGroup( values ) ).toStrictEqual( {} );
 
-			values.display_url_path = [ '', '' ];
+			values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ] = [ '', '' ];
 
 			expect( validateAssetGroup( values ) ).toStrictEqual( {} );
 		} );
 
-		it( 'When display_url_path is an array where the first element is an empty string and the second is a non-empty string, it should not pass', () => {
-			values.display_url_path = [ '', 'bar' ];
+		it( `When values.${ ASSET_FORM_KEY.DISPLAY_URL_PATH } is an array where the first element is an empty string and the second is a non-empty string, it should not pass`, () => {
+			values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ] = [ '', 'bar' ];
 			const error = validateAssetGroup( values );
+			const messages = error[ ASSET_FORM_KEY.DISPLAY_URL_PATH ];
 
-			expect( error ).toHaveProperty( 'display_url_path' );
-			expect( Array.isArray( error.display_url_path ) ).toBe( true );
-			expect( error.display_url_path ).toHaveLength( 1 );
-			expect( error.display_url_path ).toMatchSnapshot();
+			expect( error ).toHaveProperty( ASSET_FORM_KEY.DISPLAY_URL_PATH );
+			expect( Array.isArray( messages ) ).toBe( true );
+			expect( messages ).toHaveLength( 1 );
+			expect( messages ).toMatchSnapshot();
 		} );
 
-		it.each( ASSET_TEXT_SPECS.map( ( spec ) => [ spec.key, spec ] ) )(
-			'When the character limit is exceeded in the index %d of display_url_path, it should not pass',
-			( key, spec ) => {
-				values[ key ] = Array.from( { length: spec.min }, ( _, i ) => {
-					const limit =
-						spec.maxCharacterCounts?.[ i ] ??
-						spec.maxCharacterCounts;
-					return i.toString().repeat( limit + 1 );
-				} );
-				const error = validateAssetGroup( values );
-
-				expect( error ).toHaveProperty( key );
-				expect( Array.isArray( error[ key ] ) ).toBe( true );
-				expect( error[ key ] ).toHaveLength( spec.min );
-				expect( error[ key ] ).toMatchSnapshot();
-			}
-		);
-
-		it( 'When the character limit is exceeded in display_url_path, it should not pass', () => {
+		it( `When the character limit is exceeded in values.${ ASSET_FORM_KEY.DISPLAY_URL_PATH }, it should not pass`, () => {
 			const specs = ASSET_DISPLAY_URL_PATH_SPECS;
-			const { length } = specs;
-			values.display_url_path = Array.from( { length }, ( _, i ) => {
-				const limit = specs[ i ].maxCharacterCount;
-				return i.toString().repeat( limit + 1 );
+			const exceededStrings = specs.map( ( spec, i ) => {
+				const exceededCount = spec.maxCharacterCount + 1;
+				return charTable.charAt( i ).repeat( exceededCount );
 			} );
+			values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ] = exceededStrings;
 			const error = validateAssetGroup( values );
+			const messages = error[ ASSET_FORM_KEY.DISPLAY_URL_PATH ];
 
-			expect( error ).toHaveProperty( 'display_url_path' );
-			expect( Array.isArray( error.display_url_path ) ).toBe( true );
-			expect( error.display_url_path ).toHaveLength( length );
-			expect( error.display_url_path ).toMatchSnapshot();
+			expect( error ).toHaveProperty( ASSET_FORM_KEY.DISPLAY_URL_PATH );
+			expect( Array.isArray( messages ) ).toBe( true );
+			expect( messages ).toHaveLength( specs.length );
+			expect( messages ).toMatchSnapshot();
 		} );
 	} );
 } );
