@@ -32,7 +32,7 @@ const ASSET_IMAGE_SPECS = [
 	{
 		key: ASSET_FORM_KEY.MARKETING_IMAGE,
 		min: 1,
-		max: 20,
+		max: 8,
 		imageConfig: {
 			minWidth: 600,
 			minHeight: 314,
@@ -58,7 +58,7 @@ const ASSET_IMAGE_SPECS = [
 	{
 		key: ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE,
 		min: 1,
-		max: 20,
+		max: 8,
 		imageConfig: {
 			minWidth: 300,
 			minHeight: 300,
@@ -77,6 +77,32 @@ const ASSET_IMAGE_SPECS = [
 		),
 		lowercaseName: _x(
 			'square',
+			'Lowercase asset field name',
+			'google-listings-and-ads'
+		),
+	},
+	{
+		key: ASSET_FORM_KEY.PORTRAIT_MARKETING_IMAGE,
+		min: 0,
+		max: 4,
+		imageConfig: {
+			minWidth: 480,
+			minHeight: 600,
+			suggestedWidth: 960,
+			suggestedHeight: 1200,
+		},
+		heading: _x(
+			'Portrait images',
+			'Plural asset field name as the heading',
+			'google-listings-and-ads'
+		),
+		helpSubheading: _x(
+			'Portrait image (4:5)',
+			'Asset field name with its aspect ratio as the subheading within a help tip',
+			'google-listings-and-ads'
+		),
+		lowercaseName: _x(
+			'portrait',
 			'Lowercase asset field name',
 			'google-listings-and-ads'
 		),

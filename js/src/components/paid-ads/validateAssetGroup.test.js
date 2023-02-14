@@ -30,6 +30,7 @@ describe( 'validateAssetGroup', () => {
 		values = {
 			[ ASSET_FORM_KEY.MARKETING_IMAGE ]: [ 'https://image_1' ],
 			[ ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE ]: [ 'https://image_1' ],
+			[ ASSET_FORM_KEY.PORTRAIT_MARKETING_IMAGE ]: [ 'https://image_1' ],
 			[ ASSET_FORM_KEY.LOGO ]: [ 'https://logo_1' ],
 			[ ASSET_FORM_KEY.HEADLINE ]: [
 				'headline 1',
@@ -55,6 +56,11 @@ describe( 'validateAssetGroup', () => {
 		it.each( ASSET_IMAGE_SPECS.map( ( spec ) => [ spec.key, spec.min ] ) )(
 			'When the length of values.%s is less than %s, it should not pass',
 			( key, min ) => {
+				// It's impossible to get an array with a negative length, so this test doesn't need to cover this case.
+				if ( min === 0 ) {
+					return;
+				}
+
 				values[ key ] = Array.from( { length: min - 1 }, toUrl );
 				const error = validateAssetGroup( values );
 

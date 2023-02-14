@@ -85,6 +85,7 @@ export const ASSET_KEY = {
 	BUSINESS_NAME: 'business_name',
 	MARKETING_IMAGE: 'marketing_image',
 	SQUARE_MARKETING_IMAGE: 'square_marketing_image',
+	PORTRAIT_MARKETING_IMAGE: 'portrait_marketing_image',
 	LOGO: 'logo',
 	HEADLINE: 'headline',
 	LONG_HEADLINE: 'long_headline',
