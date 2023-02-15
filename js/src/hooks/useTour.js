@@ -16,7 +16,7 @@ import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 /**
  * @typedef {Object} TourHook
  * @property { { data: Tour|null, hasFinishedResolution: boolean, isResolving: boolean, invalidateResolution: Function } } tour The tour object
- * @property {() => Promise<{tour: Tour}>} setTourChecked Setter for updating the checked state of the tour in use.
+ * @property {() => Promise<{tour: Tour}>} closeTour Closes the tour and sets it as checked.
  * @property {boolean} showTour Indicates if the tour should be shown based on it's checked prop
  */
 
