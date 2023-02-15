@@ -119,7 +119,7 @@ foreach ( $packages as $package ) {
 /**
  * Process prefixing in a specific file.
  *
- * @since x.x.x
+ * @since 2.3.9
  *
  * @param string $file             File name.
  * @param array  $package          Package prefix configuration.
@@ -155,7 +155,7 @@ function process_file( $file, $package, $prefix_namespace = true, $prefix_uses =
 /**
  * Prefix the namespace.
  *
- * @since x.x.x
+ * @since 2.3.9
  *
  * @param string $contents File contents.
  * @param array  $package  Package prefix configuration.
@@ -195,7 +195,7 @@ function prefix_namespace( &$contents, $package ) {
 /**
  * Prefix any import statements and direct uses of namespace.
  *
- * @since x.x.x
+ * @since 2.3.9
  *
  * @param string $contents File contents.
  * @param array  $package  Package prefix configuration.
@@ -242,7 +242,7 @@ function prefix_uses( &$contents, $package ) {
 /**
  * Prefix any direct string.
  *
- * @since x.x.x
+ * @since 2.3.9
  *
  * @param string $contents File contents.
  * @param string $search   String to search for.
@@ -305,7 +305,7 @@ function find_files( string $package ): array {
 /**
  * Find a list of dependent PHP files for this package.
  *
- * @since x.x.x
+ * @since 2.3.9
  *
  * @param string $package Package name.
  * @return array Merged list of files.
@@ -334,7 +334,7 @@ function find_dependent_files( string $package ): array {
  *
  * The second task of this function is to prefix any autoloads with our custom namespace prefix.
  *
- * @since x.x.x
+ * @since 2.3.9
  *
  * @param string $file              Generated file containing information about all the installed packages
  * @param array  $composer_autoload List of autoloaded files in composer.json
