@@ -2,7 +2,7 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.9
-Tested up to: 6.1
+Tested up to: 6.1.1
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
 Stable tag: 2.3.8
