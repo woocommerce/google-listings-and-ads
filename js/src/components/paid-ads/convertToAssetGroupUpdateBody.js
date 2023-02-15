@@ -32,6 +32,29 @@ export function diffAssetOperations( assetGroup, values ) {
 		operations.push( ...deletions );
 	}
 
+	// The assets of Google Ads are immutable once created. Therefore if it wants to update
+	// a content of an existing asset, the processing will be made by two operations:
+	// 1. Delete that existing asset.
+	// 2. Create a new asset.
+	//
+	// In the general case, the creation order of the contents in an asset is also the order
+	// of the asset's contents after fetching the asset group. Thus, this loop compares the
+	// contents of form values and the contents of the assets in the existing entity group by
+	// the same key and one by one in order, and then differences out the operations.
+	//
+	// The logics in this calculation:
+	// - Loops all possible asset keys one by one and compares the contents of the form values
+	//   and the contents of the assets by the same key with a nested loop. The index of each
+	//   asset is compared by the one-way-walking-through in order.
+	// - If a content of the form value is the same as the current indexed asset content,
+	//   this means there is no needed operation.
+	// - If a content of the form value is found the same content after walking through the
+	//   rest asset contents, this means the walked but mismatched asset contents are deletions.
+	//   (In order to make the same order of the asset contents in the updated asset group)
+	// - If a content of the form value is not found in the asset contents, this means it
+	//   could be an asset creation or the combined operations of asset deletion and creation.
+	// - If an asset content is not found in the contents of the form value, this means it's a
+	//   deletion.
 	Object.values( ASSET_KEY ).forEach( ( key ) => {
 		const contents = [ values[ key ] ].flat().filter( Boolean );
 		const assetEntities = [ assets[ key ] ].flat().filter( Boolean );
