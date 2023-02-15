@@ -24,8 +24,6 @@ export const GUIDE_NAMES = {
 export const LOCAL_STORAGE_KEYS = {
 	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
 		'gla-can-onboarding-setup-ces-prompt-open',
-	IS_BEFORE_MIGRATION_NOTICE_DISMISSED:
-		'gla-is-before-migration-notice-dismissed',
 };
 
 export const API_RESPONSE_CODES = {
