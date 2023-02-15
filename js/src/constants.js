@@ -26,10 +26,6 @@ export const LOCAL_STORAGE_KEYS = {
 		'gla-can-onboarding-setup-ces-prompt-open',
 	IS_BEFORE_MIGRATION_NOTICE_DISMISSED:
 		'gla-is-before-migration-notice-dismissed',
-	IS_AFTER_MIGRATION_NOTICE_DISMISSED:
-		'gla-is-after-migration-notice-dismissed',
-	IS_REPORTS_MIGRATION_NOTICE_DISMISSED:
-		'gla-is-reports-migration-notice-dismissed',
 };
 
 export const API_RESPONSE_CODES = {
