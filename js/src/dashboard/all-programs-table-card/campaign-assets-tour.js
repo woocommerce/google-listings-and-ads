@@ -21,9 +21,9 @@ const TOUR_ID = 'dashboard-feature--campaign-assets';
  * @param {string} props.referenceElementCssSelector The CSS selector to find the first DOM to render this tour nearby.
  */
 export default function CampaignAssetsTour( { referenceElementCssSelector } ) {
-	const { showTour, setTourChecked } = useTour( TOUR_ID );
+	const { tourChecked, setTourChecked } = useTour( TOUR_ID );
 
-	if ( ! showTour ) {
+	if ( tourChecked ) {
 		return null;
 	}
 
