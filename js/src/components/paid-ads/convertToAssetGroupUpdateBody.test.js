@@ -265,8 +265,11 @@ describe( 'diffAssetOperations', () => {
 	} );
 
 	test( 'in each operation, one of `id` and `content` must be null and the other must not be null', () => {
-		// If this test failed, the modified code might be problematic or
-		// need adjustment for corresponding tests.
+		// This test case is to verify the contractual rules with the backend API.
+		// The creation and deletion must be strictly conformed to the rules.
+		// Therefore, if this test case fails, please first confirm whether the
+		// contractual rules are actually needed adjustments. If not, the modified
+		// code should be problematic.
 		values[ ASSET_FORM_KEY.BUSINESS_NAME ] = 'Better Clothing';
 		values[ ASSET_FORM_KEY.DESCRIPTION ] = [ 'Description' ];
 
