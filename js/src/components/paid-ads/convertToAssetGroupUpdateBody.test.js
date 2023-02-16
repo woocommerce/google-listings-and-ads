@@ -45,7 +45,7 @@ describe( 'convertToAssetGroupUpdateBody', () => {
 		};
 
 		values = {
-			[ ASSET_FORM_KEY.FINAL_URL ]: 'https://example',
+			[ ASSET_FORM_KEY.FINAL_URL ]: 'https://example/cap',
 			[ ASSET_FORM_KEY.DISPLAY_URL_PATH ]: [ 'cap', 'specials' ],
 			[ ASSET_FORM_KEY.BUSINESS_NAME ]: 'General Clothing',
 			[ ASSET_FORM_KEY.HEADLINE ]: [ 'headline 1' ],
@@ -55,9 +55,6 @@ describe( 'convertToAssetGroupUpdateBody', () => {
 
 	describe( 'should base on an existing asset entity group and convert the assets form values into the request body for updating that existing asset group', () => {
 		test( 'the returned data should meet the required structure', () => {
-			values[ ASSET_FORM_KEY.FINAL_URL ] = 'https://example/belt';
-			values[ ASSET_FORM_KEY.DISPLAY_URL_PATH ] = [ 'belt', 'specials' ];
-
 			const body = convertToAssetGroupUpdateBody( assetGroup, values );
 
 			expect( body ).toHaveProperty( 'final_url' );
@@ -119,8 +116,6 @@ describe( 'convertToAssetGroupUpdateBody', () => {
 
 describe( 'diffAssetOperations', () => {
 	const filledAssetGroup = {
-		[ ASSET_GROUP_KEY.FINAL_URL ]: 'https://example',
-		[ ASSET_GROUP_KEY.DISPLAY_URL_PATH ]: [ 'cap', 'specials' ],
 		assets: {
 			[ ASSET_KEY.BUSINESS_NAME ]: {
 				id: genId(),
