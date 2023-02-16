@@ -65,6 +65,10 @@ export default function AssetGroupSection() {
 						adapter.baseAssetGroup[ ASSET_FORM_KEY.FINAL_URL ]
 					}
 					onAssetsChange={ adapter.resetAssetGroup }
+					// Currently, the PMax Assets feature in this extension doesn't offer the function
+					// to change the Final URL of the non-empty asset entity group, so it hides the
+					// reselect button in the card footer.
+					hideFooter={ ! adapter.isEmptyAssetEntityGroup }
 				/>
 				<AssetGroupCard />
 			</VerticalGapLayout>

@@ -32,8 +32,6 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  */
 export default function AssetGroup( { campaign } ) {
 	const isCreation = ! campaign;
-	// TODO: When editing, it needs to distinguish whether the given asset group is empty. Will be implemented later.
-	const isEmptyAssetGroup = true;
 	const { isValidForm, handleSubmit, adapter } = useAdaptiveFormContext();
 	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
@@ -57,7 +55,10 @@ export default function AssetGroup( { campaign } ) {
 			/>
 			<AssetGroupSection />
 			<StepContentFooter>
-				{ ( isCreation || isEmptyAssetGroup ) && (
+				{ ( isCreation || adapter.isEmptyAssetEntityGroup ) && (
+					// Currently, the PMax Assets feature in this extension doesn't offer the function
+					// to delete the asset entity group, so it needs to hide the skip button if the editing
+					// asset group is not considered empty.
 					<AppButton
 						isTertiary
 						data-action={ ACTION_SUBMIT_CAMPAIGN_ONLY }

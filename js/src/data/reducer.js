@@ -42,6 +42,7 @@ const DEFAULT_STATE = {
 	},
 	ads_campaigns: null,
 	all_ads_campaigns: null,
+	campaign_asset_groups: {},
 	mc_setup: null,
 	mc_product_statistics: null,
 	mc_issues: {
@@ -318,6 +319,28 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				( el ) => el.id !== id
 			);
 			return setIn( state, 'ads_campaigns', adsCampaign );
+		}
+
+		case TYPES.RECEIVE_CAMPAIGN_ASSET_GROUPS: {
+			return setIn(
+				state,
+				[ 'campaign_asset_groups', action.campaignId ],
+				action.assetGroups
+			);
+		}
+
+		case TYPES.CREATE_CAMPAIGN_ASSET_GROUP: {
+			const { campaignId, assetGroup } = action;
+			const assetGroups = [
+				...( state.campaign_asset_groups[ campaignId ] || [] ),
+				assetGroup,
+			];
+
+			return setIn(
+				state,
+				[ 'campaign_asset_groups', campaignId ],
+				assetGroups
+			);
 		}
 
 		case TYPES.RECEIVE_MC_SETUP: {

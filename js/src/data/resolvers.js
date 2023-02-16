@@ -227,6 +227,30 @@ getAdsCampaigns.shouldInvalidate = ( action, query ) => {
 	);
 };
 
+export function* getCampaignAssetGroups( campaignId ) {
+	const endpoint = `${ API_NAMESPACE }/ads/campaigns/asset-groups`;
+	const query = { campaign_id: campaignId };
+	const path = addQueryArgs( endpoint, query );
+
+	try {
+		const assetGroups = yield apiFetch( { path } );
+
+		return {
+			type: TYPES.RECEIVE_CAMPAIGN_ASSET_GROUPS,
+			campaignId,
+			assetGroups,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading the assets of the campaign.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* getMCSetup() {
 	yield fetchMCSetup();
 }
