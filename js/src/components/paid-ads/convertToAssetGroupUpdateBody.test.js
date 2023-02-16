@@ -223,6 +223,9 @@ describe( 'diffAssetOperations', () => {
 			const isMultiple = Array.isArray( filledAssetGroup.assets[ key ] );
 			let asset = nextAssets[ key ];
 
+			// The null `id` means a creation, and the null `content` means a deletion.
+			// Both operations within the nested conditionals need to maintain the array for
+			// the multi-value assets or the single asset entity for the single-value assets.
 			if ( id === null ) {
 				if ( isMultiple ) {
 					if ( ! asset ) {
@@ -236,6 +239,9 @@ describe( 'diffAssetOperations', () => {
 				if ( isMultiple ) {
 					asset = asset.filter( ( item ) => item.id !== id );
 				} else {
+					// The deleted single-value asset is presented as an empty string in the form values
+					// of this test suite, so here sets the `content` to an empty string instead of setting
+					// the `asset` to null.
 					asset = { content: '' };
 				}
 			}
@@ -243,6 +249,7 @@ describe( 'diffAssetOperations', () => {
 			nextAssets[ key ] = asset;
 		} );
 
+		// Convert to the structure of the form values.
 		const appliedValues = {};
 
 		Object.entries( nextAssets ).forEach( ( [ key, asset ] ) => {
