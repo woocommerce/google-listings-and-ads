@@ -78,11 +78,20 @@ function mapFinalUrlsToOptions( finalUrls, search ) {
 }
 
 /**
+ * Clicking on the "Scan for assets" button.
+ *
+ * @event gla_import_assets_by_final_url_button_click
+ * @property {string} type The type of the selected Final URL suggestion to be imported. Possible values: `post`, `term`, `homepage`.
+ */
+
+/**
  * Renders the UI for querying pages, selecting a wanted page as the final URL,
  * and then loading the suggested assets.
  *
  * @param {Object} props React props.
  * @param {(suggestedAssets: SuggestedAssets) => void} props.onAssetsLoaded Callback function when the suggested assets are loaded.
+ *
+ * @fires gla_import_assets_by_final_url_button_click
  */
 export default function AssetsLoader( { onAssetsLoaded } ) {
 	const cacheRef = useRef( {} );
@@ -162,6 +171,8 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 			} );
 	};
 
+	const { finalUrl } = selectedOptions[ 0 ] || {};
+
 	return (
 		<>
 			<SelectControl
@@ -190,7 +201,9 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 						? __( 'Scanning…', 'google-listings-and-ads' )
 						: __( 'Scan for assets', 'google-listings-and-ads' )
 				}
-				disabled={ ! selectedOptions[ 0 ]?.finalUrl }
+				eventName="gla_import_assets_by_final_url_button_click"
+				eventProps={ { type: finalUrl?.type } }
+				disabled={ ! finalUrl }
 				loading={ fetching }
 				onClick={ handleClick }
 			/>

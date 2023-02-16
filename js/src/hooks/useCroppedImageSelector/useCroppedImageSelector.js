@@ -25,7 +25,7 @@ import './useCroppedImageSelector.scss';
  * @param {number} height The image height.
  * @param {number} widthScale The scale of width.
  * @param {number} heightScale The scale of height.
- * @return {[number, number]} The tuple of cropped width and height.
+ * @return {number[]} The tuple of cropped width and height.
  */
 export function calcMaxCroppingByFixedRatio(
 	width,

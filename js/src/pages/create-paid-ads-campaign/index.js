@@ -6,7 +6,6 @@ import apiFetch from '@wordpress/api-fetch';
 import { Stepper } from '@woocommerce/components';
 import { useState, useRef } from '@wordpress/element';
 import { getHistory } from '@woocommerce/navigation';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -31,8 +30,6 @@ const dashboardURL = getDashboardUrl();
 
 /**
  * Renders the campaign creation page.
- *
- * @fires gla_launch_paid_campaign_button_click on submit
  */
 const CreatePaidAdsCampaign = () => {
 	useLayout( 'full-content' );
@@ -48,10 +45,6 @@ const CreatePaidAdsCampaign = () => {
 
 		try {
 			const { amount, countryCodes } = values;
-			recordEvent( 'gla_launch_paid_campaign_button_click', {
-				audiences: countryCodes.join( ',' ),
-				budget: amount,
-			} );
 
 			// Avoid re-creating a new campaign if the subsequent asset group update is failed.
 			if ( createdCampaignIdRef.current === null ) {

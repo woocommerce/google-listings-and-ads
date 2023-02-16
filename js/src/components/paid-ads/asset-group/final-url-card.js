@@ -21,12 +21,20 @@ import './final-url-card.scss';
  */
 
 /**
+ * Clicking on the "Or, select another page" button.
+ *
+ * @event gla_reselect_another_final_url_button_click
+ */
+
+/**
  * Renders the Card UI for managing the final URL and getting the suggested assets.
  *
  * @param {Object} props React props.
  * @param {(suggestedAssets: SuggestedAssets | null) => void} props.onAssetsChange Callback function when the suggested assets are changed or reset to `null`.
  * @param {string} [props.initialFinalUrl] The initial final URL.
  * @param {boolean} [props.hideFooter=false] Whether to hide the card footer.
+ *
+ * @fires gla_reselect_another_final_url_button_click
  */
 export default function FinalUrlCard( {
 	onAssetsChange,
@@ -74,6 +82,7 @@ export default function FinalUrlCard( {
 							'Or, select another page',
 							'google-listings-and-ads'
 						) }
+						eventName="gla_reselect_another_final_url_button_click"
 						onClick={ handleReselectClick }
 					/>
 				) : (
