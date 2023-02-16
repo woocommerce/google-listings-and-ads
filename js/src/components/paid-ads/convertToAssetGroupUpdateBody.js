@@ -38,7 +38,7 @@ export function diffAssetOperations( assetGroup, values ) {
 	// 2. Create a new asset.
 	//
 	// In the general case, the creation order of the contents in an asset is also the order
-	// of the asset's contents after fetching the asset group. Thus, this loop compares the
+	// of the asset contents after fetching the asset group. Thus, this loop compares the
 	// contents of form values and the contents of the assets in the existing entity group by
 	// the same key and one by one in order, and then differences out the operations.
 	//
@@ -56,6 +56,8 @@ export function diffAssetOperations( assetGroup, values ) {
 	// - If an asset content is not found in the contents of the form value, this means it's a
 	//   deletion.
 	Object.values( ASSET_KEY ).forEach( ( key ) => {
+		// Filter falsy elements for both as the content of form values might be empty string
+		// and the asset entity might be `undefined`. (See the typedef of AssetsDictionary)
 		const contents = [ values[ key ] ].flat().filter( Boolean );
 		const assetEntities = [ assets[ key ] ].flat().filter( Boolean );
 		let entityIndex = 0;
@@ -64,10 +66,12 @@ export function diffAssetOperations( assetGroup, values ) {
 			do {
 				const assetEntity = assetEntities[ entityIndex ];
 
+				// No operation needed when finding the same content.
 				if ( content === assetEntity?.content ) {
 					break;
 				}
 
+				// After walking through in order, the mismatched asset entity is considered a deletion.
 				if ( assetEntity ) {
 					pushDeletions( key, assetEntity );
 				}
@@ -75,6 +79,7 @@ export function diffAssetOperations( assetGroup, values ) {
 				entityIndex += 1;
 			} while ( entityIndex < assetEntities.length );
 
+			// After reaching the end of asset entities but not found the same one, it's a creation.
 			if ( entityIndex >= assetEntities.length ) {
 				operations.push( {
 					// Setting the `id` to null indicates the asset creation operation.
@@ -87,6 +92,8 @@ export function diffAssetOperations( assetGroup, values ) {
 			entityIndex += 1;
 		} );
 
+		// After iterating over the contents of form values, the remaining asset entities are
+		// considered deletions.
 		pushDeletions( key, ...assetEntities.slice( entityIndex ) );
 	} );
 
