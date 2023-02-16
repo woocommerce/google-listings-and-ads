@@ -68,7 +68,7 @@ export default function CampaignAssetsTour( { referenceElementCssSelector } ) {
 			},
 		],
 		options: {
-			classNames: 'gla-campaign-assets-tour',
+			classNames: 'gla-admin-page,gla-campaign-assets-tour',
 			effects: { overlay: false },
 		},
 		placement: 'top',
