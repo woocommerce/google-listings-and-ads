@@ -102,13 +102,13 @@ function AdaptiveForm( { onSubmit, extendAdapter, children, ...props }, ref ) {
 			await onSubmit.call( this, values, submissionEnhancer );
 
 			if ( isMounted() ) {
+				adapterRef.current.submitter = null;
+
 				if ( shouldResetSubmission ) {
 					setSubmission( null );
 				} else {
 					setSubmission( SUBMITTED );
 				}
-
-				adapterRef.current.submitter = null;
 			}
 		};
 	}
