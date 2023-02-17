@@ -1,9 +1,16 @@
 .gla-campaign-assets-tour {
-	.components-card__body .woocommerce-pill {
-		margin-left: $grid-unit-15;
-		border: none;
-		background-color: var(--wp-admin-theme-color);
-		color: $white;
+	&__heading {
+		display: flex;
+		align-items: center;
+		gap: $grid-unit-10;
+		fill: $alert-green;
+
+		.woocommerce-pill {
+			margin-left: $grid-unit-05;
+			border: none;
+			background-color: var(--wp-admin-theme-color);
+			color: $white;
+		}
 	}
 
 	// Hide the footer content but leave the padding-bottom because

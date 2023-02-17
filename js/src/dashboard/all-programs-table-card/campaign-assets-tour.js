@@ -3,6 +3,7 @@
  */
 import { __, _x } from '@wordpress/i18n';
 import { TourKit, Pill } from '@woocommerce/components';
+import GridiconTrending from 'gridicons/dist/trending';
 
 /**
  * Internal dependencies
@@ -34,9 +35,10 @@ export default function CampaignAssetsTour( { referenceElementCssSelector } ) {
 				},
 				meta: {
 					heading: (
-						<>
+						<div className="gla-campaign-assets-tour__heading">
+							<GridiconTrending />
 							{ __(
-								'🎉 Add creative assets',
+								'Boost your campaign',
 								'google-listings-and-ads'
 							) }
 							<Pill>
@@ -46,13 +48,13 @@ export default function CampaignAssetsTour( { referenceElementCssSelector } ) {
 									'google-listings-and-ads'
 								) }
 							</Pill>
-						</>
+						</div>
 					),
 					descriptions: {
 						desktop: (
 							<>
 								{ __(
-									'Boost your ads performance by adding creative assets to your campaign.',
+									'Create ads that boost visibility and maximize campaign performance using dynamic ad assets.',
 									'google-listings-and-ads'
 								) }
 								<br />
