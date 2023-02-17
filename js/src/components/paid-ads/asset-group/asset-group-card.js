@@ -191,18 +191,18 @@ export default function AssetGroupCard() {
 				subheading={ hostname }
 				help={
 					<>
-						<p>
+						<div>
 							{ __(
 								`The display URL gives potential customers a clear idea of what webpage they'll reach once they click your ad, so your path text should describe your ad's landing page.`,
 								'google-listings-and-ads'
 							) }
-						</p>
-						<p>
+						</div>
+						<div>
 							{ __(
 								`To create your display URL, Google Ads will combine the domain (for example, "www.google.com" in www.google.com/nonprofits) from your final URL and the path text (for example, "nonprofits" in www.google.com/nonprofits).`,
 								'google-listings-and-ads'
 							) }
-						</p>
+						</div>
 					</>
 				}
 				numOfIssues={ getNumOfIssues(

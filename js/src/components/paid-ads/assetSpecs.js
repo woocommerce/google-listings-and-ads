@@ -195,18 +195,18 @@ const ASSET_TEXT_SPECS = [
 		),
 		help: (
 			<>
-				<p>
+				<div>
 					{ __(
 						'The long headline is the first line of your ad, and appears instead of your short headline in larger ads. Long headlines can be up to 90 characters, and may appear with or without your description.',
 						'google-listings-and-ads'
 					) }
-				</p>
-				<p>
+				</div>
+				<div>
 					{ __(
 						'The length of the rendered headline will depend on the site it appears on. If shortened, it will end with an ellipsis(…).',
 						'google-listings-and-ads'
 					) }
-				</p>
+				</div>
 			</>
 		),
 	},
@@ -239,18 +239,18 @@ const ASSET_TEXT_SPECS = [
 		),
 		help: (
 			<>
-				<p>
+				<div>
 					{ __(
 						'The description adds to the headline and provides additional context or details. It can be up to 90 characters, and may appear after the headline.',
 						'google-listings-and-ads'
 					) }
-				</p>
-				<p>
+				</div>
+				<div>
 					{ __(
 						`The length of the rendered description will depend on the site it appears on. If it's shortened, it will end with an ellipsis(…). The description doesn't show in all sizes and formats.`,
 						'google-listings-and-ads'
 					) }
-				</p>
+				</div>
 			</>
 		),
 	},
@@ -276,7 +276,7 @@ const ASSET_TEXT_SPECS = [
 		const size = sprintf(
 			// translators: 1: Recommended width. 2: Recommended height. 3: Minimal width. 4: Minimal height.
 			__(
-				'Recommended size: %1$d x %2$d<newline />Min. size: %3$d x %4$d',
+				'<listItem>Recommended size: %1$d x %2$d</listItem><listItem>Min. size: %3$d x %4$d</listItem>',
 				'google-listings-and-ads'
 			),
 			imageConfig.suggestedWidth,
@@ -286,16 +286,18 @@ const ASSET_TEXT_SPECS = [
 		);
 		return (
 			<>
-				<p>
+				<div>
 					{ __(
 						'Add images that meet or can be cropped to the recommended sizes. Note: The maximum file size for any image is 5120 KB.',
 						'google-listings-and-ads'
 					) }
-				</p>
-				<p>
+				</div>
+				<div>
 					<strong>{ subheading }</strong>
-				</p>
-				<p>{ createInterpolateElement( size, { newline: <br /> } ) }</p>
+				</div>
+				<ul>
+					{ createInterpolateElement( size, { listItem: <li /> } ) }
+				</ul>
 			</>
 		);
 	}

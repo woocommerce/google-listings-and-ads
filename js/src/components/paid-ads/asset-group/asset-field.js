@@ -108,7 +108,9 @@ function AssetField(
 							iconSize={ 20 }
 							disabled={ disabled }
 						>
-							{ help }
+							<div className="gla-asset-field__help-popover__content">
+								{ help }
+							</div>
 						</HelpPopover>
 					</h2>
 					{ subheading && (
