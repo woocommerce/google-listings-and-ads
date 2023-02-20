@@ -354,7 +354,7 @@ const ASSET_TEXT_SPECS = [
 				'You can add up to a maximum of %1$d image assets, which can be a combination of %2$s images.',
 				'google-listings-and-ads'
 			),
-			20,
+			specs[ sharedMaxSymbol ],
 			concatenatedNamesText
 		);
 
