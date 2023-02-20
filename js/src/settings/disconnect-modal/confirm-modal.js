@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, CheckboxControl } from '@wordpress/components';
+import { CheckboxControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 /**
@@ -116,14 +116,14 @@ export default function ConfirmModal( {
 			}
 			isDismissible={ ! isDisconnecting }
 			buttons={ [
-				<Button
+				<AppButton
 					key="1"
 					isSecondary
 					disabled={ isDisconnecting }
 					onClick={ handleRequestClose }
 				>
 					{ __( 'Never mind', 'google-listings-and-ads' ) }
-				</Button>,
+				</AppButton>,
 				<AppButton
 					key="2"
 					isPrimary

@@ -10,12 +10,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\SearchResponse;
 use DateTime;
 use Exception;
-use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V12\Services\GoogleAdsRow;
 use Google\ApiCore\PagedListResponse;
-use Google\Service\ShoppingContent;
-use Google\Service\ShoppingContent\SearchResponse;
 
 /**
  * Class MerchantMetrics

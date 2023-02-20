@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -11,6 +10,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import useJetpackAccount from '.~/hooks/useJetpackAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
@@ -142,13 +142,13 @@ const SetupAccounts = ( props ) => {
 				<Faqs />
 			</Section>
 			<StepContentFooter>
-				<Button
+				<AppButton
 					isPrimary
 					disabled={ isContinueButtonDisabled }
 					onClick={ onContinue }
 				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }
-				</Button>
+				</AppButton>
 			</StepContentFooter>
 		</StepContent>
 	);

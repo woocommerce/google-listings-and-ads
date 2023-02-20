@@ -9,7 +9,6 @@ import {
 	CardHeader,
 	CardBody,
 	CardFooter,
-	__experimentalText as Text,
 } from '@wordpress/components';
 import {
 	EmptyTable,
@@ -32,6 +31,7 @@ import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import EditVisibilityAction from './edit-visibility-action';
 import statusLabelMap from './statusLabelMap';
+import Text from '.~/components/app-text';
 
 const PER_PAGE = 10;
 const EVENT_CONTEXT = 'product-feed';
@@ -194,7 +194,7 @@ const ProductFeedTableCard = () => {
 			>
 				<CardHeader>
 					{ /* We use this Text component to make it similar to TableCard component. */ }
-					<Text variant="title.small" as="h2">
+					<Text variant="title-small" as="h2">
 						{ __( 'Product Feed', 'google-listings-and-ads' ) }
 					</Text>
 					{ /* This is also similar to TableCard component implementation. */ }
@@ -271,11 +271,11 @@ const ProductFeedTableCard = () => {
 					) }
 				</CardBody>
 				<CardFooter justify="center">
-					{ data?.total && (
+					{ data?.total > 0 && (
 						<Pagination
 							page={ query.page }
 							perPage={ query.per_page }
-							total={ data?.total }
+							total={ data.total }
 							showPagePicker={ true }
 							showPerPagePicker={ false }
 							onPageChange={ handlePageChange }

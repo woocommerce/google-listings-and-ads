@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { useState, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
@@ -11,8 +10,8 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import DifferentCurrencyNotice from '.~/components/different-currency-notice';
-import CampaignConversionDashboardNotice from '.~/components/campaign-conversion-notice';
 import NavigationClassic from '.~/components/navigation-classic';
 import CustomerEffortScorePrompt from '.~/components/customer-effort-score-prompt';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
@@ -73,7 +72,9 @@ const Dashboard = () => {
 	const ReportsLink = () => {
 		return (
 			<Link href={ getNewPath( null, '/google/reports' ) }>
-				<Button isPrimary>View Reports</Button>
+				<AppButton isPrimary>
+					{ __( 'View Reports', 'google-listings-and-ads' ) }
+				</AppButton>
 			</Link>
 		);
 	};
@@ -87,9 +88,6 @@ const Dashboard = () => {
 			<div className="gla-dashboard">
 				<DifferentCurrencyNotice context="dashboard" />
 				<NavigationClassic />
-				<div className="gla-dashboard__campaign_conversion">
-					<CampaignConversionDashboardNotice context="dashboard" />
-				</div>
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }
@@ -116,6 +114,10 @@ const Dashboard = () => {
 				<CustomerEffortScorePrompt
 					label={ __(
 						'How easy was it to create a Google Ad campaign?',
+						'google-listings-and-ads'
+					) }
+					secondLabel={ __(
+						'How easy was it to understand the requirements for the Google Ad campaign creation?',
 						'google-listings-and-ads'
 					) }
 					eventContext={ GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS }

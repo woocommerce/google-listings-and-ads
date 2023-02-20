@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
-use Google\Service\ShoppingContent\Product as GoogleProduct;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 use WC_Product;
@@ -441,5 +441,35 @@ trait ProductTrait {
 			$products[] = $this->generate_simple_product_mock();
 		}
 		return $products;
+	}
+
+	/**
+	 * Helper function to create a mocked image attachment with a specific name.
+	 *
+	 * @param int    $product_id Parent product ID.
+	 * @param string $image_name Image name to mock.
+	 * @return int Attachment ID.
+	 */
+	protected function generate_mock_image_attachment( int $product_id, string $image_name ) {
+		$attachment_id = wp_insert_post(
+			[
+				'post_parent'    => $product_id,
+				'post_type'      => 'attachment',
+				'post_mime_type' => 'import',
+			]
+		);
+
+		update_post_meta( $attachment_id, '_wp_attached_file', $image_name );
+		update_post_meta(
+			$attachment_id,
+			'_wp_attachment_metadata',
+			[
+				'width'  => 600,
+				'height' => 300,
+				'file'   => $image_name,
+			]
+		);
+
+		return $attachment_id;
 	}
 }

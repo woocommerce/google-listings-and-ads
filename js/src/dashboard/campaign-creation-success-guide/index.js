@@ -7,12 +7,12 @@ import {
 	useCallback,
 } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
 import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import AppModal from '.~/components/app-modal';
 import GuidePageContent, {
 	ContentLink,
@@ -54,7 +54,7 @@ export default function CampaignCreationSuccessGuide( {
 			className="gla-campaign-creation-success-guide"
 			onRequestClose={ handleRequestClose }
 			buttons={ [
-				<Button
+				<AppButton
 					key="0"
 					isTertiary
 					data-action={ CTA_CREATE_ANOTHER_CAMPAIGN }
@@ -64,15 +64,15 @@ export default function CampaignCreationSuccessGuide( {
 						'Create another campaign',
 						'google-listings-and-ads'
 					) }
-				</Button>,
-				<Button
+				</AppButton>,
+				<AppButton
 					key="1"
 					isPrimary
 					data-action={ CTA_CONFIRM }
 					onClick={ onGuideRequestClose }
 				>
 					{ __( 'Got it', 'google-listings-and-ads' ) }
-				</Button>,
+				</AppButton>,
 			] }
 		>
 			<div className="gla-campaign-creation-success-guide__header-image">

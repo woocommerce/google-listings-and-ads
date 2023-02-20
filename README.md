@@ -28,9 +28,9 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 
 We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
 
--   WordPress 5.7+
+-   WordPress 5.9+
 -   WooCommerce 6.9+
--   PHP 7.4+
+-   PHP 7.4+ (64 bits)
 
 ## Browsers supported
 
@@ -132,19 +132,6 @@ $ vendor/bin/phpunit
 ```
 
 The tests will execute and you'll be presented with a summary.
-
-### Unit Tests and PHP 8
-
-We support running unit tests on PHP 8.
-
-In order to have tests running, please, execute the following line just before the `phpunit` call:
-```
-composer require phpunit/phpunit "^9.5" --dev --update-with-all-dependencies
-```
-
-The above will update PHPUnit to version 9 including all of its dependencies.
-
-**NOTE!** Do not commit the changes made, committing `phpunit/phpunit: ^9.5` dependency changes to `composer.json` file will break the CI. 
 
 ## E2E Testing
 

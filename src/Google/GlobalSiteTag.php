@@ -150,12 +150,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		// Add product data for any add_to_cart link.
 		add_filter(
 			'woocommerce_loop_add_to_cart_link',
-			function ( $link, $product, $args ) {
+			function ( $link, $product ) {
 				$this->add_product_data( $product );
 				return $link;
 			},
 			10,
-			3
+			2
 		);
 
 		// Add display name for an available variation.

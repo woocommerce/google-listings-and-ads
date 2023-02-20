@@ -1,0 +1,41 @@
+.gla-app-text {
+	font-weight: 400;
+	margin: 0;
+	&--body {
+		font-size: $gla-font-base;
+		line-height: $gla-line-height-medium;
+	}
+
+	&--caption {
+		font-size: $gla-font-smaller;
+		line-height: $gla-line-height-smaller;
+	}
+
+	&--label {
+		font-weight: 600;
+		font-size: $gla-font-smaller;
+		line-height: $gla-line-height-smaller;
+	}
+
+	&--title-small {
+		font-size: $gla-font-small-medium;
+		line-height: $gla-line-height-medium-large;
+	}
+
+
+	&--title-medium {
+		font-size: $gla-font-medium;
+		line-height: $gla-line-height-large;
+	}
+
+	&--subtitle {
+		font-weight: 600;
+		font-size: 16px;
+		line-height: 24px;
+	}
+
+	&--subtitle-small {
+		font-size: $gla-font-small;
+		line-height: $gla-line-height-medium;
+	}
+}

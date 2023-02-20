@@ -12,7 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\DataTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
-use Google\Service\ShoppingContent\ProductShipping;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductShipping;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validation;
@@ -1577,6 +1577,35 @@ DESCRIPTION;
 		$this->assertNull( $violation );
 	}
 
+	public function test_invalid_image_names() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$main_image = $this->generate_mock_image_attachment( $product->get_id(), '600-×-300.png' );
+
+		$additional_images = [ $this->generate_mock_image_attachment( $product->get_id(), 'æą€.jpg' ) ];
+
+		$product->set_image_id( $main_image );
+		$product->set_gallery_image_ids( $additional_images );
+		$product->save();
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$violation = $this->validate_product_property( $adapted_product, 'imageLink' );
+		$this->assertEquals(
+			'Product image "600-×-300.png" is not a valid name.',
+			$this->validate_product_property( $adapted_product, 'imageLink' )->getMessage()
+		);
+		$this->assertEquals(
+			'Product image "æą€.jpg" is not a valid name.',
+			$this->validate_product_property( $adapted_product, 'additionalImageLinks' )->getMessage()
+		);
+	}
+
 	/**
 	 * Validate a product property and return the first violation.
 	 *
@@ -1590,7 +1619,7 @@ DESCRIPTION;
 			->getValidator();
 
 		foreach ( $validator->validate( $adapted_product ) as $violation ) {
-			if ( $violation->getPropertyPath() === $property ) {
+			if ( str_starts_with( $violation->getPropertyPath(), $property ) ) {
 				return $violation;
 			}
 		}
