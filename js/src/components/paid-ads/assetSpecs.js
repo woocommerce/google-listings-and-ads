@@ -28,7 +28,7 @@ const ASSET_DISPLAY_URL_PATH_SPECS = [
 	},
 ];
 
-const ASSET_IMAGE_SPECS = [
+const ASSET_MARKETING_IMAGE_SPECS = [
 	{
 		key: ASSET_FORM_KEY.MARKETING_IMAGE,
 		min: 1,
@@ -107,6 +107,9 @@ const ASSET_IMAGE_SPECS = [
 			'google-listings-and-ads'
 		),
 	},
+];
+
+const ASSET_LOGO_SPECS = [
 	{
 		key: ASSET_FORM_KEY.LOGO,
 		min: 1,
@@ -134,6 +137,14 @@ const ASSET_IMAGE_SPECS = [
 		),
 	},
 ];
+
+// The max number of asset images is shared across different types of asset images.
+const ASSET_IMAGE_SPECS_GROUPS = [
+	ASSET_MARKETING_IMAGE_SPECS,
+	ASSET_LOGO_SPECS,
+];
+
+const ASSET_IMAGE_SPECS = ASSET_IMAGE_SPECS_GROUPS.flat();
 
 const ASSET_TEXT_SPECS = [
 	{
@@ -302,12 +313,14 @@ const ASSET_TEXT_SPECS = [
 		);
 	}
 
-	ASSET_IMAGE_SPECS.forEach( ( spec ) => {
-		spec.subheading = getSubheading( spec.min, spec.max );
-		spec.help = getImageHelpContent(
-			spec.helpSubheading,
-			spec.imageConfig
-		);
+	ASSET_IMAGE_SPECS_GROUPS.forEach( ( specs ) => {
+		specs.forEach( ( spec ) => {
+			spec.subheading = getSubheading( spec.min, spec.max );
+			spec.help = getImageHelpContent(
+				spec.helpSubheading,
+				spec.imageConfig
+			);
+		} );
 	} );
 
 	ASSET_TEXT_SPECS.forEach( ( spec ) => {
