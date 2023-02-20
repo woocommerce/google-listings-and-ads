@@ -9,6 +9,12 @@ import { Fragment, createInterpolateElement } from '@wordpress/element';
  */
 import { ASSET_FORM_KEY } from '.~/constants';
 
+/**
+ * @typedef {import('.~/components/types.js').AssetGroupFormValues} AssetGroupFormValues
+ */
+
+const sharedMaxSymbol = Symbol( 'sharedMax' );
+
 const ASSET_DISPLAY_URL_PATH_SPECS = [
 	{
 		maxCharacterCount: 15,
@@ -32,7 +38,6 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 	{
 		key: ASSET_FORM_KEY.MARKETING_IMAGE,
 		min: 1,
-		max: 8,
 		imageConfig: {
 			minWidth: 600,
 			minHeight: 314,
@@ -58,7 +63,6 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 	{
 		key: ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE,
 		min: 1,
-		max: 8,
 		imageConfig: {
 			minWidth: 300,
 			minHeight: 300,
@@ -84,7 +88,6 @@ const ASSET_MARKETING_IMAGE_SPECS = [
 	{
 		key: ASSET_FORM_KEY.PORTRAIT_MARKETING_IMAGE,
 		min: 0,
-		max: 4,
 		imageConfig: {
 			minWidth: 480,
 			minHeight: 600,
@@ -139,6 +142,11 @@ const ASSET_LOGO_SPECS = [
 ];
 
 // The max number of asset images is shared across different types of asset images.
+// Therefore, the shared max numbers are set to each group array via the Symbol,
+// and the groups are shown in the structure of the below `ASSET_IMAGE_SPECS_GROUPS`.
+ASSET_MARKETING_IMAGE_SPECS[ sharedMaxSymbol ] = 20;
+ASSET_LOGO_SPECS[ sharedMaxSymbol ] = 5;
+
 const ASSET_IMAGE_SPECS_GROUPS = [
 	ASSET_MARKETING_IMAGE_SPECS,
 	ASSET_LOGO_SPECS,
@@ -371,17 +379,40 @@ const ASSET_TEXT_SPECS = [
 		);
 	}
 
+	/**
+	 * Gets the current maximum number of this type of asset images.
+	 *
+	 * @param {number} sharedMax The shared maximum number of the grouped types of image assets.
+	 * @param {Object[]} specs The image specs in the same group.
+	 * @param {AssetGroupFormValues} values The assets form values to be calculated for the occupied number of asset images.
+	 * @return {number} The current maximum number of this type of asset images.
+	 */
+	function getMax( sharedMax, specs, values ) {
+		return specs.reduce( ( remaining, spec ) => {
+			if ( spec.key === this.key ) {
+				return remaining;
+			}
+
+			const occupied = Math.max( spec.min, values[ spec.key ].length );
+			return remaining - occupied;
+		}, sharedMax );
+	}
+
 	ASSET_IMAGE_SPECS_GROUPS.forEach( ( specs ) => {
 		// Currently, the PMax Assets feature in this extension doesn't offer managing the landscape_logo
 		// asset but only the logo asset. So the logo asset shares the total number of images by itself.
 		// To avoid confusing extension users, the UI and wording are shown the shared max concept when
 		// the number of manageable images in the same group is > 1.
 		const shownAsSharedMax = specs.length > 1;
+		const sharedMax = specs[ sharedMaxSymbol ];
+
 		const help = getImageHelpContent( specs, shownAsSharedMax );
 
 		specs.forEach( ( spec ) => {
 			spec.subheading = getSubheading( spec, shownAsSharedMax );
 			spec.help = help;
+
+			spec.getMax = getMax.bind( spec, sharedMax, specs );
 		} );
 	} );
 
