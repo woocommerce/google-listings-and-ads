@@ -53,4 +53,10 @@
 	&__image-item:hover &__remove-image-button {
 		display: flex;
 	}
+
+	.components-popover__content {
+		width: $gla-popover-width;
+		white-space: normal;
+		text-align: left;
+	}
 }
