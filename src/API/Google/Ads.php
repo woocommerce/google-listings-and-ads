@@ -252,6 +252,15 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Returns true if the Ads id exists in the options.
+	 *
+	 * @return bool
+	 */
+	public function ads_id_exists(): bool {
+		return ! empty( $this->options->get( OptionsInterface::ADS_ID ) );
+	}
+
+	/**
 	 * Update the billing flow URL so we can retrieve it again later.
 	 *
 	 * @param string $url Billing flow URL.
