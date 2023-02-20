@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, _x, sprintf } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { Fragment, createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -295,32 +295,78 @@ const ASSET_TEXT_SPECS = [
 		);
 	}
 
-	function getImageHelpContent( subheading, imageConfig ) {
-		const size = sprintf(
-			// translators: 1: Recommended width. 2: Recommended height. 3: Minimal width. 4: Minimal height.
+	function getImageSizeHelpContent( spec, isListFormat ) {
+		const { helpSubheading, imageConfig } = spec;
+		const size = (
+			<ul>
+				{ createInterpolateElement(
+					sprintf(
+						// translators: 1: Recommended width. 2: Recommended height. 3: Minimal width. 4: Minimal height.
+						__(
+							'<listItem>Recommended size: %1$d x %2$d</listItem><listItem>Min. size: %3$d x %4$d</listItem>',
+							'google-listings-and-ads'
+						),
+						imageConfig.suggestedWidth,
+						imageConfig.suggestedHeight,
+						imageConfig.minWidth,
+						imageConfig.minHeight
+					),
+					{ listItem: <li /> }
+				) }
+			</ul>
+		);
+
+		return (
+			<Fragment key={ spec.key }>
+				<div>
+					<strong>{ helpSubheading }</strong>
+					{ isListFormat && size }
+				</div>
+				{ ! isListFormat && size }
+			</Fragment>
+		);
+	}
+
+	function getImageSharedMaxHelpContent( specs ) {
+		const names = specs.map( ( spec ) => spec.lowercaseName );
+		const separator = _x(
+			', ',
+			'The separator for concatenating the types of image assets',
+			'google-listings-and-ads'
+		);
+		const concatenatedNamesText = sprintf(
+			// translators: 1: Concatenated text for the types of image assets except for the last one. 2: The last type of image assets.
+			__( '%1$s and %2$s', 'google-listings-and-ads' ),
+			names.slice( 0, -1 ).join( separator ),
+			names.at( -1 )
+		);
+		const content = sprintf(
+			// translators: 1: The maximum number of this image assets. 2: Text for the types of image assets.
 			__(
-				'<listItem>Recommended size: %1$d x %2$d</listItem><listItem>Min. size: %3$d x %4$d</listItem>',
+				'You can add up to a maximum of %1$d image assets, which can be a combination of %2$s images.',
 				'google-listings-and-ads'
 			),
-			imageConfig.suggestedWidth,
-			imageConfig.suggestedHeight,
-			imageConfig.minWidth,
-			imageConfig.minHeight
+			20,
+			concatenatedNamesText
+		);
+
+		return <div>{ content }</div>;
+	}
+
+	function getImageHelpContent( specs, shownAsSharedMax ) {
+		const sizeContent = specs.map( ( spec ) =>
+			getImageSizeHelpContent( spec, shownAsSharedMax )
 		);
 		return (
 			<>
+				{ shownAsSharedMax && getImageSharedMaxHelpContent( specs ) }
 				<div>
 					{ __(
 						'Add images that meet or can be cropped to the recommended sizes. Note: The maximum file size for any image is 5120 KB.',
 						'google-listings-and-ads'
 					) }
 				</div>
-				<div>
-					<strong>{ subheading }</strong>
-				</div>
-				<ul>
-					{ createInterpolateElement( size, { listItem: <li /> } ) }
-				</ul>
+				{ sizeContent }
 			</>
 		);
 	}
@@ -331,13 +377,11 @@ const ASSET_TEXT_SPECS = [
 		// To avoid confusing extension users, the UI and wording are shown the shared max concept when
 		// the number of manageable images in the same group is > 1.
 		const shownAsSharedMax = specs.length > 1;
+		const help = getImageHelpContent( specs, shownAsSharedMax );
 
 		specs.forEach( ( spec ) => {
 			spec.subheading = getSubheading( spec, shownAsSharedMax );
-			spec.help = getImageHelpContent(
-				spec.helpSubheading,
-				spec.imageConfig
-			);
+			spec.help = help;
 		} );
 	} );
 
