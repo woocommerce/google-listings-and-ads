@@ -30,6 +30,7 @@ use Google\Ads\GoogleAds\V11\Resources\Campaign;
 use Google\Ads\GoogleAds\V11\Resources\Asset;
 use Google\Ads\GoogleAds\V11\Resources\AssetGroup;
 use Google\Ads\GoogleAds\V11\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V11\Services\AssetGroupAssetOperation;
 use Google\Ads\GoogleAds\V11\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V11\Resources\CampaignCriterion;
 use Google\Ads\GoogleAds\V11\Resources\Campaign\ShoppingSetting;
@@ -814,24 +815,6 @@ trait GoogleAdsClientTrait {
 				return null;
 		}
 
-	}
-
-	/**
-	 * Generate asset operations
-	 *
-	 * @param array $assets list of assets
-	 */
-	private function generate_crate_asset_operations( $assets = [] ) {
-		foreach ( $assets as $asset ) {
-
-			$ads_asset = $this->generate_asset( $asset );
-
-			if ( $ads_asset ) {
-				$asset_operations[] = ( new MutateOperation() )->setAssetOperation( ( new AssetOperation() )->setCreate( $ads_asset ) );
-			}
-		}
-
-		return $asset_operations;
 	}
 
 	/**
