@@ -407,12 +407,23 @@ const ASSET_TEXT_SPECS = [
 		const sharedMax = specs[ sharedMaxSymbol ];
 
 		const help = getImageHelpContent( specs, shownAsSharedMax );
+		const reachedMaxNumberTip = sprintf(
+			// translators: The shared maximum number of the grouped types of image assets.
+			__(
+				'You have reached the maximum of %d total ad images. Please remove some images to continue uploading.',
+				'google-listings-and-ads'
+			),
+			sharedMax
+		);
 
 		specs.forEach( ( spec ) => {
 			spec.subheading = getSubheading( spec, shownAsSharedMax );
 			spec.help = help;
 
 			spec.getMax = getMax.bind( spec, sharedMax, specs );
+			spec.reachedMaxNumberTip = shownAsSharedMax
+				? reachedMaxNumberTip
+				: null;
 		} );
 	} );
 
