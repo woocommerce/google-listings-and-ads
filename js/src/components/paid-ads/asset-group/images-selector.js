@@ -29,7 +29,7 @@ import './images-selector.scss';
  * @param {Object} props React props.
  * @param {AssetImageConfig} props.imageConfig The config of the asset image.
  * @param {string[]} props.initialImageUrls The initial image URLs.
- * @param {number} [props.maxNumberOfImages=0] The maximum number of images. 0 by default and it means unlimited number.
+ * @param {number} [props.maxNumberOfImages=-1] The maximum number of images. -1 by default and it means unlimited number.
  * @param {string} [props.reachedMaxNumberTip] The tooltip content floating on the add button when reaching the max number of images.
  * @param {JSX.Element} [props.children] Content to be rendered above the add button.
  * @param {(urls: Array<string>) => void} [props.onChange] Callback function to be called when the texts are changed.
@@ -37,7 +37,7 @@ import './images-selector.scss';
 export default function ImagesSelector( {
 	imageConfig,
 	initialImageUrls = [],
-	maxNumberOfImages = 0,
+	maxNumberOfImages = -1,
 	reachedMaxNumberTip,
 	children,
 	onChange = noop,
@@ -63,7 +63,7 @@ export default function ImagesSelector( {
 	};
 
 	useEffect( () => {
-		if ( maxNumberOfImages > 0 && images.length > maxNumberOfImages ) {
+		if ( maxNumberOfImages > -1 && images.length > maxNumberOfImages ) {
 			updateImagesRef.current( images.slice( 0, maxNumberOfImages ) );
 		}
 	}, [ images, maxNumberOfImages ] );
@@ -104,7 +104,7 @@ export default function ImagesSelector( {
 
 	const renderAddButton = () => {
 		const disabled =
-			maxNumberOfImages !== 0 && images.length >= maxNumberOfImages;
+			maxNumberOfImages !== -1 && images.length >= maxNumberOfImages;
 		const button = (
 			<AddAssetItemButton
 				disabled={ disabled }
