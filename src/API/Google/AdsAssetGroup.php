@@ -356,7 +356,8 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			}
 
 			if ( ! empty( $data ) ) {
-				$operations[] = $this->edit_operation( $asset_group_id, $data );
+				// If the asset group does not contain a final URL, it is required to update first the asset group with the final URL and then the assets.
+				$operations = [ $this->edit_operation( $asset_group_id, $data ), ...$operations ];
 			}
 
 			if ( ! empty( $operations ) ) {
