@@ -709,8 +709,9 @@ trait GoogleAdsClientTrait {
 	 *
 	 * @param string $type            Mutation type we are expecting (create/update/remove).
 	 * @param int    $asset_group_id  Asset Group ID we expect to see in the mutate result.
+	 * @param bool   $include_assets  Whether to include assets in the mutate result.
 	 */
-	protected function generate_asset_group_mutate_mock( string $type, int $asset_group_id ) {
+	protected function generate_asset_group_mutate_mock( string $type, int $asset_group_id, bool $include_assets = false ) {
 		$asset_group_result = $this->createMock( MutateAssetGroupResult::class );
 		$asset_group_result->method( 'getResourceName' )->willReturn(
 			ResourceNames::forAssetGroup( $this->ads_id, $asset_group_id )
@@ -725,8 +726,14 @@ trait GoogleAdsClientTrait {
 		$this->service_client->expects( $this->once() )
 			->method( 'mutate' )
 			->willReturnCallback(
-				function( int $ads_id, array $operations ) use ( $type, $response ) {
+				function( int $ads_id, array $operations ) use ( $type, $response, $include_assets ) {
 					$operations_names = [];
+
+					if ( $type === 'update' && count( $operations ) ) {
+						// The first operation should be always be the asset group operation.
+						$this->assertEquals( 'asset_group_operation', $operations[0]->getOperation() );
+					}
+
 					// Assert that the asset group operation is the right type.
 					foreach ( $operations as $operation ) {
 							$operation_name = $operation->getOperation();
@@ -747,8 +754,10 @@ trait GoogleAdsClientTrait {
 						$this->assertContains( 'asset_group_listing_group_filter_operation', $operations_names );
 					}
 					if ( $type === 'update' ) {
-						$this->assertEquals( 1, count( $operations_names ) );
 						$this->assertContains( 'asset_group_operation', $operations_names );
+						if ( $include_assets ) {
+							$this->assertContains( 'asset_group_asset_operation', $operations_names );
+						}
 					}
 
 					return $response;
@@ -934,6 +943,32 @@ trait GoogleAdsClientTrait {
 			default:
 				return '';
 		}
+	}
+
+	/**
+	 * Generate create asset group asset operations
+	 *
+	 * @param array $asset_group_assets list of assets group assets
+	 * @return array list of asset group asset operations
+	 */
+	private function generate_create_asset_group_asset_operations( $asset_group_assets = [] ): array {
+		$asset_group_asset_operations = [];
+
+		foreach ( $asset_group_assets as $asset_group ) {
+
+			$operation             = new AssetGroupAssetOperation();
+			$new_asset_group_asset = new AssetGroupAsset(
+				[
+					'asset'       => $asset_group['asset_id'],
+					'asset_group' => ResourceNames::forAssetGroup( $this->options->get_ads_id(), $asset_group['asset_group_id'] ),
+					'field_type'  => AssetFieldType::number( $asset_group['field_type'] ),
+				]
+			);
+
+			$asset_group_asset_operations[] = ( new MutateOperation() )->setAssetGroupAssetOperation( $operation->setCreate( $new_asset_group_asset ) );
+		}
+
+		return $asset_group_asset_operations;
 	}
 
 
