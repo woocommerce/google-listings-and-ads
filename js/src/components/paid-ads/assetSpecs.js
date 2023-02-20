@@ -271,15 +271,27 @@ const ASSET_TEXT_SPECS = [
 // functions inside are for initialization purposes only and are not expected to be exposed
 // outside this module.
 {
-	function getSubheading( min, max ) {
+	function getSubheading( spec, shownAsSharedMax ) {
+		if ( shownAsSharedMax ) {
+			if ( spec.min === 0 ) {
+				return;
+			}
+
+			return sprintf(
+				// translators: 1: The minimal number of this item.
+				__( 'At least %d required', 'google-listings-and-ads' ),
+				spec.min
+			);
+		}
+
 		return sprintf(
 			// translators: 1: The minimal number of this item. 2: The maximum number of this item.
 			__(
 				'At least %1$d required. Add up to %2$d.',
 				'google-listings-and-ads'
 			),
-			min,
-			max
+			spec.min,
+			spec.max
 		);
 	}
 
@@ -314,8 +326,14 @@ const ASSET_TEXT_SPECS = [
 	}
 
 	ASSET_IMAGE_SPECS_GROUPS.forEach( ( specs ) => {
+		// Currently, the PMax Assets feature in this extension doesn't offer managing the landscape_logo
+		// asset but only the logo asset. So the logo asset shares the total number of images by itself.
+		// To avoid confusing extension users, the UI and wording are shown the shared max concept when
+		// the number of manageable images in the same group is > 1.
+		const shownAsSharedMax = specs.length > 1;
+
 		specs.forEach( ( spec ) => {
-			spec.subheading = getSubheading( spec.min, spec.max );
+			spec.subheading = getSubheading( spec, shownAsSharedMax );
 			spec.help = getImageHelpContent(
 				spec.helpSubheading,
 				spec.imageConfig
@@ -324,7 +342,7 @@ const ASSET_TEXT_SPECS = [
 	} );
 
 	ASSET_TEXT_SPECS.forEach( ( spec ) => {
-		spec.subheading = getSubheading( spec.min, spec.max );
+		spec.subheading = getSubheading( spec );
 	} );
 }
 
