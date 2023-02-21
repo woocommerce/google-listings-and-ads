@@ -123,12 +123,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 = 2.3.8 - 2023-01-24 =
 * Fix - Product feed table footer rendering a zero when there are no products.
 
-= 2.3.7 - 2023-01-17 =
-* Tweak - Pre-select a default MC account.
-
-= 2.3.6 - 2023-01-10 =
-* Dev - Use extracted Button component from @wordpress/components package.
-* Fix - i18n for "View Reports" button.
-* Tweak - WooCommerce 7.3 Compatibility with Customer Effort Score prompt.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
