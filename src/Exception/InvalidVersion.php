@@ -56,4 +56,16 @@ class InvalidVersion extends RuntimeException implements GoogleListingsAndAdsExc
 			)
 		);
 	}
+
+	/**
+	 * Create a new instance of the exception when an invalid architecture is detected.
+	 *
+	 * @since 2.3.9
+	 * @return InvalidVersion
+	 */
+	public static function invalid_architecture(): InvalidVersion {
+		return new static(
+			__( 'Google Listings and Ads requires a 64 bit version of PHP.', 'google-listings-and-ads' )
+		);
+	}
 }

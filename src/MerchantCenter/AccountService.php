@@ -427,7 +427,7 @@ class AccountService implements OptionsAwareInterface, Service {
 
 		/** @var Account $account */
 		$account     = $merchant->get_account( $merchant_id );
-		$account_url = $account->getWebsiteUrl();
+		$account_url = $account->getWebsiteUrl() ?: '';
 
 		if ( untrailingslashit( $site_url ) !== untrailingslashit( $account_url ) ) {
 

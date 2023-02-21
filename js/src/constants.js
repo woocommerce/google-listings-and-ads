@@ -24,12 +24,6 @@ export const GUIDE_NAMES = {
 export const LOCAL_STORAGE_KEYS = {
 	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
 		'gla-can-onboarding-setup-ces-prompt-open',
-	IS_BEFORE_MIGRATION_NOTICE_DISMISSED:
-		'gla-is-before-migration-notice-dismissed',
-	IS_AFTER_MIGRATION_NOTICE_DISMISSED:
-		'gla-is-after-migration-notice-dismissed',
-	IS_REPORTS_MIGRATION_NOTICE_DISMISSED:
-		'gla-is-reports-migration-notice-dismissed',
 };
 
 export const API_RESPONSE_CODES = {
@@ -39,10 +33,6 @@ export const API_RESPONSE_CODES = {
 
 export const SHIPPING_RATE_METHOD = {
 	FLAT_RATE: 'flat_rate',
-};
-
-export const CAMPAIGN_ADS_MIGRATION = {
-	MAXIMUM_MONTHS_TO_DISPLAY_NOTICE: 1,
 };
 
 // Stepper key related

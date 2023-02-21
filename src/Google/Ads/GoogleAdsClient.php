@@ -2,7 +2,7 @@
 declare( strict_types=1 );
 
 /**
- * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V11/GoogleAdsClient.php
+ * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V12/GoogleAdsClient.php
  *
  * phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
  * phpcs:disable WordPress.NamingConventions.ValidVariableName
@@ -13,7 +13,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Auth\Credentials\InsecureCredentials;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Auth\HttpHandler\HttpHandlerFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
-use Google\Ads\GoogleAds\Util\V11\GoogleAdsFailures;
+use Google\Ads\GoogleAds\Util\V12\GoogleAdsFailures;
 
 /**
  * A Google Ads API client for handling common configuration and OAuth2 settings.
