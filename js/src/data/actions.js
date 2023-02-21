@@ -1126,7 +1126,7 @@ export function* receiveStoreCategories( storeCategories ) {
 }
 
 /**
- * Action to receive the Tours.
+ * Action to receive the tour.
  *
  * @param {Tour} tour The tour to receive.
  */

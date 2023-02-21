@@ -465,7 +465,7 @@ export function* getStoreCategories() {
 }
 
 /**
- * Resolver for getting the Tours.
+ * Resolver for getting the tour.
  *
  * @param {string} tourId The tour to get
  */
