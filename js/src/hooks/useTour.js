@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useState } from '@wordpress/element';
+import { useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -16,7 +16,8 @@ import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 /**
  * @typedef {Object} TourHook
  * @property { { data: Tour|null, hasFinishedResolution: boolean, isResolving: boolean, invalidateResolution: Function } } tour The tour object
- * @property {() => Promise<{tour: Tour}>} closeTour Closes the tour and sets it as checked.
+ * @property {(tour: Tour) => Promise<{tour: Tour}>} setTour Setter for the hook
+ * @property {(nextChecked: boolean) => Promise<{tour: Tour}>} setTourChecked Setter for updating the checked state of the tour in use.
  * @property {boolean} showTour Indicates if the tour should be shown based on it's checked prop
  */
 
@@ -29,24 +30,25 @@ import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 const useTour = ( tourId ) => {
 	const tour = useAppSelectDispatch( 'getTour', tourId );
 	const { upsertTour } = useAppDispatch();
-	const [ tourClosed, setTourClosed ] = useState( false );
+
 	const checked = tour.data?.checked;
-	const showTour = tour.hasFinishedResolution && ! checked && ! tourClosed;
+	const showTour = tour.hasFinishedResolution && ! checked;
 
-	const closeTour = useCallback( () => {
-		const nextTour = { id: tourId, checked: true };
-
-		if ( ! checked ) {
-			setTourClosed( true );
+	const setTourChecked = useCallback(
+		( nextChecked ) => {
+			const nextTour = { id: tourId, checked: nextChecked };
+			if ( nextChecked === checked ) {
+				return Promise.resolve( { tour: nextTour } );
+			}
 			return upsertTour( nextTour );
-		}
-
-		return Promise.resolve( { tour: nextTour } );
-	}, [ checked, setTourClosed, upsertTour, tourId ] );
+		},
+		[ tourId, checked, upsertTour ]
+	);
 
 	return {
 		tour,
-		closeTour,
+		setTour: upsertTour,
+		setTourChecked,
 		showTour,
 	};
 };
