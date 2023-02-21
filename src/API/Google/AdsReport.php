@@ -15,8 +15,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use DateTime;
-use Google\Ads\GoogleAds\V11\Common\Segments;
-use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V12\Common\Segments;
+use Google\Ads\GoogleAds\V12\Services\GoogleAdsRow;
 use Google\ApiCore\ApiException;
 
 /**

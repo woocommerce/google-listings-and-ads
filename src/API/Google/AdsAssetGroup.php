@@ -8,17 +8,17 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsListingGroup
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\Util\V11\ResourceNames;
-use Google\Ads\GoogleAds\V11\Enums\AssetGroupStatusEnum\AssetGroupStatus;
-use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
-use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterVerticalEnum\ListingGroupFilterVertical;
-use Google\Ads\GoogleAds\V11\Resources\AssetGroup;
-use Google\Ads\GoogleAds\V11\Resources\AssetGroupListingGroupFilter;
-use Google\Ads\GoogleAds\V11\Services\AssetGroupListingGroupFilterOperation;
-use Google\Ads\GoogleAds\V11\Services\AssetGroupOperation;
-use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V11\Services\MutateOperation;
-use Google\Ads\GoogleAds\V11\Services\AssetGroupServiceClient;
+use Google\Ads\GoogleAds\Util\V12\ResourceNames;
+use Google\Ads\GoogleAds\V12\Enums\AssetGroupStatusEnum\AssetGroupStatus;
+use Google\Ads\GoogleAds\V12\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
+use Google\Ads\GoogleAds\V12\Enums\ListingGroupFilterVerticalEnum\ListingGroupFilterVertical;
+use Google\Ads\GoogleAds\V12\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V12\Resources\AssetGroupListingGroupFilter;
+use Google\Ads\GoogleAds\V12\Services\AssetGroupListingGroupFilterOperation;
+use Google\Ads\GoogleAds\V12\Services\AssetGroupOperation;
+use Google\Ads\GoogleAds\V12\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V12\Services\MutateOperation;
+use Google\Ads\GoogleAds\V12\Services\AssetGroupServiceClient;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Google\Protobuf\FieldMask;
@@ -356,7 +356,8 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			}
 
 			if ( ! empty( $data ) ) {
-				$operations[] = $this->edit_operation( $asset_group_id, $data );
+				// If the asset group does not contain a final URL, it is required to update first the asset group with the final URL and then the assets.
+				$operations = [ $this->edit_operation( $asset_group_id, $data ), ...$operations ];
 			}
 
 			if ( ! empty( $operations ) ) {

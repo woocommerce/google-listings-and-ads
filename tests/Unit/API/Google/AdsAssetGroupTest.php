@@ -8,12 +8,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
-use Google\Ads\GoogleAds\V11\Enums\AssetGroupStatusEnum\AssetGroupStatus;
-use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
-use Google\Ads\GoogleAds\V11\Enums\ListingGroupFilterVerticalEnum\ListingGroupFilterVertical;
+use Google\Ads\GoogleAds\V12\Enums\AssetGroupStatusEnum\AssetGroupStatus;
+use Google\Ads\GoogleAds\V12\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
+use Google\Ads\GoogleAds\V12\Enums\ListingGroupFilterVerticalEnum\ListingGroupFilterVertical;
 use PHPUnit\Framework\MockObject\MockObject;
 use Google\ApiCore\ApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -141,6 +142,42 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->generate_ads_asset_groups_query_mock( $asset_group_data );
 		$this->assertEquals( $asset_group_data, $this->asset_group->get_asset_groups_by_campaign_id( self::TEST_CAMPAIGN_ID, $include_assets ) );
 
+	}
+
+	public function test_edit_asset_group_with_asset() {
+		$asset = [
+			'id'         => 11111,
+			'field_type' => AssetFieldType::DESCRIPTION,
+			'content'    => 'desc1',
+		];
+
+		$asset_group_data = [
+			'final_url' => 'https://www.example.com',
+			'path1'     => 'mypath1',
+			'path2'     => 'mypath2',
+		];
+
+		$this->asset_group_asset->expects( $this->exactly( 1 ) )
+			->method( 'edit_operations' )
+			->with( self::TEST_ASSET_GROUP_ID, [ $asset ] )
+			->willReturn(
+				$this->generate_create_asset_group_asset_operations(
+					[
+						[
+							'asset_id'       => $asset['id'],
+							'asset_group_id' => self::TEST_ASSET_GROUP_ID,
+							'field_type'     => $asset['field_type'],
+						],
+					]
+				)
+			);
+
+		$this->generate_asset_group_mutate_mock( 'update', self::TEST_ASSET_GROUP_ID, true );
+
+		$this->assertEquals(
+			self::TEST_ASSET_GROUP_ID,
+			$this->asset_group->edit_asset_group( self::TEST_ASSET_GROUP_ID, $asset_group_data, [ $asset ] )
+		);
 	}
 
 	public function test_edit_asset_group_without_assets() {

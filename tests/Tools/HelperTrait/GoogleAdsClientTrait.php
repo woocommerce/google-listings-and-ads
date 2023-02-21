@@ -10,50 +10,50 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Exception;
-use Google\Ads\GoogleAds\Util\V11\ResourceNames;
-use Google\Ads\GoogleAds\V11\Common\LocationInfo;
-use Google\Ads\GoogleAds\V11\Common\Metrics;
-use Google\Ads\GoogleAds\V11\Common\Segments;
-use Google\Ads\GoogleAds\V11\Common\TagSnippet;
-use Google\Ads\GoogleAds\V11\Common\ImageAsset;
-use Google\Ads\GoogleAds\V11\Common\TextAsset;
-use Google\Ads\GoogleAds\V11\Common\CallToActionAsset;
-use Google\Ads\GoogleAds\V11\Common\ImageDimension;
-use Google\Ads\GoogleAds\V11\Enums\AccessRoleEnum\AccessRole;
-use Google\Ads\GoogleAds\V11\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
-use Google\Ads\GoogleAds\V11\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
-use Google\Ads\GoogleAds\V11\Enums\AssetTypeEnum\AssetType;
-use Google\Ads\GoogleAds\V11\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
-use Google\Ads\GoogleAds\V11\Enums\TrackingCodeTypeEnum\TrackingCodeType;
-use Google\Ads\GoogleAds\V11\Resources\BillingSetup;
-use Google\Ads\GoogleAds\V11\Resources\Campaign;
-use Google\Ads\GoogleAds\V11\Resources\Asset;
-use Google\Ads\GoogleAds\V11\Resources\AssetGroup;
-use Google\Ads\GoogleAds\V11\Resources\AssetGroupAsset;
-use Google\Ads\GoogleAds\V11\Resources\CampaignBudget;
-use Google\Ads\GoogleAds\V11\Resources\CampaignCriterion;
-use Google\Ads\GoogleAds\V11\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V11\Resources\ConversionAction;
-use Google\Ads\GoogleAds\V11\Resources\Customer;
-use Google\Ads\GoogleAds\V11\Resources\CustomerUserAccess;
-use Google\Ads\GoogleAds\V11\Resources\MerchantCenterLink;
-use Google\Ads\GoogleAds\V11\Resources\ShoppingPerformanceView;
-use Google\Ads\GoogleAds\V11\Services\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V11\Services\CustomerServiceClient;
-use Google\Ads\GoogleAds\V11\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V11\Services\GoogleAdsServiceClient;
-use Google\Ads\GoogleAds\V11\Services\ListAccessibleCustomersResponse;
-use Google\Ads\GoogleAds\V11\Services\ListMerchantCenterLinksResponse;
-use Google\Ads\GoogleAds\V11\Services\MerchantCenterLinkServiceClient;
-use Google\Ads\GoogleAds\V11\Services\MutateCampaignResult;
-use Google\Ads\GoogleAds\V11\Services\MutateConversionActionResult;
-use Google\Ads\GoogleAds\V11\Services\MutateConversionActionsResponse;
-use Google\Ads\GoogleAds\V11\Services\MutateGoogleAdsResponse;
-use Google\Ads\GoogleAds\V11\Services\MutateOperationResponse;
-use Google\Ads\GoogleAds\V11\Services\MutateOperation;
-use Google\Ads\GoogleAds\V11\Services\AssetOperation;
-use Google\Ads\GoogleAds\V11\Services\MutateAssetGroupResult;
-use Google\Ads\GoogleAds\V11\Services\MutateAssetResult;
+use Google\Ads\GoogleAds\Util\V12\ResourceNames;
+use Google\Ads\GoogleAds\V12\Common\LocationInfo;
+use Google\Ads\GoogleAds\V12\Common\Metrics;
+use Google\Ads\GoogleAds\V12\Common\Segments;
+use Google\Ads\GoogleAds\V12\Common\TagSnippet;
+use Google\Ads\GoogleAds\V12\Common\ImageAsset;
+use Google\Ads\GoogleAds\V12\Common\TextAsset;
+use Google\Ads\GoogleAds\V12\Common\CallToActionAsset;
+use Google\Ads\GoogleAds\V12\Common\ImageDimension;
+use Google\Ads\GoogleAds\V12\Enums\AccessRoleEnum\AccessRole;
+use Google\Ads\GoogleAds\V12\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
+use Google\Ads\GoogleAds\V12\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType as AdsCampaignType;
+use Google\Ads\GoogleAds\V12\Enums\AssetTypeEnum\AssetType;
+use Google\Ads\GoogleAds\V12\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
+use Google\Ads\GoogleAds\V12\Enums\TrackingCodeTypeEnum\TrackingCodeType;
+use Google\Ads\GoogleAds\V12\Resources\BillingSetup;
+use Google\Ads\GoogleAds\V12\Resources\Campaign;
+use Google\Ads\GoogleAds\V12\Resources\Asset;
+use Google\Ads\GoogleAds\V12\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V12\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V12\Services\AssetGroupAssetOperation;
+use Google\Ads\GoogleAds\V12\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V12\Resources\CampaignCriterion;
+use Google\Ads\GoogleAds\V12\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V12\Resources\ConversionAction;
+use Google\Ads\GoogleAds\V12\Resources\Customer;
+use Google\Ads\GoogleAds\V12\Resources\CustomerUserAccess;
+use Google\Ads\GoogleAds\V12\Resources\MerchantCenterLink;
+use Google\Ads\GoogleAds\V12\Resources\ShoppingPerformanceView;
+use Google\Ads\GoogleAds\V12\Services\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V12\Services\CustomerServiceClient;
+use Google\Ads\GoogleAds\V12\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V12\Services\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V12\Services\ListAccessibleCustomersResponse;
+use Google\Ads\GoogleAds\V12\Services\ListMerchantCenterLinksResponse;
+use Google\Ads\GoogleAds\V12\Services\MerchantCenterLinkServiceClient;
+use Google\Ads\GoogleAds\V12\Services\MutateCampaignResult;
+use Google\Ads\GoogleAds\V12\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V12\Services\MutateConversionActionsResponse;
+use Google\Ads\GoogleAds\V12\Services\MutateGoogleAdsResponse;
+use Google\Ads\GoogleAds\V12\Services\MutateOperationResponse;
+use Google\Ads\GoogleAds\V12\Services\MutateOperation;
+use Google\Ads\GoogleAds\V12\Services\MutateAssetGroupResult;
+use Google\Ads\GoogleAds\V12\Services\MutateAssetResult;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
@@ -709,8 +709,9 @@ trait GoogleAdsClientTrait {
 	 *
 	 * @param string $type            Mutation type we are expecting (create/update/remove).
 	 * @param int    $asset_group_id  Asset Group ID we expect to see in the mutate result.
+	 * @param bool   $include_assets  Whether to include assets in the mutate result.
 	 */
-	protected function generate_asset_group_mutate_mock( string $type, int $asset_group_id ) {
+	protected function generate_asset_group_mutate_mock( string $type, int $asset_group_id, bool $include_assets = false ) {
 		$asset_group_result = $this->createMock( MutateAssetGroupResult::class );
 		$asset_group_result->method( 'getResourceName' )->willReturn(
 			ResourceNames::forAssetGroup( $this->ads_id, $asset_group_id )
@@ -725,8 +726,14 @@ trait GoogleAdsClientTrait {
 		$this->service_client->expects( $this->once() )
 			->method( 'mutate' )
 			->willReturnCallback(
-				function( int $ads_id, array $operations ) use ( $type, $response ) {
+				function( int $ads_id, array $operations ) use ( $type, $response, $include_assets ) {
 					$operations_names = [];
+
+					if ( $type === 'update' && count( $operations ) ) {
+						// The first operation should be always be the asset group operation.
+						$this->assertEquals( 'asset_group_operation', $operations[0]->getOperation() );
+					}
+
 					// Assert that the asset group operation is the right type.
 					foreach ( $operations as $operation ) {
 							$operation_name = $operation->getOperation();
@@ -747,8 +754,10 @@ trait GoogleAdsClientTrait {
 						$this->assertContains( 'asset_group_listing_group_filter_operation', $operations_names );
 					}
 					if ( $type === 'update' ) {
-						$this->assertEquals( 1, count( $operations_names ) );
 						$this->assertContains( 'asset_group_operation', $operations_names );
+						if ( $include_assets ) {
+							$this->assertContains( 'asset_group_asset_operation', $operations_names );
+						}
 					}
 
 					return $response;
@@ -805,24 +814,6 @@ trait GoogleAdsClientTrait {
 				return null;
 		}
 
-	}
-
-	/**
-	 * Generate asset operations
-	 *
-	 * @param array $assets list of assets
-	 */
-	private function generate_crate_asset_operations( $assets = [] ) {
-		foreach ( $assets as $asset ) {
-
-			$ads_asset = $this->generate_asset( $asset );
-
-			if ( $ads_asset ) {
-				$asset_operations[] = ( new MutateOperation() )->setAssetOperation( ( new AssetOperation() )->setCreate( $ads_asset ) );
-			}
-		}
-
-		return $asset_operations;
 	}
 
 	/**
@@ -934,6 +925,32 @@ trait GoogleAdsClientTrait {
 			default:
 				return '';
 		}
+	}
+
+	/**
+	 * Generate create asset group asset operations
+	 *
+	 * @param array $asset_group_assets list of assets group assets
+	 * @return array list of asset group asset operations
+	 */
+	private function generate_create_asset_group_asset_operations( $asset_group_assets = [] ): array {
+		$asset_group_asset_operations = [];
+
+		foreach ( $asset_group_assets as $asset_group ) {
+
+			$operation             = new AssetGroupAssetOperation();
+			$new_asset_group_asset = new AssetGroupAsset(
+				[
+					'asset'       => $asset_group['asset_id'],
+					'asset_group' => ResourceNames::forAssetGroup( $this->options->get_ads_id(), $asset_group['asset_group_id'] ),
+					'field_type'  => AssetFieldType::number( $asset_group['field_type'] ),
+				]
+			);
+
+			$asset_group_asset_operations[] = ( new MutateOperation() )->setAssetGroupAssetOperation( $operation->setCreate( $new_asset_group_asset ) );
+		}
+
+		return $asset_group_asset_operations;
 	}
 
 

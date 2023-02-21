@@ -26,7 +26,7 @@ class GoogleAdsCleanupServices {
 	 *
 	 * @var string
 	 */
-	protected $version = 'V11';
+	protected $version = 'V12';
 
 	/**
 	 * @var Event Composer event.
