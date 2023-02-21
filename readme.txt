@@ -111,6 +111,12 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.3.10 - 2023-02-21 =
+* Add "Working with DEWP.md" to exclude list.
+* Add - Integration with WooCommerce Multichannel Marketing.
+* Tweak - Remove unnecessary PMax migration banners.
+* Tweak - Remove unnecessary woocommerce_loop_add_to_cart_link filter param.
+
 = 2.3.9 - 2023-02-15 =
 * Dev - Update phpunit to version 9.5.
 * Fix - Prefix Google Service packages to prevent plugin conflicts.
