@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Proxies;
 
+use Automattic\WooCommerce\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use WC_Countries;
 use WC_Coupon;
@@ -200,5 +201,16 @@ class WC {
 	 */
 	public function get_available_payment_gateways(): array {
 		return WCCore()->payment_gateways->get_available_payment_gateways();
+	}
+
+	/**
+	 * Returns the WooCommerce object container.
+	 *
+	 * @return Container
+	 *
+	 * @since 2.3.10
+	 */
+	public function wc_get_container(): Container {
+		return wc_get_container();
 	}
 }
