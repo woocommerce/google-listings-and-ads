@@ -445,11 +445,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'store_categories', storeCategories );
 		}
 
-		case TYPES.RECEIVE_TOUR: {
-			const { tour } = action;
-			return setIn( state, [ 'tours', tour.id ], tour );
-		}
-
+		case TYPES.RECEIVE_TOUR:
 		case TYPES.UPSERT_TOUR: {
 			const { tour } = action;
 			return setIn( state, [ 'tours', tour.id ], tour );
