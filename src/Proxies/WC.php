@@ -208,7 +208,7 @@ class WC {
 	 *
 	 * @return Container
 	 *
-	 * @since x.x.x
+	 * @since 2.3.10
 	 */
 	public function wc_get_container(): Container {
 		return wc_get_container();

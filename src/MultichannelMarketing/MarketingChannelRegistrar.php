@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing
  *
- * @since   x.x.x
+ * @since   2.3.10
  */
 class MarketingChannelRegistrar implements Service, Registerable {
 	/**
