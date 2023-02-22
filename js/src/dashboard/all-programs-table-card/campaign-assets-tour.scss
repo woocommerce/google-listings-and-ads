@@ -1,0 +1,25 @@
+.gla-campaign-assets-tour {
+	&__heading {
+		display: flex;
+		align-items: center;
+		gap: $grid-unit-10;
+		fill: $alert-green;
+
+		.woocommerce-pill {
+			margin-left: $grid-unit-05;
+			border: none;
+			background-color: var(--wp-admin-theme-color);
+			color: $white;
+		}
+	}
+
+	// Hide the footer content but leave the padding-bottom because
+	// TourKit doesn't offer a way not to use the primary button.
+	.components-card__footer {
+		padding-top: 0;
+
+		> * {
+			display: none;
+		}
+	}
+}

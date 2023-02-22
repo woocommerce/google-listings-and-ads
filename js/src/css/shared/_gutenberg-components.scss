@@ -41,6 +41,16 @@
 			}
 		}
 	}
+
+	// Fix the obvious styles conflicts caused by WooCommerce Payments since approximately version 2.2.0.
+	// Ref: https://github.com/Automattic/woocommerce-payments/blob/2.2.0/client/payment-details/summary/style.scss#L3-L9
+	.components-card {
+		margin-bottom: 0;
+
+		&__header {
+			font-size: inherit;
+		}
+	}
 }
 
 // hack to fix radio button selected style bug caused by woocommerce-admin.

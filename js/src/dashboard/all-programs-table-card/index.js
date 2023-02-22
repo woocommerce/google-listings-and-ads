@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import classnames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery, onQueryChange } from '@woocommerce/navigation';
 
@@ -20,6 +21,10 @@ import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
+import CampaignAssetsTour from './campaign-assets-tour';
+
+const PROGRAMS_TABLE_CARD_CLASS_NAME = 'gla-all-programs-table-card';
+const CAMPAIGN_EDIT_BUTTON_CLASS_NAME = 'gla-campaign-edit-button';
 
 const headers = [
 	{
@@ -81,6 +86,15 @@ const AllProgramsTableCard = ( props ) => {
 		return <AppSpinner />;
 	}
 
+	let campaignAssetsTour = null;
+
+	if ( adsCampaignsData.length ) {
+		const selector = `.${ PROGRAMS_TABLE_CARD_CLASS_NAME } .${ CAMPAIGN_EDIT_BUTTON_CLASS_NAME }`;
+		campaignAssetsTour = (
+			<CampaignAssetsTour referenceElementCssSelector={ selector } />
+		);
+	}
+
 	const data = [
 		{
 			id: FREE_LISTINGS_PROGRAM_ID,
@@ -110,9 +124,9 @@ const AllProgramsTableCard = ( props ) => {
 		} ),
 	];
 
-	return (
+	const tableCard = (
 		<AppTableCard
-			className="gla-all-programs-table-card"
+			className={ PROGRAMS_TABLE_CARD_CLASS_NAME }
 			title={ __( 'Programs', 'google-listings-and-ads' ) }
 			actions={
 				<AddPaidCampaignButton
@@ -121,6 +135,11 @@ const AllProgramsTableCard = ( props ) => {
 			}
 			headers={ headers }
 			rows={ data.map( ( el ) => {
+				const isFreeListings = el.id === FREE_LISTINGS_PROGRAM_ID;
+				const editButtonClassName = classnames( {
+					[ CAMPAIGN_EDIT_BUTTON_CLASS_NAME ]: ! isFreeListings,
+				} );
+
 				// Since the <Table> component uses array index as key to render rows,
 				// it might cause incorrect state control if a column has an internal state.
 				// So we have to specific `key` prop on some components of the `display` to work around it.
@@ -130,17 +149,19 @@ const AllProgramsTableCard = ( props ) => {
 					{ display: el.country },
 					{ display: el.dailyBudget },
 					{
-						display:
-							el.id === FREE_LISTINGS_PROGRAM_ID ? (
-								<FreeListingsDisabledToggle />
-							) : (
-								<ProgramToggle key={ el.id } program={ el } />
-							),
+						display: isFreeListings ? (
+							<FreeListingsDisabledToggle />
+						) : (
+							<ProgramToggle key={ el.id } program={ el } />
+						),
 					},
 					{
 						display: (
 							<div className="program-actions" key={ el.id }>
-								<EditProgramButton programId={ el.id } />
+								<EditProgramButton
+									className={ editButtonClassName }
+									programId={ el.id }
+								/>
 								{ el.id !== FREE_LISTINGS_PROGRAM_ID && (
 									<RemoveProgramButton programId={ el.id } />
 								) }
@@ -155,6 +176,13 @@ const AllProgramsTableCard = ( props ) => {
 			onQueryChange={ onQueryChange }
 			{ ...props }
 		/>
+	);
+
+	return (
+		<>
+			{ campaignAssetsTour }
+			{ tableCard }
+		</>
 	);
 };
 
