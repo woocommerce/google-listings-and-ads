@@ -156,7 +156,7 @@ describe( 'ImagesSelector', () => {
 		expect( onChange ).toHaveBeenLastCalledWith( [ urlA ] );
 	} );
 
-	it( 'When reaching the maximum number of images and the relevant tip is specified, it should use the tooltip', async () => {
+	it( 'When reaching the maximum number of images and the relevant tip is specified, it should use the tooltip', () => {
 		const props = { imageConfig, initialImageUrls: [ urlA ] };
 		const tip = 'tip-content';
 		const { rerender } = render(
