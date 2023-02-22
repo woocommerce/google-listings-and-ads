@@ -116,7 +116,6 @@ const ASSET_LOGO_SPECS = [
 	{
 		key: ASSET_FORM_KEY.LOGO,
 		min: 1,
-		max: 5,
 		imageConfig: {
 			minWidth: 128,
 			minHeight: 128,
@@ -417,6 +416,12 @@ const ASSET_TEXT_SPECS = [
 		);
 
 		specs.forEach( ( spec ) => {
+			// Currently, the logo asset is not shown as shared max on UI, so it still needs to
+			// set `spec.max` for generating its subheading.
+			if ( ! shownAsSharedMax && Number.isInteger( sharedMax ) ) {
+				spec.max = sharedMax;
+			}
+
 			spec.subheading = getSubheading( spec, shownAsSharedMax );
 			spec.help = help;
 
