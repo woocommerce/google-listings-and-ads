@@ -60,6 +60,7 @@ describe( 'reducer', () => {
 			mc_product_feed: null,
 			report: {},
 			store_categories: [],
+			tours: {},
 		} );
 
 		prepareState = prepareImmutableStateWithRefCheck.bind(
@@ -743,6 +744,38 @@ describe( 'reducer', () => {
 			expect( pageOneState ).toHaveProperty( `${ path }.key1`, '#1' );
 			expect( pageFourState ).toHaveProperty( `${ path }.key1`, '#1' );
 			expect( pageFourState ).toHaveProperty( `${ path }.key4`, '#4' );
+		} );
+	} );
+
+	describe( 'Tours', () => {
+		const path = 'tours';
+
+		it( 'should receive a tour', () => {
+			const tour = { id: 'test', checked: false };
+			const state = reducer( prepareState(), {
+				type: TYPES.RECEIVE_TOUR,
+				tour,
+			} );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( [ path, tour.id ], tour );
+		} );
+
+		it( 'should upsert a tour', () => {
+			const tour = { id: 'test', checked: false };
+			const tourUpdated = { id: 'test', checked: true };
+			const prevState = reducer( prepareState(), {
+				type: TYPES.RECEIVE_TOUR,
+				tour,
+			} );
+
+			const state = reducer( prevState, {
+				type: TYPES.UPSERT_TOUR,
+				tour: tourUpdated,
+			} );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( [ path, tour.id ], tourUpdated );
 		} );
 	} );
 

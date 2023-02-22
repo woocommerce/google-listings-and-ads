@@ -57,6 +57,7 @@ const DEFAULT_STATE = {
 	mc_product_feed: null,
 	report: {},
 	store_categories: [],
+	tours: {},
 };
 
 /**
@@ -442,6 +443,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_STORE_CATEGORIES: {
 			const { storeCategories } = action;
 			return setIn( state, 'store_categories', storeCategories );
+		}
+
+		case TYPES.RECEIVE_TOUR:
+		case TYPES.UPSERT_TOUR: {
+			const { tour } = action;
+			return setIn( state, [ 'tours', tour.id ], tour );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
