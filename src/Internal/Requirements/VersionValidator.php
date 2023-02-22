@@ -46,7 +46,7 @@ class VersionValidator extends RequirementValidator {
 	 * This is done by checking PHP_INT_SIZE. In 32 bits this will be 4 Bytes. In 64 Bits this will be 8 Bytes
 	 *
 	 * @see https://www.php.net/manual/en/language.types.integer.php
-	 * @since x.x.x
+	 * @since 2.3.9
 	 *
 	 * @throws InvalidVersion When the PHP Architecture is not 64 Bits.
 	 */

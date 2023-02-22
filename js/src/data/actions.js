@@ -25,6 +25,10 @@ export function handleFetchError( error, message ) {
 }
 
 /**
+ * @typedef {import('./selectors').Tour} Tour
+ */
+
+/**
  * CountryCode
  *
  * @typedef {string} CountryCode Two-letter country code in ISO 3166-1 alpha-2 format. Example: 'US'.
@@ -1122,9 +1126,9 @@ export function* receiveStoreCategories( storeCategories ) {
 }
 
 /**
- * Action to receive the Tours.
+ * Action to receive the tour.
  *
- * @param {Array} tour The tour to receive
+ * @param {Tour} tour The tour to receive.
  */
 export function* receiveTour( tour ) {
 	return {
@@ -1136,20 +1140,34 @@ export function* receiveTour( tour ) {
 /**
  * Updates/Inserts a Tour action
  *
- * @param {Object} tour The tour to update in the state.
+ * @param {Tour} tour The tour to update in the state.
+ * @param {boolean} [upsertingClientStoreFirst=false] Whether updating to the wp-data store first then the API.
  */
-export function* upsertTour( tour ) {
-	try {
-		yield apiFetch( {
+export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
+	const actions = [
+		apiFetch( {
 			path: `${ API_NAMESPACE }/tours`,
 			method: REQUEST_ACTIONS.POST,
 			data: tour,
-		} );
+		} ),
+	];
 
-		return {
-			type: TYPES.UPSERT_TOUR,
-			tour,
-		};
+	const updatingStoreAction = {
+		type: TYPES.UPSERT_TOUR,
+		tour,
+	};
+
+	// Explicitly compare to avoid miss-passing in a truthy value.
+	if ( upsertingClientStoreFirst === true ) {
+		actions.unshift( updatingStoreAction );
+	} else {
+		actions.push( updatingStoreAction );
+	}
+
+	try {
+		for ( const action of actions ) {
+			yield action;
+		}
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
@@ -1158,6 +1176,5 @@ export function* upsertTour( tour ) {
 				'google-listings-and-ads'
 			)
 		);
-		throw error;
 	}
 }

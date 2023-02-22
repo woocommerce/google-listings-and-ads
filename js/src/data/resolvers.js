@@ -17,7 +17,7 @@ import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
 import { adaptAdsCampaign } from './adapters';
-import { fetchWithHeaders } from './controls';
+import { fetchWithHeaders, awaitPromise } from './controls';
 
 import {
 	handleFetchError,
@@ -465,24 +465,33 @@ export function* getStoreCategories() {
 }
 
 /**
- * Resolver for getting the Tours.
+ * Resolver for getting the tour.
  *
  * @param {string} tourId The tour to get
  */
 export function* getTour( tourId ) {
-	const response = yield apiFetch( {
-		path: `${ API_NAMESPACE }/tours/${ tourId }`,
-	} );
+	try {
+		const { data } = yield fetchWithHeaders( {
+			path: `${ API_NAMESPACE }/tours/${ tourId }`,
+		} );
 
-	yield receiveTour( response );
+		yield receiveTour( data );
+	} catch ( response ) {
+		// Intentionally silence the specific error since the tour API will respond with
+		// a 404 error if the querying tour ID doesn't exist.
+		if ( response.status === 404 ) {
+			return;
+		}
+
+		const bodyPromise = response?.json() || response?.text();
+		const error = yield awaitPromise( bodyPromise );
+
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error getting the tour.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
-
-/**
- * Refresh getTour if UPSERT happens in the APP.
- *
- * @param {Object} action The performed action
- * @return {boolean} True if the action should be invalidated
- */
-getTour.shouldInvalidate = ( action ) => {
-	return action.type === TYPES.UPSERT_TOUR;
-};

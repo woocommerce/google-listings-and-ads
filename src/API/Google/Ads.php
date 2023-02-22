@@ -13,11 +13,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Exception;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V11\ResourceNames;
-use Google\Ads\GoogleAds\V11\Enums\AccessRoleEnum\AccessRole;
-use Google\Ads\GoogleAds\V11\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
-use Google\Ads\GoogleAds\V11\Resources\MerchantCenterLink;
-use Google\Ads\GoogleAds\V11\Services\MerchantCenterLinkOperation;
+use Google\Ads\GoogleAds\Util\V12\ResourceNames;
+use Google\Ads\GoogleAds\V12\Enums\AccessRoleEnum\AccessRole;
+use Google\Ads\GoogleAds\V12\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
+use Google\Ads\GoogleAds\V12\Resources\MerchantCenterLink;
+use Google\Ads\GoogleAds\V12\Services\MerchantCenterLinkOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 
@@ -249,6 +249,15 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function update_ads_id( int $id ): bool {
 		return $this->options->update( OptionsInterface::ADS_ID, $id );
+	}
+
+	/**
+	 * Returns true if the Ads id exists in the options.
+	 *
+	 * @return bool
+	 */
+	public function ads_id_exists(): bool {
+		return ! empty( $this->options->get( OptionsInterface::ADS_ID ) );
 	}
 
 	/**

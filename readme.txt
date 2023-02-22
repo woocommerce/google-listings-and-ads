@@ -2,10 +2,10 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.9
-Tested up to: 6.1
+Tested up to: 6.1.1
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.3.8
+Stable tag: 2.3.10
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,15 +111,22 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.3.10 - 2023-02-21 =
+* Add "Working with DEWP.md" to exclude list.
+* Add - Integration with WooCommerce Multichannel Marketing.
+* Tweak - Remove unnecessary PMax migration banners.
+* Tweak - Remove unnecessary woocommerce_loop_add_to_cart_link filter param.
+
+= 2.3.9 - 2023-02-15 =
+* Dev - Update phpunit to version 9.5.
+* Fix - Prefix Google Service packages to prevent plugin conflicts.
+* Tweak - Improve PHP 8.1 compatibility.
+* Tweak - Show admin notice when PHP 32 bits is being used.
+* Tweak - WC 7.4 compatibility.
+* Update - Google Ads library to API V12.
+* Update - Google Content library to API 2.13.
+
 = 2.3.8 - 2023-01-24 =
 * Fix - Product feed table footer rendering a zero when there are no products.
-
-= 2.3.7 - 2023-01-17 =
-* Tweak - Pre-select a default MC account.
-
-= 2.3.6 - 2023-01-10 =
-* Dev - Use extracted Button component from @wordpress/components package.
-* Fix - i18n for "View Reports" button.
-* Tweak - WooCommerce 7.3 Compatibility with Customer Effort Score prompt.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

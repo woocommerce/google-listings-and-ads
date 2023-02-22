@@ -6,21 +6,20 @@
 	"minimum-stability": "dev",
 	"require": {
 		"php": ">=7.4",
+		"ext-json": "*",
 		"automattic/jetpack-autoloader": "^2.4",
 		"automattic/jetpack-config": "^1.4",
 		"automattic/jetpack-connection": "^1.40",
-		"google/apiclient": "^2.12",
-		"google/apiclient-services": "~0.258",
-		"googleads/google-ads-php": "^16.0",
+		"google/apiclient": "^2.13",
+		"google/apiclient-services": "~0.286",
+		"googleads/google-ads-php": "^17.1",
 		"league/container": "^3.3",
 		"league/iso3166": "^4.1",
 		"phpseclib/bcmath_compat": "^2.0",
 		"psr/container": "^1.0",
-		"symfony/validator": "^5.2",
-		"ext-json": "*",
 		"symfony/polyfill-intl-normalizer": "^1.26",
-		"symfony/polyfill-mbstring": "^1.26"
-		
+		"symfony/polyfill-mbstring": "^1.26",
+		"symfony/validator": "^5.2"
 	},
 	"require-dev": {
 		"dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
@@ -64,7 +63,7 @@
 			"Google\\Task\\Composer::cleanup",
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\SymfonyPolyfillCleanup::remove",
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\GoogleAdsCleanupServices::remove",
-			"composer run-script remove-google-ads-api-version-support -- 8 9 10",
+			"composer run-script remove-google-ads-api-version-support -- 9 10 11",
 			"php ./bin/prefix-vendor-namespace.php",
 			"bash ./bin/cleanup-vendor-files.sh",
 			"composer dump-autoload"
@@ -84,7 +83,8 @@
 		"exclude": [
 			"!/js/build",
 			"!/vendor/*",
-			"!/languages"
+			"!/languages",
+			"Working with DEWP.md"
 		]
 	},
 	"extra": {

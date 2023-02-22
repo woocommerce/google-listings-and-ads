@@ -2,7 +2,7 @@
 declare( strict_types=1 );
 
 /**
- * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V11/ServiceClientFactoryTrait.php
+ * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V12/ServiceClientFactoryTrait.php
  *
  * phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
  * phpcs:disable WordPress.NamingConventions.ValidVariableName
@@ -13,25 +13,25 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads;
 
 use Google\Ads\GoogleAds\Constants;
 use Google\Ads\GoogleAds\Lib\ConfigurationTrait;
-use Google\Ads\GoogleAds\V11\Services\AccountBudgetServiceClient;
-use Google\Ads\GoogleAds\V11\Services\AccountLinkServiceClient;
-use Google\Ads\GoogleAds\V11\Services\AdGroupAdLabelServiceClient;
-use Google\Ads\GoogleAds\V11\Services\AdGroupAdServiceClient;
-use Google\Ads\GoogleAds\V11\Services\AdGroupCriterionServiceClient;
-use Google\Ads\GoogleAds\V11\Services\AdGroupServiceClient;
-use Google\Ads\GoogleAds\V11\Services\AdServiceClient;
-use Google\Ads\GoogleAds\V11\Services\AssetGroupListingGroupFilterServiceClient;
-use Google\Ads\GoogleAds\V11\Services\AssetGroupServiceClient;
-use Google\Ads\GoogleAds\V11\Services\BillingSetupServiceClient;
-use Google\Ads\GoogleAds\V11\Services\CampaignBudgetServiceClient;
-use Google\Ads\GoogleAds\V11\Services\CampaignCriterionServiceClient;
-use Google\Ads\GoogleAds\V11\Services\CampaignServiceClient;
-use Google\Ads\GoogleAds\V11\Services\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V11\Services\CustomerServiceClient;
-use Google\Ads\GoogleAds\V11\Services\CustomerUserAccessServiceClient;
-use Google\Ads\GoogleAds\V11\Services\GeoTargetConstantServiceClient;
-use Google\Ads\GoogleAds\V11\Services\GoogleAdsServiceClient;
-use Google\Ads\GoogleAds\V11\Services\MerchantCenterLinkServiceClient;
+use Google\Ads\GoogleAds\V12\Services\AccountBudgetServiceClient;
+use Google\Ads\GoogleAds\V12\Services\AccountLinkServiceClient;
+use Google\Ads\GoogleAds\V12\Services\AdGroupAdLabelServiceClient;
+use Google\Ads\GoogleAds\V12\Services\AdGroupAdServiceClient;
+use Google\Ads\GoogleAds\V12\Services\AdGroupCriterionServiceClient;
+use Google\Ads\GoogleAds\V12\Services\AdGroupServiceClient;
+use Google\Ads\GoogleAds\V12\Services\AdServiceClient;
+use Google\Ads\GoogleAds\V12\Services\AssetGroupListingGroupFilterServiceClient;
+use Google\Ads\GoogleAds\V12\Services\AssetGroupServiceClient;
+use Google\Ads\GoogleAds\V12\Services\BillingSetupServiceClient;
+use Google\Ads\GoogleAds\V12\Services\CampaignBudgetServiceClient;
+use Google\Ads\GoogleAds\V12\Services\CampaignCriterionServiceClient;
+use Google\Ads\GoogleAds\V12\Services\CampaignServiceClient;
+use Google\Ads\GoogleAds\V12\Services\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V12\Services\CustomerServiceClient;
+use Google\Ads\GoogleAds\V12\Services\CustomerUserAccessServiceClient;
+use Google\Ads\GoogleAds\V12\Services\GeoTargetConstantServiceClient;
+use Google\Ads\GoogleAds\V12\Services\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V12\Services\MerchantCenterLinkServiceClient;
 
 /**
  * Contains service client factory methods.

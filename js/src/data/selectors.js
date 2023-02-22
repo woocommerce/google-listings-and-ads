@@ -371,8 +371,8 @@ export const getStoreCategories = ( state ) => {
  *
  * @param {Object} state The state
  * @param {string} tourId The tour ID to get
- * @return {Tour} The tour
+ * @return {Tour|null} The tour. It will be `null` if not yet fetched or fetched but doesn't exist.
  */
 export const getTour = ( state, tourId ) => {
-	return state.tours[ tourId ];
+	return state.tours[ tourId ] || null;
 };
