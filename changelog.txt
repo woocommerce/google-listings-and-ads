@@ -1,5 +1,29 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 2.3.8 - 2023-01-24 =
+* Fix - Product feed table footer rendering a zero when there are no products.
+
+= 2.3.7 - 2023-01-17 =
+* Tweak - Pre-select a default MC account.
+
+= 2.3.6 - 2023-01-10 =
+* Dev - Use extracted Button component from @wordpress/components package.
+* Fix - i18n for "View Reports" button.
+* Tweak - WooCommerce 7.3 Compatibility with Customer Effort Score prompt.
+
+= 2.3.5 - 2022-12-28 =
+* Tweak - Adjust copy in Attribute Mapping section.
+* Tweak - Retrieve a published product as a landing page URL.
+* Tweak - Simplify report controller parameters.
+
+= 2.3.4 - 2022-12-20 =
+* Tweak - Improve image validation error messages.
+
+= 2.3.3 - 2022-12-14 =
+* Fix - Tours API Endpoint.
+* Tweak - WC 7.2 compatibility.
+* Update - Drop support for WordPress < 5.9.
+
 = 2.3.2 - 2022-12-06 =
 * Dev - Adjusted parts of the post-install process to work on machines without `grep` and `find`. .
 * Dev - Adjusted post-install process to mention when files have their class-expectations modified but retain their original namespace.

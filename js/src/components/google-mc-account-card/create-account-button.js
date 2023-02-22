@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import WarningModal from './warning-modal';
 import TermsModal from './terms-modal';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
@@ -41,7 +41,7 @@ const CreateAccountButton = ( props ) => {
 
 	return (
 		<>
-			<Button onClick={ handleCreateAccountClick } { ...rest } />
+			<AppButton onClick={ handleCreateAccountClick } { ...rest } />
 			{ activeModal === MODALS.WARNING && (
 				<WarningModal
 					existingAccount={ matchingDomainAccount }

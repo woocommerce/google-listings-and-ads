@@ -11,13 +11,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
+use Automattic\WooCommerce\GoogleListingsAndAds\Validator\ImageUrlConstraint;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Price as GooglePrice;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductShipping as GoogleProductShipping;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductShippingDimension as GoogleProductShippingDimension;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductShippingWeight as GoogleProductShippingWeight;
 use DateInterval;
-use Google\Service\ShoppingContent\Price as GooglePrice;
-use Google\Service\ShoppingContent\Product as GoogleProduct;
-use Google\Service\ShoppingContent\ProductShipping as GoogleProductShipping;
-use Google\Service\ShoppingContent\ProductShippingDimension as GoogleProductShippingDimension;
-use Google\Service\ShoppingContent\ProductShippingWeight as GoogleProductShippingWeight;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
@@ -761,14 +762,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$metadata->addPropertyConstraint( 'link', new Assert\Url() );
 
 		$metadata->addPropertyConstraint( 'imageLink', new Assert\NotBlank() );
-		$metadata->addPropertyConstraint( 'imageLink', new Assert\Url( [ 'normalizer' => 'Normalizer::normalize' ] ) );
+		$metadata->addPropertyConstraint( 'imageLink', new ImageUrlConstraint() );
 		$metadata->addPropertyConstraint(
 			'additionalImageLinks',
 			new Assert\All(
 				[
-					'constraints' => [
-						new Assert\Url( [ 'normalizer' => 'Normalizer::normalize' ] ),
-					],
+					'constraints' => [ new ImageUrlConstraint() ],
 				]
 			)
 		);

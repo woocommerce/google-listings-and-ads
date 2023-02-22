@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import RateFormModal from './rate-form-modal.js';
 
 /**
@@ -50,15 +50,15 @@ const EditRateFormModal = ( {
 				};
 
 				return [
-					<Button
+					<AppButton
 						key="delete"
 						isTertiary
 						isDestructive
 						onClick={ handleDeleteClick }
 					>
 						{ __( 'Delete', 'google-listings-and-ads' ) }
-					</Button>,
-					<Button
+					</AppButton>,
+					<AppButton
 						key="submit"
 						isPrimary
 						disabled={ ! isValidForm }
@@ -68,7 +68,7 @@ const EditRateFormModal = ( {
 							'Update shipping rate',
 							'google-listings-and-ads'
 						) }
-					</Button>,
+					</AppButton>,
 				];
 			} }
 			onSubmit={ onSubmit }
