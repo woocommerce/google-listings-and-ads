@@ -83,7 +83,8 @@
 		"exclude": [
 			"!/js/build",
 			"!/vendor/*",
-			"!/languages"
+			"!/languages",
+			"Working with DEWP.md"
 		]
 	},
 	"extra": {

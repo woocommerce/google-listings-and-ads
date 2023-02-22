@@ -17,7 +17,7 @@ import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
 import { adaptAdsCampaign } from './adapters';
-import { fetchWithHeaders } from './controls';
+import { fetchWithHeaders, awaitPromise } from './controls';
 
 import {
 	handleFetchError,
@@ -44,6 +44,7 @@ import {
 	receiveMappingAttributes,
 	receiveMappingRules,
 	receiveStoreCategories,
+	receiveTour,
 } from './actions';
 
 export function* getShippingRates() {
@@ -481,6 +482,38 @@ export function* getStoreCategories() {
 			error,
 			__(
 				'There was an error getting the store categories.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver for getting the tour.
+ *
+ * @param {string} tourId The tour to get
+ */
+export function* getTour( tourId ) {
+	try {
+		const { data } = yield fetchWithHeaders( {
+			path: `${ API_NAMESPACE }/tours/${ tourId }`,
+		} );
+
+		yield receiveTour( data );
+	} catch ( response ) {
+		// Intentionally silence the specific error since the tour API will respond with
+		// a 404 error if the querying tour ID doesn't exist.
+		if ( response.status === 404 ) {
+			return;
+		}
+
+		const bodyPromise = response?.json() || response?.text();
+		const error = yield awaitPromise( bodyPromise );
+
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error getting the tour.',
 				'google-listings-and-ads'
 			)
 		);

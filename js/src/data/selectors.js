@@ -42,6 +42,12 @@ export const getSettings = ( state ) => {
  */
 
 /**
+ * @typedef {Object} Tour
+ * @property {string} id The tour ID
+ * @property {boolean} checked True if the tour was checked by the user.
+ */
+
+/**
  * Select jetpack connection state.
  *
  * @param {Object} state The current store state will be injected by `wp.data`.
@@ -370,4 +376,16 @@ export const getMappingRules = createSelector(
 
 export const getStoreCategories = ( state ) => {
 	return state.store_categories;
+};
+
+/**
+ *
+ * Return a tour by ID
+ *
+ * @param {Object} state The state
+ * @param {string} tourId The tour ID to get
+ * @return {Tour|null} The tour. It will be `null` if not yet fetched or fetched but doesn't exist.
+ */
+export const getTour = ( state, tourId ) => {
+	return state.tours[ tourId ] || null;
 };

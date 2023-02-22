@@ -30,6 +30,7 @@ export function handleFetchError( error, message ) {
 
 /**
  * @typedef {import('.~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
+ * @typedef {import('./selectors').Tour} Tour
  */
 
 /**
@@ -1196,4 +1197,58 @@ export function* receiveStoreCategories( storeCategories ) {
 		type: TYPES.RECEIVE_STORE_CATEGORIES,
 		storeCategories,
 	};
+}
+
+/**
+ * Action to receive the tour.
+ *
+ * @param {Tour} tour The tour to receive.
+ */
+export function* receiveTour( tour ) {
+	return {
+		type: TYPES.RECEIVE_TOUR,
+		tour,
+	};
+}
+
+/**
+ * Updates/Inserts a Tour action
+ *
+ * @param {Tour} tour The tour to update in the state.
+ * @param {boolean} [upsertingClientStoreFirst=false] Whether updating to the wp-data store first then the API.
+ */
+export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
+	const actions = [
+		apiFetch( {
+			path: `${ API_NAMESPACE }/tours`,
+			method: REQUEST_ACTIONS.POST,
+			data: tour,
+		} ),
+	];
+
+	const updatingStoreAction = {
+		type: TYPES.UPSERT_TOUR,
+		tour,
+	};
+
+	// Explicitly compare to avoid miss-passing in a truthy value.
+	if ( upsertingClientStoreFirst === true ) {
+		actions.unshift( updatingStoreAction );
+	} else {
+		actions.push( updatingStoreAction );
+	}
+
+	try {
+		for ( const action of actions ) {
+			yield action;
+		}
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error updating the tour.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
