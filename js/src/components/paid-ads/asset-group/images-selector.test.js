@@ -10,9 +10,14 @@ import userEvent from '@testing-library/user-event';
  */
 import ImagesSelector from './images-selector';
 import useCroppedImageSelector from '.~/hooks/useCroppedImageSelector';
+import AppTooltip from '.~/components/app-tooltip';
 
 jest.mock( '.~/hooks/useCroppedImageSelector', () =>
 	jest.fn().mockName( 'useCroppedImageSelector' )
+);
+
+jest.mock( '.~/components/app-tooltip', () =>
+	jest.fn( ( props ) => <div { ...props } /> ).mockName( 'AppTooltip' )
 );
 
 describe( 'ImagesSelector', () => {
@@ -149,6 +154,33 @@ describe( 'ImagesSelector', () => {
 		expect( getImgUrls() ).toEqual( [ urlA ] );
 		expect( onChange ).toHaveBeenCalledTimes( 2 );
 		expect( onChange ).toHaveBeenLastCalledWith( [ urlA ] );
+	} );
+
+	it( 'When reaching the maximum number of images and the relevant tip is specified, it should use the tooltip', () => {
+		const props = { imageConfig, initialImageUrls: [ urlA ] };
+		const tip = 'tip-content';
+		const { rerender } = render(
+			<ImagesSelector { ...props } maxNumberOfImages={ 2 } />
+		);
+
+		expect( AppTooltip ).toHaveBeenCalledTimes( 0 );
+
+		rerender( <ImagesSelector { ...props } maxNumberOfImages={ 1 } /> );
+
+		expect( AppTooltip ).toHaveBeenCalledTimes( 0 );
+
+		rerender(
+			<ImagesSelector
+				{ ...props }
+				maxNumberOfImages={ 1 }
+				reachedMaxNumberTip={ tip }
+			/>
+		);
+
+		expect( AppTooltip ).toHaveBeenCalledWith(
+			expect.objectContaining( { text: tip } ),
+			{}
+		);
 	} );
 
 	it( 'When an image is called back for addition, it should be pushed to the image list.', async () => {
