@@ -41,7 +41,7 @@ export default function AssetGroupSection() {
 			description={
 				<p className="gla-asset-group-section__primary-description">
 					{ __(
-						'Create ads that effectively boost visibility and generate maximum conversions. Google will mix and match assets to create optimized ads— maximizing your campaign’s performance.',
+						'Create ads that effectively boost visibility and generate maximum conversions. Google will mix and match assets to create optimized ads in a variety of formats— maximizing your campaign’s performance.',
 						'google-listings-and-ads'
 					) }
 				</p>

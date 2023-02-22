@@ -47,7 +47,7 @@ export default function FinalUrlCard( {
 		<ExternalLink href={ finalUrl }>{ finalUrl }</ExternalLink>
 	) : (
 		__(
-			'Choose a page that people reach after clicking your ad. This might be your homepage, or a more specific page.',
+			'Choose a page that you want people to reach after clicking your ad. This might be your homepage, or a more specific page.',
 			'google-listings-and-ads'
 		)
 	);
