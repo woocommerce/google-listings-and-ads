@@ -54,7 +54,7 @@ const faqItems = [
 				</div>
 				<div>
 					{ __(
-						'Compared to product ads—which showcase individual products and are designed to drive direct sales and revenue—responsive ads with dynamic ad assets are typically used to highlight your business, generate interest, and attract new customers. While both types of ads can drive conversions, using them together can generate even greater results.',
+						'Compared to product ads—which showcase individual products and are designed to drive direct sales and revenue— ads with dynamic assets are typically used to highlight your business, generate interest, and attract new customers. While both types of ads can drive conversions, using them together can generate even greater results.',
 						'google-listings-and-ads'
 					) }
 				</div>

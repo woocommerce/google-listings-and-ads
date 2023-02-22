@@ -110,7 +110,7 @@ export default function AssetGroup( { campaign } ) {
 			<StepContentHeader
 				title={ __( 'Boost your campaign', 'google-listings-and-ads' ) }
 				description={ __(
-					'Get more conversions by adding creative assets to your campaign',
+					'Take your campaign to the next level with dynamic ad assets',
 					'google-listings-and-ads'
 				) }
 			/>
@@ -135,10 +135,7 @@ export default function AssetGroup( { campaign } ) {
 						}
 						onClick={ handleSkipClick }
 					>
-						{ __(
-							'Skip adding assets',
-							'google-listings-and-ads'
-						) }
+						{ __( 'Skip this step', 'google-listings-and-ads' ) }
 					</AppButton>
 				) }
 				<AppButton

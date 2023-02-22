@@ -110,6 +110,7 @@ export default function AssetGroupCard() {
 						subheading={ spec.subheading }
 						help={ spec.help }
 						numOfIssues={ getNumOfIssues( spec.key ) }
+						markOptional={ spec.min === 0 }
 						disabled={ ! isSelectedFinalUrl }
 						initialExpanded={ isSelectedFinalUrl }
 					>
@@ -139,7 +140,7 @@ export default function AssetGroupCard() {
 								{ index === 0 && isSelectedFinalUrl && (
 									<ExternalLink href="https://support.google.com/google-ads/answer/6167101">
 										{ __(
-											'Learn how to write effective ad copy',
+											'Learn how to write effective ads',
 											'google-listings-and-ads'
 										) }
 									</ExternalLink>
@@ -190,23 +191,24 @@ export default function AssetGroupCard() {
 				subheading={ hostname }
 				help={
 					<>
-						<p>
+						<div>
 							{ __(
 								`The display URL gives potential customers a clear idea of what webpage they'll reach once they click your ad, so your path text should describe your ad's landing page.`,
 								'google-listings-and-ads'
 							) }
-						</p>
-						<p>
+						</div>
+						<div>
 							{ __(
 								`To create your display URL, Google Ads will combine the domain (for example, "www.google.com" in www.google.com/nonprofits) from your final URL and the path text (for example, "nonprofits" in www.google.com/nonprofits).`,
 								'google-listings-and-ads'
 							) }
-						</p>
+						</div>
 					</>
 				}
 				numOfIssues={ getNumOfIssues(
 					ASSET_FORM_KEY.DISPLAY_URL_PATH
 				) }
+				markOptional
 				disabled={ ! isSelectedFinalUrl }
 				initialExpanded={ isSelectedFinalUrl }
 			>

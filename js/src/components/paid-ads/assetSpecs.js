@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, _x, sprintf } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { Fragment, createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -28,7 +28,7 @@ const ASSET_DISPLAY_URL_PATH_SPECS = [
 	},
 ];
 
-const ASSET_IMAGE_SPECS = [
+const ASSET_MARKETING_IMAGE_SPECS = [
 	{
 		key: ASSET_FORM_KEY.MARKETING_IMAGE,
 		min: 1,
@@ -40,7 +40,7 @@ const ASSET_IMAGE_SPECS = [
 			suggestedHeight: 628,
 		},
 		heading: _x(
-			'Rectangular images',
+			'Landscape images',
 			'Plural asset field name as the heading',
 			'google-listings-and-ads'
 		),
@@ -50,7 +50,7 @@ const ASSET_IMAGE_SPECS = [
 			'google-listings-and-ads'
 		),
 		lowercaseName: _x(
-			'rectangular',
+			'landscape',
 			'Lowercase asset field name',
 			'google-listings-and-ads'
 		),
@@ -107,6 +107,9 @@ const ASSET_IMAGE_SPECS = [
 			'google-listings-and-ads'
 		),
 	},
+];
+
+const ASSET_LOGO_SPECS = [
 	{
 		key: ASSET_FORM_KEY.LOGO,
 		min: 1,
@@ -123,7 +126,7 @@ const ASSET_IMAGE_SPECS = [
 			'google-listings-and-ads'
 		),
 		helpSubheading: _x(
-			'Square logo (1:1)',
+			'Logo (1:1)',
 			'Asset field name with its aspect ratio as the subheading within a help tip',
 			'google-listings-and-ads'
 		),
@@ -134,6 +137,14 @@ const ASSET_IMAGE_SPECS = [
 		),
 	},
 ];
+
+// The max number of asset images is shared across different types of asset images.
+const ASSET_IMAGE_SPECS_GROUPS = [
+	ASSET_MARKETING_IMAGE_SPECS,
+	ASSET_LOGO_SPECS,
+];
+
+const ASSET_IMAGE_SPECS = ASSET_IMAGE_SPECS_GROUPS.flat();
 
 const ASSET_TEXT_SPECS = [
 	{
@@ -195,18 +206,18 @@ const ASSET_TEXT_SPECS = [
 		),
 		help: (
 			<>
-				<p>
+				<div>
 					{ __(
 						'The long headline is the first line of your ad, and appears instead of your short headline in larger ads. Long headlines can be up to 90 characters, and may appear with or without your description.',
 						'google-listings-and-ads'
 					) }
-				</p>
-				<p>
+				</div>
+				<div>
 					{ __(
 						'The length of the rendered headline will depend on the site it appears on. If shortened, it will end with an ellipsis(…).',
 						'google-listings-and-ads'
 					) }
-				</p>
+				</div>
 			</>
 		),
 	},
@@ -239,18 +250,18 @@ const ASSET_TEXT_SPECS = [
 		),
 		help: (
 			<>
-				<p>
+				<div>
 					{ __(
 						'The description adds to the headline and provides additional context or details. It can be up to 90 characters, and may appear after the headline.',
 						'google-listings-and-ads'
 					) }
-				</p>
-				<p>
+				</div>
+				<div>
 					{ __(
 						`The length of the rendered description will depend on the site it appears on. If it's shortened, it will end with an ellipsis(…). The description doesn't show in all sizes and formats.`,
 						'google-listings-and-ads'
 					) }
-				</p>
+				</div>
 			</>
 		),
 	},
@@ -260,56 +271,122 @@ const ASSET_TEXT_SPECS = [
 // functions inside are for initialization purposes only and are not expected to be exposed
 // outside this module.
 {
-	function getSubheading( min, max ) {
+	function getSubheading( spec, shownAsSharedMax ) {
+		if ( shownAsSharedMax ) {
+			if ( spec.min === 0 ) {
+				return;
+			}
+
+			return sprintf(
+				// translators: 1: The minimal number of this item.
+				__( 'At least %d required', 'google-listings-and-ads' ),
+				spec.min
+			);
+		}
+
 		return sprintf(
 			// translators: 1: The minimal number of this item. 2: The maximum number of this item.
 			__(
 				'At least %1$d required. Add up to %2$d.',
 				'google-listings-and-ads'
 			),
-			min,
-			max
+			spec.min,
+			spec.max
 		);
 	}
 
-	function getImageHelpContent( subheading, imageConfig ) {
-		const size = sprintf(
-			// translators: 1: Recommended width. 2: Recommended height. 3: Minimal width. 4: Minimal height.
+	function getImageSizeHelpContent( spec, isListFormat ) {
+		const { helpSubheading, imageConfig } = spec;
+		const size = (
+			<ul>
+				{ createInterpolateElement(
+					sprintf(
+						// translators: 1: Recommended width. 2: Recommended height. 3: Minimal width. 4: Minimal height.
+						__(
+							'<listItem>Recommended size: %1$d x %2$d</listItem><listItem>Min. size: %3$d x %4$d</listItem>',
+							'google-listings-and-ads'
+						),
+						imageConfig.suggestedWidth,
+						imageConfig.suggestedHeight,
+						imageConfig.minWidth,
+						imageConfig.minHeight
+					),
+					{ listItem: <li /> }
+				) }
+			</ul>
+		);
+
+		return (
+			<Fragment key={ spec.key }>
+				<div>
+					<strong>{ helpSubheading }</strong>
+					{ isListFormat && size }
+				</div>
+				{ ! isListFormat && size }
+			</Fragment>
+		);
+	}
+
+	function getImageSharedMaxHelpContent( specs ) {
+		const names = specs.map( ( spec ) => spec.lowercaseName );
+		const separator = _x(
+			', ',
+			'The separator for concatenating the types of image assets',
+			'google-listings-and-ads'
+		);
+		const concatenatedNamesText = sprintf(
+			// translators: 1: Concatenated text for the types of image assets except for the last one. 2: The last type of image assets.
+			__( '%1$s and %2$s', 'google-listings-and-ads' ),
+			names.slice( 0, -1 ).join( separator ),
+			names.at( -1 )
+		);
+		const content = sprintf(
+			// translators: 1: The maximum number of this image assets. 2: Text for the types of image assets.
 			__(
-				'Recommended size: %1$d x %2$d<newline />Min. size: %3$d x %4$d',
+				'You can add up to a maximum of %1$d image assets, which can be a combination of %2$s images.',
 				'google-listings-and-ads'
 			),
-			imageConfig.suggestedWidth,
-			imageConfig.suggestedHeight,
-			imageConfig.minWidth,
-			imageConfig.minHeight
+			20,
+			concatenatedNamesText
+		);
+
+		return <div>{ content }</div>;
+	}
+
+	function getImageHelpContent( specs, shownAsSharedMax ) {
+		const sizeContent = specs.map( ( spec ) =>
+			getImageSizeHelpContent( spec, shownAsSharedMax )
 		);
 		return (
 			<>
-				<p>
+				{ shownAsSharedMax && getImageSharedMaxHelpContent( specs ) }
+				<div>
 					{ __(
 						'Add images that meet or can be cropped to the recommended sizes. Note: The maximum file size for any image is 5120 KB.',
 						'google-listings-and-ads'
 					) }
-				</p>
-				<p>
-					<strong>{ subheading }</strong>
-				</p>
-				<p>{ createInterpolateElement( size, { newline: <br /> } ) }</p>
+				</div>
+				{ sizeContent }
 			</>
 		);
 	}
 
-	ASSET_IMAGE_SPECS.forEach( ( spec ) => {
-		spec.subheading = getSubheading( spec.min, spec.max );
-		spec.help = getImageHelpContent(
-			spec.helpSubheading,
-			spec.imageConfig
-		);
+	ASSET_IMAGE_SPECS_GROUPS.forEach( ( specs ) => {
+		// Currently, the PMax Assets feature in this extension doesn't offer managing the landscape_logo
+		// asset but only the logo asset. So the logo asset shares the total number of images by itself.
+		// To avoid confusing extension users, the UI and wording are shown the shared max concept when
+		// the number of manageable images in the same group is > 1.
+		const shownAsSharedMax = specs.length > 1;
+		const help = getImageHelpContent( specs, shownAsSharedMax );
+
+		specs.forEach( ( spec ) => {
+			spec.subheading = getSubheading( spec, shownAsSharedMax );
+			spec.help = help;
+		} );
 	} );
 
 	ASSET_TEXT_SPECS.forEach( ( spec ) => {
-		spec.subheading = getSubheading( spec.min, spec.max );
+		spec.subheading = getSubheading( spec );
 	} );
 }
 

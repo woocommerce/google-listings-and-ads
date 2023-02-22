@@ -197,9 +197,7 @@ export default function AssetsLoader( { onAssetsLoaded } ) {
 			<AppButton
 				isSecondary
 				text={
-					fetching
-						? __( 'Scanning…', 'google-listings-and-ads' )
-						: __( 'Scan for assets', 'google-listings-and-ads' )
+					fetching ? '' : __( 'Select', 'google-listings-and-ads' )
 				}
 				eventName="gla_import_assets_by_final_url_button_click"
 				eventProps={ { type: finalUrl?.type } }

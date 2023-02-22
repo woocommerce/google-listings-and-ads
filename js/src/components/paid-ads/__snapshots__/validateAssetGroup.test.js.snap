@@ -15,7 +15,7 @@ Array [
 
 exports[`validateAssetGroup Image assets When the length of values.logo is less than 1, it should not pass 1`] = `"Add at least 1 logo image"`;
 
-exports[`validateAssetGroup Image assets When the length of values.marketing_image is less than 1, it should not pass 1`] = `"Add at least 1 rectangular image"`;
+exports[`validateAssetGroup Image assets When the length of values.marketing_image is less than 1, it should not pass 1`] = `"Add at least 1 landscape image"`;
 
 exports[`validateAssetGroup Image assets When the length of values.square_marketing_image is less than 1, it should not pass 1`] = `"Add at least 1 square image"`;
 
