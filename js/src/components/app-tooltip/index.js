@@ -32,7 +32,7 @@ const AppTooltip = ( props ) => {
 			This inline-block div is needed for the tooltip to show up correctly.
 			If we use span, the tooltip will not wrap ToggleControl nicely.
 			*/ }
-			<div className="app-tooltip__children-container">{ children }</div>
+			<div className="gla-tooltip__children-container">{ children }</div>
 		</Tooltip>
 	);
 };
