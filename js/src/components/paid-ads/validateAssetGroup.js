@@ -52,6 +52,23 @@ export default function validateAssetGroup( values ) {
 		const texts = values[ spec.key ];
 		const filledTexts = texts.filter( Boolean );
 
+		if ( spec.min >= 2 && Array.isArray( spec.maxCharacterCounts ) ) {
+			const [ first, second ] = spec.maxCharacterCounts;
+
+			if ( first < second && texts[ 0 ] === '' ) {
+				const message = sprintf(
+					// translators: Asset field name.
+					__(
+						'The %s in the first field is required',
+						'google-listings-and-ads'
+					),
+					spec.lowercaseSingularName
+				);
+
+				messages.push( message );
+			}
+		}
+
 		if ( filledTexts.length < spec.min ) {
 			const name =
 				spec.min === 1

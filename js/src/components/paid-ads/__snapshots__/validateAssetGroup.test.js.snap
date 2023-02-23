@@ -40,6 +40,18 @@ Array [
 ]
 `;
 
+exports[`validateAssetGroup Text assets When the first value of description is an empty string, it should not pass 1`] = `
+Array [
+  "The description in the first field is required",
+]
+`;
+
+exports[`validateAssetGroup Text assets When the first value of headline is an empty string, it should not pass 1`] = `
+Array [
+  "The headline in the first field is required",
+]
+`;
+
 exports[`validateAssetGroup Text assets When the length of values.description is less than 2 after omitting empty strings, it should not pass 1`] = `
 Array [
   "Add at least 2 descriptions",
