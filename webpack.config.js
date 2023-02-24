@@ -193,7 +193,6 @@ const updatedSassOptions = {
 		'@import "_colors"; ' +
 		'@import "_variables"; ' +
 		'@import "_mixins"; ' +
-		'@import "_z-index"; ' +
 		'@import "_breakpoints"; ',
 };
 
