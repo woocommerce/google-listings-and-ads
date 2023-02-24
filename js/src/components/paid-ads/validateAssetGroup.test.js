@@ -71,6 +71,27 @@ describe( 'validateAssetGroup', () => {
 	} );
 
 	describe( 'Text assets', () => {
+		it.each(
+			ASSET_TEXT_SPECS.filter( ( spec ) => {
+				return (
+					spec.min >= 2 && Array.isArray( spec.maxCharacterCounts )
+				);
+			} ).map( ( spec ) => [ spec.key, spec ] )
+		)(
+			'When the first value of %s is an empty string, it should not pass',
+			( key, spec ) => {
+				const texts = Array.from( { length: spec.min + 1 }, toText );
+				texts[ 0 ] = '';
+				values[ key ] = texts;
+				const error = validateAssetGroup( values );
+
+				expect( error ).toHaveProperty( key );
+				expect( Array.isArray( error[ key ] ) ).toBe( true );
+				expect( error[ key ] ).toHaveLength( 1 );
+				expect( error[ key ] ).toMatchSnapshot();
+			}
+		);
+
 		it.each( ASSET_TEXT_SPECS.map( ( spec ) => [ spec.key, spec.min ] ) )(
 			'When the length of values.%s is less than %s after omitting empty strings, it should not pass',
 			( key, min ) => {
@@ -106,8 +127,8 @@ describe( 'validateAssetGroup', () => {
 			'When checking duplication, it should ignore empty strings',
 			( key, spec ) => {
 				const texts = Array.from( { length: spec.min + 2 }, toText );
-				texts[ 0 ] = '';
 				texts[ 1 ] = '';
+				texts[ 2 ] = '';
 				values[ key ] = texts;
 				const error = validateAssetGroup( values );
 

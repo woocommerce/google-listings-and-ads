@@ -16,7 +16,7 @@ import {
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
-import { adaptAdsCampaign } from './adapters';
+import { adaptAdsCampaign, adaptAssetGroup } from './adapters';
 import { fetchWithHeaders, awaitPromise } from './controls';
 
 import {
@@ -239,7 +239,7 @@ export function* getCampaignAssetGroups( campaignId ) {
 		return {
 			type: TYPES.RECEIVE_CAMPAIGN_ASSET_GROUPS,
 			campaignId,
-			assetGroups,
+			assetGroups: assetGroups.map( adaptAssetGroup ),
 		};
 	} catch ( error ) {
 		yield handleFetchError(
