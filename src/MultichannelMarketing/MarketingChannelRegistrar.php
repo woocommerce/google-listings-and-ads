@@ -43,6 +43,8 @@ class MarketingChannelRegistrar implements Service, Registerable {
 	 * Register as a WooCommerce marketing channel.
 	 */
 	public function register(): void {
-		$this->marketing_channels->register( $this->channel );
+		if ( apply_filters( 'woocommerce_gla_enable_mcm', false ) === true ) {
+			$this->marketing_channels->register( $this->channel );
+		}
 	}
 }
