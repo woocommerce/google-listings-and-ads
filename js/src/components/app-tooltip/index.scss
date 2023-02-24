@@ -9,18 +9,12 @@
 		cursor: auto;
 	}
 
-	&--hover-placeholder:has(.components-tooltip) {
-		position: relative;
-
-		&::after {
-			content: "";
-			position: absolute;
-			z-index: z-index(".components-tooltip") - 1;
-			top: 0;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			cursor: initial;
-		}
+	// The wrapper of the event catcher is displayed in inline layout so it may not cover
+	// the whole child completely if the child's height is higher than the wrapper.
+	// Ref:
+	// - https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4019.17.0/packages/components/src/tooltip/index.js#L42
+	// - https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4019.17.0/packages/components/src/tooltip/style.scss#L28-L29
+	.gla-admin-page .disabled-element-wrapper:has(&) {
+		display: inline-block;
 	}
 }
