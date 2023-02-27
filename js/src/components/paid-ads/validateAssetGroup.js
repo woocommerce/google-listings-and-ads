@@ -49,7 +49,7 @@ export default function validateAssetGroup( values ) {
 
 	ASSET_TEXT_SPECS.forEach( ( spec ) => {
 		const messages = [];
-		const texts = values[ spec.key ];
+		const texts = [ values[ spec.key ] ].flat();
 		const filledTexts = texts.filter( Boolean );
 
 		if ( spec.min >= 2 && Array.isArray( spec.maxCharacterCounts ) ) {
@@ -75,12 +75,13 @@ export default function validateAssetGroup( values ) {
 					? spec.lowercaseSingularName
 					: spec.lowercasePluralName;
 
-			const message = sprintf(
-				// translators: 1: The minimal number of this item. 2: Asset field name.
-				__( 'Add at least %1$d %2$s', 'google-listings-and-ads' ),
-				spec.min,
-				name
-			);
+			const format = spec.requiredSingleValue
+				? // translators: 1: (This variable is omitted). 2: Asset field name.
+				  __( 'The %2$s is required', 'google-listings-and-ads' )
+				: // translators: 1: The minimal number of this item. 2: Asset field name.
+				  __( 'Add at least %1$d %2$s', 'google-listings-and-ads' );
+
+			const message = sprintf( format, spec.min, name );
 
 			messages.push( message );
 		}
@@ -103,12 +104,19 @@ export default function validateAssetGroup( values ) {
 				normalizedMaxCharacterCounts[ 0 ];
 
 			if ( countCharacter( text ) > maxCharacterCount ) {
+				const format = spec.requiredSingleValue
+					? __(
+							'Character limit exceeded',
+							'google-listings-and-ads'
+					  )
+					: // translators: 1: Asset field name. 2: The sequential number of the asset field.
+					  __(
+							'%1$s %2$d: Character limit exceeded',
+							'google-listings-and-ads'
+					  );
+
 				const message = sprintf(
-					// translators: 1: Asset field name. 2: The sequential number of the asset field.
-					__(
-						'%1$s %2$d: Character limit exceeded',
-						'google-listings-and-ads'
-					),
+					format,
 					spec.capitalizedName,
 					index + 1
 				);
