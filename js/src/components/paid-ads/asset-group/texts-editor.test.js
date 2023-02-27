@@ -134,6 +134,39 @@ describe( 'TextsEditor', () => {
 		expect( addButton ).toBeEnabled();
 	} );
 
+	it( 'When the `minNumberOfTexts` and `maxNumberOfTexts` are the same and greater than 1, it should hide the add button`', () => {
+		const { rerender } = render( <TextsEditor /> );
+		const addButton = screen.getByRole( 'button', { name: 'Add text' } );
+
+		expect( addButton ).toBeVisible();
+
+		rerender( <TextsEditor minNumberOfTexts={ 1 } /> );
+
+		expect( addButton ).toBeVisible();
+
+		rerender( <TextsEditor maxNumberOfTexts={ 1 } /> );
+
+		expect( addButton ).toBeVisible();
+
+		rerender(
+			<TextsEditor minNumberOfTexts={ 1 } maxNumberOfTexts={ 5 } />
+		);
+
+		expect( addButton ).toBeVisible();
+
+		rerender(
+			<TextsEditor minNumberOfTexts={ 1 } maxNumberOfTexts={ 1 } />
+		);
+
+		expect( addButton ).not.toBeVisible();
+
+		rerender(
+			<TextsEditor minNumberOfTexts={ 5 } maxNumberOfTexts={ 5 } />
+		);
+
+		expect( addButton ).not.toBeVisible();
+	} );
+
 	it( 'When the length of `initialTexts` or `texts` is greater than `maxNumberOfTexts`, it should truncate the excess', () => {
 		const initialTexts = [ 'Text 1', 'Text 2', 'Text 3' ];
 		const { rerender } = render(
