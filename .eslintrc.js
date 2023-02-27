@@ -32,6 +32,9 @@ module.exports = {
 		],
 		'import/resolver': { webpack: webpackResolver },
 	},
+	globals: {
+		getComputedStyle: 'readonly',
+	},
 	rules: {
 		'@wordpress/no-unsafe-wp-apis': 1,
 		'react-hooks/exhaustive-deps': [
