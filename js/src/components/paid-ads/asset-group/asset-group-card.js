@@ -127,7 +127,7 @@ export default function AssetGroupCard() {
 				);
 			} ) }
 			{ ASSET_TEXT_SPECS.map( ( spec, index ) => {
-				const initialTexts = baseAssetGroup[ spec.key ];
+				const initialTexts = [ baseAssetGroup[ spec.key ] ].flat();
 				const textProps = getInputProps( spec.key );
 
 				return (
@@ -160,7 +160,13 @@ export default function AssetGroupCard() {
 							maxCharacterCounts={ spec.maxCharacterCounts }
 							placeholder={ spec.capitalizedName }
 							addButtonText={ spec.addButtonText }
-							onChange={ textProps.onChange }
+							onChange={ ( texts ) => {
+								if ( spec.requiredSingleValue ) {
+									textProps.onChange( texts[ 0 ] );
+								} else {
+									textProps.onChange( texts );
+								}
+							} }
 						>
 							{ renderErrors( spec.key ) }
 						</TextsEditor>
