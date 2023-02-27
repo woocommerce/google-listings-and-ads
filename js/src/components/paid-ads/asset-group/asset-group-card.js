@@ -96,10 +96,24 @@ export default function AssetGroupCard() {
 		firstErrorRef.current = ref;
 	}
 
+	// Currently, because WC's `Form` component can not properly set the multiple values
+	// synchronously. So, it needs to distinguish whether the `baseAssetGroup` is already
+	// set when mounting and not being cleaned. If yes, it means the `values` are also
+	// available and include the changes made by the user. Otherwise, it should need to
+	// wait for the `baseAssetGroup` to be set from the `AssetGroupSection`. So that the
+	// edited values in `AssetField` won't be reset after remounting the `AssetGroupCard`.
+	const isSelectedAssetGroupInitiallyRef = useRef( isSelectedFinalUrl );
+	if ( ! isSelectedFinalUrl ) {
+		isSelectedAssetGroupInitiallyRef.current = isSelectedFinalUrl;
+	}
+	const initialValues = isSelectedAssetGroupInitiallyRef.current
+		? values
+		: baseAssetGroup;
+
 	return (
 		<div key={ finalUrl } className="gla-asset-group-card">
 			{ ASSET_IMAGE_SPECS.map( ( spec ) => {
-				const initialImageUrls = baseAssetGroup[ spec.key ];
+				const initialImageUrls = initialValues[ spec.key ];
 				const imageProps = getInputProps( spec.key );
 
 				return (
@@ -127,7 +141,7 @@ export default function AssetGroupCard() {
 				);
 			} ) }
 			{ ASSET_TEXT_SPECS.map( ( spec, index ) => {
-				const initialTexts = baseAssetGroup[ spec.key ];
+				const initialTexts = initialValues[ spec.key ];
 				const textProps = getInputProps( spec.key );
 
 				return (
