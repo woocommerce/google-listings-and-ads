@@ -59,16 +59,33 @@ describe( 'AssetField', () => {
 		expect( screen.getByText( '(Optional)' ) ).toBeInTheDocument();
 	} );
 
+	it( 'Regardless of whether it is collapsed or expanded, it should always render the children', () => {
+		// In order not to reset children's states.
+		const { rerender } = render(
+			<AssetField key="1">Children</AssetField>
+		);
+
+		expect( screen.queryByText( 'Children' ) ).toBeInTheDocument();
+
+		rerender(
+			<AssetField key="2" initialExpanded>
+				Children
+			</AssetField>
+		);
+
+		expect( screen.queryByText( 'Children' ) ).toBeInTheDocument();
+	} );
+
 	it( 'When not setting `initialExpanded`, it should collapse to hide the children', () => {
 		render( <AssetField>Children</AssetField> );
 
-		expect( screen.queryByText( 'Children' ) ).not.toBeInTheDocument();
+		expect( screen.queryByText( 'Children' ) ).not.toBeVisible();
 	} );
 
-	it( 'When setting `initialExpanded`, it should expand to render the children', () => {
+	it( 'When setting `initialExpanded`, it should expand to show the children', () => {
 		render( <AssetField initialExpanded>Children</AssetField> );
 
-		expect( screen.getByText( 'Children' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Children' ) ).toBeVisible();
 	} );
 
 	it( 'When disabling, it should also collapse to hide the children', () => {
@@ -76,7 +93,7 @@ describe( 'AssetField', () => {
 			<AssetField initialExpanded>Children</AssetField>
 		);
 
-		expect( screen.getByText( 'Children' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Children' ) ).toBeVisible();
 
 		rerender(
 			<AssetField initialExpanded disabled>
@@ -84,7 +101,7 @@ describe( 'AssetField', () => {
 			</AssetField>
 		);
 
-		expect( screen.queryByText( 'Children' ) ).not.toBeInTheDocument();
+		expect( screen.queryByText( 'Children' ) ).not.toBeVisible();
 	} );
 
 	it( 'When disabled, it should also disable the toggle button and help button', async () => {
@@ -102,14 +119,14 @@ describe( 'AssetField', () => {
 	it( 'When clicking on the toggle button, it should toggle to show or hide the children', async () => {
 		render( <AssetField>Children</AssetField> );
 
-		expect( screen.queryByText( 'Children' ) ).not.toBeInTheDocument();
+		expect( screen.queryByText( 'Children' ) ).not.toBeVisible();
 
 		await userEvent.click( getToggleButton() );
 
-		expect( screen.getByText( 'Children' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Children' ) ).toBeVisible();
 
 		await userEvent.click( getToggleButton() );
 
-		expect( screen.queryByText( 'Children' ) ).not.toBeInTheDocument();
+		expect( screen.queryByText( 'Children' ) ).not.toBeVisible();
 	} );
 } );

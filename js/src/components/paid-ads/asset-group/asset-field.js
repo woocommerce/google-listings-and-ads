@@ -138,8 +138,8 @@ function AssetField(
 					/>
 				</div>
 			</header>
-			<div className="gla-asset-field__content">
-				{ shouldExpand && children }
+			<div className="gla-asset-field__content" hidden={ ! shouldExpand }>
+				{ children }
 			</div>
 		</div>
 	);

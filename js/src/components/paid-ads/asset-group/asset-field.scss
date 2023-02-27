@@ -93,6 +93,10 @@
 	}
 
 	&__content {
+		&[hidden] {
+			display: none !important;
+		}
+
 		&:not(:empty) {
 			padding-top: $grid-unit-20;
 		}
