@@ -108,6 +108,48 @@ export function calcRatioPercentError(
 	return ( errorRatio - 1 ) * 100;
 }
 
+// https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L327-L328
+// https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L597-L598
+
+// https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L289-L290
+// https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L959-L961
+// https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L262-L263
+function resetSelectionArea( controller, options, img ) {
+	// Temporarily force the preview <img> size to a size that tolerates the decimal precision bug.
+	const computedStyle = getComputedStyle( img );
+	const { style } = img;
+	const styleMap = new Map();
+
+	[ 'width', 'height' ].forEach( ( name ) => {
+		const valueNumber = parseFloat( computedStyle[ name ] );
+
+		if (
+			Number.isInteger( valueNumber ) ||
+			! Number.isFinite( valueNumber )
+		) {
+			return;
+		}
+
+		styleMap.set( name, [
+			style.getPropertyValue( name ),
+			style.getPropertyPriority( name ),
+		] );
+
+		const tolerantValue = `${ Math.ceil( valueNumber ) }px`;
+		style.setProperty( name, tolerantValue );
+	} );
+
+	// Reset the selection area.
+	const { x1, y1, x2, y2 } = options;
+	controller.imgSelect.setSelection( x1, y1, x2, y2 );
+	controller.imgSelect.update();
+
+	// Resume the preview <img> size.
+	styleMap.forEach( ( [ value, priority ], name ) => {
+		style.setProperty( name, value, priority );
+	} );
+}
+
 /**
  * Hook for opening a modal to select images with fixed aspect ratio via
  * WordPress Media library. It will request cropping when the size of the
@@ -184,6 +226,35 @@ export default function useCroppedImageSelector( {
 						);
 					};
 				}
+
+				options.onSelectChange = ( img, selection ) => {
+					// The jQuery plugin `imgAreaSelect` has a bug that the coordinates, width and height
+					// in the initial `selection` are miscalculated as `NaN` when the preview <img> is scaled
+					// to have a decimal point that >= 0.5 in width or height. For example:
+					// - The size of the image to be cropped is 800 x 799,
+					// - and the window size of the web page doesn't have enough space so the rendering
+					//   <img class="crop-image"> is scaled to 759.938 x 759.
+					//
+					// This causes the crop selection area not to appear and further skips the crop processing.
+					// Therefore, it uses a workaround to force the selection area reset.
+					//
+					// Ref:
+					// - https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L262-L263
+					//   The initial coordinates are rounded. Take the same example above, the maximum
+					//   `options.x2` 800 may be scaled to 759.938 as well and then be rounded to 760.
+					// - https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L327-L328
+					//   It calls `adjust` function initially and checks the boundaries of the selection area.
+					// - https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L597-L598
+					//   The `adjust` calls `doResize`, but at this moment, the internal variables `x1` and `y1`
+					//   are still `undefined` and cause all coordinates to be set to `NaN`.
+					if ( Number.isNaN( selection.width ) ) {
+						// Yield to wait for the `imgSelect` instance to be assigned to controller.
+						setTimeout( () =>
+							resetSelectionArea( controller, options, img )
+						);
+					}
+				};
+
 				return options;
 			};
 
