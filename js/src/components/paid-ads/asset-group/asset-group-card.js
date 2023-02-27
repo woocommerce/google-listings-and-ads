@@ -126,7 +126,7 @@ export default function AssetGroupCard() {
 					</AssetField>
 				);
 			} ) }
-			{ ASSET_TEXT_SPECS.map( ( spec, index ) => {
+			{ ASSET_TEXT_SPECS.map( ( spec ) => {
 				const initialTexts = [ baseAssetGroup[ spec.key ] ].flat();
 				const textProps = getInputProps( spec.key );
 
@@ -138,14 +138,15 @@ export default function AssetGroupCard() {
 						subheading={
 							<>
 								{ spec.subheading }
-								{ index === 0 && isSelectedFinalUrl && (
-									<ExternalLink href="https://support.google.com/google-ads/answer/6167101">
-										{ __(
-											'Learn how to write effective ads',
-											'google-listings-and-ads'
-										) }
-									</ExternalLink>
-								) }
+								{ spec.key === ASSET_FORM_KEY.HEADLINE &&
+									isSelectedFinalUrl && (
+										<ExternalLink href="https://support.google.com/google-ads/answer/6167101">
+											{ __(
+												'Learn how to write effective ads',
+												'google-listings-and-ads'
+											) }
+										</ExternalLink>
+									) }
 							</>
 						}
 						help={ spec.help }
