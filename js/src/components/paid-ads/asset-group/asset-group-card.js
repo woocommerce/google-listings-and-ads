@@ -143,7 +143,9 @@ export default function AssetGroupCard() {
 						<ImagesSelector
 							initialImageUrls={ initialImageUrls }
 							maxNumberOfImages={ spec.getMax( values ) }
-							reachedMaxNumberTip={ spec.reachedMaxNumberTip }
+							reachedMaxNumberTip={ spec.getMaxNumberTip(
+								values
+							) }
 							imageConfig={ spec.imageConfig }
 							onChange={ imageProps.onChange }
 						>
