@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __, _x, sprintf } from '@wordpress/i18n';
+import { ExternalLink } from 'extracted/@wordpress/components';
 import { Fragment, createInterpolateElement } from '@wordpress/element';
 
 /**
@@ -155,6 +156,31 @@ const ASSET_IMAGE_SPECS = ASSET_IMAGE_SPECS_GROUPS.flat();
 
 const ASSET_TEXT_SPECS = [
 	{
+		key: ASSET_FORM_KEY.BUSINESS_NAME,
+		min: 1,
+		max: 1,
+		maxCharacterCounts: 25,
+		heading: _x(
+			'Business name',
+			'Plural asset field name as the heading',
+			'google-listings-and-ads'
+		),
+		capitalizedName: _x(
+			'Business name',
+			'Capitalized asset field name as the placeholder or the start of an error message',
+			'google-listings-and-ads'
+		),
+		lowercaseSingularName: _x(
+			'business name',
+			'Singular and lowercase asset field name',
+			'google-listings-and-ads'
+		),
+		help: __(
+			'The business name is the name of your business or brand. In certain layouts, it may appear in the text of your ad.',
+			'google-listings-and-ads'
+		),
+	},
+	{
 		key: ASSET_FORM_KEY.HEADLINE,
 		min: 3,
 		max: 5,
@@ -163,6 +189,14 @@ const ASSET_TEXT_SPECS = [
 			'Headlines',
 			'Plural asset field name as the heading',
 			'google-listings-and-ads'
+		),
+		extraSubheading: (
+			<ExternalLink href="https://support.google.com/google-ads/answer/6167101">
+				{ __(
+					'Learn how to write effective ads',
+					'google-listings-and-ads'
+				) }
+			</ExternalLink>
 		),
 		addButtonText: __( 'Add headline', 'google-listings-and-ads' ),
 		capitalizedName: _x(
@@ -289,6 +323,10 @@ const ASSET_TEXT_SPECS = [
 				__( 'At least %d required', 'google-listings-and-ads' ),
 				spec.min
 			);
+		}
+
+		if ( spec.requiredSingleValue ) {
+			return;
 		}
 
 		return sprintf(
@@ -433,6 +471,7 @@ const ASSET_TEXT_SPECS = [
 	} );
 
 	ASSET_TEXT_SPECS.forEach( ( spec ) => {
+		spec.requiredSingleValue = spec.min === 1 && spec.max === 1;
 		spec.subheading = getSubheading( spec );
 	} );
 }

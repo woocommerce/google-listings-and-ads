@@ -19,6 +19,12 @@ exports[`validateAssetGroup Image assets When the length of values.marketing_ima
 
 exports[`validateAssetGroup Image assets When the length of values.square_marketing_image is less than 1, it should not pass 1`] = `"Add at least 1 square image"`;
 
+exports[`validateAssetGroup Text assets When the character limit is exceeded in values.business_name, it should not pass 1`] = `
+Array [
+  "Character limit exceeded",
+]
+`;
+
 exports[`validateAssetGroup Text assets When the character limit is exceeded in values.description, it should not pass 1`] = `
 Array [
   "Description 1: Character limit exceeded",
@@ -49,6 +55,12 @@ Array [
 exports[`validateAssetGroup Text assets When the first value of headline is an empty string, it should not pass 1`] = `
 Array [
   "The headline in the first field is required",
+]
+`;
+
+exports[`validateAssetGroup Text assets When the length of values.business_name is less than 1 after omitting empty strings, it should not pass 1`] = `
+Array [
+  "The business name is required",
 ]
 `;
 

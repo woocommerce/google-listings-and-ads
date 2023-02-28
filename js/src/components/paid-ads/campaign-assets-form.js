@@ -19,7 +19,7 @@ import validateAssetGroup from '.~/components/paid-ads/validateAssetGroup';
 
 const emptyAssetGroup = {
 	[ ASSET_FORM_KEY.FINAL_URL ]: null,
-	[ ASSET_FORM_KEY.BUSINESS_NAME ]: null,
+	[ ASSET_FORM_KEY.BUSINESS_NAME ]: '',
 	[ ASSET_FORM_KEY.MARKETING_IMAGE ]: [],
 	[ ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE ]: [],
 	[ ASSET_FORM_KEY.PORTRAIT_MARKETING_IMAGE ]: [],

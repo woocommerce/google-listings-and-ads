@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useRef, useEffect, Fragment } from '@wordpress/element';
-import { ExternalLink } from 'extracted/@wordpress/components';
 import { SelectControl } from '@wordpress/components';
 
 /**
@@ -153,8 +152,8 @@ export default function AssetGroupCard() {
 					</AssetField>
 				);
 			} ) }
-			{ ASSET_TEXT_SPECS.map( ( spec, index ) => {
-				const initialTexts = initialValues[ spec.key ];
+			{ ASSET_TEXT_SPECS.map( ( spec ) => {
+				const initialTexts = [ initialValues[ spec.key ] ].flat();
 				const textProps = getInputProps( spec.key );
 
 				return (
@@ -165,14 +164,7 @@ export default function AssetGroupCard() {
 						subheading={
 							<>
 								{ spec.subheading }
-								{ index === 0 && isSelectedFinalUrl && (
-									<ExternalLink href="https://support.google.com/google-ads/answer/6167101">
-										{ __(
-											'Learn how to write effective ads',
-											'google-listings-and-ads'
-										) }
-									</ExternalLink>
-								) }
+								{ isSelectedFinalUrl && spec.extraSubheading }
 							</>
 						}
 						help={ spec.help }
@@ -187,7 +179,13 @@ export default function AssetGroupCard() {
 							maxCharacterCounts={ spec.maxCharacterCounts }
 							placeholder={ spec.capitalizedName }
 							addButtonText={ spec.addButtonText }
-							onChange={ textProps.onChange }
+							onChange={ ( texts ) => {
+								if ( spec.requiredSingleValue ) {
+									textProps.onChange( texts[ 0 ] );
+								} else {
+									textProps.onChange( texts );
+								}
+							} }
 						>
 							{ renderErrors( spec.key ) }
 						</TextsEditor>

@@ -32,6 +32,7 @@ describe( 'validateAssetGroup', () => {
 			[ ASSET_FORM_KEY.SQUARE_MARKETING_IMAGE ]: [ 'https://image_1' ],
 			[ ASSET_FORM_KEY.PORTRAIT_MARKETING_IMAGE ]: [ 'https://image_1' ],
 			[ ASSET_FORM_KEY.LOGO ]: [ 'https://logo_1' ],
+			[ ASSET_FORM_KEY.BUSINESS_NAME ]: 'business name',
 			[ ASSET_FORM_KEY.HEADLINE ]: [
 				'headline 1',
 				'headline 2',
@@ -107,7 +108,11 @@ describe( 'validateAssetGroup', () => {
 			}
 		);
 
-		it.each( ASSET_TEXT_SPECS.map( ( spec ) => [ spec.key, spec ] ) )(
+		it.each(
+			ASSET_TEXT_SPECS.filter(
+				( spec ) => spec.max > 1
+			).map( ( spec ) => [ spec.key, spec ] )
+		)(
 			'When there is duplication in values.%s, it should not pass',
 			( key, spec ) => {
 				const texts = Array.from( { length: spec.min + 1 }, toText );
@@ -123,7 +128,11 @@ describe( 'validateAssetGroup', () => {
 			}
 		);
 
-		it.each( ASSET_TEXT_SPECS.map( ( spec ) => [ spec.key, spec ] ) )(
+		it.each(
+			ASSET_TEXT_SPECS.filter(
+				( spec ) => spec.max > 1
+			).map( ( spec ) => [ spec.key, spec ] )
+		)(
 			'When checking duplication, it should ignore empty strings',
 			( key, spec ) => {
 				const texts = Array.from( { length: spec.min + 2 }, toText );
