@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useRef, useEffect, Fragment } from '@wordpress/element';
-import { ExternalLink } from 'extracted/@wordpress/components';
 import { SelectControl } from '@wordpress/components';
 
 /**
@@ -138,15 +137,7 @@ export default function AssetGroupCard() {
 						subheading={
 							<>
 								{ spec.subheading }
-								{ spec.key === ASSET_FORM_KEY.HEADLINE &&
-									isSelectedFinalUrl && (
-										<ExternalLink href="https://support.google.com/google-ads/answer/6167101">
-											{ __(
-												'Learn how to write effective ads',
-												'google-listings-and-ads'
-											) }
-										</ExternalLink>
-									) }
+								{ isSelectedFinalUrl && spec.extraSubheading }
 							</>
 						}
 						help={ spec.help }

@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __, _x, sprintf } from '@wordpress/i18n';
+import { ExternalLink } from 'extracted/@wordpress/components';
 import { Fragment, createInterpolateElement } from '@wordpress/element';
 
 /**
@@ -188,6 +189,14 @@ const ASSET_TEXT_SPECS = [
 			'Headlines',
 			'Plural asset field name as the heading',
 			'google-listings-and-ads'
+		),
+		extraSubheading: (
+			<ExternalLink href="https://support.google.com/google-ads/answer/6167101">
+				{ __(
+					'Learn how to write effective ads',
+					'google-listings-and-ads'
+				) }
+			</ExternalLink>
 		),
 		addButtonText: __( 'Add headline', 'google-listings-and-ads' ),
 		capitalizedName: _x(
