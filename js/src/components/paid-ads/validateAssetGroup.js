@@ -76,12 +76,12 @@ export default function validateAssetGroup( values ) {
 					: spec.lowercasePluralName;
 
 			const format = spec.requiredSingleValue
-				? // translators: 1: (This variable is omitted). 2: Asset field name.
-				  __( 'The %2$s is required', 'google-listings-and-ads' )
-				: // translators: 1: The minimal number of this item. 2: Asset field name.
-				  __( 'Add at least %1$d %2$s', 'google-listings-and-ads' );
+				? // translators: 1: Asset field name.
+				  __( 'The %1$s is required', 'google-listings-and-ads' )
+				: // translators: 1: Asset field name. 2: The minimal number of this item.
+				  __( 'Add at least %2$d %1$s', 'google-listings-and-ads' );
 
-			const message = sprintf( format, spec.min, name );
+			const message = sprintf( format, name, spec.min );
 
 			messages.push( message );
 		}
