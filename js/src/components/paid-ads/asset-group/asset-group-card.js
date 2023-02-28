@@ -96,12 +96,25 @@ export default function AssetGroupCard() {
 		firstErrorRef.current = ref;
 	}
 
-	// Currently, because WC's `Form` component can not properly set the multiple values
-	// synchronously. So, it needs to distinguish whether the `baseAssetGroup` is already
-	// set when mounting and not being cleaned. If yes, it means the `values` are also
-	// available and include the changes made by the user. Otherwise, it should need to
-	// wait for the `baseAssetGroup` to be set from the `AssetGroupSection`. So that the
-	// edited values in `AssetField` won't be reset after remounting the `AssetGroupCard`.
+	// Ideally, the initial data for `ImagesSelector` and `TextsEditor` should be `values` directly.
+	// But the current WC's `Form` component can not properly set the multiple values synchronously.
+	// Therefore, an additional `baseAssetGroup` is used to ensure that the updates of multiple values
+	// can be performed simultaneously.
+	//
+	// There are three moments that need to ensure the initial data:
+	// 1. After importing assets by a final URL, the asset values are set from the `AssetGroupSection`.
+	//    - The fetched multiple values are set to `baseAssetGroup`.
+	//    - The final URL in `baseAssetGroup` must be a valid value.
+	// 2. After clearing the selected final URL, the asset values are set from the `AssetGroupSection`.
+	//    - The default empty asset values are set to `baseAssetGroup`.
+	//    - The final URL in `baseAssetGroup` must be null.
+	// 3. When mounting this component, the asset values already synchronously exist in `values`.
+	//    - The final URL in `baseAssetGroup` must be a valid value.
+	//    - The value changes made by the user are only kept in `values`.
+	//
+	// Thus, when mounting, it needs to distinguish whether the final URL in `baseAssetGroup` is
+	// already set, and it's not cleared afterward. If yes, it means the `values` should be used as
+	// the initial data. Otherwise, the `baseAssetGroup` should be used.
 	const isSelectedAssetGroupInitiallyRef = useRef( isSelectedFinalUrl );
 	if ( ! isSelectedFinalUrl ) {
 		isSelectedAssetGroupInitiallyRef.current = isSelectedFinalUrl;
