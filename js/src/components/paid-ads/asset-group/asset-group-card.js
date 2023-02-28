@@ -96,10 +96,37 @@ export default function AssetGroupCard() {
 		firstErrorRef.current = ref;
 	}
 
+	// Ideally, the initial data for `ImagesSelector` and `TextsEditor` should be `values` directly.
+	// But the current WC's `Form` component can not properly set the multiple values synchronously.
+	// Therefore, an additional `baseAssetGroup` is used to ensure that the updates of multiple values
+	// can be performed simultaneously.
+	//
+	// There are three moments that need to ensure the initial data:
+	// 1. After importing assets by a final URL, the asset values are set from the `AssetGroupSection`.
+	//    - The fetched multiple values are set to `baseAssetGroup`.
+	//    - The final URL in `baseAssetGroup` must be a valid value.
+	// 2. After clearing the selected final URL, the asset values are set from the `AssetGroupSection`.
+	//    - The default empty asset values are set to `baseAssetGroup`.
+	//    - The final URL in `baseAssetGroup` must be null.
+	// 3. When mounting this component, the asset values already synchronously exist in `values`.
+	//    - The final URL in `baseAssetGroup` must be a valid value.
+	//    - The value changes made by the user are only kept in `values`.
+	//
+	// Thus, when mounting, it needs to distinguish whether the final URL in `baseAssetGroup` is
+	// already set, and it's not cleared afterward. If yes, it means the `values` should be used as
+	// the initial data. Otherwise, the `baseAssetGroup` should be used.
+	const isSelectedAssetGroupInitiallyRef = useRef( isSelectedFinalUrl );
+	if ( ! isSelectedFinalUrl ) {
+		isSelectedAssetGroupInitiallyRef.current = isSelectedFinalUrl;
+	}
+	const initialValues = isSelectedAssetGroupInitiallyRef.current
+		? values
+		: baseAssetGroup;
+
 	return (
 		<div key={ finalUrl } className="gla-asset-group-card">
 			{ ASSET_IMAGE_SPECS.map( ( spec ) => {
-				const initialImageUrls = baseAssetGroup[ spec.key ];
+				const initialImageUrls = initialValues[ spec.key ];
 				const imageProps = getInputProps( spec.key );
 
 				return (
@@ -127,7 +154,7 @@ export default function AssetGroupCard() {
 				);
 			} ) }
 			{ ASSET_TEXT_SPECS.map( ( spec, index ) => {
-				const initialTexts = baseAssetGroup[ spec.key ];
+				const initialTexts = initialValues[ spec.key ];
 				const textProps = getInputProps( spec.key );
 
 				return (
