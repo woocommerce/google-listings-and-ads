@@ -108,12 +108,6 @@ export function calcRatioPercentError(
 	return ( errorRatio - 1 ) * 100;
 }
 
-// https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L327-L328
-// https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L597-L598
-
-// https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L289-L290
-// https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L959-L961
-// https://github.com/WordPress/wordpress-develop/blob/5.9.0/src/js/_enqueues/vendor/imgareaselect/jquery.imgareaselect.js#L262-L263
 function resetSelectionArea( controller, options, img ) {
 	// Temporarily force the preview <img> size to a size that tolerates the decimal precision bug.
 	const computedStyle = getComputedStyle( img );
