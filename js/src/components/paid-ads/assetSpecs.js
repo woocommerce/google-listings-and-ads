@@ -488,9 +488,6 @@ const ASSET_TEXT_SPECS = [
 		);
 	}
 
-	// Maximum 20 images can be uploaded, with a minimum of 1 landscape and 1 square image.
-	// The maximum number of images that can be uploaded is 20.
-
 	ASSET_IMAGE_SPECS_GROUPS.forEach( ( specs ) => {
 		// Currently, the PMax Assets feature in this extension doesn't offer managing the landscape_logo
 		// asset but only the logo asset. So the logo asset shares the total number of images by itself.
