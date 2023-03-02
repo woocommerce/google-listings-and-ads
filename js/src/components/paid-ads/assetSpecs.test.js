@@ -4,20 +4,20 @@
 import { ASSET_IMAGE_SPECS, ASSET_TEXT_SPECS } from './assetSpecs';
 
 describe( 'ASSET_IMAGE_SPECS', () => {
+	const specs = ASSET_IMAGE_SPECS;
+	const keys = specs.map( ( spec ) => spec.key );
+
+	let values;
+
+	function setImagesValues( ...numbersOfImages ) {
+		values = {};
+		keys.forEach( ( key, i ) => {
+			const num = numbersOfImages[ i ] ?? 0;
+			values[ key ] = Array.from( { length: num } );
+		} );
+	}
+
 	describe( 'getMax', () => {
-		const specs = ASSET_IMAGE_SPECS;
-		const keys = specs.map( ( spec ) => spec.key );
-
-		let values;
-
-		function setImagesValues( ...numbersOfImages ) {
-			values = {};
-			keys.forEach( ( key, i ) => {
-				const num = numbersOfImages[ i ] ?? 0;
-				values[ key ] = Array.from( { length: num } );
-			} );
-		}
-
 		function getMaxNumbers() {
 			return specs.map( ( spec ) => spec.getMax( values ) );
 		}
@@ -60,6 +60,66 @@ describe( 'ASSET_IMAGE_SPECS', () => {
 			setImagesValues( 2, 4, 6 );
 
 			expect( getMaxNumbers() ).toEqual( [ 10, 12, 14, 5 ] );
+		} );
+	} );
+
+	describe( 'getMaxNumberTip', () => {
+		describe( `Asset image is not shown as the shared max concept`, () => {
+			const { getMaxNumberTip } = specs.find( ( spec ) => spec.max );
+
+			it( 'Should always be null', () => {
+				setImagesValues( 0, 0, 0 );
+
+				expect( getMaxNumberTip( values ) ).toBe( null );
+
+				setImagesValues( 9, 9, 1 );
+
+				expect( getMaxNumberTip( values ) ).toBe( null );
+
+				setImagesValues( 10, 10, 0 );
+
+				expect( getMaxNumberTip( values ) ).toBe( null );
+
+				setImagesValues( 8, 8, 4 );
+
+				expect( getMaxNumberTip( values ) ).toBe( null );
+			} );
+		} );
+
+		describe( `Asset image is shown as the shared max concept`, () => {
+			const { getMaxNumberTip } = specs.find( ( spec ) => ! spec.max );
+
+			it( 'When the total number of the selected images is equal to the shared maximum number, it should not include the minimum image requirements', () => {
+				setImagesValues( 10, 10, 0 );
+
+				const tip = getMaxNumberTip( values );
+
+				expect( tip ).toMatchSnapshot();
+
+				setImagesValues( 1, 1, 18 );
+
+				expect( getMaxNumberTip( values ) ).toBe( tip );
+
+				setImagesValues( 8, 8, 4 );
+
+				expect( getMaxNumberTip( values ) ).toBe( tip );
+			} );
+
+			it( 'When the total number of the selected images is less than the shared maximum number, it should include the minimum image requirements', () => {
+				setImagesValues( 0, 0, 0 );
+
+				const tip = getMaxNumberTip( values );
+
+				expect( tip ).toMatchSnapshot();
+
+				setImagesValues( 0, 0, 18 );
+
+				expect( getMaxNumberTip( values ) ).toBe( tip );
+
+				setImagesValues( 9, 9, 1 );
+
+				expect( getMaxNumberTip( values ) ).toBe( tip );
+			} );
 		} );
 	} );
 } );

@@ -312,6 +312,20 @@ const ASSET_TEXT_SPECS = [
 // functions inside are for initialization purposes only and are not expected to be exposed
 // outside this module.
 {
+	function concatenateAssetStrings( strings ) {
+		const separator = _x(
+			', ',
+			'The separator for concatenating the types of assets',
+			'google-listings-and-ads'
+		);
+		return sprintf(
+			// translators: 1: Concatenated text for the types of assets except for the last one. 2: The last type of assets.
+			__( '%1$s and %2$s', 'google-listings-and-ads' ),
+			strings.slice( 0, -1 ).join( separator ),
+			strings.at( -1 )
+		);
+	}
+
 	function getSubheading( spec, shownAsSharedMax ) {
 		if ( shownAsSharedMax ) {
 			if ( spec.min === 0 ) {
@@ -374,17 +388,6 @@ const ASSET_TEXT_SPECS = [
 
 	function getImageSharedMaxHelpContent( specs ) {
 		const names = specs.map( ( spec ) => spec.lowercaseName );
-		const separator = _x(
-			', ',
-			'The separator for concatenating the types of image assets',
-			'google-listings-and-ads'
-		);
-		const concatenatedNamesText = sprintf(
-			// translators: 1: Concatenated text for the types of image assets except for the last one. 2: The last type of image assets.
-			__( '%1$s and %2$s', 'google-listings-and-ads' ),
-			names.slice( 0, -1 ).join( separator ),
-			names.at( -1 )
-		);
 		const content = sprintf(
 			// translators: 1: The maximum number of this image assets. 2: Text for the types of image assets.
 			__(
@@ -392,7 +395,7 @@ const ASSET_TEXT_SPECS = [
 				'google-listings-and-ads'
 			),
 			specs[ sharedMaxSymbol ],
-			concatenatedNamesText
+			concatenateAssetStrings( names )
 		);
 
 		return <div>{ content }</div>;
@@ -435,6 +438,56 @@ const ASSET_TEXT_SPECS = [
 		}, sharedMax );
 	}
 
+	/**
+	 * Gets the conditional tip of the maximum number of this type of asset images.
+	 *
+	 * If the total number of the selected images is less than the shared maximum number,
+	 * the tip will include the minimum image requirements.
+	 *
+	 * @param {number} sharedMax The shared maximum number of the grouped types of image assets.
+	 * @param {Object[]} specs The image specs in the same group.
+	 * @param {AssetGroupFormValues} values The assets form values to be calculated for the total number of selected asset images.
+	 * @return {string} The tip of the maximum number of this type of asset images.
+	 */
+	function getMaxNumberTip( sharedMax, specs, values ) {
+		const totalSelected = specs.reduce(
+			( acc, spec ) => acc + values[ spec.key ].length,
+			0
+		);
+
+		if ( totalSelected === sharedMax ) {
+			return sprintf(
+				// translators: The shared maximum number of the grouped types of image assets.
+				__(
+					'The maximum number of images that can be uploaded is %d.',
+					'google-listings-and-ads'
+				),
+				sharedMax
+			);
+		}
+
+		const names = specs
+			.filter( ( spec ) => spec.min > 0 )
+			.map( ( spec ) =>
+				sprintf(
+					// translators: 1: The minimum number of this asset field. 2: Asset field name.
+					__( '%1$d %2$s', 'google-listings-and-ads' ),
+					spec.min,
+					spec.lowercaseName
+				)
+			);
+
+		return sprintf(
+			// translators: 1: The shared maximum number of the grouped types of image assets. 2: Text for the minimum number and type of each image asset.
+			__(
+				'Maximum %1$d images can be uploaded, with a minimum of %2$s image.',
+				'google-listings-and-ads'
+			),
+			sharedMax,
+			concatenateAssetStrings( names )
+		);
+	}
+
 	ASSET_IMAGE_SPECS_GROUPS.forEach( ( specs ) => {
 		// Currently, the PMax Assets feature in this extension doesn't offer managing the landscape_logo
 		// asset but only the logo asset. So the logo asset shares the total number of images by itself.
@@ -444,14 +497,6 @@ const ASSET_TEXT_SPECS = [
 		const sharedMax = specs[ sharedMaxSymbol ];
 
 		const help = getImageHelpContent( specs, shownAsSharedMax );
-		const reachedMaxNumberTip = sprintf(
-			// translators: The shared maximum number of the grouped types of image assets.
-			__(
-				'You have reached the maximum of %d total ad images. Please remove some images to continue uploading.',
-				'google-listings-and-ads'
-			),
-			sharedMax
-		);
 
 		specs.forEach( ( spec ) => {
 			// Currently, the logo asset is not shown as shared max on UI, so it still needs to
@@ -464,9 +509,9 @@ const ASSET_TEXT_SPECS = [
 			spec.help = help;
 
 			spec.getMax = getMax.bind( spec, sharedMax, specs );
-			spec.reachedMaxNumberTip = shownAsSharedMax
-				? reachedMaxNumberTip
-				: null;
+			spec.getMaxNumberTip = shownAsSharedMax
+				? getMaxNumberTip.bind( null, sharedMax, specs )
+				: () => null;
 		} );
 	} );
 

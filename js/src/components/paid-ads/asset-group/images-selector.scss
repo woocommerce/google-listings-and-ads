@@ -61,5 +61,9 @@
 		width: $gla-popover-width;
 		white-space: normal;
 		text-align: left;
+
+		> div {
+			padding: 0.25em 0.5em;
+		}
 	}
 }
