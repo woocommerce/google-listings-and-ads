@@ -168,6 +168,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 				->where( 'asset_group_asset.field_type', $this->get_asset_field_types_query(), 'IN' )
 				->where( 'asset_group_asset.status', 'REMOVED', '!=' )
 				->where( 'asset_group.status', 'REMOVED', '!=' )
+				->where( 'campaign.status', 'REMOVED', '!=' )
 				->get_results();
 
 			/** @var GoogleAdsRow $row */

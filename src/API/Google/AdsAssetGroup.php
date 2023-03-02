@@ -374,6 +374,9 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			} else {
 				$errors = $this->get_api_exception_errors( $e );
 				$code   = $this->map_grpc_code_to_http_status_code( $e );
+				if ( array_key_exists( 'DUPLICATE_ASSETS_WITH_DIFFERENT_FIELD_VALUE', $errors ) ) {
+					$errors['DUPLICATE_ASSETS_WITH_DIFFERENT_FIELD_VALUE'] = __( 'Each image type (landscape, square, portrait or logo) cannot contain duplicated images.', 'google-listings-and-ads' );
+				}
 			}
 
 			throw new ExceptionWithResponseData(
