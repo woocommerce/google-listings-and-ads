@@ -51,5 +51,24 @@ jobs:
       - name: Install WP tests
         run: ./bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wp-version }}
 
-      - name: Run PHP unit tests
+      - if: matrix.wp-version == 'latest' && matrix.php == 8.0
+        name: Set condition to generate coverage report (only on latest versions)
+        run: echo "generate_coverage=true" >> $GITHUB_ENV
+
+      - if: env.generate_coverage != 'true'
+        name: Run PHP unit tests
         run: composer test-unit
+
+      - if: env.generate_coverage == 'true'
+        name: Run PHP unit tests (with code coverage)
+        run: phpdbg -qrr vendor/bin/phpunit --coverage-clover=tests/coverage/report.xml
+
+      - if: env.generate_coverage == 'true'
+        name: PHP unit coverage report
+        uses: woocommerce/grow/packages/js/github-actions/actions/coverage-report@add/coverage-report
+        with:
+          base-branch: develop
+          report-name: php-coverage-report
+          report-path: tests/php-coverage
+          test-comment: "PHP unit test coverage"
+          workflow: .github/workflows/php-unit-tests.yml
