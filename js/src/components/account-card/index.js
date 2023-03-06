@@ -16,6 +16,7 @@ import googleLogoURL from './gogole-g-logo.svg';
 import googleMCLogoURL from './google-merchant-center-logo.svg';
 import googleAdsLogoURL from './google-ads-logo.svg';
 import wpLogoURL from './wp-logo.svg';
+import finalUrlIconURL from './final-url-icon.svg';
 import './index.scss';
 
 /**
@@ -31,6 +32,7 @@ export const APPEARANCE = {
 	GOOGLE_ADS: 'google_ads',
 	PHONE: 'phone',
 	ADDRESS: 'address',
+	FINAL_URL: 'final_url',
 };
 
 const googleLogo = (
@@ -69,6 +71,14 @@ const wpLogo = (
 	/>
 );
 
+const finalUrlIcon = (
+	<img
+		src={ finalUrlIconURL }
+		alt={ __( 'Final URL icon', 'google-listings-and-ads' ) }
+		width="50"
+	/>
+);
+
 const appearanceDict = {
 	[ APPEARANCE.EMPTY ]: {},
 	[ APPEARANCE.WPCOM ]: {
@@ -102,6 +112,10 @@ const appearanceDict = {
 	[ APPEARANCE.ADDRESS ]: {
 		icon: <Icon icon={ storeIcon } size={ 32 } />,
 		title: __( 'Store address', 'google-listings-and-ads' ),
+	},
+	[ APPEARANCE.FINAL_URL ]: {
+		icon: finalUrlIcon,
+		title: __( 'Final URL', 'google-listings-and-ads' ),
 	},
 };
 

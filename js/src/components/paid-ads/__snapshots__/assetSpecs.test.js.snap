@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ASSET_IMAGE_SPECS getMaxNumberTip Asset image is shown as the shared max concept When the total number of the selected images is equal to the shared maximum number, it should not include the minimum image requirements 1`] = `"The maximum number of images that can be uploaded is 20."`;
+
+exports[`ASSET_IMAGE_SPECS getMaxNumberTip Asset image is shown as the shared max concept When the total number of the selected images is less than the shared maximum number, it should include the minimum image requirements 1`] = `"Maximum 20 images can be uploaded, with a minimum of 1 landscape and 1 square image."`;

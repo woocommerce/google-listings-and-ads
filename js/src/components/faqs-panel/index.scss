@@ -13,14 +13,8 @@
 
 	.components-panel__body-title {
 		.components-panel__body-toggle.components-button {
-			display: flex;
-			flex-direction: row-reverse;
-			justify-content: space-between;
-
-			.components-panel__arrow {
-				position: unset;
-				transform: unset;
-			}
+			padding-top: $grid-unit-05 * 5;
+			padding-bottom: $grid-unit-05 * 5;
 		}
 	}
 }

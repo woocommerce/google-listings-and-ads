@@ -16,7 +16,7 @@ import {
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
-import { adaptAdsCampaign } from './adapters';
+import { adaptAdsCampaign, adaptAssetGroup } from './adapters';
 import { fetchWithHeaders, awaitPromise } from './controls';
 
 import {
@@ -227,6 +227,30 @@ getAdsCampaigns.shouldInvalidate = ( action, query ) => {
 		query?.exclude_removed === false
 	);
 };
+
+export function* getCampaignAssetGroups( campaignId ) {
+	const endpoint = `${ API_NAMESPACE }/ads/campaigns/asset-groups`;
+	const query = { campaign_id: campaignId };
+	const path = addQueryArgs( endpoint, query );
+
+	try {
+		const assetGroups = yield apiFetch( { path } );
+
+		return {
+			type: TYPES.RECEIVE_CAMPAIGN_ASSET_GROUPS,
+			campaignId,
+			assetGroups: assetGroups.map( adaptAssetGroup ),
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading the assets of the campaign.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
 
 export function* getMCSetup() {
 	yield fetchMCSetup();

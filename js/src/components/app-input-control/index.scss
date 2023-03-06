@@ -20,4 +20,21 @@
 	&--no-pointer-events {
 		pointer-events: none;
 	}
+
+	&__character-count {
+		margin-top: calc($grid-unit-05 / 2);
+		text-align: right;
+		line-height: $gla-line-height-smaller;
+		font-size: $gla-font-smaller;
+		color: $gray-700;
+	}
+
+	&--error-character-count .components-input-control .components-input-control__container .components-input-control__backdrop {
+		border-color: $alert-red;
+		box-shadow: none;
+	}
+
+	&--error-character-count &__character-count {
+		color: $alert-red;
+	}
 }

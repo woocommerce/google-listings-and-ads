@@ -1,30 +1,68 @@
 /**
  * External dependencies
  */
-import { getQuery, getNewPath } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
+import { Stepper } from '@woocommerce/components';
+import { getQuery, getHistory, getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
-import TopBar from '.~/components/stepper/top-bar';
 import useLayout from '.~/hooks/useLayout';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
-import AppSpinner from '.~/components/app-spinner';
-import EditPaidAdsCampaignForm from './edit-paid-ads-campaign-form';
+import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import { useAppDispatch } from '.~/data';
+import { getDashboardUrl } from '.~/utils/urls';
+import convertToAssetGroupUpdateBody from '.~/components/paid-ads/convertToAssetGroupUpdateBody';
+import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
+import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
+import AdsCampaign from '.~/components/paid-ads/ads-campaign';
+import AppSpinner from '.~/components/app-spinner';
+import AssetGroup, {
+	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
+} from '.~/components/paid-ads/asset-group';
+import { CAMPAIGN_STEP as STEP } from '.~/constants';
 
-const dashboardURL = getNewPath( {}, '/google/dashboard', {} );
+const dashboardURL = getDashboardUrl();
 const helpButton = <HelpIconButton eventContext="edit-ads" />;
 
+function getCurrentStep() {
+	const { step } = getQuery();
+	if ( Object.values( STEP ).includes( step ) ) {
+		return step;
+	}
+	return STEP.CAMPAIGN;
+}
+
+/**
+ * Renders the campaign editing page.
+ */
 const EditPaidAdsCampaign = () => {
 	useLayout( 'full-content' );
 
+	const {
+		updateAdsCampaign,
+		createCampaignAssetGroup,
+		updateCampaignAssetGroup,
+	} = useAppDispatch();
+
 	const id = Number( getQuery().programId );
 	const { loaded, data: campaigns } = useAdsCampaigns();
-	const campaignData = campaigns?.find( ( el ) => el.id === id );
+	const {
+		hasFinishedResolution: hasResolvedAssetEntityGroups,
+		invalidateResolution: invalidateResolvedAssetEntityGroups,
+		data: assetEntityGroups,
+	} = useAppSelectDispatch( 'getCampaignAssetGroups', id );
+	const campaign = campaigns?.find( ( el ) => el.id === id );
+	const assetEntityGroup = assetEntityGroups?.at( 0 );
 
-	if ( ! loaded ) {
+	const setStep = ( step ) => {
+		const url = getNewPath( { ...getQuery(), step } );
+		getHistory().push( url );
+	};
+
+	if ( ! loaded || ! hasResolvedAssetEntityGroups ) {
 		return (
 			<>
 				<TopBar
@@ -37,7 +75,7 @@ const EditPaidAdsCampaign = () => {
 		);
 	}
 
-	if ( ! campaignData ) {
+	if ( ! campaign ) {
 		return (
 			<>
 				<TopBar
@@ -55,18 +93,88 @@ const EditPaidAdsCampaign = () => {
 		);
 	}
 
+	const handleSubmit = async ( values, enhancer ) => {
+		const { action } = enhancer.submitter.dataset;
+		const { amount } = values;
+
+		try {
+			await updateAdsCampaign( campaign.id, { amount } );
+
+			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
+				let existingAssetEntityGroup = assetEntityGroup;
+
+				if ( ! existingAssetEntityGroup ) {
+					const actionPayload = await createCampaignAssetGroup( id );
+					existingAssetEntityGroup = actionPayload.assetGroup;
+				}
+
+				const assetGroupId = existingAssetEntityGroup.id;
+				const body = convertToAssetGroupUpdateBody(
+					existingAssetEntityGroup,
+					values
+				);
+
+				await updateCampaignAssetGroup( assetGroupId, body );
+				invalidateResolvedAssetEntityGroups();
+			}
+		} catch ( e ) {
+			enhancer.signalFailedSubmission();
+			return;
+		}
+
+		getHistory().push( getDashboardUrl() );
+	};
+
 	return (
 		<>
 			<TopBar
 				title={ sprintf(
 					// translators: %s: campaign's name.
 					__( 'Edit %s', 'google-listings-and-ads' ),
-					campaignData.name
+					campaign.name
 				) }
 				helpButton={ helpButton }
 				backHref={ dashboardURL }
 			/>
-			<EditPaidAdsCampaignForm campaign={ campaignData } />
+			<CampaignAssetsForm
+				initialCampaign={ {
+					amount: campaign.amount,
+					countryCodes: campaign.displayCountries,
+				} }
+				assetEntityGroup={ assetEntityGroup }
+				onSubmit={ handleSubmit }
+			>
+				<Stepper
+					currentStep={ getCurrentStep() }
+					steps={ [
+						{
+							key: STEP.CAMPAIGN,
+							label: __(
+								'Edit paid campaign',
+								'google-listings-and-ads'
+							),
+							content: (
+								<AdsCampaign
+									campaign={ campaign }
+									trackingContext="edit-ads"
+									onContinue={ () =>
+										setStep( STEP.ASSET_GROUP )
+									}
+								/>
+							),
+							onClick: setStep,
+						},
+						{
+							key: STEP.ASSET_GROUP,
+							label: __(
+								'Boost your campaign',
+								'google-listings-and-ads'
+							),
+							content: <AssetGroup campaign={ campaign } />,
+						},
+					] }
+				/>
+			</CampaignAssetsForm>
 		</>
 	);
 };

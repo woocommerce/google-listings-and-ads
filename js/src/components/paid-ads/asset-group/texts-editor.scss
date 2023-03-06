@@ -1,0 +1,40 @@
+.gla-texts-editor {
+	.components-input-control .components-input-control__container .components-input-control__input {
+		height: $gla-size-control-height;
+		padding-left: $grid-unit-20;
+		padding-right: $grid-unit-20;
+	}
+
+	&__text-list {
+		display: flex;
+		flex-direction: column;
+		gap: $grid-unit-20;
+
+		&:not(:empty) {
+			margin-bottom: $grid-unit-20;
+		}
+	}
+
+	&__text-item {
+		display: flex;
+		align-items: flex-start;
+		gap: $grid-unit-05 * 7;
+	}
+
+	&__text-input {
+		flex: 1 1;
+	}
+
+	&__remove-text-button-anchor {
+		position: relative;
+		width: 24px;
+		height: $gla-size-control-height;
+	}
+
+	&__remove-text-button {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+	}
+}

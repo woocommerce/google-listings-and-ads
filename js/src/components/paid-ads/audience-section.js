@@ -10,6 +10,7 @@ import { SelectControl } from '@wordpress/components';
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import Section from '.~/wcdl/section';
 import AudienceCountrySelect from '.~/components/audience-country-select';
+import './audience-section.scss';
 
 function toCountryOptions( countryCodes, countryNameMap ) {
 	return countryCodes.map( ( code ) => ( {
@@ -32,10 +33,7 @@ const AudienceSection = ( props ) => {
 		formProps: { getInputProps },
 		multiple = true,
 		disabled = false,
-		countrySelectHelperText = __(
-			'You can only choose from countries you’ve selected during product listings configuration.',
-			'google-listings-and-ads'
-		),
+		countrySelectHelperText,
 	} = props;
 
 	const countryNameMap = useCountryKeyNameMap();
@@ -64,6 +62,7 @@ const AudienceSection = ( props ) => {
 
 	return (
 		<Section
+			className="gla-audience-section"
 			disabled={ disabled }
 			title={ __( 'Ads audience', 'google-listings-and-ads' ) }
 			description={

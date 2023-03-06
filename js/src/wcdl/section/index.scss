@@ -4,7 +4,7 @@
 	margin-bottom: var(--large-gap);
 
 	&--is-disabled,
-	&--is-disabled-left header {
+	&--is-disabled-left &__header {
 		opacity: 0.5;
 	}
 
@@ -13,7 +13,7 @@
 		gap: var(--main-gap);
 	}
 
-	header {
+	&__header {
 		@include break-small {
 			width: 33%;
 			padding-top: var(--main-gap);
