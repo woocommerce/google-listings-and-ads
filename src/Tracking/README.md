@@ -168,22 +168,22 @@ Triggered when the product feed "bulk edit" functionality is being used
 ### [`gla_ces_feedback`](../../js/src/components/customer-effort-score-prompt/index.js#L30)
 CES feedback recorded
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES feedback is recorded
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L55) whenever the CES feedback is recorded
 
 ### [`gla_ces_modal_open`](../../js/src/components/customer-effort-score-prompt/index.js#L25)
 CES modal open
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES modal is open
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L55) whenever the CES modal is open
 
 ### [`gla_ces_snackbar_closed`](../../js/src/components/customer-effort-score-prompt/index.js#L20)
 CES prompt snackbar closed
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES snackbar (notice) is closed
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L55) whenever the CES snackbar (notice) is closed
 
 ### [`gla_ces_snackbar_open`](../../js/src/components/customer-effort-score-prompt/index.js#L15)
 CES prompt snackbar open
 #### Emitters
-- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L50) whenever the CES snackbar (notice) is open
+- [`CustomerEffortScorePrompt`](../../js/src/components/customer-effort-score-prompt/index.js#L55) whenever the CES snackbar (notice) is open
 
 ### [`gla_chart_tab_click`](../../js/src/reports/summary-section.js#L20)
 Triggered when a chart tab is clicked
@@ -226,7 +226,7 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](../../js/src/reports/products/products-report-filters.js#L41)
 - [`ProgramsReportFilters`](../../js/src/reports/programs/programs-report-filters.js#L43)
 
-### [`gla_disconnected_accounts`](../../js/src/settings/linked-accounts.js#L31)
+### [`gla_disconnected_accounts`](../../js/src/settings/linked-accounts.js#L32)
 Accounts are disconnected from the Setting page
 #### Properties
 | name | type | description |
@@ -264,6 +264,8 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L41) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
 - [`TermsModal`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L29) with `{ context: 'setup-mc', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
+- [`exports`](../../js/src/components/paid-ads/ads-campaign.js#L38) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
+- [`FaqsSection`](../../js/src/components/paid-ads/asset-group/faqs-section.js#L73) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
 - [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L22)
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
@@ -275,17 +277,14 @@ When a documentation link is clicked.
 	- with `{ context: 'faqs', linkId: 'free-listings', href: 'https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google' }`.
 	- with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
 	- with `{ context: 'faqs', linkId: 'terms-and-conditions-of-google-ads-coupons', href: 'https://www.google.com/ads/coupons/terms/' }`.
-- [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L27) with `{ context: 'get-started', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
-- [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L28) with `{ context: 'get-started-with-video', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
+- [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L23) with `{ context: 'get-started', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
+- [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L23) with `{ context: 'get-started-with-video', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
 - [`UnsupportedLanguage`](../../js/src/get-started-page/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`UnsupportedCountry`](../../js/src/get-started-page/unsupported-notices/index.js#L75) with `{ context: "get-started", link_id: "supported-countries" }`
-- [`CreatePaidAdsCampaignForm`](../../js/src/pages/create-paid-ads-campaign/create-paid-ads-campaign-form.js#L29) with `{ context: 'create-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
-- [`EditPaidAdsCampaignForm`](../../js/src/pages/edit-paid-ads-campaign/edit-paid-ads-campaign-form.js#L26) with `{ context: 'edit-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 - [`IssuesTableDataModal`](../../js/src/product-feed/issues-table-card/issues-table-data-modal.js#L21) with { context: 'issues-data-table-modal' }
 - [`ProductStatusHelpPopover`](../../js/src/product-feed/product-statistics/product-status-help-popover/index.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
 - [`EditPhoneNumber`](../../js/src/settings/edit-phone-number.js#L29) with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
 - [`EditStoreAddress`](../../js/src/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
-- [`CreateCampaign`](../../js/src/setup-ads/ads-stepper/create-campaign/index.js#L22) with `{ context: 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 - [`FreeAdCredit`](../../js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L27) with `{ context: 'setup-ads', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
 - [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L68) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
 - [`GoogleMCDisclaimer`](../../js/src/setup-mc/setup-stepper/setup-accounts/index.js#L33)
@@ -323,7 +322,7 @@ Triggered when edit links are clicked from product feed table.
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/product-feed/product-feed-table-card/index.js#L66)
 
-### [`gla_edit_product_issue_click`](../../js/src/product-feed/issues-table-card/index.js#L46)
+### [`gla_edit_product_issue_click`](../../js/src/product-feed/issues-table-card/index.js#L43)
 Triggered when edit links are clicked from Issues to resolve table.
 #### Properties
 | name | type | description |
@@ -351,6 +350,9 @@ Clicking on faq item to collapse or expand it.
 `action` | `string` | (`expand`\|`collapse`)
 `context` | `string` | Indicates which page / module the FAQ is in
 #### Emitters
+- [`FaqsSection`](../../js/src/components/paid-ads/asset-group/faqs-section.js#L73)
+	- with `{ context: 'campaign-management', id: 'what-will-my-ads-look-like', action: 'expand' | 'collapse' }`.
+	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-product-ads', action: 'expand' | 'collapse' }`.
 - [`Faqs`](../../js/src/get-started-page/faqs/index.js#L276)
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'expand' }`.
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'collapse' }`.
@@ -456,15 +458,23 @@ Clicking on a Google Merchant Center link.
 #### Emitters
 - [`HelpIconButton`](../../js/src/components/help-icon-button.js#L30)
 
+### [`gla_import_assets_by_final_url_button_click`](../../js/src/components/paid-ads/asset-group/assets-loader.js#L80)
+Clicking on the "Scan for assets" button.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`type` | `string` | The type of the selected Final URL suggestion to be imported. Possible values: `post`, `term`, `homepage`.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/assets-loader.js#L96)
+
 ### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/recordEvent.js#L84)
-Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
+Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `audiences` | `string` | Country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`. This means the campaign is created with the multi-country targeting feature. Before this feature support, it was implemented as 'audience'.
 `budget` | `string` | Daily average cost of the paid campaign
 #### Emitters
-- [`CreatePaidAdsCampaignForm`](../../js/src/pages/create-paid-ads-campaign/create-paid-ads-campaign-form.js#L29) on submit
 - [`SetupAdsForm`](../../js/src/setup-ads/setup-ads-form.js#L24) on submit
 
 ### [`gla_mc_account_connect_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L25)
@@ -536,7 +546,7 @@ A modal is closed.
 `action` | `string` | Indicates the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, generic "Cancel" button, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked    - `confirm` is used when the button "Confirm", "Save"  or similar generic "Accept" button is clicked
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L60) When any of the modals is closed
-- [`Dashboard`](../../js/src/dashboard/index.js#L34) when CES modal is closed.
+- [`Dashboard`](../../js/src/dashboard/index.js#L33) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L155) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
 
@@ -611,6 +621,11 @@ Triggered when the request review is successful
 #### Emitters
 - [`ReviewRequestModal`](../../js/src/product-feed/review-request/review-request-modal.js#L58)
 
+### [`gla_reselect_another_final_url_button_click`](../../js/src/components/paid-ads/asset-group/final-url-card.js#L23)
+Clicking on the "Or, select another page" button.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/final-url-card.js#L39)
+
 ### [`gla_setup_ads`](../../js/src/setup-ads/top-bar/index.js#L14)
 Triggered on events during ads setup and editing
 #### Properties
@@ -640,10 +655,35 @@ Setup Merchant Center
 `trigger` | `string` | Action (e.g. `click`)
 `context` | `string` | Indicates which CTA is clicked
 #### Emitters
-- [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L27) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started' }`.
-- [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L28) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started-with-video' }`.
-- [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L33) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
+- [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L23) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started' }`.
+- [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L23) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started-with-video' }`.
+- [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L32) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
 - [`SetupMCTopBar`](../../js/src/setup-mc/top-bar/index.js#L17) with `{ target: 'back', trigger: 'click' }`.
+
+### [`gla_submit_campaign_button_click`](../../js/src/components/paid-ads/asset-group/asset-group.js#L26)
+Clicking on the submit button on the campaign creation or editing page.
+ If a value is recorded as `unknown`, it's because no assets are imported and therefore unknown.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicate the place where the button is located. Possible values: `campaign-creation`, `campaign-editing`.
+`action` | `string` | Indicate which submit button is clicked. Possible values: `submit-campaign-and-assets`, `submit-campaign-only`.
+`audiences` | `string` | Country codes of the campaign audience countries, e.g. `US,JP,AU`.
+`budget` | `string` | Daily average cost of the campaign.
+`assets_validation` | `string` | Whether all asset values are valid or at least one invalid. Possible values: `valid`, `invalid`, `unknown`.
+`number_of_business_name` | `string` | The number of this asset in string type or `unknown`.
+`number_of_marketing_image` | `string` | Same as above.
+`number_of_square_marketing_image` | `string` | Same as above.
+`number_of_portrait_marketing_image` | `string` | Same as above.
+`number_of_logo` | `string` | Same as above.
+`number_of_headline` | `string` | Same as above.
+`number_of_long_headline` | `string` | Same as above.
+`number_of_description` | `string` | Same as above.
+`number_of_call_to_action_selection` | `string` | Same as above.
+`number_of_final_url` | `string` | Same as above.
+`number_of_display_url_path` | `string` | Same as above.
+#### Emitters
+- [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L60)
 
 ### [`gla_table_go_to_page`](../../js/src/utils/recordEvent.js#L10)
 When table pagination is changed by entering page via "Go to page" input.
@@ -691,14 +731,14 @@ Sorting table
 - [`recordTableSortEvent`](../../js/src/components/app-table-card/index.js#L55) with given props.
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon sorting table by column
 
-### [`gla_tooltip_viewed`](../../js/src/components/help-popover/index.js#L14)
+### [`gla_tooltip_viewed`](../../js/src/components/help-popover/index.js#L16)
 Viewing tooltip
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `id` | `string` | Tooltip identifier.
 #### Emitters
-- [`HelpPopover`](../../js/src/components/help-popover/index.js#L27) with the given `id`.
+- [`HelpPopover`](../../js/src/components/help-popover/index.js#L32) with the given `id`.
 
 ### [`gla_wordpress_account_connect_button_click`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L17)
 Clicking on the button to connect WordPress.com account.
