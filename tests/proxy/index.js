@@ -54,6 +54,7 @@ const init = async () => {
 			},
 			payload: {
 				parse: false,
+				maxBytes: 40 * 1024 * 1024,
 			},
 		},
 	} );

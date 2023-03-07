@@ -12,6 +12,7 @@ import { getReportQuery, getReportKey, getPerformanceQuery } from './utils';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ * @typedef {import('.~/data/types.js').AssetEntityGroup} AssetEntityGroup
  */
 
 export const getShippingRates = ( state ) => {
@@ -38,6 +39,12 @@ export const getSettings = ( state ) => {
  * @typedef {Object} GoogleMCAccount
  * @property {number} id Account ID. It's 0 if not yet connected.
  * @property {string} status Connection status.
+ */
+
+/**
+ * @typedef {Object} Tour
+ * @property {string} id The tour ID
+ * @property {boolean} checked True if the tour was checked by the user.
  */
 
 /**
@@ -164,6 +171,18 @@ export const getAdsCampaigns = ( state, query ) => {
 	}
 
 	return state.ads_campaigns;
+};
+
+/**
+ * Gets the asset groups by the given campaign ID.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @param {number} campaignId The ID of the campaign to get the asset groups.
+ *
+ * @return {AssetEntityGroup[]|null} The asset groups of the specified campaign.
+ */
+export const getCampaignAssetGroups = ( state, campaignId ) => {
+	return state.campaign_asset_groups[ campaignId ] || null;
 };
 
 export const getMCSetup = ( state ) => {
@@ -357,4 +376,16 @@ export const getMappingRules = createSelector(
 
 export const getStoreCategories = ( state ) => {
 	return state.store_categories;
+};
+
+/**
+ *
+ * Return a tour by ID
+ *
+ * @param {Object} state The state
+ * @param {string} tourId The tour ID to get
+ * @return {Tour|null} The tour. It will be `null` if not yet fetched or fetched but doesn't exist.
+ */
+export const getTour = ( state, tourId ) => {
+	return state.tours[ tourId ] || null;
 };

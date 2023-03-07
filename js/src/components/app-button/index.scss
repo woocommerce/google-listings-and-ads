@@ -1,4 +1,8 @@
 .app-button {
+	&[hidden] {
+		display: none !important;
+	}
+
 	white-space: nowrap;
 
 	svg {

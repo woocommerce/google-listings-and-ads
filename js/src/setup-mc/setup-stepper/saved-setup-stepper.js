@@ -22,7 +22,6 @@ import SetupAccounts from './setup-accounts';
 import SetupFreeListings from '.~/components/free-listings/setup-free-listings';
 import StoreRequirements from './store-requirements';
 import SetupPaidAds from './setup-paid-ads';
-import './index.scss';
 import stepNameKeyMap from './stepNameKeyMap';
 
 /**

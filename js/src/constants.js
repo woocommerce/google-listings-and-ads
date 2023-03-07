@@ -35,6 +35,12 @@ export const SHIPPING_RATE_METHOD = {
 	FLAT_RATE: 'flat_rate',
 };
 
+// Stepper key related
+export const CAMPAIGN_STEP = {
+	CAMPAIGN: 'campaign',
+	ASSET_GROUP: 'asset-group',
+};
+
 // MC Issues Related
 export const ISSUE_TYPE_PRODUCT = 'product';
 export const ISSUE_TYPE_ACCOUNT = 'account';
@@ -63,3 +69,26 @@ export const CATEGORY_CONDITION_SELECT_TYPES = {
 };
 
 export const CATEGORIES_TO_SHOW_IN_TOOLTIP = 5;
+
+// Assets of Performance Max Campaign related
+export const ASSET_KEY = {
+	BUSINESS_NAME: 'business_name',
+	MARKETING_IMAGE: 'marketing_image',
+	SQUARE_MARKETING_IMAGE: 'square_marketing_image',
+	PORTRAIT_MARKETING_IMAGE: 'portrait_marketing_image',
+	LOGO: 'logo',
+	HEADLINE: 'headline',
+	LONG_HEADLINE: 'long_headline',
+	DESCRIPTION: 'description',
+	CALL_TO_ACTION_SELECTION: 'call_to_action_selection',
+};
+
+export const ASSET_GROUP_KEY = {
+	FINAL_URL: 'final_url',
+	DISPLAY_URL_PATH: 'display_url_path',
+};
+
+export const ASSET_FORM_KEY = {
+	...ASSET_KEY,
+	...ASSET_GROUP_KEY,
+};

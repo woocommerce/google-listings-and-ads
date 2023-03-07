@@ -83,8 +83,7 @@ $gla-campaign-preview-height: 270px;
 		}
 
 		&--gray-500 {
-			// $gray-400 is not declared Gutenberg style.
-			background-color: #bbb;
+			background-color: $gray-500;
 		}
 
 		&--blue {

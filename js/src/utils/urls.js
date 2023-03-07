@@ -38,9 +38,16 @@ export const getEditFreeListingsUrl = () => {
 	return getNewPath( { subpath: subpaths.editFreeListings }, dashboardPath );
 };
 
-export const getEditCampaignUrl = ( programId ) => {
+/**
+ * Gets the path to the campaign editing page with given query parameters.
+ *
+ * @param {string} programId The ID of the campaign to be edited.
+ * @param {string} [initialStep] The initial step when entering the campaign editing page.
+ * @return {string} The path to the campaign editing page with specified query parameters.
+ */
+export const getEditCampaignUrl = ( programId, initialStep ) => {
 	return getNewPath(
-		{ subpath: subpaths.editCampaign, programId },
+		{ subpath: subpaths.editCampaign, programId, initialStep },
 		dashboardPath
 	);
 };

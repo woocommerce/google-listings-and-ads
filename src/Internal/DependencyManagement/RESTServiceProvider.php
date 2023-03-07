@@ -5,16 +5,20 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService as AdsAssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AccountController as AdsAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\BudgetRecommendationController as AdsBudgetRecommendationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\CampaignController as AdsCampaignController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\ReportsController as AdsReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\SetupCompleteController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetGroupController as AdsAssetGroupController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetSuggestionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\TourController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\AccountController as GoogleAccountController;
@@ -101,6 +105,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( ConnectionController::class );
 		$this->share( AdsAccountController::class, AdsAccountService::class );
 		$this->share( AdsCampaignController::class, AdsCampaign::class );
+		$this->share( AdsAssetGroupController::class, AdsAssetGroup::class );
 		$this->share_with_container( AdsReportsController::class );
 		$this->share( GoogleAccountController::class, Connection::class );
 		$this->share( JetpackAccountController::class, Manager::class, Middleware::class );
@@ -124,6 +129,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( SettingsSyncController::class, Settings::class );
 		$this->share( DisconnectController::class );
 		$this->share( SetupCompleteController::class );
+		$this->share( AssetSuggestionsController::class, AdsAssetSuggestionsService::class );
 		$this->share( SyncableProductsCountController::class, JobRepository::class );
 		$this->share( PolicyComplianceCheckController::class, PolicyComplianceCheck::class );
 		$this->share( AttributeMappingDataController::class, AttributeMappingHelper::class );

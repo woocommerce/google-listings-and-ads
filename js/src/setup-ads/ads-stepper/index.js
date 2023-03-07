@@ -9,9 +9,8 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import SetupAccounts from './setup-accounts';
-import CreateCampaign from './create-campaign';
+import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
-import './index.scss';
 
 const AdsStepper = ( props ) => {
 	const { formProps } = props;
@@ -61,8 +60,8 @@ const AdsStepper = ( props ) => {
 						'google-listings-and-ads'
 					),
 					content: (
-						<CreateCampaign
-							formProps={ formProps }
+						<AdsCampaign
+							trackingContext="setup-ads"
 							onContinue={ handleCreateCampaignContinue }
 						/>
 					),

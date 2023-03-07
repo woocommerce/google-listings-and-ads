@@ -77,6 +77,11 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 		add_action(
 			'admin_enqueue_scripts',
 			function() {
+				if ( wc_admin_is_registered_page() ) {
+					// Enqueue the required JavaScript scripts and CSS styles of the Media library.
+					wp_enqueue_media();
+				}
+
 				$this->assets_handler->enqueue_many( $this->get_assets() );
 			}
 		);

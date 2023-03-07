@@ -17,12 +17,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Variati
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection as GoogleConnection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
@@ -117,11 +119,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ImageUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use wpdb;
 
 /**
  * Class CoreServiceProvider
@@ -253,6 +257,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getLeagueContainer()
 			 ->inflector( AdsAwareInterface::class )
 			 ->invokeMethod( 'set_ads_object', [ AdsService::class ] );
+		$this->share_with_tags( AssetSuggestionsService::class, WP::class, WC::class, ImageUtility::class, wpdb::class, AdsAssetGroupAsset::class );
 
 		// Set up the installer.
 		$installer_definition = $this->share_with_tags(
@@ -270,6 +275,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Share utility classes
 		$this->share_with_tags( AddressUtility::class );
 		$this->share_with_tags( DateTimeUtility::class );
+		$this->share_with_tags( ImageUtility::class, WP::class );
 		$this->share_with_tags( ISOUtility::class, ISO3166DataProvider::class );
 
 		// Share our regular service classes.

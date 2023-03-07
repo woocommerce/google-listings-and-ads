@@ -1,0 +1,8 @@
+.gla-asset-group-section {
+	&__optional-label,
+	&__primary-description {
+		font-weight: normal;
+		font-size: $default-font-size;
+		color: $gray-700;
+	}
+}

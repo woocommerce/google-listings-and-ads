@@ -11,6 +11,13 @@ export const fetchWithHeaders = ( options ) => {
 	};
 };
 
+export const awaitPromise = ( promise ) => {
+	return {
+		type: 'GLA_AWAIT_PROMISE',
+		promise,
+	};
+};
+
 export const controls = {
 	...dataControls,
 	FETCH_WITH_HEADERS( { options } ) {
@@ -28,4 +35,5 @@ export const controls = {
 				data,
 			} ) );
 	},
+	GLA_AWAIT_PROMISE: ( { promise } ) => promise,
 };

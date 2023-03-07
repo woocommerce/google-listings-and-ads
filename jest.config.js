@@ -11,7 +11,7 @@ module.exports = {
 		'<rootDir>/node_modules/(?!is-plain-obj/)',
 	],
 	moduleNameMapper: {
-		'\\.png$': '<rootDir>/tests/mocks/assets/imageMock.js',
+		'\\.(png|jpg)$': '<rootDir>/tests/mocks/assets/imageMock.js',
 		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
 		// Transform our `.~/` alias.

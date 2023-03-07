@@ -1,4 +1,4 @@
-.app-tooltip__children-container {
+.gla-tooltip__children-container {
 	display: inline-block;
 	cursor: help;
 
@@ -7,5 +7,14 @@
 		* Specify this so that the help cursor is not applied to the tooltip content.
 		*/
 		cursor: auto;
+	}
+
+	// The wrapper of the event catcher is displayed in inline layout so it may not cover
+	// the whole child completely if the child's height is higher than the wrapper.
+	// Ref:
+	// - https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4019.17.0/packages/components/src/tooltip/index.js#L42
+	// - https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4019.17.0/packages/components/src/tooltip/style.scss#L28-L29
+	.gla-admin-page .disabled-element-wrapper:has(&) {
+		display: inline-block;
 	}
 }

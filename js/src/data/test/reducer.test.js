@@ -45,6 +45,7 @@ describe( 'reducer', () => {
 			},
 			ads_campaigns: null,
 			all_ads_campaigns: null,
+			campaign_asset_groups: {},
 			mc_setup: null,
 			mc_review_request: {
 				issues: null,
@@ -60,6 +61,7 @@ describe( 'reducer', () => {
 			mc_product_feed: null,
 			report: {},
 			store_categories: [],
+			tours: {},
 		} );
 
 		prepareState = prepareImmutableStateWithRefCheck.bind(
@@ -511,6 +513,59 @@ describe( 'reducer', () => {
 		} );
 	} );
 
+	describe( 'Campaign asset groups', () => {
+		const path = 'campaign_asset_groups';
+
+		it( 'should store asset groups individually by the given `campaignId` and return with received asset groups', () => {
+			const groupsA = [ { id: 1 }, { id: 2 } ];
+			const groupsB = [ { id: 3 }, { id: 4 } ];
+			const firstState = reducer( prepareState(), {
+				type: TYPES.RECEIVE_CAMPAIGN_ASSET_GROUPS,
+				campaignId: 123,
+				assetGroups: groupsA,
+			} );
+
+			firstState.assertConsistentRef();
+			expect( firstState ).toHaveProperty( `${ path }.123`, groupsA );
+
+			// Store other asset groups individually.
+			const secondState = reducer( firstState, {
+				type: TYPES.RECEIVE_CAMPAIGN_ASSET_GROUPS,
+				campaignId: 456,
+				assetGroups: groupsB,
+			} );
+
+			secondState.assertConsistentRef();
+			expect( secondState ).toHaveProperty( `${ path }.123`, groupsA );
+			expect( secondState ).toHaveProperty( `${ path }.456`, groupsB );
+		} );
+
+		it( 'should push the newly created asset group into the specific asset group by the given `campaignId` and return with updated asset groups', () => {
+			const groupA = { id: 1 };
+			const groupB = { id: 2 };
+			const firstState = reducer( prepareState(), {
+				type: TYPES.CREATE_CAMPAIGN_ASSET_GROUP,
+				campaignId: 123,
+				assetGroup: groupA,
+			} );
+
+			firstState.assertConsistentRef();
+			expect( firstState ).toHaveProperty( `${ path }.123`, [ groupA ] );
+
+			const secondState = reducer( firstState, {
+				type: TYPES.CREATE_CAMPAIGN_ASSET_GROUP,
+				campaignId: 123,
+				assetGroup: groupB,
+			} );
+
+			secondState.assertConsistentRef();
+			expect( secondState ).toHaveProperty( `${ path }.123`, [
+				groupA,
+				groupB,
+			] );
+		} );
+	} );
+
 	describe( 'Merchant Center issues', () => {
 		const basePath = 'mc_issues';
 		const productPath = basePath + '.product';
@@ -743,6 +798,38 @@ describe( 'reducer', () => {
 			expect( pageOneState ).toHaveProperty( `${ path }.key1`, '#1' );
 			expect( pageFourState ).toHaveProperty( `${ path }.key1`, '#1' );
 			expect( pageFourState ).toHaveProperty( `${ path }.key4`, '#4' );
+		} );
+	} );
+
+	describe( 'Tours', () => {
+		const path = 'tours';
+
+		it( 'should receive a tour', () => {
+			const tour = { id: 'test', checked: false };
+			const state = reducer( prepareState(), {
+				type: TYPES.RECEIVE_TOUR,
+				tour,
+			} );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( [ path, tour.id ], tour );
+		} );
+
+		it( 'should upsert a tour', () => {
+			const tour = { id: 'test', checked: false };
+			const tourUpdated = { id: 'test', checked: true };
+			const prevState = reducer( prepareState(), {
+				type: TYPES.RECEIVE_TOUR,
+				tour,
+			} );
+
+			const state = reducer( prevState, {
+				type: TYPES.UPSERT_TOUR,
+				tour: tourUpdated,
+			} );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( [ path, tour.id ], tourUpdated );
 		} );
 	} );
 

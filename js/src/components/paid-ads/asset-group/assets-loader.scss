@@ -1,0 +1,54 @@
+.gla-assets-loader {
+	&.wcdl-select-control {
+		flex-grow: 1;
+
+		.components-base-control {
+			display: flex;
+			flex-direction: row-reverse;
+			height: $gla-size-control-height;
+		}
+
+		.woocommerce-select-control__control-input {
+			padding-left: 0;
+			font-size: $default-font-size;
+		}
+
+		.woocommerce-select-control__listbox .components-button {
+			display: block;
+			height: unset;
+			min-height: unset;
+			padding: $grid-unit-15;
+			line-height: $gla-line-height-smaller;
+
+			&:disabled {
+				background: unset;
+				color: inherit;
+			}
+		}
+	}
+
+	.wcdl-select-control__label {
+		display: flex;
+		align-items: center;
+		gap: $grid-unit-10;
+		padding-bottom: $grid-unit-10;
+		color: $black;
+
+		.woocommerce-spinner {
+			width: 1em;
+			height: 1em;
+			min-width: unset;
+		}
+	}
+
+	&__option-title {
+		margin-bottom: $grid-unit-05;
+		font-size: $default-font-size;
+		color: $gray-900;
+	}
+
+	&__option-url {
+		font-size: $gla-font-smallest;
+		color: $gray-700;
+	}
+}

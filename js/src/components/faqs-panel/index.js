@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Panel, PanelBody, PanelRow } from '@wordpress/components';
+import { Panel, PanelBody, PanelRow } from 'extracted/@wordpress/components';
 import { recordEvent } from '@woocommerce/tracks';
 import classnames from 'classnames';
 
