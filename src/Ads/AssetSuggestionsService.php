@@ -21,7 +21,7 @@ use DOMDocument;
  *
  * Suggest assets and possible final URLs.
  *
- * @since x.x.x
+ * @since 2.4.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Ads
  */

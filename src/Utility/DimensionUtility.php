@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Utility;
 /**
  * A class for dealing with Dimensions.
  *
- * @since x.x.x
+ * @since 2.4.0
  */
 class DimensionUtility {
 

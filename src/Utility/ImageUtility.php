@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 /**
  * A class of utilities for dealing with images.
  *
- * @since x.x.x
+ * @since 2.4.0
  */
 class ImageUtility implements Service {
 

@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Utility;
 /**
  * A class of utilities for dealing with arrays.
  *
- * @since x.x.x
+ * @since 2.4.0
  */
 class ArrayUtil {
 
