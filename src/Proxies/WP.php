@@ -182,7 +182,7 @@ class WP {
 	/**
 	 * Retrieves an array of the latest posts, or posts matching the given criteria.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @see WP_Query
 	 * @see WP_Query::parse_query()
@@ -199,7 +199,7 @@ class WP {
 	/**
 	 * Gets a list of all registered post type objects.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @param array|string $args     Optional. An array of key => value arguments to match against
 	 *                               the post type objects. Default empty array.
@@ -217,7 +217,7 @@ class WP {
 	/**
 	 * Retrieves a list of registered taxonomy names or objects.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @param array  $args     Optional. An array of `key => value` arguments to match against the taxonomy objects.
 	 *                         Default empty array.
@@ -235,7 +235,7 @@ class WP {
 	/**
 	 * Retrieves the terms in a given taxonomy or list of taxonomies.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @param array|string $args       Optional. Array or string of arguments. See WP_Term_Query::__construct()
 	 *                                 for information on accepted arguments. Default empty array.
@@ -254,7 +254,7 @@ class WP {
 	/**
 	 * Get static homepage
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @see https://wordpress.org/support/article/creating-a-static-front-page/
 	 *
@@ -274,7 +274,7 @@ class WP {
 	/**
 	 * Get Shop page
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @return WP_Post|null Returns the Homepage post if it is set as a static otherwise null.
 	 */
@@ -293,7 +293,7 @@ class WP {
 	 * If any of the currently registered image sub-sizes are missing,
 	 * create them and update the image meta data.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @param int $attachment_id The image attachment post ID.
 	 * @return array|WP_Error The updated image meta data array or WP_Error object
@@ -312,7 +312,7 @@ class WP {
 	/**
 	 * Performs an HTTP request using the GET method and returns its response.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @see wp_remote_request() For more information on the response array format.
 	 * @see WP_Http::request() For default arguments information.
