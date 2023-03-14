@@ -125,16 +125,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Remove unnecessary PMax migration banners.
 * Tweak - Remove unnecessary woocommerce_loop_add_to_cart_link filter param.
 
-= 2.3.9 - 2023-02-15 =
-* Dev - Update phpunit to version 9.5.
-* Fix - Prefix Google Service packages to prevent plugin conflicts.
-* Tweak - Improve PHP 8.1 compatibility.
-* Tweak - Show admin notice when PHP 32 bits is being used.
-* Tweak - WC 7.4 compatibility.
-* Update - Google Ads library to API V12.
-* Update - Google Content library to API 2.13.
-
-= 2.3.8 - 2023-01-24 =
-* Fix - Product feed table footer rendering a zero when there are no products.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
