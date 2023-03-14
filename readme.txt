@@ -2,10 +2,10 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.9
-Tested up to: 6.1.1
+Tested up to: 6.2
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.4.0
+Stable tag: 2.4.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.4.1 - 2023-03-14 =
+* Tweak - WC 7.5 compatibility.
+* Tweak - WP 6.2 compatibility.
+
 = 2.4.0 - 2023-03-07 =
 * Add - Support for the Assets of Performance Max campaigns.
 * Dev - Externalize Panel, PanelBody, and PanelRow.
@@ -124,17 +128,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Add - Integration with WooCommerce Multichannel Marketing.
 * Tweak - Remove unnecessary PMax migration banners.
 * Tweak - Remove unnecessary woocommerce_loop_add_to_cart_link filter param.
-
-= 2.3.9 - 2023-02-15 =
-* Dev - Update phpunit to version 9.5.
-* Fix - Prefix Google Service packages to prevent plugin conflicts.
-* Tweak - Improve PHP 8.1 compatibility.
-* Tweak - Show admin notice when PHP 32 bits is being used.
-* Tweak - WC 7.4 compatibility.
-* Update - Google Ads library to API V12.
-* Update - Google Content library to API 2.13.
-
-= 2.3.8 - 2023-01-24 =
-* Fix - Product feed table footer rendering a zero when there are no products.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
