@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
  */
 class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
+
 	use MenuFixesTrait;
 	use MerchantCenterAwareTrait;
 	use WooAdminNavigationTrait;
@@ -24,7 +25,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 	 *
 	 * @var string
 	 */
-	public $path = '/google/dashboard';
+	public static $path = '/google/dashboard';
 
 	/**
 	 * The WordPress proxy.
@@ -49,9 +50,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 		if ( ! $this->merchant_center->is_setup_complete() ) {
 			add_action(
 				'admin_init',
-				function() {
-					$this->maybe_redirect_to_start_page();
-				}
+				[ $this, 'maybe_redirect_to_start_page' ]
 			);
 
 			// Prevent Dashboard from being registered if setup is not complete.
@@ -69,7 +68,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 							'id'     => 'google-listings-and-ads',
 							'title'  => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
 							'parent' => 'woocommerce-marketing',
-							'path'   => $this->path,
+							'path'   => self::$path,
 						]
 					);
 				}
@@ -86,7 +85,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 				'id'       => 'google-listings-and-ads-category',
 				'title'    => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
 				'parent'   => 'woocommerce',
-				'path'     => $this->path,
+				'path'     => self::$path,
 				'nav_args' => [
 					'title'        => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
 					'is_category'  => true,
@@ -101,7 +100,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 				'id'       => 'google-dashboard',
 				'title'    => __( 'Dashboard', 'google-listings-and-ads' ),
 				'parent'   => 'google-listings-and-ads-category',
-				'path'     => $this->path,
+				'path'     => self::$path,
 				'nav_args' => [
 					'order'  => 10,
 					'parent' => 'google-listings-and-ads-category',
@@ -115,12 +114,12 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 	 *
 	 * @return void
 	 */
-	private function maybe_redirect_to_start_page(): void {
+	public function maybe_redirect_to_start_page(): void {
 		if ( $this->wp->wp_doing_ajax() ) {
 			return;
 		}
 
-		if ( ! $this->is_current_wc_admin_page( $this->path ) ) {
+		if ( ! $this->is_current_wc_admin_page( self::$path ) ) {
 			return;
 		}
 
@@ -133,7 +132,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 	 * @return void
 	 */
 	private function redirect_to_start_page(): void {
-		wp_safe_redirect( admin_url( 'admin.php?page=wc-admin&path=%2Fgoogle%2Fstart' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=wc-admin&path=' . rawurlencode( GetStarted::$path ) ) );
 		exit;
 	}
 }
