@@ -12,7 +12,7 @@ use UnexpectedValueException;
  * Mapping between Google and internal AssetFieldTypes
  * https://developers.google.com/google-ads/api/reference/rpc/v12/AssetFieldTypeEnum.AssetFieldType
  *
- * @since x.x.x
+ * @since 2.4.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */

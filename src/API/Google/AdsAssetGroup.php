@@ -89,7 +89,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	/**
 	 * Create an asset group.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @param int $campaign_id
 	 *
@@ -271,7 +271,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	/**
 	 * Get Asset Groups for a specific campaign.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @param int  $campaign_id The campaign ID.
 	 * @param bool $include_assets Whether to include the assets in the response.
@@ -318,7 +318,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	/**
 	 * Get assets for asset groups.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @param array $asset_groups The asset groups converted.
 	 *
@@ -414,7 +414,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	/**
 	 * Convert Asset Group data to an array.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @param GoogleAdsRow $row Data row returned from a query request.
 	 *
@@ -431,7 +431,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	/**
 	 * Send a batch of operations to mutate an asset group.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @param MutateOperation[] $operations
 	 *
@@ -458,7 +458,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	/**
 	 * Convert ID from a resource name to an int.
 	 *
-	 * @since x.x.x
+	 * @since 2.4.0
 	 *
 	 * @param string $name Resource name containing ID number.
 	 *

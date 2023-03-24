@@ -9,6 +9,10 @@ on:
     types:
       - opened
 
+# Leverage project write access for dependabot.
+permissions:
+  repository-projects: write
+
 jobs:
   add-to-project:
     name: Add issue/PR to project

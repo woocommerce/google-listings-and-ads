@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\StatusMapping;
  * Mapping between Google and internal CallToActionType
  * https://developers.google.com/google-ads/api/reference/rpc/v12/CallToActionTypeEnum.CallToActionType
  *
- * @since x.x.x
+ * @since 2.4.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */

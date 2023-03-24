@@ -24,7 +24,7 @@ use Google\Ads\GoogleAds\Util\V12\ResourceNames;
  * Use to get assets group assets for specific asset groups.
  * https://developers.google.com/google-ads/api/fields/v12/asset_group_asset
  *
- * @since x.x.x
+ * @since 2.4.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */

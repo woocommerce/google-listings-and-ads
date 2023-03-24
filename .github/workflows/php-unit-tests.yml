@@ -31,7 +31,7 @@ jobs:
     strategy:
       matrix:
         php: [8.0]
-        wp-version: ["5.9", "6.0", latest]
+        wp-version: ["6.0", "6.1", latest]
         include:
           - php: 7.4
             wp-version: latest
