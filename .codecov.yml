@@ -1,0 +1,28 @@
+codecov:
+    require_ci_to_pass: yes
+
+coverage:
+    precision: 1
+    round: nearest
+    range: '50...80'
+
+    status:
+        project:
+            default:
+                target: auto
+        patch:
+            default:
+                target: auto
+
+ignore:
+    - 'bin/*'
+    - 'tests/*'
+    - 'vendor/*'
+    - 'node_modules/*'
+
+comment:
+    layout: 'reach, diff, flags, files'
+    behavior: default
+    require_changes: false
+    require_base: no
+    require_head: yes
