@@ -6,14 +6,6 @@ coverage:
     round: nearest
     range: '50...80'
 
-    status:
-        project:
-            default:
-                target: auto
-        patch:
-            default:
-                target: auto
-
 ignore:
     - 'bin/*'
     - 'tests/*'
@@ -26,3 +18,4 @@ comment:
     require_changes: false
     require_base: no
     require_head: yes
+    show_carryforward_flags: false
