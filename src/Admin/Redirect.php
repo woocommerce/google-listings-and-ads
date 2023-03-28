@@ -14,11 +14,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 /**
- * Class ActivationRedirect
+ * Class Redirect
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
-class ActivationRedirect implements Activateable, Service, Registerable, OptionsAwareInterface, MerchantCenterAwareInterface {
+class Redirect implements Activateable, Service, Registerable, OptionsAwareInterface, MerchantCenterAwareInterface {
 
 	use MerchantCenterAwareTrait;
 	use OptionsAwareTrait;
