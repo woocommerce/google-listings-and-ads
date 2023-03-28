@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\Admin\PageController;
 
 /**
  * Class Redirect
@@ -139,4 +140,21 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 		wp_safe_redirect( admin_url( add_query_arg( self::PARAMS, 'admin.php' ) ) );
 		exit();
 	}
+
+	/**
+	 * Check if the current WC Admin page matches the given path.
+	 *
+	 * @param string $path The path to check.
+	 *
+	 * @return bool
+	 */
+	protected function is_current_wc_admin_page( $path ): bool {
+		$params = [
+			'page' => PageController::PAGE_ROOT,
+			'path' => $path,
+		];
+
+		return 2 === count( array_intersect_assoc( $_GET, $params ) ); // phpcs:disable WordPress.Security.NonceVerification.Recommended
+	}
+
 }
