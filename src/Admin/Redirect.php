@@ -12,6 +12,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\Admin\PageController;
 
 /**
@@ -26,10 +28,11 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 
 	protected const OPTION = OptionsInterface::REDIRECT_TO_ONBOARDING;
 
-	protected const PARAMS = [
-		'page' => 'wc-admin',
-		'path' => '/google/start',
+	protected const PATHS = [
+		'dashboard'   => Dashboard::PATH,
+		'get_started' => GetStarted::PATH,
 	];
+
 	/**
 	 * @var WP
 	 */
@@ -53,7 +56,7 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 		add_action(
 			'admin_init',
 			function () {
-				$this->maybe_redirect_to_onboarding();
+				$this->maybe_redirect();
 			}
 		);
 	}
@@ -82,18 +85,36 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 	/**
 	 * Checks if merchant should be redirected to the onboarding page if it is not.
 	 *
+	 * @return void
+	 */
+	protected function maybe_redirect(): void {
+		if ( $this->wp->wp_doing_ajax() ) {
+			return;
+		}
+		
+		// Maybe redirect to onboarding after activation
+		if ( 'yes' === $this->options->get( self::OPTION ) ) {
+			$this->maybe_redirect_after_activation();
+			return;
+		}
+
+		// If setup ISNT complete then redirect from dashboard to onboarding
+		if ( ! $this->merchant_center->is_setup_complete() && $this->is_current_wc_admin_page( self::PATHS['dashboard'] ) ) {
+			$this->redirect_to( self::PATHS['get_started'] );
+		}
+
+		// If setup IS complete then redirect from onboarding to dashboard
+		if ( $this->merchant_center->is_setup_complete() && $this->is_current_wc_admin_page( self::PATHS['get_started'] ) ) {
+			$this->redirect_to( self::PATHS['dashboard'] );
+		}
+	}
+
+	/**
+	 * Checks if merchant should be redirected to the onboarding page after extension activation.
+	 *
 	 * @return bool True if the redirection should have happened
 	 */
-	protected function maybe_redirect_to_onboarding(): bool {
-		if ( $this->wp->wp_doing_ajax() ) {
-			return false;
-		}
-
-		// If we have redirected before do not attempt to redirect again.
-		if ( 'yes' !== $this->options->get( self::OPTION ) ) {
-			return false;
-		}
-
+	protected function maybe_redirect_after_activation(): bool {
 		// Do not redirect if setup is already complete
 		if ( $this->merchant_center->is_setup_complete() ) {
 			$this->options->update( self::OPTION, 'no' );
@@ -101,43 +122,36 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 		}
 
 		// if we are on the get started page don't redirect again
-		if ( $this->is_onboarding_page() && 'yes' === $this->options->get( self::OPTION, 'yes' ) ) {
+		if ( $this->is_current_wc_admin_page( self::PATHS['get_started'] ) && 'yes' === $this->options->get( self::OPTION, 'yes' ) ) {
 			$this->options->update( self::OPTION, 'no' );
 			return false;
 		}
 
 		// Redirect if setup is not complete
-		$this->redirect_to_onboarding_page();
+		$this->redirect_to( self::PATHS['get_started'] );
 		return true;
 	}
 
 	/**
-	 * Utility function to check if are on the main "Get Started" onboarding page.
-	 *
-	 * @return bool
-	 */
-	protected function is_onboarding_page(): bool {
-		// If we are already in the onboarding page, return true
-		if ( count( self::PARAMS ) === count( array_intersect_assoc( $_GET, self::PARAMS ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Utility function to immediately redirect to the main "Get Started" onboarding page.
+	 * Utility function to immediately redirect to a given WC Admin path.
 	 * Note that this function immediately ends the execution.
+	 *
+	 * @param string $path The WC Admin path to redirect to
 	 *
 	 * @return void
 	 */
-	protected function redirect_to_onboarding_page(): void {
-		// If we are already on the onboarding page, do nothing.
-		if ( $this->is_onboarding_page() ) {
+	protected function redirect_to( $path ): void {
+		// If we are already on this path, do nothing.
+		if ( $this->is_current_wc_admin_page( $path ) ) {
 			return;
 		}
 
-		wp_safe_redirect( admin_url( add_query_arg( self::PARAMS, 'admin.php' ) ) );
+		$params = [
+			'page' => PageController::PAGE_ROOT,
+			'path' => $path,
+		];
+
+		wp_safe_redirect( admin_url( add_query_arg( $params, 'admin.php' ) ) );
 		exit();
 	}
 
