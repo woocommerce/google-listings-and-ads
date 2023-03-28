@@ -287,10 +287,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			AdsService::class
 		);
 		$this->conditionally_share_with_tags( ActivationRedirect::class, WP::class );
-		$this->conditionally_share_with_tags( GetStarted::class, WP::class );
+		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
-		$this->conditionally_share_with_tags( Dashboard::class, WP::class );
+		$this->conditionally_share_with_tags( Dashboard::class );
 		$this->conditionally_share_with_tags( Reports::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
 		$this->conditionally_share_with_tags( AttributeMapping::class );

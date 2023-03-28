@@ -127,20 +127,4 @@ trait MenuFixesTrait {
 
 		PageController::get_instance()->connect_page( $options );
 	}
-
-	/**
-	 * Check if the current WC Admin page matches the given path.
-	 *
-	 * @param string $path The path to check.
-	 *
-	 * @return bool
-	 */
-	protected function is_current_wc_admin_page( $path ): bool {
-		$params = [
-			'page' => PageController::PAGE_ROOT,
-			'path' => $path,
-		];
-
-		return 2 === count( array_intersect_assoc( $_GET, $params ) ); // phpcs:disable WordPress.Security.NonceVerification.Recommended
-	}
 }
