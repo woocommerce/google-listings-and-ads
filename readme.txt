@@ -111,6 +111,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.4.2 - 2023-03-29 =
+* Tweak - WC 7.6 compatibility.
+
 = 2.4.1 - 2023-03-14 =
 * Tweak - WC 7.5 compatibility.
 * Tweak - WP 6.2 compatibility.
