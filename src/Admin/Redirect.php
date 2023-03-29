@@ -91,7 +91,7 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 		if ( $this->wp->wp_doing_ajax() ) {
 			return;
 		}
-		
+
 		// Maybe redirect to onboarding after activation
 		if ( 'yes' === $this->options->get( self::OPTION ) ) {
 			$this->maybe_redirect_after_activation();
