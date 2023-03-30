@@ -122,7 +122,7 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 		}
 
 		// if we are on the get started page don't redirect again
-		if ( $this->is_current_wc_admin_page( self::PATHS['get_started'] ) && 'yes' === $this->options->get( self::OPTION, 'yes' ) ) {
+		if ( $this->is_current_wc_admin_page( self::PATHS['get_started'] ) ) {
 			$this->options->update( self::OPTION, 'no' );
 			return false;
 		}
