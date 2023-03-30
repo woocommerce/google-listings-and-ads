@@ -69,10 +69,11 @@ class GLAChannelTest extends UnitTest {
 
 	public function test_get_setup_url_changes_based_on_setup_status() {
 		// Return TRUE the first time `is_setup_complete` is called.
-		$this->merchant_center->expects( $this->at( 0 ) )->method( 'is_setup_complete' )->willReturn( true );
-
 		// Return FALSE the second time `is_setup_complete` is called. To test that the setup URL changes.
-		$this->merchant_center->expects( $this->at( 1 ) )->method( 'is_setup_complete' )->willReturn( false );
+		$this->merchant_center
+			->expects( $this->exactly( 2 ) )
+			->method( 'is_setup_complete' )
+			->willReturnOnConsecutiveCalls( true, false );
 
 		$setup_url_complete = $this->gla_channel->get_setup_url();
 
