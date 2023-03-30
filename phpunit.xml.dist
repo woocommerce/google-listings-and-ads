@@ -17,11 +17,11 @@
 			<directory suffix=".php">./tests/integration</directory>
 		</testsuite>
 	</testsuites>
-    <coverage includeUncoveredFiles="true">
-        <include>
-	        <directory suffix=".php">./src</directory>
-	        <directory suffix=".php">./views</directory>
+	<coverage>
+		<include>
+			<directory suffix=".php">./src</directory>
+			<directory suffix=".php">./views</directory>
 			<file>./google-listings-and-ads.php</file>
-        </include>
-     </coverage>
+		</include>
+	</coverage>
 </phpunit>
