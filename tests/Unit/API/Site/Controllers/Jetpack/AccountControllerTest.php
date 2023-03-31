@@ -15,14 +15,23 @@ use WP_Error;
  * Class AccountControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Jetpack
- *
- * @property Manager|MockObject    $manager
- * @property Middleware|MockObject $middleware
- * @property Options|MockObject    $options
- * @property Tokens|MockObject     $tokens
- * @property AccountController     $controller
  */
 class AccountControllerTest extends RESTControllerUnitTest {
+
+	/** @var Manager|MockObject $manager */
+	protected $manager;
+
+	/** @var Middleware|MockObject $middleware */
+	protected $middleware;
+
+	/** @var Options|MockObject $options */
+	protected $options;
+
+	/** @var Tokens|MockObject $tokens */
+	protected $tokens;
+
+	/** @var AccountController $controller */
+	protected $controller;
 
 	protected const ROUTE_CONNECT   = '/wc/gla/jetpack/connect';
 	protected const ROUTE_CONNECTED = '/wc/gla/jetpack/connected';

@@ -22,13 +22,19 @@ defined( 'ABSPATH' ) || exit;
  * Class AdsAssetGroupTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
- *
- * @property MockObject|OptionsInterface $options
- * @property AdsAssetGroup               $asset_group
  */
 class AdsAssetGroupTest extends UnitTest {
 
 	use GoogleAdsClientTrait;
+
+	/** @var MockObject|AdsAssetGroupAsset $asset_group_asset */
+	protected $asset_group_asset;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var AdsAssetGroup $asset_group */
+	protected $asset_group;
 
 	protected const TEST_CAMPAIGN_ID      = 1234567890;
 	protected const TEST_ASSET_GROUP_ID   = 5566778899;

@@ -16,11 +16,15 @@ use WC_Shipping_Zone;
  * Class ZoneMethodsParserTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping
- *
- * @property MockObject|WC     $wc
- * @property ZoneMethodsParser $methods_parser
  */
 class ZoneMethodsParserTest extends UnitTest {
+
+	/** @var MockObject|WC $wc */
+	protected $wc;
+
+	/** @var ZoneMethodsParser $methods_parser */
+	protected $methods_parser;
+
 	public function test_returns_flat_rate_methods() {
 		$flat_rate     = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate->id = ZoneMethodsParser::METHOD_FLAT_RATE;

@@ -14,12 +14,23 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class CampaignControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
- *
- * @property AdsCampaign|MockObject         $ads_campaign
- * @property ISO3166DataProvider|MockObject $iso_provider;
- * @property CampaignController             $controller
  */
 class CampaignControllerTest extends RESTControllerUnitTest {
+
+	/** @var MockObject|AdsCampaign $ads_campaign */
+	protected $ads_campaign;
+
+	/** @var MockObject|ISO3166DataProvider $iso_provider */
+	protected $iso_provider;
+
+	/** @var MockObject|GoogleHelper $google_helper */
+	protected $google_helper;
+
+	/** @var CampaignController $controller */
+	protected $controller;
+
+	/** @var bool $country_supported */
+	protected $country_supported;
 
 	protected const TEST_CAMPAIGN_ID = 1234567890;
 	protected const ROUTE_CAMPAIGNS  = '/wc/gla/ads/campaigns';

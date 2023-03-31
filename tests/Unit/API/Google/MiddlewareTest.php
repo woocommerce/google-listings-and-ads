@@ -25,20 +25,37 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  * @group Middleware
- *
- * @property MockObject|Ads                  $ads
- * @property MockObject|DateTimeUtility      $date_utility
- * @property MockObject|GoogleHelper         $google_helper
- * @property MockObject|Merchant             $merchant
- * @property MockObject|WP                   $wp
- * @property MockObject|OptionsInterface     $options
- * @property MockObject|TransientsInterface  $transients
- * @property Middleware                      $middleware
- * @property Container                       $container
  */
 class MiddlewareTest extends UnitTest {
 
 	use GuzzleClientTrait;
+
+	/** @var MockObject|Ads $ads */
+	protected $ads;
+
+	/** @var MockObject|DateTimeUtility $date_utility */
+	protected $date_utility;
+
+	/** @var MockObject|GoogleHelper $google_helper */
+	protected $google_helper;
+
+	/** @var MockObject|Merchant $merchant */
+	protected $merchant;
+
+	/** @var MockObject|WP $wp */
+	protected $wp;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var MockObject|TransientsInterface $transients */
+	protected $transients;
+
+	/** @var Middleware $middleware */
+	protected $middleware;
+
+	/** @var Container $container */
+	protected $container;
 
 	protected const TEST_ADS_ID      = 12345678;
 	protected const TEST_MERCHANT_ID = 23456781;

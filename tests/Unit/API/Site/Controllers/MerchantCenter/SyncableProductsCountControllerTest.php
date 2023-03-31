@@ -14,14 +14,16 @@ defined( 'ABSPATH' ) || exit;
  * Class SyncableProductsCountControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
- *
- * @property JobRepository|MockObject      $job_repository
- * @property OptionsInterface|MockObject   $options
  */
 class SyncableProductsCountControllerTest extends RESTControllerUnitTest {
 
+	/** @var MockObject|JobRepository|MockObject $job_repository */
+	protected $job_repository;
+
+	/** @var OptionsInterface|MockObject $options */
+	protected $options;
+
 	protected const ROUTE_REQUEST = '/wc/gla/mc/syncable-products-count';
-	private $job_repository;
 
 	/**
 	 * Runs before each test is executed.

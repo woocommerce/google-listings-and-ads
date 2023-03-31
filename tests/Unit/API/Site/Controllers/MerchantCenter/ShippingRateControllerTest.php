@@ -4,7 +4,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingRateController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -12,11 +11,14 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class ShippingRateControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
- *
- * @property RESTServer                   $rest_server
- * @property ShippingRateQuery|MockObject $shipping_rate_query
  */
 class ShippingRateControllerTest extends RESTControllerUnitTest {
+
+	/** @var MockObject|ShippingRateQuery $shipping_rate_query */
+	protected $shipping_rate_query;
+
+	/** @var ShippingRateController $controller */
+	protected $controller;
 
 	protected const ROUTE_RATES = '/wc/gla/mc/shipping/rates';
 

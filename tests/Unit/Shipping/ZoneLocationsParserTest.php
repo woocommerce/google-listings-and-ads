@@ -19,6 +19,10 @@ use WC_Shipping_Zone;
  * @property ZoneLocationsParser     $locations_parser
  */
 class ZoneLocationsParserTest extends UnitTest {
+
+	protected $google_helper;
+	protected $locations_parser;
+
 	public function test_returns_state_locations_if_regional_shipping_supported() {
 		$zone_locations = [
 			(object) [

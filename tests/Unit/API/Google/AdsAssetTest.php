@@ -23,14 +23,19 @@ defined( 'ABSPATH' ) || exit;
  * Class AdsAssetTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
- *
- * @property MockObject|OptionsInterface $options
- * @property AdsAsset                    $asset
- * @property MockObject|WP               $wp
  */
 class AdsAssetTest extends UnitTest {
 
 	use GoogleAdsClientTrait;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var MockObject|WP $wp */
+	protected $wp;
+
+	/** @var AdsAsset $asset */
+	protected $asset;
 
 	protected const MAX_PAYLOAD_BYTES = 30 * 1024 * 1024;
 	protected const TEMPORARY_ID      = -5;

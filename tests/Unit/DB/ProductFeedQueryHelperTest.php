@@ -10,6 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use PHPUnit\Framework\MockObject\MockObject;
+
 use WP_REST_Request;
 use wpdb;
 
@@ -19,6 +21,27 @@ use wpdb;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\DB
  */
 class ProductFeedQueryHelperTest extends UnitTest {
+
+	/** @var MockObject|wpdb $wpdb */
+	protected $wpdb;
+
+	/** @var MockObject|ProductRepository $product_repository */
+	protected $product_repository;
+
+	/** @var MockObject|MerchantCenterService $mc_service */
+	protected $mc_service;
+
+	/** @var MockObject|MerchantStatuses $merchant_statuses */
+	protected $merchant_statuses;
+
+	/** @var MockObject|ProductHelper $product_helper */
+	protected $product_helper;
+
+	/** @var MockObject|WP_REST_Request $request */
+	protected $request;
+
+	/** @var ProductFeedQueryHelper $product_feed_query_helper */
+	protected $product_feed_query_helper;
 
 	/**
 	 * Runs before each test is executed.

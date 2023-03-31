@@ -12,11 +12,14 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class GoogleHelperTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping
- *
- * @property MockObject|WC $wc
- * @property GoogleHelper  $google_helper
  */
 class GoogleHelperTest extends UnitTest {
+
+	/** @var GoogleHelper $google_helper */
+	protected $google_helper;
+
+	/** @var MockObject|WC $wc */
+	protected $wc;
 
 	public function test_get_mc_supported_countries_currencies() {
 		$supported = $this->google_helper->get_mc_supported_countries_currencies();

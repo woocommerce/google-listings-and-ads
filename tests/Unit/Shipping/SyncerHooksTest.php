@@ -18,14 +18,23 @@ use WC_Shipping_Zones;
  * Class SyncerHooksTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping
- *
- * @property MockObject|MerchantCenterService  $merchant_center
- * @property MockObject|GoogleSettings         $google_settings
- * @property MockObject|UpdateShippingSettings $update_shipping_job
- * @property MockObject|JobRepository          $job_repository
- * @property SyncerHooks                       $syncer_hooks
  */
 class SyncerHooksTest extends UnitTest {
+
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
+	/** @var MockObject|GoogleSettings $google_settings */
+	protected $google_settings;
+
+	/** @var MockObject|UpdateShippingSettings $update_shipping_job */
+	protected $update_shipping_job;
+
+	/** @var MockObject|JobRepository $job_repository */
+	protected $job_repository;
+
+	/** @var SyncerHooks $syncer_hooks */
+	protected $syncer_hooks;
 
 	/**
 	 * @var int The ID of an example shipping zone stored in DB.

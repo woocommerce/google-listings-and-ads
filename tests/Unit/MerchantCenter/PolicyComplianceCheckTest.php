@@ -18,13 +18,20 @@ defined( 'ABSPATH' ) || exit;
  * Class PolicyComplianceCheckTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
- *
- * @property  MockObject|WC             $wc
- * @property  MockObject|GoogleHelper   $google_helper
- * @property  MockObject|TargetAudience $target_audience
- * @property  PolicyComplianceCheck     $policy_compliance_check
  */
 class PolicyComplianceCheckTest extends WPRequestUnitTest {
+
+	/** @var MockObject|GoogleHelper $google_helper */
+	protected $google_helper;
+
+	/** @var MockObject|TargetAudience $target_audience */
+	protected $target_audience;
+
+	/** @var PolicyComplianceCheck $policy_compliance_check */
+	protected $policy_compliance_check;
+
+	/** @var MockObject|WC $wc */
+	protected $wc;
 
 	/**
 	 * Runs before each test is executed.

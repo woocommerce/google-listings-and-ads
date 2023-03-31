@@ -15,13 +15,22 @@ defined( 'ABSPATH' ) || exit;
  * Class ContactInformationTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
- *
- * @property  MockObject|ContainerInterface $container_interface
- * @property  Settings $google_settings
  */
 class ValidateAddressTest extends ContainerAwareUnitTest {
 
 	use MerchantTrait;
+
+	/** @var MockObject|ContainerInterface $container_interface */
+	protected $container_interface;
+
+	/** @var Settings $google_settings */
+	protected $google_settings;
+
+	/** @var array $fields_to_validate */
+	protected $fields_to_validate;
+
+	/** @var array $locale_settings */
+	protected $locale_settings;
 
 	/**
 	 * Runs before each test is executed.

@@ -19,15 +19,22 @@ use WC_Product;
  * Class ProductFactoryTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
- *
- * @property MockObject|AttributeManager $attribute_manager
- * @property WC                          $wc
- * @property ProductFactory              $product_factory
- * @property AttributeMappingRulesQuery  $rules_query
  */
 class ProductFactoryTest extends ContainerAwareUnitTest {
 
 	use ProductTrait;
+
+	/** @var MockObject|AttributeManager $attribute_manager */
+	protected $attribute_manager;
+
+	/** @var ProductFactory $product_factory */
+	protected $product_factory;
+
+	/** @var AttributeMappingRulesQuery $rules_query */
+	protected $rules_query;
+
+	/** @var WC $wc */
+	protected $wc;
 
 	public function test_create() {
 		$product = WC_Helper_Product::create_simple_product();

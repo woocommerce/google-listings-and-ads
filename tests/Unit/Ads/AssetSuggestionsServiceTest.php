@@ -25,27 +25,58 @@ defined( 'ABSPATH' ) || exit;
  * Class AssetSuggestionsServiceTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Ads
- *
- * @property MockObject|WP  $wp
- * @property MockObject|WC  $wc
- * @property MockObject|ImageUtility  $image_utility
- * @property MockObject|wpdb  $wpdb
- * @property MockObject|AdsAssetGroupAsset  $asset_group_asset
- * @property AssetSuggestionsService  $asset_suggestions
- * @property \WP_Post  $post
- * @property \WP_Term  $term
- * @property array  $suggested_post
- * @property array  $suggested_term
- * @property DimensionUtility  $big_image
- * @property DimensionUtility  $small_image
- * @property DimensionUtility  $normal_image
- * @property DimensionUtility  $suggested_image_square
- * @property DimensionUtility  $suggested_image_landscape
- * @property DimensionUtility  $suggested_image_portrait
  */
 class AssetSuggestionsServiceTest extends UnitTest {
 
 	use DataTrait;
+
+	/** @var MockObject|ImageUtility $image_utility */
+	protected $image_utility;
+
+	/** @var MockObject|AdsAssetGroupAsset asset_group_asset */
+	protected $asset_group_asset;
+
+	/** @var AssetSuggestionsService $asset_suggestions */
+	protected $asset_suggestions;
+
+	/** @var DimensionUtility $big_image */
+	protected $big_image;
+
+	/** @var DimensionUtility $small_image */
+	protected $small_image;
+
+	/** @var DimensionUtility $normal_image */
+	protected $normal_image;
+
+	/** @var DimensionUtility $suggested_image_square */
+	protected $suggested_image_square;
+
+	/** @var DimensionUtility $suggested_image_landscape */
+	protected $suggested_image_landscape;
+
+	/** @var DimensionUtility $suggested_image_portrait */
+	protected $suggested_image_portrait;
+
+	/** @var \WP_Post $post */
+	protected $post;
+
+	/** @var \WP_Term $term */
+	protected $term;
+
+	/** @var array $suggested_post */
+	protected $suggested_post;
+
+	/** @var array $suggested_term */
+	protected $suggested_term;
+
+	/** @var MockObject|WC $wc */
+	protected $wc;
+
+	/** @var MockObject|WP $wp */
+	protected $wp;
+
+	/** @var MockObject|wpdb $wpdb */
+	protected $wpdb;
 
 	protected const DEFAULT_PER_PAGE                 = 30;
 	protected const DEFAULT_PER_PAGE_POSTS           = 15;

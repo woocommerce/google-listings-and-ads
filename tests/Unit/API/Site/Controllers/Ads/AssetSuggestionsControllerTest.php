@@ -4,7 +4,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetSuggestionsController;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
@@ -13,11 +12,14 @@ use Exception;
  * Class AssetSuggestionsControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
- *
- * @property RESTServer                         $rest_server
- * @property AssetSuggestionsService|MockObject $assets_suggestions
  */
 class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
+
+	/** @var MockObject|AssetSuggestionsService $assets_suggestions */
+	protected $assets_suggestions;
+
+	/** @var AssetsSuggestionsController $controller */
+	protected $controller;
 
 	protected const ROUTE_FINAL_URL_SUGGESTIONS = '/wc/gla/assets/final-url/suggestions';
 	protected const ROUTE_ASSETS_SUGGESTIONS    = '/wc/gla/assets/suggestions';

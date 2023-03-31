@@ -20,14 +20,23 @@ defined( 'ABSPATH' ) || exit;
  * Class SiteVerificationTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
- *
- * @property MockObject|OptionsInterface       $options
- * @property MockObject|SiteVerficationService $verification_service
- * @property SiteVerification                  $verficiation
- * @property Container                         $container
- * @property string                            $site_url
  */
 class SiteVerificationTest extends UnitTest {
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var MockObject|SiteVerficationService $verification_service */
+	protected $verification_service;
+
+	/** @var SiteVerification $verification */
+	protected $verification;
+
+	/** @var Container $container */
+	protected $container;
+
+	/** @var string $site_url */
+	protected $site_url;
 
 	protected const TEST_META_TAG = '<meta name="google-site-verification" content="abc" />';
 

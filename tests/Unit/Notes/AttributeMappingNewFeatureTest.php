@@ -16,11 +16,14 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notes
  *
  * @group AttributeMapping
- *
- * @property OptionsInterface        $options
- * @property AttributeMappingNewFeature  $note
  */
 class AttributeMappingNewFeatureTest extends UnitTest {
+
+	/** @var OptionsInterface $options */
+	protected $options;
+
+	/** @var AttributeMappingNewFeature $note */
+	protected $note;
 
 	/**
 	 * Runs before each test is executed.
