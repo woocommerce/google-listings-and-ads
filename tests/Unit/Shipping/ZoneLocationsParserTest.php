@@ -51,6 +51,36 @@ class ZoneLocationsParserTest extends UnitTest {
 		$this->assertEquals( 'NV', $parsed_locations[0]->get_state() );
 	}
 
+	public function test_returns_state_locations_if_subdivision_shipping_unsupported() {
+		$zone_locations = [
+			(object) [
+				'code' => 'US:AA',
+				'type' => 'state',
+			],
+		];
+
+		$zone = $this->createMock( WC_Shipping_Zone::class );
+		$zone->expects( $this->any() )
+			->method( 'get_zone_locations' )
+			->willReturn( $zone_locations );
+
+		$this->google_helper->expects( $this->any() )
+			->method( 'is_country_supported' )
+			->with( 'US' )
+			->willReturn( true );
+
+		$this->google_helper->expects( $this->any() )
+			->method( 'does_country_support_regional_shipping' )
+			->with( 'US' )
+			->willReturn( true );
+
+		$this->mock_find_subdivision_id_by_code( null );
+
+		$parsed_locations = $this->locations_parser->parse( $zone );
+
+		$this->assertCount( 0, $parsed_locations );
+	}
+
 	public function test_returns_country_locations_if_regional_shipping_unsupported() {
 		$zone_locations = [
 			(object) [
