@@ -42,6 +42,8 @@ class ZoneLocationsParserTest extends UnitTest {
 			->with( 'US' )
 			->willReturn( true );
 
+		$this->mock_find_subdivision_id_by_code();
+
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
 		$this->assertCount( 1, $parsed_locations );
@@ -70,6 +72,7 @@ class ZoneLocationsParserTest extends UnitTest {
 			->method( 'does_country_support_regional_shipping' )
 			->with( 'XX' )
 			->willReturn( false );
+		$this->mock_find_subdivision_id_by_code();
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
@@ -125,6 +128,7 @@ class ZoneLocationsParserTest extends UnitTest {
 					[ 'DK', false ],
 				]
 			);
+		$this->mock_find_subdivision_id_by_code();
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
@@ -210,6 +214,7 @@ class ZoneLocationsParserTest extends UnitTest {
 					[ 'DE', false ],
 				]
 			);
+		$this->mock_find_subdivision_id_by_code();
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
@@ -262,14 +267,26 @@ class ZoneLocationsParserTest extends UnitTest {
 					return rand();
 				}
 			);
+
+		$this->locations_parser = new ZoneLocationsParser( $this->google_helper );
+	}
+
+	/**
+	 * Mocks the returning value of google_helper->find_subdivision_id_by_code method.
+	 *
+	 * @param int|null $return_value The location id to be returned instead of a random int. -1 by default will return the random integer.
+	 * @return void
+	 */
+	private function mock_find_subdivision_id_by_code( $return_value = -1 ) {
 		$this->google_helper->expects( $this->any() )
 			->method( 'find_subdivision_id_by_code' )
 			->willReturnCallback(
-				function () {
+				function () use ( $return_value ) {
+					if ( -1 !== $return_value ) {
+						return $return_value;
+					}
 					return rand();
 				}
 			);
-
-		$this->locations_parser = new ZoneLocationsParser( $this->google_helper );
 	}
 }
