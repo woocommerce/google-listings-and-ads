@@ -74,8 +74,11 @@ class ZoneLocationsParser implements Service {
 
 					// Only add the state if the regional shipping is supported for the country.
 					if ( $this->google_helper->does_country_support_regional_shipping( $country ) ) {
-						$google_id                    = $this->google_helper->find_subdivision_id_by_code( $state, $country );
-						$locations[ $location->code ] = new ShippingLocation( $google_id, $country, $state, $region );
+						$google_id = $this->google_helper->find_subdivision_id_by_code( $state, $country );
+
+						if ( ! is_null( $google_id ) ) {
+							$locations[ $location->code ] = new ShippingLocation( $google_id, $country, $state, $region );
+						}
 					} else {
 						$google_id             = $this->google_helper->find_country_id_by_code( $country );
 						$locations[ $country ] = new ShippingLocation( $google_id, $country, null, $region );
