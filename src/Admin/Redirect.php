@@ -28,7 +28,7 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 
 	protected const OPTION = OptionsInterface::REDIRECT_TO_ONBOARDING;
 
-	protected const PATHS = [
+	public const PATHS = [
 		'dashboard'   => Dashboard::PATH,
 		'get_started' => GetStarted::PATH,
 	];
@@ -87,26 +87,27 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 	 *
 	 * @return void
 	 */
-	protected function maybe_redirect(): void {
+	public function maybe_redirect() {
 		if ( $this->wp->wp_doing_ajax() ) {
 			return;
 		}
 
 		// Maybe redirect to onboarding after activation
 		if ( 'yes' === $this->options->get( self::OPTION ) ) {
-			$this->maybe_redirect_after_activation();
-			return;
+			return $this->maybe_redirect_after_activation();
 		}
 
 		// If setup ISNT complete then redirect from dashboard to onboarding
 		if ( ! $this->merchant_center->is_setup_complete() && $this->is_current_wc_admin_page( self::PATHS['dashboard'] ) ) {
-			$this->redirect_to( self::PATHS['get_started'] );
+			return $this->redirect_to( self::PATHS['get_started'] );
 		}
 
 		// If setup IS complete then redirect from onboarding to dashboard
 		if ( $this->merchant_center->is_setup_complete() && $this->is_current_wc_admin_page( self::PATHS['get_started'] ) ) {
-			$this->redirect_to( self::PATHS['dashboard'] );
+			return $this->redirect_to( self::PATHS['dashboard'] );
 		}
+
+		return false;
 	}
 
 	/**
@@ -140,7 +141,7 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 	 *
 	 * @return void
 	 */
-	protected function redirect_to( $path ): void {
+	public function redirect_to( $path ): void {
 		// If we are already on this path, do nothing.
 		if ( $this->is_current_wc_admin_page( $path ) ) {
 			return;
@@ -162,7 +163,7 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 	 *
 	 * @return bool
 	 */
-	protected function is_current_wc_admin_page( $path ): bool {
+	public function is_current_wc_admin_page( $path ): bool {
 		$params = [
 			'page' => PageController::PAGE_ROOT,
 			'path' => $path,
