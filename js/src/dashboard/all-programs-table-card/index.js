@@ -17,7 +17,7 @@ import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import useAdsCurrency from '.~/hooks/useAdsCurrency';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AppSpinner from '.~/components/app-spinner';
-import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
+import { FREE_LISTINGS_PROGRAM_ID, CAMPAIGN_TYPE_PMAX } from '.~/constants';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
@@ -107,6 +107,7 @@ const AllProgramsTableCard = ( props ) => {
 				/>
 			),
 			active: true,
+			disabledEdit: false,
 		},
 		...adsCampaignsData.map( ( el ) => {
 			return {
@@ -120,6 +121,7 @@ const AllProgramsTableCard = ( props ) => {
 					/>
 				),
 				active: el.status === 'enabled',
+				disabledEdit: el.type !== CAMPAIGN_TYPE_PMAX,
 			};
 		} ),
 	];
@@ -161,6 +163,7 @@ const AllProgramsTableCard = ( props ) => {
 								<EditProgramButton
 									className={ editButtonClassName }
 									programId={ el.id }
+									disabled={ el.disabledEdit }
 								/>
 								{ el.id !== FREE_LISTINGS_PROGRAM_ID && (
 									<RemoveProgramButton programId={ el.id } />

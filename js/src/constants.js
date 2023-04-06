@@ -70,6 +70,9 @@ export const CATEGORY_CONDITION_SELECT_TYPES = {
 
 export const CATEGORIES_TO_SHOW_IN_TOOLTIP = 5;
 
+// Campaign related
+export const CAMPAIGN_TYPE_PMAX = 'performance_max';
+
 // Assets of Performance Max Campaign related
 export const ASSET_KEY = {
 	BUSINESS_NAME: 'business_name',
