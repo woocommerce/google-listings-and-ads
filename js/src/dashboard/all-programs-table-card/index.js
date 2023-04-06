@@ -86,9 +86,12 @@ const AllProgramsTableCard = ( props ) => {
 		return <AppSpinner />;
 	}
 
+	const pmaxCampaigns = adsCampaignsData.filter(
+		( { type } ) => type === CAMPAIGN_TYPE_PMAX
+	);
 	let campaignAssetsTour = null;
 
-	if ( adsCampaignsData.length ) {
+	if ( pmaxCampaigns.length ) {
 		const selector = `.${ PROGRAMS_TABLE_CARD_CLASS_NAME } .${ CAMPAIGN_EDIT_BUTTON_CLASS_NAME }`;
 		campaignAssetsTour = (
 			<CampaignAssetsTour referenceElementCssSelector={ selector } />
@@ -139,7 +142,8 @@ const AllProgramsTableCard = ( props ) => {
 			rows={ data.map( ( el ) => {
 				const isFreeListings = el.id === FREE_LISTINGS_PROGRAM_ID;
 				const editButtonClassName = classnames( {
-					[ CAMPAIGN_EDIT_BUTTON_CLASS_NAME ]: ! isFreeListings,
+					[ CAMPAIGN_EDIT_BUTTON_CLASS_NAME ]:
+						! isFreeListings && ! el.disabledEdit,
 				} );
 
 				// Since the <Table> component uses array index as key to render rows,
