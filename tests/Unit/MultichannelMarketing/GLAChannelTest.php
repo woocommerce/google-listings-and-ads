@@ -152,7 +152,7 @@ class GLAChannelTest extends UnitTest {
 	}
 
 	public function test_get_campaigns_returns_marketing_campaigns() {
-		$this->wc->expects( $this->once() )->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+		$this->ads->expects( $this->once() )->method( 'get_ads_currency' )->willReturn( 'USD' );
 
 		$this->ads->expects( $this->once() )->method( 'ads_id_exists' )->willReturn( true );
 		$this->ads_campaign
@@ -193,15 +193,13 @@ class GLAChannelTest extends UnitTest {
 		$this->ads                = $this->createMock( Ads::class );
 		$this->merchant_statuses  = $this->createMock( MerchantStatuses::class );
 		$this->product_sync_stats = $this->createMock( ProductSyncStats::class );
-		$this->wc                 = $this->createMock( WC::class );
 
 		$this->gla_channel = new GLAChannel(
 			$this->merchant_center,
 			$this->ads_campaign,
 			$this->ads,
 			$this->merchant_statuses,
-			$this->product_sync_stats,
-			$this->wc
+			$this->product_sync_stats
 		);
 	}
 
