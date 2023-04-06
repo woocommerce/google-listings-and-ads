@@ -37,7 +37,7 @@ class RedirectsTest extends TestCase {
 	 * @return void
 	 */
 	public function test_maybe_redirect_to_onboarding(): void {
-		$redirect_instance = $this->get_redirect_instance( [ 'maybe_redirect' ] );
+		$redirect_instance = $this->get_redirect_instance( [ 'is_current_wc_admin_page', 'redirect_to' ] );
 
 		$this->merchant_center->method( 'is_setup_complete' )
 							  ->willReturn( false );
@@ -63,7 +63,7 @@ class RedirectsTest extends TestCase {
 	 * @return void
 	 */
 	public function test_maybe_redirect_to_dashboard(): void {
-		$redirect_instance = $this->get_redirect_instance( [ 'maybe_redirect' ] );
+		$redirect_instance = $this->get_redirect_instance( [ 'is_current_wc_admin_page', 'redirect_to' ] );
 
 		$this->merchant_center->method( 'is_setup_complete' )
 							  ->willReturn( true );
@@ -85,7 +85,7 @@ class RedirectsTest extends TestCase {
 	 * Test is_current_wc_admin_page:
 	 */
 	public function test_is_current_wc_admin_page(): void {
-		$redirect_instance = $this->get_redirect_instance( [ 'is_current_wc_admin_page' ] );
+		$redirect_instance = $this->get_redirect_instance();
 
 		$this->assertFalse( $redirect_instance->is_current_wc_admin_page( Dashboard::PATH ) );
 
@@ -98,14 +98,14 @@ class RedirectsTest extends TestCase {
 	/**
 	 * Get mock instance of Redirect class
 	 *
-	 * @param array $methods_under_test Array listing the Redirect methods that will not be replaced in this mock
+	 * @param array $only_methods Array listing the Redirect methods that will be replaced with test doubles
 	 *
 	 * @return object Mock instance of Redirect class
 	 */
-	private function get_redirect_instance( $methods_under_test = [] ): object {
+	private function get_redirect_instance( $only_methods = [] ): object {
 		$instance = $this->getMockBuilder( Redirect::class )
 						 ->setConstructorArgs( [ $this->wp ] )
-						 ->setMethodsExcept( [ 'set_options_object', 'set_merchant_center_object', ...$methods_under_test ] )
+						 ->onlyMethods( $only_methods )
 						 ->getMock();
 
 		$instance->set_options_object( $this->options );
