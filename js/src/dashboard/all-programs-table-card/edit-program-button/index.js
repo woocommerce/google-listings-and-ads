@@ -12,12 +12,16 @@ import EditProgramPromptModal from './edit-program-prompt-modal';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 
 const EditProgramButton = ( props ) => {
-	const { className, programId } = props;
+	const { className, programId, ...buttonProps } = props;
 
 	return (
 		<AppButtonModalTrigger
 			button={
-				<AppButton isLink className={ classnames( className ) }>
+				<AppButton
+					{ ...buttonProps }
+					isLink
+					className={ classnames( className ) }
+				>
 					{ __( 'Edit', 'google-listings-and-ads' ) }
 				</AppButton>
 			}
