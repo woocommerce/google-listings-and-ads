@@ -4,6 +4,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { Stepper } from '@woocommerce/components';
 import { getQuery, getHistory, getNewPath } from '@woocommerce/navigation';
+import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -22,7 +23,7 @@ import AppSpinner from '.~/components/app-spinner';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '.~/components/paid-ads/asset-group';
-import { CAMPAIGN_STEP as STEP } from '.~/constants';
+import { CAMPAIGN_STEP as STEP, CAMPAIGN_TYPE_PMAX } from '.~/constants';
 
 const dashboardURL = getDashboardUrl();
 const helpButton = <HelpIconButton eventContext="edit-ads" />;
@@ -56,6 +57,12 @@ const EditPaidAdsCampaign = () => {
 	} = useAppSelectDispatch( 'getCampaignAssetGroups', id );
 	const campaign = campaigns?.find( ( el ) => el.id === id );
 	const assetEntityGroup = assetEntityGroups?.at( 0 );
+
+	useEffect( () => {
+		if ( campaign && campaign.type !== CAMPAIGN_TYPE_PMAX ) {
+			getHistory().replace( dashboardURL );
+		}
+	}, [ campaign ] );
 
 	const setStep = ( step ) => {
 		const url = getNewPath( { ...getQuery(), step } );
