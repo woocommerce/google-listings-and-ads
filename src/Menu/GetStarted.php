@@ -19,6 +19,8 @@ class GetStarted implements Service, Registerable, MerchantCenterAwareInterface 
 	use MerchantCenterAwareTrait;
 	use WooAdminNavigationTrait;
 
+	public const PATH = '/google/start';
+
 	/**
 	 * Register a service.
 	 */
@@ -38,7 +40,7 @@ class GetStarted implements Service, Registerable, MerchantCenterAwareInterface 
 							'id'     => 'google-listings-and-ads',
 							'title'  => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
 							'parent' => 'woocommerce-marketing',
-							'path'   => '/google/start',
+							'path'   => self::PATH,
 						]
 					);
 				}
@@ -55,7 +57,7 @@ class GetStarted implements Service, Registerable, MerchantCenterAwareInterface 
 				'id'       => 'google-start',
 				'title'    => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
 				'parent'   => 'woocommerce',
-				'path'     => '/google/start',
+				'path'     => self::PATH,
 				'nav_args' => [
 					'title'        => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
 					'is_category'  => false,

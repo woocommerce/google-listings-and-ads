@@ -17,7 +17,7 @@ import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import useAdsCurrency from '.~/hooks/useAdsCurrency';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AppSpinner from '.~/components/app-spinner';
-import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
+import { FREE_LISTINGS_PROGRAM_ID, CAMPAIGN_TYPE_PMAX } from '.~/constants';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
@@ -86,9 +86,12 @@ const AllProgramsTableCard = ( props ) => {
 		return <AppSpinner />;
 	}
 
+	const pmaxCampaigns = adsCampaignsData.filter(
+		( { type } ) => type === CAMPAIGN_TYPE_PMAX
+	);
 	let campaignAssetsTour = null;
 
-	if ( adsCampaignsData.length ) {
+	if ( pmaxCampaigns.length ) {
 		const selector = `.${ PROGRAMS_TABLE_CARD_CLASS_NAME } .${ CAMPAIGN_EDIT_BUTTON_CLASS_NAME }`;
 		campaignAssetsTour = (
 			<CampaignAssetsTour referenceElementCssSelector={ selector } />
@@ -107,6 +110,7 @@ const AllProgramsTableCard = ( props ) => {
 				/>
 			),
 			active: true,
+			disabledEdit: false,
 		},
 		...adsCampaignsData.map( ( el ) => {
 			return {
@@ -120,6 +124,7 @@ const AllProgramsTableCard = ( props ) => {
 					/>
 				),
 				active: el.status === 'enabled',
+				disabledEdit: el.type !== CAMPAIGN_TYPE_PMAX,
 			};
 		} ),
 	];
@@ -137,7 +142,8 @@ const AllProgramsTableCard = ( props ) => {
 			rows={ data.map( ( el ) => {
 				const isFreeListings = el.id === FREE_LISTINGS_PROGRAM_ID;
 				const editButtonClassName = classnames( {
-					[ CAMPAIGN_EDIT_BUTTON_CLASS_NAME ]: ! isFreeListings,
+					[ CAMPAIGN_EDIT_BUTTON_CLASS_NAME ]:
+						! isFreeListings && ! el.disabledEdit,
 				} );
 
 				// Since the <Table> component uses array index as key to render rows,
@@ -161,6 +167,7 @@ const AllProgramsTableCard = ( props ) => {
 								<EditProgramButton
 									className={ editButtonClassName }
 									programId={ el.id }
+									disabled={ el.disabledEdit }
 								/>
 								{ el.id !== FREE_LISTINGS_PROGRAM_ID && (
 									<RemoveProgramButton programId={ el.id } />
