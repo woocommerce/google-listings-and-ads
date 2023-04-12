@@ -23,7 +23,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|BudgetRecommendationQuery $budget_recommendation_query */
 	protected $budget_recommendation_query;
 
-	/** @var MockObject|ISO3166DataProvider $iso_provider; */
+	/** @var MockObject|ISO3166DataProvider $iso_provider */
 	protected $iso_provider;
 
 	/** @var BudgetRecommendationController $controller */

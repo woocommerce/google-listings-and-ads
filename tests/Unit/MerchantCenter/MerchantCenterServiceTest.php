@@ -65,7 +65,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	/** @var MockObject|TargetAudience $target_audience */
 	protected $target_audience;
 
-	/** @var MockObject|TransientsInterface  $transients */
+	/** @var MockObject|TransientsInterface $transients */
 	protected $transients;
 
 	/** @var MerchantCenterService $mc_service */

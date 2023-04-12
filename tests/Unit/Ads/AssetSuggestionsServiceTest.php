@@ -33,7 +33,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 	/** @var MockObject|ImageUtility $image_utility */
 	protected $image_utility;
 
-	/** @var MockObject|AdsAssetGroupAsset asset_group_asset */
+	/** @var MockObject|AdsAssetGroupAsset $asset_group_asset */
 	protected $asset_group_asset;
 
 	/** @var AssetSuggestionsService $asset_suggestions */
