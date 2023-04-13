@@ -22,20 +22,35 @@ use WC_Coupon;
  * Class CouponSyncerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon
- *
- * @property MockObject|GooglePromotionService $google_service
- * @property MockObject|MerchantCenterService  $merchant_center
- * @property MockObject|TargetAudience         $target_audience
- * @property MockObject|ValidatorInterface     $validator
- * @property CouponMetaHandler                 $coupon_meta
- * @property CouponHelper                      $coupon_helper
- * @property WC                                $wc
- * @property CouponSyncer                      $coupon_syncer
  */
 class CouponSyncerTest extends ContainerAwareUnitTest {
 
 	use SettingsTrait;
 	use CouponTrait;
+
+	/** @var MockObject|GooglePromotionService $google_service */
+	protected $google_service;
+
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
+	/** @var MockObject|TargetAudience $target_audience */
+	protected $target_audience;
+
+	/** @var MockObject|ValidatorInterface $validator */
+	protected $validator;
+
+	/** @var CouponMetaHandler $coupon_meta */
+	protected $coupon_meta;
+
+	/** @var CouponHelper $coupon_helper */
+	protected $coupon_helper;
+
+	/** @var CouponSyncer $coupon_syncer */
+	protected $coupon_syncer;
+
+	/** @var WC $wc */
+	protected $wc;
 
 	public function test_update_succeed() {
 		$coupon = $this->create_ready_to_sync_coupon();

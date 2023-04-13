@@ -14,12 +14,13 @@ defined( 'ABSPATH' ) || exit;
  * Class AdsCampaignCriterionTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
- *
- * @property AdsCampaignCriterion $campaign_criterion
  */
 class AdsCampaignCriterionTest extends UnitTest {
 
 	use GoogleAdsClientTrait;
+
+	/** @var AdsCampaignCriterion $campaign_criterion */
+	protected $campaign_criterion;
 
 	protected const TEST_CAMPAIGN_ID = 1234567890;
 

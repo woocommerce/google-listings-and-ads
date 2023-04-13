@@ -29,14 +29,23 @@ defined( 'ABSPATH' ) || exit;
  * Class MerchantTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
- *
- * @property  MockObject|ShoppingContent  $shopping_client
- * @property  MockObject|GoogleAdsClient  $ads_client
- * @property  MockObject|OptionsInterface $options
- * @property  MerchantMetrics             $metrics
- * @property  string                      $tomorrow
  */
 class MerchantMetricsTest extends UnitTest {
+
+	/** @var MockObject|ShoppingContent $shopping_client */
+	protected $shopping_client;
+
+	/** @var MockObject|GoogleAdsClient $ads_client */
+	protected $ads_client;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var MerchantMetrics $metrics */
+	protected $metrics;
+
+	/** @var string $tomorrow */
+	protected $tomorrow;
 
 	/**
 	 * Runs before each test is executed.

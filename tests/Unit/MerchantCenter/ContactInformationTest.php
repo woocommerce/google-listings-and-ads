@@ -16,14 +16,19 @@ defined( 'ABSPATH' ) || exit;
  * Class ContactInformationTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
- *
- * @property  MockObject|Merchant $merchant
- * @property  MockObject|Settings $google_settings
- * @property  ContactInformation  $contact_information
  */
 class ContactInformationTest extends ContainerAwareUnitTest {
 
 	use MerchantTrait;
+
+	/** @var MockObject|Merchant $merchant */
+	protected $merchant;
+
+	/** @var MockObject|Settings $google_settings */
+	protected $google_settings;
+
+	/** @var ContactInformation $contact_information */
+	protected $contact_information;
 
 	/**
 	 * Runs before each test is executed.

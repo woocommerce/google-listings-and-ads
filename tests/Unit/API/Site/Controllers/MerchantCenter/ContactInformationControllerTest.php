@@ -19,16 +19,29 @@ defined( 'ABSPATH' ) || exit;
  * Class PhoneNumberControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
- *
- * @property MockObject|ContactInformation $contact_information
- * @property MockObject|Settings           $google_settings
- * @property MockObject|Merchant           $merchant
- * @property MockObject|OptionsInterface   $options
- * @property MockObject|AddressUtility     $address_utility
- * @property RESTServer                    $rest_server
- * @property ContactInformationController  $contact_information_controller
  */
 class ContactInformationControllerTest extends ContainerAwareUnitTest {
+
+	/** @var MockObject|ContactInformation $contact_information */
+	protected $contact_information;
+
+	/** @var MockObject|Settings $google_settings */
+	protected $google_settings;
+
+	/** @var MockObject|Merchant $merchant */
+	protected $merchant;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var MockObject|AddressUtility $address_utility */
+	protected $address_utility;
+
+	/** @var RESTServer $rest_server */
+	protected $rest_server;
+
+	/** @var ContactInformationController $contact_information_controller */
+	protected $contact_information_controller;
 
 	use MerchantTrait;
 

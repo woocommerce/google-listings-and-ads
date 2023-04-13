@@ -33,20 +33,35 @@ use WC_Product_Variation;
  * Class BatchProductHelperTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
- *
- * @property WC                            $wc
- * @property ProductMetaHandler            $product_meta
- * @property ProductHelper                 $product_helper
- * @property MockObject|ValidatorInterface $validator
- * @property ProductFactory                $product_factory
- * @property MockObject|TargetAudience     $target_audience
- * @property BatchProductHelper            $batch_product_helper
- * @property AttributeMappingRulesQuery    $rules_query
  */
 class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 	use ProductMetaTrait;
 	use ProductTrait;
+
+	/** @var ProductMetaHandler $product_meta */
+	protected $product_meta;
+
+	/** @var ProductHelper $product_helper */
+	protected $product_helper;
+
+	/** @var MockObject|ValidatorInterface $validator */
+	protected $validator;
+
+	/** @var ProductFactory $product_factory */
+	protected $product_factory;
+
+	/** @var MockObject|TargetAudience $target_audience */
+	protected $target_audience;
+
+	/** @var BatchProductHelper $batch_product_helper */
+	protected $batch_product_helper;
+
+	/** @var AttributeMappingRulesQuery $rules_query */
+	protected $rules_query;
+
+	/** @var WC $wc */
+	protected $wc;
 
 	public function test_filter_synced_products_all_synced() {
 		$synced_product = WC_Helper_Product::create_simple_product();

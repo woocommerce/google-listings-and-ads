@@ -13,10 +13,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
  * Class LocationRatesProcessorTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping
- *
- * @property LocationRatesProcessor $rates_processor
  */
 class LocationRatesProcessorTest extends UnitTest {
+
+	/** @var LocationRatesProcessor $rates_processor */
+	protected $rates_processor;
 
 	public function test_process_returns_only_most_expensive_flat_rate() {
 		$location       = new ShippingLocation( 21137, 'US', 'CA' );

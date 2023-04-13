@@ -18,13 +18,20 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class PhoneVerificationTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
- *
- * @property MockObject|Merchant   $merchant
- * @property MockObject|WP         $wp
- * @property MockObject|ISOUtility $iso_utility
- * @property PhoneVerification     $phone_verification
  */
 class PhoneVerificationTest extends UnitTest {
+
+	/** @var MockObject|Merchant $merchant */
+	protected $merchant;
+
+	/** @var MockObject|ISOUtility $iso_utility */
+	protected $iso_utility;
+
+	/** @var PhoneVerification $phone_verification */
+	protected $phone_verification;
+
+	/** @var MockObject|WP $wp */
+	protected $wp;
 
 	public function test_request_phone_verification() {
 		$this->iso_utility->expects( $this->any() )

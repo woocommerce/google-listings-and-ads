@@ -14,12 +14,17 @@ defined( 'ABSPATH' ) || exit;
  * Class SupportedCountriesControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
- *
- * @property MockObject|GoogleHelper      $google_helper
- * @property MockObject|WC                $wc
- * @property SupportedCountriesController $supported_countries_controller
  */
 class SupportedCountriesControllerTest extends RESTControllerUnitTest {
+
+	/** @var MockObject|GoogleHelper $google_helper */
+	protected $google_helper;
+
+	/** @var MockObject|WC $wc */
+	protected $wc;
+
+	/** @var SupportedCountriesController $supported_countries_controller */
+	protected $supported_countries_controller;
 
 	protected const ROUTE = '/wc/gla/mc/countries';
 

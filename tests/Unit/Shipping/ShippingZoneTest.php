@@ -20,14 +20,24 @@ use WC_Shipping_Zone;
  * Class ShippingZoneTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping
- *
- * @property MockObject|WC                     $wc
- * @property MockObject|ZoneLocationsParser    $locations_parser
- * @property MockObject|ZoneMethodsParser      $methods_parser
- * @property MockObject|LocationRatesProcessor $rates_processor
- * @property ShippingZone                      $shipping_zone
  */
 class ShippingZoneTest extends UnitTest {
+
+	/** @var MockObject|WC $wc */
+	protected $wc;
+
+	/** @var MockObject|ZoneLocationsParser $locations_parser */
+	protected $locations_parser;
+
+	/** @var MockObject|ZoneMethodsParser $methods_parser */
+	protected $methods_parser;
+
+	/** @var MockObject|LocationRatesProcessor $rates_processor */
+	protected $rates_processor;
+
+	/** @var ShippingZone $shipping_zone */
+	protected $shipping_zone;
+
 	public function test_returns_shipping_countries() {
 		$this->locations_parser->expects( $this->once() )
 			->method( 'parse' )

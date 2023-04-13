@@ -16,14 +16,23 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class UpdateShippingSettingsTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
- *
- * @property MockObject|ActionScheduler           $action_scheduler
- * @property MockObject|ActionSchedulerJobMonitor $monitor
- * @property MockObject|MerchantCenterService     $merchant_center
- * @property MockObject|GoogleSettings            $google_settings
- * @property UpdateShippingSettings               $job
  */
 class UpdateShippingSettingsTest extends UnitTest {
+
+	/** @var MockObject|ActionScheduler $action_scheduler */
+	protected $action_scheduler;
+
+	/** @var MockObject|ActionSchedulerJobMonitor $monitor */
+	protected $monitor;
+
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
+	/** @var MockObject|GoogleSettings $google_settings */
+	protected $google_settings;
+
+	/** @var UpdateShippingSettings $job */
+	protected $job;
 
 	public function test_job_is_scheduled() {
 		$this->merchant_center->expects( $this->any() )

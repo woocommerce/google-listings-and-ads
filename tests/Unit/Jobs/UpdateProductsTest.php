@@ -19,18 +19,29 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class UpdateProductsTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
- *
- * @property MockObject|ActionScheduler           $action_scheduler
- * @property MockObject|ActionSchedulerJobMonitor $monitor
- * @property MockObject|ProductSyncer             $product_syncer
- * @property MockObject|ProductRepository         $product_repository
- * @property MockObject|MerchantCenterService     $merchant_center
- * @property UpdateProducts                       $job
  */
 class UpdateProductsTest extends UnitTest {
 
 	use ProductTrait;
 	use JobTrait;
+
+	/** @var MockObject|ActionScheduler $action_scheduler */
+	protected $action_scheduler;
+
+	/** @var MockObject|ActionSchedulerJobMonitor $monitor */
+	protected $monitor;
+
+	/** @var MockObject|ProductSyncer $product_syncer */
+	protected $product_syncer;
+
+	/** @var MockObject|ProductRepository $product_repository */
+	protected $product_repository;
+
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
+	/** @var UpdateProducts $job */
+	protected $job;
 
 	protected const JOB_NAME          = 'update_products';
 	protected const PROCESS_ITEM_HOOK = 'gla/jobs/' . self::JOB_NAME . '/process_item';

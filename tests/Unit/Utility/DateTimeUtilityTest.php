@@ -10,10 +10,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
  * Class DateTimeUtilityTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Utility
- *
- * @property DateTimeUtility $datetime_utility
  */
 class DateTimeUtilityTest extends UnitTest {
+
+	/** @var DateTimeUtility $datetime_utility */
+	protected $datetime_utility;
 
 	public function test_returns_tz_as_is_if_not_offset() {
 		$this->assertEquals( 'Europe/London', $this->datetime_utility->maybe_convert_tz_string( 'Europe/London' ) );

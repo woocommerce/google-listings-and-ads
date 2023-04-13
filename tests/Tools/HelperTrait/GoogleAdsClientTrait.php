@@ -61,20 +61,26 @@ use Google\ApiCore\PagedListResponse;
 /**
  * Trait GoogleAdsClient
  *
- * @property int                                      $ads_id
- * @property MockObject|ConversionActionServiceClient $conversion_action_service
- * @property MockObject|CustomerServiceClient         $customer_service
- * @property MockObject|GoogleAdsClient               $client
- * @property MockObject|GoogleAdsServiceClient        $service_client
- *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait
  */
 trait GoogleAdsClientTrait {
 
 	use MicroTrait;
 
+	/** @var MockObject|ConversionActionServiceClient $conversion_action_service */
+	protected $conversion_action_service;
+
+	/** @var MockObject|CustomerServiceClient $customer_service */
+	protected $customer_service;
+
+	/** @var MockObject|GoogleAdsClient $client */
 	protected $client;
+
+	/** @var MockObject|GoogleAdsServiceClient $service_client */
 	protected $service_client;
+
+	/** @var int $ads_id */
+	protected $ads_id;
 
 	/**
 	 * Generate a mocked GoogleAdsClient.

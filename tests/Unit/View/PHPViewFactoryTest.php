@@ -13,12 +13,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
  * Class PHPViewFactoryTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Utility
- *
- * @property PHPViewFactory $view_factory
  */
 class PHPViewFactoryTest extends UnitTest {
 
 	use DataTrait;
+
+	/** @var PHPViewFactory $view_factory */
+	protected $view_factory;
 
 	public function test_create_view() {
 		$view = $this->view_factory->create( $this->get_data_file_path( 'test-php-view.php' ) );

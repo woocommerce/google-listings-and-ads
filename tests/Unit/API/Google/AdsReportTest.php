@@ -20,15 +20,22 @@ defined( 'ABSPATH' ) || exit;
  * Class AdsReportTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
- *
- * @property MockObject|AdsCampaign      $ads_campaign
- * @property MockObject|OptionsInterface $options
- * @property AdsReport                   $report
- * @property Container                   $container
  */
 class AdsReportTest extends UnitTest {
 
 	use GoogleAdsClientTrait;
+
+	/** @var MockObject|AdsCampaign $ads_campaign */
+	protected $ads_campaign;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var AdsReport $report */
+	protected $report;
+
+	/** @var Container $container */
+	protected $container;
 
 	protected const TEST_ADS_ID = 1234567890;
 

@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -14,11 +13,14 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class AccountControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
- *
- * @property RESTServer                $rest_server
- * @property AccountService|MockObject $account
  */
 class AccountControllerTest extends RESTControllerUnitTest {
+
+	/** @var MockObject|AccountService $account */
+	protected $account;
+
+	/** @var AccountController $controller */
+	protected $controller;
 
 	protected const ROUTE_ACCOUNTS           = '/wc/gla/ads/accounts';
 	protected const ROUTE_CONNECTION         = '/wc/gla/ads/connection';

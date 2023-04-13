@@ -6,7 +6,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerificationException;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PhoneNumber;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -15,11 +14,14 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class PhoneNumberControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
- *
- * @property RESTServer                   $rest_server
- * @property PhoneVerification|MockObject $phone_verification
  */
 class PhoneVerificationControllerTest extends RESTControllerUnitTest {
+
+	/** @var MockObject|PhoneVerification $phone_verification */
+	protected $phone_verification;
+
+	/** @var PhoneVerificationController $controller */
+	protected $controller;
 
 	protected const ROUTE_REQUEST_VERIFICATION     = '/wc/gla/mc/phone-verification/request';
 	protected const ROUTE_VERIFY_PHONE             = '/wc/gla/mc/phone-verification/verify';
