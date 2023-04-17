@@ -31,7 +31,6 @@ defined( 'ABSPATH' ) || exit;
  * @property MockObject|Ads                   $ads
  * @property MockObject|MerchantStatuses      $merchant_statuses
  * @property MockObject|ProductSyncStats      $product_sync_stats
- * @property MockObject|WC                    $wc
  */
 class GLAChannelTest extends UnitTest {
 
