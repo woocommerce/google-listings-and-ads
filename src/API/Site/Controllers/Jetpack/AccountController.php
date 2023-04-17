@@ -119,7 +119,7 @@ class AccountController extends BaseOptionsController {
 			$auth_url = $this->manager->get_authorization_url( null, $redirect );
 
 			// Payments flow allows redirect back to the site without showing plans. Escaping the URL preventing XSS.
-			$auth_url = sanitize_url( add_query_arg( [ 'from' => 'google-listings-and-ads' ], $auth_url ) );
+			$auth_url = esc_url( add_query_arg( [ 'from' => 'google-listings-and-ads' ], $auth_url ), null, 'db' );
 			return [
 				'url' => $auth_url,
 			];
