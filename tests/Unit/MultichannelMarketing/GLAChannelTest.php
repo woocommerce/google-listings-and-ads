@@ -13,7 +13,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\GLAChannel;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -44,9 +43,6 @@ class GLAChannelTest extends UnitTest {
 
 	/** @var MockObject|ProductSyncStats $product_sync_stats */
 	protected $product_sync_stats;
-
-	/** @var MockObject|WC $wc */
-	protected $wc;
 
 	public function test_get_slug_is_not_empty() {
 		$this->assertNotEmpty( $this->gla_channel->get_slug() );
@@ -165,7 +161,7 @@ class GLAChannelTest extends UnitTest {
 	}
 
 	public function test_get_campaigns_returns_marketing_campaigns() {
-		$this->wc->expects( $this->once() )->method( 'get_woocommerce_currency' )->willReturn( 'USD' );
+		$this->ads->expects( $this->once() )->method( 'get_ads_currency' )->willReturn( 'USD' );
 
 		$this->ads->expects( $this->once() )->method( 'ads_id_exists' )->willReturn( true );
 		$this->ads_campaign
@@ -206,15 +202,13 @@ class GLAChannelTest extends UnitTest {
 		$this->ads                = $this->createMock( Ads::class );
 		$this->merchant_statuses  = $this->createMock( MerchantStatuses::class );
 		$this->product_sync_stats = $this->createMock( ProductSyncStats::class );
-		$this->wc                 = $this->createMock( WC::class );
 
 		$this->gla_channel = new GLAChannel(
 			$this->merchant_center,
 			$this->ads_campaign,
 			$this->ads,
 			$this->merchant_statuses,
-			$this->product_sync_stats,
-			$this->wc
+			$this->product_sync_stats
 		);
 	}
 

@@ -411,7 +411,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AttributeMappingHelper::class );
 
 		if ( defined( 'WC_MCM_EXISTS' ) ) {
-			$this->share_with_tags( GLAChannel::class, MerchantCenterService::class, AdsCampaign::class, Ads::class, MerchantStatuses::class, ProductSyncStats::class, WC::class );
+			$this->share_with_tags( GLAChannel::class, MerchantCenterService::class, AdsCampaign::class, Ads::class, MerchantStatuses::class, ProductSyncStats::class );
 			$this->share_with_tags( MarketingChannelRegistrar::class, GLAChannel::class, WC::class );
 		}
 	}

@@ -13,7 +13,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -52,11 +51,6 @@ class GLAChannel implements MarketingChannelInterface {
 	protected $product_sync_stats;
 
 	/**
-	 * @var WC
-	 */
-	protected $wc;
-
-	/**
 	 * @var MarketingCampaignType[]
 	 */
 	protected $campaign_types;
@@ -69,15 +63,13 @@ class GLAChannel implements MarketingChannelInterface {
 	 * @param Ads                   $ads
 	 * @param MerchantStatuses      $merchant_statuses
 	 * @param ProductSyncStats      $product_sync_stats
-	 * @param WC                    $wc
 	 */
-	public function __construct( MerchantCenterService $merchant_center, AdsCampaign $ads_campaign, Ads $ads, MerchantStatuses $merchant_statuses, ProductSyncStats $product_sync_stats, WC $wc ) {
+	public function __construct( MerchantCenterService $merchant_center, AdsCampaign $ads_campaign, Ads $ads, MerchantStatuses $merchant_statuses, ProductSyncStats $product_sync_stats ) {
 		$this->merchant_center    = $merchant_center;
 		$this->ads_campaign       = $ads_campaign;
 		$this->ads                = $ads;
 		$this->merchant_statuses  = $merchant_statuses;
 		$this->product_sync_stats = $product_sync_stats;
-		$this->wc                 = $wc;
 		$this->campaign_types     = $this->generate_campaign_types();
 	}
 
@@ -185,7 +177,7 @@ class GLAChannel implements MarketingChannelInterface {
 		}
 
 		try {
-			$currency = $this->wc->get_woocommerce_currency();
+			$currency = $this->ads->get_ads_currency();
 
 			return array_map(
 				function ( array $campaign_data ) use ( $currency ) {
