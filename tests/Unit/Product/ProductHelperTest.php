@@ -25,17 +25,24 @@ use WC_Product;
  * Class ProductHelperTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
- *
- * @property ProductMetaHandler        $product_meta
- * @property WC                        $wc
- * @property MockObject|TargetAudience $target_audience
- * @property ProductHelper             $product_helper
  */
 class ProductHelperTest extends ContainerAwareUnitTest {
 
 	use ProductMetaTrait;
 	use ProductTrait;
 	use SettingsTrait;
+
+	/** @var ProductMetaHandler $product_meta */
+	protected $product_meta;
+
+	/** @var MockObject|TargetAudience $target_audience */
+	protected $target_audience;
+
+	/** @var ProductHelper $product_helper */
+	protected $product_helper;
+
+	/** @var WC $wc */
+	protected $wc;
 
 	/**
 	 * @param WC_Product $product

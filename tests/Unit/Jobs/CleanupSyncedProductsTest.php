@@ -18,18 +18,31 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class CleanupSyncedProductsTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
- *
- * @property MockObject|ActionScheduler           $action_scheduler
- * @property MockObject|ActionSchedulerJobMonitor $monitor
- * @property MockObject|ProductSyncer             $product_syncer
- * @property MockObject|ProductRepository         $product_repository
- * @property MockObject|BatchProductHelper        $batch_product_helper
- * @property MockObject|MerchantCenterService     $merchant_center
- * @property CleanupSyncedProducts                $job
  */
 class CleanupSyncedProductsTest extends UnitTest {
 
 	use ProductTrait;
+
+	/** @var MockObject|ActionScheduler $action_scheduler */
+	protected $action_scheduler;
+
+	/** @var MockObject|ActionSchedulerJobMonitor $monitor */
+	protected $monitor;
+
+	/** @var MockObject|ProductSyncer $product_syncer */
+	protected $product_syncer;
+
+	/** @var MockObject|ProductRepository $product_repository */
+	protected $product_repository;
+
+	/** @var MockObject|BatchProductHelper $batch_product_helper */
+	protected $batch_product_helper;
+
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
+	/** @var CleanupSyncedProducts $job */
+	protected $job;
 
 	protected const JOB_NAME          = 'cleanup_synced_products';
 	protected const CREATE_BATCH_HOOK = 'gla/jobs/' . self::JOB_NAME . '/create_batch';

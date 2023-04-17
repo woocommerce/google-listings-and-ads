@@ -6,13 +6,24 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\DB\Table;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\BudgetRecommendationTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use PHPUnit\Framework\MockObject\MockObject;
 use wpdb;
+
 /**
  * Class MigratorTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\DB\Migration
  */
 class BudgetRecommendationTableTest extends UnitTest {
+
+	/** @var MockObject|BudgetRecommendationTable $mock_budget_recommendation */
+	protected $mock_budget_recommendation;
+
+	/** @var MockObject|WP $wp */
+	protected $wp;
+
+	/** @var MockObject|wpdb $wpdb */
+	protected $wpdb;
 
 	/**
 	 * Runs before each test is executed.

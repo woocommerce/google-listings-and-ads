@@ -19,14 +19,19 @@ use WC_Product;
  * Class ProductRepositoryTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
- *
- * @property ProductRepository  $product_repository
- * @property ProductMetaHandler $product_meta
- * @property ProductHelper      $product_helper
  */
 class ProductRepositoryTest extends ContainerAwareUnitTest {
 
 	use ProductTrait;
+
+	/** @var ProductRepository $product_repository */
+	protected $product_repository;
+
+	/** @var ProductMetaHandler $product_meta */
+	protected $product_meta;
+
+	/** @var ProductHelper $product_helper */
+	protected $product_helper;
 
 	public function test_find_returns_all_supported_products() {
 		// supported

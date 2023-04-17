@@ -34,14 +34,22 @@ defined( 'ABSPATH' ) || exit;
  * Class MerchantTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
- *
- * @property  MockObject|ShoppingContent  $service
- * @property  MockObject|OptionsInterface $options
- * @property  Merchant                    $merchant
  */
 class MerchantTest extends UnitTest {
 
 	use MerchantTrait;
+
+	/** @var MockObject|ShoppingContent $service */
+	protected $service;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var Merchant $merchant */
+	protected $merchant;
+
+	/** @var int $merchant_id */
+	protected $merchant_id;
 
 	/**
 	 * Runs before each test is executed.

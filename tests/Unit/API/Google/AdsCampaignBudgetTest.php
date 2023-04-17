@@ -15,13 +15,16 @@ defined( 'ABSPATH' ) || exit;
  * Class AdsCampaignBudgetTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
- *
- * @property MockObject|OptionsInterface $options
- * @property AdsCampaignBudget           $budget
  */
 class AdsCampaignBudgetTest extends UnitTest {
 
 	use GoogleAdsClientTrait;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var AdsCampaignBudget $budget */
+	protected $budget;
 
 	protected const TEST_CAMPAIGN_ID = 1234567890;
 	protected const TEST_BUDGET_ID   = 4455667788;

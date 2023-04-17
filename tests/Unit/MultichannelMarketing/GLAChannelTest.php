@@ -13,7 +13,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\GLAChannel;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -24,15 +23,26 @@ defined( 'ABSPATH' ) || exit;
  * Class GLAChannelTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MultichannelMarketing
- *
- * @property GLAChannel                       $gla_channel
- * @property MockObject|MerchantCenterService $merchant_center
- * @property MockObject|AdsCampaign           $ads_campaign
- * @property MockObject|Ads                   $ads
- * @property MockObject|MerchantStatuses      $merchant_statuses
- * @property MockObject|ProductSyncStats      $product_sync_stats
  */
 class GLAChannelTest extends UnitTest {
+
+	/** @var GLAChannel $gla_channel */
+	protected $gla_channel;
+
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
+	/** @var MockObject|AdsCampaign $ads_campaign */
+	protected $ads_campaign;
+
+	/** @var MockObject|Ads $ads */
+	protected $ads;
+
+	/** @var MockObject|MerchantStatuses $merchant_statuses */
+	protected $merchant_statuses;
+
+	/** @var MockObject|ProductSyncStats $product_sync_stats */
+	protected $product_sync_stats;
 
 	public function test_get_slug_is_not_empty() {
 		$this->assertNotEmpty( $this->gla_channel->get_slug() );

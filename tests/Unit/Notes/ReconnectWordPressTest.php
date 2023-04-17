@@ -16,13 +16,20 @@ defined( 'ABSPATH' ) || exit;
  * Class ReconnectWordPressTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notes
- *
- * @property MockObject|Connection $connection
- * @property OptionsInterface      $options
- * @property MerchantCenterService $merchant_center
- * @property ReconnectWordPress    $note
  */
 class ReconnectWordPressTest extends UnitTest {
+
+	/** @var MockObject|Connection $connection */
+	protected $connection;
+
+	/** @var OptionsInterface $options */
+	protected $options;
+
+	/** @var MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
+	/** @var ReconnectWordPress $note */
+	protected $note;
 
 	/**
 	 * Runs before each test is executed.

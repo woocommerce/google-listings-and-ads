@@ -18,13 +18,16 @@ defined( 'ABSPATH' ) || exit;
  * Class AdsConversionActionTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
- *
- * @property MockObject|OptionsInterface  $options
- * @property AdsConversionAction          $conversion_action
  */
 class AdsConversionActionTest extends UnitTest {
 
 	use GoogleAdsClientTrait;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var AdsConversionAction $conversion_action */
+	protected $conversion_action;
 
 	protected const TEST_CONVERSION_ACTION_ID = 1234567890;
 	protected const TEST_CONVERSION_NAME      = '[a12b] Google Listings and Ads purchase action';

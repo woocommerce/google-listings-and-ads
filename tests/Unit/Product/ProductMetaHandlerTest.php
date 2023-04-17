@@ -14,12 +14,13 @@ use WP_UnitTestCase;
  * Class ProductMetaHandlerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
- *
- * @property ProductMetaHandler $product_meta_handler
  */
 class ProductMetaHandlerTest extends WP_UnitTestCase {
 
 	use ProductTrait;
+
+	/** @var ProductMetaHandler $product_meta_handler */
+	protected $product_meta_handler;
 
 	public function test_magic_call_throws_exception_invalid_method_name() {
 		$this->expectException( BadMethodCallException::class );

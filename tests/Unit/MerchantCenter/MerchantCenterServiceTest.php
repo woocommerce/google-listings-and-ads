@@ -30,27 +30,58 @@ defined( 'ABSPATH' ) || exit;
  * Class MerchantCenterServiceTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
- *
- * @property MockObject|AddressUtility       $address_utility
- * @property MockObject|ContactInformation   $contact_information
- * @property MockObject|GoogleHelper         $google_helper
- * @property MockObject|Merchant             $merchant
- * @property MockObject|MerchantAccountState $merchant_account_state
- * @property MockObject|MerchantStatuses     $merchant_statuses
- * @property MockObject|Settings             $settings
- * @property MockObject|ShippingRateQuery    $shipping_rate_query
- * @property MockObject|ShippingTimeQuery    $shipping_time_query
- * @property MockObject|TargetAudience       $target_audience
- * @property MockObject|TransientsInterface  $transients
- * @property MockObject|WC                   $wc
- * @property MockObject|WP                   $wp
- * @property MerchantCenterService           $mc_service
- * @property Container                       $container
- * @property OptionsInterface                $options
  */
 class MerchantCenterServiceTest extends UnitTest {
 
 	use MerchantTrait;
+
+	/** @var MockObject|AddressUtility $address_utility */
+	protected $address_utility;
+
+	/** @var MockObject|ContactInformation $contact_information */
+	protected $contact_information;
+
+	/** @var MockObject|GoogleHelper $google_helper */
+	protected $google_helper;
+
+	/** @var MockObject|Merchant $merchant */
+	protected $merchant;
+
+	/** @var MockObject|MerchantAccountState $merchant_account_state */
+	protected $merchant_account_state;
+
+	/** @var MockObject|MerchantStatuses $merchant_statuses */
+	protected $merchant_statuses;
+
+	/** @var MockObject|Settings $settings */
+	protected $settings;
+
+	/** @var MockObject|ShippingRateQuery $shipping_rate_query */
+	protected $shipping_rate_query;
+
+	/** @var MockObject|ShippingTimeQuery $shipping_time_query */
+	protected $shipping_time_query;
+
+	/** @var MockObject|TargetAudience $target_audience */
+	protected $target_audience;
+
+	/** @var MockObject|TransientsInterface $transients */
+	protected $transients;
+
+	/** @var MerchantCenterService $mc_service */
+	protected $mc_service;
+
+	/** @var MockObject|WC $wc */
+	protected $wc;
+
+	/** @var MockObject|WP $wp */
+	protected $wp;
+
+	/** @var Container $container */
+	protected $container;
+
+	/** @var OptionsInterface $options */
+	protected $options;
 
 	protected const TEST_SETUP_COMPLETED = 1641038400;
 

@@ -15,6 +15,18 @@ use PHPUnit\Framework\TestCase;
 
 class RedirectsTest extends TestCase {
 
+	/** @var MockObject|WP $wp */
+	protected $wp;
+
+	/** @var MockObject|Redirect $redirects */
+	protected $redirects;
+
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
 	/**
 	 * Setup tests
 	 *

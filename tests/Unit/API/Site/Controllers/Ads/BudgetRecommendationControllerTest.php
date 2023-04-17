@@ -14,13 +14,20 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class BudgetRecommendationControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
- *
- * @property Ads|MockObject                       $ads
- * @property BudgetRecommendationQuery|MockObject $budget_recommendation_query
- * @property ISO3166DataProvider|MockObject       $iso_provider;
- * @property BudgetRecommendationController       $controller
  */
 class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
+
+	/** @var MockObject|Ads $ads */
+	protected $ads;
+
+	/** @var MockObject|BudgetRecommendationQuery $budget_recommendation_query */
+	protected $budget_recommendation_query;
+
+	/** @var MockObject|ISO3166DataProvider $iso_provider */
+	protected $iso_provider;
+
+	/** @var BudgetRecommendationController $controller */
+	protected $controller;
 
 	protected const ROUTE_BUDGET_RECOMMENDATION = '/wc/gla/ads/campaigns/budget-recommendation';
 

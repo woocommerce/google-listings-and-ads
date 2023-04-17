@@ -20,15 +20,31 @@ use WC_Coupon;
  * Class SyncerHooksTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
- *
- * @property MockObject|MerchantCenterService $merchant_center
- * @property MockObject|JobRepository $job_repository
- * @property MockObject|UpdateCoupon $update_coupon_job
- * @property WC $wc
- * @property SyncerHooks $syncer_hooks
  */
 class SyncerHooksTest extends ContainerAwareUnitTest {
+
 	use CouponTrait;
+
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
+	/** @var MockObject|JobRepository $job_repository */
+	protected $job_repository;
+
+	/** @var MockObject|DeleteCoupon $delete_coupon_job */
+	protected $delete_coupon_job;
+
+	/** @var MockObject|UpdateCoupon $update_coupon_job */
+	protected $update_coupon_job;
+
+	/** @var CouponHelper $coupon_helper */
+	protected $coupon_helper;
+
+	/** @var WC $wc */
+	protected $wc;
+
+	/** @var SyncerHooks $syncer_hooks */
+	protected $syncer_hooks;
 
 	public function test_create_new_simple_coupon_schedules_update_job() {
 		$this->update_coupon_job->expects( $this->once() )

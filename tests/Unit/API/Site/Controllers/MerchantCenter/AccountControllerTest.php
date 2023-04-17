@@ -21,6 +21,12 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class AccountControllerTest extends RESTControllerUnitTest {
 
+	/** @var MockObject|AccountService $account */
+	protected $account;
+
+	/** @var AccountController $controller */
+	protected $controller;
+
 	protected const ROUTE_ACCOUNTS        = '/wc/gla/mc/accounts';
 	protected const ROUTE_CLAIM_OVERWRITE = '/wc/gla/mc/accounts/claim-overwrite';
 	protected const ROUTE_SWITCH_URL      = '/wc/gla/mc/accounts/switch-url';

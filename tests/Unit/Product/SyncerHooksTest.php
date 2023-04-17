@@ -20,19 +20,34 @@ use WC_Helper_Product;
  * Class SyncerHooksTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
- *
- * @property MockObject|MerchantCenterService $merchant_center
- * @property BatchProductHelper               $batch_helper
- * @property ProductHelper                    $product_helper
- * @property MockObject|JobRepository         $job_repository
- * @property MockObject|UpdateProducts        $update_products_job
- * @property MockObject|DeleteProducts        $delete_products_job
- * @property WC                               $wc
- * @property SyncerHooks                      $syncer_hooks
  */
 class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	use ProductTrait;
+
+	/*** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
+	/** @var BatchProductHelper $batch_helper */
+	protected $batch_helper;
+
+	/** @var ProductHelper $product_helper */
+	protected $product_helper;
+
+	/** @var MockObject|JobRepository $job_repository */
+	protected $job_repository;
+
+	/** @var MockObject|UpdateProducts $update_products_job */
+	protected $update_products_job;
+
+	/** @var MockObject|DeleteProducts $delete_products_job */
+	protected $delete_products_job;
+
+	/** @var WC $wc */
+	protected $wc;
+
+	/** @var SyncerHooks $syncer_hooks */
+	protected $syncer_hooks;
 
 	public function test_create_new_simple_product_schedules_update_job() {
 		$this->update_products_job->expects( $this->once() )

@@ -4,7 +4,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PolicyComplianceCheckController;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -12,11 +11,14 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class PolicyComplianceCheckControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
- *
- * @property RESTServer                   $rest_server
- * @property PolicyComplianceCheck|MockObject $policy_check
  */
 class PolicyComplianceCheckControllerTest extends RESTControllerUnitTest {
+
+	/** @var MockObject|PolicyComplianceCheck $policy_compliance_check */
+	protected $policy_compliance_check;
+
+	/** @var PolicyComplianceCheckController $controller */
+	protected $controller;
 
 	protected const POLICY_CHECK = '/wc/gla/mc/policy_check';
 

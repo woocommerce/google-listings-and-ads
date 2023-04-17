@@ -12,10 +12,11 @@ use WC_Helper_Product;
  * Class YoastWooCommerceSeoTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration
- *
- * @property YoastWooCommerceSeo $integration
  */
 class YoastWooCommerceSeoTest extends UnitTest {
+
+	/** @var YoastWooCommerceSeo $integration */
+	protected $integration;
 
 	protected const TEST_MPN  = '1234567';
 	protected const TEST_GTIN = '34567890';

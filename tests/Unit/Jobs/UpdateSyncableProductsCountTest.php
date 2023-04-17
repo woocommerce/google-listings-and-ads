@@ -20,17 +20,28 @@ use WC_Helper_Product;
  * Class UpdateSyncableProductsCountTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
- *
- * @property MockObject|ActionScheduler           $action_scheduler
- * @property MockObject|ActionSchedulerJobMonitor $monitor
- * @property MockObject|ProductHelper             $product_helper
- * @property MockObject|ProductRepository         $product_repository
- * @property MockObject|OptionsInterface          $options
- * @property UpdateSyncableProductsCount          $job
  */
 class UpdateSyncableProductsCountTest extends UnitTest {
 
 	use ProductTrait;
+
+	/** @var MockObject|ActionScheduler $action_scheduler */
+	protected $action_scheduler;
+
+	/** @var MockObject|ActionSchedulerJobMonitor $monitor */
+	protected $monitor;
+
+	/** @var MockObject|ProductHelper $product_helper */
+	protected $product_helper;
+
+	/** @var MockObject|ProductRepository $product_repository */
+	protected $product_repository;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var UpdateSyncableProductsCount $job */
+	protected $job;
 
 	protected const BATCH_SIZE        = 2;
 	protected const JOB_NAME          = 'update_syncable_products_count';

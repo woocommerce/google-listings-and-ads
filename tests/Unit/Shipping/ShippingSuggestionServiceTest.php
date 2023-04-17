@@ -16,12 +16,18 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class ShippingSuggestionServiceTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping
- *
- * @property MockObject|ShippingZone   $shipping_zone
- * @property MockObject|WC             $wc
- * @property ShippingSuggestionService $suggestion_service
  */
 class ShippingSuggestionServiceTest extends UnitTest {
+
+	/** @var ShippingSuggestionService $suggestion_service */
+	protected $suggestion_service;
+
+	/** @var MockObject|ShippingZone $shipping_zone */
+	protected $shipping_zone;
+
+	/** @var MockObject|WC $wc */
+	protected $wc;
+
 	public function test_get_suggestions_returns_correct_data() {
 		$location = new ShippingLocation( 21137, 'US', 'CA' );
 

@@ -4,7 +4,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AssetGroupController;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
@@ -13,11 +12,14 @@ use Exception;
  * Class AssetSuggestionsControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
- *
- * @property RESTServer               $rest_server
- * @property AdsAssetGroup|MockObject $asset_group
  */
 class AssetGroupControllerTest extends RESTControllerUnitTest {
+
+	/** @var MockObject|AdsAssetGroup $asset_group */
+	protected $asset_group;
+
+	/** @var AssetGroupController $controller */
+	protected $controller;
 
 	protected const TEST_CAMPAIGN_ID       = 1234567890;
 	protected const TEST_ASSET_GROUP_ID    = 9876543210;
