@@ -17,6 +17,11 @@ declare( strict_types=1 );
  */
 $packages = [
 	[
+		'namespace' => 'Psr\\Container',
+		'package'   => 'psr/container',
+		'strict'    => false,
+	],
+	[
 		'namespace' => 'League\\Container',
 		'package'   => 'league/container',
 		'strict'    => false,
@@ -74,6 +79,9 @@ $dependencies = [
 		'google/apiclient',
 		'google/auth',
 		'google/gax',
+	],
+	'psr/container'    => [
+		'league/container',
 	],
 ];
 
