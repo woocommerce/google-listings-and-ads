@@ -10,7 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\ActivatedEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\BaseEvent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
-use Psr\Container\ContainerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 
 /**
  * Wire up the Google Listings and Ads events to Tracks.

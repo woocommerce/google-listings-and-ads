@@ -17,7 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountTax;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountTaxTaxRule as TaxRule;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ShippingSettings;
-use Psr\Container\ContainerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 

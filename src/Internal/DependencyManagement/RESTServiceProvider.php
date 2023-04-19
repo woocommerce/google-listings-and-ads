@@ -72,7 +72,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionServi
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
-use Psr\Container\ContainerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 
 /**
  * Class RESTServiceProvider

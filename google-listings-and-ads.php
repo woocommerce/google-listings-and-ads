@@ -25,8 +25,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\PluginValidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\VersionValidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
-use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 

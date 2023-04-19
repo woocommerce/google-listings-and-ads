@@ -14,9 +14,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use DateTime;
 use Exception;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 
 defined( 'ABSPATH' ) || exit;
