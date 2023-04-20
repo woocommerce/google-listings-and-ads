@@ -44,7 +44,7 @@ jobs:
     strategy:
       matrix:
         php: [8.0]
-        wp-version: ${{ needs.GetMatrix.outputs.wp-matrix }}
+        wp-version: ${{ fromJson(needs.GetMatrix.outputs.wp-matrix) }}
         include:
           - php: 7.4
             wp-version: latest
