@@ -18,7 +18,13 @@ class ImageUtilityTest extends UnitTest {
 
 	use DataTrait;
 
-	protected const SUBSIZE_IMAGE_KEY = 'test_subisize_key';
+	protected const SUBSIZE_IMAGE_KEY = 'test_subsize_key';
+
+	/** @var ImageUtility $image_utility */
+	protected $image_utility;
+
+	/** @var WP $wp */
+	protected $wp;
 
 	/**
 	 * Runs before each test is executed.

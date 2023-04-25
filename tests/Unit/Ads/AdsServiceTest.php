@@ -14,12 +14,17 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Ads
  *
  * @group AdsService
- *
- * @property MockObject|AdsAccountState     $state
- * @property AdsService                     $ads_service
- * @property OptionsInterface               $options
  */
 class AdsServiceTest extends UnitTest {
+
+	/** @var MockObject|AdsAccountState $state */
+	protected $state;
+
+	/** @var AdsService $ads_service */
+	protected $ads_service;
+
+	/** @var OptionsInterface $options */
+	protected $options;
 
 	/**
 	 * Runs before each test is executed.

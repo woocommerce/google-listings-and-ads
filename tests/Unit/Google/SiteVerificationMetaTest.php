@@ -14,11 +14,14 @@ defined( 'ABSPATH' ) || exit;
  * Class SiteVerificationMetaTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google
- *
- * @property MockObject|OptionsInterface $options
- * @property SiteVerificationMeta        $meta
  */
 class SiteVerificationMetaTest extends UnitTest {
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var SiteVerificationMeta $meta */
+	protected $meta;
 
 	protected const TEST_META_TAG = '<meta name="google-site-verification" content="abc" />';
 

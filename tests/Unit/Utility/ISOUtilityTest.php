@@ -10,10 +10,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
  * Class ISOUtilityTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Utility
- *
- * @property ISOUtility $iso_utility
  */
 class ISOUtilityTest extends ContainerAwareUnitTest {
+
+	/** @var ISOUtility $iso_utility */
+	protected $iso_utility;
 
 	public function test_is_iso3166_alpha2_country_code() {
 		$this->assertTrue( $this->iso_utility->is_iso3166_alpha2_country_code( 'US' ) );

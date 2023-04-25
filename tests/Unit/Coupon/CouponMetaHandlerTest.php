@@ -14,11 +14,13 @@ use WP_UnitTestCase;
  * Class ProductMetaHandlerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon
- *
- * @property CouponMetaHandler $coupon_meta_handler
  */
 class CouponMetaHandlerTest extends WP_UnitTestCase {
+
 	use CouponTrait;
+
+	/** @var CouponMetaHandler $coupon_meta_handler */
+	protected $coupon_meta_handler;
 
 	public function test_magic_call_throws_exception_invalid_method_name() {
 		$this->expectException( BadMethodCallException::class );

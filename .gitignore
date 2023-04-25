@@ -9,6 +9,7 @@ build-style
 languages/*
 !languages/README.md
 coverage
+tests/php-coverage
 .phpunit.result.cache
 tests/e2e/test-results.json
 

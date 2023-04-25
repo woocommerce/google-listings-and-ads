@@ -19,12 +19,13 @@ use WC_Helper_Product;
  * Class AttributeManagerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
- *
- * @property AttributeManager $attribute_manager
  */
 class AttributeManagerTest extends ContainerAwareUnitTest {
 
 	use PluginHelper;
+
+	/** @var AttributeManager $attribute_manager */
+	protected $attribute_manager;
 
 	public function test_update_throws_exception_if_attribute_inapplicable_to_product() {
 		$variable  = WC_Helper_Product::create_variation_product();

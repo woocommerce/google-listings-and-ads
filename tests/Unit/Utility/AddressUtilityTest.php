@@ -11,10 +11,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
  * Class AddressUtilityTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Utility
- *
- * @property AddressUtility $address_utility
  */
 class AddressUtilityTest extends UnitTest {
+
+	/** @var AddressUtility $address_utility */
+	protected $address_utility;
 
 	public function test_returns_true_if_addresses_are_same() {
 		$address_1 = new AccountAddress();

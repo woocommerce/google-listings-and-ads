@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.2
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.4.2
+Stable tag: 2.4.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,25 +111,20 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.4.3 - 2023-04-25 =
+* Dev - Add PHP Code coverage report as GitHub action.
+* Dev - Unit test support for PHP 8.2.
+* Dev - Use "willReturnOnConsecutiveCalls" instead of "at" for unit tests.
+* Fix - Prevent creating assets for non-Performance Max campaigns.
+* Fix - The fatal errors caused by adding any US Armed Forces location to WooCommerce Shipping setting.
+* Fix - Use Ads account currency in the WooCommerce marketing dashboard.
+* Tweak - Redirect users between Dashboard and Get Started pages as required.
+
 = 2.4.2 - 2023-03-29 =
 * Tweak - WC 7.6 compatibility.
 
 = 2.4.1 - 2023-03-14 =
 * Tweak - WC 7.5 compatibility.
 * Tweak - WP 6.2 compatibility.
-
-= 2.4.0 - 2023-03-07 =
-* Add - Support for the Assets of Performance Max campaigns.
-* Dev - Externalize Panel, PanelBody, and PanelRow.
-* Dev - Externalize the KeyboardShortcuts component.
-* Dev - Increase maximum payload size in the test proxy.
-* Fix - The blank Product Feed page after completing the onboarding flow.
-* Tweak - Make the popover of the tooltip can be closed properly.
-
-= 2.3.10 - 2023-02-21 =
-* Add "Working with DEWP.md" to exclude list.
-* Add - Integration with WooCommerce Multichannel Marketing.
-* Tweak - Remove unnecessary PMax migration banners.
-* Tweak - Remove unnecessary woocommerce_loop_add_to_cart_link filter param.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

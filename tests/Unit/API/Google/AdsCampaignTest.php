@@ -25,19 +25,34 @@ defined( 'ABSPATH' ) || exit;
  * Class AdsCampaignTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
- *
- * @property MockObject|AdsAssetGroup        $asset_group
- * @property MockObject|AdsCampaignBudget    $budget
- * @property MockObject|AdsCampaignCriterion $criterion
- * @property MockObject|OptionsInterface     $options
- * @property AdsCampaign                     $campaign
- * @property Container                       $container
- * @property GoogleHelper                    $google_helper
- * @property WC                              $wc
  */
 class AdsCampaignTest extends UnitTest {
 
 	use GoogleAdsClientTrait;
+
+	/** @var MockObject|AdsAssetGroup $asset_group */
+	protected $asset_group;
+
+	/** @var MockObject|AdsCampaignBudget $budget */
+	protected $budget;
+
+	/** @var MockObject|AdsCampaignCriterion $criterion */
+	protected $criterion;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var AdsCampaign $campaign */
+	protected $campaign;
+
+	/** @var Container $container */
+	protected $container;
+
+	/** @var GoogleHelper $google_helper */
+	protected $google_helper;
+
+	/** @var WC $wc */
+	protected $wc;
 
 	protected const TEST_CAMPAIGN_ID = 1234567890;
 	protected const BASE_COUNTRY     = 'US';

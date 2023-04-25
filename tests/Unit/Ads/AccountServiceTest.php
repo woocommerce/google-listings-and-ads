@@ -23,17 +23,32 @@ defined( 'ABSPATH' ) || exit;
  * Class AccountServiceTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Ads
- *
- * @property MockObject|Ads                 $ads
- * @property MockObject|AdsConversionAction $conversion_action
- * @property MockObject|Merchant            $merchant
- * @property MockObject|Middleware          $middleware
- * @property MockObject|AdsAccountState     $state
- * @property AccountService                 $account
- * @property Container                      $container
- * @property OptionsInterface               $options
  */
 class AccountServiceTest extends UnitTest {
+
+	/** @var MockObject|Ads $ads */
+	protected $ads;
+
+	/** @var MockObject|AdsConversionAction $conversion_action */
+	protected $conversion_action;
+
+	/** @var MockObject|Merchant $merchant */
+	protected $merchant;
+
+	/** @var MockObject|Middleware $middleware */
+	protected $middleware;
+
+	/** @var MockObject|AdsAccountState $state */
+	protected $state;
+
+	/** @var AccountService $account */
+	protected $account;
+
+	/** @var Container $container */
+	protected $container;
+
+	/** @var OptionsInterface $options */
+	protected $options;
 
 	protected const TEST_ACCOUNT_ID        = 1234567890;
 	protected const TEST_OLD_ACCOUNT_ID    = 2345678901;

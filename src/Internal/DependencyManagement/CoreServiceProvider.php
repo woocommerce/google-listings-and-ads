@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ActivationRedirect;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Redirect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\BulkEditInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit\CouponBulkEdit;
@@ -139,7 +139,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 */
 	protected $provides = [
 		Installer::class                      => true,
-		ActivationRedirect::class             => true,
+		Redirect::class                       => true,
 		Admin::class                          => true,
 		AddressUtility::class                 => true,
 		Reports::class                        => true,
@@ -286,7 +286,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			MerchantCenterService::class,
 			AdsService::class
 		);
-		$this->conditionally_share_with_tags( ActivationRedirect::class, WP::class );
+		$this->conditionally_share_with_tags( Redirect::class, WP::class );
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
@@ -411,7 +411,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AttributeMappingHelper::class );
 
 		if ( defined( 'WC_MCM_EXISTS' ) ) {
-			$this->share_with_tags( GLAChannel::class, MerchantCenterService::class, AdsCampaign::class, Ads::class, MerchantStatuses::class, ProductSyncStats::class, WC::class );
+			$this->share_with_tags( GLAChannel::class, MerchantCenterService::class, AdsCampaign::class, Ads::class, MerchantStatuses::class, ProductSyncStats::class );
 			$this->share_with_tags( MarketingChannelRegistrar::class, GLAChannel::class, WC::class );
 		}
 	}

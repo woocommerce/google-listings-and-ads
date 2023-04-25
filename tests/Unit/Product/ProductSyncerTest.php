@@ -34,21 +34,40 @@ use WC_Product;
  * Class ProductSyncerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
- *
- * @property MockObject|GoogleProductService  $google_service
- * @property MockObject|TargetAudience        $target_audience
- * @property MockObject|MerchantCenterService $merchant_center
- * @property ProductMetaHandler               $product_meta
- * @property BatchProductHelper               $batch_helper
- * @property ProductHelper                    $product_helper
- * @property WC                               $wc
- * @property ProductSyncer                    $product_syncer
- * @property ProductRepository                $product_repository
- * @property AttributeMappingRulesQuery       $rules_query
  */
 class ProductSyncerTest extends ContainerAwareUnitTest {
 
 	use ProductTrait;
+
+	/** @var MockObject|GoogleProductService $google_service */
+	protected $google_service;
+
+	/** @var MockObject|TargetAudience $target_audience */
+	protected $target_audience;
+
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
+	/** @var ProductMetaHandler $product_meta */
+	protected $product_meta;
+
+	/** @var BatchProductHelper $batch_helper */
+	protected $batch_helper;
+
+	/** @var ProductHelper $product_helper */
+	protected $product_helper;
+
+	/** @var ProductSyncer $product_syncer */
+	protected $product_syncer;
+
+	/** @var ProductRepository $product_repository */
+	protected $product_repository;
+
+	/** @var AttributeMappingRulesQuery $rules_query */
+	protected $rules_query;
+
+	/** @var WC $wc */
+	protected $wc;
 
 	public function test_update() {
 		$validator       = $this->createMock( ValidatorInterface::class );

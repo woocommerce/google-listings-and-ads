@@ -31,24 +31,52 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
  * @group AccountService
- * @property MockObject|CleanupSyncedProducts $cleanup_synced
- * @property MockObject|Merchant              $merchant
- * @property MockObject|MerchantCenterService $mc_service
- * @property MockObject|MerchantIssueTable    $issue_table
- * @property MockObject|MerchantStatuses      $merchant_statuses
- * @property MockObject|Middleware            $middleware
- * @property MockObject|OptionsInterface      $options
- * @property MockObject|SiteVerification      $site_verification
- * @property MockObject|ShippingRateTable     $rate_table
- * @property MockObject|ShippingTimeTable     $time_table
- * @property MockObject|MerchantAccountState  $state
- * @property MockObject|TransientsInterface   $transients
- * @property AccountService                   $account
- * @property Container                        $container
  */
 class AccountServiceTest extends UnitTest {
 
 	use MerchantTrait;
+
+	/** @var MockObject|CleanupSyncedProducts $cleanup_synced */
+	protected $cleanup_synced;
+
+	/** @var MockObject|Merchant $merchant */
+	protected $merchant;
+
+	/** @var MockObject|MerchantCenterService $mc_service */
+	protected $mc_service;
+
+	/** @var MockObject|MerchantIssueTable $issue_table */
+	protected $issue_table;
+
+	/** @var MockObject|MerchantStatuses $merchant_statuses */
+	protected $merchant_statuses;
+
+	/** @var MockObject|Middleware $middleware */
+	protected $middleware;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/** @var MockObject|SiteVerification $site_verification */
+	protected $site_verification;
+
+	/** @var MockObject|ShippingRateTable $rate_table */
+	protected $rate_table;
+
+	/** @var MockObject|ShippingTimeTable $time_table */
+	protected $time_table;
+
+	/** @var MockObject|MerchantAccountState $state */
+	protected $state;
+
+	/** @var MockObject|TransientsInterface $transients */
+	protected $transients;
+
+	/** @var AccountService $account */
+	protected $account;
+
+	/** @var Container $container */
+	protected $container;
 
 	protected const TEST_ACCOUNT_ID     = 12345678;
 	protected const TEST_OLD_ACCOUNT_ID = 23456781;

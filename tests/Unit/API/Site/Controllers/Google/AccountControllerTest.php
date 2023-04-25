@@ -14,11 +14,14 @@ use PHPUnit\Framework\MockObject\MockObject;
  * Class AccountControllerTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Google
- *
- * @property Connection|MockObject $connection
- * @property AccountController     $controller
  */
 class AccountControllerTest extends RESTControllerUnitTest {
+
+	/** @var MockObject|Connection $connection */
+	protected $connection;
+
+	/** @var AccountController $controller */
+	protected $controller;
 
 	protected const ROUTE_CONNECT     = '/wc/gla/google/connect';
 	protected const ROUTE_CONNECTED   = '/wc/gla/google/connected';

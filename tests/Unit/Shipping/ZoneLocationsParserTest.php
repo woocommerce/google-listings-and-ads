@@ -19,6 +19,10 @@ use WC_Shipping_Zone;
  * @property ZoneLocationsParser     $locations_parser
  */
 class ZoneLocationsParserTest extends UnitTest {
+
+	protected $google_helper;
+	protected $locations_parser;
+
 	public function test_returns_state_locations_if_regional_shipping_supported() {
 		$zone_locations = [
 			(object) [
@@ -42,11 +46,43 @@ class ZoneLocationsParserTest extends UnitTest {
 			->with( 'US' )
 			->willReturn( true );
 
+		$this->mock_find_subdivision_id_by_code();
+
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
 		$this->assertCount( 1, $parsed_locations );
 		$this->assertEquals( 'US', $parsed_locations[0]->get_country() );
 		$this->assertEquals( 'NV', $parsed_locations[0]->get_state() );
+	}
+
+	public function test_returns_state_locations_if_subdivision_shipping_unsupported() {
+		$zone_locations = [
+			(object) [
+				'code' => 'US:AA',
+				'type' => 'state',
+			],
+		];
+
+		$zone = $this->createMock( WC_Shipping_Zone::class );
+		$zone->expects( $this->any() )
+			->method( 'get_zone_locations' )
+			->willReturn( $zone_locations );
+
+		$this->google_helper->expects( $this->any() )
+			->method( 'is_country_supported' )
+			->with( 'US' )
+			->willReturn( true );
+
+		$this->google_helper->expects( $this->any() )
+			->method( 'does_country_support_regional_shipping' )
+			->with( 'US' )
+			->willReturn( true );
+
+		$this->mock_find_subdivision_id_by_code( null );
+
+		$parsed_locations = $this->locations_parser->parse( $zone );
+
+		$this->assertCount( 0, $parsed_locations );
 	}
 
 	public function test_returns_country_locations_if_regional_shipping_unsupported() {
@@ -70,6 +106,7 @@ class ZoneLocationsParserTest extends UnitTest {
 			->method( 'does_country_support_regional_shipping' )
 			->with( 'XX' )
 			->willReturn( false );
+		$this->mock_find_subdivision_id_by_code();
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
@@ -125,6 +162,7 @@ class ZoneLocationsParserTest extends UnitTest {
 					[ 'DK', false ],
 				]
 			);
+		$this->mock_find_subdivision_id_by_code();
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
@@ -210,6 +248,7 @@ class ZoneLocationsParserTest extends UnitTest {
 					[ 'DE', false ],
 				]
 			);
+		$this->mock_find_subdivision_id_by_code();
 
 		$parsed_locations = $this->locations_parser->parse( $zone );
 
@@ -262,14 +301,26 @@ class ZoneLocationsParserTest extends UnitTest {
 					return rand();
 				}
 			);
+
+		$this->locations_parser = new ZoneLocationsParser( $this->google_helper );
+	}
+
+	/**
+	 * Mocks the returning value of google_helper->find_subdivision_id_by_code method.
+	 *
+	 * @param int|null $return_value The location id to be returned instead of a random int. -1 by default will return the random integer.
+	 * @return void
+	 */
+	private function mock_find_subdivision_id_by_code( $return_value = -1 ) {
 		$this->google_helper->expects( $this->any() )
 			->method( 'find_subdivision_id_by_code' )
 			->willReturnCallback(
-				function () {
+				function () use ( $return_value ) {
+					if ( -1 !== $return_value ) {
+						return $return_value;
+					}
 					return rand();
 				}
 			);
-
-		$this->locations_parser = new ZoneLocationsParser( $this->google_helper );
 	}
 }
