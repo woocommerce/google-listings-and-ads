@@ -59,7 +59,8 @@ class ScriptWithBuiltDependenciesAsset extends ScriptAsset {
 			if ( ! is_readable( $build_dependency_path ) ) {
 				return $fallback;
 			}
-
+			// Reason of exclusion: These files are being loaded manually in the function call with no user input
+			// nosemgrep: audit.php.lang.security.file.inclusion-arg
 			return new DependencyArray( include $build_dependency_path );
 		} catch ( Throwable $e ) {
 			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
