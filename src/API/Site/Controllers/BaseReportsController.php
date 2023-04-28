@@ -5,8 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use DateTime;
-use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;

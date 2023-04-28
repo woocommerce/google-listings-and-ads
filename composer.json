@@ -13,10 +13,10 @@
 		"google/apiclient": "^2.13",
 		"google/apiclient-services": "~0.286",
 		"googleads/google-ads-php": "^17.1",
-		"league/container": "^3.3",
+		"league/container": "^3.4",
 		"league/iso3166": "^4.1",
 		"phpseclib/bcmath_compat": "^2.0",
-		"psr/container": "^1.0",
+		"psr/container": "^1.1",
 		"symfony/polyfill-intl-normalizer": "^1.26",
 		"symfony/polyfill-mbstring": "^1.26",
 		"symfony/validator": "^5.2"
