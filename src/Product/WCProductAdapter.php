@@ -973,7 +973,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			case 'taxonomy':
 				return $this->get_product_taxonomy( $source_value );
 			case 'attribute':
-				return $this->get_wc_product()->get_meta( $source_value );
+				return $this->get_custom_attribute( $source_value );
 			default:
 				return $source;
 		}
@@ -1017,7 +1017,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 */
 	protected function get_product_taxonomy( $taxonomy ) {
 		$product = $this->get_wc_product();
-		$values  = get_the_terms( $product->get_id(), $taxonomy );
+
+		if ( $product->is_type( 'variation' ) ) {
+			return $product->get_attribute( $taxonomy );
+		}
+
+		$values = get_the_terms( $product->get_id(), $taxonomy );
 
 		if ( ! $values ) {
 			return null;
@@ -1069,5 +1074,23 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Gets a custom attribute from a product
+	 *
+	 * @param string $attribute_name - The attribute name to get.
+	 * @return string The attribute value
+	 */
+	protected function get_custom_attribute( $attribute_name ) {
+		$product = $this->get_wc_product();
+
+		$attribute = $product->get_attribute( $attribute_name );
+
+		if ( ! $attribute ) {
+			$attribute = $product->get_meta( $attribute_name );
+		}
+
+		return $attribute;
 	}
 }
