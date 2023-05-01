@@ -472,4 +472,37 @@ trait ProductTrait {
 
 		return $attachment_id;
 	}
+
+	protected function generate_attribute_mapping_adapted_product( $rules ) {
+		$product = WC_Helper_Product::create_simple_product( false );
+		$product->set_stock_quantity(1);
+		$product->set_tax_class('mytax');
+
+		return new WCProductAdapter(
+			[
+				'wc_product'     => $product,
+				'mapping_rules'  => $rules,
+				'gla_attributes' => [],
+				'targetCountry'  => 'US',
+			]
+		);
+	}
+
+	protected function generate_attribute_mapping_adapted_product_variant( $rules ) {
+		$variable = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $variable->get_children()[1] );
+		$variation->set_stock_quantity(1);
+		$variation->set_weight(1.2);
+		$variation->set_tax_class('mytax');
+
+		return new WCProductAdapter(
+			[
+				'wc_product'     => $variation,
+				'parent_wc_product' => $variable,
+				'mapping_rules'  => $rules,
+				'gla_attributes' => [],
+				'targetCountry'  => 'US',
+			]
+		);
+	}
 }

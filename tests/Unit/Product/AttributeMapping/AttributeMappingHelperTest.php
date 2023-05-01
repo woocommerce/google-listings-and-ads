@@ -1,16 +1,16 @@
 <?php
-	declare(strict_types=1);
+declare(strict_types=1);
 
-	namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product\AttributeMapping;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product\AttributeMapping;
 
-	use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
-	use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 
-	/**
-	 * Test suite for AttributeMappingHelper
-	 *
-	 * @group AttributeMapping
-	 */
+/**
+ * Test suite for AttributeMappingHelper
+ *
+ * @group AttributeMapping
+ */
 class AttributeMappingHelperTest extends UnitTest {
 
 	/**
