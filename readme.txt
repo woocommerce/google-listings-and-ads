@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.4.4 - 2023-xx-xx =
+* Dev - Fix SEMGREP warnings.
+* Fix - Prefix Psr\Container package to prevent conflicts with other plugins.
+
 = 2.4.3 - 2023-04-25 =
 * Dev - Add PHP Code coverage report as GitHub action.
 * Dev - Unit test support for PHP 8.2.
