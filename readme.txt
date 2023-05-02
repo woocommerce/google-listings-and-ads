@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.2
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.4.3
+Stable tag: 2.4.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.4.4 - 2023-05-02 =
+* Dev - Fix SEMGREP warnings.
+* Fix - Prefix Psr\Container package to prevent conflicts with other plugins.
+
 = 2.4.3 - 2023-04-25 =
 * Dev - Add PHP Code coverage report as GitHub action.
 * Dev - Unit test support for PHP 8.2.
@@ -122,9 +126,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 = 2.4.2 - 2023-03-29 =
 * Tweak - WC 7.6 compatibility.
-
-= 2.4.1 - 2023-03-14 =
-* Tweak - WC 7.5 compatibility.
-* Tweak - WP 6.2 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
