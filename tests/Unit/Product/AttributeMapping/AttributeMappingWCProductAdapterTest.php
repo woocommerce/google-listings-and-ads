@@ -59,7 +59,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	/**
 	 * Test dynamic product title source
 	 */
-	public function test_maps_rules_taxonomy_product_fields_title() {
+	public function test_maps_rules_product_fields_title() {
 		$rules = [
 			[
 				'attribute'               => Brand::get_id(),
@@ -79,7 +79,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	/**
 	 * Test dynamic product name source
 	 */
-	public function test_maps_rules_taxonomy_product_fields_name() {
+	public function test_maps_rules_product_fields_name() {
 		$rules = [
 			[
 				'attribute'               => Size::get_id(),
@@ -99,7 +99,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	/**
 	 * Test dynamic product sku source
 	 */
-	public function test_maps_rules_taxonomy_product_fields_sku() {
+	public function test_maps_rules_product_fields_sku() {
 		$rules = [
 			[
 				'attribute'               => GTIN::get_id(),
@@ -119,7 +119,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	/**
 	 * Test dynamic stock quantity source
 	 */
-	public function test_maps_rules_taxonomy_product_fields_stock_quantity() {
+	public function test_maps_rules_product_fields_stock_quantity() {
 		$rules = [
 			[
 				'attribute'               => Multipack::get_id(),
@@ -139,7 +139,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	/**
 	 * Test dynamic product stock status source
 	 */
-	public function test_maps_rules_taxonomy_product_fields_stock_status() {
+	public function test_maps_rules_product_fields_stock_status() {
 		$rules = [
 			[
 				'attribute'               => Material::get_id(),
@@ -159,7 +159,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	/**
 	 * Test dynamic product weight source
 	 */
-	public function test_maps_rules_taxonomy_product_fields_weight() {
+	public function test_maps_rules_product_fields_weight() {
 		$rules = [
 			[
 				'attribute'               => MPN::get_id(),
@@ -179,7 +179,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	/**
 	 * Test dynamic product weight (with units) source
 	 */
-	public function test_maps_rules_taxonomy_product_fields_weight_with_units() {
+	public function test_maps_rules_product_fields_weight_with_units() {
 		$rules = [
 			[
 				'attribute'               => Pattern::get_id(),
@@ -199,7 +199,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	/**
 	 * Test dynamic product tax class source
 	 */
-	public function test_maps_rules_taxonomy_product_fields_taxclass() {
+	public function test_maps_rules_product_fields_taxclass() {
 		$rules = [
 			[
 				'attribute'               => Color::get_id(),
@@ -214,6 +214,67 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 
 		$this->assertEquals( 'mytax', $adapted_product->getColor() );
 		$this->assertEquals( 'mytax', $adapted_variation->getColor() );
+	}
+
+	/**
+	 * Test dynamic taxonomy source
+	 */
+	public function test_maps_rules_product_taxonomies() {
+		$rules = [
+			[
+				'attribute'               => Size::get_id(),
+				'source'                  => 'taxonomy:pa_size',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules );
+		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules );
+
+     	$this->assertEquals( ['s'], $adapted_product->getSizes() );
+     	$this->assertEquals( ['large'], $adapted_variation->getSizes() );
+	}
+
+	/**
+	 * Test dynamic taxonomy not found
+	 */
+	public function test_maps_rules_product_taxonomies_null() {
+		$rules = [
+			[
+				'attribute'               => Color::get_id(),
+				'source'                  => 'taxonomy:pa_other',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules );
+		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules );
+
+		$this->assertNull( $adapted_product->getColor() );
+		$this->assertNull(  $adapted_variation->getColor() );
+	}
+
+
+	/**
+	 * Test dynamic taxonomy not found
+	 */
+	public function test_maps_rules_custom_attributes() {
+		$rules = [
+			[
+				'attribute'               => Color::get_id(),
+				'source'                  => 'attribute:custom',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules );
+		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules );
+
+		$this->assertEquals( 'test' , $adapted_product->getColor() );
+		$this->assertEquals( 'test', $adapted_variation->getColor() );
 	}
 
 	/**
@@ -241,6 +302,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		\WC_Tax::create_tax_class( 'mytax' );
+		wc_create_attribute( [ 'id' => 5, 'name' => 'test'] );
 	}
 
 	/**
@@ -249,5 +311,6 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	public function tearDown(): void {
 		parent::tearDown();
 		\WC_Tax::delete_tax_class_by( 'name', 'mytax' );
+		wc_delete_attribute(5);
 	}
 }

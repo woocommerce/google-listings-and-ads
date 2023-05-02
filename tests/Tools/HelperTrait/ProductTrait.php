@@ -475,6 +475,16 @@ trait ProductTrait {
 
 	protected function generate_attribute_mapping_adapted_product( $rules ) {
 		$product = WC_Helper_Product::create_simple_product( false );
+
+		$attributes = [
+			WC_Helper_Product::create_product_attribute_object( 'size', [ 's', 'xs' ] ),
+		];
+
+		$product->set_attributes( $attributes );
+		$product->add_meta_data('custom', 'test');
+
+		$product->save();
+
 		$product->set_stock_quantity(1);
 		$product->set_tax_class('mytax');
 
@@ -494,6 +504,7 @@ trait ProductTrait {
 		$variation->set_stock_quantity(1);
 		$variation->set_weight(1.2);
 		$variation->set_tax_class('mytax');
+		$variation->add_meta_data('custom', 'test');
 
 		return new WCProductAdapter(
 			[
