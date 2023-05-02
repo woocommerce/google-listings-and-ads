@@ -232,8 +232,8 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules );
 		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules );
 
-     	$this->assertEquals( ['s'], $adapted_product->getSizes() );
-     	$this->assertEquals( ['large'], $adapted_variation->getSizes() );
+		$this->assertEquals( [ 's' ], $adapted_product->getSizes() );
+		$this->assertEquals( [ 'large' ], $adapted_variation->getSizes() );
 	}
 
 	/**
@@ -253,7 +253,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules );
 
 		$this->assertNull( $adapted_product->getColor() );
-		$this->assertNull(  $adapted_variation->getColor() );
+		$this->assertNull( $adapted_variation->getColor() );
 	}
 
 
@@ -273,7 +273,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules );
 		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules );
 
-		$this->assertEquals( 'test' , $adapted_product->getColor() );
+		$this->assertEquals( 'test', $adapted_product->getColor() );
 		$this->assertEquals( 'test', $adapted_variation->getColor() );
 	}
 
@@ -309,7 +309,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 			],
 		];
 
-		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules );
+		$adapted_product = $this->generate_attribute_mapping_adapted_product( $rules );
 
 		$this->assertEquals( 'test', $adapted_product->getColor() );
 		$this->assertNull( $adapted_product->getBrand() );
@@ -343,7 +343,12 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		\WC_Tax::create_tax_class( 'mytax' );
-		wc_create_attribute( [ 'id' => 5, 'name' => 'test'] );
+		wc_create_attribute(
+			[
+				'id'   => 5,
+				'name' => 'test',
+			]
+		);
 	}
 
 	/**
@@ -352,6 +357,6 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	public function tearDown(): void {
 		parent::tearDown();
 		\WC_Tax::delete_tax_class_by( 'name', 'mytax' );
-		wc_delete_attribute(5);
+		wc_delete_attribute( 5 );
 	}
 }
