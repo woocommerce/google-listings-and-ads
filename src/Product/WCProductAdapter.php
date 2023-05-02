@@ -1020,7 +1020,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		if ( $product->is_type( 'variation' ) ) {
 			$values = $product->get_attribute( $taxonomy );
-			$values = explode(', ', $values);
+			$values = explode( ', ', $values );
 		} else {
 			$values = wc_get_product_terms( $product->get_id(), $taxonomy );
 			$values = wp_list_pluck( $values, 'name' );
@@ -1093,7 +1093,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$attribute_values = $product->get_meta( $attribute_name );
 		}
 
-		$attribute_values = explode(', ', $attribute_values);
+		$attribute_values = explode( ', ', $attribute_values );
 
 		return empty( $attribute_values[0] ) ? null : $attribute_values[0];
 	}
