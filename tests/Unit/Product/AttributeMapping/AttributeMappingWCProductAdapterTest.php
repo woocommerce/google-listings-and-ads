@@ -282,34 +282,38 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	 * Test Rule Category Type ONLY and EXCEPT matching logic
 	 */
 	public function test_rule_only_categories() {
+
+		$category = wp_insert_term( 'Test Category', 'product_cat' );
+		$term = $category['term_id'];
+
 		$rules = [
 			[
 				'attribute'               => Color::get_id(),
 				'source'                  => 'test',
 				'category_condition_type' => 'ONLY',
-				'categories'              => '15',
+				'categories'              => strval( $term ),
 			],
 			[
 				'attribute'               => Brand::get_id(),
 				'source'                  => 'test',
 				'category_condition_type' => 'ONLY',
-				'categories'              => '12',
+				'categories'              => '999',
 			],
 			[
 				'attribute'               => GTIN::get_id(),
 				'source'                  => 'test',
 				'category_condition_type' => 'EXCEPT',
-				'categories'              => '12',
+				'categories'              => '999',
 			],
 			[
 				'attribute'               => MPN::get_id(),
 				'source'                  => 'test',
 				'category_condition_type' => 'EXCEPT',
-				'categories'              => '15',
+				'categories'              => strval( $term ),
 			],
 		];
 
-		$adapted_product = $this->generate_attribute_mapping_adapted_product( $rules );
+		$adapted_product = $this->generate_attribute_mapping_adapted_product( $rules, [ $term ] );
 
 		$this->assertEquals( 'test', $adapted_product->getColor() );
 		$this->assertNull( $adapted_product->getBrand() );
@@ -343,12 +347,6 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		\WC_Tax::create_tax_class( 'mytax' );
-		wc_create_attribute(
-			[
-				'id'   => 5,
-				'name' => 'test',
-			]
-		);
 	}
 
 	/**
@@ -357,6 +355,5 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	public function tearDown(): void {
 		parent::tearDown();
 		\WC_Tax::delete_tax_class_by( 'name', 'mytax' );
-		wc_delete_attribute( 5 );
 	}
 }

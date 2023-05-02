@@ -473,7 +473,7 @@ trait ProductTrait {
 		return $attachment_id;
 	}
 
-	protected function generate_attribute_mapping_adapted_product( $rules ) {
+	protected function generate_attribute_mapping_adapted_product( $rules, $categories = [] ) {
 		$product = WC_Helper_Product::create_simple_product( false );
 
 		$attributes = [
@@ -482,6 +482,10 @@ trait ProductTrait {
 
 		$product->set_attributes( $attributes );
 		$product->add_meta_data('custom', 'test');
+
+		if ( ! empty( $categories ) ) {
+			$product->set_category_ids( $categories );
+		}
 
 		$product->save();
 

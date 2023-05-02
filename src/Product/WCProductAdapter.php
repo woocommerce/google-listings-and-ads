@@ -1019,18 +1019,18 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$product = $this->get_wc_product();
 
 		if ( $product->is_type( 'variation' ) ) {
-			$value = $product->get_attribute( $taxonomy );
-			return empty( $value ) ? null : $value;
-
+			$values = $product->get_attribute( $taxonomy );
+			$values = explode(', ', $values);
+		} else {
+			$values = wc_get_product_terms( $product->get_id(), $taxonomy );
+			$values = wp_list_pluck( $values, 'name' );
 		}
 
-		$values = get_the_terms( $product->get_id(), $taxonomy );
-
-		if ( empty( $values ) || is_wp_error( $values ) ) {
+		if ( empty( $values ) || is_wp_error( $values ) || empty( $values[0] ) ) {
 			return null;
 		}
 
-		return wp_list_pluck( $values, 'name' )[0];
+		return $values[0];
 	}
 
 	/**
@@ -1082,17 +1082,19 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * Gets a custom attribute from a product
 	 *
 	 * @param string $attribute_name - The attribute name to get.
-	 * @return string The attribute value
+	 * @return string|null The attribute value or null if no value is found
 	 */
 	protected function get_custom_attribute( $attribute_name ) {
 		$product = $this->get_wc_product();
 
-		$attribute = $product->get_attribute( $attribute_name );
+		$attribute_values = $product->get_attribute( $attribute_name );
 
-		if ( ! $attribute ) {
-			$attribute = $product->get_meta( $attribute_name );
+		if ( ! $attribute_values ) {
+			$attribute_values = $product->get_meta( $attribute_name );
 		}
 
-		return $attribute;
+		$attribute_values = explode(', ', $attribute_values);
+
+		return empty( $attribute_values[0] ) ? null : $attribute_values[0];
 	}
 }
