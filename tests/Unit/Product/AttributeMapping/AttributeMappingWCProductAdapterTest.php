@@ -277,6 +277,47 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 		$this->assertEquals( 'test', $adapted_variation->getColor() );
 	}
 
+
+	/**
+	 * Test Rule Category Type ONLY and EXCEPT matching logic
+	 */
+	public function test_rule_only_categories() {
+		$rules = [
+			[
+				'attribute'               => Color::get_id(),
+				'source'                  => 'test',
+				'category_condition_type' => 'ONLY',
+				'categories'              => '15',
+			],
+			[
+				'attribute'               => Brand::get_id(),
+				'source'                  => 'test',
+				'category_condition_type' => 'ONLY',
+				'categories'              => '12',
+			],
+			[
+				'attribute'               => GTIN::get_id(),
+				'source'                  => 'test',
+				'category_condition_type' => 'EXCEPT',
+				'categories'              => '12',
+			],
+			[
+				'attribute'               => MPN::get_id(),
+				'source'                  => 'test',
+				'category_condition_type' => 'EXCEPT',
+				'categories'              => '15',
+			],
+		];
+
+		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules );
+
+		$this->assertEquals( 'test', $adapted_product->getColor() );
+		$this->assertNull( $adapted_product->getBrand() );
+		$this->assertEquals( 'test', $adapted_product->getGtin() );
+		$this->assertNull( $adapted_product->getMpn() );
+
+	}
+
 	/**
 	 * Test rules priority
 	 */
