@@ -481,7 +481,7 @@ trait ProductTrait {
 		];
 
 		$product->set_attributes( $attributes );
-		$product->add_meta_data('custom', 'test');
+		$product->add_meta_data( 'custom', 'test' );
 
 		if ( ! empty( $categories ) ) {
 			$product->set_category_ids( $categories );
@@ -489,8 +489,8 @@ trait ProductTrait {
 
 		$product->save();
 
-		$product->set_stock_quantity(1);
-		$product->set_tax_class('mytax');
+		$product->set_stock_quantity( 1 );
+		$product->set_tax_class( 'mytax' );
 
 		return new WCProductAdapter(
 			[
@@ -503,20 +503,20 @@ trait ProductTrait {
 	}
 
 	protected function generate_attribute_mapping_adapted_product_variant( $rules ) {
-		$variable = WC_Helper_Product::create_variation_product();
+		$variable  = WC_Helper_Product::create_variation_product();
 		$variation = wc_get_product( $variable->get_children()[1] );
-		$variation->set_stock_quantity(1);
-		$variation->set_weight(1.2);
-		$variation->set_tax_class('mytax');
-		$variation->add_meta_data('custom', 'test');
+		$variation->set_stock_quantity( 1 );
+		$variation->set_weight( 1.2 );
+		$variation->set_tax_class( 'mytax' );
+		$variation->add_meta_data( 'custom', 'test' );
 
 		return new WCProductAdapter(
 			[
-				'wc_product'     => $variation,
+				'wc_product'        => $variation,
 				'parent_wc_product' => $variable,
-				'mapping_rules'  => $rules,
-				'gla_attributes' => [],
-				'targetCountry'  => 'US',
+				'mapping_rules'     => $rules,
+				'gla_attributes'    => [],
+				'targetCountry'     => 'US',
 			]
 		);
 	}

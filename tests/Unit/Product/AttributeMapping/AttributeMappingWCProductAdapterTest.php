@@ -282,9 +282,8 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	 * Test Rule Category Type ONLY and EXCEPT matching logic
 	 */
 	public function test_rule_only_categories() {
-
 		$category = wp_insert_term( 'Test Category', 'product_cat' );
-		$term = $category['term_id'];
+		$term     = $category['term_id'];
 
 		$rules = [
 			[
