@@ -1,6 +1,6 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
-= 2.4.4 - 2023-xx-xx =
+= 2.4.4 - 2023-05-02 =
 * Dev - Fix SEMGREP warnings.
 * Fix - Prefix Psr\Container package to prevent conflicts with other plugins.
 
