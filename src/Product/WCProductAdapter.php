@@ -1023,7 +1023,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			return null;
 		}
 
-		return wp_list_pluck( $values, 'name' )[0];
+		$term_names = wp_list_pluck( $values, 'name' );
+		$term_name  = reset( $term_names );
+		return $term_name ?: null;
 	}
 
 	/**
