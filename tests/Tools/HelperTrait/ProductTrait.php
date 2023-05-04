@@ -525,7 +525,7 @@ trait ProductTrait {
 	 */
 	protected function generate_attribute_mapping_adapted_product_variant( $rules ) {
 		$variable  = WC_Helper_Product::create_variation_product();
-		$variation = wc_get_product( $variable->get_children()[1] );
+		$variation = wc_get_product( $variable->get_children()[ count( $variable->get_children() ) - 1 ] );
 		$variation->set_stock_quantity( 1 );
 		$variation->set_weight( 1.2 );
 		$variation->set_tax_class( 'mytax' );

@@ -113,7 +113,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules );
 
 		$this->assertEquals( 'DUMMY SKU', $adapted_product->getGtin() );
-		$this->assertEquals( 'DUMMY SKU VARIABLE LARGE', $adapted_variation->getGtin() );
+		$this->assertEquals( 'DUMMY SKU VARIABLE HUGE BLUE ANY NUMBER', $adapted_variation->getGtin() );
 	}
 
 	/**
@@ -227,13 +227,20 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 				'category_condition_type' => 'ALL',
 				'categories'              => '',
 			],
+			[
+				'attribute'               => Color::get_id(),
+				'source'                  => 'taxonomy:pa_number', // set as any
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
 		];
 
 		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules );
 		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules );
 
 		$this->assertEquals( [ 's' ], $adapted_product->getSizes() );
-		$this->assertEquals( [ 'large' ], $adapted_variation->getSizes() );
+		$this->assertEquals( [ 'huge' ], $adapted_variation->getSizes() );
+		$this->assertEquals( '0', $adapted_variation->getColor() );
 	}
 
 	/**

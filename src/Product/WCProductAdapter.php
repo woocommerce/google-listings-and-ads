@@ -1020,6 +1020,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		if ( $product->is_type( 'variation' ) ) {
 			$values = $product->get_attribute( $taxonomy );
+
+			if ( ! $values ) {
+				$parent = wc_get_product( $product->get_parent_id() );
+				$values = $parent->get_attribute( $taxonomy );
+			}
+
 			$values = explode( ', ', $values );
 		} else {
 			$values = wc_get_product_terms( $product->get_id(), $taxonomy );
