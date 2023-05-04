@@ -1098,6 +1098,6 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			return '';
 		}
 
-		return explode( ' ' . WC_DELIMITER . ' ', $attribute_value )[0];
+		return explode( ' ' . WC_DELIMITER . ' ', strval( $attribute_value ) )[0];
 	}
 }
