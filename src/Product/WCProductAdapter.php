@@ -954,7 +954,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * Get a source value for attribute mapping
 	 *
 	 * @param string $source The source to get the value
-	 * @return string|null The source value for this product
+	 * @return string The source value for this product
 	 */
 	protected function get_source( string $source ) {
 		$source_type = null;
@@ -1026,8 +1026,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$values = wp_list_pluck( $values, 'name' );
 		}
 
-		if ( empty( $values ) || is_wp_error( $values ) || empty( $values[0] ) ) {
-			return null;
+		if ( empty( $values ) || is_wp_error( $values ) ) {
+			return '';
 		}
 
 		return $values[0];
@@ -1053,7 +1053,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			return $product->$getter();
 		}
 
-		return null;
+		return '';
 	}
 
 	/**
@@ -1087,14 +1087,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	protected function get_custom_attribute( $attribute_name ) {
 		$product = $this->get_wc_product();
 
-		$attribute_values = $product->get_attribute( $attribute_name );
+		$attribute_value = $product->get_attribute( $attribute_name );
 
-		if ( ! $attribute_values ) {
-			$attribute_values = $product->get_meta( $attribute_name );
+		if ( ! $attribute_value ) {
+			$attribute_value = $product->get_meta( $attribute_name );
 		}
 
-		$attribute_values = explode( ', ', $attribute_values );
-
-		return empty( $attribute_values[0] ) ? null : $attribute_values[0];
+		return is_scalar( $attribute_value ) ? $attribute_value : '';
 	}
 }

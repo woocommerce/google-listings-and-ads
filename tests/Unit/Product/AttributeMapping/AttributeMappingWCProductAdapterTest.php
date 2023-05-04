@@ -252,8 +252,8 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules );
 		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules );
 
-		$this->assertNull( $adapted_product->getColor() );
-		$this->assertNull( $adapted_variation->getColor() );
+		$this->assertEquals( '', $adapted_product->getColor() );
+		$this->assertEquals( '', $adapted_variation->getColor() );
 	}
 
 
@@ -315,9 +315,9 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 		$adapted_product = $this->generate_attribute_mapping_adapted_product( $rules, [ $term ] );
 
 		$this->assertEquals( 'test', $adapted_product->getColor() );
-		$this->assertNull( $adapted_product->getBrand() );
+		$this->assertEquals( '',  $adapted_product->getBrand() );
 		$this->assertEquals( 'test', $adapted_product->getGtin() );
-		$this->assertNull( $adapted_product->getMpn() );
+		$this->assertEquals( '', $adapted_product->getMpn() );
 
 	}
 
