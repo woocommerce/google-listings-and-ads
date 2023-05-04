@@ -1093,6 +1093,11 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$attribute_value = $product->get_meta( $attribute_name );
 		}
 
-		return is_scalar( $attribute_value ) ? $attribute_value : '';
+		// We only support scalar values.
+		if ( ! is_scalar( $attribute_value ) ) {
+			return '';
+		}
+
+		return explode( ' ' . WC_DELIMITER . ' ', $attribute_value )[0];
 	}
 }

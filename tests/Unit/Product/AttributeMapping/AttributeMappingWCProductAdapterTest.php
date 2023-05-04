@@ -268,6 +268,18 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 				'category_condition_type' => 'ALL',
 				'categories'              => '',
 			],
+			[
+				'attribute'               => GTIN::get_id(),
+				'source'                  => 'attribute:array', // This won't be loaded because we only accept scalars.
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => Brand::get_id(),
+				'source'                  => 'attribute:multiple', // Only first value will be loaded.
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
 		];
 
 		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules );
@@ -275,6 +287,10 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 
 		$this->assertEquals( 'test', $adapted_product->getColor() );
 		$this->assertEquals( 'test', $adapted_variation->getColor() );
+		$this->assertEquals( '', $adapted_variation->getGtin() );
+		$this->assertEquals( '', $adapted_variation->getGtin() );
+		$this->assertEquals( 'Value1', $adapted_variation->getBrand() );
+		$this->assertEquals( 'Value1', $adapted_variation->getBrand() );
 	}
 
 
@@ -315,7 +331,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 		$adapted_product = $this->generate_attribute_mapping_adapted_product( $rules, [ $term ] );
 
 		$this->assertEquals( 'test', $adapted_product->getColor() );
-		$this->assertEquals( '',  $adapted_product->getBrand() );
+		$this->assertEquals( '', $adapted_product->getBrand() );
 		$this->assertEquals( 'test', $adapted_product->getGtin() );
 		$this->assertEquals( '', $adapted_product->getMpn() );
 
