@@ -954,7 +954,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * Get a source value for attribute mapping
 	 *
 	 * @param string $source The source to get the value
-	 * @return string|null The source value for this product
+	 * @return string The source value for this product
 	 */
 	protected function get_source( string $source ) {
 		$source_type = null;
@@ -973,7 +973,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			case 'taxonomy':
 				return $this->get_product_taxonomy( $source_value );
 			case 'attribute':
-				return $this->get_wc_product()->get_meta( $source_value );
+				return $this->get_custom_attribute( $source_value );
 			default:
 				return $source;
 		}
@@ -1017,13 +1017,26 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 */
 	protected function get_product_taxonomy( $taxonomy ) {
 		$product = $this->get_wc_product();
-		$values  = get_the_terms( $product->get_id(), $taxonomy );
 
-		if ( ! $values ) {
-			return null;
+		if ( $product->is_type( 'variation' ) ) {
+			$values = $product->get_attribute( $taxonomy );
+
+			if ( ! $values ) {
+				$parent = wc_get_product( $product->get_parent_id() );
+				$values = $parent->get_attribute( $taxonomy );
+			}
+
+			$values = explode( ', ', $values );
+		} else {
+			$values = wc_get_product_terms( $product->get_id(), $taxonomy );
+			$values = wp_list_pluck( $values, 'name' );
 		}
 
-		return wp_list_pluck( $values, 'name' )[0];
+		if ( empty( $values ) || is_wp_error( $values ) ) {
+			return '';
+		}
+
+		return $values[0];
 	}
 
 	/**
@@ -1046,7 +1059,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			return $product->$getter();
 		}
 
-		return null;
+		return '';
 	}
 
 	/**
@@ -1069,5 +1082,30 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Gets a custom attribute from a product
+	 *
+	 * @param string $attribute_name - The attribute name to get.
+	 * @return string|null The attribute value or null if no value is found
+	 */
+	protected function get_custom_attribute( $attribute_name ) {
+		$product = $this->get_wc_product();
+
+		$attribute_value = $product->get_attribute( $attribute_name );
+
+		if ( ! $attribute_value ) {
+			$attribute_value = $product->get_meta( $attribute_name );
+		}
+
+		// We only support scalar values.
+		if ( ! is_scalar( $attribute_value ) ) {
+			return '';
+		}
+
+		$values = explode( WC_DELIMITER, (string) $attribute_value );
+		$values = array_filter( array_map( 'trim', $values ) );
+		return empty( $values ) ? '' : $values[0];
 	}
 }
