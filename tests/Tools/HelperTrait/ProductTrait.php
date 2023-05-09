@@ -157,6 +157,12 @@ trait ProductTrait {
 		return $adapted;
 	}
 
+	/**
+	 * Get the product ID
+	 *
+	 * @param WC_Product $product The product for getting the ID
+	 * @return int The Product ID
+	 */
 	protected static function get_product_id( WC_Product $product ) {
 		return $product->get_id();
 	}
@@ -471,5 +477,70 @@ trait ProductTrait {
 		);
 
 		return $attachment_id;
+	}
+
+	/**
+	 * Creates a simple product ready for being tested in Attribute Mapping
+	 *
+	 * @param array $rules The Attribute Mapping rules to apply.
+	 * @param array $categories The Categories attached to this product.
+	 * @return WCProductAdapter The adapted products with the rules applied.
+	 */
+	protected function generate_attribute_mapping_adapted_product( $rules, $categories = [] ) {
+		$product = WC_Helper_Product::create_simple_product( false );
+
+		$attributes = [
+			WC_Helper_Product::create_product_attribute_object( 'size', [ 's', 'xs' ] ),
+		];
+
+		$product->set_attributes( $attributes );
+		$product->add_meta_data( 'custom', 'test' );
+		$product->add_meta_data( 'array', [ 'foo' => 'bar' ] );
+		$product->add_meta_data( 'multiple', 'Value1 | Value 2' );
+
+		if ( ! empty( $categories ) ) {
+			$product->set_category_ids( $categories );
+		}
+
+		$product->save();
+
+		$product->set_stock_quantity( 1 );
+		$product->set_tax_class( 'mytax' );
+
+		return new WCProductAdapter(
+			[
+				'wc_product'     => $product,
+				'mapping_rules'  => $rules,
+				'gla_attributes' => [],
+				'targetCountry'  => 'US',
+			]
+		);
+	}
+
+	/**
+	 * Creates a variant with variations ready for being tested in Attribute Mapping
+	 *
+	 * @param array $rules The Attribute Mapping rules to apply.
+	 * @return WCProductAdapter The adapted products with the rules applied.
+	 */
+	protected function generate_attribute_mapping_adapted_product_variant( $rules ) {
+		$variable  = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $variable->get_children()[ count( $variable->get_children() ) - 1 ] );
+		$variation->set_stock_quantity( 1 );
+		$variation->set_weight( 1.2 );
+		$variation->set_tax_class( 'mytax' );
+		$variation->add_meta_data( 'custom', 'test' );
+		$variation->add_meta_data( 'array', [ 'foo' => 'bar' ] );
+		$variation->add_meta_data( 'multiple', 'Value1 | Value 2' );
+
+		return new WCProductAdapter(
+			[
+				'wc_product'        => $variation,
+				'parent_wc_product' => $variable,
+				'mapping_rules'     => $rules,
+				'gla_attributes'    => [],
+				'targetCountry'     => 'US',
+			]
+		);
 	}
 }

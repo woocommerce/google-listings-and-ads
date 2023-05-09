@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.2
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.4.4
+Stable tag: 2.4.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -110,6 +110,11 @@ Performance Max campaigns are pay-per-click, meaning you only pay when someone c
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.
 
 == Changelog ==
+
+= 2.4.5 - 2023-05-09 =
+* Fix - Bug in Attribute Mapping with Taxonomy based rules not being applied in variations.
+* Fix - Missing spaces between the card layouts on the Get Started page.
+* Tweak - WC 7.7 compatibility.
 
 = 2.4.4 - 2023-05-02 =
 * Dev - Fix SEMGREP warnings.
