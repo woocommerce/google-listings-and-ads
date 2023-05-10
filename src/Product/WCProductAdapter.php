@@ -268,7 +268,19 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return string
 	 */
 	public static function get_google_product_offer_id( string $slug, int $product_id ): string {
-		return "{$slug}_{$product_id}";
+		/**
+		 * Filters a WooCommerce product ID to be used as the Merchant Center product ID.
+		 *
+		 * This is done first to permit possible mapping to a different product ID. For example, map WooCommerce
+		 * product 5678 to Merchant Center product gla_1234.
+		 *
+		 * @param string $mc_product_id Default generated Merchant Center product ID.
+		 * @param int    $product_id    WooCommerce product ID.
+		 * @since x.x.x
+		 *
+		 * @return string Merchant Center product ID corresponding to the given WooCommerce product ID.
+		 */
+		return apply_filters( 'woocommerce_gla_get_google_product_offer_id', "{$slug}_{$product_id}", $product_id );
 	}
 
 	/**
