@@ -222,7 +222,7 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( '56789', $adapted_product->getGtin() );
 	}
 
-	public function test_get_google_product_offer_id_with_custom_mapping_filter(  ) {
+	public function test_get_google_product_offer_id_with_custom_mapping_filter() {
 		add_filter(
 			'woocommerce_gla_get_google_product_offer_id',
 			function( $mc_product_id, $woo_product_id ) {
@@ -231,7 +231,8 @@ class WCProductAdapterTest extends UnitTest {
 				}
 				return $mc_product_id;
 			},
-			10, 2
+			10,
+			2
 		);
 		// Successful map
 		$this->assertEquals( 'custom_mapped_id', WCProductAdapter::get_google_product_offer_id( 'gla', 25 ) );

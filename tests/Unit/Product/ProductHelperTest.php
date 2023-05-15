@@ -478,16 +478,16 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_get_wc_product_id_custom_map_filter_with_prefixed_id() {
-
 		add_filter(
 			'woocommerce_gla_get_wc_product_id',
 			function ( $wc_product_id, $mc_product_id ) {
-				if( $mc_product_id === 'some_custom_mc_product_id' ) {
+				if ( $mc_product_id === 'some_custom_mc_product_id' ) {
 					$wc_product_id = 55;
 				}
 				return $wc_product_id;
 			},
-			10, 2
+			10,
+			2
 		);
 		// Custom map found, prefixed MC product ID
 		$this->assertEquals( 55, $this->product_helper->get_wc_product_id( 'online:en:US:some_custom_mc_product_id' ) );
