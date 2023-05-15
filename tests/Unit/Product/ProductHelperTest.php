@@ -477,6 +477,31 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 0, $product_id );
 	}
 
+	public function test_get_wc_product_id_custom_map_filter_with_prefixed_id() {
+
+		add_filter(
+			'woocommerce_gla_get_wc_product_id',
+			function ( $wc_product_id, $mc_product_id ) {
+				if( $mc_product_id === 'some_custom_mc_product_id' ) {
+					$wc_product_id = 55;
+				}
+				return $wc_product_id;
+			},
+			10, 2
+		);
+		// Custom map found, prefixed MC product ID
+		$this->assertEquals( 55, $this->product_helper->get_wc_product_id( 'online:en:US:some_custom_mc_product_id' ) );
+		// Custom map found, simple MC product ID
+		$this->assertEquals( 55, $this->product_helper->get_wc_product_id( 'some_custom_mc_product_id' ) );
+		// No custom map found, prefixed MC product ID
+		$this->assertEquals( 1234567, $this->product_helper->get_wc_product_id( 'online:en:US:gla_1234567' ) );
+		// No custom map found, simple MC product ID
+		$this->assertEquals( 1234567, $this->product_helper->get_wc_product_id( 'gla_1234567' ) );
+		// Invalid ID, not WC product or custom map
+		$this->assertEquals( 0, $this->product_helper->get_wc_product_id( 'online:en:US:not_gla_or_mapped' ) );
+
+	}
+
 	public function test_get_wc_product_title() {
 		$product = WC_Helper_Product::create_simple_product();
 
