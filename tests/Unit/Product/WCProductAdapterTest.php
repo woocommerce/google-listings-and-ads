@@ -222,6 +222,23 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( '56789', $adapted_product->getGtin() );
 	}
 
+	public function test_get_google_product_offer_id_with_custom_mapping_filter(  ) {
+		add_filter(
+			'woocommerce_gla_get_google_product_offer_id',
+			function( $mc_product_id, $woo_product_id ) {
+				if ( $woo_product_id === 25 ) {
+					$mc_product_id = 'custom_mapped_id';
+				}
+				return $mc_product_id;
+			},
+			10, 2
+		);
+		// Successful map
+		$this->assertEquals( 'custom_mapped_id', WCProductAdapter::get_google_product_offer_id( 'gla', 25 ) );
+		// No custom map present
+		$this->assertEquals( 'gla_30', WCProductAdapter::get_google_product_offer_id( 'gla', 30 ) );
+	}
+
 	public function test_channel_is_always_set_to_online() {
 		$adapted_product = new WCProductAdapter(
 			[
