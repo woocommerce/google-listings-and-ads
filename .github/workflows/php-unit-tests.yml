@@ -30,7 +30,7 @@ jobs:
     steps:
       - name: Get Release versions from Wordpress
         id: wp
-        uses: woocommerce/grow/get-plugin-releases@actions-v1.5.0-pre
+        uses: woocommerce/grow/get-plugin-releases@actions-v1.5.3-pre
         with:
           slug: wordpress
           
