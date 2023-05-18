@@ -26,7 +26,7 @@ jobs:
     name: Get WP version Matrix
     runs-on: ubuntu-latest
     outputs:
-      wp-matrix: ${{ steps.wp.outputs.matrix }}
+      wp-matrix: ${{ steps.wp.outputs.versions }}
     steps:
       - name: Get Release versions from Wordpress
         id: wp
