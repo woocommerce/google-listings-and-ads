@@ -197,6 +197,9 @@ class GLAChannelTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		// Enable campaign types for tests.
+		add_filter( 'woocommerce_gla_enable_mcm', '__return_true' );
+
 		$this->merchant_center    = $this->createMock( MerchantCenterService::class );
 		$this->ads_campaign       = $this->createMock( AdsCampaign::class );
 		$this->ads                = $this->createMock( Ads::class );
