@@ -26,11 +26,11 @@ jobs:
     name: Get WP version Matrix
     runs-on: ubuntu-latest
     outputs:
-      wp-matrix: ${{ steps.wp.outputs.matrix }}
+      wp-versions: ${{ steps.wp.outputs.versions }}
     steps:
       - name: Get Release versions from Wordpress
         id: wp
-        uses: woocommerce/grow/get-plugin-releases@actions-v1.5.0-pre
+        uses: woocommerce/grow/get-plugin-releases@actions-v1
         with:
           slug: wordpress
           
@@ -44,7 +44,7 @@ jobs:
     strategy:
       matrix:
         php: [8.0]
-        wp-version: ${{ fromJson(needs.GetMatrix.outputs.wp-matrix) }}
+        wp-version: ${{ fromJson(needs.GetMatrix.outputs.wp-versions) }}
         include:
           - php: 7.4
             wp-version: latest
