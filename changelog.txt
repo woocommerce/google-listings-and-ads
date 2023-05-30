@@ -1,6 +1,6 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
-= 2.4.6 - 2023-xx-xx =
+= 2.4.6 - 2023-05-30 =
 * Add - Filters for manually mapping product IDs.
 * Tweak - Adjust the MCM filter to always show in channels.
 

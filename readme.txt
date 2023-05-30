@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.2
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.4.5
+Stable tag: 2.4.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,7 +111,7 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 2.4.6 - 2023-xx-xx =
+= 2.4.6 - 2023-05-30 =
 * Add - Filters for manually mapping product IDs.
 * Tweak - Adjust the MCM filter to always show in channels.
 
