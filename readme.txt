@@ -120,16 +120,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - Fix SEMGREP warnings.
 * Fix - Prefix Psr\Container package to prevent conflicts with other plugins.
 
-= 2.4.3 - 2023-04-25 =
-* Dev - Add PHP Code coverage report as GitHub action.
-* Dev - Unit test support for PHP 8.2.
-* Dev - Use "willReturnOnConsecutiveCalls" instead of "at" for unit tests.
-* Fix - Prevent creating assets for non-Performance Max campaigns.
-* Fix - The fatal errors caused by adding any US Armed Forces location to WooCommerce Shipping setting.
-* Fix - Use Ads account currency in the WooCommerce marketing dashboard.
-* Tweak - Redirect users between Dashboard and Get Started pages as required.
-
-= 2.4.2 - 2023-03-29 =
-* Tweak - WC 7.6 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
