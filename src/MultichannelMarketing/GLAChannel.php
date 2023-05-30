@@ -70,7 +70,11 @@ class GLAChannel implements MarketingChannelInterface {
 		$this->ads                = $ads;
 		$this->merchant_statuses  = $merchant_statuses;
 		$this->product_sync_stats = $product_sync_stats;
-		$this->campaign_types     = $this->generate_campaign_types();
+		$this->campaign_types     = [];
+
+		if ( apply_filters( 'woocommerce_gla_enable_mcm', false ) === true ) {
+			$this->campaign_types = $this->generate_campaign_types();
+		}
 	}
 
 	/**
