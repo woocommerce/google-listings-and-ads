@@ -983,6 +983,26 @@ DESCRIPTION;
 		$this->assertEquals( 20, $adapted_product->getSalePrice()->getValue() );
 	}
 
+	public function test_product_is_virtual_can_be_modified_via_filter() {
+		add_filter(
+			'woocommerce_gla_product_property_value_is_virtual',
+			function () {
+				return true;
+			}
+		);
+
+		$product         = WC_Helper_Product::create_simple_product( false, [ 'virtual' => false ] );
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+		$this->assertFalse( $product->is_virtual() );
+		$this->assertTrue( $adapted_product->is_virtual() );
+	}
+
+
 	public function test_product_price_includes_or_excludes_tax_based_on_target_country() {
 		add_filter(
 			'wc_tax_enabled',
