@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.4.6 - 2023-xx-xx =
+* Add - Filters for manually mapping product IDs.
+* Tweak - Adjust the MCM filter to always show in channels.
+
 = 2.4.5 - 2023-05-09 =
 * Fix - Bug in Attribute Mapping with Taxonomy based rules not being applied in variations.
 * Fix - Missing spaces between the card layouts on the Get Started page.
