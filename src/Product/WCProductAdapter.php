@@ -273,7 +273,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		 *
 		 * @param string $mc_product_id Default generated Merchant Center product ID.
 		 * @param int    $product_id    WooCommerce product ID.
-		 * @since x.x.x
+		 * @since 2.4.6
 		 *
 		 * @return string Merchant Center product ID corresponding to the given WooCommerce product ID.
 		 */
