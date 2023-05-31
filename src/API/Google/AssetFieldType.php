@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Google\Ads\GoogleAds\V12\Enums\AssetFieldTypeEnum\AssetFieldType as AdsAssetFieldType;
+use Google\Ads\GoogleAds\V13\Enums\AssetFieldTypeEnum\AssetFieldType as AdsAssetFieldType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\StatusMapping;
 use UnexpectedValueException;
 
