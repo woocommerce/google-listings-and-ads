@@ -204,7 +204,7 @@ class WooCommerceProductBundles implements IntegrationInterface {
 	 * @param WC_Product $product    WooCommerce product
 	 */
 	private function is_virtual_bundle( bool $is_virtual, WC_Product $product ): bool {
-		if ( $product instanceof WC_Product_Bundle && is_callable( [ new WC_Product_Bundle(), 'is_virtual_bundle' ] ) ) {
+		if ( $product instanceof WC_Product_Bundle && is_callable( [ $product, 'is_virtual_bundle' ] ) ) {
 			return $product->is_virtual_bundle();
 		}
 
