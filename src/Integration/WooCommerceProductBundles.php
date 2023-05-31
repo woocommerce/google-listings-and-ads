@@ -84,6 +84,16 @@ class WooCommerceProductBundles implements IntegrationInterface {
 			3
 		);
 
+		// adapt the `is_virtual` property for bundle products
+		add_filter(
+			'woocommerce_gla_product_property_value_is_virtual',
+			function ( bool $is_virtual, WC_Product $product ) {
+				return $this->is_virtual_bundle( $is_virtual, $product );
+			},
+			10,
+			2
+		);
+
 		// filter unsupported bundle products
 		add_filter(
 			'woocommerce_gla_get_sync_ready_products_pre_filter',
@@ -187,6 +197,18 @@ class WooCommerceProductBundles implements IntegrationInterface {
 		}
 
 		return $sale_price;
+	}
+
+	/**
+	 * @param bool       $is_virtual Whether a product is virtual
+	 * @param WC_Product $product    WooCommerce product
+	 */
+	private function is_virtual_bundle( bool $is_virtual, WC_Product $product ): bool {
+		if ( $product instanceof WC_Product_Bundle && is_callable( [ $product, 'is_virtual_bundle' ] ) ) {
+			return $product->is_virtual_bundle();
+		}
+
+		return $is_virtual;
 	}
 
 	/**

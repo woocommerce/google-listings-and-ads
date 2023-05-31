@@ -40,8 +40,8 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L108">Ads.php#L108</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L117">Ads.php#L117</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L112">Ads.php#L112</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L121">Ads.php#L121</a>
 
 ## woocommerce_gla_ads_client_exception
 
@@ -49,18 +49,24 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L69">Ads.php#L69</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L113">Ads.php#L113</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L168">Ads.php#L168</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L203">Ads.php#L203</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsCampaign.php#L118">AdsCampaign.php#L118</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsCampaign.php#L161">AdsCampaign.php#L161</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsCampaign.php#L221">AdsCampaign.php#L221</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsCampaign.php#L276">AdsCampaign.php#L276</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsCampaign.php#L310">AdsCampaign.php#L310</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsConversionAction.php#L95">AdsConversionAction.php#L95</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsConversionAction.php#L137">AdsConversionAction.php#L137</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsReport.php#L90">AdsReport.php#L90</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L73">Ads.php#L73</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L117">Ads.php#L117</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L172">Ads.php#L172</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L214">Ads.php#L214</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Ads.php#L298">Ads.php#L298</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsAssetGroup.php#L113">AdsAssetGroup.php#L113</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsAssetGroup.php#L304">AdsAssetGroup.php#L304</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsAssetGroup.php#L369">AdsAssetGroup.php#L369</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsAssetGroupAsset.php#L135">AdsAssetGroupAsset.php#L135</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsAssetGroupAsset.php#L202">AdsAssetGroupAsset.php#L202</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsCampaign.php#L127">AdsCampaign.php#L127</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsCampaign.php#L170">AdsCampaign.php#L170</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsCampaign.php#L230">AdsCampaign.php#L230</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsCampaign.php#L285">AdsCampaign.php#L285</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsCampaign.php#L319">AdsCampaign.php#L319</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsConversionAction.php#L97">AdsConversionAction.php#L97</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsConversionAction.php#L143">AdsConversionAction.php#L143</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsReport.php#L105">AdsReport.php#L105</a>
 
 ## woocommerce_gla_ads_setup_completed
 
@@ -87,6 +93,46 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Admin/Product/Attributes/AttributesForm.php#L74">AttributesForm.php#L74</a>
 
+## woocommerce_gla_attribute_mapping_sources
+
+**Type**: filter
+
+**Used in**:
+
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L31">IsFieldTrait.php#L31</a>
+
+## woocommerce_gla_attribute_mapping_sources_custom_attributes
+
+**Type**: filter
+
+**Used in**:
+
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L125">IsFieldTrait.php#L125</a>
+
+## woocommerce_gla_attribute_mapping_sources_global_attributes
+
+**Type**: filter
+
+**Used in**:
+
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L64">IsFieldTrait.php#L64</a>
+
+## woocommerce_gla_attribute_mapping_sources_product_fields
+
+**Type**: filter
+
+**Used in**:
+
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L115">IsFieldTrait.php#L115</a>
+
+## woocommerce_gla_attribute_mapping_sources_taxonomies
+
+**Type**: filter
+
+**Used in**:
+
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/AttributeMapping/Traits/IsFieldTrait.php#L65">IsFieldTrait.php#L65</a>
+
 ## woocommerce_gla_attributes_tab_applicable_product_types
 
 **Type**: filter
@@ -101,7 +147,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L221">ProductSyncer.php#L221</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L229">ProductSyncer.php#L229</a>
 
 ## woocommerce_gla_batch_retry_delete_products
 
@@ -109,7 +155,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L341">ProductSyncer.php#L341</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L354">ProductSyncer.php#L354</a>
 
 ## woocommerce_gla_batch_retry_update_products
 
@@ -117,7 +163,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L290">ProductSyncer.php#L290</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L298">ProductSyncer.php#L298</a>
 
 ## woocommerce_gla_batch_updated_products
 
@@ -125,7 +171,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L135">ProductSyncer.php#L135</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L143">ProductSyncer.php#L143</a>
 
 ## woocommerce_gla_batched_job_size
 
@@ -134,6 +180,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 **Used in**:
 
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Jobs/AbstractBatchedActionSchedulerJob.php#L104">AbstractBatchedActionSchedulerJob.php#L104</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Jobs/UpdateSyncableProductsCount.php#L74">UpdateSyncableProductsCount.php#L74</a>
 
 ## woocommerce_gla_bulk_update_coupon
 
@@ -149,7 +196,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsConversionAction.php#L64">AdsConversionAction.php#L64</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/AdsConversionAction.php#L66">AdsConversionAction.php#L66</a>
 
 ## woocommerce_gla_coupons_delete_retry_on_failure
 
@@ -193,21 +240,21 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Coupon/CouponSyncer.php#L308">CouponSyncer.php#L308</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Coupon/CouponSyncer.php#L327">CouponSyncer.php#L327</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Coupon/SyncerHooks.php#L177">SyncerHooks.php#L177</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/BatchProductHelper.php#L195">BatchProductHelper.php#L195</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/BatchProductHelper.php#L218">BatchProductHelper.php#L218</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductHelper.php#L427">ProductHelper.php#L427</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/BatchProductHelper.php#L208">BatchProductHelper.php#L208</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/BatchProductHelper.php#L231">BatchProductHelper.php#L231</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductHelper.php#L459">ProductHelper.php#L459</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductRepository.php#L296">ProductRepository.php#L296</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L141">ProductSyncer.php#L141</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L151">ProductSyncer.php#L151</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L227">ProductSyncer.php#L227</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L237">ProductSyncer.php#L237</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductHelper.php#L491">ProductHelper.php#L491</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductRepository.php#L304">ProductRepository.php#L304</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L149">ProductSyncer.php#L149</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L159">ProductSyncer.php#L159</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L235">ProductSyncer.php#L235</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L245">ProductSyncer.php#L245</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/SyncerHooks.php#L197">SyncerHooks.php#L197</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L194">WCProductAdapter.php#L194</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L203">WCProductAdapter.php#L203</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/DB/ProductMetaQueryHelper.php#L92">ProductMetaQueryHelper.php#L92</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/DB/ProductMetaQueryHelper.php#L123">ProductMetaQueryHelper.php#L123</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Site/Controllers/MerchantCenter/IssuesController.php#L96">IssuesController.php#L96</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/MerchantCenter/MerchantCenterService.php#L304">MerchantCenterService.php#L304</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/MerchantCenter/MerchantCenterService.php#L305">MerchantCenterService.php#L305</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/MerchantCenter/MerchantStatuses.php#L334">MerchantStatuses.php#L334</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/MerchantCenter/MerchantStatuses.php#L357">MerchantStatuses.php#L357</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Jobs/ActionSchedulerJobMonitor.php#L117">ActionSchedulerJobMonitor.php#L117</a>
@@ -228,7 +275,15 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L409">WCProductAdapter.php#L409</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L427">WCProductAdapter.php#L427</a>
+
+## woocommerce_gla_disable_gtag_tracking
+
+**Type**: filter
+
+**Used in**:
+
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Google/GlobalSiteTag.php#L463">GlobalSiteTag.php#L463</a>
 
 ## woocommerce_gla_enable_connection_test
 
@@ -246,13 +301,21 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Logging/DebugLogger.php#L33">DebugLogger.php#L33</a>
 
+## woocommerce_gla_enable_mcm
+
+**Type**: filter
+
+**Used in**:
+
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/MultichannelMarketing/GLAChannel.php#L75">GLAChannel.php#L75</a>
+
 ## woocommerce_gla_enable_reports
 
 **Type**: filter
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Admin/Admin.php#L239">Admin.php#L239</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Admin/Admin.php#L250">Admin.php#L250</a>
 
 ## woocommerce_gla_error
 
@@ -264,14 +327,14 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Coupon/CouponSyncer.php#L409">CouponSyncer.php#L409</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Coupon/CouponSyncer.php#L447">CouponSyncer.php#L447</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Coupon/CouponSyncer.php#L465">CouponSyncer.php#L465</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/BatchProductHelper.php#L235">BatchProductHelper.php#L235</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductHelper.php#L319">ProductHelper.php#L319</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductHelper.php#L501">ProductHelper.php#L501</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/BatchProductHelper.php#L248">BatchProductHelper.php#L248</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductHelper.php#L351">ProductHelper.php#L351</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductHelper.php#L567">ProductHelper.php#L567</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductMetaHandler.php#L173">ProductMetaHandler.php#L173</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L293">ProductSyncer.php#L293</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L316">ProductSyncer.php#L316</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L344">ProductSyncer.php#L344</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L359">ProductSyncer.php#L359</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L301">ProductSyncer.php#L301</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L324">ProductSyncer.php#L324</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L357">ProductSyncer.php#L357</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L372">ProductSyncer.php#L372</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/Attributes/AttributeManager.php#L269">AttributeManager.php#L269</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/View/PHPView.php#L136">PHPView.php#L136</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/View/PHPView.php#L164">PHPView.php#L164</a>
@@ -290,20 +353,20 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Admin/Input/DateTime.php#L80">DateTime.php#L80</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Admin/MetaBox/ChannelVisibilityMetaBox.php#L190">ChannelVisibilityMetaBox.php#L190</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Admin/MetaBox/CouponChannelVisibilityMetaBox.php#L197">CouponChannelVisibilityMetaBox.php#L197</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Internal/DependencyManagement/GoogleServiceProvider.php#L216">GoogleServiceProvider.php#L216</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Internal/DependencyManagement/GoogleServiceProvider.php#L222">GoogleServiceProvider.php#L222</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Coupon/CouponSyncer.php#L202">CouponSyncer.php#L202</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Coupon/CouponSyncer.php#L292">CouponSyncer.php#L292</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L126">ProductSyncer.php#L126</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L212">ProductSyncer.php#L212</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L134">ProductSyncer.php#L134</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L220">ProductSyncer.php#L220</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Notes/NoteInitializer.php#L74">NoteInitializer.php#L74</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Notes/NoteInitializer.php#L116">NoteInitializer.php#L116</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/View/PHPView.php#L87">PHPView.php#L87</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Connection.php#L95">Connection.php#L95</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Site/Controllers/MerchantCenter/ContactInformationController.php#L234">ContactInformationController.php#L234</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Site/Controllers/MerchantCenter/ContactInformationController.php#L242">ContactInformationController.php#L242</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Site/Controllers/MerchantCenter/ProductVisibilityController.php#L193">ProductVisibilityController.php#L193</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Site/Controllers/MerchantCenter/SettingsSyncController.php#L79">SettingsSyncController.php#L79</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Jobs/Update/PluginUpdate.php#L75">PluginUpdate.php#L75</a>
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Assets/AdminScriptWithBuiltDependenciesAsset.php#L64">AdminScriptWithBuiltDependenciesAsset.php#L64</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Assets/ScriptWithBuiltDependenciesAsset.php#L66">ScriptWithBuiltDependenciesAsset.php#L66</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Event/ClearProductStatsCache.php#L61">ClearProductStatsCache.php#L61</a>
 
 ## woocommerce_gla_force_run_install
@@ -313,6 +376,14 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 **Used in**:
 
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Installer.php#L82">Installer.php#L82</a>
+
+## woocommerce_gla_get_google_product_offer_id
+
+**Type**: filter
+
+**Used in**:
+
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L280">WCProductAdapter.php#L280</a>
 
 ## woocommerce_gla_get_sync_ready_products_filter
 
@@ -330,13 +401,21 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductFilter.php#L47">ProductFilter.php#L47</a>
 
+## woocommerce_gla_get_wc_product_id
+
+**Type**: filter
+
+**Used in**:
+
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductHelper.php#L278">ProductHelper.php#L278</a>
+
 ## woocommerce_gla_guzzle_client_exception
 
 **Type**: action
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Internal/DependencyManagement/GoogleServiceProvider.php#L240">GoogleServiceProvider.php#L240</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Internal/DependencyManagement/GoogleServiceProvider.php#L246">GoogleServiceProvider.php#L246</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Connection.php#L70">Connection.php#L70</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Connection.php#L91">Connection.php#L91</a>
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Google/Connection.php#L126">Connection.php#L126</a>
@@ -381,7 +460,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L267">ProductSyncer.php#L267</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L275">ProductSyncer.php#L275</a>
 
 ## woocommerce_gla_job_failure_rate_threshold
 
@@ -398,6 +477,16 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 **Used in**:
 
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Jobs/ActionSchedulerJobMonitor.php#L195">ActionSchedulerJobMonitor.php#L195</a>
+
+## woocommerce_gla_mapping_rules_change
+
+**Type**: action
+
+**Used in**:
+
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Site/Controllers/AttributeMapping/AttributeMappingRulesController.php#L143">AttributeMappingRulesController.php#L143</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Site/Controllers/AttributeMapping/AttributeMappingRulesController.php#L166">AttributeMappingRulesController.php#L166</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/API/Site/Controllers/AttributeMapping/AttributeMappingRulesController.php#L188">AttributeMappingRulesController.php#L188</a>
 
 ## woocommerce_gla_mc_account_review_lifetime
 
@@ -436,7 +525,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/MerchantCenter/MerchantStatuses.php#L735">MerchantStatuses.php#L735</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/MerchantCenter/MerchantStatuses.php#L778">MerchantStatuses.php#L778</a>
 
 ## woocommerce_gla_merchant_issue_override
 
@@ -501,7 +590,8 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L866">WCProductAdapter.php#L866</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L901">WCProductAdapter.php#L901</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L952">WCProductAdapter.php#L952</a>
 
 ## woocommerce_gla_product_attribute_value_description
 
@@ -509,7 +599,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L330">WCProductAdapter.php#L330</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L348">WCProductAdapter.php#L348</a>
 
 ## woocommerce_gla_product_attribute_value_options_$ATTRIBUTE::get_id
 
@@ -525,7 +615,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L612">WCProductAdapter.php#L612</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L630">WCProductAdapter.php#L630</a>
 
 ## woocommerce_gla_product_attribute_value_sale_price
 
@@ -533,7 +623,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L662">WCProductAdapter.php#L662</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L680">WCProductAdapter.php#L680</a>
 
 ## woocommerce_gla_product_attribute_values
 
@@ -541,7 +631,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L158">WCProductAdapter.php#L158</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L167">WCProductAdapter.php#L167</a>
 
 ## woocommerce_gla_product_description_apply_shortcodes
 
@@ -549,7 +639,15 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L299">WCProductAdapter.php#L299</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L317">WCProductAdapter.php#L317</a>
+
+## woocommerce_gla_product_property_value_is_virtual
+
+**Type**: filter
+
+**Used in**:
+
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L767">WCProductAdapter.php#L767</a>
 
 ## woocommerce_gla_products_delete_retry_on_failure
 
@@ -557,7 +655,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L340">ProductSyncer.php#L340</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L353">ProductSyncer.php#L353</a>
 
 ## woocommerce_gla_products_update_retry_on_failure
 
@@ -565,7 +663,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L289">ProductSyncer.php#L289</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L297">ProductSyncer.php#L297</a>
 
 ## woocommerce_gla_ready_for_syncing
 
@@ -677,7 +775,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L256">ProductSyncer.php#L256</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductSyncer.php#L264">ProductSyncer.php#L264</a>
 
 ## woocommerce_gla_sv_client_exception
 
@@ -694,7 +792,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L573">WCProductAdapter.php#L573</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L591">WCProductAdapter.php#L591</a>
 
 ## woocommerce_gla_updated_coupon
 
@@ -726,7 +824,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L276">WCProductAdapter.php#L276</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L294">WCProductAdapter.php#L294</a>
 
 ## woocommerce_gla_wcs_url
 
@@ -743,7 +841,7 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L410">WCProductAdapter.php#L410</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/WCProductAdapter.php#L428">WCProductAdapter.php#L428</a>
 
 ## woocommerce_hide_invisible_variations
 
@@ -751,5 +849,5 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 **Used in**:
 
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductHelper.php#L334">ProductHelper.php#L334</a>
+- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Product/ProductHelper.php#L366">ProductHelper.php#L366</a>
 

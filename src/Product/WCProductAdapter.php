@@ -756,7 +756,17 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return bool
 	 */
 	public function is_virtual(): bool {
-		return false !== $this->wc_product->is_virtual();
+		$is_virtual = $this->wc_product->is_virtual();
+
+		/**
+		 * Filters the virtual property value of a product.
+		 *
+		 * @param bool       $is_virtual Whether a product is virtual
+		 * @param WC_Product $product    WooCommerce product
+		 */
+		$is_virtual = apply_filters( 'woocommerce_gla_product_property_value_is_virtual', $is_virtual, $this->wc_product );
+
+		return false !== $is_virtual;
 	}
 
 	/**
