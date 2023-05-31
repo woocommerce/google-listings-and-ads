@@ -27,6 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       wp-versions: ${{ steps.wp.outputs.versions }}
+      latest-wp-version: ${{ fromJson(steps.wp.outputs.versions)[0] }}
     steps:
       - name: Get Release versions from Wordpress
         id: wp
@@ -47,7 +48,7 @@ jobs:
         wp-version: ${{ fromJson(needs.GetMatrix.outputs.wp-versions) }}
         include:
           - php: 7.4
-            wp-version: latest
+            wp-version: ${{ needs.GetMatrix.outputs.latest-wp-version }}
 
     steps:
       - name: Checkout repository
@@ -64,7 +65,7 @@ jobs:
       - name: Install WP tests
         run: ./bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wp-version }}
 
-      - if: matrix.wp-version == 'latest' && matrix.php == 8.0
+      - if: matrix.wp-version == needs.GetMatrix.outputs.latest-wp-version && matrix.php == 8.0
         name: Set condition to generate coverage report (only on latest versions)
         run: echo "generate_coverage=true" >> $GITHUB_ENV
 
