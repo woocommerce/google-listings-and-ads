@@ -3,13 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Google\Ads\GoogleAds\V12\Enums\CallToActionTypeEnum\CallToActionType as AdsCallToActionType;
+use Google\Ads\GoogleAds\V13\Enums\CallToActionTypeEnum\CallToActionType as AdsCallToActionType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\StatusMapping;
 
 
 /**
  * Mapping between Google and internal CallToActionType
- * https://developers.google.com/google-ads/api/reference/rpc/v12/CallToActionTypeEnum.CallToActionType
+ * https://developers.google.com/google-ads/api/reference/rpc/v13/CallToActionTypeEnum.CallToActionType
  *
  * @since 2.4.0
  *

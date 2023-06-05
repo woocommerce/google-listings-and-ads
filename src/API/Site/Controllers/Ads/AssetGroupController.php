@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class for handling API requests related to the asset groups.
- * See https://developers.google.com/google-ads/api/reference/rpc/v12/AssetGroup
+ * See https://developers.google.com/google-ads/api/reference/rpc/v13/AssetGroup
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */

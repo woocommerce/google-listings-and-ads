@@ -13,11 +13,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Exception;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V12\ResourceNames;
-use Google\Ads\GoogleAds\V12\Enums\AccessRoleEnum\AccessRole;
-use Google\Ads\GoogleAds\V12\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
-use Google\Ads\GoogleAds\V12\Resources\MerchantCenterLink;
-use Google\Ads\GoogleAds\V12\Services\MerchantCenterLinkOperation;
+use Google\Ads\GoogleAds\Util\V13\ResourceNames;
+use Google\Ads\GoogleAds\V13\Enums\AccessRoleEnum\AccessRole;
+use Google\Ads\GoogleAds\V13\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
+use Google\Ads\GoogleAds\V13\Resources\MerchantCenterLink;
+use Google\Ads\GoogleAds\V13\Services\MerchantCenterLinkOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 
