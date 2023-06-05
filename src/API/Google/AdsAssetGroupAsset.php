@@ -22,7 +22,7 @@ use Google\Ads\GoogleAds\Util\V13\ResourceNames;
  * Class AdsAssetGroupAsset
  *
  * Use to get assets group assets for specific asset groups.
- * https://developers.google.com/google-ads/api/fields/v12/asset_group_asset
+ * https://developers.google.com/google-ads/api/fields/v13/asset_group_asset
  *
  * @since 2.4.0
  *

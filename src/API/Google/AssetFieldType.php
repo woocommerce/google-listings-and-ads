@@ -10,7 +10,7 @@ use UnexpectedValueException;
 
 /**
  * Mapping between Google and internal AssetFieldTypes
- * https://developers.google.com/google-ads/api/reference/rpc/v12/AssetFieldTypeEnum.AssetFieldType
+ * https://developers.google.com/google-ads/api/reference/rpc/v13/AssetFieldTypeEnum.AssetFieldType
  *
  * @since 2.4.0
  *
