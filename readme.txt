@@ -111,6 +111,12 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.4.7 - 2023-06-07 =
+* Fix - Adapt the `is_virtual` property value for Product Bundles to avoid applying incorrect shipping rates in products synchronization.
+* Update - Google API Client Services package to v0.302.
+* Update - Google API Client package to v2.15.
+* Update - Google Ads library to API V13. (package v19.1.0).
+
 = 2.4.6 - 2023-05-30 =
 * Add - Filters for manually mapping product IDs.
 * Tweak - Adjust the MCM filter to always show in channels.
