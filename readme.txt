@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.2
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.4.6
+Stable tag: 2.4.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -110,6 +110,12 @@ Performance Max campaigns are pay-per-click, meaning you only pay when someone c
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.
 
 == Changelog ==
+
+= 2.4.7 - 2023-06-07 =
+* Fix - Adapt the `is_virtual` property value for Product Bundles to avoid applying incorrect shipping rates in products synchronization.
+* Update - Google API Client Services package to v0.302.
+* Update - Google API Client package to v2.15.
+* Update - Google Ads library to API V13. (package v19.1.0).
 
 = 2.4.6 - 2023-05-30 =
 * Add - Filters for manually mapping product IDs.
