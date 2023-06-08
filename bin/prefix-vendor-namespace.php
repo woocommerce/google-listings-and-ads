@@ -22,6 +22,11 @@ $packages = [
 		'strict'    => false,
 	],
 	[
+		'namespace' => 'Psr\\Http\\Message',
+		'package'   => 'psr/http-factory',
+		'strict'    => false,
+	],
+	[
 		'namespace' => 'Psr\\Container',
 		'package'   => 'psr/container',
 		'strict'    => false,
@@ -89,14 +94,16 @@ $dependencies = [
 		'league/container',
 	],
 	'psr/http-message' => [
-		'firebase/php-jwt',
 		'google/apiclient',
 		'google/auth',
 		'google/gax',
 		'guzzlehttp/guzzle',
 		'guzzlehttp/psr7',
 		'psr/http-client',
-		'psr/http-factory',
+	],
+	'psr/http-factory' => [
+		'firebase/php-jwt',
+		'guzzlehttp/psr7',
 	],
 ];
 
