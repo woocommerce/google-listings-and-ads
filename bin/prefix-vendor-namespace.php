@@ -88,7 +88,7 @@ $dependencies = [
 	'psr/container'    => [
 		'league/container',
 	],
-	'psr/http-message'    => [
+	'psr/http-message' => [
 		'firebase/php-jwt',
 		'google/apiclient',
 		'google/auth',
