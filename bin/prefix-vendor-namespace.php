@@ -267,7 +267,7 @@ function prefix_uses( &$contents, $package ) {
 	// Replace direct class implements.
 	$contents = preg_replace(
 		"#(\s*)(class .* implements)\s*([a-zA-Z0-9_\\,]*\s*)(\\\\{$quoted}\\\\[a-zA-Z0-9_]+\s*\{?)$#m",
-		"\$1\$2 \$3 \\\\{$namespace_prefix}\$4",
+		"\$1\$2 \$3\\\\{$namespace_prefix}\$4",
 		$contents
 	);
 
