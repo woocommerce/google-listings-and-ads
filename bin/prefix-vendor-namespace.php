@@ -17,6 +17,11 @@ declare( strict_types=1 );
  */
 $packages = [
 	[
+		'namespace' => 'Psr\\Http\\Client',
+		'package'   => 'psr/http-client',
+		'strict'    => false,
+	],
+	[
 		'namespace' => 'Psr\\Http\\Message',
 		'package'   => 'psr/http-message',
 		'strict'    => false,
@@ -92,6 +97,10 @@ $dependencies = [
 	],
 	'psr/container'    => [
 		'league/container',
+	],
+	'psr/http-client'  => [
+		'firebase/php-jwt',
+		'guzzlehttp/guzzle',
 	],
 	'psr/http-message' => [
 		'google/apiclient',
@@ -252,6 +261,13 @@ function prefix_uses( &$contents, $package ) {
 	$contents = preg_replace(
 		"#(\s*)([class|interface] .* extends)\s*(\\\\{$quoted}\\\\[a-zA-Z0-9_]+\s*\{?)$#m",
 		"\$1\$2 \\\\{$namespace_prefix}\$3",
+		$contents
+	);
+
+	// Replace direct class implements.
+	$contents = preg_replace(
+		"#(\s*)(class .* implements)\s*([a-zA-Z0-9_\\,]*\s*)(\\\\{$quoted}\\\\[a-zA-Z0-9_]+\s*\{?)$#m",
+		"\$1\$2 \$3\\\\{$namespace_prefix}\$4",
 		$contents
 	);
 

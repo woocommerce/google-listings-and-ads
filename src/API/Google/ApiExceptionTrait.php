@@ -4,9 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Google\ApiCore\ApiException;
 use Google\Rpc\Code;
-use Psr\Http\Client\ClientExceptionInterface;
 
 /**
  * Trait ApiExceptionTrait
