@@ -111,6 +111,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.4.8 - 2023-06-08 =
+* Fix - Prefix Psr\Http\Message package to prevent conflicts with other plugins.
+
 = 2.4.7 - 2023-06-07 =
 * Fix - Adapt the `is_virtual` property value for Product Bundles to avoid applying incorrect shipping rates in products synchronization.
 * Update - Google API Client Services package to v0.302.
