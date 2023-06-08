@@ -17,6 +17,11 @@ declare( strict_types=1 );
  */
 $packages = [
 	[
+		'namespace' => 'Psr\\Http\\Message',
+		'package'   => 'psr/http-message',
+		'strict'    => false,
+	],
+	[
 		'namespace' => 'Psr\\Container',
 		'package'   => 'psr/container',
 		'strict'    => false,
@@ -82,6 +87,16 @@ $dependencies = [
 	],
 	'psr/container'    => [
 		'league/container',
+	],
+	'psr/http-message'    => [
+		'firebase/php-jwt',
+		'google/apiclient',
+		'google/auth',
+		'google/gax',
+		'guzzlehttp/guzzle',
+		'guzzlehttp/psr7',
+		'psr/http-client',
+		'psr/http-factory',
 	],
 ];
 
