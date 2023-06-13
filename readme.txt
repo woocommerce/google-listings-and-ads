@@ -111,6 +111,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.4.10 - 2023-06-13 =
+* Tweak - WC 7.8 compatibility.
+
 = 2.4.9 - 2023-06-08 =
 * Fix - Prefix psr/http-client package.
 
