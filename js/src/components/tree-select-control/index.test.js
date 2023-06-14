@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
@@ -20,6 +20,11 @@ const options = [
 	{
 		value: 'AS',
 		label: 'Asia',
+	},
+	{
+		value: 'same-value',
+		label: 'Parent - same value',
+		children: [ { value: 'same-value', label: 'Child - same value' } ],
 	},
 ];
 
@@ -78,6 +83,7 @@ describe( 'TreeSelectControl Component', () => {
 	} );
 
 	it( 'Renders the All Options', () => {
+		const allValues = [ 'ES', 'FR', 'IT', 'AS', 'same-value' ];
 		const onChange = jest.fn().mockName( 'onChange' );
 		const { queryByLabelText, queryByRole, rerender } = render(
 			<TreeSelectControl options={ options } onChange={ onChange } />
@@ -90,11 +96,11 @@ describe( 'TreeSelectControl Component', () => {
 		expect( allCheckbox ).toBeTruthy();
 
 		fireEvent.click( allCheckbox );
-		expect( onChange ).toHaveBeenCalledWith( [ 'ES', 'FR', 'IT', 'AS' ] );
+		expect( onChange ).toHaveBeenCalledWith( allValues );
 
 		rerender(
 			<TreeSelectControl
-				value={ [ 'ES', 'FR', 'IT', 'AS' ] }
+				value={ allValues }
 				options={ options }
 				onChange={ onChange }
 			/>
@@ -116,6 +122,31 @@ describe( 'TreeSelectControl Component', () => {
 		const allCheckbox = queryByLabelText( 'All countries' );
 
 		expect( allCheckbox ).toBeTruthy();
+	} );
+
+	it( 'Should only allow children to be rendered as selected tags', () => {
+		render(
+			<TreeSelectControl
+				value={ [ 'EU', 'AS', 'FR' ] }
+				options={ options }
+			/>
+		);
+
+		const buttons = screen.getAllByRole( 'button', { name: /remove/i } );
+
+		expect( buttons.length ).toBe( 2 );
+		expect( screen.queryByText( 'Europe' ) ).toBeFalsy();
+	} );
+
+	it( 'When a parent and a child have the same value and be selected, the rendered tag should be the child', () => {
+		render(
+			<TreeSelectControl value={ [ 'same-value' ] } options={ options } />
+		);
+
+		const buttons = screen.getAllByRole( 'button', { name: /remove/i } );
+
+		expect( buttons.length ).toBe( 1 );
+		expect( screen.queryByText( 'Child - same value' ) ).toBeTruthy();
 	} );
 
 	it( 'Filters Options on Search', () => {
