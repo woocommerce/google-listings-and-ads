@@ -1,4 +1,4 @@
-name: Bundle Size
+name: Build
 
 on:
   push:
