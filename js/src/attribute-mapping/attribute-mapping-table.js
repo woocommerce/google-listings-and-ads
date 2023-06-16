@@ -106,10 +106,6 @@ const AttributeMappingTable = () => {
 						/>
 					) : (
 						<Table
-							emptyMessage={ __(
-								'You have no attribute rules',
-								'google-listings-and-ads'
-							) }
 							caption={ __(
 								'Attribute Mapping configuration',
 								'google-listings-and-ads'
