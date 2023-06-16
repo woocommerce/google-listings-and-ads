@@ -49,6 +49,8 @@ jobs:
         include:
           - php: 7.4
             wp-version: ${{ needs.GetMatrix.outputs.latest-wp-version }}
+          - php: 8.1
+            wp-version: ${{ needs.GetMatrix.outputs.latest-wp-version }}
 
     steps:
       - name: Checkout repository
