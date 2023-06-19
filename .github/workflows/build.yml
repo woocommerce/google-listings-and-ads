@@ -5,8 +5,6 @@ on:
     branches:
       - trunk
       - develop
-      # For temporary testing
-      - dev/gh-actions-build
   pull_request:
 
 concurrency:
@@ -47,9 +45,7 @@ jobs:
       # - https://github.com/bundlewatch/bundlewatch/issues/423
       # - https://github.com/bundlewatch/bundlewatch/issues/220
       - name: Prepare BundleWatch env values - push
-        # For temporary testing
-        if: ${{ github.event_name == 'push' && github.ref_name != 'dev/gh-actions-build' }}
-        # if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' }}
         run: |
           BRANCH=$(echo '${{ github.event.ref }}' | sed 's/^refs\/heads\///')
           echo "CI_BRANCH=$BRANCH" >> $GITHUB_ENV
@@ -69,10 +65,7 @@ jobs:
         run: node ./node_modules/bundlewatch/lib/bin/index.js
 
       - name: Publish dev build to GitHub
-        # For temporary testing
-        if: ${{ github.event_name == 'push' && github.ref_name == 'dev/gh-actions-build' }}
-        uses: woocommerce/grow/publish-extension-dev-build@actions-v1.8.0-pre
-        # if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
-        # uses: woocommerce/grow/publish-extension-dev-build@actions-v1
+        if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
+        uses: woocommerce/grow/publish-extension-dev-build@actions-v1
         with:
           extension-asset-path: google-listings-and-ads.zip
