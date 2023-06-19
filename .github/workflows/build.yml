@@ -71,7 +71,7 @@ jobs:
       - name: Publish dev build to GitHub
         # For temporary testing
         if: ${{ github.event_name == 'push' && github.ref_name == 'dev/gh-actions-build' }}
-        uses: woocommerce/grow/publish-extension-dev-build@actions-v1
+        uses: woocommerce/grow/publish-extension-dev-build@actions-v1.8.0-pre
         # if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
         # uses: woocommerce/grow/publish-extension-dev-build@actions-v1
         with:
