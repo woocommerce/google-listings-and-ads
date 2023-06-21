@@ -158,6 +158,7 @@ export function* fetchShippingRates() {
  *
  * @param {Array<ShippingRate>} shippingRates Shipping rates to be upserted.
  * @return {Object} Action object to update shipping rates.
+ * @throws Will throw an error if the request failed.
  */
 export function* upsertShippingRates( shippingRates ) {
 	const data = yield apiFetch( {
@@ -186,6 +187,7 @@ export function* upsertShippingRates( shippingRates ) {
  *
  * @param {Array<string>} ids IDs of shiping rates to be deleted.
  * @return {Object} Action object to delete shipping rates.
+ * @throws Will throw an error if the request failed.
  */
 export function* deleteShippingRates( ids ) {
 	yield apiFetch( {

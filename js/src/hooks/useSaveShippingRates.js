@@ -36,6 +36,7 @@ const useSaveShippingRates = () => {
 		 * and then upserting the new shipping rates.
 		 *
 		 * @param {Array<ShippingRate>} newShippingRates
+		 * @throws Will throw an error if any request failed.
 		 */
 		async ( newShippingRates ) => {
 			const deleteIds = getDeleteIds(
