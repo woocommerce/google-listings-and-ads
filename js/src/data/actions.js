@@ -254,63 +254,45 @@ export function* fetchShippingTimes() {
  * Updates or inserts given aggregated shipping rate.
  *
  * @param {AggregatedShippingTime} shippingTime
+ * @throws Will throw an error if the request failed.
  */
 export function* upsertShippingTimes( shippingTime ) {
 	const { countryCodes, time } = shippingTime;
 
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/times/batch`,
-			method: 'POST',
-			data: {
-				country_codes: countryCodes,
-				time,
-			},
-		} );
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/shipping/times/batch`,
+		method: 'POST',
+		data: {
+			country_codes: countryCodes,
+			time,
+		},
+	} );
 
-		return {
-			type: TYPES.UPSERT_SHIPPING_TIMES,
-			shippingTime,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to add / update shipping times. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+	return {
+		type: TYPES.UPSERT_SHIPPING_TIMES,
+		shippingTime,
+	};
 }
 
 /**
  * Deletes shipping times associated with given country codes.
  *
  * @param {Array<CountryCode>} countryCodes
+ * @throws Will throw an error if the request failed.
  */
 export function* deleteShippingTimes( countryCodes ) {
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/times/batch`,
-			method: 'DELETE',
-			data: {
-				country_codes: countryCodes,
-			},
-		} );
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/shipping/times/batch`,
+		method: 'DELETE',
+		data: {
+			country_codes: countryCodes,
+		},
+	} );
 
-		return {
-			type: TYPES.DELETE_SHIPPING_TIMES,
-			countryCodes,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to delete shipping times. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+	return {
+		type: TYPES.DELETE_SHIPPING_TIMES,
+		countryCodes,
+	};
 }
 
 export function* fetchSettings() {
