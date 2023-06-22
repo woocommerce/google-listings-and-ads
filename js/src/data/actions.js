@@ -14,6 +14,7 @@ import {
 	REQUEST_ACTIONS,
 	EMPTY_ASSET_ENTITY_GROUP,
 } from './constants';
+import { handleApiError } from '.~/utils/handleError';
 import { adaptAdsCampaign } from './adapters';
 
 export function handleFetchError( error, message ) {
@@ -785,13 +786,7 @@ export function* createAdsCampaign( amount, countryCodes ) {
 			createdCampaign: adaptAdsCampaign( createdCampaign ),
 		};
 	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'Unable to create your paid ads campaign. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
+		handleApiError( error );
 
 		throw error;
 	}
@@ -820,18 +815,18 @@ export function* updateAdsCampaign( id, data ) {
 			data,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'Unable to update your paid ads campaign. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
+		handleApiError( error );
 
 		throw error;
 	}
 }
 
+/**
+ * Delete an ads campaign by ID.
+ *
+ * @param {number} id The ID of the ads campaign to be deleted.
+ * @throws Will throw an error if the request failed.
+ */
 export function* deleteAdsCampaign( id ) {
 	try {
 		yield apiFetch( {
@@ -844,13 +839,8 @@ export function* deleteAdsCampaign( id ) {
 			id,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'Unable to delete your paid ads campaign. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
+		handleApiError( error );
+
 		throw error;
 	}
 }
