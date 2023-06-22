@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { apiFetch } from '@wordpress/data-controls';
-import { dispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -16,18 +15,6 @@ import {
 } from './constants';
 import { handleApiError } from '.~/utils/handleError';
 import { adaptAdsCampaign } from './adapters';
-
-export function handleFetchError( error, message ) {
-	const { createNotice } = dispatch( 'core/notices' );
-
-	// Only show errors that are not authorization issues.
-	if ( error.statusCode !== 401 ) {
-		createNotice( 'error', message );
-	}
-
-	// eslint-disable-next-line no-console
-	console.log( error );
-}
 
 /**
  * @typedef {import('.~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
