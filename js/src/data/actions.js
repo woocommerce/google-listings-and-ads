@@ -610,6 +610,21 @@ export function* requestPhoneVerificationCode( country, phoneNumber, method ) {
 			verificationId: response.verification_id,
 		};
 	} catch ( error ) {
+		// TODO: Remove the handling of 'backendError' and add the case for 'badRequest'.
+		//
+		// Currently, 'badRequest' won't be presented but maybe someday it can be handled.
+		// Ref:
+		// - https://github.com/woocommerce/google-listings-and-ads/issues/1101
+		// - https://github.com/woocommerce/google-listings-and-ads/issues/1998
+		if ( error.reason === 'backendError' ) {
+			throw {
+				display: __(
+					'Unable to request the verification code. This may be due to an invalid phone number or the limit of five attempts to verify the same phone number every four hours.',
+					'google-listings-and-ads'
+				),
+			};
+		}
+
 		if ( error.reason === 'rateLimitExceeded' ) {
 			throw {
 				...error,
