@@ -610,9 +610,10 @@ export function* requestPhoneVerificationCode( country, phoneNumber, method ) {
 			verificationId: response.verification_id,
 		};
 	} catch ( error ) {
-		// TODO: Remove the handling of 'backendError' and add the case for 'badRequest'.
+		// Currently, 'badRequest' won't be presented and all error responses return the
+		// same reason 'backendError'. Maybe someday the error reason can be distinguished
+		// and then we can recheck if there is a better way to handle errors.
 		//
-		// Currently, 'badRequest' won't be presented but maybe someday it can be handled.
 		// Ref:
 		// - https://github.com/woocommerce/google-listings-and-ads/issues/1101
 		// - https://github.com/woocommerce/google-listings-and-ads/issues/1998
