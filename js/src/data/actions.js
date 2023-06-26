@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { apiFetch } from '@wordpress/data-controls';
-import { dispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -14,19 +13,8 @@ import {
 	REQUEST_ACTIONS,
 	EMPTY_ASSET_ENTITY_GROUP,
 } from './constants';
+import { handleApiError } from '.~/utils/handleError';
 import { adaptAdsCampaign } from './adapters';
-
-export function handleFetchError( error, message ) {
-	const { createNotice } = dispatch( 'core/notices' );
-
-	// Only show errors that are not authorization issues.
-	if ( error.statusCode !== 401 ) {
-		createNotice( 'error', message );
-	}
-
-	// eslint-disable-next-line no-console
-	console.log( error );
-}
 
 /**
  * @typedef {import('.~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
@@ -143,7 +131,7 @@ export function* fetchShippingRates() {
 			shippingRates,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading shipping rates.',
@@ -234,7 +222,7 @@ export function* fetchShippingTimes() {
 			shippingTimes,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading shipping times.',
@@ -308,7 +296,7 @@ export function* fetchSettings() {
 			settings: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading merchant center settings.',
@@ -348,7 +336,7 @@ export function* fetchJetpackAccount() {
 			account: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading Jetpack account info.',
@@ -369,7 +357,7 @@ export function* fetchGoogleAccount() {
 			account: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading Google account info.',
@@ -397,7 +385,7 @@ export function* fetchGoogleMCAccount() {
 			account: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading Google Merchant Center account info.',
@@ -418,7 +406,7 @@ export function* fetchExistingGoogleMCAccounts() {
 			accounts: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error getting your Google Merchant Center accounts.',
@@ -439,7 +427,7 @@ export function* fetchGoogleAdsAccount() {
 			account: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading Google Ads account info.',
@@ -460,10 +448,10 @@ export function* disconnectGoogleAccount() {
 			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
-				'Unable to disconnect your Google account. Please try again later.',
+				'Unable to disconnect your Google account.',
 				'google-listings-and-ads'
 			)
 		);
@@ -489,10 +477,10 @@ export function* disconnectGoogleAdsAccount( invalidateRelatedState = false ) {
 			invalidateRelatedState,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
-				'Unable to disconnect your Google Ads account. Please try again later.',
+				'Unable to disconnect your Google Ads account.',
 				'google-listings-and-ads'
 			)
 		);
@@ -511,10 +499,10 @@ export function* disconnectAllAccounts() {
 			type: TYPES.DISCONNECT_ACCOUNTS_ALL,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
-				'Unable to disconnect all your accounts. Please try again later.',
+				'Unable to disconnect all your accounts.',
 				'google-listings-and-ads'
 			)
 		);
@@ -530,7 +518,7 @@ export function* fetchGoogleAdsAccountBillingStatus() {
 
 		return receiveGoogleAdsAccountBillingStatus( response );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error getting the billing status of your Google Ads account.',
@@ -551,7 +539,7 @@ export function* fetchExistingGoogleAdsAccounts() {
 			accounts: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error getting your Google Ads accounts.',
@@ -581,10 +569,10 @@ export function* updateGoogleMCContactInformation() {
 
 		yield receiveGoogleMCContactInformation( response );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
-				'Unable to update your Google Merchant Center contact information. Please try again later.',
+				'Unable to update your Google Merchant Center contact information.',
 				'google-listings-and-ads'
 			)
 		);
@@ -632,10 +620,10 @@ export function* requestPhoneVerificationCode( country, phoneNumber, method ) {
 			};
 		}
 
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
-				'Unable to request the phone verification code. Please try again later.',
+				'Unable to request the phone verification code.',
 				'google-listings-and-ads'
 			)
 		);
@@ -690,10 +678,10 @@ export function* verifyPhoneNumber( verificationId, code, method ) {
 			}
 		}
 
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
-				'Unable to verify your phone number. Please try again later.',
+				'Unable to verify your phone number.',
 				'google-listings-and-ads'
 			)
 		);
@@ -711,7 +699,7 @@ export function* fetchTargetAudience() {
 			target_audience: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading target audience.',
@@ -785,13 +773,7 @@ export function* createAdsCampaign( amount, countryCodes ) {
 			createdCampaign: adaptAdsCampaign( createdCampaign ),
 		};
 	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'Unable to create your paid ads campaign. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
+		handleApiError( error );
 
 		throw error;
 	}
@@ -820,18 +802,18 @@ export function* updateAdsCampaign( id, data ) {
 			data,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'Unable to update your paid ads campaign. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
+		handleApiError( error );
 
 		throw error;
 	}
 }
 
+/**
+ * Delete an ads campaign by ID.
+ *
+ * @param {number} id The ID of the ads campaign to be deleted.
+ * @throws Will throw an error if the request failed.
+ */
 export function* deleteAdsCampaign( id ) {
 	try {
 		yield apiFetch( {
@@ -844,13 +826,8 @@ export function* deleteAdsCampaign( id ) {
 			id,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'Unable to delete your paid ads campaign. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
+		handleApiError( error );
+
 		throw error;
 	}
 }
@@ -879,14 +856,12 @@ export function* createCampaignAssetGroup( campaignId ) {
 			},
 		};
 	} catch ( error ) {
-		const message =
-			error.message ||
-			__(
-				'There was an error creating the assets of the campaign.',
-				'google-listings-and-ads'
-			);
+		const fallbackMessage = __(
+			'There was an error creating the assets of the campaign.',
+			'google-listings-and-ads'
+		);
 
-		yield handleFetchError( error, message );
+		handleApiError( error, null, fallbackMessage );
 		throw error;
 	}
 }
@@ -912,14 +887,12 @@ export function* updateCampaignAssetGroup( assetGroupId, body ) {
 			assetGroupId,
 		};
 	} catch ( error ) {
-		const message =
-			error.message ||
-			__(
-				'There was an error updating the assets of the campaign.',
-				'google-listings-and-ads'
-			);
+		const fallbackMessage = __(
+			'There was an error updating the assets of the campaign.',
+			'google-listings-and-ads'
+		);
 
-		yield handleFetchError( error, message );
+		handleApiError( error, null, fallbackMessage );
 		throw error;
 	}
 }
@@ -940,7 +913,7 @@ export function* fetchMCSetup() {
 
 		return receiveMCSetup( response );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading your merchant center setup status.',
@@ -1016,10 +989,10 @@ export function* updateMCProductVisibility( ids, visible ) {
 			type: TYPES.UPDATE_MC_PRODUCTS_VISIBILITY,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
-				'Unable to update the channel visibility of products. Please try again later.',
+				'Unable to update the channel visibility of products.',
 				'google-listings-and-ads'
 			)
 		);
@@ -1039,7 +1012,7 @@ export function* sendMCReviewRequest() {
 
 		return yield receiveMCReviewRequest( response );
 	} catch ( error ) {
-		yield handleFetchError( error, error?.message );
+		handleApiError( error );
 		throw error;
 	}
 }
@@ -1102,7 +1075,7 @@ export function* createMappingRule( rule ) {
 			rule: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error creating the rule.',
@@ -1131,7 +1104,7 @@ export function* updateMappingRule( rule ) {
 			rule: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error updating the rule.',
@@ -1160,7 +1133,7 @@ export function* deleteMappingRule( rule ) {
 			rule: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error deleting the rule.',
@@ -1227,7 +1200,7 @@ export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
 			yield action;
 		}
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error updating the tour.',
