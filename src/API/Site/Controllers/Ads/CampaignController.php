@@ -321,6 +321,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_supported_country_code_validate_callback(),
 				'required'          => true,
+				'minItems'          => 1,
 				'items'             => [
 					'type' => 'string',
 				],

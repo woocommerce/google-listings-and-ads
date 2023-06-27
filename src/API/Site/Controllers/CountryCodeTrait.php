@@ -59,10 +59,6 @@ trait CountryCodeTrait {
 			// This is used for individual strings and an array of strings.
 			$countries = (array) $countries;
 
-			if ( empty( $countries ) ) {
-				throw new Exception( __( 'No countries provided.', 'google-listings-and-ads' ) );
-			}
-
 			foreach ( $countries as $country ) {
 				$this->validate_country_code( $country );
 				if ( $check_supported_country ) {
