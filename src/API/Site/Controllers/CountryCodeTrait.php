@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\ISO3166Awareness;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\Exception\OutOfBoundsException;
+use WP_REST_Request as Request;
 use Exception;
 use Throwable;
 
@@ -35,16 +36,25 @@ trait CountryCodeTrait {
 	}
 
 	/**
-	 * Validate that a country or a list of countries is valid and supported.
+	 * Validate that a country or a list of countries is valid and supported,
+	 * and also validate the data by the built-in validation of WP REST API with parameter’s schema.
 	 *
-	 * @param mixed $countries                An individual string or an array of strings.
-	 * @param bool  $check_supported_country  Whether to check the country is supported.
+	 * @param bool    $check_supported_country  Whether to check the country is supported.
+	 * @param mixed   $countries                An individual string or an array of strings.
+	 * @param Request $request                  The request to validate.
+	 * @param string  $param                    The parameter name, used in error messages.
 	 *
 	 * @return mixed
 	 * @throws Exception            When the country is not supported.
 	 * @throws OutOfBoundsException When the country code cannot be found.
 	 */
-	protected function validate_country_codes( $countries, bool $check_supported_country ) {
+	protected function validate_country_codes( bool $check_supported_country, $countries, $request, $param ) {
+		$valid = rest_validate_request_arg( $countries, $request, $param );
+
+		if ( true !== $valid ) {
+			return $valid;
+		}
+
 		try {
 			// This is used for individual strings and an array of strings.
 			$countries = (array) $countries;
@@ -91,24 +101,26 @@ trait CountryCodeTrait {
 	}
 
 	/**
-	 * Get a callable function for validating that a provided country code is recognized.
+	 * Get a callable function for validating that a provided country code is recognized
+	 * and fulfilled the given parameter's schema.
 	 *
 	 * @return callable
 	 */
 	protected function get_country_code_validate_callback(): callable {
-		return function( $value ) {
-			return $this->validate_country_codes( $value, false );
+		return function( ...$args ) {
+			return $this->validate_country_codes( false, ...$args );
 		};
 	}
 
 	/**
-	 * Get a callable function for validating that a provided country code is recognized and supported.
+	 * Get a callable function for validating that a provided country code is recognized, supported,
+	 * and fulfilled the given parameter's schema..
 	 *
 	 * @return callable
 	 */
 	protected function get_supported_country_code_validate_callback(): callable {
-		return function( $value ) {
-			return $this->validate_country_codes( $value, true );
+		return function( ...$args ) {
+			return $this->validate_country_codes( true, ...$args );
 		};
 	}
 }
