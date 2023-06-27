@@ -259,12 +259,6 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'targeted_locations' => [],
 		];
 
-		$expected = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'status'  => 'enabled',
-			'country' => self::BASE_COUNTRY,
-		] + $campaign_data;
-
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 
 		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
