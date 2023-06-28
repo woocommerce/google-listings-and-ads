@@ -124,6 +124,21 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	/**
+	 * Test a failed query of budget recommendation with empty country codes.
+	 */
+	public function test_get_budget_recommendation_with_empty_country_codes() {
+		$budget_recommendation_params = [
+			'country_codes' => [],
+		];
+
+		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $budget_recommendation_params );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): country_codes', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_get_budget_recommendation_with_nonexistent_country_code() {
 		$budget_recommendation_params = [
 			'country_codes' => [ 'AAAAA' ],
