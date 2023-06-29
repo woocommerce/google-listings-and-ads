@@ -49,10 +49,10 @@ trait CountryCodeTrait {
 	 * @throws OutOfBoundsException When the country code cannot be found.
 	 */
 	protected function validate_country_codes( bool $check_supported_country, $countries, $request, $param ) {
-		$valid = rest_validate_request_arg( $countries, $request, $param );
+		$validation_result = rest_validate_request_arg( $countries, $request, $param );
 
-		if ( true !== $valid ) {
-			return $valid;
+		if ( true !== $validation_result ) {
+			return $validation_result;
 		}
 
 		try {
