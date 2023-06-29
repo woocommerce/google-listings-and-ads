@@ -39,6 +39,11 @@ trait CountryCodeTrait {
 	 * Validate that a country or a list of countries is valid and supported,
 	 * and also validate the data by the built-in validation of WP REST API with parameter’s schema.
 	 *
+	 * Since this extension's all API endpoints that use this validation function specify both
+	 * `validate_callback` and `sanitize_callback`, this makes the built-in schema validation
+	 * in WP REST API not to be applied. Therefore, this function calls `rest_validate_request_arg`
+	 * first, so that the API endpoints can still benefit from the built-in schema validation.
+	 *
 	 * @param bool    $check_supported_country  Whether to check the country is supported.
 	 * @param mixed   $countries                An individual string or an array of strings.
 	 * @param Request $request                  The request to validate.
