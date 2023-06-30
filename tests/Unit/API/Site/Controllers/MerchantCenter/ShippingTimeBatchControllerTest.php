@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUn
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
+use Exception;
 use WP_REST_Response as Response;
 
 /**
@@ -98,6 +99,25 @@ class ShippingTimeBatchControllerTest extends RESTControllerUnitTest {
 	public function test_create_shipping_time_batch_duplicate_country_codes() {
 		$payload = [
 			'country_codes' => [ 'US', 'GB', 'US' ],
+		];
+
+		$response = $this->do_request( self::ROUTE_SHIPPING_TIME_BATCH, 'POST', $payload );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): country_codes', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	/**
+	 * Test a failed batch creation of shipping times with invalid country codes.
+	 */
+	public function test_create_shipping_time_batch_invalid_country_codes() {
+		$this->iso_provider
+			->method( 'alpha2' )
+			->willThrowException( new Exception( 'invalid_country' ) );
+
+		$payload = [
+			'country_codes' => [ 'United States' ],
 		];
 
 		$response = $this->do_request( self::ROUTE_SHIPPING_TIME_BATCH, 'POST', $payload );
