@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadR
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Google\ApiCore\ApiException;
 use Google\Rpc\Code;
+use Exception;
 
 /**
  * Trait ApiExceptionTrait
@@ -42,6 +43,24 @@ trait ApiExceptionTrait {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns a list of detailed errors from an exception instance that extends ApiException.
+	 * Other Exception instances will also be converted to an array in the same structure.
+	 *
+	 * @param ApiException $exception Exception to check.
+	 *
+	 * @return array
+	 */
+	protected function get_exception_errors( Exception $exception ): array {
+		if ( $exception instanceof ApiException ) {
+			return $this->get_api_exception_errors( $exception );
+		}
+
+		// Fallback for handling other Exception instances.
+		$code = $exception->getCode();
+		return [ $code => $exception->getMessage() ];
 	}
 
 	/**
