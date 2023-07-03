@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Google\ApiCore\ApiException;
@@ -46,16 +47,21 @@ trait ExceptionTrait {
 	}
 
 	/**
-	 * Returns a list of detailed errors from an exception instance that extends ApiException.
-	 * Other Exception instances will also be converted to an array in the same structure.
+	 * Returns a list of detailed errors from an exception instance that extends ApiException
+	 * or GoogleServiceException. Other Exception instances will also be converted to an array
+	 * in the same structure.
 	 *
-	 * @param ApiException $exception Exception to check.
+	 * @param ApiException|GoogleServiceException $exception Exception to check.
 	 *
 	 * @return array
 	 */
 	protected function get_exception_errors( Exception $exception ): array {
 		if ( $exception instanceof ApiException ) {
 			return $this->get_api_exception_errors( $exception );
+		}
+
+		if ( $exception instanceof GoogleServiceException ) {
+			return $this->get_google_service_exception_errors( $exception );
 		}
 
 		// Fallback for handling other Exception instances.
@@ -98,6 +104,23 @@ trait ExceptionTrait {
 		}
 
 		$errors[ $exception->getStatus() ] = $exception->getBasicMessage();
+		return $errors;
+	}
+
+	/**
+	 * Returns a list of detailed errors from a GoogleServiceException.
+	 *
+	 * @param GoogleServiceException $exception Exception to check.
+	 *
+	 * @return array
+	 */
+	private function get_google_service_exception_errors( GoogleServiceException $exception ): array {
+		$errors = [];
+
+		foreach ( $exception->getErrors() as $error ) {
+			$errors[ $error['reason'] ] = $error['message'];
+		}
+
 		return $errors;
 	}
 
