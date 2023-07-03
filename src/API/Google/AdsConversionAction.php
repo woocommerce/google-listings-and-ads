@@ -29,7 +29,7 @@ use Google\ApiCore\ApiException;
  */
 class AdsConversionAction implements OptionsAwareInterface {
 
-	use ApiExceptionTrait;
+	use ExceptionTrait;
 	use OptionsAwareTrait;
 
 	/**

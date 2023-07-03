@@ -30,8 +30,8 @@ use Google\Ads\GoogleAds\Util\V13\ResourceNames;
  */
 class AdsAssetGroupAsset implements OptionsAwareInterface {
 
+	use ExceptionTrait;
 	use OptionsAwareTrait;
-	use ApiExceptionTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -134,7 +134,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			$errors = $this->get_api_exception_errors( $e );
+			$errors = $this->get_exception_errors( $e );
 			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
 				sprintf( __( 'Error retrieving asset groups assets: %s', 'google-listings-and-ads' ), reset( $errors ) ),
@@ -201,7 +201,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			$errors = $this->get_api_exception_errors( $e );
+			$errors = $this->get_exception_errors( $e );
 			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
 				sprintf( __( 'Error retrieving asset groups assets by final url: %s', 'google-listings-and-ads' ), reset( $errors ) ),

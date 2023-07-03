@@ -26,8 +26,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
-	use ApiExceptionTrait;
 	use ContainerAwareTrait;
+	use ExceptionTrait;
 	use OptionsAwareTrait;
 
 	/**

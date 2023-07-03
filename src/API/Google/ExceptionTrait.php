@@ -10,11 +10,11 @@ use Google\Rpc\Code;
 use Exception;
 
 /**
- * Trait ApiExceptionTrait
+ * Trait ExceptionTrait
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-trait ApiExceptionTrait {
+trait ExceptionTrait {
 
 	/**
 	 * Check if the ApiException contains a specific error.
@@ -71,7 +71,7 @@ trait ApiExceptionTrait {
 	 *
 	 * @return array
 	 */
-	protected function get_api_exception_errors( ApiException $exception ): array {
+	private function get_api_exception_errors( ApiException $exception ): array {
 		$errors = [];
 		$meta   = $exception->getMetadata();
 

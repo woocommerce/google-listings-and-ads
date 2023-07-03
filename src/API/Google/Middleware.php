@@ -36,7 +36,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class Middleware implements OptionsAwareInterface {
 
-	use ApiExceptionTrait;
+	use ExceptionTrait;
 	use OptionsAwareTrait;
 	use PluginHelper;
 
