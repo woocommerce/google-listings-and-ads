@@ -51,7 +51,14 @@ trait ExceptionTrait {
 	 * or GoogleServiceException. Other Exception instances will also be converted to an array
 	 * in the same structure.
 	 *
-	 * @param ApiException|GoogleServiceException $exception Exception to check.
+	 * The following are the example sources of ApiException, GoogleServiceException,
+	 * and other Exception in order:
+	 *
+	 * @link https://github.com/googleads/google-ads-php/blob/v19.1.0/src/Google/Ads/GoogleAds/V13/Services/Gapic/CustomerServiceGapicClient.php#L359-L361
+	 * @link https://github.com/googleapis/google-api-php-client/blob/v2.15.0/src/Http/REST.php#L119-L135
+	 * @link https://github.com/googleapis/google-api-php-client/blob/v2.15.0/src/Service/Resource.php#L86-L175
+	 *
+	 * @param ApiException|GoogleServiceException|Exception $exception Exception to check.
 	 *
 	 * @return array
 	 */
