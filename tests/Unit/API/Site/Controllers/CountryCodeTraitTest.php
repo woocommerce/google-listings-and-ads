@@ -127,10 +127,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 		 * Test a sanitized country code with a string.
 		 */
 		public function test_get_country_code_sanitize_callback_with_string() {
-			$callback = $this->trait->get_country_code_sanitize_callback();
-			$result   = $callback( 'us' );
-
-			$this->assertEquals( 'US', $result );
+			$this->assertEquals( 'US', $this->trait->get_country_code_sanitize_callback()( 'us' ) );
 		}
 
 		/**
