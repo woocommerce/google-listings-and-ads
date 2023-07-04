@@ -428,7 +428,7 @@ class MerchantTest extends UnitTest {
 	public function test_no_access_to_account() {
 		$email = 'john@doe.email';
 
-		$this->mock_get_account_exception( new GoogleException( 'no access', 403 ) );
+		$this->mock_get_account_exception( $this->get_google_exception( 'No access' ) );
 
 		$this->assertFalse(
 			$this->merchant->has_access( $email )

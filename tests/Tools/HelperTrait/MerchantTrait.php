@@ -3,7 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Account;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountAddress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountBusinessInformation;
@@ -19,8 +20,37 @@ trait MerchantTrait {
 	protected $valid_account_phone_number = '+18008675309';
 	protected $valid_account_id           = '123581321';
 
-	public function get_account_exception( int $code = 400 ): MerchantApiException {
-		return MerchantApiException::account_retrieve_failed( $code );
+	/**
+	 * Get a mocked instance of GoogleException that occurs within the runtime of
+	 * Google library.
+	 *
+	 * @link https://github.com/googleapis/google-api-php-client/blob/v2.15.0/src/Service/Resource.php#L86-L175
+	 *
+	 * @param string $message Error message
+	 *
+	 * @return GoogleException
+	 */
+	public function get_google_exception( string $message = 'Missing required params' ): GoogleException {
+		return new GoogleException( $message );
+	}
+
+	/**
+	 * Get a mocked instance of GoogleServiceException that occurs on the Google Shopping Content
+	 * service side and then is transformed within `Google\Http\REST::decodeHttpResponse` method.
+	 *
+	 * @link https://github.com/googleapis/google-api-php-client/blob/v2.15.0/src/Http/REST.php#L119-L135
+	 *
+	 * @param int    $code    Error code.
+	 * @param string $message Error message
+	 *
+	 * @return GoogleServiceException
+	 */
+	public function get_google_service_exception( int $code = 400, string $message = 'Invalid query' ): GoogleServiceException {
+		$error = [
+			'reason'  => 'invalid',
+			'message' => $message,
+		];
+		return new GoogleServiceException( 'response body', $code, null, [ $error ] );
 	}
 
 	public function get_empty_account(): Account {
