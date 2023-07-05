@@ -48,13 +48,13 @@ const faqItems = [
 			<>
 				<div>
 					{ __(
-						`Dynamic ad assets can elevate your campaign by offering a variety of ad combinations that capture your audience's attention and generate maximum engagement. By leveraging Google's asset-mixing technology, your ads can be optimized to deliver the right message, to the right people, at the right time.`,
+						"Text and image assets can elevate your campaign by offering a variety of ad combinations that capture your audience's attention and generate maximum engagement. By leveraging Google's asset-mixing technology, your ads can be optimized to deliver the right message, to the right people, at the right time.",
 						'google-listings-and-ads'
 					) }
 				</div>
 				<div>
 					{ __(
-						'Compared to product ads—which showcase individual products and are designed to drive direct sales and revenue— ads with dynamic assets are typically used to highlight your business, generate interest, and attract new customers. While both types of ads can drive conversions, using them together can generate even greater results.',
+						'Compared to product ads—which showcase individual products and are designed to drive direct sales and revenue— ads with creative assets are typically used to highlight your business, generate interest, and attract new customers. While both types of ads can drive conversions, using them together can generate even greater results.',
 						'google-listings-and-ads'
 					) }
 				</div>
