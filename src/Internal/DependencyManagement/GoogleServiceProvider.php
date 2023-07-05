@@ -265,12 +265,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	public function add_plugin_version_header(): callable {
 		return function( callable $handler ) {
 			return function( RequestInterface $request, array $options ) use ( $handler ) {
-				try {
-					$request = $request->withHeader( 'x-client-name', $this->get_client_name() )
-									   ->withHeader( 'x-client-version', $this->get_version() );
-				} catch ( WPError $error ) {
-					do_action( 'woocommerce_gla_guzzle_client_exception', $error, __METHOD__ . ' in add_plugin_version_header()' );
-				}
+				$request = $request->withHeader( 'x-client-name', $this->get_client_name() )
+								   ->withHeader( 'x-client-version', $this->get_version() );
 				return $handler( $request, $options );
 			};
 		};
