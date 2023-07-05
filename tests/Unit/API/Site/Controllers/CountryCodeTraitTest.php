@@ -1,22 +1,5 @@
 <?php
-// This namespace must be identical to CountryCodeTrait for replacing and
-// mocking the global function rest_validate_request_arg.
-namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers {
-	use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\CountryCodeTraitTest;
-
-	/**
-	 * Replace and mock the global function rest_validate_request_arg.
-	 */
-	function rest_validate_request_arg() {
-		$mocked_callback = CountryCodeTraitTest::$rest_validate_request_arg_callback;
-
-		if ( is_null( $mocked_callback ) ) {
-			return \rest_validate_request_arg( ...func_get_args() );
-		}
-
-		return $mocked_callback( ...func_get_args() );
-	}
-};
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers {
 	use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
@@ -36,9 +19,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 	 * @phpcs:disable Squiz.Classes.ClassDeclaration.SpaceBeforeCloseBrace
 	 */
 	class CountryCodeTraitTest extends TestCase {
-
-		/** @var callable $rest_validate_request_arg_callback */
-		public static $rest_validate_request_arg_callback = null;
 
 		/** @var MockObject|ISO3166DataProvider $iso_provider */
 		protected $iso_provider;
@@ -81,13 +61,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 		}
 
 		/**
-		 * Runs after each test is executed.
-		 */
-		public function tearDown(): void {
-			self::$rest_validate_request_arg_callback = null;
-		}
-
-		/**
 		 * Test all get_*_callback methods return a callable.
 		 */
 		public function test_all_get_callbacks_return_callable() {
@@ -98,29 +71,62 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 		/**
 		 * Test the get_country_code_validate_callback and get_supported_country_code_validate_callback
-		 * methods will apply arguments to rest_validate_request_arg_callback and return early if invalid.
+		 * methods will apply arguments to rest_validate_request_arg.
+		 *
+		 * Replacing the global `rest_validate_request_arg` function to verify if it's called would
+		 * require multiple namespaces in this file and increase the test complexity.
+		 *
+		 * As an alternative, here using the I/O of callbacks to verify that their return value matches
+		 * the result of `rest_validate_request_arg`, thereby indirectly verifying that it will be called
+		 * by these callbacks.
 		 */
 		public function test_all_get_validate_callbacks_with_rest_validate_request_arg() {
-			$called_count = 0;
+			$callbacks = [
+				$this->trait->get_country_code_validate_callback(),
+				$this->trait->get_supported_country_code_validate_callback(),
+			];
 
-			self::$rest_validate_request_arg_callback = function () use ( &$called_count ) {
-				// When it returns a value other than `true`, it means the validation did not pass,
-				// and here we also make it return a called count.
-				$called_count++;
-				return [ $called_count, func_get_args() ];
-			};
+			$request = new Request();
+			$request->set_attributes(
+				[
+					'args' => [
+						'country_codes' => [
+							'type'        => 'array',
+							'items'       => [ 'type' => 'string' ],
+							'minItems'    => 2,
+							'uniqueItems' => true,
+						],
+					],
+				]
+			);
 
-			$args = [ 'US', new Request(), 'country_code' ];
+			foreach ( $callbacks as $callback ) {
+				// Valid case
+				$result = $callback( [ 'US', 'GB' ], $request, 'country_codes' );
 
-			$callback = $this->trait->get_country_code_validate_callback();
-			$results  = $callback( ...$args );
+				$this->assertTrue( $result );
 
-			$this->assertEquals( [ 1, $args ], $results );
+				// Invalid due to the 'items' schema
+				$result = $callback( [ 'US', 123 ], $request, 'country_codes' );
 
-			$callback = $this->trait->get_supported_country_code_validate_callback();
-			$results  = $callback( ...$args );
+				$this->assertInstanceOf( WP_Error::class, $result );
+				$this->assertArrayHasKey( 'rest_invalid_type', $result->errors );
+				$this->assertContains( 'country_codes[1] is not of type string.', $result->errors['rest_invalid_type'] );
 
-			$this->assertEquals( [ 2, $args ], $results );
+				// Invalid due to the 'minItems' schema
+				$result = $callback( [ 'US' ], $request, 'country_codes' );
+
+				$this->assertInstanceOf( WP_Error::class, $result );
+				$this->assertArrayHasKey( 'rest_too_few_items', $result->errors );
+				$this->assertContains( 'country_codes must contain at least 2 items.', $result->errors['rest_too_few_items'] );
+
+				// Invalid due to the 'uniqueItems' schema
+				$result = $callback( [ 'US', 'GB', 'US' ], $request, 'country_codes' );
+
+				$this->assertInstanceOf( WP_Error::class, $result );
+				$this->assertArrayHasKey( 'rest_duplicate_items', $result->errors );
+				$this->assertContains( 'country_codes has duplicate items.', $result->errors['rest_duplicate_items'] );
+			}
 		}
 
 		/**
