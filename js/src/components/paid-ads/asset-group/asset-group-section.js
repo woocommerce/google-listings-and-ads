@@ -13,6 +13,7 @@ import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import FinalUrlCard from './final-url-card';
 import AssetGroupCard from './asset-group-card';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import './asset-group-section.scss';
 
 /**
@@ -29,7 +30,7 @@ export default function AssetGroupSection() {
 			className="gla-asset-group-section"
 			title={ createInterpolateElement(
 				__(
-					'Add dynamic ad assets <optional>(Optional)</optional>',
+					'Add additional assets <optional>(Optional)</optional>',
 					'google-listings-and-ads'
 				),
 				{
@@ -39,12 +40,23 @@ export default function AssetGroupSection() {
 				}
 			) }
 			description={
-				<p className="gla-asset-group-section__primary-description">
-					{ __(
-						'Create ads that effectively boost visibility and generate maximum conversions. Google will mix and match assets to create optimized ads in a variety of formats— maximizing your campaign’s performance.',
-						'google-listings-and-ads'
-					) }
-				</p>
+				<>
+					<p className="gla-asset-group-section__primary-description">
+						{ __(
+							'Upload text and image assets to effectively reach and engage your target shoppers. Google will mix and match your assets, continually testing combinations to create personalized and optimal shopping experiences.',
+							'google-listings-and-ads'
+						) }
+					</p>
+					<p>
+						<AppDocumentationLink
+							context="asset-group"
+							linkId="asset-group-learn-more"
+							href="https://support.google.com/google-ads/answer/10729160"
+						>
+							{ __( 'Learn more', 'google-listings-and-ads' ) }
+						</AppDocumentationLink>
+					</p>
+				</>
 			}
 		>
 			<VerticalGapLayout size="medium">

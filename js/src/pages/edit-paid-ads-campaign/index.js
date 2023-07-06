@@ -174,7 +174,7 @@ const EditPaidAdsCampaign = () => {
 						{
 							key: STEP.ASSET_GROUP,
 							label: __(
-								'Boost your campaign',
+								'Optimize your campaign',
 								'google-listings-and-ads'
 							),
 							content: <AssetGroup campaign={ campaign } />,
