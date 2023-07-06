@@ -229,6 +229,16 @@ class MerchantTest extends UnitTest {
 		$this->merchant->get_account();
 	}
 
+	public function test_get_account_failure_with_null_errors_from_shopping_content_service() {
+		$exception = new GoogleServiceException( 'response body', 500, null, null );
+		$this->mock_get_account_exception( $exception );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 500 );
+		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: An unknown error occurred in the Shopping Content Service.' );
+		$this->merchant->get_account();
+	}
+
 	public function test_get_claimed_url_hash_from_cache() {
 		$url = 'https://site.test';
 		$this->options->method( 'get' )
