@@ -13,8 +13,8 @@ import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import FinalUrlCard from './final-url-card';
 import AssetGroupCard from './asset-group-card';
-import './asset-group-section.scss';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import './asset-group-section.scss';
 
 /**
  * Renders the form content for managing an asset group of a campaign with Section UI.
@@ -49,9 +49,9 @@ export default function AssetGroupSection() {
 					</p>
 					<p>
 						<AppDocumentationLink
-							context="asset-groups"
-							linkId="asset-groups-learn-more"
-							href="https://support.google.com/google-ads/answer/10729160?hl=en&ref_topic=11336002"
+							context="asset-group"
+							linkId="asset-group-learn-more"
+							href="https://support.google.com/google-ads/answer/10729160"
 						>
 							{ __( 'Learn more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>
