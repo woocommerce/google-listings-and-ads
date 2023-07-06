@@ -134,6 +134,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$handler_stack->remove( 'http_errors' );
 			$handler_stack->push( $this->error_handler(), 'http_errors' );
 			$handler_stack->push( $this->add_auth_header() );
+			$handler_stack->push( $this->add_plugin_version_header(), 'plugin_version_header' );
 
 			// Override endpoint URL if we are using http locally.
 			if ( 0 === strpos( $this->get_connect_server_url_root()->getValue(), 'http://' ) ) {
@@ -249,6 +250,23 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 					throw AccountReconnect::jetpack_disconnected();
 				}
 
+				return $handler( $request, $options );
+			};
+		};
+	}
+
+	/**
+	 * Add client name and version headers to request
+	 *
+	 * @since x.x.x
+	 *
+	 * @return callable
+	 */
+	public function add_plugin_version_header(): callable {
+		return function( callable $handler ) {
+			return function( RequestInterface $request, array $options ) use ( $handler ) {
+				$request = $request->withHeader( 'x-client-name', $this->get_client_name() )
+								   ->withHeader( 'x-client-version', $this->get_version() );
 				return $handler( $request, $options );
 			};
 		};
