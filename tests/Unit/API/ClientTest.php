@@ -21,7 +21,7 @@ class ClientTest extends ContainerAwareUnitTest {
 	use PluginHelper;
 
 	/**
-	 * Confirm that the client handler stack includes the `plugin_version_header
+	 * Confirm that the client handler stack includes the `plugin_version_header`
 	 *
 	 * @return void
 	 */
