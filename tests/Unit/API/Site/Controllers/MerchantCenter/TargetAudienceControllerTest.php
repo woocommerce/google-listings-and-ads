@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -100,5 +101,25 @@ class TargetAudienceControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( 'success', $response->get_data()['status'] );
 		$this->assertEquals( 201, $response->get_status() );
+	}
+
+	/**
+	 * Test a failed update of target audience with invalid country codes.
+	 */
+	public function test_update_target_audience_invalid_countries() {
+		$this->iso_provider
+			->method( 'alpha2' )
+			->willThrowException( new Exception( 'invalid_country' ) );
+
+		$payload = [
+			'location'  => 'selected',
+			'countries' => [ 'United States' ],
+		];
+
+		$response = $this->do_request( self::ROUTE_TARGET_AUDIENCE, 'POST', $payload );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): countries', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
 	}
 }
