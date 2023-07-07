@@ -124,12 +124,19 @@ trait ExceptionTrait {
 	private function get_google_service_exception_errors( GoogleServiceException $exception ): array {
 		$errors = [];
 
-		if ( is_null( $exception->getErrors() ) ) {
-			$errors['unknown'] = __( 'An unknown error occurred in the Shopping Content Service.', 'google-listings-and-ads' );
-		} else {
+		if ( ! is_null( $exception->getErrors() ) ) {
 			foreach ( $exception->getErrors() as $error ) {
-				$errors[ $error['reason'] ] = $error['message'];
+				if ( ! isset( $error['message'] ) ) {
+					continue;
+				}
+
+				$error_code            = $error['reason'] ?? 'ERROR';
+				$errors[ $error_code ] = $error['message'];
 			}
+		}
+
+		if ( 0 === count( $errors ) ) {
+			$errors['unknown'] = __( 'An unknown error occurred in the Shopping Content Service.', 'google-listings-and-ads' );
 		}
 
 		return $errors;

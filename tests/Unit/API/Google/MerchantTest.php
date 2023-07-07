@@ -229,12 +229,48 @@ class MerchantTest extends UnitTest {
 		$this->merchant->get_account();
 	}
 
-	public function test_get_account_failure_with_null_errors_from_shopping_content_service() {
+	public function test_get_account_failure_with_empty_or_null_errors_from_shopping_content_service() {
+		$exception = new GoogleServiceException( 'response body', 500, null, [] );
+		$this->mock_get_account_exception( $exception );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 500 );
+		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: An unknown error occurred in the Shopping Content Service.' );
+		$this->merchant->get_account();
+
 		$exception = new GoogleServiceException( 'response body', 500, null, null );
 		$this->mock_get_account_exception( $exception );
 
 		$this->expectException( ExceptionWithResponseData::class );
 		$this->expectExceptionCode( 500 );
+		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: An unknown error occurred in the Shopping Content Service.' );
+		$this->merchant->get_account();
+	}
+
+	public function test_get_account_failure_with_unexpected_error_data_structure_from_shopping_content_service() {
+		// The `reason` field is not existing
+		$error     = [
+			'error_code' => 'invalid',
+			'message'    => '12345',
+		];
+		$exception = new GoogleServiceException( 'response body', 400, null, [ $error ] );
+		$this->mock_get_account_exception( $exception );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: 12345' );
+		$this->merchant->get_account();
+
+		// The `message` field is not existing
+		$error     = [
+			'reason' => 'invalid',
+			'msg'    => '12345',
+		];
+		$exception = new GoogleServiceException( 'response body', 400, null, [ $error ] );
+		$this->mock_get_account_exception( $exception );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 400 );
 		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: An unknown error occurred in the Shopping Content Service.' );
 		$this->merchant->get_account();
 	}
