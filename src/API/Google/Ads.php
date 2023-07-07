@@ -30,7 +30,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class Ads implements OptionsAwareInterface {
 
-	use ApiExceptionTrait;
+	use ExceptionTrait;
 	use OptionsAwareTrait;
 
 	/**
@@ -72,7 +72,7 @@ class Ads implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			$errors = $this->get_api_exception_errors( $e );
+			$errors = $this->get_exception_errors( $e );
 
 			// Return an empty list if the user has not signed up to ads yet.
 			if ( isset( $errors['NOT_ADS_USER'] ) ) {

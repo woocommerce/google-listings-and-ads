@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
@@ -221,10 +221,57 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_get_account_failure() {
-		$this->mock_get_account_exception( new GoogleException( 'error', 400 ) );
+		$this->mock_get_account_exception( $this->get_google_service_exception() );
 
-		$this->expectException( MerchantApiException::class );
+		$this->expectException( ExceptionWithResponseData::class );
 		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: Invalid query' );
+		$this->merchant->get_account();
+	}
+
+	public function test_get_account_failure_with_empty_or_null_errors_from_shopping_content_service() {
+		$exception = new GoogleServiceException( 'response body', 500, null, [] );
+		$this->mock_get_account_exception( $exception );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 500 );
+		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: An unknown error occurred in the Shopping Content Service.' );
+		$this->merchant->get_account();
+
+		$exception = new GoogleServiceException( 'response body', 500, null, null );
+		$this->mock_get_account_exception( $exception );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 500 );
+		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: An unknown error occurred in the Shopping Content Service.' );
+		$this->merchant->get_account();
+	}
+
+	public function test_get_account_failure_with_unexpected_error_data_structure_from_shopping_content_service() {
+		// The `reason` field is not existing
+		$error     = [
+			'error_code' => 'invalid',
+			'message'    => '12345',
+		];
+		$exception = new GoogleServiceException( 'response body', 400, null, [ $error ] );
+		$this->mock_get_account_exception( $exception );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: 12345' );
+		$this->merchant->get_account();
+
+		// The `message` field is not existing
+		$error     = [
+			'reason' => 'invalid',
+			'msg'    => '12345',
+		];
+		$exception = new GoogleServiceException( 'response body', 400, null, [ $error ] );
+		$this->mock_get_account_exception( $exception );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Unable to retrieve Merchant Center account: An unknown error occurred in the Shopping Content Service.' );
 		$this->merchant->get_account();
 	}
 
@@ -262,7 +309,7 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_get_claimed_url_hash_from_account_failure() {
-		$this->mock_get_account_exception( new GoogleException( 'error', 400 ) );
+		$this->mock_get_account_exception( $this->get_google_service_exception() );
 
 		$this->assertNull( $this->merchant->get_claimed_url_hash() );
 	}
@@ -340,12 +387,12 @@ class MerchantTest extends UnitTest {
 			->with( $account_id, $account_id, $account )
 			->will(
 				$this->throwException(
-					new GoogleException( 'error', 400 )
+					$this->get_google_service_exception( 400, 'URL ends with an invalid top-level domain name' )
 				)
 			);
-
-		$this->expectException( MerchantApiException::class );
+		$this->expectException( ExceptionWithResponseData::class );
 		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Unable to update Merchant Center account: URL ends with an invalid top-level domain name' );
 		$this->merchant->update_account( $account );
 	}
 
@@ -428,7 +475,7 @@ class MerchantTest extends UnitTest {
 	public function test_no_access_to_account() {
 		$email = 'john@doe.email';
 
-		$this->mock_get_account_exception( new GoogleException( 'no access', 403 ) );
+		$this->mock_get_account_exception( $this->get_google_exception( 'No access' ) );
 
 		$this->assertFalse(
 			$this->merchant->has_access( $email )

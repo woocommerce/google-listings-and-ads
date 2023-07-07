@@ -17,7 +17,7 @@ use Google\Ads\GoogleAds\V13\Services\MutateOperation;
  */
 class AdsCampaignCriterion {
 
-	use ApiExceptionTrait;
+	use ExceptionTrait;
 
 	/**
 	 * Returns a set of operations to create multiple campaign criteria.

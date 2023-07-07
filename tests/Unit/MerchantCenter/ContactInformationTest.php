@@ -118,9 +118,9 @@ class ContactInformationTest extends ContainerAwareUnitTest {
 	public function test_get_account_exception() {
 		$this->merchant->expects( $this->any() )
 					   ->method( 'get_account' )
-					   ->willThrowException( $this->get_account_exception() );
+					   ->willThrowException( $this->get_google_exception() );
 
-		$this->expectExceptionObject( $this->get_account_exception() );
+		$this->expectExceptionObject( $this->get_google_exception() );
 		$this->contact_information->get_contact_information();
 	}
 }

@@ -29,8 +29,8 @@ use Google\ApiCore\ApiException;
  */
 class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 
-	use ApiExceptionTrait;
 	use ContainerAwareTrait;
+	use ExceptionTrait;
 	use MicroTrait;
 	use OptionsAwareTrait;
 	use ReportTrait;
@@ -104,7 +104,7 @@ class AdsReport implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			$errors = $this->get_api_exception_errors( $e );
+			$errors = $this->get_exception_errors( $e );
 			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
 				sprintf( __( 'Unable to retrieve report data: %s', 'google-listings-and-ads' ), reset( $errors ) ),

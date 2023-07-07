@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\AccountBusinessInformation;
 
@@ -45,7 +45,7 @@ class ContactInformation implements Service {
 	 * @return AccountBusinessInformation|null The contact information associated with the Merchant Center account or
 	 *                                         null.
 	 *
-	 * @throws MerchantApiException If the Merchant Center account can't be retrieved.
+	 * @throws ExceptionWithResponseData If the Merchant Center account can't be retrieved.
 	 */
 	public function get_contact_information(): ?AccountBusinessInformation {
 		$business_information = $this->merchant->get_account()->getBusinessInformation();
@@ -59,7 +59,7 @@ class ContactInformation implements Service {
 	 *
 	 * @return AccountBusinessInformation The contact information associated with the Merchant Center account.
 	 *
-	 * @throws MerchantApiException If the Merchant Center account can't be retrieved or updated.
+	 * @throws ExceptionWithResponseData If the Merchant Center account can't be retrieved or updated.
 	 */
 	public function update_address_based_on_store_settings(): AccountBusinessInformation {
 		$business_information = $this->get_contact_information() ?: new AccountBusinessInformation();
@@ -77,7 +77,7 @@ class ContactInformation implements Service {
 	 *
 	 * @param AccountBusinessInformation $business_information
 	 *
-	 * @throws MerchantApiException If the Merchant Center account can't be retrieved or updated.
+	 * @throws ExceptionWithResponseData If the Merchant Center account can't be retrieved or updated.
 	 */
 	protected function update_contact_information( AccountBusinessInformation $business_information ): void {
 		$account = $this->merchant->get_account();
