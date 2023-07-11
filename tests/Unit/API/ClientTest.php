@@ -14,7 +14,6 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ClientTest
  *
- * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API
  */
 class ClientTest extends ContainerAwareUnitTest {
