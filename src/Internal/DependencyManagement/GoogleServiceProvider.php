@@ -258,7 +258,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	/**
 	 * Add client name and version headers to request
 	 *
-	 * @since x.x.x
+	 * @since 2.4.11
 	 *
 	 * @return callable
 	 */
