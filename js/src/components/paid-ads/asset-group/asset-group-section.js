@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import { Tip } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -24,6 +25,7 @@ import './asset-group-section.scss';
  */
 export default function AssetGroupSection() {
 	const { adapter } = useAdaptiveFormContext();
+	const showTip = adapter.hasImportedAssets;
 
 	return (
 		<Section
@@ -70,6 +72,14 @@ export default function AssetGroupSection() {
 					// reselect button in the card footer.
 					hideFooter={ ! adapter.isEmptyAssetEntityGroup }
 				/>
+				{ showTip && (
+					<Tip>
+						{ __(
+							'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.',
+							'google-listings-and-ads'
+						) }
+					</Tip>
+				) }
 				<AssetGroupCard />
 			</VerticalGapLayout>
 		</Section>

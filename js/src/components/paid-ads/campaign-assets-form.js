@@ -77,6 +77,7 @@ export default function CampaignAssetsForm( {
 
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ validationRequestCount, setValidationRequestCount ] = useState( 0 );
+	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
@@ -90,13 +91,20 @@ export default function CampaignAssetsForm( {
 			baseAssetGroup,
 			validationRequestCount,
 			assetGroupErrors,
+			hasImportedAssets,
 			isValidAssetGroup: Object.keys( assetGroupErrors ).length === 0,
 			resetAssetGroup( assetGroup ) {
 				const nextAssetGroup = assetGroup || initialAssetGroup;
+				let hasNonEmptyAssets = false;
 
 				Object.keys( emptyAssetGroup ).forEach( ( key ) => {
+					if ( assetGroup && assetGroup[ key ]?.length ) {
+						hasNonEmptyAssets = true;
+					}
 					formContext.setValue( key, nextAssetGroup[ key ] );
 				} );
+
+				setHasImportedAssets( hasNonEmptyAssets );
 				setBaseAssetGroup( nextAssetGroup );
 				setValidationRequestCount( 0 );
 			},
