@@ -8,8 +8,8 @@
 
 	.components-tip {
 		padding: $grid-unit-15 $grid-unit-20;
-		background: #F0F6FC;
-		border: $border-width solid #C5D9ED;
+		background: #f0f6fc;
+		border: $border-width solid #c5d9ed;
 		line-height: $gla-line-height-medium;
 
 		> p {
@@ -17,7 +17,7 @@
 			font-size: $default-font-size;
 		}
 		> svg {
-			fill: #007CBA;
+			fill: #007cba;
 			align-self: initial;
 		}
 	}
