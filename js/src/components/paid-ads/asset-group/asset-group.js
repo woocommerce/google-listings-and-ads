@@ -108,9 +108,12 @@ export default function AssetGroup( { campaign } ) {
 	return (
 		<StepContent>
 			<StepContentHeader
-				title={ __( 'Boost your campaign', 'google-listings-and-ads' ) }
+				title={ __(
+					'Optimize your campaign',
+					'google-listings-and-ads'
+				) }
 				description={ __(
-					'Take your campaign to the next level with dynamic ad assets',
+					'Drive greater performance by adding text and image assets to create personalized and engaging ads',
 					'google-listings-and-ads'
 				) }
 			/>

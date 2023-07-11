@@ -7,7 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -300,7 +300,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		try {
 			$contact_info = $this->container->get( ContactInformation::class )->get_contact_information();
-		} catch ( MerchantApiException $exception ) {
+		} catch ( ExceptionWithResponseData $exception ) {
 			do_action(
 				'woocommerce_gla_debug_message',
 				'Error retrieving Merchant Center account\'s business information.',

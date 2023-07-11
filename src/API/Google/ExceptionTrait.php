@@ -3,17 +3,19 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use Google\ApiCore\ApiException;
 use Google\Rpc\Code;
+use Exception;
 
 /**
- * Trait ApiExceptionTrait
+ * Trait ExceptionTrait
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-trait ApiExceptionTrait {
+trait ExceptionTrait {
 
 	/**
 	 * Check if the ApiException contains a specific error.
@@ -45,6 +47,36 @@ trait ApiExceptionTrait {
 	}
 
 	/**
+	 * Returns a list of detailed errors from an exception instance that extends ApiException
+	 * or GoogleServiceException. Other Exception instances will also be converted to an array
+	 * in the same structure.
+	 *
+	 * The following are the example sources of ApiException, GoogleServiceException,
+	 * and other Exception in order:
+	 *
+	 * @link https://github.com/googleads/google-ads-php/blob/v19.1.0/src/Google/Ads/GoogleAds/V13/Services/Gapic/CustomerServiceGapicClient.php#L359-L361
+	 * @link https://github.com/googleapis/google-api-php-client/blob/v2.15.0/src/Http/REST.php#L119-L135
+	 * @link https://github.com/googleapis/google-api-php-client/blob/v2.15.0/src/Service/Resource.php#L86-L175
+	 *
+	 * @param ApiException|GoogleServiceException|Exception $exception Exception to check.
+	 *
+	 * @return array
+	 */
+	protected function get_exception_errors( Exception $exception ): array {
+		if ( $exception instanceof ApiException ) {
+			return $this->get_api_exception_errors( $exception );
+		}
+
+		if ( $exception instanceof GoogleServiceException ) {
+			return $this->get_google_service_exception_errors( $exception );
+		}
+
+		// Fallback for handling other Exception instances.
+		$code = $exception->getCode();
+		return [ $code => $exception->getMessage() ];
+	}
+
+	/**
 	 * Returns a list of detailed errors from an ApiException.
 	 * If no errors are found the default Exception message is returned.
 	 *
@@ -52,7 +84,7 @@ trait ApiExceptionTrait {
 	 *
 	 * @return array
 	 */
-	protected function get_api_exception_errors( ApiException $exception ): array {
+	private function get_api_exception_errors( ApiException $exception ): array {
 		$errors = [];
 		$meta   = $exception->getMetadata();
 
@@ -79,6 +111,34 @@ trait ApiExceptionTrait {
 		}
 
 		$errors[ $exception->getStatus() ] = $exception->getBasicMessage();
+		return $errors;
+	}
+
+	/**
+	 * Returns a list of detailed errors from a GoogleServiceException.
+	 *
+	 * @param GoogleServiceException $exception Exception to check.
+	 *
+	 * @return array
+	 */
+	private function get_google_service_exception_errors( GoogleServiceException $exception ): array {
+		$errors = [];
+
+		if ( ! is_null( $exception->getErrors() ) ) {
+			foreach ( $exception->getErrors() as $error ) {
+				if ( ! isset( $error['message'] ) ) {
+					continue;
+				}
+
+				$error_code            = $error['reason'] ?? 'ERROR';
+				$errors[ $error_code ] = $error['message'];
+			}
+		}
+
+		if ( 0 === count( $errors ) ) {
+			$errors['unknown'] = __( 'An unknown error occurred in the Shopping Content Service.', 'google-listings-and-ads' );
+		}
+
 		return $errors;
 	}
 

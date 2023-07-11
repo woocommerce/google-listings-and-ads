@@ -81,6 +81,7 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 					'type' => 'string',
 				],
 				'required'          => true,
+				'minItems'          => 1,
 			],
 		];
 	}

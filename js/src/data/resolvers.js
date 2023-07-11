@@ -16,11 +16,11 @@ import {
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
+import { handleApiError } from '.~/utils/handleError';
 import { adaptAdsCampaign, adaptAssetGroup } from './adapters';
 import { fetchWithHeaders, awaitPromise } from './controls';
 
 import {
-	handleFetchError,
 	fetchShippingRates,
 	fetchShippingTimes,
 	fetchSettings,
@@ -79,7 +79,7 @@ export function* getGoogleAccountAccess() {
 
 		yield receiveGoogleAccountAccess( data );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading Google account access info.',
@@ -134,7 +134,7 @@ export function* getGoogleMCContactInformation() {
 		} );
 		yield receiveGoogleMCContactInformation( data );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading Google Merchant Center contact information.',
@@ -159,7 +159,7 @@ export function* getMCCountriesAndContinents() {
 			data,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading supported country details.',
@@ -183,7 +183,7 @@ export function* getPolicyCheck() {
 			data: response,
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading policy check details.',
@@ -209,7 +209,7 @@ export function* getAdsCampaigns( query ) {
 			adsCampaigns: campaigns.map( adaptAdsCampaign ),
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading ads campaigns.',
@@ -242,7 +242,7 @@ export function* getCampaignAssetGroups( campaignId ) {
 			assetGroups: assetGroups.map( adaptAssetGroup ),
 		};
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading the assets of the campaign.',
@@ -264,7 +264,7 @@ export function* getMCProductStatistics() {
 
 		yield receiveMCProductStatistics( response );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading your merchant center product statistics.',
@@ -282,7 +282,7 @@ export function* getMCReviewRequest() {
 
 		yield receiveMCReviewRequest( response );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading your merchant center product review request status.',
@@ -307,7 +307,7 @@ export function* getMCIssues( query ) {
 
 		yield receiveMCIssues( query, response );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading issues to resolve.',
@@ -329,7 +329,7 @@ export function* getMCProductFeed( query ) {
 
 		yield receiveMCProductFeed( query, response );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading product feed.',
@@ -367,7 +367,7 @@ export function* getReportByApiQuery( category, type, reportQuery ) {
 		const reportKey = getReportKey( category, type, reportQuery );
 		yield receiveReport( reportKey, data );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading report.',
@@ -385,7 +385,7 @@ export function* getMappingAttributes() {
 
 		yield receiveMappingAttributes( response.data );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading the mapping attributes.',
@@ -409,7 +409,7 @@ export function* getMappingSources( attributeKey ) {
 
 		yield receiveMappingSources( response.data, attributeKey );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading the mapping sources for the selected attribute.',
@@ -444,7 +444,7 @@ export function* getMappingRules( pagination ) {
 			pages,
 		} );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error loading the mapping rules.',
@@ -478,7 +478,7 @@ export function* getStoreCategories() {
 
 		yield receiveStoreCategories( response );
 	} catch ( error ) {
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error getting the store categories.',
@@ -510,7 +510,7 @@ export function* getTour( tourId ) {
 		const bodyPromise = response?.json() || response?.text();
 		const error = yield awaitPromise( bodyPromise );
 
-		yield handleFetchError(
+		handleApiError(
 			error,
 			__(
 				'There was an error getting the tour.',

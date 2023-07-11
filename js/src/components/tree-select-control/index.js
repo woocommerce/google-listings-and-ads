@@ -152,13 +152,15 @@ const TreeSelectControl = ( {
 		cacheRef.current.filteredOptionsMap.clear();
 
 		function loadOption( option, parentId ) {
+			const { children = [] } = option;
 			option.parent = parentId;
 
-			option.children?.forEach( ( el ) =>
-				loadOption( el, option.value )
-			);
+			children.forEach( ( el ) => loadOption( el, option.value ) );
 
-			repository[ option.key ?? option.value ] = option;
+			// Only children can be rendered as selected tags.
+			if ( ! children.length ) {
+				repository[ option.key ?? option.value ] = option;
+			}
 		}
 
 		treeOptions.forEach( loadOption );

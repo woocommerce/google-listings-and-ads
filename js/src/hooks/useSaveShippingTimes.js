@@ -65,6 +65,7 @@ const useSaveShippingTimes = () => {
 		 * and then upserting the new shipping times.
 		 *
 		 * @param {Array<ShippingTime>} newShippingTimes
+		 * @throws Will throw an error if any request failed.
 		 */
 		async ( newShippingTimes ) => {
 			const deletedCountryCodes = getDeletedCountryCodes(

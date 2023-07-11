@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.2
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.4.10
+Stable tag: 2.4.11
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,32 +111,25 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.4.11 - 2023-07-11 =
+* Add - Client name and plugin version to requests.
+* Dev - Enable unit testing for PHP 8.1.
+* Dev - Set engines for the repository.
+* Fix - Avoid continuing to save settings to Google Merchant Center after the shipping time save failed on the Edit Free Listings page.
+* Fix - Avoid errors when clearing all audience countries in the onboarding flow.
+* Fix - Incorrectly display South America in the audience location selector after selecting Saudi Arabia.
+* Fix - Remove deprecated $border-width-focus variable.
+* Fix - Show a general error message when the phone number verification request is failed.
+* Tweak - Add placeholder in the Attribute Mapping table when there are no rules available.
+* Tweak - Changes for title, descriptions and FAQ in PMAX Optimized Campaigns.
+* Tweak - Make some error messages clearer when errors occur in querying or modifying data.
+* Tweak - Make the error message clearer for errors that occur in getting or updating a Google Merchant Center account.
+* Tweak - WC 7.9 compatibility.
+
 = 2.4.10 - 2023-06-13 =
 * Tweak - WC 7.8 compatibility.
 
 = 2.4.9 - 2023-06-08 =
 * Fix - Prefix psr/http-client package.
-
-= 2.4.8 - 2023-06-08 =
-* Fix - Prefix Psr\Http\Message package to prevent conflicts with other plugins.
-
-= 2.4.7 - 2023-06-07 =
-* Fix - Adapt the `is_virtual` property value for Product Bundles to avoid applying incorrect shipping rates in products synchronization.
-* Update - Google API Client Services package to v0.302.
-* Update - Google API Client package to v2.15.
-* Update - Google Ads library to API V13. (package v19.1.0).
-
-= 2.4.6 - 2023-05-30 =
-* Add - Filters for manually mapping product IDs.
-* Tweak - Adjust the MCM filter to always show in channels.
-
-= 2.4.5 - 2023-05-09 =
-* Fix - Bug in Attribute Mapping with Taxonomy based rules not being applied in variations.
-* Fix - Missing spaces between the card layouts on the Get Started page.
-* Tweak - WC 7.7 compatibility.
-
-= 2.4.4 - 2023-05-02 =
-* Dev - Fix SEMGREP warnings.
-* Fix - Prefix Psr\Container package to prevent conflicts with other plugins.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

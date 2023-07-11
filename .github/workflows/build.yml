@@ -1,4 +1,4 @@
-name: Bundle Size
+name: Build
 
 on:
   push:
@@ -12,8 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  BundleSize:
-    name: Bundle size
+  BuildExtensionBundle:
+    name: Build extension bundle
     runs-on: ubuntu-latest
     env:
       FORCE_COLOR: 2
@@ -63,3 +63,9 @@ jobs:
         env:
           BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.BUNDLEWATCH_GITHUB_TOKEN }}
         run: node ./node_modules/bundlewatch/lib/bin/index.js
+
+      - name: Publish dev build to GitHub
+        if: ${{ github.event_name == 'push' && github.ref_name == 'develop' }}
+        uses: woocommerce/grow/publish-extension-dev-build@actions-v1
+        with:
+          extension-asset-path: google-listings-and-ads.zip

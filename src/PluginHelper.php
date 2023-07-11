@@ -40,6 +40,15 @@ trait PluginHelper {
 	}
 
 	/**
+	 * Get the client name for this plugin.
+	 *
+	 * @return string
+	 */
+	protected function get_client_name(): string {
+		return 'google-listings-and-ads';
+	}
+
+	/**
 	 * Get the plugin slug.
 	 *
 	 * @return string

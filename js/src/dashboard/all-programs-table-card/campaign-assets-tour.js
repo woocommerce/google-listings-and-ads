@@ -38,7 +38,7 @@ export default function CampaignAssetsTour( { referenceElementCssSelector } ) {
 						<div className="gla-campaign-assets-tour__heading">
 							<GridiconTrending />
 							{ __(
-								'Boost your campaign',
+								'Optimize your campaign',
 								'google-listings-and-ads'
 							) }
 							<Pill>
@@ -54,7 +54,7 @@ export default function CampaignAssetsTour( { referenceElementCssSelector } ) {
 						desktop: (
 							<>
 								{ __(
-									'Create ads that boost visibility and maximize campaign performance using dynamic ad assets.',
+									'Add images, headlines, and descriptions to drive better engagement and more sales.',
 									'google-listings-and-ads'
 								) }
 								<br />
