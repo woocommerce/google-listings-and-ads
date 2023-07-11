@@ -111,6 +111,21 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.4.11 - 2023-07-11 =
+* Add - Client name and plugin version to requests.
+* Dev - Enable unit testing for PHP 8.1.
+* Dev - Set engines for the repository.
+* Fix - Avoid continuing to save settings to Google Merchant Center after the shipping time save failed on the Edit Free Listings page.
+* Fix - Avoid errors when clearing all audience countries in the onboarding flow.
+* Fix - Incorrectly display South America in the audience location selector after selecting Saudi Arabia.
+* Fix - Remove deprecated $border-width-focus variable.
+* Fix - Show a general error message when the phone number verification request is failed.
+* Tweak - Add placeholder in the Attribute Mapping table when there are no rules available.
+* Tweak - Changes for title, descriptions and FAQ in PMAX Optimized Campaigns.
+* Tweak - Make some error messages clearer when errors occur in querying or modifying data.
+* Tweak - Make the error message clearer for errors that occur in getting or updating a Google Merchant Center account.
+* Tweak - WC 7.9 compatibility.
+
 = 2.4.10 - 2023-06-13 =
 * Tweak - WC 7.8 compatibility.
 
