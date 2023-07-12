@@ -91,18 +91,15 @@ class SiteVerificationTest extends UnitTest {
 
 		$this->verification_service->webResource
 			->method( 'insert' )
-			->willThrowException( new GoogleServiceException( 'error', 400 ) );
+			->willThrowException( $this->get_google_service_exception( 400, 'No necessary verification token.' ) );
 
-		try {
-			$this->verification->verify_site( $this->site_url );
-		} catch ( Exception $e ) {
-			$this->assertEquals( 1, did_action( 'woocommerce_gla_site_verify_failure' ) );
-			$this->assertEquals( 400, $e->getCode() );
-			$this->assertEquals(
-				'Unable to insert site verification.',
-				$e->getMessage()
-			);
-		}
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Unable to insert site verification: No necessary verification token.' );
+
+		$this->verification->verify_site( $this->site_url );
+
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_site_verify_failure' ) );
 	}
 
 	public function test_verify_site() {
