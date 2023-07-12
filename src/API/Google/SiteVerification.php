@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -27,6 +28,7 @@ defined( 'ABSPATH' ) || exit;
 class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface {
 
 	use ContainerAwareTrait;
+	use ExceptionTrait;
 	use OptionsAwareTrait;
 	use PluginHelper;
 
@@ -94,7 +96,7 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 	 * @param string $identifier The URL of the site to verify (including protocol).
 	 *
 	 * @return string The meta tag to be used for verification.
-	 * @throws Exception When unable to retrieve meta token.
+	 * @throws ExceptionWithResponseData When unable to retrieve meta token.
 	 */
 	protected function get_token( string $identifier ): string {
 		/** @var SiteVerificationService $service */
@@ -116,9 +118,15 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 			$response = $service->webResource->getToken( $post_body );
 		} catch ( GoogleServiceException $e ) {
 			do_action( 'woocommerce_gla_sv_client_exception', $e, __METHOD__ );
-			throw new Exception(
-				__( 'Unable to retrieve site verification token.', 'google-listings-and-ads' ),
-				$e->getCode()
+
+			$errors = $this->get_exception_errors( $e );
+
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Unable to retrieve site verification token: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$e->getCode(),
+				null,
+				[ 'errors' => $errors ]
 			);
 		}
 
