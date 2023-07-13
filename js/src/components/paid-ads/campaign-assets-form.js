@@ -91,6 +91,11 @@ export default function CampaignAssetsForm( {
 			baseAssetGroup,
 			validationRequestCount,
 			assetGroupErrors,
+			/*
+			  In order to show a Tip in the UI when assets are imported we created the hasImportedAssets
+			  property. When the Final URL changes resetAssetGroup is called with the new Asset Group,
+			  We check if any of the assets has been populated and update this property based on that.
+			*/
 			hasImportedAssets,
 			isValidAssetGroup: Object.keys( assetGroupErrors ).length === 0,
 			resetAssetGroup( assetGroup ) {

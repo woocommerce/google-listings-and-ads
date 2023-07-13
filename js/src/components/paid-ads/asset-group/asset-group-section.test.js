@@ -34,7 +34,7 @@ describe( 'AssetGroupSection', () => {
 	test( 'Component renders', () => {
 		render( <AssetGroupSection /> );
 		expect(
-			screen.queryByText( /Add additional assets/i )
+			screen.getByText( /Add additional assets/i )
 		).toBeInTheDocument();
 	} );
 
@@ -60,7 +60,7 @@ describe( 'AssetGroupSection', () => {
 		} );
 		render( <AssetGroupSection /> );
 		expect(
-			screen.queryByText(
+			screen.getByText(
 				'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.'
 			)
 		).toBeInTheDocument();
