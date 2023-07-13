@@ -4,8 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\Exception as GoogleServiceException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\SiteVerification as SiteVerificationService;
@@ -22,6 +24,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  */
 class SiteVerificationTest extends UnitTest {
+
+	use MerchantTrait;
 
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
@@ -71,18 +75,15 @@ class SiteVerificationTest extends UnitTest {
 	public function test_verify_site_token_exception() {
 		$this->verification_service->webResource
 			->method( 'getToken' )
-			->willThrowException( new GoogleServiceException( 'error', 400 ) );
+			->willThrowException( $this->get_google_service_exception( 400, 'No available tokens' ) );
 
-		try {
-			$this->verification->verify_site( $this->site_url );
-		} catch ( Exception $e ) {
-			$this->assertEquals( 1, did_action( 'woocommerce_gla_site_verify_failure' ) );
-			$this->assertEquals( 400, $e->getCode() );
-			$this->assertEquals(
-				'Unable to retrieve site verification token.',
-				$e->getMessage()
-			);
-		}
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Unable to retrieve site verification token: No available tokens' );
+
+		$this->verification->verify_site( $this->site_url );
+
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_site_verify_failure' ) );
 	}
 
 	public function test_verify_site_insert_exception() {
@@ -90,18 +91,15 @@ class SiteVerificationTest extends UnitTest {
 
 		$this->verification_service->webResource
 			->method( 'insert' )
-			->willThrowException( new GoogleServiceException( 'error', 400 ) );
+			->willThrowException( $this->get_google_service_exception( 400, 'No necessary verification token.' ) );
 
-		try {
-			$this->verification->verify_site( $this->site_url );
-		} catch ( Exception $e ) {
-			$this->assertEquals( 1, did_action( 'woocommerce_gla_site_verify_failure' ) );
-			$this->assertEquals( 400, $e->getCode() );
-			$this->assertEquals(
-				'Unable to insert site verification.',
-				$e->getMessage()
-			);
-		}
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Unable to insert site verification: No necessary verification token.' );
+
+		$this->verification->verify_site( $this->site_url );
+
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_site_verify_failure' ) );
 	}
 
 	public function test_verify_site() {
