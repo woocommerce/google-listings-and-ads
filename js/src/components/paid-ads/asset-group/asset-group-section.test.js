@@ -18,7 +18,7 @@ jest.mock( '.~/components/adaptive-form', () => ( {
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -32,14 +32,16 @@ jest.mock( '.~/components/paid-ads/asset-group/asset-group-card', () =>
 
 describe( 'AssetGroupSection', () => {
 	test( 'Component renders', () => {
-		const { queryByText } = render( <AssetGroupSection /> );
-		expect( queryByText( /Add additional assets/i ) ).toBeInTheDocument();
+		render( <AssetGroupSection /> );
+		expect(
+			screen.queryByText( /Add additional assets/i )
+		).toBeInTheDocument();
 	} );
 
 	test( 'Component not showing Tip if there are no imported assets', () => {
-		const { queryByText } = render( <AssetGroupSection /> );
+		render( <AssetGroupSection /> );
 		expect(
-			queryByText(
+			screen.queryByText(
 				'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.'
 			)
 		).not.toBeInTheDocument();
@@ -56,9 +58,9 @@ describe( 'AssetGroupSection', () => {
 				},
 			};
 		} );
-		const { queryByText } = render( <AssetGroupSection /> );
+		render( <AssetGroupSection /> );
 		expect(
-			queryByText(
+			screen.queryByText(
 				'We auto-populated assets directly from your Final URL. We encourage you to edit or add more in order to best showcase your business.'
 			)
 		).toBeInTheDocument();
