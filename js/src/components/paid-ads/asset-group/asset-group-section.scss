@@ -11,11 +11,8 @@
 		background: #f0f6fc;
 		border: $border-width solid #c5d9ed;
 		line-height: $gla-line-height-medium;
+		color: $gray-900;
 
-		> p {
-			color: $gray-900;
-			font-size: $default-font-size;
-		}
 		> svg {
 			fill: #007cba;
 			align-self: initial;
