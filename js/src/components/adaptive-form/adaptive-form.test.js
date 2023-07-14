@@ -15,7 +15,7 @@ const alwaysValid = () => ( {} );
 const delayOneSecond = () => new Promise( ( r ) => setTimeout( r, 1000 ) );
 
 describe( 'AdaptiveForm', () => {
-	it( 'Should have `formContext.adapter` with initial states', () => {
+	it( 'Should have `formContext.adapter` with functions and initial states', () => {
 		const children = jest.fn();
 
 		render(
@@ -27,6 +27,10 @@ describe( 'AdaptiveForm', () => {
 				isSubmitting: false,
 				isSubmitted: false,
 				submitter: null,
+				validationRequestCount: 0,
+				requestedShowValidation: false,
+				showValidation: expect.any( Function ),
+				hideValidation: expect.any( Function ),
 			} ),
 		} );
 
@@ -147,5 +151,49 @@ describe( 'AdaptiveForm', () => {
 			{},
 			expect.objectContaining( { submitter: buttonB } )
 		);
+	} );
+
+	it( 'Should be able to accumulate and reset the validation request count and requested state', async () => {
+		const inspect = jest.fn();
+
+		render(
+			<AdaptiveForm validate={ alwaysValid }>
+				{ ( { adapter } ) => {
+					inspect(
+						adapter.requestedShowValidation,
+						adapter.validationRequestCount
+					);
+
+					return (
+						<>
+							<button onClick={ adapter.showValidation }>
+								request
+							</button>
+
+							<button onClick={ adapter.hideValidation }>
+								reset
+							</button>
+						</>
+					);
+				} }
+			</AdaptiveForm>
+		);
+
+		const requestButton = screen.getByRole( 'button', { name: 'request' } );
+		const resetButton = screen.getByRole( 'button', { name: 'reset' } );
+
+		expect( inspect ).toHaveBeenLastCalledWith( false, 0 );
+
+		await userEvent.click( requestButton );
+
+		expect( inspect ).toHaveBeenLastCalledWith( true, 1 );
+
+		await userEvent.click( requestButton );
+
+		expect( inspect ).toHaveBeenLastCalledWith( true, 2 );
+
+		await userEvent.click( resetButton );
+
+		expect( inspect ).toHaveBeenLastCalledWith( false, 0 );
 	} );
 } );
