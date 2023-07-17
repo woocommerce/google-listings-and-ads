@@ -175,6 +175,12 @@ const SetupFreeListings = ( {
 		}
 	};
 
+	const extendAdapter = ( formContext ) => {
+		return {
+			audienceCountries: resolveFinalCountries( formContext.values ),
+		};
+	};
+
 	return (
 		<div className="gla-setup-free-listings">
 			<Hero headerTitle={ headerTitle } />
@@ -203,22 +209,12 @@ const SetupFreeListings = ( {
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,
 				} }
+				extendAdapter={ extendAdapter }
 				onChange={ handleChange }
 				validate={ handleValidate }
 				onSubmit={ onContinue }
 			>
-				{ ( formContext ) => {
-					const countries = resolveFinalCountries(
-						formContext.values
-					);
-
-					return (
-						<FormContent
-							countries={ countries }
-							submitLabel={ submitLabel }
-						/>
-					);
-				} }
+				<FormContent submitLabel={ submitLabel } />
 			</AdaptiveForm>
 		</div>
 	);

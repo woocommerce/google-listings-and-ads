@@ -18,18 +18,12 @@ import AppButton from '.~/components/app-button';
 import ConditionalSection from '.~/components/conditional-section';
 
 /**
- * @typedef {import('.~/data/actions').CountryCode} CountryCode
- */
-
-/**
  * Form to configure free listigns.
  *
  * @param {Object} props React props.
- * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to ShippingRateSection and ShippingTimeSection.
  * @param {string} [props.submitLabel="Complete setup"] Submit button label.
  */
 const FormContent = ( {
-	countries,
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
 } ) => {
 	const {
@@ -38,7 +32,7 @@ const FormContent = ( {
 		handleSubmit,
 		adapter,
 	} = useAdaptiveFormContext();
-	const shouldDisplayTaxRate = useDisplayTaxRate( countries );
+	const shouldDisplayTaxRate = useDisplayTaxRate( adapter.audienceCountries );
 	const shouldDisplayShippingTime = values.shipping_time === 'flat';
 	const isCompleteSetupDisabled =
 		shouldDisplayTaxRate === null || ! isValidForm;
@@ -46,10 +40,8 @@ const FormContent = ( {
 	return (
 		<StepContent>
 			<ChooseAudienceSection />
-			<ShippingRateSection audienceCountries={ countries } />
-			{ shouldDisplayShippingTime && (
-				<ShippingTimeSection countries={ countries } />
-			) }
+			<ShippingRateSection />
+			{ shouldDisplayShippingTime && <ShippingTimeSection /> }
 			<ConditionalSection show={ shouldDisplayTaxRate }>
 				<TaxRate />
 			</ConditionalSection>

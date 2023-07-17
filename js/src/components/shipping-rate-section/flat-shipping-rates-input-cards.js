@@ -7,9 +7,8 @@ import EstimatedShippingRatesCard from './estimated-shipping-rates-card';
 import OfferFreeShippingCard from './offer-free-shipping-card';
 import MinimumOrderCard from './minimum-order-card';
 
-const FlatShippingRatesInputCards = ( props ) => {
-	const { audienceCountries } = props;
-	const { getInputProps, values } = useAdaptiveFormContext();
+const FlatShippingRatesInputCards = () => {
+	const { getInputProps, values, adapter } = useAdaptiveFormContext();
 	const displayFreeShippingCards = values.shipping_country_rates.some(
 		isNonFreeShippingRate
 	);
@@ -17,7 +16,7 @@ const FlatShippingRatesInputCards = ( props ) => {
 	return (
 		<>
 			<EstimatedShippingRatesCard
-				audienceCountries={ audienceCountries }
+				audienceCountries={ adapter.audienceCountries }
 				{ ...getInputProps( 'shipping_country_rates' ) }
 			/>
 			{ displayFreeShippingCards && (

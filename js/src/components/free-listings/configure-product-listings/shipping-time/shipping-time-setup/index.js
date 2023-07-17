@@ -8,19 +8,12 @@ import ShippingCountriesForm from './countries-form';
 import './index.scss';
 
 /**
- * @typedef { import(".~/data/actions").CountryCode } CountryCode
- */
-
-/**
  * Form control to edit shipping rate settings.
- *
- * @param {Object} props React props.
- * @param {Array<CountryCode>} props.selectedCountryCodes Array of country codes of all audience countries.
  */
-const ShippingTimeSetup = ( { selectedCountryCodes } ) => {
-	const { getInputProps } = useAdaptiveFormContext();
+const ShippingTimeSetup = () => {
+	const { getInputProps, adapter } = useAdaptiveFormContext();
 
-	if ( ! selectedCountryCodes ) {
+	if ( ! adapter.audienceCountries ) {
 		return <AppSpinner />;
 	}
 
@@ -29,7 +22,7 @@ const ShippingTimeSetup = ( { selectedCountryCodes } ) => {
 			<VerticalGapLayout>
 				<ShippingCountriesForm
 					{ ...getInputProps( 'shipping_country_times' ) }
-					selectedCountryCodes={ selectedCountryCodes }
+					audienceCountries={ adapter.audienceCountries }
 				/>
 			</VerticalGapLayout>
 		</div>

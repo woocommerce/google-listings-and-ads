@@ -20,7 +20,7 @@ import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
  */
 
-const ShippingRateSection = ( { audienceCountries } ) => {
+const ShippingRateSection = () => {
 	const { getInputProps, values } = useAdaptiveFormContext();
 	const inputProps = getInputProps( 'shipping_rate' );
 
@@ -112,9 +112,7 @@ const ShippingRateSection = ( { audienceCountries } ) => {
 					</Section.Card.Body>
 				</Section.Card>
 				{ values.shipping_rate === 'flat' && (
-					<FlatShippingRatesInputCards
-						audienceCountries={ audienceCountries }
-					/>
+					<FlatShippingRatesInputCards />
 				) }
 			</VerticalGapLayout>
 		</Section>
