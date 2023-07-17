@@ -26,15 +26,18 @@ import ConditionalSection from '.~/components/conditional-section';
  *
  * @param {Object} props React props.
  * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to ShippingRateSection and ShippingTimeSection.
- * @param {boolean} [props.saving=false] Is the form currently beign saved?
  * @param {string} [props.submitLabel="Complete setup"] Submit button label.
  */
 const FormContent = ( {
 	countries,
-	saving = false,
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
 } ) => {
-	const { values, isValidForm, handleSubmit } = useAdaptiveFormContext();
+	const {
+		values,
+		isValidForm,
+		handleSubmit,
+		adapter,
+	} = useAdaptiveFormContext();
 	const shouldDisplayTaxRate = useDisplayTaxRate( countries );
 	const shouldDisplayShippingTime = values.shipping_time === 'flat';
 	const isCompleteSetupDisabled =
@@ -54,7 +57,7 @@ const FormContent = ( {
 				<AppButton
 					isPrimary
 					disabled={ isCompleteSetupDisabled }
-					loading={ saving }
+					loading={ adapter.isSubmitting }
 					onClick={ handleSubmit }
 				>
 					{ submitLabel }

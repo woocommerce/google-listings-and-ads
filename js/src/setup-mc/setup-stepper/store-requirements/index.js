@@ -43,7 +43,6 @@ export default function StoreRequirements( { onContinue } ) {
 	const [ isPhoneNumberReady, setPhoneNumberReady ] = useState( false );
 	const [ settingsSaved, setSettingsSaved ] = useState( true );
 	const [ preprocessed, setPreprocessed ] = useState( false );
-	const [ completing, setCompleting ] = useState( false );
 
 	const handleChangeCallback = async ( _, values ) => {
 		try {
@@ -66,13 +65,9 @@ export default function StoreRequirements( { onContinue } ) {
 
 	const handleSubmitCallback = async () => {
 		try {
-			setCompleting( true );
-
 			await updateGoogleMCContactInformation();
 			onContinue();
 		} catch ( error ) {
-			setCompleting( false );
-
 			createNotice(
 				'error',
 				__(
@@ -153,7 +148,7 @@ export default function StoreRequirements( { onContinue } ) {
 				onSubmit={ handleSubmitCallback }
 			>
 				{ ( formContext ) => {
-					const { handleSubmit, isValidForm } = formContext;
+					const { handleSubmit, isValidForm, adapter } = formContext;
 
 					const isReadyToComplete =
 						isValidForm &&
@@ -172,7 +167,7 @@ export default function StoreRequirements( { onContinue } ) {
 							<StepContentFooter>
 								<AppButton
 									isPrimary
-									loading={ completing }
+									loading={ adapter.isSubmitting }
 									disabled={ ! isReadyToComplete }
 									onClick={ handleSubmit }
 								>

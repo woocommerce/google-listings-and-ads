@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useRef } from '@wordpress/element';
+import { useRef } from '@wordpress/element';
 import { pick, noop } from 'lodash';
 
 /**
@@ -91,7 +91,6 @@ const SetupFreeListings = ( {
 	headerTitle,
 } ) => {
 	const formRef = useRef();
-	const [ saving, setSaving ] = useState( false );
 
 	if ( ! ( targetAudience && settings && shippingRates && shippingTimes ) ) {
 		return <AppSpinner />;
@@ -102,12 +101,6 @@ const SetupFreeListings = ( {
 		const { shipping_country_times: shippingTimesData } = values;
 
 		return checkErrors( values, shippingTimesData, countries );
-	};
-
-	const handleSubmit = async () => {
-		setSaving( true );
-		await onContinue();
-		setSaving( false );
 	};
 
 	const handleChange = ( change, values ) => {
@@ -212,7 +205,7 @@ const SetupFreeListings = ( {
 				} }
 				onChange={ handleChange }
 				validate={ handleValidate }
-				onSubmit={ handleSubmit }
+				onSubmit={ onContinue }
 			>
 				{ ( formContext ) => {
 					const countries = resolveFinalCountries(
@@ -223,7 +216,6 @@ const SetupFreeListings = ( {
 						<FormContent
 							countries={ countries }
 							submitLabel={ submitLabel }
-							saving={ saving }
 						/>
 					);
 				} }
