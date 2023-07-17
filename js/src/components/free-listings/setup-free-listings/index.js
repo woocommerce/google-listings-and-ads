@@ -214,12 +214,13 @@ const SetupFreeListings = ( {
 				validate={ handleValidate }
 				onSubmit={ handleSubmit }
 			>
-				{ ( formProps ) => {
-					const countries = resolveFinalCountries( formProps.values );
+				{ ( formContext ) => {
+					const countries = resolveFinalCountries(
+						formContext.values
+					);
 
 					return (
 						<FormContent
-							formProps={ formProps }
 							countries={ countries }
 							submitLabel={ submitLabel }
 							saving={ saving }

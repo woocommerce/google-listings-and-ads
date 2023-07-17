@@ -2,13 +2,14 @@
  * Internal dependencies
  */
 import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import EstimatedShippingRatesCard from './estimated-shipping-rates-card';
 import OfferFreeShippingCard from './offer-free-shipping-card';
 import MinimumOrderCard from './minimum-order-card';
 
 const FlatShippingRatesInputCards = ( props ) => {
-	const { audienceCountries, formProps } = props;
-	const { getInputProps, values } = formProps;
+	const { audienceCountries } = props;
+	const { getInputProps, values } = useAdaptiveFormContext();
 	const displayFreeShippingCards = values.shipping_country_rates.some(
 		isNonFreeShippingRate
 	);
