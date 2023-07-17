@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import { Form } from '@woocommerce/components';
 import { isEqual } from 'lodash';
 
 /**
@@ -16,6 +15,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
+import AdaptiveForm from '.~/components/adaptive-form';
 import ContactInformation from '.~/components/contact-information';
 import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
@@ -140,7 +140,7 @@ export default function StoreRequirements( { onContinue } ) {
 					'google-listings-and-ads'
 				) }
 			/>
-			<Form
+			<AdaptiveForm
 				initialValues={ {
 					website_live: settings.website_live,
 					checkout_process_secure: settings.checkout_process_secure,
@@ -152,8 +152,8 @@ export default function StoreRequirements( { onContinue } ) {
 				onChange={ handleChangeCallback }
 				onSubmit={ handleSubmitCallback }
 			>
-				{ ( formProps ) => {
-					const { handleSubmit, isValidForm } = formProps;
+				{ ( formContext ) => {
+					const { handleSubmit, isValidForm } = formContext;
 
 					const isReadyToComplete =
 						isValidForm &&
@@ -168,7 +168,7 @@ export default function StoreRequirements( { onContinue } ) {
 									setPhoneNumberReady( true )
 								}
 							/>
-							<PreLaunchChecklist formProps={ formProps } />
+							<PreLaunchChecklist />
 							<StepContentFooter>
 								<AppButton
 									isPrimary
@@ -185,7 +185,7 @@ export default function StoreRequirements( { onContinue } ) {
 						</>
 					);
 				} }
-			</Form>
+			</AdaptiveForm>
 		</StepContent>
 	);
 }

@@ -10,6 +10,7 @@ import { useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import AppButton from '.~/components/app-button';
 import './index.scss';
 
@@ -21,13 +22,12 @@ const getPanelToggleHandler = ( id ) => ( isOpened ) => {
 };
 
 export default function PreLaunchCheckItem( {
-	formProps,
 	fieldName,
 	firstPersonTitle,
 	secondPersonTitle,
 	children,
 } ) {
-	const { getInputProps, setValue, values } = formProps;
+	const { getInputProps, setValue, values } = useAdaptiveFormContext();
 	const checked = values[ fieldName ];
 	const initialCheckedRef = useRef( checked );
 
