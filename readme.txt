@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.0 - 2023-07-18 =
+* Tweak - Add Tip with information with Campaign assets are imported.
+* Tweak - Provide more detailed error reasons when unable to complete site verification for the Google Merchant Center account being connected in the onboarding flow.
+
 = 2.4.11 - 2023-07-11 =
 * Add - Client name and plugin version to requests.
 * Dev - Enable unit testing for PHP 8.1.
