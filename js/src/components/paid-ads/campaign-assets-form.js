@@ -76,7 +76,6 @@ export default function CampaignAssetsForm( {
 	}, [ assetEntityGroup ] );
 
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
-	const [ validationRequestCount, setValidationRequestCount ] = useState( 0 );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
 
 	const extendAdapter = ( formContext ) => {
@@ -89,7 +88,6 @@ export default function CampaignAssetsForm( {
 			// provide different special business logic.
 			isEmptyAssetEntityGroup: ! finalUrl,
 			baseAssetGroup,
-			validationRequestCount,
 			assetGroupErrors,
 			/*
 			  In order to show a Tip in the UI when assets are imported we created the hasImportedAssets
@@ -111,10 +109,7 @@ export default function CampaignAssetsForm( {
 
 				setHasImportedAssets( hasNonEmptyAssets );
 				setBaseAssetGroup( nextAssetGroup );
-				setValidationRequestCount( 0 );
-			},
-			showValidation() {
-				setValidationRequestCount( validationRequestCount + 1 );
+				formContext.adapter.hideValidation();
 			},
 		};
 	};
