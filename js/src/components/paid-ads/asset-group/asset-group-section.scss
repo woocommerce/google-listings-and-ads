@@ -5,4 +5,17 @@
 		font-size: $default-font-size;
 		color: $gray-700;
 	}
+
+	.components-tip {
+		padding: $grid-unit-15 $grid-unit-20;
+		background: #f0f6fc;
+		border: $border-width solid #c5d9ed;
+		line-height: $gla-line-height-medium;
+		color: $gray-900;
+
+		> svg {
+			fill: #007cba;
+			align-self: initial;
+		}
+	}
 }
