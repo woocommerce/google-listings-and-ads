@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.2
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.4.11
+Stable tag: 2.5.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.0 - 2023-07-18 =
+* Tweak - Add Tip with information with Campaign assets are imported.
+* Tweak - Provide more detailed error reasons when unable to complete site verification for the Google Merchant Center account being connected in the onboarding flow.
+
 = 2.4.11 - 2023-07-11 =
 * Add - Client name and plugin version to requests.
 * Dev - Enable unit testing for PHP 8.1.
@@ -128,8 +132,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 = 2.4.10 - 2023-06-13 =
 * Tweak - WC 7.8 compatibility.
-
-= 2.4.9 - 2023-06-08 =
-* Fix - Prefix psr/http-client package.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
