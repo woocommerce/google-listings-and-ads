@@ -14,9 +14,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 /*
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-checklist', link_id: 'checklist-requirements', href: 'https://support.google.com/merchants/answer/6363310' }`
  */
-const PreLaunchChecklist = ( props ) => {
-	const { formProps } = props;
-
+const PreLaunchChecklist = () => {
 	return (
 		<div className="gla-pre-launch-checklist">
 			<Section
@@ -51,7 +49,6 @@ const PreLaunchChecklist = ( props ) => {
 					<Section.Card.Body>
 						<VerticalGapLayout size="large">
 							<PreLaunchCheckItem
-								formProps={ formProps }
 								fieldName="website_live"
 								firstPersonTitle={ __(
 									'My store is live and accessible to all users',
@@ -79,7 +76,6 @@ const PreLaunchChecklist = ( props ) => {
 								</AppDocumentationLink>
 							</PreLaunchCheckItem>
 							<PreLaunchCheckItem
-								formProps={ formProps }
 								fieldName="payment_methods_visible"
 								firstPersonTitle={ __(
 									'I have a complete checkout process',
@@ -107,7 +103,6 @@ const PreLaunchChecklist = ( props ) => {
 								</AppDocumentationLink>
 							</PreLaunchCheckItem>
 							<PreLaunchCheckItem
-								formProps={ formProps }
 								fieldName="checkout_process_secure"
 								firstPersonTitle={ __(
 									'I have a secure checkout process',
@@ -140,7 +135,6 @@ const PreLaunchChecklist = ( props ) => {
 								</AppDocumentationLink>
 							</PreLaunchCheckItem>
 							<PreLaunchCheckItem
-								formProps={ formProps }
 								fieldName="refund_tos_visible"
 								firstPersonTitle={ __(
 									'My refund policy and terms of service are visible on my online store',
@@ -168,7 +162,6 @@ const PreLaunchChecklist = ( props ) => {
 								</AppDocumentationLink>
 							</PreLaunchCheckItem>
 							<PreLaunchCheckItem
-								formProps={ formProps }
 								fieldName="contact_info_visible"
 								firstPersonTitle={ __(
 									"My store's phone number, email and/or address are visible on my website",

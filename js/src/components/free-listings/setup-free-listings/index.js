@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useRef } from '@wordpress/element';
+import { useRef } from '@wordpress/element';
 import { pick, noop } from 'lodash';
 
 /**
@@ -91,7 +91,6 @@ const SetupFreeListings = ( {
 	headerTitle,
 } ) => {
 	const formRef = useRef();
-	const [ saving, setSaving ] = useState( false );
 
 	if ( ! ( targetAudience && settings && shippingRates && shippingTimes ) ) {
 		return <AppSpinner />;
@@ -102,12 +101,6 @@ const SetupFreeListings = ( {
 		const { shipping_country_times: shippingTimesData } = values;
 
 		return checkErrors( values, shippingTimesData, countries );
-	};
-
-	const handleSubmit = async () => {
-		setSaving( true );
-		await onContinue();
-		setSaving( false );
 	};
 
 	const handleChange = ( change, values ) => {
@@ -182,6 +175,12 @@ const SetupFreeListings = ( {
 		}
 	};
 
+	const extendAdapter = ( formContext ) => {
+		return {
+			audienceCountries: resolveFinalCountries( formContext.values ),
+		};
+	};
+
 	return (
 		<div className="gla-setup-free-listings">
 			<Hero headerTitle={ headerTitle } />
@@ -210,22 +209,12 @@ const SetupFreeListings = ( {
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,
 				} }
+				extendAdapter={ extendAdapter }
 				onChange={ handleChange }
 				validate={ handleValidate }
-				onSubmit={ handleSubmit }
+				onSubmit={ onContinue }
 			>
-				{ ( formProps ) => {
-					const countries = resolveFinalCountries( formProps.values );
-
-					return (
-						<FormContent
-							formProps={ formProps }
-							countries={ countries }
-							submitLabel={ submitLabel }
-							saving={ saving }
-						/>
-					);
-				} }
+				<FormContent submitLabel={ submitLabel } />
 			</AdaptiveForm>
 		</div>
 	);
