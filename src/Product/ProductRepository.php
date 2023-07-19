@@ -357,7 +357,8 @@ class ProductRepository implements Service {
 			$args['orderby'] = 'none';
 		}
 
+		$args = apply_filters( 'woocommerce_gla_product_query_args', $args );
+
 		return $args;
 	}
-
 }
