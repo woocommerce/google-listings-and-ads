@@ -34,8 +34,14 @@ const FormContent = ( {
 	} = useAdaptiveFormContext();
 	const shouldDisplayTaxRate = useDisplayTaxRate( adapter.audienceCountries );
 	const shouldDisplayShippingTime = values.shipping_time === 'flat';
-	const isCompleteSetupDisabled =
-		shouldDisplayTaxRate === null || ! isValidForm;
+
+	const handleSubmitClick = ( event ) => {
+		if ( shouldDisplayTaxRate !== null && isValidForm ) {
+			return handleSubmit( event );
+		}
+
+		adapter.showValidation();
+	};
 
 	return (
 		<StepContent>
@@ -48,9 +54,8 @@ const FormContent = ( {
 			<StepContentFooter>
 				<AppButton
 					isPrimary
-					disabled={ isCompleteSetupDisabled }
 					loading={ adapter.isSubmitting }
-					onClick={ handleSubmit }
+					onClick={ handleSubmitClick }
 				>
 					{ submitLabel }
 				</AppButton>
