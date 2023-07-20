@@ -46,8 +46,8 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 		( values.shipping_country_rates.length < finalCountryCodes.length ||
 			values.shipping_country_rates.some( ( el ) => el.rate < 0 ) )
 	) {
-		errors.shipping_rate = __(
-			'Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0.',
+		errors.shipping_country_rates = __(
+			'Please specify estimated shipping rates for all the countries, and the rate cannot be less than 0.',
 			'google-listings-and-ads'
 		);
 	}
@@ -73,7 +73,7 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 					shippingRate.options.free_shipping_threshold === undefined
 			)
 		) {
-			errors.offer_free_shipping = __(
+			errors.free_shipping_threshold = __(
 				'Please enter minimum order for free shipping.',
 				'google-listings-and-ads'
 			);
@@ -95,8 +95,8 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 		( shippingTimes.length < finalCountryCodes.length ||
 			shippingTimes.some( ( el ) => el.time < 0 ) )
 	) {
-		errors.shipping_time = __(
-			'Please specify shipping times for all the countries. And the estimated shipping time cannot be less than 0.',
+		errors.shipping_country_times = __(
+			'Please specify estimated shipping times for all the countries, and the time cannot be less than 0.',
 			'google-listings-and-ads'
 		);
 	}
