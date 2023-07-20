@@ -11,6 +11,7 @@ import useStoreCountry from '.~/hooks/useStoreCountry';
 import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import AdaptiveForm from '.~/components/adaptive-form';
+import ValidationErrors from '.~/components/validation-errors';
 import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
 import getOfferFreeShippingInitialValue from '.~/utils/getOfferFreeShippingInitialValue';
 import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
@@ -185,6 +186,16 @@ const SetupFreeListings = ( {
 	const extendAdapter = ( formContext ) => {
 		return {
 			audienceCountries: resolveFinalCountries( formContext.values ),
+			renderRequestedValidation( key ) {
+				if ( formContext.adapter.requestedShowValidation ) {
+					return (
+						<ValidationErrors
+							messages={ formContext.errors[ key ] }
+						/>
+					);
+				}
+				return null;
+			},
 		};
 	};
 
