@@ -29,11 +29,13 @@ import getHandlers from './getHandlers';
  * @param {Object} props
  * @param {Array<ShippingRate>} props.value Array of individual shipping rates to be used as the initial values of the form.
  * @param {Array<CountryCode>} props.audienceCountries Array of country codes of all audience countries.
+ * @param {JSX.Element} [props.helper] Helper content to be rendered at the bottom of the card body.
  * @param {(newValue: Array<ShippingRate>) => void} props.onChange Callback called with new data once shipping rates are changed.
  */
 export default function EstimatedShippingRatesCard( {
 	audienceCountries,
 	value,
+	helper,
 	onChange,
 } ) {
 	const { code: currencyCode } = useStoreCurrency();
@@ -141,6 +143,7 @@ export default function EstimatedShippingRatesCard( {
 				<VerticalGapLayout size="large">
 					{ renderGroups() }
 				</VerticalGapLayout>
+				{ helper }
 			</Section.Card.Body>
 		</Section.Card>
 	);

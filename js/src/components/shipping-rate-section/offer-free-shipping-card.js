@@ -10,9 +10,16 @@ import Section from '.~/wcdl/section';
 import AppRadioContentControl from '.~/components/app-radio-content-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 
-const OfferFreeShippingCard = ( props ) => {
-	const { value, onChange } = props;
-
+/**
+ * Renders a Card UI with options to choose whether offer free shipping
+ * for orders over a certain price.
+ *
+ * @param {Object} props React props.
+ * @param {boolean} props.value The value of whether offer free shipping.
+ * @param {JSX.Element} [props.helper] Helper content to be rendered at the bottom of the card body.
+ * @param {(nextValue: boolean) => void} props.onChange Callback called with the next value of the selected option.
+ */
+const OfferFreeShippingCard = ( { value, helper, onChange } ) => {
 	const handleChange = ( newValue ) => {
 		onChange( newValue === 'yes' );
 	};
@@ -40,6 +47,7 @@ const OfferFreeShippingCard = ( props ) => {
 						onChange={ handleChange }
 					/>
 				</VerticalGapLayout>
+				{ helper }
 			</Section.Card.Body>
 		</Section.Card>
 	);
