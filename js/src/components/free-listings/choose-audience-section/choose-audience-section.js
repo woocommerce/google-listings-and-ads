@@ -27,7 +27,11 @@ import './choose-audience-section.scss';
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
  */
 const ChooseAudienceSection = () => {
-	const { values, getInputProps } = useAdaptiveFormContext();
+	const {
+		values,
+		getInputProps,
+		adapter: { renderRequestedValidation },
+	} = useAdaptiveFormContext();
 	const { locale, language } = values;
 
 	return (
@@ -105,6 +109,7 @@ const ChooseAudienceSection = () => {
 											'google-listings-and-ads'
 										) }
 									/>
+									{ renderRequestedValidation( 'countries' ) }
 								</AppRadioContentControl>
 								<AppRadioContentControl
 									{ ...getInputProps( 'location' ) }
