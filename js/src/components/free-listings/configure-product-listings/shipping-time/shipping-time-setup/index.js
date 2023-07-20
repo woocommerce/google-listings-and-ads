@@ -15,9 +15,12 @@ import ShippingCountriesForm from './countries-form';
  * Form control to edit shipping rate settings.
  */
 const ShippingTimeSetup = () => {
-	const { getInputProps, adapter } = useAdaptiveFormContext();
+	const {
+		getInputProps,
+		adapter: { audienceCountries, renderRequestedValidation },
+	} = useAdaptiveFormContext();
 
-	if ( ! adapter.audienceCountries ) {
+	if ( ! audienceCountries ) {
 		return <AppSpinner />;
 	}
 
@@ -32,8 +35,9 @@ const ShippingTimeSetup = () => {
 				</Section.Card.Title>
 				<ShippingCountriesForm
 					{ ...getInputProps( 'shipping_country_times' ) }
-					audienceCountries={ adapter.audienceCountries }
+					audienceCountries={ audienceCountries }
 				/>
+				{ renderRequestedValidation( 'shipping_country_times' ) }
 			</Section.Card.Body>
 		</Section.Card>
 	);
