@@ -13,7 +13,12 @@ const validShippingRateSet = new Set( [ 'automatic', 'flat', 'manual' ] );
 const validShippingTimeSet = new Set( [ 'flat', 'manual' ] );
 const validTaxRateSet = new Set( [ 'destination', 'manual' ] );
 
-const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
+const checkErrors = (
+	values,
+	shippingTimes,
+	finalCountryCodes,
+	storeCountryCode
+) => {
 	const errors = {};
 
 	// Check audience.
@@ -105,7 +110,7 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	 * Check tax rate (required for U.S. only).
 	 */
 	if (
-		finalCountryCodes.includes( 'US' ) &&
+		( storeCountryCode === 'US' || finalCountryCodes.includes( 'US' ) ) &&
 		! validTaxRateSet.has( values.tax_rate )
 	) {
 		errors.tax_rate = __(

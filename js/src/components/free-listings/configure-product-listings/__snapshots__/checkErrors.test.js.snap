@@ -6,11 +6,13 @@ exports[`checkErrors Audience When the audience location option is an invalid va
 
 exports[`checkErrors Audience When the audience location option is an invalid value or missing, should not pass 2`] = `"Please select a location option."`;
 
-exports[`checkErrors For tax rate, if selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 1`] = `"Please specify tax rate option."`;
+exports[`checkErrors For tax rate, if store country code or selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 1`] = `"Please specify tax rate option."`;
 
-exports[`checkErrors For tax rate, if selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 2`] = `"Please specify tax rate option."`;
+exports[`checkErrors For tax rate, if store country code or selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 2`] = `"Please specify tax rate option."`;
 
-exports[`checkErrors For tax rate, if selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 3`] = `"Please specify tax rate option."`;
+exports[`checkErrors For tax rate, if store country code or selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 3`] = `"Please specify tax rate option."`;
+
+exports[`checkErrors For tax rate, if store country code or selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 4`] = `"Please specify tax rate option."`;
 
 exports[`checkErrors Offer free shipping With flat shipping rate option When there are some non-free shipping rates, and offer free shipping is checked, and there is no minimum order amount for non-free shipping rates, should not pass 1`] = `"Please enter minimum order for free shipping."`;
 

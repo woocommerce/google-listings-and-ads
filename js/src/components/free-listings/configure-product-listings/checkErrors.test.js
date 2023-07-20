@@ -420,7 +420,7 @@ describe( 'checkErrors', () => {
 		} );
 	} );
 
-	describe( `For tax rate, if selected country codes include 'US'`, () => {
+	describe( `For tax rate, if store country code or selected country codes include 'US'`, () => {
 		let codes;
 
 		beforeEach( () => {
@@ -430,6 +430,11 @@ describe( 'checkErrors', () => {
 		it( `When the tax rate option is an invalid value or missing, should not pass`, () => {
 			// Not set yet
 			let errors = checkErrors( defaultFormValues, [], codes );
+
+			expect( errors ).toHaveProperty( 'tax_rate' );
+			expect( errors.tax_rate ).toMatchSnapshot();
+
+			errors = checkErrors( defaultFormValues, [], [], 'US' );
 
 			expect( errors ).toHaveProperty( 'tax_rate' );
 			expect( errors.tax_rate ).toMatchSnapshot();
@@ -466,10 +471,18 @@ describe( 'checkErrors', () => {
 
 			expect( errors ).not.toHaveProperty( 'tax_rate' );
 
+			errors = checkErrors( destinationTaxRate, [], [], 'US' );
+
+			expect( errors ).not.toHaveProperty( 'tax_rate' );
+
 			// Selected manual
 			const manualTaxRate = { ...defaultFormValues, tax_rate: 'manual' };
 
 			errors = checkErrors( manualTaxRate, [], codes );
+
+			expect( errors ).not.toHaveProperty( 'tax_rate' );
+
+			errors = checkErrors( destinationTaxRate, [], [], 'US' );
 
 			expect( errors ).not.toHaveProperty( 'tax_rate' );
 		} );
