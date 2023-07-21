@@ -9,20 +9,20 @@ import './validation-errors.scss';
  * @param {Object} props React props
  * @param {string|string[]} [props.messages] Validation error message(s).
  */
-export default function ValidationErrors( { messages: rawMessages } ) {
-	let messages = rawMessages;
+export default function ValidationErrors( { messages } ) {
+	let messagesList = messages;
 
-	if ( ! rawMessages?.length ) {
+	if ( ! messages?.length ) {
 		return null;
 	}
 
-	if ( ! Array.isArray( rawMessages ) ) {
-		messages = [ rawMessages ];
+	if ( ! Array.isArray( messages ) ) {
+		messagesList = [ messages ];
 	}
 
 	return (
 		<ul className="gla-validation-errors">
-			{ messages.map( ( message ) => (
+			{ messagesList.map( ( message ) => (
 				<li key={ message }>{ message }</li>
 			) ) }
 		</ul>
