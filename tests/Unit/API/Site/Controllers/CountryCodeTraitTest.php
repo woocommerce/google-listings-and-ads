@@ -25,6 +25,9 @@ class CountryCodeTraitTest extends TestCase {
 	/** @var MockObject|GoogleHelper $google_helper */
 	protected $google_helper;
 
+	/** @var CountryCodeTrait $trait */
+	protected $trait;
+
 	/** @var bool $country_supported */
 	protected $country_supported;
 
