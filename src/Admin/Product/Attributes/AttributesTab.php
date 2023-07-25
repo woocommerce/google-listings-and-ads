@@ -102,14 +102,14 @@ class AttributesTab implements Service, Registerable, Conditional {
 	private function add_tab( array $tabs ): array {
 		$shown_types = array_map(
 			function ( string $product_type ) {
-				return "show_if_${product_type}";
+				return "show_if_{$product_type}";
 			},
 			$this->get_applicable_product_types()
 		);
 
 		$hidden_types = array_map(
 			function ( string $product_type ) {
-				return "hide_if_${product_type}";
+				return "hide_if_{$product_type}";
 			},
 			ProductSyncer::get_hidden_product_types()
 		);
