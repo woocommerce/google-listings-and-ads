@@ -150,11 +150,18 @@ export default function StoreRequirements( { onContinue } ) {
 				{ ( formContext ) => {
 					const { handleSubmit, isValidForm, adapter } = formContext;
 
-					const isReadyToComplete =
-						isValidForm &&
-						isPhoneNumberReady &&
-						address.isAddressFilled &&
-						settingsSaved;
+					const handleSubmitClick = ( event ) => {
+						const isReadyToComplete =
+							isValidForm &&
+							isPhoneNumberReady &&
+							address.isAddressFilled;
+
+						if ( isReadyToComplete ) {
+							return handleSubmit( event );
+						}
+
+						adapter.showValidation();
+					};
 
 					return (
 						<>
@@ -168,8 +175,8 @@ export default function StoreRequirements( { onContinue } ) {
 								<AppButton
 									isPrimary
 									loading={ adapter.isSubmitting }
-									disabled={ ! isReadyToComplete }
-									onClick={ handleSubmit }
+									disabled={ ! settingsSaved }
+									onClick={ handleSubmitClick }
 								>
 									{ __(
 										'Continue',
