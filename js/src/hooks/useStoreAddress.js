@@ -62,10 +62,12 @@ export default function useStoreAddress( source = 'wc' ) {
 		const postcode = storeAddress?.postal_code || '';
 
 		const [ address, address2 = '' ] = streetAddress.split( '\n' );
-		const country = countryNameDict[ storeAddress?.country ];
+		const country = countryNameDict[ storeAddress?.country ] || '';
+		const countryCode = storeAddress?.country || '';
 		const isAddressFilled = ! missingRequiredFields.length;
 
 		data = {
+			countryCode,
 			address,
 			address2,
 			city,
