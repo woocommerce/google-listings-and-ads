@@ -18,14 +18,6 @@ A list of hooks, i.e `actions` and `filters`, that are defined or used in this p
 
 - <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/Admin/BulkEdit/BulkEditInitializer.php#L36">BulkEditInitializer.php#L36</a>
 
-## remove_woocommerce_extended_task_list_item
-
-**Type**: action
-
-**Used in**:
-
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/TaskList/CompleteSetup.php#L102">CompleteSetup.php#L102</a>
-
 ## woocommerce_admin_disabled
 
 **Type**: filter
