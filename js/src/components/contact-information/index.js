@@ -118,6 +118,7 @@ const ContactInformation = ( { onPhoneNumberVerified } ) => {
 				<PhoneNumberCard
 					view="setup-mc"
 					phoneNumber={ phone }
+					showValidation={ adapter.requestedShowValidation }
 					onPhoneNumberVerified={ onPhoneNumberVerified }
 				/>
 				<StoreAddressCard
