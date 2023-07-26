@@ -13,6 +13,7 @@ const emptyData = {
 	postcode: '',
 	isMCAddressDifferent: null,
 	isAddressFilled: null,
+	missingRequiredFields: [],
 };
 
 /**
@@ -27,6 +28,7 @@ const emptyData = {
  *                          `null` if data have not loaded yet.
  * @property {boolean|null} isMCAddressDifferent Whether the address data from WC store and GMC are the same.
  *                          `null` if data have not loaded yet.
+ * @property {string[]} missingRequiredFields The missing required fields of the store address.
  */
 /**
  * @typedef {Object} StoreAddressResult
@@ -54,7 +56,11 @@ export default function useStoreAddress( source = 'wc' ) {
 	let data = emptyData;
 
 	if ( loaded && contact ) {
-		const { is_mc_address_different: isMCAddressDifferent } = contact;
+		const {
+			is_mc_address_different: isMCAddressDifferent,
+			wc_address_errors: missingRequiredFields,
+		} = contact;
+
 		const storeAddress =
 			source === 'wc' ? contact.wc_address : contact.mc_address;
 
@@ -66,7 +72,7 @@ export default function useStoreAddress( source = 'wc' ) {
 
 		const [ address, address2 = '' ] = streetAddress.split( '\n' );
 		const country = countryNameDict[ storeAddress?.country ];
-		const isAddressFilled = ! contact.wc_address_errors.length;
+		const isAddressFilled = ! missingRequiredFields.length;
 
 		data = {
 			address,
@@ -77,6 +83,7 @@ export default function useStoreAddress( source = 'wc' ) {
 			postcode,
 			isAddressFilled,
 			isMCAddressDifferent,
+			missingRequiredFields,
 		};
 	}
 
