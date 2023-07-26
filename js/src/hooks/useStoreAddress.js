@@ -4,6 +4,10 @@
 import useAppSelectDispatch from './useAppSelectDispatch';
 import useCountryKeyNameMap from './useCountryKeyNameMap';
 
+/**
+ * @typedef {import('.~/hooks/types.js').StoreAddress} StoreAddress
+ */
+
 const emptyData = {
 	address: '',
 	address2: '',
@@ -17,25 +21,12 @@ const emptyData = {
 };
 
 /**
- * @typedef {Object} StoreAddress
- * @property {string} address Store address line 1.
- * @property {string} address2 Address line 2.
- * @property {string} city Store city.
- * @property {string} state Store country state if available.
- * @property {string} country Store country.
- * @property {string} postcode Store postcode.
- * @property {boolean|null} isAddressFilled Whether the minimum address data is filled in.
- *                          `null` if data have not loaded yet.
- * @property {boolean|null} isMCAddressDifferent Whether the address data from WC store and GMC are the same.
- *                          `null` if data have not loaded yet.
- * @property {string[]} missingRequiredFields The missing required fields of the store address.
- */
-/**
  * @typedef {Object} StoreAddressResult
  * @property {Function} refetch Dispatch a refetch action to reload store address.
  * @property {boolean} loaded Whether the data have been loaded.
  * @property {StoreAddress} data Store address data.
  */
+
 /**
  * Get store address data and refectch function.
  *
