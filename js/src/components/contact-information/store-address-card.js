@@ -16,8 +16,10 @@ import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
+import ValidationErrors from '.~/components/validation-errors';
 import ContactInformationPreviewCard from './contact-information-preview-card';
 import TrackableLink from '.~/components/trackable-link';
+import mapStoreAddressErrors from './mapStoreAddressErrors';
 import './store-address-card.scss';
 
 /**
@@ -34,9 +36,12 @@ import './store-address-card.scss';
  *
  * @fires gla_edit_wc_store_address Whenever "Edit in WooCommerce Settings" button is clicked.
  *
+ * @param {Object} props React props.
+ * @param {boolean} [props.showValidation=false] Whether to show validation error messages.
+ *
  * @return {JSX.Element} Filled AccountCard component.
  */
-const StoreAddressCard = () => {
+const StoreAddressCard = ( { showValidation = false } ) => {
 	const { loaded, data, refetch } = useStoreAddress();
 	const { subpath } = getQuery();
 	const editButton = (
@@ -116,6 +121,11 @@ const StoreAddressCard = () => {
 					{ __( 'Store address', 'google-listings-and-ads' ) }
 				</Subsection.Title>
 				{ addressContent }
+				{ showValidation && (
+					<ValidationErrors
+						messages={ mapStoreAddressErrors( data ) }
+					/>
+				) }
 			</Section.Card.Body>
 		</AccountCard>
 	);

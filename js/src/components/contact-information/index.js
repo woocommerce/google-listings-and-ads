@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { getEditPhoneNumberUrl, getEditStoreAddressUrl } from '.~/utils/urls';
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -88,6 +89,7 @@ export function ContactInformationPreview() {
  * @fires gla_documentation_link_click with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
  */
 const ContactInformation = ( { onPhoneNumberVerified } ) => {
+	const { adapter } = useAdaptiveFormContext();
 	const phone = useGoogleMCPhoneNumber();
 	const title = mcTitle;
 	const trackContext = 'setup-mc-contact-information';
@@ -118,7 +120,9 @@ const ContactInformation = ( { onPhoneNumberVerified } ) => {
 					phoneNumber={ phone }
 					onPhoneNumberVerified={ onPhoneNumberVerified }
 				/>
-				<StoreAddressCard />
+				<StoreAddressCard
+					showValidation={ adapter.requestedShowValidation }
+				/>
 			</VerticalGapLayout>
 		</Section>
 	);
