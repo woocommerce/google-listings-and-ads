@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import PreLaunchCheckItem from '.~/components/pre-launch-check-item';
 import Section from '.~/wcdl/section';
@@ -15,6 +16,10 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-checklist', link_id: 'checklist-requirements', href: 'https://support.google.com/merchants/answer/6363310' }`
  */
 const PreLaunchChecklist = () => {
+	const {
+		adapter: { renderRequestedValidation },
+	} = useAdaptiveFormContext();
+
 	return (
 		<div className="gla-pre-launch-checklist">
 			<Section
@@ -178,6 +183,7 @@ const PreLaunchChecklist = () => {
 								) }
 							</PreLaunchCheckItem>
 						</VerticalGapLayout>
+						{ renderRequestedValidation( 'preLaunchChecklist' ) }
 					</Section.Card.Body>
 				</Section.Card>
 			</Section>
