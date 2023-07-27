@@ -4,6 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\TaskList;
 
 use Automattic\WooCommerce\Admin\Features\OnboardingTasks\Task;
+use Automattic\WooCommerce\Admin\Features\OnboardingTasks\TaskLists;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 
@@ -12,10 +15,28 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\TaskList
  */
-class CompleteSetupTask extends Task implements MerchantCenterAwareInterface {
+class CompleteSetupTask extends Task implements Service, Registerable, MerchantCenterAwareInterface {
 
 	use MerchantCenterAwareTrait;
 
+	/**
+	 * Register a service.
+	 *
+	 * Add itself to the extended task list on init.
+	 */
+	public function register(): void {
+		add_action(
+			'init',
+			function() {
+				$list_id = 'extended';
+
+				$this->task_list = TaskLists::get_list( $list_id );
+				TaskLists::add_task( $list_id, $this );
+
+				do_action( 'add_woocommerce_extended_task_list_item', $this->get_id() );
+			}
+		);
+	}
 	/**
 	 * Get the task id.
 	 *
@@ -52,7 +73,7 @@ class CompleteSetupTask extends Task implements MerchantCenterAwareInterface {
 	 * @return string
 	 */
 	public function get_time() {
-		return __( '20 minutes', 'woocommerce' );
+		return __( '20 minutes', 'google-listings-and-ads' );
 	}
 
 	/**
@@ -71,7 +92,7 @@ class CompleteSetupTask extends Task implements MerchantCenterAwareInterface {
 	 * @return bool
 	 */
 	public function is_complete() {
-		return $this->merchant_center && $this->merchant_center->is_setup_complete() || false;
+		return $this->merchant_center->is_setup_complete();
 	}
 
 	/**
