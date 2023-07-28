@@ -3,27 +3,8 @@
 		margin-left: $grid-unit-05;
 	}
 
-	&__error-list {
-		width: 100%;
-		margin: 0;
-		line-height: $gla-line-height-smaller;
-		font-size: $gla-font-smaller;
-		color: $alert-red;
-
-		&:not(:last-child) {
-			margin-bottom: $grid-unit-20;
-		}
-
-		> li {
-			list-style: disc inside;
-			margin: 0;
-			padding-left: 0.5em;
-
-			&:only-child {
-				list-style: none;
-				padding-left: 0;
-			}
-		}
+	.gla-validation-errors {
+		margin-top: 0;
 	}
 }
 

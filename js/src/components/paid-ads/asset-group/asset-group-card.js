@@ -10,6 +10,7 @@ import { SelectControl } from '@wordpress/components';
  */
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import AppInputControl from '.~/components/app-input-control';
+import ValidationErrors from '.~/components/validation-errors';
 import ImagesSelector from './images-selector';
 import TextsEditor from './texts-editor';
 import AssetField from './asset-field';
@@ -79,13 +80,7 @@ export default function AssetGroupCard() {
 			return null;
 		}
 
-		return (
-			<ul className="gla-asset-group-card__error-list">
-				{ [ assetGroupErrors[ key ] ].flat().map( ( message ) => (
-					<li key={ message }>{ message }</li>
-				) ) }
-			</ul>
-		);
+		return <ValidationErrors messages={ assetGroupErrors[ key ] } />;
 	}
 
 	function refFirstErrorField( ref ) {

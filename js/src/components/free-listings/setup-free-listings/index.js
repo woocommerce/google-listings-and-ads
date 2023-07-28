@@ -7,9 +7,11 @@ import { pick, noop } from 'lodash';
 /**
  * Internal dependencies
  */
+import useStoreCountry from '.~/hooks/useStoreCountry';
 import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import AdaptiveForm from '.~/components/adaptive-form';
+import ValidationErrors from '.~/components/validation-errors';
 import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
 import getOfferFreeShippingInitialValue from '.~/utils/getOfferFreeShippingInitialValue';
 import isNonFreeShippingRate from '.~/utils/isNonFreeShippingRate';
@@ -91,6 +93,7 @@ const SetupFreeListings = ( {
 	headerTitle,
 } ) => {
 	const formRef = useRef();
+	const { code: storeCountryCode } = useStoreCountry();
 
 	if ( ! ( targetAudience && settings && shippingRates && shippingTimes ) ) {
 		return <AppSpinner />;
@@ -100,7 +103,12 @@ const SetupFreeListings = ( {
 		const countries = resolveFinalCountries( values );
 		const { shipping_country_times: shippingTimesData } = values;
 
-		return checkErrors( values, shippingTimesData, countries );
+		return checkErrors(
+			values,
+			shippingTimesData,
+			countries,
+			storeCountryCode
+		);
 	};
 
 	const handleChange = ( change, values ) => {
@@ -178,6 +186,16 @@ const SetupFreeListings = ( {
 	const extendAdapter = ( formContext ) => {
 		return {
 			audienceCountries: resolveFinalCountries( formContext.values ),
+			renderRequestedValidation( key ) {
+				if ( formContext.adapter.requestedShowValidation ) {
+					return (
+						<ValidationErrors
+							messages={ formContext.errors[ key ] }
+						/>
+					);
+				}
+				return null;
+			},
 		};
 	};
 

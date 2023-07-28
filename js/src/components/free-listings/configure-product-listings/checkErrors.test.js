@@ -187,8 +187,8 @@ describe( 'checkErrors', () => {
 
 				const errors = checkErrors( values, [], codes );
 
-				expect( errors ).toHaveProperty( 'shipping_rate' );
-				expect( errors.shipping_rate ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'shipping_country_rates' );
+				expect( errors.shipping_country_rates ).toMatchSnapshot();
 			} );
 
 			it( `When all selected countries' shipping rates are set, should pass`, () => {
@@ -218,8 +218,8 @@ describe( 'checkErrors', () => {
 
 				const errors = checkErrors( values, [], codes );
 
-				expect( errors ).toHaveProperty( 'shipping_rate' );
-				expect( errors.shipping_rate ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'shipping_country_rates' );
+				expect( errors.shipping_country_rates ).toMatchSnapshot();
 			} );
 
 			it( `When all shipping rates are ≥ 0, should pass`, () => {
@@ -294,7 +294,8 @@ describe( 'checkErrors', () => {
 
 				const errors = checkErrors( values, [], codes );
 
-				expect( errors ).toHaveProperty( 'offer_free_shipping' );
+				expect( errors ).toHaveProperty( 'free_shipping_threshold' );
+				expect( errors.free_shipping_threshold ).toMatchSnapshot();
 			} );
 		} );
 
@@ -385,8 +386,8 @@ describe( 'checkErrors', () => {
 
 				const errors = checkErrors( flatShipping, times, codes );
 
-				expect( errors ).toHaveProperty( 'shipping_time' );
-				expect( errors.shipping_time ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'shipping_country_times' );
+				expect( errors.shipping_country_times ).toMatchSnapshot();
 			} );
 
 			it( `When all selected countries' shipping times are set, should pass`, () => {
@@ -404,8 +405,8 @@ describe( 'checkErrors', () => {
 
 				const errors = checkErrors( flatShipping, times, codes );
 
-				expect( errors ).toHaveProperty( 'shipping_time' );
-				expect( errors.shipping_time ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'shipping_country_times' );
+				expect( errors.shipping_country_times ).toMatchSnapshot();
 			} );
 
 			it( `When all shipping times are ≥ 0, should pass`, () => {
@@ -419,7 +420,7 @@ describe( 'checkErrors', () => {
 		} );
 	} );
 
-	describe( `For tax rate, if selected country codes include 'US'`, () => {
+	describe( `For tax rate, if store country code or selected country codes include 'US'`, () => {
 		let codes;
 
 		beforeEach( () => {
@@ -429,6 +430,11 @@ describe( 'checkErrors', () => {
 		it( `When the tax rate option is an invalid value or missing, should not pass`, () => {
 			// Not set yet
 			let errors = checkErrors( defaultFormValues, [], codes );
+
+			expect( errors ).toHaveProperty( 'tax_rate' );
+			expect( errors.tax_rate ).toMatchSnapshot();
+
+			errors = checkErrors( defaultFormValues, [], [], 'US' );
 
 			expect( errors ).toHaveProperty( 'tax_rate' );
 			expect( errors.tax_rate ).toMatchSnapshot();
@@ -465,10 +471,18 @@ describe( 'checkErrors', () => {
 
 			expect( errors ).not.toHaveProperty( 'tax_rate' );
 
+			errors = checkErrors( destinationTaxRate, [], [], 'US' );
+
+			expect( errors ).not.toHaveProperty( 'tax_rate' );
+
 			// Selected manual
 			const manualTaxRate = { ...defaultFormValues, tax_rate: 'manual' };
 
 			errors = checkErrors( manualTaxRate, [], codes );
+
+			expect( errors ).not.toHaveProperty( 'tax_rate' );
+
+			errors = checkErrors( destinationTaxRate, [], [], 'US' );
 
 			expect( errors ).not.toHaveProperty( 'tax_rate' );
 		} );

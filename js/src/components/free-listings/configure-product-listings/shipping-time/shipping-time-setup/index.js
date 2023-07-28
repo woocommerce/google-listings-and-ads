@@ -1,31 +1,45 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
+import Section from '.~/wcdl/section';
 import AppSpinner from '.~/components/app-spinner';
-import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import ShippingCountriesForm from './countries-form';
-import './index.scss';
 
 /**
  * Form control to edit shipping rate settings.
  */
 const ShippingTimeSetup = () => {
-	const { getInputProps, adapter } = useAdaptiveFormContext();
+	const {
+		getInputProps,
+		adapter: { audienceCountries, renderRequestedValidation },
+	} = useAdaptiveFormContext();
 
-	if ( ! adapter.audienceCountries ) {
+	if ( ! audienceCountries ) {
 		return <AppSpinner />;
 	}
 
 	return (
-		<div className="gla-shipping-time-setup">
-			<VerticalGapLayout>
+		<Section.Card>
+			<Section.Card.Body>
+				<Section.Card.Title>
+					{ __(
+						'Estimated shipping times',
+						'google-listings-and-ads'
+					) }
+				</Section.Card.Title>
 				<ShippingCountriesForm
 					{ ...getInputProps( 'shipping_country_times' ) }
-					audienceCountries={ adapter.audienceCountries }
+					audienceCountries={ audienceCountries }
 				/>
-			</VerticalGapLayout>
-		</div>
+				{ renderRequestedValidation( 'shipping_country_times' ) }
+			</Section.Card.Body>
+		</Section.Card>
 	);
 };
 

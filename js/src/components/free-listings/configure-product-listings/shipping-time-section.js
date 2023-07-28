@@ -38,17 +38,7 @@ const ShippingTimeSection = () => {
 				</div>
 			}
 		>
-			<Section.Card>
-				<Section.Card.Body>
-					<Section.Card.Title>
-						{ __(
-							'Estimated shipping times',
-							'google-listings-and-ads'
-						) }
-					</Section.Card.Title>
-					<ShippingTimeSetup />
-				</Section.Card.Body>
-			</Section.Card>
+			<ShippingTimeSetup />
 		</Section>
 	);
 };
