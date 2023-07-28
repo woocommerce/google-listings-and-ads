@@ -20,7 +20,10 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
  */
 
 const TaxRate = () => {
-	const { getInputProps } = useAdaptiveFormContext();
+	const {
+		getInputProps,
+		adapter: { renderRequestedValidation },
+	} = useAdaptiveFormContext();
 
 	return (
 		<Section
@@ -95,6 +98,7 @@ const TaxRate = () => {
 							</RadioHelperText>
 						</AppRadioContentControl>
 					</VerticalGapLayout>
+					{ renderRequestedValidation( 'tax_rate' ) }
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>

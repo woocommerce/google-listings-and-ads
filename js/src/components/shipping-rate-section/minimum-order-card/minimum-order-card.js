@@ -5,8 +5,7 @@ import { __ } from '@wordpress/i18n';
 import GridiconPlusSmall from 'gridicons/dist/plus-small';
 
 /**
- * @typedef { import(".~/data/actions").CountryCode } CountryCode
- * @typedef { import("./typedefs").MinimumOrderGroup } MinimumOrderGroup
+ * @typedef { import(".~/data/actions").ShippingRate } ShippingRate
  */
 
 /**
@@ -23,9 +22,15 @@ import groupShippingRatesByCurrencyFreeShippingThreshold from './groupShippingRa
 import { calculateValueFromGroupChange } from './calculateValueFromGroupChange';
 import './minimum-order-card.scss';
 
-const MinimumOrderCard = ( props ) => {
-	const { value = [], onChange } = props;
-
+/**
+ * Renders a Card UI to provide the free shipping threshold for individual countries.
+ *
+ * @param {Object} props React props.
+ * @param {Array<ShippingRate>} [props.value=[]] Array of individual shipping rates to be used as the initial values of the form.
+ * @param {JSX.Element} [props.helper] Helper content to be rendered at the bottom of the card body.
+ * @param {(nextValue: Array<ShippingRate>) => void} props.onChange Callback called with the next data once shipping rates are changed.
+ */
+const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
 	const renderGroups = () => {
 		const nonZeroShippingRates = value.filter( isNonFreeShippingRate );
 		const groups = groupShippingRatesByCurrencyFreeShippingThreshold(
@@ -133,6 +138,7 @@ const MinimumOrderCard = ( props ) => {
 				<VerticalGapLayout size="large">
 					{ renderGroups() }
 				</VerticalGapLayout>
+				{ helper }
 			</Section.Card.Body>
 		</Section.Card>
 	);

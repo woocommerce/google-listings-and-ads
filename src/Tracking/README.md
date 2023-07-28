@@ -243,7 +243,7 @@ When a documentation link is clicked.
 `href` | `string` | link's URL
 #### Emitters
 - [`AppDocumentationLink`](../../js/src/components/app-documentation-link/index.js#L29)
-- [`ContactInformation`](../../js/src/components/contact-information/index.js#L90)
+- [`ContactInformation`](../../js/src/components/contact-information/index.js#L91)
 	- with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
 	- with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
 	- with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
@@ -251,9 +251,9 @@ When a documentation link is clicked.
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
-- [`ChooseAudienceSection`](../../js/src/components/free-listings/choose-audience-section/choose-audience-section.js#L30) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
+- [`ChooseAudienceSection`](../../js/src/components/free-listings/choose-audience-section/choose-audience-section.js#L29) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`ShippingTimeSection`](../../js/src/components/free-listings/configure-product-listings/shipping-time-section.js#L17) with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
-- [`TaxRate`](../../js/src/components/free-listings/configure-product-listings/tax-rate.js#L21)
+- [`TaxRate`](../../js/src/components/free-listings/configure-product-listings/tax-rate.js#L22)
 	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-read-more', href: 'https://support.google.com/merchants/answer/160162' }`
 	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
 - [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
@@ -266,7 +266,7 @@ When a documentation link is clicked.
 - [`TermsModal`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L29) with `{ context: 'setup-mc', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
 - [`exports`](../../js/src/components/paid-ads/ads-campaign.js#L38) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 - [`FaqsSection`](../../js/src/components/paid-ads/asset-group/faqs-section.js#L73) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
-- [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L22)
+- [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L23)
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
 - [`Faqs`](../../js/src/get-started-page/faqs/index.js#L276)
@@ -301,7 +301,7 @@ Triggered when phone number edit button is clicked.
 #### Emitters
 - [`PhoneNumberCardPreview`](../../js/src/components/contact-information/phone-number-card/phone-number-card-preview.js#L33) Whenever "Edit" is clicked.
 
-### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L126)
+### [`gla_edit_mc_store_address`](../../js/src/components/contact-information/store-address-card.js#L172)
 Trigger when store address edit button is clicked.
  Before `1.5.0` this name was used for tracking clicking "Edit in settings" to edit the WC address. As of `>1.5.0`, that event is now tracked as `edit_wc_store_address`.
 #### Properties
@@ -310,7 +310,7 @@ Trigger when store address edit button is clicked.
 `path` | `string` | The path used in the page from which the link was clicked, e.g. `"/google/settings"`.
 `subpath` | `string\|undefined` | The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
 #### Emitters
-- [`StoreAddressCardPreview`](../../js/src/components/contact-information/store-address-card.js#L146) Whenever "Edit" is clicked.
+- [`StoreAddressCardPreview`](../../js/src/components/contact-information/store-address-card.js#L192) Whenever "Edit" is clicked.
 
 ### [`gla_edit_product_click`](../../js/src/product-feed/product-feed-table-card/index.js#L50)
 Triggered when edit links are clicked from product feed table.
@@ -330,7 +330,7 @@ Triggered when edit links are clicked from Issues to resolve table.
 `code` | `string` | Issue code returned from Google
 `issue` | `string` | Issue description returned from Google
 
-### [`gla_edit_wc_store_address`](../../js/src/components/contact-information/store-address-card.js#L23)
+### [`gla_edit_wc_store_address`](../../js/src/components/contact-information/store-address-card.js#L26)
 Triggered when store address "Edit in WooCommerce Settings" button is clicked.
  Before `1.5.0` it was called `edit_mc_store_address`.
 #### Properties
@@ -339,7 +339,7 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 `path` | `string` | The path used in the page from which the link was clicked, e.g. `"/google/settings"`.
 `subpath` | `string\|undefined` | The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
 #### Emitters
-- [`StoreAddressCard`](../../js/src/components/contact-information/store-address-card.js#L39) Whenever "Edit in WooCommerce Settings" button is clicked.
+- [`StoreAddressCard`](../../js/src/components/contact-information/store-address-card.js#L56) Whenever "Edit in WooCommerce Settings" button is clicked.
 
 ### [`gla_faq`](../../js/src/components/faqs-panel/index.js#L22)
 Clicking on faq item to collapse or expand it.
@@ -528,14 +528,14 @@ Check for whether the phone number for Merchant Center exists or not.
 #### Emitters
 - [`usePhoneNumberCheckTrackEventEffect`](../../js/src/components/contact-information/usePhoneNumberCheckTrackEventEffect.js#L21)
 
-### [`gla_mc_phone_number_edit_button_click`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L88)
+### [`gla_mc_phone_number_edit_button_click`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L104)
 Clicking on the Merchant Center phone number edit button.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `view` | `string` | which view the edit button is in. Possible values: `setup-mc`, `settings`.
 #### Emitters
-- [`PhoneNumberCard`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L111)
+- [`PhoneNumberCard`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L128)
 
 ### [`gla_modal_closed`](../../js/src/utils/recordEvent.js#L110)
 A modal is closed.
@@ -739,6 +739,18 @@ Viewing tooltip
 `id` | `string` | Tooltip identifier.
 #### Emitters
 - [`HelpPopover`](../../js/src/components/help-popover/index.js#L32) with the given `id`.
+
+### [`gla_wc_store_address_validation`](../../js/src/components/contact-information/store-address-card.js#L35)
+Track how many times and what fields the store address is having validation errors.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`path` | `string` | The path used in the page from which the event tracking was sent, e.g. `"/google/setup-mc"` or `"/google/settings"`.
+`subpath` | `string\|undefined` | The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
+`country_code` | `string` | The country code of store address, e.g. `"US"`.
+`missing_fields` | `string` | The string of the missing required fields of store address separated by comma, e.g. `"city,postcode"`.
+#### Emitters
+- [`StoreAddressCard`](../../js/src/components/contact-information/store-address-card.js#L56) Whenever the new store address data is fetched after clicking "Refresh to sync" button.
 
 ### [`gla_wordpress_account_connect_button_click`](../../js/src/components/wpcom-account-card/connect-wpcom-account-card.js#L17)
 Clicking on the button to connect WordPress.com account.

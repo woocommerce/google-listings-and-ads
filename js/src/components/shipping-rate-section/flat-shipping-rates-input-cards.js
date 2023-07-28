@@ -13,20 +13,30 @@ const FlatShippingRatesInputCards = () => {
 		isNonFreeShippingRate
 	);
 
+	function getCardProps( key, validationKey = key ) {
+		return {
+			...getInputProps( key ),
+			helper: adapter.renderRequestedValidation( validationKey ),
+		};
+	}
+
 	return (
 		<>
 			<EstimatedShippingRatesCard
 				audienceCountries={ adapter.audienceCountries }
-				{ ...getInputProps( 'shipping_country_rates' ) }
+				{ ...getCardProps( 'shipping_country_rates' ) }
 			/>
 			{ displayFreeShippingCards && (
 				<>
 					<OfferFreeShippingCard
-						{ ...getInputProps( 'offer_free_shipping' ) }
+						{ ...getCardProps( 'offer_free_shipping' ) }
 					/>
 					{ values.offer_free_shipping && (
 						<MinimumOrderCard
-							{ ...getInputProps( 'shipping_country_rates' ) }
+							{ ...getCardProps(
+								'shipping_country_rates',
+								'free_shipping_threshold'
+							) }
 						/>
 					) }
 				</>
