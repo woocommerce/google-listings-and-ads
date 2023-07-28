@@ -16,6 +16,7 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AdaptiveForm from '.~/components/adaptive-form';
+import ValidationErrors from '.~/components/validation-errors';
 import ContactInformation from '.~/components/contact-information';
 import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
@@ -123,6 +124,21 @@ export default function StoreRequirements( { onContinue } ) {
 		return <AppSpinner />;
 	}
 
+	const extendAdapter = ( formContext ) => {
+		return {
+			renderRequestedValidation( key ) {
+				if ( formContext.adapter.requestedShowValidation ) {
+					return (
+						<ValidationErrors
+							messages={ formContext.errors[ key ] }
+						/>
+					);
+				}
+				return null;
+			},
+		};
+	};
+
 	return (
 		<StepContent>
 			<StepContentHeader
@@ -143,6 +159,7 @@ export default function StoreRequirements( { onContinue } ) {
 					refund_tos_visible: settings.refund_tos_visible,
 					contact_info_visible: settings.contact_info_visible,
 				} }
+				extendAdapter={ extendAdapter }
 				validate={ checkErrors }
 				onChange={ handleChangeCallback }
 				onSubmit={ handleSubmitCallback }
@@ -150,11 +167,18 @@ export default function StoreRequirements( { onContinue } ) {
 				{ ( formContext ) => {
 					const { handleSubmit, isValidForm, adapter } = formContext;
 
-					const isReadyToComplete =
-						isValidForm &&
-						isPhoneNumberReady &&
-						address.isAddressFilled &&
-						settingsSaved;
+					const handleSubmitClick = ( event ) => {
+						const isReadyToComplete =
+							isValidForm &&
+							isPhoneNumberReady &&
+							address.isAddressFilled;
+
+						if ( isReadyToComplete ) {
+							return handleSubmit( event );
+						}
+
+						adapter.showValidation();
+					};
 
 					return (
 						<>
@@ -168,8 +192,8 @@ export default function StoreRequirements( { onContinue } ) {
 								<AppButton
 									isPrimary
 									loading={ adapter.isSubmitting }
-									disabled={ ! isReadyToComplete }
-									onClick={ handleSubmit }
+									disabled={ ! settingsSaved }
+									onClick={ handleSubmitClick }
 								>
 									{ __(
 										'Continue',
