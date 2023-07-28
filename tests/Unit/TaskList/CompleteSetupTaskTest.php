@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class CompleteSetupTaskTest extends UnitTest {
 
-	/** @var MerchantCenterService $merchant_center */
+	/** @var MerchantCenterService|MockObject $merchant_center */
 	protected $merchant_center;
 
 	/** @var CompleteSetupTask $task */
