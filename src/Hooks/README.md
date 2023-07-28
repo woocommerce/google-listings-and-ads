@@ -2,14 +2,6 @@
 
 A list of hooks, i.e `actions` and `filters`, that are defined or used in this project.
 
-## add_woocommerce_extended_task_list_item
-
-**Type**: action
-
-**Used in**:
-
-- <a href="https://github.com/woocommerce/google-listings-and-ads/blob/develop/src/TaskList/CompleteSetupTask.php#L36">CompleteSetupTask.php#L36</a>
-
 ## bulk_edit_save_post
 
 **Type**: action

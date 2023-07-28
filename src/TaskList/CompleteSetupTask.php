@@ -32,8 +32,6 @@ class CompleteSetupTask extends Task implements Service, Registerable, MerchantC
 
 				$this->task_list = TaskLists::get_list( $list_id );
 				TaskLists::add_task( $list_id, $this );
-
-				do_action( 'add_woocommerce_extended_task_list_item', $this->get_id() );
 			}
 		);
 	}
