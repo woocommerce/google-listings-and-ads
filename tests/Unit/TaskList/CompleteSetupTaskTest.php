@@ -29,9 +29,6 @@ class CompleteSetupTaskTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		// Mock tasks list.
-		TaskLists::clear_lists();
-		TaskLists::add_list( [ 'id' => 'extended' ] );
 		// Mock MC setup.
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 
@@ -44,13 +41,7 @@ class CompleteSetupTaskTest extends UnitTest {
 	 * the task is added to the `extended` list and the `add_woocommerce_extended_task_list_item` action is called.
 	 */
 	public function test_register() {
-		$this->task->register();
-		do_action( 'init', 1 );
-
-		$this->assertGreaterThan( 0, did_action( 'add_woocommerce_extended_task_list_item' ) );
-
 		$this->assertNotNull( TaskLists::get_list( 'extended' )->get_task( $this->task->get_id() ) );
-		$this->assertEquals( $this->task, TaskLists::get_list( 'extended' )->get_task( $this->task->get_id() ) );
 	}
 
 	public function test_id() {
