@@ -32,16 +32,19 @@ class CompleteSetupTaskTest extends UnitTest {
 		// Mock MC setup.
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 
-		$this->task = new CompleteSetupTask();
+		// Fetch the task from the global list.
+		$this->task = TaskLists::get_list( 'extended' )->get_task( 'gla_complete_setup' );
 		$this->task->set_merchant_center_object( $this->merchant_center );
 	}
 
 	/**
-	 * Test that after the task is registered and `init` fired,
-	 * the task is added to the `extended` list and the `add_woocommerce_extended_task_list_item` action is called.
+	 * Test the task is added to the `extended` list.
+	 *
+	 * The addition should happen in `register` method, then `init` called before the test was started,
+	 * so we do not precisely assert that timing.
 	 */
 	public function test_register() {
-		$this->assertNotNull( TaskLists::get_list( 'extended' )->get_task( $this->task->get_id() ) );
+		$this->assertNotNull( TaskLists::get_list( 'extended' )->get_task( 'gla_complete_setup' ) );
 	}
 
 	public function test_id() {
