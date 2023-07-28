@@ -14,9 +14,10 @@ import { __, _x, sprintf } from '@wordpress/i18n';
  * @return {string[]} Error massages of store address.
  */
 export default function mapStoreAddressErrors( storeAddress ) {
-	// The sources of the possible field names:
-	// - https://github.com/woocommerce/google-listings-and-ads/blob/2.5.0/src/API/Google/Settings.php#L322-L339
-	// - https://github.com/woocommerce/woocommerce/blob/7.9.0/plugins/woocommerce/includes/class-wc-countries.php#L841-L1654
+	// The possible fields to be mapped are defined in the first file,
+	// and their specs come from the second file:
+	// 1. https://github.com/woocommerce/google-listings-and-ads/blob/2.5.0/src/API/Google/Settings.php#L322-L339
+	// 2. https://github.com/woocommerce/woocommerce/blob/7.9.0/plugins/woocommerce/includes/class-wc-countries.php#L841-L1654
 	const fieldNameDict = {
 		address_1: _x(
 			'address line',
