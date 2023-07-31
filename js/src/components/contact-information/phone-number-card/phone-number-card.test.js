@@ -96,7 +96,7 @@ describe( 'PhoneNumberCard', () => {
 		expect( button ).not.toBeInTheDocument();
 	} );
 
-	it( 'When `initEditing` is not specified, should render in display mode after loading a verified phone number', () => {
+	it( 'When `initEditing` is not specified, should render in non-editing mode after loading a verified phone number', () => {
 		mockLoaded( false );
 		const { rerender } = render(
 			<PhoneNumberCard phoneNumber={ phoneNumber } />
@@ -133,7 +133,7 @@ describe( 'PhoneNumberCard', () => {
 		expect( button ).toBeInTheDocument();
 	} );
 
-	it( 'When `initEditing` is false, should render in display mode regardless of verified or not', () => {
+	it( 'When `initEditing` is false, should render in non-editing mode regardless of verified or not', () => {
 		// Start with a verified and valid phone number
 		const { rerender } = render(
 			<PhoneNumberCard
