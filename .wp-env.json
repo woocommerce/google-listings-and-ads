@@ -1,0 +1,12 @@
+{
+    "phpVersion": "8.0",
+    "plugins": [
+		"https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip",
+		"https://github.com/WP-API/Basic-Auth/archive/master.zip",
+        "."
+    ],
+	"lifecycleScripts": {
+        "afterStart": "./tests/e2e/bin/test-env-setup.sh",
+        "afterClean": "./tests/e2e/bin/test-env-setup.sh"
+    }
+}
