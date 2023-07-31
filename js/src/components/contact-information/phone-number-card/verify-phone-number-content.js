@@ -226,6 +226,10 @@ export default function VerifyPhoneNumberContent( {
 					disabled={ verifying }
 					text={ textSwitch }
 					onClick={ switchMethod }
+					aria-label={ __(
+						'Switch verification method',
+						'google-listings-and-ads'
+					) }
 				/>
 			</Section.Card.Footer>
 		</form>
