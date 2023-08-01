@@ -8,6 +8,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import AppRadioContentControl from '.~/components/app-radio-content-control';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import Section from '.~/wcdl/section';
@@ -23,12 +24,14 @@ import './choose-audience-section.scss';
  * To be used in onboarding and further editing.
  * Does not provide any save strategy, this is to be bound externaly.
  *
- * @param {Object} props React props.
- * @param {Object} props.formProps Form props forwarded from `Form` component.
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
  */
-const ChooseAudienceSection = ( { formProps } ) => {
-	const { values, getInputProps } = formProps;
+const ChooseAudienceSection = () => {
+	const {
+		values,
+		getInputProps,
+		adapter: { renderRequestedValidation },
+	} = useAdaptiveFormContext();
 	const { locale, language } = values;
 
 	return (
@@ -106,6 +109,7 @@ const ChooseAudienceSection = ( { formProps } ) => {
 											'google-listings-and-ads'
 										) }
 									/>
+									{ renderRequestedValidation( 'countries' ) }
 								</AppRadioContentControl>
 								<AppRadioContentControl
 									{ ...getInputProps( 'location' ) }

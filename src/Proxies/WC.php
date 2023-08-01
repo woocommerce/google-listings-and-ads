@@ -34,6 +34,13 @@ class WC {
 	 */
 	protected $countries;
 
+	/**
+	 * List of countries the WC store sells to.
+	 *
+	 * @var array
+	 */
+	protected $allowed_countries;
+
 	/** @var WC_Countries */
 	protected $wc_countries;
 

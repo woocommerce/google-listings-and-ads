@@ -4,6 +4,10 @@
 import useAppSelectDispatch from './useAppSelectDispatch';
 import useCountryKeyNameMap from './useCountryKeyNameMap';
 
+/**
+ * @typedef {import('.~/hooks/types.js').StoreAddress} StoreAddress
+ */
+
 const emptyData = {
 	address: '',
 	address2: '',
@@ -13,27 +17,16 @@ const emptyData = {
 	postcode: '',
 	isMCAddressDifferent: null,
 	isAddressFilled: null,
+	missingRequiredFields: [],
 };
 
-/**
- * @typedef {Object} StoreAddress
- * @property {string} address Store address line 1.
- * @property {string} address2 Address line 2.
- * @property {string} city Store city.
- * @property {string} state Store country state if available.
- * @property {string} country Store country.
- * @property {string} postcode Store postcode.
- * @property {boolean|null} isAddressFilled Whether the minimum address data is filled in.
- *                          `null` if data have not loaded yet.
- * @property {boolean|null} isMCAddressDifferent Whether the address data from WC store and GMC are the same.
- *                          `null` if data have not loaded yet.
- */
 /**
  * @typedef {Object} StoreAddressResult
  * @property {Function} refetch Dispatch a refetch action to reload store address.
  * @property {boolean} loaded Whether the data have been loaded.
  * @property {StoreAddress} data Store address data.
  */
+
 /**
  * Get store address data and refectch function.
  *
@@ -54,7 +47,11 @@ export default function useStoreAddress( source = 'wc' ) {
 	let data = emptyData;
 
 	if ( loaded && contact ) {
-		const { is_mc_address_different: isMCAddressDifferent } = contact;
+		const {
+			is_mc_address_different: isMCAddressDifferent,
+			wc_address_errors: missingRequiredFields,
+		} = contact;
+
 		const storeAddress =
 			source === 'wc' ? contact.wc_address : contact.mc_address;
 
@@ -65,10 +62,12 @@ export default function useStoreAddress( source = 'wc' ) {
 		const postcode = storeAddress?.postal_code || '';
 
 		const [ address, address2 = '' ] = streetAddress.split( '\n' );
-		const country = countryNameDict[ storeAddress?.country ];
-		const isAddressFilled = ! contact.wc_address_errors.length;
+		const country = countryNameDict[ storeAddress?.country ] || '';
+		const countryCode = storeAddress?.country || '';
+		const isAddressFilled = ! missingRequiredFields.length;
 
 		data = {
+			countryCode,
 			address,
 			address2,
 			city,
@@ -77,6 +76,7 @@ export default function useStoreAddress( source = 'wc' ) {
 			postcode,
 			isAddressFilled,
 			isMCAddressDifferent,
+			missingRequiredFields,
 		};
 	}
 

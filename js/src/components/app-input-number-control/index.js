@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { useReducer } from '@wordpress/element';
+
+/**
  * Internal dependencies
  */
 import AppInputControl from '.~/components/app-input-control';
@@ -35,6 +40,17 @@ const AppInputNumberControl = ( props ) => {
 	} = props;
 	const numberSettings = useStoreNumberSettings( settings );
 	const numberFormat = useNumberFormat( settings );
+
+	// The `InputControl` in `@wordpress/components` doesn't take into account the context
+	// in which the `value` of a controlled component is updated via `onBlur`, resulting in
+	// the incoming `value` prop may not syncing to the <input> element's display value.
+	// Therefore, an updater of `useReducer` is used to make the value synchronized via the
+	// onChange callback.
+	//
+	// Ref:
+	// - https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4019.17.0/packages/components/src/input-control/index.tsx#L59-L62
+	// - https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4019.17.0/packages/components/src/input-control/utils.ts#L71-L108
+	const [ , forceUpdate ] = useReducer( ( x ) => x + 1, 0 );
 
 	/**
 	 * Value to be displayed to the user in the UI.
@@ -74,6 +90,7 @@ const AppInputNumberControl = ( props ) => {
 	const handleChange = ( val ) => {
 		const numberValue = getNumberFromString( val );
 		onChange( numberValue );
+		forceUpdate();
 	};
 
 	const handleBlur = ( e ) => {

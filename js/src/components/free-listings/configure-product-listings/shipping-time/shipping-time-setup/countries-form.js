@@ -18,19 +18,19 @@ import getCountriesTimeArray from './getCountriesTimeArray';
  *
  * @param {Object} props
  * @param {Array<ShippingTime>} props.value Array of individual shipping times to be used as the initial values of the form.
- * @param {Array<CountryCode>} props.selectedCountryCodes Array of country codes of all audience countries.
+ * @param {Array<CountryCode>} props.audienceCountries Array of selected audience country codes.
  * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping times are changed.
  */
 export default function ShippingCountriesForm( {
 	value: shippingTimes,
-	selectedCountryCodes,
+	audienceCountries,
 	onChange,
 } ) {
 	const actualCountryCount = shippingTimes.length;
 	const actualCountries = new Map(
 		shippingTimes.map( ( time ) => [ time.countryCode, time ] )
 	);
-	const remainingCountryCodes = selectedCountryCodes.filter(
+	const remainingCountryCodes = audienceCountries.filter(
 		( el ) => ! actualCountries.has( el )
 	);
 	const remainingCount = remainingCountryCodes.length;
@@ -41,7 +41,7 @@ export default function ShippingCountriesForm( {
 	// Prefill to-be-added time.
 	if ( countriesTimeArray.length === 0 ) {
 		countriesTimeArray.push( {
-			countries: selectedCountryCodes,
+			countries: audienceCountries,
 			time: null,
 		} );
 	}
@@ -92,7 +92,7 @@ export default function ShippingCountriesForm( {
 						>
 							<CountriesTimeInput
 								value={ el }
-								audienceCountries={ selectedCountryCodes }
+								audienceCountries={ audienceCountries }
 								onChange={ handleChange }
 								onDelete={ handleDelete }
 							/>

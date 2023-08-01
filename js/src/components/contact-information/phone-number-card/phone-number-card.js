@@ -12,6 +12,7 @@ import { Spinner } from '@woocommerce/components';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
+import ValidationErrors from '.~/components/validation-errors';
 import VerifyPhoneNumberContent from './verify-phone-number-content';
 import EditPhoneNumberContent from './edit-phone-number-content';
 import './phone-number-card.scss';
@@ -27,7 +28,11 @@ const basePhoneNumberCardProps = {
  * @typedef { import(".~/hooks/useGoogleMCPhoneNumber").PhoneNumber } PhoneNumber
  */
 
-function EditPhoneNumberCard( { phoneNumber, onPhoneNumberVerified } ) {
+function EditPhoneNumberCard( {
+	phoneNumber,
+	showValidation,
+	onPhoneNumberVerified,
+} ) {
 	const { loaded, data } = phoneNumber;
 	const [ verifying, setVerifying ] = useState( false );
 	const [ unverifiedPhoneNumber, setUnverifiedPhoneNumber ] = useState(
@@ -73,11 +78,22 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberVerified } ) {
 		/>
 	) : null;
 
+	const helper =
+		showValidation && ! data.isVerified ? (
+			<ValidationErrors
+				messages={ __(
+					'A verified phone number is required.',
+					'google-listings-and-ads'
+				) }
+			/>
+		) : null;
+
 	return (
 		<AccountCard
 			{ ...basePhoneNumberCardProps }
 			description={ description }
 			indicator={ indicator }
+			helper={ helper }
 		>
 			<CardDivider />
 			{ cardContent }
@@ -102,6 +118,7 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberVerified } ) {
  *     `true`: initialize with the editing UI for entering the phone number and proceeding with verification.
  *     `false`: initialize with the non-editing UI viewing the phone number and a button for switching to the editing UI.
  *     `null`: determine the initial UI state according to the `data.isVerified` after the `phoneNumber` loaded.
+ * @param {boolean} [props.showValidation=false] Whether to show validation error messages.
  * @param {Function} [props.onEditClick] Called when clicking on "Edit" button.
  *     If this callback is omitted, it will enter edit mode when clicking on "Edit" button.
  * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified or has been verified.
@@ -112,6 +129,7 @@ const PhoneNumberCard = ( {
 	view,
 	phoneNumber,
 	initEditing = null,
+	showValidation = false,
 	onEditClick,
 	onPhoneNumberVerified = noop,
 } ) => {
@@ -157,6 +175,7 @@ const PhoneNumberCard = ( {
 		return (
 			<EditPhoneNumberCard
 				phoneNumber={ phoneNumber }
+				showValidation={ showValidation }
 				onPhoneNumberVerified={ handlePhoneNumberVerified }
 			/>
 		);

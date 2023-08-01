@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
-	"version": "2.5.0",
+	"version": "2.5.1",
 	"description": "google-listings-and-ads",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -62,6 +62,7 @@
 		"@woocommerce/e2e-utils": "^0.2.0",
 		"@woocommerce/eslint-plugin": "^1.2.0",
 		"@wordpress/dependency-extraction-webpack-plugin": "^4.4.0",
+		"@wordpress/env": "^8.4.0",
 		"@wordpress/prettier-config": "^1.1.2",
 		"@wordpress/scripts": "^24.6.0",
 		"bundlewatch": "^0.3.3",
@@ -113,7 +114,8 @@
 		"test:e2e-dev": "npx wc-e2e test:e2e-dev",
 		"test:js": "wp-scripts test-unit-js --coverage",
 		"test:js:watch": "npm run test:js -- --watch",
-		"test-proxy": "node ./tests/proxy"
+		"test-proxy": "node ./tests/proxy",
+		"wp-env": "wp-env"
 	},
 	"config": {
 		"wp_org_slug": "google-listings-and-ads",

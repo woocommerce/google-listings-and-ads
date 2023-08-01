@@ -6,15 +6,19 @@ exports[`checkErrors Audience When the audience location option is an invalid va
 
 exports[`checkErrors Audience When the audience location option is an invalid value or missing, should not pass 2`] = `"Please select a location option."`;
 
-exports[`checkErrors For tax rate, if selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 1`] = `"Please specify tax rate option."`;
+exports[`checkErrors For tax rate, if store country code or selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 1`] = `"Please specify tax rate option."`;
 
-exports[`checkErrors For tax rate, if selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 2`] = `"Please specify tax rate option."`;
+exports[`checkErrors For tax rate, if store country code or selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 2`] = `"Please specify tax rate option."`;
 
-exports[`checkErrors For tax rate, if selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 3`] = `"Please specify tax rate option."`;
+exports[`checkErrors For tax rate, if store country code or selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 3`] = `"Please specify tax rate option."`;
 
-exports[`checkErrors Shipping rates For flat type When there are any selected countries with shipping rates not set, should not pass 1`] = `"Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0."`;
+exports[`checkErrors For tax rate, if store country code or selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 4`] = `"Please specify tax rate option."`;
 
-exports[`checkErrors Shipping rates For flat type When there are any shipping rates is < 0, should not pass 1`] = `"Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0."`;
+exports[`checkErrors Offer free shipping With flat shipping rate option When there are some non-free shipping rates, and offer free shipping is checked, and there is no minimum order amount for non-free shipping rates, should not pass 1`] = `"Please enter minimum order for free shipping."`;
+
+exports[`checkErrors Shipping rates For flat type When there are any selected countries with shipping rates not set, should not pass 1`] = `"Please specify estimated shipping rates for all the countries, and the rate cannot be less than 0."`;
+
+exports[`checkErrors Shipping rates For flat type When there are any shipping rates is < 0, should not pass 1`] = `"Please specify estimated shipping rates for all the countries, and the rate cannot be less than 0."`;
 
 exports[`checkErrors Shipping rates When the type of shipping rate is an invalid value or missing, should not pass 1`] = `"Please select a shipping rate option."`;
 
@@ -22,9 +26,9 @@ exports[`checkErrors Shipping rates When the type of shipping rate is an invalid
 
 exports[`checkErrors Shipping rates When the type of shipping rate is an invalid value or missing, should not pass 3`] = `"Please select a shipping rate option."`;
 
-exports[`checkErrors Shipping times For flat type When there are any selected countries' shipping times is not set, should not pass 1`] = `"Please specify shipping times for all the countries. And the estimated shipping time cannot be less than 0."`;
+exports[`checkErrors Shipping times For flat type When there are any selected countries' shipping times is not set, should not pass 1`] = `"Please specify estimated shipping times for all the countries, and the time cannot be less than 0."`;
 
-exports[`checkErrors Shipping times For flat type When there are any shipping times is < 0, should not pass 1`] = `"Please specify shipping times for all the countries. And the estimated shipping time cannot be less than 0."`;
+exports[`checkErrors Shipping times For flat type When there are any shipping times is < 0, should not pass 1`] = `"Please specify estimated shipping times for all the countries, and the time cannot be less than 0."`;
 
 exports[`checkErrors Shipping times When the type of shipping time is an invalid value or missing, should not pass 1`] = `"Please select a shipping time option."`;
 

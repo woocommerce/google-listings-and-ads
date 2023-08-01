@@ -7,6 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import Section from '.~/wcdl/section';
 import AppRadioContentControl from '.~/components/app-radio-content-control';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
@@ -19,8 +20,8 @@ import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
  */
 
-const ShippingRateSection = ( { formProps, audienceCountries } ) => {
-	const { getInputProps, values } = formProps;
+const ShippingRateSection = () => {
+	const { getInputProps, values } = useAdaptiveFormContext();
 	const inputProps = getInputProps( 'shipping_rate' );
 
 	return (
@@ -111,10 +112,7 @@ const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 					</Section.Card.Body>
 				</Section.Card>
 				{ values.shipping_rate === 'flat' && (
-					<FlatShippingRatesInputCards
-						audienceCountries={ audienceCountries }
-						formProps={ formProps }
-					/>
+					<FlatShippingRatesInputCards />
 				) }
 			</VerticalGapLayout>
 		</Section>

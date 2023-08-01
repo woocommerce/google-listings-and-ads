@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
@@ -17,52 +18,44 @@ import AppButton from '.~/components/app-button';
 import ConditionalSection from '.~/components/conditional-section';
 
 /**
- * @typedef {import('.~/data/actions').CountryCode} CountryCode
- */
-
-/**
  * Form to configure free listigns.
  *
  * @param {Object} props React props.
- * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to ShippingRateSection and ShippingTimeSection.
- * @param {Object} props.formProps Form props forwarded from `Form` component, containing free listings settings.
- * @param {boolean} [props.saving=false] Is the form currently beign saved?
  * @param {string} [props.submitLabel="Complete setup"] Submit button label.
  */
 const FormContent = ( {
-	countries,
-	formProps,
-	saving = false,
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
 } ) => {
-	const { values, isValidForm, handleSubmit } = formProps;
-	const shouldDisplayTaxRate = useDisplayTaxRate( countries );
+	const {
+		values,
+		isValidForm,
+		handleSubmit,
+		adapter,
+	} = useAdaptiveFormContext();
+	const shouldDisplayTaxRate = useDisplayTaxRate( adapter.audienceCountries );
 	const shouldDisplayShippingTime = values.shipping_time === 'flat';
-	const isCompleteSetupDisabled =
-		shouldDisplayTaxRate === null || ! isValidForm;
+
+	const handleSubmitClick = ( event ) => {
+		if ( shouldDisplayTaxRate !== null && isValidForm ) {
+			return handleSubmit( event );
+		}
+
+		adapter.showValidation();
+	};
 
 	return (
 		<StepContent>
-			<ChooseAudienceSection formProps={ formProps } />
-			<ShippingRateSection
-				formProps={ formProps }
-				audienceCountries={ countries }
-			/>
-			{ shouldDisplayShippingTime && (
-				<ShippingTimeSection
-					formProps={ formProps }
-					countries={ countries }
-				/>
-			) }
+			<ChooseAudienceSection />
+			<ShippingRateSection />
+			{ shouldDisplayShippingTime && <ShippingTimeSection /> }
 			<ConditionalSection show={ shouldDisplayTaxRate }>
-				<TaxRate formProps={ formProps } />
+				<TaxRate />
 			</ConditionalSection>
 			<StepContentFooter>
 				<AppButton
 					isPrimary
-					disabled={ isCompleteSetupDisabled }
-					loading={ saving }
-					onClick={ handleSubmit }
+					loading={ adapter.isSubmitting }
+					onClick={ handleSubmitClick }
 				>
 					{ submitLabel }
 				</AppButton>

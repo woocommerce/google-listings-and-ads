@@ -23,6 +23,10 @@ import { createContext, useContext } from '@wordpress/element';
  * @property {boolean} isSubmitting `true` if the form is currently being submitted.
  * @property {boolean} isSubmitted Set to `true` after the form is submitted. Initial value and during submission are set to `false`.
  * @property { HTMLElement | null} submitter Set to the element triggering the `handleSubmit` callback until the processing of `onSubmit` is completed. `null` otherwise.
+ * @property {number} validationRequestCount The current validation request count.
+ * @property {boolean} requestedShowValidation Whether have requested verification. It will be reset to false after calling hideValidation.
+ * @property {() => void} showValidation Increase the validation request count by 1.
+ * @property {() => void} hideValidation Reset the validation request count to 0.
  */
 
 /**

@@ -110,14 +110,14 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 	public function get_classes(): array {
 		$shown_types = array_map(
 			function ( string $coupon_type ) {
-				return "show_if_${coupon_type}";
+				return "show_if_{$coupon_type}";
 			},
 			CouponSyncer::get_supported_coupon_types()
 		);
 
 		$hidden_types = array_map(
 			function ( string $coupon_type ) {
-				return "hide_if_${coupon_type}";
+				return "hide_if_{$coupon_type}";
 			},
 			CouponSyncer::get_hidden_coupon_types()
 		);

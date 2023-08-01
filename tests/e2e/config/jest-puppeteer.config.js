@@ -4,7 +4,7 @@ const { useE2EJestPuppeteerConfig } = require( '@woocommerce/e2e-environment' );
 const puppeteerConfig = useE2EJestPuppeteerConfig( {
 	launch: {
 		browserContext: 'incognito',
-		args: [ '--incognito', '--window-size=1920,1080' ],
+		args: [ '--no-sandbox', '--incognito', '--window-size=1920,1080' ],
 		defaultViewport: {
 			width: 1280,
 			height: 800,

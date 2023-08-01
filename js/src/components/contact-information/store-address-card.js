@@ -2,11 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { useRef, createInterpolateElement } from '@wordpress/element';
 import { CardDivider } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
 import { update as updateIcon } from '@wordpress/icons';
 import { getPath, getQuery } from '@woocommerce/navigation';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -16,8 +17,10 @@ import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
+import ValidationErrors from '.~/components/validation-errors';
 import ContactInformationPreviewCard from './contact-information-preview-card';
 import TrackableLink from '.~/components/trackable-link';
+import mapStoreAddressErrors from './mapStoreAddressErrors';
 import './store-address-card.scss';
 
 /**
@@ -30,23 +33,61 @@ import './store-address-card.scss';
  */
 
 /**
+ * Track how many times and what fields the store address is having validation errors.
+ *
+ * @event gla_wc_store_address_validation
+ * @property {string} path The path used in the page from which the event tracking was sent, e.g. `"/google/setup-mc"` or `"/google/settings"`.
+ * @property {string|undefined} [subpath] The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
+ * @property {string} country_code The country code of store address, e.g. `"US"`.
+ * @property {string} missing_fields The string of the missing required fields of store address separated by comma, e.g. `"city,postcode"`.
+ */
+
+/**
  * Renders a component with a given store address.
  *
  * @fires gla_edit_wc_store_address Whenever "Edit in WooCommerce Settings" button is clicked.
+ * @fires gla_wc_store_address_validation Whenever the new store address data is fetched after clicking "Refresh to sync" button.
+ *
+ * @param {Object} props React props.
+ * @param {boolean} [props.showValidation=false] Whether to show validation error messages.
  *
  * @return {JSX.Element} Filled AccountCard component.
  */
-const StoreAddressCard = () => {
+const StoreAddressCard = ( { showValidation = false } ) => {
 	const { loaded, data, refetch } = useStoreAddress();
+	const path = getPath();
 	const { subpath } = getQuery();
-	const editButton = (
+
+	const refetchedCallbackRef = useRef( null );
+
+	if ( loaded && refetchedCallbackRef.current ) {
+		refetchedCallbackRef.current( data );
+		refetchedCallbackRef.current = null;
+	}
+
+	const handleRefreshClick = () => {
+		refetch();
+
+		refetchedCallbackRef.current = ( storeAddress ) => {
+			const eventProps = {
+				path,
+				subpath,
+				country_code: storeAddress.countryCode,
+				missing_fields: storeAddress.missingRequiredFields.join( ',' ),
+			};
+
+			recordEvent( 'gla_wc_store_address_validation', eventProps );
+		};
+	};
+
+	const refreshButton = (
 		<AppButton
 			isSecondary
 			icon={ updateIcon }
 			iconSize={ 20 }
 			iconPosition="right"
 			text={ __( 'Refresh to sync', 'google-listings-and-ads' ) }
-			onClick={ refetch }
+			onClick={ handleRefreshClick }
 			disabled={ ! loaded }
 		/>
 	);
@@ -67,7 +108,7 @@ const StoreAddressCard = () => {
 								type="external"
 								href="admin.php?page=wc-settings"
 								eventName="gla_edit_wc_store_address"
-								eventProps={ { path: getPath(), subpath } }
+								eventProps={ { path, subpath } }
 							/>
 						),
 					}
@@ -108,7 +149,7 @@ const StoreAddressCard = () => {
 			alignIcon="top"
 			alignIndicator="top"
 			description={ description }
-			indicator={ editButton }
+			indicator={ refreshButton }
 		>
 			<CardDivider />
 			<Section.Card.Body>
@@ -116,6 +157,11 @@ const StoreAddressCard = () => {
 					{ __( 'Store address', 'google-listings-and-ads' ) }
 				</Subsection.Title>
 				{ addressContent }
+				{ showValidation && (
+					<ValidationErrors
+						messages={ mapStoreAddressErrors( data ) }
+					/>
+				) }
 			</Section.Card.Body>
 		</AccountCard>
 	);

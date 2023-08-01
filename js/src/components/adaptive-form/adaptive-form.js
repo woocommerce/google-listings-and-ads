@@ -81,6 +81,15 @@ function AdaptiveForm( { onSubmit, extendAdapter, children, ...props }, ref ) {
 
 	const isMounted = useIsMounted();
 
+	// Add states for form user sides to determine whether to show validation results.
+	const [ validationRequestCount, setValidationRequestCount ] = useState( 0 );
+	const showValidation = useCallback( () => {
+		setValidationRequestCount( ( count ) => count + 1 );
+	}, [] );
+	const hideValidation = useCallback( () => {
+		setValidationRequestCount( 0 );
+	}, [] );
+
 	// Add `isSubmitting` and `isSubmitted` states for facilitating across multiple layers of
 	// component controlling, such as disabling inputs or buttons.
 	const [ submission, setSubmission ] = useState( null );
@@ -208,6 +217,10 @@ function AdaptiveForm( { onSubmit, extendAdapter, children, ...props }, ref ) {
 					isSubmitting,
 					isSubmitted,
 					submitter: adapterRef.current.submitter,
+					validationRequestCount,
+					requestedShowValidation: validationRequestCount > 0,
+					showValidation,
+					hideValidation,
 				};
 
 				if ( typeof extendAdapter === 'function' ) {
