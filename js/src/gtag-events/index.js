@@ -75,6 +75,23 @@ document.defaultView.addEventListener( 'DOMContentLoaded', function () {
 			button.addEventListener( 'click', addToCartClick );
 		} );
 
+	/**
+	 * Fix for Products (Beta) block
+	 *
+	 * Products (Beta) block doesn't trigger addAction events. Also it's not being queried by the previous query selector
+	 * because we added :not( .wc-block-components-product-button__button ) to prevent tracking duplicates with
+	 * other blocks that yes trigger addAction events.
+	 *
+	 * So the fix is to query again specifically the add to cart button in Products (Beta) block
+	 */
+	document
+		.querySelectorAll(
+			'[data-block-name="woocommerce/product-button"] > .add_to_cart_button:not( .product_type_variable ):not( .product_type_grouped )'
+		)
+		.forEach( ( button ) => {
+			button.addEventListener( 'click', addToCartClick );
+		} );
+
 	document
 		.querySelectorAll( '.single_add_to_cart_button' )
 		.forEach( ( button ) => {
