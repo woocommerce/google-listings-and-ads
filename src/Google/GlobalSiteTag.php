@@ -504,7 +504,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$plugin_url = $this->get_plugin_url();
 
 		wp_enqueue_script(
-			'gla-webpack-rumtime',
+			'gla-webpack-runtime',
 			"{$plugin_url}/js/build/runtime.js",
 			[],
 			(string) filemtime( $runtime_path ),
@@ -516,7 +516,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		wp_register_script(
 			'wp-react-refresh-runtime',
 			"{$plugin_url}/js/build-dev/react-refresh-runtime.js",
-			[ 'gla-webpack-rumtime' ],
+			[ 'gla-webpack-runtime' ],
 			$this->get_version(),
 			false
 		);
