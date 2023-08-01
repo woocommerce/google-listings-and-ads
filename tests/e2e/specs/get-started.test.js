@@ -1,61 +1,53 @@
 /**
  * External dependencies
  */
-import {
-	merchant, // eslint-disable-line import/named
-} from '@woocommerce/e2e-utils';
+const { test, expect } = require( '@playwright/test' );
 
-describe( 'Merchant who is getting started', () => {
-	beforeAll( async () => {
-		await merchant.login();
-	} );
+test.use( { storageState: process.env.ADMINSTATE } );
 
-	it( 'Clicks on the Marketing > GLA link, clicks on the call-to-action setup button to go to the Setup MC page, should get to the accounts setup', async () => {
-		// hover at the marketing link to open popup submenu.
-		const marketingLink = (
-			await page.$x( "//a[contains(., 'Marketing')]" )
-		 )[ 0 ];
-		await marketingLink.hover();
+test( 'Merchant who is getting started clicks on the Marketing > GLA link, clicks on the call-to-action setup button to go to the Setup MC page, should get to the accounts setup', async ( {
+	page,
+} ) => {
+	await page.goto( '/wp-admin/' );
 
-		// the submenu is in the DOM but not visible with the use of absolute positioning.
-		// we wait for submenu to open by checking for "opensub" CSS class in Marketing menu item.
-		await page.waitForSelector(
-			'li#toplevel_page_woocommerce-marketing.opensub'
-		);
+	// hover at the marketing link to open popup submenu.
+	const marketingLink = await page.$( "//a[contains(., 'Marketing')]" );
+	await marketingLink.hover();
 
-		// the submenu is now opened, the GLA sub menu item is now visible to the user,
-		// we can call `click` now.
-		const glaLink = (
-			await page.$x( "//a[text()='Google Listings & Ads']" )
-		 )[ 0 ];
-		await glaLink.click();
+	// the submenu is in the DOM but not visible with the use of absolute positioning.
+	// we wait for submenu to open by checking for "opensub" CSS class in Marketing menu item.
+	await page.waitForSelector(
+		'li#toplevel_page_woocommerce-marketing.opensub'
+	);
 
-		await page.waitForNavigation();
-		await expect( page.title() ).resolves.toContain(
-			'Google Listings & Ads'
-		);
+	// the submenu is now opened, the GLA sub menu item is now visible to the user,
+	// we can call `click` now.
+	const glaLink = await page.$( "//a[text()='Google Listings & Ads']" );
+	await glaLink.click();
 
-		// click on the call-to-action button.
-		const setupButton = (
-			await page.$x( "//a[text()='Start listing products →']" )
-		 )[ 0 ];
-		await setupButton.click();
-		await page.waitForNavigation();
+	await page.waitForLoadState( 'networkidle' );
+	await expect( page.title() ).resolves.toContain( 'Google Listings & Ads' );
 
-		// Check we are in the Setup MC page.
-		await expect(
-			page.waitForXPath(
-				"//*[text()='Get started with Google Listings & Ads']"
-			)
-		).resolves.toBeTruthy();
+	// click on the call-to-action button.
+	const setupButton = await page.$(
+		"//a[text()='Start listing products →']"
+	);
+	await setupButton.click();
+	await page.waitForLoadState( 'networkidle' );
 
-		// There are some API calls running in the page before the steps are displayed.
-		// Assert we eventually see the setup page Step 1 header.
-		await expect(
-			page.waitForXPath( "//*[text()='Set up your accounts']" )
-		).resolves.toBeTruthy();
+	// Check we are in the Setup MC page.
+	await expect(
+		page.waitForSelector(
+			"//*[text()='Get started with Google Listings & Ads']"
+		)
+	).resolves.toBeTruthy();
 
-		// Expect to land on the setup page URL.
-		expect( page.url() ).toMatch( /path=%2Fgoogle%2Fsetup-mc/ );
-	} );
+	// There are some API calls running in the page before the steps are displayed.
+	// Assert we eventually see the setup page Step 1 header.
+	await expect(
+		page.waitForSelector( "//*[text()='Set up your accounts']" )
+	).resolves.toBeTruthy();
+
+	// Expect to land on the setup page URL.
+	expect( page.url() ).toMatch( /path=%2Fgoogle%2Fsetup-mc/ );
 } );
