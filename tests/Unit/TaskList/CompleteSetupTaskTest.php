@@ -34,6 +34,9 @@ class CompleteSetupTaskTest extends UnitTest {
 
 		// Fetch the task from the global list.
 		$this->task = TaskLists::get_list( 'extended' )->get_task( 'gla_complete_setup' );
+		if ( ! $this->task ) {
+			$this->fail( '`gla_complete_setup` task not found in the extended list.' );
+		}
 		$this->task->set_merchant_center_object( $this->merchant_center );
 	}
 
@@ -44,7 +47,6 @@ class CompleteSetupTaskTest extends UnitTest {
 	 * So, we do not precisely assert timing and exact instance, only the presence of a task.
 	 */
 	public function test_register() {
-		$this->assertNotNull( TaskLists::get_list( 'extended' )->get_task( 'gla_complete_setup' ) );
 		$this->assertInstanceOf( CompleteSetupTask::class, TaskLists::get_list( 'extended' )->get_task( 'gla_complete_setup' ) );
 
 	}
