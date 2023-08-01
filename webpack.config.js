@@ -136,11 +136,6 @@ const webpackConfig = {
 	],
 	entry: {
 		index: path.resolve( process.cwd(), 'js/src', 'index.js' ),
-		'task-complete-setup': path.resolve(
-			process.cwd(),
-			'js/src/tasks/complete-setup',
-			'index.js'
-		),
 		'custom-inputs': path.resolve(
 			process.cwd(),
 			'js/src/custom-inputs',
