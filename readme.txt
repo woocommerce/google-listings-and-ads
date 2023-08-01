@@ -130,7 +130,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Make the error message clearer for errors that occur in getting or updating a Google Merchant Center account.
 * Tweak - WC 7.9 compatibility.
 
-= 2.4.10 - 2023-06-13 =
-* Tweak - WC 7.8 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
