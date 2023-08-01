@@ -1,187 +1,146 @@
 /**
  * External dependencies
  */
-import {
-	merchant, // eslint-disable-line import/named
-} from '@woocommerce/e2e-utils';
-/**
- * Internal dependencies
- */
-import { createURL } from '../../utils/create-url';
-import { visitGLAPage } from '../../utils/visit-gla-page';
-import { RequestMock } from '../../utils/request-mock';
+const { test, expect } = require( '@playwright/test' );
 
-const requestMock = new RequestMock();
+test.use( { storageState: process.env.ADMINSTATE } );
 
-describe( 'At setup page', () => {
-	beforeAll( async () => {
-		await merchant.login();
-	} );
-	afterAll( () => {
-		requestMock.disconnect();
+test.describe( 'Merchant who is getting started', () => {
+	test.beforeEach( async ( { page } ) => {
+		// Go to the setup page short way - directly via URL.
+		await page.goto(
+			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc'
+		);
 	} );
 
-	afterEach( async function goToSetup() {
-		requestMock.restore();
+	test( 'should see accounts step header, "Connect your WordPress.com account" & connect button', async ( {
+		page,
+	} ) => {
+		// Wait for API calls and the page to render.
+		await expect(
+			page.waitForSelector( "//*[text()='Set up your accounts']" )
+		).resolves.toBeTruthy();
+
+		await expect(
+			page.waitForSelector(
+				"//*[text()='Connect the accounts required to use Google Listings & Ads.']"
+			)
+		).resolves.toBeTruthy();
+
+		expect(
+			page.$( "//button[text()='Connect'][not(@disabled)]" )
+		).toBeTruthy();
 	} );
 
-	describe( 'Merchant who is getting started', () => {
-		beforeEach( async function goToSetup() {
-			// Go to the setup page short way - directly via URL.
-			await visitGLAPage( { path: '/google/setup-mc' } );
-		} );
+	test( 'after clicking the "Connect your WordPress.com account" button, should send an API request to connect Jetpack, and redirect to the returned URL', async ( {
+		page,
+		baseURL,
+	} ) => {
+		// Mock Jetpack as connected
+		await page.route( /\/wc\/gla\/jetpack\/connect\b/, ( route ) =>
+			route.fulfill( {
+				content: 'application/json',
+				headers: { 'Access-Control-Allow-Origin': '*' },
+				body: JSON.stringify( {
+					url: baseURL + 'auth_url',
+				} ),
+			} )
+		);
 
-		it( 'should see accounts step header, "Connect your WordPress.com account" & connect button', async () => {
-			// Wait for API calls and the page to render.
-			await expect(
-				page.waitForXPath( "//*[text()='Set up your accounts']" )
-			).resolves.toBeTruthy();
+		// Wait for enabled button.
+		const connectWPButton = await page.waitForSelector(
+			"//button[text()='Connect'][not(@disabled)]"
+		);
 
-			await expect(
-				page.waitForXPath(
-					"//*[text()='Connect the accounts required to use Google Listings & Ads.']"
-				)
-			).resolves.toBeTruthy();
+		// Click the button.
+		await connectWPButton.click();
+		await page.waitForLoadState( 'networkidle' );
 
-			expect(
-				page.$x( "//button[text()='Connect'][not(@disabled)]" )
-			).toBeTruthy();
-		} );
-
-		describe( 'after clicking the "Connect your WordPress.com account" button', () => {
-			let jetpackConnectMock;
-
-			beforeEach( async function mockJetpackConnect() {
-				await requestMock.observe( page );
-
-				jetpackConnectMock = requestMock
-					// Match "connect" not "connected".
-					.mock( /\/wc\/gla\/jetpack\/connect\b/ )
-					.mockImplementation( ( interceptedRequest ) => {
-						// Mock connected
-						interceptedRequest.respond( {
-							content: 'application/json',
-							headers: { 'Access-Control-Allow-Origin': '*' },
-							body: JSON.stringify( {
-								url: createURL( '', 'auth_url' ),
-							} ),
-						} );
-						return true;
-					} );
-			} );
-
-			it( 'should sent an API request to connect Jetpack, and redirect to the returned URL', async () => {
-				// Wait for enabled button.
-				const connectWPButton = await page.waitForXPath(
-					"//button[text()='Connect'][not(@disabled)]"
-				);
-
-				// Click the button.
-				await connectWPButton.click();
-
-				// Wait for all XHRs and redirects.
-				await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-
-				// Expect Jetpack call to be executed.
-				expect( jetpackConnectMock ).toBeCalled();
-				// Expect the user to be redirected
-				expect( page.url() ).toEqual( createURL( '', 'auth_url' ) );
-			} );
-		} );
+		// Expect the user to be redirected
+		expect( page.url() ).toEqual( baseURL + 'auth_url' );
 	} );
-	describe( 'Merchant who has their Jetpack connected, but Google not yet connected', () => {
-		beforeEach( async function goToSetup() {
-			// Mock Jetpack as connected
-			await requestMock.observe( page );
-			requestMock
-				.mock( /\/wc\/gla\/jetpack\/connected\b/ )
-				.mockImplementation( ( interceptedRequest ) => {
-					interceptedRequest.respond( {
-						content: 'application/json',
-						headers: { 'Access-Control-Allow-Origin': '*' },
-						body: JSON.stringify( {
-							active: 'yes',
-							owner: 'yes',
-							displayName: 'testUser',
-							email: 'mail@example.com',
-						} ),
-					} );
-					return true;
-				} );
+} );
 
-			// Mock google as not connected.
-			// When pending even WPORG will not render yet.
-			// If not mocked will fail and render nothing,
-			// as Jetpack is mocked only on the client-side.
-			requestMock
-				.mock( /\/wc\/gla\/google\/connected\b/ )
-				.mockImplementation( ( interceptedRequest ) => {
-					interceptedRequest.respond( {
-						content: 'application/json',
-						headers: { 'Access-Control-Allow-Origin': '*' },
-						body: JSON.stringify( {
-							active: 'no',
-							email: '',
-						} ),
-					} );
+test.describe( 'Merchant with Jetpack connected & Google not connected', () => {
+	test.beforeEach( async ( { page } ) => {
+		// Mock Jetpack as connected
+		await page.route( /\/wc\/gla\/jetpack\/connected\b/, ( route ) =>
+			route.fulfill( {
+				content: 'application/json',
+				headers: { 'Access-Control-Allow-Origin': '*' },
+				body: JSON.stringify( {
+					active: 'yes',
+					owner: 'yes',
+					displayName: 'testUser',
+					email: 'mail@example.com',
+				} ),
+			} )
+		);
 
-					return true;
-				} );
+		// Mock google as not connected.
+		// When pending even WPORG will not render yet.
+		// If not mocked will fail and render nothing,
+		// as Jetpack is mocked only on the client-side.
+		await page.route( /\/wc\/gla\/google\/connected\b/, ( route ) =>
+			route.fulfill( {
+				content: 'application/json',
+				headers: { 'Access-Control-Allow-Origin': '*' },
+				body: JSON.stringify( {
+					active: 'no',
+					email: '',
+				} ),
+			} )
+		);
 
-			// Go to the setup page short way - directly via URL.
-			await visitGLAPage( { path: '/google/setup-mc' } );
-			// Wait for API calls and the page to render.
-			await page.waitForXPath( "//*[text()='Set up your accounts']" );
-		} );
+		// Go to the setup page short way - directly via URL.
+		await page.goto(
+			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc'
+		);
 
-		it( 'should see their WPORG email, "Google" title & connect button', async () => {
-			await expect(
-				page.waitForXPath( "//*[text()='mail@example.com']" )
-			).resolves.toBeTruthy();
+		// Wait for API calls and the page to render.
+		await page.waitForSelector( "//*[text()='Set up your accounts']" );
+	} );
 
-			await expect(
-				page.waitForXPath( "//*[text()='Google']" )
-			).resolves.toBeTruthy();
+	test( 'should see their WPORG email, "Google" title & connect button', async ( {
+		page,
+	} ) => {
+		await expect(
+			page.waitForSelector( "//*[text()='mail@example.com']" )
+		).resolves.toBeTruthy();
 
-			await expect(
-				page.$x( "//button[text()='Connect'][not(@disabled)]" )
-			).resolves.toBeTruthy();
-		} );
+		await expect(
+			page.waitForSelector( "//*[text()='Google']" )
+		).resolves.toBeTruthy();
 
-		describe( 'after clicking the "Connect your Google account" button', () => {
-			let googleConnectMock;
-			beforeEach( async function mockGoogleConnect() {
-				// Spy on Google connection request.
-				googleConnectMock = requestMock
-					.mock( /\/wc\/gla\/google\/connect\b/ )
-					.mockImplementation( ( interceptedRequest ) => {
-						interceptedRequest.respond( {
-							content: 'application/json',
-							headers: { 'Access-Control-Allow-Origin': '*' },
-							body: JSON.stringify( {
-								url: createURL( '', 'google_auth' ),
-							} ),
-						} );
-						return true;
-					} );
-			} );
+		await expect(
+			page.$( "//button[text()='Connect'][not(@disabled)]" )
+		).resolves.toBeTruthy();
+	} );
 
-			it( 'should sent an API request to connect Google account, and redirect to the returned URL', async () => {
-				const connectGoogleButton = await page.waitForXPath(
-					"//button[text()='Connect'][not(@disabled)]"
-				);
+	test( 'after clicking the "Connect your Google account" button should send an API request to connect Google account, and redirect to the returned URL', async ( {
+		page,
+		baseURL,
+	} ) => {
+		// Mock google as connected.
+		await page.route( /\/wc\/gla\/google\/connect\b/, ( route ) =>
+			route.fulfill( {
+				content: 'application/json',
+				headers: { 'Access-Control-Allow-Origin': '*' },
+				body: JSON.stringify( {
+					url: baseURL + 'google_auth',
+				} ),
+			} )
+		);
 
-				// Click the button
-				await connectGoogleButton.click();
+		const connectGoogleButton = await page.waitForSelector(
+			"//button[text()='Connect'][not(@disabled)]"
+		);
 
-				// Wait for all XHRs and redirects.
-				await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		// Click the button
+		await connectGoogleButton.click();
+		await page.waitForLoadState( 'networkidle' );
 
-				// Expect Google call to be executed.
-				expect( googleConnectMock ).toBeCalled();
-				// Expect the user to be redirected
-				expect( page.url() ).toEqual( createURL( '', 'google_auth' ) );
-			} );
-		} );
+		// Expect the user to be redirected
+		expect( page.url() ).toEqual( baseURL + 'google_auth' );
 	} );
 } );
