@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.2
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.5.0
+Stable tag: 2.5.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,14 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.1 - 2023-08-01 =
+* Dev - Setup wp-env for E2E tests.
+* Dev - automate merging trunk to develop after a release.
+* Fix - Fix support for "add_to_cart" event in Products (Beta) block.
+* Fix - Prevent PHP 8.2 deprecation messages.
+* Tweak - Ability to filter products for syncing via `gla_filter_product_query_args` apply_filters hook.
+* Update - Show validation errors on steps 2 and 3 of the onboarding flow when unable to continue.
+
 = 2.5.0 - 2023-07-18 =
 * Tweak - Add Tip with information with Campaign assets are imported.
 * Tweak - Provide more detailed error reasons when unable to complete site verification for the Google Merchant Center account being connected in the onboarding flow.
@@ -129,8 +137,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Make some error messages clearer when errors occur in querying or modifying data.
 * Tweak - Make the error message clearer for errors that occur in getting or updating a Google Merchant Center account.
 * Tweak - WC 7.9 compatibility.
-
-= 2.4.10 - 2023-06-13 =
-* Tweak - WC 7.8 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
