@@ -38,13 +38,15 @@ class CompleteSetupTaskTest extends UnitTest {
 	}
 
 	/**
-	 * Test the task is added to the `extended` list.
+	 * Test a CompleteSetupTask is added to the `extended` list.
 	 *
-	 * The addition should happen in `register` method, then `init` called before the test was started,
-	 * so we do not precisely assert that timing.
+	 * The addition should happen in `register` method, then `init` called before the test was started.
+	 * So, we do not precisely assert timing and exact instance, only the presence of a task.
 	 */
 	public function test_register() {
 		$this->assertNotNull( TaskLists::get_list( 'extended' )->get_task( 'gla_complete_setup' ) );
+		$this->assertInstanceOf( CompleteSetupTask::class, TaskLists::get_list( 'extended' )->get_task( 'gla_complete_setup' ) );
+
 	}
 
 	public function test_id() {
