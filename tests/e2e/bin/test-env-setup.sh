@@ -16,6 +16,3 @@ wp-env run tests-cli wp user create customer customer@woocommercee2etestsuite.co
 
 echo -e 'Update Blog Name \n'
 wp-env run tests-cli wp option update blogname 'WooCommerce E2E Test Suite'
-
-echo -e 'Create Ready Post \n'
-wp-env run tests-cli -- wp post create --post_type=page --post_status=publish --post_title='Ready'
