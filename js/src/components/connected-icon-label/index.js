@@ -3,7 +3,7 @@
  */
 import classnames from 'classnames';
 import { __ } from '@wordpress/i18n';
-import { Flex, FlexItem } from '@wordpress/components';
+import { Flex, FlexItem } from 'extracted/@wordpress/components';
 import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
 
 /**

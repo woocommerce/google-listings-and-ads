@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
+import { Flex, FlexItem, FlexBlock } from 'extracted/@wordpress/components';
 import { Pill } from '@woocommerce/components';
 import GridiconCheckmark from 'gridicons/dist/checkmark';
 import GridiconGift from 'gridicons/dist/gift';

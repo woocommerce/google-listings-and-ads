@@ -2,7 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card, CardHeader, Flex, FlexBlock } from '@wordpress/components';
+import { Card, CardHeader } from '@wordpress/components';
+import { Flex, FlexBlock } from 'extracted/@wordpress/components';
 
 /**
  * Internal dependencies

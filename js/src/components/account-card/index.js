@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import classnames from 'classnames';
-import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
+import { Flex, FlexItem, FlexBlock } from 'extracted/@wordpress/components';
 import GridiconPhone from 'gridicons/dist/phone';
 import { Icon, store as storeIcon } from '@wordpress/icons';
 
