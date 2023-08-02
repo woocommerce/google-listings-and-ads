@@ -28,7 +28,6 @@ const requestToExternal = ( request ) => {
 		// WP 5.4 is the min version for <Card* />, <TabPanel />
 		'@wordpress/compose',
 		'@wordpress/components',
-		'@wordpress/primitives',
 		// Opt-out WooCommerce packages.
 		'@woocommerce/currency',
 		'@woocommerce/date',

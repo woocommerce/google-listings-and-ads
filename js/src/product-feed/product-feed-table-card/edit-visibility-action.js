@@ -3,7 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import { Icon } from '@wordpress/components';
+import { Icon } from 'extracted/@wordpress/components';
 import { SelectControl } from '@woocommerce/components';
 import { edit as editIcon } from '@wordpress/icons';
 
@@ -68,7 +68,7 @@ export default function EditVisibilityAction( {
 					'google-listings-and-ads'
 				) }
 			>
-				<Icon icon={ editIcon } size={ 24 } />
+				<Icon icon={ editIcon } />
 			</AppTooltip>
 		);
 	}
