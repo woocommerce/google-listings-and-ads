@@ -2,7 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, Notice } from '@wordpress/components';
+import { CheckboxControl } from '@wordpress/components';
+import { Notice } from 'extracted/@wordpress/components';
 import { createInterpolateElement, useState } from '@wordpress/element';
 import { recordEvent } from '@woocommerce/tracks';
 
