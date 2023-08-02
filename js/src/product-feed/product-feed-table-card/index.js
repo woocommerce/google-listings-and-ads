@@ -3,13 +3,13 @@
  */
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { CheckboxControl } from '@wordpress/components';
 import {
-	CheckboxControl,
 	Card,
 	CardHeader,
 	CardBody,
 	CardFooter,
-} from '@wordpress/components';
+} from 'extracted/@wordpress/components';
 import {
 	EmptyTable,
 	Pagination,

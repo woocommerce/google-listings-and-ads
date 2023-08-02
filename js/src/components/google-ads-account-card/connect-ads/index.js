@@ -3,7 +3,7 @@
  */
 import { useState, createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { CardDivider } from '@wordpress/components';
+import { CardDivider } from 'extracted/@wordpress/components';
 
 /**
  * Internal dependencies

@@ -3,7 +3,8 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { CardDivider, Notice } from '@wordpress/components';
+import { Notice } from '@wordpress/components';
+import { CardDivider } from 'extracted/@wordpress/components';
 import { noop } from 'lodash';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 // The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.

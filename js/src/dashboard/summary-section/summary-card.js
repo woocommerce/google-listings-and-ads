@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Card, CardHeader } from '@wordpress/components';
+import { Card, CardHeader } from 'extracted/@wordpress/components';
 /**
  * Internal dependencies
  */

@@ -2,8 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card, CardHeader, CardBody, CardFooter } from '@wordpress/components';
-import { FlexItem } from 'extracted/@wordpress/components';
+import {
+	FlexItem,
+	Card,
+	CardHeader,
+	CardBody,
+	CardFooter,
+} from 'extracted/@wordpress/components';
 
 import {
 	SummaryList,
