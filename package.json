@@ -93,8 +93,6 @@
 		"dewps:woo": "node bin/list-woo-dewped.mjs",
 		"doc:hooks": "php bin/HooksDocsGenerator.php",
 		"doc:tracking": "woocommerce-grow-jsdoc ./js/src",
-		"docker:up": "WP_VERSION=6.1 npx wc-e2e docker:up",
-		"docker:down": "npx wc-e2e docker:down",
 		"format": "wp-scripts format",
 		"i18n": "WP_CLI_PHP_ARGS='-d memory_limit=2048M' ./vendor/bin/wp i18n make-pot ./ languages/$npm_package_name.pot --slug=$npm_package_name --domain=$npm_package_name --exclude=bin,data,js/src,node_modules,tests,vendor",
 		"lint": "npm run lint:php && npm run lint:js && npm run lint:css",
@@ -113,12 +111,14 @@
 		"storybook": "storybook",
 		"storybook:build": "storybook build",
 		"storybook:deploy": "storybook deploy",
-		"test:e2e": "npx wc-e2e test:e2e",
-		"test:e2e-dev": "npx wc-e2e test:e2e-dev",
+		"test:e2e": "npx playwright test --config=tests/e2e/config/playwright.config.js",
+		"test:e2e-dev": "npx playwright test --config=tests/e2e/config/playwright.config.js --debug",
 		"test:js": "wp-scripts test-unit-js --coverage",
 		"test:js:watch": "npm run test:js -- --watch",
 		"test-proxy": "node ./tests/proxy",
-		"wp-env": "wp-env"
+		"wp-env": "wp-env",
+		"wp-env:up": "npm run wp-env start --update",
+		"wp-env:down": "npm run wp-env stop"
 	},
 	"config": {
 		"wp_org_slug": "google-listings-and-ads",
