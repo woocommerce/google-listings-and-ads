@@ -16,3 +16,6 @@ wp-env run tests-cli wp user create customer customer@woocommercee2etestsuite.co
 
 echo -e 'Update Blog Name \n'
 wp-env run tests-cli wp option update blogname 'WooCommerce E2E Test Suite'
+
+echo -e 'Adding basic WooCommerce settings... \n'
+wp-env run tests-cli wp wc payment_gateway update cod --enabled=1 --user=admin
