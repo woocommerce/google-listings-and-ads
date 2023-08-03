@@ -196,4 +196,113 @@ describe( 'AdaptiveForm', () => {
 
 		expect( inspect ).toHaveBeenLastCalledWith( false, 0 );
 	} );
+
+	describe( 'Compatibly patches', () => {
+		it( 'Should update all changes to values for the synchronous multiple calls to `setValue`', async () => {
+			render(
+				<AdaptiveForm
+					initialValues={ {
+						firstName: 'Foo',
+						lastName: 'Bar',
+						email: '(empty)',
+					} }
+					validate={ alwaysValid }
+				>
+					{ ( { setValue, values } ) => {
+						return (
+							<>
+								<button
+									onClick={ () => {
+										setValue( 'firstName', 'Hey' );
+										setValue( 'lastName', 'Howdy' );
+										setValue( 'email', 'hi[at]greetings' );
+									} }
+								/>
+								<article>
+									{ `${ values.firstName } ${ values.lastName } ${ values.email }` }
+								</article>
+							</>
+						);
+					} }
+				</AdaptiveForm>
+			);
+
+			const article = screen.getByRole( 'article' );
+
+			expect( article.textContent ).toBe( 'Foo Bar (empty)' );
+
+			await act( async () => {
+				await userEvent.click( screen.getByRole( 'button' ) );
+				jest.runAllTimers();
+			} );
+
+			expect( article.textContent ).toBe( 'Hey Howdy hi[at]greetings' );
+		} );
+
+		it( 'Should call back to `onChange` for the changed value only', async () => {
+			const onChange = jest.fn();
+
+			render(
+				<AdaptiveForm
+					onChange={ onChange }
+					initialValues={ {
+						firstName: '',
+						lastName: '',
+						agreedTerms: false,
+					} }
+					validate={ alwaysValid }
+				>
+					{ ( { setValue, getInputProps } ) => {
+						return (
+							<>
+								<button
+									onClick={ () => {
+										setValue( 'firstName', 'Hey' );
+									} }
+								/>
+								<input
+									type="text"
+									{ ...getInputProps( 'lastName' ) }
+								/>
+								<input
+									type="checkbox"
+									{ ...getInputProps( 'agreedTerms' ) }
+								/>
+							</>
+						);
+					} }
+				</AdaptiveForm>
+			);
+
+			await act( async () => {
+				await userEvent.click( screen.getByRole( 'button' ) );
+				jest.runAllTimers();
+			} );
+
+			expect( onChange ).toHaveBeenCalledTimes( 1 );
+			expect( onChange ).toHaveBeenLastCalledWith(
+				{ name: 'firstName', value: 'Hey' },
+				expect.any( Object ),
+				true
+			);
+
+			await userEvent.type( screen.getByRole( 'textbox' ), 'a' );
+
+			expect( onChange ).toHaveBeenCalledTimes( 2 );
+			expect( onChange ).toHaveBeenLastCalledWith(
+				{ name: 'lastName', value: 'a' },
+				expect.any( Object ),
+				true
+			);
+
+			await userEvent.click( screen.getByRole( 'checkbox' ) );
+
+			expect( onChange ).toHaveBeenCalledTimes( 3 );
+			expect( onChange ).toHaveBeenLastCalledWith(
+				{ name: 'agreedTerms', value: true },
+				expect.any( Object ),
+				true
+			);
+		} );
+	} );
 } );
