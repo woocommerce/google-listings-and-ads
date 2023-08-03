@@ -30,14 +30,14 @@ test.describe( 'Merchant who is getting started', () => {
 
 		expect(
 			page.getByRole( 'button' ).getByText( 'Connect' ).first()
-		).not.toBeDisabled();
+		).toBeEnabled();
 	} );
 
 	test( 'after clicking the "Connect your WordPress.com account" button, should send an API request to connect Jetpack, and redirect to the returned URL', async ( {
 		page,
 		baseURL,
 	} ) => {
-		// Mock Jetpack as connected
+		// Mock Jetpack connect
 		await page.route( /\/wc\/gla\/jetpack\/connect\b/, ( route ) =>
 			route.fulfill( {
 				content: 'application/json',
@@ -109,14 +109,14 @@ test.describe( 'Merchant with Jetpack connected & Google not connected', () => {
 
 		expect(
 			page.getByRole( 'button' ).getByText( 'Connect' ).first()
-		).not.toBeDisabled();
+		).toBeEnabled();
 	} );
 
 	test( 'after clicking the "Connect your Google account" button should send an API request to connect Google account, and redirect to the returned URL', async ( {
 		page,
 		baseURL,
 	} ) => {
-		// Mock google as connected.
+		// Mock google connect.
 		await page.route( /\/wc\/gla\/google\/connect\b/, ( route ) =>
 			route.fulfill( {
 				content: 'application/json',
