@@ -4,7 +4,7 @@ echo -e 'Activate twentytwentytwo theme \n'
 wp-env run tests-cli wp theme activate twentytwentytwo
 
 echo -e 'Update URL structure \n'
-wp-env run tests-cli wp rewrite structure '/%postname%/' --hard
+wp-env run tests-cli -- wp rewrite structure '/%postname%/' --hard
 
 echo -e 'Add Customer user \n'
 wp-env run tests-cli wp user create customer customer@woocommercee2etestsuite.com \
