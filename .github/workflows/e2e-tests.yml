@@ -41,13 +41,13 @@ jobs:
           echo "::endgroup::"
 
       - name: Start wp-env container
-        run: |
-          npm run wp-env:up
-          sleep 10
+        run: npm run wp-env:up
+
+      - name: Download and install Chromium browser.
+        run: npx playwright install chromium
 
       - name: Run tests
-        run: |
-          npm run test:e2e
+        run: npm run test:e2e
 
       - name: Archive e2e failure screenshots
         if: ${{ always() }}

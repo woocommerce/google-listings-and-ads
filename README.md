@@ -141,6 +141,9 @@ Make sure Docker is running in your machine, and run the following:
 
 `npm run wp-env:up` - This will automatically download and run WordPress in a Docker container. You can access it at http://localhost:8889 (Username: admin, Password: password).
 
+To install the PlayWright browser locally you can run:
+`npx playwright install chromium`
+
 Run E2E testing:
 
 -   `npm run test:e2e` to run the test in headless mode.
