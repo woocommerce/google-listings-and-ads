@@ -21,7 +21,7 @@ test( 'Merchant who is getting started clicks on the Marketing > GLA link, click
 
 	// the submenu is now opened, the GLA sub menu item is now visible to the user,
 	// we can call `click` now.
-	await page.getByRole( 'link' ).getByText( 'Google Listings & Ads' ).click();
+	await page.getByRole( 'link', { name: 'Google Listings & Ads' } ).click();
 	await page.waitForLoadState( 'networkidle' );
 
 	await expect( page.title() ).resolves.toContain( 'Google Listings & Ads' );
@@ -38,7 +38,7 @@ test( 'Merchant who is getting started clicks on the Marketing > GLA link, click
 	// There are some API calls running in the page before the steps are displayed.
 	// Assert we eventually see the setup page Step 1 header.
 	await expect(
-		page.getByRole( 'heading' ).getByText( 'Set up your accounts' )
+		page.getByRole( 'heading', { name: 'Set up your accounts' } )
 	).toBeVisible();
 
 	// Expect to land on the setup page URL.

@@ -19,7 +19,7 @@ test.describe( 'Merchant who is getting started', () => {
 	} ) => {
 		// Wait for API calls and the page to render.
 		await expect(
-			page.getByRole( 'heading' ).getByText( 'Set up your accounts' )
+			page.getByRole( 'heading', { name: 'Set up your accounts' } )
 		).toBeVisible();
 
 		await expect(
@@ -29,7 +29,7 @@ test.describe( 'Merchant who is getting started', () => {
 		).toBeVisible();
 
 		expect(
-			page.getByRole( 'button' ).getByText( 'Connect' ).first()
+			page.getByRole( 'button', { name: 'Connect' } ).first()
 		).toBeEnabled();
 	} );
 
@@ -95,7 +95,7 @@ test.describe( 'Merchant with Jetpack connected & Google not connected', () => {
 
 		// Wait for API calls and the page to render.
 		await page.waitForLoadState( 'networkidle' );
-		page.getByRole( 'heading' ).getByText( 'Set up your accounts' );
+		page.getByRole( 'heading', { name: 'Set up your accounts' } );
 	} );
 
 	test( 'should see their WPORG email, "Google" title & connect button', async ( {
@@ -108,7 +108,7 @@ test.describe( 'Merchant with Jetpack connected & Google not connected', () => {
 		).toBeVisible();
 
 		expect(
-			page.getByRole( 'button' ).getByText( 'Connect' ).first()
+			page.getByRole( 'button', { name: 'Connect' } ).first()
 		).toBeEnabled();
 	} );
 
