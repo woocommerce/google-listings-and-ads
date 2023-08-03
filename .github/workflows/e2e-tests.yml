@@ -20,11 +20,6 @@ jobs:
     env:
       FORCE_COLOR: 2
     steps:
-      # Needed for Ubuntu 20.04.
-      - name: Kill mono to free 8084
-        run: |
-          sudo killall mono
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -45,22 +40,20 @@ jobs:
           npm run build
           echo "::endgroup::"
 
-      - name: Start docker container
+      - name: Start wp-env container
         run: |
-          npm run docker:up
+          npm run wp-env:up
           sleep 10
 
       - name: Run tests
-        env:
-            WC_E2E_SCREENSHOTS: 1
         run: |
           npm run test:e2e
 
-      - name: Archive e2e test screenshots
+      - name: Archive e2e failure screenshots
         if: ${{ always() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
             name: e2e-screenshots
-            path: tests/e2e/screenshots
+            path: tests/e2e/test-results/report/**/*.png
             if-no-files-found: ignore
             retention-days: 5
