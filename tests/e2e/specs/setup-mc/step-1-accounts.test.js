@@ -53,7 +53,7 @@ test.describe( 'Merchant who is getting started', () => {
 		await page.waitForLoadState( 'networkidle' );
 
 		// Expect the user to be redirected
-		expect( page.url() ).toEqual( baseURL + 'auth_url' );
+		await page.waitForURL( baseURL + 'auth_url' );
 	} );
 } );
 
@@ -132,6 +132,6 @@ test.describe( 'Merchant with Jetpack connected & Google not connected', () => {
 		await page.waitForLoadState( 'networkidle' );
 
 		// Expect the user to be redirected
-		expect( page.url() ).toEqual( baseURL + 'google_auth' );
+		await page.waitForURL( baseURL + 'google_auth' );
 	} );
 } );
