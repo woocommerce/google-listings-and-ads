@@ -315,7 +315,7 @@ export default function useCroppedImageSelector( {
 				// since `toolbar` will be triggered the refresh event at the end, so this function
 				// must be called after that.
 				if ( this === frame ) {
-					setImmediate( handleSelectionToggle );
+					setTimeout( handleSelectionToggle );
 					return;
 				}
 
