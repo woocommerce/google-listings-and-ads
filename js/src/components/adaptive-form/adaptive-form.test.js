@@ -197,7 +197,7 @@ describe( 'AdaptiveForm', () => {
 		expect( inspect ).toHaveBeenLastCalledWith( false, 0 );
 	} );
 
-	describe( 'Compatibly patches', () => {
+	describe( 'Compatibility patches', () => {
 		it( 'Should update all changes to values for the synchronous multiple calls to `setValue`', async () => {
 			render(
 				<AdaptiveForm
