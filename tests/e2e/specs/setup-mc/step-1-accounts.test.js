@@ -18,18 +18,18 @@ test.describe( 'Merchant who is getting started', () => {
 	} ) => {
 		// Wait for API calls and the page to render.
 		await expect(
-			page.waitForSelector( "//*[text()='Set up your accounts']" )
-		).resolves.toBeTruthy();
+			page.getByRole( 'heading' ).getByText( 'Set up your accounts' )
+		).toBeVisible();
 
 		await expect(
-			page.waitForSelector(
-				"//*[text()='Connect the accounts required to use Google Listings & Ads.']"
+			page.getByText(
+				'Connect the accounts required to use Google Listings & Ads.'
 			)
-		).resolves.toBeTruthy();
+		).toBeVisible();
 
 		expect(
-			page.$( "//button[text()='Connect'][not(@disabled)]" )
-		).toBeTruthy();
+			page.getByRole( 'button' ).getByText( 'Connect' ).first()
+		).not.toBeDisabled();
 	} );
 
 	test( 'after clicking the "Connect your WordPress.com account" button, should send an API request to connect Jetpack, and redirect to the returned URL', async ( {
@@ -47,13 +47,8 @@ test.describe( 'Merchant who is getting started', () => {
 			} )
 		);
 
-		// Wait for enabled button.
-		const connectWPButton = await page.waitForSelector(
-			"//button[text()='Connect'][not(@disabled)]"
-		);
-
-		// Click the button.
-		await connectWPButton.click();
+		// Click the enabled connect button.
+		page.locator( "//button[text()='Connect'][not(@disabled)]" ).click();
 		await page.waitForLoadState( 'networkidle' );
 
 		// Expect the user to be redirected
@@ -98,23 +93,21 @@ test.describe( 'Merchant with Jetpack connected & Google not connected', () => {
 		);
 
 		// Wait for API calls and the page to render.
-		await page.waitForSelector( "//*[text()='Set up your accounts']" );
+		page.getByRole( 'heading' ).getByText( 'Set up your accounts' );
 	} );
 
 	test( 'should see their WPORG email, "Google" title & connect button', async ( {
 		page,
 	} ) => {
-		await expect(
-			page.waitForSelector( "//*[text()='mail@example.com']" )
-		).resolves.toBeTruthy();
+		await expect( page.getByText( 'mail@example.com' ) ).toBeVisible();
 
 		await expect(
-			page.waitForSelector( "//*[text()='Google']" )
-		).resolves.toBeTruthy();
+			page.getByText( 'Google', { exact: true } )
+		).toBeVisible();
 
-		await expect(
-			page.$( "//button[text()='Connect'][not(@disabled)]" )
-		).resolves.toBeTruthy();
+		expect(
+			page.getByRole( 'button' ).getByText( 'Connect' ).first()
+		).not.toBeDisabled();
 	} );
 
 	test( 'after clicking the "Connect your Google account" button should send an API request to connect Google account, and redirect to the returned URL', async ( {
@@ -132,12 +125,8 @@ test.describe( 'Merchant with Jetpack connected & Google not connected', () => {
 			} )
 		);
 
-		const connectGoogleButton = await page.waitForSelector(
-			"//button[text()='Connect'][not(@disabled)]"
-		);
-
-		// Click the button
-		await connectGoogleButton.click();
+		// Click the enabled connect button
+		page.locator( "//button[text()='Connect'][not(@disabled)]" ).click();
 		await page.waitForLoadState( 'networkidle' );
 
 		// Expect the user to be redirected
