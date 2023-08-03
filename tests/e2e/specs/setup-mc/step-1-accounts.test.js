@@ -11,6 +11,7 @@ test.describe( 'Merchant who is getting started', () => {
 		await page.goto(
 			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc'
 		);
+		await page.waitForLoadState( 'networkidle' );
 	} );
 
 	test( 'should see accounts step header, "Connect your WordPress.com account" & connect button', async ( {
@@ -93,6 +94,7 @@ test.describe( 'Merchant with Jetpack connected & Google not connected', () => {
 		);
 
 		// Wait for API calls and the page to render.
+		await page.waitForLoadState( 'networkidle' );
 		page.getByRole( 'heading' ).getByText( 'Set up your accounts' );
 	} );
 
