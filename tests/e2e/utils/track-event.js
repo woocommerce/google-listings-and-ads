@@ -1,20 +1,19 @@
 /**
  * Tracking of Gtag events.
- */
-/* global page */
-
-/**
- * @typedef {import('puppeteer').HTTPRequest} HTTPRequest
+ *
+ * @typedef { import( '@playwright/test' ).Request } Request
+ * @typedef { import( '@playwright/test' ).Page } Page
  */
 
 /**
  * Tracks when the Gtag Event request matching a specific name is sent.
  *
+ * @param {Page} page
  * @param {string} eventName Event name to match.
- * @return {Promise} Matching request.
+ * @return {Promise<Request>} Matching request.
  */
-export function trackGtagEvent( eventName ) {
-	const eventPath = '/pagead';
+export function trackGtagEvent( page, eventName ) {
+	const eventPath = '/pagead/';
 	return page.waitForRequest( ( request ) => {
 		const url = request.url();
 		const match = encodeURIComponent( 'event=' + eventName );
@@ -25,7 +24,7 @@ export function trackGtagEvent( eventName ) {
 /**
  * Retrieve data from a Gtag event.
  *
- * @param {HTTPRequest} request
+ * @param {Request} request
  * @return {Object} Data sent with the event.
  */
 export function getEventData( request ) {

@@ -2,12 +2,11 @@
  * External dependencies
  */
 import { cleanForSlug } from '@wordpress/url';
-const { dirname } = require( 'path' );
-const { readJson } = require( 'fs-extra' ); // eslint-disable-line import/no-extraneous-dependencies
-const axios = require( 'axios' ).default; // eslint-disable-line import/no-extraneous-dependencies
-const config = require( 'config' ); // eslint-disable-line import/no-extraneous-dependencies
 
-const WPAPI = `${ config.url }wp-json/wp/v2/pages`;
+/**
+ * Internal dependencies
+ */
+import { apiWP } from './api';
 
 /**
  * Check if a page exists from a title.
@@ -18,8 +17,8 @@ const WPAPI = `${ config.url }wp-json/wp/v2/pages`;
 export async function pageExistsByTitle( title ) {
 	const slug = cleanForSlug( title );
 
-	return await axios
-		.get( WPAPI + '?slug=' + slug )
+	return await apiWP()
+		.get( `pages?slug=${ slug }` )
 		.then( ( response ) => response.data[ 0 ]?.id );
 }
 
@@ -31,21 +30,12 @@ export async function pageExistsByTitle( title ) {
  * @return {Promise<number>} Created page ID.
  */
 export async function createPage( title, content ) {
-	return await axios
-		.post(
-			WPAPI,
-			{
-				title,
-				content,
-				status: 'publish',
-			},
-			{
-				auth: {
-					username: config.users.admin.username,
-					password: config.users.admin.password,
-				},
-			}
-		)
+	return await apiWP()
+		.post( 'pages', {
+			title,
+			content,
+			status: 'publish',
+		} )
 		.then( ( response ) => response.data.id );
 }
 
@@ -53,11 +43,10 @@ export async function createPage( title, content ) {
  * Creates a shop page using blocks.
  */
 export async function createBlockShopPage() {
-	const filePath = `${ dirname(
-		__filename
-	) }/__fixtures__/all-products.fixture.json`;
-	const file = await readJson( filePath );
-	const { title, pageContent: content } = file;
+	const {
+		title,
+		pageContent: content,
+	} = require( './__fixtures__/all-products.fixture.json' );
 
 	if ( ! ( await pageExistsByTitle( title ) ) ) {
 		await createPage( title, content );
