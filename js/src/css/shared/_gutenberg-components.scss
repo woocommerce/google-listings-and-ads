@@ -53,11 +53,6 @@
 	}
 }
 
-// hack to fix radio button selected style bug caused by woocommerce-admin.
-.components-radio-control__input[type="radio"]:checked::before {
-	border: none;
-}
-
 // hack to fix InputControl suffix's empty right margin.
 .components-input-control__suffix {
 	margin-right: $grid-unit;
