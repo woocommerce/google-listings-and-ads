@@ -25,9 +25,9 @@ export async function singleProductAddToCart( page, productID ) {
 
 	const addToCart = '.single_add_to_cart_button';
 	await page.locator( addToCart ).first().click();
-	await expect( page.locator( '.woocommerce-message' ) ).toContainText(
-		'been added to your cart'
-	);
+	await expect(
+		page.getByText( 'has been added to your cart' )
+	).toBeVisible();
 
 	// Wait till all tracking event request have been sent after page reloaded.
 	await page.waitForLoadState( 'networkidle' );
