@@ -24,7 +24,7 @@ test( 'Merchant who is getting started clicks on the Marketing > GLA link, click
 	await page.getByRole( 'link', { name: 'Google Listings & Ads' } ).click();
 	await page.waitForLoadState( 'networkidle' );
 
-	await expect( page.title() ).resolves.toContain( 'Google Listings & Ads' );
+	await expect( page ).toHaveTitle( /Google Listings & Ads/ );
 
 	// click on the call-to-action button.
 	await page.getByText( 'Start listing products →' ).first().click();
