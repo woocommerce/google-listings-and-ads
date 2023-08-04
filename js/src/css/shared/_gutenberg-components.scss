@@ -51,9 +51,9 @@
 			font-size: inherit;
 		}
 	}
-}
 
-// hack to fix InputControl suffix's empty right margin.
-.components-input-control__suffix {
-	margin-right: $grid-unit;
+	// Adjust InputControl suffix's empty right margin.
+	.components-input-control__suffix {
+		margin-right: $grid-unit;
+	}
 }
