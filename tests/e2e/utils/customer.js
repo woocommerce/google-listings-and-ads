@@ -40,7 +40,7 @@ export async function singleProductAddToCart( page, productID ) {
  * @return {number} Product ID of the added product.
  */
 export async function relatedProductAddToCart( page ) {
-	const addToCart = await page.locator( '.related.products' ).isVisible()
+	const addToCart = ( await page.locator( '.related.products' ).isVisible() )
 		? '.related.products .add_to_cart_button'
 		: '.wp-block-woocommerce-related-products .add_to_cart_button';
 
