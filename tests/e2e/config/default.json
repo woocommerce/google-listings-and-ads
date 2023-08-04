@@ -153,6 +153,7 @@
 				"addresssecondline": "addr 2",
 				"city": "San Francisco",
 				"state": "CA",
+				"statename": "California",
 				"postcode": "94107",
 				"phone": "123456789",
 				"email": "john.doe@example.com"

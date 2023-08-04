@@ -74,17 +74,31 @@ export async function checkout( page ) {
 
 	await page.goto( 'checkout' );
 
-	await page.locator( '#billing_first_name' ).fill( user.firstname );
-	await page.locator( '#billing_last_name' ).fill( user.lastname );
-	await page.locator( '#billing_address_1' ).fill( user.addressfirstline );
-	await page.locator( '#billing_city' ).fill( user.city );
-	await page.locator( '#billing_state' ).selectOption( user.state );
-	await page.locator( '#billing_postcode' ).fill( user.postcode );
-	await page.locator( '#billing_phone' ).fill( user.phone );
-	await page.locator( '#billing_email' ).fill( user.email );
+	if ( await page.locator( '#billing_first_name' ).isVisible() ) {
+		await page.locator( '#billing_first_name' ).fill( user.firstname );
+		await page.locator( '#billing_last_name' ).fill( user.lastname );
+		await page
+			.locator( '#billing_address_1' )
+			.fill( user.addressfirstline );
+		await page.locator( '#billing_city' ).fill( user.city );
+		await page.locator( '#billing_state' ).selectOption( user.state );
+		await page.locator( '#billing_postcode' ).fill( user.postcode );
+		await page.locator( '#billing_phone' ).fill( user.phone );
+		await page.locator( '#billing_email' ).fill( user.email );
 
-	await page.locator( 'text=Cash on delivery' ).click();
-	await expect( page.locator( 'div.payment_method_cod' ) ).toBeVisible();
+		await page.locator( 'text=Cash on delivery' ).click();
+		await expect( page.locator( 'div.payment_method_cod' ) ).toBeVisible();
+	} else {
+		await page.getByLabel( 'Email address' ).fill( user.email );
+		await page.getByLabel( 'First name' ).fill( user.firstname );
+		await page.getByLabel( 'Last name' ).fill( user.lastname );
+		await page
+			.getByLabel( 'Address', { exact: true } )
+			.fill( user.addressfirstline );
+		await page.getByLabel( 'City' ).fill( user.city );
+		await page.getByLabel( 'ZIP Code' ).fill( user.postcode );
+		await page.locator( '#billing-state input' ).fill( user.statename );
+	}
 
 	await page.locator( 'text=Place order' ).click();
 
