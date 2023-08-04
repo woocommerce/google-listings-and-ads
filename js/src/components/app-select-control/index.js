@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { SelectControl } from '@wordpress/components';
+import { SelectControl } from 'extracted/@wordpress/components';
 import classNames from 'classnames';
 
 /**

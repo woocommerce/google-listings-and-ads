@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useRef, useEffect, Fragment } from '@wordpress/element';
-import { SelectControl } from '@wordpress/components';
+import { SelectControl } from 'extracted/@wordpress/components';
 
 /**
  * Internal dependencies
