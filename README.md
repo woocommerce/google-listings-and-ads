@@ -165,16 +165,16 @@ WP_ENV_CORE=WordPress/WordPress#6.2.2 npm run wp-env:up
 This does not work with Release Candidate versions as the tag is not available. Instead we can bring the `wp-env:up` with the latest version and then upgrade WordPress through WP CLI.
 
 ```
-npm run wp-env -- run tests-cli -- wp core update --version=6.3-RC3
-npm run wp-env -- run tests-cli -- wp core update-db
+npm run -- wp-env run tests-cli -- wp core update --version=6.3-RC3
+npm run -- wp-env run tests-cli -- wp core update-db
 ```
 
 ### Test other WooCommerce versions
 WooCommerce is installed through WP CLI so we can use this to update to a newer version like a release candidate.
 
 ```
-npm run wp-env -- run tests-cli -- wp plugin update woocommerce --version=8.0.0-rc.1
-npm run wp-env -- run tests-cli -- wp wc update
+npm run -- wp-env run tests-cli -- wp plugin update woocommerce --version=8.0.0-rc.1
+npm run -- wp-env run tests-cli -- wp wc update
 ```
 
 ## Docs
