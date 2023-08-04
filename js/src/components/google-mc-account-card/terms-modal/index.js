@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { CheckboxControl } from '@wordpress/components';
+import { CheckboxControl } from 'extracted/@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
 

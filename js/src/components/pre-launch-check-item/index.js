@@ -2,8 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl } from '@wordpress/components';
-import { Panel, PanelBody, PanelRow } from 'extracted/@wordpress/components';
+import {
+	Panel,
+	PanelBody,
+	PanelRow,
+	CheckboxControl,
+} from 'extracted/@wordpress/components';
 import { recordEvent } from '@woocommerce/tracks';
 import { useRef } from '@wordpress/element';
 
