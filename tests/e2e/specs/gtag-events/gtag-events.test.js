@@ -111,9 +111,11 @@ test.describe( 'GTag events', () => {
 		page,
 	} ) => {
 		await createSimpleProduct(); // Create an additional product for related to show up.
-		const event = trackGtagEvent( page, 'add_to_cart' );
 
 		await page.goto( `?p=${ simpleProductID }` );
+		await page.waitForLoadState( 'networkidle' );
+
+		const event = trackGtagEvent( page, 'add_to_cart' );
 		const relatedProductID = await relatedProductAddToCart( page );
 
 		await event.then( ( request ) => {
