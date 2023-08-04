@@ -40,8 +40,9 @@ export async function singleProductAddToCart( page, productID ) {
  * @return {number} Product ID of the added product.
  */
 export async function relatedProductAddToCart( page ) {
-	const addToCart =
-		'.wp-block-woocommerce-related-products .add_to_cart_button';
+	const addToCart = page.locator( '.related.products' ).isVisible()
+		? '.related.products .add_to_cart_button'
+		: '.wp-block-woocommerce-related-products .add_to_cart_button';
 
 	await page.locator( addToCart ).first().click();
 	await expect( page.locator( addToCart ).first() ).toHaveClass( /added/ );
