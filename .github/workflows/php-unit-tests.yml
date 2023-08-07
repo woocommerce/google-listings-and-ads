@@ -51,7 +51,7 @@ jobs:
           
   UnitTests:
     name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version }}
-    needs: GetWPMatrix
+    needs: [GetWCMatrix, GetWPMatrix]
     runs-on: ubuntu-latest
     env:
       WP_CORE_DIR: "/tmp/wordpress/src"
