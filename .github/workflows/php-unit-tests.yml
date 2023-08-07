@@ -60,17 +60,14 @@ jobs:
       matrix:
         php: [8.0]
         wp-version: ${{ fromJson(needs.GetWPMatrix.outputs.wp-versions) }}
-        wc-version: ${{ needs.GetWCMatrix.outputs.latest-wc-version }}
         include:
           - php: 7.4
             wp-version: ${{ needs.GetWPMatrix.outputs.latest-wp-version }}
             wc-version: ${{ needs.GetWCMatrix.outputs.previous-wc-version }}
           - php: 8.1
             wp-version: ${{ needs.GetWPMatrix.outputs.latest-wp-version }}
-            wc-version: ${{ needs.GetWCMatrix.outputs.latest-wc-version }}
           - php: 8.2
             wp-version: ${{ needs.GetWPMatrix.outputs.latest-wp-version }}
-            wc-version: ${{ needs.GetWCMatrix.outputs.latest-wc-version }}
 
     steps:
       - name: Checkout repository
