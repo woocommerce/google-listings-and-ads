@@ -36,6 +36,7 @@ define( 'WC_GLA_MIN_WC_VER', '6.9' );
 
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
+
 if ( ! Autoloader::init() ) {
 	return;
 }
