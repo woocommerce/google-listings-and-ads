@@ -50,7 +50,7 @@ jobs:
           releases: 2
           
   UnitTests:
-    name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version }}, WC ${{ matrix.wc-version }}
+    name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version }}, WC ${{ matrix.wc-version || 'latest' }}
     needs: [GetWCMatrix, GetWPMatrix]
     runs-on: ubuntu-latest
     env:
@@ -60,7 +60,7 @@ jobs:
       matrix:
         php: [8.0]
         wp-version: ${{ fromJson(needs.GetWPMatrix.outputs.wp-versions) }}
-        wc-version: [ ${{ needs.GetWCMatrix.outputs.latest-wc-version }} ]
+        wc-version: [ latest ]
         include:
           - php: 7.4
             wp-version: ${{ needs.GetWPMatrix.outputs.latest-wp-version }}
