@@ -50,7 +50,7 @@ jobs:
           releases: 2
           
   UnitTests:
-    name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version }}
+    name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version }}, WC ${{ matrix.wc-version }}
     needs: [GetWCMatrix, GetWPMatrix]
     runs-on: ubuntu-latest
     env:
@@ -60,17 +60,17 @@ jobs:
       matrix:
         php: [8.0]
         wp-version: ${{ fromJson(needs.GetWPMatrix.outputs.wp-versions) }}
-        wc-version: [latest]
+        wc-version: ${{ needs.GetWPMatrix.outputs.latest-wc-version }}
         include:
           - php: 7.4
             wp-version: ${{ needs.GetWPMatrix.outputs.latest-wp-version }}
             wc-version: ${{ needs.GetWPMatrix.outputs.previous-wc-version }}
           - php: 8.1
             wp-version: ${{ needs.GetWPMatrix.outputs.latest-wp-version }}
-            wc-version: [latest]
+            wc-version: ${{ needs.GetWPMatrix.outputs.latest-wc-version }}
           - php: 8.2
             wp-version: ${{ needs.GetWPMatrix.outputs.latest-wp-version }}
-            wc-version: [latest]
+            wc-version: ${{ needs.GetWPMatrix.outputs.latest-wc-version }}
 
     steps:
       - name: Checkout repository
