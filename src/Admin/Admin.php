@@ -286,12 +286,12 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 		$plugin_url = $this->get_plugin_url();
 
 		$scripts->add(
-			'gla-webpack-rumtime',
+			'gla-webpack-runtime',
 			"{$plugin_url}/js/build/runtime.js",
 			[],
 			(string) filemtime( $runtime_path )
 		);
-		$react_script->deps[] = 'gla-webpack-rumtime';
+		$react_script->deps[] = 'gla-webpack-runtime';
 
 		if ( ! in_array( 'wp-react-refresh-entry', $react_script->deps, true ) ) {
 			$scripts->add(

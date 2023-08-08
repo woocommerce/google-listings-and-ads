@@ -2,10 +2,10 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.9
-Tested up to: 6.2
+Tested up to: 6.3
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.5.1
+Stable tag: 2.5.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.2 - 2023-08-08 =
+* Fix - Remove `add_woocommerce_extended_task_list_item` and `remove_woocommerce_extended_task_list_item` hooks.
+* Fix - WordPress 6.3 compatibility: The forms and image selector may not work due to "setImmediate" deprecation.
+* Tweak - Use the latest API to add an item to the WC tasks list.
+* Tweak - WC 8.0 compatibility.
+* Tweak - WP 6.3 compatibility.
+
 = 2.5.1 - 2023-08-01 =
 * Dev - Setup wp-env for E2E tests.
 * Dev - automate merging trunk to develop after a release.
@@ -122,20 +129,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 = 2.5.0 - 2023-07-18 =
 * Tweak - Add Tip with information with Campaign assets are imported.
 * Tweak - Provide more detailed error reasons when unable to complete site verification for the Google Merchant Center account being connected in the onboarding flow.
-
-= 2.4.11 - 2023-07-11 =
-* Add - Client name and plugin version to requests.
-* Dev - Enable unit testing for PHP 8.1.
-* Dev - Set engines for the repository.
-* Fix - Avoid continuing to save settings to Google Merchant Center after the shipping time save failed on the Edit Free Listings page.
-* Fix - Avoid errors when clearing all audience countries in the onboarding flow.
-* Fix - Incorrectly display South America in the audience location selector after selecting Saudi Arabia.
-* Fix - Remove deprecated $border-width-focus variable.
-* Fix - Show a general error message when the phone number verification request is failed.
-* Tweak - Add placeholder in the Attribute Mapping table when there are no rules available.
-* Tweak - Changes for title, descriptions and FAQ in PMAX Optimized Campaigns.
-* Tweak - Make some error messages clearer when errors occur in querying or modifying data.
-* Tweak - Make the error message clearer for errors that occur in getting or updating a Google Merchant Center account.
-* Tweak - WC 7.9 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

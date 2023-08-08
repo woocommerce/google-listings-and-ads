@@ -108,7 +108,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingSuggestionServi
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneMethodsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
-use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
+use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetupTask;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\ActivatedEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
@@ -146,7 +146,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		AssetsHandlerInterface::class         => true,
 		BulkEditInitializer::class            => true,
 		ContactInformationNote::class         => true,
-		CompleteSetup::class                  => true,
+		CompleteSetupTask::class              => true,
 		CompleteSetupNote::class              => true,
 		CouponBulkEdit::class                 => true,
 		CouponHelper::class                   => true,
@@ -299,7 +299,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( EventTracking::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
-		$this->conditionally_share_with_tags( CompleteSetup::class, AssetsHandlerInterface::class );
+		$this->share_with_tags( CompleteSetupTask::class );
 		$this->conditionally_share_with_tags( GlobalSiteTag::class, AssetsHandlerInterface::class, GoogleGtagJs::class, ProductHelper::class, WC::class, WP::class );
 		$this->share_with_tags( SiteVerificationMeta::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );

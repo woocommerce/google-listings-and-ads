@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
-	"version": "2.5.1",
+	"version": "2.5.2",
 	"description": "google-listings-and-ads",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -89,6 +89,7 @@
 		"check-licenses": "wp-scripts check-licenses",
 		"dev": "NODE_ENV=development wp-scripts build",
 		"dewps:woo": "node bin/list-woo-dewped.mjs",
+		"doc:hooks": "php bin/HooksDocsGenerator.php",
 		"doc:tracking": "woocommerce-grow-jsdoc ./js/src",
 		"docker:up": "WP_VERSION=6.1 npx wc-e2e docker:up",
 		"docker:down": "npx wc-e2e docker:down",
