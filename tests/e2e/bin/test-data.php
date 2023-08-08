@@ -13,6 +13,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 add_action( 'rest_api_init', __NAMESPACE__ . '\register_routes' );
 
+/**
+ * Register routes for setting test data.
+ */
 function register_routes() {
 	register_rest_route(
 		'wc/v3',
@@ -32,6 +35,9 @@ function register_routes() {
 	);
 }
 
+/**
+ * Set the Ads Conversion Action to test values.
+ */
 function set_conversion_id() {
 	/** @var OptionsInterface $options */
 	$options = woogle_get_container()->get( OptionsInterface::class );
@@ -44,12 +50,18 @@ function set_conversion_id() {
 	);
 }
 
+/**
+ * Clear a previously set Conversion Action.
+ */
 function clear_conversion_id() {
 	/** @var OptionsInterface $options */
 	$options = woogle_get_container()->get( OptionsInterface::class );
 	$options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
 }
 
+/**
+ * Check permissions for API requests.
+ */
 function permissions() {
 	return current_user_can( 'manage_woocommerce' );
 }
