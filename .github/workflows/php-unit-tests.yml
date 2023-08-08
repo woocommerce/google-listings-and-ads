@@ -22,55 +22,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  GetWPMatrix:
-    name: Get WP L-2 version Matrix
+  GetMatrix:
+    name: Get WP and WC version Matrix
     runs-on: ubuntu-latest
     outputs:
       wp-versions: ${{ steps.wp.outputs.versions }}
-      latest-wp-version: ${{ fromJson(steps.wp.outputs.versions)[0] }}
+      wc-versions: ${{ steps.wc.outputs.versions }}
+      latest-wc-version: ${{ fromJson(steps.wc.outputs.versions)[0] }}
     steps:
       - name: Get Release versions from Wordpress
         id: wp
         uses: woocommerce/grow/get-plugin-releases@actions-v1
         with:
           slug: wordpress
-          
-  GetWCMatrix:
-    name: Get WC L-1 version Matrix
-    runs-on: ubuntu-latest
-    outputs:
-      previous-wc-version: ${{ fromJson(steps.wc.outputs.versions)[1] }}
-      latest-wc-version: ${{ fromJson(steps.wc.outputs.versions)[0] }}
-    steps:
       - name: Get Release versions from WooCommerce
         id: wc
         uses: woocommerce/grow/get-plugin-releases@actions-v1
         with:
-          slug: woocommerce 
-          releases: 2
+          slug: woocommerce
           
   UnitTests:
-    name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version }}, WC ${{ matrix.wc-version || 'latest' }}
-    needs: [GetWCMatrix, GetWPMatrix]
+    name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version || 'latest' }}, WC ${{ matrix.wc-version || 'latest' }}
+    needs: GetMatrix
     runs-on: ubuntu-latest
     env:
       WP_CORE_DIR: "/tmp/wordpress/src"
       WP_TESTS_DIR: "/tmp/wordpress/tests/phpunit"
     strategy:
       matrix:
-        php: [8.0]
-        wp-version: ${{ fromJson(needs.GetWPMatrix.outputs.wp-versions) }}
-        wc-version: [ latest ]
+        php: [ 8.0 ]
+        wp-version: [ latest ]
+        wc-versions: ${{ fromJson(needs.GetMatrix.outputs.wc-versions) }}
         include:
-          - php: 7.4
-            wp-version: ${{ needs.GetWPMatrix.outputs.latest-wp-version }}
-            wc-version: ${{ needs.GetWCMatrix.outputs.previous-wc-version }}
-          - php: 8.1
-            wp-version: ${{ needs.GetWPMatrix.outputs.latest-wp-version }}
-            wc-version: ${{ needs.GetWCMatrix.outputs.latest-wc-version }}
           - php: 8.2
-            wp-version: ${{ needs.GetWPMatrix.outputs.latest-wp-version }}
-            wc-version: ${{ needs.GetWCMatrix.outputs.latest-wc-version }}
+            wp-version: latest
+            wc-versions: latest
+          - php: 7.4
+            wp-version: ${{ fromJson(needs.GetMatrix.outputs.wp-versions)[2] }} # L-2 WP Version support
+            wc-versions: ${{ fromJson(needs.GetMatrix.outputs.wc-versions)[2] }} # L-2 WC Version support
+          - php: 8.1
+            wp-version: latest
+            wc-versions: latest
 
     steps:
       - name: Checkout repository
@@ -85,9 +77,9 @@ jobs:
         uses: woocommerce/grow/prepare-mysql@actions-v1
 
       - name: Install WP tests
-        run: ./bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wp-version }} ${{ matrix.wc-version }}
+        run: ./bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wp-version }} ${{ matrix.wc-versions }}
 
-      - if: matrix.wp-version == needs.GetWPMatrix.outputs.latest-wp-version && matrix.php == 8.0
+      - if: matrix.wc-version == needs.GetMatrix.outputs.latest-wc-version && matrix.php == 8.0
         name: Set condition to generate coverage report (only on latest versions)
         run: echo "generate_coverage=true" >> $GITHUB_ENV
 
