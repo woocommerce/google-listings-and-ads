@@ -20,7 +20,7 @@ module.exports = async ( config ) => {
 		if ( err.code === 'ENOENT' ) {
 			console.log( 'Admin state file does not exist.' );
 		} else {
-			console.log( 'Admin state file could not be deleted: ' + err );
+			console.error( 'Admin state file could not be deleted: ' + err );
 		}
 	}
 
@@ -62,10 +62,10 @@ module.exports = async ( config ) => {
 			adminLoggedIn = true;
 			break;
 		} catch ( e ) {
-			console.log(
+			console.warn(
 				`Admin log-in failed, Retrying... ${ i }/${ adminRetries }`
 			);
-			console.log( e );
+			console.warn( e );
 		}
 	}
 
