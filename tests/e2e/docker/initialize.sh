@@ -19,6 +19,9 @@ wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --acti
 # we just need to activate it here.
 wp plugin activate google-listings-and-ads
 
+# Activate twentytwentyone theme. Currently e2e tests wich Blcoks are not supported.
+wp theme activate twentytwentyone
+
 # GLA doesn't really need a customer account here,
 # but we are leaving it intact here just in case we want to run full WooCommerce core e2e test.
 wp user create customer customer@woocommercecoree2etestsuite.com --user_pass=password --role=customer --path=/var/www/html
