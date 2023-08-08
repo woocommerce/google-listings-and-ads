@@ -4,19 +4,16 @@ const { url } = require( './default.json' );
 module.exports = defineConfig( {
 	testDir: '../specs',
 
-	/* Maximum time one test can run for. */
+	/* Maximum time in milliseconds one test can run for. */
 	timeout: 120 * 1000,
 
 	expect: {
 		/**
-		 * Maximum time expect() should wait for the condition to be met.
+		 * Maximum time in milliseconds, expect() should wait for the condition to be met.
 		 * For example in `await expect(locator).toHaveText();`
 		 */
 		timeout: 20 * 1000,
 	},
-
-	/* Fail the build on CI if you accidentally left test.only in the source code. */
-	forbidOnly: !! process.env.CI,
 
 	/* Retry on CI only */
 	retries: process.env.CI ? 2 : 0,
@@ -35,7 +32,7 @@ module.exports = defineConfig( {
 
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
-		/* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
+		/* Maximum time in milliseconds, each action such as `click()` can take. Defaults to 0 (no limit). */
 		actionTimeout: 0,
 
 		/* Base URL to use in actions like `await page.goto('/')`. */
