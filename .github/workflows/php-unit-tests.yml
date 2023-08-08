@@ -42,7 +42,7 @@ jobs:
           slug: woocommerce
           
   UnitTests:
-    name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version || 'latest' }}, WC ${{ matrix.wc-version || 'latest' }}
+    name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version || 'latest' }}, WC ${{ matrix.wc-versions || 'latest' }}
     needs: GetMatrix
     runs-on: ubuntu-latest
     env:
@@ -79,7 +79,7 @@ jobs:
       - name: Install WP tests
         run: ./bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wp-version }} ${{ matrix.wc-versions }}
 
-      - if: matrix.wc-version == needs.GetMatrix.outputs.latest-wc-version && matrix.php == 8.0
+      - if: matrix.wc-versions == needs.GetMatrix.outputs.latest-wc-version && matrix.php == 8.0
         name: Set condition to generate coverage report (only on latest versions)
         run: echo "generate_coverage=true" >> $GITHUB_ENV
 
