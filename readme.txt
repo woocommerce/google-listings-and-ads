@@ -111,6 +111,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.2 - 2023-08-08 =
+* Fix - Remove `add_woocommerce_extended_task_list_item` and `remove_woocommerce_extended_task_list_item` hooks.
+* Fix - WordPress 6.3 compatibility: The forms and image selector may not work due to "setImmediate" deprecation.
+* Tweak - Use the latest API to add an item to the WC tasks list.
+* Tweak - WC 8.0 compatibility.
+* Tweak - WP 6.3 compatibility.
+
 = 2.5.1 - 2023-08-01 =
 * Dev - Setup wp-env for E2E tests.
 * Dev - automate merging trunk to develop after a release.
