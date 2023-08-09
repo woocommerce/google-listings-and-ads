@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { Tip } from '@wordpress/components';
+import { Tip } from 'extracted/@wordpress/components';
 
 /**
  * Internal dependencies

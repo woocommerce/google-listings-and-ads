@@ -3,7 +3,7 @@
  */
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Dashicon } from '@wordpress/components';
+import { Dashicon } from 'extracted/@wordpress/components';
 
 /**
  * Internal dependencies

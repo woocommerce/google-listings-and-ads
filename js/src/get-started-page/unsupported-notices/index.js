@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Notice, Icon } from '@wordpress/components';
+import { Notice, Icon } from 'extracted/@wordpress/components';
 import { external as externalIcon } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
 import { createInterpolateElement } from '@wordpress/element';
