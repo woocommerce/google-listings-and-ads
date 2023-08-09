@@ -1,0 +1,18 @@
+name: 'Merge the release to develop'
+run-name:  Make a PR to merge the released `${{ github.head_ref }}` from `trunk` to `develop`
+
+# **What it does**: Creates a PR to merge `trunk` to `develop` after `prepare-extension-release`-based release is merged to `trunk`.
+# **Why we have it**: To automate the release process and follow the git-flow.
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - trunk
+
+jobs:
+  MergeTrunkDevelopPR:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: woocommerce/grow/merge-trunk-develop-pr@actions-v1
