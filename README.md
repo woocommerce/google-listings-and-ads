@@ -151,9 +151,31 @@ Run E2E testing:
 
 To remove the Docker container and images (this will **delete everything** in the WordPress Docker container):
 
-`npm run docker:down`
+`npm run wp-env destroy`
 
 :warning: Currently, the E2E testing on GitHub Actions is only run automatically after opening a PR with `release/*` branches or pushing changes to `release/*` branches. To run it manually, please visit [here](../../actions/workflows/e2e-tests.yml) and follow [this instruction](https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow?tool=webui) to do so.
+
+### Test other WordPress versions
+By default the latest version of WordPress will be installed. `WP_ENV_CORE` can be used to install a specific version.
+
+```
+WP_ENV_CORE=WordPress/WordPress#6.2.2 npm run wp-env:up
+```
+
+This does not work with Release Candidate versions as the tag is not available. Instead we can bring the `wp-env:up` with the latest version and then upgrade WordPress through WP CLI.
+
+```
+npm run -- wp-env run tests-cli -- wp core update --version=6.3-RC3
+npm run -- wp-env run tests-cli -- wp core update-db
+```
+
+### Test other WooCommerce versions
+WooCommerce is installed through WP CLI so we can use this to update to a newer version like a release candidate.
+
+```
+npm run -- wp-env run tests-cli -- wp plugin update woocommerce --version=8.0.0-rc.1
+npm run -- wp-env run tests-cli -- wp wc update
+```
 
 ## Docs
 
