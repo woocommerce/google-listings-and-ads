@@ -52,4 +52,5 @@ module.exports = {
 			timeFormat: 'g:i a',
 		},
 	},
+	timers: 'fake',
 };

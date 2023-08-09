@@ -135,11 +135,14 @@ The tests will execute and you'll be presented with a summary.
 
 ## E2E Testing
 
-E2E testing uses [@woocommerce/e2e-environment](https://www.npmjs.com/package/@woocommerce/e2e-environment) which requires [Docker](https://www.docker.com/).
+E2E testing uses [wp-env](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/) which requires [Docker](https://www.docker.com/).
 
 Make sure Docker is running in your machine, and run the following:
 
-`npm run docker:up` - This will automatically download and run WordPress in a Docker container. You can access it at http://localhost:8084 (Username: admin, Password: password).
+`npm run wp-env:up` - This will automatically download and run WordPress in a Docker container. You can access it at http://localhost:8889 (Username: admin, Password: password).
+
+To install the PlayWright browser locally you can run:
+`npx playwright install chromium`
 
 Run E2E testing:
 
@@ -151,10 +154,6 @@ To remove the Docker container and images (this will **delete everything** in th
 `npm run docker:down`
 
 :warning: Currently, the E2E testing on GitHub Actions is only run automatically after opening a PR with `release/*` branches or pushing changes to `release/*` branches. To run it manually, please visit [here](../../actions/workflows/e2e-tests.yml) and follow [this instruction](https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow?tool=webui) to do so.
-
-### Linux Troubleshooting
-
-If you encounter problems starting your `test:e2e`, like `No usable sandbox!` or `UnhandledPromiseRejectionWarning: Error: Page crashed!`, you may try disabling the Chromium sandbox by adding `--no-sandbox` to `launch.args` in [`/tests/e2e/config/jest-puppeteer.config.js#L7`](https://github.com/woocommerce/google-listings-and-ads/blob/develop/tests/e2e/config/jest-puppeteer.config.js#L7).
 
 ## Docs
 

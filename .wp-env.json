@@ -3,8 +3,12 @@
     "plugins": [
 		"https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip",
 		"https://github.com/WP-API/Basic-Auth/archive/master.zip",
+		"./tests/e2e/bin/test-data.php",
         "."
     ],
+    "mappings": {
+        "wp-cli.yml": "./tests/e2e/config/wp-cli.yml"
+    },
 	"lifecycleScripts": {
         "afterStart": "./tests/e2e/bin/test-env-setup.sh",
         "afterClean": "./tests/e2e/bin/test-env-setup.sh"

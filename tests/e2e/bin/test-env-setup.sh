@@ -4,7 +4,7 @@ echo -e 'Activate twentytwentytwo theme \n'
 wp-env run tests-cli wp theme activate twentytwentytwo
 
 echo -e 'Update URL structure \n'
-wp-env run tests-cli wp rewrite structure '/%postname%/' --hard
+wp-env run tests-cli -- wp rewrite structure '/%postname%/' --hard
 
 echo -e 'Add Customer user \n'
 wp-env run tests-cli wp user create customer customer@woocommercee2etestsuite.com \
@@ -17,5 +17,5 @@ wp-env run tests-cli wp user create customer customer@woocommercee2etestsuite.co
 echo -e 'Update Blog Name \n'
 wp-env run tests-cli wp option update blogname 'WooCommerce E2E Test Suite'
 
-echo -e 'Create Ready Post \n'
-wp-env run tests-cli -- wp post create --post_type=page --post_status=publish --post_title='Ready'
+echo -e 'Adding basic WooCommerce settings... \n'
+wp-env run tests-cli wp wc payment_gateway update cod --enabled=1 --user=admin

@@ -20,11 +20,6 @@ jobs:
     env:
       FORCE_COLOR: 2
     steps:
-      # Needed for Ubuntu 20.04.
-      - name: Kill mono to free 8084
-        run: |
-          sudo killall mono
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -45,22 +40,20 @@ jobs:
           npm run build
           echo "::endgroup::"
 
-      - name: Start docker container
-        run: |
-          npm run docker:up
-          sleep 10
+      - name: Start wp-env container
+        run: npm run wp-env:up
+
+      - name: Download and install Chromium browser.
+        run: npx playwright install chromium
 
       - name: Run tests
-        env:
-            WC_E2E_SCREENSHOTS: 1
-        run: |
-          npm run test:e2e
+        run: npm run test:e2e
 
-      - name: Archive e2e test screenshots
+      - name: Archive e2e failure screenshots
         if: ${{ always() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
             name: e2e-screenshots
-            path: tests/e2e/screenshots
+            path: tests/e2e/test-results/report/**/*.png
             if-no-files-found: ignore
             retention-days: 5
