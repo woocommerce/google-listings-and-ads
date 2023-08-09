@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect, useRef } from '@wordpress/element';
-import { CardDivider } from '@wordpress/components';
+import { CardDivider } from 'extracted/@wordpress/components';
 import { Spinner } from '@woocommerce/components';
 
 /**

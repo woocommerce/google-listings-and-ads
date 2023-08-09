@@ -5,7 +5,7 @@ import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { select } from '@wordpress/data';
 import { useState } from '@wordpress/element';
-import { Flex } from '@wordpress/components';
+import { Flex } from 'extracted/@wordpress/components';
 import { noop, merge } from 'lodash';
 
 /**

@@ -3,7 +3,7 @@
  */
 import { useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Flex } from '@wordpress/components';
+import { Flex } from 'extracted/@wordpress/components';
 import { format as formatDate } from '@wordpress/date';
 
 /**

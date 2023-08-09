@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Card as WPCard } from '@wordpress/components';
+import { Card as WPCard } from 'extracted/@wordpress/components';
 
 /**
  * Internal dependencies

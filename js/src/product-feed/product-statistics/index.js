@@ -3,12 +3,12 @@
  */
 import { __ } from '@wordpress/i18n';
 import {
+	FlexItem,
 	Card,
 	CardHeader,
 	CardBody,
 	CardFooter,
-	FlexItem,
-} from '@wordpress/components';
+} from 'extracted/@wordpress/components';
 
 import {
 	SummaryList,

@@ -3,7 +3,12 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Pagination, Table, TablePlaceholder } from '@woocommerce/components';
-import { CardBody, CardFooter, Flex, FlexItem } from '@wordpress/components';
+import {
+	CardBody,
+	CardFooter,
+	Flex,
+	FlexItem,
+} from 'extracted/@wordpress/components';
 import { useEffect } from '@wordpress/element';
 import { recordEvent } from '@woocommerce/tracks';
 
