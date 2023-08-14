@@ -9,7 +9,7 @@ import {
 	CardHeader,
 	CardBody,
 	CardFooter,
-} from 'extracted/@wordpress/components';
+} from '@wordpress/components';
 import {
 	EmptyTable,
 	Pagination,

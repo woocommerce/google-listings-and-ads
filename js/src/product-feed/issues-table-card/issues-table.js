@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CardBody, CardFooter } from 'extracted/@wordpress/components';
+import { CardBody, CardFooter } from '@wordpress/components';
 import { Pagination, TablePlaceholder } from '@woocommerce/components';
 
 /**

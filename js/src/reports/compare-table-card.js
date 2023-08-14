@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useMemo } from '@wordpress/element';
-import { CheckboxControl } from 'extracted/@wordpress/components';
+import { CheckboxControl } from '@wordpress/components';
 import { onQueryChange } from '@woocommerce/navigation';
 
 /**

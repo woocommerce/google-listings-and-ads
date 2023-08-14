@@ -4,7 +4,7 @@
 import classnames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
 import { forwardRef } from '@wordpress/element';
-import { __experimentalInputControl as InputControl } from 'extracted/@wordpress/components';
+import { __experimentalInputControl as InputControl } from '@wordpress/components';
 
 /**
  * Internal dependencies

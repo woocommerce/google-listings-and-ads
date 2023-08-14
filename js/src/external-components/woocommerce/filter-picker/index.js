@@ -8,7 +8,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Dropdown, Button } from 'extracted/@wordpress/components';
+import { Dropdown, Button } from '@wordpress/components';
 import { focus } from '@wordpress/dom';
 import classnames from 'classnames';
 import { Component } from '@wordpress/element';

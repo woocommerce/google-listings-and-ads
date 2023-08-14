@@ -15,7 +15,7 @@ import {
 	CardFooter,
 	CardHeader,
 	Button,
-} from 'extracted/@wordpress/components';
+} from '@wordpress/components';
 import { isEqual, isFunction } from 'lodash';
 import PropTypes from 'prop-types';
 import { getIdsFromQuery, updateQueryString } from '@woocommerce/navigation';

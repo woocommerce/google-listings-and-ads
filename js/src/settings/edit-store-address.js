@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
 import { useState } from '@wordpress/element';
-import { Flex } from 'extracted/@wordpress/components';
+import { Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies

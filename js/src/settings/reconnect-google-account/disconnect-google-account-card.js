@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { CardDivider, Notice } from 'extracted/@wordpress/components';
+import { CardDivider, Notice } from '@wordpress/components';
 import { useState, createInterpolateElement } from '@wordpress/element';
 import { getNewPath } from '@woocommerce/navigation';
 

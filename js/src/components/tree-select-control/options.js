@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { noop } from 'lodash';
-import { Flex } from 'extracted/@wordpress/components';
+import { Flex } from '@wordpress/components';
 import { Icon, chevronUp, chevronDown } from '@wordpress/icons';
 import classnames from 'classnames';
 

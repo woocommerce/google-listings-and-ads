@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { ToggleControl } from 'extracted/@wordpress/components';
+import { ToggleControl } from '@wordpress/components';
 
 /**
  * Internal dependencies

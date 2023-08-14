@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Notice } from 'extracted/@wordpress/components';
+import { Notice } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**

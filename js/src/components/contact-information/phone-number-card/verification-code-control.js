@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
-import { Flex } from 'extracted/@wordpress/components';
+import { Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies

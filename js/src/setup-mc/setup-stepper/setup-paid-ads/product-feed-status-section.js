@@ -3,7 +3,7 @@
  */
 import { sprintf, __, _n } from '@wordpress/i18n';
 import { useEffect } from '@wordpress/element';
-import { Flex, FlexItem, FlexBlock } from 'extracted/@wordpress/components';
+import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
 
 /**

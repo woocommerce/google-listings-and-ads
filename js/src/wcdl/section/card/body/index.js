@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { CardBody } from 'extracted/@wordpress/components';
+import { CardBody } from '@wordpress/components';
 import classnames from 'classnames';
 
 /**
