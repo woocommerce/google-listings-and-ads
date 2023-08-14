@@ -53,4 +53,12 @@ module.exports = {
 		'import/no-duplicates': 'off',
 		'no-duplicate-imports': 'warn',
 	},
+	overrides: [
+		{
+			files: [ 'tests/e2e/**/*.js' ],
+			rules: {
+				'jest/no-done-callback': [ 'off' ],
+			},
+		},
+	],
 };
