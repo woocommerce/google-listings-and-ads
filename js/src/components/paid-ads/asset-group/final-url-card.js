@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import classnames from 'classnames';
 import { useState } from '@wordpress/element';
-import { ExternalLink } from 'extracted/@wordpress/components';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies

@@ -9,8 +9,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Component } from '@wordpress/element';
-import { Card, CardBody, CardFooter, CardHeader } from '@wordpress/components';
-import { Button } from 'extracted/@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardFooter,
+	CardHeader,
+	Button,
+} from '@wordpress/components';
 import { isEqual, isFunction } from 'lodash';
 import PropTypes from 'prop-types';
 import { getIdsFromQuery, updateQueryString } from '@woocommerce/navigation';

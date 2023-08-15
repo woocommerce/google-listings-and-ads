@@ -1,4 +1,3 @@
-const webpack = require( 'webpack' );
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const { hasArgInCLI } = require( '@wordpress/scripts/utils' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
@@ -22,13 +21,6 @@ const requestToExternal = ( request ) => {
 		return defaultRequestToExternalWP( request );
 	}
 	const bundledPackages = [
-		// Opt-out WordPress packages.
-		// The following default externals are bundled for compatibility with older versions of WP
-		// Note CSS for specific components is bundled via admin/assets/src/index.scss
-		// WP 5.4 is the min version for <Card* />, <TabPanel />
-		'@wordpress/compose',
-		'@wordpress/components',
-		'@wordpress/primitives',
 		// Opt-out WooCommerce packages.
 		'@woocommerce/currency',
 		'@woocommerce/date',
@@ -118,20 +110,6 @@ const webpackConfig = {
 				! hasReactFastRefresh && '../../.externalized.json',
 			requestToExternal,
 			requestToHandle,
-		} ),
-		/**
-		 * Automatic polyfills for native node.js modules were removed from webpack v5.
-		 * And `@wordpress/components` below version 16.x depends on `@wordpress/compose`,
-		 * which directly accesses `process.env`.
-		 * Ref: https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/compose/src/hooks/use-reduced-motion/index.js#L21
-		 *
-		 * So the fallback is required here.
-		 * It may be possible to remove this fallback
-		 * when `@wordpress/components` is upgraded above 17.0.0+,
-		 * or when it is removed from the `requestToExternal` function above.
-		 */
-		new webpack.ProvidePlugin( {
-			process: 'process/browser',
 		} ),
 	],
 	entry: {

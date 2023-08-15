@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Card, CardBody, FlexBlock, Tip } from '@wordpress/components';
+import { FlexBlock, Card, CardBody, Tip } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
