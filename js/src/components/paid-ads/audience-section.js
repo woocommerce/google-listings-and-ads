@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { SelectControl } from '@wordpress/components';
+import { SelectControl } from 'extracted/@wordpress/components';
 
 /**
  * Internal dependencies

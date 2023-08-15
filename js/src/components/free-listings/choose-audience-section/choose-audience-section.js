@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { RadioControl } from '@wordpress/components';
+import { RadioControl } from 'extracted/@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 

@@ -4,8 +4,12 @@
 import { parsePhoneNumberFromString as parsePhoneNumber } from 'libphonenumber-js';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import { RadioControl } from '@wordpress/components';
-import { Flex, FlexItem, FlexBlock } from 'extracted/@wordpress/components';
+import {
+	Flex,
+	FlexItem,
+	FlexBlock,
+	RadioControl,
+} from 'extracted/@wordpress/components';
 
 /**
  * Internal dependencies
