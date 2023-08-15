@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { CardFooter } from 'extracted/@wordpress/components';
+import { CardFooter } from '@wordpress/components';
 
 /**
  * Internal dependencies

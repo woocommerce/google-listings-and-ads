@@ -3,7 +3,7 @@
  */
 import { queueRecordEvent } from '@woocommerce/tracks';
 import { __ } from '@wordpress/i18n';
-import { Flex } from 'extracted/@wordpress/components';
+import { Flex } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 /**

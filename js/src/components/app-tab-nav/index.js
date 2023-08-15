@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { NavigableMenu } from 'extracted/@wordpress/components';
+import { NavigableMenu } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 import classnames from 'classnames';
 

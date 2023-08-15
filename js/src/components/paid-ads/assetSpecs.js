@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, _x, sprintf } from '@wordpress/i18n';
-import { ExternalLink } from 'extracted/@wordpress/components';
+import { ExternalLink } from '@wordpress/components';
 import { Fragment, createInterpolateElement } from '@wordpress/element';
 
 /**

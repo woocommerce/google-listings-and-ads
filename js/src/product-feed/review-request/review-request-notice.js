@@ -3,7 +3,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { format as formatDate } from '@wordpress/date';
-import { Flex, FlexItem } from 'extracted/@wordpress/components';
+import { Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import classnames from 'classnames';
-import { RadioControl } from 'extracted/@wordpress/components';
+import { RadioControl } from '@wordpress/components';
 
 /**
  * Internal dependencies

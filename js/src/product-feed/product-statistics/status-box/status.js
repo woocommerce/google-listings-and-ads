@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Flex, FlexItem } from 'extracted/@wordpress/components';
+import { Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Renders a status line. With a title, an icon and a description for the status

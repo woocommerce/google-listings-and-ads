@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useRef } from '@wordpress/element';
-import { Flex, FlexItem, FlexBlock } from 'extracted/@wordpress/components';
+import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
 import GridiconChevronLeft from 'gridicons/dist/chevron-left';
 import GridiconChevronRight from 'gridicons/dist/chevron-right';
 

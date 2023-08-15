@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import Gridiconcheckmark from 'gridicons/dist/checkmark';
-import { Flex, FlexBlock } from 'extracted/@wordpress/components';
+import { Flex, FlexBlock } from '@wordpress/components';
 
 /**
  * Internal dependencies

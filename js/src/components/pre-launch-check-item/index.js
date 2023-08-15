@@ -7,7 +7,7 @@ import {
 	PanelBody,
 	PanelRow,
 	CheckboxControl,
-} from 'extracted/@wordpress/components';
+} from '@wordpress/components';
 import { recordEvent } from '@woocommerce/tracks';
 import { useRef } from '@wordpress/element';
 

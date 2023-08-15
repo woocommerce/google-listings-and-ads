@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Modal } from 'extracted/@wordpress/components';
+import { Modal } from '@wordpress/components';
 import classnames from 'classnames';
 
 /**

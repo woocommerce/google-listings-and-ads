@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useRef, createInterpolateElement } from '@wordpress/element';
-import { CardDivider } from 'extracted/@wordpress/components';
+import { CardDivider } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
 import { update as updateIcon } from '@wordpress/icons';
 import { getPath, getQuery } from '@woocommerce/navigation';

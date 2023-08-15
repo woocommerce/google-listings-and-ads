@@ -2,12 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	Flex,
-	FlexBlock,
-	Card,
-	CardHeader,
-} from 'extracted/@wordpress/components';
+import { Flex, FlexBlock, Card, CardHeader } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**

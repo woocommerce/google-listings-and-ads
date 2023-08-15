@@ -9,8 +9,7 @@ import {
 	useRef,
 	createInterpolateElement,
 } from '@wordpress/element';
-import { Notice } from 'extracted/@wordpress/components';
-import { Flex } from 'extracted/@wordpress/components';
+import { Notice, Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies
