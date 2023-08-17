@@ -18,6 +18,7 @@ import { Modal, Button, KeyboardShortcuts } from '@wordpress/components';
  */
 import PageControl from './page-control';
 import FinishButton from './finish-button';
+import './index.scss';
 
 /**
  * @callback renderFinishCallback
@@ -88,9 +89,17 @@ export default function Guide( {
 		finishBlock = renderFinish( finishButton );
 	}
 
+	const guideClassName = classnames(
+		// gla-admin-page is for scoping particular styles to components that are used by
+		// a GLA admin page and are rendered via ReactDOM.createPortal.
+		'gla-admin-page',
+		'components-guide',
+		className
+	);
+
 	return (
 		<Modal
-			className={ classnames( 'components-guide', className ) }
+			className={ guideClassName }
 			contentLabel={ contentLabel }
 			onRequestClose={ onFinish }
 		>
