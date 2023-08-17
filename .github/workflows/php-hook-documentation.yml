@@ -27,7 +27,7 @@ jobs:
         uses: woocommerce/grow/hook-documentation@actions-v1
         with:
           debug-output: yes
-          source-directories: src/,templates/
+          source-directories: src/,views/
 
       - name: Commit hook documentation
         shell: bash
