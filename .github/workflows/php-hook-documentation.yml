@@ -3,10 +3,7 @@ name: PHP Hook Documentation Generator
 on:
   pull_request:
     branches:
-      - 'release/**'
-    paths:
-      - "**.php"
-      - .github/workflows/php-hook-documentation.yml
+      - "release/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
