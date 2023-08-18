@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - "release/**"
-      paths:
-        - "**.php"
-        - .github/workflows/php-hook-documentation.yml
+    paths:
+      - "**.php"
+      - .github/workflows/php-hook-documentation.yml
   pull_request:
     types:
       - opened
