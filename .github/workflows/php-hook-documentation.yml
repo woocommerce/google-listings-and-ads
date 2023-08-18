@@ -2,6 +2,8 @@ name: PHP Hook Documentation Generator
 
 on:
   pull_request:
+    types:
+      - opened
     branches:
       - "release/**"
 
