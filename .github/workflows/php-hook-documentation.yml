@@ -1,11 +1,21 @@
 name: PHP Hook Documentation Generator
 
 on:
+  push:
+    branches:
+      - "release/**"
+      paths:
+        - "**.php"
+        - .github/workflows/php-hook-documentation.yml
   pull_request:
     types:
       - opened
     branches:
       - "release/**"
+    paths:
+      - "**.php"
+      - .github/workflows/php-hook-documentation.yml
+
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
