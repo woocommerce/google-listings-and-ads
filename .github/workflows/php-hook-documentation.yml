@@ -1,9 +1,17 @@
 name: PHP Hook Documentation Generator
 
 on:
-  pull_request:
+  push:
     branches:
-      - 'release/**'
+      - "release/**"
+    paths:
+      - "**.php"
+      - .github/workflows/php-hook-documentation.yml
+  pull_request:
+    types:
+      - opened
+    branches:
+      - "release/**"
     paths:
       - "**.php"
       - .github/workflows/php-hook-documentation.yml
