@@ -23,15 +23,15 @@ const TopBar = ( { title, backHref, helpButton, onBackButtonClick } ) => {
 	return (
 		<div className="gla-stepper-top-bar">
 			<Link
-				className="back-button"
+				className="components-button gla-stepper-top-bar__back-button"
 				href={ backHref }
 				type="wc-admin"
 				onClick={ onBackButtonClick }
 			>
 				<GridiconChevronLeft />
 			</Link>
-			<span className="title">{ title }</span>
-			<div className="actions">{ helpButton }</div>
+			<span className="gla-stepper-top-bar__title">{ title }</span>
+			{ helpButton }
 		</div>
 	);
 };

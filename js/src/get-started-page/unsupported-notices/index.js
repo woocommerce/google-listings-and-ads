@@ -49,14 +49,12 @@ const UnsupportedLanguage = () => {
 					language: <strong>{ data.language }</strong>,
 					settingsLink: (
 						<Link
-							className="gla-get-started-notice__link"
 							type="wp-admin"
 							href="/wp-admin/options-general.php"
 						/>
 					),
 					supportedLanguagesLink: (
 						<AppDocumentationLink
-							className="gla-get-started-notice__link"
 							href="https://support.google.com/merchants/answer/160637"
 							context="get-started"
 							linkId="supported-languages"
@@ -94,14 +92,12 @@ const UnsupportedCountry = () => {
 					country: <strong>{ countryName }</strong>,
 					settingsLink: (
 						<Link
-							className="gla-get-started-notice__link"
 							type="wp-admin"
 							href="/wp-admin/admin.php?page=wc-settings"
 						/>
 					),
 					supportedCountriesLink: (
 						<AppDocumentationLink
-							className="gla-get-started-notice__link"
 							href="https://support.google.com/merchants/answer/160637"
 							context="get-started"
 							linkId="supported-countries"
