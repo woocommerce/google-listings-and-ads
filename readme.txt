@@ -111,6 +111,18 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.3 - 2023-08-22 =
+* Dev - Add Action for Hooks Documentation Generator.
+* Dev - Allow E2E testing with Release Candidates.
+* Dev - Convert E2E tests from Puppeteer to Playwright.
+* Dev - Externalize all WordPress JavaScript packages via Dependency Extraction Webpack Plugin (DEWP).
+* Dev - Fetch WooCommerce L-1 versions for our tests.
+* Dev - Remove legacy HooksDocsGenerator.php file.
+* Dev - Use `merge-trunk-develop-pr` action.
+* Tweak - Apply consistent admin theme colors to common UI components.
+* Update - Google API Client Services package to v0.312.
+* Update - Google Ads library to API V14. (package v19.2.0).
+
 = 2.5.2 - 2023-08-08 =
 * Fix - Remove `add_woocommerce_extended_task_list_item` and `remove_woocommerce_extended_task_list_item` hooks.
 * Fix - WordPress 6.3 compatibility: The forms and image selector may not work due to "setImmediate" deprecation.
