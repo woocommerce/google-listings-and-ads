@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.3
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.5.2
+Stable tag: 2.5.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,18 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.3 - 2023-08-22 =
+* Dev - Add Action for Hooks Documentation Generator.
+* Dev - Allow E2E testing with Release Candidates.
+* Dev - Convert E2E tests from Puppeteer to Playwright.
+* Dev - Externalize all WordPress JavaScript packages via Dependency Extraction Webpack Plugin (DEWP).
+* Dev - Fetch WooCommerce L-1 versions for our tests.
+* Dev - Remove legacy HooksDocsGenerator.php file.
+* Dev - Use `merge-trunk-develop-pr` action.
+* Tweak - Apply consistent admin theme colors to common UI components.
+* Update - Google API Client Services package to v0.312.
+* Update - Google Ads library to API V14. (package v19.2.0).
+
 = 2.5.2 - 2023-08-08 =
 * Fix - Remove `add_woocommerce_extended_task_list_item` and `remove_woocommerce_extended_task_list_item` hooks.
 * Fix - WordPress 6.3 compatibility: The forms and image selector may not work due to "setImmediate" deprecation.
@@ -125,9 +137,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Prevent PHP 8.2 deprecation messages.
 * Tweak - Ability to filter products for syncing via `gla_filter_product_query_args` apply_filters hook.
 * Update - Show validation errors on steps 2 and 3 of the onboarding flow when unable to continue.
-
-= 2.5.0 - 2023-07-18 =
-* Tweak - Add Tip with information with Campaign assets are imported.
-* Tweak - Provide more detailed error reasons when unable to complete site verification for the Google Merchant Center account being connected in the onboarding flow.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
