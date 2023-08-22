@@ -135,11 +135,14 @@ The tests will execute and you'll be presented with a summary.
 
 ## E2E Testing
 
-E2E testing uses [@woocommerce/e2e-environment](https://www.npmjs.com/package/@woocommerce/e2e-environment) which requires [Docker](https://www.docker.com/).
+E2E testing uses [wp-env](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/) which requires [Docker](https://www.docker.com/).
 
 Make sure Docker is running in your machine, and run the following:
 
-`npm run docker:up` - This will automatically download and run WordPress in a Docker container. You can access it at http://localhost:8084 (Username: admin, Password: password).
+`npm run wp-env:up` - This will automatically download and run WordPress in a Docker container. You can access it at http://localhost:8889 (Username: admin, Password: password).
+
+To install the PlayWright browser locally you can run:
+`npx playwright install chromium`
 
 Run E2E testing:
 
@@ -148,13 +151,31 @@ Run E2E testing:
 
 To remove the Docker container and images (this will **delete everything** in the WordPress Docker container):
 
-`npm run docker:down`
+`npm run wp-env destroy`
 
 :warning: Currently, the E2E testing on GitHub Actions is only run automatically after opening a PR with `release/*` branches or pushing changes to `release/*` branches. To run it manually, please visit [here](../../actions/workflows/e2e-tests.yml) and follow [this instruction](https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow?tool=webui) to do so.
 
-### Linux Troubleshooting
+### Test other WordPress versions
+By default the latest version of WordPress will be installed. `WP_ENV_CORE` can be used to install a specific version.
 
-If you encounter problems starting your `test:e2e`, like `No usable sandbox!` or `UnhandledPromiseRejectionWarning: Error: Page crashed!`, you may try disabling the Chromium sandbox by adding `--no-sandbox` to `launch.args` in [`/tests/e2e/config/jest-puppeteer.config.js#L7`](https://github.com/woocommerce/google-listings-and-ads/blob/develop/tests/e2e/config/jest-puppeteer.config.js#L7).
+```
+WP_ENV_CORE=WordPress/WordPress#6.2.2 npm run wp-env:up
+```
+
+This does not work with Release Candidate versions as the tag is not available. Instead we can bring the `wp-env:up` with the latest version and then upgrade WordPress through WP CLI.
+
+```
+npm run -- wp-env run tests-cli -- wp core update --version=6.3-RC3
+npm run -- wp-env run tests-cli -- wp core update-db
+```
+
+### Test other WooCommerce versions
+WooCommerce is installed through WP CLI so we can use this to update to a newer version like a release candidate.
+
+```
+npm run -- wp-env run tests-cli -- wp plugin update woocommerce --version=8.0.0-rc.1
+npm run -- wp-env run tests-cli -- wp wc update
+```
 
 ## Docs
 

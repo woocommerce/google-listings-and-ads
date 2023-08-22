@@ -68,7 +68,7 @@ export default function EditVisibilityAction( {
 					'google-listings-and-ads'
 				) }
 			>
-				<Icon icon={ editIcon } size={ 24 } />
+				<Icon icon={ editIcon } />
 			</AppTooltip>
 		);
 	}

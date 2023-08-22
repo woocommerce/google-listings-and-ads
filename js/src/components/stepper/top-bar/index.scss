@@ -1,28 +1,22 @@
 .gla-stepper-top-bar {
 	display: flex;
-	align-items: stretch;
+	align-items: center;
 	min-height: $grid-unit-40 * 2;
 	background-color: $white;
 	box-shadow: 0 -1px 0 0 $gray-400 inset;
 
-	.back-button {
-		display: flex;
-		align-items: center;
+	.components-button {
+		height: auto;
+		align-self: stretch;
+	}
+
+	&__back-button {
 		padding: 0 calc(var(--main-gap) / 2);
 	}
 
-	.title {
-		align-self: center;
+	&__title {
 		flex: 1;
 		font-size: $editor-font-size;
-		font-weight: 400;
-		line-height: $gla-line-height-medium-large;
 		letter-spacing: 0;
-	}
-
-	.actions {
-		.components-button {
-			height: 100%;
-		}
 	}
 }

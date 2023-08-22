@@ -11,8 +11,8 @@
 		"automattic/jetpack-config": "^1.4",
 		"automattic/jetpack-connection": "^1.40",
 		"google/apiclient": "^2.15",
-		"google/apiclient-services": "~0.302",
-		"googleads/google-ads-php": "^19.1",
+		"google/apiclient-services": "~0.312",
+		"googleads/google-ads-php": "^19.2",
 		"league/container": "^3.4",
 		"league/iso3166": "^4.1",
 		"phpseclib/bcmath_compat": "^2.0",
@@ -39,8 +39,7 @@
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\": "bin/"
 		},
 		"files": [
-			"vendor/guzzlehttp/guzzle/src/functions_include.php",
-			"vendor/guzzlehttp/promises/src/functions_include.php"
+			"vendor/guzzlehttp/guzzle/src/functions_include.php"
 		]
 	},
 	"autoload-dev": {
@@ -63,7 +62,7 @@
 			"Google\\Task\\Composer::cleanup",
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\SymfonyPolyfillCleanup::remove",
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\GoogleAdsCleanupServices::remove",
-			"composer run-script remove-google-ads-api-version-support -- 10 11 12",
+			"composer run-script remove-google-ads-api-version-support -- 11 12 13",
 			"php ./bin/prefix-vendor-namespace.php",
 			"bash ./bin/cleanup-vendor-files.sh",
 			"composer dump-autoload"

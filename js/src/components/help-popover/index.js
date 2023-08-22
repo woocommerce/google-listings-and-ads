@@ -3,7 +3,7 @@
  */
 import classnames from 'classnames';
 import { __ } from '@wordpress/i18n';
-import { Popover } from 'extracted/@wordpress/components';
+import { Popover } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import GridiconHelpOutline from 'gridicons/dist/help-outline';
 import { recordEvent } from '@woocommerce/tracks';

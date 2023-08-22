@@ -125,7 +125,6 @@ $direct_replacements = [
 		'GuzzleHttp\describe_type',
 		'GuzzleHttp\HandlerStack::create',
 		'GuzzleHttp\Message\ResponseInterface)',
-		'GuzzleHttp\Promise\promise_for',
 		'GuzzleHttp\Psr7\Message::bodySummary',
 		'GuzzleHttp\Psr7\Utils::streamFor',
 		'GuzzleHttp\Psr7\Utils::tryFopen',

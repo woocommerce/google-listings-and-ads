@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
-use Google\Ads\GoogleAds\V13\Resources\ShoppingPerformanceView;
+use Google\Ads\GoogleAds\V14\Resources\ShoppingPerformanceView;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -1,12 +1,5 @@
 // Scope the old styles of core components to GLA pages to avoid styling conflicts with other non-GLA pages.
 .gla-admin-page {
-	// WP 6.1 Compatibility (@wordpress/components 21.0.6 imported by @woocommerce/components)
-	// The style of `DatePicker` component was significantly changed as per the new implementations.
-	// This import could be removed after:
-	// - It's fixed from @woocommerce/components
-	// - or @wordpress/components is changed to be imported via (WC)DEWP
-	@import "node_modules/@wordpress/components/src/date-time/date/datepicker"; /* stylelint-disable-line no-invalid-position-at-import-rule */
-
 	.components-button {
 		// Hack to show correct font color for disabled primary destructive button.
 		// The color style is copied from https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/button/style.scss#L67-L72
@@ -51,35 +44,9 @@
 			font-size: inherit;
 		}
 	}
-}
 
-// hack to fix radio button selected style bug caused by woocommerce-admin.
-.components-radio-control__input[type="radio"]:checked::before {
-	border: none;
-}
-
-// hack to fix InputControl suffix's empty right margin.
-.components-input-control__suffix {
-	margin-right: $grid-unit;
-}
-
-// Hack to fix the Tooltip position of the top-right side close button in a Modal component.
-// The follow up can be found here: https://github.com/woocommerce/google-listings-and-ads/issues/203
-.components-modal {
-	&__screen-overlay {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-
-	&__frame {
-		@include break-small {
-			transform: initial;
-			position: relative;
-			top: 0;
-			bottom: 0;
-			left: 0;
-			right: 0;
-		}
+	// Adjust InputControl suffix's empty right margin.
+	.components-input-control__suffix {
+		margin-right: $grid-unit;
 	}
 }

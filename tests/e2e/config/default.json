@@ -12,7 +12,8 @@
 	},
 	"products": {
 		"simple": {
-			"name": "Simple product"
+			"name": "Simple product",
+			"regularPrice": 9.99
 		},
 		"variable": {
 			"name": "Variable Product with Three Attributes",
@@ -152,6 +153,7 @@
 				"addresssecondline": "addr 2",
 				"city": "San Francisco",
 				"state": "CA",
+				"statename": "California",
 				"postcode": "94107",
 				"phone": "123456789",
 				"email": "john.doe@example.com"

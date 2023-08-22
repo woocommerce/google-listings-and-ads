@@ -10,7 +10,7 @@
  */
 import { times } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button } from 'extracted/@wordpress/components';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -35,11 +35,7 @@ export default function PageControl( {
 				>
 					<Button
 						key={ page }
-						icon={
-							<PageControlIcon
-								isSelected={ page === currentPage }
-							/>
-						}
+						icon={ <PageControlIcon /> }
 						aria-label={ sprintf(
 							/* translators: 1: current page number 2: total number of pages */
 							__( 'Page %1$d of %2$d' ),

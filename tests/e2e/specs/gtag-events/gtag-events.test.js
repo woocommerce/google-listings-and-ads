@@ -1,57 +1,44 @@
 /**
  * External dependencies
  */
-import {
-	createSimpleProduct,
-	SHOP_PAGE, // eslint-disable-line import/named
-	shopper, // eslint-disable-line import/named
-	uiUnblocked,
-	withRestApi, // eslint-disable-line import/named
-} from '@woocommerce/e2e-utils';
+const { test, expect } = require( '@playwright/test' );
 
 /**
  * Internal dependencies
  */
 import {
+	createSimpleProduct,
+	setConversionID,
 	clearConversionID,
-	saveConversionID,
-} from '../../utils/connection-test-page';
-import { getEventData, trackGtagEvent } from '../../utils/track-event';
+} from '../../utils/api';
 import {
 	blockProductAddToCart,
-	emptyCart,
+	checkout,
 	relatedProductAddToCart,
-} from '../../utils/cart';
+	singleProductAddToCart,
+} from '../../utils/customer';
 import { createBlockShopPage } from '../../utils/block-page';
-import { goToSingleProduct } from '../../utils/visit-product-page';
+import { getEventData, trackGtagEvent } from '../../utils/track-event';
 
-const config = require( 'config' ); // eslint-disable-line import/no-extraneous-dependencies
-const productPrice = config.has( 'products.simple.price' )
-	? config.get( 'products.simple.price' )
-	: '9.99';
+const config = require( '../../config/default' );
+const productPrice = config.products.simple.regularPrice;
 
 let simpleProductID;
 
-describe( 'GTag events', () => {
-	beforeAll( async () => {
-		await saveConversionID();
-		await createBlockShopPage();
+test.describe( 'GTag events', () => {
+	test.beforeAll( async () => {
+		await setConversionID();
 		simpleProductID = await createSimpleProduct();
-
-		// Enable COD payment method
-		await withRestApi.updatePaymentGateway(
-			'cod',
-			{ enabled: true },
-			false
-		);
 	} );
 
-	afterAll( async () => {
+	test.afterAll( async () => {
 		await clearConversionID();
 	} );
 
-	it( 'Global GTag snippet appears on a frontend page', async () => {
-		await shopper.goToShop();
+	test( 'Global GTag snippet appears on a frontend page', async ( {
+		page,
+	} ) => {
+		await page.goto( 'shop' );
 
 		await expect(
 			page.$$eval( 'head', ( elements ) =>
@@ -62,17 +49,19 @@ describe( 'GTag events', () => {
 		).resolves.toBeTruthy();
 	} );
 
-	it( 'Page view event is sent on a frontend page', async () => {
-		const event = trackGtagEvent( 'page_view' );
+	test( 'Page view event is sent on a frontend page', async ( { page } ) => {
+		const event = trackGtagEvent( page, 'page_view' );
 
-		await shopper.goToShop();
+		await page.goto( 'shop' );
 		await expect( event ).resolves.toBeTruthy();
 	} );
 
-	it( 'View item event is sent on a single product page', async () => {
-		const event = trackGtagEvent( 'view_item' );
+	test( 'View item event is sent on a single product page', async ( {
+		page,
+	} ) => {
+		const event = trackGtagEvent( page, 'view_item' );
 
-		await goToSingleProduct( simpleProductID );
+		await page.goto( `?p=${ simpleProductID }` );
 
 		await event.then( ( request ) => {
 			const data = getEventData( request );
@@ -82,28 +71,16 @@ describe( 'GTag events', () => {
 		} );
 	} );
 
-	it( 'Add to cart event is sent from a block shop page', async () => {
-		const event = trackGtagEvent( 'add_to_cart' );
+	test( 'Add to cart event is sent from a block shop page', async ( {
+		page,
+	} ) => {
+		await createBlockShopPage();
+
+		const event = trackGtagEvent( page, 'add_to_cart' );
 
 		// Go to block shop page
-		await page.goto( config.url + 'all-products-block/' );
-
-		await blockProductAddToCart();
-
-		await event.then( ( request ) => {
-			const data = getEventData( request );
-			expect( data.id ).toEqual( 'gla_' + simpleProductID );
-			expect( data.ecomm_pagetype ).toEqual( 'cart' );
-			expect( data.event_category ).toEqual( 'ecommerce' );
-			expect( data.google_business_vertical ).toEqual( 'retail' );
-		} );
-	} );
-
-	it( 'Add to cart event is sent on a single product page', async () => {
-		const event = trackGtagEvent( 'add_to_cart' );
-
-		await goToSingleProduct( simpleProductID );
-		await shopper.addToCart();
+		await page.goto( 'all-products-block' );
+		await blockProductAddToCart( page );
 
 		await event.then( ( request ) => {
 			const data = getEventData( request );
@@ -114,12 +91,30 @@ describe( 'GTag events', () => {
 		} );
 	} );
 
-	it( 'Add to cart event is sent from related product on single product page', async () => {
+	test( 'Add to cart event is sent on a single product page', async ( {
+		page,
+	} ) => {
+		const event = trackGtagEvent( page, 'add_to_cart' );
+
+		await singleProductAddToCart( page, simpleProductID );
+
+		await event.then( ( request ) => {
+			const data = getEventData( request );
+			expect( data.id ).toEqual( 'gla_' + simpleProductID );
+			expect( data.ecomm_pagetype ).toEqual( 'cart' );
+			expect( data.event_category ).toEqual( 'ecommerce' );
+			expect( data.google_business_vertical ).toEqual( 'retail' );
+		} );
+	} );
+
+	test( 'Add to cart event is sent from related product on single product page', async ( {
+		page,
+	} ) => {
 		await createSimpleProduct(); // Create an additional product for related to show up.
-		const event = trackGtagEvent( 'add_to_cart' );
+		const event = trackGtagEvent( page, 'add_to_cart' );
 
-		await goToSingleProduct( simpleProductID );
-		const relatedProductID = await relatedProductAddToCart();
+		await page.goto( `?p=${ simpleProductID }` );
+		const relatedProductID = await relatedProductAddToCart( page );
 
 		await event.then( ( request ) => {
 			const data = getEventData( request );
@@ -130,14 +125,18 @@ describe( 'GTag events', () => {
 		} );
 	} );
 
-	it( 'Add to cart event is sent from the shop page', async () => {
-		const event = trackGtagEvent( 'add_to_cart' );
+	test( 'Add to cart event is sent from the shop page', async ( {
+		page,
+	} ) => {
+		const event = trackGtagEvent( page, 'add_to_cart' );
 
 		// Go to shop page (newest first)
-		await page.goto( SHOP_PAGE + '?orderby=date', {
-			waitUntil: 'networkidle0',
-		} );
-		await shopper.addToCartFromShopPage( simpleProductID );
+		await page.goto( 'shop?orderby=date' );
+		const addToCart = `[data-product_id="${ simpleProductID }"]`;
+		await page.locator( addToCart ).first().click();
+		await expect( page.locator( addToCart ).first() ).toHaveClass(
+			/added/
+		);
 
 		await event.then( ( request ) => {
 			const data = getEventData( request );
@@ -148,9 +147,13 @@ describe( 'GTag events', () => {
 		} );
 	} );
 
-	it( 'Cart page view event is sent from the cart page', async () => {
-		const event = trackGtagEvent( 'page_view' );
-		await shopper.goToCart();
+	test( 'Cart page view event is sent from the cart page', async ( {
+		page,
+	} ) => {
+		await singleProductAddToCart( page, simpleProductID );
+
+		const event = trackGtagEvent( page, 'page_view' );
+		await page.goto( 'cart' );
 
 		await event.then( ( request ) => {
 			const data = getEventData( request );
@@ -159,44 +162,32 @@ describe( 'GTag events', () => {
 		} );
 	} );
 
-	it( 'Conversion event is sent on order complete page', async () => {
-		await emptyCart();
-		await goToSingleProduct( simpleProductID );
-		await shopper.addToCart();
+	test( 'Conversion event is sent on order complete page', async ( {
+		page,
+	} ) => {
+		await singleProductAddToCart( page, simpleProductID );
 
-		await shopper.goToCheckout();
-		await shopper.fillBillingDetails(
-			config.get( 'addresses.customer.billing' )
-		);
-		await uiUnblocked();
-
-		const event = trackGtagEvent( 'conversion' );
-		await shopper.placeOrder();
+		const event = trackGtagEvent( page, 'conversion' );
+		await checkout( page );
 
 		await event.then( ( request ) => {
 			const data = getEventData( request );
-			expect( data.value ).toEqual( productPrice );
+			expect( data.value ).toEqual( String( productPrice ) );
 			expect( data.currency_code ).toEqual( 'USD' );
 		} );
 	} );
 
-	it( 'Purchase event is sent on order complete page', async () => {
-		await emptyCart();
-		await goToSingleProduct( simpleProductID );
-		await shopper.addToCart();
+	test( 'Purchase event is sent on order complete page', async ( {
+		page,
+	} ) => {
+		await singleProductAddToCart( page, simpleProductID );
 
-		await shopper.goToCheckout();
-		await shopper.fillBillingDetails(
-			config.get( 'addresses.customer.billing' )
-		);
-		await uiUnblocked();
-
-		const event = trackGtagEvent( 'purchase' );
-		await shopper.placeOrder();
+		const event = trackGtagEvent( page, 'purchase' );
+		await checkout( page );
 
 		await event.then( ( request ) => {
 			const data = getEventData( request );
-			expect( data.value ).toEqual( productPrice );
+			expect( data.value ).toEqual( String( productPrice ) );
 			expect( data.ecomm_pagetype ).toEqual( 'purchase' );
 			expect( data.currency_code ).toEqual( 'USD' );
 			expect( data.country ).toEqual( 'US' );
