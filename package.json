@@ -79,6 +79,11 @@
 		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?9eb10353728dc915bf5f7bdd4b8e218c625355a9",
 		"woocommerce-grow-storybook": "https://gitpkg.now.sh/woocommerce/grow/packages/js/storybook?fecfad52db350afd3550842e2374dee8dbc587ea"
 	},
+	"overrides": {
+		"engine.io-client": {
+			"xmlhttprequest-ssl@<1.6.2": "1.6.2"
+		}
+	},
 	"scripts": {
 		"prearchive": "rm -rf vendor && composer install --no-dev && composer dump-autoload -o",
 		"archive": "composer archive --file=$npm_package_name --format=zip",
