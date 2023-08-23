@@ -59,8 +59,7 @@ const BillingSavedCard = () => {
 											eventProps={ {
 												context: 'setup-ads',
 												link_id: 'google-ads-account',
-												href:
-													'https://ads.google.com/aw/overview ',
+												href: 'https://ads.google.com/aw/overview ',
 											} }
 											type="external"
 											target="_blank"

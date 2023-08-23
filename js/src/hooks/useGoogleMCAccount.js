@@ -46,18 +46,14 @@ const useGoogleMCAccount = () => {
 				};
 			}
 
-			const {
-				getGoogleMCAccount,
-				isResolving,
-				hasFinishedResolution,
-			} = select( STORE_KEY );
+			const { getGoogleMCAccount, isResolving, hasFinishedResolution } =
+				select( STORE_KEY );
 
 			return {
 				googleMCAccount: getGoogleMCAccount(),
 				isResolving: isResolving( 'getGoogleMCAccount' ),
-				hasFinishedResolution: hasFinishedResolution(
-					'getGoogleMCAccount'
-				),
+				hasFinishedResolution:
+					hasFinishedResolution( 'getGoogleMCAccount' ),
 				isPreconditionReady: true,
 			};
 		},

@@ -46,28 +46,24 @@ import createErrorMessageForRejectedPromises from '.~/utils/createErrorMessageFo
 const EditFreeCampaign = () => {
 	useLayout( 'full-content' );
 
-	const {
-		targetAudience: savedTargetAudience,
-		getFinalCountries,
-	} = useTargetAudienceFinalCountryCodes();
+	const { targetAudience: savedTargetAudience, getFinalCountries } =
+		useTargetAudienceFinalCountryCodes();
 
 	const { settings: savedSettings } = useSettings();
 	const { saveTargetAudience, saveSettings } = useAppDispatch();
 	const { saveShippingRates } = useSaveShippingRates();
 	const { saveShippingTimes } = useSaveShippingTimes();
 
-	const [ targetAudience, updateTargetAudience ] = useState(
-		savedTargetAudience
-	);
+	const [ targetAudience, updateTargetAudience ] =
+		useState( savedTargetAudience );
 	const [ settings, updateSettings ] = useState( savedSettings );
 
 	const {
 		hasFinishedResolution: hfrShippingRates,
 		data: savedShippingRates,
 	} = useShippingRates();
-	const [ shippingRates, updateShippingRates ] = useState(
-		savedShippingRates
-	);
+	const [ shippingRates, updateShippingRates ] =
+		useState( savedShippingRates );
 	// This is a quick and not safe workaround for
 	// https://github.com/woocommerce/google-listings-and-ads/pull/422#discussion_r607796375
 	// - `<Form>` element ignoring changes to its `initialValues` prop
@@ -79,22 +75,24 @@ const EditFreeCampaign = () => {
 		hasFinishedResolution: hfrShippingTimes,
 		data: savedShippingTimes,
 	} = useShippingTimes();
-	const [ shippingTimes, updateShippingTimes ] = useState(
-		savedShippingTimes
-	);
+	const [ shippingTimes, updateShippingTimes ] =
+		useState( savedShippingTimes );
 	const loadedShippingTimes = ! hfrShippingTimes ? null : shippingTimes;
 
 	// TODO: Consider making it less repetitive.
 	useEffect( () => updateSettings( savedSettings ), [ savedSettings ] );
-	useEffect( () => updateTargetAudience( savedTargetAudience ), [
-		savedTargetAudience,
-	] );
-	useEffect( () => updateShippingRates( savedShippingRates ), [
-		savedShippingRates,
-	] );
-	useEffect( () => updateShippingTimes( savedShippingTimes ), [
-		savedShippingTimes,
-	] );
+	useEffect(
+		() => updateTargetAudience( savedTargetAudience ),
+		[ savedTargetAudience ]
+	);
+	useEffect(
+		() => updateShippingRates( savedShippingRates ),
+		[ savedShippingRates ]
+	);
+	useEffect(
+		() => updateShippingTimes( savedShippingTimes ),
+		[ savedShippingTimes ]
+	);
 
 	const [ fetchSettingsSync ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/settings/sync`,

@@ -78,10 +78,8 @@ class FilterPicker extends Component {
 				/* eslint-disable react/no-did-update-set-state */
 				this.setState( { nav: selectedFilter.path || [] } );
 				/* eslint-enable react/no-did-update-set-state */
-				const {
-					param: filterParam,
-					getLabels,
-				} = selectedFilter.settings;
+				const { param: filterParam, getLabels } =
+					selectedFilter.settings;
 				getLabels( nextQuery[ filterParam ], nextQuery ).then(
 					this.updateSelectedTag
 				);

@@ -48,9 +48,8 @@ const ProgramsReportFilters = ( props ) => {
 	];
 
 	const { period, compare, before, after } = getDateParamsFromQuery( query );
-	const { primary: primaryDate, secondary: secondaryDate } = getCurrentDates(
-		query
-	);
+	const { primary: primaryDate, secondary: secondaryDate } =
+		getCurrentDates( query );
 	const dateQuery = {
 		period,
 		compare,

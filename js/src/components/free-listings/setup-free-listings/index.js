@@ -220,9 +220,8 @@ const SetupFreeListings = ( {
 					refund_tos_visible: settings.refund_tos_visible,
 					contact_info_visible: settings.contact_info_visible,
 					// This is used in UI only, not used in API.
-					offer_free_shipping: getOfferFreeShippingInitialValue(
-						shippingRates
-					),
+					offer_free_shipping:
+						getOfferFreeShippingInitialValue( shippingRates ),
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,

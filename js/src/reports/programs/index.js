@@ -94,10 +94,8 @@ const ProgramsReport = () => {
 	const availableMetrics = useMetricsWithFormatter( metricsGroup.available );
 	const expectedMetrics = useMetricsWithFormatter( metricsGroup.expected );
 
-	const {
-		loaded: performanceLoaded,
-		data: performanceTotals,
-	} = usePerformanceReport( totals );
+	const { loaded: performanceLoaded, data: performanceTotals } =
+		usePerformanceReport( totals );
 	// Use 'primary' data before the previous period is loaded.
 	const availablePerformance = performanceLoaded ? performanceTotals : totals;
 
