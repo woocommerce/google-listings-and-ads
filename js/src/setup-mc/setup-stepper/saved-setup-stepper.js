@@ -34,10 +34,8 @@ const SavedSetupStepper = ( { savedStep } ) => {
 
 	const { settings } = useSettings();
 	const { data: suggestedAudience } = useTargetAudienceWithSuggestions();
-	const {
-		targetAudience,
-		getFinalCountries,
-	} = useTargetAudienceFinalCountryCodes();
+	const { targetAudience, getFinalCountries } =
+		useTargetAudienceFinalCountryCodes();
 	const {
 		hasFinishedResolution: hasResolvedShippingRates,
 		data: shippingRates,

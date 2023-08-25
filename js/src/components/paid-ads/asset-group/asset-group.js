@@ -59,12 +59,8 @@ export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
  */
 export default function AssetGroup( { campaign } ) {
 	const isCreation = ! campaign;
-	const {
-		isValidForm,
-		handleSubmit,
-		adapter,
-		values,
-	} = useAdaptiveFormContext();
+	const { isValidForm, handleSubmit, adapter, values } =
+		useAdaptiveFormContext();
 	const { isValidAssetGroup, isSubmitting, isSubmitted, submitter } = adapter;
 	const currentAction = submitter?.dataset.action;
 

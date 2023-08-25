@@ -32,10 +32,8 @@ const ReviewRequest = ( { account = {} } ) => {
 	const [ modalActive, setModalActive ] = useState( false );
 	const activeIssueType = useActiveIssueType();
 
-	const {
-		data: mcData,
-		hasFinishedResolution: mcDataHasFinishedResolution,
-	} = useMCIssuesTypeFilter( ISSUE_TYPE_ACCOUNT, 1, 200 );
+	const { data: mcData, hasFinishedResolution: mcDataHasFinishedResolution } =
+		useMCIssuesTypeFilter( ISSUE_TYPE_ACCOUNT, 1, 200 );
 	const { data: accountData, hasFinishedResolution } = account;
 
 	if (

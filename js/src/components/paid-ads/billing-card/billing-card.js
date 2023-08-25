@@ -22,10 +22,8 @@ const { APPROVED } = GOOGLE_ADS_BILLING_STATUS;
  * of the connected Google Ads account.
  */
 export default function BillingCard() {
-	const {
-		billingStatus,
-		hasFinishedResolution,
-	} = useGoogleAdsAccountBillingStatus();
+	const { billingStatus, hasFinishedResolution } =
+		useGoogleAdsAccountBillingStatus();
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;

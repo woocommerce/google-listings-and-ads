@@ -13,10 +13,10 @@ import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
  */
 const useMCIssuesTotals = () => {
 	const issueTypesTotals = {
-		[ ISSUE_TYPE_ACCOUNT ]: useMCIssuesTypeFilter( ISSUE_TYPE_ACCOUNT )
-			?.data?.total,
-		[ ISSUE_TYPE_PRODUCT ]: useMCIssuesTypeFilter( ISSUE_TYPE_PRODUCT )
-			?.data?.total,
+		[ ISSUE_TYPE_ACCOUNT ]:
+			useMCIssuesTypeFilter( ISSUE_TYPE_ACCOUNT )?.data?.total,
+		[ ISSUE_TYPE_PRODUCT ]:
+			useMCIssuesTypeFilter( ISSUE_TYPE_PRODUCT )?.data?.total,
 	};
 
 	return {

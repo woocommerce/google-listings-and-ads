@@ -62,7 +62,7 @@
 		"@wordpress/dependency-extraction-webpack-plugin": "^4.4.0",
 		"@wordpress/env": "^8.4.0",
 		"@wordpress/jest-preset-default": "^11.9.0",
-		"@wordpress/prettier-config": "^1.1.2",
+		"@wordpress/prettier-config": "2.18.1",
 		"@wordpress/scripts": "^24.6.0",
 		"axios": "^1.4.0",
 		"bundlewatch": "^0.3.3",
@@ -72,12 +72,18 @@
 		"jest": "^29.6.2",
 		"jest-environment-jsdom": "^27.5.1",
 		"path-browserify": "^1.0.1",
-		"prettier": "npm:wp-prettier@2.2.1-beta-1",
+		"prettier": "npm:wp-prettier@2.6.2",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
 		"stylelint-config-standard-scss": "^3.0.0",
 		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?9eb10353728dc915bf5f7bdd4b8e218c625355a9",
 		"woocommerce-grow-storybook": "https://gitpkg.now.sh/woocommerce/grow/packages/js/storybook?fecfad52db350afd3550842e2374dee8dbc587ea"
+	},
+	"overrides": {
+		"engine.io-client": {
+			"xmlhttprequest-ssl@<1.6.2": "1.6.2",
+			"ws@<6.2.2": "6.2.2"
+		}
 	},
 	"scripts": {
 		"prearchive": "rm -rf vendor && composer install --no-dev && composer dump-autoload -o",
@@ -163,7 +169,7 @@
 		}
 	},
 	"engines": {
-		"node": "^14",
-		"npm": "^6"
+		"node": "^16",
+		"npm": "^8"
 	}
 }

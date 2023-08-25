@@ -42,9 +42,8 @@ describe( 'groupShippingRatesByCurrencyFreeShippingThreshold', () => {
 			},
 		];
 
-		const result = groupShippingRatesByCurrencyFreeShippingThreshold(
-			shippingRates
-		);
+		const result =
+			groupShippingRatesByCurrencyFreeShippingThreshold( shippingRates );
 
 		expect( result.length ).toEqual( 3 );
 		expect( result[ 0 ] ).toStrictEqual( {
@@ -102,9 +101,8 @@ describe( 'groupShippingRatesByCurrencyFreeShippingThreshold', () => {
 			},
 		];
 
-		const result = groupShippingRatesByCurrencyFreeShippingThreshold(
-			shippingRates
-		);
+		const result =
+			groupShippingRatesByCurrencyFreeShippingThreshold( shippingRates );
 
 		expect( result.length ).toEqual( 3 );
 		expect( result[ 0 ] ).toStrictEqual( {

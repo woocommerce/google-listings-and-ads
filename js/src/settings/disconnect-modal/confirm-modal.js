@@ -77,9 +77,8 @@ export default function ConfirmModal( {
 	const [ isDisconnecting, setDisconnecting ] = useState( false );
 	const dispatcher = useAppDispatch();
 
-	const { title, confirmButton, confirmation, contents } = textDict[
-		disconnectTarget
-	];
+	const { title, confirmButton, confirmation, contents } =
+		textDict[ disconnectTarget ];
 
 	const handleRequestClose = () => {
 		if ( isDisconnecting ) {

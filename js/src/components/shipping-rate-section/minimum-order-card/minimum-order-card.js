@@ -33,9 +33,10 @@ import './minimum-order-card.scss';
 const MinimumOrderCard = ( { value = [], helper, onChange } ) => {
 	const renderGroups = () => {
 		const nonZeroShippingRates = value.filter( isNonFreeShippingRate );
-		const groups = groupShippingRatesByCurrencyFreeShippingThreshold(
-			nonZeroShippingRates
-		);
+		const groups =
+			groupShippingRatesByCurrencyFreeShippingThreshold(
+				nonZeroShippingRates
+			);
 		const countryOptions = nonZeroShippingRates.map(
 			( shippingRate ) => shippingRate.country
 		);
