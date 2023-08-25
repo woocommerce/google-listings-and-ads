@@ -59,7 +59,6 @@
 		"@types/jest": "^27.5.2",
 		"@woocommerce/dependency-extraction-webpack-plugin": "^2.0.0",
 		"@woocommerce/eslint-plugin": "^1.2.0",
-		"@wordpress/dependency-extraction-webpack-plugin": "^4.4.0",
 		"@wordpress/env": "^8.4.0",
 		"@wordpress/jest-preset-default": "^11.9.0",
 		"@wordpress/prettier-config": "2.18.1",

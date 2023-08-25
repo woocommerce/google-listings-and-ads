@@ -1,39 +1,12 @@
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const { hasArgInCLI } = require( '@wordpress/scripts/utils' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
-const {
-	defaultRequestToExternal: defaultRequestToExternalWP,
-	defaultRequestToHandle: defaultRequestToHandleWP,
-} = require( '@wordpress/dependency-extraction-webpack-plugin/lib/util' );
 
 const ReactRefreshWebpackPlugin = require( '@pmmmwh/react-refresh-webpack-plugin' );
 const path = require( 'path' );
 
 const isProduction = process.env.NODE_ENV === 'production';
 const hasReactFastRefresh = hasArgInCLI( '--hot' ) && ! isProduction;
-
-const explicitlyExtractPrefix = 'extracted/';
-
-const requestToExternal = ( request ) => {
-	// Externalized when explicitely asked for.
-	if ( request.startsWith( explicitlyExtractPrefix ) ) {
-		request = request.substr( explicitlyExtractPrefix.length );
-		return defaultRequestToExternalWP( request );
-	}
-
-	// Follow with the default behavior for any other.
-	return undefined;
-};
-
-const requestToHandle = ( request ) => {
-	// Externalized when explicitely asked for.
-	if ( request.startsWith( explicitlyExtractPrefix ) ) {
-		request = request.substr( explicitlyExtractPrefix.length );
-		return defaultRequestToHandleWP( request );
-	}
-	// Follow with the default behavior for any other.
-	return undefined;
-};
 
 const exceptSVGAndPNGRule = ( rule ) => {
 	return ! rule.test.toString().match( /svg|png/i );
@@ -66,7 +39,6 @@ const webpackConfig = {
 		...defaultConfig.resolve,
 		alias: {
 			'.~': path.resolve( process.cwd(), 'js/src/' ),
-			extracted: path.resolve( __dirname, 'node_modules' ),
 		},
 		fallback: {
 			/**
@@ -98,8 +70,6 @@ const webpackConfig = {
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			externalizedReport:
 				! hasReactFastRefresh && '../../.externalized.json',
-			requestToExternal,
-			requestToHandle,
 		} ),
 	],
 	entry: {
