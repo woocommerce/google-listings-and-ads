@@ -20,16 +20,6 @@ const requestToExternal = ( request ) => {
 		request = request.substr( explicitlyExtractPrefix.length );
 		return defaultRequestToExternalWP( request );
 	}
-	const bundledPackages = [
-		// Opt-out WooCommerce packages.
-		'@woocommerce/currency',
-		'@woocommerce/date',
-		'@woocommerce/number',
-		'@woocommerce/tracks',
-	];
-	if ( bundledPackages.includes( request ) ) {
-		return false;
-	}
 
 	// Follow with the default behavior for any other.
 	return undefined;
