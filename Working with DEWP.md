@@ -19,11 +19,16 @@ So we could later inspect that.
 
 ## Selective bundling & extracting.
 
-Sometimes the fact we do bundle a package that is provided by WordPress/WooCommerce instance introduces errors, as some packages are not effectively modular, so we face version conflicts, style collisions, etc.
+In the past, we did bundle a package that is provided by WordPress/WooCommerce instance introduces errors, as some packages are not effectively modular, so we face version conflicts, style collisions, etc.
 Also, we'd like to reduce the size of our bundle, so eventually, we aim to extract/externalize as much as possible and when possible import from an external package.
 
-To help with that we implemented the `extracted/` prefix. It's also a custom implementation in [/webpack.config.js](/develop/webpack.config.js).
+To help with that we had ever implemented the `extracted/` prefix. It was also a custom implementation in webpack.config.js.
 Thanks to that even though a package is bundled, the given import would fetch it from external.
+
+Now, we have already externalized all DEWP-able packages, so the implementation of `extracted/` prefix was removed as well.
+If someday we ever need it again, please refer to:
+- The PR implemented it: https://github.com/woocommerce/google-listings-and-ads/pull/1762
+- The commit removed it: https://github.com/woocommerce/google-listings-and-ads/commit/5a2e20409a53ccb3b7fcbfe5c46988ca2b153b38
 
 ## NPM scripts
 
