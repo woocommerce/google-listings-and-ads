@@ -253,14 +253,14 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 				'source'                  => 'taxonomy:product_cat',
 				'category_condition_type' => 'ALL',
 				'categories'              => '',
-			]
+			],
 		];
 
 		$category_1 = wp_insert_term( 'Zulu Category', 'product_cat' );
 		$category_2 = wp_insert_term( 'Alpha Category', 'product_cat' );
 
 		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules, [ $category_1['term_id'], $category_2['term_id'] ] );
-		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules, [ $category_1['term_id'], $category_2['term_id'] ]  );
+		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules, [ $category_1['term_id'], $category_2['term_id'] ] );
 
 		$this->assertEquals( 'Alpha Category', $adapted_product->getBrand() );
 		$this->assertEquals( 'Alpha Category', $adapted_variation->getBrand() );

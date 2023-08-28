@@ -525,7 +525,7 @@ trait ProductTrait {
 	 * @return WCProductAdapter The adapted products with the rules applied.
 	 */
 	protected function generate_attribute_mapping_adapted_product_variant( $rules, $categories = [] ) {
-		$variable  = WC_Helper_Product::create_variation_product();
+		$variable = WC_Helper_Product::create_variation_product();
 		if ( ! empty( $categories ) ) {
 			$variable->set_category_ids( $categories );
 		}
