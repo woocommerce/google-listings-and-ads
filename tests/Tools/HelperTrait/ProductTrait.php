@@ -521,10 +521,16 @@ trait ProductTrait {
 	 * Creates a variant with variations ready for being tested in Attribute Mapping
 	 *
 	 * @param array $rules The Attribute Mapping rules to apply.
+	 * @param array $categories The Categories attached to the variation parent.
 	 * @return WCProductAdapter The adapted products with the rules applied.
 	 */
-	protected function generate_attribute_mapping_adapted_product_variant( $rules ) {
+	protected function generate_attribute_mapping_adapted_product_variant( $rules, $categories = [] ) {
 		$variable  = WC_Helper_Product::create_variation_product();
+		if ( ! empty( $categories ) ) {
+			$variable->set_category_ids( $categories );
+		}
+		$variable->save();
+
 		$variation = wc_get_product( $variable->get_children()[ count( $variable->get_children() ) - 1 ] );
 		$variation->set_stock_quantity( 1 );
 		$variation->set_weight( 1.2 );

@@ -244,6 +244,30 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 	}
 
 	/**
+	 * Test taxonomy source like product_cat, product_tag
+	 */
+	public function test_maps_rules_product_cat() {
+		$rules = [
+			[
+				'attribute'               => Brand::get_id(),
+				'source'                  => 'taxonomy:product_cat',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			]
+		];
+
+		$category_1 = wp_insert_term( 'Zulu Category', 'product_cat' );
+		$category_2 = wp_insert_term( 'Alpha Category', 'product_cat' );
+
+		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules, [ $category_1['term_id'], $category_2['term_id'] ] );
+		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules, [ $category_1['term_id'], $category_2['term_id'] ]  );
+
+		var_dump($adapted_variation->getBrand());
+		$this->assertEquals( 'Alpha Category', $adapted_product->getBrand() );
+		$this->assertEquals( 'Alpha Category', $adapted_variation->getBrand() );
+	}
+
+	/**
 	 * Test dynamic taxonomy not found
 	 */
 	public function test_maps_rules_product_taxonomies_null() {
