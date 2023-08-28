@@ -1139,8 +1139,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 	/**
 	 * Get a taxonomy term names from a product using
-	 * @param $product_id int The product ID to get the taxonomy term
-	 * @param $taxonomy string The taxonomy to get.
+	 *
+	 * @param int    $product_id - The product ID to get the taxonomy term
+	 * @param string $taxonomy - The taxonomy to get.
 	 * @return string[] An array of term names.
 	 */
 	protected function get_taxonomy_term_names( $product_id, $taxonomy ) {
