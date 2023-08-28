@@ -262,7 +262,6 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules, [ $category_1['term_id'], $category_2['term_id'] ] );
 		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules, [ $category_1['term_id'], $category_2['term_id'] ]  );
 
-		var_dump($adapted_variation->getBrand());
 		$this->assertEquals( 'Alpha Category', $adapted_product->getBrand() );
 		$this->assertEquals( 'Alpha Category', $adapted_variation->getBrand() );
 	}
