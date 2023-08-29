@@ -25,7 +25,7 @@ test.describe( 'Edit Free Listings', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
-		await dashboardPage.onboarded();
+		await dashboardPage.mockOnboarded();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );

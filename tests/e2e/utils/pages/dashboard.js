@@ -70,16 +70,6 @@ export default class DashboardPage extends MockRequests {
 	}
 
 	/**
-	 * Mock the onboarded state. Otherwise it will be redirected to the onboarding page.
-	 */
-	async onboarded() {
-		this.page.route( /\/admin.php\b/, ( route ) => {
-			const url = `${ route.request().url() }&gla-e2e-onboarded=true`;
-			route.continue( { url } );
-		} );
-	}
-
-	/**
 	 * Go to the dashboard page.
 	 */
 	async goto() {
