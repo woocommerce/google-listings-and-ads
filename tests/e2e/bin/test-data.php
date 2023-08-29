@@ -35,22 +35,34 @@ function register_routes() {
 	);
 }
 
-add_action( 'plugins_loaded', function () {
+add_action(
+	'plugins_loaded',
+	function () {
+		if ( isset( $_GET['gla-e2e-onboarded'] ) ) {
+			add_filter(
+				'woocommerce_gla_options_get_' . OptionsInterface::REDIRECT_TO_ONBOARDING,
+				function ( $value ) {
+					return 'no';
+				}
+			);
 
-	if(isset($_GET['gla-e2e-onboarded'])){
-		add_filter("woocommerce_gla_options_get_".OptionsInterface::REDIRECT_TO_ONBOARDING, function ($value){
-			return 'no';
-		});
-		
-		add_filter("woocommerce_gla_options_get_".OptionsInterface::MC_SETUP_COMPLETED_AT, function ($value){
-			return 1693215209;
-		});	
-	
-		add_filter("woocommerce_gla_options_get_".OptionsInterface::GOOGLE_CONNECTED, function ($value){
-			return true;
-		});
+			add_filter(
+				'woocommerce_gla_options_get_' . OptionsInterface::MC_SETUP_COMPLETED_AT,
+				function ( $value ) {
+					return 1693215209;
+				}
+			);
+
+			add_filter(
+				'woocommerce_gla_options_get_' . OptionsInterface::GOOGLE_CONNECTED,
+				function ( $value ) {
+					return true;
+				}
+			);
+		}
 	}
-} );
+);
+
 
 /**
  * Set the Ads Conversion Action to test values.
@@ -73,13 +85,12 @@ function set_conversion_id() {
 function clear_conversion_id() {
 	/** @var OptionsInterface $options */
 	$options = woogle_get_container()->get( OptionsInterface::class );
-	$options->delete( OptionsInterface::ADS_CONVERSION_ACTION );	
+	$options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
 }
 
 /**
  * Check permissions for API requests.
  */
 function permissions() {
-	return true;
 	return current_user_can( 'manage_woocommerce' );
 }
