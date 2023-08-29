@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.4 - 2023-08-29 =
+* Dev - Override vulnerability packages: xmlhttprequest-ssl and ws.
+* Dev - Update trigger method in Hooks Generator Workflow.
+
 = 2.5.3 - 2023-08-22 =
 * Dev - Add Action for Hooks Documentation Generator.
 * Dev - Allow E2E testing with Release Candidates.
