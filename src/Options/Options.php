@@ -41,7 +41,7 @@ final class Options implements OptionsInterface, Service {
 
 		if ( ! array_key_exists( $name, $this->options ) ) {
 			$value                  = get_option( $this->prefix_name( $name ), $default );
-			$this->options[ $name ] = $this->maybe_cast_value( $name, $value );
+			$this->options[ $name ] = apply_filters("woocommerce_gla_options_get_{$name}", $this->maybe_cast_value( $name, $value )) ;
 		}
 
 		return $this->raw_value( $this->options[ $name ] );
