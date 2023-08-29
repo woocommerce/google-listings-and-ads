@@ -25,13 +25,13 @@ function register_routes() {
 				'methods'             => 'POST',
 				'callback'            => __NAMESPACE__ . '\set_conversion_id',
 				'permission_callback' => __NAMESPACE__ . '\permissions',
-			],			
+			],
 			[
 				'methods'             => 'DELETE',
 				'callback'            => __NAMESPACE__ . '\clear_conversion_id',
 				'permission_callback' => __NAMESPACE__ . '\permissions',
 			],
-		],		
+		],
 	);
 }
 
