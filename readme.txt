@@ -130,12 +130,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WC 8.0 compatibility.
 * Tweak - WP 6.3 compatibility.
 
-= 2.5.1 - 2023-08-01 =
-* Dev - Setup wp-env for E2E tests.
-* Dev - automate merging trunk to develop after a release.
-* Fix - Fix support for "add_to_cart" event in Products (Beta) block.
-* Fix - Prevent PHP 8.2 deprecation messages.
-* Tweak - Ability to filter products for syncing via `gla_filter_product_query_args` apply_filters hook.
-* Update - Show validation errors on steps 2 and 3 of the onboarding flow when unable to continue.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
