@@ -1,3 +1,6 @@
+/**
+ * Internal dependencies
+ */
 import MockRequests from '../mock-requests';
 
 /**
@@ -20,6 +23,8 @@ export default class DashboardPage extends MockRequests {
 
 	/**
 	 * Close the current page.
+	 *
+	 * @return {Promise<void>}
 	 */
 	async closePage() {
 		await this.page.close();
@@ -71,6 +76,8 @@ export default class DashboardPage extends MockRequests {
 
 	/**
 	 * Go to the dashboard page.
+	 *
+	 * @return {Promise<void>}
 	 */
 	async goto() {
 		await this.page.goto(
@@ -81,6 +88,8 @@ export default class DashboardPage extends MockRequests {
 
 	/**
 	 * Click the edit free listings button.
+	 *
+	 * @return {Promise<void>}
 	 */
 	async clickEditFreeListings() {
 		await this.editFreeListingButton.click();
@@ -89,7 +98,7 @@ export default class DashboardPage extends MockRequests {
 	/**
 	 * Get the continue to edit button from the modal.
 	 *
-	 * @returns {Promise<import('@playwright/test').Locator>}
+	 * @return {Promise<import('@playwright/test').Locator>} Get the continue to edit button from the modal.
 	 */
 	async getContinueToEditButton() {
 		return this.page.getByRole( 'button', {
@@ -101,7 +110,7 @@ export default class DashboardPage extends MockRequests {
 	/**
 	 * Get the don't edit button from the modal.
 	 *
-	 * @returns {Promise<import('@playwright/test').Locator>}
+	 * @return {Promise<import('@playwright/test').Locator>}  Get the don't edit button from the modal.
 	 */
 	async getDontEditButton() {
 		return this.page.getByRole( 'button', {
@@ -112,7 +121,8 @@ export default class DashboardPage extends MockRequests {
 
 	/**
 	 * Click the continue to edit button from the modal.
-	 * @returns {Promise<void>}
+	 *
+	 * @return {Promise<void>}
 	 */
 	async clickContinueToEditButton() {
 		const continueToEditButton = await this.getContinueToEditButton();

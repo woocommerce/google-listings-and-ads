@@ -13,7 +13,8 @@ export default class MockRequests {
 
 	/**
 	 * Add the parameter gla-e2e-onboarded to the request to simulate the onboarded state; otherwise, it will redirect to the onboarding page.
-	 * @returns {Promise<void>}
+	 *
+	 * @return {Promise<void>}
 	 */
 	async mockOnboarded() {
 		await this.page.route( /\/admin.php\b/, ( route ) => {
@@ -24,9 +25,10 @@ export default class MockRequests {
 
 	/**
 	 * Fulfill a request with a payload.
-	 * @param {RegExp|String} url The url to fulfill.
+	 *
+	 * @param {RegExp|string} url The url to fulfill.
 	 * @param {Object} payload The payload to send.
-	 * @returns {Promise<void>}
+	 * @return {Promise<void>}
 	 */
 	async fulfillRequest( url, payload ) {
 		await this.page.route( url, ( route ) =>
@@ -40,8 +42,9 @@ export default class MockRequests {
 
 	/**
 	 * Fulfill the MC Report Program request.
+	 *
 	 * @param {Object} payload
-	 * @returns {Promise<void>}
+	 * @return {Promise<void>}
 	 */
 	async fulfillMCReportProgram( payload ) {
 		await this.fulfillRequest(
@@ -52,8 +55,9 @@ export default class MockRequests {
 
 	/**
 	 * Fulfill the Target Audience request.
+	 *
 	 * @param {Object} payload
-	 * @returns {Promise<void>}
+	 * @return {Promise<void>}
 	 */
 	async fulfillTargetAudience( payload ) {
 		await this.fulfillRequest(
@@ -64,8 +68,9 @@ export default class MockRequests {
 
 	/**
 	 * Fulfill the JetPack Connection request.
+	 *
 	 * @param {Object} payload
-	 * @returns {Promise<void>}
+	 * @return {Promise<void>}
 	 */
 	async fulfillJetPackConnection( payload ) {
 		await this.fulfillRequest( /\/wc\/gla\/jetpack\/connected\b/, payload );
@@ -73,8 +78,9 @@ export default class MockRequests {
 
 	/**
 	 * Fulfill the Google Connection request.
+	 *
 	 * @param {Object} payload
-	 * @returns {Promise<void>}
+	 * @return {Promise<void>}
 	 */
 	async fulfillGoogleConnection( payload ) {
 		await this.fulfillRequest( /\/wc\/gla\/google\/connected\b/, payload );
@@ -82,8 +88,9 @@ export default class MockRequests {
 
 	/**
 	 * Fulfill the Ads Connection request.
+	 *
 	 * @param {Object} payload
-	 * @returns {Promise<void>}
+	 * @return {Promise<void>}
 	 */
 	async fulfillAdsConnection( payload ) {
 		await this.fulfillRequest( /\/wc\/gla\/ads\/connection\b/, payload );

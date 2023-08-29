@@ -7,8 +7,9 @@ export default class EditFreeListingsPage {
 	}
 
 	/**
-	 * Get Save Changes button.	 *
-	 * @returns {Promise<import('@playwright/test').Locator>}
+	 * Get Save Changes button.
+	 *
+	 * @return {Promise<import('@playwright/test').Locator>} Get Save Changes button.
 	 */
 	async getSaveChangesButton() {
 		return this.page.getByRole( 'button', {
@@ -19,7 +20,8 @@ export default class EditFreeListingsPage {
 
 	/**
 	 * Click the Save Changes button.
-	 * @returns {Promise<void>}
+	 *
+	 * @return {Promise<void>}
 	 */
 	async clickSaveChanges() {
 		const saveChangesButton = await this.getSaveChangesButton();
@@ -28,7 +30,8 @@ export default class EditFreeListingsPage {
 
 	/**
 	 * Check the recommended shipping settings.
-	 * @returns {Promise<void>}
+	 *
+	 * @return {Promise<void>}
 	 */
 	async checkRecommendShippingSettings() {
 		return this.page
@@ -39,8 +42,9 @@ export default class EditFreeListingsPage {
 	}
 	/**
 	 * Fill the countries shipping time input.
-	 * @param {String} input The shipping time
-	 * @returns {Promise<void>}
+	 *
+	 * @param {string} input The shipping time
+	 * @return {Promise<void>}
 	 */
 	async fillCountriesShippingTimeInput( input ) {
 		await this.page.locator( '.countries-time input' ).fill( input );
@@ -48,7 +52,8 @@ export default class EditFreeListingsPage {
 
 	/**
 	 * Check the destination based tax rates.
-	 * @returns {Promise<void>}
+	 *
+	 * @return {Promise<void>}
 	 */
 	async checkDestinationBasedTaxRates() {
 		await this.page
@@ -58,7 +63,8 @@ export default class EditFreeListingsPage {
 
 	/**
 	 * Register the requests when the save button is clicked.
-	 * @returns {Promise<import('@playwright/test').Request[]>}
+	 *
+	 * @return {Promise<import('@playwright/test').Request[]>} The requests.
 	 */
 	registerSavingRequests() {
 		const targetAudienteRequest = this.page.waitForRequest(

@@ -1,4 +1,10 @@
+/**
+ * External dependencies
+ */
 import { test, expect } from '@playwright/test';
+/**
+ * Internal dependencies
+ */
 import DashboardPage from '../../utils/pages/dashboard.js';
 import EditFreeListingsPage from '../../utils/pages/edit-free-listings.js';
 
