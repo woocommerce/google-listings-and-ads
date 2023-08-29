@@ -26,12 +26,8 @@ import ConditionalSection from '.~/components/conditional-section';
 const FormContent = ( {
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
 } ) => {
-	const {
-		values,
-		isValidForm,
-		handleSubmit,
-		adapter,
-	} = useAdaptiveFormContext();
+	const { values, isValidForm, handleSubmit, adapter } =
+		useAdaptiveFormContext();
 	const shouldDisplayTaxRate = useDisplayTaxRate( adapter.audienceCountries );
 	const shouldDisplayShippingTime = values.shipping_time === 'flat';
 

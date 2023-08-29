@@ -40,13 +40,11 @@ const ConnectedGoogleMCAccountCard = ( {
 	const { createNotice, removeNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 
-	const [
-		fetchGoogleMCDisconnect,
-		{ loading: loadingGoogleMCDisconnect },
-	] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/mc/connection`,
-		method: 'DELETE',
-	} );
+	const [ fetchGoogleMCDisconnect, { loading: loadingGoogleMCDisconnect } ] =
+		useApiFetchCallback( {
+			path: `${ API_NAMESPACE }/mc/connection`,
+			method: 'DELETE',
+		} );
 
 	const domain = new URL( getSetting( 'homeUrl' ) ).host;
 

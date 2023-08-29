@@ -29,20 +29,16 @@ const useGoogleAccount = () => {
 				};
 			}
 
-			const {
-				getGoogleAccount,
-				isResolving,
-				hasFinishedResolution,
-			} = select( STORE_KEY );
+			const { getGoogleAccount, isResolving, hasFinishedResolution } =
+				select( STORE_KEY );
 			const google = getGoogleAccount();
 
 			return {
 				google,
 				scope: toScopeState( glaData.adsSetupComplete, google?.scope ),
 				isResolving: isResolving( 'getGoogleAccount' ),
-				hasFinishedResolution: hasFinishedResolution(
-					'getGoogleAccount'
-				),
+				hasFinishedResolution:
+					hasFinishedResolution( 'getGoogleAccount' ),
 			};
 		},
 		[ jetpack, isResolvingJetpack, hasFinishedResolutionJetpack ]

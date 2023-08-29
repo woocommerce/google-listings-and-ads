@@ -35,9 +35,8 @@ function EditPhoneNumberCard( {
 } ) {
 	const { loaded, data } = phoneNumber;
 	const [ verifying, setVerifying ] = useState( false );
-	const [ unverifiedPhoneNumber, setUnverifiedPhoneNumber ] = useState(
-		null
-	);
+	const [ unverifiedPhoneNumber, setUnverifiedPhoneNumber ] =
+		useState( null );
 
 	let cardContent = <AppSpinner />;
 

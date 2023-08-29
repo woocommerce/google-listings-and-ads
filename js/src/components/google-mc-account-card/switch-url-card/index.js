@@ -45,14 +45,12 @@ const SwitchUrlCard = ( {
 } ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
-	const [
-		fetchMCAccountSwitchUrl,
-		{ loading, error, response },
-	] = useApiFetchCallback( {
-		path: `/wc/gla/mc/accounts/switch-url`,
-		method: 'POST',
-		data: { id },
-	} );
+	const [ fetchMCAccountSwitchUrl, { loading, error, response } ] =
+		useApiFetchCallback( {
+			path: `/wc/gla/mc/accounts/switch-url`,
+			method: 'POST',
+			data: { id },
+		} );
 	const homeUrl = getSetting( 'homeUrl' );
 
 	const handleSwitch = async () => {

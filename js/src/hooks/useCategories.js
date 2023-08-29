@@ -31,9 +31,8 @@ const getDeletedCategoryName = ( categoryId ) => {
  * @return {{categories: Array, selected: Array, names: string, hasFinishedResolution: boolean}} The categories ready to insert in Select Control as well as the selected categories and the categories separated by commas together with the resolution state
  */
 const useCategories = ( selected = [] ) => {
-	const { data, hasFinishedResolution } = useAppSelectDispatch(
-		'getStoreCategories'
-	);
+	const { data, hasFinishedResolution } =
+		useAppSelectDispatch( 'getStoreCategories' );
 
 	if ( ! hasFinishedResolution ) {
 		return {

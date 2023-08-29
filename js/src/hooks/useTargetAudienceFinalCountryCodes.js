@@ -31,10 +31,8 @@ import useMCCountries from '.~/hooks/useMCCountries';
  *
  */
 const useTargetAudienceFinalCountryCodes = () => {
-	const {
-		data: supportedCountries,
-		isResolving: countriesLoading,
-	} = useMCCountries();
+	const { data: supportedCountries, isResolving: countriesLoading } =
+		useMCCountries();
 
 	function mapSelect( select ) {
 		const { getTargetAudience, isResolving } = select( STORE_KEY );
