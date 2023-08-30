@@ -40,14 +40,12 @@ import AppInputLinkControl from '.~/components/app-input-link-control';
  */
 const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 	const { invalidateResolution } = useAppDispatch();
-	const [
-		fetchClaimOverwrite,
-		{ loading, error, reset },
-	] = useApiFetchCallback( {
-		path: `/wc/gla/mc/accounts/claim-overwrite`,
-		method: 'POST',
-		data: { id },
-	} );
+	const [ fetchClaimOverwrite, { loading, error, reset } ] =
+		useApiFetchCallback( {
+			path: `/wc/gla/mc/accounts/claim-overwrite`,
+			method: 'POST',
+			data: { id },
+		} );
 	const homeUrl = getSetting( 'homeUrl' );
 
 	const handleReclaimClick = async () => {

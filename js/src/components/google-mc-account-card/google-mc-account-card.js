@@ -8,11 +8,8 @@ import DisabledCard from './disabled-card';
 import NonConnected from './non-connected';
 
 const GoogleMCAccountCard = () => {
-	const {
-		hasFinishedResolution,
-		isPreconditionReady,
-		googleMCAccount,
-	} = useGoogleMCAccount();
+	const { hasFinishedResolution, isPreconditionReady, googleMCAccount } =
+		useGoogleMCAccount();
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;

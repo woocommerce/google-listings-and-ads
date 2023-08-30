@@ -109,9 +109,9 @@ describe( 'validateAssetGroup', () => {
 		);
 
 		it.each(
-			ASSET_TEXT_SPECS.filter(
-				( spec ) => spec.max > 1
-			).map( ( spec ) => [ spec.key, spec ] )
+			ASSET_TEXT_SPECS.filter( ( spec ) => spec.max > 1 ).map(
+				( spec ) => [ spec.key, spec ]
+			)
 		)(
 			'When there is duplication in values.%s, it should not pass',
 			( key, spec ) => {
@@ -129,9 +129,9 @@ describe( 'validateAssetGroup', () => {
 		);
 
 		it.each(
-			ASSET_TEXT_SPECS.filter(
-				( spec ) => spec.max > 1
-			).map( ( spec ) => [ spec.key, spec ] )
+			ASSET_TEXT_SPECS.filter( ( spec ) => spec.max > 1 ).map(
+				( spec ) => [ spec.key, spec ]
+			)
 		)(
 			'When checking duplication, it should ignore empty strings',
 			( key, spec ) => {

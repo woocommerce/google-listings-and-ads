@@ -19,10 +19,8 @@ import useCreateMCAccount from './useCreateMCAccount';
  */
 const CreateAccount = ( props ) => {
 	const { onSwitchAccount } = props;
-	const [
-		handleCreateAccount,
-		{ loading, error, response },
-	] = useCreateMCAccount();
+	const [ handleCreateAccount, { loading, error, response } ] =
+		useCreateMCAccount();
 
 	if ( loading || ( response && response.status === 503 ) ) {
 		return (

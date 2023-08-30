@@ -256,9 +256,10 @@ const ProductFeedTableCard = () => {
 												eventName="gla_edit_product_click"
 												eventProps={ {
 													status: el.status,
-													visibility: toVisibilityEventProp(
-														el.visible
-													),
+													visibility:
+														toVisibilityEventProp(
+															el.visible
+														),
 												} }
 											/>
 										),

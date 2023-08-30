@@ -19,13 +19,11 @@ const ClaimTermsAndCreateAccountButton = () => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccount } = useAppDispatch();
 	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
-	const [
-		fetchCreateAdsAccount,
-		{ loading: createLoading },
-	] = useApiFetchCallback( {
-		path: `/wc/gla/ads/accounts`,
-		method: 'POST',
-	} );
+	const [ fetchCreateAdsAccount, { loading: createLoading } ] =
+		useApiFetchCallback( {
+			path: `/wc/gla/ads/accounts`,
+			method: 'POST',
+		} );
 
 	const handleCreateAccount = async () => {
 		try {

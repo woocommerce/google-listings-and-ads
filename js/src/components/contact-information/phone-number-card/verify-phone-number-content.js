@@ -93,10 +93,8 @@ export default function VerifyPhoneNumberContent( {
 	const [ verifying, setVerifying ] = useState( false );
 	const [ error, setError ] = useState( null );
 	const verificationIdRef = useRef( {} );
-	const {
-		requestPhoneVerificationCode,
-		verifyPhoneNumber,
-	} = useAppDispatch();
+	const { requestPhoneVerificationCode, verifyPhoneNumber } =
+		useAppDispatch();
 
 	const isSMS = method === VERIFICATION_METHOD.SMS;
 
@@ -160,12 +158,8 @@ export default function VerifyPhoneNumberContent( {
 	}, [ method, callCount, handleVerificationCodeRequest ] );
 
 	// Render related.
-	const {
-		toInstruction,
-		textResend,
-		textResendCooldown,
-		textSwitch,
-	} = appearanceDict[ method ];
+	const { toInstruction, textResend, textResendCooldown, textSwitch } =
+		appearanceDict[ method ];
 
 	const verificationId = verificationIdRef.current[ method ];
 	const disabledVerify = ! ( verification?.isFilled && verificationId );

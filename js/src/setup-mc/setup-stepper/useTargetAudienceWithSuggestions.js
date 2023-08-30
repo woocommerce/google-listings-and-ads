@@ -38,12 +38,10 @@ const useTargetAudienceWithSuggestions = () => {
 		hasFinishedResolution: hfrTargetAudience,
 		data: dataTargetAudience,
 	} = useTargetAudience();
-	const {
-		loading: loadingSuggestions,
-		data: dataSuggestions,
-	} = useApiFetchEffect( {
-		path: `${ API_NAMESPACE }/mc/target_audience/suggestions`,
-	} );
+	const { loading: loadingSuggestions, data: dataSuggestions } =
+		useApiFetchEffect( {
+			path: `${ API_NAMESPACE }/mc/target_audience/suggestions`,
+		} );
 
 	const hasNoLocationCountries =
 		hfrTargetAudience &&

@@ -81,10 +81,8 @@ const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { jetpack } = useJetpackAccount();
 	const { google, scope } = useGoogleAccount();
-	const {
-		googleMCAccount,
-		isPreconditionReady: isGMCPreconditionReady,
-	} = useGoogleMCAccount();
+	const { googleMCAccount, isPreconditionReady: isGMCPreconditionReady } =
+		useGoogleMCAccount();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,

@@ -39,11 +39,9 @@ export default function EstimatedShippingRatesCard( {
 	onChange,
 } ) {
 	const { code: currencyCode } = useStoreCurrency();
-	const {
-		handleAddSubmit,
-		getChangeHandler,
-		getDeleteHandler,
-	} = getHandlers( { value, onChange } );
+	const { handleAddSubmit, getChangeHandler, getDeleteHandler } = getHandlers(
+		{ value, onChange }
+	);
 
 	/**
 	 * Function to render the shipping rate groups from `value`.

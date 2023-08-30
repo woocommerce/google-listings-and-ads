@@ -1040,15 +1040,24 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		if ( $product->is_type( 'variation' ) ) {
 			$values = $product->get_attribute( $taxonomy );
 
-			if ( ! $values ) {
-				$parent = wc_get_product( $product->get_parent_id() );
-				$values = $parent->get_attribute( $taxonomy );
+			if ( ! $values ) { // if taxonomy is not a global attribute (ie product_tag), attempt to get is with wc_get_product_terms
+				$values = $this->get_taxonomy_term_names( $product->get_id(), $taxonomy );
 			}
 
-			$values = explode( ', ', $values );
+			if ( ! $values ) { // if the value is still not available at this point, we try to get it from the parent
+				$parent = wc_get_product( $product->get_parent_id() );
+				$values = $parent->get_attribute( $taxonomy );
+
+				if ( ! $values ) {
+					$values = $this->get_taxonomy_term_names( $parent->get_id(), $taxonomy );
+				}
+			}
+
+			if ( is_string( $values ) ) {
+				$values = explode( ', ', $values );
+			}
 		} else {
-			$values = wc_get_product_terms( $product->get_id(), $taxonomy );
-			$values = wp_list_pluck( $values, 'name' );
+			$values = $this->get_taxonomy_term_names( $product->get_id(), $taxonomy );
 		}
 
 		if ( empty( $values ) || is_wp_error( $values ) ) {
@@ -1126,5 +1135,17 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$values = explode( WC_DELIMITER, (string) $attribute_value );
 		$values = array_filter( array_map( 'trim', $values ) );
 		return empty( $values ) ? '' : $values[0];
+	}
+
+	/**
+	 * Get a taxonomy term names from a product using
+	 *
+	 * @param int    $product_id - The product ID to get the taxonomy term
+	 * @param string $taxonomy - The taxonomy to get.
+	 * @return string[] An array of term names.
+	 */
+	protected function get_taxonomy_term_names( $product_id, $taxonomy ) {
+		$values = wc_get_product_terms( $product_id, $taxonomy );
+		return wp_list_pluck( $values, 'name' );
 	}
 }

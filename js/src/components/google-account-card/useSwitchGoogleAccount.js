@@ -31,13 +31,11 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 const useSwitchGoogleAccount = () => {
 	const { createNotice, removeNotice } = useDispatchCoreNotices();
 
-	const [
-		fetchGoogleMCDisconnect,
-		{ loading: loadingGoogleMCDisconnect },
-	] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/mc/connection`,
-		method: 'DELETE',
-	} );
+	const [ fetchGoogleMCDisconnect, { loading: loadingGoogleMCDisconnect } ] =
+		useApiFetchCallback( {
+			path: `${ API_NAMESPACE }/mc/connection`,
+			method: 'DELETE',
+		} );
 
 	/**
 	 * Note: we are manually calling `DELETE /google/connect` instead of using
@@ -46,13 +44,11 @@ const useSwitchGoogleAccount = () => {
 	 * and the UI will display the Connect card for a brief moment,
 	 * before the browser redirects to the Google Auth page.
 	 */
-	const [
-		fetchGoogleDisconnect,
-		{ loading: loadingGoogleDisconnect },
-	] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/google/connect`,
-		method: 'DELETE',
-	} );
+	const [ fetchGoogleDisconnect, { loading: loadingGoogleDisconnect } ] =
+		useApiFetchCallback( {
+			path: `${ API_NAMESPACE }/google/connect`,
+			method: 'DELETE',
+		} );
 
 	const [
 		fetchGoogleConnect,
