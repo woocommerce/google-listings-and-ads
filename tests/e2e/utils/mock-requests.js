@@ -12,18 +12,6 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Add the parameter gla-e2e-onboarded to the request to simulate the onboarded state; otherwise, it will redirect to the onboarding page.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async mockOnboarded() {
-		await this.page.route( /\/admin.php\b/, ( route ) => {
-			const url = `${ route.request().url() }&gla-e2e-onboarded=true`;
-			route.continue( { url } );
-		} );
-	}
-
-	/**
 	 * Fulfill a request with a payload.
 	 *
 	 * @param {RegExp|string} url The url to fulfill.
