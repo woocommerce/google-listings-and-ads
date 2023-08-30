@@ -25,7 +25,7 @@ export default class EditFreeListingsPage {
 	 */
 	async clickSaveChanges() {
 		const saveChangesButton = await this.getSaveChangesButton();
-		saveChangesButton.click();
+		await saveChangesButton.click();
 	}
 
 	/**

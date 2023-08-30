@@ -35,7 +35,7 @@ export default class DashboardPage extends MockRequests {
 	 */
 	async mockRequests() {
 		// Mock Reports Programs
-		this.fulfillMCReportProgram( {
+		await this.fulfillMCReportProgram( {
 			free_listings: null,
 			products: null,
 			intervals: null,
@@ -46,27 +46,27 @@ export default class DashboardPage extends MockRequests {
 			next_page: null,
 		} );
 
-		this.fulfillTargetAudience( {
+		await this.fulfillTargetAudience( {
 			location: 'selected',
 			countries: [ 'US' ],
 			locale: 'en_US',
 			language: 'English',
 		} );
 
-		this.fulfillJetPackConnection( {
+		await this.fulfillJetPackConnection( {
 			active: 'yes',
 			owner: 'yes',
 			displayName: 'John',
 			email: 'john@email.com',
 		} );
 
-		this.fulfillGoogleConnection( {
+		await this.fulfillGoogleConnection( {
 			active: 'yes',
 			email: 'john@email.com',
 			scope: [],
 		} );
 
-		this.fulfillAdsConnection( {
+		await this.fulfillAdsConnection( {
 			id: 0,
 			currency: null,
 			symbol: '$',
