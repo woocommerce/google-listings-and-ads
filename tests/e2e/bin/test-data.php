@@ -33,35 +33,54 @@ function register_routes() {
 			],
 		],
 	);
+	register_rest_route(
+		'wc/v3',
+		'gla-test/onboarded-merchant',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\set_onboarded_merchant',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\clear_onboarded_merchant',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
 }
 
-add_action(
-	'plugins_loaded',
-	function () {
-		if ( isset( $_GET['gla-e2e-onboarded'] ) ) {
-			add_filter(
-				'woocommerce_gla_options_get_' . OptionsInterface::REDIRECT_TO_ONBOARDING,
-				function ( $value ) {
-					return 'no';
-				}
-			);
+/**
+ * Set the onboarded merchant options.
+ */
+function set_onboarded_merchant() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update(
+		OptionsInterface::REDIRECT_TO_ONBOARDING,
+		'no'
+	);
+	$options->update(
+		OptionsInterface::MC_SETUP_COMPLETED_AT,
+		1693215209
+	);
+	$options->update(
+		OptionsInterface::GOOGLE_CONNECTED,
+		true
+	);
+}
 
-			add_filter(
-				'woocommerce_gla_options_get_' . OptionsInterface::MC_SETUP_COMPLETED_AT,
-				function ( $value ) {
-					return 1693215209;
-				}
-			);
-
-			add_filter(
-				'woocommerce_gla_options_get_' . OptionsInterface::GOOGLE_CONNECTED,
-				function ( $value ) {
-					return true;
-				}
-			);
-		}
-	}
-);
+/**
+ * Clear a previously set onboarded merchant.
+ */
+function clear_onboarded_merchant() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->delete( OptionsInterface::REDIRECT_TO_ONBOARDING );
+	$options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
+	$options->delete( OptionsInterface::GOOGLE_CONNECTED );
+}
 
 
 /**
