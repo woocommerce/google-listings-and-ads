@@ -61,3 +61,17 @@ export async function setConversionID() {
 export async function clearConversionID() {
 	await api().delete( 'gla-test/conversion-id' );
 }
+
+/**
+ * Set Onboarded Merchant.
+ */
+export async function setOnboardedMerchant() {
+	await api().post( 'gla-test/onboarded-merchant' );
+}
+
+/**
+ * Clear Onboarded Merchant.
+ */
+export async function clearOnboardedMerchant() {
+	await api().delete( 'gla-test/onboarded-merchant' );
+}
