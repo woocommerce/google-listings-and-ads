@@ -7,6 +7,7 @@ import { test, expect } from '@playwright/test';
  */
 import DashboardPage from '../../utils/pages/dashboard.js';
 import EditFreeListingsPage from '../../utils/pages/edit-free-listings.js';
+import { setOnboardedMerchant, clearOnboardedMerchant } from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -31,12 +32,13 @@ test.describe( 'Edit Free Listings', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
-		await dashboardPage.mockOnboarded();
+		await setOnboardedMerchant();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );
 
 	test.afterAll( async () => {
+		await clearOnboardedMerchant();
 		await page.close();
 	} );
 
