@@ -55,7 +55,8 @@ test.describe( 'Edit Free Listings', () => {
 
 		await page.waitForLoadState( 'domcontentloaded' );
 
-		const continueToEditButton = await dashboardPage.getContinueToEditButton();
+		const continueToEditButton =
+			await dashboardPage.getContinueToEditButton();
 		const dontEditButton = await dashboardPage.getDontEditButton();
 		await expect( continueToEditButton ).toBeEnabled();
 		await expect( dontEditButton ).toBeEnabled();
@@ -71,7 +72,8 @@ test.describe( 'Edit Free Listings', () => {
 		await editFreeListingsPage.checkRecommendShippingSettings();
 		await editFreeListingsPage.fillCountriesShippingTimeInput( '5' );
 		await editFreeListingsPage.checkDestinationBasedTaxRates();
-		const saveChangesButton = await editFreeListingsPage.getSaveChangesButton();
+		const saveChangesButton =
+			await editFreeListingsPage.getSaveChangesButton();
 		await expect( saveChangesButton ).toBeEnabled();
 	} );
 
