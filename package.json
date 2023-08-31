@@ -107,7 +107,7 @@
 		"lint:php-tests": "vendor/bin/phpcs --standard=tests/phpcs.xml.dist",
 		"lint:fix:php": "vendor/bin/phpcbf; vendor/bin/phpcbf --standard=tests/phpcs.xml.dist",
 		"lint:pkg-json": "wp-scripts lint-pkg-json",
-		"outdated:dewp": "npm outdated `cat .externalized.json | sed 's/[][\",]/ /g'` || true",
+		"outdated:dewp": "npm outdated --color=always `cat .externalized.json | sed 's/[][\",]/ /g'` | grep -E --color=never \"Depended by|google-listings-and-ads$\" || true",
 		"outdated:nondewp": "npm outdated --color=always | grep --color=never --invert -E \"^(.\\[31m|.\\[33m)?(`cat .externalized.json | sed 's/[][\"]//g'| sed 's/,/|/g'`)\"",
 		"packages-update": "wp-scripts packages-update",
 		"start": "wp-scripts start",
