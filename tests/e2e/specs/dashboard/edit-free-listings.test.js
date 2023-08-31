@@ -32,6 +32,7 @@ test.describe( 'Edit Free Listings', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
+		editFreeListingsPage = new EditFreeListingsPage( page );
 		await setOnboardedMerchant();
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
