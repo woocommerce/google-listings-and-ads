@@ -1,23 +1,39 @@
 /**
+ * Internal dependencies
+ */
+import SetUpAccountsPage from '../../utils/pages/setup-mc/step-1-set-up-accounts.js';
+
+/**
  * External dependencies
  */
 const { test, expect } = require( '@playwright/test' );
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
-test.describe( 'Merchant who is getting started', () => {
-	test.beforeEach( async ( { page } ) => {
-		// Go to the setup page short way - directly via URL.
-		await page.goto(
-			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc'
-		);
-		await page.waitForLoadState( 'networkidle' );
+test.describe.configure( { mode: 'serial' } );
+
+/**
+ * @type {import('../../utils/pages/setup-mc/step-1-set-up-accounts.js').default} setUpAccountsPage
+ */
+let setUpAccountsPage = null;
+
+/**
+ * @type {import('@playwright/test').Page} page
+ */
+let page = null;
+
+test.describe( 'Set up accounts', () => {
+	test.beforeAll( async ( { browser } ) => {
+		page = await browser.newPage();
+		setUpAccountsPage = new SetUpAccountsPage( page );
+		await setUpAccountsPage.goto();
 	} );
 
-	test( 'should see accounts step header, "Connect your WordPress.com account" & connect button', async ( {
-		page,
-	} ) => {
-		// Wait for API calls and the page to render.
+	test.afterAll( async () => {
+		await setUpAccountsPage.closePage();
+	} );
+
+	test( 'should see accounts step header, "Connect your WordPress.com account" & connect button', async () => {
 		await expect(
 			page.getByRole( 'heading', { name: 'Set up your accounts' } )
 		).toBeVisible();
@@ -33,105 +49,58 @@ test.describe( 'Merchant who is getting started', () => {
 		).toBeEnabled();
 	} );
 
-	test( 'after clicking the "Connect your WordPress.com account" button, should send an API request to connect Jetpack, and redirect to the returned URL', async ( {
-		page,
-		baseURL,
-	} ) => {
-		// Mock Jetpack connect
-		await page.route( /\/wc\/gla\/jetpack\/connect\b/, ( route ) =>
-			route.fulfill( {
-				content: 'application/json',
-				headers: { 'Access-Control-Allow-Origin': '*' },
-				body: JSON.stringify( {
-					url: baseURL + 'auth_url',
-				} ),
-			} )
-		);
+	test.describe( 'Connect WordPress.com account', () => {
+		test( 'should send an API request to connect Jetpack, and redirect to the returned URL', async ( { baseURL } ) => {
+			// Mock Jetpack connect
+			setUpAccountsPage.mockJetpackConnect( baseURL + 'auth_url' );
 
-		// Click the enabled connect button.
-		page.locator( "//button[text()='Connect'][not(@disabled)]" ).click();
-		await page.waitForLoadState( 'networkidle' );
+			// Click the enabled connect button.
+			page.locator( "//button[text()='Connect'][not(@disabled)]" ).click();
+			await page.waitForLoadState( 'networkidle' );
 
-		// Expect the user to be redirected
-		await page.waitForURL( baseURL + 'auth_url' );
-	} );
-} );
-
-test.describe( 'Merchant with Jetpack connected & Google not connected', () => {
-	test.beforeEach( async ( { page } ) => {
-		// Mock Jetpack as connected
-		await page.route( /\/wc\/gla\/jetpack\/connected\b/, ( route ) =>
-			route.fulfill( {
-				content: 'application/json',
-				headers: { 'Access-Control-Allow-Origin': '*' },
-				body: JSON.stringify( {
-					active: 'yes',
-					owner: 'yes',
-					displayName: 'testUser',
-					email: 'mail@example.com',
-				} ),
-			} )
-		);
-
-		// Mock google as not connected.
-		// When pending even WPORG will not render yet.
-		// If not mocked will fail and render nothing,
-		// as Jetpack is mocked only on the client-side.
-		await page.route( /\/wc\/gla\/google\/connected\b/, ( route ) =>
-			route.fulfill( {
-				content: 'application/json',
-				headers: { 'Access-Control-Allow-Origin': '*' },
-				body: JSON.stringify( {
-					active: 'no',
-					email: '',
-				} ),
-			} )
-		);
-
-		// Go to the setup page short way - directly via URL.
-		await page.goto(
-			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc'
-		);
-
-		// Wait for API calls and the page to render.
-		await page.waitForLoadState( 'networkidle' );
-		page.getByRole( 'heading', { name: 'Set up your accounts' } );
+			// Expect the user to be redirected
+			await page.waitForURL( baseURL + 'auth_url' );
+		} );
 	} );
 
-	test( 'should see their WPORG email, "Google" title & connect button', async ( {
-		page,
-	} ) => {
-		await expect( page.getByText( 'mail@example.com' ) ).toBeVisible();
+	test.describe( 'Connect Google account', () => {
+		test.beforeAll( async () => {
+			// Mock Jetpack as connected
+			await setUpAccountsPage.mockJetpackConnected( 'Test user', 'mail@example.com' );
 
-		await expect(
-			page.getByText( 'Google', { exact: true } )
-		).toBeVisible();
+			// Mock google as not connected.
+			// When pending even WPORG will not render yet.
+			// If not mocked will fail and render nothing,
+			// as Jetpack is mocked only on the client-side.
+			await setUpAccountsPage.mockGoogleNotConnected();
 
-		expect(
-			page.getByRole( 'button', { name: 'Connect' } ).first()
-		).toBeEnabled();
-	} );
+			setUpAccountsPage.goto();
 
-	test( 'after clicking the "Connect your Google account" button should send an API request to connect Google account, and redirect to the returned URL', async ( {
-		page,
-		baseURL,
-	} ) => {
-		// Mock google connect.
-		await page.route( /\/wc\/gla\/google\/connect\b/, ( route ) =>
-			route.fulfill( {
-				content: 'application/json',
-				headers: { 'Access-Control-Allow-Origin': '*' },
-				body: JSON.stringify( {
-					url: baseURL + 'google_auth',
-				} ),
-			} )
-		);
+			page.getByRole( 'heading', { name: 'Set up your accounts' } );
+		} );
 
-		// Click the enabled connect button
-		page.locator( "//button[text()='Connect'][not(@disabled)]" ).click();
-		await page.waitForLoadState( 'networkidle' );
+		test( 'should see their WPORG email, "Google" title & connect button', async () => {
+			await expect( page.getByText( 'mail@example.com' ) ).toBeVisible();
 
-		// Expect the user to be redirected
-		await page.waitForURL( baseURL + 'google_auth' );
+			await expect(
+				page.getByText( 'Google', { exact: true } )
+			).toBeVisible();
+
+			expect(
+				page.getByRole( 'button', { name: 'Connect' } ).first()
+			).toBeEnabled();
+		} );
+
+		test( 'after clicking the "Connect your Google account" button should send an API request to connect Google account, and redirect to the returned URL', async ( { baseURL } ) => {
+			// Mock google connect.
+			await setUpAccountsPage.mockGoogleConnect( baseURL + 'google_auth' );
+
+			// Click the enabled connect button
+			page.locator( "//button[text()='Connect'][not(@disabled)]" ).click();
+			await page.waitForLoadState( 'networkidle' );
+
+			// Expect the user to be redirected
+			await page.waitForURL( baseURL + 'google_auth' );
+		} );
 	} );
 } );
