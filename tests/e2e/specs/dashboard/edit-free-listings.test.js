@@ -1,14 +1,14 @@
 /**
  * External dependencies
  */
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
+import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
+import { checkSnackBarMessage } from '../../utils/page';
 import DashboardPage from '../../utils/pages/dashboard.js';
 import EditFreeListingsPage from '../../utils/pages/edit-free-listings.js';
-import { setOnboardedMerchant, clearOnboardedMerchant } from '../../utils/api';
-import { checkSnackBarMessage } from '../../utils/page';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -70,7 +70,6 @@ test.describe( 'Edit Free Listings', () => {
 	} );
 
 	test( 'Check recommended shipping settings', async () => {
-		editFreeListingsPage = new EditFreeListingsPage( page );
 		await editFreeListingsPage.checkRecommendShippingSettings();
 		await editFreeListingsPage.fillCountriesShippingTimeInput( '5' );
 		await editFreeListingsPage.checkDestinationBasedTaxRates();
