@@ -8,6 +8,7 @@ import { test, expect } from '@playwright/test';
 import DashboardPage from '../../utils/pages/dashboard.js';
 import EditFreeListingsPage from '../../utils/pages/edit-free-listings.js';
 import { setOnboardedMerchant, clearOnboardedMerchant } from '../../utils/api';
+import { checkSnackBarMessage } from '../../utils/page';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -80,6 +81,7 @@ test.describe( 'Edit Free Listings', () => {
 
 	test( 'Save changes', async () => {
 		const awaitForRequests = editFreeListingsPage.registerSavingRequests();
+		await editFreeListingsPage.mockSuccessfulSavingSettingsResponse();
 		await editFreeListingsPage.clickSaveChanges();
 		const requests = await awaitForRequests;
 		const settingsResponse = await (
@@ -92,5 +94,10 @@ test.describe( 'Edit Free Listings', () => {
 		);
 		expect( settingsResponse.data.shipping_time ).toBe( 'flat' );
 		expect( settingsResponse.data.tax_rate ).toBe( 'destination' );
+
+		await checkSnackBarMessage(
+			page,
+			'Your changes to your Free Listings have been saved and will be synced to your Google Merchant Center account.'
+		);
 	} );
 } );
