@@ -32,6 +32,8 @@ export default class DashboardPage extends MockRequests {
 
 	/**
 	 * Mock all requests related to external accounts such as Merchant Center, Google, etc.
+	 *
+	 * @return {Promise<void>}
 	 */
 	async mockRequests() {
 		// Mock Reports Programs
