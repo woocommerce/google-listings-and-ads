@@ -15,6 +15,9 @@ module.exports = defineConfig( {
 		timeout: 20 * 1000,
 	},
 
+	/* Number of workers, See discusion: https://github.com/woocommerce/google-listings-and-ads/pull/2080#issuecomment-1698810270 */
+	workers: 1,
+
 	/* Retry on CI only */
 	retries: process.env.CI ? 2 : 0,
 
