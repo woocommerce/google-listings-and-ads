@@ -67,7 +67,7 @@ export default class EditFreeListingsPage {
 	 * @return {Promise<import('@playwright/test').Request[]>} The requests.
 	 */
 	registerSavingRequests() {
-		const targetAudienteRequest = this.page.waitForRequest(
+		const targetAudienceRequest = this.page.waitForRequest(
 			( request ) =>
 				request.url().includes( '/gla/mc/target_audience' ) &&
 				request.method() === 'POST' &&
@@ -89,7 +89,7 @@ export default class EditFreeListingsPage {
 
 		return Promise.all( [
 			settingsRequest,
-			targetAudienteRequest,
+			targetAudienceRequest,
 			syncRequest,
 		] );
 	}
