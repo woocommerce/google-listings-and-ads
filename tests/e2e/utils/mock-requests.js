@@ -65,6 +65,16 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the request to connect Jetpack.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillConnectJetPack( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/jetpack\/connect\b/, payload );
+	}
+
+	/**
 	 * Fulfill the Google Connection request.
 	 *
 	 * @param {Object} payload
@@ -72,6 +82,16 @@ export default class MockRequests {
 	 */
 	async fulfillGoogleConnection( payload ) {
 		await this.fulfillRequest( /\/wc\/gla\/google\/connected\b/, payload );
+	}
+
+	/**
+	 * Fulfill the request to connect Google.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillConnectGoogle( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/google\/connect\b/, payload );
 	}
 
 	/**
@@ -92,5 +112,59 @@ export default class MockRequests {
 	 */
 	async fulfillSettingsSync( payload ) {
 		await this.fulfillRequest( /\/wc\/gla\/mc\/settings\/sync\b/, payload );
+	}
+
+	/**
+	 * Mock the request to connect Jetpack
+	 */
+	async mockJetpackConnect( url ) {
+		await this.fulfillConnectJetPack( { url } );
+	}
+
+	/**
+	 * Mock Jetpack as connected
+	 */
+	async mockJetpackConnected( displayName = 'John', email = 'mail@example.com' ) {
+		await this.fulfillJetPackConnection( {
+			active: 'yes',
+			owner: 'yes',
+			displayName,
+			email,
+		} );
+	}
+
+	/**
+	 * Mock the request to connect Google
+	 */
+	async mockGoogleConnect( url ) {
+		await this.fulfillConnectGoogle( { url } );
+	}
+
+	/**
+	 * Mock Google as connected
+	 */
+	async mockGoogleConnected( email = 'mail@example.com' ) {
+		await this.fulfillGoogleConnection( {
+			active: 'yes',
+			email,
+			scope: [
+				'https:\/\/www.googleapis.com\/auth\/content',
+				'https:\/\/www.googleapis.com\/auth\/adwords',
+				'https:\/\/www.googleapis.com\/auth\/userinfo.email',
+				'https:\/\/www.googleapis.com\/auth\/siteverification.verify_only',
+				'openid',
+			],
+		} );
+	}
+
+	/**
+	 * Mock Google as not connected
+	 */
+	async mockGoogleNotConnected() {
+		await this.fulfillGoogleConnection( {
+			active: 'no',
+			email: '',
+			scope: [],
+		} );
 	}
 }
