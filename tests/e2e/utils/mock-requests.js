@@ -83,4 +83,14 @@ export default class MockRequests {
 	async fulfillAdsConnection( payload ) {
 		await this.fulfillRequest( /\/wc\/gla\/ads\/connection\b/, payload );
 	}
+
+	/**
+	 * Fulfill the Sync Settings Connection request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillSettingsSync( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/mc\/settings\/sync\b/, payload );
+	}
 }

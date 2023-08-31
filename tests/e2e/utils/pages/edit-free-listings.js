@@ -1,8 +1,14 @@
-export default class EditFreeListingsPage {
+/**
+ * Internal dependencies
+ */
+import MockRequests from '../mock-requests';
+
+export default class EditFreeListingsPage extends MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
 	constructor( page ) {
+		super( page );
 		this.page = page;
 	}
 
@@ -59,6 +65,18 @@ export default class EditFreeListingsPage {
 		await this.page
 			.locator( 'text=My store uses destination-based tax rates.' )
 			.check();
+	}
+
+	/**
+	 * Mock the successful saving settings response.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockSuccessfulSavingSettingsResponse() {
+		await this.fulfillSettingsSync( {
+			status: 'success',
+			message: 'Successfully synchronized settings with Google.',
+		} );
 	}
 
 	/**
