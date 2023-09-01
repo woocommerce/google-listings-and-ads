@@ -18,9 +18,10 @@ export default class MockRequests {
 	 * @param {Object} payload The payload to send.
 	 * @return {Promise<void>}
 	 */
-	async fulfillRequest( url, payload ) {
+	async fulfillRequest( url, payload, status = 200 ) {
 		await this.page.route( url, ( route ) =>
 			route.fulfill( {
+				status,
 				content: 'application/json',
 				headers: { 'Access-Control-Allow-Origin': '*' },
 				body: JSON.stringify( payload ),
@@ -50,6 +51,47 @@ export default class MockRequests {
 	async fulfillTargetAudience( payload ) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/mc\/target_audience\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill the MC accounts request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillMCAccounts( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/accounts\b/,
+			payload,
+			status
+		);
+	}
+
+	/**
+	 * Fulfill the MC accounts claim-overwrite request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillMCAccountsClaimOverwrite( payload, status = 200 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/accounts\/claim-overwrite\b/,
+			payload,
+			status
+		);
+	}
+
+	/**
+	 * Fulfill the MC connection request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillMCConnection( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/connection\b/,
 			payload
 		);
 	}
@@ -122,7 +164,7 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Mock Jetpack as connected
+	 * Mock Jetpack as connected.
 	 */
 	async mockJetpackConnected( displayName = 'John', email = 'mail@example.com' ) {
 		await this.fulfillJetPackConnection( {
@@ -134,14 +176,14 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Mock the request to connect Google
+	 * Mock the request to connect Google.
 	 */
 	async mockGoogleConnect( url ) {
 		await this.fulfillConnectGoogle( { url } );
 	}
 
 	/**
-	 * Mock Google as connected
+	 * Mock Google as connected.
 	 */
 	async mockGoogleConnected( email = 'mail@example.com' ) {
 		await this.fulfillGoogleConnection( {
@@ -158,7 +200,7 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Mock Google as not connected
+	 * Mock Google as not connected.
 	 */
 	async mockGoogleNotConnected() {
 		await this.fulfillGoogleConnection( {
@@ -166,5 +208,92 @@ export default class MockRequests {
 			email: '',
 			scope: [],
 		} );
+	}
+
+	/**
+	 * Mock MC as connected.
+	 */
+	async mockMCConnected( id = 1234 ) {
+		await this.fulfillMCConnection( {
+			id,
+			status: 'connected',
+		} );
+	}
+
+	/**
+	 * Mock MC as not connected.
+	 */
+	async mockMCNotConnected() {
+		await this.fulfillMCConnection( {
+			id: 0,
+			status: 'disconnected',
+		} );
+	}
+
+	/**
+	 * Mock MC has accounts.
+	 */
+	async mockMCHasAccounts() {
+		await this.fulfillMCAccounts( [
+			{
+				id: 12345,
+				subaccount: true,
+				name: 'MC Account 1',
+				domain: 'https:\/\/example.com',
+			},
+			{
+				id: 23456,
+				subaccount: true,
+				name: 'MC Account 2',
+				domain: 'https:\/\/example.com',
+			},
+		] );
+	}
+
+	/**
+	 * Mock MC has no accounts.
+	 */
+	async mockMCHasNoAccounts() {
+		await this.fulfillMCAccounts( [] );
+	}
+
+	/**
+	 * Mock MC create account where the website is not claimed.
+	 */
+	async mockMCCreateAccountWebsiteNotClaimed( id = 12345 ) {
+		await this.fulfillMCAccounts( {
+			id,
+			subaccount: null,
+			name: null,
+			domain: null,
+		} );
+	}
+
+	/**
+	 * Mock MC create account where the website is claimed.
+	 */
+	async mockMCCreateAccountWebsiteClaimed( id = 12345, websiteUrl = 'example.com' ) {
+		await this.fulfillMCAccounts(
+			{
+				message: 'Website already claimed, use overwrite to complete the process.',
+				id,
+				website_url: websiteUrl,
+			},
+			403
+		);
+	}
+
+	/**
+	 * Mock MC accounts claim overwrite.
+	 */
+	async mockMCAccountsClaimOverwrite( id = 12345 ) {
+		await this.fulfillMCAccountsClaimOverwrite(
+			{
+				id,
+				subaccount: null,
+				name: null,
+				domain: null,
+			},
+		);
 	}
 }
