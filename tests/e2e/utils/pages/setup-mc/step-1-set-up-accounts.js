@@ -35,4 +35,177 @@ export default class SetUpAccountsPage extends MockRequests {
 			{ waitUntil: 'networkidle' }
 		);
 	}
+
+	/**
+	 * Get "Create account" button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get "Create account" button.
+	 */
+	getCreateAccountButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Create account',
+			exact: true
+		} );
+	}
+
+	/**
+	 * Get MC "Create account" button from the page.
+	 *
+	 * @return {import('@playwright/test').Locator} Get MC "Create account" button from the page.
+	 */
+	getMCCreateAccountButtonFromPage() {
+		const button = this.getCreateAccountButton();
+		return button.locator( ':scope.is-secondary' );
+	}
+
+	/**
+	 * Get MC "Create account" button from the modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Get MC "Create account" button from the modal.
+	 */
+	getMCCreateAccountButtonFromModal() {
+		const button = this.getCreateAccountButton();
+		return button.locator( ':scope.is-primary' );
+	}
+
+	/**
+	 * Get .gla-account-card__title class.
+	 *
+	 * @return {import('@playwright/test').Locator} Get .gla-account-card__title class.
+	 */
+	getCardTitleClass() {
+		return this.page.locator( '.gla-account-card__title' );
+	}
+
+	/**
+	 * Get .gla-account-card__description class.
+	 *
+	 * @return {import('@playwright/test').Locator} Get .gla-account-card__description class.
+	 */
+	getCardDescriptionClass() {
+		return this.page.locator( '.gla-account-card__description' );
+	}
+
+	/**
+	 * Get Jetpack description row.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Jetpack description row.
+	 */
+	getJetpackDescriptionRow() {
+		return this.getCardDescriptionClass().first();
+	}
+
+	/**
+	 * Get Google description row.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Google description row.
+	 */
+	getGoogleDescriptionRow() {
+		return this.getCardDescriptionClass().nth( 1 );
+	}
+
+	/**
+	 * Get Merchant Center description row.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Merchant Center description row.
+	 */
+	getMCDescriptionRow() {
+		return this.getCardDescriptionClass().nth( 2 );
+	}
+
+	/**
+	 * Get Google Merchant Center title.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Google Merchant Center title.
+	 */
+	getMCTitleRow() {
+		return this.getCardTitleClass().nth( 2 );
+	}
+
+	/**
+	 * Get modal header.
+	 *
+	 * @return {import('@playwright/test').Locator} Get modal header.
+	 */
+	getModalHeader() {
+		return this.page.locator( '.components-modal__header' );
+	}
+
+	/**
+	 * Get modal checkbox.
+	 *
+	 * @return {import('@playwright/test').Locator} Get modal checkbox.
+	 */
+	getModalCheckbox() {
+		return this.page.getByRole( 'checkbox' );
+	}
+
+	/**
+	 * Get .gla-connected-icon-label class.
+	 *
+	 * @return {import('@playwright/test').Locator} Get .gla-connected-icon-label class.
+	 */
+	getConnectedLabelClass() {
+		return this.page.locator( '.gla-connected-icon-label' );
+	}
+
+	/**
+	 * Get Jetpack connected label.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Jetpack connected label.
+	 */
+	getJetpackConnectedLabel() {
+		return this.getConnectedLabelClass().first();
+	}
+
+	/**
+	 * Get Google connected label.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Google connected label.
+	 */
+	getGoogleConnectedLabel() {
+		return this.getConnectedLabelClass().nth( 1 );
+	}
+
+	/**
+	 * Get Merchant Center connected label.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Merchant Center connected label.
+	 */
+	getMCConnectedLabel() {
+		return this.getConnectedLabelClass().nth( 2 );
+	}
+
+	/**
+	 * Get "Reclaim my URL" button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get "Reclaim my URL" button.
+	 */
+	getReclaimMyURLButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Reclaim my URL',
+			exact: true
+		} );
+	}
+
+	/**
+	 * Get "Switch account" button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get "Switch account" button.
+	 */
+	getSwitchAccountButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Switch account',
+			exact: true
+		} );
+	}
+
+	/**
+	 * Get reclaiming URL input.
+	 *
+	 * @return {import('@playwright/test').Locator} Get reclaiming URL input.
+	 */
+	getReclaimingURLInput() {
+		return this.page.locator( 'input#inspector-input-control-0' );
+	}
 }
