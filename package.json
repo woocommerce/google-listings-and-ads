@@ -59,7 +59,6 @@
 		"@types/jest": "^27.5.2",
 		"@woocommerce/dependency-extraction-webpack-plugin": "^2.0.0",
 		"@woocommerce/eslint-plugin": "^1.2.0",
-		"@wordpress/dependency-extraction-webpack-plugin": "^4.4.0",
 		"@wordpress/env": "^8.4.0",
 		"@wordpress/jest-preset-default": "^11.9.0",
 		"@wordpress/prettier-config": "2.18.1",
@@ -145,7 +144,7 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "209.08 kB"
+				"maxSize": "148.52 kB"
 			},
 			{
 				"path": "./js/build/*.css",
@@ -157,7 +156,7 @@
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
-				"maxSize": "8.48 mB",
+				"maxSize": "8.22 mB",
 				"compression": "none"
 			}
 		],
