@@ -81,8 +81,8 @@ test.describe( 'Set up accounts', () => {
 		} );
 
 		test( 'should see their WPORG email, "Google" title & connect button', async () => {
-			const jetpackEmailRow = setUpAccountsPage.getJetpackDescriptionRow();
-			await expect( jetpackEmailRow  ).toContainText( 'jetpack@example.com' );
+			const jetpackDescriptionRow = setUpAccountsPage.getJetpackDescriptionRow();
+			await expect( jetpackDescriptionRow  ).toContainText( 'jetpack@example.com' );
 
 			await expect(
 				page.getByText( 'Google', { exact: true } )
@@ -129,11 +129,11 @@ test.describe( 'Set up accounts', () => {
 			} );
 
 			test( 'should see their WPORG email, Google email, "Google Merchant Center" title & "Create account" button', async () => {
-				const jetpackEmailRow = setUpAccountsPage.getJetpackDescriptionRow();
-				await expect( jetpackEmailRow  ).toContainText( 'jetpack@example.com' );
+				const jetpackDescriptionRow = setUpAccountsPage.getJetpackDescriptionRow();
+				await expect( jetpackDescriptionRow  ).toContainText( 'jetpack@example.com' );
 
-				const googleEmailRow = setUpAccountsPage.getGoogleDescriptionRow();
-				await expect( googleEmailRow  ).toContainText( 'google@example.com' );
+				const googleDescriptionRow = setUpAccountsPage.getGoogleDescriptionRow();
+				await expect( googleDescriptionRow  ).toContainText( 'google@example.com' );
 
 				const mcTitleRow = setUpAccountsPage.getMCTitleRow();
 				await expect( mcTitleRow ).toContainText( 'Google Merchant Center' );
