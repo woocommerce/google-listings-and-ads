@@ -44,7 +44,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	getCreateAccountButton() {
 		return this.page.getByRole( 'button', {
 			name: 'Create account',
-			exact: true
+			exact: true,
 		} );
 	}
 
@@ -184,7 +184,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	getReclaimMyURLButton() {
 		return this.page.getByRole( 'button', {
 			name: 'Reclaim my URL',
-			exact: true
+			exact: true,
 		} );
 	}
 
@@ -196,7 +196,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	getSwitchAccountButton() {
 		return this.page.getByRole( 'button', {
 			name: 'Switch account',
-			exact: true
+			exact: true,
 		} );
 	}
 

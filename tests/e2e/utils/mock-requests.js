@@ -14,8 +14,9 @@ export default class MockRequests {
 	/**
 	 * Fulfill a request with a payload.
 	 *
-	 * @param {RegExp|string} url The url to fulfill.
+	 * @param {RegExp|string}  url The url to fulfill.
 	 * @param {Object} payload The payload to send.
+	 * @param {number} status  The HTTP status in the response.
 	 * @return {Promise<void>}
 	 */
 	async fulfillRequest( url, payload, status = 200 ) {
@@ -59,6 +60,7 @@ export default class MockRequests {
 	 * Fulfill the MC accounts request.
 	 *
 	 * @param {Object} payload
+	 * @param {number} status
 	 * @return {Promise<void>}
 	 */
 	async fulfillMCAccounts( payload, status = 200 ) {
@@ -73,6 +75,7 @@ export default class MockRequests {
 	 * Fulfill the MC accounts claim-overwrite request.
 	 *
 	 * @param {Object} payload
+	 * @param {number} status
 	 * @return {Promise<void>}
 	 */
 	async fulfillMCAccountsClaimOverwrite( payload, status = 200 ) {
@@ -90,10 +93,7 @@ export default class MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async fulfillMCConnection( payload ) {
-		await this.fulfillRequest(
-			/\/wc\/gla\/mc\/connection\b/,
-			payload
-		);
+		await this.fulfillRequest( /\/wc\/gla\/mc\/connection\b/, payload );
 	}
 
 	/**
@@ -158,6 +158,8 @@ export default class MockRequests {
 
 	/**
 	 * Mock the request to connect Jetpack
+	 *
+	 * @param {string} url
 	 */
 	async mockJetpackConnect( url ) {
 		await this.fulfillConnectJetPack( { url } );
@@ -165,8 +167,14 @@ export default class MockRequests {
 
 	/**
 	 * Mock Jetpack as connected.
+	 *
+	 * @param {string} displayName
+	 * @param {string} email
 	 */
-	async mockJetpackConnected( displayName = 'John', email = 'mail@example.com' ) {
+	async mockJetpackConnected(
+		displayName = 'John',
+		email = 'mail@example.com'
+	) {
 		await this.fulfillJetPackConnection( {
 			active: 'yes',
 			owner: 'yes',
@@ -177,6 +185,8 @@ export default class MockRequests {
 
 	/**
 	 * Mock the request to connect Google.
+	 *
+	 * @param {string} url
 	 */
 	async mockGoogleConnect( url ) {
 		await this.fulfillConnectGoogle( { url } );
@@ -184,16 +194,18 @@ export default class MockRequests {
 
 	/**
 	 * Mock Google as connected.
+	 *
+	 * @param {string} email
 	 */
 	async mockGoogleConnected( email = 'mail@example.com' ) {
 		await this.fulfillGoogleConnection( {
 			active: 'yes',
 			email,
 			scope: [
-				'https:\/\/www.googleapis.com\/auth\/content',
-				'https:\/\/www.googleapis.com\/auth\/adwords',
-				'https:\/\/www.googleapis.com\/auth\/userinfo.email',
-				'https:\/\/www.googleapis.com\/auth\/siteverification.verify_only',
+				'https://www.googleapis.com/auth/content',
+				'https://www.googleapis.com/auth/adwords',
+				'https://www.googleapis.com/auth/userinfo.email',
+				'https://www.googleapis.com/auth/siteverification.verify_only',
 				'openid',
 			],
 		} );
@@ -212,6 +224,8 @@ export default class MockRequests {
 
 	/**
 	 * Mock MC as connected.
+	 *
+	 * @param {number} id
 	 */
 	async mockMCConnected( id = 1234 ) {
 		await this.fulfillMCConnection( {
@@ -239,13 +253,13 @@ export default class MockRequests {
 				id: 12345,
 				subaccount: true,
 				name: 'MC Account 1',
-				domain: 'https:\/\/example.com',
+				domain: 'https://example.com',
 			},
 			{
 				id: 23456,
 				subaccount: true,
 				name: 'MC Account 2',
-				domain: 'https:\/\/example.com',
+				domain: 'https://example.com',
 			},
 		] );
 	}
@@ -259,6 +273,8 @@ export default class MockRequests {
 
 	/**
 	 * Mock MC create account where the website is not claimed.
+	 *
+	 * @param {number} id
 	 */
 	async mockMCCreateAccountWebsiteNotClaimed( id = 12345 ) {
 		await this.fulfillMCAccounts( {
@@ -271,11 +287,18 @@ export default class MockRequests {
 
 	/**
 	 * Mock MC create account where the website is claimed.
+	 *
+	 * @param {number} id
+	 * @param {string} websiteUrl
 	 */
-	async mockMCCreateAccountWebsiteClaimed( id = 12345, websiteUrl = 'example.com' ) {
+	async mockMCCreateAccountWebsiteClaimed(
+		id = 12345,
+		websiteUrl = 'example.com'
+	) {
 		await this.fulfillMCAccounts(
 			{
-				message: 'Website already claimed, use overwrite to complete the process.',
+				message:
+					'Website already claimed, use overwrite to complete the process.',
 				id,
 				website_url: websiteUrl,
 			},
@@ -285,15 +308,15 @@ export default class MockRequests {
 
 	/**
 	 * Mock MC accounts claim overwrite.
+	 *
+	 * @param {number} id
 	 */
 	async mockMCAccountsClaimOverwrite( id = 12345 ) {
-		await this.fulfillMCAccountsClaimOverwrite(
-			{
-				id,
-				subaccount: null,
-				name: null,
-				domain: null,
-			},
-		);
+		await this.fulfillMCAccountsClaimOverwrite( {
+			id,
+			subaccount: null,
+			name: null,
+			domain: null,
+		} );
 	}
 }
