@@ -123,6 +123,15 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
+	 * Get modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Get modal.
+	 */
+	getModal() {
+		return this.page.locator( '.components-modal__content' );
+	}
+
+	/**
 	 * Get modal header.
 	 *
 	 * @return {import('@playwright/test').Locator} Get modal header.
@@ -138,6 +147,24 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getModalCheckbox() {
 		return this.page.getByRole( 'checkbox' );
+	}
+
+	/**
+	 * Get modal primary button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get modal primary button.
+	 */
+	getModalPrimaryButton() {
+		return this.getModal().locator( 'button.is-primary' );
+	}
+
+	/**
+	 * Get modal secondary button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get modal secondary button.
+	 */
+	getModalSecondaryButton() {
+		return this.getModal().locator( 'button.is-secondary' );
 	}
 
 	/**
@@ -207,5 +234,89 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getReclaimingURLInput() {
 		return this.page.locator( 'input#inspector-input-control-0' );
+	}
+
+	/**
+	 * Get sub section title row.
+	 *
+	 * @return {import('@playwright/test').Locator} Get sub section title row.
+	 */
+	getSubSectionTitleRow() {
+		return this.page.locator( '.wcdl-subsection-title' );
+	}
+
+	/**
+	 * Get section footer row.
+	 *
+	 * @return {import('@playwright/test').Locator} Get section footer row.
+	 */
+	getSectionFooterRow() {
+		return this.page.locator( '.wcdl-section-card-footer' );
+	}
+
+	/**
+	 * Get select existing Merchant Center account title.
+	 *
+	 * @return {import('@playwright/test').Locator} Get select existing Merchant Center account title.
+	 */
+	getSelectExistingMCAccountTitle() {
+		return this.getSubSectionTitleRow().nth( 3 );
+	}
+
+	/**
+	 * Get MC accounts select element.
+	 *
+	 * @return {import('@playwright/test').Locator} Get select MC accounts select element.
+	 */
+	getMCAccountsSelect() {
+		return this.page.locator( 'select[id*="inspector-select-control"]' );
+	}
+
+	/**
+	 * Get "Connect" button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get "Connect" button.
+	 */
+	getConnectButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Connect',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get account cards.
+	 *
+	 * @return {import('@playwright/test').Locator} Get account cards.
+	 */
+	getAccountCards() {
+		return this.page.locator( '.gla-account-card' );
+	}
+
+	/**
+	 * Get Merchant Center account card.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Merchant Center account card.
+	 */
+	getMCAccountCard() {
+		return this.getAccountCards().nth( 2 );
+	}
+
+	/**
+	 * Get Merchant Center card footer.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Merchant Center card footer.
+	 */
+	getMCCardFooter() {
+		return this.getMCAccountCard().locator( '.wcdl-section-card-footer' );
+	}
+
+	/**
+	 * Get Merchant Center card footer button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Merchant Center card footer button.
+	 */
+	getMCCardFooterButton() {
+		return this.getMCCardFooter().getByRole( 'button' );
 	}
 }
