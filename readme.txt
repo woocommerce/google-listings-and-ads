@@ -111,6 +111,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.5 - 2023-09-05 =
+* Dev - Add E2E tests - Dashboard - Edit Free Listings.
+* Dev - Clean up workarounds for WooCommerce < 6.8.
+* Dev - Externalize all WooCommerce JavaScript packages via Dependency Extraction Webpack Plugin (DEWP) and remove the selective bundling implementation that gradually externalizes packages into DEWP.
+* Dev - Update DEWP related tools and docs.
+* Fix - Fix Taxonomy Attribute Mapping for Product Variations.
+
 = 2.5.4 - 2023-08-29 =
 * Dev - Override vulnerability packages: xmlhttprequest-ssl and ws.
 * Dev - Update trigger method in Hooks Generator Workflow.
