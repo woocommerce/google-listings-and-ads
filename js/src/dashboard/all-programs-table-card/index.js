@@ -138,6 +138,7 @@ const AllProgramsTableCard = ( props ) => {
 				/>
 			}
 			headers={ headers }
+			rowKey={ ( cells ) => cells[ 0 ].id }
 			rows={ data.map( ( el ) => {
 				const isFreeListings = el.id === FREE_LISTINGS_PROGRAM_ID;
 				const editButtonClassName = classnames( {
@@ -145,24 +146,21 @@ const AllProgramsTableCard = ( props ) => {
 						! isFreeListings && ! el.disabledEdit,
 				} );
 
-				// Since the <Table> component uses array index as key to render rows,
-				// it might cause incorrect state control if a column has an internal state.
-				// So we have to specific `key` prop on some components of the `display` to work around it.
-				// Ref: https://github.com/woocommerce/woocommerce-admin/blob/v2.1.2/packages/components/src/table/table.js#L288-L289
+				// The `id` property in the first cell is for the `rowKey` callback.
 				return [
-					{ display: el.title },
+					{ display: el.title, id: el.id.toString() },
 					{ display: el.country },
 					{ display: el.dailyBudget },
 					{
 						display: isFreeListings ? (
 							<FreeListingsDisabledToggle />
 						) : (
-							<ProgramToggle key={ el.id } program={ el } />
+							<ProgramToggle program={ el } />
 						),
 					},
 					{
 						display: (
-							<div className="program-actions" key={ el.id }>
+							<div className="program-actions">
 								<EditProgramButton
 									className={ editButtonClassName }
 									programId={ el.id }

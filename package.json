@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
-	"version": "2.5.4",
+	"version": "2.5.5",
 	"description": "google-listings-and-ads",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -59,7 +59,6 @@
 		"@types/jest": "^27.5.2",
 		"@woocommerce/dependency-extraction-webpack-plugin": "^2.0.0",
 		"@woocommerce/eslint-plugin": "^1.2.0",
-		"@wordpress/dependency-extraction-webpack-plugin": "^4.4.0",
 		"@wordpress/env": "^8.4.0",
 		"@wordpress/jest-preset-default": "^11.9.0",
 		"@wordpress/prettier-config": "2.18.1",
@@ -95,7 +94,6 @@
 		"check-engines": "wp-scripts check-engines",
 		"check-licenses": "wp-scripts check-licenses",
 		"dev": "NODE_ENV=development wp-scripts build",
-		"dewps:woo": "node bin/list-woo-dewped.mjs",
 		"doc:tracking": "woocommerce-grow-jsdoc ./js/src",
 		"format": "wp-scripts format",
 		"i18n": "WP_CLI_PHP_ARGS='-d memory_limit=2048M' ./vendor/bin/wp i18n make-pot ./ languages/$npm_package_name.pot --slug=$npm_package_name --domain=$npm_package_name --exclude=bin,data,js/src,node_modules,tests,vendor",
@@ -107,7 +105,7 @@
 		"lint:php-tests": "vendor/bin/phpcs --standard=tests/phpcs.xml.dist",
 		"lint:fix:php": "vendor/bin/phpcbf; vendor/bin/phpcbf --standard=tests/phpcs.xml.dist",
 		"lint:pkg-json": "wp-scripts lint-pkg-json",
-		"outdated:dewp": "npm outdated `cat .externalized.json | sed 's/[][\",]/ /g'` || true",
+		"outdated:dewp": "npm outdated --color=always `cat .externalized.json | sed 's/[][\",]/ /g'` | grep -E --color=never \"Depended by|google-listings-and-ads$\" || true",
 		"outdated:nondewp": "npm outdated --color=always | grep --color=never --invert -E \"^(.\\[31m|.\\[33m)?(`cat .externalized.json | sed 's/[][\"]//g'| sed 's/,/|/g'`)\"",
 		"packages-update": "wp-scripts packages-update",
 		"start": "wp-scripts start",
@@ -145,7 +143,7 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "209.08 kB"
+				"maxSize": "148.52 kB"
 			},
 			{
 				"path": "./js/build/*.css",
@@ -157,7 +155,7 @@
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
-				"maxSize": "8.48 mB",
+				"maxSize": "8.22 mB",
 				"compression": "none"
 			}
 		],

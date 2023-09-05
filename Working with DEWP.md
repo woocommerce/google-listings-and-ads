@@ -19,11 +19,17 @@ So we could later inspect that.
 
 ## Selective bundling & extracting.
 
-Sometimes the fact we do bundle a package that is provided by WordPress/WooCommerce instance introduces errors, as some packages are not effectively modular, so we face version conflicts, style collisions, etc.
-Also, we'd like to reduce the size of our bundle, so eventually, we aim to extract/externalize as much as possible and when possible import from an external package.
+In the past, we did bundle some packages provided by WordPress/WooCommerce instances. We did so to use a specific package version, for example, to ship a new feature we need, fix, or avoid a bug. However, bundling a package tends to introduce other errors, as some packages are not effectively modular, so we face version conflicts, style collisions, etc.
+Also, we'd like to reduce the size of our bundle, so eventually, we aim to extract/externalize as much as possible and import from an external package when possible.
 
-To help with that we implemented the `extracted/` prefix. It's also a custom implementation in [/webpack.config.js](/develop/webpack.config.js).
-Thanks to that even though a package is bundled, the given import would fetch it from external.
+To help with that, we had implemented the `extracted/` prefix in the past. It was also a custom implementation in [`webpack.config.js`](webpack.config.js).
+Thanks to that, even though a package is bundled, the given import would fetch it from external.
+
+Now, we have already externalized all DEWP-able packages, so we also removed the implementation of the `extracted/` prefix.
+If someday we ever need it again, please refer to:
+- The PR implemented it: https://github.com/woocommerce/google-listings-and-ads/pull/1762
+- The commit removed it: https://github.com/woocommerce/google-listings-and-ads/commit/5a2e20409a53ccb3b7fcbfe5c46988ca2b153b38
+Alternatively, we can consider an opposite approach and selectively **bundle** with a similar prefix implementation.
 
 ## NPM scripts
 
@@ -38,18 +44,50 @@ In a regular project to track outdated packages, you would use `npm outdated`. H
 
 ### What is the version of the DEWPed package?
 
-As we externalize packages we lose control of the version of the package that will run in the wild (on WordPress instance).
-However, with the current platform, we not only lose control, but we also lose the actual information on the range of package we should expect.
-So, even if we know we support WooCommerce 6.9+, what are the `@woocommerce/components` there?
+As we externalize a package, we lose control of its version that will run in the wild (on WordPress instance).
+However, with the current platform, we not only lose control, but we also lose the actual information on the range of package versions we should expect.
+So, even if we know we support WooCommerce L-2, what are the `@woocommerce/components` there?
 
-There is no published table of those, and finding them usually requires quite a lot of manual digging. To mitigate that we created another script.
+There is no published table of those, and finding them usually requires quite a lot of manual digging. To mitigate that, we created a tool: [`dewped`](https://github.com/woocommerce/dewped#dewped).
 
-- `npm run dewps:woo 6.9.4` - where `6.9.4` is the version of WooCommerce you would like to check.
+First, `latest-versions`/`l-x` helps you check the platform's current, latest, or L-x version:
 
-Please note this simple script still has several limitations.
-1. It works for WooCommerce deps only. WordPress ones are more tricky to get, as the list of packages is less static and regular. Theoretically, we should be able to [use dist-tags](https://github.com/WordPress/gutenberg/issues/24376), like `npm install @wordpress/components@wp-6.1.0` or `npx wp-scripts packages-update --dist-tag=wp-5.8`.
-2. It assumes all packages are prefixed with `@woocommerce/`
-3. You need to provide the exact full version. The latest, or `x.y` tree lines are not being resolved automatically.
-4. Some packages externalized by DEWP, are not packages we could find neither in npm nor in [`woocommerce/woocommerce/packages/js`](https://github.com/woocommerce/woocommerce/commits/trunk/packages/js/) 🤷
-5. It requires at least Node 18 to run.
+```bash
+$ dewped l-x
+Fetching L-2 versions wordpress!
+["6.3.1","6.2.2","6.1.3"]
+
+$ dewped l-x woocommerce 3
+Fetching L-3 versions woocommerce!
+["8.0.3","7.9.0","7.8.2","7.7.2"]
+```
+
+Then, with `platform-dependency-version`/`pdep` you may check which version of packages is expected to be present in the platform you target to support and compare it to the locally installed versions.
+
+```bash
+$ dewped pdep -w=6.2.2 -c=7.8.2 -d=.externalized.json
+ Name                               WordPress 6.2.2 WooCommerce 7.8.2 Local    
+ ────────────────────────────────── ─────────────── ───────────────── ──────── 
+ @woocommerce/components                            12.0.0            ^10.3.0  
+…
+```
+
+
+You can also use it to check an individual package. For example, when you consider adding a new dependency and want to check which version to anticipate
+
+```bash
+$ dewped pdep --wcVersion=7.8.2 @woocommerce/data 
+ Name              WooCommerce 7.8.2 Local  
+ ───────────────── ───────────────── ────── 
+ @woocommerce/data 4.1.0             ^4.1.0 
+```
+
+Please bear in mind there are still dragons:
+1. :warning: By the design of DEWP, there is absolutely no guarantee that the package will be there at the version reported by this tool. DEWP makes use of global variables available in runtime. So, any other extension or custom code running in a particular instance can overwrite what you expect in a package.
+2. The fact that `dewped pdep package` reports a version of a package does not mean it was actually externalized from your bundle. It only means WP/WC uses a reported version. To check what was effectively externalized, please inspect your Webpack config and DEWP report file (`externalizedReport`).
+3. Some packages externalized by DEWP, like `@woocommerce/settings`, are not packages we could find either in npm or in [`woocommerce/woocommerce/packages/js`](https://github.com/woocommerce/woocommerce/commits/trunk/packages/js/) 🤷. There may be no way for you to install them locally or even reason about their versions.
+4. The `dewped` tool implementation relies on the internal structure of WordPress and WooCommerce repos, which is not documented, considered API, or even stable. So, it may potentially change at any time, making this tool fail or return invalid results 🤷.
+
+(If any of the above caveats bothers you or makes you even even more confused, please refer to https://github.com/WordPress/gutenberg/issues/35630)
+
 
