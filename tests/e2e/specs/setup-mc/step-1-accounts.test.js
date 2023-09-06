@@ -64,6 +64,35 @@ test.describe( 'Set up accounts', () => {
 		await expect( continueButton ).toBeDisabled();
 	} );
 
+	test.describe( 'FAQ panels', () => {
+		test( 'should see two questions in FAQ', async () => {
+			const faqTitles = setUpAccountsPage.getFAQPanelTitle();
+			await expect( faqTitles ).toHaveCount( 2 );
+		} );
+
+		test( 'should not see FAQ rows when FAQ titles are not clicked', async () => {
+			const faqRows = setUpAccountsPage.getFAQPanelRow();
+			await expect( faqRows ).toHaveCount( 0 );
+		} );
+
+		test( 'should see one FAQ rows when the first FAQ title is clicked', async () => {
+			const faqTitle = setUpAccountsPage.getFAQPanelTitle().first();
+			await faqTitle.click();
+			const faqRow = setUpAccountsPage.getFAQPanelRow();
+			await expect( faqRow ).toBeVisible();
+		} );
+
+		test( 'should see two FAQ rows when two FAQ titles are clicked', async () => {
+			const faqTitle2 = setUpAccountsPage.getFAQPanelTitle().nth( 1 );
+			await faqTitle2.click();
+			const faqRows = setUpAccountsPage.getFAQPanelRow();
+			await expect( faqRows ).toHaveCount( 2 );
+			for ( const faqRow of await faqRows.all() ) {
+				await expect( faqRow ).toBeVisible();
+			}
+		} );
+	} );
+
 	test.describe( 'Connect WordPress.com account', () => {
 		test( 'should send an API request to connect Jetpack, and redirect to the returned URL', async ( {
 			baseURL,
