@@ -85,8 +85,6 @@ test.describe( 'Set up accounts', () => {
 			await setUpAccountsPage.mockGoogleNotConnected();
 
 			await setUpAccountsPage.goto();
-
-			page.getByRole( 'heading', { name: 'Set up your accounts' } );
 		} );
 
 		test( 'should see their WPORG email, "Google" title & connect button', async () => {
