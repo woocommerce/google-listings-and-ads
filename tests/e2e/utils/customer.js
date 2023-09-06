@@ -12,6 +12,7 @@ const { expect } = require( '@playwright/test' );
 /**
  * Internal dependencies
  */
+import { LOAD_STATE } from './constants';
 const config = require( '../config/default.json' );
 
 /**
@@ -30,7 +31,7 @@ export async function singleProductAddToCart( page, productID ) {
 	).toBeVisible();
 
 	// Wait till all tracking event request have been sent after page reloaded.
-	await page.waitForLoadState( 'networkidle' );
+	await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
 }
 
 /**

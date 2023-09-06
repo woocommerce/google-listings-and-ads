@@ -1,5 +1,13 @@
-const { chromium, expect } = require( '@playwright/test' );
+/**
+ * Internal dependencies
+ */
 const { admin } = require( './config/default.json' ).users;
+const { LOAD_STATE } = require( './utils/constants' );
+
+/**
+ * External dependencies
+ */
+const { chromium, expect } = require( '@playwright/test' );
 const fs = require( 'fs' );
 
 /* eslint-disable no-console */
@@ -48,9 +56,9 @@ module.exports = async ( config ) => {
 				.locator( 'input[name="pwd"]' )
 				.fill( admin.password );
 			await adminPage.locator( 'text=Log In' ).click();
-			await adminPage.waitForLoadState( 'networkidle' );
+			await adminPage.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
 			await adminPage.goto( `/wp-admin` );
-			await adminPage.waitForLoadState( 'domcontentloaded' );
+			await adminPage.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
 			await expect( adminPage.locator( 'div.wrap > h1' ) ).toHaveText(
 				'Dashboard'

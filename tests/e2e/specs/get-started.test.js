@@ -1,4 +1,9 @@
 /**
+ * Internal dependencies
+ */
+import { LOAD_STATE } from '../utils/constants';
+
+/**
  * External dependencies
  */
 const { test, expect } = require( '@playwright/test' );
@@ -22,13 +27,13 @@ test( 'Merchant who is getting started clicks on the Marketing > GLA link, click
 	// the submenu is now opened, the GLA sub menu item is now visible to the user,
 	// we can call `click` now.
 	await page.getByRole( 'link', { name: 'Google Listings & Ads' } ).click();
-	await page.waitForLoadState( 'networkidle' );
+	await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
 
 	await expect( page ).toHaveTitle( /Google Listings & Ads/ );
 
 	// click on the call-to-action button.
 	await page.getByText( 'Start listing products →' ).first().click();
-	await page.waitForLoadState( 'networkidle' );
+	await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
 
 	// Check we are in the Setup MC page.
 	await expect(
