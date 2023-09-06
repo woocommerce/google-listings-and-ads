@@ -295,6 +295,24 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
+	 * Get WordPress account card.
+	 *
+	 * @return {import('@playwright/test').Locator} Get WordPress account card.
+	 */
+	getWPAccountCard() {
+		return this.getAccountCards().first();
+	}
+
+	/**
+	 * Get Google account card.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Google account card.
+	 */
+	getGoogleAccountCard() {
+		return this.getAccountCards().nth( 1 );
+	}
+
+	/**
 	 * Get Merchant Center account card.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Merchant Center account card.
@@ -319,5 +337,17 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getMCCardFooterButton() {
 		return this.getMCCardFooter().getByRole( 'button' );
+	}
+
+	/**
+	 * Get "Continue" button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get "Continue" button.
+	 */
+	getContinueButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Continue',
+			exact: true,
+		} );
 	}
 }

@@ -49,6 +49,19 @@ test.describe( 'Set up accounts', () => {
 		await expect(
 			page.getByRole( 'button', { name: 'Connect' } ).first()
 		).toBeEnabled();
+
+		const wpAccountCard = setUpAccountsPage.getWPAccountCard();
+		await expect( wpAccountCard ).toBeEnabled();
+		await expect( wpAccountCard ).toContainText( 'WordPress.com' );
+
+		const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
+		await expect( googleAccountCard.getByRole( 'button' ) ).toBeDisabled();
+
+		const mcAccountCard = setUpAccountsPage.getMCAccountCard();
+		await expect( mcAccountCard.getByRole( 'button' ) ).toBeDisabled();
+
+		const continueButton = setUpAccountsPage.getContinueButton();
+		await expect( continueButton ).toBeDisabled();
 	} );
 
 	test.describe( 'Connect WordPress.com account', () => {
@@ -96,13 +109,23 @@ test.describe( 'Set up accounts', () => {
 				'jetpack@example.com'
 			);
 
+			const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
+
 			await expect(
-				page.getByText( 'Google', { exact: true } )
+				googleAccountCard.getByText( 'Google', { exact: true } )
 			).toBeVisible();
 
 			await expect(
-				page.getByRole( 'button', { name: 'Connect' } ).first()
+				googleAccountCard
+					.getByRole( 'button', { name: 'Connect' } )
+					.first()
 			).toBeEnabled();
+
+			const mcAccountCard = setUpAccountsPage.getMCAccountCard();
+			await expect( mcAccountCard.getByRole( 'button' ) ).toBeDisabled();
+
+			const continueButton = setUpAccountsPage.getContinueButton();
+			await expect( continueButton ).toBeDisabled();
 		} );
 
 		test( 'after clicking the "Connect your Google account" button should send an API request to connect Google account, and redirect to the returned URL', async ( {
@@ -171,6 +194,9 @@ test.describe( 'Set up accounts', () => {
 				const createAccountButton =
 					setUpAccountsPage.getMCCreateAccountButtonFromPage();
 				await expect( createAccountButton ).toBeEnabled();
+
+				const continueButton = setUpAccountsPage.getContinueButton();
+				await expect( continueButton ).toBeDisabled();
 			} );
 
 			test( 'click "Create account" button should see the modal of confirmation of creating account', async () => {
@@ -227,6 +253,10 @@ test.describe( 'Set up accounts', () => {
 						await expect( mcDescriptionRow ).toContainText(
 							`${ host } (12345)`
 						);
+
+						const continueButton =
+							setUpAccountsPage.getContinueButton();
+						await expect( continueButton ).toBeEnabled();
 					} );
 
 					test.describe(
@@ -287,6 +317,10 @@ test.describe( 'Set up accounts', () => {
 								await expect( reclaimingURLInput ).toHaveValue(
 									baseURL
 								);
+
+								const continueButton =
+									setUpAccountsPage.getContinueButton();
+								await expect( continueButton ).toBeDisabled();
 							} );
 
 							test( 'click "Reclaim my URL" should send a claim overwrite request and see Merchant Center "Connected"', async ( {
@@ -319,6 +353,10 @@ test.describe( 'Set up accounts', () => {
 								await expect( mcDescriptionRow ).toContainText(
 									`${ host } (12345)`
 								);
+
+								const continueButton =
+									setUpAccountsPage.getContinueButton();
+								await expect( continueButton ).toBeEnabled();
 							} );
 						}
 					);
@@ -373,6 +411,12 @@ test.describe( 'Set up accounts', () => {
 					await expect( connectButton ).toBeEnabled();
 				} );
 
+				test( 'should see "Continue" button is disabled', async () => {
+					const continueButton =
+						setUpAccountsPage.getContinueButton();
+					await expect( continueButton ).toBeDisabled();
+				} );
+
 				test( 'select MC Account 2 and click "Connect" button should see Merchant Center "Connected"', async ( {
 					baseURL,
 				} ) => {
@@ -408,6 +452,10 @@ test.describe( 'Set up accounts', () => {
 					await expect( mcDescriptionRow ).toContainText(
 						`${ host } (23456)`
 					);
+
+					const continueButton =
+						setUpAccountsPage.getContinueButton();
+					await expect( continueButton ).toBeEnabled();
 				} );
 			} );
 
