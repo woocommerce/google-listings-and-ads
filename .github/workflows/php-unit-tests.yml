@@ -40,6 +40,7 @@ jobs:
         uses: woocommerce/grow/get-plugin-releases@actions-v1
         with:
           slug: woocommerce
+          includeRC: true
           
   UnitTests:
     name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version || 'latest' }}, WC ${{ matrix.wc-versions || 'latest' }}
