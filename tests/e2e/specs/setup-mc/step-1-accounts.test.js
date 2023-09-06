@@ -553,4 +553,32 @@ test.describe( 'Set up accounts', () => {
 			);
 		} );
 	} );
+
+	test.describe( 'Links', () => {
+		test( 'should contain the correct URL for "Google Merchant Center Help" link', async () => {
+			await setUpAccountsPage.goto();
+			const link = setUpAccountsPage.getMCHelpLink();
+			await expect( link ).toBeVisible();
+			await expect( link ).toHaveAttribute(
+				'href',
+				'https://support.google.com/merchants/topic/9080307'
+			);
+		} );
+
+		test( 'should contain the correct URL for CSS Partners link', async () => {
+			const cssPartersLink =
+				'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/';
+			const link = setUpAccountsPage.getCSSPartnersLink();
+			await expect( link ).toBeVisible();
+			await expect( link ).toHaveAttribute( 'href', cssPartersLink );
+
+			const faqTitle2 = setUpAccountsPage.getFAQPanelTitle().nth( 1 );
+			await faqTitle2.click();
+			const linkInFAQ = setUpAccountsPage.getCSSPartnersLink(
+				'Please find more information here'
+			);
+			await expect( linkInFAQ ).toBeVisible();
+			await expect( linkInFAQ ).toHaveAttribute( 'href', cssPartersLink );
+		} );
+	} );
 } );

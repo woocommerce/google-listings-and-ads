@@ -377,4 +377,30 @@ export default class SetUpAccountsPage extends MockRequests {
 	getFAQPanelRow() {
 		return this.getFAQPanel().locator( '.components-panel__row' );
 	}
+
+	/**
+	 * Get link of Google Merchant Center Help.
+	 *
+	 * @return {import('@playwright/test').Locator} Get link of Google Merchant Center Help.
+	 */
+	getMCHelpLink() {
+		return this.page.getByRole( 'link', {
+			name: 'Google Merchant Center Help',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get link of CSS partners.
+	 *
+	 * @param {string} name
+	 *
+	 * @return {import('@playwright/test').Locator} Get link of CSS partners.
+	 */
+	getCSSPartnersLink( name = 'here' ) {
+		return this.page.getByRole( 'link', {
+			name,
+			exact: true,
+		} );
+	}
 }
