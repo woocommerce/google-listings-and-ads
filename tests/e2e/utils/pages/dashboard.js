@@ -1,6 +1,7 @@
 /**
  * Internal dependencies
  */
+import { LOAD_STATE } from '../constants';
 import MockRequests from '../mock-requests';
 
 /**
@@ -84,7 +85,7 @@ export default class DashboardPage extends MockRequests {
 	async goto() {
 		await this.page.goto(
 			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard',
-			{ waitUntil: 'domcontentloaded' }
+			{ waitUntil: LOAD_STATE.DOM_CONTENT_LOADED }
 		);
 	}
 

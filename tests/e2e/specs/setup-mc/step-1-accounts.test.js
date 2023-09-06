@@ -1,7 +1,8 @@
 /**
  * Internal dependencies
  */
-import SetUpAccountsPage from '../../utils/pages/setup-mc/step-1-set-up-accounts.js';
+import SetUpAccountsPage from '../../utils/pages/setup-mc/step-1-set-up-accounts';
+import { LOAD_STATE } from '../../utils/constants';
 
 /**
  * External dependencies
@@ -61,7 +62,7 @@ test.describe( 'Set up accounts', () => {
 			page.locator(
 				"//button[text()='Connect'][not(@disabled)]"
 			).click();
-			await page.waitForLoadState( 'networkidle' );
+			await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
 
 			// Expect the user to be redirected
 			await page.waitForURL( baseURL + 'auth_url' );
@@ -116,7 +117,7 @@ test.describe( 'Set up accounts', () => {
 			page.locator(
 				"//button[text()='Connect'][not(@disabled)]"
 			).click();
-			await page.waitForLoadState( 'networkidle' );
+			await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
 
 			// Expect the user to be redirected
 			await page.waitForURL( baseURL + 'google_auth' );
@@ -177,7 +178,7 @@ test.describe( 'Set up accounts', () => {
 				const createAccountButton =
 					setUpAccountsPage.getMCCreateAccountButtonFromPage();
 				await createAccountButton.click();
-				await page.waitForLoadState( 'domcontentloaded' );
+				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
 				const modalHeader = setUpAccountsPage.getModalHeader();
 				await expect( modalHeader ).toContainText(
@@ -213,7 +214,7 @@ test.describe( 'Set up accounts', () => {
 						const createAccountButtonFromModal =
 							setUpAccountsPage.getMCCreateAccountButtonFromModal();
 						await createAccountButtonFromModal.click();
-						await page.waitForLoadState( 'networkidle' );
+						await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
 						const mcConnectedLabel =
 							setUpAccountsPage.getMCConnectedLabel();
 						await expect( mcConnectedLabel ).toContainText(
@@ -257,7 +258,7 @@ test.describe( 'Set up accounts', () => {
 									setUpAccountsPage.getMCCreateAccountButtonFromPage();
 								await createAccountButton.click();
 								await page.waitForLoadState(
-									'domcontentloaded'
+									LOAD_STATE.DOM_CONTENT_LOADED
 								);
 
 								// Check the checkbox to accept ToS.
@@ -269,7 +270,7 @@ test.describe( 'Set up accounts', () => {
 								const createAccountButtonFromModal =
 									setUpAccountsPage.getMCCreateAccountButtonFromModal();
 								await createAccountButtonFromModal.click();
-								await page.waitForLoadState( 'networkidle' );
+								await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
 
 								const reclaimButton =
 									setUpAccountsPage.getReclaimMyURLButton();
@@ -304,7 +305,7 @@ test.describe( 'Set up accounts', () => {
 								const reclaimButton =
 									setUpAccountsPage.getReclaimMyURLButton();
 								await reclaimButton.click();
-								await page.waitForLoadState( 'networkidle' );
+								await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
 
 								const mcConnectedLabel =
 									setUpAccountsPage.getMCConnectedLabel();
@@ -393,7 +394,7 @@ test.describe( 'Set up accounts', () => {
 					// Click connect button
 					const connectButton = setUpAccountsPage.getConnectButton();
 					await connectButton.click();
-					await page.waitForLoadState( 'networkidle' );
+					await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
 
 					const mcConnectedLabel =
 						setUpAccountsPage.getMCConnectedLabel();
@@ -443,7 +444,7 @@ test.describe( 'Set up accounts', () => {
 						const mcFooterButton =
 							setUpAccountsPage.getMCCardFooterButton();
 						await mcFooterButton.click();
-						await page.waitForLoadState( 'domcontentloaded' );
+						await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
 						const modalHeader = setUpAccountsPage.getModalHeader();
 						await expect( modalHeader ).toContainText(

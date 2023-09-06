@@ -1,6 +1,7 @@
 /**
  * Internal dependencies
  */
+import { LOAD_STATE } from '../../constants';
 import MockRequests from '../../mock-requests';
 
 /**
@@ -32,7 +33,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	async goto() {
 		await this.page.goto(
 			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc',
-			{ waitUntil: 'networkidle' }
+			{ waitUntil: LOAD_STATE.NETWORK_IDLE }
 		);
 	}
 
