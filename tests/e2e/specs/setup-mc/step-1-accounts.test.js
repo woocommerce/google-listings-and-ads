@@ -65,6 +65,8 @@ test.describe( 'Set up accounts', () => {
 
 			// Expect the user to be redirected
 			await page.waitForURL( baseURL + 'auth_url' );
+
+			expect( page.url() ).toMatch( baseURL + 'auth_url' );
 		} );
 	} );
 
@@ -120,6 +122,8 @@ test.describe( 'Set up accounts', () => {
 
 			// Expect the user to be redirected
 			await page.waitForURL( baseURL + 'google_auth' );
+
+			expect( page.url() ).toMatch( baseURL + 'google_auth' );
 		} );
 	} );
 
