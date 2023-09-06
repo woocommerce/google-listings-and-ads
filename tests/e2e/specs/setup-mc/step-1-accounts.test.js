@@ -143,7 +143,7 @@ test.describe( 'Set up accounts', () => {
 			] );
 		} );
 
-		test.describe( 'Create a new Merchant Center account', () => {
+		test.describe( 'Merchant Center has no existing accounts', () => {
 			test.beforeAll( async () => {
 				// Mock merchant center has no accounts
 				await setUpAccountsPage.mockMCHasNoAccounts();
