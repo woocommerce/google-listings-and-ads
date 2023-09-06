@@ -300,7 +300,9 @@ test.describe( 'Set up accounts', () => {
 								const createAccountButtonFromModal =
 									setUpAccountsPage.getMCCreateAccountButtonFromModal();
 								await createAccountButtonFromModal.click();
-								await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
+								await page.waitForLoadState(
+									LOAD_STATE.NETWORK_IDLE
+								);
 
 								const reclaimButton =
 									setUpAccountsPage.getReclaimMyURLButton();
@@ -339,7 +341,9 @@ test.describe( 'Set up accounts', () => {
 								const reclaimButton =
 									setUpAccountsPage.getReclaimMyURLButton();
 								await reclaimButton.click();
-								await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
+								await page.waitForLoadState(
+									LOAD_STATE.NETWORK_IDLE
+								);
 
 								const mcConnectedLabel =
 									setUpAccountsPage.getMCConnectedLabel();
@@ -492,7 +496,9 @@ test.describe( 'Set up accounts', () => {
 						const mcFooterButton =
 							setUpAccountsPage.getMCCardFooterButton();
 						await mcFooterButton.click();
-						await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+						await page.waitForLoadState(
+							LOAD_STATE.DOM_CONTENT_LOADED
+						);
 
 						const modalHeader = setUpAccountsPage.getModalHeader();
 						await expect( modalHeader ).toContainText(
