@@ -31,6 +31,19 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the WC options default country request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillWCDefaultCountry( payload ) {
+		await this.fulfillRequest(
+			/wc-admin\/options\?options=woocommerce_default_country\b/,
+			payload
+		);
+	}
+
+	/**
 	 * Fulfill the MC Report Program request.
 	 *
 	 * @param {Object} payload
@@ -52,6 +65,19 @@ export default class MockRequests {
 	async fulfillTargetAudience( payload ) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/mc\/target_audience\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill the Target Audience suggestions request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillTargetAudienceSuggestions( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/target_audience\/suggestions\b/,
 			payload
 		);
 	}
@@ -94,6 +120,16 @@ export default class MockRequests {
 	 */
 	async fulfillMCConnection( payload ) {
 		await this.fulfillRequest( /\/wc\/gla\/mc\/connection\b/, payload );
+	}
+
+	/**
+	 * Fulfill the MC setup request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillMCSetup( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/mc\/setup\b/, payload );
 	}
 
 	/**
@@ -317,6 +353,19 @@ export default class MockRequests {
 			subaccount: null,
 			name: null,
 			domain: null,
+		} );
+	}
+
+	/**
+	 * Mock MC setup.
+	 *
+	 * @param {string} status
+	 * @param {string} step
+	 */
+	async mockMCSetup( status = 'incomplete', step = 'accounts' ) {
+		await this.fulfillMCSetup( {
+			status,
+			step,
 		} );
 	}
 }
