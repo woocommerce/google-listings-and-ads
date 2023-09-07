@@ -6,6 +6,7 @@ import $ from 'jquery';
 /**
  * Internal dependencies
  */
+import './custom-inputs';
 import './index.scss';
 
 const applicableProductTypes = new Set( [

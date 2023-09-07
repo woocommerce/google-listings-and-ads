@@ -1,9 +1,14 @@
 /**
+ * External dependencies
+ */
+import $ from 'jquery';
+
+/**
  * Internal dependencies
  */
 import selectWithText from './select-with-text-input';
 
-window.jQuery( function ( $ ) {
+$( function () {
 	'use strict';
 
 	const init = () => {

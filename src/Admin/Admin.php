@@ -153,13 +153,6 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 		};
 
 		$assets[] = ( new AdminScriptAsset(
-			'gla-custom-inputs',
-			'js/build/custom-inputs',
-			[],
-			'',
-			$product_condition
-		) );
-		$assets[] = ( new AdminScriptAsset(
 			'gla-product-attributes',
 			'js/build/product-attributes',
 			[],
