@@ -100,25 +100,9 @@ class AttributesTab implements Service, Registerable, Conditional {
 	 * @return array An array with product tabs with the Yoast SEO tab added.
 	 */
 	private function add_tab( array $tabs ): array {
-		$shown_types = array_map(
-			function ( string $product_type ) {
-				return "show_if_{$product_type}";
-			},
-			$this->get_applicable_product_types()
-		);
-
-		$hidden_types = array_map(
-			function ( string $product_type ) {
-				return "hide_if_{$product_type}";
-			},
-			ProductSyncer::get_hidden_product_types()
-		);
-
-		$classes = array_merge( [ 'gla' ], $shown_types, $hidden_types );
-
 		$tabs['gla_attributes'] = [
 			'label'  => 'Google Listings and Ads',
-			'class'  => join( ' ', $classes ),
+			'class'  => 'gla',
 			'target' => 'gla_attributes',
 		];
 

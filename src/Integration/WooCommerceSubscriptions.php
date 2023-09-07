@@ -31,13 +31,6 @@ class WooCommerceSubscriptions implements IntegrationInterface {
 	 * @return void
 	 */
 	public function init(): void {
-		add_filter(
-			'woocommerce_gla_hidden_product_types',
-			function ( array $product_types ) {
-				$product_types[] = 'subscription';
-				$product_types[] = 'variable-subscription';
-				return $product_types;
-			}
-		);
+		// No required adjustments yet.
 	}
 }
