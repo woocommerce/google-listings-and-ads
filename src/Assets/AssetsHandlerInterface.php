@@ -13,18 +13,18 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidAsset;
 interface AssetsHandlerInterface {
 
 	/**
-	 * Add a single asset to the asset handler.
+	 * Register a single asset.
 	 *
-	 * @param Asset $asset Asset to add.
+	 * @param Asset $asset Asset to register.
 	 */
-	public function add( Asset $asset ): void;
+	public function register( Asset $asset ): void;
 
 	/**
-	 * Add multiple assets to the asset handler.
+	 * Register multiple assets.
 	 *
-	 * @param Asset[] $assets Array of assets to add.
+	 * @param Asset[] $assets Array of assets to register.
 	 */
-	public function add_many( array $assets ): void;
+	public function register_many( array $assets ): void;
 
 	/**
 	 * Enqueue a single asset.
@@ -33,8 +33,8 @@ interface AssetsHandlerInterface {
 	 *
 	 * @throws InvalidAsset If the passed-in asset is not valid.
 	 *
-	 * @see AssetsHandlerInterface::add To add assets.
-	 * @see AssetsHandlerInterface::add_many To add multiple assets.
+	 * @see AssetsHandlerInterface::register To register assets.
+	 * @see AssetsHandlerInterface::register_many To register multiple assets.
 	 */
 	public function enqueue( Asset $asset ): void;
 
@@ -45,8 +45,8 @@ interface AssetsHandlerInterface {
 	 *
 	 * @throws InvalidAsset If any of the passed-in assets are not valid.
 	 *
-	 * @see AssetsHandlerInterface::add To add assets.
-	 * @see AssetsHandlerInterface::add_many To add multiple assets.
+	 * @see AssetsHandlerInterface::register To register assets.
+	 * @see AssetsHandlerInterface::register_many To register multiple assets.
 	 */
 	public function enqueue_many( array $assets ): void;
 

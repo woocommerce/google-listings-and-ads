@@ -6,17 +6,9 @@ import $ from 'jquery';
 /**
  * Internal dependencies
  */
+import { glaData } from '.~/constants';
 import './custom-inputs';
 import './index.scss';
-
-const applicableProductTypes = new Set( [
-	// Simple product
-	'simple',
-	// Variable product
-	'variable',
-	// Product bundle from WooCommerce Product Bundles
-	'bundle',
-] );
 
 // Originally, this extension relied on a WooCommerce core processing to show or hide
 // the product data tab and meta box added to the product editing page.
@@ -39,7 +31,9 @@ $( document ).on(
 	'woocommerce-product-type-change',
 	'body',
 	( e, productType ) => {
-		const shouldDisplay = applicableProductTypes.has( productType );
+		const shouldDisplay =
+			glaData.applicableProductTypes.includes( productType );
+
 		$( '.gla_attributes_tab, .gla_meta_box' ).toggle( shouldDisplay );
 	}
 );
