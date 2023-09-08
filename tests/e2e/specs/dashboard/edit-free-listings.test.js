@@ -2,10 +2,12 @@
  * External dependencies
  */
 import { expect, test } from '@playwright/test';
+
 /**
  * Internal dependencies
  */
 import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
+import { LOAD_STATE } from '../../utils/constants';
 import { checkSnackBarMessage } from '../../utils/page';
 import DashboardPage from '../../utils/pages/dashboard.js';
 import EditFreeListingsPage from '../../utils/pages/edit-free-listings.js';
@@ -55,7 +57,7 @@ test.describe( 'Edit Free Listings', () => {
 	test( 'Edit Free Listings should show modal', async () => {
 		await dashboardPage.clickEditFreeListings();
 
-		await page.waitForLoadState( 'domcontentloaded' );
+		await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
 		const continueToEditButton =
 			await dashboardPage.getContinueToEditButton();
@@ -66,7 +68,7 @@ test.describe( 'Edit Free Listings', () => {
 
 	test( 'Continue to edit Free listings', async () => {
 		await dashboardPage.clickContinueToEditButton();
-		await page.waitForLoadState( 'domcontentloaded' );
+		await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	} );
 
 	test( 'Check recommended shipping settings', async () => {
