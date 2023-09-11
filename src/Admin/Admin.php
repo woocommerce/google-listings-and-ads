@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
@@ -17,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -72,8 +72,6 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 	 * Register a service.
 	 */
 	public function register(): void {
-		$this->assets_handler->add_many( $this->get_assets() );
-
 		add_action(
 			'admin_enqueue_scripts',
 			function() {
@@ -82,7 +80,10 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 					wp_enqueue_media();
 				}
 
-				$this->assets_handler->enqueue_many( $this->get_assets() );
+				$assets = $this->get_assets();
+
+				$this->assets_handler->register_many( $assets );
+				$this->assets_handler->enqueue_many( $assets );
 			}
 		);
 
@@ -135,7 +136,6 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 				'dateFormat'               => get_option( 'date_format' ),
 				'timeFormat'               => get_option( 'time_format' ),
 				'siteLogoUrl'              => wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
-
 			]
 		);
 
@@ -152,13 +152,24 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 			return ( null !== $screen && 'product' === $screen->id );
 		};
 
-		$assets[] = ( new AdminScriptAsset(
-			'gla-custom-inputs',
-			'js/build/custom-inputs',
-			[],
-			'',
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+			'gla-product-attributes',
+			'js/build/product-attributes',
+			"{$this->get_root_dir()}/js/build/product-attributes.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/product-attributes.js" ),
+				]
+			),
 			$product_condition
-		) );
+		) )->add_inline_script(
+			'glaProductData',
+			[
+				'applicableProductTypes' => ProductSyncer::get_supported_product_types(),
+			]
+		);
+
 		$assets[] = ( new AdminStyleAsset(
 			'gla-product-attributes-css',
 			'js/build/product-attributes',

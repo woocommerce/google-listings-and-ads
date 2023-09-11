@@ -74,11 +74,6 @@ const webpackConfig = {
 	],
 	entry: {
 		index: path.resolve( process.cwd(), 'js/src', 'index.js' ),
-		'custom-inputs': path.resolve(
-			process.cwd(),
-			'js/src/custom-inputs',
-			'index.js'
-		),
 		'product-attributes': path.resolve(
 			process.cwd(),
 			'js/src/product-attributes',

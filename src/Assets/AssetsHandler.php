@@ -4,14 +4,13 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidAsset;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 
 /**
  * Class AssetsHandler
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Assets
  */
-final class AssetsHandler implements Registerable, AssetsHandlerInterface {
+final class AssetsHandler implements AssetsHandlerInterface {
 
 	/**
 	 * Assets known to this asset handler.
@@ -21,32 +20,24 @@ final class AssetsHandler implements Registerable, AssetsHandlerInterface {
 	private $assets = [];
 
 	/**
-	 * Add a single asset to the asset handler.
+	 * Register a single asset.
 	 *
-	 * @param Asset $asset Asset to add.
+	 * @param Asset $asset Asset to register.
 	 */
-	public function add( Asset $asset ): void {
+	public function register( Asset $asset ): void {
 		$this->validate_handle_not_exists( $asset->get_handle() );
 		$this->assets[ $asset->get_handle() ] = $asset;
+		$asset->register();
 	}
 
 	/**
-	 * Add multiple assets to the asset handler.
+	 * Register multiple assets.
 	 *
-	 * @param Asset[] $assets Array of assets to add.
+	 * @param Asset[] $assets Array of assets to register.
 	 */
-	public function add_many( array $assets ): void {
+	public function register_many( array $assets ): void {
 		foreach ( $assets as $asset ) {
-			$this->add( $asset );
-		}
-	}
-
-	/**
-	 * Register a service.
-	 */
-	public function register(): void {
-		foreach ( $this->assets as $asset ) {
-			$asset->register();
+			$this->register( $asset );
 		}
 	}
 
@@ -57,8 +48,8 @@ final class AssetsHandler implements Registerable, AssetsHandlerInterface {
 	 *
 	 * @throws InvalidAsset If the passed-in asset is not valid.
 	 *
-	 * @see AssetsHandlerInterface::add To add assets.
-	 * @see AssetsHandlerInterface::add_many To add multiple assets.
+	 * @see AssetsHandlerInterface::register To register assets.
+	 * @see AssetsHandlerInterface::register_many To register multiple assets.
 	 */
 	public function enqueue( Asset $asset ): void {
 		$this->enqueue_handle( $asset->get_handle() );
@@ -71,8 +62,8 @@ final class AssetsHandler implements Registerable, AssetsHandlerInterface {
 	 *
 	 * @throws InvalidAsset If any of the passed-in assets are not valid.
 	 *
-	 * @see AssetsHandlerInterface::add To add assets.
-	 * @see AssetsHandlerInterface::add_many To add multiple assets.
+	 * @see AssetsHandlerInterface::register To register assets.
+	 * @see AssetsHandlerInterface::register_many To register multiple assets.
 	 */
 	public function enqueue_many( array $assets ): void {
 		foreach ( $assets as $asset ) {
