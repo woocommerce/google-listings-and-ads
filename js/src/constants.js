@@ -1,4 +1,9 @@
+// An inline script data only available for the admin pages of this extension.
 export const glaData = window.glaData;
+
+// An inline script data only available for the UI blocks that are added to the
+// product editing page by this extension.
+export const glaProductData = window.glaProductData;
 
 export const FREE_LISTINGS_PROGRAM_ID = 0;
 

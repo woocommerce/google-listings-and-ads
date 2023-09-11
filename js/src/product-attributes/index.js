@@ -6,7 +6,7 @@ import $ from 'jquery';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
+import { glaProductData } from '.~/constants';
 import './custom-inputs';
 import './index.scss';
 
@@ -32,7 +32,7 @@ $( document ).on(
 	'body',
 	( e, productType ) => {
 		const shouldDisplay =
-			glaData.applicableProductTypes.includes( productType );
+			glaProductData.applicableProductTypes.includes( productType );
 
 		$( '.gla_attributes_tab, .gla_meta_box' ).toggle( shouldDisplay );
 	}

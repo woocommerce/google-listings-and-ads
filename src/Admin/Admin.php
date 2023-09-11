@@ -113,22 +113,6 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 			return wc_admin_is_registered_page();
 		};
 
-		$gla_data_inline_script_args = [
-			'glaData',
-			[
-				'mcSetupComplete'          => $this->merchant_center->is_setup_complete(),
-				'mcSupportedCountry'       => $this->merchant_center->is_store_country_supported(),
-				'mcSupportedLanguage'      => $this->merchant_center->is_language_supported(),
-				'adsCampaignConvertStatus' => $this->options->get( OptionsInterface::CAMPAIGN_CONVERT_STATUS ),
-				'adsSetupComplete'         => $this->ads->is_setup_complete(),
-				'enableReports'            => $this->enableReports(),
-				'dateFormat'               => get_option( 'date_format' ),
-				'timeFormat'               => get_option( 'time_format' ),
-				'siteLogoUrl'              => wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
-				'applicableProductTypes'   => ProductSyncer::get_supported_product_types(),
-			],
-		];
-
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads',
 			'js/build/index',
@@ -140,7 +124,20 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 				]
 			),
 			$wc_admin_condition
-		) )->add_inline_script( ...$gla_data_inline_script_args );
+		) )->add_inline_script(
+			'glaData',
+			[
+				'mcSetupComplete'          => $this->merchant_center->is_setup_complete(),
+				'mcSupportedCountry'       => $this->merchant_center->is_store_country_supported(),
+				'mcSupportedLanguage'      => $this->merchant_center->is_language_supported(),
+				'adsCampaignConvertStatus' => $this->options->get( OptionsInterface::CAMPAIGN_CONVERT_STATUS ),
+				'adsSetupComplete'         => $this->ads->is_setup_complete(),
+				'enableReports'            => $this->enableReports(),
+				'dateFormat'               => get_option( 'date_format' ),
+				'timeFormat'               => get_option( 'time_format' ),
+				'siteLogoUrl'              => wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
+			]
+		);
 
 		$assets[] = ( new AdminStyleAsset(
 			'google-listings-and-ads-css',
@@ -166,7 +163,12 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 				]
 			),
 			$product_condition
-		) )->add_inline_script( ...$gla_data_inline_script_args );
+		) )->add_inline_script(
+			'glaProductData',
+			[
+				'applicableProductTypes' => ProductSyncer::get_supported_product_types(),
+			]
+		);
 
 		$assets[] = ( new AdminStyleAsset(
 			'gla-product-attributes-css',
