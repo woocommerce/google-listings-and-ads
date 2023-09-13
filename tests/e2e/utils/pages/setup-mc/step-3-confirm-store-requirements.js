@@ -227,6 +227,42 @@ export default class StoreRequirements extends MockRequests {
 	}
 
 	/**
+	 * Get learn more link.
+	 *
+	 * @return {import('@playwright/test').Locator} Get learn more link.
+	 */
+	getLearnMoreLink() {
+		return this.page.getByRole( 'link', {
+			name: 'Learn more',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get read google merchant center requirements link.
+	 *
+	 * @return {import('@playwright/test').Locator} Get read google merchant center requirements link.
+	 */
+	getReadGoogleMerchantCenterRequirementsLink() {
+		return this.page.getByRole( 'link', {
+			name: 'Read Google Merchant Center requirements',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get WooCommerce settings link.
+	 *
+	 * @return {import('@playwright/test').Locator} Get WooCommerce settings link.
+	 */
+	getWooCommerceSettingsLink() {
+		return this.page.getByRole( 'link', {
+			name: 'WooCommerce settings',
+			exact: true,
+		} );
+	}
+
+	/**
 	 * Fill country code.
 	 *
 	 * @param {string} code

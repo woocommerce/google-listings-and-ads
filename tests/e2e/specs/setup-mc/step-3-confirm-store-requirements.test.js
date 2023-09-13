@@ -213,6 +213,36 @@ test.describe( 'Confirm store requirements', () => {
 		} );
 	} );
 
+	test.describe( 'Links', () => {
+		test( 'should contain the correct URL for "Learn more" link', async () => {
+			const link = storeRequirements.getLearnMoreLink();
+			await expect( link ).toBeVisible();
+			await expect( link ).toHaveAttribute(
+				'href',
+				'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information'
+			);
+		} );
+
+		test( 'should contain the correct URL for "Read Google Merchant Center requirements" link', async () => {
+			const link =
+				storeRequirements.getReadGoogleMerchantCenterRequirementsLink();
+			await expect( link ).toBeVisible();
+			await expect( link ).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/google-listings-and-ads/compliance-policy'
+			);
+		} );
+
+		test( 'should contain the correct URL for "WooCommerce settings" link', async () => {
+			const link = storeRequirements.getWooCommerceSettingsLink();
+			await expect( link ).toBeVisible();
+			await expect( link ).toHaveAttribute(
+				'href',
+				'admin.php?page=wc-settings'
+			);
+		} );
+	} );
+
 	test.describe( 'Pre-Launch Checklist', () => {
 		test.beforeAll( async () => {
 			// Mock MC contact information
