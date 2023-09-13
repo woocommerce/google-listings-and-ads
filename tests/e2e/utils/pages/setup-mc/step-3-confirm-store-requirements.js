@@ -165,6 +165,18 @@ export default class StoreRequirements extends MockRequests {
 	}
 
 	/**
+	 * Get store address refresh to sync button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get store address refresh to sync button.
+	 */
+	getStoreAddressRefreshToSyncButton() {
+		return this.getStoreAddressCard().getByRole( 'button', {
+			name: 'Refresh to sync',
+			exact: true,
+		} );
+	}
+
+	/**
 	 * Get pre-launch checklist checkboxes.
 	 *
 	 * @return {import('@playwright/test').Locator} Get pre-launch checklist checkboxes.

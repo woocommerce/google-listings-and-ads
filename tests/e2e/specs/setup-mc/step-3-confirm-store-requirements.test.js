@@ -171,6 +171,48 @@ test.describe( 'Confirm store requirements', () => {
 		} );
 	} );
 
+	test.describe( 'Store address', () => {
+		test.beforeAll( async () => {
+			// Mock MC contact information
+			await storeRequirements.mockContactInformation( {
+				phoneNumber: '+18888888888',
+				phoneVerificationStatus: 'verified',
+				streetAddress: 'Automata Road',
+			} );
+			await storeRequirements.goto();
+		} );
+
+		test( 'should see "Refresh to sync" button', async () => {
+			const refreshToSyncButton =
+				storeRequirements.getStoreAddressRefreshToSyncButton();
+			await expect( refreshToSyncButton ).toBeVisible();
+			await expect( refreshToSyncButton ).toBeEnabled();
+		} );
+
+		test( 'should see store address contains "Automata Road"', async () => {
+			const storeAddressCard = storeRequirements.getStoreAddressCard();
+			await expect( storeAddressCard ).toContainText( 'Automata Road' );
+		} );
+
+		test( 'should see store address contains "WooCommerce Road" after clicking "Refresh to sync" button', async () => {
+			// Mock MC contact information
+			await storeRequirements.mockContactInformation( {
+				phoneNumber: '+18888888888',
+				phoneVerificationStatus: 'verified',
+				streetAddress: 'WooCommerce Road',
+			} );
+
+			const refreshToSyncButton =
+				storeRequirements.getStoreAddressRefreshToSyncButton();
+			await refreshToSyncButton.click();
+			await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
+			const storeAddressCard = storeRequirements.getStoreAddressCard();
+			await expect( storeAddressCard ).toContainText(
+				'WooCommerce Road'
+			);
+		} );
+	} );
+
 	test.describe( 'Pre-Launch Checklist', () => {
 		test.beforeAll( async () => {
 			// Mock MC contact information
