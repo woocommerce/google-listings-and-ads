@@ -7,6 +7,7 @@ const { test, expect } = require( '@playwright/test' );
 /**
  * Internal dependencies
  */
+import { LOAD_STATE } from '../../utils/constants';
 import StoreRequirements from '../../utils/pages/setup-mc/step-3-confirm-store-requirements';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -133,8 +134,7 @@ test.describe( 'Confirm store requirements', () => {
 			);
 			await storeRequirements.clickVerifyPhoneNumberButon();
 
-			const errorNotice =
-				storeRequirements.getPhoneNumberErrorNotice();
+			const errorNotice = storeRequirements.getPhoneNumberErrorNotice();
 			await expect( errorNotice ).toContainText(
 				'Wrong verification code. Please try again.'
 			);
@@ -169,5 +169,216 @@ test.describe( 'Confirm store requirements', () => {
 				storeRequirements.getPhoneNumberEditButton();
 			await expect( phoneNumberEditButton ).toBeVisible();
 		} );
+	} );
+
+	test.describe( 'Pre-Launch Checklist', () => {
+		test.beforeAll( async () => {
+			// Mock MC contact information
+			await storeRequirements.mockContactInformation( {
+				phoneNumber: '+18888888888',
+				phoneVerificationStatus: 'verified',
+			} );
+		} );
+
+		test.describe(
+			'When the policy checks are not compliant and settings are false',
+			() => {
+				test.beforeAll( async () => {
+					// Mock all policy checks as non-compliant
+					await storeRequirements.fulfillPolicyCheckRequest( {
+						allowed_countries: false,
+						robots_restriction: true,
+						page_not_found_error: true,
+						page_redirects: true,
+						payment_gateways: false,
+						store_ssl: false,
+						refund_returns: false,
+					} );
+
+					// Mock all settings as false
+					await storeRequirements.fulfillSettings( {
+						website_live: false,
+						checkout_process_secure: false,
+						payment_methods_visible: false,
+						refund_tos_visible: false,
+						contact_info_visible: false,
+					} );
+
+					await storeRequirements.goto();
+				} );
+
+				test( 'should see all checkboxes are not checked', async () => {
+					const prelaunchChecklistCheckboxes =
+						storeRequirements.getPrelaunchChecklistCheckboxes();
+
+					for ( const checkbox of await prelaunchChecklistCheckboxes.all() ) {
+						await expect( checkbox ).not.toBeChecked();
+					}
+				} );
+
+				test( 'should toggle all checklists and see the "Confirm" button in each checklist', async () => {
+					const prelaunchChecklistToggles =
+						storeRequirements.getPrelaunchChecklistToggles();
+					const count = await prelaunchChecklistToggles.count();
+
+					for ( let i = 0; i < count; i++ ) {
+						const toggle = await prelaunchChecklistToggles.nth( i );
+						await toggle.click();
+						const panel = await storeRequirements
+							.getPrelaunchChecklistPanels()
+							.nth( i );
+						const confirmButton = panel.getByRole( 'button', {
+							name: 'Confirm',
+							exact: true,
+						} );
+						await expect( confirmButton ).toBeVisible();
+						await expect( confirmButton ).toBeEnabled();
+					}
+				} );
+
+				test( 'should see the correct link in each toggled panel', async () => {
+					const panels =
+						storeRequirements.getPrelaunchChecklistPanels();
+
+					const panel1 = await panels.nth( 0 );
+					const link1 = panel1.getByRole( 'link' );
+					await expect( link1 ).toBeVisible();
+					await expect( link1 ).toHaveAttribute(
+						'href',
+						'https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#store-is-live'
+					);
+
+					const panel2 = await panels.nth( 1 );
+					const link2 = panel2.getByRole( 'link' );
+					await expect( link2 ).toBeVisible();
+					await expect( link2 ).toHaveAttribute(
+						'href',
+						'https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout'
+					);
+
+					const panel3 = await panels.nth( 2 );
+					const link3 = panel3.getByRole( 'link' );
+					await expect( link3 ).toBeVisible();
+					await expect( link3 ).toHaveAttribute(
+						'href',
+						'https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout'
+					);
+
+					const panel4 = await panels.nth( 3 );
+					const link4 = panel4.getByRole( 'link' );
+					await expect( link4 ).toBeVisible();
+					await expect( link4 ).toHaveAttribute(
+						'href',
+						'https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms'
+					);
+				} );
+
+				test( 'should have the checkbox checked by clicking "Confirm" button', async () => {
+					// Click "Confirm" button from panel 1 and panel 2
+
+					const panels =
+						storeRequirements.getPrelaunchChecklistPanels();
+					const checkboxes =
+						storeRequirements.getPrelaunchChecklistCheckboxes();
+
+					for ( let i = 0; i <= 1; i++ ) {
+						// Using .first() because after clicking "Confirm" the row that was clicked would disappear,
+						// the second panel would become the first one at the second iteration of for loop.
+						const panel = await panels.first();
+
+						// Did not use .first() for the checkboxes because checkboxes would not disappear after clicking "Confirm".
+						const checkbox = await checkboxes.nth( i );
+
+						const confirmButton = panel.getByRole( 'button', {
+							name: 'Confirm',
+							exact: true,
+						} );
+
+						await confirmButton.click();
+
+						await expect( checkbox ).toBeDisabled();
+						await expect( checkbox ).toBeChecked();
+					}
+				} );
+
+				test( 'should have the checkbox checked by clicking the checkbox', async () => {
+					// Click checkboxes from panel 3 and panel 4
+
+					const checkboxes =
+						storeRequirements.getPrelaunchChecklistCheckboxes();
+
+					for ( let i = 2; i <= 3; i++ ) {
+						const checkbox = await checkboxes.nth( i );
+						await checkbox.click();
+						await expect( checkbox ).toBeDisabled();
+						await expect( checkbox ).toBeChecked();
+					}
+				} );
+
+				test( 'should see error message after clicking "Continue" when any one of the checkboxes was not checked', async () => {
+					const continueButton =
+						storeRequirements.getContinueButton();
+					await continueButton.click();
+					const errorMessageRow =
+						storeRequirements.getErrorMessageRow();
+					await expect( errorMessageRow ).toContainText(
+						'Please check all requirements.'
+					);
+				} );
+			}
+		);
+
+		test.describe(
+			'When the policy checks are compliant and settings are true',
+			() => {
+				test.beforeAll( async () => {
+					// Mock all policy checks as compliant
+					await storeRequirements.fulfillPolicyCheckRequest( {
+						allowed_countries: true,
+						robots_restriction: false,
+						page_not_found_error: false,
+						page_redirects: false,
+						payment_gateways: true,
+						store_ssl: true,
+						refund_returns: true,
+					} );
+
+					// Mock all settings as true
+					await storeRequirements.fulfillSettings( {
+						website_live: true,
+						checkout_process_secure: true,
+						payment_methods_visible: true,
+						refund_tos_visible: true,
+						contact_info_visible: true,
+					} );
+
+					await storeRequirements.goto();
+				} );
+
+				test( 'should see all checkboxes are checked', async () => {
+					const prelaunchChecklistCheckboxes =
+						storeRequirements.getPrelaunchChecklistCheckboxes();
+					for ( const checkbox of await prelaunchChecklistCheckboxes.all() ) {
+						await expect( checkbox ).toBeChecked();
+						await expect( checkbox ).toBeDisabled();
+					}
+				} );
+
+				test( 'should see the heading of next step after clicking "Continue"', async () => {
+					const continueButton =
+						storeRequirements.getContinueButton();
+					await continueButton.click();
+					await page.waitForLoadState(
+						LOAD_STATE.DOM_CONTENT_LOADED
+					);
+					await expect(
+						page.getByRole( 'heading', {
+							name: 'Complete your campaign with paid ads',
+							exact: true,
+						} )
+					).toBeVisible();
+				} );
+			}
+		);
 	} );
 } );

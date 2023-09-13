@@ -183,6 +183,16 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the Settings request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillSettings( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/mc\/settings\b/, payload );
+	}
+
+	/**
 	 * Fulfill the Sync Settings Connection request.
 	 *
 	 * @param {Object} payload
@@ -231,6 +241,16 @@ export default class MockRequests {
 			payload,
 			status
 		);
+	}
+
+	/**
+	 * Fulfill policy check request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillPolicyCheckRequest( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/mc\/policy_check\b/, payload );
 	}
 
 	/**

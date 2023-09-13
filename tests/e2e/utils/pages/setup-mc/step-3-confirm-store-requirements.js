@@ -165,6 +165,56 @@ export default class StoreRequirements extends MockRequests {
 	}
 
 	/**
+	 * Get pre-launch checklist checkboxes.
+	 *
+	 * @return {import('@playwright/test').Locator} Get pre-launch checklist checkboxes.
+	 */
+	getPrelaunchChecklistCheckboxes() {
+		return this.getChecklistCard().getByRole( 'checkbox' );
+	}
+
+	/**
+	 * Get pre-launch checklist panels.
+	 *
+	 * @return {import('@playwright/test').Locator} Get pre-launch checklist panels.
+	 */
+	getPrelaunchChecklistPanels() {
+		return this.getChecklistCard().locator( '.components-panel__body' );
+	}
+
+	/**
+	 * Get pre-launch checklist toggles.
+	 *
+	 * @return {import('@playwright/test').Locator} Get pre-launch checklist toggles.
+	 */
+	getPrelaunchChecklistToggles() {
+		return this.getPrelaunchChecklistPanels().locator(
+			'.components-button.components-panel__body-toggle'
+		);
+	}
+
+	/**
+	 * Get Continue button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Continue button.
+	 */
+	getContinueButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Continue',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get error message row.
+	 *
+	 * @return {import('@playwright/test').Locator} Get error message row.
+	 */
+	getErrorMessageRow() {
+		return this.page.locator( '.gla-validation-errors' );
+	}
+
+	/**
 	 * Fill country code.
 	 *
 	 * @param {string} code
