@@ -52,6 +52,8 @@ test.describe( 'Configure product listings', () => {
 				woocommerce_default_country: 'US',
 			} ),
 		] );
+
+		await productListingsPage.goto();
 	} );
 
 	test.afterAll( async () => {
@@ -59,8 +61,6 @@ test.describe( 'Configure product listings', () => {
 	} );
 
 	test( 'should see the heading and the texts below', async () => {
-		await productListingsPage.goto();
-
 		await expect(
 			page.getByRole( 'heading', {
 				name: 'Configure your product listings',
@@ -134,7 +134,7 @@ test.describe( 'Configure product listings', () => {
 		await productListingsPage.fulfillWCDefaultCountry( {
 			woocommerce_default_country: 'TW',
 		} );
-		await productListingsPage.goto();
+		await page.reload();
 
 		// Check the radio button of "Selected countries only" first in order to ensure the country search box is visible.
 		await productListingsPage.checkSelectedCountriesOnlyRadioButton();
@@ -151,7 +151,7 @@ test.describe( 'Configure product listings', () => {
 
 	test.describe( 'Shipping rate is simple', () => {
 		test.beforeAll( async () => {
-			await productListingsPage.goto();
+			await page.reload();
 			await productListingsPage.checkSimpleShippingRateRadioButton();
 		} );
 
