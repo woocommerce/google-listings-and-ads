@@ -360,6 +360,45 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
+	 * Register the requests when the continue button is clicked.
+	 *
+	 * @return {Promise<import('@playwright/test').Request[]>} The requests.
+	 */
+	registerContinueRequests() {
+		const contactInfoRequestPromise = this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/contact-information' ) &&
+				request.method() === 'GET'
+		);
+
+		const policyCheckRequestPromise = this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/policy_check' ) &&
+				request.method() === 'GET'
+		);
+
+		return Promise.all( [
+			contactInfoRequestPromise,
+			policyCheckRequestPromise,
+		] );
+	}
+
+	/**
+	 * Register settings request when the shipping rate radio button is checked.
+	 *
+	 * @param {string} shippingRate
+	 * @return {Promise<import('@playwright/test').Request>} The requests.
+	 */
+	registerShippingRateRadioButtonRequests( shippingRate ) {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/settings' ) &&
+				request.method() === 'POST' &&
+				request.postDataJSON().shipping_rate === shippingRate
+		);
+	}
+
+	/**
 	 * Click "Continue" button.
 	 *
 	 * @return {Promise<void>}
