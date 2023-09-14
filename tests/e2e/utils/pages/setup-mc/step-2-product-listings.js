@@ -110,25 +110,13 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get offer free shipping for order "Yes" button.
+	 * Get offer free shipping for orders button.
 	 *
-	 * @return {import('@playwright/test').Locator} Get offer free shipping for order "Yes" button.
+	 * @return {import('@playwright/test').Locator} Get offer free shipping for orders button.
 	 */
-	getOfferFreeShippingForOrdersYesRadioRow() {
+	getOfferFreeShippingForOrdersRadioRow( name = 'Yes' ) {
 		return this.page.getByRole( 'radio', {
-			name: 'Yes',
-			exact: true,
-		} );
-	}
-
-	/**
-	 * Get offer free shipping for order "No" button.
-	 *
-	 * @return {import('@playwright/test').Locator} Get offer free shipping for order "No" button.
-	 */
-	getOfferFreeShippingForOrdersNoRadioRow() {
-		return this.page.getByRole( 'radio', {
-			name: 'No',
+			name,
 			exact: true,
 		} );
 	}
@@ -472,9 +460,9 @@ export default class ProductListingsPage extends MockRequests {
 	 *
 	 * @return {Promise<void>}
 	 */
-	async checkOfferFreeShippingForOrdersYesRadioButton() {
-		const yesRadio = this.getOfferFreeShippingForOrdersYesRadioRow();
-		await yesRadio.check();
+	async checkOfferFreeShippingForOrdersRadioButton( name = 'Yes' ) {
+		const radio = this.getOfferFreeShippingForOrdersRadioRow( name );
+		await radio.check();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
 

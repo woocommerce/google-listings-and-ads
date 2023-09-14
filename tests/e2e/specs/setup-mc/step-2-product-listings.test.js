@@ -179,7 +179,8 @@ test.describe( 'Configure product listings', () => {
 		} );
 
 		test( 'should see "Minimum order to qualify for free shipping" text if "offer free shipping for order..." is "Yes"', async () => {
-			await productListingsPage.checkOfferFreeShippingForOrdersYesRadioButton();
+			// Check the "Yes" button of "Offer free shipping for orders".
+			await productListingsPage.checkOfferFreeShippingForOrdersRadioButton( 'Yes' );
 			const minimumOrderForFreeShippingText =
 				productListingsPage.getMinimumOrderForFreeShippingText();
 			await expect( minimumOrderForFreeShippingText ).toBeVisible();
