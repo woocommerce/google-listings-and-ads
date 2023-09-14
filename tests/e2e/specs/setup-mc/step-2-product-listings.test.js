@@ -13,7 +13,7 @@ test.use( { storageState: process.env.ADMINSTATE } );
 test.describe.configure( { mode: 'serial' } );
 
 /**
- * @type {import('../../utils/pages/setup-mc/step-1-set-up-accounts.js').default} productListingsPage
+ * @type {import('../../utils/pages/setup-mc/step-2-product-listings.js').default} productListingsPage
  */
 let productListingsPage = null;
 
@@ -39,19 +39,24 @@ test.describe( 'Configure product listings', () => {
 			// Mock MC step as product_listings
 			productListingsPage.mockMCSetup( 'incomplete', 'product_listings' ),
 
-			// Mock MC target audience
-			productListingsPage.fulfillTargetAudience( {
-				location: 'selected',
-				countries: [ 'US' ],
-				locale: 'en_US',
-				language: 'English',
-			} ),
+			// Mock MC target audience, only mocks GET method
+			productListingsPage.fulfillTargetAudience(
+				{
+					location: 'selected',
+					countries: [ 'US' ],
+					locale: 'en_US',
+					language: 'English',
+				},
+				[ 'GET' ]
+			),
 
 			// Mock WC default country as US
 			productListingsPage.fulfillWCDefaultCountry( {
 				woocommerce_default_country: 'US',
 			} ),
 		] );
+
+		await productListingsPage.goto();
 	} );
 
 	test.afterAll( async () => {
@@ -59,8 +64,6 @@ test.describe( 'Configure product listings', () => {
 	} );
 
 	test( 'should see the heading and the texts below', async () => {
-		await productListingsPage.goto();
-
 		await expect(
 			page.getByRole( 'heading', {
 				name: 'Configure your product listings',
@@ -85,25 +88,47 @@ test.describe( 'Configure product listings', () => {
 		await expect( languageRadioRow ).toBeChecked();
 	} );
 
-	test( 'should not see UK in the country search box', async () => {
+	test( 'should see US but should not see UK in the country search box', async () => {
 		const countrySearchBoxContainer =
 			productListingsPage.getCountryInputSearchBoxContainer();
+		await expect( countrySearchBoxContainer ).toContainText(
+			'United States (US)'
+		);
 		await expect( countrySearchBoxContainer ).not.toContainText(
 			'United Kingdom (UK)'
 		);
 	} );
 
-	test( 'should see UK in the country search box after selecting UK', async () => {
+	test( 'should see UK in the country search box and send the target audience POST request after selecting UK', async () => {
 		const countrySearchBoxContainer =
 			productListingsPage.getCountryInputSearchBoxContainer();
 		await expect( countrySearchBoxContainer ).not.toContainText(
 			'United Kingdom (UK)'
 		);
+
+		const requestPromise = page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/target_audience' ) &&
+				request.method() === 'POST' &&
+				request.postDataJSON().countries.includes( 'GB' )
+		);
+
 		await productListingsPage.selectCountryFromSearchBox(
 			'United Kingdom (UK)'
 		);
+
 		await expect( countrySearchBoxContainer ).toContainText(
 			'United Kingdom (UK)'
+		);
+
+		const request = await requestPromise;
+		const response = await request.response();
+		const responseBody = await response.json();
+
+		expect( response.status() ).toBe( 201 );
+		expect( responseBody.status ).toBe( 'success' );
+		expect( responseBody.message ).toBe(
+			'Successfully updated the Target Audience settings.'
 		);
 	} );
 
@@ -131,7 +156,7 @@ test.describe( 'Configure product listings', () => {
 		await productListingsPage.fulfillWCDefaultCountry( {
 			woocommerce_default_country: 'TW',
 		} );
-		await productListingsPage.goto();
+		await page.reload();
 
 		// Check the radio button of "Selected countries only" first in order to ensure the country search box is visible.
 		await productListingsPage.checkSelectedCountriesOnlyRadioButton();
@@ -148,8 +173,31 @@ test.describe( 'Configure product listings', () => {
 
 	test.describe( 'Shipping rate is simple', () => {
 		test.beforeAll( async () => {
-			await productListingsPage.goto();
+			await page.reload();
+
+			// Check another shipping rate first in case the simple shipping rate radio button is already checked.
+			await productListingsPage.checkRecommendedShippingRateRadioButton();
+		} );
+
+		test( 'should send settings POST request after checking simple shipping rate radio button', async () => {
+			const requestPromise =
+				productListingsPage.registerShippingRateRadioButtonRequests(
+					'flat'
+				);
+
+			// Check simple shipping rate
 			await productListingsPage.checkSimpleShippingRateRadioButton();
+
+			const request = await requestPromise;
+			const response = await request.response();
+			const responseBody = await response.json();
+
+			expect( response.status() ).toBe( 200 );
+			expect( responseBody.status ).toBe( 'success' );
+			expect( responseBody.message ).toBe(
+				'Merchant Center Settings successfully updated.'
+			);
+			expect( responseBody.data.shipping_rate ).toBe( 'flat' );
 		} );
 
 		test( 'should see "Estimated shipping rates" field', async () => {
@@ -176,7 +224,10 @@ test.describe( 'Configure product listings', () => {
 		} );
 
 		test( 'should see "Minimum order to qualify for free shipping" text if "offer free shipping for order..." is "Yes"', async () => {
-			await productListingsPage.checkOfferFreeShippingForOrdersYesRadioButton();
+			// Check the "Yes" button of "Offer free shipping for orders".
+			await productListingsPage.checkOfferFreeShippingForOrdersRadioButton(
+				'Yes'
+			);
 			const minimumOrderForFreeShippingText =
 				productListingsPage.getMinimumOrderForFreeShippingText();
 			await expect( minimumOrderForFreeShippingText ).toBeVisible();
@@ -203,8 +254,29 @@ test.describe( 'Configure product listings', () => {
 			estimatedTimesCard =
 				productListingsPage.getEstimatedShippingTimesCard();
 
+			// Check another shipping rate first in case the complex shipping rate radio button is already checked.
+			await productListingsPage.checkRecommendedShippingRateRadioButton();
+		} );
+
+		test( 'should send settings POST request after checking complex shipping rate radio button', async () => {
+			const requestPromise =
+				productListingsPage.registerShippingRateRadioButtonRequests(
+					'manual'
+				);
+
 			// Check complex shipping rate
 			await productListingsPage.checkComplexShippingRateRadioButton();
+
+			const request = await requestPromise;
+			const response = await request.response();
+			const responseBody = await response.json();
+
+			expect( response.status() ).toBe( 200 );
+			expect( responseBody.status ).toBe( 'success' );
+			expect( responseBody.message ).toBe(
+				'Merchant Center Settings successfully updated.'
+			);
+			expect( responseBody.data.shipping_rate ).toBe( 'manual' );
 		} );
 
 		test( 'should not see "Estimated shipping rates" and "Estimated shipping times" field', async () => {
@@ -220,13 +292,56 @@ test.describe( 'Configure product listings', () => {
 
 	test.describe( 'Shipping rate is recommended', () => {
 		test.beforeAll( async () => {
+			// Check another shipping rate first in case the recommended shipping rate radio button is already checked.
+			await productListingsPage.checkSimpleShippingRateRadioButton();
+		} );
+
+		test( 'should send settings POST request after checking recommended shipping rate radio button', async () => {
+			const requestPromise =
+				productListingsPage.registerShippingRateRadioButtonRequests(
+					'automatic'
+				);
+
+			// Check recommended shipping rate
 			await productListingsPage.checkRecommendedShippingRateRadioButton();
+
+			const request = await requestPromise;
+			const response = await request.response();
+			const responseBody = await response.json();
+
+			expect( response.status() ).toBe( 200 );
+			expect( responseBody.status ).toBe( 'success' );
+			expect( responseBody.message ).toBe(
+				'Merchant Center Settings successfully updated.'
+			);
+			expect( responseBody.data.shipping_rate ).toBe( 'automatic' );
 		} );
 
 		test( 'should see "Estimated shipping times" field', async () => {
 			const estimatedTimesCard =
 				productListingsPage.getEstimatedShippingTimesCard();
 			await expect( estimatedTimesCard ).toBeVisible();
+		} );
+
+		test( 'should send shipping times batch POST request aftering filling "Estimated shipping times" field', async () => {
+			const requestPromise = page.waitForRequest(
+				( request ) =>
+					request.url().includes( '/gla/mc/shipping/times/batch' ) &&
+					request.method() === 'POST' &&
+					request.postDataJSON().time === 14
+			);
+
+			await productListingsPage.fillEstimatedShippingTimes( '14' );
+
+			const request = await requestPromise;
+			const response = await request.response();
+			const responseBody = await response.json();
+
+			expect( response.status() ).toBe( 201 );
+			expect( responseBody.success[ 0 ].status ).toBe( 'success' );
+			expect( responseBody.success[ 0 ].message ).toBe(
+				'Successfully added time for country: "US".'
+			);
 		} );
 	} );
 
@@ -270,6 +385,34 @@ test.describe( 'Configure product listings', () => {
 				'href',
 				'https://support.google.com/merchants/answer/160162'
 			);
+		} );
+	} );
+
+	test.describe( 'Click "Continue" button', () => {
+		test.beforeAll( async () => {
+			productListingsPage.checkRecommendedShippingRateRadioButton();
+			await productListingsPage.fillEstimatedShippingTimes( '14' );
+		} );
+
+		test( 'should see the heading of next step and send two requests after clicking "Continue"', async () => {
+			const requestPromises =
+				productListingsPage.registerContinueRequests();
+
+			await productListingsPage.clickContinueButton();
+
+			await expect(
+				page.getByRole( 'heading', {
+					name: 'Confirm store requirements',
+					exact: true,
+				} )
+			).toBeVisible();
+
+			const requests = await requestPromises;
+			const policyCheckResponse = await requests[ 1 ].response();
+			const policyCheckResponseBody = await policyCheckResponse.json();
+
+			expect( policyCheckResponse.status() ).toBe( 200 );
+			expect( policyCheckResponseBody.allowed_countries ).toBeTruthy();
 		} );
 	} );
 } );

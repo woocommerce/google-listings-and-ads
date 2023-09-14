@@ -33,7 +33,7 @@ export default class ProductListingsPage extends MockRequests {
 	async goto() {
 		await this.page.goto(
 			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc&google-mc=connected',
-			{ waitUntil: LOAD_STATE.NETWORK_IDLE }
+			{ waitUntil: LOAD_STATE.DOM_CONTENT_LOADED }
 		);
 	}
 
@@ -110,25 +110,15 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get offer free shipping for order "Yes" button.
+	 * Get offer free shipping for orders button.
 	 *
-	 * @return {import('@playwright/test').Locator} Get offer free shipping for order "Yes" button.
-	 */
-	getOfferFreeShippingForOrdersYesRadioRow() {
-		return this.page.getByRole( 'radio', {
-			name: 'Yes',
-			exact: true,
-		} );
-	}
-
-	/**
-	 * Get offer free shipping for order "No" button.
+	 * @param {string} name
 	 *
-	 * @return {import('@playwright/test').Locator} Get offer free shipping for order "No" button.
+	 * @return {import('@playwright/test').Locator} Get offer free shipping for orders button.
 	 */
-	getOfferFreeShippingForOrdersNoRadioRow() {
+	getOfferFreeShippingForOrdersRadioRow( name = 'Yes' ) {
 		return this.page.getByRole( 'radio', {
-			name: 'No',
+			name,
 			exact: true,
 		} );
 	}
@@ -171,7 +161,7 @@ export default class ProductListingsPage extends MockRequests {
 	 *
 	 * @param {string} name
 	 *
-	 * @return {import('@playwright/test').Locator} Get tree item by country name.
+	 * @return {import('@playwright/test').Locator} Get remove country button by country name.
 	 */
 	getRemoveCountryButtonByName( name = 'United States (US)' ) {
 		return this.page.getByRole( 'button', { name: `Remove ${ name }` } );
@@ -370,6 +360,45 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
+	 * Register the requests when the continue button is clicked.
+	 *
+	 * @return {Promise<import('@playwright/test').Request[]>} The requests.
+	 */
+	registerContinueRequests() {
+		const contactInfoRequestPromise = this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/contact-information' ) &&
+				request.method() === 'GET'
+		);
+
+		const policyCheckRequestPromise = this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/policy_check' ) &&
+				request.method() === 'GET'
+		);
+
+		return Promise.all( [
+			contactInfoRequestPromise,
+			policyCheckRequestPromise,
+		] );
+	}
+
+	/**
+	 * Register settings request when the shipping rate radio button is checked.
+	 *
+	 * @param {string} shippingRate
+	 * @return {Promise<import('@playwright/test').Request>} The requests.
+	 */
+	registerShippingRateRadioButtonRequests( shippingRate ) {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/settings' ) &&
+				request.method() === 'POST' &&
+				request.postDataJSON().shipping_rate === shippingRate
+		);
+	}
+
+	/**
 	 * Click "Continue" button.
 	 *
 	 * @return {Promise<void>}
@@ -470,11 +499,13 @@ export default class ProductListingsPage extends MockRequests {
 	/**
 	 * Check offer free shipping for order "Yes" radio button.
 	 *
+	 * @param {string} name
+	 *
 	 * @return {Promise<void>}
 	 */
-	async checkOfferFreeShippingForOrdersYesRadioButton() {
-		const yesRadio = this.getOfferFreeShippingForOrdersYesRadioRow();
-		await yesRadio.check();
+	async checkOfferFreeShippingForOrdersRadioButton( name = 'Yes' ) {
+		const radio = this.getOfferFreeShippingForOrdersRadioRow( name );
+		await radio.check();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
 
