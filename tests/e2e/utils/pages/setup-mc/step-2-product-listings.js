@@ -33,7 +33,7 @@ export default class ProductListingsPage extends MockRequests {
 	async goto() {
 		await this.page.goto(
 			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc&google-mc=connected',
-			{ waitUntil: LOAD_STATE.NETWORK_IDLE }
+			{ waitUntil: LOAD_STATE.DOM_CONTENT_LOADED }
 		);
 	}
 

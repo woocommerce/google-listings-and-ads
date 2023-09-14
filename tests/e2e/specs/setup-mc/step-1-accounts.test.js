@@ -104,7 +104,7 @@ test.describe( 'Set up accounts', () => {
 			page.locator(
 				"//button[text()='Connect'][not(@disabled)]"
 			).click();
-			await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
+			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
 			// Expect the user to be redirected
 			await page.waitForURL( baseURL + 'auth_url' );
@@ -169,7 +169,7 @@ test.describe( 'Set up accounts', () => {
 			page.locator(
 				"//button[text()='Connect'][not(@disabled)]"
 			).click();
-			await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
+			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
 			// Expect the user to be redirected
 			await page.waitForURL( baseURL + 'google_auth' );
@@ -269,7 +269,7 @@ test.describe( 'Set up accounts', () => {
 						const createAccountButtonFromModal =
 							setUpAccountsPage.getMCCreateAccountButtonFromModal();
 						await createAccountButtonFromModal.click();
-						await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
+						await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 						const mcConnectedLabel =
 							setUpAccountsPage.getMCConnectedLabel();
 						await expect( mcConnectedLabel ).toContainText(
@@ -330,7 +330,7 @@ test.describe( 'Set up accounts', () => {
 									setUpAccountsPage.getMCCreateAccountButtonFromModal();
 								await createAccountButtonFromModal.click();
 								await page.waitForLoadState(
-									LOAD_STATE.NETWORK_IDLE
+									LOAD_STATE.DOM_CONTENT_LOADED
 								);
 
 								const reclaimButton =
@@ -371,7 +371,7 @@ test.describe( 'Set up accounts', () => {
 									setUpAccountsPage.getReclaimMyURLButton();
 								await reclaimButton.click();
 								await page.waitForLoadState(
-									LOAD_STATE.NETWORK_IDLE
+									LOAD_STATE.DOM_CONTENT_LOADED
 								);
 
 								const mcConnectedLabel =
@@ -471,7 +471,7 @@ test.describe( 'Set up accounts', () => {
 					// Click connect button
 					const connectButton = setUpAccountsPage.getConnectButton();
 					await connectButton.click();
-					await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
+					await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
 					const mcConnectedLabel =
 						setUpAccountsPage.getMCConnectedLabel();
