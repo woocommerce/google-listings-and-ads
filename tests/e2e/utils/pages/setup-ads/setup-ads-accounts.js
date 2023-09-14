@@ -3,7 +3,7 @@
  */
 import MockRequests from '../../mock-requests';
 
-export default class SetupAdsPage extends MockRequests {
+export default class SetupAdsAccount extends MockRequests {
 	/**
 	 * @param {import('@playwright/test').Page} page
 	 */
@@ -13,7 +13,7 @@ export default class SetupAdsPage extends MockRequests {
 	}
 
 	/**
-	 * Get Continues button.
+	 * Get Continue button.
 	 *
 	 * @return {Promise<import('@playwright/test').Locator>} The Continue button.
 	 */
@@ -76,6 +76,11 @@ export default class SetupAdsPage extends MockRequests {
 		await this.fulfillAdsAccounts( payload );
 	}
 
+	/**
+	 * Get the create account modal.
+	 *
+	 * @return {import('@playwright/test').Locator} The create account modal.
+	 */
 	getCreateAccountModal() {
 		return this.page.locator( '.gla-ads-terms-modal' );
 	}
@@ -91,6 +96,11 @@ export default class SetupAdsPage extends MockRequests {
 		);
 	}
 
+	/**
+	 * Get Create account button located in the modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Create account button.
+	 */
 	getCreateAdsAccountButtonModal() {
 		return this.getCreateAccountModal().getByRole( 'button', {
 			name: 'Create account',
