@@ -276,4 +276,18 @@ test.describe( 'Configure product listings', () => {
 			);
 		} );
 	} );
+
+	test.describe( 'Click "Continue" button', () => {
+		test( 'should see the heading of next step after clicking "Continue"', async () => {
+			await productListingsPage.fillEstimatedShippingRates( '0' );
+			await productListingsPage.fillEstimatedShippingTimes( '14' );
+			await productListingsPage.clickContinueButton();
+			await expect(
+				page.getByRole( 'heading', {
+					name: 'Confirm store requirements',
+					exact: true,
+				} )
+			).toBeVisible();
+		} );
+	} );
 } );
