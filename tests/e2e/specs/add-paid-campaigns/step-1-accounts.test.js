@@ -82,7 +82,7 @@ test.describe( 'Set up Ads account', () => {
 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 		} );
 
-		test( 'Page header should be Set up your accounts', async () => {
+		test( 'Page header should be "Set up your accounts"', async () => {
 			await expect(
 				page.getByRole( 'heading', { name: 'Set up your accounts' } )
 			).toBeVisible();
