@@ -171,7 +171,7 @@ export default class ProductListingsPage extends MockRequests {
 	 *
 	 * @param {string} name
 	 *
-	 * @return {import('@playwright/test').Locator} Get tree item by country name.
+	 * @return {import('@playwright/test').Locator} Get remove country button by country name.
 	 */
 	getRemoveCountryButtonByName( name = 'United States (US)' ) {
 		return this.page.getByRole( 'button', { name: `Remove ${ name }` } );
