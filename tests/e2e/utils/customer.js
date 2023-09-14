@@ -45,12 +45,10 @@ export async function relatedProductAddToCart( page ) {
 		? '.related.products .add_to_cart_button'
 		: '.wp-block-woocommerce-related-products .add_to_cart_button';
 
-	await page.locator( addToCart ).first().click();
-	await expect( page.locator( addToCart ).first() ).toHaveClass( /added/ );
-
-	return await page.$eval( addToCart, ( el ) => {
-		return el.getAttribute( 'data-product_id' );
-	} );
+	const addToCartButton = await page.locator( addToCart ).first();
+	addToCartButton.click();
+	await expect( addToCartButton.getByText( '1 in cart' ) ).toBeVisible();
+	return await page.$eval( addToCart, ( el ) => el.dataset.product_id );
 }
 
 /**
