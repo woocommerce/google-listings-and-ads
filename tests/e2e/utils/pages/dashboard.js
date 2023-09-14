@@ -129,12 +129,12 @@ export default class DashboardPage extends MockRequests {
 	}
 
 	/**
-	 * Get the Ads connection button located in the all programs table.
+	 * Get the Ads connection button.
 	 *
 	 * @param  {('programs-table'|'summary-card')} [type] The type of button to get. Either 'programs-table' or 'summary-card'.
-	 * @return {Promise<import('@playwright/test').Locator>} Get the Ads connection button.
+	 * @return {import('@playwright/test').Locator} Get the Ads connection button.
 	 */
-	async getAdsConnectionAllProgramsButton( type = 'programs-table' ) {
+	getAdsConnectionAllProgramsButton( type = 'programs-table' ) {
 		return this.page.locator(
 			`${
 				type === 'programs-table'
