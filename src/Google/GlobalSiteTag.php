@@ -189,7 +189,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			}
 		);
 
-		$this->assets_handler->add( $gtag_events );
+		$this->assets_handler->register( $gtag_events );
 
 		add_action(
 			'wp_footer',
