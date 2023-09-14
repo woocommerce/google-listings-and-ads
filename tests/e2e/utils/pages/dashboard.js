@@ -63,11 +63,7 @@ export default class DashboardPage extends MockRequests {
 			email: 'john@email.com',
 		} );
 
-		await this.fulfillGoogleConnection( {
-			active: 'yes',
-			email: 'john@email.com',
-			scope: [],
-		} );
+		await this.mockGoogleConnected();
 
 		await this.fulfillAdsConnection( {
 			id: 0,
