@@ -111,6 +111,14 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.6 - 2023-09-14 =
+* Dev - E2E - Onboarding Step 1 - Set up accounts - Connect Merchant Center account.
+* FIx - Undesired margin in Paid Campaign Creation Success Modal.
+* Fix - Adjust target on click events preventing GLA ID to be Undefined.
+* Fix - Tweak E2E tests for WC 8.1.
+* Fix - WooCommerce Subscriptions compatibility: Fix the visible issue of the "Google Listings and Ads" tab and "Channel visibility" meta box for some unsupported product types.
+* Tweak - WC 8.1.0 compatibility.
+
 = 2.5.5 - 2023-09-05 =
 * Dev - Add E2E tests - Dashboard - Edit Free Listings.
 * Dev - Clean up workarounds for WooCommerce < 6.8.
