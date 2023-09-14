@@ -269,7 +269,9 @@ test.describe( 'Set up accounts', () => {
 						const createAccountButtonFromModal =
 							setUpAccountsPage.getMCCreateAccountButtonFromModal();
 						await createAccountButtonFromModal.click();
-						await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+						await page.waitForLoadState(
+							LOAD_STATE.DOM_CONTENT_LOADED
+						);
 						const mcConnectedLabel =
 							setUpAccountsPage.getMCConnectedLabel();
 						await expect( mcConnectedLabel ).toContainText(
@@ -471,7 +473,9 @@ test.describe( 'Set up accounts', () => {
 					// Click connect button
 					const connectButton = setUpAccountsPage.getConnectButton();
 					await connectButton.click();
-					await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+					await page.waitForLoadState(
+						LOAD_STATE.DOM_CONTENT_LOADED
+					);
 
 					const mcConnectedLabel =
 						setUpAccountsPage.getMCConnectedLabel();

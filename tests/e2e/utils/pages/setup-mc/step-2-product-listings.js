@@ -112,6 +112,8 @@ export default class ProductListingsPage extends MockRequests {
 	/**
 	 * Get offer free shipping for orders button.
 	 *
+	 * @param {string} name
+	 *
 	 * @return {import('@playwright/test').Locator} Get offer free shipping for orders button.
 	 */
 	getOfferFreeShippingForOrdersRadioRow( name = 'Yes' ) {
@@ -457,6 +459,8 @@ export default class ProductListingsPage extends MockRequests {
 
 	/**
 	 * Check offer free shipping for order "Yes" radio button.
+	 *
+	 * @param {string} name
 	 *
 	 * @return {Promise<void>}
 	 */
