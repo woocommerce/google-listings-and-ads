@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.3
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.5.5
+Stable tag: 2.5.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,14 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.6 - 2023-09-14 =
+* Dev - E2E - Onboarding Step 1 - Set up accounts - Connect Merchant Center account.
+* FIx - Undesired margin in Paid Campaign Creation Success Modal.
+* Fix - Adjust target on click events preventing GLA ID to be Undefined.
+* Fix - Tweak E2E tests for WC 8.1.
+* Fix - WooCommerce Subscriptions compatibility: Fix the visible issue of the "Google Listings and Ads" tab and "Channel visibility" meta box for some unsupported product types.
+* Tweak - WC 8.1.0 compatibility.
+
 = 2.5.5 - 2023-09-05 =
 * Dev - Add E2E tests - Dashboard - Edit Free Listings.
 * Dev - Clean up workarounds for WooCommerce < 6.8.
@@ -121,17 +129,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 = 2.5.4 - 2023-08-29 =
 * Dev - Override vulnerability packages: xmlhttprequest-ssl and ws.
 * Dev - Update trigger method in Hooks Generator Workflow.
-
-= 2.5.3 - 2023-08-22 =
-* Dev - Add Action for Hooks Documentation Generator.
-* Dev - Allow E2E testing with Release Candidates.
-* Dev - Convert E2E tests from Puppeteer to Playwright.
-* Dev - Externalize all WordPress JavaScript packages via Dependency Extraction Webpack Plugin (DEWP).
-* Dev - Fetch WooCommerce L-1 versions for our tests.
-* Dev - Remove legacy HooksDocsGenerator.php file.
-* Dev - Use `merge-trunk-develop-pr` action.
-* Tweak - Apply consistent admin theme colors to common UI components.
-* Update - Google API Client Services package to v0.312.
-* Update - Google Ads library to API V14. (package v19.2.0).
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
