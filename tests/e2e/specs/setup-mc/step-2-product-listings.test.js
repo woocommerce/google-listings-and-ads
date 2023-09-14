@@ -85,9 +85,12 @@ test.describe( 'Configure product listings', () => {
 		await expect( languageRadioRow ).toBeChecked();
 	} );
 
-	test( 'should not see UK in the country search box', async () => {
+	test( 'should see US but should not see UK in the country search box', async () => {
 		const countrySearchBoxContainer =
 			productListingsPage.getCountryInputSearchBoxContainer();
+		await expect( countrySearchBoxContainer ).toContainText(
+			'United States (US)'
+		);
 		await expect( countrySearchBoxContainer ).not.toContainText(
 			'United Kingdom (UK)'
 		);
