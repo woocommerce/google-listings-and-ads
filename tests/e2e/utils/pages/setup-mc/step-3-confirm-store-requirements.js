@@ -263,6 +263,29 @@ export default class StoreRequirements extends MockRequests {
 	}
 
 	/**
+	 * Register settings request when the confirm button or checkbox in pre-lauch checklist is checked.
+	 *
+	 * @param {Array} settings
+	 * @return {Promise<import('@playwright/test').Request[]>} The requests.
+	 */
+	registerPrelaunchChecklistConfirmCheckedRequest( settings = [] ) {
+		const promises = [];
+
+		for ( const setting of settings ) {
+			promises.push(
+				this.page.waitForRequest(
+					( request ) =>
+						request.url().includes( '/gla/mc/settings' ) &&
+						request.method() === 'POST' &&
+						request.postDataJSON()[ setting ] === true
+				)
+			);
+		}
+
+		return Promise.all( promises );
+	}
+
+	/**
 	 * Fill country code.
 	 *
 	 * @param {string} code

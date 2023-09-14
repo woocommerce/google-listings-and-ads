@@ -205,7 +205,7 @@ test.describe( 'Confirm store requirements', () => {
 			const refreshToSyncButton =
 				storeRequirements.getStoreAddressRefreshToSyncButton();
 			await refreshToSyncButton.click();
-			await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
+			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 			const storeAddressCard = storeRequirements.getStoreAddressCard();
 			await expect( storeAddressCard ).toContainText(
 				'WooCommerce Road'
@@ -268,13 +268,17 @@ test.describe( 'Confirm store requirements', () => {
 					} );
 
 					// Mock all settings as false
-					await storeRequirements.fulfillSettings( {
-						website_live: false,
-						checkout_process_secure: false,
-						payment_methods_visible: false,
-						refund_tos_visible: false,
-						contact_info_visible: false,
-					} );
+					await storeRequirements.fulfillSettings(
+						{
+							website_live: false,
+							checkout_process_secure: false,
+							payment_methods_visible: false,
+							refund_tos_visible: false,
+							contact_info_visible: false,
+						},
+						200,
+						[ 'GET' ]
+					);
 
 					await storeRequirements.goto();
 				} );
@@ -353,6 +357,11 @@ test.describe( 'Confirm store requirements', () => {
 					const checkboxes =
 						storeRequirements.getPrelaunchChecklistCheckboxes();
 
+					const requestPromises =
+						storeRequirements.registerPrelaunchChecklistConfirmCheckedRequest(
+							[ 'website_live', 'payment_methods_visible' ]
+						);
+
 					for ( let i = 0; i <= 1; i++ ) {
 						// Using .first() because after clicking "Confirm" the row that was clicked would disappear,
 						// the second panel would become the first one at the second iteration of for loop.
@@ -371,6 +380,17 @@ test.describe( 'Confirm store requirements', () => {
 						await expect( checkbox ).toBeDisabled();
 						await expect( checkbox ).toBeChecked();
 					}
+
+					const requests = await requestPromises;
+					for ( const request of requests ) {
+						const response = await request.response();
+						const responseBody = await response.json();
+						expect( response.status() ).toBe( 200 );
+						expect( responseBody.status ).toBe( 'success' );
+						expect( responseBody.message ).toBe(
+							'Merchant Center Settings successfully updated.'
+						);
+					}
 				} );
 
 				test( 'should have the checkbox checked by clicking the checkbox', async () => {
@@ -379,11 +399,27 @@ test.describe( 'Confirm store requirements', () => {
 					const checkboxes =
 						storeRequirements.getPrelaunchChecklistCheckboxes();
 
+					const requestPromises =
+						storeRequirements.registerPrelaunchChecklistConfirmCheckedRequest(
+							[ 'checkout_process_secure', 'refund_tos_visible' ]
+						);
+
 					for ( let i = 2; i <= 3; i++ ) {
 						const checkbox = await checkboxes.nth( i );
 						await checkbox.click();
 						await expect( checkbox ).toBeDisabled();
 						await expect( checkbox ).toBeChecked();
+					}
+
+					const requests = await requestPromises;
+					for ( const request of requests ) {
+						const response = await request.response();
+						const responseBody = await response.json();
+						expect( response.status() ).toBe( 200 );
+						expect( responseBody.status ).toBe( 'success' );
+						expect( responseBody.message ).toBe(
+							'Merchant Center Settings successfully updated.'
+						);
 					}
 				} );
 
@@ -395,6 +431,32 @@ test.describe( 'Confirm store requirements', () => {
 						storeRequirements.getErrorMessageRow();
 					await expect( errorMessageRow ).toContainText(
 						'Please check all requirements.'
+					);
+				} );
+
+				test( 'should send settings POST request by clicking the last checkbox', async () => {
+					// Click the checkbox of panel 5
+
+					const checkboxes =
+						storeRequirements.getPrelaunchChecklistCheckboxes();
+					const checkbox = await checkboxes.nth( 4 );
+
+					const requestPromises =
+						storeRequirements.registerPrelaunchChecklistConfirmCheckedRequest(
+							[ 'contact_info_visible' ]
+						);
+
+					await checkbox.click();
+					await expect( checkbox ).toBeDisabled();
+					await expect( checkbox ).toBeChecked();
+
+					const requests = await requestPromises;
+					const response = await requests[ 0 ].response();
+					const responseBody = await response.json();
+					expect( response.status() ).toBe( 200 );
+					expect( responseBody.status ).toBe( 'success' );
+					expect( responseBody.message ).toBe(
+						'Merchant Center Settings successfully updated.'
 					);
 				} );
 			}
@@ -416,13 +478,17 @@ test.describe( 'Confirm store requirements', () => {
 					} );
 
 					// Mock all settings as true
-					await storeRequirements.fulfillSettings( {
-						website_live: true,
-						checkout_process_secure: true,
-						payment_methods_visible: true,
-						refund_tos_visible: true,
-						contact_info_visible: true,
-					} );
+					await storeRequirements.fulfillSettings(
+						{
+							website_live: true,
+							checkout_process_secure: true,
+							payment_methods_visible: true,
+							refund_tos_visible: true,
+							contact_info_visible: true,
+						},
+						200,
+						[ 'GET' ]
+					);
 
 					await storeRequirements.goto();
 				} );
