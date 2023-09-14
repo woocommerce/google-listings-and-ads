@@ -15,7 +15,7 @@ test.use( { storageState: process.env.ADMINSTATE } );
 test.describe.configure( { mode: 'serial' } );
 
 /**
- * @type {import('../../utils/pages/setup-mc/step-1-set-up-accounts.js').default} storeRequirements
+ * @type {import('../../utils/pages/setup-mc/step-3-confirm-store-requirements.js').default} storeRequirements
  */
 let storeRequirements = null;
 
