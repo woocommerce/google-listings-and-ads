@@ -64,14 +64,11 @@ test.describe( 'Set up Ads account', () => {
 	test( 'Dashboard page contains Add Paid campaign buttons', async () => {
 		//Add page campaign in the Performance (Paid Campaigns) section
 		await expect(
-			await dashboardPage.getAdsConnectionAllProgramsButton(
-				'summary-card'
-			)
+			dashboardPage.getAdsConnectionAllProgramsButton( 'summary-card' )
 		).toBeEnabled();
 
 		//Add page campaign in the programs section.
-		adsConnectionButton =
-			await dashboardPage.getAdsConnectionAllProgramsButton();
+		adsConnectionButton = dashboardPage.getAdsConnectionAllProgramsButton();
 		await expect( adsConnectionButton ).toBeEnabled();
 	} );
 
@@ -102,9 +99,7 @@ test.describe( 'Set up Ads account', () => {
 		} );
 
 		test( 'Continue Button should be disabled', async () => {
-			await expect(
-				await setupAdsAccounts.getContinueButton()
-			).toBeDisabled();
+			await expect( setupAdsAccounts.getContinueButton() ).toBeDisabled();
 		} );
 	} );
 
@@ -116,9 +111,7 @@ test.describe( 'Set up Ads account', () => {
 
 			await expect( createAccountButton ).toBeVisible();
 
-			await expect(
-				await setupAdsAccounts.getContinueButton()
-			).toBeDisabled();
+			await expect( setupAdsAccounts.getContinueButton() ).toBeDisabled();
 
 			await expect(
 				page.getByText(
@@ -170,9 +163,7 @@ test.describe( 'Set up Ads account', () => {
 
 			await connectAdsAccountRequest;
 
-			await expect(
-				await setupAdsAccounts.getContinueButton()
-			).toBeEnabled();
+			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 
 			await expect(
 				page.getByRole( 'link', {
@@ -199,7 +190,7 @@ test.describe( 'Set up Ads account', () => {
 			const adsAccountSelected = `${ ADS_ACCOUNTS[ 1 ].id }`;
 
 			await expect(
-				await setupAdsAccounts.getConnectAdsButton()
+				setupAdsAccounts.getConnectAdsButton()
 			).toBeDisabled();
 
 			await setupAdsAccounts.selectAnExistingAdsAccount(
@@ -207,7 +198,7 @@ test.describe( 'Set up Ads account', () => {
 			);
 
 			await expect(
-				await setupAdsAccounts.getConnectAdsButton()
+				setupAdsAccounts.getConnectAdsButton()
 			).toBeEnabled();
 
 			//Intercept Ads connection request
@@ -227,9 +218,7 @@ test.describe( 'Set up Ads account', () => {
 			await setupAdsAccounts.clickConnectAds();
 			await connectAdsAccountRequest;
 
-			await expect(
-				await setupAdsAccounts.getContinueButton()
-			).toBeEnabled();
+			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 		} );
 
 		test( 'Continue to create paid campaign', async () => {
