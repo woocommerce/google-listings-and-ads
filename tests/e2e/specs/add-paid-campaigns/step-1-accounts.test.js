@@ -120,7 +120,9 @@ test.describe( 'Set up Ads account', () => {
 			).toBeVisible();
 
 			await createAccountButton.click();
+		} );
 
+		test( 'Create account button should be disable if the ToS have not been accepted.', async () => {
 			await expect(
 				page.getByRole( 'heading', {
 					name: 'Create Google Ads Account',
@@ -136,13 +138,17 @@ test.describe( 'Set up Ads account', () => {
 			await expect(
 				setupAdsAccounts.getCreateAdsAccountButtonModal()
 			).toBeDisabled();
+		} );
 
+		test( 'Accept terms and conditions to enable the create account button', async () => {
 			await setupAdsAccounts.getAcceptTermCreateAccount().check();
 
 			await expect(
 				setupAdsAccounts.getCreateAdsAccountButtonModal()
 			).toBeEnabled();
+		} );
 
+		test( 'Create Ads account', async () => {
 			//Intercept Ads connection request
 			const connectAdsAccountRequest =
 				setupAdsAccounts.registerConnectAdsAccountRequests();
