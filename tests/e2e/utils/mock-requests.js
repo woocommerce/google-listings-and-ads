@@ -194,6 +194,23 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the Settings request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} status
+	 * @param {Array}  methods
+	 * @return {Promise<void>}
+	 */
+	async fulfillSettings( payload, status = 200, methods = [] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/settings\b/,
+			payload,
+			status,
+			methods
+		);
+	}
+
+	/**
 	 * Fulfill the Sync Settings Connection request.
 	 *
 	 * @param {Object} payload

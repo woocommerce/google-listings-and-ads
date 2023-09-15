@@ -124,6 +124,30 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
+	 * Get destination-based tax rate radio row.
+	 *
+	 * @return {import('@playwright/test').Locator} Get destination-based tax rate radio row.
+	 */
+	getDestinationBasedTaxRateRadioRow() {
+		return this.page.getByRole( 'radio', {
+			name: 'My store uses destination-based tax rates.',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get non-destination-based tax rate radio row.
+	 *
+	 * @return {import('@playwright/test').Locator} Get non-destination-based tax rate radio row.
+	 */
+	getNonDestinationBasedTaxRateRadioRow() {
+		return this.page.getByRole( 'radio', {
+			name: 'My store does not use destination-based tax rates.',
+			exact: true,
+		} );
+	}
+
+	/**
 	 * Get country input search box container.
 	 *
 	 * @return {import('@playwright/test').Locator} Get country input search box container.
@@ -263,6 +287,17 @@ export default class ProductListingsPage extends MockRequests {
 	getEstimatedShippingTimesError() {
 		return this.getEstimatedShippingTimesCard().getByText(
 			'Please specify estimated shipping times for all the countries, and the time cannot be less than 0'
+		);
+	}
+
+	/**
+	 * Get tax rate error.
+	 *
+	 * @return {import('@playwright/test').Locator} Get tax rate error.
+	 */
+	getTaxRateError() {
+		return this.getTaxRateSection().getByText(
+			'Please specify tax rate option.'
 		);
 	}
 
@@ -505,6 +540,28 @@ export default class ProductListingsPage extends MockRequests {
 	 */
 	async checkOfferFreeShippingForOrdersRadioButton( name = 'Yes' ) {
 		const radio = this.getOfferFreeShippingForOrdersRadioRow( name );
+		await radio.check();
+		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+	}
+
+	/**
+	 * Check destination-based tax rate radio button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async checkDestinationBasedTaxRateRadioButton() {
+		const radio = this.getDestinationBasedTaxRateRadioRow();
+		await radio.check();
+		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+	}
+
+	/**
+	 * Check non-destination-based tax rate radio button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async checkNonDestinationBasedTaxRateRadioButton() {
+		const radio = this.getNonDestinationBasedTaxRateRadioRow();
 		await radio.check();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
