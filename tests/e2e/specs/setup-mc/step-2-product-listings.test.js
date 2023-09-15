@@ -54,6 +54,20 @@ test.describe( 'Configure product listings', () => {
 			productListingsPage.fulfillWCDefaultCountry( {
 				woocommerce_default_country: 'US',
 			} ),
+
+			// Mock MC settings
+			productListingsPage.fulfillSettings(
+				{
+					shipping_rate: 'automatic',
+					website_live: false,
+					checkout_process_secure: false,
+					payment_methods_visible: false,
+					refund_tos_visible: false,
+					contact_info_visible: false,
+				},
+				200,
+				[ 'GET' ]
+			),
 		] );
 
 		await productListingsPage.goto();
@@ -343,6 +357,12 @@ test.describe( 'Configure product listings', () => {
 				'Successfully added time for country: "US".'
 			);
 		} );
+
+		test( 'should show error message if clicking "Continue" button when tax rate is not chosen', async () => {
+			await productListingsPage.clickContinueButton();
+			const taxRateError = productListingsPage.getTaxRateError();
+			await expect( taxRateError ).toBeVisible();
+		} );
 	} );
 
 	test.describe( 'Links', () => {
@@ -392,6 +412,7 @@ test.describe( 'Configure product listings', () => {
 		test.beforeAll( async () => {
 			productListingsPage.checkRecommendedShippingRateRadioButton();
 			await productListingsPage.fillEstimatedShippingTimes( '14' );
+			await productListingsPage.checkNonDestinationBasedTaxRateRadioButton();
 		} );
 
 		test( 'should see the heading of next step and send two requests after clicking "Continue"', async () => {
