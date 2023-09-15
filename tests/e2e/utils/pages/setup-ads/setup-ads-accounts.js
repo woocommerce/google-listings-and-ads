@@ -15,9 +15,9 @@ export default class SetupAdsAccount extends MockRequests {
 	/**
 	 * Get Continue button.
 	 *
-	 * @return {Promise<import('@playwright/test').Locator>} The Continue button.
+	 * @return {import('@playwright/test').Locator} The Continue button.
 	 */
-	async getContinueButton() {
+	getContinueButton() {
 		return this.page.getByRole( 'button', {
 			name: 'Continue',
 			exact: true,
@@ -27,9 +27,9 @@ export default class SetupAdsAccount extends MockRequests {
 	/**
 	 * Get Connect Account button.
 	 *
-	 * @return {Promise<import('@playwright/test').Locator>} The Connect button.
+	 * @return {import('@playwright/test').Locator} The Connect button.
 	 */
-	async getConnectAdsButton() {
+	getConnectAdsButton() {
 		return this.page.getByRole( 'button', {
 			name: 'Connect',
 			exact: true,
@@ -42,7 +42,7 @@ export default class SetupAdsAccount extends MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async clickContinue() {
-		await ( await this.getContinueButton() ).click();
+		await this.getContinueButton().click();
 	}
 
 	/**
@@ -51,7 +51,7 @@ export default class SetupAdsAccount extends MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async clickConnectAds() {
-		await ( await this.getConnectAdsButton() ).click();
+		await this.getConnectAdsButton().click();
 	}
 
 	/**
