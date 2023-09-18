@@ -196,7 +196,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 						$path = $request->getUri()->getPath();
 
-						// Partial Failures come back with a status code of 200, so it's necessary to call GoogleAdsFailures:init every time..
+						// Partial Failures come back with a status code of 200, so it's necessary to call GoogleAdsFailures:init every time.
 						if ( strpos( $path, 'google-ads' ) !== false ) {
 							GoogleAdsFailures::init();
 						}
