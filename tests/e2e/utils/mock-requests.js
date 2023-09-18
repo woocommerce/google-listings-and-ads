@@ -211,6 +211,16 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the Ads Account request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillAdsAccounts( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/ads\/accounts\b/, payload );
+	}
+
+	/**
 	 * Fulfill the Sync Settings Connection request.
 	 *
 	 * @param {Object} payload
