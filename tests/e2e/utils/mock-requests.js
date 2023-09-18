@@ -221,6 +221,57 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill contact information request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillContactInformation( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/contact-information\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill phone verification request request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillPhoneVerificationRequest( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/phone-verification\/request\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill phone verification verify request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} status
+	 * @return {Promise<void>}
+	 */
+	async fulfillPhoneVerificationVerifyRequest( payload, status = 204 ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/phone-verification\/verify\b/,
+			payload,
+			status
+		);
+	}
+
+	/**
+	 * Fulfill policy check request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillPolicyCheckRequest( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/mc\/policy_check\b/, payload );
+	}
+
+	/**
 	 * Mock the request to connect Jetpack
 	 *
 	 * @param {string} url
@@ -394,6 +445,45 @@ export default class MockRequests {
 		await this.fulfillMCSetup( {
 			status,
 			step,
+		} );
+	}
+
+	/**
+	 * Mock contact information.
+	 *
+	 * @param {Object} options
+	 */
+	async mockContactInformation( options = {} ) {
+		const defaultOptions = {
+			id: 12345,
+			phoneNumber: null,
+			phoneVerificationStatus: null,
+			mcAddress: null,
+			streetAddress: 'Automata Road',
+			locality: 'Taipei',
+			region: null,
+			postalCode: '999',
+			country: 'TW',
+			isMCAddressDifferent: true,
+			wcAddressErrors: [],
+		};
+
+		options = { ...defaultOptions, ...options };
+
+		await this.fulfillContactInformation( {
+			id: options.id,
+			phone_number: options.phoneNumber,
+			phone_verification_status: options.phoneVerificationStatus,
+			mc_address: options.mcAddress,
+			wc_address: {
+				street_address: options.streetAddress,
+				locality: options.locality,
+				region: options.region,
+				postal_code: options.postalCode,
+				country: options.country,
+			},
+			is_mc_address_different: options.isMCAddressDifferent,
+			wc_address_errors: options.wcAddressErrors,
 		} );
 	}
 }

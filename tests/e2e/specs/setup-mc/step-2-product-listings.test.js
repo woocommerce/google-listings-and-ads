@@ -410,6 +410,8 @@ test.describe( 'Configure product listings', () => {
 
 	test.describe( 'Click "Continue" button', () => {
 		test.beforeAll( async () => {
+			// Mock MC contact information
+			productListingsPage.mockContactInformation();
 			productListingsPage.checkRecommendedShippingRateRadioButton();
 			await productListingsPage.fillEstimatedShippingTimes( '14' );
 			await productListingsPage.checkNonDestinationBasedTaxRateRadioButton();
