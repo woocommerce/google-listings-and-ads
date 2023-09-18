@@ -3,6 +3,11 @@
  */
 import SetUpAccountsPage from '../../utils/pages/setup-mc/step-1-set-up-accounts';
 import { LOAD_STATE } from '../../utils/constants';
+import {
+	getFAQPanelTitle,
+	getFAQPanelRow,
+	checkFAQExpandable,
+} from '../../utils/page';
 
 /**
  * External dependencies
@@ -66,30 +71,17 @@ test.describe( 'Set up accounts', () => {
 
 	test.describe( 'FAQ panels', () => {
 		test( 'should see two questions in FAQ', async () => {
-			const faqTitles = setUpAccountsPage.getFAQPanelTitle();
+			const faqTitles = getFAQPanelTitle( page );
 			await expect( faqTitles ).toHaveCount( 2 );
 		} );
 
 		test( 'should not see FAQ rows when FAQ titles are not clicked', async () => {
-			const faqRows = setUpAccountsPage.getFAQPanelRow();
+			const faqRows = getFAQPanelRow( page );
 			await expect( faqRows ).toHaveCount( 0 );
 		} );
 
-		test( 'should see one FAQ rows when the first FAQ title is clicked', async () => {
-			const faqTitle = setUpAccountsPage.getFAQPanelTitle().first();
-			await faqTitle.click();
-			const faqRow = setUpAccountsPage.getFAQPanelRow();
-			await expect( faqRow ).toBeVisible();
-		} );
-
-		test( 'should see two FAQ rows when two FAQ titles are clicked', async () => {
-			const faqTitle2 = setUpAccountsPage.getFAQPanelTitle().nth( 1 );
-			await faqTitle2.click();
-			const faqRows = setUpAccountsPage.getFAQPanelRow();
-			await expect( faqRows ).toHaveCount( 2 );
-			for ( const faqRow of await faqRows.all() ) {
-				await expect( faqRow ).toBeVisible();
-			}
+		test( 'should see FAQ rows when all FAQ titles are clicked', async () => {
+			await checkFAQExpandable( page );
 		} );
 	} );
 
@@ -576,7 +568,7 @@ test.describe( 'Set up accounts', () => {
 			await expect( link ).toBeVisible();
 			await expect( link ).toHaveAttribute( 'href', cssPartersLink );
 
-			const faqTitle2 = setUpAccountsPage.getFAQPanelTitle().nth( 1 );
+			const faqTitle2 = getFAQPanelTitle( page ).nth( 1 );
 			await faqTitle2.click();
 			const linkInFAQ = setUpAccountsPage.getCSSPartnersLink(
 				'Please find more information here'

@@ -352,33 +352,6 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
-	 * Get FAQ panel.
-	 *
-	 * @return {import('@playwright/test').Locator} Get FAQ panel.
-	 */
-	getFAQPanel() {
-		return this.page.locator( '.gla-faqs-panel' );
-	}
-
-	/**
-	 * Get FAQ panel title.
-	 *
-	 * @return {import('@playwright/test').Locator} Get FAQ panel title.
-	 */
-	getFAQPanelTitle() {
-		return this.getFAQPanel().locator( '.components-panel__body-title' );
-	}
-
-	/**
-	 * Get FAQ panel row.
-	 *
-	 * @return {import('@playwright/test').Locator} Get FAQ panel row.
-	 */
-	getFAQPanelRow() {
-		return this.getFAQPanel().locator( '.components-panel__row' );
-	}
-
-	/**
 	 * Get link of Google Merchant Center Help.
 	 *
 	 * @return {import('@playwright/test').Locator} Get link of Google Merchant Center Help.
