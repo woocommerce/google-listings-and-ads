@@ -282,6 +282,32 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill syncable products count request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillSyncableProductsCountRequest( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/syncable-products-count\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill product statistics request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillProductStatisticsRequest( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/product-statistics\b/,
+			payload
+		);
+	}
+
+	/**
 	 * Mock the request to connect Jetpack
 	 *
 	 * @param {string} url
@@ -494,6 +520,18 @@ export default class MockRequests {
 			},
 			is_mc_address_different: options.isMCAddressDifferent,
 			wc_address_errors: options.wcAddressErrors,
+		} );
+	}
+
+	/**
+	 * Mock the successful settings sync requesst.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockSuccessfulSettingsSyncRequest() {
+		await this.fulfillSettingsSync( {
+			status: 'success',
+			message: 'Successfully synchronized settings with Google.',
 		} );
 	}
 }
