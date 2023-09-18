@@ -7,6 +7,11 @@ const { test, expect } = require( '@playwright/test' );
  * Internal dependencies
  */
 import CompleteCampaign from '../../utils/pages/setup-mc/step-4-complete-campaign';
+import {
+	getFAQPanelTitle,
+	getFAQPanelRow,
+	checkFAQExpandable,
+} from '../../utils/page';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
@@ -71,6 +76,22 @@ test.describe( 'Complete your campaign', () => {
 			const syncableProductCountTooltip =
 				completeCampaign.getSyncableProductsCountTooltip();
 			await expect( syncableProductCountTooltip ).toContainText( '1024' );
+		} );
+	} );
+
+	test.describe( 'FAQ panels', () => {
+		test( 'should see five questions in FAQ', async () => {
+			const faqTitles = getFAQPanelTitle( page );
+			await expect( faqTitles ).toHaveCount( 5 );
+		} );
+
+		test( 'should not see FAQ rows when FAQ titles are not clicked', async () => {
+			const faqRows = getFAQPanelRow( page );
+			await expect( faqRows ).toHaveCount( 0 );
+		} );
+
+		test( 'should see FAQ rows when all FAQ titles are clicked', async () => {
+			await checkFAQExpandable( page );
 		} );
 	} );
 
