@@ -33,7 +33,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	async goto() {
 		await this.page.goto(
 			'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fsetup-mc',
-			{ waitUntil: LOAD_STATE.NETWORK_IDLE }
+			{ waitUntil: LOAD_STATE.DOM_CONTENT_LOADED }
 		);
 	}
 

@@ -31,7 +31,7 @@ export async function singleProductAddToCart( page, productID ) {
 	).toBeVisible();
 
 	// Wait till all tracking event request have been sent after page reloaded.
-	await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
+	await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 }
 
 /**

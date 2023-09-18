@@ -14,19 +14,40 @@ export default class MockRequests {
 	/**
 	 * Fulfill a request with a payload.
 	 *
-	 * @param {RegExp|string}  url The url to fulfill.
-	 * @param {Object} payload The payload to send.
-	 * @param {number} status  The HTTP status in the response.
+	 * @param {RegExp|string} url      The url to fulfill.
+	 * @param {Object}        payload  The payload to send.
+	 * @param {number}        status   The HTTP status in the response.
+	 * @param {Array}         methods  The HTTP methods in the request to be fulfill.
 	 * @return {Promise<void>}
 	 */
-	async fulfillRequest( url, payload, status = 200 ) {
-		await this.page.route( url, ( route ) =>
-			route.fulfill( {
-				status,
-				content: 'application/json',
-				headers: { 'Access-Control-Allow-Origin': '*' },
-				body: JSON.stringify( payload ),
-			} )
+	async fulfillRequest( url, payload, status = 200, methods = [] ) {
+		await this.page.route( url, ( route ) => {
+			if (
+				methods.length === 0 ||
+				methods.includes( route.request().method() )
+			) {
+				route.fulfill( {
+					status,
+					content: 'application/json',
+					headers: { 'Access-Control-Allow-Origin': '*' },
+					body: JSON.stringify( payload ),
+				} );
+			} else {
+				route.continue();
+			}
+		} );
+	}
+
+	/**
+	 * Fulfill the WC options default country request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillWCDefaultCountry( payload ) {
+		await this.fulfillRequest(
+			/wc-admin\/options\?options=woocommerce_default_country\b/,
+			payload
 		);
 	}
 
@@ -47,11 +68,27 @@ export default class MockRequests {
 	 * Fulfill the Target Audience request.
 	 *
 	 * @param {Object} payload
+	 * @param {Array} methods
 	 * @return {Promise<void>}
 	 */
-	async fulfillTargetAudience( payload ) {
+	async fulfillTargetAudience( payload, methods = [] ) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/mc\/target_audience\b/,
+			payload,
+			200,
+			methods
+		);
+	}
+
+	/**
+	 * Fulfill the Target Audience suggestions request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillTargetAudienceSuggestions( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/target_audience\/suggestions\b/,
 			payload
 		);
 	}
@@ -94,6 +131,16 @@ export default class MockRequests {
 	 */
 	async fulfillMCConnection( payload ) {
 		await this.fulfillRequest( /\/wc\/gla\/mc\/connection\b/, payload );
+	}
+
+	/**
+	 * Fulfill the MC setup request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillMCSetup( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/mc\/setup\b/, payload );
 	}
 
 	/**
@@ -144,6 +191,23 @@ export default class MockRequests {
 	 */
 	async fulfillAdsConnection( payload ) {
 		await this.fulfillRequest( /\/wc\/gla\/ads\/connection\b/, payload );
+	}
+
+	/**
+	 * Fulfill the Settings request.
+	 *
+	 * @param {Object} payload
+	 * @param {number} status
+	 * @param {Array}  methods
+	 * @return {Promise<void>}
+	 */
+	async fulfillSettings( payload, status = 200, methods = [] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/settings\b/,
+			payload,
+			status,
+			methods
+		);
 	}
 
 	/**
@@ -317,6 +381,19 @@ export default class MockRequests {
 			subaccount: null,
 			name: null,
 			domain: null,
+		} );
+	}
+
+	/**
+	 * Mock MC setup.
+	 *
+	 * @param {string} status
+	 * @param {string} step
+	 */
+	async mockMCSetup( status = 'incomplete', step = 'accounts' ) {
+		await this.fulfillMCSetup( {
+			status,
+			step,
 		} );
 	}
 }

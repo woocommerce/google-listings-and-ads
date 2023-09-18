@@ -27,13 +27,13 @@ test( 'Merchant who is getting started clicks on the Marketing > GLA link, click
 	// the submenu is now opened, the GLA sub menu item is now visible to the user,
 	// we can call `click` now.
 	await page.getByRole( 'link', { name: 'Google Listings & Ads' } ).click();
-	await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
+	await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
 	await expect( page ).toHaveTitle( /Google Listings & Ads/ );
 
 	// click on the call-to-action button.
 	await page.getByText( 'Start listing products →' ).first().click();
-	await page.waitForLoadState( LOAD_STATE.NETWORK_IDLE );
+	await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
 	// Check we are in the Setup MC page.
 	await expect(
