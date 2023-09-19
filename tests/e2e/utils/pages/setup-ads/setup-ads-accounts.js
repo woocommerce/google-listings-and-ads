@@ -37,6 +37,15 @@ export default class SetupAdsAccount extends MockRequests {
 	}
 
 	/**
+	 * Get ads account select.
+	 *
+	 * @return {import('@playwright/test').Locator} Get ads account select.
+	 */
+	getAdsAccountSelect() {
+		return this.page.locator( '.gla-connect-ads select' );
+	}
+
+	/**
 	 * Click the Continue button.
 	 *
 	 * @return {Promise<void>}
@@ -61,9 +70,7 @@ export default class SetupAdsAccount extends MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async selectAnExistingAdsAccount( accountNumber ) {
-		await this.page
-			.locator( '.gla-connect-ads select' )
-			.selectOption( accountNumber );
+		await this.getAdsAccountSelect().selectOption( accountNumber );
 	}
 
 	/**
@@ -91,9 +98,9 @@ export default class SetupAdsAccount extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Accept terms checkbox.
 	 */
 	getAcceptTermCreateAccount() {
-		return this.getCreateAccountModal().locator(
-			'text=I have read and accept these terms'
-		);
+		return this.getCreateAccountModal().getByRole( 'checkbox', {
+			name: 'I have read and accept these terms',
+		} );
 	}
 
 	/**
@@ -109,25 +116,60 @@ export default class SetupAdsAccount extends MockRequests {
 	}
 
 	/**
+	 * Get connect to a different account button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get connect to a different account button.
+	 */
+	getConnectDifferentAccountButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Or, connect to a different Google Ads account',
+			exact: true,
+		} );
+	}
+
+	/**
 	 * Register the requests when the save button is clicked.
 	 *
 	 * @param {string} [adsAccountID] The Ads account ID.
 	 * @return {Promise<import('@playwright/test').Request>} The request.
 	 */
 	async registerConnectAdsAccountRequests( adsAccountID = null ) {
-		return this.page.waitForRequest( ( request ) => {
-			if ( adsAccountID ) {
-				return (
-					request.url().includes( '/gla/ads/accounts' ) &&
-					request.method() === 'POST' &&
-					request.postDataJSON().id === adsAccountID
-				);
-			}
+		return this.page.waitForRequest( ( request ) =>
+			request.url().includes( '/gla/ads/accounts' ) &&
+			request.method() === 'POST' &&
+			adsAccountID
+				? request.postDataJSON().id === adsAccountID
+				: true
+		);
+	}
 
-			return (
-				request.url().includes( '/gla/ads/accounts' ) &&
-				request.method() === 'POST'
-			);
-		} );
+	/**
+	 * Click ToS checkbox from modal.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickToSCheckboxFromModal() {
+		const checkbox = this.getAcceptTermCreateAccount();
+		await checkbox.check();
+	}
+
+	/**
+	 * Click create account button from modal.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickCreateAccountButtonFromModal() {
+		const button = this.getCreateAdsAccountButtonModal();
+		await button.click();
+	}
+
+	/**
+	 * Click connect to a different account button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickConnectDifferentAccountButton() {
+		const button = this.getConnectDifferentAccountButton();
+		await button.click();
 	}
 }
