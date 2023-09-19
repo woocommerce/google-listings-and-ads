@@ -46,44 +46,6 @@ export default class SetupAdsAccount extends MockRequests {
 	}
 
 	/**
-	 * Click the Continue button.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async clickContinue() {
-		await this.getContinueButton().click();
-	}
-
-	/**
-	 * Click the Connect Ads button.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async clickConnectAds() {
-		await this.getConnectAdsButton().click();
-	}
-
-	/**
-	 * Selects the ads account.
-	 *
-	 * @param {string} accountNumber The Ads account number.
-	 * @return {Promise<void>}
-	 */
-	async selectAnExistingAdsAccount( accountNumber ) {
-		await this.getAdsAccountSelect().selectOption( accountNumber );
-	}
-
-	/**
-	 * Mock the Ads accounts response.
-	 *
-	 * @param {Object} payload
-	 * @return {Promise<void>}
-	 */
-	async mockAdsAccountsResponse( payload ) {
-		await this.fulfillAdsAccounts( payload );
-	}
-
-	/**
 	 * Get the create account modal.
 	 *
 	 * @return {import('@playwright/test').Locator} The create account modal.
@@ -125,6 +87,44 @@ export default class SetupAdsAccount extends MockRequests {
 			name: 'Or, connect to a different Google Ads account',
 			exact: true,
 		} );
+	}
+
+	/**
+	 * Click the Continue button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickContinue() {
+		await this.getContinueButton().click();
+	}
+
+	/**
+	 * Click the Connect Ads button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickConnectAds() {
+		await this.getConnectAdsButton().click();
+	}
+
+	/**
+	 * Selects the ads account.
+	 *
+	 * @param {string} accountNumber The Ads account number.
+	 * @return {Promise<void>}
+	 */
+	async selectAnExistingAdsAccount( accountNumber ) {
+		await this.getAdsAccountSelect().selectOption( accountNumber );
+	}
+
+	/**
+	 * Mock the Ads accounts response.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async mockAdsAccountsResponse( payload ) {
+		await this.fulfillAdsAccounts( payload );
 	}
 
 	/**
