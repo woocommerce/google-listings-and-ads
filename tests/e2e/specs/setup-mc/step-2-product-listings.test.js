@@ -2,6 +2,11 @@
  * Internal dependencies
  */
 import ProductListingsPage from '../../utils/pages/setup-mc/step-2-product-listings';
+import {
+	getCountryInputSearchBoxContainer,
+	getCountryInputSearchBox,
+	selectCountryFromSearchBox,
+} from '../../utils/page';
 
 /**
  * External dependencies
@@ -104,7 +109,7 @@ test.describe( 'Configure product listings', () => {
 
 	test( 'should see US but should not see UK in the country search box', async () => {
 		const countrySearchBoxContainer =
-			productListingsPage.getCountryInputSearchBoxContainer();
+			getCountryInputSearchBoxContainer( page );
 		await expect( countrySearchBoxContainer ).toContainText(
 			'United States (US)'
 		);
@@ -115,7 +120,7 @@ test.describe( 'Configure product listings', () => {
 
 	test( 'should see UK in the country search box and send the target audience POST request after selecting UK', async () => {
 		const countrySearchBoxContainer =
-			productListingsPage.getCountryInputSearchBoxContainer();
+			getCountryInputSearchBoxContainer( page );
 		await expect( countrySearchBoxContainer ).not.toContainText(
 			'United Kingdom (UK)'
 		);
@@ -127,9 +132,7 @@ test.describe( 'Configure product listings', () => {
 				request.postDataJSON().countries.includes( 'GB' )
 		);
 
-		await productListingsPage.selectCountryFromSearchBox(
-			'United Kingdom (UK)'
-		);
+		await selectCountryFromSearchBox( page, 'United Kingdom (UK)' );
 
 		await expect( countrySearchBoxContainer ).toContainText(
 			'United Kingdom (UK)'
@@ -147,7 +150,7 @@ test.describe( 'Configure product listings', () => {
 	} );
 
 	test( 'should hide country search box after clicking "All countries"', async () => {
-		const countrySearchBox = productListingsPage.getCountryInputSearchBox();
+		const countrySearchBox = getCountryInputSearchBox( page );
 		await expect( countrySearchBox ).toBeVisible();
 		await productListingsPage.checkAllCountriesRadioButton();
 		await expect( countrySearchBox ).not.toBeVisible();

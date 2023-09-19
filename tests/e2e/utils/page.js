@@ -37,6 +37,62 @@ export function getFAQPanelRow( page ) {
 }
 
 /**
+ * Get country input search box container.
+ *
+ * @param {import('@playwright/test').Page} page The current page.
+ *
+ * @return {import('@playwright/test').Locator} Get country input search box container.
+ */
+export function getCountryInputSearchBoxContainer( page ) {
+	return page.locator(
+		'.woocommerce-tree-select-control > .components-base-control'
+	);
+}
+
+/**
+ * Get country input search box.
+ *
+ * @param {import('@playwright/test').Page} page The current page.
+ *
+ * @return {import('@playwright/test').Locator} Get country input search box.
+ */
+export function getCountryInputSearchBox( page ) {
+	return getCountryInputSearchBoxContainer( page ).locator(
+		'input[id*="woocommerce-tree-select-control"]'
+	);
+}
+
+/**
+ * Get tree item by country name.
+ *
+ * @param {import('@playwright/test').Page} page The current page.
+ * @param {string} name
+ *
+ * @return {import('@playwright/test').Locator} Get tree item by country name.
+ */
+export function getTreeItemByCountryName( page, name = 'United States (US)' ) {
+	return page.getByRole( 'treeitem', { name } );
+}
+
+/**
+ * Select a country from the search box.
+ *
+ * @param {import('@playwright/test').Page} page The current page.
+ * @param {string} name
+ *
+ * @return {Promise<void>}
+ */
+export async function selectCountryFromSearchBox(
+	page,
+	name = 'United States (US)'
+) {
+	const countrySearchBox = getCountryInputSearchBox( page );
+	await countrySearchBox.fill( name );
+	await getTreeItemByCountryName( page, name ).click();
+	await countrySearchBox.press( 'Escape' );
+}
+
+/**
  * Check if FAQs are expandable.
  *
  * @param {import('@playwright/test').Page} page The current page.
