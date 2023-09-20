@@ -126,8 +126,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - Update DEWP related tools and docs.
 * Fix - Fix Taxonomy Attribute Mapping for Product Variations.
 
-= 2.5.4 - 2023-08-29 =
-* Dev - Override vulnerability packages: xmlhttprequest-ssl and ws.
-* Dev - Update trigger method in Hooks Generator Workflow.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
