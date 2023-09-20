@@ -111,6 +111,12 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.7 - 2023-09-20 =
+* Dev - E2E - Ads a paid campaign Step 1 - Connect Ads Account.
+* Dev - E2E - Onboarding Step 2 - Configure product listings.
+* Dev - E2E - Onboarding Step 3 - Confirm store requirements.
+* Fix - Performance issue with GoogleAdsFailures::init.
+
 = 2.5.6 - 2023-09-14 =
 * Dev - E2E - Onboarding Step 1 - Set up accounts - Connect Merchant Center account.
 * FIx - Undesired margin in Paid Campaign Creation Success Modal.
