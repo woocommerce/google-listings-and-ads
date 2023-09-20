@@ -456,7 +456,7 @@ test.describe( 'Complete your campaign', () => {
 				} );
 			} );
 
-			test.describe( 'Setup budget', () => {
+			test.describe( 'Set up budget', () => {
 				test( 'should see the low budget tip when the buget is set lower than the recommended value', async () => {
 					await setupBudgetPage.fillBudget( '1' );
 					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
@@ -467,6 +467,101 @@ test.describe( 'Complete your campaign', () => {
 					await setupBudgetPage.fillBudget( '99999' );
 					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
 					await expect( lowBudgetTip ).not.toBeVisible();
+				} );
+			} );
+
+			test.describe( 'Set up billing', () => {
+				let newPage;
+
+				test( 'should see set up billing button is enabled', async () => {
+					const setUpBillingButton =
+						setupBudgetPage.getSetUpBillingButton();
+					await expect( setUpBillingButton ).toBeEnabled();
+				} );
+
+				test( 'should see the correct set up billing link', async () => {
+					const setUpBillingLink =
+						setupBudgetPage.getSetUpBillingLink();
+					await expect( setUpBillingLink ).toHaveAttribute(
+						'href',
+						'https://support.google.com/google-ads/answer/2375375'
+					);
+				} );
+
+				test( 'should open a popup when clicking set up billing button', async () => {
+					const popupPromise = page.waitForEvent( 'popup' );
+					await setupBudgetPage.clickSetUpBillingButton();
+					const popup = await popupPromise;
+					await popup.waitForLoadState();
+					const popupTitle = await popup.title();
+					const popupURL = await popup.url();
+					await expect( popupTitle ).toBe(
+						'Add a new payment method in Google Ads - Google Ads Help'
+					);
+					await expect( popupURL ).toBe(
+						'https://support.google.com/google-ads/answer/2375375'
+					);
+					await popup.close();
+				} );
+
+				test( 'should open a new page when clicking set up billing link', async () => {
+					const newPagePromise = page.waitForEvent( 'popup' );
+					await setupBudgetPage.clickSetUpBillingLink();
+					newPage = await newPagePromise;
+					await newPage.waitForLoadState();
+					const newPageTitle = await newPage.title();
+					const newPageURL = await newPage.url();
+					await expect( newPageTitle ).toBe(
+						'Add a new payment method in Google Ads - Google Ads Help'
+					);
+					await expect( newPageURL ).toBe(
+						'https://support.google.com/google-ads/answer/2375375'
+					);
+				} );
+
+				test( 'should see billing has been set up successfully when billing status API returns approved', async () => {
+					await setupBudgetPage.fulfillBillingStatusRequest( {
+						status: 'approved',
+					} );
+
+					const responsePromise = page.waitForResponse(
+						/\/gla\/ads\/billing-status/
+					);
+
+					await newPage.close();
+
+					const billingSetupSection =
+						setupBudgetPage.getBillingSetupSection();
+					await billingSetupSection.focus();
+
+					await responsePromise;
+
+					const billingSetupSuccessSection =
+						setupBudgetPage.getBillingSetupSuccessSection();
+					await expect( billingSetupSuccessSection ).toContainText(
+						'Billing method for Google Ads added successfully'
+					);
+				} );
+
+				test( 'should see "Complete setup" button is enabled', async () => {
+					const button = completeCampaign.getCompleteSetupButton();
+					await expect( button ).toBeEnabled();
+				} );
+
+				test( 'should go to "Product Feed" when clicking "Complete setup" button', async () => {
+					await completeCampaign.fulfillAdsCampaignsRequest();
+					const requestsPromises =
+						completeCampaign.registerCompleteSetupRequests();
+					await completeCampaign.clickCompleteSetupButton();
+					await requestsPromises;
+
+					const setupSuccessModal = page
+						.locator( '.components-modal__content' )
+						.filter( {
+							hasText:
+								'You’ve successfully set up Google Listings & Ads!',
+						} );
+					await expect( setupSuccessModal ).toBeVisible();
 				} );
 			} );
 		} );

@@ -308,6 +308,29 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill billing status request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillBillingStatusRequest( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/billing-status\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill ads campaigns request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillAdsCampaignsRequest( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/ads\/campaigns\b/, payload );
+	}
+
+	/**
 	 * Mock the request to connect Jetpack
 	 *
 	 * @param {string} url

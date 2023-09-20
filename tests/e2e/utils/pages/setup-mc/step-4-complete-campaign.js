@@ -212,4 +212,39 @@ export default class CompleteCampaign extends MockRequests {
 		await button.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
+
+	/**
+	 * Click complete setup button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickCompleteSetupButton() {
+		const button = this.getCompleteSetupButton();
+		await button.click();
+		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+	}
+
+	/**
+	 * Register the requests when completing setup.
+	 *
+	 * @return {Promise<import('@playwright/test').Request[]>} The request.
+	 */
+	registerCompleteSetupRequests() {
+		const campaignsRequestPromise = this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/ads/campaigns' ) &&
+				request.method() === 'POST'
+		);
+
+		const mcSettingsSyncRequestPromise = this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/mc/settings/sync' ) &&
+				request.method() === 'POST'
+		);
+
+		return Promise.all( [
+			campaignsRequestPromise,
+			mcSettingsSyncRequestPromise,
+		] );
+	}
 }

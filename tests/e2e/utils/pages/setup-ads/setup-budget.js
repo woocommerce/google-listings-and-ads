@@ -42,6 +42,49 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
+	 * Get billing setup section.
+	 *
+	 * @return {import('@playwright/test').Locator} The billing setup section.
+	 */
+	getBillingSetupSection() {
+		return this.page.locator( '.gla-google-ads-billing-setup-card' );
+	}
+
+	/**
+	 * Get set up billing button.
+	 *
+	 * @return {import('@playwright/test').Locator} The set up billing button.
+	 */
+	getSetUpBillingButton() {
+		return this.getBillingSetupSection().getByRole( 'button', {
+			name: 'Set up billing',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get set up billing link.
+	 *
+	 * @return {import('@playwright/test').Locator} The set up billing link.
+	 */
+	getSetUpBillingLink() {
+		return this.getBillingSetupSection().getByRole( 'link', {
+			name: 'click here instead',
+		} );
+	}
+
+	/**
+	 * Get billing setup success section.
+	 *
+	 * @return {import('@playwright/test').Locator} The billing setup success section.
+	 */
+	getBillingSetupSuccessSection() {
+		return this.page.locator(
+			'.gla-google-ads-billing-card__success-status'
+		);
+	}
+
+	/**
 	 * Extract budget recommendation range.
 	 *
 	 * @param {string} text
@@ -72,14 +115,34 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
-	 * Fill the budget
+	 * Fill the budget.
 	 *
 	 * @param {string} budget
 	 *
-	 * @return {Promise<import('@playwright/test').Response>} The response.
+	 * @return {Promise<void>}
 	 */
 	async fillBudget( budget = '0' ) {
 		const input = this.getBudgetInput();
 		await input.fill( budget );
+	}
+
+	/**
+	 * Click set up billing button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickSetUpBillingButton() {
+		const button = this.getSetUpBillingButton();
+		await button.click();
+	}
+
+	/**
+	 * Click set up billing link.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickSetUpBillingLink() {
+		const link = this.getSetUpBillingLink();
+		await link.click();
 	}
 }
