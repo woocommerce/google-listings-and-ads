@@ -298,7 +298,7 @@ test.describe( 'Set up accounts', () => {
 									setUpAccountsPage.mockMCNotConnected(),
 								] );
 
-								await setUpAccountsPage.goto();
+								await page.reload();
 
 								// Mock Merchant Center create accounts
 								await setUpAccountsPage.mockMCCreateAccountWebsiteClaimed(
