@@ -5,6 +5,7 @@ import ProductListingsPage from '../../utils/pages/setup-mc/step-2-product-listi
 import {
 	getCountryInputSearchBoxContainer,
 	getCountryInputSearchBox,
+	removeCountryFromSearchBox,
 	selectCountryFromSearchBox,
 } from '../../utils/page';
 
@@ -162,9 +163,7 @@ test.describe( 'Configure product listings', () => {
 	test( 'should still see "Tax rate (required for U.S. only)" even if deselect US when the default country is US', async () => {
 		const taxRateSection = productListingsPage.getTaxRateSection();
 		await expect( taxRateSection ).toBeVisible();
-		await productListingsPage.removeCountryFromSearchBox(
-			'United States (US)'
-		);
+		await removeCountryFromSearchBox( page, 'United States (US)' );
 		await expect( taxRateSection ).toBeVisible();
 	} );
 
@@ -181,9 +180,7 @@ test.describe( 'Configure product listings', () => {
 		const taxRateSection = productListingsPage.getTaxRateSection();
 		await expect( taxRateSection ).toBeVisible();
 
-		await productListingsPage.removeCountryFromSearchBox(
-			'United States (US)'
-		);
+		await removeCountryFromSearchBox( page, 'United States (US)' );
 
 		await expect( taxRateSection ).not.toBeVisible();
 	} );

@@ -6,12 +6,18 @@ const { test, expect } = require( '@playwright/test' );
 /**
  * Internal dependencies
  */
+import SetupBudgetPage from '../../utils/pages/setup-ads/setup-budget';
 import CompleteCampaign from '../../utils/pages/setup-mc/step-4-complete-campaign';
 import SetupAdsAccountPage from '../../utils/pages/setup-ads/setup-ads-accounts';
 import {
+	checkFAQExpandable,
+	fillCountryInSearchBox,
+	getCountryInputSearchBoxContainer,
+	getCountryTagsFromInputSearchBoxContainer,
 	getFAQPanelTitle,
 	getFAQPanelRow,
-	checkFAQExpandable,
+	getTreeSelectMenu,
+	removeCountryFromSearchBox,
 } from '../../utils/page';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -19,12 +25,17 @@ test.use( { storageState: process.env.ADMINSTATE } );
 test.describe.configure( { mode: 'serial' } );
 
 /**
+ * @type {import('../../utils/pages/setup-ads/stepup-budget.js').default} setupBudgetPage
+ */
+let setupBudgetPage = null;
+
+/**
  * @type {import('../../utils/pages/setup-mc/step-4-complete-campaign.js').default} completeCampaign
  */
 let completeCampaign = null;
 
 /**
- * @type {import('../../utils/pages/setup-ads/setup-ads-accounts.js').default} completeCampaign
+ * @type {import('../../utils/pages/setup-ads/setup-ads-accounts.js').default} setupAdsAccountPage
  */
 let setupAdsAccountPage = null;
 
@@ -36,6 +47,7 @@ let page = null;
 test.describe( 'Complete your campaign', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
+		setupBudgetPage = new SetupBudgetPage( page );
 		completeCampaign = new CompleteCampaign( page );
 		setupAdsAccountPage = new SetupAdsAccountPage( page );
 		await Promise.all( [
@@ -369,6 +381,92 @@ test.describe( 'Complete your campaign', () => {
 					await expect( budgetSection ).not.toHaveClass(
 						/wcdl-section--is-disabled/
 					);
+				} );
+			} );
+
+			test.describe( 'Select audience', () => {
+				test( 'should see only three country tags in country input search box', async () => {
+					const countrySearchBoxContainer =
+						getCountryInputSearchBoxContainer( page );
+					const countryTags =
+						getCountryTagsFromInputSearchBoxContainer( page );
+					await expect( countryTags ).toHaveCount( 3 );
+					await expect( countrySearchBoxContainer ).toContainText(
+						'United States'
+					);
+					await expect( countrySearchBoxContainer ).toContainText(
+						'Taiwan'
+					);
+					await expect( countrySearchBoxContainer ).toContainText(
+						'United Kingdom'
+					);
+				} );
+
+				test( 'should only allow searching for the same set of the countries selected in step 2, which is returned by target audience API', async () => {
+					const treeSelectMenu = getTreeSelectMenu( page );
+
+					await fillCountryInSearchBox( page, 'United States' );
+					await expect( treeSelectMenu ).toBeVisible();
+
+					await fillCountryInSearchBox( page, 'United Kingdom' );
+					await expect( treeSelectMenu ).toBeVisible();
+
+					await fillCountryInSearchBox( page, 'Taiwan' );
+					await expect( treeSelectMenu ).toBeVisible();
+
+					await fillCountryInSearchBox( page, 'Japan' );
+					await expect( treeSelectMenu ).not.toBeVisible();
+
+					await fillCountryInSearchBox( page, 'Spain' );
+					await expect( treeSelectMenu ).not.toBeVisible();
+				} );
+
+				test( 'should see the budget recommendation range changed, and see the budget recommendation request is triggered  when changing the ads audience', async () => {
+					let textContent = await setupBudgetPage
+						.getBudgetRecommendationTextRow()
+						.textContent();
+
+					const textBeforeRemoveCountry =
+						setupBudgetPage.extractBudgetRecommendationRange(
+							textContent
+						);
+
+					const responsePromise =
+						setupBudgetPage.registerBudgetRecommendationResponse();
+
+					await removeCountryFromSearchBox(
+						page,
+						'United States (US)'
+					);
+
+					await responsePromise;
+
+					textContent = await setupBudgetPage
+						.getBudgetRecommendationTextRow()
+						.textContent();
+
+					const textAfterRemoveCountry =
+						setupBudgetPage.extractBudgetRecommendationRange(
+							textContent
+						);
+
+					await expect( textBeforeRemoveCountry ).not.toBe(
+						textAfterRemoveCountry
+					);
+				} );
+			} );
+
+			test.describe( 'Setup budget', () => {
+				test( 'should see the low budget tip when the buget is set lower than the recommended value', async () => {
+					await setupBudgetPage.fillBudget( '1' );
+					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
+					await expect( lowBudgetTip ).toBeVisible();
+				} );
+
+				test( 'should not see the low budget tip when the buget is set higher than the recommended value', async () => {
+					await setupBudgetPage.fillBudget( '99999' );
+					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();
+					await expect( lowBudgetTip ).not.toBeVisible();
 				} );
 			} );
 		} );

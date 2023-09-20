@@ -50,6 +50,19 @@ export function getCountryInputSearchBoxContainer( page ) {
 }
 
 /**
+ * Get country tags from input search box container.
+ *
+ * @param {import('@playwright/test').Page} page The current page.
+ *
+ * @return {import('@playwright/test').Locator} Get country tags from input search box container.
+ */
+export function getCountryTagsFromInputSearchBoxContainer( page ) {
+	return getCountryInputSearchBoxContainer( page ).locator(
+		'.woocommerce-tag'
+	);
+}
+
+/**
  * Get country input search box.
  *
  * @param {import('@playwright/test').Page} page The current page.
@@ -60,6 +73,17 @@ export function getCountryInputSearchBox( page ) {
 	return getCountryInputSearchBoxContainer( page ).locator(
 		'input[id*="woocommerce-tree-select-control"]'
 	);
+}
+
+/**
+ * Get tree select menu.
+ *
+ * @param {import('@playwright/test').Page} page The current page.
+ *
+ * @return {import('@playwright/test').Locator} Get tree select menu.
+ */
+export function getTreeSelectMenu( page ) {
+	return page.locator( '.woocommerce-tree-select-control__main' );
 }
 
 /**
@@ -75,6 +99,53 @@ export function getTreeItemByCountryName( page, name = 'United States (US)' ) {
 }
 
 /**
+ * Get remove country button by country name.
+ *
+ * @param {import('@playwright/test').Page} page The current page.
+ * @param {string} name
+ *
+ * @return {import('@playwright/test').Locator} Get remove country button by country name.
+ */
+export function getRemoveCountryButtonByName(
+	page,
+	name = 'United States (US)'
+) {
+	return page.getByRole( 'button', { name: `Remove ${ name }` } );
+}
+
+/**
+ * Remove a country from the search box.
+ *
+ * @param {import('@playwright/test').Page} page The current page.
+ * @param {string} name
+ *
+ * @return {Promise<void>}
+ */
+export async function removeCountryFromSearchBox(
+	page,
+	name = 'United States (US)'
+) {
+	const removeButton = getRemoveCountryButtonByName( page, name );
+	await removeButton.click();
+}
+
+/**
+ * Fill a country in the search box.
+ *
+ * @param {import('@playwright/test').Page} page The current page.
+ * @param {string} name
+ *
+ * @return {Promise<void>}
+ */
+export async function fillCountryInSearchBox(
+	page,
+	name = 'United States (US)'
+) {
+	const countrySearchBox = getCountryInputSearchBox( page );
+	await countrySearchBox.fill( name );
+}
+
+/**
  * Select a country from the search box.
  *
  * @param {import('@playwright/test').Page} page The current page.
@@ -86,9 +157,10 @@ export async function selectCountryFromSearchBox(
 	page,
 	name = 'United States (US)'
 ) {
+	await fillCountryInSearchBox( page, name );
+	const treeItem = getTreeItemByCountryName( page, name );
+	await treeItem.click();
 	const countrySearchBox = getCountryInputSearchBox( page );
-	await countrySearchBox.fill( name );
-	await getTreeItemByCountryName( page, name ).click();
 	await countrySearchBox.press( 'Escape' );
 }
 

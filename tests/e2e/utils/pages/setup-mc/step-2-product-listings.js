@@ -148,17 +148,6 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get remove country button by country name.
-	 *
-	 * @param {string} name
-	 *
-	 * @return {import('@playwright/test').Locator} Get remove country button by country name.
-	 */
-	getRemoveCountryButtonByName( name = 'United States (US)' ) {
-		return this.page.getByRole( 'button', { name: `Remove ${ name }` } );
-	}
-
-	/**
 	 * Get shipping rates section.
 	 *
 	 * @return {import('@playwright/test').Locator} Get shipping rates section.
@@ -408,19 +397,6 @@ export default class ProductListingsPage extends MockRequests {
 	async clickContinueButton() {
 		const continueButton = this.getContinueButton();
 		await continueButton.click();
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	}
-
-	/**
-	 * Remove a country from the search box.
-	 *
-	 * @param {string} name
-	 *
-	 * @return {Promise<void>}
-	 */
-	async removeCountryFromSearchBox( name = 'United States (US)' ) {
-		const removeButton = this.getRemoveCountryButtonByName( name );
-		await removeButton.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
 
