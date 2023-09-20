@@ -46,6 +46,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definiti
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
+use Google\Ads\GoogleAds\Util\V14\GoogleAdsFailures;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -192,6 +193,14 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 				return $handler( $request, $options )->then(
 					function ( ResponseInterface $response ) use ( $request ) {
 						$code = $response->getStatusCode();
+
+						$path = $request->getUri()->getPath();
+
+						// Partial Failures come back with a status code of 200, so it's necessary to call GoogleAdsFailures:init every time.
+						if ( strpos( $path, 'google-ads' ) !== false ) {
+							GoogleAdsFailures::init();
+						}
+
 						if ( $code < 400 ) {
 							return $response;
 						}

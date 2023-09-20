@@ -13,7 +13,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Auth\Credentials\InsecureCredentials;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Auth\HttpHandler\HttpHandlerFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
-use Google\Ads\GoogleAds\Util\V14\GoogleAdsFailures;
 
 /**
  * A Google Ads API client for handling common configuration and OAuth2 settings.
@@ -32,8 +31,6 @@ class GoogleAdsClient {
 	public function __construct( string $endpoint ) {
 		$this->oAuth2Credential = new InsecureCredentials();
 		$this->endpoint         = $endpoint;
-
-		GoogleAdsFailures::init();
 	}
 
 	/**
