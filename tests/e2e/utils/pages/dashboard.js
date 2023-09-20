@@ -63,11 +63,7 @@ export default class DashboardPage extends MockRequests {
 			email: 'john@email.com',
 		} );
 
-		await this.fulfillGoogleConnection( {
-			active: 'yes',
-			email: 'john@email.com',
-			scope: [],
-		} );
+		await this.mockGoogleConnected();
 
 		await this.fulfillAdsConnection( {
 			id: 0,
@@ -130,5 +126,24 @@ export default class DashboardPage extends MockRequests {
 	async clickContinueToEditButton() {
 		const continueToEditButton = await this.getContinueToEditButton();
 		await continueToEditButton.click();
+	}
+
+	/**
+	 * Get the Ads connection button.
+	 *
+	 * @param  {('programs-table'|'summary-card')} [type] The type of button to get. Either 'programs-table' or 'summary-card'.
+	 * @return {import('@playwright/test').Locator} Get the Ads connection button.
+	 */
+	getAdsConnectionAllProgramsButton( type = 'programs-table' ) {
+		return this.page.locator(
+			`${
+				type === 'programs-table'
+					? '.gla-all-programs-table-card button'
+					: '.gla-summary-card'
+			}`,
+			{
+				hasText: 'Add paid campaign',
+			}
+		);
 	}
 }

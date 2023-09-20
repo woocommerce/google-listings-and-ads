@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.3
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.5.6
+Stable tag: 2.5.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,12 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.7 - 2023-09-20 =
+* Dev - E2E - Ads a paid campaign Step 1 - Connect Ads Account.
+* Dev - E2E - Onboarding Step 2 - Configure product listings.
+* Dev - E2E - Onboarding Step 3 - Confirm store requirements.
+* Fix - Performance issue with GoogleAdsFailures::init.
+
 = 2.5.6 - 2023-09-14 =
 * Dev - E2E - Onboarding Step 1 - Set up accounts - Connect Merchant Center account.
 * FIx - Undesired margin in Paid Campaign Creation Success Modal.
@@ -125,9 +131,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - Externalize all WooCommerce JavaScript packages via Dependency Extraction Webpack Plugin (DEWP) and remove the selective bundling implementation that gradually externalizes packages into DEWP.
 * Dev - Update DEWP related tools and docs.
 * Fix - Fix Taxonomy Attribute Mapping for Product Variations.
-
-= 2.5.4 - 2023-08-29 =
-* Dev - Override vulnerability packages: xmlhttprequest-ssl and ws.
-* Dev - Update trigger method in Hooks Generator Workflow.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
