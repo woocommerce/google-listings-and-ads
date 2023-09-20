@@ -101,6 +101,8 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 			},
 			20
 		);
+
+		add_action( 'admin_init', array( $this, 'privacy_policy' ) );
 	}
 
 	/**
@@ -259,6 +261,21 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 	 */
 	protected function enableReports(): bool {
 		return apply_filters( 'woocommerce_gla_enable_reports', true );
+	}
+
+	/**
+	 * Add suggested privacy policy content
+	 *
+	 * @return void
+	 */
+	public function privacy_policy() {
+		$content = '<p class="privacy-policy-tutorial">' . sprintf(
+			esc_html__( 'By using this extension, you may be storing personal data or sharing data with an external service. %1$sLearn more about what data is collected by Google and what you may want to include in your privacy policy.%2$s.', 'woocommerce-google-analytics-integration' ),
+			'<a href="https://support.google.com/adspolicy/answer/54817" target="_blank">',
+			'</a>'
+		) . '</p>';
+
+		wp_add_privacy_policy_content( 'Google Listings & Ads', wpautop( $content, false ) );
 	}
 
 	/**
