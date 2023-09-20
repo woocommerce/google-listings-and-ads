@@ -134,7 +134,7 @@ test.describe( 'GTag events', () => {
 		await page.goto( 'shop?orderby=date' );
 		const addToCart = `[data-product_id="${ simpleProductID }"]`;
 		const addToCartButton = await page.locator( addToCart ).first();
-		addToCartButton.click();
+		await addToCartButton.click();
 		await expect( addToCartButton.getByText( '1 in cart' ) ).toBeVisible();
 
 		await event.then( ( request ) => {
