@@ -1,6 +1,7 @@
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const { hasArgInCLI } = require( '@wordpress/scripts/utils' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
+const MiniCSSExtractPlugin = require( 'mini-css-extract-plugin' );
 
 const ReactRefreshWebpackPlugin = require( '@pmmmwh/react-refresh-webpack-plugin' );
 const path = require( 'path' );
@@ -63,6 +64,7 @@ const webpackConfig = {
 				 * - https://github.com/WordPress/gutenberg/blob/%40wordpress/scripts%4022.1.0/packages/scripts/config/webpack.config.js#L232-L240
 				 */
 				'CopyPlugin',
+				'MiniCssExtractPlugin',
 				'ReactRefreshPlugin',
 			];
 			return ! filteredPlugins.includes( plugin.constructor.name );
@@ -70,6 +72,10 @@ const webpackConfig = {
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			externalizedReport:
 				! hasReactFastRefresh && '../../.externalized.json',
+		} ),
+		new MiniCSSExtractPlugin( {
+			filename: '[name].css',
+			chunkFilename: '[name].css?ver=[chunkhash]',
 		} ),
 	],
 	entry: {
@@ -88,6 +94,28 @@ const webpackConfig = {
 	output: {
 		...defaultConfig.output,
 		path: path.resolve( process.cwd(), 'js/build' ),
+		chunkFilename: '[name].js?ver=[chunkhash]',
+	},
+	optimization: {
+		...defaultConfig.optimization,
+		splitChunks: {
+			...defaultConfig.optimization.splitChunks,
+			cacheGroups: {
+				...defaultConfig.optimization.splitChunks.cacheGroups,
+				vendors: {
+					name: 'vendors',
+					test: /([\\/])node_modules\1/,
+				},
+				commons: {
+					name: 'commons',
+					test( { resource } ) {
+						return /([\\/])js\1src\1(components|data|hooks|images|utils|wcdl)\1/.test(
+							resource
+						);
+					},
+				},
+			},
+		},
 	},
 };
 
