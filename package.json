@@ -140,19 +140,23 @@
 		"files": [
 			{
 				"path": "./js/build/*.js",
-				"maxSize": "1.74 kB"
+				"maxSize": "10 kB"
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "148.52 kB"
+				"maxSize": "18.05 kB"
+			},
+			{
+				"path": "./js/build/commons.js",
+				"maxSize": "54.14 kB"
+			},
+			{
+				"path": "./js/build/vendors.js",
+				"maxSize": "39.37 kB"
 			},
 			{
 				"path": "./js/build/*.css",
-				"maxSize": "364 B"
-			},
-			{
-				"path": "./js/build/index.css",
-				"maxSize": "12.55 kB"
+				"maxSize": "7.5 kB"
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
