@@ -25,7 +25,7 @@ const webpackConfig = {
 				test: /\.(svg|png|jpe?g|gif)$/i,
 				type: 'asset/resource',
 				generator: {
-					filename: 'images/[path]/[contenthash].[name][ext]',
+					filename: 'images/[path][contenthash].[name][ext]',
 				},
 			},
 			// Fix module not found problem for `process/browser`.
