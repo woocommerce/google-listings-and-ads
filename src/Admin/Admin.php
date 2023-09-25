@@ -22,6 +22,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\Admin\PageController;
+
 /**
  * Class Admin
  *
@@ -75,7 +77,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 		add_action(
 			'admin_enqueue_scripts',
 			function() {
-				if ( wc_admin_is_registered_page() ) {
+				if ( PageController::is_admin_page() ) {
 					// Enqueue the required JavaScript scripts and CSS styles of the Media library.
 					wp_enqueue_media();
 				}
@@ -110,7 +112,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 	 */
 	protected function get_assets(): array {
 		$wc_admin_condition = function() {
-			return wc_admin_is_registered_page();
+			return PageController::is_admin_page();
 		};
 
 		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
