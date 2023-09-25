@@ -101,6 +101,8 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 			},
 			20
 		);
+
+		add_action( 'admin_init', [ $this, 'privacy_policy' ] );
 	}
 
 	/**
@@ -259,6 +261,27 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 	 */
 	protected function enableReports(): bool {
 		return apply_filters( 'woocommerce_gla_enable_reports', true );
+	}
+
+	/**
+	 * Add suggested privacy policy content
+	 *
+	 * @return void
+	 */
+	public function privacy_policy() {
+		$policy_text = sprintf(
+			/* translators: 1) HTML anchor open tag 2) HTML anchor closing tag */
+			esc_html__( 'By using this extension, you may be storing personal data or sharing data with an external service. %1$sLearn more about what data is collected by Google and what you may want to include in your privacy policy%2$s.', 'google-listings-and-ads' ),
+			'<a href="https://support.google.com/adspolicy/answer/54817" target="_blank">',
+			'</a>'
+		);
+
+		// As the extension doesn't offer suggested privacy policy text, the button to copy it is hidden.
+		$content = '
+			<p class="privacy-policy-tutorial">' . $policy_text . '</p>
+			<style>#privacy-settings-accordion-block-google-listings-ads .privacy-settings-accordion-actions { display: none }</style>';
+
+		wp_add_privacy_policy_content( 'Google Listings & Ads', wpautop( $content, false ) );
 	}
 
 	/**
