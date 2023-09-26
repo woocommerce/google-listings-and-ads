@@ -67,7 +67,8 @@ class AttributeMappingNewFeature extends AbstractNote implements OptionsAwareInt
 	 * @return bool
 	 */
 	public function should_be_added(): bool {
-		return ! $this->has_been_added() && $this->options->get( OptionsInterface::INSTALL_TIMESTAMP ) <= '1669161600';
+		$timestamp = $this->options->get( OptionsInterface::INSTALL_TIMESTAMP );
+		return ! $this->has_been_added() && $timestamp > '0' && $timestamp <= '1669161600';
 
 	}
 }

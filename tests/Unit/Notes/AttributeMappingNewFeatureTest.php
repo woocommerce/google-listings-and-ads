@@ -48,6 +48,15 @@ class AttributeMappingNewFeatureTest extends UnitTest {
 		$this->assertStringContainsString( 'admin.php?page=wc-admin&path=/google/attribute-mapping', $note->get_actions()[0]->query );
 	}
 
+	public function test_should_not_be_added_if_install_timestamp_is_null() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::INSTALL_TIMESTAMP )
+			->willReturn( null );
+
+		$this->assertFalse( $this->note->should_be_added() );
+	}
+
 	public function test_should_be_added_when_existing_user_and_not_already_added() {
 		$this->options->expects( $this->once() )
 			->method( 'get' )
@@ -70,7 +79,6 @@ class AttributeMappingNewFeatureTest extends UnitTest {
 
 		$this->assertFalse( $this->note->should_be_added() );
 	}
-
 
 
 }
