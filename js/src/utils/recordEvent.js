@@ -111,8 +111,10 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * Triggered on events during ads onboarding
  *
  * @event gla_setup_ads
- * @property {string} target Button ID
- * @property {string} trigger Action (e.g. `click`)
+ * @property {string} triggered_by Button name
+ * @property {string} action User's action or/and objective (e.g. `leave`, `go-to-step-2`)
+ * @property {string | undefined} target (**Deprecated: this property should not be used after Q1 2024**) Button ID
+ * @property {string | undefined} trigger (**Deprecated: this property should not be used after Q1 2024**) Action (e.g. `click`)
  */
 
 /**

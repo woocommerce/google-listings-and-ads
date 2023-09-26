@@ -4,6 +4,7 @@
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -12,24 +13,43 @@ import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
 
-const AdsStepper = ( props ) => {
-	const { formProps } = props;
+/**
+ * @param {Object} props React props
+ * @param {Object} props.formProps Form props forwarded from `Form` component.
+ * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button' , action: 'go-to-step2' | 'go-to-step3' }`.
+ * @fires gla_setup_ads with `{ triggered_by: 'stepper-button', action: 'go-to-step1' | 'go-to-step2' }`.
+ */
+const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
 
 	// Allow the users to go backward only, not forward.
 	// Users can only go forward by clicking on the Continue button.
 	const handleStepClick = ( value ) => {
 		if ( value < step ) {
+			recordEvent( 'gla_setup_ads', {
+				triggered_by: 'stepper-button',
+				action: `go-to-step${ value }`,
+			} );
 			setStep( value );
 		}
 	};
 
+	const continueStep = ( to ) => {
+		const from = step;
+
+		recordEvent( 'gla_setup_ads', {
+			triggered_by: `step${ from }-continue-button`,
+			action: `go-to-step${ to }`,
+		} );
+		setStep( to );
+	};
+
 	const handleSetupAccountsContinue = () => {
-		setStep( '2' );
+		continueStep( '2' );
 	};
 
 	const handleCreateCampaignContinue = () => {
-		setStep( '3' );
+		continueStep( '3' );
 	};
 
 	return (
