@@ -12,14 +12,6 @@ import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 
 /**
- * Triggered on events during ads setup and editing
- *
- * @event gla_setup_ads
- * @property {string} target Button ID
- * @property {string} trigger Action (e.g. `click`)
- */
-
-/**
  * @fires gla_setup_ads with given `{ target: 'back', trigger: 'click' }` when back button is clicked.
  */
 const SetupAdsTopBar = () => {

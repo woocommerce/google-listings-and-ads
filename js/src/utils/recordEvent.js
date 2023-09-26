@@ -108,6 +108,14 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  */
 
 /**
+ * Triggered on events during ads onboarding
+ *
+ * @event gla_setup_ads
+ * @property {string} target Button ID
+ * @property {string} trigger Action (e.g. `click`)
+ */
+
+/**
  * A modal is closed.
  *
  * @event gla_modal_closed
