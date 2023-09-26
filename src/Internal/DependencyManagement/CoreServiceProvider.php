@@ -70,7 +70,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\GLAChannel;
 use Automattic\WooCommerce\GoogleListingsAndAds\MultichannelMarketing\MarketingChannelRegistrar;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PolicyComplianceCheck;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notes\AttributeMappingNewFeature as AttributeMappingNewFeatureNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
@@ -208,7 +207,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		AdsAccountService::class              => true,
 		MerchantAccountService::class         => true,
 		AttributeMapping::class               => true,
-		AttributeMappingNewFeatureNote::class => true,
 		MarketingChannelRegistrar::class      => true,
 	];
 
@@ -316,7 +314,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( SetupCampaignNote::class, MerchantCenterService::class );
 		$this->share_with_tags( SetupCampaign2Note::class, MerchantCenterService::class );
 		$this->share_with_tags( SetupCouponSharingNote::class, MerchantStatuses::class );
-		$this->share_with_tags( AttributeMappingNewFeatureNote::class );
 		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class );
 
 		// Product attributes
