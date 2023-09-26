@@ -27,7 +27,7 @@ import stepNameKeyMap from './stepNameKeyMap';
 /**
  * @param {Object} props React props
  * @param {string} [props.savedStep] A saved step overriding the current step
- * @fires gla_setup_mc with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
+ * @fires gla_setup_mc with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', 'step3-continue-button', action: 'go-to-step2' | 'go-to-step3' | 'go-to-step4', target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
  */
 const SavedSetupStepper = ( { savedStep } ) => {
 	const [ step, setStep ] = useState( savedStep );
@@ -73,28 +73,29 @@ const SavedSetupStepper = ( { savedStep } ) => {
 		}
 	}, [ settings, saveSettings ] );
 
-	const handleSetupAccountsContinue = () => {
+	const continueStep = ( to ) => {
+		const from = step;
+
 		recordEvent( 'gla_setup_mc', {
-			target: 'step1_continue',
+			triggered_by: `step${ from }-continue-button`,
+			action: `go-to-step${ to }`,
+			// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.
+			target: `step${ from }_continue`,
 			trigger: 'click',
 		} );
-		setStep( stepNameKeyMap.product_listings );
+		setStep( to );
+	};
+
+	const handleSetupAccountsContinue = () => {
+		continueStep( stepNameKeyMap.product_listings );
 	};
 
 	const handleSetupListingsContinue = () => {
-		recordEvent( 'gla_setup_mc', {
-			target: 'step2_continue',
-			trigger: 'click',
-		} );
-		setStep( stepNameKeyMap.store_requirements );
+		continueStep( stepNameKeyMap.store_requirements );
 	};
 
 	const handleStoreRequirementsContinue = () => {
-		recordEvent( 'gla_setup_mc', {
-			target: 'step3_continue',
-			trigger: 'click',
-		} );
-		setStep( stepNameKeyMap.paid_ads );
+		continueStep( stepNameKeyMap.paid_ads );
 	};
 
 	const handleStepClick = ( stepKey ) => {

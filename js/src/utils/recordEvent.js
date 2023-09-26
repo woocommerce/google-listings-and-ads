@@ -76,9 +76,11 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * Setup Merchant Center
  *
  * @event gla_setup_mc
- * @property {string} target Button ID
- * @property {string} trigger Action (e.g. `click`)
- * @property {string} context Indicates which CTA is clicked
+ * @property {string} triggered_by Button name
+ * @property {string} action User's action or/and objective (e.g. `leave`, `go-to-step-2`)
+ * @property {string | undefined} context Indicates which CTA is clicked
+ * @property {string | undefined} target (**Deprecated: this property should not be used after Q1 2024**) Button ID
+ * @property {string | undefined} trigger (**Deprecated: this property should not be used after Q1 2024**) Action (e.g. `click`)
  */
 
 /**
