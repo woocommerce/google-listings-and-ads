@@ -52,6 +52,7 @@ jobs:
     name: Run QIT Tests
     # Update it with more stable path once merged.
     uses: woocommerce/grow/.github/workflows/run-qit-extension.yml@add/qit-workflows
+    needs: build
     secrets: inherit
     with:
       version: local
