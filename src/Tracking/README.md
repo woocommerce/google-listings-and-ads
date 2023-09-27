@@ -638,7 +638,7 @@ Triggered on events during ads onboarding
 #### Emitters
 - [`AdsStepper`](../../js/src/setup-ads/ads-stepper/index.js#L22)
 	- with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button' , action: 'go-to-step2' | 'go-to-step3' }`.
-	- with `{ triggered_by: 'stepper-button', action: 'go-to-step1' | 'go-to-step2' }`.
+	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
 - [`SetupAdsTopBar`](../../js/src/setup-ads/top-bar/index.js#L17) with given `{ triggered_by: 'back-button', action: 'leave', target: 'back', trigger: 'click' }` when back button is clicked.
 
 ### [`gla_setup_ads_faq`](../../js/src/components/paid-ads/faqs-section.js#L76)
@@ -666,7 +666,7 @@ Setup Merchant Center
 - [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L23) with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started-with-video', target: 'set_up_free_listings', trigger: 'click' }`.
 - [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L33)
 	- with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', 'step3-continue-button', action: 'go-to-step2' | 'go-to-step3' | 'go-to-step4', target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
-	- with `{ triggered_by: 'stepper-button', action: 'go-to-step1' | 'go-to-step2' | 'go-to-step3' }`.
+	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button' | 'stepper-step3-button', action: 'go-to-step1' | 'go-to-step2' | 'go-to-step3' }`.
 - [`SetupMCTopBar`](../../js/src/setup-mc/top-bar/index.js#L17) with `{ triggered_by: 'back-button', action: 'leave', target: 'back', trigger: 'click' }`.
 
 ### [`gla_submit_campaign_button_click`](../../js/src/components/paid-ads/asset-group/asset-group.js#L26)

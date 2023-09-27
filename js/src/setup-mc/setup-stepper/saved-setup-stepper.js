@@ -28,7 +28,7 @@ import stepNameKeyMap from './stepNameKeyMap';
  * @param {Object} props React props
  * @param {string} [props.savedStep] A saved step overriding the current step
  * @fires gla_setup_mc with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', 'step3-continue-button', action: 'go-to-step2' | 'go-to-step3' | 'go-to-step4', target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
- * @fires gla_setup_mc with `{ triggered_by: 'stepper-button', action: 'go-to-step1' | 'go-to-step2' | 'go-to-step3' }`.
+ * @fires gla_setup_mc with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button' | 'stepper-step3-button', action: 'go-to-step1' | 'go-to-step2' | 'go-to-step3' }`.
  */
 const SavedSetupStepper = ( { savedStep } ) => {
 	const [ step, setStep ] = useState( savedStep );
@@ -108,7 +108,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 		// Only allow going back to the previous steps.
 		if ( Number( stepKey ) < Number( step ) ) {
 			recordEvent( 'gla_setup_mc', {
-				triggered_by: 'stepper-button',
+				triggered_by: `stepper-step${ stepKey }-button`,
 				action: `go-to-step${ stepKey }`,
 			} );
 			setStep( stepKey );

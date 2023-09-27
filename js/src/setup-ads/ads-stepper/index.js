@@ -17,7 +17,7 @@ import SetupBilling from './setup-billing';
  * @param {Object} props React props
  * @param {Object} props.formProps Form props forwarded from `Form` component.
  * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button' , action: 'go-to-step2' | 'go-to-step3' }`.
- * @fires gla_setup_ads with `{ triggered_by: 'stepper-button', action: 'go-to-step1' | 'go-to-step2' }`.
+ * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
@@ -27,7 +27,7 @@ const AdsStepper = ( { formProps } ) => {
 	const handleStepClick = ( value ) => {
 		if ( value < step ) {
 			recordEvent( 'gla_setup_ads', {
-				triggered_by: 'stepper-button',
+				triggered_by: `stepper-step${ value }-button`,
 				action: `go-to-step${ value }`,
 			} );
 			setStep( value );
