@@ -406,7 +406,7 @@ Saving changes to the free campaign.
 #### Emitters
 - [`EditFreeCampaign`](../../js/src/edit-free-campaign/index.js#L46)
 
-### [`gla_google_account_connect_button_click`](../../js/src/utils/recordEvent.js#L92)
+### [`gla_google_account_connect_button_click`](../../js/src/utils/recordEvent.js#L94)
 Clicking on the button to connect Google account.
 #### Properties
 | name | type | description |
@@ -438,7 +438,7 @@ Clicking on a Google Ads account text link.
 #### Emitters
 - [`BillingSavedCard`](../../js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
 
-### [`gla_google_mc_link_click`](../../js/src/utils/recordEvent.js#L102)
+### [`gla_google_mc_link_click`](../../js/src/utils/recordEvent.js#L104)
 Clicking on a Google Merchant Center link.
 #### Properties
 | name | type | description |
@@ -467,7 +467,7 @@ Clicking on the "Scan for assets" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/assets-loader.js#L96)
 
-### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/recordEvent.js#L84)
+### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/recordEvent.js#L86)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
 #### Properties
 | name | type | description |
@@ -528,16 +528,16 @@ Check for whether the phone number for Merchant Center exists or not.
 #### Emitters
 - [`usePhoneNumberCheckTrackEventEffect`](../../js/src/components/contact-information/usePhoneNumberCheckTrackEventEffect.js#L21)
 
-### [`gla_mc_phone_number_edit_button_click`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L104)
+### [`gla_mc_phone_number_edit_button_click`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L103)
 Clicking on the Merchant Center phone number edit button.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `view` | `string` | which view the edit button is in. Possible values: `setup-mc`, `settings`.
 #### Emitters
-- [`PhoneNumberCard`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L128)
+- [`PhoneNumberCard`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L127)
 
-### [`gla_modal_closed`](../../js/src/utils/recordEvent.js#L110)
+### [`gla_modal_closed`](../../js/src/utils/recordEvent.js#L122)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -560,7 +560,7 @@ Clicking on a text link within the modal content
 #### Emitters
 - [`ContentLink`](../../js/src/components/guide-page-content/index.js#L46) with given `context, href`
 
-### [`gla_modal_open`](../../js/src/utils/recordEvent.js#L123)
+### [`gla_modal_open`](../../js/src/utils/recordEvent.js#L135)
 A modal is open
 #### Properties
 | name | type | description |
@@ -626,15 +626,20 @@ Clicking on the "Or, select another page" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/final-url-card.js#L39)
 
-### [`gla_setup_ads`](../../js/src/setup-ads/top-bar/index.js#L14)
-Triggered on events during ads setup and editing
+### [`gla_setup_ads`](../../js/src/utils/recordEvent.js#L112)
+Triggered on events during ads onboarding
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`target` | `string` | Button ID
-`trigger` | `string` | Action (e.g. `click`)
+`triggered_by` | `string` | Indicates which button triggered this event
+`action` | `string` | User's action or/and objective (e.g. `leave`, `go-to-step-2`)
+`target` | `string \| undefined` | (**Deprecated: this property should not be used after Q1 2024**) Button ID
+`trigger` | `string \| undefined` | (**Deprecated: this property should not be used after Q1 2024**) Action (e.g. `click`)
 #### Emitters
-- [`SetupAdsTopBar`](../../js/src/setup-ads/top-bar/index.js#L25) with given `{ target: 'back', trigger: 'click' }` when back button is clicked.
+- [`AdsStepper`](../../js/src/setup-ads/ads-stepper/index.js#L22)
+	- with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button' , action: 'go-to-step2' | 'go-to-step3' }`.
+	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
+- [`SetupAdsTopBar`](../../js/src/setup-ads/top-bar/index.js#L17) with given `{ triggered_by: 'back-button', action: 'leave', target: 'back', trigger: 'click' }` when back button is clicked.
 
 ### [`gla_setup_ads_faq`](../../js/src/components/paid-ads/faqs-section.js#L76)
 Clicking on faq items to collapse or expand it in the Onboarding Flow or creating/editing a campaign
@@ -651,14 +656,18 @@ Setup Merchant Center
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`target` | `string` | Button ID
-`trigger` | `string` | Action (e.g. `click`)
-`context` | `string` | Indicates which CTA is clicked
+`triggered_by` | `string` | Indicates which button triggered this event
+`action` | `string` | User's action or/and objective (e.g. `leave`, `go-to-step-2`)
+`context` | `string \| undefined` | Indicates which CTA is clicked
+`target` | `string \| undefined` | (**Deprecated: this property should not be used after Q1 2024**) Button ID
+`trigger` | `string \| undefined` | (**Deprecated: this property should not be used after Q1 2024**) Action (e.g. `click`)
 #### Emitters
-- [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L23) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started' }`.
-- [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L23) with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started-with-video' }`.
-- [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L32) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
-- [`SetupMCTopBar`](../../js/src/setup-mc/top-bar/index.js#L17) with `{ target: 'back', trigger: 'click' }`.
+- [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L23) with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started', target: 'set_up_free_listings', trigger: 'click' }`.
+- [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L23) with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started-with-video', target: 'set_up_free_listings', trigger: 'click' }`.
+- [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L33)
+	- with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', 'step3-continue-button', action: 'go-to-step2' | 'go-to-step3' | 'go-to-step4', target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
+	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button' | 'stepper-step3-button', action: 'go-to-step1' | 'go-to-step2' | 'go-to-step3' }`.
+- [`SetupMCTopBar`](../../js/src/setup-mc/top-bar/index.js#L17) with `{ triggered_by: 'back-button', action: 'leave', target: 'back', trigger: 'click' }`.
 
 ### [`gla_submit_campaign_button_click`](../../js/src/components/paid-ads/asset-group/asset-group.js#L26)
 Clicking on the submit button on the campaign creation or editing page.

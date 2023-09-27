@@ -17,7 +17,7 @@ import AppButton from '.~/components/app-button';
 import { getSetupMCUrl } from '.~/utils/urls';
 
 /**
- * @fires gla_setup_mc with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started' }`.
+ * @fires gla_setup_mc with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started', target: 'set_up_free_listings', trigger: 'click' }`.
  * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
  */
 const GetStartedCard = () => {
@@ -52,9 +52,12 @@ const GetStartedCard = () => {
 					href={ getSetupMCUrl() }
 					eventName="gla_setup_mc"
 					eventProps={ {
+						triggered_by: 'start-onboarding-button',
+						action: 'go-to-onboarding',
+						context: 'get-started',
+						// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.
 						target: 'set_up_free_listings',
 						trigger: 'click',
-						context: 'get-started',
 					} }
 				>
 					{ __(

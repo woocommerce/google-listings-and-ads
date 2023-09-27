@@ -17,7 +17,7 @@ import { getSetupMCUrl } from '.~/utils/urls';
 import './index.scss';
 
 /**
- * @fires gla_setup_mc with `{ target: 'set_up_free_listings', trigger: 'click', context: 'get-started-with-video' }`.
+ * @fires gla_setup_mc with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started-with-video', target: 'set_up_free_listings', trigger: 'click' }`.
  * @fires gla_documentation_link_click with `{ context: 'get-started-with-video', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
  */
 const GetStartedWithVideoCard = () => {
@@ -67,9 +67,12 @@ const GetStartedWithVideoCard = () => {
 					href={ getSetupMCUrl() }
 					eventName="gla_setup_mc"
 					eventProps={ {
+						triggered_by: 'start-onboarding-button',
+						action: 'go-to-onboarding',
+						context: 'get-started-with-video',
+						// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.
 						target: 'set_up_free_listings',
 						trigger: 'click',
-						context: 'get-started-with-video',
 					} }
 				>
 					{ __(
