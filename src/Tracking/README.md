@@ -631,7 +631,7 @@ Triggered on events during ads onboarding
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`triggered_by` | `string` | Button name
+`triggered_by` | `string` | Indicates which button triggered this event
 `action` | `string` | User's action or/and objective (e.g. `leave`, `go-to-step-2`)
 `target` | `string \| undefined` | (**Deprecated: this property should not be used after Q1 2024**) Button ID
 `trigger` | `string \| undefined` | (**Deprecated: this property should not be used after Q1 2024**) Action (e.g. `click`)
@@ -656,7 +656,7 @@ Setup Merchant Center
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`triggered_by` | `string` | Button name
+`triggered_by` | `string` | Indicates which button triggered this event
 `action` | `string` | User's action or/and objective (e.g. `leave`, `go-to-step-2`)
 `context` | `string \| undefined` | Indicates which CTA is clicked
 `target` | `string \| undefined` | (**Deprecated: this property should not be used after Q1 2024**) Button ID
