@@ -34,6 +34,11 @@ const AdsStepper = ( { formProps } ) => {
 		}
 	};
 
+	/**
+	 * Handles "onContinue" callback to set the current step and record event tracking.
+	 *
+	 * @param {string} to The next step to go to.
+	 */
 	const continueStep = ( to ) => {
 		const from = step;
 
