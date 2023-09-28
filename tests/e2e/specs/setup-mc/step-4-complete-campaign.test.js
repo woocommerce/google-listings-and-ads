@@ -25,7 +25,7 @@ test.use( { storageState: process.env.ADMINSTATE } );
 test.describe.configure( { mode: 'serial' } );
 
 /**
- * @type {import('../../utils/pages/setup-ads/stepup-budget.js').default} setupBudgetPage
+ * @type {import('../../utils/pages/setup-ads/setup-budget.js').default} setupBudgetPage
  */
 let setupBudgetPage = null;
 
@@ -494,11 +494,11 @@ test.describe( 'Complete your campaign', () => {
 					const popup = await popupPromise;
 					await popup.waitForLoadState();
 					const popupTitle = await popup.title();
-					const popupURL = await popup.url();
-					await expect( popupTitle ).toBe(
+					const popupURL = popup.url();
+					expect( popupTitle ).toBe(
 						'Add a new payment method in Google Ads - Google Ads Help'
 					);
-					await expect( popupURL ).toBe(
+					expect( popupURL ).toBe(
 						'https://support.google.com/google-ads/answer/2375375'
 					);
 					await popup.close();
@@ -510,11 +510,11 @@ test.describe( 'Complete your campaign', () => {
 					newPage = await newPagePromise;
 					await newPage.waitForLoadState();
 					const newPageTitle = await newPage.title();
-					const newPageURL = await newPage.url();
-					await expect( newPageTitle ).toBe(
+					const newPageURL = newPage.url();
+					expect( newPageTitle ).toBe(
 						'Add a new payment method in Google Ads - Google Ads Help'
 					);
-					await expect( newPageURL ).toBe(
+					expect( newPageURL ).toBe(
 						'https://support.google.com/google-ads/answer/2375375'
 					);
 				} );
