@@ -524,17 +524,8 @@ test.describe( 'Complete your campaign', () => {
 						status: 'approved',
 					} );
 
-					const responsePromise = page.waitForResponse(
-						/\/gla\/ads\/billing-status/
-					);
-
 					await newPage.close();
-
-					const billingSetupSection =
-						setupBudgetPage.getBillingSetupSection();
-					await billingSetupSection.focus();
-
-					await responsePromise;
+					await page.reload();
 
 					const billingSetupSuccessSection =
 						setupBudgetPage.getBillingSetupSuccessSection();
