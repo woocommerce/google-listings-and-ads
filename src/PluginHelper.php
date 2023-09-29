@@ -199,14 +199,4 @@ trait PluginHelper {
 	protected function strip_url_protocol( string $url ): string {
 		return preg_replace( '#^https?://#', '', untrailingslashit( $url ) );
 	}
-
-	/**
-	 * Get the Attribute Mapping Page URL
-	 *
-	 * @return string The Attribute Mapping Page URL
-	 * @since 2.3.1
-	 */
-	protected function get_attribute_mapping_url(): string {
-		return admin_url( 'admin.php?page=wc-admin&path=/google/attribute-mapping' );
-	}
 }
