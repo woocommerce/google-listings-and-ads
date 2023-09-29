@@ -60,7 +60,7 @@ jobs:
       test-activation: ${{ inputs.test-activation || true }}
       test-security: ${{ inputs.test-security || true }}
       test-phpstan: ${{ inputs.test-phpstan || true }}
-      test-api: ${{ inputs.test-api || false }}
+      test-api: ${{ inputs.test-api || true }}
       test-e2e: ${{ inputs.test-e2e || false }}
       extension: 'google-listings-and-ads'
       options: ${{ inputs.options }}
