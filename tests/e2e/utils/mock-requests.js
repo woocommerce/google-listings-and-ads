@@ -33,7 +33,7 @@ export default class MockRequests {
 					body: JSON.stringify( payload ),
 				} );
 			} else {
-				route.continue();
+				route.fallback();
 			}
 		} );
 	}
@@ -98,13 +98,15 @@ export default class MockRequests {
 	 *
 	 * @param {Object} payload
 	 * @param {number} status
+	 * @param {string[]} [methods]
 	 * @return {Promise<void>}
 	 */
-	async fulfillMCAccounts( payload, status = 200 ) {
+	async fulfillMCAccounts( payload, status = 200, methods ) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/mc\/accounts\b/,
 			payload,
-			status
+			status,
+			methods
 		);
 	}
 
@@ -402,12 +404,16 @@ export default class MockRequests {
 	 * @param {number} id
 	 */
 	async mockMCCreateAccountWebsiteNotClaimed( id = 12345 ) {
-		await this.fulfillMCAccounts( {
-			id,
-			subaccount: null,
-			name: null,
-			domain: null,
-		} );
+		await this.fulfillMCAccounts(
+			{
+				id,
+				subaccount: null,
+				name: null,
+				domain: null,
+			},
+			200,
+			[ 'POST' ]
+		);
 	}
 
 	/**
@@ -427,7 +433,8 @@ export default class MockRequests {
 				id,
 				website_url: websiteUrl,
 			},
-			403
+			403,
+			[ 'POST' ]
 		);
 	}
 

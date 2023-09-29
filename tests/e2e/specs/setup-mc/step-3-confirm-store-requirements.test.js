@@ -284,25 +284,25 @@ test.describe( 'Confirm store requirements', () => {
 				} );
 
 				test( 'should see all checkboxes are not checked', async () => {
-					const prelaunchChecklistCheckboxes =
+					const checkboxes =
 						storeRequirements.getPrelaunchChecklistCheckboxes();
 
-					for ( const checkbox of await prelaunchChecklistCheckboxes.all() ) {
+					await expect( checkboxes ).toHaveCount( 5 );
+
+					for ( const checkbox of await checkboxes.all() ) {
 						await expect( checkbox ).not.toBeChecked();
 					}
 				} );
 
 				test( 'should toggle all checklists and see the "Confirm" button in each checklist', async () => {
-					const prelaunchChecklistToggles =
-						storeRequirements.getPrelaunchChecklistToggles();
-					const count = await prelaunchChecklistToggles.count();
+					const panels =
+						storeRequirements.getPrelaunchChecklistPanels();
 
-					for ( let i = 0; i < count; i++ ) {
-						const toggle = await prelaunchChecklistToggles.nth( i );
-						await toggle.click();
-						const panel = await storeRequirements
-							.getPrelaunchChecklistPanels()
-							.nth( i );
+					await expect( panels ).toHaveCount( 5 );
+
+					for ( const panel of await panels.all() ) {
+						await panel.click();
+
 						const confirmButton = panel.getByRole( 'button', {
 							name: 'Confirm',
 							exact: true,
@@ -494,9 +494,12 @@ test.describe( 'Confirm store requirements', () => {
 				} );
 
 				test( 'should see all checkboxes are checked', async () => {
-					const prelaunchChecklistCheckboxes =
+					const checkboxes =
 						storeRequirements.getPrelaunchChecklistCheckboxes();
-					for ( const checkbox of await prelaunchChecklistCheckboxes.all() ) {
+
+					await expect( checkboxes ).toHaveCount( 5 );
+
+					for ( const checkbox of await checkboxes.all() ) {
 						await expect( checkbox ).toBeChecked();
 						await expect( checkbox ).toBeDisabled();
 					}
