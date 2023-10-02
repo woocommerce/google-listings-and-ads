@@ -148,50 +148,6 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get country input search box container.
-	 *
-	 * @return {import('@playwright/test').Locator} Get country input search box container.
-	 */
-	getCountryInputSearchBoxContainer() {
-		return this.page.locator(
-			'.woocommerce-tree-select-control > .components-base-control'
-		);
-	}
-
-	/**
-	 * Get country input search box.
-	 *
-	 * @return {import('@playwright/test').Locator} Get country input search box.
-	 */
-	getCountryInputSearchBox() {
-		return this.getCountryInputSearchBoxContainer().locator(
-			'input[id*="woocommerce-tree-select-control"]'
-		);
-	}
-
-	/**
-	 * Get tree item by country name.
-	 *
-	 * @param {string} name
-	 *
-	 * @return {import('@playwright/test').Locator} Get tree item by country name.
-	 */
-	getTreeItemByCountryName( name = 'United States (US)' ) {
-		return this.page.getByRole( 'treeitem', { name } );
-	}
-
-	/**
-	 * Get remove country button by country name.
-	 *
-	 * @param {string} name
-	 *
-	 * @return {import('@playwright/test').Locator} Get remove country button by country name.
-	 */
-	getRemoveCountryButtonByName( name = 'United States (US)' ) {
-		return this.page.getByRole( 'button', { name: `Remove ${ name }` } );
-	}
-
-	/**
 	 * Get shipping rates section.
 	 *
 	 * @return {import('@playwright/test').Locator} Get shipping rates section.
@@ -441,34 +397,6 @@ export default class ProductListingsPage extends MockRequests {
 	async clickContinueButton() {
 		const continueButton = this.getContinueButton();
 		await continueButton.click();
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	}
-
-	/**
-	 * Select a country from the search box.
-	 *
-	 * @param {string} name
-	 *
-	 * @return {Promise<void>}
-	 */
-	async selectCountryFromSearchBox( name = 'United States (US)' ) {
-		const countrySearchBox = this.getCountryInputSearchBox();
-		await countrySearchBox.fill( name );
-		await this.getTreeItemByCountryName( name ).click();
-		await countrySearchBox.press( 'Escape' );
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	}
-
-	/**
-	 * Remove a country from the search box.
-	 *
-	 * @param {string} name
-	 *
-	 * @return {Promise<void>}
-	 */
-	async removeCountryFromSearchBox( name = 'United States (US)' ) {
-		const removeButton = this.getRemoveCountryButtonByName( name );
-		await removeButton.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
 

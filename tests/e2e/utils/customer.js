@@ -46,7 +46,7 @@ export async function relatedProductAddToCart( page ) {
 		: '.wp-block-woocommerce-related-products .add_to_cart_button';
 
 	const addToCartButton = await page.locator( addToCart ).first();
-	addToCartButton.click();
+	await addToCartButton.click();
 	await expect( addToCartButton.getByText( '1 in cart' ) ).toBeVisible();
 	return await page.$eval( addToCart, ( el ) => el.dataset.product_id );
 }
