@@ -64,9 +64,6 @@ test.describe( 'Edit Free Listings', () => {
 		const dontEditButton = await dashboardPage.getDontEditButton();
 		await expect( continueToEditButton ).toBeEnabled();
 		await expect( dontEditButton ).toBeEnabled();
-	} );
-
-	test( 'Continue to edit Free listings', async () => {
 		await dashboardPage.clickContinueToEditButton();
 		await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	} );
