@@ -12,11 +12,17 @@ import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 
 /**
- * @fires gla_setup_mc with `{ target: 'back', trigger: 'click' }`.
+ * @fires gla_setup_mc with `{ triggered_by: 'back-button', action: 'leave', target: 'back', trigger: 'click' }`.
  */
 const SetupMCTopBar = () => {
 	const handleBackButtonClick = () => {
-		recordEvent( 'gla_setup_mc', { target: 'back', trigger: 'click' } );
+		recordEvent( 'gla_setup_mc', {
+			triggered_by: 'back-button',
+			action: 'leave',
+			// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.
+			target: 'back',
+			trigger: 'click',
+		} );
 	};
 
 	return (

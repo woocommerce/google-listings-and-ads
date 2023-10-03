@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { lazy } from '@wordpress/element';
 import { addFilter } from '@wordpress/hooks';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 // The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
@@ -12,16 +13,40 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
  */
 import './css/index.scss';
 import withAdminPageShell from '.~/components/withAdminPageShell';
-import GetStartedPage from './get-started-page';
-import SetupMC from './setup-mc';
-import SetupAds from './setup-ads';
-import Dashboard from './dashboard';
-import Reports from './pages/reports';
-import ProductFeed from './product-feed';
-import Settings from './settings';
-import AttributeMapping from '.~/attribute-mapping';
 import './data';
 import isWCNavigationEnabled from './utils/isWCNavigationEnabled';
+
+const Dashboard = lazy( () =>
+	import( /* webpackChunkName: "dashboard" */ './dashboard' )
+);
+
+const GetStartedPage = lazy( () =>
+	import( /* webpackChunkName: "get-started-page" */ './get-started-page' )
+);
+
+const SetupMC = lazy( () =>
+	import( /* webpackChunkName: "setup-mc" */ './setup-mc' )
+);
+
+const SetupAds = lazy( () =>
+	import( /* webpackChunkName: "setup-ads" */ './setup-ads' )
+);
+
+const Reports = lazy( () =>
+	import( /* webpackChunkName: "reports" */ './pages/reports' )
+);
+
+const ProductFeed = lazy( () =>
+	import( /* webpackChunkName: "product-feed" */ './product-feed' )
+);
+
+const AttributeMapping = lazy( () =>
+	import( /* webpackChunkName: "attribute-mapping" */ './attribute-mapping' )
+);
+
+const Settings = lazy( () =>
+	import( /* webpackChunkName: "settings" */ './settings' )
+);
 
 const woocommerceTranslation =
 	getSetting( 'admin' )?.woocommerceTranslation ||

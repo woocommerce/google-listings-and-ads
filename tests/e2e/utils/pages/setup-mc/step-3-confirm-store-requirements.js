@@ -195,17 +195,6 @@ export default class StoreRequirements extends MockRequests {
 	}
 
 	/**
-	 * Get pre-launch checklist toggles.
-	 *
-	 * @return {import('@playwright/test').Locator} Get pre-launch checklist toggles.
-	 */
-	getPrelaunchChecklistToggles() {
-		return this.getPrelaunchChecklistPanels().locator(
-			'.components-button.components-panel__body-toggle'
-		);
-	}
-
-	/**
 	 * Get Continue button.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Continue button.

@@ -33,7 +33,7 @@ export default class MockRequests {
 					body: JSON.stringify( payload ),
 				} );
 			} else {
-				route.continue();
+				route.fallback();
 			}
 		} );
 	}
@@ -98,13 +98,15 @@ export default class MockRequests {
 	 *
 	 * @param {Object} payload
 	 * @param {number} status
+	 * @param {string[]} [methods]
 	 * @return {Promise<void>}
 	 */
-	async fulfillMCAccounts( payload, status = 200 ) {
+	async fulfillMCAccounts( payload, status = 200, methods ) {
 		await this.fulfillRequest(
 			/\/wc\/gla\/mc\/accounts\b/,
 			payload,
-			status
+			status,
+			methods
 		);
 	}
 
@@ -282,6 +284,55 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill syncable products count request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillSyncableProductsCountRequest( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/syncable-products-count\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill product statistics request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillProductStatisticsRequest( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/product-statistics\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill billing status request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillBillingStatusRequest( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/billing-status\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill ads campaigns request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillAdsCampaignsRequest( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/ads\/campaigns\b/, payload );
+	}
+
+	/**
 	 * Mock the request to connect Jetpack
 	 *
 	 * @param {string} url
@@ -402,12 +453,16 @@ export default class MockRequests {
 	 * @param {number} id
 	 */
 	async mockMCCreateAccountWebsiteNotClaimed( id = 12345 ) {
-		await this.fulfillMCAccounts( {
-			id,
-			subaccount: null,
-			name: null,
-			domain: null,
-		} );
+		await this.fulfillMCAccounts(
+			{
+				id,
+				subaccount: null,
+				name: null,
+				domain: null,
+			},
+			200,
+			[ 'POST' ]
+		);
 	}
 
 	/**
@@ -427,7 +482,8 @@ export default class MockRequests {
 				id,
 				website_url: websiteUrl,
 			},
-			403
+			403,
+			[ 'POST' ]
 		);
 	}
 
@@ -494,6 +550,18 @@ export default class MockRequests {
 			},
 			is_mc_address_different: options.isMCAddressDifferent,
 			wc_address_errors: options.wcAddressErrors,
+		} );
+	}
+
+	/**
+	 * Mock the successful settings sync requesst.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockSuccessfulSettingsSyncRequest() {
+		await this.fulfillSettingsSync( {
+			status: 'success',
+			message: 'Successfully synchronized settings with Google.',
 		} );
 	}
 }

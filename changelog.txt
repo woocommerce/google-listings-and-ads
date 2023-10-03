@@ -1,5 +1,15 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 2.5.8 - 2023-10-03 =
+* Add - Privacy policy guide section.
+* Add - The missing tracking to onboarding when changing steps.
+* Dev - Adjust the conditions for loading JS and CSS assets, and configure them with lazy loading and code splitting.
+* Dev - E2E - Onboarding Step 4 - Complete your campaign.
+* Fix - Remove AttributeMapping new feature inbox notification.
+* Tweak - Add UTM parameters to documentation link.
+* Tweak - The properties of the gla_setup_mc and gla_setup_ads tracking events to reduce their confusion.
+* Tweak - WC 8.2 compatibility.
+
 = 2.5.7 - 2023-09-20 =
 * Dev - E2E - Ads a paid campaign Step 1 - Connect Ads Account.
 * Dev - E2E - Onboarding Step 2 - Configure product listings.
