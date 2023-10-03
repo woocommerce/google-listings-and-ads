@@ -125,11 +125,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - WooCommerce Subscriptions compatibility: Fix the visible issue of the "Google Listings and Ads" tab and "Channel visibility" meta box for some unsupported product types.
 * Tweak - WC 8.1.0 compatibility.
 
-= 2.5.5 - 2023-09-05 =
-* Dev - Add E2E tests - Dashboard - Edit Free Listings.
-* Dev - Clean up workarounds for WooCommerce < 6.8.
-* Dev - Externalize all WooCommerce JavaScript packages via Dependency Extraction Webpack Plugin (DEWP) and remove the selective bundling implementation that gradually externalizes packages into DEWP.
-* Dev - Update DEWP related tools and docs.
-* Fix - Fix Taxonomy Attribute Mapping for Product Variations.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
