@@ -42,6 +42,7 @@ on:
   push:
     branches:
       - dev/qit-workflow
+      - dev/qit-workflow-alternative
 
 jobs:
   build:
@@ -50,17 +51,25 @@ jobs:
     secrets: inherit
   qit-tests:
     name: Run QIT Tests
-    # Update it with more stable path once merged.
-    uses: woocommerce/grow/.github/workflows/run-qit-extension.yml@add/qit-workflows
+    runs-on: ubuntu-20.04
     needs: build
-    secrets: inherit
-    with:
-      version: local
-      # Conditional statements are here to allow testing on push triggers, without manual input. To be removed before merging.
-      test-activation: ${{ inputs.test-activation || true }}
-      test-security: ${{ inputs.test-security || true }}
-      test-phpstan: ${{ inputs.test-phpstan || true }}
-      test-api: ${{ inputs.test-api || true }}
-      test-e2e: ${{ inputs.test-e2e || false }}
-      extension: 'google-listings-and-ads'
-      options: ${{ inputs.options }}
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: google-listings-and-ads.zip
+      - name: Delegate QIT Tests
+        # Update it with more stable path once merged.
+        uses: woocommerce/grow/packages/github-actions/actions/run-qit-extension@add/qit-workflows-alternative
+        with:
+          qit-partner-user: ${{ secrets.QIT_PARTNER_USER }}
+          qit-partner-secret: ${{ secrets.QIT_PARTNER_SECRET }}
+          version: local
+          extension: 'google-listings-and-ads'
+          # Conditional statements are here to allow testing on push triggers, without manual input. To be removed before merging.
+          test-activation: ${{ inputs.test-activation || true }}
+          test-security: ${{ inputs.test-security || true }}
+          test-phpstan: ${{ inputs.test-phpstan || true }}
+          test-api: ${{ inputs.test-api || true }}
+          test-e2e: ${{ inputs.test-e2e || false }}
+          options: ${{ inputs.options }}
