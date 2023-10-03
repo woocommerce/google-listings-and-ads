@@ -223,6 +223,19 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the Budget Recommendation request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillBudgetRecommendation( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/budget-recommendation\b/,
+			payload
+		);
+	}
+
+	/**
 	 * Fulfill the Sync Settings Connection request.
 	 *
 	 * @param {Object} payload
