@@ -16,6 +16,7 @@ import {
 	getFAQPanelTitle,
 	getFAQPanelRow,
 	checkFAQExpandable,
+	checkAdsPopup,
 } from '../../utils/page';
 
 const ADS_ACCOUNTS = [
@@ -339,23 +340,56 @@ test.describe( 'Set up Ads account', () => {
 		} );
 
 		test( 'Set the budget', async () => {
-			await setupBudgetPage.fillBudget( '1' );
-
-			await expect(
-				page.getByRole( 'button', { name: 'Continue' } )
-			).toBeEnabled();
-
 			await setupBudgetPage.fillBudget( '0' );
 
 			await expect(
 				page.getByRole( 'button', { name: 'Continue' } )
 			).toBeDisabled();
+
+			await setupBudgetPage.fillBudget( '1' );
+
+			await expect(
+				page.getByRole( 'button', { name: 'Continue' } )
+			).toBeEnabled();
 		} );
 
 		test( 'Budget Recommendation', async () => {
 			await expect(
 				page.getByText( 'set a daily budget of 5 to 15 USD' )
 			).toBeVisible();
+		} );
+	} );
+
+	test.describe( 'Set up billing', () => {
+		test.describe( 'Billing status is not approved', () => {
+			test( 'It should say that the billing is not setup', async () => {
+				await page.getByRole( 'button', { name: 'Continue' } ).click();
+				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+				await expect(
+					page.getByRole( 'button', {
+						name: 'Set up billing',
+						exact: true,
+					} )
+				).toBeEnabled();
+
+				await expect(
+					page.getByText(
+						'In order to launch your paid campaign, your billing information is required. You will be billed directly by Google and only pay when someone clicks on your ad.'
+					)
+				).toBeVisible();
+
+				await expect(
+					page.getByRole( 'link', {
+						name: 'click here instead',
+					} )
+				).toBeVisible();
+			} );
+
+			// eslint-disable-next-line jest/expect-expect
+			test( 'should open a popup when clicking set up billing button', async () => {
+				await checkAdsPopup( page );
+			} );
 		} );
 	} );
 } );
