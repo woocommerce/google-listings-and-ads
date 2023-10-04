@@ -50,7 +50,7 @@ test.describe( 'GTag events', () => {
 	} );
 
 	test( 'Page view event is sent on a frontend page', async ( { page } ) => {
-		const event = trackGtagEvent( page, 'page_view' );
+		const event = trackGtagEvent( page, 'page_view', false );
 
 		await page.goto( 'shop' );
 		await expect( event ).resolves.toBeTruthy();
@@ -166,7 +166,7 @@ test.describe( 'GTag events', () => {
 	} ) => {
 		await singleProductAddToCart( page, simpleProductID );
 
-		const event = trackGtagEvent( page, 'conversion' );
+		const event = trackGtagEvent( page, 'conversion', false );
 		await checkout( page );
 
 		await event.then( ( request ) => {
