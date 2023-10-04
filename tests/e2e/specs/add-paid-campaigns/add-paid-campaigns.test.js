@@ -302,10 +302,10 @@ test.describe( 'Set up Ads account', () => {
 					'.gla-campaign-preview-card__moving-button'
 				);
 
-				expect( await buttonsToChangeImage.count() ).toBe( 2 );
+				expect( buttonsToChangeImage ).toHaveCount( 2 );
 
 				for ( const button of await buttonsToChangeImage.all() ) {
-					expect( button ).toBeEnabled();
+					await expect( button ).toBeEnabled();
 				}
 			} );
 		} );
