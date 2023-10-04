@@ -391,5 +391,40 @@ test.describe( 'Set up Ads account', () => {
 				await checkAdsPopup( page );
 			} );
 		} );
+		test.describe( 'Billing status is approved', () => {
+			test.beforeAll( async () => {
+				await setupBudgetPage.fulfillBillingStatusRequest( {
+					status: 'approved',
+				} );
+
+				await setupAdsAccounts.mockAdsAccountsResponse( {
+					id: ADS_ACCOUNTS[ 1 ],
+					billing_url: null,
+				} );
+			} );
+			test( 'It should say that the billing is setup', async () => {
+				await page
+					.getByRole( 'button', {
+						name: 'Create your paid campaign',
+					} )
+					.click();
+				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+				await page.getByRole( 'button', { name: 'Continue' } ).click();
+				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+				await expect(
+					page.getByText(
+						'Great! You already have billing information saved for this'
+					)
+				).toBeVisible();
+
+				await expect(
+					page.getByRole( 'link', {
+						name: 'Google Ads account',
+					} )
+				).toBeVisible();
+			} );
+		} );
 	} );
 } );
