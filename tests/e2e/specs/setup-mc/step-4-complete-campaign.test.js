@@ -120,6 +120,7 @@ test.describe( 'Complete your campaign', () => {
 			await expect( faqRows ).toHaveCount( 0 );
 		} );
 
+		// eslint-disable-next-line jest/expect-expect
 		test( 'should see FAQ rows when all FAQ titles are clicked', async () => {
 			await checkFAQExpandable( page );
 		} );

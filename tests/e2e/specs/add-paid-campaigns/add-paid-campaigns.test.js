@@ -8,7 +8,15 @@ import { expect, test } from '@playwright/test';
 import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
 import DashboardPage from '../../utils/pages/dashboard.js';
 import SetupAdsAccountsPage from '../../utils/pages/setup-ads/setup-ads-accounts.js';
+import SetupBudgetPage from '../../utils/pages/setup-ads/setup-budget';
 import { LOAD_STATE } from '../../utils/constants';
+import {
+	getCountryInputSearchBoxContainer,
+	getCountryTagsFromInputSearchBoxContainer,
+	getFAQPanelTitle,
+	getFAQPanelRow,
+	checkFAQExpandable,
+} from '../../utils/page';
 
 const ADS_ACCOUNTS = [
 	{
@@ -39,6 +47,11 @@ let setupAdsAccounts = null;
  * @type {import('@playwright/test').Locator} adsConnectionButton
  */
 let adsConnectionButton = null;
+
+/**
+ * @type {import('../../utils/pages/setup-ads/setup-budget.js').default} setupBudgetPage
+ */
+let setupBudgetPage = null;
 
 /**
  * @type {import('@playwright/test').Page} page
@@ -226,6 +239,22 @@ test.describe( 'Set up Ads account', () => {
 
 			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 		} );
+	} );
+
+	test.describe( 'Create your paid campaign', () => {
+		test.beforeAll( async () => {
+			setupBudgetPage = new SetupBudgetPage( page );
+			await setupBudgetPage.fulfillBudgetRecommendation( {
+				currency: 'USD',
+				recommendations: [
+					{
+						country: 'US',
+						daily_budget_low: 5,
+						daily_budget_high: 15,
+					},
+				],
+			} );
+		} );
 
 		test( 'Continue to create paid campaign', async () => {
 			await setupAdsAccounts.clickContinue();
@@ -243,6 +272,89 @@ test.describe( 'Set up Ads account', () => {
 
 			await expect(
 				page.getByRole( 'heading', { name: 'Set your budget' } )
+			).toBeVisible();
+
+			await expect(
+				page.getByRole( 'button', { name: 'Continue' } )
+			).toBeDisabled();
+
+			await expect(
+				page.getByRole( 'link', {
+					name: 'See what your ads will look like.',
+				} )
+			).toBeVisible();
+		} );
+
+		test.describe( 'Preview product ad', () => {
+			test( 'Preview product ad should be visible', async () => {
+				await expect(
+					page.getByText( 'Preview product ad' )
+				).toBeVisible();
+				await expect(
+					page.getByText(
+						"Each of your product variants will have its own ad. Previews shown here are examples and don't include all possible formats."
+					)
+				).toBeVisible();
+			} );
+
+			test( 'Change image buttons should be enabled', async () => {
+				const buttonsToChangeImage = page.locator(
+					'.gla-campaign-preview-card__moving-button'
+				);
+
+				expect( buttonsToChangeImage ).toHaveCount( 2 );
+
+				for ( const button of await buttonsToChangeImage.all() ) {
+					await expect( button ).toBeEnabled();
+				}
+			} );
+		} );
+
+		test.describe( 'FAQ panels', () => {
+			test( 'should see five questions in FAQ', async () => {
+				const faqTitles = getFAQPanelTitle( page );
+				await expect( faqTitles ).toHaveCount( 5 );
+			} );
+
+			test( 'should not see FAQ rows when FAQ titles are not clicked', async () => {
+				const faqRows = getFAQPanelRow( page );
+				await expect( faqRows ).toHaveCount( 0 );
+			} );
+
+			// eslint-disable-next-line jest/expect-expect
+			test( 'should see FAQ rows when all FAQ titles are clicked', async () => {
+				await checkFAQExpandable( page );
+			} );
+		} );
+
+		test( 'Audience should be United States', async () => {
+			const countrySearchBoxContainer =
+				getCountryInputSearchBoxContainer( page );
+			const countryTags =
+				getCountryTagsFromInputSearchBoxContainer( page );
+			await expect( countryTags ).toHaveCount( 1 );
+			await expect( countrySearchBoxContainer ).toContainText(
+				'United States'
+			);
+		} );
+
+		test( 'Set the budget', async () => {
+			await setupBudgetPage.fillBudget( '1' );
+
+			await expect(
+				page.getByRole( 'button', { name: 'Continue' } )
+			).toBeEnabled();
+
+			await setupBudgetPage.fillBudget( '0' );
+
+			await expect(
+				page.getByRole( 'button', { name: 'Continue' } )
+			).toBeDisabled();
+		} );
+
+		test( 'Budget Recommendation', async () => {
+			await expect(
+				page.getByText( 'set a daily budget of 5 to 15 USD' )
 			).toBeVisible();
 		} );
 	} );
