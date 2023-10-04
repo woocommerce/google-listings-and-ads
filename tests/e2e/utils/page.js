@@ -4,6 +4,11 @@
 const { expect } = require( '@playwright/test' );
 
 /**
+ * Internal dependencies
+ */
+import SetupBudgetPage from '../utils/pages/setup-ads/setup-budget';
+
+/**
  * Get FAQ panel.
  *
  * @param {import('@playwright/test').Page} page The current page.
@@ -189,6 +194,23 @@ export async function checkFAQExpandable( page ) {
 			await expect( faqRow ).toBeVisible();
 		}
 	}
+}
+
+export async function checkAdsPopup( page ) {
+	const popupPromise = page.waitForEvent( 'popup' );
+	const setupBudgetPage = new SetupBudgetPage( page );
+	await setupBudgetPage.clickSetUpBillingButton();
+	const popup = await popupPromise;
+	await popup.waitForLoadState();
+	const popupTitle = await popup.title();
+	const popupURL = popup.url();
+	expect( popupTitle ).toBe(
+		'Add a new payment method in Google Ads - Google Ads Help'
+	);
+	expect( popupURL ).toBe(
+		'https://support.google.com/google-ads/answer/2375375'
+	);
+	await popup.close();
 }
 
 /**

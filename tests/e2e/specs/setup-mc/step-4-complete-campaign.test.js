@@ -18,6 +18,7 @@ import {
 	getFAQPanelRow,
 	getTreeSelectMenu,
 	removeCountryFromSearchBox,
+	checkAdsPopup,
 } from '../../utils/page';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -489,20 +490,9 @@ test.describe( 'Complete your campaign', () => {
 					);
 				} );
 
+				// eslint-disable-next-line jest/expect-expect
 				test( 'should open a popup when clicking set up billing button', async () => {
-					const popupPromise = page.waitForEvent( 'popup' );
-					await setupBudgetPage.clickSetUpBillingButton();
-					const popup = await popupPromise;
-					await popup.waitForLoadState();
-					const popupTitle = await popup.title();
-					const popupURL = popup.url();
-					expect( popupTitle ).toBe(
-						'Add a new payment method in Google Ads - Google Ads Help'
-					);
-					expect( popupURL ).toBe(
-						'https://support.google.com/google-ads/answer/2375375'
-					);
-					await popup.close();
+					await checkAdsPopup( page );
 				} );
 
 				test( 'should open a new page when clicking set up billing link', async () => {
