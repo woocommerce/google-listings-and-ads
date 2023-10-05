@@ -197,7 +197,7 @@ export async function checkFAQExpandable( page ) {
 }
 
 /**
- * Test if the Billing pop opens.
+ * Test if the billing ads pop up opens.
  *
  * @param {import('@playwright/test').Page} page The current page.
  */
