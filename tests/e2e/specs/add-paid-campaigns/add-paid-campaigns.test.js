@@ -60,6 +60,9 @@ let setupBudgetPage = null;
 let page = null;
 
 test.describe( 'Set up Ads account', () => {
+	// The campaign budget
+	let budget = null;
+
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
@@ -340,13 +343,15 @@ test.describe( 'Set up Ads account', () => {
 		} );
 
 		test( 'Set the budget', async () => {
-			await setupBudgetPage.fillBudget( '0' );
+			budget = '0';
+			await setupBudgetPage.fillBudget( budget );
 
 			await expect(
 				page.getByRole( 'button', { name: 'Continue' } )
 			).toBeDisabled();
 
-			await setupBudgetPage.fillBudget( '1' );
+			budget = '1';
+			await setupBudgetPage.fillBudget( budget );
 
 			await expect(
 				page.getByRole( 'button', { name: 'Continue' } )
@@ -403,15 +408,11 @@ test.describe( 'Set up Ads account', () => {
 				} );
 			} );
 			test( 'It should say that the billing is setup', async () => {
-				await page
-					.getByRole( 'button', {
-						name: 'Create your paid campaign',
-					} )
-					.click();
-				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-
-				await page.getByRole( 'button', { name: 'Continue' } ).click();
-				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+				//Every 30s the page will check if the billing status is approved and it will trigger the campaign creation.
+				await setupBudgetPage.awaitForBillingStatusRequest();
+				await setupBudgetPage.awaitForCampaignCreationRequest( budget, [
+					'US',
+				] );
 
 				await expect(
 					page.getByText(
