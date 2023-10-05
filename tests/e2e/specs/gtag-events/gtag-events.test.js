@@ -50,7 +50,7 @@ test.describe( 'GTag events', () => {
 	} );
 
 	test( 'Page view event is sent on a frontend page', async ( { page } ) => {
-		const event = trackGtagEvent( page, 'page_view', false );
+		const event = trackGtagEvent( page, 'page_view' );
 
 		await page.goto( 'shop' );
 		await expect( event ).resolves.toBeTruthy();
@@ -151,7 +151,7 @@ test.describe( 'GTag events', () => {
 	} ) => {
 		await singleProductAddToCart( page, simpleProductID );
 
-		const event = trackGtagEvent( page, 'page_view' );
+		const event = trackGtagEvent( page, 'page_view', 'cart' );
 		await page.goto( 'cart' );
 
 		await event.then( ( request ) => {
@@ -166,7 +166,7 @@ test.describe( 'GTag events', () => {
 	} ) => {
 		await singleProductAddToCart( page, simpleProductID );
 
-		const event = trackGtagEvent( page, 'conversion', false );
+		const event = trackGtagEvent( page, 'conversion', 'checkout' );
 		await checkout( page );
 
 		await event.then( ( request ) => {
@@ -181,7 +181,7 @@ test.describe( 'GTag events', () => {
 	} ) => {
 		await singleProductAddToCart( page, simpleProductID );
 
-		const event = trackGtagEvent( page, 'purchase' );
+		const event = trackGtagEvent( page, 'purchase', 'checkout' );
 		await checkout( page );
 
 		await event.then( ( request ) => {
