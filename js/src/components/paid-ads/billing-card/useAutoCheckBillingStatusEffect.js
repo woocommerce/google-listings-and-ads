@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useCallback } from '@wordpress/element';
+import { useCallback, useRef } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { noop } from 'lodash';
 
@@ -28,6 +28,9 @@ const useAutoCheckBillingStatusEffect = ( onStatusApproved = noop ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { receiveGoogleAdsAccountBillingStatus } = useAppDispatch();
 
+	const onStatusApprovedRef = useRef();
+	onStatusApprovedRef.current = onStatusApproved;
+
 	const checkStatusAndCompleteSetup = useCallback( async () => {
 		const billingStatus = await apiFetch( {
 			path: '/wc/gla/ads/billing-status',
@@ -39,7 +42,7 @@ const useAutoCheckBillingStatusEffect = ( onStatusApproved = noop ) => {
 
 		try {
 			await completeGoogleAdsAccountSetup();
-			await onStatusApproved();
+			await onStatusApprovedRef.current();
 			receiveGoogleAdsAccountBillingStatus( billingStatus );
 		} catch ( e ) {
 			createNotice(
@@ -50,11 +53,7 @@ const useAutoCheckBillingStatusEffect = ( onStatusApproved = noop ) => {
 				)
 			);
 		}
-	}, [
-		createNotice,
-		onStatusApproved,
-		receiveGoogleAdsAccountBillingStatus,
-	] );
+	}, [ createNotice, receiveGoogleAdsAccountBillingStatus ] );
 
 	useWindowFocusCallbackIntervalEffect( checkStatusAndCompleteSetup, 30 );
 };
