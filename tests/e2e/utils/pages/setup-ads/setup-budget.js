@@ -145,4 +145,38 @@ export default class SetupBudget extends MockRequests {
 		const link = this.getSetUpBillingLink();
 		await link.click();
 	}
+
+	/**
+	 * Await for billing status request.
+	 *
+	 * @return {Promise<Request>} The request.
+	 */
+	async awaitForBillingStatusRequest() {
+		return this.page.waitForRequest(
+			( request ) =>
+				request.url().includes( '/gla/ads/billing-status' ) &&
+				request.method() === 'GET',
+			{ timeout: 35000 }
+		);
+	}
+
+	/**
+	 * Await for the campaign creation request.
+	 *
+	 * @param {string} budget The campaign budget.
+	 * @param {Array}  targetLocations The targeted locations.
+	 * @return {Promise<Request>} The request.
+	 */
+	async awaitForCampaignCreationRequest( budget, targetLocations ) {
+		return this.page.waitForRequest( ( request ) => {
+			return (
+				request.url().includes( '/gla/ads/campaigns' ) &&
+				request.method() === 'POST' &&
+				request.postDataJSON().amount === parseInt( budget, 10 ) &&
+				targetLocations.every( ( item ) =>
+					request.postDataJSON().targeted_locations.includes( item )
+				)
+			);
+		} );
+	}
 }
