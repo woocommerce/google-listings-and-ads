@@ -17,13 +17,13 @@ export function trackGtagEvent( page, eventName, urlPath = null ) {
 	const eventPath = '/pagead/';
 	return page.waitForRequest( ( request ) => {
 		const url = request.url();
-		const match = encodeURIComponent( 'event=' + eventName );
+		const match = 'event=' + eventName;
 		const origin = new URL( page.url() ).origin;
 		const params = new URL( url ).searchParams;
 
 		return (
 			url.includes( eventPath ) &&
-			url.includes( match ) &&
+			params.get( 'data' ).includes( match ) &&
 			( urlPath
 				? params
 						.get( 'url' )
