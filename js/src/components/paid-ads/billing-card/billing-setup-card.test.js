@@ -93,4 +93,22 @@ describe( 'BillingSetupCard', () => {
 
 		expect( inspect ).toHaveBeenCalledTimes( 1 );
 	} );
+
+	it( 'Should not call back `onSetupComplete` again by the next interval after billing is already approved', async () => {
+		const onSetupComplete = jest.fn();
+
+		await act( async () => {
+			render( <BillingSetupCard onSetupComplete={ onSetupComplete } /> );
+		} );
+
+		expect( fetchBillingStatus ).toHaveBeenCalledTimes( 1 );
+		expect( onSetupComplete ).toHaveBeenCalledTimes( 1 );
+
+		await act( async () => {
+			jest.runOnlyPendingTimers();
+		} );
+
+		expect( fetchBillingStatus ).toHaveBeenCalledTimes( 2 );
+		expect( onSetupComplete ).toHaveBeenCalledTimes( 1 );
+	} );
 } );
