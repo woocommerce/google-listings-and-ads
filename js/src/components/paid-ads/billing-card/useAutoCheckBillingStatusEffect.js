@@ -27,16 +27,23 @@ const completeGoogleAdsAccountSetup = () => {
 const useAutoCheckBillingStatusEffect = ( onStatusApproved = noop ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { receiveGoogleAdsAccountBillingStatus } = useAppDispatch();
+	const prevStatusRef = useRef();
 
 	const onStatusApprovedRef = useRef();
 	onStatusApprovedRef.current = onStatusApproved;
 
 	const checkStatusAndCompleteSetup = useCallback( async () => {
+		const prevStatus = prevStatusRef.current;
 		const billingStatus = await apiFetch( {
 			path: '/wc/gla/ads/billing-status',
 		} );
 
-		if ( billingStatus.status !== GOOGLE_ADS_BILLING_STATUS.APPROVED ) {
+		prevStatusRef.current = billingStatus.status;
+
+		if (
+			prevStatus === billingStatus.status ||
+			billingStatus.status !== GOOGLE_ADS_BILLING_STATUS.APPROVED
+		) {
 			return;
 		}
 
