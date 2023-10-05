@@ -10,25 +10,24 @@
  *
  * @param {Page} page
  * @param {string} eventName Event name to match.
- * @param {string|null} URLpath The URL path where the event should be triggered.
+ * @param {string|null} urlPath The starting path to match where the event should be triggered.
  * @return {Promise<Request>} Matching request.
  */
-export function trackGtagEvent( page, eventName, URLpath = null ) {
+export function trackGtagEvent( page, eventName, urlPath = null ) {
 	const eventPath = '/pagead/';
 	return page.waitForRequest( ( request ) => {
 		const url = request.url();
 		const match = encodeURIComponent( 'event=' + eventName );
 		const origin = new URL( page.url() ).origin;
+		const params = new URL( url ).searchParams;
 
 		return (
 			url.includes( eventPath ) &&
 			url.includes( match ) &&
-			( URLpath
-				? url.includes(
-						`url=${ encodeURIComponent(
-							`${ origin }/${ URLpath }`
-						) }`
-				  )
+			( urlPath
+				? params
+						.get( 'url' )
+						.includes( `${ `${ origin }/${ urlPath }` }` )
 				: true )
 		);
 	} );
