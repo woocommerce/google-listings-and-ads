@@ -10,18 +10,26 @@
  *
  * @param {Page} page
  * @param {string} eventName Event name to match.
- * @param  {boolean} ecommPagetype Whether to check for ecomm_pagetype in the URL.
+ * @param {string|null} URLpath The URL path where the event should be triggered.
  * @return {Promise<Request>} Matching request.
  */
-export function trackGtagEvent( page, eventName, ecommPagetype = true ) {
+export function trackGtagEvent( page, eventName, URLpath = null ) {
 	const eventPath = '/pagead/';
 	return page.waitForRequest( ( request ) => {
 		const url = request.url();
 		const match = encodeURIComponent( 'event=' + eventName );
+		const origin = new URL( page.url() ).origin;
+
 		return (
 			url.includes( eventPath ) &&
 			url.includes( match ) &&
-			( ecommPagetype ? url.includes( 'ecomm_pagetype' ) : true )
+			( URLpath
+				? url.includes(
+						`url=${ encodeURIComponent(
+							`${ origin }/${ URLpath }`
+						) }`
+				  )
+				: true )
 		);
 	} );
 }
