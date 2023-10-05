@@ -18,7 +18,7 @@ import {
 	getFAQPanelRow,
 	getTreeSelectMenu,
 	removeCountryFromSearchBox,
-	checkAdsPopup,
+	checkBillingAdsPopup,
 } from '../../utils/page';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -492,7 +492,7 @@ test.describe( 'Complete your campaign', () => {
 
 				// eslint-disable-next-line jest/expect-expect
 				test( 'should open a popup when clicking set up billing button', async () => {
-					await checkAdsPopup( page );
+					await checkBillingAdsPopup( page );
 				} );
 
 				test( 'should open a new page when clicking set up billing link', async () => {

@@ -196,7 +196,12 @@ export async function checkFAQExpandable( page ) {
 	}
 }
 
-export async function checkAdsPopup( page ) {
+/**
+ * Test if the Billing pop opens.
+ *
+ * @param {import('@playwright/test').Page} page The current page.
+ */
+export async function checkBillingAdsPopup( page ) {
 	const popupPromise = page.waitForEvent( 'popup' );
 	const setupBudgetPage = new SetupBudgetPage( page );
 	await setupBudgetPage.clickSetUpBillingButton();

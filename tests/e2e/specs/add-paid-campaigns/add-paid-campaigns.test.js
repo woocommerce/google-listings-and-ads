@@ -16,7 +16,7 @@ import {
 	getFAQPanelTitle,
 	getFAQPanelRow,
 	checkFAQExpandable,
-	checkAdsPopup,
+	checkBillingAdsPopup,
 } from '../../utils/page';
 
 const ADS_ACCOUNTS = [
@@ -388,7 +388,7 @@ test.describe( 'Set up Ads account', () => {
 
 			// eslint-disable-next-line jest/expect-expect
 			test( 'should open a popup when clicking set up billing button', async () => {
-				await checkAdsPopup( page );
+				await checkBillingAdsPopup( page );
 			} );
 		} );
 		test.describe( 'Billing status is approved', () => {
