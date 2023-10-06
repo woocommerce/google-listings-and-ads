@@ -116,16 +116,25 @@ describe( 'AdaptiveForm', () => {
 							<button onClick={ formContext.handleSubmit }>
 								B
 							</button>
+							<button
+								onClick={ () => {
+									// To simulate that `handleSubmit` is called without passing an `event`.
+									formContext.handleSubmit();
+								} }
+							>
+								C
+							</button>
 						</>
 					);
 				} }
 			</AdaptiveForm>
 		);
 
-		const [ buttonA, buttonB ] = screen.getAllByRole( 'button' );
+		const [ buttonA, buttonB, buttonC ] = screen.getAllByRole( 'button' );
 
 		expect( inspectOnSubmit ).toHaveBeenCalledTimes( 0 );
 
+		// Click button A to test if the form indicates that button A triggered a submission.
 		await act( async () => {
 			return userEvent.click( buttonA );
 		} );
@@ -138,6 +147,7 @@ describe( 'AdaptiveForm', () => {
 			expect.objectContaining( { submitter: buttonA } )
 		);
 
+		// Click button B to test if the form indicates that button B triggered another submission.
 		inspectSubmitter.mockClear();
 
 		await act( async () => {
@@ -150,6 +160,24 @@ describe( 'AdaptiveForm', () => {
 		expect( inspectOnSubmit ).toHaveBeenLastCalledWith(
 			{},
 			expect.objectContaining( { submitter: buttonB } )
+		);
+
+		// Click button C to test if the form stays `submitter` as `null` if `handleSubmit`
+		// is triggered without a corresponding event.
+		inspectSubmitter.mockClear();
+
+		await act( async () => {
+			return userEvent.click( buttonC );
+		} );
+
+		expect( inspectSubmitter ).toHaveBeenCalled();
+		inspectSubmitter.mock.calls.forEach( ( args ) => {
+			expect( args ).toEqual( [ null ] );
+		} );
+		expect( inspectOnSubmit ).toHaveBeenCalledTimes( 3 );
+		expect( inspectOnSubmit ).toHaveBeenLastCalledWith(
+			{},
+			expect.objectContaining( { submitter: null } )
 		);
 	} );
 
