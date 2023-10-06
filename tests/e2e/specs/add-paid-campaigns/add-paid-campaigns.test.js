@@ -406,13 +406,20 @@ test.describe( 'Set up Ads account', () => {
 					id: ADS_ACCOUNTS[ 1 ],
 					billing_url: null,
 				} );
+
+				// Simulate a bit of delay when creating the Ads campaign so we have enough time to test the content in the page before the redirect.
+				await page.route(
+					/\/wc\/gla\/ads\/campaigns\b/,
+					async ( route ) => {
+						await new Promise( ( f ) => setTimeout( f, 500 ) );
+						await route.continue();
+					}
+				);
 			} );
 			test( 'It should say that the billing is setup', async () => {
 				//Every 30s the page will check if the billing status is approved and it will trigger the campaign creation.
 				await setupBudgetPage.awaitForBillingStatusRequest();
-				await setupBudgetPage.awaitForCampaignCreationRequest( budget, [
-					'US',
-				] );
+				await setupBudgetPage.mockCampaignCreation( budget, [ 'US' ] );
 
 				await expect(
 					page.getByText(
@@ -420,34 +427,78 @@ test.describe( 'Set up Ads account', () => {
 					)
 				).toBeVisible();
 
+				//It should redirect to the dashboard page
+				await page.waitForURL(
+					'/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success',
+					{
+						timeout: 30000,
+						waitUntil: LOAD_STATE.DOM_CONTENT_LOADED,
+					}
+				);
+			} );
+
+			test( 'It should show the campaign creation success message', async () => {
 				await expect(
-					page.getByRole( 'link', {
-						name: 'Google Ads account',
+					page.getByRole( 'heading', {
+						name: "You've set up a paid Performance Max Campaign!",
 					} )
 				).toBeVisible();
 
-				//This step is necessary; otherwise, it will set the ADS_SETUP_COMPLETED_AT option in the database, which could potentially impact other tests.
-				await setupBudgetPage.fulfillRequest(
-					/\/wc\/gla\/ads\/setup\/complete\b/,
-					null,
-					200,
-					[ 'POST' ]
-				);
+				await expect(
+					page.getByRole( 'button', {
+						name: 'Create another campaign',
+					} )
+				).toBeEnabled();
 
-				await setupBudgetPage.fulfillAdsCampaignsRequest(
-					{
-						id: 111111111,
-						name: 'Test Campaign',
-						status: 'enabled',
-						type: 'performance_max',
-						amount: budget,
-						country: 'US',
-						targeted_locations: [ 'US' ],
-					},
-					200,
-					[ 'POST' ]
-				);
+				await expect(
+					page.getByRole( 'button', {
+						name: 'Got It',
+					} )
+				).toBeEnabled();
+
+				await page
+					.getByRole( 'button', {
+						name: 'Got It',
+					} )
+					.click();
 			} );
+		} );
+	} );
+
+	test.describe( 'Create Ads with billing data already setup', () => {
+		test( 'Launch paid campaign should be enabled', async () => {
+			//Click Add paid Campaign
+			await adsConnectionButton.click();
+			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+			//Step 1 - Accounts are already set up.
+			await setupAdsAccounts.clickContinue();
+			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+			//Step 2 - Fill the budget
+			await setupBudgetPage.fillBudget( '1' );
+			await page.getByRole( 'button', { name: 'Continue' } ).click();
+			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+
+			//Step 3 - Billing is already setup
+			await expect(
+				page.getByText(
+					'Great! You already have billing information saved for this'
+				)
+			).toBeVisible();
+
+			await expect(
+				page.getByRole( 'button', { name: 'Launch paid campaign' } )
+			).toBeEnabled();
+
+			const campaignCreation = setupBudgetPage.mockCampaignCreation(
+				'1',
+				[ 'US' ]
+			);
+			await page
+				.getByRole( 'button', { name: 'Launch paid campaign' } )
+				.click();
+			await campaignCreation;
 		} );
 	} );
 } );

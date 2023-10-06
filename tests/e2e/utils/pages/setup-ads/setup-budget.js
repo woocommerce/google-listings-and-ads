@@ -168,15 +168,55 @@ export default class SetupBudget extends MockRequests {
 	 * @return {Promise<Request>} The request.
 	 */
 	async awaitForCampaignCreationRequest( budget, targetLocations ) {
-		return this.page.waitForRequest( ( request ) => {
-			return (
-				request.url().includes( '/gla/ads/campaigns' ) &&
-				request.method() === 'POST' &&
-				request.postDataJSON().amount === parseInt( budget, 10 ) &&
-				targetLocations.every( ( item ) =>
-					request.postDataJSON().targeted_locations.includes( item )
-				)
-			);
-		} );
+		return this.page.waitForRequest(
+			( request ) => {
+				return (
+					request.url().includes( '/gla/ads/campaigns' ) &&
+					request.method() === 'POST' &&
+					request.postDataJSON().amount === parseInt( budget, 10 ) &&
+					targetLocations.every( ( item ) =>
+						request
+							.postDataJSON()
+							.targeted_locations.includes( item )
+					)
+				);
+			},
+			{
+				timeout: 35000,
+			}
+		);
+	}
+
+	/**
+	 * Mock the campaign creation process.
+	 *
+	 * @param {string} budget The campaign budget.
+	 * @param {Array}  targetLocations The targeted locations.
+	 * @return {Promise<void>}
+	 */
+	async mockCampaignCreation( budget, targetLocations ) {
+		//This step is necessary; otherwise, it will set the ADS_SETUP_COMPLETED_AT option in the database, which could potentially impact other tests.
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/setup\/complete\b/,
+			null,
+			200,
+			[ 'POST' ]
+		);
+
+		await this.fulfillAdsCampaignsRequest(
+			{
+				id: 111111111,
+				name: 'Test Campaign',
+				status: 'enabled',
+				type: 'performance_max',
+				amount: budget,
+				country: 'US',
+				targeted_locations: targetLocations,
+			},
+			200,
+			[ 'POST' ]
+		);
+
+		await this.awaitForCampaignCreationRequest( budget, targetLocations );
 	}
 }
