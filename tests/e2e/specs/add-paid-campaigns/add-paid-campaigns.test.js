@@ -396,7 +396,7 @@ test.describe( 'Set up Ads account', () => {
 				await checkBillingAdsPopup( page );
 			} );
 		} );
-		test.describe( 'Billing status is approved', () => {
+		test.describe( 'Billing status is approved', async () => {
 			test.beforeAll( async () => {
 				await setupBudgetPage.fulfillBillingStatusRequest( {
 					status: 'approved',
@@ -425,6 +425,28 @@ test.describe( 'Set up Ads account', () => {
 						name: 'Google Ads account',
 					} )
 				).toBeVisible();
+
+				//This step is necessary; otherwise, it will set the ADS_SETUP_COMPLETED_AT option in the database, which could potentially impact other tests.
+				await setupBudgetPage.fulfillRequest(
+					/\/wc\/gla\/ads\/setup\/complete\b/,
+					null,
+					200,
+					[ 'POST' ]
+				);
+
+				await setupBudgetPage.fulfillAdsCampaignsRequest(
+					{
+						id: 111111111,
+						name: 'Test Campaign',
+						status: 'enabled',
+						type: 'performance_max',
+						amount: budget,
+						country: 'US',
+						targeted_locations: [ 'US' ],
+					},
+					200,
+					[ 'POST' ]
+				);
 			} );
 		} );
 	} );
