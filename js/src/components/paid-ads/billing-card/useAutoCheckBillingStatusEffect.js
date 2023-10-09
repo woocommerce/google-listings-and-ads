@@ -40,6 +40,8 @@ const useAutoCheckBillingStatusEffect = ( onStatusApproved = noop ) => {
 
 		prevStatusRef.current = billingStatus.status;
 
+		// Prevent the completion API and callback from being called unwanted times due to
+		// the regain focus or interval timer after the status is approved.
 		if (
 			prevStatus === billingStatus.status ||
 			billingStatus.status !== GOOGLE_ADS_BILLING_STATUS.APPROVED
