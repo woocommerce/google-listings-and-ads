@@ -419,7 +419,10 @@ test.describe( 'Set up Ads account', () => {
 			test( 'It should say that the billing is setup', async () => {
 				//Every 30s the page will check if the billing status is approved and it will trigger the campaign creation.
 				await setupBudgetPage.awaitForBillingStatusRequest();
-				await setupBudgetPage.mockCampaignCreation( budget, [ 'US' ] );
+				await setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+					budget,
+					[ 'US' ]
+				);
 
 				await expect(
 					page.getByText(
@@ -491,10 +494,11 @@ test.describe( 'Set up Ads account', () => {
 				page.getByRole( 'button', { name: 'Launch paid campaign' } )
 			).toBeEnabled();
 
-			const campaignCreation = setupBudgetPage.mockCampaignCreation(
-				'1',
-				[ 'US' ]
-			);
+			const campaignCreation =
+				setupBudgetPage.mockCampaignCreationAndAdsSetupCompletion(
+					'1',
+					[ 'US' ]
+				);
 			await page
 				.getByRole( 'button', { name: 'Launch paid campaign' } )
 				.click();

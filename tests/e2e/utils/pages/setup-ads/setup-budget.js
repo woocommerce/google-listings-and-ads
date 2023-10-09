@@ -188,13 +188,13 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
-	 * Mock the campaign creation process.
+	 * Mock the campaign creation process and the Ads setup completion.
 	 *
 	 * @param {string} budget The campaign budget.
 	 * @param {Array}  targetLocations The targeted locations.
 	 * @return {Promise<void>}
 	 */
-	async mockCampaignCreation( budget, targetLocations ) {
+	async mockCampaignCreationAndAdsSetupCompletion( budget, targetLocations ) {
 		//This step is necessary; otherwise, it will set the ADS_SETUP_COMPLETED_AT option in the database, which could potentially impact other tests.
 		await this.fulfillRequest(
 			/\/wc\/gla\/ads\/setup\/complete\b/,
