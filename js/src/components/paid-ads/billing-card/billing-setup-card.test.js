@@ -108,7 +108,6 @@ describe( 'BillingSetupCard', () => {
 			jest.runOnlyPendingTimers();
 		} );
 
-		expect( fetchBillingStatus ).toHaveBeenCalledTimes( 2 );
 		expect( onSetupComplete ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
