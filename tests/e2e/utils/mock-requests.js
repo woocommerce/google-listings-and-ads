@@ -223,6 +223,19 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the Budget Recommendation request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillBudgetRecommendation( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\/budget-recommendation\b/,
+			payload
+		);
+	}
+
+	/**
 	 * Fulfill the Sync Settings Connection request.
 	 *
 	 * @param {Object} payload
@@ -326,10 +339,17 @@ export default class MockRequests {
 	 * Fulfill ads campaigns request.
 	 *
 	 * @param {Object} payload
+	 * @param {number} status The HTTP status in the response.
+	 * @param {Array} methods The HTTP methods in the request to be fulfill.
 	 * @return {Promise<void>}
 	 */
-	async fulfillAdsCampaignsRequest( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/ads\/campaigns\b/, payload );
+	async fulfillAdsCampaignsRequest( payload, status = 200, methods = [] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/campaigns\b/,
+			payload,
+			status,
+			methods
+		);
 	}
 
 	/**

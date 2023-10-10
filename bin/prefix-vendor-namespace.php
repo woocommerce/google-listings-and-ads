@@ -295,9 +295,11 @@ function prefix_uses( &$contents, $package ) {
 function prefix_string( &$contents, $search ) {
 	global $namespace_prefix;
 
-	$quoted   = preg_quote( $search, '#' );
+	$quoted           = preg_quote( $search, '#' );
+	$namespace_quoted = preg_quote( $namespace_prefix . '\\', '#' );
+
 	$contents = preg_replace(
-		"#({$quoted})#m",
+		"#((?<!{$namespace_quoted}){$quoted})#m", // prevent to add the namespace twice
 		"{$namespace_prefix}\\\\\$1",
 		$contents
 	);

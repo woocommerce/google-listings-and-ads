@@ -209,7 +209,7 @@ function AdaptiveForm( { onSubmit, extendAdapter, children, ...props }, ref ) {
 				// Keep the target element for identifying which one triggered the submission when
 				// there are multiple submit buttons.
 				formContext.handleSubmit = function ( event ) {
-					adapterRef.current.submitter = event.currentTarget;
+					adapterRef.current.submitter = event?.currentTarget || null;
 					return handleSubmit.call( this, event );
 				};
 

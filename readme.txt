@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.3
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.5.8
+Stable tag: 2.5.9
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,14 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.9 - 2023-10-10 =
+* Dev - E2E - Setup Google Ads Step 2 - Create your paid campaign.
+* Dev - E2E - Setup Google Ads Step 3 - Setup billing data.
+* Dev - E2E tests - Track gtag event on specific page.
+* Dev - Prevent Prefix Vendor to be added twice.
+* Fix - Avoid creating two campaigns after completing the Google Ads onboarding.
+* Fix - The auto-refresh processing of billing status in the Google Ads onboarding flow.
+
 = 2.5.8 - 2023-10-03 =
 * Add - Privacy policy guide section.
 * Add - The missing tracking to onboarding when changing steps.
@@ -126,13 +134,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - E2E - Onboarding Step 2 - Configure product listings.
 * Dev - E2E - Onboarding Step 3 - Confirm store requirements.
 * Fix - Performance issue with GoogleAdsFailures::init.
-
-= 2.5.6 - 2023-09-14 =
-* Dev - E2E - Onboarding Step 1 - Set up accounts - Connect Merchant Center account.
-* FIx - Undesired margin in Paid Campaign Creation Success Modal.
-* Fix - Adjust target on click events preventing GLA ID to be Undefined.
-* Fix - Tweak E2E tests for WC 8.1.
-* Fix - WooCommerce Subscriptions compatibility: Fix the visible issue of the "Google Listings and Ads" tab and "Channel visibility" meta box for some unsupported product types.
-* Tweak - WC 8.1.0 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
