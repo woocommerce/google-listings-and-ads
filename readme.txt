@@ -111,6 +111,14 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.9 - 2023-10-10 =
+* Dev - E2E - Setup Google Ads Step 2 - Create your paid campaign.
+* Dev - E2E - Setup Google Ads Step 3 - Setup billing data.
+* Dev - E2E tests - Track gtag event on specific page.
+* Dev - Prevent Prefix Vendor to be added twice.
+* Fix - Avoid creating two campaigns after completing the Google Ads onboarding.
+* Fix - The auto-refresh processing of billing status in the Google Ads onboarding flow.
+
 = 2.5.8 - 2023-10-03 =
 * Add - Privacy policy guide section.
 * Add - The missing tracking to onboarding when changing steps.
