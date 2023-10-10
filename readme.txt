@@ -127,12 +127,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - E2E - Onboarding Step 3 - Confirm store requirements.
 * Fix - Performance issue with GoogleAdsFailures::init.
 
-= 2.5.6 - 2023-09-14 =
-* Dev - E2E - Onboarding Step 1 - Set up accounts - Connect Merchant Center account.
-* FIx - Undesired margin in Paid Campaign Creation Success Modal.
-* Fix - Adjust target on click events preventing GLA ID to be Undefined.
-* Fix - Tweak E2E tests for WC 8.1.
-* Fix - WooCommerce Subscriptions compatibility: Fix the visible issue of the "Google Listings and Ads" tab and "Channel visibility" meta box for some unsupported product types.
-* Tweak - WC 8.1.0 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
