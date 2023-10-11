@@ -1204,11 +1204,17 @@ class GoogleHelper implements Service {
 	protected function get_mc_promotion_supported_countries_currencies(): array {
 		return [
 			'AU' => 'AUD', // Australia
+			'BR' => 'BRL', // Brazil
 			'CA' => 'CAD', // Canada
 			'DE' => 'EUR', // Germany
+			'ES' => 'EUR', // Spain
 			'FR' => 'EUR', // France
 			'GB' => 'GBP', // United Kingdom
 			'IN' => 'INR', // India
+			'IT' => 'EUR', // Italy
+			'JP' => 'JPY', // Japan
+			'NL' => 'EUR', // The Netherlands
+			'KR' => 'KRW', // South Korea
 			'US' => 'USD', // United States
 		];
 	}

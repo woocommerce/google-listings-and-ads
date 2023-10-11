@@ -50,7 +50,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 
 	protected const DATE_TIME_FORMAT = 'Y-m-d h:i:sa';
 
-	private const COUNTRIES_WITH_FREE_SHIPPING_DESTINATION = [ 'BR', 'IT', 'JP', 'NL', 'KR', 'US' ];
+	public const COUNTRIES_WITH_FREE_SHIPPING_DESTINATION = [ 'BR', 'IT', 'ES', 'JP', 'NL', 'KR', 'US' ];
 
 	/**
 	 *
@@ -389,6 +389,6 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 			$destinations[] = self::PROMOTION_DESTINATION_FREE_LISTING;
 		}
 
-		return apply_filters( 'woocommerce_gla_coupon_destinations', $destinations, [ $target_country, $this->wc_coupon_id ] );
+		return apply_filters( 'woocommerce_gla_coupon_destinations', $destinations, $target_country, $this->wc_coupon_id );
 	}
 }
