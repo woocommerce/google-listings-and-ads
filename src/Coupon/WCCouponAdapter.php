@@ -50,6 +50,8 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 
 	protected const DATE_TIME_FORMAT = 'Y-m-d h:i:sa';
 
+	private const COUNTRIES_WITH_FREE_SHIPPING_DESTINATION = [ 'BR', 'IT', 'JP', 'NL', 'KR', 'US' ];
+
 	/**
 	 *
 	 * @var int wc_coupon_id
@@ -74,7 +76,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 
 		$wc_coupon          = $array['wc_coupon'];
 		$this->wc_coupon_id = $wc_coupon->get_id();
-			$this->map_woocommerce_coupon( $wc_coupon );
+		$this->map_woocommerce_coupon( $wc_coupon, $this->get_coupon_destinations_per_country( $array['targetCountry'] ) );
 
 		// Google doesn't expect extra fields, so it's best to remove them
 		unset( $array['wc_coupon'] );
@@ -86,14 +88,13 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	 * Map the WooCommerce coupon attributes to the current class.
 	 *
 	 * @param WC_Coupon $wc_coupon
+	 * @param string[] $destinations The destination ID's for the coupon
 	 *
 	 * @return void
 	 */
-	protected function map_woocommerce_coupon( WC_Coupon $wc_coupon ) {
+	protected function map_woocommerce_coupon( WC_Coupon $wc_coupon, array $destinations ) {
 		$this->setRedemptionChannel( self::CHANNEL_ONLINE );
-		$this->setPromotionDestinationIds(
-			[ self::PROMOTION_DESTINATION_ADS, self::PROMOTION_DESTINATION_FREE_LISTING ]
-		);
+		$this->setPromotionDestinationIds( $destinations );
 
 		$content_language = empty( get_locale() ) ? 'en' : strtolower(
 			substr( get_locale(), 0, 2 )
@@ -374,5 +375,20 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	public function setTargetCountry( $targetCountry ) {
 		// set the new target country
 		parent::setTargetCountry( $targetCountry );
+	}
+
+	/**
+	 * Get the destinations allowed per specific country.
+	 *
+	 * @param string $target_country The country to get the allowed destinations in ISO 3166-1 alpha-2 format (ie 'US')
+	 * @return string[] The destinations country based.
+	 */
+	private function get_coupon_destinations_per_country( string $target_country ) : array {
+		$destinations = [ self::PROMOTION_DESTINATION_ADS ];
+		if ( in_array( $target_country, self::COUNTRIES_WITH_FREE_SHIPPING_DESTINATION ) ) {
+			$destinations[] = self::PROMOTION_DESTINATION_FREE_LISTING;
+		}
+
+		return apply_filters( 'woocommerce_gla_coupon_destinations', $destinations, [ $target_country, $this->wc_coupon_id ] );
 	}
 }
