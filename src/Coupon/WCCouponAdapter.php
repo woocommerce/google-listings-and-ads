@@ -88,7 +88,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	 * Map the WooCommerce coupon attributes to the current class.
 	 *
 	 * @param WC_Coupon $wc_coupon
-	 * @param string[] $destinations The destination ID's for the coupon
+	 * @param string[]  $destinations The destination ID's for the coupon
 	 *
 	 * @return void
 	 */
@@ -383,9 +383,9 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	 * @param string $target_country The country to get the allowed destinations in ISO 3166-1 alpha-2 format (ie 'US')
 	 * @return string[] The destinations country based.
 	 */
-	private function get_coupon_destinations_per_country( string $target_country ) : array {
+	private function get_coupon_destinations_per_country( string $target_country ): array {
 		$destinations = [ self::PROMOTION_DESTINATION_ADS ];
-		if ( in_array( $target_country, self::COUNTRIES_WITH_FREE_SHIPPING_DESTINATION ) ) {
+		if ( in_array( $target_country, self::COUNTRIES_WITH_FREE_SHIPPING_DESTINATION, true ) ) {
 			$destinations[] = self::PROMOTION_DESTINATION_FREE_LISTING;
 		}
 
