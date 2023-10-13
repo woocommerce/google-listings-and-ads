@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignReportQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantFreeListingReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -185,6 +186,37 @@ class MerchantMetrics implements OptionsAwareInterface {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Return amount of active campaigns for the connected Ads account.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return int
+	 */
+	public function get_campaign_count(): int {
+		if ( ! $this->options->get_ads_id() ) {
+			return 0;
+		}
+
+		$campaign_count = 0;
+
+		try {
+			$query = ( new AdsCampaignQuery() )->set_client( $this->ads_client, $this->options->get_ads_id() );
+			$query->where( 'campaign.status', 'REMOVED', '!=' );
+
+			$campaign_results = $query->get_results();
+
+			// Iterate through all paged results (total results count is not set).
+			foreach ( $campaign_results->iterateAllElements() as $row ) {
+				$campaign_count++;
+			}
+		} catch ( Exception $e ) {
+			$campaign_count = 0;
+		}
+
+		return $campaign_count;
 	}
 
 	/**

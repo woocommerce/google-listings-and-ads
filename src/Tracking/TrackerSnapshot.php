@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -20,7 +21,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
  * Include Google Listings and Ads data in the WC Tracker snapshot.
  *
  * ContainerAware used to access:
- * - MerchantStatuses
+ * - AdsService
+ * - MerchantCenterService
+ * - MerchantMetrics
+ * - TargetAudience
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
@@ -83,6 +87,8 @@ class TrackerSnapshot implements Conditional, ContainerAwareInterface, OptionsAw
 		$ads_service = $this->container->get( AdsService::class );
 		/** @var MerchantCenterService $mc_service */
 		$mc_service = $this->container->get( MerchantCenterService::class );
+		/** @var MerchantMetrics $merchant_metrics */
+		$merchant_metrics = $this->container->get( MerchantMetrics::class );
 
 		return [
 			'version'                         => $this->get_version(),
@@ -98,6 +104,8 @@ class TrackerSnapshot implements Conditional, ContainerAwareInterface, OptionsAw
 			'has_account_issue'               => $mc_service->is_connected() && $mc_service->has_account_issues() ? 'yes' : 'no',
 			'has_at_least_one_synced_product' => $mc_service->is_connected() && $mc_service->has_at_least_one_synced_product() ? 'yes' : 'no',
 			'ads_setup_started'               => $ads_service->is_setup_started() ? 'yes' : 'no',
+			'ads_customer_id'                 => $this->options->get_ads_id(),
+			'ads_campaign_count'              => $merchant_metrics->get_campaign_count(),
 		];
 	}
 
