@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V14\ResourceNames;
@@ -35,6 +36,7 @@ use Exception;
  *
  * ContainerAware used for:
  * - AdsAssetGroup
+ * - TransientsInterface
  * - WC
  *
  * @since 1.12.2 Refactored to support PMax and (legacy) SSC.
@@ -219,6 +221,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			);
 
 			$campaign_id = $this->mutate( $operations );
+
+			// Clear cached campaign count.
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
 
 			return [
 				'id'      => $campaign_id,
