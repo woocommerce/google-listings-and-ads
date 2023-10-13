@@ -201,6 +201,10 @@ class MerchantMetrics implements OptionsAwareInterface {
 		}
 
 		$campaign_count = 0;
+		$cached_count   = $this->transients->get( TransientsInterface::ADS_CAMPAIGN_COUNT );
+		if ( null !== $cached_count ) {
+			return (int) $cached_count;
+		}
 
 		try {
 			$query = ( new AdsCampaignQuery() )->set_client( $this->ads_client, $this->options->get_ads_id() );
@@ -216,6 +220,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 			$campaign_count = 0;
 		}
 
+		$this->transients->set( TransientsInterface::ADS_CAMPAIGN_COUNT, $campaign_count, HOUR_IN_SECONDS * 12 );
 		return $campaign_count;
 	}
 
