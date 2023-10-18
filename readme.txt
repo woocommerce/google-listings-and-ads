@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.10 - 2023-10-18 =
+* Tweak - Add correct Destinations for Supported Countries in Coupons.
+* Tweak - Declare cart_checkout_blocks feature compatibility.
+
 = 2.5.9 - 2023-10-10 =
 * Dev - E2E - Setup Google Ads Step 2 - Create your paid campaign.
 * Dev - E2E - Setup Google Ads Step 3 - Setup billing data.
