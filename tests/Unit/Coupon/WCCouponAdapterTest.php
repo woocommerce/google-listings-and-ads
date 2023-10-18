@@ -15,6 +15,7 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
 /**
  * Class WCProductAdapterTest
  *
+ * @group Coupons
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon
  */
 class WCCouponAdapterTest extends UnitTest {
@@ -86,19 +87,36 @@ class WCCouponAdapterTest extends UnitTest {
 	}
 
 	public function test_destination_ids_are_set() {
-		$coupon         = $this->create_ready_to_sync_coupon();
+		$coupon = $this->create_ready_to_sync_coupon();
+
+		foreach ( WCCouponAdapter::COUNTRIES_WITH_FREE_SHIPPING_DESTINATION as $free_shipping_destination ) {
+			$adapted_coupon = new WCCouponAdapter(
+				[
+					'wc_coupon'     => $coupon,
+					'targetCountry' => $free_shipping_destination,
+				]
+			);
+
+			$this->assertEquals(
+				[ 'Shopping_ads', 'Free_listings' ],
+				$adapted_coupon->getPromotionDestinationIds()
+			);
+		}
+
 		$adapted_coupon = new WCCouponAdapter(
 			[
 				'wc_coupon'     => $coupon,
-				'targetCountry' => 'US',
+				'targetCountry' => 'IN',
 			]
 		);
 
 		$this->assertEquals(
-			[ 'Shopping_ads', 'Free_listings' ],
+			[ 'Shopping_ads' ],
 			$adapted_coupon->getPromotionDestinationIds()
 		);
 	}
+
+
 
 	public function test_promotion_id_is_set() {
 		$coupon         = $this->create_ready_to_sync_coupon();

@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.3
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.5.9
+Stable tag: 2.5.10
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.10 - 2023-10-18 =
+* Tweak - Add correct Destinations for Supported Countries in Coupons.
+* Tweak - Declare cart_checkout_blocks feature compatibility.
+
 = 2.5.9 - 2023-10-10 =
 * Dev - E2E - Setup Google Ads Step 2 - Create your paid campaign.
 * Dev - E2E - Setup Google Ads Step 3 - Setup billing data.
@@ -128,11 +132,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Add UTM parameters to documentation link.
 * Tweak - The properties of the gla_setup_mc and gla_setup_ads tracking events to reduce their confusion.
 * Tweak - WC 8.2 compatibility.
-
-= 2.5.7 - 2023-09-20 =
-* Dev - E2E - Ads a paid campaign Step 1 - Connect Ads Account.
-* Dev - E2E - Onboarding Step 2 - Configure product listings.
-* Dev - E2E - Onboarding Step 3 - Confirm store requirements.
-* Fix - Performance issue with GoogleAdsFailures::init.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
