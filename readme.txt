@@ -129,10 +129,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - The properties of the gla_setup_mc and gla_setup_ads tracking events to reduce their confusion.
 * Tweak - WC 8.2 compatibility.
 
-= 2.5.7 - 2023-09-20 =
-* Dev - E2E - Ads a paid campaign Step 1 - Connect Ads Account.
-* Dev - E2E - Onboarding Step 2 - Configure product listings.
-* Dev - E2E - Onboarding Step 3 - Confirm store requirements.
-* Fix - Performance issue with GoogleAdsFailures::init.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
