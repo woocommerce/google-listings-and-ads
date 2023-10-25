@@ -41,10 +41,21 @@ export const SHIPPING_RATE_METHOD = {
 };
 
 // Stepper key related
-export const CAMPAIGN_STEP = {
-	CAMPAIGN: 'campaign',
-	ASSET_GROUP: 'asset-group',
-};
+const campaignStepEntries = [
+	[ 'CAMPAIGN', 'campaign' ],
+	[ 'ASSET_GROUP', 'asset-group' ],
+];
+
+export const CAMPAIGN_STEP = Object.fromEntries( campaignStepEntries );
+
+export const CAMPAIGN_STEP_NUMBER_MAP = campaignStepEntries.reduce(
+	( acc, entry, index ) => {
+		const no = ( index + 1 ).toString();
+		acc[ entry[ 1 ] ] = no;
+		return acc;
+	},
+	{}
+);
 
 // MC Issues Related
 export const ISSUE_TYPE_PRODUCT = 'product';
