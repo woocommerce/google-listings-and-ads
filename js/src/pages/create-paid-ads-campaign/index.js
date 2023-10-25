@@ -23,13 +23,25 @@ import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '.~/components/paid-ads/asset-group';
-import { CAMPAIGN_STEP as STEP } from '.~/constants';
+import {
+	CAMPAIGN_STEP as STEP,
+	CAMPAIGN_STEP_NUMBER_MAP as STEP_NUMBER_MAP,
+} from '.~/constants';
 import { API_NAMESPACE } from '.~/data/constants';
+import {
+	recordStepperChangeEvent,
+	recordStepContinueEvent,
+} from '.~/utils/recordEvent';
 
+const eventName = 'gla_paid_campaign_step';
+const eventContext = 'create-ads';
 const dashboardURL = getDashboardUrl();
 
 /**
  * Renders the campaign creation page.
+ *
+ * @fires gla_paid_campaign_step with `{ conext: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+ * @fires gla_paid_campaign_step with `{ conext: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
  */
 const CreatePaidAdsCampaign = () => {
 	useLayout( 'full-content' );
@@ -39,6 +51,25 @@ const CreatePaidAdsCampaign = () => {
 	const { createAdsCampaign, updateCampaignAssetGroup } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: initialCountryCodes } = useTargetAudienceFinalCountryCodes();
+
+	const handleStepperClick = ( nextStep ) => {
+		recordStepperChangeEvent(
+			eventName,
+			STEP_NUMBER_MAP[ nextStep ],
+			eventContext
+		);
+		setStep( nextStep );
+	};
+
+	const handleContinueClick = ( nextStep ) => {
+		recordStepContinueEvent(
+			eventName,
+			STEP_NUMBER_MAP[ step ],
+			STEP_NUMBER_MAP[ nextStep ],
+			eventContext
+		);
+		setStep( nextStep );
+	};
 
 	const handleSubmit = async ( values, enhancer ) => {
 		const { action } = enhancer.submitter.dataset;
@@ -92,7 +123,7 @@ const CreatePaidAdsCampaign = () => {
 					'Create your paid campaign',
 					'google-listings-and-ads'
 				) }
-				helpButton={ <HelpIconButton eventContext="create-ads" /> }
+				helpButton={ <HelpIconButton eventContext={ eventContext } /> }
 				backHref={ dashboardURL }
 			/>
 			<CampaignAssetsForm
@@ -113,13 +144,13 @@ const CreatePaidAdsCampaign = () => {
 							),
 							content: (
 								<AdsCampaign
-									trackingContext="create-ads"
+									trackingContext={ eventContext }
 									onContinue={ () =>
-										setStep( STEP.ASSET_GROUP )
+										handleContinueClick( STEP.ASSET_GROUP )
 									}
 								/>
 							),
-							onClick: setStep,
+							onClick: handleStepperClick,
 						},
 						{
 							key: STEP.ASSET_GROUP,
