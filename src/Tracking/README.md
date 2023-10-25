@@ -537,7 +537,7 @@ Clicking on the Merchant Center phone number edit button.
 #### Emitters
 - [`PhoneNumberCard`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L127)
 
-### [`gla_modal_closed`](../../js/src/utils/recordEvent.js#L122)
+### [`gla_modal_closed`](../../js/src/utils/recordEvent.js#L162)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -560,7 +560,7 @@ Clicking on a text link within the modal content
 #### Emitters
 - [`ContentLink`](../../js/src/components/guide-page-content/index.js#L46) with given `context, href`
 
-### [`gla_modal_open`](../../js/src/utils/recordEvent.js#L135)
+### [`gla_modal_open`](../../js/src/utils/recordEvent.js#L175)
 A modal is open
 #### Properties
 | name | type | description |
@@ -596,6 +596,22 @@ Clicking on the "Complete setup" button to complete the onboarding flow with pai
 Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
 #### Emitters
 - [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L67)
+
+### [`gla_paid_campaign_step`](../../js/src/utils/recordEvent.js#L122)
+Triggered when moving to another step during creating/editing a campaign.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`triggered_by` | `string` | Indicates which button triggered this event
+`action` | `string` | User's action or/and objective (e.g. `go-to-step-2`)
+`context` | `string \| undefined` | Indicates where this event happened
+#### Emitters
+- [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L46)
+	- with `{ conext: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+	- with `{ conext: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
+- [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L55)
+	- with `{ conext: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+	- with `{ conext: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
 
 ### [`gla_request_review`](../../js/src/product-feed/review-request/review-request-modal.js#L19)
 Triggered when request review button is clicked
