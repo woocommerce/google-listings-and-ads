@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V14\ResourceNames;
@@ -35,6 +36,7 @@ use Exception;
  *
  * ContainerAware used for:
  * - AdsAssetGroup
+ * - TransientsInterface
  * - WC
  *
  * @since 1.12.2 Refactored to support PMax and (legacy) SSC.
@@ -110,12 +112,23 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$query->where( 'campaign.status', 'REMOVED', '!=' );
 			}
 
+			$campaign_count      = 0;
 			$campaign_results    = $query->get_results();
 			$converted_campaigns = [];
 
 			foreach ( $campaign_results->iterateAllElements() as $row ) {
+				$campaign_count++;
 				$campaign                               = $this->convert_campaign( $row );
 				$converted_campaigns[ $campaign['id'] ] = $campaign;
+			}
+
+			if ( $exclude_removed ) {
+				// Cache campaign count.
+				$this->container->get( TransientsInterface::class )->set(
+					TransientsInterface::ADS_CAMPAIGN_COUNT,
+					$campaign_count,
+					HOUR_IN_SECONDS * 12
+				);
 			}
 
 			if ( $fetch_criterion ) {
@@ -219,6 +232,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			);
 
 			$campaign_id = $this->mutate( $operations );
+
+			// Clear cached campaign count.
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
 
 			return [
 				'id'      => $campaign_id,
