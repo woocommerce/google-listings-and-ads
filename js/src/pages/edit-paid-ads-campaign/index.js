@@ -23,10 +23,20 @@ import AppSpinner from '.~/components/app-spinner';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '.~/components/paid-ads/asset-group';
-import { CAMPAIGN_STEP as STEP, CAMPAIGN_TYPE_PMAX } from '.~/constants';
+import {
+	CAMPAIGN_STEP as STEP,
+	CAMPAIGN_STEP_NUMBER_MAP as STEP_NUMBER_MAP,
+	CAMPAIGN_TYPE_PMAX,
+} from '.~/constants';
+import {
+	recordStepperChangeEvent,
+	recordStepContinueEvent,
+} from '.~/utils/recordEvent';
 
+const eventName = 'gla_paid_campaign_step';
+const eventContext = 'edit-ads';
 const dashboardURL = getDashboardUrl();
-const helpButton = <HelpIconButton eventContext="edit-ads" />;
+const helpButton = <HelpIconButton eventContext={ eventContext } />;
 
 function getCurrentStep() {
 	const { step } = getQuery();
@@ -38,6 +48,9 @@ function getCurrentStep() {
 
 /**
  * Renders the campaign editing page.
+ *
+ * @fires gla_paid_campaign_step with `{ context: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+ * @fires gla_paid_campaign_step with `{ context: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
  */
 const EditPaidAdsCampaign = () => {
 	useLayout( 'full-content' );
@@ -64,8 +77,9 @@ const EditPaidAdsCampaign = () => {
 		}
 	}, [ campaign ] );
 
-	const setStep = ( step ) => {
-		const url = getNewPath( { ...getQuery(), step } );
+	const step = getCurrentStep();
+	const setStep = ( nextStep ) => {
+		const url = getNewPath( { ...getQuery(), step: nextStep } );
 		getHistory().push( url );
 	};
 
@@ -99,6 +113,25 @@ const EditPaidAdsCampaign = () => {
 			</>
 		);
 	}
+
+	const handleStepperClick = ( nextStep ) => {
+		recordStepperChangeEvent(
+			eventName,
+			STEP_NUMBER_MAP[ nextStep ],
+			eventContext
+		);
+		setStep( nextStep );
+	};
+
+	const handleContinueClick = ( nextStep ) => {
+		recordStepContinueEvent(
+			eventName,
+			STEP_NUMBER_MAP[ step ],
+			STEP_NUMBER_MAP[ nextStep ],
+			eventContext
+		);
+		setStep( nextStep );
+	};
 
 	const handleSubmit = async ( values, enhancer ) => {
 		const { action } = enhancer.submitter.dataset;
@@ -163,13 +196,13 @@ const EditPaidAdsCampaign = () => {
 							content: (
 								<AdsCampaign
 									campaign={ campaign }
-									trackingContext="edit-ads"
+									trackingContext={ eventContext }
 									onContinue={ () =>
-										setStep( STEP.ASSET_GROUP )
+										handleContinueClick( STEP.ASSET_GROUP )
 									}
 								/>
 							),
-							onClick: setStep,
+							onClick: handleStepperClick,
 						},
 						{
 							key: STEP.ASSET_GROUP,
