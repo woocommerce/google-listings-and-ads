@@ -607,11 +607,11 @@ Triggered when moving to another step during creating/editing a campaign.
 `context` | `string \| undefined` | Indicates where this event happened
 #### Emitters
 - [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L46)
-	- with `{ conext: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
-	- with `{ conext: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
+	- with `{ context: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+	- with `{ context: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
 - [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L55)
-	- with `{ conext: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
-	- with `{ conext: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
+	- with `{ context: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+	- with `{ context: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
 
 ### [`gla_request_review`](../../js/src/product-feed/review-request/review-request-modal.js#L19)
 Triggered when request review button is clicked

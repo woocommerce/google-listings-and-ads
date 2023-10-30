@@ -40,8 +40,8 @@ const dashboardURL = getDashboardUrl();
 /**
  * Renders the campaign creation page.
  *
- * @fires gla_paid_campaign_step with `{ conext: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
- * @fires gla_paid_campaign_step with `{ conext: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
+ * @fires gla_paid_campaign_step with `{ context: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+ * @fires gla_paid_campaign_step with `{ context: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
  */
 const CreatePaidAdsCampaign = () => {
 	useLayout( 'full-content' );

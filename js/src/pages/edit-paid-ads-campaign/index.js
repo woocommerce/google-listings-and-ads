@@ -49,8 +49,8 @@ function getCurrentStep() {
 /**
  * Renders the campaign editing page.
  *
- * @fires gla_paid_campaign_step with `{ conext: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
- * @fires gla_paid_campaign_step with `{ conext: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
+ * @fires gla_paid_campaign_step with `{ context: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+ * @fires gla_paid_campaign_step with `{ context: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
  */
 const EditPaidAdsCampaign = () => {
 	useLayout( 'full-content' );
