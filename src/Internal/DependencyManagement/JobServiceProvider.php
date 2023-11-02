@@ -204,7 +204,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function share_coupon_syncer_job( string $class_name, ...$arguments ) {
 		// Coupon related jobs also should implement ProductSyncerJobInterface.
-		$this->validate_interface( $class, ProductSyncerJobInterface::class );
+		$this->validate_interface( $class_name, ProductSyncerJobInterface::class );
 		$this->share_action_scheduler_job(
 			$class_name,
 			CouponHelper::class,
