@@ -18,8 +18,12 @@
 		<exclude name="Squiz.Commenting.LongConditionClosingComment"/>
 
 		<!-- No thanks -->
-		<exclude name="WordPress.PHP.DisallowShortTernary"/>
+		<exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
+		<exclude name="Universal.Operators.DisallowShortTernary.Found"/>
 		<exclude name="WordPress.PHP.YodaConditions.NotYoda"/>
+
+		<!-- Exceptions can be escaped before outputting not when thrown -->
+		<exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped"/>
 
 		<!-- These overrides are useful for code hinting -->
 		<exclude name="Generic.CodeAnalysis.UselessOverridingMethod.Found"/>
@@ -29,7 +33,7 @@
 		<exclude name="WordPress.DB.DirectDatabaseQuery.NoCaching"/>
 
 		<!-- We like short array syntax -->
-		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
 
 		<!-- Multiple throws tags are fine -->
 		<exclude name="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber"/>
@@ -54,11 +58,6 @@
 		<properties>
 			<property name="text_domain" type="array" value="google-listings-and-ads"/>
 		</properties>
-	</rule>
-
-	<!-- This rule flags space indents in HTML tags, which are generally OK. -->
-	<rule ref="WordPress.WhiteSpace.PrecisionAlignment">
-		<exclude name="WordPress.WhiteSpace.PrecisionAlignment.Found"/>
 	</rule>
 
 	<!-- We allow the use of / in hooks -->
