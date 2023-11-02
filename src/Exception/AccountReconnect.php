@@ -50,5 +50,4 @@ class AccountReconnect extends ExceptionWithResponseData {
 			]
 		);
 	}
-
 }

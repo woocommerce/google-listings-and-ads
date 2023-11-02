@@ -32,5 +32,4 @@ interface Note {
 	 * Get the note entry.
 	 */
 	public function get_entry(): NoteEntry;
-
 }

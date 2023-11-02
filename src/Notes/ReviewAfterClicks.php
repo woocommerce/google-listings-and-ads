@@ -125,5 +125,4 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 
 		return empty( $metrics ) ? 0 : $metrics['clicks'];
 	}
-
 }

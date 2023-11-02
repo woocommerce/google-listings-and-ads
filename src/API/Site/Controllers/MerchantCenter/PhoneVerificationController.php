@@ -116,7 +116,7 @@ class PhoneVerificationController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_request_phone_verification_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$verification_id = $this->phone_verification->request_phone_verification(
 					$request->get_param( 'phone_region_code' ),
@@ -138,7 +138,7 @@ class PhoneVerificationController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_verify_phone_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$this->phone_verification->verify_phone_number(
 					$request->get_param( 'verification_id' ),

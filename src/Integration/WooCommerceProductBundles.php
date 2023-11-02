@@ -228,5 +228,4 @@ class WooCommerceProductBundles implements IntegrationInterface {
 			}
 		);
 	}
-
 }

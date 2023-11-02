@@ -82,12 +82,12 @@ interface OptionsInterface {
 	/**
 	 * Get an option.
 	 *
-	 * @param string $name    The option name.
-	 * @param mixed  $default A default value for the option.
+	 * @param string $name          The option name.
+	 * @param mixed  $default_value A default value for the option.
 	 *
 	 * @return mixed
 	 */
-	public function get( string $name, $default = null );
+	public function get( string $name, $default_value = null );
 
 	/**
 	 * Add an option.

@@ -33,7 +33,7 @@ class GoogleProductFeedValidator extends RequirementValidator {
 
 			add_filter(
 				'woocommerce_gla_custom_merchant_issues',
-				function( $issues, $current_time ) {
+				function ( $issues, $current_time ) {
 					return $this->add_conflict_issue( $issues, $current_time );
 				},
 				10,
@@ -42,7 +42,7 @@ class GoogleProductFeedValidator extends RequirementValidator {
 
 			add_action(
 				'deactivated_plugin',
-				function( $plugin ) {
+				function ( $plugin ) {
 					if ( 'woocommerce-product-feeds/woocommerce-gpf.php' === $plugin ) {
 						/** @var MerchantStatuses $merchant_statuses */
 						$merchant_statuses = woogle_get_container()->get( MerchantStatuses::class );

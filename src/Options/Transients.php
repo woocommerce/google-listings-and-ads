@@ -29,19 +29,19 @@ final class Transients implements TransientsInterface, Service {
 	/**
 	 * Get a transient.
 	 *
-	 * @param string $name    The transient name.
-	 * @param mixed  $default A default value for the transient.
+	 * @param string $name          The transient name.
+	 * @param mixed  $default_value A default value for the transient.
 	 *
 	 * @return mixed
 	 */
-	public function get( string $name, $default = null ) {
+	public function get( string $name, $default_value = null ) {
 		$this->validate_transient_key( $name );
 
 		if ( ! array_key_exists( $name, $this->transients ) ) {
 			$value = get_transient( $this->prefix_name( $name ) );
 
 			if ( false === $value ) {
-				$value = $default;
+				$value = $default_value;
 			}
 
 			$this->transients[ $name ] = $value;

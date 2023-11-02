@@ -18,6 +18,6 @@ trait PermissionsTrait {
 	 * @return bool
 	 */
 	protected function can_manage(): bool {
-		return current_user_can( 'manage_woocommerce' );
+		return current_user_can( 'manage_woocommerce' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown
 	}
 }

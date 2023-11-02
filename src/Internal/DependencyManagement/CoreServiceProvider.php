@@ -231,14 +231,14 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Set up Options, and inflect classes that need options.
 		$this->share_concrete( OptionsInterface::class, Options::class );
 		$this->getLeagueContainer()
-			 ->inflector( OptionsAwareInterface::class )
-			 ->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
+			->inflector( OptionsAwareInterface::class )
+			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
 		// Share helper classes, and inflect classes that need it.
 		$this->share_with_tags( GoogleHelper::class, WC::class );
 		$this->getLeagueContainer()
-			 ->inflector( GoogleHelperAwareInterface::class )
-			 ->invokeMethod( 'set_google_helper_object', [ GoogleHelper::class ] );
+			->inflector( GoogleHelperAwareInterface::class )
+			->invokeMethod( 'set_google_helper_object', [ GoogleHelper::class ] );
 
 		// Set up the TargetAudience service.
 		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
@@ -246,15 +246,15 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
 		$this->getLeagueContainer()
-			 ->inflector( MerchantCenterAwareInterface::class )
-			 ->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
+			->inflector( MerchantCenterAwareInterface::class )
+			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
 
 		// Set up Ads service, and inflect classes that need it.
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( AdsService::class, AdsAccountState::class );
 		$this->getLeagueContainer()
-			 ->inflector( AdsAwareInterface::class )
-			 ->invokeMethod( 'set_ads_object', [ AdsService::class ] );
+			->inflector( AdsAwareInterface::class )
+			->invokeMethod( 'set_ads_object', [ AdsService::class ] );
 		$this->share_with_tags( AssetSuggestionsService::class, WP::class, WC::class, ImageUtility::class, wpdb::class, AdsAssetGroupAsset::class );
 
 		// Set up the installer.
@@ -370,8 +370,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Set up inflector for tracks classes.
 		$this->getLeagueContainer()
-			 ->inflector( TracksAwareInterface::class )
-			 ->invokeMethod( 'set_tracks', [ TracksInterface::class ] );
+			->inflector( TracksAwareInterface::class )
+			->invokeMethod( 'set_tracks', [ TracksInterface::class ] );
 
 		// Share admin meta boxes
 		$this->conditionally_share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class, MerchantCenterService::class );

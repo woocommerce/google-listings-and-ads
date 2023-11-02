@@ -55,7 +55,4 @@ class DimensionUtility {
 	public function equals( DimensionUtility $target, $precision = 1 ): bool {
 		return wp_fuzzy_number_match( $this->x, $target->x, $precision ) && wp_fuzzy_number_match( $this->y, $target->y, $precision );
 	}
-
-
 }
-

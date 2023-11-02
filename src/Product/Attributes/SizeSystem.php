@@ -83,5 +83,4 @@ class SizeSystem extends AbstractAttribute implements WithValueOptionsInterface,
 	public static function get_name(): string {
 		return __( 'Size System', 'google-listings-and-ads' );
 	}
-
 }

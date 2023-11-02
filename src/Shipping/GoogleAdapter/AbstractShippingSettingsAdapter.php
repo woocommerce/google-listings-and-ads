@@ -30,23 +30,23 @@ abstract class AbstractShippingSettingsAdapter extends GoogleShippingSettings {
 	/**
 	 * Initialize this object's properties from an array.
 	 *
-	 * @param array $array Used to seed this object's properties.
+	 * @param array $properties Used to seed this object's properties.
 	 *
 	 * @return void
 	 *
 	 * @throws InvalidValue When the required parameters are not provided, or they are invalid.
 	 */
-	public function mapTypes( $array ) {
-		$this->validate_gla_data( $array );
+	public function mapTypes( $properties ) {
+		$this->validate_gla_data( $properties );
 
-		$this->currency       = $array['currency'];
-		$this->delivery_times = $array['delivery_times'];
+		$this->currency       = $properties['currency'];
+		$this->delivery_times = $properties['delivery_times'];
 
-		$this->map_gla_data( $array );
+		$this->map_gla_data( $properties );
 
-		$this->unset_gla_data( $array );
+		$this->unset_gla_data( $properties );
 
-		parent::mapTypes( $array );
+		parent::mapTypes( $properties );
 	}
 
 	/**

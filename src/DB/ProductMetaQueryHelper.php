@@ -144,6 +144,4 @@ class ProductMetaQueryHelper implements Service {
 			throw InvalidMeta::invalid_key( $meta_key );
 		}
 	}
-
 }
-

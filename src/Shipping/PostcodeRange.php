@@ -77,5 +77,4 @@ class PostcodeRange {
 
 		return $this->start_code;
 	}
-
 }

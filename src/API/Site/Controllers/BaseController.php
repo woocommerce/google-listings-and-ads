@@ -18,7 +18,9 @@ use WP_REST_Response as Response;
  */
 abstract class BaseController extends WC_REST_Controller implements Registerable {
 
-	use PluginHelper, PermissionsTrait, ResponseFromExceptionTrait;
+	use PluginHelper;
+	use PermissionsTrait;
+	use ResponseFromExceptionTrait;
 
 	/**
 	 * @var RESTServer
@@ -67,7 +69,7 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 	 * @return callable
 	 */
 	protected function get_permission_callback(): callable {
-		return function() {
+		return function () {
 			return $this->can_manage();
 		};
 	}
@@ -107,7 +109,7 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 	 * @return callable
 	 */
 	protected function get_api_response_schema_callback(): callable {
-		return function() {
+		return function () {
 			return $this->get_item_schema();
 		};
 	}

@@ -175,9 +175,7 @@ class AssetSuggestionsService implements Service {
 		}
 
 		return $url;
-
 	}
-
 
 
 	/**
@@ -197,7 +195,6 @@ class AssetSuggestionsService implements Service {
 		}
 
 		return array_merge( $this->get_suggestions_common_fields( [] ), [ 'final_url' => $final_url ], $asset_group_assets );
-
 	}
 
 	/**
@@ -217,7 +214,6 @@ class AssetSuggestionsService implements Service {
 		} else {
 			return $this->get_homepage_assets();
 		}
-
 	}
 
 	/**
@@ -251,7 +247,6 @@ class AssetSuggestionsService implements Service {
 			],
 			$this->get_suggestions_common_fields( $marketing_images )
 		);
-
 	}
 
 	/**
@@ -346,7 +341,6 @@ class AssetSuggestionsService implements Service {
 			],
 			$this->get_suggestions_common_fields( $marketing_images )
 		);
-
 	}
 
 	/**
@@ -395,7 +389,6 @@ class AssetSuggestionsService implements Service {
 		}
 
 		return $images_ids;
-
 	}
 
 	/**
@@ -671,7 +664,6 @@ class AssetSuggestionsService implements Service {
 		}
 
 		return $terms_suggestions;
-
 	}
 
 
@@ -686,7 +678,7 @@ class AssetSuggestionsService implements Service {
 	 */
 	public function get_final_url_suggestions( string $search = '', int $per_page = 30, string $order_by = 'title' ): array {
 		if ( empty( $search ) ) {
-			 return $this->get_defaults_final_url_suggestions();
+			return $this->get_defaults_final_url_suggestions();
 		}
 
 		$homepage = [];
@@ -694,7 +686,7 @@ class AssetSuggestionsService implements Service {
 		// If the search query contains the word "homepage" add the homepage to the results.
 		if ( strpos( 'homepage', strtolower( $search ) ) !== false ) {
 			$homepage[] = $this->get_homepage_final_url();
-			$per_page--;
+			--$per_page;
 		}
 
 		// Split possible results between posts and terms.
@@ -718,7 +710,6 @@ class AssetSuggestionsService implements Service {
 		$result = array_merge( $homepage, $posts, $terms, $more_results );
 
 		return $this->sort_results( $result, $order_by );
-
 	}
 
 	/**
@@ -749,21 +740,20 @@ class AssetSuggestionsService implements Service {
 	/**
 	 *  Order suggestions alphabetically
 	 *
-	 *  @param array  $array associative array
-	 *  @param string $field Sort by a specific field
+	 *  @param array  $results Results as an associative array
+	 *  @param string $field   Sort by a specific field
 	 *
 	 * @return array response sorted alphabetically
 	 */
-	protected function sort_results( array $array, string $field ): array {
+	protected function sort_results( array $results, string $field ): array {
 		usort(
-			$array,
+			$results,
 			function ( $a, $b ) use ( $field ) {
 				return strcmp( strtolower( (string) $a[ $field ] ), strtolower( (string) $b[ $field ] ) );
 			}
 		);
 
-		return $array;
-
+		return $results;
 	}
 
 	/**
@@ -783,7 +773,6 @@ class AssetSuggestionsService implements Service {
 			'title' => $title,
 			'url'   => $url,
 		];
-
 	}
 
 	/**
@@ -802,6 +791,5 @@ class AssetSuggestionsService implements Service {
 			AssetFieldType::PORTRAIT_MARKETING_IMAGE => $marketing_images [ self::PORTRAIT_MARKETING_IMAGE_KEY ] ?? [],
 			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
 		];
-
 	}
 }

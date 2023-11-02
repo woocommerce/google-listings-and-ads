@@ -76,7 +76,6 @@ class ActivatedEvents extends BaseEvent implements Activateable {
 		}
 
 		$this->record_event( 'activated_from_source', $available_source_params );
-
 	}
 
 	/**
@@ -87,5 +86,4 @@ class ActivatedEvents extends BaseEvent implements Activateable {
 	public function activate(): void {
 		$this->maybe_track_activation_source();
 	}
-
 }

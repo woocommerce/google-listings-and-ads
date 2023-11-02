@@ -187,5 +187,4 @@ class AttributesTab implements Service, Registerable, Conditional {
 			}
 		}
 	}
-
 }

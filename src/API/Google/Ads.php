@@ -323,5 +323,4 @@ class Ads implements OptionsAwareInterface {
 
 		throw new Exception( __( 'Merchant link is not available to accept', 'google-listings-and-ads' ) );
 	}
-
 }

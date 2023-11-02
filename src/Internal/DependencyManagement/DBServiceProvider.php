@@ -106,13 +106,13 @@ class DBServiceProvider extends AbstractServiceProvider {
 	/**
 	 * Add a query class.
 	 *
-	 * @param string $class
+	 * @param string $class_name
 	 * @param mixed  ...$arguments
 	 *
 	 * @return DefinitionInterface
 	 */
-	protected function add_query_class( string $class, ...$arguments ): DefinitionInterface {
-		return $this->add( $class, wpdb::class, ...$arguments )->addTag( 'db_query' );
+	protected function add_query_class( string $class_name, ...$arguments ): DefinitionInterface {
+		return $this->add( $class_name, wpdb::class, ...$arguments )->addTag( 'db_query' );
 	}
 
 	/**
@@ -121,29 +121,29 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * Shared classes will always return the same instance of the class when the class is requested
 	 * from the container.
 	 *
-	 * @param string $class        The class name to add.
+	 * @param string $class_name   The class name to add.
 	 * @param mixed  ...$arguments Constructor arguments for the class.
 	 *
 	 * @return DefinitionInterface
 	 */
-	protected function share_table_class( string $class, ...$arguments ): DefinitionInterface {
-		return parent::share( $class, WP::class, wpdb::class, ...$arguments )->addTag( 'db_table' );
+	protected function share_table_class( string $class_name, ...$arguments ): DefinitionInterface {
+		return parent::share( $class_name, WP::class, wpdb::class, ...$arguments )->addTag( 'db_table' );
 	}
 
 	/**
 	 * Share a migration class.
 	 *
-	 * @param string $class        The class name to add.
+	 * @param string $class_name   The class name to add.
 	 * @param mixed  ...$arguments Constructor arguments for the class.
 	 *
 	 * @throws InvalidClass When the given class does not implement the MigrationInterface.
 	 *
 	 * @since 1.4.1
 	 */
-	protected function share_migration( string $class, ...$arguments ) {
-		$this->validate_interface( $class, MigrationInterface::class );
+	protected function share_migration( string $class_name, ...$arguments ) {
+		$this->validate_interface( $class_name, MigrationInterface::class );
 		$this->share_with_tags(
-			$class,
+			$class_name,
 			wpdb::class,
 			...$arguments
 		);

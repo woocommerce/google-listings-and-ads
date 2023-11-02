@@ -76,7 +76,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 	public function register(): void {
 		add_action(
 			'admin_enqueue_scripts',
-			function() {
+			function () {
 				if ( PageController::is_admin_page() ) {
 					// Enqueue the required JavaScript scripts and CSS styles of the Media library.
 					wp_enqueue_media();
@@ -91,14 +91,14 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 
 		add_action(
 			"plugin_action_links_{$this->get_plugin_basename()}",
-			function( $links ) {
+			function ( $links ) {
 				return $this->add_plugin_links( $links );
 			}
 		);
 
 		add_action(
 			'wp_default_scripts',
-			function( $scripts ) {
+			function ( $scripts ) {
 				$this->inject_fast_refresh_for_dev( $scripts );
 			},
 			20
@@ -113,7 +113,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 	 * @return Asset[]
 	 */
 	protected function get_assets(): array {
-		$wc_admin_condition = function() {
+		$wc_admin_condition = function () {
 			return PageController::is_admin_page();
 		};
 

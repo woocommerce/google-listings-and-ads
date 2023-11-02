@@ -64,7 +64,7 @@ class AttributeMappingSyncerController extends BaseController implements Options
 	 * @return callable
 	 */
 	protected function get_sync_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$state = [
 					'is_scheduled' => (bool) $this->sync_stats->get_count(),

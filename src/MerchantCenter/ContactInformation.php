@@ -84,5 +84,4 @@ class ContactInformation implements Service {
 		$account->setBusinessInformation( $business_information );
 		$this->merchant->update_account( $account );
 	}
-
 }

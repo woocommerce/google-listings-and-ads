@@ -115,5 +115,4 @@ class ShippingLocation {
 
 		return $code;
 	}
-
 }

@@ -14,7 +14,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareTrait;
  */
 abstract class BaseEvent implements TracksEventInterface, TracksAwareInterface {
 
-	use TracksAwareTrait, PluginHelper;
+	use TracksAwareTrait;
+	use PluginHelper;
 
 	/**
 	 * Record an event using the Tracks instance.

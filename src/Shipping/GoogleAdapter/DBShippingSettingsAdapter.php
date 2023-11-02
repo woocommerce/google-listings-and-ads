@@ -185,5 +185,4 @@ class DBShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 
 		return $service;
 	}
-
 }
