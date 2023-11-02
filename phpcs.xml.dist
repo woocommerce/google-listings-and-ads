@@ -106,6 +106,8 @@
 	<!-- Check the main PHP file and everything in src/ -->
 	<arg name="extensions" value="php"/>
 	<file>./src</file>
+	<file>./bin</file>
+	<file>./views</file>
 	<file>./google-listings-and-ads.php</file>
 
 	<!-- Show progress and sniff codes in all reports -->
