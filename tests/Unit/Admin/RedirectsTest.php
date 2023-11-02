@@ -52,17 +52,17 @@ class RedirectsTest extends TestCase {
 		$redirect_instance = $this->get_redirect_instance( [ 'is_current_wc_admin_page', 'redirect_to' ] );
 
 		$this->merchant_center->method( 'is_setup_complete' )
-							  ->willReturn( false );
+			->willReturn( false );
 
 		$this->assertFalse( $redirect_instance->maybe_redirect() );
 
 		$redirect_instance->method( 'is_current_wc_admin_page' )
-						  ->with( Dashboard::PATH )
-						  ->willReturn( true );
+			->with( Dashboard::PATH )
+			->willReturn( true );
 
 		$redirect_instance->expects( $this->once() )
-						  ->method( 'redirect_to' )
-						  ->with( GetStarted::PATH );
+			->method( 'redirect_to' )
+			->with( GetStarted::PATH );
 
 		$this->assertNull( $redirect_instance->maybe_redirect() );
 	}
@@ -78,17 +78,17 @@ class RedirectsTest extends TestCase {
 		$redirect_instance = $this->get_redirect_instance( [ 'is_current_wc_admin_page', 'redirect_to' ] );
 
 		$this->merchant_center->method( 'is_setup_complete' )
-							  ->willReturn( true );
+			->willReturn( true );
 
 		$this->assertFalse( $redirect_instance->maybe_redirect() );
 
 		$redirect_instance->method( 'is_current_wc_admin_page' )
-						  ->with( GetStarted::PATH )
-						  ->willReturn( true );
+			->with( GetStarted::PATH )
+			->willReturn( true );
 
 		$redirect_instance->expects( $this->once() )
-						  ->method( 'redirect_to' )
-						  ->with( Dashboard::PATH );
+			->method( 'redirect_to' )
+			->with( Dashboard::PATH );
 
 		$this->assertNull( $redirect_instance->maybe_redirect() );
 	}
@@ -116,9 +116,9 @@ class RedirectsTest extends TestCase {
 	 */
 	private function get_redirect_instance( $only_methods = [] ): object {
 		$instance = $this->getMockBuilder( Redirect::class )
-						 ->setConstructorArgs( [ $this->wp ] )
-						 ->onlyMethods( $only_methods )
-						 ->getMock();
+			->setConstructorArgs( [ $this->wp ] )
+			->onlyMethods( $only_methods )
+			->getMock();
 
 		$instance->set_options_object( $this->options );
 		$instance->set_merchant_center_object( $this->merchant_center );

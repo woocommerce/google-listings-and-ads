@@ -102,5 +102,4 @@ class AttributeMappingSyncerControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 	}
-
 }

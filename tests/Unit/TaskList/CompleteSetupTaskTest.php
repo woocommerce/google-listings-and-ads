@@ -48,7 +48,6 @@ class CompleteSetupTaskTest extends UnitTest {
 	 */
 	public function test_register() {
 		$this->assertInstanceOf( CompleteSetupTask::class, TaskLists::get_list( 'extended' )->get_task( 'gla_complete_setup' ) );
-
 	}
 
 	public function test_id() {

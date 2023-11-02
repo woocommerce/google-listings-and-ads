@@ -102,8 +102,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$google_product = $this->generate_google_product_mock();
 
 		$this->target_audience->expects( $this->any() )
-							  ->method( 'get_target_countries' )
-							  ->willReturn( [ 'AU', $google_product->getTargetCountry() ] );
+			->method( 'get_target_countries' )
+			->willReturn( [ 'AU', $google_product->getTargetCountry() ] );
 
 		// add some random errors residue from previous sync attempts
 		$this->product_meta->update_errors( $product, [ 'Error 1', 'Error 2' ] );
@@ -131,8 +131,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$variation      = $this->wc->get_product( $parent->get_children()[0] );
 
 		$this->target_audience->expects( $this->any() )
-							  ->method( 'get_target_countries' )
-							  ->willReturn( [ $this->get_sample_target_country() ] );
+			->method( 'get_target_countries' )
+			->willReturn( [ $this->get_sample_target_country() ] );
 
 		// add some random errors residue from previous sync attempts
 		$this->product_meta->update_errors( $variation, [ 'Error 1', 'Error 2' ] );
@@ -170,8 +170,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$variation->save();
 
 		$this->target_audience->expects( $this->any() )
-							  ->method( 'get_target_countries' )
-							  ->willReturn( [ $this->get_sample_target_country() ] );
+			->method( 'get_target_countries' )
+			->willReturn( [ $this->get_sample_target_country() ] );
 
 		$this->product_helper->mark_as_synced( $variation, $google_product );
 
@@ -383,7 +383,6 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 			$this->assertEmpty( $this->product_meta->get_failed_sync_attempts( $product ) );
 			$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
 		}
-
 	}
 
 	public function test_mark_as_invalid_does_not_update_parent_if_orphan_variation() {
@@ -499,7 +498,6 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 1234567, $this->product_helper->get_wc_product_id( 'gla_1234567' ) );
 		// Invalid ID, not WC product or custom map
 		$this->assertEquals( 0, $this->product_helper->get_wc_product_id( 'online:en:US:not_gla_or_mapped' ) );
-
 	}
 
 	public function test_get_wc_product_title() {

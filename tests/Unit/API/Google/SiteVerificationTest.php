@@ -140,5 +140,4 @@ class SiteVerificationTest extends UnitTest {
 		$this->verification_service->webResource->expects( $this->once() )
 			->method( 'insert' );
 	}
-
 }

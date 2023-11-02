@@ -724,5 +724,4 @@ class AccountServiceTest extends UnitTest {
 
 		$this->account->disconnect();
 	}
-
 }

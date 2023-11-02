@@ -160,5 +160,4 @@ class MerchantMetricsTest extends UnitTest {
 
 		$this->assertSame( [], $this->metrics->get_ads_metrics() );
 	}
-
 }

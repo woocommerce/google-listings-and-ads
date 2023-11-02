@@ -225,7 +225,7 @@ class WCProductAdapterTest extends UnitTest {
 	public function test_get_google_product_offer_id_with_custom_mapping_filter() {
 		add_filter(
 			'woocommerce_gla_get_google_product_offer_id',
-			function( $mc_product_id, $woo_product_id ) {
+			function ( $mc_product_id, $woo_product_id ) {
 				if ( $woo_product_id === 25 ) {
 					$mc_product_id = 'custom_mapped_id';
 				}
@@ -377,7 +377,7 @@ class WCProductAdapterTest extends UnitTest {
 			false,
 			[
 				'description' => 'This product has a shortcode like [wc_gla_sample_test_shortcode] that will not get stripped out, ' .
-								 'along with an unregistered short code [some-test-short-code id=1] that will also remain intact.',
+					'along with an unregistered short code [some-test-short-code id=1] that will also remain intact.',
 			]
 		);
 		$adapted_product = new WCProductAdapter(
