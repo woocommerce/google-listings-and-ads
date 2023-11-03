@@ -60,6 +60,15 @@
 		</properties>
 	</rule>
 
+	<!-- Add manage_woocommerce to accepted user capabilities -->
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element value="manage_woocommerce"/>
+			</property>
+		</properties>
+	</rule>
+
 	<!-- We allow the use of / in hooks -->
 	<rule ref="WordPress.NamingConventions.ValidHookName">
 		<properties>
