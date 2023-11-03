@@ -23,7 +23,7 @@
 
 		<!-- No thanks -->
 		<exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
-		<exclude name="Universal.Operators.DisallowShortTernary.Found"/>
+		<exclude name="Universal.Operators.DisallowShortTernary"/>
 		<exclude name="WordPress.PHP.YodaConditions.NotYoda"/>
 
 		<!-- Exceptions can be escaped before outputting not when thrown -->

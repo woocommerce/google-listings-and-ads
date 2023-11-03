@@ -19,7 +19,7 @@
 
 		<!-- No thanks -->
 		<exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
-		<exclude name="Universal.Operators.DisallowShortTernary.Found"/>
+		<exclude name="Universal.Operators.DisallowShortTernary"/>
 		<exclude name="WordPress.PHP.YodaConditions.NotYoda"/>
 
 		<!-- Exceptions can be escaped before outputting not when thrown -->
@@ -33,7 +33,7 @@
 		<exclude name="WordPress.DB.DirectDatabaseQuery.NoCaching"/>
 
 		<!-- We like short array syntax -->
-		<exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
 
 		<!-- Multiple throws tags are fine -->
 		<exclude name="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber"/>
