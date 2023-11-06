@@ -1,6 +1,6 @@
 # Usage Tracking
 
-_Google Listings & Ads_ implements usage tracking, based on the native [WooCommerce Usage Tracking](https://woocommerce.com/usage-tracking/), and is only enabled when WooCommerce Tracking is enabled.
+_Google Listings & Ads_ implements usage tracking, based on the native [WooCommerce Usage Tracking](https://woo.com/usage-tracking/), and is only enabled when WooCommerce Tracking is enabled.
 
 When a store opts in to WooCommerce usage tracking and uses _Google Listings & Ads_, they will also be opted in to the tracking added by _Google Listings & Ads_.
 
@@ -270,12 +270,12 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
 - [`Faqs`](../../js/src/get-started-page/faqs/index.js#L276)
-	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#general-requirements' }`.
+	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woo.com/document/google-listings-and-ads/#general-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
-	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-merchant-center-requirements' }`.
-	- with `{ context: 'faqs', linkId: 'performance-max', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-performance-max-campaigns' }`.
-	- with `{ context: 'faqs', linkId: 'free-listings', href: 'https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google' }`.
-	- with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
+	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woo.com/document/google-listings-and-ads/#google-merchant-center-requirements' }`.
+	- with `{ context: 'faqs', linkId: 'performance-max', href: 'https://woo.com/document/google-listings-and-ads/#google-performance-max-campaigns' }`.
+	- with `{ context: 'faqs', linkId: 'free-listings', href: 'https://woo.com/document/google-listings-and-ads/#free-listings-on-google' }`.
+	- with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woo.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
 	- with `{ context: 'faqs', linkId: 'terms-and-conditions-of-google-ads-coupons', href: 'https://www.google.com/ads/coupons/terms/' }`.
 - [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L23) with `{ context: 'get-started', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
 - [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L23) with `{ context: 'get-started-with-video', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
