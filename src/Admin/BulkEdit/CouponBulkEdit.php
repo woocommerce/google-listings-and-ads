@@ -118,7 +118,6 @@ class CouponBulkEdit implements BulkEditInterface, Registerable {
 		}
 
 		// Check nonce.
-	    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		if ( ! isset( $request_data['woocommerce_gla_bulk_edit'] ) || ! wp_verify_nonce( $request_data['woocommerce_gla_bulk_edit_nonce'], 'woocommerce_gla_bulk_edit_nonce' ) ) {
 			return $post_id;
 		}
@@ -146,7 +145,7 @@ class CouponBulkEdit implements BulkEditInterface, Registerable {
 	 */
 	protected function request_data(): array {
 		// Nonce must be verified manually.
-		//phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		return $_REQUEST;
 	}
 }
