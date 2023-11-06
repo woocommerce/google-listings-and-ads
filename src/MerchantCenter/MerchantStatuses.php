@@ -883,7 +883,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		 */
 		if ( 'home_page_issue' === $issue['code'] ) {
 			$issue['issue']      = 'Website claim is lost, need to re verify and claim your website. Please reference the support link';
-			$issue['action_url'] = 'https://woocommerce.com/document/google-listings-and-ads-faqs/#reverify-website';
+			$issue['action_url'] = 'https://woo.com/document/google-listings-and-ads-faqs/#reverify-website';
 		}
 
 		return $issue;
