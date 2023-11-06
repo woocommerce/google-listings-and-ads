@@ -10,7 +10,7 @@ A native integration with Google offering free listings and Performance Max ads 
 
 -   [WooCommerce.com product page](https://woocommerce.com/products/google-listings-and-ads/)
 -   [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)
--   [User documentation](https://docs.woocommerce.com/document/google-listings-and-ads/)
+-   [User documentation](https://woo.com/document/google-listings-and-ads/)
 -   [Ideas board](https://ideas.woocommerce.com/forums/133476-woocommerce?category_id=403986)
 -   [Storybook](https://woocommerce.github.io/google-listings-and-ads/)
 
@@ -18,7 +18,7 @@ A native integration with Google offering free listings and Performance Max ads 
 
 This repository is not suitable for support. Please don't use our issue tracker for support requests.
 
-For self help, start with our [user documentation](https://docs.woocommerce.com/document/google-listings-and-ads/).
+For self help, start with our [user documentation](https://woo.com/document/google-listings-and-ads/).
 
 The best place to get support is the [WordPress.org Google Listings and Ads forum](https://wordpress.org/support/plugin/google-listings-and-ads/).
 
