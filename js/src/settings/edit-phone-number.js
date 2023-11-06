@@ -18,13 +18,13 @@ import usePhoneNumberCheckTrackEventEffect from '.~/components/contact-informati
 
 const learnMoreLinkId = 'contact-information-read-more';
 const learnMoreUrl =
-	'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information';
+	'https://woo.com/document/google-listings-and-ads/#contact-information';
 
 /**
  * Renders the phone number settings page.
  *
  * @see PhoneNumberCard
- * @fires gla_documentation_link_click with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
+ * @fires gla_documentation_link_click with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://woo.com/document/google-listings-and-ads/#contact-information" }`
  */
 const EditPhoneNumber = () => {
 	const phone = useGoogleMCPhoneNumber();

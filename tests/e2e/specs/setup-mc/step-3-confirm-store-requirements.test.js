@@ -219,7 +219,7 @@ test.describe( 'Confirm store requirements', () => {
 			await expect( link ).toBeVisible();
 			await expect( link ).toHaveAttribute(
 				'href',
-				'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information'
+				'https://woo.com/document/google-listings-and-ads/#contact-information'
 			);
 		} );
 

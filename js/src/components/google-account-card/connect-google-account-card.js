@@ -18,7 +18,7 @@ import useGoogleConnectFlow from './use-google-connect-flow';
  * @param {boolean} props.disabled
  * @fires gla_google_account_connect_button_click with `{ action: 'authorization', context: 'reconnect' }`
  * @fires gla_google_account_connect_button_click with `{ action: 'authorization', context: 'setup-mc' }`
- * @fires gla_documentation_link_click with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woo.com/document/google-listings-and-ads/#required-google-permissions' }`
  */
 const ConnectGoogleAccountCard = ( { disabled } ) => {
 	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
