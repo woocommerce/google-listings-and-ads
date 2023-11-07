@@ -111,6 +111,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.11 - 2023-11-07 =
+* Add - Record tracking events for moving steps on the campaign creation and editing pages.
+* Tweak - Add tracking for campaign count.
+* Tweak - WC 8.3 compatibility.
+* Tweak - WP 6.4 compatibility.
+* Update - Use new Woo.com domain.
+
 = 2.5.10 - 2023-10-18 =
 * Tweak - Add correct Destinations for Supported Countries in Coupons.
 * Tweak - Declare cart_checkout_blocks feature compatibility.
