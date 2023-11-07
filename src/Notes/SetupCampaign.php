@@ -79,7 +79,7 @@ class SetupCampaign extends AbstractSetupCampaign {
 		$note->add_action(
 			'setup-campaign-learn-more',
 			__( 'Learn more', 'google-listings-and-ads' ),
-			'https://docs.woocommerce.com/document/google-listings-and-ads/#get-500-in-free-ad-credits'
+			'https://woo.com/document/google-listings-and-ads/#google-performance-max-campaigns'
 		);
 	}
 }

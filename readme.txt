@@ -60,7 +60,7 @@ Create a new Google Ads account through Google Listings & Ads and a promotional 
 * PHP Architecture 64 bits
 * MySQL version 5.6 or greater
 
-Visit the [WooCommerce server requirements documentation](https://docs.woocommerce.com/document/server-requirements/) for a detailed list of server requirements.
+Visit the [WooCommerce server requirements documentation](https://woo.com/document/server-requirements/) for a detailed list of server requirements.
 
 = Automatic installation =
 
