@@ -214,5 +214,4 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( self::TEST_BILLING_STATUS_DATA, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
-
 }

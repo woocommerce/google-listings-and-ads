@@ -84,5 +84,4 @@ class IsBundle extends AbstractAttribute implements WithMappingInterface {
 			'no'  => __( 'No', 'google-listings-and-ads' ),
 		];
 	}
-
 }

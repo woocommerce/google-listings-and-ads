@@ -35,15 +35,15 @@ class PhoneVerificationTest extends UnitTest {
 
 	public function test_request_phone_verification() {
 		$this->iso_utility->expects( $this->any() )
-						  ->method( 'wp_locale_to_bcp47' )
-						  ->willReturn( 'fr-CA' );
+			->method( 'wp_locale_to_bcp47' )
+			->willReturn( 'fr-CA' );
 		$this->merchant->expects( $this->any() )
-					   ->method( 'request_phone_verification' )
-					   ->with( $this->anything(), $this->anything(), $this->anything(), $this->equalTo( 'fr-CA' ) )
-					   ->willReturn( 'some_verification_id' );
+			->method( 'request_phone_verification' )
+			->with( $this->anything(), $this->anything(), $this->anything(), $this->equalTo( 'fr-CA' ) )
+			->willReturn( 'some_verification_id' );
 		$this->iso_utility->expects( $this->any() )
-						  ->method( 'is_iso3166_alpha2_country_code' )
-						  ->willReturn( true );
+			->method( 'is_iso3166_alpha2_country_code' )
+			->willReturn( true );
 
 		$this->assertEquals(
 			'some_verification_id',
@@ -53,8 +53,8 @@ class PhoneVerificationTest extends UnitTest {
 
 	public function test_request_phone_verification_invalid_verification_method() {
 		$this->iso_utility->expects( $this->any() )
-						  ->method( 'is_iso3166_alpha2_country_code' )
-						  ->willReturn( true );
+			->method( 'is_iso3166_alpha2_country_code' )
+			->willReturn( true );
 
 		$this->expectException( InvalidValue::class );
 
@@ -63,8 +63,8 @@ class PhoneVerificationTest extends UnitTest {
 
 	public function test_request_phone_verification_invalid_phone_region() {
 		$this->iso_utility->expects( $this->any() )
-						  ->method( 'is_iso3166_alpha2_country_code' )
-						  ->willReturn( false );
+			->method( 'is_iso3166_alpha2_country_code' )
+			->willReturn( false );
 
 		$this->expectException( InvalidValue::class );
 
@@ -73,8 +73,8 @@ class PhoneVerificationTest extends UnitTest {
 
 	public function test_map_google_exception() {
 		$this->iso_utility->expects( $this->any() )
-						  ->method( 'is_iso3166_alpha2_country_code' )
-						  ->willReturn( true );
+			->method( 'is_iso3166_alpha2_country_code' )
+			->willReturn( true );
 
 		$google_exception = new GoogleServiceException(
 			'Retries quota exceeded.',
@@ -89,8 +89,8 @@ class PhoneVerificationTest extends UnitTest {
 			]
 		);
 		$this->merchant->expects( $this->any() )
-					   ->method( 'request_phone_verification' )
-					   ->willThrowException( $google_exception );
+			->method( 'request_phone_verification' )
+			->willThrowException( $google_exception );
 
 		$this->expectException( PhoneVerificationException::class );
 		$this->expectExceptionMessage( 'Retries quota exceeded.' );

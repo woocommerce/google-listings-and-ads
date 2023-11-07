@@ -53,22 +53,22 @@ class CouponMetaHandlerTest extends WP_UnitTestCase {
 		$value  = 12345;
 
 		$coupon_meta_handler = $this->getMockBuilder( CouponMetaHandler::class )
-									 ->setMethodsExcept( [ '__call' ] )
-									 ->getMock();
+			->setMethodsExcept( [ '__call' ] )
+			->getMock();
 
 		$coupon_meta_handler->expects( $this->once() )
-							 ->method( 'update' )
-							 ->with( $this->equalTo( $coupon ), $this->equalTo( $key ), $this->equalTo( $value ) );
+			->method( 'update' )
+			->with( $this->equalTo( $coupon ), $this->equalTo( $key ), $this->equalTo( $value ) );
 		$coupon_meta_handler->update_synced_at( $coupon, $value );
 
 		$coupon_meta_handler->expects( $this->once() )
-							 ->method( 'get' )
-							 ->with( $this->equalTo( $coupon ), $this->equalTo( $key ) );
+			->method( 'get' )
+			->with( $this->equalTo( $coupon ), $this->equalTo( $key ) );
 		$coupon_meta_handler->get_synced_at( $coupon );
 
 		$coupon_meta_handler->expects( $this->once() )
-							 ->method( 'delete' )
-							 ->with( $this->equalTo( $coupon ), $this->equalTo( $key ) );
+			->method( 'delete' )
+			->with( $this->equalTo( $coupon ), $this->equalTo( $key ) );
 		$coupon_meta_handler->delete_synced_at( $coupon );
 	}
 

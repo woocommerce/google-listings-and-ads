@@ -183,5 +183,4 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	public function fetch_action( int $action_id ): ActionScheduler_Action {
 		return ActionSchedulerCore::store()->fetch_action( $action_id );
 	}
-
 }

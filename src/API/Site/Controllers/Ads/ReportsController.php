@@ -56,7 +56,7 @@ class ReportsController extends BaseReportsController {
 	 * @return callable
 	 */
 	protected function get_programs_report_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				/** @var AdsReport $ads */
 				$ads  = $this->container->get( AdsReport::class );
@@ -74,7 +74,7 @@ class ReportsController extends BaseReportsController {
 	 * @return callable
 	 */
 	protected function get_products_report_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				/** @var AdsReport $ads */
 				$ads  = $this->container->get( AdsReport::class );

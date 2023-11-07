@@ -62,13 +62,13 @@ class ScriptAsset extends BaseAsset {
 	/**
 	 * Add a localization to the script.
 	 *
-	 * @param string $object The object name.
-	 * @param array  $data   Array of data for the object.
+	 * @param string $object_name The object name.
+	 * @param array  $data        Array of data for the object.
 	 *
 	 * @return $this
 	 */
-	public function add_localization( string $object, array $data ): ScriptAsset {
-		$this->localizations[ $object ] = $data;
+	public function add_localization( string $object_name, array $data ): ScriptAsset {
+		$this->localizations[ $object_name ] = $data;
 
 		return $this;
 	}
@@ -93,7 +93,7 @@ class ScriptAsset extends BaseAsset {
 	 * @return callable
 	 */
 	protected function get_register_callback(): callable {
-		return function() {
+		return function () {
 			if ( wp_script_is( $this->handle, 'registered' ) ) {
 				return;
 			}
@@ -114,7 +114,7 @@ class ScriptAsset extends BaseAsset {
 	 * @return callable
 	 */
 	protected function get_enqueue_callback(): callable {
-		return function() {
+		return function () {
 			if ( ! wp_script_is( $this->handle, 'registered' ) ) {
 				throw InvalidAsset::asset_not_registered( $this->handle );
 			}
@@ -142,9 +142,8 @@ class ScriptAsset extends BaseAsset {
 	 * @return callable
 	 */
 	protected function get_dequeue_callback(): callable {
-		return function() {
+		return function () {
 			wp_dequeue_script( $this->handle );
 		};
 	}
-
 }

@@ -158,5 +158,4 @@ class RequestReviewStatuses implements Service {
 
 		return $cooldown;
 	}
-
 }

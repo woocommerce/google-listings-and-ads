@@ -119,10 +119,8 @@ class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInte
 			if ( ! $this->gla_setup_for( 3 * DAY_IN_SECONDS ) ) {
 				return false;
 			}
-		} else {
-			if ( ! $this->gla_setup_for( 17 * DAY_IN_SECONDS ) ) {
-				return false;
-			}
+		} elseif ( ! $this->gla_setup_for( 17 * DAY_IN_SECONDS ) ) {
+			return false;
 		}
 
 		return true;

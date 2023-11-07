@@ -18,5 +18,4 @@ interface RecurringJobInterface extends StartOnHookInterface {
 	 * @return int
 	 */
 	public function get_interval(): int;
-
 }

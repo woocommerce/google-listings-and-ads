@@ -145,18 +145,18 @@ trait ExceptionTrait {
 	/**
 	 * Get an error message from a ClientException.
 	 *
-	 * @param ClientExceptionInterface $exception Exception to check.
-	 * @param string                   $default   Default error message.
+	 * @param ClientExceptionInterface $exception     Exception to check.
+	 * @param string                   $default_error Default error message.
 	 *
 	 * @return string
 	 */
-	protected function client_exception_message( ClientExceptionInterface $exception, string $default ): string {
+	protected function client_exception_message( ClientExceptionInterface $exception, string $default_error ): string {
 		if ( $exception instanceof BadResponseException ) {
 			$response = json_decode( $exception->getResponse()->getBody()->getContents(), true );
 			$message  = $response['message'] ?? false;
-			return $message ? $default . ': ' . $message : $default;
+			return $message ? $default_error . ': ' . $message : $default_error;
 		}
-		return $default;
+		return $default_error;
 	}
 
 	/**

@@ -144,23 +144,23 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 *
 	 * Overridden to include the RESTServer proxy with all classes.
 	 *
-	 * @param string $class        The class name to add.
+	 * @param string $class_name   The class name to add.
 	 * @param mixed  ...$arguments Constructor arguments for the class.
 	 *
 	 * @return DefinitionInterface
 	 */
-	protected function share( string $class, ...$arguments ): DefinitionInterface {
-		return parent::share( $class, RESTServer::class, ...$arguments )->addTag( 'rest_controller' );
+	protected function share( string $class_name, ...$arguments ): DefinitionInterface {
+		return parent::share( $class_name, RESTServer::class, ...$arguments )->addTag( 'rest_controller' );
 	}
 
 	/**
 	 * Share a class with only the container object provided.
 	 *
-	 * @param string $class The class name to add.
+	 * @param string $class_name The class name to add.
 	 *
 	 * @return DefinitionInterface
 	 */
-	protected function share_with_container( string $class ): DefinitionInterface {
-		return parent::share( $class, ContainerInterface::class )->addTag( 'rest_controller' );
+	protected function share_with_container( string $class_name ): DefinitionInterface {
+		return parent::share( $class_name, ContainerInterface::class )->addTag( 'rest_controller' );
 	}
 }

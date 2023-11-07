@@ -31,16 +31,16 @@ final class Options implements OptionsInterface, Service {
 	/**
 	 * Get an option.
 	 *
-	 * @param string $name    The option name.
-	 * @param mixed  $default A default value for the option.
+	 * @param string $name          The option name.
+	 * @param mixed  $default_value A default value for the option.
 	 *
 	 * @return mixed
 	 */
-	public function get( string $name, $default = null ) {
+	public function get( string $name, $default_value = null ) {
 		$this->validate_option_key( $name );
 
 		if ( ! array_key_exists( $name, $this->options ) ) {
-			$value                  = get_option( $this->prefix_name( $name ), $default );
+			$value                  = get_option( $this->prefix_name( $name ), $default_value );
 			$this->options[ $name ] = $this->maybe_cast_value( $name, $value );
 		}
 

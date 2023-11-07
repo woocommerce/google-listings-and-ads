@@ -62,5 +62,4 @@ class SiteVerificationMetaTest extends UnitTest {
 		do_action( 'wp_head' );
 		return ob_get_clean();
 	}
-
 }

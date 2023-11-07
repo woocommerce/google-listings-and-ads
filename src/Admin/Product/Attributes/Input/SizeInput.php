@@ -25,5 +25,4 @@ class SizeInput extends Text {
 		$this->set_label( __( 'Size', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'Size of the product.', 'google-listings-and-ads' ) );
 	}
-
 }

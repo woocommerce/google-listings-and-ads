@@ -624,5 +624,4 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
 		$this->assertEquals( 'unconverted', $this->campaign->get_campaign_convert_status() );
 	}
-
 }

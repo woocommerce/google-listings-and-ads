@@ -97,7 +97,7 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_connect_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$next       = $request->get_param( 'next_page_name' );
 				$login_hint = $request->get_param( 'login_hint' ) ?: '';
@@ -143,7 +143,7 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_disconnect_callback(): callable {
-		return function() {
+		return function () {
 			$this->connection->disconnect();
 
 			return [
@@ -161,7 +161,7 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_connected_callback(): callable {
-		return function() {
+		return function () {
 			try {
 				$status = $this->connection->get_status();
 				return [
@@ -181,7 +181,7 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_reconnected_callback(): callable {
-		return function() {
+		return function () {
 			try {
 				$status           = $this->connection->get_reconnect_status();
 				$status['active'] = array_key_exists( 'status', $status ) && ( 'connected' === $status['status'] ) ? 'yes' : 'no';

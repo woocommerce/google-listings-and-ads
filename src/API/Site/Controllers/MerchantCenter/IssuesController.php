@@ -69,7 +69,7 @@ class IssuesController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_issues_read_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$type_filter = $request['type_filter'];
 			$per_page    = intval( $request['per_page'] );
 			$page        = max( 1, intval( $request['page'] ) );
@@ -208,7 +208,6 @@ class IssuesController extends BaseOptionsController {
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
-
 	}
 
 	/**

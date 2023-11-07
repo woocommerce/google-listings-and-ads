@@ -24,8 +24,8 @@ class SelectWithTextInput extends Input {
 		$this->add( $select_input );
 
 		$custom_input = ( new Text() )->set_id( self::CUSTOM_INPUT_KEY )
-									  ->set_label( __( 'Enter your value', 'google-listings-and-ads' ) )
-									  ->set_name( self::CUSTOM_INPUT_KEY );
+			->set_label( __( 'Enter your value', 'google-listings-and-ads' ) )
+			->set_name( self::CUSTOM_INPUT_KEY );
 		$this->add( $custom_input );
 
 		parent::__construct( 'select-with-text-input' );

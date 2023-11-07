@@ -86,5 +86,4 @@ class ShippingRegion {
 	public function __toString() {
 		return $this->get_country() . join( ',', $this->get_postcode_ranges() );
 	}
-
 }

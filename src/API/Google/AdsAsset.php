@@ -116,7 +116,6 @@ class AdsAsset implements OptionsAwareInterface {
 			default:
 				throw new Exception( 'Asset Field type not supported' );
 		}
-
 	}
 
 	/**
@@ -209,7 +208,6 @@ class AdsAsset implements OptionsAwareInterface {
 		}
 
 		return $arns;
-
 	}
 
 	/**
@@ -245,7 +243,6 @@ class AdsAsset implements OptionsAwareInterface {
 
 		$operation = ( new AssetOperation() )->setCreate( $asset );
 		return ( new MutateOperation() )->setAssetOperation( $operation );
-
 	}
 
 	/**

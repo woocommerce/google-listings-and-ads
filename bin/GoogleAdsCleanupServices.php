@@ -160,36 +160,36 @@ class GoogleAdsCleanupServices {
 
 		foreach ( array_diff( $library_enums, $used_enums ) as $enum ) {
 			$this->remove_enum( $enum );
-		};
+		}
 	}
 
 	/**
 	 * Remove a specific enum.
 	 *
-	 * @param string $enum Enum name.
+	 * @param string $enum_name Enum name.
 	 */
-	protected function remove_enum( string $enum ) {
-		$this->output_text( "Removing enum {$enum}" );
+	protected function remove_enum( string $enum_name ) {
+		$this->output_text( "Removing enum {$enum_name}" );
 		$this->src_path = '/src/Google/Ads/GoogleAds';
 
-		$this->remove_file( "/{$this->version}/Enums/{$enum}Enum.php" );
-		$this->remove_file( "/{$this->version}/Enums/{$enum}Enum_{$enum}.php" );
-		$this->remove_file( "/{$this->version}/Enums/{$enum}Enum/{$enum}.php" );
-		$this->remove_directory( "/{$this->version}/Enums/{$enum}Enum" );
+		$this->remove_file( "/{$this->version}/Enums/{$enum_name}Enum.php" );
+		$this->remove_file( "/{$this->version}/Enums/{$enum_name}Enum_{$enum_name}.php" );
+		$this->remove_file( "/{$this->version}/Enums/{$enum_name}Enum/{$enum_name}.php" );
+		$this->remove_directory( "/{$this->version}/Enums/{$enum_name}Enum" );
 
 		// Remove metadata files.
 		$this->src_path = '/metadata/Google/Ads/GoogleAds';
-		$this->remove_file( "/{$this->version}/Enums/{$enum}.php" );
+		$this->remove_file( "/{$this->version}/Enums/{$enum_name}.php" );
 	}
 
 	/**
 	 * Find a list of files in a path, including subdirectories, matching a pattern.
 	 *
-	 * @param string $path Package path
-	 * @param string $match Regex pattern to match
+	 * @param string $path    Package path
+	 * @param string $pattern Regex pattern to match
 	 * @return array Matching files
 	 */
-	protected function get_dir_contents( $path, $match ) {
+	protected function get_dir_contents( $path, $pattern ) {
 		try {
 			$rdi = new RecursiveDirectoryIterator( $path );
 		} catch ( UnexpectedValueException $e ) {
@@ -203,7 +203,7 @@ class GoogleAdsCleanupServices {
 		}
 
 		$rii   = new RecursiveIteratorIterator( $rdi );
-		$rri   = new RegexIterator( $rii, $match );
+		$rri   = new RegexIterator( $rii, $pattern );
 		$files = [];
 		foreach ( $rri as $file ) {
 			$files[] = $file->getPathname();
@@ -255,7 +255,7 @@ class GoogleAdsCleanupServices {
 		}
 
 		return array_map(
-			function( $file ) use ( $suffix ) {
+			function ( $file ) use ( $suffix ) {
 				$name = pathinfo( $file, PATHINFO_FILENAME );
 				return $suffix ? $this->remove_suffix( $suffix, $name ) : $name;
 			},
@@ -317,10 +317,10 @@ class GoogleAdsCleanupServices {
 		// Parse until we encounter closing bracket.
 		for ( $end = $offset; $end < $length; $end++ ) {
 			if ( '{' === $contents[ $end ] ) {
-				$bracket++;
+				++$bracket;
 			}
 			if ( '}' === $contents[ $end ] ) {
-				$bracket--;
+				--$bracket;
 				if ( 1 > $bracket ) {
 					break;
 				}
@@ -334,7 +334,7 @@ class GoogleAdsCleanupServices {
 
 		// Include whitespaces before start.
 		while ( 0 < $start && ctype_space( $contents[ $start - 1 ] ) ) {
-			$start--;
+			--$start;
 		}
 
 		$new  = substr( $contents, 0, $start );
@@ -388,7 +388,7 @@ class GoogleAdsCleanupServices {
 			return;
 		}
 
-		unlink( $file );
+		unlink( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 	}
 
 	/**
@@ -403,7 +403,7 @@ class GoogleAdsCleanupServices {
 			return;
 		}
 
-		rmdir( $directory );
+		rmdir( $directory ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
 	}
 
 	/**

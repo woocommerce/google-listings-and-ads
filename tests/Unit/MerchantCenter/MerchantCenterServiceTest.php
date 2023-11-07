@@ -624,5 +624,4 @@ class MerchantCenterServiceTest extends UnitTest {
 
 		$this->assertTrue( $this->mc_service->has_at_least_one_synced_product() );
 	}
-
 }

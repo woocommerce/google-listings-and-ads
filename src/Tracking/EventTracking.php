@@ -55,7 +55,7 @@ class EventTracking implements Service, Registerable {
 	public function register(): void {
 		add_action(
 			'init',
-			function() {
+			function () {
 				$this->register_events();
 			},
 			20 // After WC_Admin loads WC_Tracks class (init 10).

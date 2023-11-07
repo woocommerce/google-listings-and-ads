@@ -37,14 +37,14 @@ class StartProductSync implements Registerable, Service {
 	public function register(): void {
 		add_action(
 			'woocommerce_gla_mc_settings_sync',
-			function() {
+			function () {
 				$this->on_settings_sync();
 			}
 		);
 
 		add_action(
 			'woocommerce_gla_mapping_rules_change',
-			function() {
+			function () {
 				$this->on_rules_change();
 			}
 		);

@@ -157,5 +157,4 @@ class AdsConversionActionTest extends UnitTest {
 
 		$this->conversion_action->get_conversion_action( self::TEST_CONVERSION_ACTION_ID );
 	}
-
 }

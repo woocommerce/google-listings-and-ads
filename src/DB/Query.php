@@ -359,7 +359,7 @@ abstract class Query implements QueryInterface {
 					join(
 						"','",
 						array_map(
-							function( $value ) {
+							function ( $value ) {
 								return $this->wpdb->_escape( $value );
 							},
 							$where['value']

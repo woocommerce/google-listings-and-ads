@@ -64,7 +64,6 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 		}
 
 		flush_rewrite_rules();
-
 	}
 
 	/**
@@ -92,7 +91,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	public function register(): void {
 		add_action(
 			self::SERVICE_REGISTRATION_HOOK,
-			function() {
+			function () {
 				$this->maybe_register_services();
 			},
 			20
@@ -100,7 +99,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 
 		add_action(
 			'init',
-			function() {
+			function () {
 				// register the job initializer only if it is available. see JobInitializer::is_needed.
 				if ( $this->container->has( JobInitializer::class ) ) {
 					$this->container->get( JobInitializer::class )->register();
@@ -114,7 +113,6 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 				}
 			}
 		);
-
 	}
 
 	/**

@@ -60,7 +60,6 @@ class LocationRatesProcessor {
 	 */
 	protected function should_rate_be_replaced( ShippingRate $new_rate, ShippingRate $existing_rate ): bool {
 		return $new_rate->get_rate() > $existing_rate->get_rate() ||
-			   (float) $new_rate->get_min_order_amount() > (float) $existing_rate->get_min_order_amount();
+			(float) $new_rate->get_min_order_amount() > (float) $existing_rate->get_min_order_amount();
 	}
-
 }

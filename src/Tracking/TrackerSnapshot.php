@@ -49,7 +49,7 @@ class TrackerSnapshot implements Conditional, ContainerAwareInterface, OptionsAw
 	public function register(): void {
 		add_filter(
 			'woocommerce_tracker_data',
-			function( $data ) {
+			function ( $data ) {
 				return $this->include_snapshot_data( $data );
 			}
 		);

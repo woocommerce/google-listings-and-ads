@@ -53,7 +53,7 @@ class BatchProductEntry implements JsonSerializable {
 	/**
 	 * @return array
 	 */
-	public function jsonSerialize(): array { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+	public function jsonSerialize(): array {
 		$data = [ 'woocommerce_id' => $this->get_wc_product_id() ];
 
 		if ( null !== $this->get_google_product() ) {

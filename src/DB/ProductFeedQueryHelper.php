@@ -232,4 +232,3 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 		return strtoupper( $this->request['order'] ?? '' ) === 'DESC' ? 'DESC' : 'ASC';
 	}
 }
-

@@ -76,7 +76,7 @@ class ProductSyncStats {
 
 		foreach ( $scheduled as $action ) {
 			if ( $this->job_matches( $action->get_hook() ) ) {
-				$count++;
+				++$count;
 			}
 		}
 

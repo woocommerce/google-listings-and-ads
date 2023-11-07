@@ -32,5 +32,4 @@ interface WithMappingInterface {
 	 * @return array
 	 */
 	public static function get_sources(): array;
-
 }

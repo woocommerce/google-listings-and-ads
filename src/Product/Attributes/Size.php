@@ -60,5 +60,4 @@ class Size extends AbstractAttribute implements WithMappingInterface {
 	public static function get_name(): string {
 		return __( 'Size', 'google-listings-and-ads' );
 	}
-
 }

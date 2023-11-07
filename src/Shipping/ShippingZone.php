@@ -177,5 +177,4 @@ class ShippingZone implements Service {
 			$this->location_rates[ $country_code ][ $location_key ] = $location_rates;
 		}
 	}
-
 }

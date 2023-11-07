@@ -103,7 +103,8 @@ trait CouponTrait {
 	 */
 	public function generate_google_promotion_mock(
 		$coupon_id = null,
-		$target_country = null ) {
+		$target_country = null
+	) {
 		$promotion = $this->createMock( GooglePromotion::class );
 
 		$target_country = $target_country ?: $this->get_sample_target_country();

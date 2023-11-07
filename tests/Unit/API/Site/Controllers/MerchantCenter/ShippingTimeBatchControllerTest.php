@@ -46,7 +46,7 @@ class ShippingTimeBatchControllerTest extends RESTControllerUnitTest {
 			'/mc/shipping/times',
 			[
 				'methods'  => TransportMethods::CREATABLE,
-				'callback' => function( $request ) {
+				'callback' => function ( $request ) {
 					return new Response( $request->get_param( 'country_code' ), 201 );
 				},
 			]

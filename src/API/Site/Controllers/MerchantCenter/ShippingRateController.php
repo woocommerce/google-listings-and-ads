@@ -227,7 +227,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 * @return callable
 	 */
 	protected function get_delete_rate_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$id = (string) $request->get_param( 'id' );
 

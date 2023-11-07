@@ -55,7 +55,6 @@ class ImageUtilityTest extends UnitTest {
 		$metadata_updated = wp_get_attachment_metadata( $image_id );
 
 		$this->assertArrayHasKey( self::SUBSIZE_IMAGE_KEY, $metadata_updated['sizes'] );
-
 	}
 
 	public function test_real_size_bigger_than_suggested_square() {
@@ -69,7 +68,6 @@ class ImageUtilityTest extends UnitTest {
 		$this->assertEquals( 1200, $suggested_size->y );
 
 		$this->assert_aspect_rate_tolerance( $suggested_size, $recommended_size );
-
 	}
 
 	public function test_real_size_bigger_than_suggested_landscape() {
@@ -83,7 +81,6 @@ class ImageUtilityTest extends UnitTest {
 		$this->assertEquals( 525, $suggested_size->y );
 
 		$this->assert_aspect_rate_tolerance( $suggested_size, $recommended_size );
-
 	}
 
 	public function test_real_size_smaller_than_suggested_square() {
@@ -97,7 +94,6 @@ class ImageUtilityTest extends UnitTest {
 		$this->assertEquals( 350, $suggested_size->y );
 
 		$this->assert_aspect_rate_tolerance( $suggested_size, $recommended_size );
-
 	}
 
 	public function test_real_size_smaller_than_suggested_landscape() {
@@ -111,7 +107,6 @@ class ImageUtilityTest extends UnitTest {
 		$this->assertEquals( 225, $suggested_size->y );
 
 		$this->assert_aspect_rate_tolerance( $suggested_size, $recommended_size );
-
 	}
 
 	public function test_recommend_size_less_than_the_minimum() {
@@ -122,8 +117,5 @@ class ImageUtilityTest extends UnitTest {
 		$suggested_size = $this->image_utility->recommend_size( $real_size, $recommended_size, $minimum_size );
 
 		$this->assertFalse( $suggested_size );
-
 	}
-
-
 }

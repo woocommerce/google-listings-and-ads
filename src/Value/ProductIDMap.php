@@ -22,16 +22,16 @@ class ProductIDMap extends ArrayObject implements ValueInterface {
 	/**
 	 * ProductIDMap constructor.
 	 *
-	 * @param int[]  $array         An array of WooCommerce product IDs mapped to Google product IDs as their key.
+	 * @param int[]  $product_ids   An array of WooCommerce product IDs mapped to Google product IDs as their key.
 	 * @param int    $flags         Flags to control the behaviour of the ArrayObject object.
 	 * @param string $iteratorClass Specify the class that will be used for iteration of the ArrayObject object. ArrayIterator is the default class used.
 	 *
 	 * @throws InvalidValue When an invalid WooCommerce product ID or Google product ID is provided in the map.
 	 */
-	public function __construct( $array = [], $flags = 0, $iteratorClass = 'ArrayIterator' ) {
-		$this->validate( $array );
+	public function __construct( $product_ids = [], $flags = 0, $iteratorClass = 'ArrayIterator' ) {
+		$this->validate( $product_ids );
 
-		parent::__construct( $array, $flags, $iteratorClass );
+		parent::__construct( $product_ids, $flags, $iteratorClass );
 	}
 
 	/**
@@ -44,12 +44,12 @@ class ProductIDMap extends ArrayObject implements ValueInterface {
 	}
 
 	/**
-	 * @param array $array
+	 * @param int[] $product_ids An array of WooCommerce product IDs mapped to Google product IDs as their key.
 	 *
 	 * @throws InvalidValue When an invalid WooCommerce product ID or Google product ID is provided in the map.
 	 */
-	protected function validate( array $array ) {
-		foreach ( $array as $google_id => $wc_product_id ) {
+	protected function validate( array $product_ids ) {
+		foreach ( $product_ids as $google_id => $wc_product_id ) {
 			$wc_product_id = filter_var( $wc_product_id, FILTER_VALIDATE_INT );
 			if ( false === $wc_product_id ) {
 				throw InvalidValue::not_integer( 'product_id' );

@@ -25,5 +25,4 @@ class SizeTypeInput extends Select {
 		$this->set_label( __( 'Size type', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'The cut of the item. Recommended for apparel items.', 'google-listings-and-ads' ) );
 	}
-
 }

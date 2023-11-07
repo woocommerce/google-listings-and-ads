@@ -25,5 +25,4 @@ class MPNInput extends Text {
 		$this->set_label( __( 'Manufacturer Part Number (MPN)', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'This code uniquely identifies the product to its manufacturer.', 'google-listings-and-ads' ) );
 	}
-
 }

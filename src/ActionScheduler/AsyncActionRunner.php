@@ -81,5 +81,4 @@ class AsyncActionRunner implements Service {
 		$this->locker->set( 'async-request-runner' );
 		$this->async_request->maybe_dispatch();
 	}
-
 }

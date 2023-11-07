@@ -69,5 +69,4 @@ VIEW;
 		parent::setUp();
 		$this->view_factory = new PHPViewFactory();
 	}
-
 }

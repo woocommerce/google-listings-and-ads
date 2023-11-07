@@ -101,7 +101,7 @@ function woogle_get_container(): ContainerInterface {
  */
 add_action(
 	'plugins_loaded',
-	function() {
+	function () {
 		// Check requirements.
 		if ( ! PluginValidator::validate() ) {
 			return;

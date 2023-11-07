@@ -25,5 +25,4 @@ class GTINInput extends Text {
 		$this->set_label( __( 'Global Trade Item Number (GTIN)', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'Global Trade Item Number (GTIN) for your item. These identifiers include UPC (in North America), EAN (in Europe), JAN (in Japan), and ISBN (for books)', 'google-listings-and-ads' ) );
 	}
-
 }

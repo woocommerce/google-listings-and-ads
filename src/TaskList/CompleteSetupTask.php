@@ -27,7 +27,7 @@ class CompleteSetupTask extends Task implements Service, Registerable, MerchantC
 	public function register(): void {
 		add_action(
 			'init',
-			function() {
+			function () {
 				$list_id = 'extended';
 
 				$this->task_list = TaskLists::get_list( $list_id );
@@ -105,5 +105,4 @@ class CompleteSetupTask extends Task implements Service, Registerable, MerchantC
 
 		return admin_url( 'admin.php?page=wc-admin&path=/google/dashboard' );
 	}
-
 }

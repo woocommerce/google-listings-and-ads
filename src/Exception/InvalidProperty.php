@@ -15,16 +15,16 @@ class InvalidProperty extends LogicException implements GoogleListingsAndAdsExce
 	/**
 	 * Create a new instance of the exception for a class property that should not be null.
 	 *
-	 * @param string $class    The class name.
-	 * @param string $property The class property name.
+	 * @param string $class_name The class name.
+	 * @param string $property   The class property name.
 	 *
 	 * @return static
 	 */
-	public static function not_null( string $class, string $property ) {
+	public static function not_null( string $class_name, string $property ) {
 		return new static(
 			sprintf(
 				'The class "%s" property "%s" must be set.',
-				$class,
+				$class_name,
 				$property
 			)
 		);

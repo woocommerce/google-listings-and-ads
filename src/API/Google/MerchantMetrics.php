@@ -214,7 +214,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 
 			// Iterate through all paged results (total results count is not set).
 			foreach ( $campaign_results->iterateAllElements() as $row ) {
-				$campaign_count++;
+				++$campaign_count;
 			}
 		} catch ( Exception $e ) {
 			$campaign_count = 0;
@@ -232,5 +232,4 @@ class MerchantMetrics implements OptionsAwareInterface {
 	protected function get_tomorrow(): string {
 		return ( new DateTime( 'tomorrow', $this->wp->wp_timezone() ) )->format( 'Y-m-d' );
 	}
-
 }

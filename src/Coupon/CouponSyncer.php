@@ -78,7 +78,8 @@ class CouponSyncer implements Service {
 		ValidatorInterface $validator,
 		MerchantCenterService $merchant_center,
 		TargetAudience $target_audience,
-		WC $wc ) {
+		WC $wc
+	) {
 		$this->google_service  = $google_service;
 		$this->coupon_helper   = $coupon_helper;
 		$this->validator       = $validator;

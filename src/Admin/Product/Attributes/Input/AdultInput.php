@@ -25,5 +25,4 @@ class AdultInput extends BooleanSelect {
 		$this->set_label( __( 'Adult content', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'Whether the product contains nudity or sexually suggestive content', 'google-listings-and-ads' ) );
 	}
-
 }

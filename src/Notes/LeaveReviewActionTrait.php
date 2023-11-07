@@ -31,5 +31,4 @@ trait LeaveReviewActionTrait {
 			rand( 0, 1 ) ? $wp_link : $wc_link
 		);
 	}
-
 }

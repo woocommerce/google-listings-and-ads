@@ -130,7 +130,7 @@ trait GoogleAdsClientTrait {
 		$this->service_client->expects( $this->once() )
 			->method( 'mutate' )
 			->willReturnCallback(
-				function( int $ads_id, array $operations ) use ( $type, $response ) {
+				function ( int $ads_id, array $operations ) use ( $type, $response ) {
 					// Assert that the campaign operation is the right type.
 					foreach ( $operations as $operation ) {
 						if ( 'campaign_operation' === $operation->getOperation() ) {
@@ -390,11 +390,11 @@ trait GoogleAdsClientTrait {
 	/**
 	 * Generates a list of mocked customers resource names.
 	 *
-	 * @param array $list
+	 * @param array $mocked_list
 	 */
-	protected function generate_customer_list_mock( array $list ) {
+	protected function generate_customer_list_mock( array $mocked_list ) {
 		$customers = $this->createMock( ListAccessibleCustomersResponse::class );
-		$customers->method( 'getResourceNames' )->willReturn( $list );
+		$customers->method( 'getResourceNames' )->willReturn( $mocked_list );
 
 		$this->customer_service->method( 'listAccessibleCustomers' )->willReturn( $customers );
 	}
@@ -418,7 +418,7 @@ trait GoogleAdsClientTrait {
 		$this->client->method( 'getMerchantCenterLinkServiceClient' )->willReturn( $mc_link_service );
 
 		$links = array_map(
-			function( $link ) {
+			function ( $link ) {
 				return new MerchantCenterLink( $link );
 			},
 			$links
@@ -462,7 +462,7 @@ trait GoogleAdsClientTrait {
 		$this->conversion_action_service->expects( $this->once() )
 			->method( 'mutateConversionActions' )
 			->willReturnCallback(
-				function( int $ads_id, array $operations ) use ( $type, $response ) {
+				function ( int $ads_id, array $operations ) use ( $type, $response ) {
 					// Assert that the operation is the right type.
 					foreach ( $operations as $operation ) {
 						if ( 'conversion_action_operation' === $operation->getOperation() ) {
@@ -522,7 +522,7 @@ trait GoogleAdsClientTrait {
 		$page->method( 'getNextPageToken' )->willReturn( $next_page );
 		$page->method( 'getIterator' )->willReturn(
 			array_map(
-				function( $row ) use ( $args ) {
+				function ( $row ) use ( $args ) {
 					return $this->generate_report_row_mock( $row, $args );
 				},
 				$data
@@ -732,7 +732,7 @@ trait GoogleAdsClientTrait {
 		$this->service_client->expects( $this->once() )
 			->method( 'mutate' )
 			->willReturnCallback(
-				function( int $ads_id, array $operations ) use ( $type, $response, $include_assets ) {
+				function ( int $ads_id, array $operations ) use ( $type, $response, $include_assets ) {
 					$operations_names = [];
 
 					if ( $type === 'update' && count( $operations ) ) {
@@ -769,7 +769,6 @@ trait GoogleAdsClientTrait {
 					return $response;
 				}
 			);
-
 	}
 
 	/**
@@ -819,7 +818,6 @@ trait GoogleAdsClientTrait {
 			default:
 				return null;
 		}
-
 	}
 
 	/**
@@ -857,7 +855,7 @@ trait GoogleAdsClientTrait {
 		$this->service_client->expects( $this->once() )
 			->method( 'mutate' )
 			->willReturnCallback(
-				function( int $ads_id, array $operations ) use ( $type, $response, $asset ) {
+				function ( int $ads_id, array $operations ) use ( $type, $response, $asset ) {
 					// Assert that the asset group operation is the right type.
 					$operations_names = [];
 					foreach ( $operations as $operation ) {
@@ -874,14 +872,13 @@ trait GoogleAdsClientTrait {
 					return $response;
 				}
 			);
-
 	}
 
 	protected function generate_asset_batch_mutate_mock( $matcher, $asset_batches_callback ) {
 		$this->service_client->expects( $matcher )
 		->method( 'mutate' )
 		->willReturnCallback(
-			function( int $ads_id, array $operations ) use ( $matcher, $asset_batches_callback ) {
+			function ( int $ads_id, array $operations ) use ( $matcher, $asset_batches_callback ) {
 				$responses = [];
 
 				$asset_batches_callback( $matcher, $operations );
@@ -897,10 +894,8 @@ trait GoogleAdsClientTrait {
 				return ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
 					$responses
 				);
-
 			}
 		);
-
 	}
 
 	/**
@@ -958,7 +953,4 @@ trait GoogleAdsClientTrait {
 
 		return $asset_group_asset_operations;
 	}
-
-
-
 }

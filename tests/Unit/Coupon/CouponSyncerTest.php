@@ -177,8 +177,8 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 
 		$this->target_audience = $this->createMock( TargetAudience::class );
 		$this->target_audience->expects( $this->any() )
-							  ->method( 'get_main_target_country' )
-							  ->willReturn( $this->get_sample_target_country() );
+			->method( 'get_main_target_country' )
+			->willReturn( $this->get_sample_target_country() );
 
 		$this->google_service = $this->createMock( GooglePromotionService::class );
 		$this->validator      = $this->createMock( ValidatorInterface::class );
