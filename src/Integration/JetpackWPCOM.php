@@ -20,6 +20,10 @@ defined( 'ABSPATH' ) || exit;
  * Initializes the Jetpack function required to connect the WPCOM App.
  * This class can be deleted when the jetpack-connection package includes these functions.
  *
+ * The majority of these class methods have been copied from the Jetpack class.
+ *
+ * @see https://github.com/Automattic/jetpack/blob/trunk/projects/plugins/jetpack/class.jetpack.php
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Integration
  */
 class JetpackWPCOM implements Service, Registerable, Conditional {
@@ -64,6 +68,8 @@ class JetpackWPCOM implements Service, Registerable, Conditional {
 
 	/**
 	 * Handles the login action for Authorizing the JSON API
+	 *
+	 * @see https://github.com/Automattic/jetpack/blob/6066d7181f78bdec7c355d8b2152733f4691e8a9/projects/plugins/jetpack/class.jetpack.php#L5301
 	 */
 	public function login_form_json_api_authorization() {
 		$this->verify_json_api_authorization_request();
@@ -78,12 +84,8 @@ class JetpackWPCOM implements Service, Registerable, Conditional {
 	 *
 	 * @param string  $user_login Unused.
 	 * @param WP_User $user User logged in.
-	 */
-	/**
-	 * If someone logs in to approve API access, store the Access Code in usermeta.
 	 *
-	 * @param string  $user_login Unused.
-	 * @param WP_User $user User logged in.
+	 * @see https://github.com/Automattic/jetpack/blob/6066d7181f78bdec7c355d8b2152733f4691e8a9/projects/plugins/jetpack/class.jetpack.php#L5349
 	 */
 	public function store_json_api_authorization_token( $user_login, $user ) {
 		add_filter( 'login_redirect', [ $this, 'add_token_to_login_redirect_json_api_authorization' ], 10, 3 );
@@ -94,6 +96,8 @@ class JetpackWPCOM implements Service, Registerable, Conditional {
 
 	/**
 	 * Make sure the POSTed request is handled by the same action.
+	 *
+	 * @see https://github.com/Automattic/jetpack/blob/6066d7181f78bdec7c355d8b2152733f4691e8a9/projects/plugins/jetpack/class.jetpack.php#L5336
 	 */
 	public function preserve_action_in_login_form_for_json_api_authorization() {
 		$http_host   = isset( $_SERVER['HTTP_HOST'] ) ? wp_unslash( $_SERVER['HTTP_HOST'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- escaped with esc_url below.
@@ -108,6 +112,8 @@ class JetpackWPCOM implements Service, Registerable, Conditional {
 	 * @param string $url Redirect URL.
 	 * @param string $path Path.
 	 * @param string $scheme URL Scheme.
+	 *
+	 * @see https://github.com/Automattic/jetpack/blob/trunk/projects/plugins/jetpack/class.jetpack.php#L5318
 	 */
 	public function post_login_form_to_signed_url( $url, $path, $scheme ) {
 		if ( 'wp-login.php' !== $path || ( 'login_post' !== $scheme && 'login' !== $scheme ) ) {
@@ -132,6 +138,8 @@ class JetpackWPCOM implements Service, Registerable, Conditional {
 	 * @param WP_User $user WP_User for the redirect.
 	 *
 	 * @return string
+	 *
+	 * @see https://github.com/Automattic/jetpack/blob/6066d7181f78bdec7c355d8b2152733f4691e8a9/projects/plugins/jetpack/class.jetpack.php#L5401
 	 */
 	public function add_token_to_login_redirect_json_api_authorization( $redirect_to, $original_redirect_to, $user ) {
 		return add_query_arg(
@@ -148,10 +156,11 @@ class JetpackWPCOM implements Service, Registerable, Conditional {
 
 	/**
 	 * Add public-api.wordpress.com to the safe redirect allowed list - only added when someone allows API access.
-	 *
 	 * To be used with a filter of allowed domains for a redirect.
 	 *
 	 * @param array $domains Allowed WP.com Environments.
+	 *
+	 * @see https://github.com/Automattic/jetpack/blob/6066d7181f78bdec7c355d8b2152733f4691e8a9/projects/plugins/jetpack/class.jetpack.php#L5363
 	 */
 	public function allow_wpcom_public_api_domain( $domains ) {
 		$domains[] = 'public-api.wordpress.com';
@@ -164,6 +173,8 @@ class JetpackWPCOM implements Service, Registerable, Conditional {
 	 * @param string $redirect_url Redirect URL.
 	 *
 	 * @return bool If redirect has been encoded.
+	 *
+	 * @see https://github.com/Automattic/jetpack/blob/6066d7181f78bdec7c355d8b2152733f4691e8a9/projects/plugins/jetpack/class.jetpack.php#L5375
 	 */
 	public static function is_redirect_encoded( $redirect_url ) {
 		return preg_match( '/https?%3A%2F%2F/i', $redirect_url ) > 0;
@@ -173,6 +184,8 @@ class JetpackWPCOM implements Service, Registerable, Conditional {
 	 * HTML for the JSON API authorization notice.
 	 *
 	 * @return string
+	 *
+	 * @see https://github.com/Automattic/jetpack/blob/6066d7181f78bdec7c355d8b2152733f4691e8a9/projects/plugins/jetpack/class.jetpack.php#L5603
 	 */
 	public function login_message_json_api_authorization() {
 		return '<p class="message">' . sprintf(
@@ -185,10 +198,9 @@ class JetpackWPCOM implements Service, Registerable, Conditional {
 	/**
 	 * Verifies the request by checking the signature
 	 *
-	 * @since 4.6.0 Method was updated to use `$_REQUEST` instead of `$_GET` and `$_POST`. Method also updated to allow
-	 * passing in an `$environment` argument that overrides `$_REQUEST`. This was useful for integrating with SSO.
-	 *
 	 * @param null|array $environment Value to override $_REQUEST.
+	 *
+	 * @see https://github.com/Automattic/jetpack/blob/trunk/projects/plugins/jetpack/class.jetpack.php#L5422
 	 */
 	public function verify_json_api_authorization_request( $environment = null ) {
 		$environment = $environment === null
@@ -207,8 +219,6 @@ class JetpackWPCOM implements Service, Registerable, Conditional {
 		if ( self::is_redirect_encoded( esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- no site changes, we're erroring out.
 			/**
 			 * Jetpack authorisation request Error.
-			 *
-			 * @since 7.5.0
 			 */
 			do_action( 'jetpack_verify_api_authorization_request_error_double_encode' );
 			$die_error = sprintf(
