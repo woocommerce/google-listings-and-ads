@@ -1,6 +1,6 @@
 # Usage Tracking
 
-_Google Listings & Ads_ implements usage tracking, based on the native [WooCommerce Usage Tracking](https://woocommerce.com/usage-tracking/), and is only enabled when WooCommerce Tracking is enabled.
+_Google Listings & Ads_ implements usage tracking, based on the native [WooCommerce Usage Tracking](https://woo.com/usage-tracking/), and is only enabled when WooCommerce Tracking is enabled.
 
 When a store opts in to WooCommerce usage tracking and uses _Google Listings & Ads_, they will also be opted in to the tracking added by _Google Listings & Ads_.
 
@@ -244,9 +244,9 @@ When a documentation link is clicked.
 #### Emitters
 - [`AppDocumentationLink`](../../js/src/components/app-documentation-link/index.js#L29)
 - [`ContactInformation`](../../js/src/components/contact-information/index.js#L91)
-	- with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
-	- with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
-	- with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information' }`
+	- with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://woo.com/document/google-listings-and-ads/#contact-information' }`
+	- with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://woo.com/document/google-listings-and-ads/#contact-information' }`
+	- with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://woo.com/document/google-listings-and-ads/#contact-information' }`
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
@@ -256,8 +256,8 @@ When a documentation link is clicked.
 - [`TaxRate`](../../js/src/components/free-listings/configure-product-listings/tax-rate.js#L22)
 	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-read-more', href: 'https://support.google.com/merchants/answer/160162' }`
 	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
-- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
-- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
+- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woo.com/document/google-listings-and-ads/#required-google-permissions' }`
+- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woo.com/document/google-listings-and-ads/#required-google-permissions' }`
 - [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L36) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
 - [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L32)
 	- with `{ context: 'setup-ads', link_id: 'shopping-ads-policies', href: 'https://support.google.com/merchants/answer/6149970' }`
@@ -270,12 +270,12 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
 - [`Faqs`](../../js/src/get-started-page/faqs/index.js#L276)
-	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#general-requirements' }`.
+	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woo.com/document/google-listings-and-ads/#general-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
-	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-merchant-center-requirements' }`.
-	- with `{ context: 'faqs', linkId: 'performance-max', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-performance-max-campaigns' }`.
-	- with `{ context: 'faqs', linkId: 'free-listings', href: 'https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google' }`.
-	- with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
+	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woo.com/document/google-listings-and-ads/#google-merchant-center-requirements' }`.
+	- with `{ context: 'faqs', linkId: 'performance-max', href: 'https://woo.com/document/google-listings-and-ads/#google-performance-max-campaigns' }`.
+	- with `{ context: 'faqs', linkId: 'free-listings', href: 'https://woo.com/document/google-listings-and-ads/#free-listings-on-google' }`.
+	- with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woo.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
 	- with `{ context: 'faqs', linkId: 'terms-and-conditions-of-google-ads-coupons', href: 'https://www.google.com/ads/coupons/terms/' }`.
 - [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L23) with `{ context: 'get-started', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
 - [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L23) with `{ context: 'get-started-with-video', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
@@ -283,8 +283,8 @@ When a documentation link is clicked.
 - [`UnsupportedCountry`](../../js/src/get-started-page/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
 - [`IssuesTableDataModal`](../../js/src/product-feed/issues-table-card/issues-table-data-modal.js#L21) with { context: 'issues-data-table-modal' }
 - [`ProductStatusHelpPopover`](../../js/src/product-feed/product-statistics/product-status-help-popover/index.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
-- [`EditPhoneNumber`](../../js/src/settings/edit-phone-number.js#L29) with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
-- [`EditStoreAddress`](../../js/src/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
+- [`EditPhoneNumber`](../../js/src/settings/edit-phone-number.js#L29) with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://woo.com/document/google-listings-and-ads/#contact-information" }`
+- [`EditStoreAddress`](../../js/src/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://woo.com/document/google-listings-and-ads/#contact-information" }`
 - [`FreeAdCredit`](../../js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L27) with `{ context: 'setup-ads', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
 - [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L68) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
 - [`GoogleMCDisclaimer`](../../js/src/setup-mc/setup-stepper/setup-accounts/index.js#L33)
@@ -537,7 +537,7 @@ Clicking on the Merchant Center phone number edit button.
 #### Emitters
 - [`PhoneNumberCard`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L127)
 
-### [`gla_modal_closed`](../../js/src/utils/recordEvent.js#L122)
+### [`gla_modal_closed`](../../js/src/utils/recordEvent.js#L162)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -560,7 +560,7 @@ Clicking on a text link within the modal content
 #### Emitters
 - [`ContentLink`](../../js/src/components/guide-page-content/index.js#L46) with given `context, href`
 
-### [`gla_modal_open`](../../js/src/utils/recordEvent.js#L135)
+### [`gla_modal_open`](../../js/src/utils/recordEvent.js#L175)
 A modal is open
 #### Properties
 | name | type | description |
@@ -596,6 +596,22 @@ Clicking on the "Complete setup" button to complete the onboarding flow with pai
 Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
 #### Emitters
 - [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L67)
+
+### [`gla_paid_campaign_step`](../../js/src/utils/recordEvent.js#L122)
+Triggered when moving to another step during creating/editing a campaign.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`triggered_by` | `string` | Indicates which button triggered this event
+`action` | `string` | User's action or/and objective (e.g. `go-to-step-2`)
+`context` | `string \| undefined` | Indicates where this event happened
+#### Emitters
+- [`CreatePaidAdsCampaign`](../../js/src/pages/create-paid-ads-campaign/index.js#L46)
+	- with `{ context: 'create-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+	- with `{ context: 'create-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
+- [`EditPaidAdsCampaign`](../../js/src/pages/edit-paid-ads-campaign/index.js#L55)
+	- with `{ context: 'edit-ads', triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+	- with `{ context: 'edit-ads', triggered_by: 'stepper-step1-button', action: 'go-to-step1' }`.
 
 ### [`gla_request_review`](../../js/src/product-feed/review-request/review-request-modal.js#L19)
 Triggered when request review button is clicked

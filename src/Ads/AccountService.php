@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use Exception;
 
@@ -28,6 +29,7 @@ defined( 'ABSPATH' ) || exit;
  * - AdsConversionAction
  * - Merchant
  * - Middleware
+ * - TransientsInterface
  *
  * @since 1.11.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Ads
@@ -216,6 +218,7 @@ class AccountService implements OptionsAwareInterface, Service {
 		$this->options->delete( OptionsInterface::ADS_ID );
 		$this->options->delete( OptionsInterface::ADS_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::CAMPAIGN_CONVERT_STATUS );
+		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
 	}
 
 	/**

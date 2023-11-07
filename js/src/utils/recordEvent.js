@@ -120,6 +120,46 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  */
 
 /**
+ * Triggered when moving to another step during creating/editing a campaign.
+ *
+ * @event gla_paid_campaign_step
+ * @property {string} triggered_by Indicates which button triggered this event
+ * @property {string} action User's action or/and objective (e.g. `go-to-step-2`)
+ * @property {string | undefined} context Indicates where this event happened
+ */
+
+/**
+ * Records the event tracking when calling back the "onClick" of <Stepper> to move to another step.
+ *
+ * @param {string} eventName The event name to record.
+ * @param {string} to The next step to go to, e.g. '2'.
+ * @param {string} [context] Indicates where this event happened.
+ */
+export function recordStepperChangeEvent( eventName, to, context ) {
+	recordEvent( eventName, {
+		triggered_by: `stepper-step${ to }-button`,
+		action: `go-to-step${ to }`,
+		context,
+	} );
+}
+
+/**
+ * Records the event tracking when clicking on the "Continue" button within a step content to move to another step.
+ *
+ * @param {string} eventName The event name to record.
+ * @param {string} from The current step to leave from, e.g. '1'.
+ * @param {string} to The next step to go to, e.g. '2'.
+ * @param {string} [context] Indicates where this event happened.
+ */
+export function recordStepContinueEvent( eventName, from, to, context ) {
+	recordEvent( eventName, {
+		triggered_by: `step${ from }-continue-button`,
+		action: `go-to-step${ to }`,
+		context,
+	} );
+}
+
+/**
  * A modal is closed.
  *
  * @event gla_modal_closed

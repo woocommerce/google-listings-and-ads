@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Exception;
@@ -40,6 +41,9 @@ class AccountServiceTest extends UnitTest {
 
 	/** @var MockObject|AdsAccountState $state */
 	protected $state;
+
+	/** @var MockObject|TransientsInterface $transients */
+	protected $transients;
 
 	/** @var AccountService $account */
 	protected $account;
@@ -104,6 +108,7 @@ class AccountServiceTest extends UnitTest {
 		$this->middleware        = $this->createMock( Middleware::class );
 		$this->state             = $this->createMock( AdsAccountState::class );
 		$this->options           = $this->createMock( OptionsInterface::class );
+		$this->transients        = $this->createMock( TransientsInterface::class );
 
 		$this->container = new Container();
 		$this->container->share( Ads::class, $this->ads );
@@ -111,6 +116,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( Merchant::class, $this->merchant );
 		$this->container->share( Middleware::class, $this->middleware );
 		$this->container->share( AdsAccountState::class, $this->state );
+		$this->container->share( TransientsInterface::class, $this->transients );
 
 		$this->account = new AccountService( $this->container );
 		$this->account->set_options_object( $this->options );
@@ -465,6 +471,12 @@ class AccountServiceTest extends UnitTest {
 				[ OptionsInterface::ADS_ID ],
 				[ OptionsInterface::ADS_SETUP_COMPLETED_AT ],
 				[ OptionsInterface::CAMPAIGN_CONVERT_STATUS ]
+			);
+
+		$this->transients->expects( $this->exactly( 1 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ TransientsInterface::ADS_CAMPAIGN_COUNT ],
 			);
 
 		$this->account->disconnect();

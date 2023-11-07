@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
@@ -42,6 +43,9 @@ class AdsCampaignTest extends UnitTest {
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
+	/** @var MockObject|TransientsInterface $transients */
+	protected $transients;
+
 	/** @var AdsCampaign $campaign */
 	protected $campaign;
 
@@ -69,12 +73,14 @@ class AdsCampaignTest extends UnitTest {
 		$this->budget      = $this->createMock( AdsCampaignBudget::class );
 		$this->criterion   = new AdsCampaignCriterion();
 		$this->options     = $this->createMock( OptionsInterface::class );
+		$this->transients  = $this->createMock( TransientsInterface::class );
 
 		$this->wc            = $this->createMock( WC::class );
 		$this->google_helper = new GoogleHelper( $this->wc );
 
 		$this->container = new Container();
 		$this->container->share( AdsAssetGroup::class, $this->asset_group );
+		$this->container->share( TransientsInterface::class, $this->transients );
 		$this->container->share( WC::class, $this->wc );
 
 		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->criterion, $this->google_helper );
