@@ -191,7 +191,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 	/**
 	 * Return amount of active campaigns for the connected Ads account.
 	 *
-	 * @since x.x.x
+	 * @since 2.5.11
 	 *
 	 * @return int
 	 */
