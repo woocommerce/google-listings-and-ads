@@ -25,8 +25,8 @@
 		"dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
 		"phpunit/phpunit": "^9.5",
 		"wp-cli/i18n-command": "^2.2",
-		"wp-coding-standards/wpcs": "^2.3",
-		"yoast/phpunit-polyfills": "^1.0"
+		"wp-coding-standards/wpcs": "^3.0",
+		"yoast/phpunit-polyfills": "^1.1.0"
 	},
 	"replace" : {
 		"google/grpc-gcp": "*",
