@@ -128,6 +128,24 @@ abstract class Table implements TableInterface {
 	}
 
 	/**
+	 * Checks whether a column exists for the table.
+	 *
+	 * @param string $column_name The column name.
+	 *
+	 * @return bool True if the column exists on the table or False if not.
+	 *
+	 * @since x.x.x
+	 */
+	public function has_column( string $column_name ): bool {
+		$this->wpdb->get_results(
+			$this->wpdb->prepare( "SHOW COLUMNS FROM `{$this->get_sql_safe_name()}` LIKE %s", [ '%' . $this->wpdb->esc_like( $column_name ) . '%' ] )
+		);
+
+		return (bool) $this->wpdb->num_rows;
+	}
+
+
+	/**
 	 * Get the schema for the DB.
 	 *
 	 * This should be a SQL string for creating the DB table.
