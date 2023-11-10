@@ -78,5 +78,4 @@ class ContactInformation extends AbstractNote implements MerchantCenterAwareInte
 
 		return true;
 	}
-
 }

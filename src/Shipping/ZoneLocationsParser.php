@@ -133,5 +133,4 @@ class ZoneLocationsParser implements Service {
 
 		return new ShippingRegion( $region_id, $country, $postcode_ranges );
 	}
-
 }

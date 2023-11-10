@@ -25,5 +25,4 @@ class ConditionInput extends Select {
 		$this->set_label( __( 'Condition', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'Condition or state of the item.', 'google-listings-and-ads' ) );
 	}
-
 }

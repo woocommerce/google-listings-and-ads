@@ -97,5 +97,4 @@ class ShippingSuggestionService implements Service {
 
 		return $suggestions;
 	}
-
 }

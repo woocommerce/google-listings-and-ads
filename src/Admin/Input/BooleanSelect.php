@@ -37,5 +37,4 @@ class BooleanSelect extends Select {
 
 		return $view_data;
 	}
-
 }

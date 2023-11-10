@@ -65,7 +65,7 @@ class SyncableProductsCountController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_syncable_products_count_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$response = [
 				'count' => null,
 			];
@@ -86,7 +86,7 @@ class SyncableProductsCountController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function update_syncable_products_count_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$this->options->delete( OptionsInterface::SYNCABLE_PRODUCTS_COUNT );
 			$this->options->delete( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA );
 

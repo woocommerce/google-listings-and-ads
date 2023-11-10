@@ -180,5 +180,4 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		);
 		$this->assertEquals( 200, $response->get_status() );
 	}
-
 }

@@ -92,5 +92,4 @@ abstract class RESTControllerUnitTest extends UnitTest {
 
 		return $this->server->dispatch_request( $request );
 	}
-
 }

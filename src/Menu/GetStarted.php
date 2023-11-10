@@ -31,7 +31,7 @@ class GetStarted implements Service, Registerable, MerchantCenterAwareInterface 
 
 		add_action(
 			'admin_menu',
-			function() {
+			function () {
 				if ( $this->is_woo_nav_enabled() ) {
 					$this->register_navigation_pages();
 				} else {

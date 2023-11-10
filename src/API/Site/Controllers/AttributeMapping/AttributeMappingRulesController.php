@@ -94,7 +94,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_rule_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$page     = $request->get_param( 'page' );
 				$per_page = $request->get_param( 'per_page' );
@@ -133,7 +133,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function create_rule_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				if ( ! $this->attribute_mapping_rules_query->insert( $this->prepare_item_for_database( $request ) ) ) {
 					return $this->response_from_exception( new Exception( 'Unable to create the new rule.' ) );
@@ -154,7 +154,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function update_rule_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$rule_id = $request->get_url_params()['id'];
 
@@ -177,7 +177,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function delete_rule_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$rule_id = $request->get_url_params()['id'];
 
@@ -233,7 +233,7 @@ class AttributeMappingRulesController extends BaseOptionsController {
 				'description'       => __( 'List of category IDs, separated by commas.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'required'          => false,
-				'validate_callback' => function( $param ) {
+				'validate_callback' => function ( $param ) {
 					return $this->validate_categories_param( $param );
 				},
 			],

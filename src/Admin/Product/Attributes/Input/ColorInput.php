@@ -25,5 +25,4 @@ class ColorInput extends Text {
 		$this->set_label( __( 'Color', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'Color of the product.', 'google-listings-and-ads' ) );
 	}
-
 }

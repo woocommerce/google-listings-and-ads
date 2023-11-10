@@ -185,5 +185,4 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
 	 */
 	abstract protected function get_batch( int $batch_number ): array;
-
 }

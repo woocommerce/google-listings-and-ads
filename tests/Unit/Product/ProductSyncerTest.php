@@ -328,8 +328,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$product = WC_Helper_Product::create_simple_product();
 
 		$this->google_service->expects( $this->any() )
-							 ->method( 'insert_batch' )
-							 ->willThrowException( new GoogleException() );
+			->method( 'insert_batch' )
+			->willThrowException( new GoogleException() );
 
 		$this->expectException( ProductSyncerException::class );
 		$this->product_syncer->update_by_batch_requests( [ new BatchProductRequestEntry( $product->get_id(), $this->generate_adapted_product( $product ) ) ] );
@@ -339,8 +339,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$product = WC_Helper_Product::create_simple_product();
 
 		$this->google_service->expects( $this->any() )
-							 ->method( 'delete_batch' )
-							 ->willThrowException( new GoogleException() );
+			->method( 'delete_batch' )
+			->willThrowException( new GoogleException() );
 
 		$this->expectException( ProductSyncerException::class );
 		$this->product_syncer->delete_by_batch_requests( [ new BatchProductIDRequestEntry( $product->get_id(), $this->generate_google_id( $product ) ) ] );
@@ -540,12 +540,12 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		};
 
 		$this->google_service->expects( $this->any() )
-							 ->method( 'insert_batch' )
-							 ->willReturnCallback( $callback );
+			->method( 'insert_batch' )
+			->willReturnCallback( $callback );
 
 		$this->google_service->expects( $this->any() )
-							 ->method( 'delete_batch' )
-							 ->willReturnCallback( $callback );
+			->method( 'delete_batch' )
+			->willReturnCallback( $callback );
 	}
 
 	/**
@@ -579,8 +579,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$this->target_audience = $this->createMock( TargetAudience::class );
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
-							  ->method( 'is_ready_for_syncing' )
-							  ->willReturn( true );
+			->method( 'is_ready_for_syncing' )
+			->willReturn( true );
 
 		$this->google_service = $this->createMock( GoogleProductService::class );
 		$this->rules_query    = $this->createMock( AttributeMappingRulesQuery::class );

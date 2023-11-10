@@ -26,7 +26,7 @@ class SiteVerificationMeta implements OptionsAwareInterface, Registerable, Servi
 	public function register(): void {
 		add_action(
 			'wp_head',
-			function() {
+			function () {
 				$this->display_meta_token();
 			}
 		);

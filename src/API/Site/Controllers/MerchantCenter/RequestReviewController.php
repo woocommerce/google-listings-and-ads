@@ -260,6 +260,5 @@ class RequestReviewController extends BaseOptionsController {
 		}
 
 		return $review_status;
-
 	}
 }

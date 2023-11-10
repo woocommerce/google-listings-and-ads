@@ -120,5 +120,4 @@ class ReviewAfterConversions extends AbstractNote implements MerchantCenterAware
 
 		return true;
 	}
-
 }

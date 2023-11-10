@@ -53,22 +53,22 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 		$value   = 12345;
 
 		$product_meta_handler = $this->getMockBuilder( ProductMetaHandler::class )
-									 ->setMethodsExcept( [ '__call' ] )
-									 ->getMock();
+			->setMethodsExcept( [ '__call' ] )
+			->getMock();
 
 		$product_meta_handler->expects( $this->once() )
-							 ->method( 'update' )
-							 ->with( $this->equalTo( $product ), $this->equalTo( $key ), $this->equalTo( $value ) );
+			->method( 'update' )
+			->with( $this->equalTo( $product ), $this->equalTo( $key ), $this->equalTo( $value ) );
 		$product_meta_handler->update_synced_at( $product, $value );
 
 		$product_meta_handler->expects( $this->once() )
-							 ->method( 'get' )
-							 ->with( $this->equalTo( $product ), $this->equalTo( $key ) );
+			->method( 'get' )
+			->with( $this->equalTo( $product ), $this->equalTo( $key ) );
 		$product_meta_handler->get_synced_at( $product );
 
 		$product_meta_handler->expects( $this->once() )
-							 ->method( 'delete' )
-							 ->with( $this->equalTo( $product ), $this->equalTo( $key ) );
+			->method( 'delete' )
+			->with( $this->equalTo( $product ), $this->equalTo( $key ) );
 		$product_meta_handler->delete_synced_at( $product );
 	}
 

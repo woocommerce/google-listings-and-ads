@@ -124,7 +124,6 @@ class AdsAssetGroupTest extends UnitTest {
 
 		$this->generate_ads_asset_groups_query_mock( $asset_group_data );
 		$this->assertEquals( $asset_group_data, $this->asset_group->get_asset_groups_by_campaign_id( self::TEST_CAMPAIGN_ID ) );
-
 	}
 
 	public function test_get_asset_groups_by_campaign_id_without_assets() {
@@ -147,7 +146,6 @@ class AdsAssetGroupTest extends UnitTest {
 
 		$this->generate_ads_asset_groups_query_mock( $asset_group_data );
 		$this->assertEquals( $asset_group_data, $this->asset_group->get_asset_groups_by_campaign_id( self::TEST_CAMPAIGN_ID, $include_assets ) );
-
 	}
 
 	public function test_edit_asset_group_with_asset() {
@@ -269,7 +267,4 @@ class AdsAssetGroupTest extends UnitTest {
 			$this->assertEquals( 400, $e->getCode() );
 		}
 	}
-
-
-
 }

@@ -74,5 +74,4 @@ class JobException extends RuntimeException implements GoogleListingsAndAdsExcep
 			)
 		);
 	}
-
 }

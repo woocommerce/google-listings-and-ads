@@ -336,7 +336,7 @@ class MerchantTest extends UnitTest {
 			->method( 'custombatch' )
 			->with(
 				$this->callback(
-					function( ProductstatusesCustomBatchRequest $request ) {
+					function ( ProductstatusesCustomBatchRequest $request ) {
 						$this->assertEquals(
 							[
 								'batchId'    => 3,
@@ -408,7 +408,7 @@ class MerchantTest extends UnitTest {
 			->method( 'setAdsLinks' )
 			->with(
 				$this->callback(
-					function( array $links ) use ( $ads_id ) {
+					function ( array $links ) use ( $ads_id ) {
 						$this->assertEquals( $ads_id, $links[0]->getAdsId() );
 						$this->assertEquals( 'active', $links[0]->getStatus() );
 
@@ -519,5 +519,4 @@ class MerchantTest extends UnitTest {
 			->with( $this->merchant_id, $this->merchant_id )
 			->will( $this->throwException( $exception ) );
 	}
-
 }

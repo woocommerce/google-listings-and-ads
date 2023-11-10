@@ -171,5 +171,4 @@ class Redirect implements Activateable, Service, Registerable, OptionsAwareInter
 
 		return 2 === count( array_intersect_assoc( $_GET, $params ) ); // phpcs:disable WordPress.Security.NonceVerification.Recommended
 	}
-
 }

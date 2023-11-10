@@ -312,7 +312,6 @@ class AdsAssetGroup implements OptionsAwareInterface {
 				[ 'errors' => $errors ]
 			);
 		}
-
 	}
 
 	/**
@@ -473,5 +472,4 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			throw new Exception( __( 'Invalid asset group ID', 'google-listings-and-ads' ) );
 		}
 	}
-
 }

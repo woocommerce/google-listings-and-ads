@@ -94,7 +94,7 @@ trait CountryCodeTrait {
 	 * @return callable
 	 */
 	protected function get_country_code_sanitize_callback(): callable {
-		return function( $value ) {
+		return function ( $value ) {
 			return is_array( $value )
 				? array_map( 'strtoupper', $value )
 				: strtoupper( $value );
@@ -108,7 +108,7 @@ trait CountryCodeTrait {
 	 * @return callable
 	 */
 	protected function get_country_code_validate_callback(): callable {
-		return function( ...$args ) {
+		return function ( ...$args ) {
 			return $this->validate_country_codes( false, ...$args );
 		};
 	}
@@ -120,7 +120,7 @@ trait CountryCodeTrait {
 	 * @return callable
 	 */
 	protected function get_supported_country_code_validate_callback(): callable {
-		return function( ...$args ) {
+		return function ( ...$args ) {
 			return $this->validate_country_codes( true, ...$args );
 		};
 	}

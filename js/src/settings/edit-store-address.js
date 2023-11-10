@@ -23,7 +23,7 @@ import StoreAddressCard from '.~/components/contact-information/store-address-ca
 
 const learnMoreLinkId = 'contact-information-read-more';
 const learnMoreUrl =
-	'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information';
+	'https://woo.com/document/google-listings-and-ads/#contact-information';
 
 /**
  * Triggered when the save button in contact information page is clicked.
@@ -36,7 +36,7 @@ const learnMoreUrl =
  *
  * @see StoreAddressCard
  * @fires gla_contact_information_save_button_click
- * @fires gla_documentation_link_click with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information" }`
+ * @fires gla_documentation_link_click with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://woo.com/document/google-listings-and-ads/#contact-information" }`
  */
 const EditStoreAddress = () => {
 	useLayout( 'full-content' );

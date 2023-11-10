@@ -90,7 +90,7 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	 * @return callable
 	 */
 	protected function get_budget_recommendation_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$country_codes = $request->get_param( 'country_codes' );
 			$currency      = $this->ads->get_ads_currency();
 

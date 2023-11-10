@@ -36,73 +36,73 @@ class UpdateShippingSettingsTest extends UnitTest {
 
 	public function test_job_is_scheduled() {
 		$this->merchant_center->expects( $this->any() )
-							  ->method( 'is_connected' )
-							  ->willReturn( true );
+			->method( 'is_connected' )
+			->willReturn( true );
 		$this->google_settings->expects( $this->any() )
-							  ->method( 'should_get_shipping_rates_from_woocommerce' )
-							  ->willReturn( true );
+			->method( 'should_get_shipping_rates_from_woocommerce' )
+			->willReturn( true );
 
 		$this->action_scheduler->expects( $this->once() )
-							   ->method( 'schedule_immediate' )
-							   ->with( $this->job->get_process_item_hook() );
+			->method( 'schedule_immediate' )
+			->with( $this->job->get_process_item_hook() );
 
 		$this->job->schedule();
 	}
 
 	public function test_job_is_not_scheduled_if_shipping_not_set_to_automatic_sync() {
 		$this->merchant_center->expects( $this->any() )
-							  ->method( 'is_connected' )
-							  ->willReturn( true );
+			->method( 'is_connected' )
+			->willReturn( true );
 		$this->google_settings->expects( $this->any() )
-							  ->method( 'should_get_shipping_rates_from_woocommerce' )
-							  ->willReturn( false );
+			->method( 'should_get_shipping_rates_from_woocommerce' )
+			->willReturn( false );
 
 		$this->action_scheduler->expects( $this->never() )
-							   ->method( 'schedule_immediate' )
-							   ->with( $this->job->get_process_item_hook() );
+			->method( 'schedule_immediate' )
+			->with( $this->job->get_process_item_hook() );
 
 		$this->job->schedule();
 	}
 
 	public function test_job_is_not_scheduled_if_mc_not_connected() {
 		$this->merchant_center->expects( $this->any() )
-							  ->method( 'is_connected' )
-							  ->willReturn( false );
+			->method( 'is_connected' )
+			->willReturn( false );
 		$this->google_settings->expects( $this->any() )
-							  ->method( 'should_get_shipping_rates_from_woocommerce' )
-							  ->willReturn( true );
+			->method( 'should_get_shipping_rates_from_woocommerce' )
+			->willReturn( true );
 
 		$this->action_scheduler->expects( $this->never() )
-							   ->method( 'schedule_immediate' )
-							   ->with( $this->job->get_process_item_hook() );
+			->method( 'schedule_immediate' )
+			->with( $this->job->get_process_item_hook() );
 
 		$this->job->schedule();
 	}
 
 	public function test_process_items() {
 		$this->merchant_center->expects( $this->any() )
-							  ->method( 'is_connected' )
-							  ->willReturn( true );
+			->method( 'is_connected' )
+			->willReturn( true );
 		$this->google_settings->expects( $this->any() )
-							  ->method( 'should_get_shipping_rates_from_woocommerce' )
-							  ->willReturn( true );
+			->method( 'should_get_shipping_rates_from_woocommerce' )
+			->willReturn( true );
 
 		$this->google_settings->expects( $this->once() )
-							  ->method( 'sync_shipping' );
+			->method( 'sync_shipping' );
 
 		do_action( $this->job->get_process_item_hook(), [] );
 	}
 
 	public function test_process_items_fails_if_mc_not_connected() {
 		$this->merchant_center->expects( $this->any() )
-							  ->method( 'is_connected' )
-							  ->willReturn( false );
+			->method( 'is_connected' )
+			->willReturn( false );
 		$this->google_settings->expects( $this->any() )
-							  ->method( 'should_get_shipping_rates_from_woocommerce' )
-							  ->willReturn( true );
+			->method( 'should_get_shipping_rates_from_woocommerce' )
+			->willReturn( true );
 
 		$this->google_settings->expects( $this->never() )
-							  ->method( 'sync_shipping' );
+			->method( 'sync_shipping' );
 
 		$this->expectException( JobException::class );
 
@@ -111,14 +111,14 @@ class UpdateShippingSettingsTest extends UnitTest {
 
 	public function test_process_items_fails_if_shipping_not_set_to_automatic_sync() {
 		$this->merchant_center->expects( $this->any() )
-							  ->method( 'is_connected' )
-							  ->willReturn( true );
+			->method( 'is_connected' )
+			->willReturn( true );
 		$this->google_settings->expects( $this->any() )
-							  ->method( 'should_get_shipping_rates_from_woocommerce' )
-							  ->willReturn( false );
+			->method( 'should_get_shipping_rates_from_woocommerce' )
+			->willReturn( false );
 
 		$this->google_settings->expects( $this->never() )
-							  ->method( 'sync_shipping' );
+			->method( 'sync_shipping' );
 
 		$this->expectException( JobException::class );
 
@@ -139,5 +139,4 @@ class UpdateShippingSettingsTest extends UnitTest {
 
 		$this->job->init();
 	}
-
 }

@@ -42,7 +42,7 @@ abstract class RequirementValidator implements RequirementValidatorInterface {
 		// Display notice error message.
 		add_action(
 			'admin_notices',
-			function() use ( $e ) {
+			function () use ( $e ) {
 				echo '<div class="notice notice-error">' . PHP_EOL;
 				echo '	<p>' . esc_html( $e->getMessage() ) . '</p>' . PHP_EOL;
 				echo '</div>' . PHP_EOL;

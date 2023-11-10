@@ -143,7 +143,6 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 				[ 'errors' => $errors ]
 			);
 		}
-
 	}
 
 	/**
@@ -210,7 +209,6 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 				[ 'errors' => $errors ]
 			);
 		}
-
 	}
 
 	/**
@@ -224,7 +222,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		return array_values(
 			array_filter(
 				$assets,
-				function( $asset ) {
+				function ( $asset ) {
 					return ! empty( $asset['id'] );
 				}
 			)
@@ -242,7 +240,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		return array_values(
 			array_filter(
 				$assets,
-				function( $asset ) {
+				function ( $asset ) {
 					return ! empty( $asset['content'] );
 				}
 			)
@@ -293,7 +291,7 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 	 */
 	protected function get_override_operations( int $asset_group_id, array $asset_field_types ): array {
 		return array_map(
-			function( $asset ) use ( $asset_group_id ) {
+			function ( $asset ) use ( $asset_group_id ) {
 				return $this->delete_operation( $asset_group_id, $asset['field_type'], $asset['id'] );
 			},
 			$this->get_specific_assets( $asset_group_id, $asset_field_types )
@@ -338,7 +336,6 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		// The delete operations must be executed first otherwise will cause a conflict with existing assets with identical content.
 		// See here: https://github.com/woocommerce/google-listings-and-ads/pull/1870
 		return array_merge( $delete_asset_group_assets_operations, $asset_group_assets_operations );
-
 	}
 
 
@@ -378,8 +375,4 @@ class AdsAssetGroupAsset implements OptionsAwareInterface {
 		$operation                       = ( new AssetGroupAssetOperation() )->setRemove( $asset_group_asset_resource_name );
 		return ( new MutateOperation() )->setAssetGroupAssetOperation( $operation );
 	}
-
-
-
-
 }

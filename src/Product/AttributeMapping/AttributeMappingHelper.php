@@ -123,7 +123,6 @@ class AttributeMappingHelper implements Service {
 		}
 
 		return $attribute_sources;
-
 	}
 
 	/**
@@ -138,5 +137,4 @@ class AttributeMappingHelper implements Service {
 			self::CATEGORY_CONDITION_TYPE_ONLY,
 		];
 	}
-
 }

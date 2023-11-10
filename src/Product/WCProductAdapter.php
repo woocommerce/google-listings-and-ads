@@ -71,41 +71,41 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	/**
 	 * Initialize this object's properties from an array.
 	 *
-	 * @param array $array Used to seed this object's properties.
+	 * @param array $properties Used to seed this object's properties.
 	 *
 	 * @return void
 	 *
 	 * @throws InvalidValue When a WooCommerce product is not provided or it is invalid.
 	 */
-	public function mapTypes( $array ) {
-		if ( empty( $array['wc_product'] ) || ! $array['wc_product'] instanceof WC_Product ) {
+	public function mapTypes( $properties ) {
+		if ( empty( $properties['wc_product'] ) || ! $properties['wc_product'] instanceof WC_Product ) {
 			throw InvalidValue::not_instance_of( WC_Product::class, 'wc_product' );
 		}
 
 		// throw an exception if the parent product isn't provided and this is a variation
-		if ( $array['wc_product'] instanceof WC_Product_Variation &&
-			 ( empty( $array['parent_wc_product'] ) || ! $array['parent_wc_product'] instanceof WC_Product_Variable )
+		if ( $properties['wc_product'] instanceof WC_Product_Variation &&
+			( empty( $properties['parent_wc_product'] ) || ! $properties['parent_wc_product'] instanceof WC_Product_Variable )
 		) {
 			throw InvalidValue::not_instance_of( WC_Product_Variable::class, 'parent_wc_product' );
 		}
 
-		if ( empty( $array['targetCountry'] ) ) {
+		if ( empty( $properties['targetCountry'] ) ) {
 			throw InvalidValue::is_empty( 'targetCountry' );
 		}
 
-		$this->wc_product        = $array['wc_product'];
-		$this->parent_wc_product = $array['parent_wc_product'] ?? null;
+		$this->wc_product        = $properties['wc_product'];
+		$this->parent_wc_product = $properties['parent_wc_product'] ?? null;
 
-		$mapping_rules  = $array['mapping_rules'] ?? [];
-		$gla_attributes = $array['gla_attributes'] ?? [];
+		$mapping_rules  = $properties['mapping_rules'] ?? [];
+		$gla_attributes = $properties['gla_attributes'] ?? [];
 
 		// Google doesn't expect extra fields, so it's best to remove them
-		unset( $array['wc_product'] );
-		unset( $array['parent_wc_product'] );
-		unset( $array['gla_attributes'] );
-		unset( $array['mapping_rules'] );
+		unset( $properties['wc_product'] );
+		unset( $properties['parent_wc_product'] );
+		unset( $properties['gla_attributes'] );
+		unset( $properties['mapping_rules'] );
 
-		parent::mapTypes( $array );
+		parent::mapTypes( $properties );
 		$this->map_woocommerce_product();
 		$this->map_attribute_mapping_rules( $mapping_rules );
 		$this->map_gla_attributes( $gla_attributes );
@@ -126,13 +126,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$this->setContentLanguage( $content_language );
 
 		$this->map_wc_product_id()
-			 ->map_wc_general_attributes()
-			 ->map_product_categories()
-			 ->map_wc_product_image( self::IMAGE_SIZE_FULL )
-			 ->map_wc_availability()
-			 ->map_wc_product_shipping()
-			 ->map_wc_prices();
-
+			->map_wc_general_attributes()
+			->map_product_categories()
+			->map_wc_product_image( self::IMAGE_SIZE_FULL )
+			->map_wc_availability()
+			->map_wc_product_shipping()
+			->map_wc_prices();
 	}
 
 	/**
@@ -428,7 +427,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$weight_unit    = apply_filters( 'woocommerce_gla_weight_unit', get_option( 'woocommerce_weight_unit' ) );
 
 			$this->map_wc_shipping_dimensions( $dimension_unit )
-				 ->map_wc_shipping_weight( $weight_unit );
+				->map_wc_shipping_weight( $weight_unit );
 		}
 
 		// Set the product's shipping class slug as the shipping label.
@@ -659,8 +658,10 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$regular_price = $product->get_regular_price();
 		$sale_price    = $product->get_sale_price();
 		$active_price  = $product->get_price();
-		if ( ( empty( $sale_price ) && $active_price < $regular_price ) ||
-			 ( ! empty( $sale_price ) && $active_price < $sale_price ) ) {
+		if (
+			( empty( $sale_price ) && $active_price < $regular_price ) ||
+			( ! empty( $sale_price ) && $active_price < $sale_price )
+		) {
 			$sale_price = $active_price;
 		}
 
@@ -712,23 +713,26 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		$now = new WC_DateTime();
 		// if we have a sale end date in the future, but no start date, set the start date to now()
-		if ( ! empty( $end_date ) &&
-			 $end_date > $now &&
-			 empty( $start_date )
+		if (
+			! empty( $end_date ) &&
+			$end_date > $now &&
+			empty( $start_date )
 		) {
 			$start_date = $now;
 		}
 		// if we have a sale start date in the past, but no end date, do not include the start date.
-		if ( ! empty( $start_date ) &&
-			 $start_date < $now &&
-			 empty( $end_date )
+		if (
+			! empty( $start_date ) &&
+			$start_date < $now &&
+			empty( $end_date )
 		) {
 			$start_date = null;
 		}
 		// if we have a start date in the future, but no end date, assume a one-day sale.
-		if ( ! empty( $start_date ) &&
-			 $start_date > $now &&
-			 empty( $end_date )
+		if (
+			! empty( $start_date ) &&
+			$start_date > $now &&
+			empty( $end_date )
 		) {
 			$end_date = clone $start_date;
 			$end_date->add( new DateInterval( 'P1D' ) );

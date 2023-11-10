@@ -25,5 +25,4 @@ class MaterialInput extends Text {
 		$this->set_label( __( 'Material', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'The material of which the item is made.', 'google-listings-and-ads' ) );
 	}
-
 }

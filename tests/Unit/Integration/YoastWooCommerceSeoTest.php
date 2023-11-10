@@ -211,5 +211,4 @@ class YoastWooCommerceSeoTest extends UnitTest {
 		$this->assertEquals( self::TEST_GTIN, $adapted_one->getGtin() );
 		$this->assertEquals( '78901234', $adapted_two->getGtin() );
 	}
-
 }

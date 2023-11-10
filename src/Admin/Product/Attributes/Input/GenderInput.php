@@ -25,5 +25,4 @@ class GenderInput extends Select {
 		$this->set_label( __( 'Gender', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'The gender for which your product is intended.', 'google-listings-and-ads' ) );
 	}
-
 }

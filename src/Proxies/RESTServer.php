@@ -34,29 +34,29 @@ class RESTServer {
 	/**
 	 * Register a REST route.
 	 *
-	 * @param string $namespace The route namespace.
-	 * @param string $route     The route.
-	 * @param array  $args      Arguments for the route.
+	 * @param string $route_namespace The route namespace.
+	 * @param string $route           The route.
+	 * @param array  $args            Arguments for the route.
 	 */
-	public function register_route( string $namespace, string $route, array $args ): void {
+	public function register_route( string $route_namespace, string $route, array $args ): void {
 		// Clean up namespace and route.
-		$namespace  = trim( $namespace, '/' );
-		$route      = trim( $route, '/' );
-		$full_route = "/{$namespace}/{$route}";
-		$this->server->register_route( $namespace, $full_route, $this->prepare_route_args( $args ) );
+		$route_namespace = trim( $route_namespace, '/' );
+		$route           = trim( $route, '/' );
+		$full_route      = "/{$route_namespace}/{$route}";
+		$this->server->register_route( $route_namespace, $full_route, $this->prepare_route_args( $args ) );
 	}
 
 	/**
 	 * Get the registered REST routes.
 	 *
-	 * @param string $namespace Optionally, only return routes in the given namespace.
+	 * @param string $route_namespace Optionally, only return routes in the given namespace.
 	 * @return array `'/path/regex' => array( $callback, $bitmask )` or
 	 *               `'/path/regex' => array( array( $callback, $bitmask ), ...)`.
 	 *
 	 * @since 1.4.0
 	 */
-	public function get_routes( string $namespace = '' ): array {
-		return $this->server->get_routes( $namespace );
+	public function get_routes( string $route_namespace = '' ): array {
+		return $this->server->get_routes( $route_namespace );
 	}
 
 	/**

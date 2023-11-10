@@ -92,7 +92,7 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 	 * @return callable
 	 */
 	protected function get_read_times_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$times = $this->get_all_shipping_times();
 			$items = [];
 			foreach ( $times as $time ) {
@@ -117,7 +117,7 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 	 * @return callable
 	 */
 	protected function get_read_time_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$country = $request->get_param( 'country_code' );
 			$time    = $this->get_shipping_time_for_country( $country );
 			if ( empty( $time ) ) {
@@ -146,7 +146,7 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 	 * @return callable
 	 */
 	protected function get_create_time_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$query        = $this->get_query_object();
 			$country_code = $request->get_param( 'country_code' );
 			$existing     = ! empty( $query->where( 'country', $country_code )->get_results() );
@@ -197,7 +197,7 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 	 * @return callable
 	 */
 	protected function get_delete_time_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$country_code = $request->get_param( 'country_code' );
 				$this->get_query_object()->delete( 'country', $country_code );
@@ -300,7 +300,7 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'get_callback' => function( $fields ) {
+			'get_callback' => function ( $fields ) {
 				return $this->iso3166_data_provider->alpha2( $fields['country_code'] )['name'];
 			},
 		];

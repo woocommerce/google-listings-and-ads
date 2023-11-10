@@ -58,7 +58,7 @@ class ProxyServiceProvider extends AbstractServiceProvider {
 			wpdb::class,
 			new Definition(
 				wpdb::class,
-				function() {
+				function () {
 					global $wpdb;
 					return $wpdb;
 				}

@@ -167,5 +167,4 @@ class ZoneMethodsParser implements Service {
 
 		return array_values( $class_rates );
 	}
-
 }

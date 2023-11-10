@@ -61,7 +61,7 @@ class SettingsSyncController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_sync_endpoint_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$this->settings->sync_taxes();
 				$this->settings->sync_shipping();

@@ -127,5 +127,4 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 			Notes::delete_notes_with_name( $note_names );
 		}
 	}
-
 }

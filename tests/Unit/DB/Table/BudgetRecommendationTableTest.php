@@ -33,12 +33,12 @@ class BudgetRecommendationTableTest extends UnitTest {
 
 		$this->wp   = $this->createMock( WP::class );
 		$this->wpdb = $this->getMockBuilder( wpdb::class )
-						 ->setMethods( [ 'query', 'prepare' ] )
-						 ->disableOriginalConstructor()
-						 ->disableOriginalClone()
-						 ->disableArgumentCloning()
-						 ->disallowMockingUnknownTypes()
-						 ->getMock();
+			->setMethods( [ 'query', 'prepare' ] )
+			->disableOriginalConstructor()
+			->disableOriginalClone()
+			->disableArgumentCloning()
+			->disallowMockingUnknownTypes()
+			->getMock();
 
 		$this->mock_budget_recommendation = $this->getMockBuilder( BudgetRecommendationTable::class )
 						->setMethods( [ 'exists', 'truncate', 'get_sql_safe_name' ] )
@@ -54,11 +54,11 @@ class BudgetRecommendationTableTest extends UnitTest {
 
 	public function test_reload_data_when_table_exists() {
 		$this->mock_budget_recommendation->expects( $this->once() )
-						 ->method( 'exists' )
-						 ->willReturn( true );
+			->method( 'exists' )
+			->willReturn( true );
 
 		$this->mock_budget_recommendation->expects( $this->once() )
-						 ->method( 'truncate' );
+			->method( 'truncate' );
 
 		$this->wpdb->expects( $this->atLeastOnce() )
 		->method( 'query' );
@@ -70,37 +70,34 @@ class BudgetRecommendationTableTest extends UnitTest {
 
 	public function test_reload_data_when_table_does_not_exist() {
 		$this->mock_budget_recommendation->expects( $this->once() )
-						 ->method( 'exists' )
-						 ->willReturn( false );
+			->method( 'exists' )
+			->willReturn( false );
 
 		$this->mock_budget_recommendation->expects( $this->exactly( 0 ) )
-						 ->method( 'truncate' );
+			->method( 'truncate' );
 
 		$this->wpdb->expects( $this->exactly( 0 ) )
-						 ->method( 'query' );
+			->method( 'query' );
 
 		$this->mock_budget_recommendation->reload_data();
 
 		$this->assertFalse( $this->mock_budget_recommendation->has_loaded_initial_data );
-
 	}
 
 	public function test_reload_data_when_table_exists_but_data_was_loaded_earlier() {
 		$this->mock_budget_recommendation->expects( $this->once() )
-						 ->method( 'exists' )
-						 ->willReturn( true );
+			->method( 'exists' )
+			->willReturn( true );
 
 		$this->mock_budget_recommendation->expects( $this->exactly( 0 ) )
-						 ->method( 'truncate' );
+			->method( 'truncate' );
 
 		$this->wpdb->expects( $this->exactly( 0 ) )
-						 ->method( 'query' );
+			->method( 'query' );
 
 		// If the table has been deleted or if it is a first installation, the BudgetRecommendationTable::install loads the data
 		$this->mock_budget_recommendation->has_loaded_initial_data = true;
 
 		$this->mock_budget_recommendation->reload_data();
-
 	}
-
 }

@@ -67,6 +67,4 @@ class ShippingRateQuery extends Query {
 			$this->results
 		);
 	}
-
-
 }

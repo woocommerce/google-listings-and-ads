@@ -25,5 +25,4 @@ class AgeGroupInput extends Select {
 		$this->set_label( __( 'Age Group', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'Target age group of the item.', 'google-listings-and-ads' ) );
 	}
-
 }

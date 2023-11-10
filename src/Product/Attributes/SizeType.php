@@ -79,5 +79,4 @@ class SizeType extends AbstractAttribute implements WithValueOptionsInterface, W
 	public static function get_name(): string {
 		return __( 'Size Type', 'google-listings-and-ads' );
 	}
-
 }

@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Integration
  *
- * @link https://woocommerce.com/products/woocommerce-pre-orders/
+ * @link https://woo.com/products/woocommerce-pre-orders/
  *
  * @since 1.5.0
  */

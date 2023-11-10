@@ -59,7 +59,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	public function __construct() {
 		add_filter(
 			'woocommerce_gla_custom_merchant_issues',
-			function( array $issues, DateTime $cache_created_time ) {
+			function ( array $issues, DateTime $cache_created_time ) {
 				return $this->maybe_add_contact_info_issue( $issues, $cache_created_time );
 			},
 			10,
@@ -383,7 +383,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 			// Check if all target countries have a shipping time.
 			$saved_shipping_time = count( $shipping_time_rows ) === count( $target_countries ) &&
-								   empty( array_diff( $target_countries, $saved_time_countries ) );
+				empty( array_diff( $target_countries, $saved_time_countries ) );
 		}
 
 		// Shipping rates saved if: 'manual', 'automatic', OR there are records for all countries
@@ -406,7 +406,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 			// Check if all target countries have a shipping rate.
 			$saved_shipping_rate = count( $shipping_rate_rows ) === count( $target_countries ) &&
-								   empty( array_diff( $target_countries, $saved_rates_countries ) );
+				empty( array_diff( $target_countries, $saved_rates_countries ) );
 		}
 
 		return $saved_shipping_rate && $saved_shipping_time;

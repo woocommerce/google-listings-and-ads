@@ -138,7 +138,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		// Disable logo image by default. There is a specific test for the logo asset.
 		add_filter( 'theme_mod_custom_logo', '__return_false' );
-
 	}
 
 	protected function format_url_post_item( $post ) {
@@ -183,7 +182,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			],
 			$this->get_suggestions_common_fields( $marketing_images )
 		);
-
 	}
 
 	protected function format_term_asset_response( $term, array $marketing_images = [] ): array {
@@ -197,7 +195,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			],
 			$this->get_suggestions_common_fields( $marketing_images )
 		);
-
 	}
 
 	protected function get_suggestions_common_fields( $marketing_images ) {
@@ -209,7 +206,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			AssetFieldType::PORTRAIT_MARKETING_IMAGE => $marketing_images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] ?? [],
 			AssetFieldType::CALL_TO_ACTION_SELECTION => null,
 		];
-
 	}
 
 	protected function update_size_image( int $attachmend_id, DimensionUtility $size, array $size_types = [] ): void {
@@ -503,7 +499,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id, self::PORTRAIT_MARKETING_IMAGE_KEY ) ];
 
 		$this->assertEquals( $this->format_post_asset_response( $post, $images ), $this->asset_suggestions->get_assets_suggestions( $post->ID, 'post' ) );
-
 	}
 
 	public function test_get_shop_assets() {
@@ -637,7 +632,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_post_2 ) ];
 
 		$this->assertEquals( $this->format_term_asset_response( $this->term, $images ), $this->asset_suggestions->get_assets_suggestions( $this->term->term_id, 'term' ) );
-
 	}
 
 	public function test_get_term_without_product() {
@@ -652,7 +646,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->willReturnOnConsecutiveCalls( $posts_ids_assigned_to_term, [] );
 
 		$this->assertEquals( $this->format_term_asset_response( $this->term ), $this->asset_suggestions->get_assets_suggestions( $this->term->term_id, 'term' ) );
-
 	}
 
 	public function test_get_term_without_assigned_posts() {
@@ -666,7 +659,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->willReturn( $posts_ids_assigned_to_term );
 
 		$this->assertEquals( $this->format_term_asset_response( $this->term, [] ), $this->asset_suggestions->get_assets_suggestions( $this->term->term_id, 'term' ) );
-
 	}
 
 	public function test_get_invalid_term_id() {
@@ -679,7 +671,7 @@ class AssetSuggestionsServiceTest extends UnitTest {
 
 		add_filter(
 			'theme_mod_custom_logo',
-			function() use ( $image_id ) {
+			function () use ( $image_id ) {
 				return $image_id; }
 		);
 
@@ -696,7 +688,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$images[ self::LOGO_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id ) ];
 
 		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
-
 	}
 
 
@@ -722,7 +713,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] = [ wp_get_attachment_image_url( $image_id ) ];
 
 		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
-
 	}
 
 	public function tests_assets_image_too_small_size() {
@@ -747,7 +737,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 		$images[ self::PORTRAIT_MARKETING_IMAGE_KEY ] = [];
 
 		$this->assertEquals( $this->format_post_asset_response( $this->post, $images ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
-
 	}
 
 	public function test_get_asset_suggestions_with_empty_asset_group() {
@@ -757,7 +746,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			->willReturn( [] );
 
 			$this->assertEquals( $this->format_post_asset_response( $this->post ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
-
 	}
 
 	public function test_get_asset_suggestions_with_assets_from_asset_group() {
@@ -780,7 +768,6 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			];
 
 			$this->assertEquals( array_merge( $this->get_suggestions_common_fields( [] ), $expected ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
-
 	}
 
 	public function test_get_asset_suggestions_with_assets_from_asset_group_empty_call_to_action() {
@@ -802,7 +789,5 @@ class AssetSuggestionsServiceTest extends UnitTest {
 			];
 
 			$this->assertEquals( array_merge( $this->get_suggestions_common_fields( [] ), $expected ), $this->asset_suggestions->get_assets_suggestions( $this->post->ID, 'post' ) );
-
 	}
-
 }

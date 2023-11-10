@@ -46,5 +46,4 @@ class StatesRateGroupAdapter extends AbstractRateGroupAdapter {
 
 		$this->setMainTable( $table );
 	}
-
 }

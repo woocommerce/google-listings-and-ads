@@ -19,5 +19,4 @@ interface ProductSyncerJobInterface {
 	 * @return bool
 	 */
 	public function is_mc_ready_for_syncing(): bool;
-
 }

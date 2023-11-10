@@ -36,5 +36,4 @@ interface AttributeInputInterface {
 	 * @return string
 	 */
 	public static function get_input_type(): string;
-
 }

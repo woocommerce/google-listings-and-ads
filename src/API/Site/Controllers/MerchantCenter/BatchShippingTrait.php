@@ -20,7 +20,7 @@ trait BatchShippingTrait {
 	 * @return callable
 	 */
 	protected function get_batch_delete_shipping_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$country_codes = $request->get_param( 'country_codes' );
 
 			$responses = [];

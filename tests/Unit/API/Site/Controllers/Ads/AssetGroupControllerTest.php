@@ -169,7 +169,4 @@ class AssetGroupControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'error', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
-
-
-
 }

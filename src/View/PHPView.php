@@ -220,13 +220,13 @@ class PHPView implements View {
 	}
 
 	/**
-	 * @param mixed $var
+	 * @param mixed $variable
 	 */
-	protected function sanitize_context_variable( $var ) {
-		if ( is_array( $var ) ) {
-			return array_map( [ $this, 'sanitize_context_variable' ], $var );
+	protected function sanitize_context_variable( $variable ) {
+		if ( is_array( $variable ) ) {
+			return array_map( [ $this, 'sanitize_context_variable' ], $variable );
 		} else {
-			return ! is_bool( $var ) && is_scalar( $var ) ? sanitize_text_field( $var ) : $var;
+			return ! is_bool( $variable ) && is_scalar( $variable ) ? sanitize_text_field( $variable ) : $variable;
 		}
 	}
 

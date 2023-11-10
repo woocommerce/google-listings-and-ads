@@ -112,6 +112,4 @@ class AssetSuggestionsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'Invalid ID', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
-
-
 }

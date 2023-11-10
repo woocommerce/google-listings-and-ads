@@ -37,7 +37,6 @@ class AdsServiceTest extends UnitTest {
 
 		$this->ads_service = new AdsService( $this->state );
 		$this->ads_service->set_options_object( $this->options );
-
 	}
 
 	public function test_is_setup_started() {
@@ -47,7 +46,6 @@ class AdsServiceTest extends UnitTest {
 			->willReturn( null );
 
 		$this->assertTrue( $this->ads_service->is_setup_started() );
-
 	}
 
 	public function test_is_setup_started_last_incomplete_step_is_empty() {
@@ -57,7 +55,6 @@ class AdsServiceTest extends UnitTest {
 			->willReturn( null );
 
 		$this->assertFalse( $this->ads_service->is_setup_started() );
-
 	}
 
 	public function test_is_setup_started_already_completed() {
@@ -67,7 +64,5 @@ class AdsServiceTest extends UnitTest {
 			->willReturn( 123 );
 
 		$this->assertFalse( $this->ads_service->is_setup_started() );
-
 	}
 }
-

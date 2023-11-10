@@ -34,5 +34,4 @@ class ApiNotReady extends ExceptionWithResponseData {
 			]
 		);
 	}
-
 }

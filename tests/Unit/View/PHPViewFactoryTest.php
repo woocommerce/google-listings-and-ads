@@ -39,5 +39,4 @@ class PHPViewFactoryTest extends UnitTest {
 		parent::setUp();
 		$this->view_factory = new PHPViewFactory();
 	}
-
 }

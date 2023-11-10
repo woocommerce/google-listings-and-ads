@@ -117,6 +117,4 @@ class ValidateAddressTest extends ContainerAwareUnitTest {
 			count( $errors )
 		);
 	}
-
-
 }

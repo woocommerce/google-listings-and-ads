@@ -44,7 +44,6 @@ class ToursControllerTest extends RESTControllerUnitTest {
 		$this->controller = new TourController( $this->server );
 		$this->controller->register();
 		$this->controller->set_options_object( $this->options );
-
 	}
 
 

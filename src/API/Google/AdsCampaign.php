@@ -117,7 +117,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$converted_campaigns = [];
 
 			foreach ( $campaign_results->iterateAllElements() as $row ) {
-				$campaign_count++;
+				++$campaign_count;
 				$campaign                               = $this->convert_campaign( $row );
 				$converted_campaigns[ $campaign['id'] ] = $campaign;
 			}
@@ -386,9 +386,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				foreach ( $this->get_campaigns( false, false ) as $campaign ) {
 					if ( CampaignType::PERFORMANCE_MAX !== $campaign['type'] ) {
 						if ( CampaignStatus::REMOVED === $campaign['status'] ) {
-							$old_removed_campaigns++;
+							++$old_removed_campaigns;
 						} else {
-							$old_campaigns++;
+							++$old_campaigns;
 						}
 					}
 				}

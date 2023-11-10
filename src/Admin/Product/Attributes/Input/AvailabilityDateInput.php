@@ -25,5 +25,4 @@ class AvailabilityDateInput extends DateTime {
 		$this->set_label( __( 'Availability Date', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'The date a preordered or backordered product becomes available for delivery. Required if product availability is preorder or backorder', 'google-listings-and-ads' ) );
 	}
-
 }
