@@ -38,13 +38,13 @@ class ClearProductStatsCache implements Registerable, Service {
 	public function register(): void {
 		add_action(
 			'woocommerce_gla_batch_updated_products',
-			function() {
+			function () {
 				$this->clear_stats_cache();
 			}
 		);
 		add_action(
 			'woocommerce_gla_batch_deleted_products',
-			function() {
+			function () {
 				$this->clear_stats_cache();
 			}
 		);

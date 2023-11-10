@@ -38,7 +38,7 @@ class ConnectionController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_connect_callback(): callable {
-		return function() {
+		return function () {
 			return [
 				'url' => 'example.com',
 			];

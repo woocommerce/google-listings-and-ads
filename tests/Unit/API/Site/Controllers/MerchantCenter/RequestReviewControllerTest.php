@@ -454,7 +454,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_exception_in_request_route() {
-		 $this->middleware->expects( $this->once() )
+		$this->middleware->expects( $this->once() )
 			->method( 'get_account_review_status' )
 			->willReturn(
 				[
@@ -477,7 +477,6 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_post_request_review();
 		$this->assertEquals( 'error', $response->get_data()['message'] );
 		$this->assertEquals( 401, $response->get_status() );
-
 	}
 
 	private function do_post_request_review() {

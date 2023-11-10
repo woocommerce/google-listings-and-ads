@@ -61,27 +61,26 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	/**
 	 * Initialize this object's properties from an array.
 	 *
-	 * @param array $array
-	 *            Used to seed this object's properties.
+	 * @param array $properties Used to seed this object's properties.
 	 *
 	 * @return void
 	 *
 	 * @throws InvalidValue When a WooCommerce coupon is not provided or it is invalid.
 	 */
-	public function mapTypes( $array ) {
-		if ( empty( $array['wc_coupon'] ) ||
-			! $array['wc_coupon'] instanceof WC_Coupon ) {
+	public function mapTypes( $properties ) {
+		if ( empty( $properties['wc_coupon'] ) ||
+			! $properties['wc_coupon'] instanceof WC_Coupon ) {
 				throw InvalidValue::not_instance_of( WC_Coupon::class, 'wc_coupon' );
 		}
 
-		$wc_coupon          = $array['wc_coupon'];
+		$wc_coupon          = $properties['wc_coupon'];
 		$this->wc_coupon_id = $wc_coupon->get_id();
-		$this->map_woocommerce_coupon( $wc_coupon, $this->get_coupon_destinations( $array ) );
+		$this->map_woocommerce_coupon( $wc_coupon, $this->get_coupon_destinations( $properties ) );
 
 		// Google doesn't expect extra fields, so it's best to remove them
-		unset( $array['wc_coupon'] );
+		unset( $properties['wc_coupon'] );
 
-		parent::mapTypes( $array );
+		parent::mapTypes( $properties );
 	}
 
 	/**

@@ -28,7 +28,7 @@ class AdsSetupCompleted implements OptionsAwareInterface, Registerable, Service 
 	public function register(): void {
 		add_action(
 			'woocommerce_gla_ads_setup_completed',
-			function() {
+			function () {
 				$this->set_completed_timestamp();
 			}
 		);

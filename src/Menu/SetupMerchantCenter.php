@@ -19,7 +19,7 @@ class SetupMerchantCenter implements Service, Registerable {
 	public function register(): void {
 		add_action(
 			'admin_menu',
-			function() {
+			function () {
 				wc_admin_register_page(
 					[
 						'title'  => __( 'MC Setup Wizard', 'google-listings-and-ads' ),

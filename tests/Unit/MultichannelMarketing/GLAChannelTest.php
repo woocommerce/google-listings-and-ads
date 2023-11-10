@@ -227,5 +227,4 @@ class GLAChannelTest extends UnitTest {
 			$this->product_sync_stats
 		);
 	}
-
 }

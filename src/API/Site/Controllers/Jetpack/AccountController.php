@@ -96,7 +96,7 @@ class AccountController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_connect_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			// Register the site to wp.com.
 			if ( ! $this->manager->is_connected() ) {
 				$result = $this->manager->register();
@@ -150,7 +150,7 @@ class AccountController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_disconnect_callback(): callable {
-		return function() {
+		return function () {
 			$this->manager->remove_connection();
 			$this->options->delete( OptionsInterface::WP_TOS_ACCEPTED );
 			$this->options->delete( OptionsInterface::JETPACK_CONNECTED );
@@ -168,7 +168,7 @@ class AccountController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_connected_callback(): callable {
-		return function() {
+		return function () {
 			if ( $this->is_jetpack_connected() && ! $this->options->get( OptionsInterface::WP_TOS_ACCEPTED ) ) {
 				$this->log_wp_tos_accepted();
 			}

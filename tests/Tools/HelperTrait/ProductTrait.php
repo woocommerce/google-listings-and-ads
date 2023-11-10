@@ -31,18 +31,18 @@ trait ProductTrait {
 		$id      = rand();
 
 		$children = [];
-		for ( $i = 0; $i < $number_of_variations; $i ++ ) {
+		for ( $i = 0; $i < $number_of_variations; $i++ ) {
 			$child = $this->createMock( WC_Product_Variation::class );
 
 			$child->expects( $this->any() )
-				  ->method( 'get_id' )
-				  ->willReturn( rand() );
+				->method( 'get_id' )
+				->willReturn( rand() );
 			$child->expects( $this->any() )
-				  ->method( 'get_parent_id' )
-				  ->willReturn( $id );
+				->method( 'get_parent_id' )
+				->willReturn( $id );
 			$child->expects( $this->any() )
-				  ->method( 'get_type' )
-				  ->willReturn( 'variation' );
+				->method( 'get_type' )
+				->willReturn( 'variation' );
 
 			$children[] = $child;
 		}
@@ -194,7 +194,7 @@ trait ProductTrait {
 	 */
 	public function create_simple_product_set( int $product_count ): array {
 		$products = [];
-		for ( $i = 1; $i <= $product_count; $i ++ ) {
+		for ( $i = 1; $i <= $product_count; $i++ ) {
 			$product                        = WC_Helper_Product::create_simple_product();
 			$products[ $product->get_id() ] = $product;
 		}

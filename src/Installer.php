@@ -62,7 +62,7 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	public function register(): void {
 		add_action(
 			'admin_init',
-			function() {
+			function () {
 				$this->admin_init();
 			}
 		);

@@ -277,5 +277,4 @@ class AccountService implements OptionsAwareInterface, Service {
 		$action = $this->container->get( AdsConversionAction::class )->create_conversion_action();
 		$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $action );
 	}
-
 }

@@ -66,7 +66,7 @@ class Migrator implements Service {
 	 */
 	protected function can_apply( string $migration_version, string $old_version, string $new_version ): bool {
 		return version_compare( $old_version, $new_version, '<' ) &&
-			   version_compare( $old_version, $migration_version, '<' ) &&
-			   version_compare( $migration_version, $new_version, '<=' );
+			version_compare( $old_version, $migration_version, '<' ) &&
+			version_compare( $migration_version, $new_version, '<=' );
 	}
 }

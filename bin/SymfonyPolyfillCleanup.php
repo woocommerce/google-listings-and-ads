@@ -67,7 +67,6 @@ class SymfonyPolyfillCleanup {
 	public static function remove( Event $event = null ) {
 		$cleanup = new SymfonyPolyfillCleanup( $event );
 		$cleanup->remove_bootstraps80();
-
 	}
 
 	/**
@@ -131,10 +130,10 @@ class SymfonyPolyfillCleanup {
 		// Parse until we encounter closing bracket.
 		for ( $end = $offset; $end < $length; $end++ ) {
 			if ( '{' === $contents[ $end ] ) {
-				$bracket++;
+				++$bracket;
 			}
 			if ( '}' === $contents[ $end ] ) {
-				$bracket--;
+				--$bracket;
 				if ( 1 > $bracket ) {
 					break;
 				}
@@ -148,7 +147,7 @@ class SymfonyPolyfillCleanup {
 
 		// Include whitespaces before start.
 		while ( 0 < $start && ctype_space( $contents[ $start - 1 ] ) ) {
-			$start--;
+			--$start;
 		}
 
 		$new  = substr( $contents, 0, $start );
@@ -174,7 +173,7 @@ class SymfonyPolyfillCleanup {
 			return;
 		}
 
-		unlink( $file );
+		unlink( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 	}
 
 	/**

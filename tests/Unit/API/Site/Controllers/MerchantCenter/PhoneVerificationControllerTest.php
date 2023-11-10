@@ -138,5 +138,4 @@ class PhoneVerificationControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 	}
-
 }

@@ -19,7 +19,7 @@ class ProductFeed implements Service, Registerable {
 	public function register(): void {
 		add_action(
 			'admin_menu',
-			function() {
+			function () {
 				wc_admin_register_page(
 					[
 						'title'    => __( 'Product Feed', 'google-listings-and-ads' ),

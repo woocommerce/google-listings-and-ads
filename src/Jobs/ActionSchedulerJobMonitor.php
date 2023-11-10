@@ -145,7 +145,7 @@ class ActionSchedulerJobMonitor implements Service {
 	 */
 	protected function is_timeout_error( array $error ): bool {
 		return isset( $error['type'] ) && $error['type'] === E_ERROR &&
-			   isset( $error['message'] ) && strpos( $error ['message'], 'Maximum execution time' ) !== false;
+			isset( $error['message'] ) && strpos( $error ['message'], 'Maximum execution time' ) !== false;
 	}
 
 	/**
@@ -222,5 +222,4 @@ class ActionSchedulerJobMonitor implements Service {
 	protected function is_monitored_for_timeout( string $hook, ?array $args = null ): bool {
 		return isset( $this->monitored_hooks[ self::get_job_hash( $hook, $args ) ] );
 	}
-
 }

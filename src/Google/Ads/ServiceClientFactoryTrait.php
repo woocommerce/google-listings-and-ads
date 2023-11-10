@@ -208,5 +208,4 @@ trait ServiceClientFactoryTrait {
 	public function getMerchantCenterLinkServiceClient(): MerchantCenterLinkServiceClient {
 		return new MerchantCenterLinkServiceClient( $this->getGoogleAdsClientOptions() );
 	}
-
 }

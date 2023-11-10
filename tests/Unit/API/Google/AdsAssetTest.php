@@ -120,7 +120,6 @@ class AdsAssetTest extends UnitTest {
 
 		$this->generate_asset_mutate_mock( 'create', $data );
 		$this->assertEquals( $this->generate_asset_resource_name( $data['id'] ), $this->asset->create_assets( [ $data ] )[0] );
-
 	}
 
 	public function test_create_assets_image_asset() {
@@ -142,7 +141,6 @@ class AdsAssetTest extends UnitTest {
 
 			$this->generate_asset_mutate_mock( 'create', $data );
 			$this->assertEquals( $this->generate_asset_resource_name( $data['id'] ), $this->asset->create_assets( [ $data ] )[0] );
-
 	}
 
 	public function test_create_assets_image_asset_exception() {
@@ -173,7 +171,6 @@ class AdsAssetTest extends UnitTest {
 		$this->expectExceptionMessage( 'Asset Field type not supported' );
 
 		$this->asset->create_assets( [ $data ], self::TEMPORARY_ID );
-
 	}
 
 	public function test_create_one_batch() {
@@ -197,13 +194,11 @@ class AdsAssetTest extends UnitTest {
 			}
 
 			$this->assert_asset_content( $operations, $assets, $index );
-
 		};
 
 		$matcher = $this->exactly( 1 );
 		$this->generate_asset_batch_mutate_mock( $matcher, $assert_batches );
 		$this->asset->create_assets( $assets );
-
 	}
 
 	public function test_create_batches_multiple() {
@@ -236,13 +231,11 @@ class AdsAssetTest extends UnitTest {
 			}
 
 			$this->assert_asset_content( $operations, $assets, $index );
-
 		};
 
 		$matcher = $this->exactly( 3 );
 		$this->generate_asset_batch_mutate_mock( $matcher, $assert_batches );
 		$this->asset->create_assets( $assets, 5 * 1024 * 1024 );
-
 	}
 
 	/**
@@ -255,7 +248,7 @@ class AdsAssetTest extends UnitTest {
 	protected function assert_asset_content( $operations, $assets, $starting_index = 0 ) {
 		foreach ( $operations as $operation ) {
 			$this->assertEquals( $assets[ $starting_index ]['content'], $this->get_asset_content( $operation->getAssetOperation()->getCreate(), $assets[ $starting_index ]['field_type'] ) );
-			$starting_index++;
+			++$starting_index;
 		}
 	}
 
@@ -312,11 +305,10 @@ class AdsAssetTest extends UnitTest {
 				'headers' => new ArrayObject( [ 'content-length' => $size * 1024 * 1024 ] ),
 			];
 
-			$index++;
+			++$index;
 		}
 
 		return $responses;
-
 	}
 
 
@@ -340,8 +332,4 @@ class AdsAssetTest extends UnitTest {
 
 		return $assets;
 	}
-
-
-
-
 }

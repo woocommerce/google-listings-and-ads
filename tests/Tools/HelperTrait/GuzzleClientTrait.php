@@ -184,6 +184,5 @@ trait GuzzleClientTrait {
 				$result,
 			)
 		);
-
 	}
 }

@@ -39,11 +39,10 @@ class ClientTest extends ContainerAwareUnitTest {
 		$request = new Request( 'GET', 'https://testing.local' );
 
 		$service->add_plugin_version_header()(
-			function( $request, $options ) {
+			function ( $request, $options ) {
 				$this->assertEquals( $this->get_client_name(), $request->getHeader( 'x-client-name' )[0] );
 				$this->assertEquals( $this->get_version(), $request->getHeader( 'x-client-version' )[0] );
 			}
 		)( $request, [] );
-
 	}
 }

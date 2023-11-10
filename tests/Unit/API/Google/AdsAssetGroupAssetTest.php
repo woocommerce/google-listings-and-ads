@@ -105,7 +105,6 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		$this->generate_ads_asset_group_asset_query_mock( $asset_group_asset_data );
 		$this->assertEquals( $expected, $this->asset_group_asset->get_assets_by_asset_group_ids( [ self::TEST_CAMPAIGN_ID ] ) );
-
 	}
 
 	public function test_asset_group_assets_without_asset_groups() {
@@ -162,7 +161,6 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		$this->generate_ads_asset_group_asset_query_mock( $asset_group_asset_data );
 		$this->assertEquals( $expected, $this->asset_group_asset->get_assets_by_final_url( 'https://example.com' ) );
-
 	}
 
 	public function test_get_asset_groups_assets_by_final_url_firt_result() {
@@ -206,7 +204,6 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		$this->generate_ads_asset_group_asset_query_mock( $asset_group_asset_data );
 		$this->assertEquals( $expected, $this->asset_group_asset->get_assets_by_final_url( 'https://example.com', true ) );
-
 	}
 
 
@@ -256,7 +253,6 @@ class AdsAssetGroupAssetTest extends UnitTest {
 		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, self::TEST_ASSET_ID, AssetFieldType::name( AssetFieldType::LANDSCAPE_LOGO ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][0] )->getRemove() );
 		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[0]['id'], AssetFieldType::name( $assets[0]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][1] )->getRemove() );
 		$this->assertEquals( ResourceNames::forAssetGroupAsset( $this->options->get_ads_id(), self::TEST_ASSET_GROUP_ID, $assets[1]['id'], AssetFieldType::name( $assets[1]['field_type'] ) ), ( $grouped_operations['asset_group_asset_operation']['remove'][2] )->getRemove() );
-
 	}
 
 	public function test_edit_asset_group_assets_create_assets() {
@@ -294,7 +290,6 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		// We should not remove old assets.
 		$this->assertArrayNotHasKey( 'remove', $grouped_operations['asset_group_asset_operation'] );
-
 	}
 
 	public function test_edit_asset_group_assets_delete_assets() {
@@ -330,7 +325,6 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		// We should not create assets.
 		$this->assertArrayNotHasKey( 'create', $grouped_operations['asset_group_asset_operation'] );
-
 	}
 
 	protected function generate_overridable_asset(): void {
@@ -386,6 +380,4 @@ class AdsAssetGroupAssetTest extends UnitTest {
 
 		return $grouped_operations;
 	}
-
-
 }

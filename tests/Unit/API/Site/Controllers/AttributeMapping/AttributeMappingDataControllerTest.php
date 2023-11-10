@@ -83,5 +83,4 @@ class AttributeMappingDataControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 	}
-
 }

@@ -147,8 +147,8 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 
 		$form = new Form();
 		$form->set_name( 'variation_attributes' )
-			 ->add( $attribute_form )
-			 ->set_data( [ (string) $variation_index => $this->attribute_manager->get_all_values( $variation ) ] );
+			->add( $attribute_form )
+			->set_data( [ (string) $variation_index => $this->attribute_manager->get_all_values( $variation ) ] );
 
 		return $form;
 	}
@@ -166,5 +166,4 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 			}
 		}
 	}
-
 }

@@ -52,7 +52,7 @@ class AttributeMappingCategoriesController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_categories_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$cats = $this->get_category_tree();
 				return array_map(
@@ -132,6 +132,4 @@ class AttributeMappingCategoriesController extends BaseController {
 			$categories
 		);
 	}
-
-
 }

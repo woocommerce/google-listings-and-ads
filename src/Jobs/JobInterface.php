@@ -30,5 +30,4 @@ interface JobInterface extends Service {
 	 * Init the job.
 	 */
 	public function init(): void;
-
 }

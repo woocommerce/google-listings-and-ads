@@ -92,7 +92,7 @@ class BatchInvalidProductEntry implements JsonSerializable {
 	/**
 	 * @return array
 	 */
-	public function jsonSerialize(): array { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+	public function jsonSerialize(): array {
 		$data = [
 			'woocommerce_id' => $this->get_wc_product_id(),
 			'errors'         => $this->get_errors(),

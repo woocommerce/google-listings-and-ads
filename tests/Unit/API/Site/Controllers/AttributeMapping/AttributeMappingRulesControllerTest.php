@@ -59,7 +59,6 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 		$this->attribute_mapping_rules_query = $this->createMock( AttributeMappingRulesQuery::class );
 		$this->controller                    = new AttributeMappingRulesController( $this->server, $this->attribute_mapping_helper, $this->attribute_mapping_rules_query );
 		$this->controller->register();
-
 	}
 
 
@@ -160,7 +159,6 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 			],
 			$response->get_headers()
 		);
-
 	}
 
 	public function test_create_rule_route() {
@@ -273,7 +271,6 @@ class AttributeMappingRulesControllerTest extends RESTControllerUnitTest {
 			]
 		);
 		$this->assertEquals( 400, $response->get_status() );
-
 	}
 
 	public function test_delete_rule_route() {

@@ -18,7 +18,7 @@ validate_file_exits( "{$wp_tests_dir}/includes/functions.php" );
 $wp_core_dir    = getenv( 'WP_CORE_DIR' ) ?: path_join( sys_get_temp_dir(), '/wordpress' );
 $wp_plugins_dir = path_join( $wp_core_dir, '/wp-content/plugins' );
 
-$gla_dir = dirname( __FILE__, 2 ); // ../../
+$gla_dir = dirname( __DIR__ ); // Parent directory
 
 $wc_dir = getenv( 'WC_DIR' );
 if ( ! $wc_dir ) {

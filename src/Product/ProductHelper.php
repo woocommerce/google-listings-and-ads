@@ -148,7 +148,6 @@ class ProductHelper implements Service {
 			// if there are no Google IDs left then this product is no longer considered "synced"
 			$this->mark_as_unsynced( $product );
 		}
-
 	}
 
 	/**
@@ -369,9 +368,9 @@ class ProductHelper implements Service {
 		}
 
 		return ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_channel_visibility( $product ) ) &&
-			   ( in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true ) ) &&
-			   ( 'publish' === $product_status ) &&
-			   $product_visibility;
+			( in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true ) ) &&
+			( 'publish' === $product_status ) &&
+			$product_visibility;
 	}
 
 	/**
@@ -390,7 +389,7 @@ class ProductHelper implements Service {
 
 		// if it has failed more times than the specified threshold AND if syncing it has failed within the specified window
 		return $failed_attempts > ProductSyncer::FAILURE_THRESHOLD &&
-			   $failed_at > strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) );
+			$failed_at > strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) );
 	}
 
 	/**

@@ -110,7 +110,7 @@ class GLAChannel implements MarketingChannelInterface {
 	 * @return string
 	 */
 	public function get_icon_url(): string {
-		return 'https://woocommerce.com/wp-content/uploads/2021/06/woo-GoogleListingsAds-jworee.png';
+		return 'https://woo.com/wp-content/uploads/2021/06/woo-GoogleListingsAds-jworee.png';
 	}
 
 	/**

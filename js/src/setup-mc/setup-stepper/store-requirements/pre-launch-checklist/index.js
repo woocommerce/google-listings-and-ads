@@ -39,7 +39,7 @@ const PreLaunchChecklist = () => {
 							<AppDocumentationLink
 								context="setup-mc-checklist"
 								linkId="checklist-requirements"
-								href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy"
+								href="https://woo.com/document/google-listings-and-ads/compliance-policy"
 							>
 								{ __(
 									'Read Google Merchant Center requirements',
@@ -72,7 +72,7 @@ const PreLaunchChecklist = () => {
 									context="setup-mc-checklist"
 									linkId="check-website-is-live"
 									type="external"
-									href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#store-is-live"
+									href="https://woo.com/document/google-listings-and-ads/compliance-policy/#store-is-live"
 								>
 									{ __(
 										'Learn more about common landing page issues and how to fix them',
@@ -99,7 +99,7 @@ const PreLaunchChecklist = () => {
 									context="setup-mc-checklist"
 									linkId="check-payment-methods-visible"
 									type="external"
-									href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout"
+									href="https://woo.com/document/google-listings-and-ads/compliance-policy/#complete-checkout"
 								>
 									{ __(
 										"Learn more about Google's checkout requirements & best practices",
@@ -131,7 +131,7 @@ const PreLaunchChecklist = () => {
 									context="setup-mc-checklist"
 									linkId="check-checkout-process-secure"
 									type="external"
-									href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout"
+									href="https://woo.com/document/google-listings-and-ads/compliance-policy/#complete-checkout"
 								>
 									{ __(
 										'Learn to set up SSL on your website',
@@ -158,7 +158,7 @@ const PreLaunchChecklist = () => {
 									context="setup-mc-checklist"
 									linkId="check-refund-tos-visible"
 									type="external"
-									href="https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms"
+									href="https://woo.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms"
 								>
 									{ __(
 										"Learn more about Google's refund policy requirements",

@@ -12,14 +12,11 @@ class ArrayUtil {
 	/**
 	 * Remove empty values from array.
 	 *
-	 * @param array $array A list of strings.
+	 * @param array $strings A list of strings.
 	 *
 	 * @return array A list of strings without empty strings.
 	 */
-	public static function remove_empty_values( array $array ): array {
-		return array_values( array_filter( $array ) );
+	public static function remove_empty_values( array $strings ): array {
+		return array_values( array_filter( $strings ) );
 	}
-
 }
-
-

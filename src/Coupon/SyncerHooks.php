@@ -87,7 +87,8 @@ class SyncerHooks implements Service, Registerable {
 		CouponHelper $coupon_helper,
 		JobRepository $job_repository,
 		MerchantCenterService $merchant_center,
-		WC $wc ) {
+		WC $wc
+	) {
 		$this->update_coupon_job = $job_repository->get( UpdateCoupon::class );
 		$this->delete_coupon_job = $job_repository->get( DeleteCoupon::class );
 		$this->coupon_helper     = $coupon_helper;
@@ -256,7 +257,8 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function is_already_scheduled(
 		int $coupon_id,
-		string $schedule_type ): bool {
+		string $schedule_type
+	): bool {
 		return isset( $this->already_scheduled[ $coupon_id ] ) &&
 			$this->already_scheduled[ $coupon_id ] === $schedule_type;
 	}
@@ -296,7 +298,8 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function set_already_scheduled(
 		int $coupon_id,
-		string $schedule_type ): void {
+		string $schedule_type
+	): void {
 		$this->already_scheduled[ $coupon_id ] = $schedule_type;
 	}
 
@@ -320,4 +323,3 @@ class SyncerHooks implements Service, Registerable {
 		$this->set_already_scheduled( $coupon_id, self::SCHEDULE_TYPE_DELETE );
 	}
 }
-

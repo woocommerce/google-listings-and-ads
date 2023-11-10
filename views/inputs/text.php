@@ -13,4 +13,3 @@ defined( 'ABSPATH' ) || exit;
 $input = $this->input;
 
 woocommerce_wp_text_input( $input );
-

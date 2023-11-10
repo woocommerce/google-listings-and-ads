@@ -94,5 +94,4 @@ class DateTime extends Input {
 	protected function get_local_tz_string(): string {
 		return wp_timezone_string();
 	}
-
 }

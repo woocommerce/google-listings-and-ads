@@ -189,11 +189,11 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$products = $this->create_and_return_supported_test_products();
 
 		$this->target_audience->expects( $this->any() )
-							  ->method( 'get_main_target_country' )
-							  ->willReturn( 'US' );
+			->method( 'get_main_target_country' )
+			->willReturn( 'US' );
 		$this->validator->expects( $this->any() )
-						->method( 'validate' )
-						->willReturn( [] );
+			->method( 'validate' )
+			->willReturn( [] );
 
 		$this->rules_query->expects( $this->any() )
 			->method( 'get_results' )
@@ -233,28 +233,28 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$invalid_product = $products[0];
 
 		$this->validator->expects( $this->any() )
-						->method( 'validate' )
-						->willReturnCallback(
-							function ( WCProductAdapter $product ) use ( $invalid_product ) {
-								if ( $product->get_wc_product()->get_id() === $invalid_product->get_id() ) {
-									$violation_example = $this->createMock( ConstraintViolation::class );
-									$violations        = new ConstraintViolationList();
-									$violations->add( $violation_example );
+			->method( 'validate' )
+			->willReturnCallback(
+				function ( WCProductAdapter $product ) use ( $invalid_product ) {
+					if ( $product->get_wc_product()->get_id() === $invalid_product->get_id() ) {
+						$violation_example = $this->createMock( ConstraintViolation::class );
+						$violations        = new ConstraintViolationList();
+						$violations->add( $violation_example );
 
-									return $violations;
-								}
+						return $violations;
+					}
 
-								return [];
-							}
-						);
+					return [];
+				}
+			);
 
 		$this->rules_query->expects( $this->any() )
 			->method( 'get_results' )
 			->willReturn( [] );
 
 		$this->target_audience->expects( $this->any() )
-							  ->method( 'get_main_target_country' )
-							  ->willReturn( 'US' );
+			->method( 'get_main_target_country' )
+			->willReturn( 'US' );
 
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
 
@@ -280,11 +280,11 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		}
 
 		$this->target_audience->expects( $this->any() )
-							  ->method( 'get_main_target_country' )
-							  ->willReturn( 'US' );
+			->method( 'get_main_target_country' )
+			->willReturn( 'US' );
 		$this->validator->expects( $this->any() )
-						->method( 'validate' )
-						->willReturn( [] );
+			->method( 'validate' )
+			->willReturn( [] );
 		$this->rules_query->expects( $this->any() )
 			->method( 'get_results' )
 			->willReturn( [] );
@@ -316,11 +316,11 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$stale_product_id = $stale_product->get_id();
 
 		$this->target_audience->expects( $this->once() )
-							  ->method( 'get_target_countries' )
-							  ->willReturn( [ 'US' ] );
+			->method( 'get_target_countries' )
+			->willReturn( [ 'US' ] );
 		$this->target_audience->expects( $this->any() )
-							  ->method( 'get_main_target_country' )
-							  ->willReturn( 'US' );
+			->method( 'get_main_target_country' )
+			->willReturn( 'US' );
 
 		$stale_google_ids = [
 			'AU' => "online:en:AU:gla_{$stale_product_id}",
@@ -347,8 +347,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$stale_product_id = $stale_product->get_id();
 
 		$this->target_audience->expects( $this->once() )
-							  ->method( 'get_main_target_country' )
-							  ->willReturn( 'US' );
+			->method( 'get_main_target_country' )
+			->willReturn( 'US' );
 
 		$stale_google_ids = [
 			'AU' => "online:en:AU:gla_{$stale_product_id}",

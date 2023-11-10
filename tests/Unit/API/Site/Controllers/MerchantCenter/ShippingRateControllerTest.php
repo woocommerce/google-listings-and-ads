@@ -91,5 +91,4 @@ class ShippingRateControllerTest extends RESTControllerUnitTest {
 		// Confirm that the 'options' value is an object, not an array.
 		$this->assertIsObject( $data[0]['options'] );
 	}
-
 }

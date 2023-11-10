@@ -78,5 +78,4 @@ class TargetAudience implements Service {
 
 		return in_array( $shop_country, $target_countries, true ) ? $shop_country : $target_countries[0];
 	}
-
 }

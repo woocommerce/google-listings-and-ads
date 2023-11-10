@@ -72,7 +72,7 @@ class SupportedCountriesController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_countries_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$return = [
 				'countries' => $this->get_supported_countries( $request ),
 			];
@@ -108,7 +108,7 @@ class SupportedCountriesController extends BaseController {
 
 		uasort(
 			$supported,
-			function( $a, $b ) {
+			function ( $a, $b ) {
 				return $a['name'] <=> $b['name'];
 			}
 		);

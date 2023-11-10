@@ -45,7 +45,7 @@ class SettingsController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_settings_endpoint_read_callback(): callable {
-		return function() {
+		return function () {
 			$data   = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 			$schema = $this->get_schema_properties();
 			$items  = [];
@@ -63,7 +63,7 @@ class SettingsController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_settings_endpoint_edit_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$schema  = $this->get_schema_properties();
 			$options = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 			if ( ! is_array( $options ) ) {

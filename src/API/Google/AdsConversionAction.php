@@ -186,5 +186,4 @@ class AdsConversionAction implements OptionsAwareInterface {
 		}
 		return $return;
 	}
-
 }

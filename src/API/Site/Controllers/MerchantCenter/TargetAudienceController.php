@@ -108,7 +108,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	 * @return callable
 	 */
 	protected function get_read_audience_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			return $this->prepare_item_for_response( $this->get_target_audience_option(), $request );
 		};
 	}
@@ -121,7 +121,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	 * @since 1.9.0
 	 */
 	protected function get_suggest_audience_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			return $this->prepare_item_for_response( $this->get_target_audience_suggestion(), $request );
 		};
 	}
@@ -132,7 +132,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	 * @return callable
 	 */
 	protected function get_update_audience_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$data = $this->prepare_item_for_database( $request );
 			$this->update_target_audience_option( $data );
 			$this->prepare_item_for_response( $data, $request );
@@ -166,7 +166,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'get_callback' => function() {
+			'get_callback' => function () {
 				return $this->wp->get_locale();
 			},
 		];
@@ -276,12 +276,12 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 
 		// Default to using the Locale class if it is available.
 		if ( class_exists( Locale::class ) ) {
-			return function() use ( $locale ): string {
+			return function () use ( $locale ): string {
 				return Locale::getDisplayLanguage( $locale, $locale );
 			};
 		}
 
-		return function() use ( $locale ): string {
+		return function () use ( $locale ): string {
 			// en_US isn't provided by the translations API.
 			if ( 'en_US' === $locale ) {
 				return 'English';

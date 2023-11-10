@@ -119,8 +119,8 @@ class ShippingSuggestionServiceTest extends UnitTest {
 		parent::setUp();
 		$this->wc = $this->createMock( WC::class );
 		$this->wc->expects( $this->any() )
-				 ->method( 'get_woocommerce_currency' )
-				 ->willReturn( 'USD' );
+			->method( 'get_woocommerce_currency' )
+			->willReturn( 'USD' );
 
 		$this->shipping_zone = $this->createMock( ShippingZone::class );
 
