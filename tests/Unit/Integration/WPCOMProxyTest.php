@@ -81,7 +81,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 	protected function maps_the_response_with_the_item_id( WP_REST_Response $response ): array {
 		return array_reduce(
 			$response->get_data(),
-			function( $c, $i ) {
+			function ( $c, $i ) {
 				$c[ $i['id'] ] = $i;
 				return $c;
 			},
@@ -258,7 +258,6 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( $coupon_1->get_id(), $response->get_data()[0]['id'] );
 		$this->assertEquals( $expected_metadata, $this->format_metadata( $response->get_data()[0]['meta_data'] ) );
-
 	}
 
 	public function test_get_coupons_with_customer_email_and_syncable() {
@@ -352,7 +351,5 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( $this->get_test_metadata(), $this->format_metadata( $response_mapped[ $coupon_1->get_id() ]['meta_data'] ) );
 		$this->assertEquals( $this->get_test_metadata( 'dont-sync-and-show' ), $this->format_metadata( $response_mapped[ $coupon_2->get_id() ]['meta_data'] ) );
-
 	}
-
 }
