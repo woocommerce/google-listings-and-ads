@@ -57,23 +57,11 @@ class AttributesForm extends Form {
 				continue;
 			}
 
-			$attribute_id     = $index;
-			$attribute_type   = $this->attribute_types[ $index ];
-			$applicable_types = call_user_func( [ $attribute_type, 'get_applicable_product_types' ] );
+			$attribute_type          = $this->attribute_types[ $index ];
+			$attribute_product_types = self::get_attribute_product_types( $attribute_type );
 
-			/**
-			 * This filter is documented in AttributeManager::map_attribute_types
-			 *
-			 * @see AttributeManager::map_attribute_types
-			 */
-			$applicable_types = apply_filters( "woocommerce_gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
-
-			/**
-			 * Filters the list of product types to hide the attribute for.
-			 */
-			$hidden_types = apply_filters( "woocommerce_gla_attribute_hidden_product_types_{$attribute_id}", [] );
-
-			$visible_types = array_diff( $applicable_types, $hidden_types );
+			$hidden_types  = $attribute_product_types['hidden'];
+			$visible_types = $attribute_product_types['visible'];
 
 			$input['gla_wrapper_class'] = $input['gla_wrapper_class'] ?? '';
 
@@ -89,6 +77,37 @@ class AttributesForm extends Form {
 		}
 
 		return $view_data;
+	}
+
+	/**
+	 * Get the hidden and visible types of an attribute's applicable product types.
+	 *
+	 * @param string $attribute_type An attribute class extending AttributeInterface
+	 *
+	 * @return array
+	 */
+	public static function get_attribute_product_types( string $attribute_type ): array {
+		$attribute_id             = call_user_func( [ $attribute_type, 'get_id' ] );
+		$applicable_product_types = call_user_func( [ $attribute_type, 'get_applicable_product_types' ] );
+
+		/**
+		 * This filter is documented in AttributeManager::map_attribute_types
+		 *
+		 * @see AttributeManager::map_attribute_types
+		 */
+		$applicable_product_types = apply_filters( "woocommerce_gla_attribute_applicable_product_types_{$attribute_id}", $applicable_product_types, $attribute_type );
+
+		/**
+		 * Filters the list of product types to hide the attribute for.
+		 */
+		$hidden_product_types = apply_filters( "woocommerce_gla_attribute_hidden_product_types_{$attribute_id}", [] );
+
+		$visible_product_types = array_diff( $applicable_product_types, $hidden_product_types );
+
+		return [
+			'hidden'  => $hidden_product_types,
+			'visible' => $visible_product_types,
+		];
 	}
 
 	/**
