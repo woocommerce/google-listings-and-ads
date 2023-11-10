@@ -116,7 +116,7 @@ class AttributesForm extends Form {
 	 *
 	 * @return InputInterface
 	 */
-	protected function init_input( InputInterface $input, AttributeInterface $attribute ) {
+	public static function init_input( InputInterface $input, AttributeInterface $attribute ) {
 		$input->set_id( $attribute::get_id() )
 			->set_name( $attribute::get_id() );
 
@@ -132,7 +132,7 @@ class AttributesForm extends Form {
 				$new_input->set_label( $input->get_label() )
 					->set_description( $input->get_description() );
 
-				return $this->init_input( $new_input, $attribute );
+				return self::init_input( $new_input, $attribute );
 			}
 
 			// add a 'default' value option
@@ -165,7 +165,7 @@ class AttributesForm extends Form {
 
 		$this->validate_interface( $input_type, InputInterface::class );
 
-		$attribute_input = $this->init_input( new $input_type(), new $attribute_type() );
+		$attribute_input = self::init_input( new $input_type(), new $attribute_type() );
 		$this->add( $attribute_input );
 
 		$attribute_id                           = call_user_func( [ $attribute_type, 'get_id' ] );
@@ -214,7 +214,7 @@ class AttributesForm extends Form {
 
 		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
 		if ( $this->has( $attribute_id ) ) {
-			$this->children[ $attribute_id ] = $this->init_input( new $input_type(), new $attribute_type() );
+			$this->children[ $attribute_id ] = self::init_input( new $input_type(), new $attribute_type() );
 		}
 
 		return $this;
