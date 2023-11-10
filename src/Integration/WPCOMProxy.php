@@ -59,7 +59,7 @@ class WPCOMProxy implements Service, Registerable {
 		// Allow to filter by gla_syncable.
 		add_filter(
 			'woocommerce_rest_query_vars',
-			function( $valid_vars ) {
+			function ( $valid_vars ) {
 				$valid_vars[] = 'gla_syncable';
 				return $valid_vars;
 			}
@@ -68,7 +68,6 @@ class WPCOMProxy implements Service, Registerable {
 		foreach ( array_keys( self::$post_types_to_be_filter ) as $object_type ) {
 			$this->register_object_types_filter( $object_type );
 		}
-
 	}
 
 	/**
@@ -92,7 +91,6 @@ class WPCOMProxy implements Service, Registerable {
 			10,
 			2
 		);
-
 	}
 
 	/**
@@ -110,12 +108,12 @@ class WPCOMProxy implements Service, Registerable {
 	 * Check if a single item is syncable.
 	 *
 	 * @param WP_REST_Response $response The response object.
-	 * @param mixed            $object   The object.
+	 * @param mixed            $item     The item.
 	 * @param WP_REST_Request  $request  The request object.
 	 *
 	 * @return WP_REST_Response The response object updated.
 	 */
-	public function check_item_is_syncable( $response, $object, WP_REST_Request $request ): WP_REST_Response {
+	public function check_item_is_syncable( $response, $item, WP_REST_Request $request ): WP_REST_Response {
 		if ( ! $this->should_filter_data( $request ) ) {
 			return $response;
 		}
@@ -150,7 +148,6 @@ class WPCOMProxy implements Service, Registerable {
 			],
 			403
 		);
-
 	}
 
 	/**
@@ -182,12 +179,12 @@ class WPCOMProxy implements Service, Registerable {
 	 * Filter the metadata of an object.
 	 *
 	 * @param WP_REST_Response $response The response object.
-	 * @param mixed            $object   The object.
+	 * @param mixed            $item     The item.
 	 * @param WP_REST_Request  $request  The request object.
 	 *
 	 * @return WP_REST_Response The response object updated.
 	 */
-	public function filter_metadata( WP_REST_Response $response, $object, WP_REST_Request $request ): WP_REST_Response {
+	public function filter_metadata( WP_REST_Response $response, $item, WP_REST_Request $request ): WP_REST_Response {
 		if ( ! $this->should_filter_data( $request ) ) {
 			return $response;
 		}
@@ -209,5 +206,4 @@ class WPCOMProxy implements Service, Registerable {
 
 		return $response;
 	}
-
 }
