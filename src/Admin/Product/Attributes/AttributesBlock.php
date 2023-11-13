@@ -118,7 +118,9 @@ class AttributesBlock implements Service, Registerable, Conditional {
 	 * @param BlockInterface $section The section block to add attribute blocks
 	 */
 	private function add_blocks( BlockInterface $section ): void {
-		$product_types   = $this->is_variation_template( $section ) ? [ 'variation' ] : $this->get_applicable_product_types();
+		$is_variation_template = $this->is_variation_template( $section );
+
+		$product_types   = $is_variation_template ? [ 'variation' ] : $this->get_applicable_product_types();
 		$attribute_types = $this->attribute_manager->get_attribute_types_for_product_types( $product_types );
 
 		foreach ( $attribute_types as $attribute_type ) {
@@ -130,9 +132,21 @@ class AttributesBlock implements Service, Registerable, Conditional {
 				continue;
 			}
 
-			$block = $section->add_block( $input->get_block_config() );
-
-			$block->add_hide_condition( $this->get_hide_condition( $attribute_type ) );
+			if ( $is_variation_template ) {
+				// When editing a variation, its product type on the frontend side won't be changed dynamically.
+				// In addition, the property of `editedProduct.type` doesn't exist in the variation product.
+				// Therefore, instead of using the ProductTemplates API `add_hide_condition` to conditionally
+				// hide attributes, it doesn't add invisible attribute blocks from the beginning.
+				if ( $this->is_visible_for_variation( $attribute_type ) ) {
+					$section->add_block( $input->get_block_config() );
+				}
+			} else {
+				// When editing a simple or variable product, its product type on the frontend side can be
+				// changed dynamically. So, it needs to use the ProductTemplates API `add_hide_condition`
+				// to conditionally hide attributes.
+				$block = $section->add_block( $input->get_block_config() );
+				$block->add_hide_condition( $this->get_hide_condition( $attribute_type ) );
+			}
 		}
 	}
 
@@ -145,6 +159,19 @@ class AttributesBlock implements Service, Registerable, Conditional {
 	 */
 	private function is_variation_template( BlockInterface $block ): bool {
 		return 'product-variation' === $block->get_root_template()->get_id();
+	}
+
+	/**
+	 * Determine if the given attribute is visible for variation product after applying related filters.
+	 *
+	 * @param string $attribute_type An attribute class extending AttributeInterface
+	 *
+	 * @return bool
+	 */
+	private function is_visible_for_variation( string $attribute_type ): bool {
+		$attribute_product_types = AttributesForm::get_attribute_product_types( $attribute_type );
+
+		return in_array( 'variation', $attribute_product_types['visible'], true );
 	}
 
 	/**
@@ -163,12 +190,6 @@ class AttributesBlock implements Service, Registerable, Conditional {
 
 		$conditions = array_map(
 			function ( $type ) {
-				// The property of `editedProduct.type` doesn't exist in the variation product.
-				// Maybe there's a more robust way to replace this workaround in the future.
-				if ( 'variation' === $type ) {
-					return '! editedProduct.parent_id > 0';
-				}
-
 				return "editedProduct.type !== '{$type}'";
 			},
 			$attribute_product_types['visible']
