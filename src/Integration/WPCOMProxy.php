@@ -106,7 +106,8 @@ class WPCOMProxy implements Service, Registerable {
 	 * @return bool
 	 */
 	protected function should_filter_data( WP_REST_Request $request ): bool {
-		return $request->get_param( 'gla_syncable' ) !== null;
+		// WPCOM proxy will set the gla_syncable to 1 if the request is coming from the proxy and it is the Google App.
+		return $request->get_param( 'gla_syncable' ) === '1';
 	}
 
 	/**

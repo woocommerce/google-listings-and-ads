@@ -96,7 +96,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->add_metadata( $product_1->get_id(), $this->get_test_metadata() );
 		$this->add_metadata( $product_2->get_id(), $this->get_test_metadata( 'dont-sync-and-show' ) );
 
-		$response = $this->do_request( '/wc/v3/products', 'GET', [ 'gla_syncable' => 1 ] );
+		$response = $this->do_request( '/wc/v3/products', 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertCount( 1, $response->get_data() );
@@ -110,6 +110,27 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->assertEquals( $expected_metadata, $this->format_metadata( $response->get_data()[0]['meta_data'] ) );
 	}
 
+	public function test_get_products_with_gla_syncable_false() {
+		$product_1 = ProductHelper::create_simple_product();
+		$product_2 = ProductHelper::create_simple_product();
+
+		$this->add_metadata( $product_1->get_id(), $this->get_test_metadata() );
+		$this->add_metadata( $product_2->get_id(), $this->get_test_metadata( 'dont-sync-and-show' ) );
+
+		$response = $this->do_request( '/wc/v3/products', 'GET', [ 'gla_syncable' => '0' ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertCount( 2, $response->get_data() );
+
+		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
+
+		$this->assertArrayHasKey( $product_1->get_id(), $response_mapped );
+		$this->assertArrayHasKey( $product_2->get_id(), $response_mapped );
+
+		$this->assertEquals( $this->get_test_metadata(), $this->format_metadata( $response_mapped[ $product_1->get_id() ]['meta_data'] ) );
+		$this->assertEquals( $this->get_test_metadata( 'dont-sync-and-show' ), $this->format_metadata( $response_mapped[ $product_2->get_id() ]['meta_data'] ) );
+	}
+
 	public function test_get_products_without_gla_visibility_metadata() {
 		$product_1 = ProductHelper::create_simple_product();
 		$product_2 = ProductHelper::create_simple_product();
@@ -117,7 +138,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->add_metadata( $product_1->get_id(), $this->get_test_metadata( null ) );
 		$this->add_metadata( $product_2->get_id(), $this->get_test_metadata() );
 
-		$response = $this->do_request( '/wc/v3/products', 'GET', [ 'gla_syncable' => 1 ] );
+		$response = $this->do_request( '/wc/v3/products', 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertCount( 1, $response->get_data() );
@@ -138,7 +159,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		delete_post_meta( $product->get_id(), 'customer_email' );
 
-		$response = $this->do_request( '/wc/v3/products/' . $product->get_id(), 'GET', [ 'gla_syncable' => 1 ] );
+		$response = $this->do_request( '/wc/v3/products/' . $product->get_id(), 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 403, $response->get_status() );
 		$this->assertEquals( 'gla_rest_item_no_syncable', $response->get_data()['code'] );
@@ -149,7 +170,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$product = ProductHelper::create_simple_product();
 		$this->add_metadata( $product->get_id(), $this->get_test_metadata() );
 
-		$response = $this->do_request( '/wc/v3/products/' . $product->get_id(), 'GET', [ 'gla_syncable' => 1 ] );
+		$response = $this->do_request( '/wc/v3/products/' . $product->get_id(), 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( $product->get_id(), $response->get_data()['id'] );
@@ -195,7 +216,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 			$this->add_metadata( $variation['variation_id'], $this->get_test_metadata( null ) );
 		}
 
-		$response = $this->do_request( '/wc/v3/products/' . $product->get_id() . '/variations', 'GET', [ 'gla_syncable' => 1 ] );
+		$response = $this->do_request( '/wc/v3/products/' . $product->get_id() . '/variations', 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertCount( count( $variations ), $response->get_data() );
@@ -246,7 +267,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		delete_post_meta( $coupon_1->get_id(), 'customer_email' );
 		delete_post_meta( $coupon_2->get_id(), 'customer_email' );
 
-		$response = $this->do_request( '/wc/v3/coupons', 'GET', [ 'gla_syncable' => 1 ] );
+		$response = $this->do_request( '/wc/v3/coupons', 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertCount( 1, $response->get_data() );
@@ -267,7 +288,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		delete_post_meta( $coupon->get_id(), 'customer_email' );
 
-		$response = $this->do_request( '/wc/v3/coupons', 'GET', [ 'gla_syncable' => 1 ] );
+		$response = $this->do_request( '/wc/v3/coupons', 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertCount( 1, $response->get_data() );
@@ -288,7 +309,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		delete_post_meta( $coupon->get_id(), 'customer_email' );
 
-		$response = $this->do_request( '/wc/v3/coupons', 'GET', [ 'gla_syncable' => 1 ] );
+		$response = $this->do_request( '/wc/v3/coupons', 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertCount( 1, $response->get_data() );
@@ -308,7 +329,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		delete_post_meta( $coupon->get_id(), 'customer_email' );
 
-		$response = $this->do_request( '/wc/v3/coupons/' . $coupon->get_id(), 'GET', [ 'gla_syncable' => 1 ] );
+		$response = $this->do_request( '/wc/v3/coupons/' . $coupon->get_id(), 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 403, $response->get_status() );
 		$this->assertEquals( 'gla_rest_item_no_syncable', $response->get_data()['code'] );
@@ -320,7 +341,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		delete_post_meta( $coupon->get_id(), 'customer_email' );
 
-		$response = $this->do_request( '/wc/v3/coupons/' . $coupon->get_id(), 'GET', [ 'gla_syncable' => 1 ] );
+		$response = $this->do_request( '/wc/v3/coupons/' . $coupon->get_id(), 'GET', [ 'gla_syncable' => '1' ] );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( $coupon->get_id(), $response->get_data()['id'] );
