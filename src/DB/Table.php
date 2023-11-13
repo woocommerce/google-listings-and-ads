@@ -137,9 +137,13 @@ abstract class Table implements TableInterface {
 	 * @since x.x.x
 	 */
 	public function has_column( string $column_name ): bool {
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$this->wpdb->get_results(
 			$this->wpdb->prepare( "SHOW COLUMNS FROM `{$this->get_sql_safe_name()}` LIKE %s", [ '%' . $this->wpdb->esc_like( $column_name ) . '%' ] )
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 
 		return (bool) $this->wpdb->num_rows;
 	}
