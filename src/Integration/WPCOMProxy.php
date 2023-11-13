@@ -24,7 +24,7 @@ class WPCOMProxy implements Service, Registerable {
 	 *
 	 * @var array
 	 */
-	public static $post_types_to_be_filter = [
+	public static $post_types_to_filter = [
 		'product'           => [
 			'meta_query' => [
 				[
@@ -65,7 +65,7 @@ class WPCOMProxy implements Service, Registerable {
 			}
 		);
 
-		foreach ( array_keys( self::$post_types_to_be_filter ) as $object_type ) {
+		foreach ( array_keys( self::$post_types_to_filter ) as $object_type ) {
 			$this->register_object_types_filter( $object_type );
 		}
 	}
@@ -164,7 +164,7 @@ class WPCOMProxy implements Service, Registerable {
 		}
 
 		$post_type         = $args['post_type'];
-		$post_type_filters = self::$post_types_to_be_filter[ $post_type ];
+		$post_type_filters = self::$post_types_to_filter[ $post_type ];
 
 		if ( ! isset( $post_type_filters['meta_query'] ) || ! is_array( $post_type_filters['meta_query'] ) ) {
 			return $args;
