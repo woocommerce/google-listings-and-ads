@@ -101,7 +101,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 		$this->share_migration( MigrationVersion141::class, MerchantIssueTable::class );
 		$this->share_migration( Migration20211228T1640692399::class, ShippingRateTable::class, OptionsInterface::class );
 		$this->share_with_tags( Migration20220524T1653383133::class, BudgetRecommendationTable::class );
-		$this->share_with_tags( Migration20231109T1653383133::class, BudgetRecommendationTable::class );
+		$this->share_migration( Migration20231109T1653383133::class, BudgetRecommendationTable::class );
 		$this->share_with_tags( Migrator::class, MigrationInterface::class );
 	}
 

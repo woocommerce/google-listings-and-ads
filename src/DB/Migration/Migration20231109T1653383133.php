@@ -26,9 +26,11 @@ class Migration20231109T1653383133 extends AbstractMigration {
 	/**
 	 * Migration constructor.
 	 *
+	 * @param \wpdb $wpdb
 	 * @param BudgetRecommendationTable $budget_rate_table
 	 */
-	public function __construct( BudgetRecommendationTable $budget_rate_table ) {
+	public function __construct( \wpdb $wpdb, BudgetRecommendationTable $budget_rate_table ) {
+		parent::__construct( $wpdb );
 		$this->budget_rate_table = $budget_rate_table;
 	}
 
@@ -39,7 +41,7 @@ class Migration20231109T1653383133 extends AbstractMigration {
 	 * @return string A version number. For example: 1.4.1
 	 */
 	public function get_applicable_version(): string {
-		return 'x.x.x';
+		return '2.5.11';
 	}
 
 	/**
