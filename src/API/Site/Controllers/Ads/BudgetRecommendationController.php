@@ -125,8 +125,8 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 			$returned_recommendations = array_map(
 				function ( $recommendation ) {
 					return [
-						'country'       => $recommendation['country'],
-						'daily_budget'  => (int) $recommendation['daily_budget'],
+						'country'      => $recommendation['country'],
+						'daily_budget' => (int) $recommendation['daily_budget'],
 					];
 				},
 				$recommendations
@@ -160,15 +160,15 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				'items' => [
 					'type'       => 'object',
 					'properties' => [
-						'country'           => [
+						'country'      => [
 							'type'        => 'string',
 							'description' => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
-						'daily_budget'  => [
+						'daily_budget' => [
 							'type'        => 'number',
 							'description' => __( 'The recommended daily budget for a country.', 'google-listings-and-ads' ),
-						]
+						],
 					],
 				],
 			],

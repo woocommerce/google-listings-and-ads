@@ -85,10 +85,10 @@ SQL;
 	 */
 	public function get_columns(): array {
 		return [
-			'id'            => true,
-			'currency'      => true,
-			'country'       => true,
-			'daily_budget'  => true,
+			'id'           => true,
+			'currency'     => true,
+			'country'      => true,
+			'daily_budget' => true,
 		];
 	}
 

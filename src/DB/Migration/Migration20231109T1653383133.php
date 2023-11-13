@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration
  *
- * @since 2.5.11
+ * @since x.x.x
  */
 class Migration20231109T1653383133 extends AbstractMigration {
 
@@ -39,7 +39,7 @@ class Migration20231109T1653383133 extends AbstractMigration {
 	 * @return string A version number. For example: 1.4.1
 	 */
 	public function get_applicable_version(): string {
-		return '2.5.11';
+		return 'x.x.x';
 	}
 
 	/**
@@ -49,15 +49,15 @@ class Migration20231109T1653383133 extends AbstractMigration {
 	 */
 	public function apply(): void {
 		if ( $this->budget_rate_table->exists() && $this->budget_rate_table->has_column( 'daily_budget_low' ) ) {
-			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->budget_rate_table->get_name() )}` RENAME COLUMN `daily_budget_low` TO `daily_budget`" );
+			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->budget_rate_table->get_name() )}` RENAME COLUMN `daily_budget_low` TO `daily_budget`" );    // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
 		}
 
 		if ( $this->budget_rate_table->exists() && $this->budget_rate_table->has_column( 'daily_budget_high' ) ) {
-			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->budget_rate_table->get_name() )}` DROP COLUMN `daily_budget_high`" );
+			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->budget_rate_table->get_name() )}` DROP COLUMN `daily_budget_high`" ); // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
 		}
 
 		$this->budget_rate_table->reload_data();
 	}
-
-
 }
