@@ -53,20 +53,20 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 		$budget_recommendation_data = [
 			[
-				'country'       => 'US',
-				'daily_budget'  => '330',
+				'country'      => 'US',
+				'daily_budget' => '330',
 			],
 			[
-				'country'       => 'GB',
-				'daily_budget'  => '245',
+				'country'      => 'GB',
+				'daily_budget' => '245',
 			],
 			[
-				'country'       => 'TW',
-				'daily_budget'  => '95',
+				'country'      => 'TW',
+				'daily_budget' => '95',
 			],
 			[
-				'country'       => 'JP',
-				'daily_budget'  => '110',
+				'country'      => 'JP',
+				'daily_budget' => '110',
 			],
 		];
 
@@ -74,20 +74,20 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			'currency'        => 'TWD',
 			'recommendations' => [
 				[
-					'country'           => 'US',
-					'daily_budget'  => 330,
+					'country'      => 'US',
+					'daily_budget' => 330,
 				],
 				[
-					'country'           => 'GB',
-					'daily_budget'  => 245,
+					'country'      => 'GB',
+					'daily_budget' => 245,
 				],
 				[
-					'country'           => 'TW',
-					'daily_budget'  => 95,
+					'country'      => 'TW',
+					'daily_budget' => 95,
 				],
 				[
-					'country'           => 'JP',
-					'daily_budget'  => 110,
+					'country'      => 'JP',
+					'daily_budget' => 110,
 				],
 			],
 		];
