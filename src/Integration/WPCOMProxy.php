@@ -76,7 +76,12 @@ class WPCOMProxy implements Service, Registerable {
 	 * @param string $object_type The object type.
 	 */
 	protected function register_object_types_filter( string $object_type ): void {
-		add_filter( 'woocommerce_rest_prepare_' . $object_type . '_object', [ $this, 'check_item_is_syncable' ], 9, 3 );
+		add_filter(
+			'woocommerce_rest_prepare_' . $object_type . '_object',
+			[ $this, 'check_item_is_syncable' ],
+			9,
+			3
+		);
 
 		add_filter(
 			'woocommerce_rest_prepare_' . $object_type . '_object',
@@ -153,7 +158,7 @@ class WPCOMProxy implements Service, Registerable {
 	/**
 	 * Query items with specific args for example where _wc_gla_visibility is set to sync-and-show.
 	 *
-	 * @param array           $args The query args.
+	 * @param array           $args    The query args.
 	 * @param WP_REST_Request $request The request object.
 	 *
 	 * @return array The query args updated.
