@@ -148,7 +148,7 @@ SQL;
 	 * @param array    $values
 	 */
 	private function insert_chunk( array $placeholders, array $values ): void {
-		$sql  = "INSERT INTO `{$this->get_sql_safe_name()}` (currency,country,daily_budget) VALUES\n";
+		$sql  = "INSERT INTO `{$this->get_sql_safe_name()}` (country,daily_budget,currency) VALUES\n";
 		$sql .= implode( ",\n", $placeholders );
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
