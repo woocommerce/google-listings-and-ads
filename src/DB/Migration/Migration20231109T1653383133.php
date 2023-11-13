@@ -26,7 +26,7 @@ class Migration20231109T1653383133 extends AbstractMigration {
 	/**
 	 * Migration constructor.
 	 *
-	 * @param \wpdb $wpdb
+	 * @param \wpdb                     $wpdb
 	 * @param BudgetRecommendationTable $budget_rate_table
 	 */
 	public function __construct( \wpdb $wpdb, BudgetRecommendationTable $budget_rate_table ) {
