@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WP_REST_Response;
 use WP_REST_Request;
 
@@ -20,6 +21,13 @@ defined( 'ABSPATH' ) || exit;
 class WPCOMProxy implements Service, Registerable {
 
 	/**
+	 * The meta key used to filter the items.
+	 *
+	 * @var string
+	 */
+	public const KEY_VISIBILITY = '_wc_gla_visibility';
+
+	/**
 	 * The Post types to be filtered.
 	 *
 	 * @var array
@@ -28,8 +36,8 @@ class WPCOMProxy implements Service, Registerable {
 		'product'           => [
 			'meta_query' => [
 				[
-					'key'     => '_wc_gla_visibility',
-					'value'   => 'sync-and-show',
+					'key'     => self::KEY_VISIBILITY,
+					'value'   => ChannelVisibility::SYNC_AND_SHOW,
 					'compare' => '=',
 				],
 			],
@@ -37,8 +45,8 @@ class WPCOMProxy implements Service, Registerable {
 		'shop_coupon'       => [
 			'meta_query' => [
 				[
-					'key'     => '_wc_gla_visibility',
-					'value'   => 'sync-and-show',
+					'key'     => self::KEY_VISIBILITY,
+					'value'   => ChannelVisibility::SYNC_AND_SHOW,
 					'compare' => '=',
 				],
 				[
@@ -139,7 +147,7 @@ class WPCOMProxy implements Service, Registerable {
 		$meta_data = $response->get_data()['meta_data'] ?? [];
 
 		foreach ( $meta_data as $meta ) {
-			if ( $meta->key === '_wc_gla_visibility' && $meta->value === 'sync-and-show' ) {
+			if ( $meta->key === self::KEY_VISIBILITY && $meta->value === ChannelVisibility::SYNC_AND_SHOW ) {
 				return $response;
 			}
 		}
