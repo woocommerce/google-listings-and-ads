@@ -78,7 +78,7 @@ class WPCOMProxy implements Service, Registerable {
 	protected function register_object_types_filter( string $object_type ): void {
 		add_filter(
 			'woocommerce_rest_prepare_' . $object_type . '_object',
-			[ $this, 'check_item_is_syncable' ],
+			[ $this, 'filter_response_by_syncable_item' ],
 			9,
 			3
 		);
@@ -111,7 +111,7 @@ class WPCOMProxy implements Service, Registerable {
 	}
 
 	/**
-	 * Check if a single item is syncable.
+	 * Filter response by syncable item.
 	 *
 	 * @param WP_REST_Response $response The response object.
 	 * @param mixed            $item     The item.
@@ -119,7 +119,7 @@ class WPCOMProxy implements Service, Registerable {
 	 *
 	 * @return WP_REST_Response The response object updated.
 	 */
-	public function check_item_is_syncable( $response, $item, WP_REST_Request $request ): WP_REST_Response {
+	public function filter_response_by_syncable_item( $response, $item, WP_REST_Request $request ): WP_REST_Response {
 		if ( ! $this->should_filter_data( $request ) ) {
 			return $response;
 		}
@@ -182,7 +182,7 @@ class WPCOMProxy implements Service, Registerable {
 	}
 
 	/**
-	 * Filter the metadata of an object.
+	 * Filter the response metadata returning all public metadata and those prefixed with _wc_gla
 	 *
 	 * @param WP_REST_Response $response The response object.
 	 * @param mixed            $item     The item.
@@ -207,7 +207,6 @@ class WPCOMProxy implements Service, Registerable {
 			}
 		}
 
-		$data['meta_data'] = array_values( $data['meta_data'] );
 		$response->set_data( $data );
 
 		return $response;
