@@ -63,7 +63,7 @@
 		"@wordpress/jest-preset-default": "^11.9.0",
 		"@wordpress/prettier-config": "2.18.1",
 		"@wordpress/scripts": "^24.6.0",
-		"axios": "^1.4.0",
+		"axios": "^1.6.0",
 		"bundlewatch": "^0.3.3",
 		"eslint": "^7.17.0",
 		"eslint-import-resolver-webpack": "^0.13.1",
