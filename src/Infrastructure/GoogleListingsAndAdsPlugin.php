@@ -62,8 +62,6 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 				$service->activate();
 			}
 		}
-
-		flush_rewrite_rules();
 	}
 
 	/**
@@ -79,8 +77,6 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 				$service->deactivate();
 			}
 		}
-
-		flush_rewrite_rules();
 	}
 
 	/**
