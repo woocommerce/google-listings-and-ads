@@ -210,15 +210,6 @@ class ConnectionTest implements Service, Registerable {
 				<?php } ?>
 
 				<?php if ( $blog_token ) { ?>
-					<tr>
-						<th>Test: send partner notification request to WPCOM</th>
-						<td>
-							 <p>
-							 <a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'partner-notification-test' ], $url ), 'partner-notification-test' ) ); ?>">Send partner notification request</a>
-					 </p>
-					 </td>
-				  </tr>
-
 				<tr>
 					<th>Test Authenticated WCS Request:</th>
 					<td>
@@ -636,6 +627,47 @@ class ConnectionTest implements Service, Registerable {
 				</form>
 			<?php } ?>
 
+			<hr />
+
+			<?php if ( $blog_token ) { ?>
+				<h2 class="title">Partner API Pull Integration</h2>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Send partner notification request to WPCOM:</th>
+							<td>
+								<p>
+									<label>
+										Product/Coupon/Shipping ID <input name="item_id" type="text" value="<?php echo ! empty( $_GET['item_id'] ) ? intval( $_GET['item_id'] ) : ''; ?>" />
+									</label>
+									<br />
+									<label>
+										Partner APP Client ID <input name="client_id" type="text" value="<?php echo ! empty( $_GET['client_id'] ) ? $_GET['client_id'] : ''; ?>" />
+									</label>
+									<br />
+									<label>
+										Partner APP Secret ID <input name="client_secret" type="text" value="<?php echo ! empty( $_GET['client_secret'] ) ? $_GET['client_secret'] : ''; ?>" />
+									</label>
+									<br />
+									<label>
+										Topic
+										<select name="topic">
+											<option value="product/create" <?php echo (! isset( $_GET['topic'] ) || $_GET['topic'] === 'product/create') ? "selected" : "" ?>>product/create</option>
+											<option value="product/delete" <?php echo $_GET['topic'] === 'product/delete' ? "selected" : ""?>>product/delete</option>
+											<option value="product/update" <?php echo $_GET['topic'] === 'product/update' ? "selected" : ""?>>product/update</option>
+										</select>
+									</label>
+									<button class="button">Send Notification</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'partner-notification' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="partner-notification" type="hidden" />
+				</form>
+			<?php } ?>
+
 		</div>
 		<?php
 	}
@@ -707,11 +739,16 @@ class ConnectionTest implements Service, Registerable {
 			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
-		if ( 'partner-notification-test' === $_GET['action'] && check_admin_referer( 'partner-notification-test' ) ) {
+		if ( 'partner-notification' === $_GET['action'] && check_admin_referer( 'partner-notification' ) ) {
+			if ( ! isset( $_GET['client_secret'], $_GET['client_id'],  $_GET['topic'], $_GET['item_id'] ) ) {
+				$this->response .= "\n Client Secret, Client Id, Topic and Item ID are required.";
+				return;
+			}
+
 			$blog_id = Jetpack_Options::get_option( 'id' );
 			$gmc_id  = $this->container->get( OptionsInterface::class )->get_merchant_id();
 			$partner = 'google';
-			$topic   = 'product/update';
+			$topic   = $_GET[ 'topic' ];
 			$url     = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/{$partner}/notifications";
 			$remote_args = [
 				  'method'  => 'POST',
@@ -720,10 +757,10 @@ class ConnectionTest implements Service, Registerable {
 				  'headers' => [
 					    'x-woocommerce-topic'      => $topic,
 					    'x-woocommerce-gmc-id'     => $gmc_id,
-					    'x-woocommerce-partner-id' => "92341",
+					    'x-woocommerce-partner-id' => $_GET['client_id'],
 					  ],
 				  'body' => [
-					  'product_id' => "35",
+					  'item_id' => $_GET['item_id'],
 				  ],
 				  'url'     => $url,
 				];
@@ -731,10 +768,17 @@ class ConnectionTest implements Service, Registerable {
 			$response        = Client::remote_request( $remote_args, wp_json_encode( $remote_args['body'] ) );
 			$body            = wp_remote_retrieve_body( $response );
 			$decoded_body = json_decode( $body, true );
-			$decoded_hash = base64_decode( $decoded_body["hash"] );
-			$hash = hash_hmac('sha1', implode( "\n", $decoded_body ) . "\n", "w0H1kcLi4P0e3p7ADETr4kdn1BTVhoUNcLyQzpAQ4X9diKtusQ7u4OhvMvUjiC9e", true);
-			$is_hash_ok = hash_equals( $hash, $decoded_hash );
-			$this->response .= 'Partner notification response: ' . $body . 'Signed: ' . $is_hash_ok ? 'OK' : 'NOK';
+			$response_hash = base64_decode( wp_remote_retrieve_header( $response,'x-woocommerce-signature' ) );
+			$hash = hash_hmac( 'sha1', serialize( $decoded_body ), $_GET['client_secret'], true );
+
+			$is_hash_ok = hash_equals( $hash, $response_hash );
+			$this->response .= "\n Serialized Partner Notification response: " . $body;
+			if ( $is_hash_ok ) {
+				$this->response .= "\n OK - HMAC Signature is present and matches";
+			} else {
+				$this->response .= "\n NOK - HMAC Signature is not present or doesn't match";
+			}
+			return;
 		}
 
 		if ( 'wcs-auth-test' === $_GET['action'] && check_admin_referer( 'wcs-auth-test' ) ) {
