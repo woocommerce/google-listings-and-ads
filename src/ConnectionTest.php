@@ -9,6 +9,7 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
+use Automattic\Jetpack\Connection\Client;
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
@@ -30,6 +31,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
+use Jetpack_Client;
 use Jetpack_Options;
 use WP_REST_Request as Request;
 
@@ -714,6 +716,36 @@ class ConnectionTest implements Service, Registerable {
 			}
 
 			$this->response .= wp_remote_retrieve_body( $response );
+		}
+
+		if ( 'partner-notification-test' === $_GET['action'] && check_admin_referer( 'partner-notification-test' ) ) {
+			$blog_id = Jetpack_Options::get_option( 'id' );
+			$gmc_id  = $this->container->get( OptionsInterface::class )->get_merchant_id();
+			$partner = 'google';
+			$topic   = 'product/update';
+			$url     = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/{$partner}/notifications";
+			$remote_args = [
+				  'method'  => 'POST',
+				  'blog_id' => $blog_id,
+				  'timeout' => 30,
+				  'headers' => [
+					    'x-woocommerce-topic'      => $topic,
+					    'x-woocommerce-gmc-id'     => $gmc_id,
+					    'x-woocommerce-partner-id' => "92341",
+					  ],
+				  'body' => [
+					  'product_id' => "35",
+				  ],
+				  'url'     => $url,
+				];
+
+			$response        = Client::remote_request( $remote_args, wp_json_encode( $remote_args['body'] ) );
+			$body            = wp_remote_retrieve_body( $response );
+			$decoded_body = json_decode( $body, true );
+			$decoded_hash = base64_decode( $decoded_body["hash"] );
+			$hash = hash_hmac('sha1', implode( "\n", $decoded_body ) . "\n", "w0H1kcLi4P0e3p7ADETr4kdn1BTVhoUNcLyQzpAQ4X9diKtusQ7u4OhvMvUjiC9e", true);
+			$is_hash_ok = hash_equals( $hash, $decoded_hash );
+			$this->response .= 'Partner notification response: ' . $body . 'Signed: ' . $is_hash_ok ? 'OK' : 'NOK';
 		}
 
 		if ( 'wcs-auth-test' === $_GET['action'] && check_admin_referer( 'wcs-auth-test' ) ) {
