@@ -122,12 +122,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Add correct Destinations for Supported Countries in Coupons.
 * Tweak - Declare cart_checkout_blocks feature compatibility.
 
-= 2.5.9 - 2023-10-10 =
-* Dev - E2E - Setup Google Ads Step 2 - Create your paid campaign.
-* Dev - E2E - Setup Google Ads Step 3 - Setup billing data.
-* Dev - E2E tests - Track gtag event on specific page.
-* Dev - Prevent Prefix Vendor to be added twice.
-* Fix - Avoid creating two campaigns after completing the Google Ads onboarding.
-* Fix - The auto-refresh processing of billing status in the Google Ads onboarding flow.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
