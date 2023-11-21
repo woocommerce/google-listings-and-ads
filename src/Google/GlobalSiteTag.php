@@ -121,6 +121,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		add_action(
 			'woocommerce_before_thankyou',
 			function ( $order_id ) use ( $ads_conversion_id, $ads_conversion_label ) {
+				// TODO: Remove this temporal workaround once this issue is fixed: https://github.com/woocommerce/woocommerce-blocks/issues/11851
+				if ( $order_id instanceof \WC_Order ) {
+					$order_id = $order_id->get_id();
+				}
 				$this->maybe_display_conversion_and_purchase_event_snippets( $ads_conversion_id, $ads_conversion_label, $order_id );
 			},
 		);
