@@ -769,7 +769,7 @@ class ConnectionTest implements Service, Registerable {
 			$body            = wp_remote_retrieve_body( $response );
 			$decoded_body = json_decode( $body, true );
 			$response_hash = base64_decode( wp_remote_retrieve_header( $response,'x-woocommerce-signature' ) );
-			$hash = hash_hmac( 'sha1', serialize( $decoded_body ), $_GET['client_secret'], true );
+			$hash = hash_hmac( 'sha256', wp_json_encode( $decoded_body ), $_GET['client_secret'], true );
 
 			$is_hash_ok = hash_equals( $hash, $response_hash );
 			$this->response .= "\n Serialized Partner Notification response: " . $body;
