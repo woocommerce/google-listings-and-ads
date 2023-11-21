@@ -106,6 +106,6 @@ export async function checkout( page ) {
 	await page.locator( 'text=Place order' ).click();
 
 	await expect(
-		page.locator( '.woocommerce-thankyou-order-received' )
+		page.locator( '.wc-block-order-confirmation-status' )
 	).toContainText( 'order has been received' );
 }
