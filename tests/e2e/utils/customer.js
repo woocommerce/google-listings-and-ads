@@ -100,6 +100,9 @@ export async function checkout( page ) {
 		await page.locator( '#billing-state input' ).fill( user.statename );
 	}
 
+	//TODO: See if there's an alternative method to click the button without relying on waitForTimeout.
+	await page.waitForTimeout( 3000 );
+
 	await page.locator( 'text=Place order' ).click();
 
 	await expect(
