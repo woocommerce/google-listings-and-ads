@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.4
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.5.11
+Stable tag: 2.5.12
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
