@@ -111,6 +111,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.12 - 2023-11-22 =
+* Dev - Fix E2E gtag events tests.
+* Dev - Update WordPress CS to 3.0.
+* Dev - Update phpunit polyfills to 1.1 for WP 6.4.
+* Tweak - Add filter to be able to build custom shipping method rate handers.
+* Tweak - Remove rewrite rules flush.
+
 = 2.5.11 - 2023-11-07 =
 * Add - Record tracking events for moving steps on the campaign creation and editing pages.
 * Tweak - Add tracking for campaign count.
