@@ -17,7 +17,7 @@ class MigratorTest extends UnitTest {
 	public function test_does_not_run_migrations_if_no_version_change() {
 		$mock_migration_1 = $this->createMock( MigrationInterface::class );
 		$mock_migration_1->expects( $this->never() )
-						 ->method( 'apply' );
+			->method( 'apply' );
 
 		$migrator = new Migrator( [ $mock_migration_1 ] );
 
@@ -27,38 +27,38 @@ class MigratorTest extends UnitTest {
 	public function test_runs_matching_migrations_if_version_increase() {
 		$mock_migration_0 = $this->createMock( MigrationInterface::class );
 		$mock_migration_0->expects( $this->any() )
-						 ->method( 'get_applicable_version' )
-						 ->willReturn( '1.2.0' );
+			->method( 'get_applicable_version' )
+			->willReturn( '1.2.0' );
 		$mock_migration_0->expects( $this->once() )
-						 ->method( 'apply' );
+			->method( 'apply' );
 
 		$mock_migration_1 = $this->createMock( MigrationInterface::class );
 		$mock_migration_1->expects( $this->any() )
-						 ->method( 'get_applicable_version' )
-						 ->willReturn( '1.1.5' );
+			->method( 'get_applicable_version' )
+			->willReturn( '1.1.5' );
 		$mock_migration_1->expects( $this->once() )
-						 ->method( 'apply' );
+			->method( 'apply' );
 
 		$mock_migration_2 = $this->createMock( MigrationInterface::class );
 		$mock_migration_2->expects( $this->any() )
-						 ->method( 'get_applicable_version' )
-						 ->willReturn( '1.1.0' );
+			->method( 'get_applicable_version' )
+			->willReturn( '1.1.0' );
 		$mock_migration_2->expects( $this->once() )
-						 ->method( 'apply' );
+			->method( 'apply' );
 
 		$mock_migration_3 = $this->createMock( MigrationInterface::class );
 		$mock_migration_3->expects( $this->any() )
-						 ->method( 'get_applicable_version' )
-						 ->willReturn( '1.0.0' );
+			->method( 'get_applicable_version' )
+			->willReturn( '1.0.0' );
 		$mock_migration_3->expects( $this->never() )
-						 ->method( 'apply' );
+			->method( 'apply' );
 
 		$mock_migration_4 = $this->createMock( MigrationInterface::class );
 		$mock_migration_4->expects( $this->any() )
-						 ->method( 'get_applicable_version' )
-						 ->willReturn( '0.9.0' );
+			->method( 'get_applicable_version' )
+			->willReturn( '0.9.0' );
 		$mock_migration_4->expects( $this->never() )
-						 ->method( 'apply' );
+			->method( 'apply' );
 
 		$migrator = new Migrator( [ $mock_migration_0, $mock_migration_1, $mock_migration_2, $mock_migration_3, $mock_migration_4 ] );
 

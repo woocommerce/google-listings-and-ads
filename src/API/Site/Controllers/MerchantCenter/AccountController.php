@@ -117,10 +117,10 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_accounts_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				return array_map(
-					function( $account ) use ( $request ) {
+					function ( $account ) use ( $request ) {
 						$data = $this->prepare_item_for_response( $account, $request );
 						return $this->prepare_response_for_collection( $data );
 					},
@@ -157,7 +157,7 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function setup_account_callback( string $action = 'setup_account' ): callable {
-		return function( Request $request ) use ( $action ) {
+		return function ( Request $request ) use ( $action ) {
 			try {
 				$account_id = absint( $request['id'] );
 
@@ -182,7 +182,7 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_connected_merchant_callback(): callable {
-		return function() {
+		return function () {
 			return $this->account->get_connected_status();
 		};
 	}
@@ -193,7 +193,7 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_setup_merchant_callback(): callable {
-		return function() {
+		return function () {
 			return $this->account->get_setup_status();
 		};
 	}
@@ -204,7 +204,7 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function disconnect_merchant_callback(): callable {
-		return function() {
+		return function () {
 			$this->account->disconnect();
 
 			return [
@@ -278,5 +278,4 @@ class AccountController extends BaseController {
 			]
 		);
 	}
-
 }

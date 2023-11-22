@@ -58,5 +58,4 @@ interface AttributeInterface {
 	 * @return mixed
 	 */
 	public function get_value();
-
 }

@@ -50,13 +50,13 @@ class WP {
 	/**
 	 * Retrieve values from the WP query_vars property.
 	 *
-	 * @param string $key     The key of the value to retrieve.
-	 * @param null   $default The default value to return if the key isn't found.
+	 * @param string $key           The key of the value to retrieve.
+	 * @param null   $default_value The default value to return if the key isn't found.
 	 *
 	 * @return mixed The query value if found, or the default value.
 	 */
-	public function get_query_vars( string $key, $default = null ) {
-		return $this->wp->query_vars[ $key ] ?? $default;
+	public function get_query_vars( string $key, $default_value = null ) {
+		return $this->wp->query_vars[ $key ] ?? $default_value;
 	}
 
 	/**
@@ -237,18 +237,14 @@ class WP {
 	 *
 	 * @since 2.4.0
 	 *
-	 * @param array|string $args       Optional. Array or string of arguments. See WP_Term_Query::__construct()
-	 *                                 for information on accepted arguments. Default empty array.
-	 * @param array|string $deprecated Optional. Argument array, when using the legacy function parameter format.
-	 *                                 If present, this parameter will be interpreted as `$args`, and the first
-	 *                                 function parameter will be parsed as a taxonomy or array of taxonomies.
-	 *                                 Default empty.
+	 * @param array|string $args Optional. Array or string of arguments. See WP_Term_Query::__construct()
+	 *                           for information on accepted arguments. Default empty array.
 	 * @return WP_Term[]|int[]|string[]|string|WP_Error Array of terms, a count thereof as a numeric string,
 	 *                                                  or WP_Error if any of the taxonomies do not exist.
 	 *                                                  See the function description for more information.
 	 */
-	public function get_terms( $args = [], $deprecated = '' ) {
-		return get_terms( $args, $deprecated );
+	public function get_terms( $args = [] ) {
+		return get_terms( $args );
 	}
 
 	/**
@@ -286,7 +282,6 @@ class WP {
 		}
 
 		return null;
-
 	}
 
 	/**
@@ -306,7 +301,6 @@ class WP {
 		}
 
 		return wp_update_image_subsizes( $attachment_id );
-
 	}
 
 	/**

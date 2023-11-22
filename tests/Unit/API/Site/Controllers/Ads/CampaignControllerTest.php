@@ -202,7 +202,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
 			->willReturnCallback(
-				function( array $data ) use ( $campaign_data, $expected ) {
+				function ( array $data ) use ( $campaign_data, $expected ) {
 					$name = $data['name'];
 					unset( $data['name'] );
 

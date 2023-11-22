@@ -19,7 +19,7 @@ class AttributeMapping implements Service, Registerable {
 	public function register(): void {
 		add_action(
 			'admin_menu',
-			function() {
+			function () {
 				wc_admin_register_page(
 					[
 						'title'    => __( 'Attribute Mapping', 'google-listings-and-ads' ),

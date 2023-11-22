@@ -75,5 +75,4 @@ class Condition extends AbstractAttribute implements WithValueOptionsInterface, 
 	public static function get_name(): string {
 		return __( 'Condition', 'google-listings-and-ads' );
 	}
-
 }

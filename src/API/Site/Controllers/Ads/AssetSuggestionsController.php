@@ -132,7 +132,7 @@ class AssetSuggestionsController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_assets_suggestions_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$id   = $request->get_param( 'id' );
 				$type = $request->get_param( 'type' );
@@ -149,12 +149,12 @@ class AssetSuggestionsController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_final_url_suggestions_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$search   = $request->get_param( 'search' );
 			$per_page = $request->get_param( 'per_page' );
 			$order_by = $request->get_param( 'order_by' );
 			return array_map(
-				function( $item ) use ( $request ) {
+				function ( $item ) use ( $request ) {
 					$data = $this->prepare_item_for_response( $item, $request );
 					return $this->prepare_response_for_collection( $data );
 				},
@@ -198,7 +198,6 @@ class AssetSuggestionsController extends BaseController {
 			],
 
 		];
-
 	}
 
 
@@ -212,5 +211,4 @@ class AssetSuggestionsController extends BaseController {
 	protected function get_schema_title(): string {
 		return 'asset_final_url_suggestions';
 	}
-
 }

@@ -25,5 +25,4 @@ class BrandInput extends Text {
 		$this->set_label( __( 'Brand', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'Brand of the product.', 'google-listings-and-ads' ) );
 	}
-
 }

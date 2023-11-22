@@ -450,5 +450,4 @@ class MiddlewareTest extends UnitTest {
 
 		$this->middleware->get_account_review_status();
 	}
-
 }

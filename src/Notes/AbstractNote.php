@@ -50,5 +50,4 @@ abstract class AbstractNote implements Note, OptionsAwareInterface {
 
 		return ! empty( $note_ids );
 	}
-
 }

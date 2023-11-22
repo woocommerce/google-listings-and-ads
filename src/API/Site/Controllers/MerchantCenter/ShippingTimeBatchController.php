@@ -50,7 +50,7 @@ class ShippingTimeBatchController extends ShippingTimeController {
 	 * @return callable
 	 */
 	protected function get_batch_create_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$country_codes = $request->get_param( 'country_codes' );
 			$time          = $request->get_param( 'time' );
 

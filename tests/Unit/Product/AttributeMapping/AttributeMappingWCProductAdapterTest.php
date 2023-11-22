@@ -364,7 +364,6 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 		$this->assertEquals( '', $adapted_product->getBrand() );
 		$this->assertEquals( 'test', $adapted_product->getGtin() );
 		$this->assertEquals( '', $adapted_product->getMpn() );
-
 	}
 
 	/**

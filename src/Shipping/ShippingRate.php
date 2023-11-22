@@ -116,5 +116,4 @@ class ShippingRate implements JsonSerializable {
 			'rate' => $this->get_rate(),
 		];
 	}
-
 }

@@ -49,7 +49,8 @@ class CouponHelper implements Service {
 	public function __construct(
 		CouponMetaHandler $meta_handler,
 		WC $wc,
-		MerchantCenterService $merchant_center ) {
+		MerchantCenterService $merchant_center
+	) {
 		$this->meta_handler    = $meta_handler;
 		$this->wc              = $wc;
 		$this->merchant_center = $merchant_center;
@@ -66,7 +67,8 @@ class CouponHelper implements Service {
 	public function mark_as_synced(
 		WC_Coupon $coupon,
 		?string $google_id,
-		string $target_country ) {
+		string $target_country
+	) {
 		$this->meta_handler->update_synced_at( $coupon, time() );
 		$this->meta_handler->update_sync_status( $coupon, SyncStatus::SYNCED );
 		$this->update_empty_visibility( $coupon );

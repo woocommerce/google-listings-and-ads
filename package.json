@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
-	"version": "2.5.11",
+	"version": "2.5.12",
 	"description": "google-listings-and-ads",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -63,7 +63,7 @@
 		"@wordpress/jest-preset-default": "^11.9.0",
 		"@wordpress/prettier-config": "2.18.1",
 		"@wordpress/scripts": "^24.6.0",
-		"axios": "^1.4.0",
+		"axios": "^1.6.0",
 		"bundlewatch": "^0.3.3",
 		"eslint": "^7.17.0",
 		"eslint-import-resolver-webpack": "^0.13.1",
@@ -172,7 +172,7 @@
 		}
 	},
 	"engines": {
-		"node": "^16",
-		"npm": "^8"
+		"node": "^16 || ^18",
+		"npm": "^8 || ^9"
 	}
 }

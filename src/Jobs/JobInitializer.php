@@ -58,9 +58,11 @@ class JobInitializer implements Registerable, Conditional {
 				);
 			}
 
-			if ( $job instanceof RecurringJobInterface &&
-				 ! $this->action_scheduler->has_scheduled_action( $job->get_start_hook()->get_hook() ) &&
-				 $job->can_schedule() ) {
+			if (
+				$job instanceof RecurringJobInterface &&
+				! $this->action_scheduler->has_scheduled_action( $job->get_start_hook()->get_hook() ) &&
+				$job->can_schedule()
+			) {
 
 				$recurring_date_time = new DateTime( 'tomorrow 3am', wp_timezone() );
 				$schedule            = '0 3 * * *'; // 3 am every day

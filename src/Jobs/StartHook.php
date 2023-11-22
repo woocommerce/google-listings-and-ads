@@ -46,5 +46,4 @@ class StartHook {
 	public function get_argument_count(): int {
 		return $this->argument_count;
 	}
-
 }

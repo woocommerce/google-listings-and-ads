@@ -40,7 +40,7 @@ class DisconnectController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_disconnect_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$endpoints = [
 				'ads/connection',
 				'mc/connection',

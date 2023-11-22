@@ -703,5 +703,4 @@ class AdsReportTest extends UnitTest {
 			$this->report->get_report_data( $report_type, $report_args )
 		);
 	}
-
 }

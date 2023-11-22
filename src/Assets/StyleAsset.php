@@ -51,7 +51,7 @@ class StyleAsset extends BaseAsset {
 	 * @return callable
 	 */
 	protected function get_register_callback(): callable {
-		return function() {
+		return function () {
 			if ( wp_style_is( $this->handle, 'registered' ) ) {
 				return;
 			}
@@ -72,7 +72,7 @@ class StyleAsset extends BaseAsset {
 	 * @return callable
 	 */
 	protected function get_enqueue_callback(): callable {
-		return function() {
+		return function () {
 			if ( ! wp_style_is( $this->handle, 'registered' ) ) {
 				throw InvalidAsset::asset_not_registered( $this->handle );
 			}
@@ -87,9 +87,8 @@ class StyleAsset extends BaseAsset {
 	 * @return callable
 	 */
 	protected function get_dequeue_callback(): callable {
-		return function() {
+		return function () {
 			wp_dequeue_style( $this->handle );
 		};
 	}
-
 }

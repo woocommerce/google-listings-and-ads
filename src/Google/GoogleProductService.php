@@ -170,7 +170,7 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 
 			$batch_id_product_map[ $batch_id ] = $product_entry;
 
-			$batch_id++;
+			++$batch_id;
 		}
 
 		$responses = $this->shopping_service->products->custombatch( new GoogleBatchRequest( [ 'entries' => $request_entries ] ) );

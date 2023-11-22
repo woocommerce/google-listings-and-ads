@@ -143,5 +143,4 @@ interface ActionSchedulerInterface {
 	 * @since 1.7.0
 	 */
 	public function fetch_action( int $action_id ): ActionScheduler_Action;
-
 }

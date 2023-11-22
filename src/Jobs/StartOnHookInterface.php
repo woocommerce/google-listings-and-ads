@@ -20,5 +20,4 @@ interface StartOnHookInterface extends ActionSchedulerJobInterface {
 	 * @return StartHook
 	 */
 	public function get_start_hook(): StartHook;
-
 }

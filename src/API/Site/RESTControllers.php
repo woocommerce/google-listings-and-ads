@@ -40,7 +40,7 @@ class RESTControllers implements Service, Registerable {
 	public function register(): void {
 		add_action(
 			'rest_api_init',
-			function() {
+			function () {
 				$this->register_controllers();
 			}
 		);

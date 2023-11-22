@@ -76,5 +76,4 @@ class PluginUpdate implements Service, InstallableInterface {
 			}
 		}
 	}
-
 }

@@ -96,8 +96,17 @@ class ZoneMethodsParser implements Service {
 				$shipping_rates[] = $shipping_rate;
 				break;
 			default:
-				// We don't support other shipping methods.
-				return [];
+				/**
+				 * Filter the shipping rates for a shipping method that is not supported.
+				 *
+				 * @param ShippingRate[] $shipping_rates The shipping rates.
+				 * @param object|WC_Shipping_Method $method The shipping method.
+				 */
+				return apply_filters(
+					'woocommerce_gla_handle_shipping_method_to_rates',
+					$shipping_rates,
+					$method
+				);
 		}
 
 		return $shipping_rates;
@@ -167,5 +176,4 @@ class ZoneMethodsParser implements Service {
 
 		return array_values( $class_rates );
 	}
-
 }

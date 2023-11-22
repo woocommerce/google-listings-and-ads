@@ -49,7 +49,8 @@ class InvalidCouponEntry implements JsonSerializable {
 		int $wc_coupon_id,
 		array $errors = [],
 		string $target_country = null,
-		string $google_promotion_id = null ) {
+		string $google_promotion_id = null
+	) {
 		$this->wc_coupon_id        = $wc_coupon_id;
 		$this->target_country      = $target_country;
 		$this->google_promotion_id = $google_promotion_id;
@@ -105,7 +106,8 @@ class InvalidCouponEntry implements JsonSerializable {
 	 * @return InvalidCouponEntry
 	 */
 	public function map_validation_violations(
-		ConstraintViolationListInterface $violations ): InvalidCouponEntry {
+		ConstraintViolationListInterface $violations
+	): InvalidCouponEntry {
 		$validation_errors = [];
 		foreach ( $violations as $violation ) {
 			array_push(
@@ -127,7 +129,7 @@ class InvalidCouponEntry implements JsonSerializable {
 	 *
 	 * @return array
 	 */
-	public function jsonSerialize(): array { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+	public function jsonSerialize(): array {
 		$data = [
 			'woocommerce_id' => $this->get_wc_coupon_id(),
 			'errors'         => $this->get_errors(),

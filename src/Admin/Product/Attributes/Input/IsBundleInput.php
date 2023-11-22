@@ -25,5 +25,4 @@ class IsBundleInput extends BooleanSelect {
 		$this->set_label( __( 'Is Bundle?', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'Whether the item is a bundle of products. A bundle is a custom grouping of different products sold by a merchant for a single price.', 'google-listings-and-ads' ) );
 	}
-
 }

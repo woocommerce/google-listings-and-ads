@@ -87,7 +87,7 @@ class TourController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_tours_create_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			try {
 				$tour_id           = $request->get_param( 'id' );
 				$tours             = $this->get_tours();

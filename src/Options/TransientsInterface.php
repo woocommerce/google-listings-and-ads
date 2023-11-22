@@ -31,12 +31,12 @@ interface TransientsInterface {
 	/**
 	 * Get a transient.
 	 *
-	 * @param string $name    The transient name.
-	 * @param mixed  $default A default value for the transient.
+	 * @param string $name          The transient name.
+	 * @param mixed  $default_value A default value for the transient.
 	 *
 	 * @return mixed
 	 */
-	public function get( string $name, $default = null );
+	public function get( string $name, $default_value = null );
 
 	/**
 	 * Add or update a transient.

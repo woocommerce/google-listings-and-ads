@@ -25,5 +25,4 @@ class PatternInput extends Text {
 		$this->set_label( __( 'Pattern', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'The item\'s pattern (e.g. polka dots).', 'google-listings-and-ads' ) );
 	}
-
 }

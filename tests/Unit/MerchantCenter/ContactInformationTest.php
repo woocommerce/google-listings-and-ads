@@ -42,16 +42,16 @@ class ContactInformationTest extends ContainerAwareUnitTest {
 
 	public function test_get_empty_contact_information() {
 		$this->merchant->expects( $this->any() )
-					   ->method( 'get_account' )
-					   ->willReturn( $this->get_empty_account() );
+			->method( 'get_account' )
+			->willReturn( $this->get_empty_account() );
 
 		$this->assertNull( $this->contact_information->get_contact_information() );
 	}
 
 	public function test_get_valid_contact_information() {
 		$this->merchant->expects( $this->any() )
-					   ->method( 'get_account' )
-					   ->willReturn( $this->get_valid_account() );
+			->method( 'get_account' )
+			->willReturn( $this->get_valid_account() );
 
 		$contact_information = $this->contact_information->get_contact_information();
 
@@ -84,12 +84,12 @@ class ContactInformationTest extends ContainerAwareUnitTest {
 
 	public function test_update_address() {
 		$this->merchant->expects( $this->any() )
-					   ->method( 'get_account' )
-					   ->willReturn( $this->get_valid_account() );
+			->method( 'get_account' )
+			->willReturn( $this->get_valid_account() );
 
 		$this->google_settings->expects( $this->any() )
-							  ->method( 'get_store_address' )
-							  ->willReturn( $this->get_sample_address() );
+			->method( 'get_store_address' )
+			->willReturn( $this->get_sample_address() );
 
 		$results = $this->contact_information->update_address_based_on_store_settings();
 
@@ -117,8 +117,8 @@ class ContactInformationTest extends ContainerAwareUnitTest {
 
 	public function test_get_account_exception() {
 		$this->merchant->expects( $this->any() )
-					   ->method( 'get_account' )
-					   ->willThrowException( $this->get_google_exception() );
+			->method( 'get_account' )
+			->willThrowException( $this->get_google_exception() );
 
 		$this->expectExceptionObject( $this->get_google_exception() );
 		$this->contact_information->get_contact_information();

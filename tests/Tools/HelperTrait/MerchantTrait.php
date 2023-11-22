@@ -97,5 +97,4 @@ trait MerchantTrait {
 
 		return $status;
 	}
-
 }

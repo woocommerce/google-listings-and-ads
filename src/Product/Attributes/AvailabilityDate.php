@@ -66,5 +66,4 @@ class AvailabilityDate extends AbstractAttribute {
 	public static function get_input_type(): string {
 		return AvailabilityDateInput::class;
 	}
-
 }

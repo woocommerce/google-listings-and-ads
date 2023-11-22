@@ -71,5 +71,4 @@ class Multipack extends AbstractAttribute implements WithMappingInterface {
 	public static function get_name(): string {
 		return __( 'Multipack', 'google-listings-and-ads' );
 	}
-
 }

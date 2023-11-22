@@ -80,10 +80,4 @@ class ImageUtility implements Service {
 
 		return new DimensionUtility( $x, $y );
 	}
-
-
-
-
 }
-
-

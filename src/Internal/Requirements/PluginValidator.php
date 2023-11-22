@@ -49,5 +49,4 @@ class PluginValidator {
 		}
 		return self::$is_validated;
 	}
-
 }

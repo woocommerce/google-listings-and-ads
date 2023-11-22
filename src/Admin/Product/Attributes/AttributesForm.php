@@ -99,7 +99,7 @@ class AttributesForm extends Form {
 	 */
 	protected function init_input( InputInterface $input, AttributeInterface $attribute ) {
 		$input->set_id( $attribute::get_id() )
-			  ->set_name( $attribute::get_id() );
+			->set_name( $attribute::get_id() );
 
 		$value_options = [];
 		if ( $attribute instanceof WithValueOptionsInterface ) {
@@ -111,7 +111,7 @@ class AttributesForm extends Form {
 			if ( ! $input instanceof Select && ! $input instanceof SelectWithTextInput ) {
 				$new_input = new SelectWithTextInput();
 				$new_input->set_label( $input->get_label() )
-						  ->set_description( $input->get_description() );
+					->set_description( $input->get_description() );
 
 				return $this->init_input( $new_input, $attribute );
 			}

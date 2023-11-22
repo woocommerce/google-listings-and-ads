@@ -36,5 +36,4 @@ interface ActionSchedulerJobInterface extends JobInterface {
 	 * @param array $args
 	 */
 	public function schedule( array $args = [] );
-
 }

@@ -40,7 +40,7 @@ class CountryCodeTraitTest extends TestCase {
 		$this->iso_provider  = $this->createMock( ISO3166DataProvider::class );
 		$this->google_helper = $this->createMock( GoogleHelper::class );
 
-		// phpcs:ignore WordPress.Classes.ClassInstantiation.MissingParenthesis
+		// phpcs:ignore Universal.Classes.RequireAnonClassParentheses.Missing
 		$this->trait = new class {
 			use CountryCodeTrait {
 				get_country_code_sanitize_callback as public;
