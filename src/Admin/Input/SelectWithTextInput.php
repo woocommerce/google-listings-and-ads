@@ -86,15 +86,6 @@ class SelectWithTextInput extends Input {
 	}
 
 	/**
-	 * Whether the set value is a custom value (i.e. not from the list of specified options).
-	 *
-	 * @return bool
-	 */
-	protected function is_custom_value(): bool {
-		return ! empty( $this->get_value() ) && ! is_array( $this->get_value() ) && ! isset( $this->get_options()[ $this->get_value() ] );
-	}
-
-	/**
 	 * Return the data used for the input's view.
 	 *
 	 * @return array
