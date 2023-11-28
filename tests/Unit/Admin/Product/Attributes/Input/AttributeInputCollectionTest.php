@@ -71,6 +71,20 @@ class AttributeInputCollectionTest extends UnitTest {
 			],
 			$input->get_view_data()
 		);
+
+		$this->assertEquals(
+			[
+				'id'         => 'google-listings-and-ads-product-attributes-adult',
+				'blockName'  => 'google-listings-and-ads/product-select-field',
+				'attributes' => [
+					'property' => 'meta_data._wc_gla_adult',
+					'label'    => 'Adult content',
+					'tooltip'  => 'Whether the product contains nudity or sexually suggestive content',
+					'options'  => $input->get_block_attributes()['options'],
+				],
+			],
+			$input->get_block_config()
+		);
 	}
 
 	public function test_age_group_input() {
@@ -95,6 +109,20 @@ class AttributeInputCollectionTest extends UnitTest {
 				'children'    => [],
 			],
 			$input->get_view_data()
+		);
+
+		$this->assertEquals(
+			[
+				'id'         => 'google-listings-and-ads-product-attributes-ageGroup',
+				'blockName'  => 'google-listings-and-ads/product-select-field',
+				'attributes' => [
+					'property' => 'meta_data._wc_gla_ageGroup',
+					'label'    => 'Age Group',
+					'tooltip'  => 'Target age group of the item.',
+					'options'  => $input->get_block_attributes()['options'],
+				],
+			],
+			$input->get_block_config()
 		);
 	}
 
@@ -213,6 +241,20 @@ class AttributeInputCollectionTest extends UnitTest {
 			],
 			$input->get_view_data()
 		);
+
+		$this->assertEquals(
+			[
+				'id'         => 'google-listings-and-ads-product-attributes-condition',
+				'blockName'  => 'google-listings-and-ads/product-select-field',
+				'attributes' => [
+					'property' => 'meta_data._wc_gla_condition',
+					'label'    => 'Condition',
+					'tooltip'  => 'Condition or state of the item.',
+					'options'  => $input->get_block_attributes()['options'],
+				],
+			],
+			$input->get_block_config()
+		);
 	}
 
 	public function test_gender_input() {
@@ -237,6 +279,20 @@ class AttributeInputCollectionTest extends UnitTest {
 				'children'    => [],
 			],
 			$input->get_view_data()
+		);
+
+		$this->assertEquals(
+			[
+				'id'         => 'google-listings-and-ads-product-attributes-gender',
+				'blockName'  => 'google-listings-and-ads/product-select-field',
+				'attributes' => [
+					'property' => 'meta_data._wc_gla_gender',
+					'label'    => 'Gender',
+					'tooltip'  => 'The gender for which your product is intended.',
+					'options'  => $input->get_block_attributes()['options'],
+				],
+			],
+			$input->get_block_config()
 		);
 	}
 
@@ -300,6 +356,20 @@ class AttributeInputCollectionTest extends UnitTest {
 				'children'    => [],
 			],
 			$input->get_view_data()
+		);
+
+		$this->assertEquals(
+			[
+				'id'         => 'google-listings-and-ads-product-attributes-isBundle',
+				'blockName'  => 'google-listings-and-ads/product-select-field',
+				'attributes' => [
+					'property' => 'meta_data._wc_gla_isBundle',
+					'label'    => 'Is Bundle?',
+					'tooltip'  => 'Whether the item is a bundle of products. A bundle is a custom grouping of different products sold by a merchant for a single price.',
+					'options'  => $input->get_block_attributes()['options'],
+				],
+			],
+			$input->get_block_config()
 		);
 	}
 
@@ -502,6 +572,20 @@ class AttributeInputCollectionTest extends UnitTest {
 			],
 			$input->get_view_data()
 		);
+
+		$this->assertEquals(
+			[
+				'id'         => 'google-listings-and-ads-product-attributes-sizeSystem',
+				'blockName'  => 'google-listings-and-ads/product-select-field',
+				'attributes' => [
+					'property' => 'meta_data._wc_gla_sizeSystem',
+					'label'    => 'Size system',
+					'tooltip'  => 'System in which the size is specified. Recommended for apparel items.',
+					'options'  => $input->get_block_attributes()['options'],
+				],
+			],
+			$input->get_block_config()
+		);
 	}
 
 	public function test_size_type_input() {
@@ -526,6 +610,20 @@ class AttributeInputCollectionTest extends UnitTest {
 				'children'    => [],
 			],
 			$input->get_view_data()
+		);
+
+		$this->assertEquals(
+			[
+				'id'         => 'google-listings-and-ads-product-attributes-sizeType',
+				'blockName'  => 'google-listings-and-ads/product-select-field',
+				'attributes' => [
+					'property' => 'meta_data._wc_gla_sizeType',
+					'label'    => 'Size type',
+					'tooltip'  => 'The cut of the item. Recommended for apparel items.',
+					'options'  => $input->get_block_attributes()['options'],
+				],
+			],
+			$input->get_block_config()
 		);
 	}
 }

@@ -288,19 +288,19 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 	 */
 	public function test_register_add_blocks() {
 		// The total number of blocks to be added to the simple product template is 16,
-		// and the converted number so far is 8
+		// and the converted number so far is 15
 		$this->simple_gla_section
-			->expects( $this->exactly( 8 ) )
+			->expects( $this->exactly( 15 ) )
 			->method( 'add_block' );
 
 		$this->simple_gla_section->get_block( 'mocked-singleton' )
-			->expects( $this->exactly( 8 ) )
+			->expects( $this->exactly( 15 ) )
 			->method( 'add_hide_condition' );
 
 		// The total number of visible blocks to be added to the variation product template is 15,
-		// and the converted number so far is 7
+		// and the converted number so far is 14
 		$this->variation_gla_section
-			->expects( $this->exactly( 7 ) )
+			->expects( $this->exactly( 14 ) )
 			->method( 'add_block' );
 
 		$this->variation_gla_section->get_block( 'mocked-singleton' )
