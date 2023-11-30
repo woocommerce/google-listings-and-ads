@@ -16,14 +16,13 @@ import './index.scss';
 /*
  * If a merchant selects more than one country, the budget recommendation
  * takes the highest country out from the selected countries.
- * When looking for the highest one, it should only consider the `daily_budget_high` value.
  *
- * For example, a merchant selected Brunei (5-20 USD) and Croatia (10-15 USD),
- * then the budget recommendation should be (5-20 USD).
+ * For example, a merchant selected Brunei (20 USD) and Croatia (15 USD),
+ * then the budget recommendation should be (20 USD).
  */
 function getHighestBudget( recommendations ) {
 	return recommendations.reduce( ( defender, challenger ) => {
-		if ( challenger.daily_budget_high > defender.daily_budget_high ) {
+		if ( challenger.daily_budget > defender.daily_budget ) {
 			return challenger;
 		}
 		return defender;
@@ -33,14 +32,14 @@ function getHighestBudget( recommendations ) {
 function toRecommendationRange( isMultiple, ...values ) {
 	const conversionMap = { strong: <strong />, em: <em />, br: <br /> };
 	const template = isMultiple
-		? // translators: it's a range of recommended budget amount. 1: the low value of the range, 2: the high value of the range, 3: the currency of amount.
+		? // translators: it's a range of recommended budget amount. 1: the value of the budget, 2: the currency of amount.
 		  __(
-				'Google will optimize your ads to maximize performance across the country/s you select.<br /><em>Tip: Most merchants targeting similar countries <strong>set a daily budget of %1$f to %2$f %3$s</strong></em>',
+				'Google will optimize your ads to maximize performance across the country/s you select.<br /><em>Tip: Most merchants targeting similar countries <strong>set a daily budget of %1$f %2$s</strong></em>',
 				'google-listings-and-ads'
 		  )
-		: // translators: it's a range of recommended budget amount. 1: the low value of the range, 2: the high value of the range, 3: the currency of amount, 4: a country name selected by the merchant.
+		: // translators: it's a range of recommended budget amount. 1: the value of the budget, 2: the currency of amount 3: a country name selected by the merchant.
 		  __(
-				'Google will optimize your ads to maximize performance across the country/s you select.<br /><em>Tip: Most merchants targeting <strong>%4$s set a daily budget of %1$f to %2$f %3$s</strong></em>',
+				'Google will optimize your ads to maximize performance across the country/s you select.<br /><em>Tip: Most merchants targeting <strong>%3$s set a daily budget of %1$f %2$s</strong></em>',
 				'google-listings-and-ads'
 		  );
 
@@ -60,22 +59,18 @@ const BudgetRecommendation = ( props ) => {
 	}
 
 	const { currency, recommendations } = data;
-	const {
-		daily_budget_low: dailyBudgetLow,
-		daily_budget_high: dailyBudgetHigh,
-		country,
-	} = getHighestBudget( recommendations );
+	const { daily_budget: dailyBudget, country } =
+		getHighestBudget( recommendations );
 
 	const countryName = map[ country ];
 	const recommendationRange = toRecommendationRange(
 		recommendations.length > 1,
-		dailyBudgetLow,
-		dailyBudgetHigh,
+		dailyBudget,
 		currency,
 		countryName
 	);
 
-	const showLowerBudgetNotice = dailyAverageCost < dailyBudgetLow;
+	const showLowerBudgetNotice = dailyAverageCost < dailyBudget;
 
 	return (
 		<div className="gla-budget-recommendation">
