@@ -7,6 +7,7 @@ import { select } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
 import { noop, merge } from 'lodash';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -47,6 +48,14 @@ const ACTION_SKIP = 'skip-ads';
  */
 
 /**
+ * When the Onboarding is completed with Ads Setup.
+ *
+ * @event gla_onboarding_complete_ads_setup
+ * @property {number} budget The budget for the campaign
+ * @property {number} audiences The targeted audiences for the campaign
+ */
+
+/**
  * Clicking on the skip paid ads button to complete the onboarding flow.
  * The 'unknown' value of properties may means:
  * - the paid ads setup is not opened
@@ -67,6 +76,7 @@ const ACTION_SKIP = 'skip-ads';
  * @fires gla_onboarding_open_paid_ads_setup_button_click
  * @fires gla_onboarding_complete_with_paid_ads_button_click
  * @fires gla_onboarding_complete_button_click
+ * @fires gla_onboarding_complete_ads_setup
  */
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
@@ -104,6 +114,11 @@ export default function SetupPaidAds() {
 				)
 			);
 		}
+
+		recordEvent( 'gla_onboarding_complete_ads_setup', {
+			budget: paidAds.amount,
+			audiences: paidAds.countryCodes.join( ',' ),
+		} );
 
 		// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
 		const query = { guide: GUIDE_NAMES.SUBMISSION_SUCCESS };
