@@ -571,7 +571,17 @@ A modal is open
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L155) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
-### [`gla_onboarding_complete_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L45)
+### [`gla_onboarding_complete_ads_setup`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L46)
+When the Onboarding is completed with Ads Setup.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`budget` | `number` | The budget for the campaign
+`audiences` | `number` | The targeted audiences for the campaign
+#### Emitters
+- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L77)
+
+### [`gla_onboarding_complete_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L54)
 Clicking on the skip paid ads button to complete the onboarding flow.
  The 'unknown' value of properties may means:
  - the paid ads setup is not opened
@@ -585,17 +595,17 @@ Clicking on the skip paid ads button to complete the onboarding flow.
 `billing_method_status` | `string` | aaa, The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
 `campaign_form_validation` | `string` | Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
 #### Emitters
-- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L67)
+- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L77)
 
-### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L39)
+### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L40)
 Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
 #### Emitters
-- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L67)
+- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L77)
 
-### [`gla_onboarding_open_paid_ads_setup_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L33)
+### [`gla_onboarding_open_paid_ads_setup_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L34)
 Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
 #### Emitters
-- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L67)
+- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L77)
 
 ### [`gla_paid_campaign_step`](../../js/src/utils/recordEvent.js#L122)
 Triggered when moving to another step during creating/editing a campaign.
