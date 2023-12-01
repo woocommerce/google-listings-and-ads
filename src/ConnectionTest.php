@@ -663,9 +663,15 @@ class ConnectionTest implements Service, Registerable {
 									<label>
 										Topic
 										<select name="topic">
-											<option value="product/create" <?php echo (! isset( $_GET['topic'] ) || $_GET['topic'] === 'product/create') ? "selected" : "" ?>>product/create</option>
-											<option value="product/delete" <?php echo $_GET['topic'] === 'product/delete' ? "selected" : ""?>>product/delete</option>
-											<option value="product/update" <?php echo $_GET['topic'] === 'product/update' ? "selected" : ""?>>product/update</option>
+											<option value="products.create" <?php echo (! isset( $_GET['topic'] ) || $_GET['topic'] === 'products.create') ? "selected" : "" ?>>products.create</option>
+											<option value="products.delete" <?php echo $_GET['topic'] === 'products.delete' ? "selected" : ""?>>products.delete</option>
+											<option value="products.update" <?php echo $_GET['topic'] === 'products.update' ? "selected" : ""?>>products.update</option>
+											<option value="coupons.create" <?php echo $_GET['topic'] === 'coupons.create' ? "selected" : ""?>>coupons.create</option>
+											<option value="coupons.delete" <?php echo $_GET['topic'] === 'coupons.delete' ? "selected" : ""?>>coupons.delete</option>
+											<option value="coupons.update" <?php echo $_GET['topic'] === 'coupons.update' ? "selected" : ""?>>coupons.update</option>
+											<option value="shipping.create" <?php echo $_GET['topic'] === 'shipping.create' ? "selected" : ""?>>product.create</option>
+											<option value="shipping.delete" <?php echo $_GET['topic'] === 'shipping.delete' ? "selected" : ""?>>product.delete</option>
+											<option value="shipping.update" <?php echo $_GET['topic'] === 'shipping.update' ? "selected" : ""?>>product.update</option>
 										</select>
 									</label>
 									<button class="button">Send Notification</button>
@@ -765,30 +771,31 @@ class ConnectionTest implements Service, Registerable {
 				return;
 			}
 
-			$blog_id = Jetpack_Options::get_option( 'id' );
-			$gmc_id  = $this->container->get( OptionsInterface::class )->get_merchant_id();
-			$partner = 'google';
-			$topic   = $_GET[ 'topic' ];
-			$url     = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/{$partner}/notifications";
-			$remote_args = [
+			$blog_id 		  = Jetpack_Options::get_option( 'id' );
+			$merchant_domain  =  parse_url( $this->get_site_url() );
+
+			$partner	 	  = 'google';
+			$topic            = $_GET[ 'topic' ];
+			$partner_endpoint = "https://shoppingdataintegration.googleapis.com/v1/webhooks/partners/woocommerce/merchants/" . $merchant_domain["host"] . "/types/" . $topic . ":webhookHandler";
+			$url    		  = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/{$partner}/notifications";
+			$remote_args 	  = [
 				  'method'  => 'POST',
-				  'blog_id' => $blog_id,
 				  'timeout' => 30,
 				  'headers' => [
-					    'x-woocommerce-topic'      => $topic,
-					    'x-woocommerce-gmc-id'     => $gmc_id,
-					    'x-woocommerce-partner-id' => $_GET['client_id'],
+					    'x-woocommerce-topic'            => $topic,
+					    'x-woocommerce-partner-endpoint' => $partner_endpoint,
+					    'x-woocommerce-partner-id'       => $_GET['client_id'],
 					  ],
 				  'body' => [
 					  'item_id' => $_GET['item_id'],
 				  ],
 				  'url'     => $url,
-				];
+			];
 
 			$response        = Client::remote_request( $remote_args, wp_json_encode( $remote_args['body'] ) );
 			$body            = wp_remote_retrieve_body( $response );
 			$decoded_body = json_decode( $body, true );
-			$response_hash = base64_decode( wp_remote_retrieve_header( $response,'x-woocommerce-signature' ) );
+			$response_hash = base64_decode( wp_remote_retrieve_header( $response,'X-WC-Webhook-Signature' ) );
 			$hash = hash_hmac( 'sha256', wp_json_encode( $decoded_body ), $_GET['client_secret'], true );
 
 			$is_hash_ok = hash_equals( $hash, $response_hash );
