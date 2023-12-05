@@ -125,8 +125,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WP 6.4 compatibility.
 * Update - Use new Woo.com domain.
 
-= 2.5.10 - 2023-10-18 =
-* Tweak - Add correct Destinations for Supported Countries in Coupons.
-* Tweak - Declare cart_checkout_blocks feature compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
