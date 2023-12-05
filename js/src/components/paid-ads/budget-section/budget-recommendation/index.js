@@ -35,12 +35,12 @@ function toRecommendationRange( isMultiple, ...values ) {
 	const template = isMultiple
 		? // translators: it's a range of recommended budget amount. 1: the low value of the range, 2: the high value of the range, 3: the currency of amount.
 		  __(
-				'Google will optimize your ads to maximize performance across the country/s you select.<br /><em>Tip: Most merchants targeting similar countries <strong>set a daily budget of %1$f to %2$f %3$s</strong></em>',
+				'Google will optimize your ads to maximize performance across the country/s you select.<br /><em>Tip: Most merchants targeting similar countries <strong>set a daily budget of %1$f %2$s</strong></em>',
 				'google-listings-and-ads'
 		  )
 		: // translators: it's a range of recommended budget amount. 1: the low value of the range, 2: the high value of the range, 3: the currency of amount, 4: a country name selected by the merchant.
 		  __(
-				'Google will optimize your ads to maximize performance across the country/s you select.<br /><em>Tip: Most merchants targeting <strong>%4$s set a daily budget of %1$f to %2$f %3$s</strong></em>',
+				'Google will optimize your ads to maximize performance across the country/s you select.<br /><em>Tip: Most merchants targeting <strong>%4$s set a daily budget of %1$f %2$s</strong></em>',
 				'google-listings-and-ads'
 		  );
 
