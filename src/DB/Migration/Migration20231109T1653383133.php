@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration
  *
- * @since x.x.x
+ * @since 2.5.13
  */
 class Migration20231109T1653383133 extends AbstractMigration {
 
