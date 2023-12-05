@@ -16,14 +16,13 @@ import './index.scss';
 /*
  * If a merchant selects more than one country, the budget recommendation
  * takes the highest country out from the selected countries.
- * When looking for the highest one, it should only consider the `daily_budget_high` value.
  *
- * For example, a merchant selected Brunei (5-20 USD) and Croatia (10-15 USD),
- * then the budget recommendation should be (5-20 USD).
+ * For example, a merchant selected Brunei (20 USD) and Croatia (15 USD),
+ * then the budget recommendation should be (20 USD).
  */
 function getHighestBudget( recommendations ) {
 	return recommendations.reduce( ( defender, challenger ) => {
-		if ( challenger.daily_budget_high > defender.daily_budget_high ) {
+		if ( challenger.daily_budget > defender.daily_budget ) {
 			return challenger;
 		}
 		return defender;
@@ -60,22 +59,18 @@ const BudgetRecommendation = ( props ) => {
 	}
 
 	const { currency, recommendations } = data;
-	const {
-		daily_budget_low: dailyBudgetLow,
-		daily_budget_high: dailyBudgetHigh,
-		country,
-	} = getHighestBudget( recommendations );
+	const { daily_budget: dailyBudget, country } =
+		getHighestBudget( recommendations );
 
 	const countryName = map[ country ];
 	const recommendationRange = toRecommendationRange(
 		recommendations.length > 1,
-		dailyBudgetLow,
-		dailyBudgetHigh,
+		dailyBudget,
 		currency,
 		countryName
 	);
 
-	const showLowerBudgetNotice = dailyAverageCost < dailyBudgetLow;
+	const showLowerBudgetNotice = dailyAverageCost < dailyBudget;
 
 	return (
 		<div className="gla-budget-recommendation">
