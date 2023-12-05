@@ -92,7 +92,7 @@ export default class SetupBudget extends MockRequests {
 	 * @return {string} The budget recommendation range.
 	 */
 	extractBudgetRecommendationRange( text ) {
-		const match = text.match( /set a daily budget of (\d+ to \d+)/ );
+		const match = text.match( /set a daily budget of (\d+)/ );
 		if ( match ) {
 			return match[ 1 ];
 		}
