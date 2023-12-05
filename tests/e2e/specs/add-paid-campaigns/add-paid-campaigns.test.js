@@ -360,7 +360,7 @@ test.describe( 'Set up Ads account', () => {
 
 		test( 'Budget Recommendation', async () => {
 			await expect(
-				page.getByText( 'set a daily budget of 5 to 15 USD' )
+				page.getByText( 'set a daily budget of 15 USD' )
 			).toBeVisible();
 		} );
 	} );
