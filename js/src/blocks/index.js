@@ -8,6 +8,8 @@ import { registerProductEditorBlockType } from '@woocommerce/product-editor';
  */
 import SelectFieldEdit from './product-select-field/edit';
 import selectFieldMetadata from './product-select-field/block.json';
+import SelectWithTextFieldEdit from './product-select-with-text-field/edit';
+import selectWithTextFieldMetadata from './product-select-with-text-field/block.json';
 
 function registerProductEditorBlock( { name, ...metadata }, Edit ) {
 	registerProductEditorBlockType( {
@@ -18,3 +20,7 @@ function registerProductEditorBlock( { name, ...metadata }, Edit ) {
 }
 
 registerProductEditorBlock( selectFieldMetadata, SelectFieldEdit );
+registerProductEditorBlock(
+	selectWithTextFieldMetadata,
+	SelectWithTextFieldEdit
+);
