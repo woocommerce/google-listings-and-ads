@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.4
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.5.12
+Stable tag: 2.5.13
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.13 - 2023-12-06 =
+* Fix - Change Budget Recommendations values.
+* Tweak - Use a single daily budget instead of a range.
+
 = 2.5.12 - 2023-11-22 =
 * Dev - Fix E2E gtag events tests.
 * Dev - Update WordPress CS to 3.0.
@@ -124,9 +128,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WC 8.3 compatibility.
 * Tweak - WP 6.4 compatibility.
 * Update - Use new Woo.com domain.
-
-= 2.5.10 - 2023-10-18 =
-* Tweak - Add correct Destinations for Supported Countries in Coupons.
-* Tweak - Declare cart_checkout_blocks feature compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
