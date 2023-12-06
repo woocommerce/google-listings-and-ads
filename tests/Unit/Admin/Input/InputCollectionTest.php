@@ -148,8 +148,10 @@ class InputCollectionTest extends UnitTest {
 	public function test_select_with_text_input() {
 		$input = new SelectWithTextInput();
 		$input->set_name( 'name' );
+		$input->set_id( 'test-select-with-text-input' );
 
 		$this->assertEquals( 'select-with-text-input', $input->get_type() );
+		$this->assertEquals( 'google-listings-and-ads/product-select-with-text-field', $input->get_block_name() );
 
 		// Default view data
 		$this->assertEquals(
@@ -194,6 +196,17 @@ class InputCollectionTest extends UnitTest {
 				'gla_wrapper_class' => ' select-with-text-input',
 			],
 			$input->get_view_data()
+		);
+
+		$this->assertEquals( '_gla_custom_value', $input->get_block_attributes()['customInputValue'] );
+		$this->assertEquals(
+			[
+				[
+					'label' => 'Enter a custom value',
+					'value' => '_gla_custom_value',
+				],
+			],
+			$input->get_block_attributes()['options']
 		);
 
 		// After calling setters
@@ -251,6 +264,24 @@ class InputCollectionTest extends UnitTest {
 				'gla_wrapper_class' => ' select-with-text-input',
 			],
 			$input->get_view_data()
+		);
+
+		$this->assertEquals(
+			[
+				[
+					'label' => 'Default name',
+					'value' => '',
+				],
+				[
+					'label' => 'Use admin name',
+					'value' => 'use_admin_name',
+				],
+				[
+					'label' => 'Enter a custom value',
+					'value' => '_gla_custom_value',
+				],
+			],
+			$input->get_block_attributes()['options']
 		);
 
 		// Selected an option other than value from the custom text input
