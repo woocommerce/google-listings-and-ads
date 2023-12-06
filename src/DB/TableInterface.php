@@ -65,4 +65,15 @@ interface TableInterface {
 	 * @since 1.4.1
 	 */
 	public function has_index( string $index_name ): bool;
+
+	/**
+	 * Checks whether a column exists for the table.
+	 *
+	 * @param string $column_name The column name.
+	 *
+	 * @return bool True if the column exists on the table or False if not.
+	 *
+	 * @since 2.5.13
+	 */
+	public function has_column( string $column_name ): bool;
 }
