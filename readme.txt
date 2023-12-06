@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.13 - 2023-12-06 =
+* Fix - Change Budget Recommendations values.
+* Tweak - Use a single daily budget instead of a range.
+
 = 2.5.12 - 2023-11-22 =
 * Dev - Fix E2E gtag events tests.
 * Dev - Update WordPress CS to 3.0.
