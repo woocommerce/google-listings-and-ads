@@ -287,20 +287,18 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 	 * `InputTest` and `AttributeInputCollectionTest`.
 	 */
 	public function test_register_add_blocks() {
-		// The total number of blocks to be added to the simple product template is 16,
-		// and the converted number so far is 15
+		// The total number of blocks to be added to the simple product template is 16
 		$this->simple_gla_section
-			->expects( $this->exactly( 15 ) )
+			->expects( $this->exactly( 16 ) )
 			->method( 'add_block' );
 
 		$this->simple_gla_section->get_block( 'mocked-singleton' )
-			->expects( $this->exactly( 15 ) )
+			->expects( $this->exactly( 16 ) )
 			->method( 'add_hide_condition' );
 
-		// The total number of visible blocks to be added to the variation product template is 15,
-		// and the converted number so far is 14
+		// The total number of visible blocks to be added to the variation product template is 15
 		$this->variation_gla_section
-			->expects( $this->exactly( 14 ) )
+			->expects( $this->exactly( 15 ) )
 			->method( 'add_block' );
 
 		$this->variation_gla_section->get_block( 'mocked-singleton' )

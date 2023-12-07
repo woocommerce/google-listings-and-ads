@@ -48,6 +48,7 @@ class AttributesBlock implements Service, Registerable, Conditional {
 	 * @var string[]
 	 */
 	protected const CUSTOM_BLOCKS = [
+		'product-date-time-field',
 		'product-select-field',
 		'product-select-with-text-field',
 	];

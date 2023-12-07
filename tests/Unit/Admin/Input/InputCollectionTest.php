@@ -71,6 +71,7 @@ class InputCollectionTest extends UnitTest {
 		$input = new DateTime();
 
 		$this->assertEquals( 'datetime', $input->get_type() );
+		$this->assertEquals( 'google-listings-and-ads/product-date-time-field', $input->get_block_name() );
 
 		// Null by default
 		$view_data = $input->get_view_data();
