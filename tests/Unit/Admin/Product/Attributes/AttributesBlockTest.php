@@ -61,9 +61,9 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 	protected const VARIATION_IMAGES_SECTION_HOOK  = 'woocommerce_block_template_area_product-form_after_add_block_product-variation-images-section';
 
 	public function setUp(): void {
-		// compatibility-code "WC >= 8.3" -- The Block Template API used requires at least WooCommerce 8.3
-		if ( ! version_compare( WC_VERSION, '8.3', '>=' ) ) {
-			$this->markTestSkipped( 'This test suite requires WooCommerce version >= 8.3' );
+		// compatibility-code "WC >= 8.4" -- The Block Template API used requires at least WooCommerce 8.4
+		if ( ! version_compare( WC_VERSION, '8.4', '>=' ) ) {
+			$this->markTestSkipped( 'This test suite requires WooCommerce version >= 8.4' );
 		}
 
 		parent::setUp();

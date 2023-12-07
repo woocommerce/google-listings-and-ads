@@ -68,8 +68,8 @@ class AttributesBlock implements Service, Registerable, Conditional {
 	 * Register a service.
 	 */
 	public function register(): void {
-		// compatibility-code "WC >= 8.3" -- The Block Template API used requires at least WooCommerce 8.3
-		if ( ! version_compare( WC_VERSION, '8.3', '>=' ) ) {
+		// compatibility-code "WC >= 8.4" -- The Block Template API used requires at least WooCommerce 8.4
+		if ( ! version_compare( WC_VERSION, '8.4', '>=' ) ) {
 			return;
 		}
 
