@@ -77,14 +77,14 @@ With the adjusted setup:
 
 #### Registration on the PHP side
 
-By default, when each block is registered via PHP in the [AttributesBlock](../../../src/Admin/Product/Attributes/AttributesBlock.php) class, the `register_block_type` function will also register and enqueue the related scripts and styles such as the built edit.js.
+By default, when each block is registered via PHP in the [ProductBlocksService](../../../src/Admin/ProductBlocksService.php) class, the `register_block_type` function will also register and enqueue the related scripts and styles such as the built edit.js.
 
-The same part is the separate registration for each block, therefore all blocks should be listed in the `CUSTOM_BLOCKS` array of the `AttributesBlock` class.
+The same part is the separate registration for each block, therefore all blocks should be listed in the `CUSTOM_BLOCKS` array of the `ProductBlocksService` class.
 
 With the adjusted setup:
 
 - The scripts and styles of blocks are not specified in block.json files, so they won't be registered or enqueued via the `register_block_type` function.
-- Instead, the blocks.js script is registered and enqueued by `AttributesBlock`.
+- Instead, the blocks.js script is registered and enqueued by `ProductBlocksService`.
 
 ## Related documentation
 

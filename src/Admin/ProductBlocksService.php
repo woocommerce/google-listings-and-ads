@@ -1,8 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesForm;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
@@ -19,11 +21,11 @@ use Automattic\WooCommerce\Admin\PageController;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class AttributesBlock
+ * Class ProductBlocksService
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
-class AttributesBlock implements Service, Registerable, Conditional {
+class ProductBlocksService implements Service, Registerable, Conditional {
 
 	use AdminConditional;
 	use AttributesTrait;
@@ -54,7 +56,7 @@ class AttributesBlock implements Service, Registerable, Conditional {
 	];
 
 	/**
-	 * AttributesBlock constructor.
+	 * ProductBlocksService constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
 	 * @param AttributeManager       $attribute_manager

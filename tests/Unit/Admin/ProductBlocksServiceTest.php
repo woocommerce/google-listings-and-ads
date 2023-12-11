@@ -1,15 +1,15 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin\Product\Attributes;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin;
 
 use Automattic\WooCommerce\Admin\BlockTemplates\BlockInterface;
 use Automattic\WooCommerce\Admin\BlockTemplates\BlockTemplateInterface;
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\GroupInterface;
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface;
 use Automattic\WooCommerce\Admin\PageController;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesBlock;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ProductBlocksService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -22,11 +22,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
- * Class AttributesBlockTest
+ * Class ProductBlocksServiceTest
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin\Product\Attributes
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin
  */
-class AttributesBlockTest extends ContainerAwareUnitTest {
+class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 
 	use AttributesTrait;
 
@@ -51,8 +51,8 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 	/** @var MockObject|SectionInterface $variation_gla_section */
 	protected $variation_gla_section;
 
-	/** @var AttributesBlock $attributes_block */
-	protected $attributes_block;
+	/** @var ProductBlocksService $product_blocks_service */
+	protected $product_blocks_service;
 
 	/** @var bool $is_mc_setup_complete */
 	protected $is_mc_setup_complete;
@@ -75,7 +75,7 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 		$this->simple_anchor_block    = $this->createMock( BlockInterface::class );
 		$this->variation_anchor_block = $this->createMock( BlockInterface::class );
 
-		$this->attributes_block = new AttributesBlock( $this->assets_handler, $this->attribute_manager, $this->merchant_center );
+		$this->product_blocks_service = new ProductBlocksService( $this->assets_handler, $this->attribute_manager, $this->merchant_center );
 
 		// Set up stubs and mocks
 		$this->is_mc_setup_complete = true;
@@ -130,17 +130,17 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 	public function test_get_hide_condition() {
 		$this->assertEquals(
 			"editedProduct.type !== 'simple' && editedProduct.type !== 'variable' && editedProduct.type !== 'variation'",
-			$this->attributes_block->get_hide_condition( Adult::class )
+			$this->product_blocks_service->get_hide_condition( Adult::class )
 		);
 
 		$this->assertEquals(
 			"editedProduct.type !== 'simple' && editedProduct.type !== 'variable'",
-			$this->attributes_block->get_hide_condition( Brand::class )
+			$this->product_blocks_service->get_hide_condition( Brand::class )
 		);
 
 		$this->assertEquals(
 			"editedProduct.type !== 'simple' && editedProduct.type !== 'variation'",
-			$this->attributes_block->get_hide_condition( Gender::class )
+			$this->product_blocks_service->get_hide_condition( Gender::class )
 		);
 
 		add_filter(
@@ -153,7 +153,7 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 
 		$this->assertEquals(
 			"editedProduct.type !== 'variation'",
-			$this->attributes_block->get_hide_condition( Gender::class )
+			$this->product_blocks_service->get_hide_condition( Gender::class )
 		);
 	}
 
@@ -168,7 +168,7 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 			->expects( $this->exactly( 0 ) )
 			->method( 'get_root_template' );
 
-		$this->attributes_block->register();
+		$this->product_blocks_service->register();
 
 		do_action( self::SIMPLE_ATTRIBUTES_SECTION_HOOK, $this->simple_anchor_block );
 		do_action( self::VARIATION_IMAGES_SECTION_HOOK, $this->variation_anchor_block );
@@ -185,7 +185,7 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 			->expects( $this->exactly( 0 ) )
 			->method( 'get_root_template' );
 
-		$this->attributes_block->register();
+		$this->product_blocks_service->register();
 
 		do_action( self::SIMPLE_ATTRIBUTES_SECTION_HOOK, $this->simple_anchor_block );
 		do_action( self::VARIATION_IMAGES_SECTION_HOOK, $this->variation_anchor_block );
@@ -200,7 +200,7 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 			->expects( $this->exactly( 1 ) )
 			->method( 'get_root_template' );
 
-		$this->attributes_block->register();
+		$this->product_blocks_service->register();
 
 		do_action( self::SIMPLE_ATTRIBUTES_SECTION_HOOK, $this->simple_anchor_block );
 		do_action( self::VARIATION_IMAGES_SECTION_HOOK, $this->variation_anchor_block );
@@ -230,7 +230,7 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 			->method( 'enqueue' )
 			->with( $expected_asset );
 
-		$this->attributes_block->register_custom_blocks( GLA_TESTS_DATA_DIR, 'tests/data/blocks', $custom_blocks );
+		$this->product_blocks_service->register_custom_blocks( GLA_TESTS_DATA_DIR, 'tests/data/blocks', $custom_blocks );
 	}
 
 	public function test_register_not_add_section() {
@@ -242,7 +242,7 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 			->expects( $this->exactly( 0 ) )
 			->method( 'add_section' );
 
-		$this->attributes_block->register();
+		$this->product_blocks_service->register();
 
 		// Here it intentionally calls with a mismatched template for each
 		do_action( self::SIMPLE_ATTRIBUTES_SECTION_HOOK, $this->variation_anchor_block );
@@ -276,7 +276,7 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 				]
 			);
 
-		$this->attributes_block->register();
+		$this->product_blocks_service->register();
 
 		do_action( self::SIMPLE_ATTRIBUTES_SECTION_HOOK, $this->simple_anchor_block );
 		do_action( self::VARIATION_IMAGES_SECTION_HOOK, $this->variation_anchor_block );
@@ -305,7 +305,7 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 			->expects( $this->exactly( 0 ) )
 			->method( 'add_hide_condition' );
 
-		$this->attributes_block->register();
+		$this->product_blocks_service->register();
 
 		do_action( self::SIMPLE_ATTRIBUTES_SECTION_HOOK, $this->simple_anchor_block );
 		do_action( self::VARIATION_IMAGES_SECTION_HOOK, $this->variation_anchor_block );
