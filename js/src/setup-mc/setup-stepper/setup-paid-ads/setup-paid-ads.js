@@ -211,7 +211,7 @@ export default function SetupPaidAds() {
 						eventName="gla_onboarding_complete_with_paid_ads_button_click"
 						eventProps={ {
 							budget: paidAds.amount,
-							audiences: paidAds.countryCodes.join( ',' ),
+							audiences: paidAds.countryCodes?.join( ',' ),
 						} }
 					/>
 				</Flex>
