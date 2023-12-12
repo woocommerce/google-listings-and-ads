@@ -93,34 +93,41 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/AbstractProductFormTemplate.php#L16
 		$template_area = 'product-form';
 
-		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/SimpleProductTemplate.php#L361
-		$block_id = 'product-attributes-section';
+		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/SimpleProductTemplate.php#L18
+		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/ProductVariationTemplate.php#L18
+		$block_id = 'general';
 
 		add_action(
 			"woocommerce_block_template_area_{$template_area}_after_add_block_{$block_id}",
-			function ( BlockInterface $attributes_section ) {
+			function ( BlockInterface $general_group ) {
+				$template = $general_group->get_root_template();
+
 				// Please note that the simple and variable product types use the same product block template 'simple-product'.
-				if ( 'simple-product' !== $attributes_section->get_root_template()->get_id() ) {
+				if ( 'simple-product' !== $template->get_id() && ! $this->is_variation_template( $general_group ) ) {
 					return;
 				}
 
-				$section = $this->add_section( $attributes_section );
-				$this->add_blocks( $section );
-			}
-		);
+				$group = $template->add_group(
+					[
+						'id'         => 'google-listings-and-ads-group',
+						'order'      => 100,
+						'attributes' => [
+							'title' => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+						],
+					]
+				);
 
-		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/ProductVariationTemplate.php#L161
-		$block_id = 'product-variation-images-section';
+				$product_attributes_section = $group->add_section(
+					[
+						'id'         => 'google-listings-and-ads-product-attributes-section',
+						'order'      => 2,
+						'attributes' => [
+							'title' => __( 'Product attributes', 'google-listings-and-ads' ),
+						],
+					]
+				);
 
-		add_action(
-			"woocommerce_block_template_area_{$template_area}_after_add_block_{$block_id}",
-			function ( BlockInterface $images_section ) {
-				if ( ! $this->is_variation_template( $images_section ) ) {
-					return;
-				}
-
-				$section = $this->add_section( $images_section );
-				$this->add_blocks( $section );
+				$this->add_product_attribute_blocks( $product_attributes_section );
 			}
 		);
 	}
@@ -160,30 +167,11 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * Add this extension's section block after the given reference section block.
+	 * Add product attribute blocks to the given section block.
 	 *
-	 * @param BlockInterface $reference_section The reference section block to add this extension's section block
+	 * @param BlockInterface $section The section block to add product attribute blocks
 	 */
-	private function add_section( BlockInterface $reference_section ): BlockInterface {
-		$group = $reference_section->get_parent();
-
-		return $group->add_section(
-			[
-				'id'         => 'google-listings-and-ads-product-block-section',
-				'order'      => $reference_section->get_order() + 1,
-				'attributes' => [
-					'title' => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
-				],
-			]
-		);
-	}
-
-	/**
-	 * Add attribute blocks to the given section block.
-	 *
-	 * @param BlockInterface $section The section block to add attribute blocks
-	 */
-	private function add_blocks( BlockInterface $section ): void {
+	private function add_product_attribute_blocks( BlockInterface $section ): void {
 		$is_variation_template = $this->is_variation_template( $section );
 
 		$product_types   = $is_variation_template ? [ 'variation' ] : $this->get_applicable_product_types();
