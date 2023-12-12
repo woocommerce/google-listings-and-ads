@@ -191,11 +191,6 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 			$input_type = call_user_func( [ $attribute_type, 'get_input_type' ] );
 			$input      = AttributesForm::init_input( new $input_type(), new $attribute_type() );
 
-			// TODO: Remove this check after all attribute inputs have specified a block name
-			if ( '' === $input->get_block_config()['blockName'] ) {
-				continue;
-			}
-
 			if ( $is_variation_template ) {
 				// When editing a variation, its product type on the frontend side won't be changed dynamically.
 				// In addition, the property of `editedProduct.type` doesn't exist in the variation product.

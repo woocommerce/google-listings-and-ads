@@ -57,8 +57,7 @@ class Input extends Form implements InputInterface {
 	 * @param string $type
 	 * @param string $block_name The name of a generic product block in WooCommerce core or a custom block in this extension.
 	 */
-	public function __construct( string $type, string $block_name = '' ) {
-		// TODO: Remove the default value of $block_name after all attribute inputs have specified a block name
+	public function __construct( string $type, string $block_name ) {
 		$this->type       = $type;
 		$this->block_name = $block_name;
 		parent::__construct();
