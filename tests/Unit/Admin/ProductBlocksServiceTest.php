@@ -102,11 +102,16 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		$template = $this->createStub( ProductFormTemplateInterface::class );
 		$group    = $this->createStub( GroupInterface::class );
 
+		$visibility_section = $this->createMock( SectionInterface::class );
 		$attributes_section = $this->createMock( SectionInterface::class );
+		$visibility_block   = $this->createMock( BlockInterface::class );
 		$attributes_block   = $this->createMock( BlockInterface::class );
 
 		$template->method( 'get_id' )->willReturn( $template_id );
 		$template->method( 'add_group' )->willReturn( $group );
+
+		$visibility_section->method( 'get_root_template' )->willReturn( $template );
+		$visibility_section->method( 'add_block' )->willReturn( $visibility_block );
 
 		$attributes_section->method( 'get_root_template' )->willReturn( $template );
 		$attributes_section->method( 'add_block' )->willReturn( $attributes_block );
@@ -116,7 +121,11 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		$group
 			->method( 'add_section' )
 			->willReturnCallback(
-				function ( array $config ) use ( $attributes_section ) {
+				function ( array $config ) use ( $visibility_section, $attributes_section ) {
+					if ( 'google-listings-and-ads-channel-visibility-section' === $config['id'] ) {
+						return $visibility_section;
+					}
+
 					if ( 'google-listings-and-ads-product-attributes-section' === $config['id'] ) {
 						return $attributes_section;
 					}
@@ -126,7 +135,9 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		return [
 			'template'           => $template,
 			'group'              => $group,
+			'visibility_section' => $visibility_section,
 			'attributes_section' => $attributes_section,
+			'visibility_block'   => $visibility_block,
 			'attributes_block'   => $attributes_block,
 		];
 	}
@@ -289,9 +300,18 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			);
 
 		$this->simple['group']
-			->expects( $this->exactly( 1 ) )
+			->expects( $this->exactly( 2 ) )
 			->method( 'add_section' )
 			->withConsecutive(
+				[
+					[
+						'id'         => 'google-listings-and-ads-channel-visibility-section',
+						'order'      => 1,
+						'attributes' => [
+							'title' => __( 'Channel visibility', 'google-listings-and-ads' ),
+						],
+					],
+				],
 				[
 					[
 						'id'         => 'google-listings-and-ads-product-attributes-section',
@@ -316,9 +336,18 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			);
 
 		$this->variation['group']
-			->expects( $this->exactly( 1 ) )
+			->expects( $this->exactly( 2 ) )
 			->method( 'add_section' )
 			->withConsecutive(
+				[
+					[
+						'id'         => 'google-listings-and-ads-channel-visibility-section',
+						'order'      => 1,
+						'attributes' => [
+							'title' => __( 'Channel visibility', 'google-listings-and-ads' ),
+						],
+					],
+				],
 				[
 					[
 						'id'         => 'google-listings-and-ads-product-attributes-section',

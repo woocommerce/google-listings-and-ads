@@ -117,6 +117,16 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 					]
 				);
 
+				$channel_visibility_section = $group->add_section(
+					[
+						'id'         => 'google-listings-and-ads-channel-visibility-section',
+						'order'      => 1,
+						'attributes' => [
+							'title' => __( 'Channel visibility', 'google-listings-and-ads' ),
+						],
+					]
+				);
+
 				$product_attributes_section = $group->add_section(
 					[
 						'id'         => 'google-listings-and-ads-product-attributes-section',
