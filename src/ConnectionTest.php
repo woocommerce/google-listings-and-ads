@@ -752,18 +752,14 @@ class ConnectionTest implements Service, Registerable {
 			}
 
 			$blog_id 		  = Jetpack_Options::get_option( 'id' );
-			$merchant_domain  =  parse_url( $this->get_site_url() );
-
 			$partner	 	  = 'google';
 			$topic            = $_GET[ 'topic' ];
-			$partner_endpoint = "https://shoppingdataintegration.googleapis.com/v1/webhooks/partners/woocommerce/merchants/" . $merchant_domain["host"] . "/types/" . $topic . ":webhookHandler";
 			$url    		  = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/{$partner}/notifications";
 			$remote_args 	  = [
 				  'method'  => 'POST',
 				  'timeout' => 30,
 				  'headers' => [
 					    'x-woocommerce-topic'            => $topic,
-					    'x-woocommerce-partner-endpoint' => $partner_endpoint,
 					    'x-woocommerce-partner-id'       => $_GET['client_id'],
 					  ],
 				  'body' => [
