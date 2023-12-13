@@ -11,16 +11,14 @@ import { Form } from '@woocommerce/components';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
-import GoogleAdsAccountSection from './google-ads-account-section';
 import AudienceSection from '.~/components/paid-ads/audience-section';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
+import SpinnerCard from '.~/components/spinner-card';
+import Section from '.~/wcdl/section';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import clientSession from './clientSession';
-import {
-	GOOGLE_ADS_ACCOUNT_STATUS,
-	GOOGLE_ADS_BILLING_STATUS,
-} from '.~/constants';
+import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -77,7 +75,7 @@ function resolveInitialPaidAds( paidAds, targetAudience ) {
  * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the audience, budget, and billing are updated.
  */
 export default function PaidAdsSetupSections( { onStatesReceived } ) {
-	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
@@ -135,7 +133,11 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 	}, [ targetAudience ] );
 
 	if ( ! targetAudience || ! billingStatus ) {
-		return <GoogleAdsAccountSection />;
+		return (
+			<Section>
+				<SpinnerCard />
+			</Section>
+		);
 	}
 
 	const initialValues = {
@@ -153,16 +155,12 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 		>
 			{ ( formProps ) => {
 				const { countryCodes } = formProps.values;
-				const disabledAudience = ! [
-					GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED,
-					GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE,
-				].includes( googleAdsAccount?.status );
+				const disabledAudience = ! hasGoogleAdsConnection;
 				const disabledBudget =
 					disabledAudience || countryCodes.length === 0;
 
 				return (
 					<>
-						<GoogleAdsAccountSection />
 						<AudienceSection
 							formProps={ formProps }
 							disabled={ disabledAudience }
