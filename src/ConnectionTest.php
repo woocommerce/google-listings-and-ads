@@ -642,10 +642,6 @@ class ConnectionTest implements Service, Registerable {
 									</label>
 									<br />
 									<label>
-										Partner APP Client ID <input name="client_id" type="text" value="<?php echo ! empty( $_GET['client_id'] ) ? $_GET['client_id'] : ''; ?>" />
-									</label>
-									<br />
-									<label>
 										Partner APP Secret ID <input name="client_secret" type="text" value="<?php echo ! empty( $_GET['client_secret'] ) ? $_GET['client_secret'] : ''; ?>" />
 									</label>
 									<br />
@@ -746,7 +742,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'partner-notification' === $_GET['action'] && check_admin_referer( 'partner-notification' ) ) {
-			if ( ! isset( $_GET['client_secret'], $_GET['client_id'],  $_GET['topic'], $_GET['item_id'] ) ) {
+			if ( ! isset( $_GET['client_secret'],  $_GET['topic'], $_GET['item_id'] ) ) {
 				$this->response .= "\n Client Secret, Client Id, Topic and Item ID are required.";
 				return;
 			}
@@ -759,8 +755,7 @@ class ConnectionTest implements Service, Registerable {
 				  'method'  => 'POST',
 				  'timeout' => 30,
 				  'headers' => [
-					    'x-woocommerce-topic'            => $topic,
-					    'x-woocommerce-partner-id'       => $_GET['client_id'],
+					    'x-woocommerce-topic'            => $topic
 					  ],
 				  'body' => [
 					  'item_id' => $_GET['item_id'],
