@@ -174,7 +174,10 @@ export default function SetupPaidAds() {
 			<ProductFeedStatusSection />
 			<GoogleAdsAccountSection />
 			<PaidAdsFeaturesSection
-				hideFooterButtons={ showPaidAdsSetup }
+				hideBudgetContent={ ! hasGoogleAdsConnection }
+				hideFooterButtons={
+					! hasGoogleAdsConnection || showPaidAdsSetup
+				}
 				skipButton={ createSkipButton(
 					__( 'Skip this step for now', 'google-listings-and-ads' )
 				) }
