@@ -13,6 +13,7 @@ import { noop, merge } from 'lodash';
  */
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
@@ -20,6 +21,7 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
 import ProductFeedStatusSection from './product-feed-status-section';
+import GoogleAdsAccountSection from './google-ads-account-section';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
@@ -53,7 +55,7 @@ const ACTION_SKIP = 'skip-ads';
  *
  * @event gla_onboarding_complete_button_click
  * @property {string} opened_paid_ads_setup Whether the paid ads setup is opened, e.g. 'yes', 'no'
- * @property {string} google_ads_account_status The connection status of merchant's Google Ads addcount, e.g. 'unknown', 'connected', 'disconnected', 'incomplete'
+ * @property {string} google_ads_account_status The connection status of merchant's Google Ads addcount, e.g. 'connected', 'disconnected', 'incomplete'
  * @property {string} billing_method_status aaa, The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
  * @property {string} campaign_form_validation Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
  */
@@ -69,6 +71,7 @@ const ACTION_SKIP = 'skip-ads';
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
 	const { createNotice } = useDispatchCoreNotices();
+	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( () =>
 		clientSession.getShowPaidAdsSetup( false )
@@ -123,23 +126,24 @@ export default function SetupPaidAds() {
 	function createSkipButton( text ) {
 		const eventProps = {
 			opened_paid_ads_setup: 'no',
-			google_ads_account_status: 'unknown',
+			google_ads_account_status: googleAdsAccount?.status,
 			billing_method_status: 'unknown',
 			campaign_form_validation: 'unknown',
 		};
 
 		if ( showPaidAdsSetup ) {
 			const selector = select( STORE_KEY );
-			const account = selector.getGoogleAdsAccount();
 			const billing = selector.getGoogleAdsAccountBillingStatus();
 
 			merge( eventProps, {
 				opened_paid_ads_setup: 'yes',
-				google_ads_account_status: account?.status,
 				billing_method_status: billing?.status,
 				campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
 			} );
 		}
+
+		const disabledSkip =
+			completing === ACTION_COMPLETE || ! hasGoogleAdsConnection;
 
 		return (
 			<AppButton
@@ -147,7 +151,7 @@ export default function SetupPaidAds() {
 				data-action={ ACTION_SKIP }
 				text={ text }
 				loading={ completing === ACTION_SKIP }
-				disabled={ completing === ACTION_COMPLETE }
+				disabled={ disabledSkip }
 				onClick={ finishOnboardingSetup }
 				eventName="gla_onboarding_complete_button_click"
 				eventProps={ eventProps }
@@ -168,6 +172,7 @@ export default function SetupPaidAds() {
 				) }
 			/>
 			<ProductFeedStatusSection />
+			<GoogleAdsAccountSection />
 			<PaidAdsFeaturesSection
 				hideFooterButtons={ showPaidAdsSetup }
 				skipButton={ createSkipButton(
