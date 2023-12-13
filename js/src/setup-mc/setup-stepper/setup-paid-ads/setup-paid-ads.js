@@ -40,6 +40,8 @@ const ACTION_SKIP = 'skip-ads';
  * Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
  *
  * @event gla_onboarding_complete_with_paid_ads_button_click
+ * @property {number} budget The budget for the campaign
+ * @property {string} audiences The targeted audiences for the campaign
  */
 
 /**
@@ -207,6 +209,10 @@ export default function SetupPaidAds() {
 						disabled={ disabledComplete }
 						onClick={ handleCompleteClick }
 						eventName="gla_onboarding_complete_with_paid_ads_button_click"
+						eventProps={ {
+							budget: paidAds.amount,
+							audiences: paidAds.countryCodes?.join( ',' ),
+						} }
 					/>
 				</Flex>
 			</StepContentFooter>
