@@ -423,13 +423,13 @@ test.describe( 'Complete your campaign', () => {
 					await expect( treeSelectMenu ).not.toBeVisible();
 				} );
 
-				test( 'should see the budget recommendation range changed, and see the budget recommendation request is triggered  when changing the ads audience', async () => {
+				test( 'should see the budget recommendation value changed, and see the budget recommendation request is triggered when changing the ads audience', async () => {
 					let textContent = await setupBudgetPage
 						.getBudgetRecommendationTextRow()
 						.textContent();
 
 					const textBeforeRemoveCountry =
-						setupBudgetPage.extractBudgetRecommendationRange(
+						setupBudgetPage.extractBudgetRecommendationValue(
 							textContent
 						);
 
@@ -438,7 +438,7 @@ test.describe( 'Complete your campaign', () => {
 
 					await removeCountryFromSearchBox(
 						page,
-						'United States (US)'
+						'United Kingdom (UK)'
 					);
 
 					await responsePromise;
@@ -448,7 +448,7 @@ test.describe( 'Complete your campaign', () => {
 						.textContent();
 
 					const textAfterRemoveCountry =
-						setupBudgetPage.extractBudgetRecommendationRange(
+						setupBudgetPage.extractBudgetRecommendationValue(
 							textContent
 						);
 

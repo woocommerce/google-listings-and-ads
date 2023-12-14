@@ -248,16 +248,6 @@ test.describe( 'Set up Ads account', () => {
 	test.describe( 'Create your paid campaign', () => {
 		test.beforeAll( async () => {
 			setupBudgetPage = new SetupBudgetPage( page );
-			await setupBudgetPage.fulfillBudgetRecommendation( {
-				currency: 'USD',
-				recommendations: [
-					{
-						country: 'US',
-						daily_budget_low: 5,
-						daily_budget_high: 15,
-					},
-				],
-			} );
 		} );
 
 		test( 'Continue to create paid campaign', async () => {
