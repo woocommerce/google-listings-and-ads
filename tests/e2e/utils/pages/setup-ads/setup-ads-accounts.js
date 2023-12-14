@@ -118,6 +118,49 @@ export default class SetupAdsAccount extends MockRequests {
 	}
 
 	/**
+	 * Mock Google Ads account as not yet connected.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockAdsAccountDisconnected() {
+		await this.fulfillAdsConnection( {
+			id: 0,
+			currency: null,
+			symbol: 'NT$',
+			status: 'disconnected',
+		} );
+	}
+
+	/**
+	 * Mock Google Ads account as connected but its billing setup is incomplete.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockAdsAccountIncomplete() {
+		await this.fulfillAdsConnection( {
+			id: 12345,
+			currency: 'TWD',
+			symbol: 'NT$',
+			status: 'incomplete',
+		} );
+	}
+
+	/**
+	 * Mock Google Ads account as connected.
+	 *
+	 * @param {number} [id=12345]
+	 * @return {Promise<void>}
+	 */
+	async mockAdsAccountConnected( id = 12345 ) {
+		await this.fulfillAdsConnection( {
+			id,
+			currency: 'TWD',
+			symbol: 'NT$',
+			status: 'connected',
+		} );
+	}
+
+	/**
 	 * Mock the Ads accounts response.
 	 *
 	 * @param {Object} payload
