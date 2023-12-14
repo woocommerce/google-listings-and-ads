@@ -61,6 +61,12 @@ test.describe( 'Complete your campaign', () => {
 			// Mock Merchant Center as connected
 			completeCampaign.mockMCConnected(),
 
+			// Mock Google Ads as not yet connected.
+			setupAdsAccountPage.mockAdsAccountDisconnected(),
+
+			// Mock there is no existing Google Ads account.
+			setupAdsAccountPage.mockAdsAccountsResponse( [] ),
+
 			// Mock MC step as paid_ads
 			completeCampaign.mockMCSetup( 'incomplete', 'paid_ads' ),
 
@@ -78,6 +84,40 @@ test.describe( 'Complete your campaign', () => {
 			// Mock syncable products count
 			completeCampaign.fulfillSyncableProductsCountRequest( {
 				count: 1024,
+			} ),
+
+			// The following mocks are requests will happen after completing the onboarding
+			completeCampaign.mockSuccessfulSettingsSyncRequest(),
+
+			completeCampaign.fulfillProductStatisticsRequest( {
+				timestamp: 1695011644,
+				statistics: {
+					active: 0,
+					expiring: 0,
+					pending: 0,
+					disapproved: 0,
+					not_synced: 1137,
+				},
+				scheduled_sync: 1,
+			} ),
+
+			completeCampaign.fulfillAccountIssuesRequest( {
+				issues: [],
+				page: 1,
+				total: 0,
+			} ),
+
+			completeCampaign.fulfillProductIssuesRequest( {
+				issues: [],
+				page: 1,
+				total: 0,
+			} ),
+
+			completeCampaign.fulfillMCReview( {
+				cooldown: 0,
+				issues: [],
+				reviewEligibleRegions: [],
+				status: 'ONBOARDING',
 			} ),
 		] );
 
@@ -127,124 +167,63 @@ test.describe( 'Complete your campaign', () => {
 		} );
 	} );
 
-	test.describe( 'Click "Skip this step for now"', () => {
-		test.beforeAll( async () => {
-			await Promise.all( [
-				// Mock settings sync request
-				completeCampaign.mockSuccessfulSettingsSyncRequest(),
+	test.describe( 'Google Ads', () => {
+		test.describe( 'Google Ads section', () => {
+			test.beforeEach( async () => {
+				await completeCampaign.goto();
+			} );
 
-				// Mock product statistics request
-				completeCampaign.fulfillProductStatisticsRequest( {
-					timestamp: 1695011644,
-					statistics: {
-						active: 0,
-						expiring: 0,
-						pending: 0,
-						disapproved: 0,
-						not_synced: 1137,
-					},
-					scheduled_sync: 1,
-				} ),
-			] );
-			await completeCampaign.clickSkipStepButton();
+			test( 'should see Google Ads section', async () => {
+				const section = completeCampaign.getAdsAccountSection();
+				await expect( section ).toBeVisible();
+			} );
+
+			test( 'should only see non-budget related items and no footer buttons in the Features section when not yet connected', async () => {
+				const section = completeCampaign.getPaidAdsFeaturesSection();
+				const items = section.locator(
+					'.gla-paid-ads-features-section__feature-list > div'
+				);
+				await expect( items ).toHaveCount( 1 );
+				await expect( items ).toContainText( 'Promote your products' );
+
+				const buttons = section.locator(
+					'.components-card__footer > button'
+				);
+				await expect( buttons ).toHaveCount( 2 );
+				for ( const button of await buttons.all() ) {
+					await expect( button ).toBeHidden();
+				}
+			} );
+
+			test( 'should see all items and footer buttons in the Features section when connected', async () => {
+				await setupAdsAccountPage.mockAdsAccountConnected();
+
+				const section = completeCampaign.getPaidAdsFeaturesSection();
+				const items = section.locator(
+					'.gla-paid-ads-features-section__feature-list > div'
+				);
+				await expect( items ).toHaveCount( 3 );
+				await expect( items ).toContainText( [
+					'Promote your products',
+					'Set a daily budget',
+					/Claim \$\d+ in ads credit/,
+				] );
+
+				const buttons = section.locator(
+					'.components-card__footer > button'
+				);
+				await expect( buttons ).toHaveCount( 2 );
+				for ( const button of await buttons.all() ) {
+					await expect( button ).toBeVisible();
+					await expect( button ).toBeEnabled();
+				}
+			} );
 		} );
 
-		test( 'should see the setup success modal', async () => {
-			const setupSuccessModal = page
-				.locator( '.components-modal__content' )
-				.filter( {
-					hasText:
-						'You’ve successfully set up Google Listings & Ads!',
-				} );
-			await expect( setupSuccessModal ).toBeVisible();
-		} );
-
-		test( 'should see the url contains product-feed', async () => {
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
-		} );
-	} );
-
-	test.describe( 'Set up paid ads', () => {
-		test.beforeAll( async () => {
-			await Promise.all( [
-				// Mock settings sync request
-				completeCampaign.mockSuccessfulSettingsSyncRequest(),
-
-				// Mock product statistics request
-				completeCampaign.fulfillProductStatisticsRequest( {
-					timestamp: 1695011644,
-					statistics: {
-						active: 0,
-						expiring: 0,
-						pending: 0,
-						disapproved: 0,
-						not_synced: 1137,
-					},
-					scheduled_sync: 1,
-				} ),
-			] );
-			await completeCampaign.goto();
-		} );
-
-		test( 'should see the "Create a paid ad campaign" button is enabled', async () => {
-			const button = completeCampaign.getCreatePaidAdButton();
-			await expect( button ).toBeVisible();
-			await expect( button ).toBeEnabled();
-		} );
-
-		test.describe( 'Click "Create a paid ad campaign" button', () => {
+		test.describe( 'Google Ads account', () => {
 			test.beforeAll( async () => {
-				await completeCampaign.clickCreatePaidAdButton();
-				await setupAdsAccountPage.mockAdsAccountsResponse( [] );
-			} );
-
-			test( 'should see "Complete setup" button is disabled', async () => {
-				const completeSetupButton =
-					completeCampaign.getCompleteSetupButton();
-				await expect( completeSetupButton ).toBeVisible();
-				await expect( completeSetupButton ).toBeDisabled();
-			} );
-
-			test( 'should see "Skip paid ads creation" button is enabled', async () => {
-				const skipPaidAdsCreationButton =
-					completeCampaign.getSkipPaidAdsCreationButton();
-				await expect( skipPaidAdsCreationButton ).toBeVisible();
-				await expect( skipPaidAdsCreationButton ).toBeEnabled();
-			} );
-
-			test( 'should see "Google Ads" section is enabled', async () => {
-				const googleAdsSection =
-					completeCampaign.getAdsAccountSection();
-				await expect( googleAdsSection ).toBeVisible();
-
-				// Cannot use toBeEnabled() because <section> is not a native control element
-				// such as <button> or <input> so it will be always enabled.
-				await expect( googleAdsSection ).not.toHaveClass(
-					/wcdl-section--is-disabled/
-				);
-			} );
-
-			test( 'should see "Ads audience" section is disabled', async () => {
-				const adsAudienceSection =
-					completeCampaign.getAdsAudienceSection();
-				await expect( adsAudienceSection ).toBeVisible();
-
-				// Cannot use toBeDisabled() because <section> is not a native control element
-				// such as <button> or <input> so it will be always enabled.
-				await expect( adsAudienceSection ).toHaveClass(
-					/wcdl-section--is-disabled/
-				);
-			} );
-
-			test( 'should see "Set your budget" section is disabled', async () => {
-				const budgetSection = completeCampaign.getBudgetSection();
-				await expect( budgetSection ).toBeVisible();
-
-				// Cannot use toBeDisabled() because <section> is not a native control element
-				// such as <button> or <input> so it will be always enabled.
-				await expect( budgetSection ).toHaveClass(
-					/wcdl-section--is-disabled/
-				);
+				await setupAdsAccountPage.mockAdsAccountDisconnected();
+				await completeCampaign.goto();
 			} );
 
 			test.describe( 'Create account', () => {
@@ -286,12 +265,7 @@ test.describe( 'Complete your campaign', () => {
 						},
 					] );
 
-					await setupAdsAccountPage.fulfillAdsConnection( {
-						id: 12345,
-						currency: 'TWD',
-						symbol: 'NT$',
-						status: 'connected',
-					} );
+					await setupAdsAccountPage.mockAdsAccountConnected();
 
 					await setupAdsAccountPage.clickCreateAccountButtonFromModal();
 					const connectedText =
@@ -313,12 +287,7 @@ test.describe( 'Complete your campaign', () => {
 						},
 					] );
 
-					await setupAdsAccountPage.fulfillAdsConnection( {
-						id: 12345,
-						currency: 'TWD',
-						symbol: 'NT$',
-						status: 'disconnected',
-					} );
+					await setupAdsAccountPage.mockAdsAccountDisconnected();
 
 					await setupAdsAccountPage.clickConnectDifferentAccountButton();
 				} );
@@ -343,7 +312,7 @@ test.describe( 'Complete your campaign', () => {
 					await expect( button ).toBeEnabled();
 				} );
 
-				test( 'should see ads account connected text, audience and budget sections are enabled, and ads/accounts request is triggered after clicking connect button', async () => {
+				test( 'should see ads account connected text and ads/accounts request is triggered after clicking connect button', async () => {
 					await setupAdsAccountPage.mockAdsAccountsResponse( [
 						{
 							id: 23456,
@@ -351,12 +320,7 @@ test.describe( 'Complete your campaign', () => {
 						},
 					] );
 
-					await setupAdsAccountPage.fulfillAdsConnection( {
-						id: 23456,
-						currency: 'TWD',
-						symbol: 'NT$',
-						status: 'connected',
-					} );
+					await setupAdsAccountPage.mockAdsAccountConnected( 23456 );
 
 					const requestPromise =
 						setupAdsAccountPage.registerConnectAdsAccountRequests(
@@ -370,20 +334,85 @@ test.describe( 'Complete your campaign', () => {
 					const connectedText =
 						completeCampaign.getAdsAccountConnectedText();
 					await expect( connectedText ).toBeVisible();
+				} );
+			} );
+		} );
+	} );
 
+	test.describe( 'Set up paid ads', () => {
+		test.describe( 'Click "Create a paid ad campaign" button', () => {
+			test.beforeAll( async () => {
+				await setupAdsAccountPage.mockAdsAccountConnected();
+				await completeCampaign.goto();
+				await completeCampaign.clickCreatePaidAdButton();
+			} );
+
+			test( 'should not see the "Create a paid ad campaign" button after this section is shown', async () => {
+				const button = completeCampaign.getCreatePaidAdButton();
+				await expect( button ).toBeHidden();
+			} );
+
+			test( 'should see "Complete setup" button is disabled', async () => {
+				const completeSetupButton =
+					completeCampaign.getCompleteSetupButton();
+				await expect( completeSetupButton ).toBeVisible();
+				await expect( completeSetupButton ).toBeDisabled();
+			} );
+
+			test( 'should see "Skip paid ads creation" button is enabled', async () => {
+				const skipPaidAdsCreationButton =
+					completeCampaign.getSkipPaidAdsCreationButton();
+				await expect( skipPaidAdsCreationButton ).toBeVisible();
+				await expect( skipPaidAdsCreationButton ).toBeEnabled();
+			} );
+
+			test.describe( 'Allow to disconnect Google Ads account', () => {
+				test.beforeAll( async () => {
+					await setupAdsAccountPage.mockAdsAccountDisconnected();
+					await setupAdsAccountPage.clickConnectDifferentAccountButton();
+				} );
+
+				test( 'should see "Ads audience" section is disabled', async () => {
 					const adsAudienceSection =
 						completeCampaign.getAdsAudienceSection();
-					const budgetSection = completeCampaign.getBudgetSection();
+					await expect( adsAudienceSection ).toBeVisible();
 
 					// Cannot use toBeDisabled() because <section> is not a native control element
 					// such as <button> or <input> so it will be always enabled.
-					await expect( adsAudienceSection ).not.toHaveClass(
-						/wcdl-section--is-disabled/
-					);
-					await expect( budgetSection ).not.toHaveClass(
+					await expect( adsAudienceSection ).toHaveClass(
 						/wcdl-section--is-disabled/
 					);
 				} );
+
+				test( 'should see "Set your budget" section is disabled', async () => {
+					const budgetSection = completeCampaign.getBudgetSection();
+					await expect( budgetSection ).toBeVisible();
+
+					// Cannot use toBeDisabled() because <section> is not a native control element
+					// such as <button> or <input> so it will be always enabled.
+					await expect( budgetSection ).toHaveClass(
+						/wcdl-section--is-disabled/
+					);
+				} );
+
+				test( 'should see both "Skip paid ads creation" and "Complete setup" button are disabled', async () => {
+					const completeButton =
+						completeCampaign.getCompleteSetupButton();
+					await expect( completeButton ).toBeVisible();
+					await expect( completeButton ).toBeDisabled();
+
+					const skipButton =
+						completeCampaign.getSkipPaidAdsCreationButton();
+					await expect( skipButton ).toBeVisible();
+					await expect( skipButton ).toBeDisabled();
+				} );
+			} );
+		} );
+
+		test.describe( 'Set up a campaign', () => {
+			test.beforeAll( async () => {
+				await setupAdsAccountPage.mockAdsAccountConnected();
+				await completeCampaign.goto();
 			} );
 
 			test.describe( 'Select audience', () => {
@@ -546,6 +575,68 @@ test.describe( 'Complete your campaign', () => {
 					await expect( setupSuccessModal ).toBeVisible();
 				} );
 			} );
+		} );
+	} );
+
+	test.describe( 'Complete onboarding by "Skip this step for now"', () => {
+		test.beforeAll( async () => {
+			// Reset the showing status for the "Set up paid ads" section.
+			await page.evaluate( () => window.sessionStorage.clear() );
+			await setupAdsAccountPage.mockAdsAccountIncomplete();
+			await completeCampaign.goto();
+			await completeCampaign.clickSkipStepButton();
+		} );
+
+		test( 'should see the setup success modal', async () => {
+			const setupSuccessModal = page
+				.locator( '.components-modal__content' )
+				.filter( {
+					hasText:
+						'You’ve successfully set up Google Listings & Ads!',
+				} );
+			await expect( setupSuccessModal ).toBeVisible();
+		} );
+
+		test( 'should see the url contains product-feed', async () => {
+			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
+		} );
+	} );
+
+	test.describe( 'Complete onboarding by "Skip paid ads creation"', () => {
+		test.beforeAll( async () => {
+			await setupAdsAccountPage.mockAdsAccountIncomplete();
+			await completeCampaign.goto();
+			await completeCampaign.clickCreatePaidAdButton();
+			await completeCampaign.clickSkipPaidAdsCreationButon();
+		} );
+
+		test( 'should also see the setup success modal', async () => {
+			const setupSuccessModal = page
+				.locator( '.components-modal__content' )
+				.filter( {
+					hasText:
+						'You’ve successfully set up Google Listings & Ads!',
+				} );
+			await expect( setupSuccessModal ).toBeVisible();
+		} );
+
+		test( 'should also see the url contains product-feed', async () => {
+			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
+		} );
+
+		test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
+			await page.keyboard.press( 'Escape' );
+			await page.getByRole( 'tab', { name: 'Dashboard' } ).click();
+
+			const buttons = page.getByRole( 'button', {
+				name: 'Add paid campaign',
+			} );
+
+			await expect( buttons ).toHaveCount( 2 );
+			for ( const button of await buttons.all() ) {
+				await expect( button ).toBeVisible();
+				await expect( button ).toBeEnabled();
+			}
 		} );
 	} );
 } );
