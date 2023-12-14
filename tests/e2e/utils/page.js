@@ -178,6 +178,7 @@ export async function selectCountryFromSearchBox(
  */
 export async function checkFAQExpandable( page ) {
 	const faqTitles = getFAQPanelTitle( page );
+	await expect.poll( () => faqTitles.count() ).toBeGreaterThan( 0 );
 	const count = await faqTitles.count();
 
 	if ( count === 1 ) {
