@@ -100,6 +100,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 		add_action(
 			"woocommerce_block_template_area_{$template_area}_after_add_block_{$block_id}",
 			function ( BlockInterface $general_group ) {
+				/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\ProductFormTemplateInterface */
 				$template = $general_group->get_root_template();
 
 				// Please note that the simple and variable product types use the same product block template 'simple-product'.
@@ -107,6 +108,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 					return;
 				}
 
+				/** @var Automattic\WooCommerce\Internal\Admin\Features\ProductBlockEditor\ProductTemplates\Group */
 				$group = $template->add_group(
 					[
 						'id'         => 'google-listings-and-ads-group',
@@ -117,6 +119,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 					]
 				);
 
+				/** @var Automattic\WooCommerce\Internal\Admin\Features\ProductBlockEditor\ProductTemplates\Section */
 				$channel_visibility_section = $group->add_section(
 					[
 						'id'         => 'google-listings-and-ads-channel-visibility-section',
@@ -127,6 +130,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 					]
 				);
 
+				/** @var Automattic\WooCommerce\Internal\Admin\Features\ProductBlockEditor\ProductTemplates\Section */
 				$product_attributes_section = $group->add_section(
 					[
 						'id'         => 'google-listings-and-ads-product-attributes-section',
@@ -203,6 +207,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 				// When editing a simple or variable product, its product type on the frontend side can be
 				// changed dynamically. So, it needs to use the ProductTemplates API `add_hide_condition`
 				// to conditionally hide attributes.
+				/** @var BlockInterface */
 				$block = $section->add_block( $input->get_block_config() );
 				$block->add_hide_condition( $this->get_hide_condition( $attribute_type ) );
 			}
