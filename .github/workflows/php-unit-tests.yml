@@ -50,19 +50,16 @@ jobs:
       WP_TESTS_DIR: "/tmp/wordpress/tests/phpunit"
     strategy:
       matrix:
-        php: [ 8.0 ]
+        php: [ 8.2 ]
         wp-version: [ latest ]
         wc-versions: ${{ fromJson(needs.GetMatrix.outputs.wc-versions) }}
         include:
-          - php: 8.2
+          - php: 8.3
             wp-version: latest
             wc-versions: latest
           - php: 7.4
             wp-version: ${{ fromJson(needs.GetMatrix.outputs.wp-versions)[2] }} # L-2 WP Version support
             wc-versions: ${{ fromJson(needs.GetMatrix.outputs.wc-versions)[2] }} # L-2 WC Version support
-          - php: 8.1
-            wp-version: latest
-            wc-versions: latest
 
     steps:
       - name: Checkout repository
