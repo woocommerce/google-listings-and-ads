@@ -223,19 +223,6 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Fulfill the Budget Recommendation request.
-	 *
-	 * @param {Object} payload
-	 * @return {Promise<void>}
-	 */
-	async fulfillBudgetRecommendation( payload ) {
-		await this.fulfillRequest(
-			/\/wc\/gla\/ads\/campaigns\/budget-recommendation\b/,
-			payload
-		);
-	}
-
-	/**
 	 * Fulfill the Sync Settings Connection request.
 	 *
 	 * @param {Object} payload
@@ -307,6 +294,42 @@ export default class MockRequests {
 			/\/wc\/gla\/mc\/syncable-products-count\b/,
 			payload
 		);
+	}
+
+	/**
+	 * Fulfill the MC account issues request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillAccountIssuesRequest( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/issues\/account\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill the MC product issues request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillProductIssuesRequest( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/mc\/issues\/product\b/,
+			payload
+		);
+	}
+
+	/**
+	 * Fulfill the MC review request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillMCReview( payload ) {
+		await this.fulfillRequest( /\/wc\/gla\/mc\/review\b/, payload );
 	}
 
 	/**

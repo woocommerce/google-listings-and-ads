@@ -48,7 +48,7 @@ export default function MockupSearch( { product } ) {
 					</ScaledText>
 					<Placeholder stroke="thinner" width="79" color="blue" />
 				</div>
-				<Flex justfy="space-between" align="stretch">
+				<Flex align="stretch">
 					<div className="gla-ads-mockup__search-card-placeholders">
 						<Placeholder width="100" />
 						<Placeholder width="97" />
