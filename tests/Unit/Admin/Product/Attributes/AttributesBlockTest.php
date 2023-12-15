@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Color;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
@@ -311,5 +312,45 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 
 		do_action( self::SIMPLE_ATTRIBUTES_SECTION_HOOK, $this->simple_anchor_block );
 		do_action( self::VARIATION_IMAGES_SECTION_HOOK, $this->variation_anchor_block );
+	}
+
+	/**
+	 * Assert it only calls `$block->add_hide_condition` when `$attributes_block->get_hide_condition()`
+	 * is not an empty string.
+	 */
+	public function test_register_add_product_attribute_blocks_conditionally_add_hide_condition() {
+		$attribute_manager = $this->createStub( AttributeManager::class );
+		$attribute_manager
+			->method( 'get_attribute_types_for_product_types' )
+			->willReturn(
+				[
+					'color' => Color::class,
+					'brand' => Brand::class,
+				]
+			);
+
+		$attributes_block = new AttributesBlock( $attribute_manager, $this->merchant_center );
+
+		// Hide all product types for Brand
+		add_filter(
+			'woocommerce_gla_attribute_hidden_product_types_brand',
+			[ Brand::class, 'get_applicable_product_types' ]
+		);
+
+		$this->assertNotEquals( '', $attributes_block->get_hide_condition( Color::class ) );
+		$this->assertEquals( '', $attributes_block->get_hide_condition( Brand::class ) );
+
+		$this->simple_gla_section
+			->expects( $this->exactly( 2 ) )
+			->method( 'add_block' );
+
+		$this->simple_gla_section->get_block( 'mocked-singleton' )
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_hide_condition' )
+			->with( $attributes_block->get_hide_condition( Color::class ) );
+
+		$attributes_block->register();
+
+		do_action( self::SIMPLE_ATTRIBUTES_SECTION_HOOK, $this->simple_anchor_block );
 	}
 }
