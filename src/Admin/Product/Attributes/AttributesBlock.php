@@ -144,12 +144,8 @@ class AttributesBlock implements Service, Registerable, Conditional {
 				// When editing a simple or variable product, its product type on the frontend side can be
 				// changed dynamically. So, it needs to use the ProductTemplates API `add_hide_condition`
 				// to conditionally hide attributes.
-				$block          = $section->add_block( $input->get_block_config() );
-				$hide_condition = $this->get_hide_condition( $attribute_type );
-
-				if ( '' !== $hide_condition ) {
-					$block->add_hide_condition( $hide_condition );
-				}
+				$block = $section->add_block( $input->get_block_config() );
+				$block->add_hide_condition( $this->get_hide_condition( $attribute_type ) );
 			}
 		}
 	}
@@ -199,6 +195,6 @@ class AttributesBlock implements Service, Registerable, Conditional {
 			$attribute_product_types['visible']
 		);
 
-		return implode( ' && ', $conditions );
+		return implode( ' && ', $conditions ) ?: 'true';
 	}
 }
