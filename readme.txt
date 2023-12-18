@@ -111,6 +111,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.14 - 2023-12-18 =
+* Dev - Include PHP 8.3 in tested versions for PHPunit.
+* Fix - Item price in purchase event.
+* Tweak - Track Budgets and Audience in Onboarding.
+* Tweak - WC 8.4 compatibility.
+* Update - Change to require Google Ads connection during the onboarding.
+
 = 2.5.13 - 2023-12-06 =
 * Fix - Change Budget Recommendations values.
 * Tweak - Use a single daily budget instead of a range.
