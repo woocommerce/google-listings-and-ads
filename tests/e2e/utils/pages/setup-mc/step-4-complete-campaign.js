@@ -56,20 +56,20 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
-	 * Get paid ads features section.
-	 *
-	 * @return {import('@playwright/test').Locator} Get paid ads features section.
-	 */
-	getPaidAdsFeaturesSection() {
-		return this.getSections().nth( 1 );
-	}
-
-	/**
 	 * Get ads account section.
 	 *
 	 * @return {import('@playwright/test').Locator} Get ads account section.
 	 */
 	getAdsAccountSection() {
+		return this.getSections().nth( 1 );
+	}
+
+	/**
+	 * Get paid ads features section.
+	 *
+	 * @return {import('@playwright/test').Locator} Get paid ads features section.
+	 */
+	getPaidAdsFeaturesSection() {
 		return this.getSections().nth( 2 );
 	}
 

@@ -302,7 +302,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$product_id   = $item->get_product_id();
 			$product_name = $item->get_name();
 			$quantity     = $item->get_quantity();
-			$price        = $item->get_subtotal();
+			$price        = $order->get_item_total( $item );
 			$item_info [] = sprintf(
 				'{
 				id: "gla_%s",

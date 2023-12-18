@@ -15,7 +15,7 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import CampaignPreview from '.~/components/paid-ads/campaign-preview';
 import './paid-ads-features-section.scss';
 
-function FeatureList() {
+function FeatureList( { hideBudgetContent } ) {
 	const featuresItems = [
 		{
 			Icon: GridiconCheckmark,
@@ -24,21 +24,26 @@ function FeatureList() {
 				'google-listings-and-ads'
 			),
 		},
-		{
-			Icon: GridiconCheckmark,
-			content: __(
-				'Set a daily budget, and only pay when someone clicks.',
-				'google-listings-and-ads'
-			),
-		},
-		{
-			Icon: GridiconGift,
-			content: __(
-				'Claim $500 in ads credit when you spend your first $500 with Google Ads. Terms and conditions apply.',
-				'google-listings-and-ads'
-			),
-		},
 	];
+
+	if ( ! hideBudgetContent ) {
+		featuresItems.push(
+			{
+				Icon: GridiconCheckmark,
+				content: __(
+					'Set a daily budget, and only pay when someone clicks.',
+					'google-listings-and-ads'
+				),
+			},
+			{
+				Icon: GridiconGift,
+				content: __(
+					'Claim $500 in ads credit when you spend your first $500 with Google Ads. Terms and conditions apply.',
+					'google-listings-and-ads'
+				),
+			}
+		);
+	}
 
 	return (
 		<div className="gla-paid-ads-features-section__feature-list">
@@ -61,11 +66,13 @@ function FeatureList() {
  * for the next actions: skip or continue the paid ads setup.
  *
  * @param {Object} props React props.
+ * @param {boolean} props.hideBudgetContent Whether to hide the content about the ad budget.
  * @param {boolean} props.hideFooterButtons Whether to hide the buttons at the card footer.
  * @param {JSX.Element} props.skipButton Button to skip paid ads setup.
  * @param {JSX.Element} props.continueButton Button to continue paid ads setup.
  */
 export default function PaidAdsFeaturesSection( {
+	hideBudgetContent,
 	hideFooterButtons,
 	skipButton,
 	continueButton,
@@ -120,7 +127,9 @@ export default function PaidAdsFeaturesSection( {
 									'google-listings-and-ads'
 								) }
 							</div>
-							<FeatureList />
+							<FeatureList
+								hideBudgetContent={ hideBudgetContent }
+							/>
 							<cite className="gla-paid-ads-features-section__cite">
 								{ __(
 									'Source: Google Internal Data, July 2020',
