@@ -28,9 +28,7 @@ trait MenuFixesTrait {
 	 *
 	 * There is a guide with a few examples showing how to add a page to WooCommerce Admin.
 	 *
-	 * TODO: rename to developer.woo.com when the migration is done
-	 *
-	 * @link https://developer.woocommerce.com/extension-developer-guide/working-with-woocommerce-admin-pages/
+	 * @link https://developer.woo.com/extension-developer-guide/working-with-woocommerce-admin-pages/
 	 *
 	 * Originally, a React-powered page is expected to be registered by WC core function
 	 * `wc_admin_register_page`, and the function also handles the registration of wp-admin
