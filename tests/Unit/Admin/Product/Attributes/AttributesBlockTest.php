@@ -329,7 +329,7 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 				]
 			);
 
-		$attributes_block = new AttributesBlock( $this->assets_handler, $attribute_manager, $this->merchant_center );
+		$attributes_block = new AttributesBlock( $attribute_manager, $this->merchant_center );
 
 		// Hide all product types for Brand
 		add_filter(
