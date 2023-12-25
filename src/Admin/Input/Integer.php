@@ -15,6 +15,6 @@ class Integer extends Input {
 	 * Integer constructor.
 	 */
 	public function __construct() {
-		parent::__construct( 'integer' );
+		parent::__construct( 'integer', 'woocommerce/product-number-field' );
 	}
 }
