@@ -21,8 +21,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 class InputCollectionTest extends UnitTest {
 	public function test_boolean_select() {
 		$input = new BooleanSelect();
+		$input->set_id( 'test-boolean-select' );
 
 		$this->assertEquals( 'select', $input->get_type() );
+		$this->assertEquals( 'google-listings-and-ads/product-select-field', $input->get_block_name() );
 
 		// BooleanSelect doesn't reflect the call of set_options method
 		$input->set_options( [] );
@@ -34,6 +36,24 @@ class InputCollectionTest extends UnitTest {
 				'no'  => 'No',
 			],
 			$input->get_options()
+		);
+
+		$this->assertEquals(
+			[
+				[
+					'label' => 'Default',
+					'value' => '',
+				],
+				[
+					'label' => 'Yes',
+					'value' => 'yes',
+				],
+				[
+					'label' => 'No',
+					'value' => 'no',
+				],
+			],
+			$input->get_block_attributes()['options']
 		);
 
 		// Null by default
@@ -90,13 +110,16 @@ class InputCollectionTest extends UnitTest {
 
 	public function test_select() {
 		$input = new Select();
+		$input->set_id( 'test-select' );
 
 		$this->assertEquals( 'select', $input->get_type() );
+		$this->assertEquals( 'google-listings-and-ads/product-select-field', $input->get_block_name() );
 		$this->assertEquals( 'select short', $input->get_view_data()['class'] );
 
 		// Empty options by default
 		$this->assertEquals( [], $input->get_options() );
 		$this->assertEquals( [], $input->get_view_data()['options'] );
+		$this->assertEquals( [], $input->get_block_attributes()['options'] );
 
 		// Set and get options
 		$options = [
@@ -107,6 +130,19 @@ class InputCollectionTest extends UnitTest {
 
 		$this->assertEquals( $options, $input->get_options() );
 		$this->assertEquals( $options, $input->get_view_data()['options'] );
+		$this->assertEquals(
+			[
+				[
+					'label' => 'bar',
+					'value' => 'foo',
+				],
+				[
+					'label' => 'hello',
+					'value' => 'hi',
+				],
+			],
+			$input->get_block_attributes()['options']
+		);
 	}
 
 	public function test_select_with_text_input() {

@@ -3,13 +3,18 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\Admin\BlockTemplates\BlockInterface;
+use Automattic\WooCommerce\Admin\PageController;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,6 +27,12 @@ class AttributesBlock implements Service, Registerable, Conditional {
 
 	use AdminConditional;
 	use AttributesTrait;
+	use PluginHelper;
+
+	/**
+	 * @var AssetsHandlerInterface
+	 */
+	protected $assets_handler;
 
 	/**
 	 * @var AttributeManager
@@ -34,12 +45,21 @@ class AttributesBlock implements Service, Registerable, Conditional {
 	protected $merchant_center;
 
 	/**
+	 * @var string[]
+	 */
+	protected const CUSTOM_BLOCKS = [
+		'product-select-field',
+	];
+
+	/**
 	 * AttributesBlock constructor.
 	 *
-	 * @param AttributeManager      $attribute_manager
-	 * @param MerchantCenterService $merchant_center
+	 * @param AssetsHandlerInterface $assets_handler
+	 * @param AttributeManager       $attribute_manager
+	 * @param MerchantCenterService  $merchant_center
 	 */
-	public function __construct( AttributeManager $attribute_manager, MerchantCenterService $merchant_center ) {
+	public function __construct( AssetsHandlerInterface $assets_handler, AttributeManager $attribute_manager, MerchantCenterService $merchant_center ) {
+		$this->assets_handler    = $assets_handler;
 		$this->attribute_manager = $attribute_manager;
 		$this->merchant_center   = $merchant_center;
 	}
@@ -53,10 +73,18 @@ class AttributesBlock implements Service, Registerable, Conditional {
 			return;
 		}
 
-		// Register the hooks only if Merchant Center is set up.
-		if ( ! $this->merchant_center->is_setup_complete() ) {
+		if ( ! $this->merchant_center->is_setup_complete() || ! PageController::is_admin_page() ) {
 			return;
 		}
+
+		add_action(
+			'init',
+			function () {
+				$build_path = "{$this->get_root_dir()}/js/build";
+				$uri        = 'js/build/blocks';
+				$this->register_custom_blocks( $build_path, $uri, self::CUSTOM_BLOCKS );
+			}
+		);
 
 		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/AbstractProductFormTemplate.php#L16
 		$template_area = 'product-form';
@@ -91,6 +119,40 @@ class AttributesBlock implements Service, Registerable, Conditional {
 				$this->add_blocks( $section );
 			}
 		);
+	}
+
+	/**
+	 * Register the custom blocks and their assets.
+	 *
+	 * @param string   $build_path    The absolute path to the build directory of the assets.
+	 * @param string   $uri           The script URI of the custom blocks.
+	 * @param string[] $custom_blocks The directory names of each custom block under the build path.
+	 */
+	public function register_custom_blocks( string $build_path, string $uri, array $custom_blocks ): void {
+		foreach ( $custom_blocks as $custom_block ) {
+			$block_json_file = "${build_path}/${custom_block}/block.json";
+
+			if ( ! file_exists( $block_json_file ) ) {
+				continue;
+			}
+
+			register_block_type( $block_json_file );
+		}
+
+		$asset = new AdminScriptWithBuiltDependenciesAsset(
+			'google-listings-and-ads-product-blocks',
+			$uri,
+			"${build_path}/blocks.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) filemtime( "${build_path}/blocks.js" ),
+				]
+			)
+		);
+
+		$this->assets_handler->register( $asset );
+		$this->assets_handler->enqueue( $asset );
 	}
 
 	/**

@@ -7,14 +7,18 @@ use Automattic\WooCommerce\Admin\BlockTemplates\BlockInterface;
 use Automattic\WooCommerce\Admin\BlockTemplates\BlockTemplateInterface;
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\GroupInterface;
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface;
+use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesBlock;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -25,6 +29,9 @@ use PHPUnit\Framework\MockObject\MockObject;
 class AttributesBlockTest extends ContainerAwareUnitTest {
 
 	use AttributesTrait;
+
+	/** @var AssetsHandlerInterface $assets_handler */
+	protected $assets_handler;
 
 	/** @var AttributeManager $attribute_manager */
 	protected $attribute_manager;
@@ -61,13 +68,14 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 
 		parent::setUp();
 
+		$this->assets_handler    = $this->createStub( AssetsHandlerInterface::class );
 		$this->attribute_manager = $this->container->get( AttributeManager::class );
 		$this->merchant_center   = $this->createStub( MerchantCenterService::class );
 
 		$this->simple_anchor_block    = $this->createMock( BlockInterface::class );
 		$this->variation_anchor_block = $this->createMock( BlockInterface::class );
 
-		$this->attributes_block = new AttributesBlock( $this->attribute_manager, $this->merchant_center );
+		$this->attributes_block = new AttributesBlock( $this->assets_handler, $this->attribute_manager, $this->merchant_center );
 
 		// Set up stubs and mocks
 		$this->is_mc_setup_complete = true;
@@ -78,6 +86,9 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 					return $this->is_mc_setup_complete;
 				}
 			);
+
+		// Ref: https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/PageController.php#L555-L562
+		$_GET['page'] = PageController::PAGE_ROOT;
 
 		$this->simple_gla_section    = $this->setUpBlockMock( $this->simple_anchor_block, 'simple-product', 10 );
 		$this->variation_gla_section = $this->setUpBlockMock( $this->variation_anchor_block, 'product-variation', 20 );
@@ -171,7 +182,24 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 		do_action( self::VARIATION_IMAGES_SECTION_HOOK, $this->variation_anchor_block );
 	}
 
-	public function test_register_merchant_center_setup_is_complete() {
+	public function test_register_is_not_admin_page() {
+		unset( $_GET['page'] );
+
+		$this->simple_anchor_block
+			->expects( $this->exactly( 0 ) )
+			->method( 'get_root_template' );
+
+		$this->variation_anchor_block
+			->expects( $this->exactly( 0 ) )
+			->method( 'get_root_template' );
+
+		$this->attributes_block->register();
+
+		do_action( self::SIMPLE_ATTRIBUTES_SECTION_HOOK, $this->simple_anchor_block );
+		do_action( self::VARIATION_IMAGES_SECTION_HOOK, $this->variation_anchor_block );
+	}
+
+	public function test_register_merchant_center_setup_is_complete_and_is_admin_page() {
 		$this->simple_anchor_block
 			->expects( $this->exactly( 1 ) )
 			->method( 'get_root_template' );
@@ -184,6 +212,33 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 
 		do_action( self::SIMPLE_ATTRIBUTES_SECTION_HOOK, $this->simple_anchor_block );
 		do_action( self::VARIATION_IMAGES_SECTION_HOOK, $this->variation_anchor_block );
+	}
+
+	public function test_register_custom_blocks() {
+		$custom_blocks  = [ 'existing-block', 'non-existent-block' ];
+		$expected_asset = new AdminScriptWithBuiltDependenciesAsset(
+			'google-listings-and-ads-product-blocks',
+			'tests/data/blocks',
+			GLA_TESTS_DATA_DIR . '/blocks.asset.php',
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) filemtime( GLA_TESTS_DATA_DIR . '/blocks.js' ),
+				]
+			)
+		);
+
+		$this->assets_handler
+			->expects( $this->exactly( 1 ) )
+			->method( 'register' )
+			->with( $expected_asset );
+
+		$this->assets_handler
+			->expects( $this->exactly( 1 ) )
+			->method( 'enqueue' )
+			->with( $expected_asset );
+
+		$this->attributes_block->register_custom_blocks( GLA_TESTS_DATA_DIR, 'tests/data/blocks', $custom_blocks );
 	}
 
 	public function test_register_not_add_section() {
@@ -241,19 +296,19 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 	 */
 	public function test_register_add_blocks() {
 		// The total number of blocks to be added to the simple product template is 16,
-		// and the converted number so far is 8
+		// and the converted number so far is 15
 		$this->simple_gla_section
-			->expects( $this->exactly( 8 ) )
+			->expects( $this->exactly( 15 ) )
 			->method( 'add_block' );
 
 		$this->simple_gla_section->get_block( 'mocked-singleton' )
-			->expects( $this->exactly( 8 ) )
+			->expects( $this->exactly( 15 ) )
 			->method( 'add_hide_condition' );
 
 		// The total number of visible blocks to be added to the variation product template is 15,
-		// and the converted number so far is 7
+		// and the converted number so far is 14
 		$this->variation_gla_section
-			->expects( $this->exactly( 7 ) )
+			->expects( $this->exactly( 14 ) )
 			->method( 'add_block' );
 
 		$this->variation_gla_section->get_block( 'mocked-singleton' )
