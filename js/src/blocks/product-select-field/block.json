@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 2,
 	"name": "google-listings-and-ads/product-select-field",
-	"title": "Product select control",
+	"title": "Product select field",
 	"textdomain": "google-listings-and-ads",
 	"attributes": {
 		"_templateBlockHideConditions": {
