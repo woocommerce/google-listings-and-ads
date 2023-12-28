@@ -32,7 +32,7 @@ class AttributesForm extends Form {
 	/**
 	 * AttributesForm constructor.
 	 *
-	 * @param string[] $attribute_types
+	 * @param string[] $attribute_types The names of the attribute classes extending AttributeInterface.
 	 * @param array    $data
 	 */
 	public function __construct( array $attribute_types, array $data = [] ) {
@@ -82,7 +82,7 @@ class AttributesForm extends Form {
 	/**
 	 * Get the hidden and visible types of an attribute's applicable product types.
 	 *
-	 * @param string $attribute_type An attribute class extending AttributeInterface
+	 * @param string $attribute_type The name of an attribute class extending AttributeInterface.
 	 *
 	 * @return array
 	 */
@@ -147,8 +147,8 @@ class AttributesForm extends Form {
 	/**
 	 * Add an attribute to the form
 	 *
-	 * @param string      $attribute_type An attribute class extending AttributeInterface
-	 * @param string|null $input_type     An input class extending InputInterface to use for attribute input.
+	 * @param string      $attribute_type The name of an attribute class extending AttributeInterface.
+	 * @param string|null $input_type     The name of an input class extending InputInterface to use for attribute input.
 	 *
 	 * @return AttributesForm
 	 *
@@ -177,7 +177,7 @@ class AttributesForm extends Form {
 	/**
 	 * Remove an attribute from the form
 	 *
-	 * @param string $attribute_type An attribute class extending AttributeInterface
+	 * @param string $attribute_type The name of an attribute class extending AttributeInterface.
 	 *
 	 * @return AttributesForm
 	 *
@@ -197,8 +197,8 @@ class AttributesForm extends Form {
 	/**
 	 * Sets the input type for the given attribute.
 	 *
-	 * @param string $attribute_type
-	 * @param string $input_type
+	 * @param string $attribute_type The name of an attribute class extending AttributeInterface.
+	 * @param string $input_type     The name of an input class extending InputInterface to use for attribute input.
 	 *
 	 * @return $this
 	 *

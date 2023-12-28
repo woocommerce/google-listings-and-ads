@@ -6,8 +6,8 @@ import { registerProductEditorBlockType } from '@woocommerce/product-editor';
 /**
  * Internal dependencies
  */
-import DatetimeFieldEdit from './product-date-time-field/edit';
-import datetimeFieldMetadata from './product-date-time-field/block.json';
+import DateTimeFieldEdit from './product-date-time-field/edit';
+import dateTimeFieldMetadata from './product-date-time-field/block.json';
 import SelectFieldEdit from './product-select-field/edit';
 import selectFieldMetadata from './product-select-field/block.json';
 import SelectWithTextFieldEdit from './product-select-with-text-field/edit';
@@ -21,7 +21,7 @@ function registerProductEditorBlock( { name, ...metadata }, Edit ) {
 	} );
 }
 
-registerProductEditorBlock( datetimeFieldMetadata, DatetimeFieldEdit );
+registerProductEditorBlock( dateTimeFieldMetadata, DateTimeFieldEdit );
 registerProductEditorBlock( selectFieldMetadata, SelectFieldEdit );
 registerProductEditorBlock(
 	selectWithTextFieldMetadata,

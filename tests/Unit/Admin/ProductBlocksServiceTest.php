@@ -11,6 +11,7 @@ use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ProductBlocksService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
@@ -184,6 +185,14 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			"editedProduct.type !== 'variation'",
 			$this->product_blocks_service->get_hide_condition( Gender::class )
 		);
+
+		// Hide all product types for Brand
+		add_filter(
+			'woocommerce_gla_attribute_hidden_product_types_brand',
+			[ Brand::class, 'get_applicable_product_types' ]
+		);
+
+		$this->assertEquals( 'true', $this->product_blocks_service->get_hide_condition( Brand::class ) );
 	}
 
 	public function test_register_merchant_center_setup_is_not_complete() {
@@ -236,8 +245,8 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_register_custom_blocks() {
-		$custom_blocks  = [ 'existing-block', 'non-existent-block' ];
-		$expected_asset = new AdminScriptWithBuiltDependenciesAsset(
+		$custom_blocks         = [ 'existing-block', 'non-existent-block' ];
+		$expected_script_asset = new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads-product-blocks',
 			'tests/data/blocks',
 			GLA_TESTS_DATA_DIR . '/blocks.asset.php',
@@ -248,16 +257,22 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 				]
 			)
 		);
+		$expected_style_asset  = new AdminStyleAsset(
+			'google-listings-and-ads-product-blocks-css',
+			'tests/data/blocks',
+			[],
+			(string) filemtime( GLA_TESTS_DATA_DIR . '/blocks.css' )
+		);
 
 		$this->assets_handler
 			->expects( $this->exactly( 1 ) )
-			->method( 'register' )
-			->with( $expected_asset );
+			->method( 'register_many' )
+			->with( [ $expected_script_asset, $expected_style_asset ] );
 
 		$this->assets_handler
 			->expects( $this->exactly( 1 ) )
-			->method( 'enqueue' )
-			->with( $expected_asset );
+			->method( 'enqueue_many' )
+			->with( [ $expected_script_asset, $expected_style_asset ] );
 
 		$this->product_blocks_service->register_custom_blocks( GLA_TESTS_DATA_DIR, 'tests/data/blocks', $custom_blocks );
 	}

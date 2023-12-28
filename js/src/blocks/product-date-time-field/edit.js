@@ -3,19 +3,48 @@
  */
 import { date as formatDate, getDate } from '@wordpress/date';
 import { useWooBlockProps } from '@woocommerce/block-templates';
-import { useState } from '@wordpress/element';
+import { useState, useRef } from '@wordpress/element';
 import {
 	__experimentalUseProductEntityProp as useProductEntityProp,
 	__experimentalTextControl as TextControl,
+	useValidation,
 } from '@woocommerce/product-editor';
 import { Flex, FlexBlock } from '@wordpress/components';
 
+/**
+ * Internal dependencies
+ */
+import styles from './editor.module.scss';
+
+/**
+ * @typedef {import('../types.js').ProductEditorBlockContext} ProductEditorBlockContext
+ * @typedef {import('../types.js').ProductBasicAttributes} ProductBasicAttributes
+ */
+
+async function resolveValidationMessage( inputRef ) {
+	const input = inputRef.current;
+
+	if ( ! input.validity.valid ) {
+		return input.validationMessage;
+	}
+}
+
+/**
+ * Custom block for editing a given product data with date and time fields.
+ *
+ * @param {Object} props React props.
+ * @param {ProductBasicAttributes} props.attributes
+ * @param {ProductEditorBlockContext} props.context
+ */
 export default function Edit( { attributes, context } ) {
+	const { property } = attributes;
 	const blockProps = useWooBlockProps( attributes );
-	const [ value, setValue ] = useProductEntityProp( attributes.property, {
+	const [ value, setValue ] = useProductEntityProp( property, {
 		postType: context.postType,
 		fallbackValue: '',
 	} );
+	const dateInputRef = useRef( null );
+	const timeInputRef = useRef( null );
 
 	// Refer to the "Derived value for initialization" in README for why these `useState`
 	// can initialize directly.
@@ -29,10 +58,12 @@ export default function Edit( { attributes, context } ) {
 	const setNextValue = ( nextDate, nextTime ) => {
 		let nextValue = '';
 
-		if ( nextDate && nextTime ) {
+		// It allows `nextTime` to be an empty string and fall back to '00:00:00'.
+		if ( nextDate ) {
 			// The date and time values are strings presented in the site timezone.
 			// Normalize them to date string in UTC timezone in ISO 8601 format.
-			const dateInSiteTimezone = getDate( `${ nextDate }T${ nextTime }` );
+			const isoDateString = `${ nextDate }T${ nextTime || '00:00:00' }`;
+			const dateInSiteTimezone = getDate( isoDateString );
 			nextValue = formatDate( 'c', dateInSiteTimezone, 'UTC' );
 		}
 
@@ -44,29 +75,49 @@ export default function Edit( { attributes, context } ) {
 		}
 	};
 
+	const dateValidation = useValidation( `${ property }-date`, () =>
+		resolveValidationMessage( dateInputRef )
+	);
+
+	const timeValidation = useValidation( `${ property }-time`, () =>
+		resolveValidationMessage( timeInputRef )
+	);
+
 	return (
 		<div { ...blockProps }>
-			<Flex align="flex-end">
+			<Flex align="flex-start">
 				<FlexBlock>
 					<TextControl
+						ref={ dateInputRef }
 						type="date"
 						pattern="\d{4}-\d{2}-\d{2}"
 						label={ attributes.label }
 						tooltip={ attributes.tooltip }
 						value={ date }
+						error={ dateValidation.error }
 						onChange={ ( nextDate ) =>
 							setNextValue( nextDate, time )
 						}
+						onBlur={ dateValidation.validate }
 					/>
 				</FlexBlock>
 				<FlexBlock>
 					<TextControl
+						// The invisible chars in the label and tooltip are to maintain the space between
+						// the <label> and <input> as the same in the sibling <TextControl>. Also, it uses
+						// CSS to keep its space but is invisible.
+						className={ styles.invisibleLabelAndTooltip }
+						label=" "
+						tooltip="‎ "
+						ref={ timeInputRef }
 						type="time"
 						pattern="[0-9]{2}:[0-9]{2}"
 						value={ time }
+						error={ timeValidation.error }
 						onChange={ ( nextTime ) =>
 							setNextValue( date, nextTime )
 						}
+						onBlur={ timeValidation.validate }
 					/>
 				</FlexBlock>
 			</Flex>

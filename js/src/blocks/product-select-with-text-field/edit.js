@@ -14,8 +14,30 @@ import {
  */
 import { Label } from '../components';
 
+/**
+ * @typedef {import('../types.js').ProductEditorBlockContext} ProductEditorBlockContext
+ * @typedef {import('../types.js').ProductBasicAttributes} ProductBasicAttributes
+ */
+
+/**
+ * @typedef {Object} SpecificAttributes
+ * @property {string} customInputValue The value to be used in the selection option that shows the text field.
+ * @property {import('@wordpress/components').SelectControl.Option} [options=[]] The options to be shown in the select field.
+ *
+ * @typedef {ProductBasicAttributes & SpecificAttributes} ProductSelectWithTextFieldAttributes
+ */
+
 const FALLBACK_VALUE = '';
 
+/**
+ * Custom block for editing a given product data with a select field or a text field.
+ * The text field is used to enter a custom value and is shown when selecting the option
+ * that has the same value as the given `customInputValue`.
+ *
+ * @param {Object} props React props.
+ * @param {ProductSelectWithTextFieldAttributes} props.attributes
+ * @param {ProductEditorBlockContext} props.context
+ */
 export default function Edit( { attributes, context } ) {
 	const { options, customInputValue } = attributes;
 
