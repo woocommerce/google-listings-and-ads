@@ -109,7 +109,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 					return;
 				}
 
-				/** @var Automattic\WooCommerce\Internal\Admin\Features\ProductBlockEditor\ProductTemplates\Group */
+				/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\GroupInterface */
 				$group = $template->add_group(
 					[
 						'id'         => 'google-listings-and-ads-group',
@@ -120,7 +120,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 					]
 				);
 
-				/** @var Automattic\WooCommerce\Internal\Admin\Features\ProductBlockEditor\ProductTemplates\Section */
+				/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface */
 				$channel_visibility_section = $group->add_section(
 					[
 						'id'         => 'google-listings-and-ads-channel-visibility-section',
@@ -131,7 +131,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 					]
 				);
 
-				/** @var Automattic\WooCommerce\Internal\Admin\Features\ProductBlockEditor\ProductTemplates\Section */
+				/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface */
 				$product_attributes_section = $group->add_section(
 					[
 						'id'         => 'google-listings-and-ads-product-attributes-section',
