@@ -267,6 +267,6 @@ class AttributesBlock implements Service, Registerable, Conditional {
 			$attribute_product_types['visible']
 		);
 
-		return implode( ' && ', $conditions );
+		return implode( ' && ', $conditions ) ?: 'true';
 	}
 }

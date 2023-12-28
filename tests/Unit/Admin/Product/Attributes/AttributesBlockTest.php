@@ -156,6 +156,14 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 			"editedProduct.type !== 'variation'",
 			$this->attributes_block->get_hide_condition( Gender::class )
 		);
+
+		// Hide all product types for Brand
+		add_filter(
+			'woocommerce_gla_attribute_hidden_product_types_brand',
+			[ Brand::class, 'get_applicable_product_types' ]
+		);
+
+		$this->assertEquals( 'true', $this->attributes_block->get_hide_condition( Brand::class ) );
 	}
 
 	public function test_register_merchant_center_setup_is_not_complete() {
