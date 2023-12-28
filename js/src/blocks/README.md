@@ -45,7 +45,7 @@ The `useProductEntityProp` hook imported from `@woocommerce/product-editor` offe
 
 #### Derived value for initialization
 
-At the time of starting rendering a block, the product data has already been loaded to a data store of `@wordpress/data` in Woo's Product Block Editor, so the value returned from `useProductEntityProp` can be considered as an already fetched data for directly initializing derived values, because they all eventually use the same selector `getEntityRecord` from `@wordpress/core-data` to get product data.
+The "derived value" refers to the computation of a value based on another state or props in a component. At the time of starting rendering a block, the product data has already been loaded to a data store of `@wordpress/data` in Woo's Product Block Editor, so the value returned from `useProductEntityProp` can be considered as an already fetched data for directly initializing derived values, because they all eventually use the same selector `getEntityRecord` from `@wordpress/core-data` to get product data.
 
 References:
 
