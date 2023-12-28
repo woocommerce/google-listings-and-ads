@@ -11,6 +11,7 @@ use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesBlock;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
@@ -207,8 +208,8 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_register_custom_blocks() {
-		$custom_blocks  = [ 'existing-block', 'non-existent-block' ];
-		$expected_asset = new AdminScriptWithBuiltDependenciesAsset(
+		$custom_blocks         = [ 'existing-block', 'non-existent-block' ];
+		$expected_script_asset = new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads-product-blocks',
 			'tests/data/blocks',
 			GLA_TESTS_DATA_DIR . '/blocks.asset.php',
@@ -219,16 +220,22 @@ class AttributesBlockTest extends ContainerAwareUnitTest {
 				]
 			)
 		);
+		$expected_style_asset  = new AdminStyleAsset(
+			'google-listings-and-ads-product-blocks-css',
+			'tests/data/blocks',
+			[],
+			(string) filemtime( GLA_TESTS_DATA_DIR . '/blocks.css' )
+		);
 
 		$this->assets_handler
 			->expects( $this->exactly( 1 ) )
-			->method( 'register' )
-			->with( $expected_asset );
+			->method( 'register_many' )
+			->with( [ $expected_script_asset, $expected_style_asset ] );
 
 		$this->assets_handler
 			->expects( $this->exactly( 1 ) )
-			->method( 'enqueue' )
-			->with( $expected_asset );
+			->method( 'enqueue_many' )
+			->with( [ $expected_script_asset, $expected_style_asset ] );
 
 		$this->attributes_block->register_custom_blocks( GLA_TESTS_DATA_DIR, 'tests/data/blocks', $custom_blocks );
 	}
