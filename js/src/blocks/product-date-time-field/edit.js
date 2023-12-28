@@ -10,6 +10,18 @@ import {
 } from '@woocommerce/product-editor';
 import { Flex, FlexBlock } from '@wordpress/components';
 
+/**
+ * @typedef {import('../types.js').ProductEditorBlockContext} ProductEditorBlockContext
+ * @typedef {import('../types.js').ProductBasicAttributes} ProductBasicAttributes
+ */
+
+/**
+ * Custom block for editing a given product data with date and time fields.
+ *
+ * @param {Object} props React props.
+ * @param {ProductBasicAttributes} props.attributes
+ * @param {ProductEditorBlockContext} props.context
+ */
 export default function Edit( { attributes, context } ) {
 	const blockProps = useWooBlockProps( attributes );
 	const [ value, setValue ] = useProductEntityProp( attributes.property, {
