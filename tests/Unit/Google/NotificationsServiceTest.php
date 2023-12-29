@@ -95,7 +95,7 @@
 		 */
 		public function get_mock() {
 			return $this->getMockBuilder( NotificationsService::class)
-				->setMethods( [ 'do_request' ] )
+				->onlyMethods( [ 'do_request' ] )
 				->getMock();
 		}
 
