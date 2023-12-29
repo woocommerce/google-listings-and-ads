@@ -18,14 +18,14 @@ defined( 'ABSPATH' ) || exit;
 class NotificationsService implements Service {
 
 	// List of Topics to be used.
-	public const TOPIC_PRODUCT_CREATED   = 'product.created';
-	public const TOPIC_PRODUCT_DELETED   = 'product.deleted';
-	public const TOPIC_PRODUCT_UPDATED   = 'product.updated';
-	public const  TOPIC_COUPON_CREATED   = 'coupon.created';
-	public const  TOPIC_COUPON_DELETED   = 'coupon.deleted';
-	public const  TOPIC_COUPON_UPDATED   = 'coupon.updated';
-	public const  TOPIC_SHIPPING_SAVED   = 'action.woocommerce_after_shipping_zone_object_save';
-	public const  TOPIC_SHIPPING_DELETED = 'action.woocommerce_delete_shipping_zone';
+	public const TOPIC_PRODUCT_CREATED  = 'product.created';
+	public const TOPIC_PRODUCT_DELETED  = 'product.deleted';
+	public const TOPIC_PRODUCT_UPDATED  = 'product.updated';
+	public const TOPIC_COUPON_CREATED   = 'coupon.created';
+	public const TOPIC_COUPON_DELETED   = 'coupon.deleted';
+	public const TOPIC_COUPON_UPDATED   = 'coupon.updated';
+	public const TOPIC_SHIPPING_SAVED   = 'action.woocommerce_after_shipping_zone_object_save';
+	public const TOPIC_SHIPPING_DELETED = 'action.woocommerce_delete_shipping_zone';
 
 	/**
 	 * The route to send the notification
@@ -65,13 +65,9 @@ class NotificationsService implements Service {
 
 		$response = $this->do_request( $remote_args );
 
-		if ( is_wp_error( $response ) ) {
-			$this->notification_error( $item_id, $topic, $response->get_error_message() );
-			return false;
-		}
-
-		if ( wp_remote_retrieve_response_code( $response ) >= 400 ) {
-			$this->notification_error( $item_id, $topic, wp_remote_retrieve_body( $response ) );
+		if( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) >= 400 ) {
+			$error = is_wp_error( $response ) ? $response->get_error_message() : wp_remote_retrieve_body( $response );
+			$this->notification_error( $item_id, $topic, $error );
 			return false;
 		}
 
