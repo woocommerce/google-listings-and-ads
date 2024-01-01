@@ -16,13 +16,21 @@ import {
 /* global jQuery */
 
 // Hook into cart add item events sent from Gutenberg blocks.
-addAction(
-	`${ ACTION_PREFIX }-cart-add-item`,
-	NAMESPACE,
-	( { product, quantity = 1 } ) => {
-		trackAddToCartEvent( product, quantity );
+// In WC >= 8.5 the product Proxy is the argument.
+// In WC < 8.5 the product and the quantity are sent as arguments.
+addAction( `${ ACTION_PREFIX }-cart-add-item`, NAMESPACE, ( data ) => {
+	if ( ! data ) {
+		return;
 	}
-);
+
+	if ( data?.product ) {
+		// WC < 8.5
+		trackAddToCartEvent( data.product, data.quantity );
+	} else {
+		// WC >= 8.5
+		trackAddToCartEvent( data, 1 );
+	}
+} );
 
 /**
  * Handle add to cart clicks on any buttons shown in an archive loop.
