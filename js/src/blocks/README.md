@@ -18,7 +18,7 @@ Since this extension requires a few custom blocks, and considering these custom 
 ├── another-field/         # Another custom block
 │   ├── block.json
 │   └── edit.js
-├── components/            # The shared components within custom blocks
+├── components/            # The shared components within custom blocks (if any)
 │   ├── index.js           # The main file to export components
 │   └── label.js           # A shared component
 └── index.js               # The main file to import and register all custom blocks via JavaScript

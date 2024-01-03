@@ -3,12 +3,10 @@
  */
 import { useWooBlockProps } from '@woocommerce/block-templates';
 import { SelectControl } from '@wordpress/components';
-import { __experimentalUseProductEntityProp as useProductEntityProp } from '@woocommerce/product-editor';
-
-/**
- * Internal dependencies
- */
-import { Label } from '../components';
+import {
+	__experimentalUseProductEntityProp as useProductEntityProp,
+	__experimentalLabel as Label,
+} from '@woocommerce/product-editor';
 
 /**
  * @typedef {import('../types.js').ProductEditorBlockContext} ProductEditorBlockContext
