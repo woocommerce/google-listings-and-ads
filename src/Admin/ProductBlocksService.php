@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\Admin\BlockTemplates\BlockInterface;
+use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface;
 use Automattic\WooCommerce\Admin\PageController;
 
 defined( 'ABSPATH' ) || exit;
@@ -120,7 +121,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 					]
 				);
 
-				/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface */
+				/** @var SectionInterface */
 				$channel_visibility_section = $group->add_section(
 					[
 						'id'         => 'google-listings-and-ads-channel-visibility-section',
@@ -131,7 +132,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 					]
 				);
 
-				/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface */
+				/** @var SectionInterface */
 				$product_attributes_section = $group->add_section(
 					[
 						'id'         => 'google-listings-and-ads-product-attributes-section',
@@ -191,9 +192,9 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	/**
 	 * Add product attribute blocks to the given section block.
 	 *
-	 * @param BlockInterface $section The section block to add product attribute blocks
+	 * @param SectionInterface $section The section block to add product attribute blocks
 	 */
-	private function add_product_attribute_blocks( BlockInterface $section ): void {
+	private function add_product_attribute_blocks( SectionInterface $section ): void {
 		$is_variation_template = $this->is_variation_template( $section );
 
 		$product_types   = $is_variation_template ? [ 'variation' ] : $this->get_applicable_product_types();
