@@ -5,9 +5,6 @@
 	"title": "Product date and time fields",
 	"textdomain": "google-listings-and-ads",
 	"attributes": {
-		"_templateBlockHideConditions": {
-			"type": "array"
-		},
 		"label": {
 			"type": "string"
 		},
@@ -23,8 +20,5 @@
 		"html": false,
 		"inserter": false,
 		"lock": false
-	},
-	"usesContext": [
-		"postType"
-	]
+	}
 }

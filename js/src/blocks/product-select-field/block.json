@@ -5,9 +5,6 @@
 	"title": "Product select field",
 	"textdomain": "google-listings-and-ads",
 	"attributes": {
-		"_templateBlockHideConditions": {
-			"type": "array"
-		},
 		"label": {
 			"type": "string"
 		},
@@ -30,8 +27,5 @@
 		"html": false,
 		"inserter": false,
 		"lock": false
-	},
-	"usesContext": [
-		"postType"
-	]
+	}
 }

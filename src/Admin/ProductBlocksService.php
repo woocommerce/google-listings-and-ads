@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\Admin\BlockTemplates\BlockInterface;
+use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\BlockRegistry;
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface;
 use Automattic\WooCommerce\Admin\PageController;
 
@@ -49,6 +50,11 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	protected $merchant_center;
 
 	/**
+	 * @var BlockRegistry
+	 */
+	protected $block_registry;
+
+	/**
 	 * @var string[]
 	 */
 	protected const CUSTOM_BLOCKS = [
@@ -74,8 +80,8 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	 * Register a service.
 	 */
 	public function register(): void {
-		// compatibility-code "WC >= 8.4" -- The Block Template API used requires at least WooCommerce 8.4
-		if ( ! version_compare( WC_VERSION, '8.4', '>=' ) ) {
+		// compatibility-code "WC >= 8.5" -- The Block Template API used requires at least WooCommerce 8.5
+		if ( ! version_compare( WC_VERSION, '8.5', '>=' ) ) {
 			return;
 		}
 
@@ -88,6 +94,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 			function () {
 				$build_path = "{$this->get_root_dir()}/js/build";
 				$uri        = 'js/build/blocks';
+				$this->set_block_registry( BlockRegistry::get_instance() );
 				$this->register_custom_blocks( $build_path, $uri, self::CUSTOM_BLOCKS );
 			}
 		);
@@ -163,7 +170,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 				continue;
 			}
 
-			register_block_type( $block_json_file );
+			$this->block_registry->register_block_type_from_metadata( $block_json_file );
 		}
 
 		$assets[] = new AdminScriptWithBuiltDependenciesAsset(
@@ -221,6 +228,15 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 				$block->add_hide_condition( $this->get_hide_condition( $attribute_type ) );
 			}
 		}
+	}
+
+	/**
+	 * Set the block registry for registering custom blocks.
+	 *
+	 * @param BlockRegistry $block_registry
+	 */
+	public function set_block_registry( BlockRegistry $block_registry ): void {
+		$this->block_registry = $block_registry;
 	}
 
 	/**
