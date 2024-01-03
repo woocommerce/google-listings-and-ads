@@ -146,6 +146,19 @@ class AttributeInputCollectionTest extends UnitTest {
 			],
 			$input->get_view_data()
 		);
+
+		$this->assertEquals(
+			[
+				'id'         => 'google-listings-and-ads-product-attributes-availabilityDate',
+				'blockName'  => 'google-listings-and-ads/product-date-time-field',
+				'attributes' => [
+					'property' => 'meta_data._wc_gla_availabilityDate',
+					'label'    => 'Availability Date',
+					'tooltip'  => 'The date a preordered or backordered product becomes available for delivery. Required if product availability is preorder or backorder',
+				],
+			],
+			$input->get_block_config()
+		);
 	}
 
 	public function test_brand_input() {

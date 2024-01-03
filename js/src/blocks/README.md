@@ -36,6 +36,24 @@ Since this extension requires a few custom blocks, and considering these custom 
 └── blocks.asset.php       # The dependencies of blocks.js to be used when registering blocks.js via PHP
 ```
 
+### Accessing product data
+
+The `useProductEntityProp` hook imported from `@woocommerce/product-editor` offers a convenient way to get and set product data and metadata.
+
+- In block.json, it needs to list `"postType"` in the `usesContext` array to ask for the current post type ('product' or 'product_variation') from the context provider.
+- Forwarding the `context.postType` to `useProductEntityProp` hook is required in order to be compatible with both simple and variation product block templates.
+
+#### Derived value for initialization
+
+The "derived value" refers to the computation of a value based on another state or props in a component. At the time of starting rendering a block, the product data has already been loaded to a data store of `@wordpress/data` in Woo's Product Block Editor, so the value returned from `useProductEntityProp` can be considered as an already fetched data for directly initializing derived values, because they all eventually use the same selector `getEntityRecord` from `@wordpress/core-data` to get product data.
+
+References:
+
+- At [ProductPage](https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce-admin/client/products/product-page.tsx#L77-L79) and [ProductVariationPage](https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce-admin/client/products/product-variation-page.tsx#L83-L85) layers, they won't render the actual blocks before the product data is fetched
+- The above product data is obtained from [useProductEntityRecord](https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce-admin/client/products/hooks/use-product-entity-record.ts#L19-L23) or [useProductVariationEntityRecord](https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce-admin/client/products/hooks/use-product-variation-entity-record.ts#L16-L22) hook, and both hooks use the `getEntityRecord` selector.
+- This extension obtains product data from [useProductEntityProp](https://github.com/woocommerce/woocommerce/blob/8.3.0/packages/js/product-editor/src/hooks/use-product-entity-prop.ts#L24-L33), which uses the `useEntityProp` hook internally.
+- The [useEntityProp](https://github.com/WordPress/gutenberg/blob/wp/6.0/packages/core-data/src/entity-provider.js#L102-L133) hook also uses the `getEntityRecord` selector.
+
 ### Infrastructure adjustments
 
 #### block.json and edit.js

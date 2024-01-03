@@ -28,7 +28,7 @@ class SelectWithTextInput extends Input {
 			->set_name( self::CUSTOM_INPUT_KEY );
 		$this->add( $custom_input );
 
-		parent::__construct( 'select-with-text-input' );
+		parent::__construct( 'select-with-text-input', 'google-listings-and-ads/product-select-with-text-field' );
 	}
 
 	/**
@@ -135,5 +135,31 @@ class SelectWithTextInput extends Input {
 			$this->get_select_input()->set_data( $select_value );
 			$this->data = $select_value;
 		}
+	}
+
+	/**
+	 * Return the attributes of block config used for the input's view within the Product Block Editor.
+	 *
+	 * @return array
+	 */
+	public function get_block_attributes(): array {
+		$options = [];
+
+		foreach ( $this->get_options() as $key => $value ) {
+			$options[] = [
+				'label' => $value,
+				'value' => $key,
+			];
+		}
+
+		$options[] = [
+			'label' => __( 'Enter a custom value', 'google-listings-and-ads' ),
+			'value' => self::CUSTOM_INPUT_KEY,
+		];
+
+		$this->set_block_attribute( 'options', $options );
+		$this->set_block_attribute( 'customInputValue', self::CUSTOM_INPUT_KEY );
+
+		return parent::get_block_attributes();
 	}
 }

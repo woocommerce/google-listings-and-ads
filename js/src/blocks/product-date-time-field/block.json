@@ -1,8 +1,8 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 2,
-	"name": "google-listings-and-ads/product-select-field",
-	"title": "Product select field",
+	"name": "google-listings-and-ads/product-date-time-field",
+	"title": "Product date and time fields",
 	"textdomain": "google-listings-and-ads",
 	"attributes": {
 		"_templateBlockHideConditions": {
@@ -17,13 +17,6 @@
 		"property": {
 			"type": "string",
 			"__experimentalRole": "content"
-		},
-		"options": {
-			"type": "array",
-			"items": {
-				"type": "object"
-			},
-			"default": []
 		}
 	},
 	"supports": {

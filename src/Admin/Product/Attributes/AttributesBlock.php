@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
@@ -48,7 +49,9 @@ class AttributesBlock implements Service, Registerable, Conditional {
 	 * @var string[]
 	 */
 	protected const CUSTOM_BLOCKS = [
+		'product-date-time-field',
 		'product-select-field',
+		'product-select-with-text-field',
 	];
 
 	/**
@@ -68,8 +71,8 @@ class AttributesBlock implements Service, Registerable, Conditional {
 	 * Register a service.
 	 */
 	public function register(): void {
-		// compatibility-code "WC >= 8.3" -- The Block Template API used requires at least WooCommerce 8.3
-		if ( ! version_compare( WC_VERSION, '8.3', '>=' ) ) {
+		// compatibility-code "WC >= 8.4" -- The Block Template API used requires at least WooCommerce 8.4
+		if ( ! version_compare( WC_VERSION, '8.4', '>=' ) ) {
 			return;
 		}
 
@@ -139,7 +142,7 @@ class AttributesBlock implements Service, Registerable, Conditional {
 			register_block_type( $block_json_file );
 		}
 
-		$asset = new AdminScriptWithBuiltDependenciesAsset(
+		$assets[] = new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads-product-blocks',
 			$uri,
 			"${build_path}/blocks.asset.php",
@@ -151,8 +154,15 @@ class AttributesBlock implements Service, Registerable, Conditional {
 			)
 		);
 
-		$this->assets_handler->register( $asset );
-		$this->assets_handler->enqueue( $asset );
+		$assets[] = new AdminStyleAsset(
+			'google-listings-and-ads-product-blocks-css',
+			$uri,
+			[],
+			(string) filemtime( "${build_path}/blocks.css" )
+		);
+
+		$this->assets_handler->register_many( $assets );
+		$this->assets_handler->enqueue_many( $assets );
 	}
 
 	/**
