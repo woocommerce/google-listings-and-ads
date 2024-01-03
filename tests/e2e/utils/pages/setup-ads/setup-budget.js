@@ -85,14 +85,14 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
-	 * Extract budget recommendation range.
+	 * Extract budget recommendation value.
 	 *
 	 * @param {string} text
 	 *
-	 * @return {string} The budget recommendation range.
+	 * @return {string} The budget recommendation value.
 	 */
-	extractBudgetRecommendationRange( text ) {
-		const match = text.match( /set a daily budget of (\d+ to \d+)/ );
+	extractBudgetRecommendationValue( text ) {
+		const match = text.match( /set a daily budget of (\d+)/ );
 		if ( match ) {
 			return match[ 1 ];
 		}
