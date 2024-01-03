@@ -1,8 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesForm;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
@@ -15,16 +17,17 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\Admin\BlockTemplates\BlockInterface;
+use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface;
 use Automattic\WooCommerce\Admin\PageController;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class AttributesBlock
+ * Class ProductBlocksService
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
-class AttributesBlock implements Service, Registerable, Conditional {
+class ProductBlocksService implements Service, Registerable, Conditional {
 
 	use AdminConditional;
 	use AttributesTrait;
@@ -55,7 +58,7 @@ class AttributesBlock implements Service, Registerable, Conditional {
 	];
 
 	/**
-	 * AttributesBlock constructor.
+	 * ProductBlocksService constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
 	 * @param AttributeManager       $attribute_manager
@@ -92,34 +95,55 @@ class AttributesBlock implements Service, Registerable, Conditional {
 		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/AbstractProductFormTemplate.php#L16
 		$template_area = 'product-form';
 
-		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/SimpleProductTemplate.php#L361
-		$block_id = 'product-attributes-section';
+		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/SimpleProductTemplate.php#L18
+		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/ProductVariationTemplate.php#L18
+		$block_id = 'general';
 
 		add_action(
 			"woocommerce_block_template_area_{$template_area}_after_add_block_{$block_id}",
-			function ( BlockInterface $attributes_section ) {
+			function ( BlockInterface $general_group ) {
+				/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\ProductFormTemplateInterface */
+				$template = $general_group->get_root_template();
+
 				// Please note that the simple and variable product types use the same product block template 'simple-product'.
-				if ( 'simple-product' !== $attributes_section->get_root_template()->get_id() ) {
+				if ( 'simple-product' !== $template->get_id() && ! $this->is_variation_template( $general_group ) ) {
 					return;
 				}
 
-				$section = $this->add_section( $attributes_section );
-				$this->add_blocks( $section );
-			}
-		);
+				/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\GroupInterface */
+				$group = $template->add_group(
+					[
+						'id'         => 'google-listings-and-ads-group',
+						'order'      => 100,
+						'attributes' => [
+							'title' => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+						],
+					]
+				);
 
-		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/ProductVariationTemplate.php#L161
-		$block_id = 'product-variation-images-section';
+				/** @var SectionInterface */
+				$channel_visibility_section = $group->add_section(
+					[
+						'id'         => 'google-listings-and-ads-channel-visibility-section',
+						'order'      => 1,
+						'attributes' => [
+							'title' => __( 'Channel visibility', 'google-listings-and-ads' ),
+						],
+					]
+				);
 
-		add_action(
-			"woocommerce_block_template_area_{$template_area}_after_add_block_{$block_id}",
-			function ( BlockInterface $images_section ) {
-				if ( ! $this->is_variation_template( $images_section ) ) {
-					return;
-				}
+				/** @var SectionInterface */
+				$product_attributes_section = $group->add_section(
+					[
+						'id'         => 'google-listings-and-ads-product-attributes-section',
+						'order'      => 2,
+						'attributes' => [
+							'title' => __( 'Product attributes', 'google-listings-and-ads' ),
+						],
+					]
+				);
 
-				$section = $this->add_section( $images_section );
-				$this->add_blocks( $section );
+				$this->add_product_attribute_blocks( $product_attributes_section );
 			}
 		);
 	}
@@ -166,30 +190,11 @@ class AttributesBlock implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * Add this extension's section block after the given reference section block.
+	 * Add product attribute blocks to the given section block.
 	 *
-	 * @param BlockInterface $reference_section The reference section block to add this extension's section block
+	 * @param SectionInterface $section The section block to add product attribute blocks
 	 */
-	private function add_section( BlockInterface $reference_section ): BlockInterface {
-		$group = $reference_section->get_parent();
-
-		return $group->add_section(
-			[
-				'id'         => 'google-listings-and-ads-product-block-section',
-				'order'      => $reference_section->get_order() + 1,
-				'attributes' => [
-					'title' => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
-				],
-			]
-		);
-	}
-
-	/**
-	 * Add attribute blocks to the given section block.
-	 *
-	 * @param BlockInterface $section The section block to add attribute blocks
-	 */
-	private function add_blocks( BlockInterface $section ): void {
+	private function add_product_attribute_blocks( SectionInterface $section ): void {
 		$is_variation_template = $this->is_variation_template( $section );
 
 		$product_types   = $is_variation_template ? [ 'variation' ] : $this->get_applicable_product_types();
@@ -198,11 +203,6 @@ class AttributesBlock implements Service, Registerable, Conditional {
 		foreach ( $attribute_types as $attribute_type ) {
 			$input_type = call_user_func( [ $attribute_type, 'get_input_type' ] );
 			$input      = AttributesForm::init_input( new $input_type(), new $attribute_type() );
-
-			// TODO: Remove this check after all attribute inputs have specified a block name
-			if ( '' === $input->get_block_config()['blockName'] ) {
-				continue;
-			}
 
 			if ( $is_variation_template ) {
 				// When editing a variation, its product type on the frontend side won't be changed dynamically.
@@ -216,6 +216,7 @@ class AttributesBlock implements Service, Registerable, Conditional {
 				// When editing a simple or variable product, its product type on the frontend side can be
 				// changed dynamically. So, it needs to use the ProductTemplates API `add_hide_condition`
 				// to conditionally hide attributes.
+				/** @var BlockInterface */
 				$block = $section->add_block( $input->get_block_config() );
 				$block->add_hide_condition( $this->get_hide_condition( $attribute_type ) );
 			}
