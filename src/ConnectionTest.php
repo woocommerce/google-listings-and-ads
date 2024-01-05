@@ -652,9 +652,6 @@ class ConnectionTest implements Service, Registerable {
 										Product/Coupon/Shipping ID <input name="item_id" type="text" value="<?php echo ! empty( $_GET['item_id'] ) ? intval( $_GET['item_id'] ) : ''; ?>" />
 									</label>
 									<br />
-									<label>
-										Partner APP Secret ID <input name="client_secret" type="text" value="<?php echo ! empty( $_GET['client_secret'] ) ? $_GET['client_secret'] : ''; ?>" />
-									</label>
 									<br />
 									<label>
 										Topic
@@ -759,8 +756,8 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'partner-notification' === $_GET['action'] && check_admin_referer( 'partner-notification' ) ) {
-			if ( ! isset( $_GET['client_secret'],  $_GET['topic'], $_GET['item_id'] ) ) {
-				$this->response .= "\n Client Secret, Client Id, Topic and Item ID are required.";
+			if ( ! isset( $_GET['topic'], $_GET['item_id'] ) ) {
+				$this->response .= "\n Topic and Item ID are required.";
 				return;
 			}
 
