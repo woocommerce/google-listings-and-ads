@@ -122,11 +122,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Change Budget Recommendations values.
 * Tweak - Use a single daily budget instead of a range.
 
-= 2.5.12 - 2023-11-22 =
-* Dev - Fix E2E gtag events tests.
-* Dev - Update WordPress CS to 3.0.
-* Dev - Update phpunit polyfills to 1.1 for WP 6.4.
-* Tweak - Add filter to be able to build custom shipping method rate handers.
-* Tweak - Remove rewrite rules flush.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
