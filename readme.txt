@@ -111,6 +111,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.15 - 2024-01-09 =
+* Dev - Update link for developer.woo.com.
+* Tweak - WC 8.5 compatibility.
+* Update - Upgrade google/apiclient for PHP 8.3 compatibility.
+
 = 2.5.14 - 2023-12-18 =
 * Dev - Include PHP 8.3 in tested versions for PHPunit.
 * Fix - Item price in purchase event.
