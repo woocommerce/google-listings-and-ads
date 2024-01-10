@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin;
 
 use Automattic\WooCommerce\Admin\BlockTemplates\BlockInterface;
+use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\BlockRegistry;
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\GroupInterface;
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\ProductFormTemplateInterface;
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface;
@@ -31,7 +32,7 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 
 	use AttributesTrait;
 
-	/** @var AssetsHandlerInterface $assets_handler */
+	/** @var MockObject|AssetsHandlerInterface $assets_handler */
 	protected $assets_handler;
 
 	/** @var AttributeManager $attribute_manager */
@@ -39,6 +40,9 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 
 	/** @var Stub|MerchantCenterService $merchant_center */
 	protected $merchant_center;
+
+	/** @var MockObject|BlockRegistry $block_registry */
+	protected $block_registry;
 
 	/** @var MockObject|BlockInterface $simple_anchor_group */
 	protected $simple_anchor_group;
@@ -64,22 +68,25 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	protected const GENERAL_GROUP_HOOK = 'woocommerce_block_template_area_product-form_after_add_block_general';
 
 	public function setUp(): void {
-		// compatibility-code "WC >= 8.4" -- The Block Template API used requires at least WooCommerce 8.4
-		if ( ! version_compare( WC_VERSION, '8.4', '>=' ) ) {
-			$this->markTestSkipped( 'This test suite requires WooCommerce version >= 8.4' );
+		// compatibility-code "WC >= 8.5" -- The Block Template API used requires at least WooCommerce 8.5
+		if ( ! version_compare( WC_VERSION, '8.5', '>=' ) ) {
+			$this->markTestSkipped( 'This test suite requires WooCommerce version >= 8.5' );
 		}
 
 		parent::setUp();
 
-		$this->assets_handler    = $this->createStub( AssetsHandlerInterface::class );
+		$this->assets_handler    = $this->createMock( AssetsHandlerInterface::class );
 		$this->attribute_manager = $this->container->get( AttributeManager::class );
 		$this->merchant_center   = $this->createStub( MerchantCenterService::class );
+		$this->block_registry    = $this->createMock( BlockRegistry::class );
 
 		$this->simple_anchor_group    = $this->createMock( BlockInterface::class );
 		$this->variation_anchor_group = $this->createMock( BlockInterface::class );
 		$this->mismatching_group      = $this->createMock( BlockInterface::class );
 
 		$this->product_blocks_service = new ProductBlocksService( $this->assets_handler, $this->attribute_manager, $this->merchant_center );
+
+		$this->product_blocks_service->set_block_registry( $this->block_registry );
 
 		// Set up stubs and mocks
 		$this->is_mc_setup_complete = true;
@@ -263,6 +270,11 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			[],
 			(string) filemtime( GLA_TESTS_DATA_DIR . '/blocks.css' )
 		);
+
+		$this->block_registry
+			->expects( $this->exactly( 1 ) )
+			->method( 'register_block_type_from_metadata' )
+			->with( $this->stringContains( 'tests/data/existing-block/block.json' ) );
 
 		$this->assets_handler
 			->expects( $this->exactly( 1 ) )

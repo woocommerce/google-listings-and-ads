@@ -18,7 +18,7 @@ Since this extension requires a few custom blocks, and considering these custom 
 ├── another-field/         # Another custom block
 │   ├── block.json
 │   └── edit.js
-├── components/            # The shared components within custom blocks
+├── components/            # The shared components within custom blocks (if any)
 │   ├── index.js           # The main file to export components
 │   └── label.js           # A shared component
 └── index.js               # The main file to import and register all custom blocks via JavaScript
@@ -36,12 +36,16 @@ Since this extension requires a few custom blocks, and considering these custom 
 └── blocks.asset.php       # The dependencies of blocks.js to be used when registering blocks.js via PHP
 ```
 
-### Accessing product data
+### Compatible with block templates and product data access
 
-The `useProductEntityProp` hook imported from `@woocommerce/product-editor` offers a convenient way to get and set product data and metadata.
+The Product Block Editor requires template attributes and `usesContext` to support its specific features, e.g. conditionally hide/disable block or contextually access product data. To make the custom blocks fully compatible with these features, the uses of the following APIs are required:
 
-- In block.json, it needs to list `"postType"` in the `usesContext` array to ask for the current post type ('product' or 'product_variation') from the context provider.
-- Forwarding the `context.postType` to `useProductEntityProp` hook is required in order to be compatible with both simple and variation product block templates.
+- JavaScript side:
+   - Use `useWooBlockProps` hook imported from `@woocommerce/block-templates` to get React props for the custom block's `<div>` wrapper.
+   - Use `useProductEntityProp` hook imported from `@woocommerce/product-editor` to get and set product data or metadata.
+   - Forwarding the `context.postType` to `useProductEntityProp` hook to contextually access simple or variation product.
+- PHP side:
+   - Register all custom blocks via `\Automattic\WooCommerce\Admin\Features\ProductBlockEditor\BlockRegistry::get_instance()->register_block_type_from_metadata()`.
 
 #### Derived value for initialization
 

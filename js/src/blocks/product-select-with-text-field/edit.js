@@ -7,12 +7,8 @@ import { useState } from '@wordpress/element';
 import {
 	__experimentalUseProductEntityProp as useProductEntityProp,
 	__experimentalTextControl as TextControl,
+	__experimentalLabel as Label,
 } from '@woocommerce/product-editor';
-
-/**
- * Internal dependencies
- */
-import { Label } from '../components';
 
 /**
  * @typedef {import('../types.js').ProductEditorBlockContext} ProductEditorBlockContext
