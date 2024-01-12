@@ -15,7 +15,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
-const ClaimTermsAndCreateAccountButton = () => {
+const ClaimTermsAndCreateAccountButton = ( { disabled } ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccount } = useAppDispatch();
 	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
@@ -53,18 +53,19 @@ const ClaimTermsAndCreateAccountButton = () => {
 		<CreateAccountButton
 			loading={ createLoading || fetchAccountLoading }
 			onCreateAccount={ handleCreateAccount }
+			disabled={ disabled }
 		/>
 	);
 };
 
 const CreateAccount = ( props ) => {
-	const { allowShowExisting, onShowExisting } = props;
+	const { allowShowExisting, onShowExisting, disabled } = props;
 
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			alignIcon="top"
-			indicator={ <ClaimTermsAndCreateAccountButton /> }
+			indicator={ <ClaimTermsAndCreateAccountButton disabled /> }
 		>
 			{ allowShowExisting && (
 				<Section.Card.Footer>

@@ -1,7 +1,6 @@
 /**
  * Internal dependencies
  */
-import SpinnerCard from '.~/components/spinner-card';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleAdsAccountCard from './connected-google-ads-account-card';
@@ -14,7 +13,7 @@ export default function GoogleAdsAccountCard() {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 
 	if ( ! google || ! googleAdsAccount ) {
-		return <SpinnerCard />;
+		return <NonConnected />;
 	}
 
 	if ( ! scope.adsRequired ) {

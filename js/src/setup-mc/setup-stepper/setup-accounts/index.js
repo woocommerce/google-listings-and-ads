@@ -21,6 +21,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import WPComAccountCard from '.~/components/wpcom-account-card';
 import GoogleAccountCard from '.~/components/google-account-card';
 import GoogleMCAccountCard from '.~/components/google-mc-account-card';
+import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
 import Faqs from './faqs';
 import './index.scss';
 
@@ -129,6 +130,9 @@ const SetupAccounts = ( props ) => {
 				<VerticalGapLayout size="large">
 					<WPComAccountCard jetpack={ jetpack } />
 					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
+					<GoogleAdsAccountCard
+						disabled={ isGoogleAccountDisabled }
+					/>
 				</VerticalGapLayout>
 			</Section>
 			<Section
