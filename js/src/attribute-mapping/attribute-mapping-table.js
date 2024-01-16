@@ -21,7 +21,7 @@ import AttributeMappingSync from './attribute-mapping-sync';
 import useMappingAttributes from '.~/hooks/useMappingAttributes';
 import useMappingRules from '.~/hooks/useMappingRules';
 import usePagination from '.~/hooks/usePagination';
-import { recordTablePageEvent } from '.~/utils/recordEvent';
+import { recordTablePageEvent } from '.~/utils/tracks';
 
 const PER_PAGE = 10;
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [

@@ -22,7 +22,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
-import { recordTablePageEvent } from '.~/utils/recordEvent';
+import { recordTablePageEvent } from '.~/utils/tracks';
 import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import './index.scss';
