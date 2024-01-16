@@ -8,7 +8,7 @@ jest.mock( '@wordpress/date', () => {
 } );
 
 jest.mock( '.~/data/actions', () => ( {
-	__esModule: true,
+	...jest.requireActual( '.~/data/actions' ),
 	createMappingRule: jest
 		.fn()
 		.mockName( 'createMappingRule' )
