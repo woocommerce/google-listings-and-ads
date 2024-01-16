@@ -34,7 +34,7 @@ class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implement
 	 *
 	 * @return array
 	 */
-	public function get_batch( int $batch_number ): array {
+	public function get_batch( int $batch_number, array $args = [] ): array {
 		return $this->product_repository->find_expiring_product_ids( $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
 	}
 
@@ -45,7 +45,7 @@ class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implement
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	protected function process_items( array $items ) {
+	protected function process_items( array $items, array $args = [] ) {
 		$products = $this->product_repository->find_by_ids( $items );
 
 		$this->product_syncer->update( $products );

@@ -18,7 +18,7 @@ use WC_Helper_Product;
 
 /**
  * Class UpdateSyncableProductsCountTest
- *
+ * @group Jobs
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
  */
 class UpdateSyncableProductsCountTest extends UnitTest {
@@ -98,11 +98,11 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 5 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids() ] ],
-				[ self::CREATE_BATCH_HOOK, [ 2 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids() ] ],
-				[ self::CREATE_BATCH_HOOK, [ 3 ] ],
+				[ self::CREATE_BATCH_HOOK, [ 1, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids(), [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids(), [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3, [] ] ],
 			);
 
 		$this->product_repository->expects( $this->exactly( 3 ) )
@@ -134,11 +134,11 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 
 		$this->job->schedule();
 
-		do_action( self::CREATE_BATCH_HOOK, 1 );
-		do_action( self::PROCESS_ITEM_HOOK, $batch_a->get_product_ids() );
-		do_action( self::CREATE_BATCH_HOOK, 2 );
-		do_action( self::PROCESS_ITEM_HOOK, $batch_b->get_product_ids() );
-		do_action( self::CREATE_BATCH_HOOK, 3 );
+		do_action( self::CREATE_BATCH_HOOK, 1, [] );
+		do_action( self::PROCESS_ITEM_HOOK, $batch_a->get_product_ids(), [] );
+		do_action( self::CREATE_BATCH_HOOK, 2, [] );
+		do_action( self::PROCESS_ITEM_HOOK, $batch_b->get_product_ids(), [] );
+		do_action( self::CREATE_BATCH_HOOK, 3, [] );
 	}
 
 	public function test_update_syncable_products_count_duplicate_product_ids() {
@@ -166,11 +166,11 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 5 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids() ] ],
-				[ self::CREATE_BATCH_HOOK, [ 2 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids() ] ],
-				[ self::CREATE_BATCH_HOOK, [ 3 ] ],
+				[ self::CREATE_BATCH_HOOK, [ 1, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids(), [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids(), [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3, [] ] ],
 			);
 
 		$this->product_repository->expects( $this->exactly( 3 ) )
@@ -202,11 +202,11 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 
 		$this->job->schedule();
 
-		do_action( self::CREATE_BATCH_HOOK, 1 );
-		do_action( self::PROCESS_ITEM_HOOK, $batch_a->get_product_ids() );
-		do_action( self::CREATE_BATCH_HOOK, 2 );
-		do_action( self::PROCESS_ITEM_HOOK, $batch_b->get_product_ids() );
-		do_action( self::CREATE_BATCH_HOOK, 3 );
+		do_action( self::CREATE_BATCH_HOOK, 1, [] );
+		do_action( self::PROCESS_ITEM_HOOK, $batch_a->get_product_ids(), [] );
+		do_action( self::CREATE_BATCH_HOOK, 2, [] );
+		do_action( self::PROCESS_ITEM_HOOK, $batch_b->get_product_ids(), [] );
+		do_action( self::CREATE_BATCH_HOOK, 3, [] );
 	}
 
 	public function test_update_syncable_products_count_no_syncable_products_single_batch() {
@@ -215,7 +215,7 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
-			->with( self::CREATE_BATCH_HOOK, [ 1 ] );
+			->with( self::CREATE_BATCH_HOOK, [ 1, [] ] );
 
 		$this->product_repository->expects( $this->once() )
 			->method( 'find_sync_ready_products' )
@@ -233,7 +233,7 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 
 		$this->job->schedule();
 
-		do_action( self::CREATE_BATCH_HOOK, 1 );
+		do_action( self::CREATE_BATCH_HOOK, 1, [] );
 	}
 
 	public function test_update_syncable_products_count_no_syncable_products_multiple_batches() {
@@ -249,9 +249,9 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 3 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
-				[ self::CREATE_BATCH_HOOK, [ 2 ] ],
-				[ self::CREATE_BATCH_HOOK, [ 3 ] ]
+				[ self::CREATE_BATCH_HOOK, [ 1, [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2, [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3, [] ] ]
 			);
 
 		$this->product_repository->expects( $this->exactly( 3 ) )
@@ -274,9 +274,9 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 
 		$this->job->schedule();
 
-		do_action( self::CREATE_BATCH_HOOK, 1 );
-		do_action( self::CREATE_BATCH_HOOK, 2 );
-		do_action( self::CREATE_BATCH_HOOK, 3 );
+		do_action( self::CREATE_BATCH_HOOK, 1, [] );
+		do_action( self::CREATE_BATCH_HOOK, 2, [] );
+		do_action( self::CREATE_BATCH_HOOK, 3, [] );
 	}
 
 	public function test_update_syncable_products_count_product_gets_deleted_after_batches_get_created() {
@@ -307,11 +307,11 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 5 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids() ] ],
-				[ self::CREATE_BATCH_HOOK, [ 2 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids() ] ],
-				[ self::CREATE_BATCH_HOOK, [ 3 ] ],
+				[ self::CREATE_BATCH_HOOK, [ 1, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids(), [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids(), [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3, [] ] ],
 			);
 
 		$this->product_repository->expects( $this->exactly( 3 ) )
@@ -352,9 +352,9 @@ class UpdateSyncableProductsCountTest extends UnitTest {
 		wp_trash_post( $product_to_be_deleted->get_id() );
 		$product_to_be_deleted->set_status( 'trash' );
 		$product_to_be_deleted->save();
-		do_action( self::PROCESS_ITEM_HOOK, $batch_a->get_product_ids() );
-		do_action( self::CREATE_BATCH_HOOK, 2 );
-		do_action( self::PROCESS_ITEM_HOOK, $batch_b->get_product_ids() );
-		do_action( self::CREATE_BATCH_HOOK, 3 );
+		do_action( self::PROCESS_ITEM_HOOK, $batch_a->get_product_ids(), [] );
+		do_action( self::CREATE_BATCH_HOOK, 2, [] );
+		do_action( self::PROCESS_ITEM_HOOK, $batch_b->get_product_ids(), [] );
+		do_action( self::CREATE_BATCH_HOOK, 3, [] );
 	}
 }

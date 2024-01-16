@@ -14,7 +14,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Class UpdateShippingSettingsTest
- *
+ * @group Jobs
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
  */
 class UpdateShippingSettingsTest extends UnitTest {

@@ -333,7 +333,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PolicyComplianceCheck::class, WC::class, GoogleHelper::class, TargetAudience::class );
 		$this->share_with_tags( ContactInformation::class, Merchant::class, GoogleSettings::class );
 		$this->share_with_tags( ProductMetaHandler::class );
-		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, TargetAudience::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, TargetAudience::class, NotificationsService::class );
 		$this->share_with_tags( ProductFilter::class, ProductHelper::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class );
 		$this->share_with_tags( ProductFactory::class, AttributeManager::class, WC::class );

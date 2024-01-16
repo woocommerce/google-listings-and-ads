@@ -42,6 +42,20 @@ class JobException extends RuntimeException implements GoogleListingsAndAdsExcep
 	}
 
 	/**
+	 * Create a new exception instance for when the provided items are not WC_Product instances.
+	 *
+	 * @param string $type The expected type.
+	 *
+	 * @return static
+	 */
+	public static function item_is_not_expected_type( string $type ): JobException {
+		return new static(
+			/* translators: %s: the type */
+			sprintf( __( 'Some provided items were not instances of %s.', 'google-listings-and-ads' ), $type )
+		);
+	}
+
+	/**
 	 * Create a new exception instance for when a job is stopped due to a high failure rate.
 	 *
 	 * @param string $job_name

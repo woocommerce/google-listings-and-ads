@@ -54,11 +54,12 @@ class CleanupSyncedProducts extends AbstractProductSyncerBatchedJob {
 	 *
 	 * If no items are returned the job will stop.
 	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param array $args The action args.
 	 *
 	 * @return int[]
 	 */
-	public function get_batch( int $batch_number ): array {
+	public function get_batch( int $batch_number, array $args = [] ): array {
 		return $this->product_repository->find_synced_product_ids( [], $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
 	}
 
@@ -67,8 +68,9 @@ class CleanupSyncedProducts extends AbstractProductSyncerBatchedJob {
 	 * Skips processing if the Merchant Center has been connected again.
 	 *
 	 * @param int[] $items A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param array $args The action args.
 	 */
-	protected function process_items( array $items ) {
+	protected function process_items( array $items, array $args = [] ) {
 		if ( $this->is_mc_connected() ) {
 			do_action(
 				'woocommerce_gla_debug_message',

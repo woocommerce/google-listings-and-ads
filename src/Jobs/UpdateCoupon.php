@@ -35,7 +35,7 @@ class UpdateCoupon extends AbstractCouponSyncerJob implements
 	 *
 	 * @throws CouponSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	public function process_items( $coupon_ids ) {
+	public function process_items( $coupon_ids, array $args = [] ) {
 		foreach ( $coupon_ids as $coupon_id ) {
 			$coupon = $this->wc->maybe_get_coupon( $coupon_id );
 			if ( $coupon instanceof WC_Coupon &&

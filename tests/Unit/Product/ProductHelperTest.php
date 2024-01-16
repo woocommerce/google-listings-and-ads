@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -37,6 +38,9 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 	/** @var MockObject|TargetAudience $target_audience */
 	protected $target_audience;
+
+	/** @var MockObject|NotificationsService $notifications */
+	protected $notifications;
 
 	/** @var ProductHelper $product_helper */
 	protected $product_helper;
@@ -1087,6 +1091,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->product_meta    = $this->container->get( ProductMetaHandler::class );
 		$this->wc              = $this->container->get( WC::class );
 		$this->target_audience = $this->createMock( TargetAudience::class );
-		$this->product_helper  = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience );
+		$this->notifications   = $this->createMock( NotificationsService::class );
+		$this->product_helper  = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience, $this->notifications );
 	}
 }

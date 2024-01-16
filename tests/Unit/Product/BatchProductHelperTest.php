@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
@@ -31,7 +32,7 @@ use WC_Product_Variation;
 
 /**
  * Class BatchProductHelperTest
- *
+ * @group Jobs
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  */
 class BatchProductHelperTest extends ContainerAwareUnitTest {
@@ -53,6 +54,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 	/** @var MockObject|TargetAudience $target_audience */
 	protected $target_audience;
+
+	/** @var MockObject|NotificationsService $notifications */
+	protected $notifications;
 
 	/** @var BatchProductHelper $batch_product_helper */
 	protected $batch_product_helper;
@@ -388,10 +392,11 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->target_audience      = $this->createMock( TargetAudience::class );
 		$this->validator            = $this->createMock( ValidatorInterface::class );
 		$this->rules_query          = $this->createMock( AttributeMappingRulesQuery::class );
+		$this->notifications        = $this->createMock( NotificationsService::class );
 		$this->product_meta         = $this->container->get( ProductMetaHandler::class );
 		$this->product_factory      = $this->container->get( ProductFactory::class );
 		$this->wc                   = $this->container->get( WC::class );
-		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience );
+		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience, $this->notifications );
 		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->target_audience, $this->rules_query );
 	}
 }

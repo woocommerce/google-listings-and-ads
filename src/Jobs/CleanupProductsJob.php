@@ -32,10 +32,11 @@ class CleanupProductsJob extends AbstractProductSyncerBatchedJob {
 	 * If no items are returned the job will stop.
 	 *
 	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param array $args The action args.
 	 *
 	 * @return array
 	 */
-	public function get_batch( int $batch_number ): array {
+	public function get_batch( int $batch_number, array $args = [] ): array {
 		return $this->product_repository->find_synced_product_ids( [], $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
 	}
 
@@ -43,10 +44,11 @@ class CleanupProductsJob extends AbstractProductSyncerBatchedJob {
 	 * Process batch items.
 	 *
 	 * @param int[] $items A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param array $args The action args.
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	protected function process_items( array $items ) {
+	protected function process_items( array $items, array $args = [] ) {
 		$products      = $this->product_repository->find_by_ids( $items );
 		$stale_entries = $this->batch_product_helper->generate_stale_products_request_entries( $products );
 		$this->product_syncer->delete_by_batch_requests( $stale_entries );

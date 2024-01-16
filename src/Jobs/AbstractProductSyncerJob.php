@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -33,6 +34,11 @@ abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob imple
 	protected $merchant_center;
 
 	/**
+	 * @var NotificationsService
+	 */
+	protected $notifications_service;
+
+	/**
 	 * SyncProducts constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
@@ -46,11 +52,13 @@ abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob imple
 		ActionSchedulerJobMonitor $monitor,
 		ProductSyncer $product_syncer,
 		ProductRepository $product_repository,
-		MerchantCenterService $merchant_center
+		MerchantCenterService $merchant_center,
+		NotificationsService $notifications_service,
 	) {
-		$this->product_syncer     = $product_syncer;
-		$this->product_repository = $product_repository;
-		$this->merchant_center    = $merchant_center;
+		$this->product_syncer        = $product_syncer;
+		$this->product_repository    = $product_repository;
+		$this->merchant_center       = $merchant_center;
+		$this->notifications_service = $notifications_service;
 		parent::__construct( $action_scheduler, $monitor );
 	}
 

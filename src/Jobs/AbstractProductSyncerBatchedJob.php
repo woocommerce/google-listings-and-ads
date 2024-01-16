@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -39,6 +40,11 @@ abstract class AbstractProductSyncerBatchedJob extends AbstractBatchedActionSche
 	protected $merchant_center;
 
 	/**
+	 * @var NotificationsService
+	 */
+	protected $notifications_service;
+
+	/**
 	 * SyncProducts constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
@@ -47,6 +53,7 @@ abstract class AbstractProductSyncerBatchedJob extends AbstractBatchedActionSche
 	 * @param ProductRepository         $product_repository
 	 * @param BatchProductHelper        $batch_product_helper
 	 * @param MerchantCenterService     $merchant_center
+	 * @param NotificationsService      $notifications_service
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
@@ -54,12 +61,14 @@ abstract class AbstractProductSyncerBatchedJob extends AbstractBatchedActionSche
 		ProductSyncer $product_syncer,
 		ProductRepository $product_repository,
 		BatchProductHelper $batch_product_helper,
-		MerchantCenterService $merchant_center
+		MerchantCenterService $merchant_center,
+		NotificationsService $notifications_service
 	) {
-		$this->batch_product_helper = $batch_product_helper;
-		$this->product_syncer       = $product_syncer;
-		$this->product_repository   = $product_repository;
-		$this->merchant_center      = $merchant_center;
+		$this->batch_product_helper  = $batch_product_helper;
+		$this->product_syncer        = $product_syncer;
+		$this->product_repository    = $product_repository;
+		$this->merchant_center       = $merchant_center;
+		$this->notifications_service = $notifications_service;
 		parent::__construct( $action_scheduler, $monitor );
 	}
 

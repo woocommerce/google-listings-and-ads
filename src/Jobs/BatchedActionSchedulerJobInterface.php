@@ -23,7 +23,7 @@ interface BatchedActionSchedulerJobInterface extends ActionSchedulerJobInterface
 	 *
 	 * @throws Exception If an error occurs.
 	 */
-	public function handle_create_batch_action( int $batch_number );
+	public function handle_create_batch_action( int $batch_number, array $args = [] );
 
 	/**
 	 * Handles processing a single batch action hook.
@@ -34,5 +34,5 @@ interface BatchedActionSchedulerJobInterface extends ActionSchedulerJobInterface
 	 *
 	 * @throws Exception If an error occurs.
 	 */
-	public function handle_process_items_action( array $items );
+	public function handle_process_items_action( array $items, array $args = [] );
 }

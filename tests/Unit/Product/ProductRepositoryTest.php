@@ -3,11 +3,14 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
@@ -17,7 +20,7 @@ use WC_Product;
 
 /**
  * Class ProductRepositoryTest
- *
+ * @group Jobs
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  */
 class ProductRepositoryTest extends ContainerAwareUnitTest {
@@ -348,5 +351,7 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$this->product_meta       = $this->container->get( ProductMetaHandler::class );
 		$this->product_helper     = $this->container->get( ProductHelper::class );
 		$this->product_repository = $this->container->get( ProductRepository::class );
+		add_filter('woocommerce_gla_notifications_enabled', '__return_false' );
+
 	}
 }

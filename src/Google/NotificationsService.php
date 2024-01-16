@@ -18,14 +18,13 @@ defined( 'ABSPATH' ) || exit;
 class NotificationsService implements Service {
 
 	// List of Topics to be used.
-	public const TOPIC_PRODUCT_CREATED  = 'product.created';
-	public const TOPIC_PRODUCT_DELETED  = 'product.deleted';
-	public const TOPIC_PRODUCT_UPDATED  = 'product.updated';
-	public const TOPIC_COUPON_CREATED   = 'coupon.created';
-	public const TOPIC_COUPON_DELETED   = 'coupon.deleted';
-	public const TOPIC_COUPON_UPDATED   = 'coupon.updated';
-	public const TOPIC_SHIPPING_SAVED   = 'action.woocommerce_after_shipping_zone_object_save';
-	public const TOPIC_SHIPPING_DELETED = 'action.woocommerce_delete_shipping_zone';
+
+	public const TOPIC_PRODUCT_CREATED = 'product.create';
+	public const TOPIC_PRODUCT_DELETED = 'product.delete';
+	public const TOPIC_PRODUCT_UPDATED = 'product.update';
+	public const TOPIC_COUPON_CREATED  = 'coupon.create';
+	public const TOPIC_COUPON_DELETED  = 'coupon.delete';
+	public const TOPIC_COUPON_UPDATED  = 'coupon.update';
 
 	/**
 	 * The route to send the notification
@@ -51,6 +50,14 @@ class NotificationsService implements Service {
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
 	public function notify( int $item_id, string $topic ) {
+		$date = new \DateTime();
+
+		do_action(
+			'woocommerce_gla_debug_message',
+			sprintf( 'Notify: %d  Topic: %s Date: %s', $item_id, $topic, $date->format( 'Y-m-d H:i' ) ),
+			__METHOD__,
+		);
+
 		$remote_args = [
 			'method'  => 'POST',
 			'timeout' => 30,
@@ -65,7 +72,7 @@ class NotificationsService implements Service {
 
 		$response = $this->do_request( $remote_args );
 
-		if( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) >= 400 ) {
+		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) >= 400 ) {
 			$error = is_wp_error( $response ) ? $response->get_error_message() : wp_remote_retrieve_body( $response );
 			$this->notification_error( $item_id, $topic, $error );
 			return false;
@@ -106,5 +113,25 @@ class NotificationsService implements Service {
 	 */
 	public function get_route(): string {
 		return $this->route;
+	}
+
+	/**
+	 * Whether Notifications are enabled
+	 *
+	 * @return bool True when it is enabled. False otherwise.
+	 */
+	public function is_enabled(): bool {
+		return (bool) apply_filters( 'woocommerce_gla_notifications_enabled', true );
+	}
+
+	/**
+	 * Whether a topic is product based.
+	 *
+	 * @param string $topic
+	 *
+	 * @return bool true if the topic is product based.
+	 */
+	public function is_product_topic( string $topic ): bool {
+		return in_array( $topic, [ self::TOPIC_PRODUCT_CREATED, self::TOPIC_PRODUCT_UPDATED, self::TOPIC_PRODUCT_DELETED ], true );
 	}
 }

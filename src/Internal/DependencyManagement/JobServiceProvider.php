@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
@@ -101,6 +102,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_product_syncer_job( ResubmitExpiringProducts::class );
 		$this->share_product_syncer_job( CleanupProductsJob::class );
 		$this->share_product_syncer_job( CleanupSyncedProducts::class );
+		$this->share_product_syncer_job( Notification::class );
 
 		// share coupon syncer jobs.
 		$this->share_coupon_syncer_job( UpdateCoupon::class );
@@ -183,6 +185,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 				ProductRepository::class,
 				BatchProductHelper::class,
 				MerchantCenterService::class,
+				NotificationsService::class,
 				...$arguments
 			);
 		} else {
@@ -191,6 +194,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 				ProductSyncer::class,
 				ProductRepository::class,
 				MerchantCenterService::class,
+				NotificationsService::class,
 				...$arguments
 			);
 		}

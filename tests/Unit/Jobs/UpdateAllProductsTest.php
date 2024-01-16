@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -21,7 +22,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Class UpdateProductsTest
- *
+ * @group Jobs
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
  */
 class UpdateAllProductsTest extends UnitTest {
@@ -50,6 +51,9 @@ class UpdateAllProductsTest extends UnitTest {
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
+	/** @var MockObject|NotificationsService $notifications */
+	protected $notifications;
+
 	/** @var UpdateAllProducts $job */
 	protected $job;
 
@@ -70,13 +74,15 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->product_repository = $this->createMock( ProductRepository::class );
 		$this->product_helper     = $this->createMock( BatchProductHelper::class );
 		$this->merchant_center    = $this->createMock( MerchantCenterService::class );
+		$this->notifications      = $this->createMock( NotificationsService::class );
 		$this->job                = new UpdateAllProducts(
 			$this->action_scheduler,
 			$this->monitor,
 			$this->product_syncer,
 			$this->product_repository,
 			$this->product_helper,
-			$this->merchant_center
+			$this->merchant_center,
+			$this->notifications
 		);
 
 		$this->merchant_center
@@ -127,11 +133,11 @@ class UpdateAllProductsTest extends UnitTest {
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
-			->with( self::CREATE_BATCH_HOOK, [ 1 ] );
+			->with( self::CREATE_BATCH_HOOK, [ 1, [] ] );
 
 		$this->job->schedule();
 
-		do_action( self::CREATE_BATCH_HOOK, 1 );
+		do_action( self::CREATE_BATCH_HOOK, 1, [] );
 	}
 
 	/**
@@ -149,13 +155,13 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 3 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids() ] ]
+				[ self::CREATE_BATCH_HOOK, [ 1, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $filtered_product_list->get_product_ids(), [] ] ]
 			);
 
 		$this->job->schedule();
 
-		do_action( self::CREATE_BATCH_HOOK, 1 );
+		do_action( self::CREATE_BATCH_HOOK, 1, [] );
 	}
 
 	/**
@@ -169,11 +175,11 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 5 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids() ] ],
-				[ self::CREATE_BATCH_HOOK, [ 2 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids() ] ],
-				[ self::CREATE_BATCH_HOOK, [ 3 ] ],
+				[ self::CREATE_BATCH_HOOK, [ 1, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids(), [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids(), [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3, [] ] ],
 			);
 
 		$this->product_repository->expects( $this->exactly( 3 ) )
@@ -187,9 +193,9 @@ class UpdateAllProductsTest extends UnitTest {
 
 		$this->job->schedule();
 
-		do_action( self::CREATE_BATCH_HOOK, 1 );
-		do_action( self::CREATE_BATCH_HOOK, 2 );
-		do_action( self::CREATE_BATCH_HOOK, 3 );
+		do_action( self::CREATE_BATCH_HOOK, 1, [] );
+		do_action( self::CREATE_BATCH_HOOK, 2, [] );
+		do_action( self::CREATE_BATCH_HOOK, 3, [] );
 	}
 
 	/**
@@ -203,11 +209,11 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 5 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids() ] ],
-				[ self::CREATE_BATCH_HOOK, [ 2 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids() ] ],
-				[ self::CREATE_BATCH_HOOK, [ 3 ] ],
+				[ self::CREATE_BATCH_HOOK, [ 1, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_a->get_product_ids(), [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids(), [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3, [] ] ],
 			);
 
 		$this->product_repository->expects( $this->exactly( 3 ) )
@@ -221,9 +227,9 @@ class UpdateAllProductsTest extends UnitTest {
 
 		$this->job->schedule();
 
-		do_action( self::CREATE_BATCH_HOOK, 1 );
-		do_action( self::CREATE_BATCH_HOOK, 2 );
-		do_action( self::CREATE_BATCH_HOOK, 3 );
+		do_action( self::CREATE_BATCH_HOOK, 1, [] );
+		do_action( self::CREATE_BATCH_HOOK, 2, [] );
+		do_action( self::CREATE_BATCH_HOOK, 3, [] );
 	}
 
 	/**
@@ -242,10 +248,10 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 4 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
-				[ self::CREATE_BATCH_HOOK, [ 2 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids() ] ],
-				[ self::CREATE_BATCH_HOOK, [ 3 ] ],
+				[ self::CREATE_BATCH_HOOK, [ 1, [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $batch_b->get_product_ids(), [] ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3, [] ] ],
 			);
 
 		$this->product_repository->expects( $this->exactly( 3 ) )
@@ -255,9 +261,9 @@ class UpdateAllProductsTest extends UnitTest {
 
 		$this->job->schedule();
 
-		do_action( self::CREATE_BATCH_HOOK, 1 );
-		do_action( self::CREATE_BATCH_HOOK, 2 );
-		do_action( self::CREATE_BATCH_HOOK, 3 );
+		do_action( self::CREATE_BATCH_HOOK, 1, [] );
+		do_action( self::CREATE_BATCH_HOOK, 2, [] );
+		do_action( self::CREATE_BATCH_HOOK, 3, [] );
 	}
 
 	public function test_process_item() {

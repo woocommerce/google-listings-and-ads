@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntr
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
@@ -29,6 +30,7 @@ class SyncerHooks implements Service, Registerable {
 
 	use PluginHelper;
 
+	protected const SCHEDULE_TYPE_CREATE = 'create';
 	protected const SCHEDULE_TYPE_UPDATE = 'update';
 	protected const SCHEDULE_TYPE_DELETE = 'delete';
 
@@ -67,6 +69,11 @@ class SyncerHooks implements Service, Registerable {
 	protected $delete_products_job;
 
 	/**
+	 * @var Notification
+	 */
+	protected $notification_job;
+
+	/**
 	 * @var MerchantCenterService
 	 */
 	protected $merchant_center;
@@ -103,6 +110,7 @@ class SyncerHooks implements Service, Registerable {
 		$this->product_helper        = $product_helper;
 		$this->update_products_job   = $job_repository->get( UpdateProducts::class );
 		$this->delete_products_job   = $job_repository->get( DeleteProducts::class );
+		$this->notification_job      = $job_repository->get( Notification::class );
 		$this->merchant_center       = $merchant_center;
 		$this->notifications_service = $notifications_service;
 		$this->wc                    = $wc;
@@ -119,14 +127,12 @@ class SyncerHooks implements Service, Registerable {
 		}
 
 		$update_by_object = function ( int $product_id, WC_Product $product ) {
-			$this->notifications_service->notify( $product_id, $this->notifications_service::TOPIC_PRODUCT_UPDATED );
 			$this->handle_update_products( [ $product ] );
 		};
 
 		$update_by_id = function ( int $product_id ) {
 			$product = $this->wc->maybe_get_product( $product_id );
 			if ( $product instanceof WC_Product ) {
-				$this->notifications_service->notify( $product_id, $this->notifications_service::TOPIC_PRODUCT_CREATED );
 				$this->handle_update_products( [ $product ] );
 			}
 		};
@@ -177,24 +183,30 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function handle_update_products( array $products ) {
 		$products_to_update = [];
+		$products_to_create = [];
 		$products_to_delete = [];
+
 		foreach ( $products as $product ) {
 			$product_id = $product->get_id();
 
 			// Bail if an event is already scheduled for this product in the current request
-			if ( $this->is_already_scheduled_to_update( $product_id ) ) {
+			if ( $this->is_already_scheduled_to_update( $product_id ) || $this->is_already_scheduled_to_create( $product_id ) ) {
 				continue;
 			}
 
 			// If it's a variable product we handle each variation separately
 			if ( $product instanceof WC_Product_Variable ) {
 				$this->handle_update_products( $product->get_available_variations( 'objects' ) );
-
 				continue;
 			}
 
-			// Schedule an update job if product sync is enabled.
-			if ( $this->product_helper->is_sync_ready( $product ) ) {
+			if ( $this->product_helper->should_notify_creation( $product ) ) {
+				// Notify about the product creation
+				$products_to_create[] = $product->get_id();
+				$this->product_helper->mark_as_notification_created( $product );
+				$this->set_already_scheduled_to_create( $product_id );
+			} elseif ( $this->product_helper->is_sync_ready( $product ) ) {
+				// Schedule an update job if product is enabled to sync or notify.
 				$this->product_helper->mark_as_pending( $product );
 				$products_to_update[] = $product->get_id();
 				$this->set_already_scheduled_to_update( $product_id );
@@ -213,15 +225,62 @@ class SyncerHooks implements Service, Registerable {
 			}
 		}
 
-		if ( ! empty( $products_to_update ) ) {
-			$this->update_products_job->schedule( [ $products_to_update ] );
+		$this->schedule_create( $products_to_create );
+		$this->schedule_update( $products_to_update );
+		$this->schedule_delete( $products_to_delete );
+	}
+
+	/**
+	 * Prepare the items to process and Schedule the update Job.
+	 * When using Notifications, we pass an array of WC_Product products. Otherwise, we send an array map containing
+	 * the Google product IDs as key and the WooCommerce product IDs as values.
+	 *
+	 * @param int[] $products_to_update Product IDs to update
+	 */
+	protected function schedule_update( array $products_to_update ) {
+		if ( empty( $products_to_update ) ) {
+			return;
 		}
 
-		if ( ! empty( $products_to_delete ) ) {
-			$request_entries = $this->batch_helper->generate_delete_request_entries( $products_to_delete );
-			$this->delete_products_job->schedule( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
+		if ( $this->notifications_service->is_enabled() ) {
+			$this->notification_job->schedule_notifications( $products_to_update, NotificationsService::TOPIC_PRODUCT_UPDATED );
+		} else {
+			$this->update_products_job->schedule( [ $products_to_update ] );
 		}
 	}
+
+	/**
+	 * Schedules a product deletion request
+	 *
+	 * @param array $products_to_delete
+	 */
+	protected function schedule_delete( array $products_to_delete ) {
+		if ( empty( $products_to_delete ) ) {
+			return;
+		}
+
+		if ( $this->notifications_service->is_enabled() ) {
+			$this->notification_job->schedule_notifications( $products_to_delete, NotificationsService::TOPIC_PRODUCT_DELETED );
+		} else {
+			$request_entries = $this->batch_helper->generate_delete_request_entries( $products_to_delete );
+			$items           = BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get();
+			$this->delete_products_job->schedule( [ $items ] );
+		}
+	}
+
+	/**
+	 * Schedules a product creation request
+	 *
+	 * @param array $products_to_create
+	 */
+	protected function schedule_create( array $products_to_create ) {
+		if ( empty( $products_to_create ) ) {
+			return;
+		}
+
+		$this->notification_job->schedule_notifications( $products_to_create, NotificationsService::TOPIC_PRODUCT_CREATED );
+	}
+
 
 	/**
 	 * Handle deleting of a product.
@@ -229,9 +288,13 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_delete_product( int $product_id ) {
-		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product ) {
-			$this->notifications_service->notify( $product_id, $this->notifications_service::TOPIC_PRODUCT_DELETED );
+		if ( $this->notifications_service->is_enabled() ) {
+			$product = wc_get_product( $product_id );
+			if ( $product instanceof WC_Product && $this->product_helper->should_notify( $product ) ) {
+				$this->set_already_scheduled_to_delete( $product_id );
+				$this->notification_job->schedule_notifications( [ $product_id ], $this->notifications_service::TOPIC_PRODUCT_DELETED );
+			}
+			return;
 		}
 
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
@@ -250,6 +313,10 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_pre_delete_product( int $product_id ) {
+		if ( $this->notifications_service->is_enabled() ) {
+			return;
+		}
+
 		$product = $this->wc->maybe_get_product( $product_id );
 
 		// each variation is passed to this method separately so we don't need to delete the variable product
@@ -306,6 +373,15 @@ class SyncerHooks implements Service, Registerable {
 	}
 
 	/**
+	 * @param int $product_id
+	 *
+	 * @return bool
+	 */
+	protected function is_already_scheduled_to_create( int $product_id ): bool {
+		return $this->is_already_scheduled( $product_id, self::SCHEDULE_TYPE_CREATE );
+	}
+
+	/**
 	 * @param int    $product_id
 	 * @param string $schedule_type
 	 *
@@ -331,5 +407,14 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function set_already_scheduled_to_delete( int $product_id ): void {
 		$this->set_already_scheduled( $product_id, self::SCHEDULE_TYPE_DELETE );
+	}
+
+	/**
+	 * @param int $product_id
+	 *
+	 * @return void
+	 */
+	protected function set_already_scheduled_to_create( int $product_id ): void {
+		$this->set_already_scheduled( $product_id, self::SCHEDULE_TYPE_CREATE );
 	}
 }

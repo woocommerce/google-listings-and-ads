@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -16,7 +17,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Class CleanupSyncedProductsTest
- *
+ * @group Jobs
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
  */
 class CleanupSyncedProductsTest extends UnitTest {
@@ -41,6 +42,9 @@ class CleanupSyncedProductsTest extends UnitTest {
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
+	/** @var MockObject|NotificationsService $notifications */
+	protected $notifications;
+
 	/** @var CleanupSyncedProducts $job */
 	protected $job;
 
@@ -61,13 +65,15 @@ class CleanupSyncedProductsTest extends UnitTest {
 		$this->product_repository   = $this->createMock( ProductRepository::class );
 		$this->batch_product_helper = $this->createMock( BatchProductHelper::class );
 		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
+		$this->notifications        = $this->createMock( NotificationsService::class );
 		$this->job                  = new CleanupSyncedProducts(
 			$this->action_scheduler,
 			$this->monitor,
 			$this->product_syncer,
 			$this->product_repository,
 			$this->batch_product_helper,
-			$this->merchant_center
+			$this->merchant_center,
+			$this->notifications
 		);
 
 		$this->job->init();
@@ -87,14 +93,14 @@ class CleanupSyncedProductsTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 3 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $ids ] ]
+				[ self::CREATE_BATCH_HOOK, [ 1, [] ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $ids, []  ] ]
 			);
 
 		$this->job->schedule();
 
 		// Trigger first batch
-		do_action( self::CREATE_BATCH_HOOK, 1 );
+		do_action( self::CREATE_BATCH_HOOK, 1, []  );
 	}
 
 	public function test_schedule_multiple_batches() {
@@ -115,18 +121,18 @@ class CleanupSyncedProductsTest extends UnitTest {
 		$this->action_scheduler->expects( $this->exactly( 5 ) )
 			->method( 'schedule_immediate' )
 			->withConsecutive(
-				[ self::CREATE_BATCH_HOOK, [ 1 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $first_batch ] ],
-				[ self::CREATE_BATCH_HOOK, [ 2 ] ],
-				[ self::PROCESS_ITEM_HOOK, [ $second_batch ] ],
-				[ self::CREATE_BATCH_HOOK, [ 3 ] ]
+				[ self::CREATE_BATCH_HOOK, [ 1, []  ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $first_batch, []  ] ],
+				[ self::CREATE_BATCH_HOOK, [ 2, []  ] ],
+				[ self::PROCESS_ITEM_HOOK, [ $second_batch, []  ] ],
+				[ self::CREATE_BATCH_HOOK, [ 3, []  ] ]
 			);
 
 		$this->job->schedule();
 
 		// Trigger first two batches
-		do_action( self::CREATE_BATCH_HOOK, 1 );
-		do_action( self::CREATE_BATCH_HOOK, 2 );
+		do_action( self::CREATE_BATCH_HOOK, 1, []  );
+		do_action( self::CREATE_BATCH_HOOK, 2, []  );
 	}
 
 	public function test_process_items() {
@@ -136,7 +142,7 @@ class CleanupSyncedProductsTest extends UnitTest {
 			->method( 'mark_batch_as_unsynced' )
 			->with( $ids );
 
-		do_action( self::PROCESS_ITEM_HOOK, $ids );
+		do_action( self::PROCESS_ITEM_HOOK, $ids, []  );
 	}
 
 	public function test_process_items_with_merchant_center_connected() {
@@ -149,7 +155,7 @@ class CleanupSyncedProductsTest extends UnitTest {
 		$this->batch_product_helper->expects( $this->never() )
 			->method( 'mark_batch_as_unsynced' );
 
-		do_action( self::PROCESS_ITEM_HOOK, $ids );
+		do_action( self::PROCESS_ITEM_HOOK, $ids, []  );
 
 		$this->assertEquals( 1, did_action( 'woocommerce_gla_debug_message' ) );
 	}

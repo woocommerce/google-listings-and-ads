@@ -153,6 +153,21 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * Find and return an array of WooCommerce product objects ready to be notified to Google.
+	 *
+	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
+	 *
+	 * @return int[] List of WooCommerce product objects after filtering.
+	 */
+	public function find_notification_ready_products( array $args = [], int $limit = - 1, int $offset = 0 ): array {
+		$args['post_status'] = [ 'publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash' ];
+
+		return $this->find_ids( $args, $limit, $offset );
+	}
+
+	/**
 	 * Find and return an array of WooCommerce product ID's ready to be deleted from the Google Merchant Center.
 	 *
 	 * @since 1.12.0
@@ -203,6 +218,23 @@ class ProductRepository implements Service {
 		if ( empty( $args['status'] ) ) {
 			$args['status'] = [ 'publish' ];
 		}
+
+		return $args;
+	}
+
+	/**
+	 * @param array $args Array of WooCommerce args (except 'return'), and product metadata.
+	 *
+	 * @return array
+	 */
+	protected function get_notification_ready_products_query_args( array $args = [] ): array {
+		$args['meta_query'] = [
+			[
+				'key'     => ProductMetaHandler::KEY_VISIBILITY,
+				'compare' => '!=',
+				'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
+			],
+		];
 
 		return $args;
 	}

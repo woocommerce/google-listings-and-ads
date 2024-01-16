@@ -20,11 +20,11 @@ trait SyncableProductsBatchedActionSchedulerJobTrait {
 	 *
 	 * If no items are returned the job will stop.
 	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
-	 *
+	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param array $args The action arguments.
 	 * @return WC_Product[]
 	 */
-	public function get_batch( int $batch_number ): array {
+	public function get_batch( int $batch_number, array $args = [] ): array {
 		return $this->get_filtered_batch( $batch_number )->get();
 	}
 
@@ -53,12 +53,13 @@ trait SyncableProductsBatchedActionSchedulerJobTrait {
 	 *
 	 * @since 1.4.0
 	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param array $args The action arguments.
 	 *
 	 * @throws Exception If an error occurs.
 	 * @throws JobException If the job failure rate is too high.
 	 */
-	public function handle_create_batch_action( int $batch_number ) {
+	public function handle_create_batch_action( int $batch_number, array $args = [] ) {
 		$create_batch_hook = $this->get_create_batch_hook();
 		$create_batch_args = [ $batch_number ];
 

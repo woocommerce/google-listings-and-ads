@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
@@ -17,7 +18,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Class UpdateProductsTest
- *
+ * @group Jobs
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
  */
 class UpdateProductsTest extends UnitTest {
@@ -40,6 +41,9 @@ class UpdateProductsTest extends UnitTest {
 	/** @var MockObject|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
+	/** @var MockObject|NotificationsService $notifications */
+	protected $notifications;
+
 	/** @var UpdateProducts $job */
 	protected $job;
 
@@ -57,12 +61,14 @@ class UpdateProductsTest extends UnitTest {
 		$this->product_syncer     = $this->createMock( ProductSyncer::class );
 		$this->product_repository = $this->createMock( ProductRepository::class );
 		$this->merchant_center    = $this->createMock( MerchantCenterService::class );
+		$this->notifications      = $this->createMock( NotificationsService::class );
 		$this->job                = new UpdateProducts(
 			$this->action_scheduler,
 			$this->monitor,
 			$this->product_syncer,
 			$this->product_repository,
-			$this->merchant_center
+			$this->merchant_center,
+			$this->notifications
 		);
 
 		$this->job->init();

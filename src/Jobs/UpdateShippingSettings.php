@@ -72,7 +72,7 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob {
 	 *
 	 * @throws JobException If the shipping settings cannot be synced.
 	 */
-	public function process_items( array $items ) {
+	public function process_items( array $items, array $args = [] ) {
 		if ( ! $this->can_sync_shipping() ) {
 			throw new JobException( 'Cannot sync shipping settings. Confirm that the merchant center account is connected and the option to automatically sync the shipping settings is selected.' );
 		}

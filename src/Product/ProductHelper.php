@@ -5,11 +5,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
 use WC_Product;
@@ -43,16 +45,23 @@ class ProductHelper implements Service {
 	protected $target_audience;
 
 	/**
+	 * @var NotificationsService
+	 */
+	protected $notifications_service;
+
+	/**
 	 * ProductHelper constructor.
 	 *
-	 * @param ProductMetaHandler $meta_handler
-	 * @param WC                 $wc
-	 * @param TargetAudience     $target_audience
+	 * @param ProductMetaHandler   $meta_handler
+	 * @param WC                   $wc
+	 * @param TargetAudience       $target_audience
+	 * @param NotificationsService $notifications_service
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, WC $wc, TargetAudience $target_audience ) {
-		$this->meta_handler    = $meta_handler;
-		$this->wc              = $wc;
-		$this->target_audience = $target_audience;
+	public function __construct( ProductMetaHandler $meta_handler, WC $wc, TargetAudience $target_audience, NotificationsService $notifications_service ) {
+		$this->meta_handler          = $meta_handler;
+		$this->wc                    = $wc;
+		$this->target_audience       = $target_audience;
+		$this->notifications_service = $notifications_service;
 	}
 
 	/**
@@ -102,6 +111,7 @@ class ProductHelper implements Service {
 	 * @param WC_Product $product
 	 */
 	public function mark_as_unsynced( WC_Product $product ) {
+		$this->meta_handler->delete_notification_status( $product );
 		$this->meta_handler->delete_synced_at( $product );
 		if ( ! $this->is_sync_ready( $product ) ) {
 			$this->meta_handler->delete_sync_status( $product );
@@ -203,6 +213,10 @@ class ProductHelper implements Service {
 	 * @param WC_Product $product
 	 */
 	public function mark_as_pending( WC_Product $product ) {
+		if ( $this->notifications_service->is_enabled() ) {
+			return;
+		}
+
 		$this->meta_handler->update_sync_status( $product, SyncStatus::PENDING );
 
 		// mark the parent product as pending if it's a variation
@@ -214,6 +228,30 @@ class ProductHelper implements Service {
 			}
 
 			$this->mark_as_pending( $parent_product );
+		}
+	}
+
+	/**
+	 * Marks a WooCommerce product as notification created.
+	 *
+	 * @param WC_Product $product
+	 */
+	public function mark_as_notification_created( WC_Product $product ) {
+		if ( ! $this->notifications_service->is_enabled() ) {
+			return;
+		}
+
+		$this->meta_handler->update_notification_status( $product, NotificationStatus::CREATED );
+
+		// mark the parent product as pending if it's a variation
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
+
+			$this->mark_as_notification_created( $parent_product );
 		}
 	}
 
@@ -326,6 +364,10 @@ class ProductHelper implements Service {
 	 * @return bool
 	 */
 	public function is_product_synced( WC_Product $product ): bool {
+		if ( $this->notifications_service->is_enabled() ) {
+			return $this->is_created_notification( $product );
+		}
+
 		$synced_at  = $this->meta_handler->get_synced_at( $product );
 		$google_ids = $this->meta_handler->get_google_ids( $product );
 
@@ -333,11 +375,57 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Whether a product.create notification was sent already.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function is_created_notification( WC_Product $product ): bool {
+		return $this->meta_handler->get_notification_status( $product ) === NotificationStatus::CREATED;
+	}
+
+	/**
+	 * Whether the system should send notifications for a specific product.
+	 *
+	 * @param WC_Product $product
+	 * @return bool
+	 */
+	public function should_notify( WC_Product $product ): bool {
+		return $this->notifications_service->is_enabled() && ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_channel_visibility( $product );
+	}
+
+	/**
+	 * Whether the system should send product.create notification for a specific product.
+	 *
+	 * @param WC_Product $product
+	 * @return bool
+	 */
+	public function should_notify_creation( WC_Product $product ): bool {
+		return $this->should_notify( $product ) && ! $this->is_created_notification( $product );
+	}
+
+	/**
+	 * Whether the system should send product.updates notification for a specific product.
+	 *
+	 * @param WC_Product $product
+	 * @return bool
+	 */
+	public function should_notify_update( WC_Product $product ) {
+		return $this->should_notify( $product ) && $this->is_created_notification( $product );
+	}
+
+
+	/**
 	 * @param WC_Product $product
 	 *
 	 * @return bool
 	 */
 	public function is_sync_ready( WC_Product $product ): bool {
+		if ( $this->notifications_service->is_enabled() ) {
+			return $this->should_notify_update( $product );
+		}
+
 		$product_visibility = $product->is_visible();
 		$product_status     = $product->get_status();
 

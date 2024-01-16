@@ -37,7 +37,7 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob implements Optio
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	protected function process_items( array $items ) {
+	protected function process_items( array $items, array $args = [] ) {
 		$products = $this->product_repository->find_by_ids( $items );
 		$this->product_syncer->update( $products );
 	}

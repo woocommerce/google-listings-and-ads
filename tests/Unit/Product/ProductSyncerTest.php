@@ -32,7 +32,7 @@ use WC_Product;
 
 /**
  * Class ProductSyncerTest
- *
+ * @group Jobs
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  */
 class ProductSyncerTest extends ContainerAwareUnitTest {
@@ -591,5 +591,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$this->wc                 = $this->container->get( WC::class );
 		$this->product_repository = $this->container->get( ProductRepository::class );
 		$this->product_syncer     = $this->get_product_syncer();
+
+		add_filter('woocommerce_gla_notifications_enabled', '__return_false' );
 	}
 }
