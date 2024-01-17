@@ -15,6 +15,7 @@ import './css/index.scss';
 import withAdminPageShell from '.~/components/withAdminPageShell';
 import './data';
 import isWCNavigationEnabled from './utils/isWCNavigationEnabled';
+import { addBaseEventProperties } from '.~/utils/tracks';
 
 const Dashboard = lazy( () =>
 	import( /* webpackChunkName: "dashboard" */ './dashboard' )
@@ -47,6 +48,8 @@ const AttributeMapping = lazy( () =>
 const Settings = lazy( () =>
 	import( /* webpackChunkName: "settings" */ './settings' )
 );
+
+export const pagePaths = new Set();
 
 const woocommerceTranslation =
 	getSetting( 'admin' )?.woocommerceTranslation ||
@@ -165,8 +168,28 @@ addFilter(
 
 		pluginAdminPages.forEach( ( page ) => {
 			page.container = withAdminPageShell( page.container );
+
+			// Do the same thing as https://github.com/woocommerce/woocommerce/blob/6.9.0/plugins/woocommerce-admin/client/layout/index.js#L178
+			const path = page.path.substring( 1 ).replace( /\//g, '_' );
+			pagePaths.add( path );
 		} );
 
 		return pages.concat( pluginAdminPages );
+	}
+);
+
+// Ref: https://github.com/woocommerce/woocommerce/blob/6.9.0/plugins/woocommerce/includes/tracks/class-wc-site-tracking.php#L92
+addFilter(
+	'woocommerce_tracks_client_event_properties',
+	'woocommerce/google-listings-and-ads/add-base-event-properties-to-page-view',
+	( eventProperties, eventName ) => {
+		if (
+			eventName === 'wcadmin_page_view' &&
+			pagePaths.has( eventProperties.path )
+		) {
+			return addBaseEventProperties( eventProperties );
+		}
+
+		return eventProperties;
 	}
 );
