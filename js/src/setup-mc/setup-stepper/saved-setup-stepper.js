@@ -4,7 +4,6 @@
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -23,6 +22,7 @@ import SetupFreeListings from '.~/components/free-listings/setup-free-listings';
 import StoreRequirements from './store-requirements';
 import SetupPaidAds from './setup-paid-ads';
 import stepNameKeyMap from './stepNameKeyMap';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * @param {Object} props React props
@@ -82,7 +82,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const continueStep = ( to ) => {
 		const from = step;
 
-		recordEvent( 'gla_setup_mc', {
+		recordGlaEvent( 'gla_setup_mc', {
 			triggered_by: `step${ from }-continue-button`,
 			action: `go-to-step${ to }`,
 			// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.
@@ -107,7 +107,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const handleStepClick = ( stepKey ) => {
 		// Only allow going back to the previous steps.
 		if ( Number( stepKey ) < Number( step ) ) {
-			recordEvent( 'gla_setup_mc', {
+			recordGlaEvent( 'gla_setup_mc', {
 				triggered_by: `stepper-step${ stepKey }-button`,
 				action: `go-to-step${ stepKey }`,
 			} );

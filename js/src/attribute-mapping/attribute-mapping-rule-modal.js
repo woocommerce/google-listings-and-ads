@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { isEqual, noop } from 'lodash';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -21,6 +20,7 @@ import AttributeMappingCategoryControl from '.~/attribute-mapping/attribute-mapp
 import AppSpinner from '.~/components/app-spinner';
 import { useAppDispatch } from '.~/data';
 import { CATEGORY_CONDITION_SELECT_TYPES } from '.~/constants';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * Updates the rule successfully
@@ -137,12 +137,12 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 		try {
 			if ( rule ) {
 				await updateMappingRule( newRule );
-				recordEvent( 'gla_attribute_mapping_update_rule', {
+				recordGlaEvent( 'gla_attribute_mapping_update_rule', {
 					context: 'attribute-mapping-manage-rule-modal',
 				} );
 			} else {
 				await createMappingRule( newRule );
-				recordEvent( 'gla_attribute_mapping_create_rule', {
+				recordGlaEvent( 'gla_attribute_mapping_create_rule', {
 					context: 'attribute-mapping-create-rule-modal',
 				} );
 			}

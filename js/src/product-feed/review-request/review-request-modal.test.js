@@ -1,6 +1,6 @@
-jest.mock( '@woocommerce/tracks', () => {
+jest.mock( '.~/utils/tracks', () => {
 	return {
-		recordEvent: jest.fn(),
+		recordGlaEvent: jest.fn(),
 	};
 } );
 
@@ -29,12 +29,12 @@ jest.mock( '.~/data', () => ( {
  * External dependencies
  */
 import { act, fireEvent, render } from '@testing-library/react';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import ReviewRequestModal from '.~/product-feed/review-request/review-request-modal';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 const issues = [
 	{ code: '#1', issue: '#1' },
@@ -78,7 +78,7 @@ describe( 'Request Review Modal', () => {
 		expect( queryByText( 'Show less' ) ).toBeFalsy();
 		expect( button ).toBeTruthy();
 		fireEvent.click( button );
-		expect( recordEvent ).toHaveBeenCalledWith(
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_request_review_issue_list_toggle_click',
 			{
 				action: 'expand',
@@ -88,7 +88,7 @@ describe( 'Request Review Modal', () => {
 		button = queryByText( 'Show less' );
 		expect( button ).toBeTruthy();
 		fireEvent.click( button );
-		expect( recordEvent ).toHaveBeenCalledWith(
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_request_review_issue_list_toggle_click',
 			{
 				action: 'collapse',
@@ -128,20 +128,20 @@ describe( 'Request Review Modal', () => {
 		const checkbox = queryByRole( 'checkbox' );
 		expect( button ).toBeTruthy();
 		fireEvent.click( button );
-		expect( recordEvent ).not.toHaveBeenCalled();
+		expect( recordGlaEvent ).not.toHaveBeenCalled();
 		expect( checkbox ).toBeTruthy();
 
 		expect( checkbox.checked ).toEqual( false );
 		fireEvent.click( checkbox );
 		expect( checkbox.checked ).toEqual( true );
-		expect( recordEvent ).toHaveBeenNthCalledWith(
+		expect( recordGlaEvent ).toHaveBeenNthCalledWith(
 			1,
 			'gla_request_review_issues_solved_checkbox_click',
 			{ action: 'check' }
 		);
 		fireEvent.click( button );
 
-		expect( recordEvent ).toHaveBeenNthCalledWith(
+		expect( recordGlaEvent ).toHaveBeenNthCalledWith(
 			2,
 			'gla_request_review'
 		);
@@ -151,7 +151,7 @@ describe( 'Request Review Modal', () => {
 			await Promise.resolve();
 		} );
 
-		expect( recordEvent ).toHaveBeenNthCalledWith(
+		expect( recordGlaEvent ).toHaveBeenNthCalledWith(
 			3,
 			'gla_request_review_success'
 		);

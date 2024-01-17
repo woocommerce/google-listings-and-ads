@@ -10,7 +10,6 @@ import {
 	isoDateFormat,
 } from '@woocommerce/date';
 import { ITEMS_STORE_NAME } from '@woocommerce/data';
-import { recordEvent } from '@woocommerce/tracks';
 
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 // The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
@@ -20,6 +19,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
  * Internal dependencies
  */
 import { productsFilter, advancedFilters } from './filter-config';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 const currency = getSetting( 'currency' );
 const siteLocale = getSetting( 'locale' ).siteLocale;
@@ -60,7 +60,7 @@ const ProductsReportFilters = ( props ) => {
 	 * @param {Object} data Data to be forwarded from ReportFilters' date picker.
 	 */
 	const onDateSelect = ( data ) =>
-		recordEvent( 'gla_datepicker_update', {
+		recordGlaEvent( 'gla_datepicker_update', {
 			report: trackEventId,
 			...omitBy( data, isUndefined ),
 		} );
@@ -72,7 +72,7 @@ const ProductsReportFilters = ( props ) => {
 	 * @param {Object} data Data to be forwarded from ReportFilters.
 	 */
 	const onFilterSelect = ( data ) =>
-		recordEvent( 'gla_filter', {
+		recordGlaEvent( 'gla_filter', {
 			report: trackEventId,
 			filter: data.filter || 'all',
 			// wc-admin does not send it

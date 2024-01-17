@@ -3,12 +3,12 @@
  */
 import { Button } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
-import { recordEvent } from '@woocommerce/tracks';
 import classnames from 'classnames';
 
 /**
  * Internal dependencies
  */
+import { recordGlaEvent } from '.~/utils/tracks';
 import './index.scss';
 
 /**
@@ -16,7 +16,7 @@ import './index.scss';
  *
  * Set `loading` to `true` and it will render a disabled Button with a loading spinner indicator.
  *
- * Set `eventName` and upon `onClick` it will call `recordEvent` with provided `eventName` and `eventProps`.
+ * Set `eventName` and upon `onClick` it will call `recordGlaEvent` with provided `eventName` and `eventProps`.
  *
  * ## Usage
  *
@@ -43,7 +43,7 @@ const AppButton = ( props ) => {
 
 	const handleClick = ( ...args ) => {
 		if ( eventName ) {
-			recordEvent( eventName, eventProps );
+			recordGlaEvent( eventName, eventProps );
 		}
 
 		onClick( ...args );

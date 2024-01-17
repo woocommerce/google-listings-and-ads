@@ -95,7 +95,7 @@ export const recordTablePageEvent = ( context, page, direction ) => {
 		eventName = 'gla_table_page_click';
 		properties.direction = direction;
 	}
-	recordEvent( eventName, properties );
+	recordGlaEvent( eventName, properties );
 };
 
 /**
@@ -185,7 +185,7 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @param {string} [context] Indicates where this event happened.
  */
 export function recordStepperChangeEvent( eventName, to, context ) {
-	recordEvent( eventName, {
+	recordGlaEvent( eventName, {
 		triggered_by: `stepper-step${ to }-button`,
 		action: `go-to-step${ to }`,
 		context,
@@ -201,7 +201,7 @@ export function recordStepperChangeEvent( eventName, to, context ) {
  * @param {string} [context] Indicates where this event happened.
  */
 export function recordStepContinueEvent( eventName, from, to, context ) {
-	recordEvent( eventName, {
+	recordGlaEvent( eventName, {
 		triggered_by: `step${ from }-continue-button`,
 		action: `go-to-step${ to }`,
 		context,
