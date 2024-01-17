@@ -57,7 +57,7 @@ const woocommerceTranslation =
 
 addFilter(
 	'woocommerce_admin_pages_list',
-	'woocommerce-marketing',
+	'woocommerce/google-listings-and-ads/add-page-routes',
 	( pages ) => {
 		const navigationEnabled = isWCNavigationEnabled();
 		const initialBreadcrumbs = [ [ '', woocommerceTranslation ] ];
