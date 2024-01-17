@@ -1,7 +1,14 @@
 /**
  * External dependencies
  */
-import { recordEvent } from '@woocommerce/tracks';
+import { recordEvent, queueRecordEvent } from '@woocommerce/tracks';
+import { select } from '@wordpress/data';
+
+/**
+ * Internal dependencies
+ */
+import { glaData } from '.~/constants';
+import { STORE_KEY } from '.~/data';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -22,6 +29,48 @@ import { recordEvent } from '@woocommerce/tracks';
  * @property {string} context Name of the table
  * @property {string} direction Direction of page to be changed. `("next" | "previous")`
  */
+
+function prepareEventProperties( eventProperties ) {
+	const { slug } = glaData;
+	const { version, adsId, mcId } = select( STORE_KEY ).getGeneral();
+
+	const mixedProperties = {
+		...eventProperties,
+		[ `${ slug }_version` ]: version,
+	};
+
+	if ( mcId ) {
+		mixedProperties[ `${ slug }_mc_id` ] = mcId;
+	}
+
+	if ( adsId ) {
+		mixedProperties[ `${ slug }_ads_id` ] = adsId;
+	}
+
+	return mixedProperties;
+}
+
+/**
+ * Record a tracking event with base properties.
+ *
+ * @param {string} eventName The name of the event to record.
+ * @param {Object} [eventProperties] The event properties to include in the event.
+ */
+export function recordGlaEvent( eventName, eventProperties ) {
+	recordEvent( eventName, prepareEventProperties( eventProperties ) );
+}
+
+/**
+ * Queue a tracking event with base properties.
+ *
+ * This allows you to delay tracking events that would otherwise cause a race condition.
+ *
+ * @param {string} eventName The name of the event to record.
+ * @param {Object} [eventProperties] The event properties to include in the event.
+ */
+export function queueRecordGlaEvent( eventName, eventProperties ) {
+	queueRecordEvent( eventName, prepareEventProperties( eventProperties ) );
+}
 
 /**
  * Records table's page tracking event.
