@@ -23,6 +23,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductCreateNotificationJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductDeleteNotificationJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductUpdateNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitExpiringProducts;
@@ -105,6 +108,11 @@ class JobServiceProvider extends AbstractServiceProvider {
 		// share coupon syncer jobs.
 		$this->share_coupon_syncer_job( UpdateCoupon::class );
 		$this->share_coupon_syncer_job( DeleteCoupon::class );
+
+		// share product notifications job
+		$this->share_product_notification_job( ProductCreateNotificationJob::class );
+		$this->share_product_notification_job( ProductUpdateNotificationJob::class );
+		$this->share_product_notification_job( ProductDeleteNotificationJob::class );
 
 		$this->share_with_tags(
 			JobRepository::class,
@@ -213,6 +221,20 @@ class JobServiceProvider extends AbstractServiceProvider {
 			CouponSyncer::class,
 			WC::class,
 			MerchantCenterService::class,
+			...$arguments
+		);
+	}
+
+	/**
+	 * Share a product notification job class
+	 *
+	 * @param string $class_name   The class name to add.
+	 * @param mixed  ...$arguments Constructor arguments for the class.
+	 */
+	protected function share_product_notification_job( string $class_name, ...$arguments ) {
+		$this->share_action_scheduler_job(
+			$class_name,
+			NotificationsService::class,
 			...$arguments
 		);
 	}

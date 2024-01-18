@@ -9,10 +9,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductCreateNotificationJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductDeleteNotificationJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductUpdateNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use WC_Product;
 use WC_Product_Variable;
 
@@ -67,6 +71,21 @@ class SyncerHooks implements Service, Registerable {
 	protected $delete_products_job;
 
 	/**
+	 * @var ProductCreateNotificationJob
+	 */
+	protected $create_products_notification_job;
+
+	/**
+	 * @var ProductUpdateNotificationJob
+	 */
+	protected $update_products_notification_job;
+
+	/**
+	 * @var ProductDeleteNotificationJob
+	 */
+	protected $delete_products_notification_job;
+
+	/**
 	 * @var MerchantCenterService
 	 */
 	protected $merchant_center;
@@ -99,13 +118,16 @@ class SyncerHooks implements Service, Registerable {
 		NotificationsService $notifications_service,
 		WC $wc
 	) {
-		$this->batch_helper          = $batch_helper;
-		$this->product_helper        = $product_helper;
-		$this->update_products_job   = $job_repository->get( UpdateProducts::class );
-		$this->delete_products_job   = $job_repository->get( DeleteProducts::class );
-		$this->merchant_center       = $merchant_center;
-		$this->notifications_service = $notifications_service;
-		$this->wc                    = $wc;
+		$this->batch_helper                     = $batch_helper;
+		$this->product_helper                   = $product_helper;
+		$this->update_products_job              = $job_repository->get( UpdateProducts::class );
+		$this->delete_products_job              = $job_repository->get( DeleteProducts::class );
+		$this->create_products_notification_job = $job_repository->get( ProductCreateNotificationJob::class );
+		$this->update_products_notification_job = $job_repository->get( ProductUpdateNotificationJob::class );
+		$this->delete_products_notification_job = $job_repository->get( ProductDeleteNotificationJob::class );
+		$this->merchant_center                  = $merchant_center;
+		$this->notifications_service            = $notifications_service;
+		$this->wc                               = $wc;
 	}
 
 	/**
@@ -119,14 +141,12 @@ class SyncerHooks implements Service, Registerable {
 		}
 
 		$update_by_object = function ( int $product_id, WC_Product $product ) {
-			$this->notifications_service->notify( $product_id, $this->notifications_service::TOPIC_PRODUCT_UPDATED );
 			$this->handle_update_products( [ $product ] );
 		};
 
 		$update_by_id = function ( int $product_id ) {
 			$product = $this->wc->maybe_get_product( $product_id );
 			if ( $product instanceof WC_Product ) {
-				$this->notifications_service->notify( $product_id, $this->notifications_service::TOPIC_PRODUCT_CREATED );
 				$this->handle_update_products( [ $product ] );
 			}
 		};
@@ -178,6 +198,12 @@ class SyncerHooks implements Service, Registerable {
 	protected function handle_update_products( array $products ) {
 		$products_to_update = [];
 		$products_to_delete = [];
+
+		if ( $this->notifications_service->is_enabled() ) {
+			$this->handle_update_products_notification( $products );
+			return;
+		}
+
 		foreach ( $products as $product ) {
 			$product_id = $product->get_id();
 
@@ -224,14 +250,53 @@ class SyncerHooks implements Service, Registerable {
 	}
 
 	/**
+	 *
+	 * @param array $products
+	 */
+	protected function handle_update_products_notification( array $products ) {
+		$should_update = false;
+		$should_create = false;
+		$should_delete = false;
+
+		foreach ( $products as $product ) {
+			if ( $product instanceof WC_Product_Variable ) {
+				$this->handle_update_products_notification( $product->get_available_variations( 'objects' ) );
+			} elseif ( $this->product_helper->should_trigger_create_notification( $product ) ) {
+				$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_CREATE );
+				$should_create = true;
+			} elseif ( $this->product_helper->should_trigger_update_notification( $product ) ) {
+				$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_UPDATE );
+				$should_update = true;
+			} elseif ( $this->product_helper->should_trigger_delete_notification( $product ) ) {
+				$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
+				$should_delete = true;
+			}
+		}
+
+		// TODO: Potentially convert this into recurring jobs
+		if ( $should_update ) {
+			$this->update_products_notification_job->schedule();
+		}
+
+		if ( $should_create ) {
+			$this->create_products_notification_job->schedule();
+		}
+
+		if ( $should_delete ) {
+			$this->delete_products_notification_job->schedule();
+		}
+	}
+
+	/**
 	 * Handle deleting of a product.
 	 *
 	 * @param int $product_id
 	 */
 	protected function handle_delete_product( int $product_id ) {
 		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product ) {
+		if ( $product instanceof WC_Product && $this->notifications_service->is_enabled() && $this->product_helper->should_trigger_delete_notification( $product ) ) {
 			$this->notifications_service->notify( $product_id, $this->notifications_service::TOPIC_PRODUCT_DELETED );
+			return;
 		}
 
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
