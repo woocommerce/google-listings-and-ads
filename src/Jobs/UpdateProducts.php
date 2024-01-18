@@ -31,6 +31,7 @@ class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	 * Process an item.
 	 *
 	 * @param int[] $product_ids An array of WooCommerce product ids.
+	 * @param array $args Action args
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 * @throws JobException If invalid or non-existing products are provided. The exception will be logged by ActionScheduler.

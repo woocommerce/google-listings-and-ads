@@ -31,7 +31,7 @@ class CleanupProductsJob extends AbstractProductSyncerBatchedJob {
 	 *
 	 * If no items are returned the job will stop.
 	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
 	 * @param array $args The action args.
 	 *
 	 * @return array

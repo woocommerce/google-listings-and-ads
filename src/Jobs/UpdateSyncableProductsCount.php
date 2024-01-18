@@ -78,6 +78,7 @@ class UpdateSyncableProductsCount extends AbstractBatchedActionSchedulerJob impl
 	 * Process batch items.
 	 *
 	 * @param int[] $items A single batch of WooCommerce product IDs from the get_batch() method.
+	 * @param array $args Action args.
 	 */
 	protected function process_items( array $items, array $args = [] ) {
 		$product_ids = $this->options->get( OptionsInterface::SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA );

@@ -32,6 +32,7 @@ class UpdateCoupon extends AbstractCouponSyncerJob implements
 	 * Process an item.
 	 *
 	 * @param int[] $coupon_ids
+	 * @param array $args Action args.
 	 *
 	 * @throws CouponSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */

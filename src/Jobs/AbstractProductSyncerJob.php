@@ -46,6 +46,7 @@ abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob imple
 	 * @param ProductSyncer             $product_syncer
 	 * @param ProductRepository         $product_repository
 	 * @param MerchantCenterService     $merchant_center
+	 * @param NotificationsService      $notifications_service
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,

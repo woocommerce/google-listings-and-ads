@@ -74,6 +74,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 * @hooked gla/jobs/{$job_name}/process_item
 	 *
 	 * @param array $items The job items from the current batch.
+	 * @param array $args Action args.
 	 *
 	 * @throws Exception If an error occurs.
 	 */
@@ -136,6 +137,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 * Process batch items.
 	 *
 	 * @param array $items A single batch from the get_batch() method.
+	 * @param array $args Action args.
 	 *
 	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
 	 */

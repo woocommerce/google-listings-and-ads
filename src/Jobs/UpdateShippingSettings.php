@@ -69,6 +69,7 @@ class UpdateShippingSettings extends AbstractActionSchedulerJob {
 	 * Process the job.
 	 *
 	 * @param int[] $items An array of job arguments.
+	 * @param array $args Action args.
 	 *
 	 * @throws JobException If the shipping settings cannot be synced.
 	 */

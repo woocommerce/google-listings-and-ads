@@ -19,7 +19,8 @@ interface BatchedActionSchedulerJobInterface extends ActionSchedulerJobInterface
 	 *
 	 * @hooked gla/jobs/{$job_name}/create_batch
 	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param int   $batch_number The batch number increments for each new batch in the job cycle.
+	 * @param array $args Action args.
 	 *
 	 * @throws Exception If an error occurs.
 	 */
@@ -31,6 +32,7 @@ interface BatchedActionSchedulerJobInterface extends ActionSchedulerJobInterface
 	 * @hooked gla/jobs/{$job_name}/process_item
 	 *
 	 * @param array $items The job items from the current batch.
+	 * @param array $args Action args.
 	 *
 	 * @throws Exception If an error occurs.
 	 */
