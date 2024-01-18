@@ -91,8 +91,12 @@ Do not edit it manually!
 
 ### [`gla_ads_account_connect_button_click`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L24)
 Clicking on the button to connect an existing Google Ads account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`id` | `number` | The account ID to be connected.
 #### Emitters
-- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L36) when "Connect" button is clicked.
+- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L37) when "Connect" button is clicked.
 
 ### [`gla_ads_account_create_button_click`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L16)
 Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
@@ -259,7 +263,7 @@ When a documentation link is clicked.
 	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
 - [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woo.com/document/google-listings-and-ads/#required-google-permissions' }`
 - [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woo.com/document/google-listings-and-ads/#required-google-permissions' }`
-- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L36) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
+- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L37) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
 - [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L32)
 	- with `{ context: 'setup-ads', link_id: 'shopping-ads-policies', href: 'https://support.google.com/merchants/answer/6149970' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
@@ -480,8 +484,12 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 
 ### [`gla_mc_account_connect_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L25)
 Clicking on the button to connect an existing Google Merchant Center account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`id` | `number` | The account ID to be connected.
 #### Emitters
-- [`ConnectMC`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L41)
+- [`ConnectMC`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L42)
 
 ### [`gla_mc_account_connect_different_account_button_click`](../../js/src/components/google-mc-account-card/connected-google-mc-account-card.js#L21)
 Clicking on the "connect to a different Google Merchant Center account" button.
@@ -498,7 +506,7 @@ Clicking on the button to reclaim URL for a Google Merchant Center account.
 #### Emitters
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L41)
 
-### [`gla_mc_account_switch_account_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L31)
+### [`gla_mc_account_switch_account_button_click`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L32)
 Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
 #### Properties
 | name | type | description |
