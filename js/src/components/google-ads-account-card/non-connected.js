@@ -11,9 +11,19 @@ import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts'
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import ConnectAds from './connect-ads';
 
-const NonConnected = () => {
+const useGoogleAccountCheck = () => {
 	const { google } = useGoogleAccount();
-	const { existingAccounts } = useExistingGoogleAdsAccounts();
+	const { existingAccounts } =
+		google.active !== 'no'
+			? // eslint-disable-next-line react-hooks/rules-of-hooks
+			  useExistingGoogleAdsAccounts()
+			: { existingAccounts: null };
+
+	return { google, existingAccounts };
+};
+
+const NonConnected = () => {
+	const { google, existingAccounts } = useGoogleAccountCheck();
 	const [ ignoreExisting, setIgnoreExisting ] = useState( false );
 
 	const handleShowExisting = () => {

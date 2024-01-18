@@ -63,6 +63,7 @@ const CreateAccount = ( props ) => {
 
 	return (
 		<AccountCard
+			disabled
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			alignIcon="top"
 			indicator={ <ClaimTermsAndCreateAccountButton disabled /> }
