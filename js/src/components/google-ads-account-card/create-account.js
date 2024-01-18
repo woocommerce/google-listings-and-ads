@@ -59,7 +59,7 @@ const ClaimTermsAndCreateAccountButton = ( { disabled } ) => {
 };
 
 const CreateAccount = ( props ) => {
-	const { allowShowExisting, onShowExisting, disabled } = props;
+	const { allowShowExisting, onShowExisting } = props;
 
 	return (
 		<AccountCard
