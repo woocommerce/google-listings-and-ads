@@ -211,7 +211,7 @@ Triggered when "continue" to edit program button is clicked.
 #### Emitters
 - [`EditProgramPromptModal`](../../js/src/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal/index.js#L32) when "Continue to edit" is clicked.
 
-### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L101)
+### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L110)
 Triggered when datepicker (date ranger picker) is updated,
  with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
 #### Properties
@@ -379,7 +379,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'expand' }`.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'collapse' }`.
 
-### [`gla_filter`](../../js/src/utils/tracks.js#L113)
+### [`gla_filter`](../../js/src/utils/tracks.js#L122)
 Triggered when changing products & variations filter,
  with data that comes from
  `FilterPicker`'s `onFilterSelect` callback.
@@ -407,7 +407,7 @@ Saving changes to the free campaign.
 #### Emitters
 - [`EditFreeCampaign`](../../js/src/edit-free-campaign/index.js#L46)
 
-### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L143)
+### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L152)
 Clicking on the button to connect Google account.
 #### Properties
 | name | type | description |
@@ -439,7 +439,7 @@ Clicking on a Google Ads account text link.
 #### Emitters
 - [`BillingSavedCard`](../../js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
 
-### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L153)
+### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L162)
 Clicking on a Google Merchant Center link.
 #### Properties
 | name | type | description |
@@ -468,7 +468,7 @@ Clicking on the "Scan for assets" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/assets-loader.js#L96)
 
-### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L135)
+### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L144)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
 #### Properties
 | name | type | description |
@@ -538,7 +538,7 @@ Clicking on the Merchant Center phone number edit button.
 #### Emitters
 - [`PhoneNumberCard`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L127)
 
-### [`gla_modal_closed`](../../js/src/utils/tracks.js#L211)
+### [`gla_modal_closed`](../../js/src/utils/tracks.js#L220)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -561,7 +561,7 @@ Clicking on a text link within the modal content
 #### Emitters
 - [`ContentLink`](../../js/src/components/guide-page-content/index.js#L46) with given `context, href`
 
-### [`gla_modal_open`](../../js/src/utils/tracks.js#L224)
+### [`gla_modal_open`](../../js/src/utils/tracks.js#L233)
 A modal is open
 #### Properties
 | name | type | description |
@@ -603,7 +603,7 @@ Clicking on the "Create a paid ad campaign" button to open the paid ads setup in
 #### Emitters
 - [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L71)
 
-### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L171)
+### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L180)
 Triggered when moving to another step during creating/editing a campaign.
 #### Properties
 | name | type | description |
@@ -648,7 +648,7 @@ Clicking on the "Or, select another page" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/final-url-card.js#L39)
 
-### [`gla_setup_ads`](../../js/src/utils/tracks.js#L161)
+### [`gla_setup_ads`](../../js/src/utils/tracks.js#L170)
 Triggered on events during ads onboarding
 #### Properties
 | name | type | description |
@@ -673,7 +673,7 @@ Clicking on faq items to collapse or expand it in the Onboarding Flow or creatin
 #### Emitters
 - [`FaqsSection`](../../js/src/components/paid-ads/faqs-section.js#L89)
 
-### [`gla_setup_mc`](../../js/src/utils/tracks.js#L124)
+### [`gla_setup_mc`](../../js/src/utils/tracks.js#L133)
 Setup Merchant Center
 #### Properties
 | name | type | description |
@@ -725,7 +725,7 @@ When table pagination is changed by entering page via "Go to page" input.
 `page` | `string` | Page number (starting at 1)
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
-- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L87) with the given `{ context, page }`.
+- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L96) with the given `{ context, page }`.
 
 ### [`gla_table_header_toggle`](../../js/src/components/app-table-card/index.js#L12)
 Toggling display of table columns
@@ -748,7 +748,7 @@ When table pagination is clicked
 `direction` | `string` | Direction of page to be changed. `("next" \| "previous")`
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
-- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L87) with the given `{ context, direction }`.
+- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L96) with the given `{ context, direction }`.
 
 ### [`gla_table_sort`](../../js/src/components/app-table-card/index.js#L38)
 Sorting table
