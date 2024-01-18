@@ -4,6 +4,8 @@
 	namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
 	use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
+	use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+	use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 	use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 
 	defined( 'ABSPATH' ) || exit;
@@ -28,6 +30,9 @@
 		public function setUp(): void {
 			parent::setUp();
 
+			$this->product_helper     = $this->createMock( ProductHelper::class );
+			$this->product_repository = $this->createMock( ProductRepository::class );
+
 			// Mock the Blog ID from Jetpack
 			add_filter('jetpack_options', function ( $value, $name ) {
 				if ( $name === 'id' ) {
@@ -37,7 +42,7 @@
 				return $value;
 			}, 10, 2 );
 
-			$this->service = $this->get_mock();
+			$this->service = $this->get_mock( [ $this->product_repository, $this->product_helper ] );
 		}
 
 		/**
@@ -93,8 +98,9 @@
 		 * Mocks the service
 		 * @return NotificationsService
 		 */
-		public function get_mock() {
+		public function get_mock( $constructor_args = [] ) {
 			return $this->getMockBuilder( NotificationsService::class)
+				->setConstructorArgs( $constructor_args )
 				->onlyMethods( [ 'do_request' ] )
 				->getMock();
 		}

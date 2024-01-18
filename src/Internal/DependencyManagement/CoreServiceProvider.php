@@ -252,7 +252,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( MerchantCenterService::class );
 
 		// Set up Notifications service.
-		$this->share_with_tags( NotificationsService::class );
+		$this->share_with_tags( NotificationsService::class, ProductRepository::class, ProductHelper::class );
 
 		$this->getLeagueContainer()
 			->inflector( MerchantCenterAwareInterface::class )

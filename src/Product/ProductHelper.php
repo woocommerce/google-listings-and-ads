@@ -5,11 +5,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
 use WC_Product;
@@ -361,6 +363,58 @@ class ProductHelper implements Service {
 	 *
 	 * @return bool
 	 */
+	public function is_ready_to_notify( WC_Product $product ): bool {
+		return ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_channel_visibility( $product );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function should_trigger_create_notification( WC_Product $product ): bool {
+		return $this->is_ready_to_notify( $product ) && ! $this->has_notified_creation( $product );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function should_trigger_update_notification( WC_Product $product ): bool {
+		return $this->is_ready_to_notify( $product ) && $this->has_notified_creation( $product );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function should_trigger_delete_notification( WC_Product $product ): bool {
+		return $this->has_notified_creation( $product );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function has_notified_creation( WC_Product $product ): bool {
+		$valid_has_notified_creation_statuses = [
+			NotificationStatus::NOTIFICATION_CREATED,
+			NotificationStatus::NOTIFICATION_UPDATED,
+			NotificationStatus::NOTIFICATION_PENDING_UPDATE,
+			NotificationStatus::NOTIFICATION_PENDING_DELETE,
+		];
+
+		return in_array( $this->meta_handler->get_notification_status( $product ), $valid_has_notified_creation_statuses, true );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
 	public function is_sync_ready( WC_Product $product ): bool {
 		$product_visibility = $product->is_visible();
 		$product_status     = $product->get_status();
@@ -628,5 +682,28 @@ class ProductHelper implements Service {
 	public function get_categories( WC_Product $product ): array {
 		$terms = get_the_terms( $product->get_id(), 'product_cat' );
 		return ( empty( $terms ) || is_wp_error( $terms ) ) ? [] : wp_list_pluck( $terms, 'name' );
+	}
+
+	/**
+	 * Set the notification status for a WooCommerce product.
+	 *
+	 * Note: If the status is set for a product variation then the parent product is also marked with the same status.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $status
+	 */
+	public function set_notification_status( WC_Product $product, $status ) {
+		$this->meta_handler->update_notification_status( $product, $status );
+
+		// mark the parent product as pending if it's a variation
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
+
+			$this->set_notification_status( $parent_product, $status );
+		}
 	}
 }
