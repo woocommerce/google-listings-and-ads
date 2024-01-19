@@ -41,7 +41,7 @@ trait WPErrorTrait {
 	 * @return WP_Error
 	 */
 	protected function error_from_exception( Throwable $e, string $code, array $data = [] ): WP_Error {
-		return new WP_Error( $code, $e->getMessage(), $data );
+		return new WP_Error( $code, $data['message'] ?? $e->getMessage(), $data );
 	}
 
 	/**
