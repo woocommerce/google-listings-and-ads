@@ -58,6 +58,35 @@ When a site verification with Google fails
 ### `gla_site_verify_success`
 When a site is successfully verified with Google
 
+### `gla_created_campaign`
+When a campaign has been successfully created.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`id` | `int` | Campaign ID.
+`status` | `string` | Campaign status, `enabled` or `paused`.
+`name` | `string` | Campaign name, generated based on date.
+`amount` | `float` | Campaign budget.
+`country` | `string` | Base target country code.
+`targeted_locations` | `string` | Additional target country codes.
+
+### `gla_edited_campaign`
+When a campaign has been successfully edited.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`id` | `int` | Campaign ID.
+`status` | `string` | Campaign status, `enabled` or `paused`.
+`name` | `string` | Campaign name.
+`amount` | `float` | Campaign budget.
+
+### `gla_deleted_campaign`
+When a campaign has been successfully deleted.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`id` | `int` | Campaign ID.
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.
