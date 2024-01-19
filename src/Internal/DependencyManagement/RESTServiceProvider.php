@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AssetSuggestionsService as A
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
@@ -128,7 +129,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( SupportedCountriesController::class, WC::class, GoogleHelper::class );
 		$this->share( SettingsSyncController::class, Settings::class );
 		$this->share( DisconnectController::class );
-		$this->share( SetupCompleteController::class );
+		$this->share( SetupCompleteController::class, MerchantMetrics::class );
 		$this->share( AssetSuggestionsController::class, AdsAssetSuggestionsService::class );
 		$this->share( SyncableProductsCountController::class, JobRepository::class );
 		$this->share( PolicyComplianceCheckController::class, PolicyComplianceCheck::class );

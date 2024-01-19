@@ -87,6 +87,13 @@ When a campaign has been successfully deleted.
 | ---- | ---- | ----------- |
 `id` | `int` | Campaign ID.
 
+### `gla_ads_setup_completed`
+Ads onboarding has been successfully completed.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`campaign_count` | `int` | Number of campaigns for the connected Ads account.
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.
