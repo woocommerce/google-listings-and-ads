@@ -94,6 +94,18 @@ Ads onboarding has been successfully completed.
 | ---- | ---- | ----------- |
 `campaign_count` | `int` | Number of campaigns for the connected Ads account.
 
+### `gla_mc_setup_completed`
+Merchant Center onboarding has been successfully completed.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`shipping_rate` | `string` | Shipping rate setup `automatic`, `manual`, `flat`.
+`offers_free_shipping` | `bool` | Free Shipping is available.
+`free_shipping_threshold` | `float` | Minimum amount to avail of free shipping.
+`shipping_time` | `string` | Shipping time setup `flat`, `manual`.
+`tax_rate` | `string` | Tax rate setup `destination`, `manual`.
+`target_countries` | `string` | List of target countries or `all`.
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.
