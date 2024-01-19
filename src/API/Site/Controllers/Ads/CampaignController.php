@@ -228,10 +228,12 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				do_action(
 					'woocommerce_gla_track_event',
 					'edited_campaign',
-					[
-						'id' => $campaign_id,
-						...$fields,
-					]
+					array_merge(
+						[
+							'id' => $campaign_id,
+						],
+						$fields,
+					)
 				);
 
 				return [
