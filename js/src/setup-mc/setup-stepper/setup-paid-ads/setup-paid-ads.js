@@ -21,7 +21,6 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
 import ProductFeedStatusSection from './product-feed-status-section';
-import GoogleAdsAccountSection from './google-ads-account-section';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
@@ -172,7 +171,6 @@ export default function SetupPaidAds() {
 				) }
 			/>
 			<ProductFeedStatusSection />
-			<GoogleAdsAccountSection />
 			<PaidAdsFeaturesSection
 				hideBudgetContent={ ! hasGoogleAdsConnection }
 				hideFooterButtons={
