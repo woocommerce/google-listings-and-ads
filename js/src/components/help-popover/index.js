@@ -63,6 +63,7 @@ const HelpPopover = ( {
 			{ showPopover && ! disabled && (
 				<Popover
 					focusOnMount="container"
+					inline
 					onClose={ handlePopoverClose }
 					{ ...props }
 				>
