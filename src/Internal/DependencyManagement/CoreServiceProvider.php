@@ -109,6 +109,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetupTask;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\ActivatedEvents;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\GenericEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
@@ -386,8 +387,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Share other classes.
 		$this->share_with_tags( ActivatedEvents::class, $_SERVER );
-		$this->share_with_tags( SiteVerificationEvents::class );
+		$this->share_with_tags( GenericEvents::class );
 		$this->share_with_tags( SiteClaimEvents::class );
+		$this->share_with_tags( SiteVerificationEvents::class );
 
 		$this->conditionally_share_with_tags( InstallTimestamp::class );
 		$this->conditionally_share_with_tags( ClearProductStatsCache::class, MerchantStatuses::class );
