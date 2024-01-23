@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -34,6 +35,9 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 
 	/** @var MockObject|AssetsHandlerInterface $assets_handler */
 	protected $assets_handler;
+
+	/** @var Stub|ProductHelper $product_helper */
+	protected $product_helper;
 
 	/** @var AttributeManager $attribute_manager */
 	protected $attribute_manager;
@@ -76,6 +80,7 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		parent::setUp();
 
 		$this->assets_handler    = $this->createMock( AssetsHandlerInterface::class );
+		$this->product_helper    = $this->createStub( ProductHelper::class );
 		$this->attribute_manager = $this->container->get( AttributeManager::class );
 		$this->merchant_center   = $this->createStub( MerchantCenterService::class );
 		$this->block_registry    = $this->createMock( BlockRegistry::class );
@@ -84,7 +89,7 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		$this->variation_anchor_group = $this->createMock( BlockInterface::class );
 		$this->mismatching_group      = $this->createMock( BlockInterface::class );
 
-		$this->product_blocks_service = new ProductBlocksService( $this->assets_handler, $this->attribute_manager, $this->merchant_center );
+		$this->product_blocks_service = new ProductBlocksService( $this->assets_handler, $this->product_helper, $this->attribute_manager, $this->merchant_center );
 
 		$this->product_blocks_service->set_block_registry( $this->block_registry );
 
@@ -376,9 +381,46 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 
 	/**
 	 * Tests that assert the block configs passed to `add_block` are covered by
+	 * `ChannelVisibilityBlockTest`.
+	 */
+	public function test_register_add_channel_visibility_blocks() {
+		$this->simple['visibility_section']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_block' );
+
+		$this->simple['visibility_section']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_hide_condition' )
+			->with( "editedProduct.type !== 'simple' && editedProduct.type !== 'variable'" );
+
+		$this->simple['visibility_block']
+			->expects( $this->exactly( 0 ) )
+			->method( 'add_hide_condition' );
+
+		$this->variation['visibility_section']
+			->expects( $this->exactly( 0 ) )
+			->method( 'add_block' );
+
+		$this->variation['visibility_section']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_hide_condition' )
+			->with( "editedProduct.type !== 'simple' && editedProduct.type !== 'variable'" );
+
+		$this->variation['visibility_block']
+			->expects( $this->exactly( 0 ) )
+			->method( 'add_hide_condition' );
+
+		$this->product_blocks_service->register();
+
+		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
+		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );
+	}
+
+	/**
+	 * Tests that assert the block configs passed to `add_block` are covered by
 	 * `InputTest` and `AttributeInputCollectionTest`.
 	 */
-	public function test_register_add_blocks() {
+	public function test_register_add_attribute_blocks() {
 		// The total number of attribute blocks to be added to the simple product template is 16
 		$this->simple['attributes_section']
 			->expects( $this->exactly( 16 ) )
