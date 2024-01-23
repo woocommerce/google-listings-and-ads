@@ -364,7 +364,7 @@ class ProductHelper implements Service {
 	 * @return bool
 	 */
 	public function is_ready_to_notify( WC_Product $product ): bool {
-		return ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_channel_visibility( $product );
+		return ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_channel_visibility( $product ) && $product->get_status() === 'publish';
 	}
 
 	/**
