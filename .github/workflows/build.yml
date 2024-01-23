@@ -69,3 +69,15 @@ jobs:
         uses: woocommerce/grow/publish-extension-dev-build@actions-v1
         with:
           extension-asset-path: google-listings-and-ads.zip
+
+      # TODO: Remove it before merging the feature breanch
+      - name: Upload build for testing
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          retention-days: 30
+          overwrite: true
+          compression-level: 0
+          path: |
+            google-listings-and-ads.zip
+            .nvmrc
