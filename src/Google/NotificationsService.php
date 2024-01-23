@@ -102,7 +102,7 @@ class NotificationsService implements Service {
 			return false;
 		}
 
-		$this->set_status( $item_id, $this->map_topic_status( $topic ) );
+		$this->set_status( $item_id, $this->get_after_notification_status( $topic ) );
 
 		return true;
 	}
@@ -151,16 +151,21 @@ class NotificationsService implements Service {
 	}
 
 	/**
-	 * Find products matching the provided status
+	 * Find a product matching the provided status
 	 *
-	 * @param string $status Status to filter.
-	 * @param int    $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int    $offset Amount to offset product results.
+	 * @param int $product_id The product Id to filter
+	 * @param string $topic The product topic to filter
 	 *
-	 * @return int[]|\WC_Product[]
+	 * @return int|null
 	 */
-	public function find_products( $status, $limit, $offset ) {
-		return $this->product_repository->find_notification_ready_products( $status, [], $limit, $offset );
+	public function filter_product( $product_id, $topic ) {
+		if ( is_null( $product_id ) || is_null( $topic ) ) {
+			return null;
+		}
+
+		$status = $this->get_before_notification_status( $topic );
+		$query_results = $this->product_repository->find_notification_products( $product_id, $status );
+		return $query_results[ 0 ] ?? null;
 	}
 
 	/**
@@ -175,18 +180,34 @@ class NotificationsService implements Service {
 	}
 
 	/**
-	 * Get the Notification Status based on the topic
+	 * Get the Notification Status after the notification happens
 	 *
 	 * @param string $topic
 	 * @return string
 	 */
-	public function map_topic_status( $topic ) {
+	public function get_after_notification_status( $topic ) {
 		if ( str_contains( $topic, '.create' ) ) {
 			return NotificationStatus::NOTIFICATION_CREATED;
 		} elseif ( str_contains( $topic, '.delete' ) ) {
 			return NotificationStatus::NOTIFICATION_DELETED;
 		} else {
 			return NotificationStatus::NOTIFICATION_UPDATED;
+		}
+	}
+
+	/**
+	 * Get the Notification Status before the notification happens
+	 *
+	 * @param string $topic
+	 * @return string
+	 */
+	public function get_before_notification_status( $topic ) {
+		if ( str_contains( $topic, '.create' ) ) {
+			return NotificationStatus::NOTIFICATION_PENDING_CREATE;
+		} elseif ( str_contains( $topic, '.delete' ) ) {
+			return NotificationStatus::NOTIFICATION_PENDING_DELETE;
+		} else {
+			return NotificationStatus::NOTIFICATION_PENDING_UPDATE;
 		}
 	}
 }
