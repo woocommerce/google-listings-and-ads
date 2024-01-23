@@ -167,39 +167,21 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	public function test_get_hide_condition() {
 		$this->assertEquals(
 			"editedProduct.type !== 'simple' && editedProduct.type !== 'variable' && editedProduct.type !== 'variation'",
-			$this->product_blocks_service->get_hide_condition( Adult::class )
+			$this->product_blocks_service->get_hide_condition( Adult::get_applicable_product_types() )
 		);
 
 		$this->assertEquals(
 			"editedProduct.type !== 'simple' && editedProduct.type !== 'variable'",
-			$this->product_blocks_service->get_hide_condition( Brand::class )
+			$this->product_blocks_service->get_hide_condition( Brand::get_applicable_product_types() )
 		);
 
 		$this->assertEquals(
 			"editedProduct.type !== 'simple' && editedProduct.type !== 'variation'",
-			$this->product_blocks_service->get_hide_condition( Gender::class )
+			$this->product_blocks_service->get_hide_condition( Gender::get_applicable_product_types() )
 		);
 
-		add_filter(
-			'woocommerce_gla_attribute_hidden_product_types_gender',
-			function ( array $applicable_types ) {
-				$applicable_types[] = 'simple';
-				return $applicable_types;
-			}
-		);
-
-		$this->assertEquals(
-			"editedProduct.type !== 'variation'",
-			$this->product_blocks_service->get_hide_condition( Gender::class )
-		);
-
-		// Hide all product types for Brand
-		add_filter(
-			'woocommerce_gla_attribute_hidden_product_types_brand',
-			[ Brand::class, 'get_applicable_product_types' ]
-		);
-
-		$this->assertEquals( 'true', $this->product_blocks_service->get_hide_condition( Brand::class ) );
+		// Hide all product types
+		$this->assertEquals( 'true', $this->product_blocks_service->get_hide_condition( [] ) );
 	}
 
 	public function test_register_merchant_center_setup_is_not_complete() {

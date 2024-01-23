@@ -220,12 +220,14 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 					$section->add_block( $input->get_block_config() );
 				}
 			} else {
+				$visible_product_types = AttributesForm::get_attribute_product_types( $attribute_type )['visible'];
+
 				// When editing a simple or variable product, its product type on the frontend side can be
 				// changed dynamically. So, it needs to use the ProductTemplates API `add_hide_condition`
 				// to conditionally hide attributes.
 				/** @var BlockInterface */
 				$block = $section->add_block( $input->get_block_config() );
-				$block->add_hide_condition( $this->get_hide_condition( $attribute_type ) );
+				$block->add_hide_condition( $this->get_hide_condition( $visible_product_types ) );
 			}
 		}
 	}
@@ -264,24 +266,22 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * Get the expression of the hide condition to an attribute's block based on its applicable product types.
+	 * Get the expression of the hide condition to a block based on the visible product types.
 	 * e.g. "editedProduct.type !== 'simple' && ! editedProduct.parent_id > 0"
 	 *
 	 * The hide condition is a JavaScript-like expression that will be evaluated on the client to determine if the block should be hidden.
 	 * See [@woocommerce/expression-evaluation](https://github.com/woocommerce/woocommerce/blob/trunk/packages/js/expression-evaluation/README.md) for more details.
 	 *
-	 * @param string $attribute_type An attribute class extending AttributeInterface
+	 * @param array $visible_product_types The visible product types to be converted to a hidden condition
 	 *
 	 * @return string
 	 */
-	public function get_hide_condition( string $attribute_type ): string {
-		$attribute_product_types = AttributesForm::get_attribute_product_types( $attribute_type );
-
+	public function get_hide_condition( array $visible_product_types ): string {
 		$conditions = array_map(
 			function ( $type ) {
 				return "editedProduct.type !== '{$type}'";
 			},
-			$attribute_product_types['visible']
+			$visible_product_types
 		);
 
 		return implode( ' && ', $conditions ) ?: 'true';
