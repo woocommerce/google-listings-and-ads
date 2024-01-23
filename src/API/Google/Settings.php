@@ -49,7 +49,7 @@ class Settings {
 	 *
 	 * @return array
 	 */
-	public function get_tracked_settings() {
+	public function get_settings_for_tracking() {
 		$settings = $this->get_settings();
 
 		return [

@@ -82,7 +82,7 @@ class SettingsSyncController extends BaseController {
 				do_action(
 					'woocommerce_gla_track_event',
 					'mc_setup_completed',
-					$this->settings->get_tracked_settings()
+					$this->settings->get_settings_for_tracking()
 				);
 
 				return new Response(

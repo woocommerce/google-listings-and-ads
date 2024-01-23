@@ -48,7 +48,7 @@ class SettingsSyncControllerTest extends RESTControllerUnitTest {
 		];
 
 		$this->settings->expects( $this->once() )
-			->method( 'get_tracked_settings' )
+			->method( 'get_settings_for_tracking' )
 			->willReturn( $settings );
 
 		$this->expect_track_event( 'mc_setup_completed', $settings );
