@@ -1,0 +1,13 @@
+.notice {
+	margin: 1em 0 0;
+	padding-top: 0;
+	padding-bottom: 0;
+
+	h2 {
+		font-size: 1em;
+	}
+}
+
+.uppercaseFirstLetter::first-letter {
+	text-transform: uppercase;
+}
