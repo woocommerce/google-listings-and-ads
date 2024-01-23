@@ -662,24 +662,11 @@ class ProductHelper implements Service {
 
 	/**
 	 * Set the notification status for a WooCommerce product.
-	 *
-	 * Note: If the status is set for a product variation then the parent product is also marked with the same status.
-	 *
+	 **
 	 * @param WC_Product $product
 	 * @param string     $status
 	 */
 	public function set_notification_status( WC_Product $product, $status ) {
 		$this->meta_handler->update_notification_status( $product, $status );
-
-		// mark the parent product as pending if it's a variation
-		if ( $product instanceof WC_Product_Variation ) {
-			try {
-				$parent_product = $this->get_wc_product( $product->get_parent_id() );
-			} catch ( InvalidValue $exception ) {
-				return;
-			}
-
-			$this->set_notification_status( $parent_product, $status );
-		}
 	}
 }
