@@ -63,10 +63,7 @@ if ( $input_disabled ) {
 				'label'             => __( 'Google Listing & Ads', 'google-listings-and-ads' ),
 				'description'       => $input_description,
 				'desc_tip'          => false,
-				'options'           => [
-					ChannelVisibility::SYNC_AND_SHOW      => __( 'Sync and show', 'google-listings-and-ads' ),
-					ChannelVisibility::DONT_SYNC_AND_SHOW => __( 'Don\'t Sync and show', 'google-listings-and-ads' ),
-				],
+				'options'           => ChannelVisibility::get_value_options(),
 				'custom_attributes' => $custom_attributes,
 				'wrapper_class'     => 'form-row form-row-full',
 			]
