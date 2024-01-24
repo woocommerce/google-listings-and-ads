@@ -52,6 +52,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	 */
 	protected $notification_service;
 
+	/**
+	 * @var MockObject|ProductNotificationJob
+	 */
+	protected $product_notification_job;
+
 	/** @var WC $wc */
 	protected $wc;
 
