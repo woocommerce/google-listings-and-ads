@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use WC_Helper_Product;
 use WC_Product;
@@ -338,6 +339,16 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 			[ $product_1->get_id(), $product_3->get_id(), $product_4->get_id() ],
 			$this->product_repository->find_delete_product_ids( $ids )
 		);
+	}
+
+	public function test_find_notification_products() {
+		/**
+		 * @var WC_Product $product
+		 */
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_CREATE );
+		$this->assertEquals( $this->product_repository->find_notification_products( $product->get_id(), NotificationStatus::NOTIFICATION_PENDING_CREATE ), [ $product->get_id() ] );
 	}
 
 	/**
