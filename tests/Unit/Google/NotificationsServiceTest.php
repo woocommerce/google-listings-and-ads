@@ -8,6 +8,7 @@
 	use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 	use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 	use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
+	use PHPUnit\Framework\MockObject\MockObject;
 	use WC_Helper_Product;
 
 	defined( 'ABSPATH' ) || exit;
@@ -23,6 +24,16 @@
 		 * @var NotificationsService
 		 */
 		public $service;
+
+		/**
+		 * @var MockObject|ProductHelper
+		 */
+		public $product_helper;
+
+		/**
+		 * @var MockObject|ProductRepository
+		 */
+		public $product_repository;
 
 		const DUMMY_BLOG_ID = "123";
 
