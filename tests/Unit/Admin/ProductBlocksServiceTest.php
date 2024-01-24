@@ -10,6 +10,7 @@ use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\Pr
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface;
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\ChannelVisibilityBlock;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ProductBlocksService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
@@ -19,7 +20,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -36,8 +36,8 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	/** @var MockObject|AssetsHandlerInterface $assets_handler */
 	protected $assets_handler;
 
-	/** @var Stub|ProductHelper $product_helper */
-	protected $product_helper;
+	/** @var ChannelVisibilityBlock $channel_visibility_block */
+	protected $channel_visibility_block;
 
 	/** @var AttributeManager $attribute_manager */
 	protected $attribute_manager;
@@ -79,17 +79,17 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 
 		parent::setUp();
 
-		$this->assets_handler    = $this->createMock( AssetsHandlerInterface::class );
-		$this->product_helper    = $this->createStub( ProductHelper::class );
-		$this->attribute_manager = $this->container->get( AttributeManager::class );
-		$this->merchant_center   = $this->createStub( MerchantCenterService::class );
-		$this->block_registry    = $this->createMock( BlockRegistry::class );
+		$this->assets_handler           = $this->createMock( AssetsHandlerInterface::class );
+		$this->channel_visibility_block = $this->container->get( ChannelVisibilityBlock::class );
+		$this->attribute_manager        = $this->container->get( AttributeManager::class );
+		$this->merchant_center          = $this->createStub( MerchantCenterService::class );
+		$this->block_registry           = $this->createMock( BlockRegistry::class );
 
 		$this->simple_anchor_group    = $this->createMock( BlockInterface::class );
 		$this->variation_anchor_group = $this->createMock( BlockInterface::class );
 		$this->mismatching_group      = $this->createMock( BlockInterface::class );
 
-		$this->product_blocks_service = new ProductBlocksService( $this->assets_handler, $this->product_helper, $this->attribute_manager, $this->merchant_center );
+		$this->product_blocks_service = new ProductBlocksService( $this->assets_handler, $this->channel_visibility_block, $this->attribute_manager, $this->merchant_center );
 
 		$this->product_blocks_service->set_block_registry( $this->block_registry );
 

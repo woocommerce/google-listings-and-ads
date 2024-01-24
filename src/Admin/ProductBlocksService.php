@@ -14,7 +14,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\Admin\BlockTemplates\BlockInterface;
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\BlockRegistry;
@@ -72,16 +71,15 @@ class ProductBlocksService implements Service, Registerable {
 	 * ProductBlocksService constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
-	 * @param ProductHelper          $product_helper
+	 * @param ChannelVisibilityBlock $channel_visibility_block
 	 * @param AttributeManager       $attribute_manager
 	 * @param MerchantCenterService  $merchant_center
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, ProductHelper $product_helper, AttributeManager $attribute_manager, MerchantCenterService $merchant_center ) {
-		$this->assets_handler    = $assets_handler;
-		$this->attribute_manager = $attribute_manager;
-		$this->merchant_center   = $merchant_center;
-
-		$this->channel_visibility_block = new ChannelVisibilityBlock( $product_helper );
+	public function __construct( AssetsHandlerInterface $assets_handler, ChannelVisibilityBlock $channel_visibility_block, AttributeManager $attribute_manager, MerchantCenterService $merchant_center ) {
+		$this->assets_handler           = $assets_handler;
+		$this->attribute_manager        = $attribute_manager;
+		$this->merchant_center          = $merchant_center;
+		$this->channel_visibility_block = $channel_visibility_block;
 	}
 
 	/**

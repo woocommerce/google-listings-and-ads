@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
@@ -18,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product
  */
-class ChannelVisibilityBlock {
+class ChannelVisibilityBlock implements Service {
 
 	public const PROPERTY = 'google_listings_and_ads__channel_visibility';
 
