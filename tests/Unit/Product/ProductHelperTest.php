@@ -1178,7 +1178,12 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		 */
 		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
 		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
+		$this->assertFalse( $this->product_helper->should_trigger_delete_notification( $product ) );
+
+		$product->set_status( 'draft' );
+		$product->save();
 		$this->assertTrue( $this->product_helper->should_trigger_delete_notification( $product ) );
+
 		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_DELETED );
 		$this->assertFalse( $this->product_helper->should_trigger_delete_notification( $product ) );
 	}
