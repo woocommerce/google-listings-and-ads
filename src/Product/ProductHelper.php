@@ -347,8 +347,8 @@ class ProductHelper implements Service {
 	}
 
 	/**
-	 * Indicates if a product is ready for sending a create Notifications.
-	 * A product is ready to send notifications if is ready to notify and has not sent create notification yet.
+	 * Indicates if a product is ready for sending a create Notification.
+	 * A product is ready to send create notifications if is ready to notify and has not sent create notification yet.
 	 *
 	 * @param WC_Product $product
 	 *
@@ -359,6 +359,9 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Indicates if a product is ready for sending an update Notification.
+	 * A product is ready to send update notifications if is ready to notify and has sent create notification already.
+	 *
 	 * @param WC_Product $product
 	 *
 	 * @return bool
@@ -368,12 +371,15 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Indicates if a product is ready for sending a delete Notification.
+	 * A product is ready to send delete notifications if it is not ready to notify and has sent create notification already.
+	 *
 	 * @param WC_Product $product
 	 *
 	 * @return bool
 	 */
 	public function should_trigger_delete_notification( WC_Product $product ): bool {
-		return $this->has_notified_creation( $product );
+		return ! $this->is_ready_to_notify( $product ) && $this->has_notified_creation( $product );
 	}
 
 	/**
