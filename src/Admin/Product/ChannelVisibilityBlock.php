@@ -45,7 +45,7 @@ class ChannelVisibilityBlock {
 
 		// https://github.com/woocommerce/woocommerce/blob/8.5.0/plugins/woocommerce/includes/rest-api/Controllers/Version3/class-wc-rest-crud-controller.php#L200-L207
 		// https://github.com/woocommerce/woocommerce/blob/8.5.0/plugins/woocommerce/includes/rest-api/Controllers/Version3/class-wc-rest-crud-controller.php#L247-L254
-		add_filter( 'woocommerce_rest_insert_product_object', [ $this, 'update_data' ], 10, 2 );
+		add_action( 'woocommerce_rest_insert_product_object', [ $this, 'update_data' ], 10, 2 );
 	}
 
 	/**

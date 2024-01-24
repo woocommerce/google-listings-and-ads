@@ -46,7 +46,7 @@ class ChannelVisibilityBlockTest extends UnitTest {
 
 		$this->assertEquals(
 			10,
-			has_filter(
+			has_action(
 				'woocommerce_rest_insert_product_object',
 				[ $this->channel_visibility_block, 'update_data' ]
 			)
