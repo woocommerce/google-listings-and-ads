@@ -3,16 +3,16 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Panel, PanelBody, PanelRow } from '@wordpress/components';
-import { recordEvent } from '@woocommerce/tracks';
 import classnames from 'classnames';
 
 /**
  * Internal dependencies
  */
+import { recordGlaEvent } from '.~/utils/tracks';
 import './index.scss';
 
 const getPanelToggleHandler = ( trackName, id, context ) => ( isOpened ) => {
-	recordEvent( trackName, {
+	recordGlaEvent( trackName, {
 		id,
 		action: isOpened ? 'expand' : 'collapse',
 		context,

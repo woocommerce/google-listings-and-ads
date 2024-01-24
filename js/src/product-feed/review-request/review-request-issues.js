@@ -3,13 +3,13 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import AppButton from '.~/components/app-button';
 import Text from '.~/components/app-text';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 const COLLAPSED_ISSUES_SIZE = 5;
 
@@ -18,7 +18,7 @@ const ReviewRequestIssues = ( { issues = [] } ) => {
 	if ( ! issues.length ) return null;
 
 	const toggleExpanded = () => {
-		recordEvent( 'gla_request_review_issue_list_toggle_click', {
+		recordGlaEvent( 'gla_request_review_issue_list_toggle_click', {
 			action: expanded ? 'collapse' : 'expand',
 		} );
 		setExpanded( ! expanded );

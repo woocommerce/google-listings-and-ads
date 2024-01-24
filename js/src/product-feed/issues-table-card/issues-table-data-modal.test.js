@@ -1,6 +1,6 @@
-jest.mock( '@woocommerce/tracks', () => {
+jest.mock( '.~/utils/tracks', () => {
 	return {
-		recordEvent: jest.fn(),
+		recordGlaEvent: jest.fn(),
 	};
 } );
 /**
@@ -8,13 +8,13 @@ jest.mock( '@woocommerce/tracks', () => {
  */
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import IssuesTableDataModal from './issues-table-data-modal';
 import mockIssue from '.~/tests/mock-issue';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 describe( 'Issues Data Table Modal', () => {
 	test( 'Render the issue details', () => {
@@ -28,7 +28,7 @@ describe( 'Issues Data Table Modal', () => {
 		expect( queryByText( 'What to do?' ) ).toBeTruthy();
 		expect( link ).toHaveAttribute( 'href', 'example.com/1' );
 		fireEvent.click( link );
-		expect( recordEvent ).toHaveBeenCalledWith(
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_documentation_link_click',
 			{
 				context: 'issues-data-table-modal',

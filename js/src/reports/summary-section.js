@@ -3,13 +3,13 @@
  */
 import { SummaryList, SummaryListPlaceholder } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import MetricNumber from './metric-number';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 const noValidData = {
 	value: null,
@@ -51,7 +51,7 @@ const SummarySection = ( {
 	const { selectedMetric = metrics[ 0 ].key } = query;
 
 	const trackClickEvent = ( context ) => {
-		recordEvent( 'gla_chart_tab_click', {
+		recordGlaEvent( 'gla_chart_tab_click', {
 			report: trackEventId,
 			context,
 		} );

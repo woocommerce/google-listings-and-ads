@@ -31,7 +31,7 @@ import {
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
-} from '.~/utils/recordEvent';
+} from '.~/utils/tracks';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'edit-ads';

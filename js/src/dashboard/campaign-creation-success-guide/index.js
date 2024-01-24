@@ -7,7 +7,6 @@ import {
 	useCallback,
 } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -19,12 +18,13 @@ import GuidePageContent, {
 } from '.~/components/guide-page-content';
 import { GUIDE_NAMES } from '.~/constants';
 import headerImageURL from './header.svg';
-import './index.scss';
 import {
 	CTA_CREATE_ANOTHER_CAMPAIGN,
 	CTA_CONFIRM,
 	CTA_DISMISS,
 } from '../constants';
+import { recordGlaEvent } from '.~/utils/tracks';
+import './index.scss';
 
 /**
  * Modal window to prompt the user at Dashboard, after successful completing the campaign creation.
@@ -39,7 +39,7 @@ export default function CampaignCreationSuccessGuide( {
 	onGuideRequestClose = () => {},
 } ) {
 	useEffect( () => {
-		recordEvent( 'gla_modal_open', {
+		recordGlaEvent( 'gla_modal_open', {
 			context: GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS,
 		} );
 	}, [] );

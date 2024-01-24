@@ -3,12 +3,12 @@
  */
 import { DateRangeFilterPicker } from '@woocommerce/components';
 import { updateQueryString } from '@woocommerce/navigation';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import getDateQuery from './getDateQuery';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 const isoDateFormat = 'YYYY-MM-DD';
 
@@ -37,7 +37,7 @@ const AppDateRangeFilterPicker = ( props ) => {
 	 */
 	const handleRangeSelect = ( data ) => {
 		if ( trackEventReportId ) {
-			recordEvent( 'gla_datepicker_update', {
+			recordGlaEvent( 'gla_datepicker_update', {
 				report: trackEventReportId,
 				...data,
 			} );

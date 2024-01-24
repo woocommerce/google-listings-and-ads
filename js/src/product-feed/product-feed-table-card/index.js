@@ -16,13 +16,12 @@ import {
 	Table,
 	TablePlaceholder,
 } from '@woocommerce/components';
-import { recordEvent } from '@woocommerce/tracks';
 import classnames from 'classnames';
 
 /**
  * Internal dependencies
  */
-import { recordTablePageEvent } from '.~/utils/recordEvent';
+import { recordGlaEvent, recordTablePageEvent } from '.~/utils/tracks';
 import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import './index.scss';
@@ -169,7 +168,7 @@ const ProductFeedTableCard = () => {
 			createNotice( 'success', message );
 		} );
 
-		recordEvent( 'gla_bulk_edit_click', {
+		recordGlaEvent( 'gla_bulk_edit_click', {
 			context: EVENT_CONTEXT,
 			number_of_items: length,
 			visibility_to: toVisibilityEventProp( visible ),
