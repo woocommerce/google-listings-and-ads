@@ -10,7 +10,7 @@
 	use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 
 
-	defined('ABSPATH') || exit;
+	defined( 'ABSPATH' ) || exit;
 
 	/**
 	 * Class ProductNotificationJob
@@ -29,27 +29,27 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		/**
 		 * Notifications Jobs constructor.
 		 *
-		 * @param ActionSchedulerInterface $action_scheduler
+		 * @param ActionSchedulerInterface  $action_scheduler
 		 * @param ActionSchedulerJobMonitor $monitor
-		 * @param NotificationsService $notifications_service
+		 * @param NotificationsService      $notifications_service
 		 */
-		public function __construct(
-			ActionSchedulerInterface  $action_scheduler,
-			ActionSchedulerJobMonitor $monitor,
-			NotificationsService      $notifications_service
-		) {
-			$this->notifications_service = $notifications_service;
-			parent::__construct($action_scheduler, $monitor);
-		}
+	public function __construct(
+		ActionSchedulerInterface $action_scheduler,
+		ActionSchedulerJobMonitor $monitor,
+		NotificationsService $notifications_service
+	) {
+		$this->notifications_service = $notifications_service;
+		parent::__construct( $action_scheduler, $monitor );
+	}
 
 		/**
 		 * Get the job name
 		 *
 		 * @return string
 		 */
-		public function get_name(): string {
-			return 'notifications/products';
-		}
+	public function get_name(): string {
+		return 'notifications/products';
+	}
 
 
 		/**
@@ -57,17 +57,22 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		 *
 		 * @param array $args Arguments with the item id and the topic
 		 */
-		protected function process_items( array $args ) {
-			$item  = $args[0] ?? null;
-			$topic = $args[1] ?? null;
+	protected function process_items( array $args ) {
+		$item  = $args[0] ?? null;
+		$topic = $args[1] ?? null;
 
-			$item_id = $this->notifications_service->filter_product( $item, $topic );
+		$item_id = $this->notifications_service->filter_product( $item, $topic );
 
-			if ( ! is_null( $item_id ) && ! is_null( $topic ) ) {
-				$this->notifications_service->notify( $item, $topic );
-			}
+		if ( ! is_null( $item_id ) && ! is_null( $topic ) ) {
+			$this->notifications_service->notify( $item, $topic );
 		}
+	}
 
+	/**
+	 * Schedule the Product Notification Job
+	 *
+	 * @param array $args
+	 */
 	public function schedule( array $args = [] ) {
 		if ( $this->can_schedule( [ $args ] ) ) {
 			$this->action_scheduler->schedule_immediate(
@@ -76,5 +81,4 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 			);
 		}
 	}
-
 }

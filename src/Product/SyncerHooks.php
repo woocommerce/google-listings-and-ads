@@ -106,14 +106,14 @@ class SyncerHooks implements Service, Registerable {
 		NotificationsService $notifications_service,
 		WC $wc
 	) {
-		$this->batch_helper                     = $batch_helper;
-		$this->product_helper                   = $product_helper;
-		$this->update_products_job              = $job_repository->get( UpdateProducts::class );
-		$this->delete_products_job              = $job_repository->get( DeleteProducts::class );
-		$this->product_notification_job         = $job_repository->get( ProductNotificationJob::class );
-		$this->merchant_center                  = $merchant_center;
-		$this->notifications_service            = $notifications_service;
-		$this->wc                               = $wc;
+		$this->batch_helper             = $batch_helper;
+		$this->product_helper           = $product_helper;
+		$this->update_products_job      = $job_repository->get( UpdateProducts::class );
+		$this->delete_products_job      = $job_repository->get( DeleteProducts::class );
+		$this->product_notification_job = $job_repository->get( ProductNotificationJob::class );
+		$this->merchant_center          = $merchant_center;
+		$this->notifications_service    = $notifications_service;
+		$this->wc                       = $wc;
 	}
 
 	/**
@@ -237,6 +237,7 @@ class SyncerHooks implements Service, Registerable {
 
 	/**
 	 * Schedules notifications for an updated product
+	 *
 	 * @param WC_Product $product
 	 */
 	protected function handle_update_product_notification( WC_Product $product ) {
@@ -281,7 +282,6 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_pre_delete_product( int $product_id ) {
-
 		if ( $this->notifications_service->is_enabled() ) {
 			return;
 		}

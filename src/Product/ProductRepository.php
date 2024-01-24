@@ -160,7 +160,7 @@ class ProductRepository implements Service {
 	/**
 	 * Find and return an array of WooCommerce product objects ready to be notified.
 	 *
-	 * @param int  $id  Product ID to filter.
+	 * @param int    $id  Product ID to filter.
 	 * @param string $status Status to filter.
 	 *
 	 * @return int[] List of WooCommerce product IDs.
@@ -173,7 +173,7 @@ class ProductRepository implements Service {
 			],
 		];
 
-		$args['status'] = [ 'draft', 'pending', 'private', 'publish', 'trash' ];
+		$args['status']  = [ 'draft', 'pending', 'private', 'publish', 'trash' ];
 		$args['include'] = [ $id ];
 
 		return $this->find_ids( $args, 1 );
