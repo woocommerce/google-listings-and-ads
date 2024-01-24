@@ -359,6 +359,9 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Indicates if a product is ready for sending Notifications.
+	 * A product is ready to send notifications if DONT_SYNC_AND_SHOW is not enabled and the post status is publish.
+	 *
 	 * @param WC_Product $product
 	 *
 	 * @return bool
@@ -368,6 +371,9 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Indicates if a product is ready for sending a create Notifications.
+	 * A product is ready to send notifications if is ready to notify and has not sent create notification yet.
+	 *
 	 * @param WC_Product $product
 	 *
 	 * @return bool
@@ -408,6 +414,16 @@ class ProductHelper implements Service {
 		];
 
 		return in_array( $this->meta_handler->get_notification_status( $product ), $valid_has_notified_creation_statuses, true );
+	}
+
+	/**
+	 * Set the notification status for a WooCommerce product.
+	 **
+	 * @param WC_Product $product
+	 * @param string     $status
+	 */
+	public function set_notification_status( WC_Product $product, $status ) {
+		$this->meta_handler->update_notification_status( $product, $status );
 	}
 
 	/**
@@ -682,15 +698,5 @@ class ProductHelper implements Service {
 	public function get_categories( WC_Product $product ): array {
 		$terms = get_the_terms( $product->get_id(), 'product_cat' );
 		return ( empty( $terms ) || is_wp_error( $terms ) ) ? [] : wp_list_pluck( $terms, 'name' );
-	}
-
-	/**
-	 * Set the notification status for a WooCommerce product.
-	 **
-	 * @param WC_Product $product
-	 * @param string     $status
-	 */
-	public function set_notification_status( WC_Product $product, $status ) {
-		$this->meta_handler->update_notification_status( $product, $status );
 	}
 }
