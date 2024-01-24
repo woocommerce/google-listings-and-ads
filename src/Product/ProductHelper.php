@@ -400,7 +400,8 @@ class ProductHelper implements Service {
 
 	/**
 	 * Set the notification status for a WooCommerce product.
-	 **
+	 * *
+	 *
 	 * @param WC_Product $product
 	 * @param string     $status
 	 */

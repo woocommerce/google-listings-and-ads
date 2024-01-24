@@ -153,7 +153,7 @@ class NotificationsService implements Service {
 	/**
 	 * Find a product matching the provided status
 	 *
-	 * @param int $product_id The product Id to filter
+	 * @param int    $product_id The product Id to filter
 	 * @param string $topic The product topic to filter
 	 *
 	 * @return int|null
@@ -163,9 +163,9 @@ class NotificationsService implements Service {
 			return null;
 		}
 
-		$status = $this->get_before_notification_status( $topic );
+		$status        = $this->get_before_notification_status( $topic );
 		$query_results = $this->product_repository->find_notification_products( $product_id, $status );
-		return $query_results[ 0 ] ?? null;
+		return $query_results[0] ?? null;
 	}
 
 	/**
