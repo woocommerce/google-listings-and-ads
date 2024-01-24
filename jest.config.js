@@ -39,7 +39,7 @@ module.exports = {
 	],
 	globals: {
 		wcAdminFeatures: {
-			navigation: true,
+			navigation: false,
 		},
 		glaData: {
 			slug: 'gla',

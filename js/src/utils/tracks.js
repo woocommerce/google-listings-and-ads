@@ -30,7 +30,16 @@ import { STORE_KEY } from '.~/data';
  * @property {string} direction Direction of page to be changed. `("next" | "previous")`
  */
 
-function prepareEventProperties( eventProperties ) {
+/**
+ * Returns an event properties with base properties.
+ * - gla_version: Plugin version
+ * - gla_mc_id: Google Merchant Center account ID if connected
+ * - gla_ads_id: Google Ads account ID if connected
+ *
+ * @param {Object} [eventProperties] The event properties to be included base properties.
+ * @return {Object} Event properties with base event properties.
+ */
+export function addBaseEventProperties( eventProperties ) {
 	const { slug } = glaData;
 	const { version, adsId, mcId } = select( STORE_KEY ).getGeneral();
 
@@ -57,7 +66,7 @@ function prepareEventProperties( eventProperties ) {
  * @param {Object} [eventProperties] The event properties to include in the event.
  */
 export function recordGlaEvent( eventName, eventProperties ) {
-	recordEvent( eventName, prepareEventProperties( eventProperties ) );
+	recordEvent( eventName, addBaseEventProperties( eventProperties ) );
 }
 
 /**
@@ -69,7 +78,7 @@ export function recordGlaEvent( eventName, eventProperties ) {
  * @param {Object} [eventProperties] The event properties to include in the event.
  */
 export function queueRecordGlaEvent( eventName, eventProperties ) {
-	queueRecordEvent( eventName, prepareEventProperties( eventProperties ) );
+	queueRecordEvent( eventName, addBaseEventProperties( eventProperties ) );
 }
 
 /**
