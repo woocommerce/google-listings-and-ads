@@ -1,24 +1,24 @@
 <?php
-	declare(strict_types=1);
+declare(strict_types=1);
 
-	namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
 
-	use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
-	use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
-	use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractActionSchedulerJob;
-	use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
-	use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractActionSchedulerJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 
 
-	defined( 'ABSPATH' ) || exit;
+defined( 'ABSPATH' ) || exit;
 
-	/**
-	 * Class ProductNotificationJob
-	 *
-	 * Class for all the Product Notifications Jobs
-	 *
-	 * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
-	 */
+/**
+ * Class ProductNotificationJob
+ *
+ * Class for all the Product Notifications Jobs
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
+ */
 class ProductNotificationJob extends AbstractActionSchedulerJob implements JobInterface {
 
 		/**
