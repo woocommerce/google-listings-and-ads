@@ -111,6 +111,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_action_scheduler_job(
 			ProductNotificationJob::class,
 			NotificationsService::class,
+			ProductHelper::class
 		);
 
 		$this->share_with_tags(

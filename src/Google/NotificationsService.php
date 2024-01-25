@@ -5,9 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -38,34 +35,13 @@ class NotificationsService implements Service {
 	 */
 	private $notification_url;
 
-	/**
-	 * The product repository dependency
-	 *
-	 * @var ProductRepository $product_repository
-	 */
-	protected $product_repository;
-
-	/**
-	 * The product helper dependency
-	 *
-	 * @var ProductHelper $product_helper
-	 */
-	protected $product_helper;
 
 	/**
 	 * Class constructor
-	 *
-	 * @param ProductRepository $product_repository
-	 * @param ProductHelper     $product_helper
 	 */
-	public function __construct(
-		ProductRepository $product_repository,
-		ProductHelper $product_helper
-	) {
-		$this->product_repository = $product_repository;
-		$this->product_helper     = $product_helper;
+	public function __construct() {
 		$blog_id                  = Jetpack_Options::get_option( 'id' );
-		$this->notification_url              = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
+		$this->notification_url   = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
 	}
 
 	/**
@@ -102,8 +78,6 @@ class NotificationsService implements Service {
 			$this->notification_error( $item_id, $topic, $error );
 			return false;
 		}
-
-		$this->set_status( $item_id, $this->get_after_notification_status( $topic ) );
 
 		return true;
 	}
@@ -151,60 +125,4 @@ class NotificationsService implements Service {
 		return apply_filters( 'woocommerce_gla_notifications_enabled', true );
 	}
 
-	/**
-	 * Find a product matching the provided status
-	 *
-	 * @param int    $product_id The product Id to filter
-	 * @param string $topic The product topic to filter
-	 *
-	 * @return int|null
-	 */
-	public function filter_product( int $product_id, string $topic ) {
-		$status        = $this->get_before_notification_status( $topic );
-		$query_results = $this->product_repository->find_notification_products( $product_id, $status );
-		return $query_results[0] ?? null;
-	}
-
-	/**
-	 * Set the notification status for a product.
-	 *
-	 * @param int    $product_id
-	 * @param string $status
-	 */
-	public function set_status( int $product_id, string $status ): void {
-		$product = $this->product_helper->get_wc_product( $product_id );
-		$this->product_helper->set_notification_status( $product, $status );
-	}
-
-	/**
-	 * Get the Notification Status after the notification happens
-	 *
-	 * @param string $topic
-	 * @return string
-	 */
-	public function get_after_notification_status( string $topic ): string {
-		if ( str_contains( $topic, '.create' ) ) {
-			return NotificationStatus::NOTIFICATION_CREATED;
-		} elseif ( str_contains( $topic, '.delete' ) ) {
-			return NotificationStatus::NOTIFICATION_DELETED;
-		} else {
-			return NotificationStatus::NOTIFICATION_UPDATED;
-		}
-	}
-
-	/**
-	 * Get the Notification Status before the notification happens
-	 *
-	 * @param string $topic
-	 * @return string
-	 */
-	public function get_before_notification_status( string $topic ): string {
-		if ( str_contains( $topic, '.create' ) ) {
-			return NotificationStatus::NOTIFICATION_PENDING_CREATE;
-		} elseif ( str_contains( $topic, '.delete' ) ) {
-			return NotificationStatus::NOTIFICATION_PENDING_DELETE;
-		} else {
-			return NotificationStatus::NOTIFICATION_PENDING_UPDATE;
-		}
-	}
 }
