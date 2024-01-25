@@ -2,13 +2,17 @@
  * External dependencies
  */
 import { Link } from '@woocommerce/components';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
- * A {@link module:@woocommerce/components~Link} component that will call `recordEvent` with `eventName` and `eventProps` parameters upon click.
+ * Internal dependencies
+ */
+import { recordGlaEvent } from '.~/utils/tracks';
+
+/**
+ * A {@link module:@woocommerce/components~Link} component that will call `recordGlaEvent` with `eventName` and `eventProps` parameters upon click.
  *
  * @param {Object} props Props to be forwarded to {@link module:@woocommerce/components~Link}.
- * @param {string} props.eventName The eventName used in calling `recordEvent`.
+ * @param {string} props.eventName The eventName used in calling `recordGlaEvent`.
  * @param {Object} [props.eventProps] Event properties to include in the event.
  */
 const TrackableLink = ( props ) => {
@@ -16,7 +20,7 @@ const TrackableLink = ( props ) => {
 
 	const handleClick = ( e ) => {
 		if ( eventName ) {
-			recordEvent( eventName, eventProps );
+			recordGlaEvent( eventName, eventProps );
 		}
 
 		onClick( e );

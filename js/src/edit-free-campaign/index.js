@@ -4,7 +4,6 @@
 import { useEffect, useState } from '@wordpress/element';
 import { getNewPath } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
-import { recordEvent } from '@woocommerce/tracks';
 import { isEqual } from 'lodash';
 
 /**
@@ -26,6 +25,7 @@ import hasUnsavedShippingRates from './hasUnsavedShippingRates';
 import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 import useSaveShippingTimes from '.~/hooks/useSaveShippingTimes';
 import createErrorMessageForRejectedPromises from '.~/utils/createErrorMessageForRejectedPromises';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * Saving changes to the free campaign.
@@ -176,7 +176,7 @@ const EditFreeCampaign = () => {
 				);
 			}
 
-			recordEvent( 'gla_free_campaign_edited' );
+			recordGlaEvent( 'gla_free_campaign_edited' );
 		} catch ( error ) {
 			createNotice(
 				'error',

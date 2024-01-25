@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useState } from '@wordpress/element';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -13,6 +12,7 @@ import ReviewRequestNotice from './review-request-notice';
 import { ISSUE_TYPE_ACCOUNT, REQUEST_REVIEW } from '.~/constants';
 import REVIEW_STATUSES from './review-request-statuses';
 import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
+import { recordGlaEvent } from '.~/utils/tracks';
 import './index.scss';
 
 const showNotice = ( status ) => !! REVIEW_STATUSES[ status ]?.title;
@@ -47,12 +47,12 @@ const ReviewRequest = ( { account = {} } ) => {
 
 	const handleNoticeClick = () => {
 		setModalActive( true );
-		recordEvent( 'gla_modal_open', { context: REQUEST_REVIEW } );
+		recordGlaEvent( 'gla_modal_open', { context: REQUEST_REVIEW } );
 	};
 
 	const handleModalClose = ( action ) => {
 		setModalActive( false );
-		recordEvent( 'gla_modal_closed', {
+		recordGlaEvent( 'gla_modal_closed', {
 			context: REQUEST_REVIEW,
 			action,
 		} );

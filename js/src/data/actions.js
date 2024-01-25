@@ -110,6 +110,22 @@ import { adaptAdsCampaign } from './adapters';
  */
 
 /**
+ * Hydrate the prefetched data to store.
+ *
+ * @param {Object} data The prefetched data.
+ * @param {string} [data.version] The version of this extension.
+ * @param {number | null} [data.mcId] The ID of the connected Google Merchant Center account. Set to null if not yet connected.
+ * @param {number | null} [data.adsId] The ID of the connected Google Ads account. Set to null if not yet connected.
+ * @return {Object} Action object to hydrate the prefetched data.
+ */
+export function hydratePrefetchedData( data ) {
+	return {
+		type: TYPES.HYDRATE_PREFETCHED_DATA,
+		data,
+	};
+}
+
+/**
  *
  * @return {Array<ShippingRate>} Array of individual shipping rates.
  */
@@ -380,6 +396,9 @@ export function* fetchGoogleMCAccount() {
 			path: `${ API_NAMESPACE }/mc/connection`,
 		} );
 
+		const mcId = response.id || null;
+		yield hydratePrefetchedData( { mcId } );
+
 		return {
 			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC,
 			account: response,
@@ -421,6 +440,9 @@ export function* fetchGoogleAdsAccount() {
 		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/connection`,
 		} );
+
+		const adsId = response.id || null;
+		yield hydratePrefetchedData( { adsId } );
 
 		return {
 			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS,

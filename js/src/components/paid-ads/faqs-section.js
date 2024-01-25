@@ -89,7 +89,11 @@ const faqItems = [
 const FaqsSection = () => {
 	return (
 		<Section>
-			<FaqsPanel trackName="gla_setup_ads_faq" faqItems={ faqItems } />
+			<FaqsPanel
+				trackName="gla_setup_ads_faq"
+				context="setup-ads"
+				faqItems={ faqItems }
+			/>
 		</Section>
 	);
 };

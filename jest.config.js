@@ -39,9 +39,10 @@ module.exports = {
 	],
 	globals: {
 		wcAdminFeatures: {
-			navigation: true,
+			navigation: false,
 		},
 		glaData: {
+			slug: 'gla',
 			mcSetupComplete: true,
 			mcSupportedCountry: true,
 			mcSupportedLanguage: true,
@@ -49,6 +50,9 @@ module.exports = {
 			enableReports: true,
 			dateFormat: 'F j, Y',
 			timeFormat: 'g:i a',
+			initialWpData: {
+				version: '1.2.3',
+			},
 		},
 	},
 	timers: 'fake',
