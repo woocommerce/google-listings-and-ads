@@ -5,11 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesForm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\ChannelVisibilityBlock;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -28,9 +27,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
-class ProductBlocksService implements Service, Registerable, Conditional {
+class ProductBlocksService implements Service, Registerable {
 
-	use AdminConditional;
 	use AttributesTrait;
 	use PluginHelper;
 
@@ -50,6 +48,11 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	protected $merchant_center;
 
 	/**
+	 * @var ChannelVisibilityBlock
+	 */
+	protected $channel_visibility_block;
+
+	/**
 	 * @var BlockRegistry
 	 */
 	protected $block_registry;
@@ -58,6 +61,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	 * @var string[]
 	 */
 	protected const CUSTOM_BLOCKS = [
+		'product-channel-visibility',
 		'product-date-time-field',
 		'product-select-field',
 		'product-select-with-text-field',
@@ -67,13 +71,15 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	 * ProductBlocksService constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
+	 * @param ChannelVisibilityBlock $channel_visibility_block
 	 * @param AttributeManager       $attribute_manager
 	 * @param MerchantCenterService  $merchant_center
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, AttributeManager $attribute_manager, MerchantCenterService $merchant_center ) {
-		$this->assets_handler    = $assets_handler;
-		$this->attribute_manager = $attribute_manager;
-		$this->merchant_center   = $merchant_center;
+	public function __construct( AssetsHandlerInterface $assets_handler, ChannelVisibilityBlock $channel_visibility_block, AttributeManager $attribute_manager, MerchantCenterService $merchant_center ) {
+		$this->assets_handler           = $assets_handler;
+		$this->attribute_manager        = $attribute_manager;
+		$this->merchant_center          = $merchant_center;
+		$this->channel_visibility_block = $channel_visibility_block;
 	}
 
 	/**
@@ -85,7 +91,15 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 			return;
 		}
 
-		if ( ! $this->merchant_center->is_setup_complete() || ! PageController::is_admin_page() ) {
+		if ( ! $this->merchant_center->is_setup_complete() ) {
+			return;
+		}
+
+		// To register hooks related to REST APIs, it needs to be called before
+		// the `PageController::is_admin_page()` check.
+		$this->channel_visibility_block->register_hooks();
+
+		if ( ! PageController::is_admin_page() ) {
 			return;
 		}
 
@@ -112,8 +126,10 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 				/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\ProductFormTemplateInterface */
 				$template = $general_group->get_root_template();
 
+				$is_variation_template = $this->is_variation_template( $general_group );
+
 				// Please note that the simple and variable product types use the same product block template 'simple-product'.
-				if ( 'simple-product' !== $template->get_id() && ! $this->is_variation_template( $general_group ) ) {
+				if ( 'simple-product' !== $template->get_id() && ! $is_variation_template ) {
 					return;
 				}
 
@@ -138,6 +154,14 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 						],
 					]
 				);
+
+				if ( ! $is_variation_template ) {
+					$this->add_channel_visibility_block( $channel_visibility_section );
+				}
+
+				// Add the hidden condition to the channel visibility section because it only has one block.
+				$visible_product_types = $this->channel_visibility_block->get_visible_product_types();
+				$channel_visibility_section->add_hide_condition( $this->get_hide_condition( $visible_product_types ) );
 
 				/** @var SectionInterface */
 				$product_attributes_section = $group->add_section(
@@ -197,6 +221,15 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	}
 
 	/**
+	 * Add the channel visibility block to the given section block.
+	 *
+	 * @param SectionInterface $section The section block to add the channel visibility block
+	 */
+	private function add_channel_visibility_block( SectionInterface $section ): void {
+		$section->add_block( $this->channel_visibility_block->get_block_config() );
+	}
+
+	/**
 	 * Add product attribute blocks to the given section block.
 	 *
 	 * @param SectionInterface $section The section block to add product attribute blocks
@@ -220,12 +253,14 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 					$section->add_block( $input->get_block_config() );
 				}
 			} else {
+				$visible_product_types = AttributesForm::get_attribute_product_types( $attribute_type )['visible'];
+
 				// When editing a simple or variable product, its product type on the frontend side can be
 				// changed dynamically. So, it needs to use the ProductTemplates API `add_hide_condition`
 				// to conditionally hide attributes.
 				/** @var BlockInterface */
 				$block = $section->add_block( $input->get_block_config() );
-				$block->add_hide_condition( $this->get_hide_condition( $attribute_type ) );
+				$block->add_hide_condition( $this->get_hide_condition( $visible_product_types ) );
 			}
 		}
 	}
@@ -264,24 +299,22 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * Get the expression of the hide condition to an attribute's block based on its applicable product types.
+	 * Get the expression of the hide condition to a block based on the visible product types.
 	 * e.g. "editedProduct.type !== 'simple' && ! editedProduct.parent_id > 0"
 	 *
 	 * The hide condition is a JavaScript-like expression that will be evaluated on the client to determine if the block should be hidden.
 	 * See [@woocommerce/expression-evaluation](https://github.com/woocommerce/woocommerce/blob/trunk/packages/js/expression-evaluation/README.md) for more details.
 	 *
-	 * @param string $attribute_type An attribute class extending AttributeInterface
+	 * @param array $visible_product_types The visible product types to be converted to a hidden condition
 	 *
 	 * @return string
 	 */
-	public function get_hide_condition( string $attribute_type ): string {
-		$attribute_product_types = AttributesForm::get_attribute_product_types( $attribute_type );
-
+	public function get_hide_condition( array $visible_product_types ): string {
 		$conditions = array_map(
 			function ( $type ) {
 				return "editedProduct.type !== '{$type}'";
 			},
-			$attribute_product_types['visible']
+			$visible_product_types
 		);
 
 		return implode( ' && ', $conditions ) ?: 'true';

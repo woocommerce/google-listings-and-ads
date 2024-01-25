@@ -6,6 +6,8 @@ import { registerProductEditorBlockType } from '@woocommerce/product-editor';
 /**
  * Internal dependencies
  */
+import ChannelVisibilityEdit from './product-channel-visibility/edit';
+import channelVisibilityMetadata from './product-channel-visibility/block.json';
 import DateTimeFieldEdit from './product-date-time-field/edit';
 import dateTimeFieldMetadata from './product-date-time-field/block.json';
 import SelectFieldEdit from './product-select-field/edit';
@@ -21,6 +23,7 @@ function registerProductEditorBlock( { name, ...metadata }, Edit ) {
 	} );
 }
 
+registerProductEditorBlock( channelVisibilityMetadata, ChannelVisibilityEdit );
 registerProductEditorBlock( dateTimeFieldMetadata, DateTimeFieldEdit );
 registerProductEditorBlock( selectFieldMetadata, SelectFieldEdit );
 registerProductEditorBlock(

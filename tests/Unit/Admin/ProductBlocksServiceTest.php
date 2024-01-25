@@ -10,6 +10,7 @@ use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\Pr
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\SectionInterface;
 use Automattic\WooCommerce\Admin\PageController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\ChannelVisibilityBlock;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ProductBlocksService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
@@ -34,6 +35,9 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 
 	/** @var MockObject|AssetsHandlerInterface $assets_handler */
 	protected $assets_handler;
+
+	/** @var ChannelVisibilityBlock $channel_visibility_block */
+	protected $channel_visibility_block;
 
 	/** @var AttributeManager $attribute_manager */
 	protected $attribute_manager;
@@ -75,16 +79,17 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 
 		parent::setUp();
 
-		$this->assets_handler    = $this->createMock( AssetsHandlerInterface::class );
-		$this->attribute_manager = $this->container->get( AttributeManager::class );
-		$this->merchant_center   = $this->createStub( MerchantCenterService::class );
-		$this->block_registry    = $this->createMock( BlockRegistry::class );
+		$this->assets_handler           = $this->createMock( AssetsHandlerInterface::class );
+		$this->channel_visibility_block = $this->container->get( ChannelVisibilityBlock::class );
+		$this->attribute_manager        = $this->container->get( AttributeManager::class );
+		$this->merchant_center          = $this->createStub( MerchantCenterService::class );
+		$this->block_registry           = $this->createMock( BlockRegistry::class );
 
 		$this->simple_anchor_group    = $this->createMock( BlockInterface::class );
 		$this->variation_anchor_group = $this->createMock( BlockInterface::class );
 		$this->mismatching_group      = $this->createMock( BlockInterface::class );
 
-		$this->product_blocks_service = new ProductBlocksService( $this->assets_handler, $this->attribute_manager, $this->merchant_center );
+		$this->product_blocks_service = new ProductBlocksService( $this->assets_handler, $this->channel_visibility_block, $this->attribute_manager, $this->merchant_center );
 
 		$this->product_blocks_service->set_block_registry( $this->block_registry );
 
@@ -167,39 +172,21 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	public function test_get_hide_condition() {
 		$this->assertEquals(
 			"editedProduct.type !== 'simple' && editedProduct.type !== 'variable' && editedProduct.type !== 'variation'",
-			$this->product_blocks_service->get_hide_condition( Adult::class )
+			$this->product_blocks_service->get_hide_condition( Adult::get_applicable_product_types() )
 		);
 
 		$this->assertEquals(
 			"editedProduct.type !== 'simple' && editedProduct.type !== 'variable'",
-			$this->product_blocks_service->get_hide_condition( Brand::class )
+			$this->product_blocks_service->get_hide_condition( Brand::get_applicable_product_types() )
 		);
 
 		$this->assertEquals(
 			"editedProduct.type !== 'simple' && editedProduct.type !== 'variation'",
-			$this->product_blocks_service->get_hide_condition( Gender::class )
+			$this->product_blocks_service->get_hide_condition( Gender::get_applicable_product_types() )
 		);
 
-		add_filter(
-			'woocommerce_gla_attribute_hidden_product_types_gender',
-			function ( array $applicable_types ) {
-				$applicable_types[] = 'simple';
-				return $applicable_types;
-			}
-		);
-
-		$this->assertEquals(
-			"editedProduct.type !== 'variation'",
-			$this->product_blocks_service->get_hide_condition( Gender::class )
-		);
-
-		// Hide all product types for Brand
-		add_filter(
-			'woocommerce_gla_attribute_hidden_product_types_brand',
-			[ Brand::class, 'get_applicable_product_types' ]
-		);
-
-		$this->assertEquals( 'true', $this->product_blocks_service->get_hide_condition( Brand::class ) );
+		// Hide all product types
+		$this->assertEquals( 'true', $this->product_blocks_service->get_hide_condition( [] ) );
 	}
 
 	public function test_register_merchant_center_setup_is_not_complete() {
@@ -394,9 +381,46 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 
 	/**
 	 * Tests that assert the block configs passed to `add_block` are covered by
+	 * `ChannelVisibilityBlockTest`.
+	 */
+	public function test_register_add_channel_visibility_blocks() {
+		$this->simple['visibility_section']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_block' );
+
+		$this->simple['visibility_section']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_hide_condition' )
+			->with( "editedProduct.type !== 'simple' && editedProduct.type !== 'variable'" );
+
+		$this->simple['visibility_block']
+			->expects( $this->exactly( 0 ) )
+			->method( 'add_hide_condition' );
+
+		$this->variation['visibility_section']
+			->expects( $this->exactly( 0 ) )
+			->method( 'add_block' );
+
+		$this->variation['visibility_section']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_hide_condition' )
+			->with( "editedProduct.type !== 'simple' && editedProduct.type !== 'variable'" );
+
+		$this->variation['visibility_block']
+			->expects( $this->exactly( 0 ) )
+			->method( 'add_hide_condition' );
+
+		$this->product_blocks_service->register();
+
+		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
+		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );
+	}
+
+	/**
+	 * Tests that assert the block configs passed to `add_block` are covered by
 	 * `InputTest` and `AttributeInputCollectionTest`.
 	 */
-	public function test_register_add_blocks() {
+	public function test_register_add_attribute_blocks() {
 		// The total number of attribute blocks to be added to the simple product template is 16
 		$this->simple['attributes_section']
 			->expects( $this->exactly( 16 ) )

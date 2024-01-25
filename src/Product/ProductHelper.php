@@ -237,6 +237,30 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Update a product's channel visibility.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $visibility
+	 */
+	public function update_channel_visibility( WC_Product $product, string $visibility ): void {
+		try {
+			$product = $this->maybe_swap_for_parent( $product );
+		} catch ( InvalidValue $exception ) {
+			// The error has been logged within the call of maybe_swap_for_parent
+			return;
+		}
+
+		try {
+			$visibility = ChannelVisibility::cast( $visibility )->get();
+		} catch ( InvalidValue $exception ) {
+			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+			return;
+		}
+
+		$this->meta_handler->update_visibility( $product, $visibility );
+	}
+
+	/**
 	 * @param WC_Product $product
 	 *
 	 * @return string[]|null An array of Google product IDs stored for each WooCommerce product
