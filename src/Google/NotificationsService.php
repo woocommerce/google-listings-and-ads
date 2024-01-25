@@ -34,9 +34,9 @@ class NotificationsService implements Service {
 	/**
 	 * The route to send the notification
 	 *
-	 * @var string $route
+	 * @var string $notification_url
 	 */
-	private $route;
+	private $notification_url;
 
 	/**
 	 * The product repository dependency
@@ -65,7 +65,7 @@ class NotificationsService implements Service {
 		$this->product_repository = $product_repository;
 		$this->product_helper     = $product_helper;
 		$blog_id                  = Jetpack_Options::get_option( 'id' );
-		$this->route              = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
+		$this->notification_url              = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
 	}
 
 	/**
@@ -92,7 +92,7 @@ class NotificationsService implements Service {
 			'body'    => [
 				'item_id' => $item_id,
 			],
-			'url'     => $this->get_route(),
+			'url'     => $this->get_notification_url(),
 		];
 
 		$response = $this->do_request( $remote_args );
@@ -138,8 +138,8 @@ class NotificationsService implements Service {
 	 *
 	 * @return string The route.
 	 */
-	public function get_route(): string {
-		return $this->route;
+	public function get_notification_url(): string {
+		return $this->notification_url;
 	}
 
 	/**
