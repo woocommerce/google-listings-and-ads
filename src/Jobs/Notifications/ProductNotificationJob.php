@@ -48,7 +48,7 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		ProductHelper $product_helper
 	) {
 		$this->notifications_service = $notifications_service;
-		$this->product_helper = $product_helper;
+		$this->product_helper        = $product_helper;
 		parent::__construct( $action_scheduler, $monitor );
 	}
 
@@ -68,7 +68,6 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 	 * @param array $args Arguments with the item id and the topic
 	 */
 	protected function process_items( array $args ) {
-
 		if ( ! isset( $args[0] ) || ! isset( $args[1] ) ) {
 			return;
 		}
@@ -77,7 +76,8 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		$topic = $args[1];
 
 		if ( $this->notifications_service->notify( $item, $topic ) ) {
-			$this->set_status( $item, $this->get_after_notification_status( $topic ) );;
+			$this->set_status( $item, $this->get_after_notification_status( $topic ) );
+
 		}
 	}
 

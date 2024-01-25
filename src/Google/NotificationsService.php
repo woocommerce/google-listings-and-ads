@@ -14,7 +14,6 @@ defined( 'ABSPATH' ) || exit;
  * This class implements a service to Notify a partner about Shop Data Updates
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
- *
  */
 class NotificationsService implements Service {
 
@@ -40,8 +39,8 @@ class NotificationsService implements Service {
 	 * Class constructor
 	 */
 	public function __construct() {
-		$blog_id                  = Jetpack_Options::get_option( 'id' );
-		$this->notification_url   = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
+		$blog_id                = Jetpack_Options::get_option( 'id' );
+		$this->notification_url = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
 	}
 
 	/**
@@ -124,5 +123,4 @@ class NotificationsService implements Service {
 	public function is_enabled(): bool {
 		return apply_filters( 'woocommerce_gla_notifications_enabled', true );
 	}
-
 }
