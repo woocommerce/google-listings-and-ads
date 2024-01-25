@@ -129,7 +129,7 @@ class NotificationsService implements Service {
 	 * @param array $args
 	 * @return array|\WP_Error
 	 */
-	protected function do_request( $args ) {
+	protected function do_request( array $args ) {
 		return Client::remote_request( $args, wp_json_encode( $args['body'] ) );
 	}
 
@@ -159,11 +159,7 @@ class NotificationsService implements Service {
 	 *
 	 * @return int|null
 	 */
-	public function filter_product( $product_id, $topic ) {
-		if ( is_null( $product_id ) || is_null( $topic ) ) {
-			return null;
-		}
-
+	public function filter_product( int $product_id, string $topic ) {
 		$status        = $this->get_before_notification_status( $topic );
 		$query_results = $this->product_repository->find_notification_products( $product_id, $status );
 		return $query_results[0] ?? null;
@@ -175,7 +171,7 @@ class NotificationsService implements Service {
 	 * @param int    $product_id
 	 * @param string $status
 	 */
-	public function set_status( $product_id, $status ) {
+	public function set_status( int $product_id, string $status ): void {
 		$product = $this->product_helper->get_wc_product( $product_id );
 		$this->product_helper->set_notification_status( $product, $status );
 	}
@@ -186,7 +182,7 @@ class NotificationsService implements Service {
 	 * @param string $topic
 	 * @return string
 	 */
-	public function get_after_notification_status( $topic ) {
+	public function get_after_notification_status( string $topic ): string {
 		if ( str_contains( $topic, '.create' ) ) {
 			return NotificationStatus::NOTIFICATION_CREATED;
 		} elseif ( str_contains( $topic, '.delete' ) ) {
@@ -202,7 +198,7 @@ class NotificationsService implements Service {
 	 * @param string $topic
 	 * @return string
 	 */
-	public function get_before_notification_status( $topic ) {
+	public function get_before_notification_status( string $topic ): string {
 		if ( str_contains( $topic, '.create' ) ) {
 			return NotificationStatus::NOTIFICATION_PENDING_CREATE;
 		} elseif ( str_contains( $topic, '.delete' ) ) {
