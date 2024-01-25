@@ -40,7 +40,7 @@ jobs:
         uses: woocommerce/grow/get-plugin-releases@actions-v1
         with:
           slug: woocommerce
-          
+
   UnitTests:
     name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version || 'latest' }}, WC ${{ matrix.wc-versions || 'latest' }}
     needs: GetMatrix
@@ -64,23 +64,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        
+
       - if: matrix.wc-versions == needs.GetMatrix.outputs.latest-wc-version && matrix.php == 8.2
         name: Set condition to generate coverage report (only on latest versions)
         run: echo "generate_coverage=true" >> $GITHUB_ENV
 
-      - name: Prepare PHP  
+      - name: Prepare PHP
         uses: woocommerce/grow/prepare-php@actions-v1
         with:
           php-version: "${{ matrix.php }}"
           coverage: "${{ env.generate_coverage == 'true' && 'xdebug' || 'none' }}"
 
-      - name: Prepare MySQL    
+      - name: Prepare MySQL
         uses: woocommerce/grow/prepare-mysql@actions-v1
 
-      - name: Install WP tests  
+      - name: Install WP tests
         run: ./bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wp-version }} ${{ matrix.wc-versions }}
-  
+
       - if: env.generate_coverage != 'true'
         name: Run PHP unit tests
         run: composer test-unit
