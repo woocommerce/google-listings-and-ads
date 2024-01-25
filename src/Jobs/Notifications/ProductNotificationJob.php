@@ -58,12 +58,17 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 	 * @param array $args Arguments with the item id and the topic
 	 */
 	protected function process_items( array $args ) {
-		$item  = $args[0] ?? null;
-		$topic = $args[1] ?? null;
+
+		if ( ! isset( $args[0] ) || ! isset( $args[1] ) ) {
+			return;
+		}
+
+		$item  = $args[0];
+		$topic = $args[1];
 
 		$item_id = $this->notifications_service->filter_product( $item, $topic );
 
-		if ( ! is_null( $item_id ) && ! is_null( $topic ) ) {
+		if ( ! is_null( $item_id ) ) {
 			$this->notifications_service->notify( $item, $topic );
 		}
 	}
