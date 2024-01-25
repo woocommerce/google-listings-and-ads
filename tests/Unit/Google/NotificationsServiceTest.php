@@ -65,7 +65,7 @@
 
 
 			$blog_id = self::DUMMY_BLOG_ID;
-			$this->assertEquals( $this->service->get_route(), "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications" );
+			$this->assertEquals( $this->service->get_notification_url(), "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications" );
 		}
 
 		/**
@@ -127,7 +127,7 @@
 				'body' => [
 					'item_id' => $item_id,
 				],
-				'url' =>  $this->service->get_route(),
+				'url' =>  $this->service->get_notification_url(),
 			];
 
 			$this->service->expects( $this->once() )->method( 'do_request' )->with( $args )->willReturn( [ 'code' => 200 ] );
