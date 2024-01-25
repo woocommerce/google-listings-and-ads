@@ -60,7 +60,7 @@ class NotificationsService implements Service {
 	 */
 	public function __construct(
 		ProductRepository $product_repository,
-		ProductHelper $product_helper,
+		ProductHelper $product_helper
 	) {
 		$this->product_repository = $product_repository;
 		$this->product_helper     = $product_helper;
