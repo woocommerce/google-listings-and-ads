@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractActionSchedulerJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 
 
 defined( 'ABSPATH' ) || exit;
@@ -27,18 +29,26 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 	protected $notifications_service;
 
 	/**
+	 * @var ProductHelper $product_helper
+	 */
+	protected $product_helper;
+
+	/**
 	 * Notifications Jobs constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param NotificationsService      $notifications_service
+	 * @param ProductHelper             $product_helper
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
-		NotificationsService $notifications_service
+		NotificationsService $notifications_service,
+		ProductHelper $product_helper
 	) {
 		$this->notifications_service = $notifications_service;
+		$this->product_helper = $product_helper;
 		parent::__construct( $action_scheduler, $monitor );
 	}
 
@@ -66,10 +76,8 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		$item  = $args[0];
 		$topic = $args[1];
 
-		$item_id = $this->notifications_service->filter_product( $item, $topic );
-
-		if ( ! is_null( $item_id ) ) {
-			$this->notifications_service->notify( $item, $topic );
+		if ( $this->notifications_service->notify( $item, $topic ) ) {
+			$this->set_status( $item, $this->get_after_notification_status( $topic ) );;
 		}
 	}
 
@@ -84,6 +92,33 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 				$this->get_process_item_hook(),
 				[ $args ]
 			);
+		}
+	}
+
+	/**
+	 * Set the notification status for a product.
+	 *
+	 * @param int    $product_id
+	 * @param string $status
+	 */
+	protected function set_status( int $product_id, string $status ): void {
+		$product = $this->product_helper->get_wc_product( $product_id );
+		$this->product_helper->set_notification_status( $product, $status );
+	}
+
+	/**
+	 * Get the Notification Status after the notification happens
+	 *
+	 * @param string $topic
+	 * @return string
+	 */
+	protected function get_after_notification_status( string $topic ): string {
+		if ( str_contains( $topic, '.create' ) ) {
+			return NotificationStatus::NOTIFICATION_CREATED;
+		} elseif ( str_contains( $topic, '.delete' ) ) {
+			return NotificationStatus::NOTIFICATION_DELETED;
+		} else {
+			return NotificationStatus::NOTIFICATION_UPDATED;
 		}
 	}
 }
