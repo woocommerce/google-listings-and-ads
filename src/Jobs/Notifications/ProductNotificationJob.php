@@ -21,18 +21,18 @@ defined( 'ABSPATH' ) || exit;
  */
 class ProductNotificationJob extends AbstractActionSchedulerJob implements JobInterface {
 
-		/**
-		 * @var NotificationsService $notifications_service
-		 */
-		protected $notifications_service;
+	/**
+	 * @var NotificationsService $notifications_service
+	 */
+	protected $notifications_service;
 
-		/**
-		 * Notifications Jobs constructor.
-		 *
-		 * @param ActionSchedulerInterface  $action_scheduler
-		 * @param ActionSchedulerJobMonitor $monitor
-		 * @param NotificationsService      $notifications_service
-		 */
+	/**
+	 * Notifications Jobs constructor.
+	 *
+	 * @param ActionSchedulerInterface  $action_scheduler
+	 * @param ActionSchedulerJobMonitor $monitor
+	 * @param NotificationsService      $notifications_service
+	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
@@ -42,21 +42,21 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		parent::__construct( $action_scheduler, $monitor );
 	}
 
-		/**
-		 * Get the job name
-		 *
-		 * @return string
-		 */
+	/**
+	 * Get the job name
+	 *
+	 * @return string
+	 */
 	public function get_name(): string {
 		return 'notifications/products';
 	}
 
 
-		/**
-		 * Logic when processing the items
-		 *
-		 * @param array $args Arguments with the item id and the topic
-		 */
+	/**
+	 * Logic when processing the items
+	 *
+	 * @param array $args Arguments with the item id and the topic
+	 */
 	protected function process_items( array $args ) {
 		$item  = $args[0] ?? null;
 		$topic = $args[1] ?? null;
