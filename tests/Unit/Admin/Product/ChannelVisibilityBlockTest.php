@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\ChannelVisibilityB
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
+use WC_Order_Item_Product;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -76,6 +77,15 @@ class ChannelVisibilityBlockTest extends UnitTest {
 		);
 	}
 
+	public function test_prepare_data_incoming_unexpected_wc_data() {
+		$product  = $this->createMock( WC_Order_Item_Product::class );
+		$response = $this->channel_visibility_block->prepare_data( new Response( [] ), $product );
+
+		$this->assertInstanceOf( Response::class, $response );
+		$this->assertArrayNotHasKey( ChannelVisibilityBlock::PROPERTY, $response->data );
+		$this->product_helper->expects( $this->exactly( 0 ) )->method( 'get_channel_visibility' );
+	}
+
 	public function test_update_data() {
 		$product = $this->generate_simple_product_mock();
 		$request = new Request( 'POST' );
@@ -101,6 +111,21 @@ class ChannelVisibilityBlockTest extends UnitTest {
 		$this->product_helper
 			->method( 'get_channel_visibility' )
 			->willReturn( $data['channel_visibility'] );
+
+		$this->product_helper
+			->expects( $this->exactly( 0 ) )
+			->method( 'update_channel_visibility' );
+
+		$this->channel_visibility_block->update_data( $product, $request );
+	}
+
+	public function test_update_data_incoming_unexpected_wc_data() {
+		$product = $this->createMock( WC_Order_Item_Product::class );
+		$request = $this->createMock( Request::class );
+
+		$request
+			->expects( $this->exactly( 0 ) )
+			->method( 'get_params' );
 
 		$this->product_helper
 			->expects( $this->exactly( 0 ) )

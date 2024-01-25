@@ -8,9 +8,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
+use WC_Data;
+use WC_Product;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
-use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -52,12 +53,16 @@ class ChannelVisibilityBlock implements Service {
 	/**
 	 * Get channel visibility data from the given product and add it to the given response.
 	 *
-	 * @param Response   $response Response to be added channel visibility data.
-	 * @param WC_Product $product WooCommerce product to get data.
+	 * @param Response           $response Response to be added channel visibility data.
+	 * @param WC_Product|WC_Data $product  WooCommerce product to get data.
 	 *
 	 * @return Response
 	 */
-	public function prepare_data( Response $response, WC_Product $product ): Response {
+	public function prepare_data( Response $response, WC_Data $product ): Response {
+		if ( ! $product instanceof WC_Product ) {
+			return $response;
+		}
+
 		$response->data[ self::PROPERTY ] = [
 			'is_visible'         => $product->is_visible(),
 			'channel_visibility' => $this->product_helper->get_channel_visibility( $product ),
@@ -71,11 +76,11 @@ class ChannelVisibilityBlock implements Service {
 	/**
 	 * Get channel visibility data from the given request and update it to the given product.
 	 *
-	 * @param WC_Product $product WooCommerce product to be updated.
-	 * @param Request    $request Response to get the channel visibility data.
+	 * @param WC_Product|WC_Data $product WooCommerce product to be updated.
+	 * @param Request            $request Response to get the channel visibility data.
 	 */
-	public function update_data( WC_Product $product, Request $request ): void {
-		if ( ! in_array( $product->get_type(), $this->get_visible_product_types(), true ) ) {
+	public function update_data( WC_Data $product, Request $request ): void {
+		if ( ! $product instanceof WC_Product || ! in_array( $product->get_type(), $this->get_visible_product_types(), true ) ) {
 			return;
 		}
 
