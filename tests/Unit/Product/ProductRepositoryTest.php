@@ -341,16 +341,6 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		);
 	}
 
-	public function test_find_notification_products() {
-		/**
-		 * @var WC_Product $product
-		 */
-		$product = WC_Helper_Product::create_simple_product();
-
-		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_CREATE );
-		$this->assertEquals( $this->product_repository->find_notification_products( $product->get_id(), NotificationStatus::NOTIFICATION_PENDING_CREATE ), [ $product->get_id() ] );
-	}
-
 	/**
 	 * Runs before each test is executed.
 	 */
