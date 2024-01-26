@@ -158,28 +158,6 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product objects ready to be notified.
-	 *
-	 * @param int    $id  Product ID to filter.
-	 * @param string $status Status to filter.
-	 *
-	 * @return int[] List of WooCommerce product IDs.
-	 */
-	public function find_notification_products( $id, string $status ): array {
-		$args['meta_query'] = [
-			[
-				'key'   => ProductMetaHandler::KEY_NOTIFICATION_STATUS,
-				'value' => $status,
-			],
-		];
-
-		$args['status']  = [ 'draft', 'pending', 'private', 'publish', 'trash' ];
-		$args['include'] = [ $id ];
-
-		return $this->find_ids( $args, 1 );
-	}
-
-	/**
 	 * Find and return an array of WooCommerce product ID's ready to be deleted from the Google Merchant Center.
 	 *
 	 * @since 1.12.0
