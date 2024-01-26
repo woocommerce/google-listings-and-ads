@@ -35,11 +35,12 @@ const NonConnected = () => {
 		existingAccounts.length === 0 ||
 		ignoreExisting
 	) {
+		const disabled = ! google || google.active === 'no';
 		return (
 			<CreateAccount
 				allowShowExisting={ ignoreExisting }
 				onShowExisting={ handleShowExisting }
-				disabled={ ! google }
+				disabled={ disabled }
 			/>
 		);
 	}
