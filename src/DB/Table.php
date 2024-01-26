@@ -134,7 +134,7 @@ abstract class Table implements TableInterface {
 	 *
 	 * @return bool True if the column exists on the table or False if not.
 	 *
-	 * @since x.x.x
+	 * @since 2.5.13
 	 */
 	public function has_column( string $column_name ): bool {
 		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
