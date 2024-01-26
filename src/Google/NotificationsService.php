@@ -28,7 +28,7 @@ class NotificationsService implements Service {
 	public const TOPIC_SHIPPING_DELETED = 'action.woocommerce_delete_shipping_zone';
 
 	/**
-	 * The route to send the notification
+	 * The url to send the notification
 	 *
 	 * @var string $notification_url
 	 */
