@@ -52,6 +52,19 @@ class NotificationsService implements Service {
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
 	public function notify( int $item_id, string $topic ) {
+		/**
+		 * Allow users to disable the notification request.
+		 *
+		 * @since x.x.x
+		 *
+		 * @param bool $value The current filter value. True by default.
+		 * @param int $item_id The item_id for the notification.
+		 * @param string $topic The topic for the notification.
+		 */
+		if ( ! apply_filters( 'woocommerce_gla_notify', true, $item_id, $topic ) ) {
+			return false;
+		}
+
 		do_action(
 			'woocommerce_gla_debug_message',
 			sprintf( 'Notification - Item ID: %d - Topic: %s', $item_id, $topic ),

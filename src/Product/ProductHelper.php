@@ -366,7 +366,19 @@ class ProductHelper implements Service {
 	 * @return bool
 	 */
 	public function is_ready_to_notify( WC_Product $product ): bool {
-		return ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_channel_visibility( $product ) && $product->get_status() === 'publish';
+		$is_ready = ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_channel_visibility( $product ) &&
+			$product->get_status() === 'publish' &&
+			in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true );
+
+		/**
+		 * Allow users to filter if a product is ready to notify.
+		 *
+		 * @since x.x.x
+		 *
+		 * @param bool $value The current filter value.
+		 * @param WC_Product $product The product for the notification.
+		 */
+		return apply_filters( 'woocommerce_gla_is_ready_to_notify', $is_ready, $product );
 	}
 
 	/**
