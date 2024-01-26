@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupProductsJob;
@@ -761,24 +762,16 @@ class ConnectionTest implements Service, Registerable {
 				return;
 			}
 
-			$blog_id 		  = Jetpack_Options::get_option( 'id' );
-			$partner	 	  = 'google';
-			$topic            = $_GET[ 'topic' ];
-			$url    		  = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/{$partner}/notifications";
-			$remote_args 	  = [
-				  'method'  => 'POST',
-				  'timeout' => 30,
-				  'headers' => [
-					    'x-woocommerce-topic' => $topic,
-					  ],
-				  'body' => [
-					  'item_id' => $_GET['item_id'],
-				  ],
-				  'url'     => $url,
-			];
+			$item  = $_GET['item_id'];
+			$topic = $_GET['topic'];
 
-			$response        = Client::remote_request( $remote_args, wp_json_encode( $remote_args['body'] ) );
-			$this->response .= "\n Serialized Partner Notification response: " . json_encode( $response );
+			$service = new NotificationsService();
+			if ( $service->notify( $item, $topic ) ) {
+				$this->response .= "\n Notification success. Item: " . $item . " - Topic: " . $topic;
+			} else {
+				$this->response .= "\n Notification failed. Item: " . $item . " - Topic: " . $topic;
+			}
+
 			return;
 		}
 
