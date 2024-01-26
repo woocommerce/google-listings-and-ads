@@ -104,9 +104,11 @@ class InputCollectionTest extends UnitTest {
 
 	public function test_integer() {
 		$input = new Integer();
+		$input->set_id( 'test-integer' );
 
 		$this->assertEquals( 'integer', $input->get_type() );
-		$this->assertEquals( 'woocommerce/product-number-field', $input->get_block_name() );
+		$this->assertEquals( 'woocommerce/product-text-field', $input->get_block_name() );
+		$this->assertEquals( [ 'value' => 'number' ], $input->get_block_attributes()['type'] );
 	}
 
 	public function test_select() {
