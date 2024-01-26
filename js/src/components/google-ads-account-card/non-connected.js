@@ -14,7 +14,7 @@ import ConnectAds from './connect-ads';
 const useGoogleAccountCheck = () => {
 	const { google } = useGoogleAccount();
 	const { existingAccounts } =
-		google.active !== 'no'
+		google && google.active !== 'no'
 			? // eslint-disable-next-line react-hooks/rules-of-hooks
 			  useExistingGoogleAdsAccounts()
 			: { existingAccounts: null };

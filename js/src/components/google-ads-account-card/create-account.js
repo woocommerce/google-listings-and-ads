@@ -59,14 +59,16 @@ const ClaimTermsAndCreateAccountButton = ( { disabled } ) => {
 };
 
 const CreateAccount = ( props ) => {
-	const { allowShowExisting, onShowExisting } = props;
+	const { allowShowExisting, onShowExisting, disabled } = props;
 
 	return (
 		<AccountCard
-			disabled
+			disabled={ disabled }
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			alignIcon="top"
-			indicator={ <ClaimTermsAndCreateAccountButton disabled /> }
+			indicator={
+				<ClaimTermsAndCreateAccountButton disabled={ disabled } />
+			}
 		>
 			{ allowShowExisting && (
 				<Section.Card.Footer>
