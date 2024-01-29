@@ -51,7 +51,7 @@ class NotificationsService implements Service {
 	 * @param string $topic
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
-	public function notify( int $item_id, string $topic ) {
+	public function notify( int $item_id, string $topic ): bool {
 		/**
 		 * Allow users to disable the notification request.
 		 *
@@ -115,7 +115,7 @@ class NotificationsService implements Service {
 	 * @param array $args
 	 * @return array|\WP_Error
 	 */
-	protected function do_request( array $args ) {
+	protected function do_request( array $args ): \WP_Error|array {
 		return Client::remote_request( $args, wp_json_encode( $args['body'] ) );
 	}
 
