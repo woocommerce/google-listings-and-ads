@@ -11,7 +11,7 @@
 
 	/**
 	 * Class NotificationsServiceTest
-	 * @group NotificationsService
+	 * @group Notifications
 	 * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google
 	 */
 	class NotificationsServiceTest extends UnitTest {

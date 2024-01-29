@@ -16,9 +16,9 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class ProductNotificationJob
- *
  * Class for all the Product Notifications Jobs
  *
+ * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
  */
 class ProductNotificationJob extends AbstractActionSchedulerJob implements JobInterface {

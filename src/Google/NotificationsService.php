@@ -13,6 +13,7 @@ defined( 'ABSPATH' ) || exit;
  * Class NotificationsService
  * This class implements a service to Notify a partner about Shop Data Updates
  *
+ * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
 class NotificationsService implements Service {
