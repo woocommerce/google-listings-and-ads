@@ -610,7 +610,7 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get' )
 			->willReturn(
 				[
-					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
 				]
 			);
 
@@ -638,7 +638,7 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get' )
 			->willReturn(
 				[
-					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
 				]
 			);
 
@@ -658,7 +658,7 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get' )
 			->willReturn(
 				[
-					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
 				]
 			);
 
