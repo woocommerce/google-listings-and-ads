@@ -92,7 +92,7 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		 * @since x.x.x
 		 *
 		 * @param bool $value The current filter value. By default, it is the result of `$this->can_schedule` function.
-		 * @param array $args The arguments for the schedule function.
+		 * @param array $args The arguments for the schedule function with the item id and the topic.
 		 */
 		$can_schedule = apply_filters( 'woocommerce_gla_product_notification_job_can_schedule', $this->can_schedule( [ $args ] ), $args );
 
