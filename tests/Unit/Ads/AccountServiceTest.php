@@ -371,6 +371,10 @@ class AccountServiceTest extends UnitTest {
 
 	public function test_setup_account_step_link_merchant_no_merchant_id() {
 		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->options->expects( $this->any() )
 			->method( 'get_merchant_id' )
 			->willReturn( 0 );
 
@@ -382,10 +386,7 @@ class AccountServiceTest extends UnitTest {
 				]
 			);
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'A Merchant Center account must be connected' );
-
-		$this->account->setup_account();
+		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
 	}
 
 	public function test_setup_account_step_conversion_action() {
