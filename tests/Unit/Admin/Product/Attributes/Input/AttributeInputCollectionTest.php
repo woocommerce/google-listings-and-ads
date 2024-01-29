@@ -480,12 +480,13 @@ class AttributeInputCollectionTest extends UnitTest {
 		$this->assertEquals(
 			[
 				'id'         => 'google-listings-and-ads-product-attributes-multipack',
-				'blockName'  => 'woocommerce/product-number-field',
+				'blockName'  => 'woocommerce/product-text-field',
 				'attributes' => [
 					'property' => 'meta_data._wc_gla_multipack',
 					'label'    => 'Multipack',
 					'tooltip'  => 'The number of identical products in a multipack. Use this attribute to indicate that you\'ve grouped multiple identical products for sale as one item.',
-					'min'      => 0,
+					'type'     => [ 'value' => 'number' ],
+					'min'      => [ 'value' => 0 ],
 				],
 			],
 			$input->get_block_config()

@@ -24,6 +24,6 @@ class MultipackInput extends Integer {
 
 		$this->set_label( __( 'Multipack', 'google-listings-and-ads' ) );
 		$this->set_description( __( 'The number of identical products in a multipack. Use this attribute to indicate that you\'ve grouped multiple identical products for sale as one item.', 'google-listings-and-ads' ) );
-		$this->set_block_attribute( 'min', 0 );
+		$this->set_block_attribute( 'min', [ 'value' => 0 ] );
 	}
 }
