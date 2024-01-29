@@ -419,6 +419,7 @@ class ProductHelper implements Service {
 
 	/**
 	 * Indicates if a product was already notified about its creation.
+	 * Notice we consider synced products in MC as notified for creation.
 	 *
 	 * @param WC_Product $product
 	 *
