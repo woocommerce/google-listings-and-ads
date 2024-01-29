@@ -5,7 +5,6 @@
 
 	use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 	use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
-	use WC_Helper_Product;
 
 	defined( 'ABSPATH' ) || exit;
 
