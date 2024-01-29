@@ -403,6 +403,7 @@ class ProductHelper implements Service {
 	 */
 	public function has_notified_creation( WC_Product $product ): bool {
 		$valid_has_notified_creation_statuses = [
+			NotificationStatus::NOTIFICATION_PENDING_CREATE,
 			NotificationStatus::NOTIFICATION_CREATED,
 			NotificationStatus::NOTIFICATION_UPDATED,
 			NotificationStatus::NOTIFICATION_PENDING_UPDATE
