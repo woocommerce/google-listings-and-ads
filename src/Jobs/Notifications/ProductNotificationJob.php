@@ -67,7 +67,7 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 	 *
 	 * @param array $args Arguments with the item id and the topic
 	 */
-	protected function process_items( array $args ) {
+	protected function process_items( array $args ): void {
 		if ( ! isset( $args[0] ) || ! isset( $args[1] ) ) {
 			return;
 		}
@@ -85,7 +85,7 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 	 *
 	 * @param array $args
 	 */
-	public function schedule( array $args = [] ) {
+	public function schedule( array $args = [] ): void {
 		/**
 		 * Allow users to disable the notification job schedule.
 		 *
