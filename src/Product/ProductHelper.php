@@ -408,7 +408,7 @@ class ProductHelper implements Service {
 			NotificationStatus::NOTIFICATION_PENDING_DELETE,
 		];
 
-		return in_array( $this->meta_handler->get_notification_status( $product ), $valid_has_notified_creation_statuses, true );
+		return in_array( $this->meta_handler->get_notification_status( $product ), $valid_has_notified_creation_statuses, true ) || $this->is_product_synced( $product );
 	}
 
 	/**
