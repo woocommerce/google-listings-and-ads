@@ -125,6 +125,7 @@ class AccountServiceTest extends UnitTest {
 		$this->transients        = $this->createMock( TransientsInterface::class );
 
 		$this->container = new Container();
+		$this->container->share( Ads::class, $this->ads );
 		$this->container->share( CleanupSyncedProducts::class, $this->cleanup_synced );
 		$this->container->share( Merchant::class, $this->merchant );
 		$this->container->share( MerchantCenterService::class, $this->mc_service );
@@ -622,7 +623,7 @@ class AccountServiceTest extends UnitTest {
 			->method( 'accept_merchant_link' )
 			->with( self::TEST_ACCOUNT_ID );
 
-		$this->assertEquals( self::TEST_ACCOUNT_ID, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
 	}
 
 	public function test_setup_account_step_link_ads_without_ads() {
@@ -642,7 +643,7 @@ class AccountServiceTest extends UnitTest {
 				]
 			);
 
-		$this->assertEquals( self::TEST_ACCOUNT_ID, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
 	}
 
 	public function test_setup_account_step_link_ads_without_mc() {
