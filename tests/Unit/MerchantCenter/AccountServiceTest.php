@@ -36,6 +36,9 @@ class AccountServiceTest extends UnitTest {
 
 	use MerchantTrait;
 
+	/** @var MockObject|Ads $ads */
+	protected $ads;
+
 	/** @var MockObject|CleanupSyncedProducts $cleanup_synced */
 	protected $cleanup_synced;
 
@@ -80,6 +83,7 @@ class AccountServiceTest extends UnitTest {
 
 	protected const TEST_ACCOUNT_ID     = 12345678;
 	protected const TEST_OLD_ACCOUNT_ID = 23456781;
+	protected const TEST_ADS_ID         = 1234567890;
 	protected const TEST_ACCOUNTS       = [
 		[
 			'id'         => self::TEST_ACCOUNT_ID,
@@ -105,6 +109,7 @@ class AccountServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->ads               = $this->createMock( Ads::class );
 		$this->cleanup_synced    = $this->createMock( CleanupSyncedProducts::class );
 		$this->merchant          = $this->createMock( Merchant::class );
 		$this->mc_service        = $this->createMock( MerchantCenterService::class );
@@ -589,6 +594,77 @@ class AccountServiceTest extends UnitTest {
 			->with( OptionsInterface::CLAIMED_URL_HASH );
 
 		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->switch_url( self::TEST_ACCOUNT_ID ) );
+	}
+
+	public function test_setup_account_step_link_ads() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ADS_ID );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->merchant->expects( $this->once() )
+			->method( 'link_ads_id' )
+			->with( self::TEST_ADS_ID );
+
+		$this->ads->expects( $this->once() )
+			->method( 'accept_merchant_link' )
+			->with( self::TEST_ACCOUNT_ID );
+
+		$this->assertEquals( self::TEST_ACCOUNT_ID, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+	}
+
+	public function test_setup_account_step_link_ads_without_ads() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( 0 );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->assertEquals( self::TEST_ACCOUNT_ID, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+	}
+
+	public function test_setup_account_step_link_ads_without_mc() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ADS_ID );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( 0 );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'A Merchant Center account must be connected' );
+
+		$this->account->setup_account( self::TEST_ACCOUNT_ID );
 	}
 
 	public function test_switch_url_invalid() {
