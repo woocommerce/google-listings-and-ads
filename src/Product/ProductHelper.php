@@ -394,6 +394,8 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Indicates if a product was already notified about its creation.
+	 *
 	 * @param WC_Product $product
 	 *
 	 * @return bool
@@ -411,12 +413,11 @@ class ProductHelper implements Service {
 
 	/**
 	 * Set the notification status for a WooCommerce product.
-	 * *
 	 *
 	 * @param WC_Product $product
 	 * @param string     $status
 	 */
-	public function set_notification_status( WC_Product $product, $status ) {
+	public function set_notification_status( WC_Product $product, $status ): void {
 		$this->meta_handler->update_notification_status( $product, $status );
 	}
 
