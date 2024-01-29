@@ -160,12 +160,12 @@ class AccountService implements OptionsAwareInterface, Service {
 						$this->check_billing_status( $account );
 						break;
 
-					case 'link_merchant':
-						$this->link_merchant_account();
-						break;
-
 					case 'conversion_action':
 						$this->create_conversion_action();
+						break;
+
+					case 'link_merchant':
+						$this->link_merchant_account();
 						break;
 
 					default:
@@ -252,15 +252,16 @@ class AccountService implements OptionsAwareInterface, Service {
 	/**
 	 * Get the callback function for linking a merchant account.
 	 *
-	 * @throws Exception When the merchant or ads account hasn't been set yet.
+	 * @throws Exception When the ads account hasn't been set yet.
 	 */
 	private function link_merchant_account() {
-		if ( ! $this->options->get_merchant_id() ) {
-			throw new Exception( 'A Merchant Center account must be connected' );
-		}
-
 		if ( ! $this->options->get_ads_id() ) {
 			throw new Exception( 'An Ads account must be connected' );
+		}
+
+		if ( ! $this->options->get_merchant_id() ) {
+			// Return early if the merchant account hasn't been created yet.
+			return;
 		}
 
 		// Create link for Merchant and accept it in Ads.

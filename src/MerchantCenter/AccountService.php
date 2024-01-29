@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -330,6 +331,9 @@ class AccountService implements OptionsAwareInterface, Service {
 							$merchant->claimwebsite();
 						}
 						break;
+					case 'link_ads':
+						$this->link_ads_account();
+						break;
 					default:
 						throw new Exception(
 							sprintf(
@@ -467,6 +471,26 @@ class AccountService implements OptionsAwareInterface, Service {
 
 			do_action( 'woocommerce_gla_url_switch_success', [] );
 		}
+	}
+
+	/**
+	 * Get the callback function for linking an Ads account.
+	 *
+	 * @throws Exception When the merchant account hasn't been set yet.
+	 */
+	private function link_ads_account() {
+		if ( ! $this->options->get_merchant_id() ) {
+			throw new Exception( 'A Merchant Center account must be connected' );
+		}
+
+		if ( ! $this->options->get_ads_id() ) {
+			// Return early if the ads account hasn't been created yet.
+			return;
+		}
+
+		// Create link for Merchant and accept it in Ads.
+		$this->container->get( Merchant::class )->link_ads_id( $this->options->get_ads_id() );
+		$this->container->get( Ads::class )->accept_merchant_link( $this->options->get_merchant_id() );
 	}
 
 	/**
