@@ -406,7 +406,7 @@ class ProductHelper implements Service {
 			NotificationStatus::NOTIFICATION_PENDING_CREATE,
 			NotificationStatus::NOTIFICATION_CREATED,
 			NotificationStatus::NOTIFICATION_UPDATED,
-			NotificationStatus::NOTIFICATION_PENDING_UPDATE
+			NotificationStatus::NOTIFICATION_PENDING_UPDATE,
 		];
 
 		return in_array( $this->meta_handler->get_notification_status( $product ), $valid_has_notified_creation_statuses, true ) || $this->is_product_synced( $product );
