@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Admin\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\ChannelVisibilityBlock;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
@@ -23,19 +24,25 @@ class ChannelVisibilityBlockTest extends UnitTest {
 	/** @var Stub|ProductHelper $product_helper */
 	protected $product_helper;
 
+	/** @var Stub|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
 	/** @var ChannelVisibilityBlock $channel_visibility_block */
 	protected $channel_visibility_block;
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->product_helper = $this->createStub( ProductHelper::class );
+		$this->product_helper  = $this->createStub( ProductHelper::class );
+		$this->merchant_center = $this->createStub( MerchantCenterService::class );
 
-		$this->channel_visibility_block = new ChannelVisibilityBlock( $this->product_helper );
+		$this->channel_visibility_block = new ChannelVisibilityBlock( $this->product_helper, $this->merchant_center );
 	}
 
-	public function test_register_hooks() {
-		$this->channel_visibility_block->register_hooks();
+	public function test_register() {
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( true );
+
+		$this->channel_visibility_block->register();
 
 		$this->assertEquals(
 			10,
@@ -47,6 +54,26 @@ class ChannelVisibilityBlockTest extends UnitTest {
 
 		$this->assertEquals(
 			10,
+			has_action(
+				'woocommerce_rest_insert_product_object',
+				[ $this->channel_visibility_block, 'update_data' ]
+			)
+		);
+	}
+
+	public function test_register_merchant_center_setup_is_not_complete() {
+		$this->merchant_center->method( 'is_setup_complete' )->willReturn( false );
+
+		$this->channel_visibility_block->register();
+
+		$this->assertFalse(
+			has_filter(
+				'woocommerce_rest_prepare_product_object',
+				[ $this->channel_visibility_block, 'prepare_data' ]
+			)
+		);
+
+		$this->assertFalse(
 			has_action(
 				'woocommerce_rest_insert_product_object',
 				[ $this->channel_visibility_block, 'update_data' ]

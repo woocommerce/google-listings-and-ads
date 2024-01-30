@@ -209,6 +209,8 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	public function test_register_is_not_admin_page() {
 		unset( $_GET['page'] );
 
+		$this->assertFalse( ProductBlocksService::is_needed() );
+
 		$this->simple_anchor_group->get_root_template()
 			->expects( $this->exactly( 0 ) )
 			->method( 'add_group' );
@@ -217,7 +219,8 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			->expects( $this->exactly( 0 ) )
 			->method( 'add_group' );
 
-		$this->product_blocks_service->register();
+		// Here it doesn't call `product_blocks_service->register()` because it will
+		// be processed by the conditional registration in `GoogleAdsCleanupServices`.
 
 		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
 		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );

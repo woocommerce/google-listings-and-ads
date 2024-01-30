@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
@@ -20,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product
  */
-class ChannelVisibilityBlock implements Service {
+class ChannelVisibilityBlock implements Service, Registerable {
 
 	public const PROPERTY = 'google_listings_and_ads__channel_visibility';
 
@@ -30,18 +32,29 @@ class ChannelVisibilityBlock implements Service {
 	protected $product_helper;
 
 	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
 	 * ChannelVisibilityBlock constructor.
 	 *
-	 * @param ProductHelper $product_helper
+	 * @param ProductHelper         $product_helper
+	 * @param MerchantCenterService $merchant_center
 	 */
-	public function __construct( ProductHelper $product_helper ) {
-		$this->product_helper = $product_helper;
+	public function __construct( ProductHelper $product_helper, MerchantCenterService $merchant_center ) {
+		$this->product_helper  = $product_helper;
+		$this->merchant_center = $merchant_center;
 	}
 
 	/**
 	 * Register hooks for querying and updating product via REST APIs.
 	 */
-	public function register_hooks(): void {
+	public function register(): void {
+		if ( ! $this->merchant_center->is_setup_complete() ) {
+			return;
+		}
+
 		// https://github.com/woocommerce/woocommerce/blob/8.5.0/plugins/woocommerce/includes/rest-api/Controllers/Version2/class-wc-rest-products-v2-controller.php#L182-L192
 		add_filter( 'woocommerce_rest_prepare_product_object', [ $this, 'prepare_data' ], 10, 2 );
 

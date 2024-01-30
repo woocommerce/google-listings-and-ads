@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\ChannelVisibilityB
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -27,7 +28,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
-class ProductBlocksService implements Service, Registerable {
+class ProductBlocksService implements Service, Registerable, Conditional {
 
 	use AttributesTrait;
 	use PluginHelper;
@@ -83,23 +84,20 @@ class ProductBlocksService implements Service, Registerable {
 	}
 
 	/**
+	 * Return whether this service is needed to be registered.
+	 *
+	 * @return bool Whether this service is needed to be registered.
+	 */
+	public static function is_needed(): bool {
+		// compatibility-code "WC >= 8.5" -- The Block Template API used requires at least WooCommerce 8.5
+		return version_compare( WC_VERSION, '8.5', '>=' ) && PageController::is_admin_page();
+	}
+
+	/**
 	 * Register a service.
 	 */
 	public function register(): void {
-		// compatibility-code "WC >= 8.5" -- The Block Template API used requires at least WooCommerce 8.5
-		if ( ! version_compare( WC_VERSION, '8.5', '>=' ) ) {
-			return;
-		}
-
 		if ( ! $this->merchant_center->is_setup_complete() ) {
-			return;
-		}
-
-		// To register hooks related to REST APIs, it needs to be called before
-		// the `PageController::is_admin_page()` check.
-		$this->channel_visibility_block->register_hooks();
-
-		if ( ! PageController::is_admin_page() ) {
 			return;
 		}
 
