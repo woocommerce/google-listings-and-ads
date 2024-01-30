@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
 use WC_Product;
@@ -330,6 +331,95 @@ class ProductHelper implements Service {
 		$google_ids = $this->meta_handler->get_google_ids( $product );
 
 		return ! empty( $synced_at ) && ! empty( $google_ids );
+	}
+
+	/**
+	 * Indicates if a product is ready for sending Notifications.
+	 * A product is ready to send notifications if DONT_SYNC_AND_SHOW is not enabled and the post status is publish.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function is_ready_to_notify( WC_Product $product ): bool {
+		$is_ready = ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_channel_visibility( $product ) &&
+			$product->get_status() === 'publish' &&
+			in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true );
+
+		/**
+		 * Allow users to filter if a product is ready to notify.
+		 *
+		 * @since x.x.x
+		 *
+		 * @param bool $value The current filter value.
+		 * @param WC_Product $product The product for the notification.
+		 */
+		return apply_filters( 'woocommerce_gla_is_ready_to_notify', $is_ready, $product );
+	}
+
+	/**
+	 * Indicates if a product is ready for sending a create Notification.
+	 * A product is ready to send create notifications if is ready to notify and has not sent create notification yet.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function should_trigger_create_notification( WC_Product $product ): bool {
+		return $this->is_ready_to_notify( $product ) && ! $this->has_notified_creation( $product );
+	}
+
+	/**
+	 * Indicates if a product is ready for sending an update Notification.
+	 * A product is ready to send update notifications if is ready to notify and has sent create notification already.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function should_trigger_update_notification( WC_Product $product ): bool {
+		return $this->is_ready_to_notify( $product ) && $this->has_notified_creation( $product );
+	}
+
+	/**
+	 * Indicates if a product is ready for sending a delete Notification.
+	 * A product is ready to send delete notifications if it is not ready to notify and has sent create notification already.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function should_trigger_delete_notification( WC_Product $product ): bool {
+		return ! $this->is_ready_to_notify( $product ) && $this->has_notified_creation( $product );
+	}
+
+	/**
+	 * Indicates if a product was already notified about its creation.
+	 * Notice we consider synced products in MC as notified for creation.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function has_notified_creation( WC_Product $product ): bool {
+		$valid_has_notified_creation_statuses = [
+			NotificationStatus::NOTIFICATION_PENDING_CREATE,
+			NotificationStatus::NOTIFICATION_CREATED,
+			NotificationStatus::NOTIFICATION_UPDATED,
+			NotificationStatus::NOTIFICATION_PENDING_UPDATE
+		];
+
+		return in_array( $this->meta_handler->get_notification_status( $product ), $valid_has_notified_creation_statuses, true ) || $this->is_product_synced( $product );
+	}
+
+	/**
+	 * Set the notification status for a WooCommerce product.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $status
+	 */
+	public function set_notification_status( WC_Product $product, $status ): void {
+		$this->meta_handler->update_notification_status( $product, $status );
 	}
 
 	/**
