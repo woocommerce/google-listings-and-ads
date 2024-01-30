@@ -330,6 +330,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$this->delete_operation( $campaign_resource_name ),
 			];
 
+			// Clear cached campaign count.
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
+
 			return $this->mutate( $operations );
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );

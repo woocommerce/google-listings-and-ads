@@ -3,7 +3,11 @@
  */
 import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
-import { queueRecordEvent } from '@woocommerce/tracks';
+
+/**
+ * Internal dependencies
+ */
+import { queueRecordGlaEvent } from '.~/utils/tracks';
 
 const noop = () => {};
 
@@ -20,7 +24,7 @@ const EditProductLink = ( { productId, eventName, eventProps } ) => {
 	const editProductLink = `post.php?action=edit&post=${ productId }`;
 
 	const handleClick = eventName
-		? () => queueRecordEvent( eventName, eventProps )
+		? () => queueRecordGlaEvent( eventName, eventProps )
 		: noop;
 
 	return (

@@ -297,6 +297,8 @@ class AdsCampaignTest extends UnitTest {
 			'country' => self::BASE_COUNTRY,
 		] + $campaign_data;
 
+		$this->transients->expects( $this->once() )->method( 'delete' )->with( TransientsInterface::ADS_CAMPAIGN_COUNT );
+
 		$this->assertEquals(
 			$expected,
 			$this->campaign->create_campaign( $campaign_data )
@@ -445,6 +447,8 @@ class AdsCampaignTest extends UnitTest {
 
 	public function test_delete_campaign() {
 		$this->generate_campaign_mutate_mock( 'remove', self::TEST_CAMPAIGN_ID );
+
+		$this->transients->expects( $this->once() )->method( 'delete' )->with( TransientsInterface::ADS_CAMPAIGN_COUNT );
 
 		$this->assertEquals(
 			self::TEST_CAMPAIGN_ID,

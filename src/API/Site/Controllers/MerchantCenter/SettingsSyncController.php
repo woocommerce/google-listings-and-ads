@@ -68,6 +68,23 @@ class SettingsSyncController extends BaseController {
 
 				do_action( 'woocommerce_gla_mc_settings_sync' );
 
+				/**
+				 * MerchantCenter onboarding has been successfully completed.
+				 *
+				 * @event gla_mc_setup_completed
+				 * @property string shipping_rate           Shipping rate setup `automatic`, `manual`, `flat`.
+				 * @property bool   offers_free_shipping    Free Shipping is available.
+				 * @property float  free_shipping_threshold Minimum amount to avail of free shipping.
+				 * @property string shipping_time           Shipping time setup `flat`, `manual`.
+				 * @property string tax_rate                Tax rate setup `destination`, `manual`.
+				 * @property string target_countries        List of target countries or `all`.
+				 */
+				do_action(
+					'woocommerce_gla_track_event',
+					'mc_setup_completed',
+					$this->settings->get_settings_for_tracking()
+				);
+
 				return new Response(
 					[
 						'status'  => 'success',

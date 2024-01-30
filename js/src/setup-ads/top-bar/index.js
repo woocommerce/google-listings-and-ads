@@ -3,13 +3,13 @@
  */
 import { getNewPath } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * @fires gla_setup_ads with given `{ triggered_by: 'back-button', action: 'leave', target: 'back', trigger: 'click' }` when back button is clicked.
@@ -19,7 +19,7 @@ const SetupAdsTopBar = () => {
 	// Those events are fired before the actual navigation happens.
 	// The navigation itself may or maynot be blocked, for example to avoid leaving unsaved chanes.
 	const handleBackButtonClick = () => {
-		recordEvent( 'gla_setup_ads', {
+		recordGlaEvent( 'gla_setup_ads', {
 			triggered_by: 'back-button',
 			action: 'leave',
 			// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.

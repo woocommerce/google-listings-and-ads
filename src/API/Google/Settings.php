@@ -43,6 +43,26 @@ class Settings {
 	}
 
 	/**
+	 * Return a set of formatted settings which can be used in tracking.
+	 *
+	 * @since 2.5.16
+	 *
+	 * @return array
+	 */
+	public function get_settings_for_tracking() {
+		$settings = $this->get_settings();
+
+		return [
+			'shipping_rate'           => $settings['shipping_rate'] ?? '',
+			'offers_free_shipping'    => (bool) $settings['offers_free_shipping'] ?? false,
+			'free_shipping_threshold' => (float) $settings['free_shipping_threshold'] ?? 0,
+			'shipping_time'           => $settings['shipping_time'] ?? '',
+			'tax_rate'                => $settings['tax_rate'] ?? '',
+			'target_countries'        => join( ',', $this->get_target_countries() ),
+		];
+	}
+
+	/**
 	 * Sync the shipping settings with Google.
 	 */
 	public function sync_shipping() {
@@ -392,5 +412,20 @@ class Settings {
 	protected function get_settings(): array {
 		$settings = $this->get_options_object()->get( OptionsInterface::MERCHANT_CENTER );
 		return is_array( $settings ) ? $settings : [];
+	}
+
+	/**
+	 * Return a list of target countries or all.
+	 *
+	 * @return array
+	 */
+	protected function get_target_countries(): array {
+		$target_audience = $this->get_options_object()->get( OptionsInterface::TARGET_AUDIENCE );
+
+		if ( isset( $target_audience['location'] ) && 'all' === $target_audience['location'] ) {
+			return [ 'all' ];
+		}
+
+		return $target_audience['countries'] ?? [];
 	}
 }

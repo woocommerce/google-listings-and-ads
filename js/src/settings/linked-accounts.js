@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { queueRecordEvent } from '@woocommerce/tracks';
 import { __ } from '@wordpress/i18n';
 import { Flex } from '@wordpress/components';
 import { useState } from '@wordpress/element';
@@ -26,6 +25,7 @@ import Section from '.~/wcdl/section';
 import LinkedAccountsSectionWrapper from './linked-accounts-section-wrapper';
 import DisconnectModal, { ALL_ACCOUNTS, ADS_ACCOUNT } from './disconnect-modal';
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
+import { queueRecordGlaEvent } from '.~/utils/tracks';
 
 const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
 
@@ -62,7 +62,7 @@ export default function LinkedAccounts() {
 	const dismissModal = () => setOpenedModal( null );
 
 	const handleDisconnected = () => {
-		queueRecordEvent( 'gla_disconnected_accounts', {
+		queueRecordGlaEvent( 'gla_disconnected_accounts', {
 			context: openedModal,
 		} );
 

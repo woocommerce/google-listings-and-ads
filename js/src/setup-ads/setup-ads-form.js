@@ -5,7 +5,6 @@ import { isEqual } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import { getNewPath } from '@woocommerce/navigation';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -17,6 +16,7 @@ import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsStepper from './ads-stepper';
 import SetupAdsTopBar from './top-bar';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * @fires gla_launch_paid_campaign_button_click on submit
@@ -57,7 +57,7 @@ const SetupAdsForm = () => {
 	const handleSubmit = ( values ) => {
 		const { amount, countryCodes } = values;
 
-		recordEvent( 'gla_launch_paid_campaign_button_click', {
+		recordGlaEvent( 'gla_launch_paid_campaign_button_click', {
 			audiences: countryCodes.join( ',' ),
 			budget: amount,
 		} );

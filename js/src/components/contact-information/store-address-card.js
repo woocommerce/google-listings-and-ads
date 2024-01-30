@@ -7,7 +7,6 @@ import { CardDivider } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
 import { update as updateIcon } from '@wordpress/icons';
 import { getPath, getQuery } from '@woocommerce/navigation';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -21,6 +20,7 @@ import ValidationErrors from '.~/components/validation-errors';
 import ContactInformationPreviewCard from './contact-information-preview-card';
 import TrackableLink from '.~/components/trackable-link';
 import mapStoreAddressErrors from './mapStoreAddressErrors';
+import { recordGlaEvent } from '.~/utils/tracks';
 import './store-address-card.scss';
 
 /**
@@ -76,7 +76,7 @@ const StoreAddressCard = ( { showValidation = false } ) => {
 				missing_fields: storeAddress.missingRequiredFields.join( ',' ),
 			};
 
-			recordEvent( 'gla_wc_store_address_validation', eventProps );
+			recordGlaEvent( 'gla_wc_store_address_validation', eventProps );
 		};
 	};
 

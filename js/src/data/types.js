@@ -1,4 +1,11 @@
 /**
+ * @typedef {Object} GeneralState
+ * @property {string} version The version of this extension. Null if not yet connected.
+ * @property {number | null} mcId The ID of the connected Google Merchant Center account. Null if not yet connected.
+ * @property {number | null} adsId The ID of the connected Google Ads account. Null if not yet connected.
+ */
+
+/**
  * @typedef {Object} SuggestedAssets
  * @property {string} business_name The name of merchant's business or brand.
  * @property {string} final_url The page URL on merchant's website that people reach when they click the ad.

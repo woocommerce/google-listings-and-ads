@@ -6,11 +6,11 @@ import { __ } from '@wordpress/i18n';
 import { Popover } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import GridiconHelpOutline from 'gridicons/dist/help-outline';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
+import { recordGlaEvent } from '.~/utils/tracks';
 import './index.scss';
 
 /**
@@ -43,7 +43,7 @@ const HelpPopover = ( {
 		setShowPopover( true );
 
 		if ( id ) {
-			recordEvent( 'gla_tooltip_viewed', { id } );
+			recordGlaEvent( 'gla_tooltip_viewed', { id } );
 		}
 	};
 
@@ -63,6 +63,7 @@ const HelpPopover = ( {
 			{ showPopover && ! disabled && (
 				<Popover
 					focusOnMount="container"
+					inline
 					onClose={ handlePopoverClose }
 					{ ...props }
 				>

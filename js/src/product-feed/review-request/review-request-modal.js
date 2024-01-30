@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { CheckboxControl, Notice } from '@wordpress/components';
 import { createInterpolateElement, useState } from '@wordpress/element';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -15,6 +14,7 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import ReviewRequestIssues from './review-request-issues';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * Triggered when request review button is clicked
@@ -76,7 +76,7 @@ const ReviewRequestModal = ( {
 
 	const handleCheckboxChange = ( checked ) => {
 		setCheckBoxChecked( checked );
-		recordEvent( 'gla_request_review_issues_solved_checkbox_click', {
+		recordGlaEvent( 'gla_request_review_issues_solved_checkbox_click', {
 			action: checked ? 'check' : 'uncheck',
 		} );
 	};
@@ -85,7 +85,7 @@ const ReviewRequestModal = ( {
 		if ( isRequestingReview ) return;
 
 		setIsRequestingReview( true );
-		recordEvent( 'gla_request_review' );
+		recordGlaEvent( 'gla_request_review' );
 
 		sendMCReviewRequest()
 			.then( () => {
@@ -96,12 +96,12 @@ const ReviewRequestModal = ( {
 						'google-listings-and-ads'
 					)
 				);
-				recordEvent( 'gla_request_review_success' );
+				recordGlaEvent( 'gla_request_review_success' );
 				onClose( 'request-review-success' );
 			} )
 			.catch( () => {
 				setIsRequestingReview( false );
-				recordEvent( 'gla_request_review_failure' );
+				recordGlaEvent( 'gla_request_review_failure' );
 			} );
 	};
 
