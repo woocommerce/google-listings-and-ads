@@ -123,8 +123,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WC 8.4 compatibility.
 * Update - Change to require Google Ads connection during the onboarding.
 
-= 2.5.13 - 2023-12-06 =
-* Fix - Change Budget Recommendations values.
-* Tweak - Use a single daily budget instead of a range.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
