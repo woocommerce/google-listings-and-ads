@@ -111,7 +111,16 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Merchant Center description row.
 	 */
 	getMCDescriptionRow() {
-		return this.getCardDescriptionClass().nth( 2 );
+		return this.getCardDescriptionClass().nth( 3 );
+	}
+
+	/**
+	 * Get Google Ads title.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Google Ads title.
+	 */
+	getAdsTitleRow() {
+		return this.getCardTitleClass().nth( 2 );
 	}
 
 	/**
@@ -120,7 +129,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Google Merchant Center title.
 	 */
 	getMCTitleRow() {
-		return this.getCardTitleClass().nth( 2 );
+		return this.getCardTitleClass().nth( 3 );
 	}
 
 	/**
@@ -201,7 +210,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Merchant Center connected label.
 	 */
 	getMCConnectedLabel() {
-		return this.getConnectedLabelClass().nth( 2 );
+		return this.getConnectedLabelClass().nth( 3 );
 	}
 
 	/**
@@ -261,7 +270,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get select existing Merchant Center account title.
 	 */
 	getSelectExistingMCAccountTitle() {
-		return this.getSubSectionTitleRow().nth( 3 );
+		return this.getSubSectionTitleRow().nth( 4 );
 	}
 
 	/**
@@ -318,7 +327,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Merchant Center account card.
 	 */
 	getMCAccountCard() {
-		return this.getAccountCards().nth( 2 );
+		return this.getAccountCards().nth( 3 );
 	}
 
 	/**
