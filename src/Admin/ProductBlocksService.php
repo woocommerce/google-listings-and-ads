@@ -97,10 +97,6 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	 * Register a service.
 	 */
 	public function register(): void {
-		if ( ! $this->merchant_center->is_setup_complete() ) {
-			return;
-		}
-
 		add_action(
 			'init',
 			function () {
@@ -141,6 +137,10 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 						],
 					]
 				);
+
+				if ( ! $this->merchant_center->is_setup_complete() ) {
+					return;
+				}
 
 				/** @var SectionInterface */
 				$channel_visibility_section = $group->add_section(

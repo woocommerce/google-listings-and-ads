@@ -193,11 +193,11 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		$this->is_mc_setup_complete = false;
 
 		$this->simple_anchor_group->get_root_template()
-			->expects( $this->exactly( 0 ) )
+			->expects( $this->exactly( 1 ) )
 			->method( 'add_group' );
 
 		$this->variation_anchor_group->get_root_template()
-			->expects( $this->exactly( 0 ) )
+			->expects( $this->exactly( 1 ) )
 			->method( 'add_group' );
 
 		$this->product_blocks_service->register();
