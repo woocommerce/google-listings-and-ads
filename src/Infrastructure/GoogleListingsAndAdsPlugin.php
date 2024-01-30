@@ -34,6 +34,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 
 	/**
 	 * The client ID.
+	 *
 	 * @var string
 	 */
 	private $client_id;
@@ -116,12 +117,14 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 			}
 		);
 
-		add_action( 'login_form_jetpack_json_api_authorization', array( $this, 'login_form_json_api_authorization' ) );
+		add_action( 'login_form_jetpack_json_api_authorization', [ $this, 'login_form_json_api_authorization' ] );
 
-		add_filter('jetpack_xmlrpc_test_connection_response', function (){
-			return '1.40';
-		});
-
+		add_filter(
+			'jetpack_xmlrpc_test_connection_response',
+			function () {
+				return '1.40';
+			}
+		);
 	}
 
 	/**
@@ -155,9 +158,9 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 * Handles the login action for Authorizing the JSON API
 	 */
 	public function login_form_json_api_authorization() {
-		add_action( 'wp_login', array( $this, 'store_json_api_authorization_token' ), 10, 2 );
-		add_action( 'login_form', array( $this, 'preserve_action_in_login_form_for_json_api_authorization' ) );
-		add_filter( 'site_url', array( $this, 'post_login_form_to_signed_url' ), 10, 3 );
+		add_action( 'wp_login', [ $this, 'store_json_api_authorization_token' ], 10, 2 );
+		add_action( 'login_form', [ $this, 'preserve_action_in_login_form_for_json_api_authorization' ] );
+		add_filter( 'site_url', [ $this, 'post_login_form_to_signed_url' ], 10, 3 );
 	}
 
 	/**
@@ -167,10 +170,16 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 * @param WP_User $user User logged in.
 	 */
 	public function store_json_api_authorization_token( $user_login, $user ) {
-		$data         = json_decode( base64_decode( stripslashes( $_REQUEST['data'] ) ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
-		$this->client_id = $data->client_id;
-		add_filter( 'login_redirect', array( $this, 'add_token_to_login_redirect_json_api_authorization' ), 10, 3 );
-		add_filter( 'allowed_redirect_hosts', array( $this, 'allow_wpcom_public_api_domain' ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$data = isset( $_REQUEST['data'] ) ? json_decode( base64_decode( wp_unslash( $_REQUEST['data'] ) ) ) : null;
+
+		if ( is_null( $data ) ) {
+			return;
+		}
+
+		$this->client_id = sanitize_text_field( $data->client_id );
+		add_filter( 'login_redirect', [ $this, 'add_token_to_login_redirect_json_api_authorization' ], 10, 3 );
+		add_filter( 'allowed_redirect_hosts', [ $this, 'allow_wpcom_public_api_domain' ] );
 		$token = wp_generate_password( 32, false );
 		update_user_meta( $user->ID, 'jetpack_json_api_' . $this->client_id, $token );
 	}
@@ -219,11 +228,11 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	public function add_token_to_login_redirect_json_api_authorization( $redirect_to, $original_redirect_to, $user ) {
 		return add_query_arg(
 			urlencode_deep(
-				array(
+				[
 					'jetpack-code'    => get_user_meta( $user->ID, 'jetpack_json_api_' . $this->client_id, true ),
 					'jetpack-user-id' => (int) $user->ID,
 					'jetpack-state'   => '',
-				)
+				]
 			),
 			$redirect_to
 		);
