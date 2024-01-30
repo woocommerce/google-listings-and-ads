@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
@@ -20,6 +21,14 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class ProductStatisticsController extends BaseOptionsController {
+
+
+	/**
+	 * The Merchant Report.
+	 *
+	 * @var MerchantReport
+	 */
+	protected $merchant_report;
 
 	/**
 	 * The MerchantProducts object.
@@ -43,10 +52,11 @@ class ProductStatisticsController extends BaseOptionsController {
 	 * @param MerchantStatuses $merchant_statuses
 	 * @param ProductSyncStats $sync_stats
 	 */
-	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses, ProductSyncStats $sync_stats ) {
+	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses, ProductSyncStats $sync_stats, MerchantReport $merchant_report ) {
 		parent::__construct( $server );
 		$this->merchant_statuses = $merchant_statuses;
 		$this->sync_stats        = $sync_stats;
+		$this->merchant_report   = $merchant_report;
 	}
 
 	/**
@@ -108,6 +118,9 @@ class ProductStatisticsController extends BaseOptionsController {
 	 */
 	protected function get_product_status_stats( Request $request, bool $force_refresh = false ): Response {
 		try {
+
+			$response = $this->merchant_report->get_product_statuses();
+
 			$response = $this->merchant_statuses->get_product_statistics( $force_refresh );
 
 			$response['scheduled_sync'] = $this->sync_stats->get_count();

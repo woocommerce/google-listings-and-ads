@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\Admin\API\Reports\TimeInterval;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantFreeListingReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantProductReportQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantProductViewReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -50,6 +51,30 @@ class MerchantReport implements OptionsAwareInterface {
 	public function __construct( ShoppingContent $service, ProductHelper $product_helper ) {
 		$this->service        = $service;
 		$this->product_helper = $product_helper;
+	}
+
+	/**
+	 * Get product statuses.
+	 *
+	 * @throws GoogleException If the search call fails.
+	 */
+	public function get_product_statuses() {
+		$query = new MerchantProductViewReportQuery( [] );
+
+		$results = $query
+			->set_client( $this->service, $this->options->get_merchant_id() )
+			->get_results();
+
+		$rows = [];
+
+		/** @var $row ReportRow  */
+		foreach ( $results->getResults() as $row ) {
+			/** @var $product_view Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductView */
+			$product_view                        = $row->getProductView();
+			$rows[ $product_view->getOfferId() ] = $product_view->getAggregatedDestinationStatus();
+		}
+
+		return $results;
 	}
 
 	/**
