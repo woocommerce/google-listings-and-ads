@@ -170,7 +170,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 * @param WP_User $user User logged in.
 	 */
 	public function store_json_api_authorization_token( $user_login, $user ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized after via sanitize_text_field
 		$data = isset( $_REQUEST['data'] ) ? json_decode( base64_decode( wp_unslash( $_REQUEST['data'] ) ) ) : null;
 
 		if ( is_null( $data ) ) {
