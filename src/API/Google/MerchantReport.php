@@ -15,6 +15,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as Googl
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ReportRow;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Segments;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductView;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\SearchResponse;
 use DateTime;
 use Exception;
 
@@ -27,6 +33,7 @@ class MerchantReport implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
 	use ReportTrait;
+	use PluginHelper;
 
 	/**
 	 * The shopping service.
@@ -34,6 +41,13 @@ class MerchantReport implements OptionsAwareInterface {
 	 * @var ShoppingContent
 	 */
 	protected $service;
+
+	/**
+	 * Product repository.
+	 *
+	 * @var ProductRepository
+	 */
+	protected $product_repository;
 
 	/**
 	 * Product helper class.
@@ -48,9 +62,10 @@ class MerchantReport implements OptionsAwareInterface {
 	 * @param ShoppingContent $service
 	 * @param ProductHelper   $product_helper
 	 */
-	public function __construct( ShoppingContent $service, ProductHelper $product_helper ) {
-		$this->service        = $service;
-		$this->product_helper = $product_helper;
+	public function __construct( ShoppingContent $service, ProductHelper $product_helper, ProductRepository $product_repository ) {
+		$this->service            = $service;
+		$this->product_helper     = $product_helper;
+		$this->product_repository = $product_repository;
 	}
 
 	/**
@@ -58,23 +73,62 @@ class MerchantReport implements OptionsAwareInterface {
 	 *
 	 * @throws GoogleException If the search call fails.
 	 */
-	public function get_product_statuses() {
-		$query = new MerchantProductViewReportQuery( [] );
+	public function get_product_statistics() {
+		$statistics = [
+			'active'              => 0,
+			'not_synced'          => 0,
+			MCStatus::EXPIRING    => 0,
+			MCStatus::PENDING     => 0,
+			MCStatus::DISAPPROVED => 0,
+		];
 
+		$sync_ready_products_ids = $this->product_repository->find_sync_ready_products()->get_product_ids();
+		$offer_ids               = array_map(
+			function ( $item ) {
+				return WCProductAdapter::get_google_product_offer_id( $this->get_slug(), $item );
+			},
+			$sync_ready_products_ids
+		);
+
+		$query = new MerchantProductViewReportQuery( $offer_ids );
+
+		/** @var SearchResponse $results  */
 		$results = $query
 			->set_client( $this->service, $this->options->get_merchant_id() )
 			->get_results();
 
-		$rows = [];
-
 		/** @var $row ReportRow  */
 		foreach ( $results->getResults() as $row ) {
-			/** @var $product_view Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductView */
-			$product_view                        = $row->getProductView();
-			$rows[ $product_view->getOfferId() ] = $product_view->getAggregatedDestinationStatus();
+			/** @var ProductView $product_view  */
+			$product_view    = $row->getProductView();
+			$experation_date = $product_view->getExpirationDate();
+
+			$formatted_expiration_date = DateTime::createFromFormat( 'Y-m-d', "{$experation_date->getYear()}-{$experation_date->getMonth()}-{$experation_date->getDay()}" );
+			$formatted_expiration_date->modify( '-3 days' );  // subtract 3 days from the expiration date
+			if ( $formatted_expiration_date < new DateTime() ) {
+				++$statistics[ MCStatus::EXPIRING ];
+				continue;
+			}
+
+			switch ( $product_view->getAggregatedDestinationStatus() ) {
+				case 'ELIGIBLE':
+				case 'ELIGIBLE_LIMITED':
+					++$statistics['active'];
+					break;
+				case 'PENDING':
+					++$statistics[ MCStatus::PENDING ];
+					break;
+				case 'NOT_ELIGIBLE_OR_DISAPPROVED':
+					++$statistics[ MCStatus::DISAPPROVED ];
+					break;
+				default:
+					break;
+			}
 		}
 
-		return $results;
+		$statistics['not_synced'] = count( $sync_ready_products_ids ) - $results->count();
+
+		return $statistics;
 	}
 
 	/**

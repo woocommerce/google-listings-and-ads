@@ -6,13 +6,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class MerchantReportQuery
+ * Class MerchantProductViewReportQuery
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
 class MerchantProductViewReportQuery extends MerchantQuery {
-
-	use ReportQueryTrait;
 
 	/**
 	 * Query constructor.
@@ -22,6 +20,7 @@ class MerchantProductViewReportQuery extends MerchantQuery {
 	public function __construct( array $args ) {
 		parent::__construct( 'ProductView' );
 		$this->set_initial_columns();
+		$this->filter( $args );
 	}
 
 
