@@ -45,7 +45,7 @@ class Settings {
 	/**
 	 * Return a set of formatted settings which can be used in tracking.
 	 *
-	 * @since x.x.x
+	 * @since 2.5.16
 	 *
 	 * @return array
 	 */
