@@ -116,7 +116,7 @@ class NotificationsService implements Service {
 	 * @param array $args
 	 * @return array|\WP_Error
 	 */
-	protected function do_request( array $args ): \WP_Error|array {
+	protected function do_request( array $args ) {
 		return Client::remote_request( $args, wp_json_encode( $args['body'] ) );
 	}
 
