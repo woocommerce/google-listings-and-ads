@@ -7,7 +7,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events;
  * This class adds an action to track a generic event, which can be triggered by:
  * `do_action( 'woocommerce_gla_track_event', 'event_name', $properties )`
  *
- * @since x.x.x
+ * @since 2.5.16
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
