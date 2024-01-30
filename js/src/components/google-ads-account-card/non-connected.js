@@ -6,29 +6,23 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import SpinnerCard from '.~/components/spinner-card';
 import CreateAccount from './create-account';
-import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
-import useGoogleAccount from '.~/hooks/useGoogleAccount';
+import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
 import ConnectAds from './connect-ads';
 
-const useGoogleAccountCheck = () => {
-	const { google } = useGoogleAccount();
-	const { existingAccounts } =
-		google && google.active !== 'no'
-			? // eslint-disable-next-line react-hooks/rules-of-hooks
-			  useExistingGoogleAdsAccounts()
-			: { existingAccounts: null };
-
-	return { google, existingAccounts };
-};
-
 const NonConnected = () => {
-	const { google, existingAccounts } = useGoogleAccountCheck();
+	const { google, existingAccounts, hasFinishedResolution } =
+		useGoogleAccountCheck();
 	const [ ignoreExisting, setIgnoreExisting ] = useState( false );
 
 	const handleShowExisting = () => {
 		setIgnoreExisting( false );
 	};
+
+	if ( ! hasFinishedResolution ) {
+		return <SpinnerCard />;
+	}
 
 	if (
 		! existingAccounts ||
