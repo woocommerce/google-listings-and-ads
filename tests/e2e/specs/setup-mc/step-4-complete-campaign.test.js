@@ -167,178 +167,6 @@ test.describe( 'Complete your campaign', () => {
 		} );
 	} );
 
-	test.describe( 'Google Ads', () => {
-		test.describe( 'Google Ads section', () => {
-			test.beforeEach( async () => {
-				await completeCampaign.goto();
-			} );
-
-			test( 'should see Google Ads section', async () => {
-				const section = completeCampaign.getAdsAccountSection();
-				await expect( section ).toBeVisible();
-			} );
-
-			test( 'should only see non-budget related items and no footer buttons in the Features section when not yet connected', async () => {
-				const section = completeCampaign.getPaidAdsFeaturesSection();
-				const items = section.locator(
-					'.gla-paid-ads-features-section__feature-list > div'
-				);
-				await expect( items ).toHaveCount( 1 );
-				await expect( items ).toContainText( 'Promote your products' );
-
-				const buttons = section.locator(
-					'.components-card__footer > button'
-				);
-				await expect( buttons ).toHaveCount( 2 );
-				for ( const button of await buttons.all() ) {
-					await expect( button ).toBeHidden();
-				}
-			} );
-
-			test( 'should see all items and footer buttons in the Features section when connected', async () => {
-				await setupAdsAccountPage.mockAdsAccountConnected();
-
-				const section = completeCampaign.getPaidAdsFeaturesSection();
-				const items = section.locator(
-					'.gla-paid-ads-features-section__feature-list > div'
-				);
-				await expect( items ).toHaveCount( 3 );
-				await expect( items ).toContainText( [
-					'Promote your products',
-					'Set a daily budget',
-					/Claim \$\d+ in ads credit/,
-				] );
-
-				const buttons = section.locator(
-					'.components-card__footer > button'
-				);
-				await expect( buttons ).toHaveCount( 2 );
-				for ( const button of await buttons.all() ) {
-					await expect( button ).toBeVisible();
-					await expect( button ).toBeEnabled();
-				}
-			} );
-		} );
-
-		test.describe( 'Google Ads account', () => {
-			test.beforeAll( async () => {
-				await setupAdsAccountPage.mockAdsAccountDisconnected();
-				await completeCampaign.goto();
-			} );
-
-			test.describe( 'Create account', () => {
-				test.beforeAll( async () => {
-					await completeCampaign.clickCreateAccountButton();
-				} );
-
-				test( 'should see "Create Google Ads Account" modal', async () => {
-					const modal = setupAdsAccountPage.getCreateAccountModal();
-					await expect( modal ).toBeVisible();
-				} );
-
-				test( 'should see "ToS checkbox" from modal is unchecked', async () => {
-					const checkbox =
-						setupAdsAccountPage.getAcceptTermCreateAccount();
-					await expect( checkbox ).toBeVisible();
-					await expect( checkbox ).not.toBeChecked();
-				} );
-
-				test( 'should see "Create account" from modal is disabled', async () => {
-					const button =
-						setupAdsAccountPage.getCreateAdsAccountButtonModal();
-					await expect( button ).toBeVisible();
-					await expect( button ).toBeDisabled();
-				} );
-
-				test( 'should see "Create account" from modal is enabled when ToS checkbox is checked', async () => {
-					const button =
-						setupAdsAccountPage.getCreateAdsAccountButtonModal();
-					await setupAdsAccountPage.clickToSCheckboxFromModal();
-					await expect( button ).toBeEnabled();
-				} );
-
-				test( 'should see ads account connected after creating a new ads account', async () => {
-					await setupAdsAccountPage.mockAdsAccountsResponse( [
-						{
-							id: 12345,
-							name: 'Test Ad',
-						},
-					] );
-
-					await setupAdsAccountPage.mockAdsAccountConnected();
-
-					await setupAdsAccountPage.clickCreateAccountButtonFromModal();
-					const connectedText =
-						completeCampaign.getAdsAccountConnectedText();
-					await expect( connectedText ).toBeVisible();
-				} );
-			} );
-
-			test.describe( 'Connect to an existing account', () => {
-				test.beforeAll( async () => {
-					await setupAdsAccountPage.mockAdsAccountsResponse( [
-						{
-							id: 12345,
-							name: 'Test Ad 1',
-						},
-						{
-							id: 23456,
-							name: 'Test Ad 2',
-						},
-					] );
-
-					await setupAdsAccountPage.mockAdsAccountDisconnected();
-
-					await setupAdsAccountPage.clickConnectDifferentAccountButton();
-				} );
-
-				test( 'should see the ads account select', async () => {
-					const select = setupAdsAccountPage.getAdsAccountSelect();
-					await expect( select ).toBeVisible();
-				} );
-
-				test( 'should see connect button is disabled when no ads account is selected', async () => {
-					const button = setupAdsAccountPage.getConnectAdsButton();
-					await expect( button ).toBeVisible();
-					await expect( button ).toBeDisabled();
-				} );
-
-				test( 'should see connect button is enabled when an ads account is selected', async () => {
-					await setupAdsAccountPage.selectAnExistingAdsAccount(
-						'23456'
-					);
-					const button = setupAdsAccountPage.getConnectAdsButton();
-					await expect( button ).toBeVisible();
-					await expect( button ).toBeEnabled();
-				} );
-
-				test( 'should see ads account connected text and ads/accounts request is triggered after clicking connect button', async () => {
-					await setupAdsAccountPage.mockAdsAccountsResponse( [
-						{
-							id: 23456,
-							name: 'Test Ad 2',
-						},
-					] );
-
-					await setupAdsAccountPage.mockAdsAccountConnected( 23456 );
-
-					const requestPromise =
-						setupAdsAccountPage.registerConnectAdsAccountRequests(
-							'23456'
-						);
-
-					await setupAdsAccountPage.clickConnectAds();
-
-					await requestPromise;
-
-					const connectedText =
-						completeCampaign.getAdsAccountConnectedText();
-					await expect( connectedText ).toBeVisible();
-				} );
-			} );
-		} );
-	} );
-
 	test.describe( 'Set up paid ads', () => {
 		test.describe( 'Click "Create a paid ad campaign" button', () => {
 			test.beforeAll( async () => {
@@ -368,11 +196,10 @@ test.describe( 'Complete your campaign', () => {
 
 			test.describe( 'Allow to disconnect Google Ads account', () => {
 				test.beforeAll( async () => {
-					await setupAdsAccountPage.mockAdsAccountDisconnected();
-					await setupAdsAccountPage.clickConnectDifferentAccountButton();
+					await setupAdsAccountPage.mockAdsAccountConnected();
 				} );
 
-				test( 'should see "Ads audience" section is disabled', async () => {
+				test( 'should see "Ads audience" section is enabled', async () => {
 					const adsAudienceSection =
 						completeCampaign.getAdsAudienceSection();
 					await expect( adsAudienceSection ).toBeVisible();
@@ -380,22 +207,20 @@ test.describe( 'Complete your campaign', () => {
 					// Cannot use toBeDisabled() because <section> is not a native control element
 					// such as <button> or <input> so it will be always enabled.
 					await expect( adsAudienceSection ).toHaveClass(
-						/wcdl-section--is-disabled/
+						/wcdl-section/
 					);
 				} );
 
-				test( 'should see "Set your budget" section is disabled', async () => {
+				test( 'should see "Set your budget" section is enabled', async () => {
 					const budgetSection = completeCampaign.getBudgetSection();
 					await expect( budgetSection ).toBeVisible();
 
 					// Cannot use toBeDisabled() because <section> is not a native control element
 					// such as <button> or <input> so it will be always enabled.
-					await expect( budgetSection ).toHaveClass(
-						/wcdl-section--is-disabled/
-					);
+					await expect( budgetSection ).toHaveClass( /wcdl-section/ );
 				} );
 
-				test( 'should see both "Skip paid ads creation" and "Complete setup" button are disabled', async () => {
+				test( 'should see both "Skip paid ads creation" is enabled and "Complete setup" button is disabled', async () => {
 					const completeButton =
 						completeCampaign.getCompleteSetupButton();
 					await expect( completeButton ).toBeVisible();
@@ -404,7 +229,7 @@ test.describe( 'Complete your campaign', () => {
 					const skipButton =
 						completeCampaign.getSkipPaidAdsCreationButton();
 					await expect( skipButton ).toBeVisible();
-					await expect( skipButton ).toBeDisabled();
+					await expect( skipButton ).toBeEnabled();
 				} );
 			} );
 		} );

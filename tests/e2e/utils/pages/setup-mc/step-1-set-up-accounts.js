@@ -322,6 +322,15 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
+	 * Get WordPress account card.
+	 *
+	 * @return {import('@playwright/test').Locator} Get WordPress account card.
+	 */
+	getGoogleAdsAccountCard() {
+		return this.getAccountCards().nth( 2 );
+	}
+
+	/**
 	 * Get Merchant Center account card.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Merchant Center account card.
@@ -384,5 +393,30 @@ export default class SetUpAccountsPage extends MockRequests {
 			name,
 			exact: true,
 		} );
+	}
+
+	/**
+	 * Click create account button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async getCreateAdsAccountButton() {
+		return this.page
+			.getByRole( 'button', {
+				name: 'Create account',
+				exact: true,
+			} )
+			.first();
+	}
+
+	/**
+	 * Click create account button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickCreateAdsAccountButton() {
+		const button = await this.getCreateAdsAccountButton();
+		await button.click();
+		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
 }

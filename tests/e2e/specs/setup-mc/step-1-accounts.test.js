@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import SetUpAccountsPage from '../../utils/pages/setup-mc/step-1-set-up-accounts';
+import SetupAdsAccountPage from '../../utils/pages/setup-ads/setup-ads-accounts';
 import { LOAD_STATE } from '../../utils/constants';
 import {
 	getFAQPanelTitle,
@@ -24,6 +25,11 @@ test.describe.configure( { mode: 'serial' } );
 let setUpAccountsPage = null;
 
 /**
+ * @type {import('../../utils/pages/setup-ads/setup-ads-accounts.js').default} setupAdsAccountPage
+ */
+let setupAdsAccountPage = null;
+
+/**
  * @type {import('@playwright/test').Page} page
  */
 let page = null;
@@ -32,6 +38,7 @@ test.describe( 'Set up accounts', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		setUpAccountsPage = new SetUpAccountsPage( page );
+		setupAdsAccountPage = new SetupAdsAccountPage( page );
 	} );
 
 	test.afterAll( async () => {
@@ -171,6 +178,38 @@ test.describe( 'Set up accounts', () => {
 		} );
 	} );
 
+	test.describe( 'Google Ads', () => {
+		test.beforeAll( async () => {
+			// Mock Jetpack as connected
+			await setUpAccountsPage.mockJetpackConnected(
+				'Test user',
+				'jetpack@example.com'
+			);
+
+			// Mock google as connected.
+			await setUpAccountsPage.mockGoogleConnected();
+			await setUpAccountsPage.goto();
+		} );
+
+		test( 'should see Google Ads section', async () => {
+			const section = setUpAccountsPage.getGoogleAdsAccountCard();
+			await expect( section ).toBeVisible();
+		} );
+
+		test.describe( 'Google Ads account', () => {
+			test.describe( 'Create account', () => {
+				test.beforeAll( async () => {
+					await setUpAccountsPage.clickCreateAdsAccountButton();
+				} );
+
+				test( 'should see "Create Google Ads Account" modal', async () => {
+					const modal = setupAdsAccountPage.getCreateAccountModal();
+					await expect( modal ).toBeVisible();
+				} );
+			} );
+		} );
+	} );
+
 	test.describe( 'Connect Merchant Center account', () => {
 		test.beforeAll( async () => {
 			await Promise.all( [
@@ -186,6 +225,8 @@ test.describe( 'Set up accounts', () => {
 				// Mock Google Ads as connected.
 				setUpAccountsPage.mockAdsAccountConnected(),
 
+				// Mock google ads as connected.
+				setupAdsAccountPage.mockAdsAccountConnected(),
 				// Mock merchant center as not connected.
 				setUpAccountsPage.mockMCNotConnected(),
 			] );
