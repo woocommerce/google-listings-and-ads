@@ -318,6 +318,77 @@ class AccountServiceTest extends UnitTest {
 		$this->account->setup_account();
 	}
 
+	public function test_setup_account_step_link_merchant() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_MERCHANT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->merchant->expects( $this->once() )
+			->method( 'link_ads_id' )
+			->with( self::TEST_ACCOUNT_ID );
+
+		$this->ads->expects( $this->once() )
+			->method( 'accept_merchant_link' )
+			->with( self::TEST_MERCHANT_ID );
+
+		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
+	}
+
+	public function test_setup_account_step_link_merchant_no_ads_id() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( 0 );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_MERCHANT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'An Ads account must be connected' );
+
+		$this->account->setup_account();
+	}
+
+	public function test_setup_account_step_link_merchant_no_merchant_id() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( 0 );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
+	}
+
 	public function test_setup_account_step_conversion_action() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -35,6 +36,9 @@ defined( 'ABSPATH' ) || exit;
 class AccountServiceTest extends UnitTest {
 
 	use MerchantTrait;
+
+	/** @var MockObject|Ads $ads */
+	protected $ads;
 
 	/** @var MockObject|CleanupSyncedProducts $cleanup_synced */
 	protected $cleanup_synced;
@@ -80,6 +84,7 @@ class AccountServiceTest extends UnitTest {
 
 	protected const TEST_ACCOUNT_ID     = 12345678;
 	protected const TEST_OLD_ACCOUNT_ID = 23456781;
+	protected const TEST_ADS_ID         = 1234567890;
 	protected const TEST_ACCOUNTS       = [
 		[
 			'id'         => self::TEST_ACCOUNT_ID,
@@ -105,6 +110,7 @@ class AccountServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->ads               = $this->createMock( Ads::class );
 		$this->cleanup_synced    = $this->createMock( CleanupSyncedProducts::class );
 		$this->merchant          = $this->createMock( Merchant::class );
 		$this->mc_service        = $this->createMock( MerchantCenterService::class );
@@ -119,6 +125,7 @@ class AccountServiceTest extends UnitTest {
 		$this->transients        = $this->createMock( TransientsInterface::class );
 
 		$this->container = new Container();
+		$this->container->share( Ads::class, $this->ads );
 		$this->container->share( CleanupSyncedProducts::class, $this->cleanup_synced );
 		$this->container->share( Merchant::class, $this->merchant );
 		$this->container->share( MerchantCenterService::class, $this->mc_service );
@@ -589,6 +596,77 @@ class AccountServiceTest extends UnitTest {
 			->with( OptionsInterface::CLAIMED_URL_HASH );
 
 		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->switch_url( self::TEST_ACCOUNT_ID ) );
+	}
+
+	public function test_setup_account_step_link_ads() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ADS_ID );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->merchant->expects( $this->once() )
+			->method( 'link_ads_id' )
+			->with( self::TEST_ADS_ID );
+
+		$this->ads->expects( $this->once() )
+			->method( 'accept_merchant_link' )
+			->with( self::TEST_ACCOUNT_ID );
+
+		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+	}
+
+	public function test_setup_account_step_link_ads_without_ads() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( 0 );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+	}
+
+	public function test_setup_account_step_link_ads_without_mc() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ADS_ID );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( 0 );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'A Merchant Center account must be connected' );
+
+		$this->account->setup_account( self::TEST_ACCOUNT_ID );
 	}
 
 	public function test_switch_url_invalid() {
