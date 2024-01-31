@@ -15,6 +15,7 @@ use WC_Helper_Product;
 
 /**
  * Class ProductNotificationJobTest
+ *
  * @group Notifications
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
  */
@@ -65,7 +66,7 @@ class ProductNotificationJobTest extends UnitTest {
 
 	public function test_schedule_schedules_immediate_job() {
 		$topic = 'product.create';
-		$id = 1;
+		$id    = 1;
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
@@ -83,7 +84,7 @@ class ProductNotificationJobTest extends UnitTest {
 	}
 
 	public function test_schedule_doesnt_schedules_immediate_job_if_already_scheduled() {
-		$id = 1;
+		$id    = 1;
 		$topic = 'product.create';
 
 		$this->action_scheduler->expects( $this->once() )
@@ -94,11 +95,10 @@ class ProductNotificationJobTest extends UnitTest {
 		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
 
 		$this->job->schedule( [ $id, $topic ] );
-
 	}
 
 	public function test_schedule_doesnt_schedules_immediate_job_if_filtered() {
-		$id = 1;
+		$id    = 1;
 		$topic = 'product.create';
 
 		add_filter( 'woocommerce_gla_product_notification_job_can_schedule', '__return_false' );
@@ -111,31 +111,34 @@ class ProductNotificationJobTest extends UnitTest {
 		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
 
 		$this->job->schedule( [ $id, $topic ] );
-
 	}
 
 	public function test_process_items_calls_notify_and_set_status_on_success() {
 		/** @var \WC_Product $product */
 		$product = WC_Helper_Product::create_simple_product();
-		$id = $product->get_id();
-		$topic = 'product.create';
+		$id      = $product->get_id();
+		$topic   = 'product.create';
 
 		$this->notification_service->expects( $this->once() )
 			->method( 'notify' )
 			->with( $id, $topic )
 			->willReturn( true );
 
-		$this->product_helper->expects( $this->once() )
+		$this->product_helper->expects( $this->exactly( 2 ) )
 		->method( 'get_wc_product' )
 		->with( $id )
 		->willReturn( $product );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_create_notification' )
+			->with( $product )
+			->willReturn( true );
 
 		$this->product_helper->expects( $this->once() )
 			->method( 'set_notification_status' )
 			->with( $product, NotificationStatus::NOTIFICATION_CREATED );
 
 		$this->job->handle_process_items_action( [ $id, $topic ] );
-
 	}
 
 	public function test_process_items_doesnt_calls_notify_when_no_args() {
@@ -149,53 +152,107 @@ class ProductNotificationJobTest extends UnitTest {
 	public function test_process_items_doesnt_calls_set_status_on_failure() {
 		/** @var \WC_Product $product */
 		$product = WC_Helper_Product::create_simple_product();
-		$id = $product->get_id();
-		$topic = 'product.create';
+		$id      = $product->get_id();
+		$topic   = 'product.create';
 
 		$this->notification_service->expects( $this->once() )
 			->method( 'notify' )
 			->with( $id, $topic )
 			->willReturn( false );
 
-		$this->product_helper->expects( $this->never() )
-			->method( 'get_wc_product' );
+		$this->product_helper->expects( $this->once() )
+			->method( 'get_wc_product' )
+			->with( $id )
+			->willReturn( $product );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_create_notification' )
+			->with( $product )
+			->willReturn( true );
 
 		$this->product_helper->expects( $this->never() )
 			->method( 'set_notification_status' );
 
 		$this->job->handle_process_items_action( [ $id, $topic ] );
-
 	}
 
 	public function test_get_after_notification_status() {
 		/** @var \WC_Product $product */
 		$product = WC_Helper_Product::create_simple_product();
-		$id = $product->get_id();
+		$id      = $product->get_id();
 
 		$this->notification_service->expects( $this->exactly( 3 ) )
 			->method( 'notify' )
 			->willReturn( true );
 
-		$this->product_helper->expects( $this->exactly( 3 ) )
+		$this->product_helper->expects( $this->exactly( 6 ) )
 			->method( 'get_wc_product' )
 			->willReturn( $product );
 
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_create_notification' )
+			->with( $product )
+			->willReturn( true );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_update_notification' )
+			->with( $product )
+			->willReturn( true );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_delete_notification' )
+			->with( $product )
+			->willReturn( true );
+
 		$this->product_helper->expects( $this->exactly( 3 ) )
 			->method( 'set_notification_status' )
-			->willReturnCallback( function( $id, $topic ) {
-				if ( $topic === 'product.create' ) {
-					return NotificationStatus::NOTIFICATION_CREATED;
-				} else if ( $topic === 'product.delete' ) {
-					return  NotificationStatus::NOTIFICATION_DELETED;
-				} else {
-					return  NotificationStatus::NOTIFICATION_UPDATED;
+			->willReturnCallback(
+				function ( $id, $topic ) {
+					if ( $topic === 'product.create' ) {
+							return NotificationStatus::NOTIFICATION_CREATED;
+					} elseif ( $topic === 'product.delete' ) {
+						return NotificationStatus::NOTIFICATION_DELETED;
+					} else {
+						return NotificationStatus::NOTIFICATION_UPDATED;
+					}
 				}
-			});
-
+			);
 
 		$this->job->handle_process_items_action( [ $id, 'product.create' ] );
 		$this->job->handle_process_items_action( [ $id, 'product.delete' ] );
 		$this->job->handle_process_items_action( [ $id, 'product.update' ] );
 	}
 
+	public function test_dont_process_item_if_status_changed() {
+		/** @var \WC_Product $product */
+		$product = WC_Helper_Product::create_simple_product();
+		$id      = $product->get_id();
+
+		$this->notification_service->expects( $this->never() )->method( 'notify' );
+
+		$this->product_helper->expects( $this->exactly( 3 ) )
+			->method( 'get_wc_product' )
+			->willReturn( $product );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_create_notification' )
+			->with( $product )
+			->willReturn( false );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_update_notification' )
+			->with( $product )
+			->willReturn( false );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_delete_notification' )
+			->with( $product )
+			->willReturn( false );
+
+		$this->product_helper->expects( $this->never() )->method( 'set_notification_status' );
+
+		$this->job->handle_process_items_action( [ $id, 'product.create' ] );
+		$this->job->handle_process_items_action( [ $id, 'product.delete' ] );
+		$this->job->handle_process_items_action( [ $id, 'product.update' ] );
+	}
 }
