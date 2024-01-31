@@ -3,8 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
@@ -13,6 +15,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\SyncerHooks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 
@@ -42,6 +46,16 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	/** @var MockObject|DeleteProducts $delete_products_job */
 	protected $delete_products_job;
+
+	/**
+	 * @var MockObject|NotificationsService
+	 */
+	protected $notification_service;
+
+	/**
+	 * @var MockObject|ProductNotificationJob
+	 */
+	protected $product_notification_job;
 
 	/** @var WC $wc */
 	protected $wc;
@@ -186,6 +200,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$variation_to_delete->delete();
 	}
 
+
 	public function test_force_deleting_synced_variation_schedules_delete_job() {
 		$variable_product = $this->create_variation_product();
 		foreach ( $variable_product->get_children() as $variation_id ) {
@@ -212,7 +227,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product->save();
 	}
 
-	public function test_trashing_synced_product_wp_post_schedules_delete_job() {
+	public function test_trashing_synced_product_wp_post_schedules_delete_joby() {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
@@ -263,6 +278,37 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		wp_delete_post( $post->ID, true );
 	}
 
+	public function test_create_product_triggers_notification_created() {
+		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->product_notification_job->expects( $this->once() )
+			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_CREATED ] ) );
+		$product->set_status( 'publish' );
+		$product->save();
+	}
+
+	public function test_create_product_triggers_notification_updated() {
+		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->product_notification_job->expects( $this->once() )
+			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_UPDATED ] ) );
+		$product->set_status( 'publish' );
+		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
+		$product->save();
+	}
+
+	public function test_create_product_triggers_notification_delete() {
+		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->product_notification_job->expects( $this->once() )
+			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED ] ) );
+		$product->set_status( 'publish' );
+		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
+		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
+		$product->save();
+	}
+
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -276,23 +322,28 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->method( 'is_ready_for_syncing' )
 			->willReturn( true );
 
-		$this->update_products_job = $this->createMock( UpdateProducts::class );
-		$this->delete_products_job = $this->createMock( DeleteProducts::class );
-		$this->job_repository      = $this->createMock( JobRepository::class );
+		$this->update_products_job      = $this->createMock( UpdateProducts::class );
+		$this->delete_products_job      = $this->createMock( DeleteProducts::class );
+		$this->product_notification_job = $this->createMock( ProductNotificationJob::class );
+		$this->job_repository           = $this->createMock( JobRepository::class );
+		$this->notification_service     = $this->createMock( NotificationsService::class );
+
 		$this->job_repository->expects( $this->any() )
 			->method( 'get' )
 			->willReturnMap(
 				[
 					[ UpdateProducts::class, $this->update_products_job ],
 					[ DeleteProducts::class, $this->delete_products_job ],
+					[ ProductNotificationJob::class, $this->product_notification_job ],
 				]
 			);
 
 		$this->batch_helper   = $this->container->get( BatchProductHelper::class );
 		$this->product_helper = $this->container->get( ProductHelper::class );
 		$this->wc             = $this->container->get( WC::class );
-		$this->syncer_hooks   = new SyncerHooks( $this->batch_helper, $this->product_helper, $this->job_repository, $this->merchant_center, $this->wc );
+		$this->syncer_hooks   = new SyncerHooks( $this->batch_helper, $this->product_helper, $this->job_repository, $this->merchant_center, $this->notification_service, $this->wc );
 
+		add_filter( 'woocommerce_gla_notifications_enabled', '__return_false' );
 		$this->syncer_hooks->register();
 	}
 }
