@@ -124,10 +124,15 @@ class ProductNotificationJobTest extends UnitTest {
 			->with( $id, $topic )
 			->willReturn( true );
 
-		$this->product_helper->expects( $this->once() )
+		$this->product_helper->expects( $this->exactly( 2 ) )
 		->method( 'get_wc_product' )
 		->with( $id )
 		->willReturn( $product );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_create_notification' )
+			->with( $product )
+			->willReturn( true );
 
 		$this->product_helper->expects( $this->once() )
 			->method( 'set_notification_status' )
@@ -155,8 +160,15 @@ class ProductNotificationJobTest extends UnitTest {
 			->with( $id, $topic )
 			->willReturn( false );
 
-		$this->product_helper->expects( $this->never() )
-			->method( 'get_wc_product' );
+		$this->product_helper->expects( $this->once() )
+			->method( 'get_wc_product' )
+			->with( $id )
+			->willReturn( $product );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_create_notification' )
+			->with( $product )
+			->willReturn( true );
 
 		$this->product_helper->expects( $this->never() )
 			->method( 'set_notification_status' );
@@ -173,9 +185,24 @@ class ProductNotificationJobTest extends UnitTest {
 			->method( 'notify' )
 			->willReturn( true );
 
-		$this->product_helper->expects( $this->exactly( 3 ) )
+		$this->product_helper->expects( $this->exactly( 6 ) )
 			->method( 'get_wc_product' )
 			->willReturn( $product );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_create_notification' )
+			->with( $product )
+			->willReturn( true );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_update_notification' )
+			->with( $product )
+			->willReturn( true );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_delete_notification' )
+			->with( $product )
+			->willReturn( true );
 
 		$this->product_helper->expects( $this->exactly( 3 ) )
 			->method( 'set_notification_status' )
@@ -190,6 +217,39 @@ class ProductNotificationJobTest extends UnitTest {
 					}
 				}
 			);
+
+		$this->job->handle_process_items_action( [ $id, 'product.create' ] );
+		$this->job->handle_process_items_action( [ $id, 'product.delete' ] );
+		$this->job->handle_process_items_action( [ $id, 'product.update' ] );
+	}
+
+	public function test_dont_process_item_if_status_changed() {
+		/** @var \WC_Product $product */
+		$product = WC_Helper_Product::create_simple_product();
+		$id      = $product->get_id();
+
+		$this->notification_service->expects( $this->never() )->method( 'notify' );
+
+		$this->product_helper->expects( $this->exactly( 3 ) )
+			->method( 'get_wc_product' )
+			->willReturn( $product );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_create_notification' )
+			->with( $product )
+			->willReturn( false );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_update_notification' )
+			->with( $product )
+			->willReturn( false );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_delete_notification' )
+			->with( $product )
+			->willReturn( false );
+
+		$this->product_helper->expects( $this->never() )->method( 'set_notification_status' );
 
 		$this->job->handle_process_items_action( [ $id, 'product.create' ] );
 		$this->job->handle_process_items_action( [ $id, 'product.delete' ] );
