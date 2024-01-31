@@ -419,4 +419,13 @@ export default class SetUpAccountsPage extends MockRequests {
 		await button.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
+
+	/**
+	 * Get ads account connected text.
+	 *
+	 * @return {import('@playwright/test').Locator} Get ads account connected text.
+	 */
+	getAdsAccountConnectedText() {
+		return this.getGoogleAdsAccountCard().getByText( 'Connected' );
+	}
 }

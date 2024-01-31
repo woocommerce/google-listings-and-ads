@@ -206,6 +206,43 @@ test.describe( 'Set up accounts', () => {
 					const modal = setupAdsAccountPage.getCreateAccountModal();
 					await expect( modal ).toBeVisible();
 				} );
+
+				test( 'should see "ToS checkbox" from modal is unchecked', async () => {
+					const checkbox =
+						setupAdsAccountPage.getAcceptTermCreateAccount();
+					await expect( checkbox ).toBeVisible();
+					await expect( checkbox ).not.toBeChecked();
+				} );
+
+				test( 'should see "Create account" from modal is disabled', async () => {
+					const button =
+						setupAdsAccountPage.getCreateAdsAccountButtonModal();
+					await expect( button ).toBeVisible();
+					await expect( button ).toBeDisabled();
+				} );
+
+				test( 'should see "Create account" from modal is enabled when ToS checkbox is checked', async () => {
+					const button =
+						setupAdsAccountPage.getCreateAdsAccountButtonModal();
+					await setupAdsAccountPage.clickToSCheckboxFromModal();
+					await expect( button ).toBeEnabled();
+				} );
+
+				test( 'should see ads account connected after creating a new ads account', async () => {
+					await setupAdsAccountPage.mockAdsAccountsResponse( [
+						{
+							id: 12345,
+							name: 'Test Ad',
+						},
+					] );
+
+					await setupAdsAccountPage.mockAdsAccountConnected();
+
+					await setupAdsAccountPage.clickCreateAccountButtonFromModal();
+					const connectedText =
+						setUpAccountsPage.getAdsAccountConnectedText();
+					await expect( connectedText ).toBeVisible();
+				} );
 			} );
 		} );
 	} );
