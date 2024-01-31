@@ -244,6 +244,68 @@ test.describe( 'Set up accounts', () => {
 					await expect( connectedText ).toBeVisible();
 				} );
 			} );
+
+			test.describe( 'Connect to an existing account', () => {
+				test.beforeAll( async () => {
+					await setupAdsAccountPage.mockAdsAccountsResponse( [
+						{
+							id: 12345,
+							name: 'Test Ad 1',
+						},
+						{
+							id: 23456,
+							name: 'Test Ad 2',
+						},
+					] );
+
+					await setupAdsAccountPage.mockAdsAccountDisconnected();
+					await setupAdsAccountPage.clickConnectDifferentAccountButton();
+				} );
+
+				test( 'should see the ads account select', async () => {
+					const select = setupAdsAccountPage.getAdsAccountSelect();
+					await expect( select ).toBeVisible();
+				} );
+
+				test( 'should see connect button is disabled when no ads account is selected', async () => {
+					const button = setupAdsAccountPage.getConnectAdsButton();
+					await expect( button ).toBeVisible();
+					await expect( button ).toBeDisabled();
+				} );
+
+				test( 'should see connect button is enabled when an ads account is selected', async () => {
+					await setupAdsAccountPage.selectAnExistingAdsAccount(
+						'23456'
+					);
+					const button = setupAdsAccountPage.getConnectAdsButton();
+					await expect( button ).toBeVisible();
+					await expect( button ).toBeEnabled();
+				} );
+
+				test( 'should see ads account connected text and ads/accounts request is triggered after clicking connect button', async () => {
+					await setupAdsAccountPage.mockAdsAccountsResponse( [
+						{
+							id: 23456,
+							name: 'Test Ad 2',
+						},
+					] );
+
+					await setupAdsAccountPage.mockAdsAccountConnected( 23456 );
+
+					const requestPromise =
+						setupAdsAccountPage.registerConnectAdsAccountRequests(
+							'23456'
+						);
+
+					await setupAdsAccountPage.clickConnectAds();
+
+					await requestPromise;
+
+					const connectedText =
+						setUpAccountsPage.getAdsAccountConnectedText();
+					await expect( connectedText ).toBeVisible();
+				} );
+			} );
 		} );
 	} );
 
