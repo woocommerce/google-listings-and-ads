@@ -77,7 +77,6 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->method( 'schedule' )
 			->with( $this->equalTo( [ [ $product->get_id() ] ] ) );
 
-
 		$product->set_status( 'publish' );
 		$product->save();
 	}
@@ -281,7 +280,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	public function test_create_product_triggers_notification_created() {
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
-		$this->notification_service->expects( $this->once() )->method('is_enabled')->willReturn( true );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->product_notification_job->expects( $this->once() )
 			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_CREATED ] ) );
 		$product->set_status( 'publish' );
@@ -290,7 +289,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	public function test_create_product_triggers_notification_updated() {
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
-		$this->notification_service->expects( $this->once() )->method('is_enabled')->willReturn( true );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->product_notification_job->expects( $this->once() )
 			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_UPDATED ] ) );
 		$product->set_status( 'publish' );
@@ -300,11 +299,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	public function test_create_product_triggers_notification_delete() {
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
-		$this->notification_service->expects( $this->once() )->method('is_enabled')->willReturn( true );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->product_notification_job->expects( $this->once() )
 			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED ] ) );
 		$product->set_status( 'publish' );
-		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW , true );
+		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
 		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
 		$product->save();
 	}
@@ -323,11 +322,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->method( 'is_ready_for_syncing' )
 			->willReturn( true );
 
-		$this->update_products_job              = $this->createMock( UpdateProducts::class );
-		$this->delete_products_job              = $this->createMock( DeleteProducts::class );
-		$this->product_notification_job 		= $this->createMock( ProductNotificationJob::class );
-		$this->job_repository                   = $this->createMock( JobRepository::class );
-		$this->notification_service             = $this->createMock( NotificationsService::class );
+		$this->update_products_job      = $this->createMock( UpdateProducts::class );
+		$this->delete_products_job      = $this->createMock( DeleteProducts::class );
+		$this->product_notification_job = $this->createMock( ProductNotificationJob::class );
+		$this->job_repository           = $this->createMock( JobRepository::class );
+		$this->notification_service     = $this->createMock( NotificationsService::class );
 
 		$this->job_repository->expects( $this->any() )
 			->method( 'get' )
@@ -339,12 +338,12 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 				]
 			);
 
-		$this->batch_helper          = $this->container->get( BatchProductHelper::class );
-		$this->product_helper        = $this->container->get( ProductHelper::class );
-		$this->wc                    = $this->container->get( WC::class );
+		$this->batch_helper   = $this->container->get( BatchProductHelper::class );
+		$this->product_helper = $this->container->get( ProductHelper::class );
+		$this->wc             = $this->container->get( WC::class );
 		$this->syncer_hooks   = new SyncerHooks( $this->batch_helper, $this->product_helper, $this->job_repository, $this->merchant_center, $this->notification_service, $this->wc );
 
-		add_filter( 'woocommerce_gla_notifications_enabled', '__return_false');
+		add_filter( 'woocommerce_gla_notifications_enabled', '__return_false' );
 		$this->syncer_hooks->register();
 	}
 }
