@@ -309,7 +309,6 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		 *
 		 * @return string Merchant Center product ID corresponding to the given WooCommerce product ID.
 		 */
-		// The offer ID will not include the gla slug if the product is new in the MC.
 		return apply_filters( 'woocommerce_gla_get_google_product_offer_id', "{$slug}_{$product_id}", $product_id );
 	}
 
