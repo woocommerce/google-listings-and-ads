@@ -7,7 +7,6 @@ import {
 	getDateParamsFromQuery,
 	isoDateFormat,
 } from '@woocommerce/date';
-import { recordEvent } from '@woocommerce/tracks';
 // We are waiting for the release of the following fixes:
 // https://github.com/woocommerce/woocommerce-admin/issues/6890
 // https://github.com/woocommerce/woocommerce-admin/issues/6062
@@ -23,6 +22,7 @@ import { createProgramsFilterConfig } from './filter-config';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import ReportFilters from '.~/external-components/woocommerce/filters';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 const siteLocale = getSetting( 'locale' ).siteLocale;
 const getProgramsFilter = createProgramsFilterConfig();
@@ -68,7 +68,7 @@ const ProgramsReportFilters = ( props ) => {
 	 * @param {Object} data Data to be forwarded from ReportFilters' date picker.
 	 */
 	const onDateSelect = ( data ) =>
-		recordEvent( 'gla_datepicker_update', {
+		recordGlaEvent( 'gla_datepicker_update', {
 			report: trackEventId,
 			...omitBy( data, isUndefined ),
 		} );
@@ -80,7 +80,7 @@ const ProgramsReportFilters = ( props ) => {
 	 * @param {Object} data Data to be forwarded from ReportFilters.
 	 */
 	const onFilterSelect = ( data ) =>
-		recordEvent( 'gla_filter', {
+		recordGlaEvent( 'gla_filter', {
 			report: trackEventId,
 			filter: data.filter || 'all',
 		} );

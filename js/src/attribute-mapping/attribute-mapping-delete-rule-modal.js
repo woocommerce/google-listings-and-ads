@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { noop } from 'lodash';
 import { useState } from '@wordpress/element';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -12,6 +11,7 @@ import { recordEvent } from '@woocommerce/tracks';
 import AppModal from '.~/components/app-modal';
 import AppButton from '.~/components/app-button';
 import { useAppDispatch } from '.~/data';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * Deletes the rule successfully
@@ -45,7 +45,7 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 
 		try {
 			await deleteMappingRule( rule );
-			recordEvent( 'gla_attribute_mapping_delete_rule', {
+			recordGlaEvent( 'gla_attribute_mapping_delete_rule', {
 				context: 'attribute-mapping-delete-rule-modal',
 			} );
 			onRequestClose( 'confirm' );

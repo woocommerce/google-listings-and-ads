@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { CustomerEffortScore } from '@woocommerce/customer-effort-score';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -11,6 +10,7 @@ import { recordEvent } from '@woocommerce/tracks';
 import { LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
 import useEffectRemoveNotice from '.~/hooks/useEffectRemoveNotice';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * CES prompt snackbar open
@@ -66,25 +66,25 @@ const CustomerEffortScorePrompt = ( { eventContext, label, secondLabel } ) => {
 
 	const onNoticeShown = () => {
 		removeCESPromptFlagFromLocal();
-		recordEvent( 'gla_ces_snackbar_open', {
+		recordGlaEvent( 'gla_ces_snackbar_open', {
 			context: eventContext,
 		} );
 	};
 
 	const onNoticeDismissed = () => {
-		recordEvent( 'gla_ces_snackbar_closed', {
+		recordGlaEvent( 'gla_ces_snackbar_closed', {
 			context: eventContext,
 		} );
 	};
 
 	const onModalShown = () => {
-		recordEvent( 'gla_ces_modal_open', {
+		recordGlaEvent( 'gla_ces_modal_open', {
 			context: eventContext,
 		} );
 	};
 
 	const recordScore = ( score, score2, comments ) => {
-		recordEvent( 'gla_ces_feedback', {
+		recordGlaEvent( 'gla_ces_feedback', {
 			context: eventContext,
 			score,
 			comments: comments || '',

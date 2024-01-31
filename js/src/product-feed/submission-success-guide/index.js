@@ -8,7 +8,6 @@ import {
 	useCallback,
 } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -24,6 +23,7 @@ import localStorage from '.~/utils/localStorage';
 import { getProductFeedUrl } from '.~/utils/urls';
 import wooLogoURL from './woocommerce-logo.svg';
 import googleLogoURL from '.~/images/google-logo.svg';
+import { recordGlaEvent } from '.~/utils/tracks';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';
@@ -137,7 +137,7 @@ const handleGuideFinish = ( e ) => {
 	// here is a workaround by identifying the close button's data-aciton attribute.
 	const target = e.currentTarget || e.target;
 	const action = target.dataset.action || 'dismiss';
-	recordEvent( EVENT_NAME, {
+	recordGlaEvent( EVENT_NAME, {
 		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 		action,
 	} );
@@ -154,7 +154,7 @@ const handleGuideFinish = ( e ) => {
  */
 const SubmissionSuccessGuide = () => {
 	useEffect( () => {
-		recordEvent( 'gla_modal_open', {
+		recordGlaEvent( 'gla_modal_open', {
 			context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 		} );
 

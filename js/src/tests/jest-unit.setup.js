@@ -18,3 +18,5 @@ global.ResizeObserver = jest
 		unobserve: jest.fn().mockName( 'resizeObserver.unobserve' ),
 		disconnect: jest.fn().mockName( 'resizeObserver.disconnect' ),
 	} ) );
+
+global.wpNavMenuClassChange = jest.fn().mockName( 'wpNavMenuClassChange' );

@@ -10,9 +10,9 @@ jest.mock( '.~/hooks/useMCIssuesTypeFilter', () => ( {
 } ) );
 
 jest.mock( '.~/hooks/useActiveIssueType' );
-jest.mock( '@woocommerce/tracks', () => {
+jest.mock( '.~/utils/tracks', () => {
 	return {
-		recordEvent: jest.fn(),
+		recordGlaEvent: jest.fn(),
 	};
 } );
 
@@ -27,13 +27,13 @@ jest.mock( '.~/hooks/useDispatchCoreNotices', () => ( {
  * External dependencies
  */
 import { fireEvent, screen, render } from '@testing-library/react';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import useActiveIssueType from '.~/hooks/useActiveIssueType';
 import ReviewRequest from '.~/product-feed/review-request/index';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 describe( 'Request Review Component', () => {
 	it.each( [ 'DISAPPROVED', 'WARNING' ] )(
@@ -73,13 +73,13 @@ describe( 'Request Review Component', () => {
 			expect( button ).toBeTruthy();
 			fireEvent.click( button );
 			expect( queryByRole( 'dialog' ) ).toBeTruthy();
-			expect( recordEvent ).toHaveBeenCalledWith( 'gla_modal_open', {
+			expect( recordGlaEvent ).toHaveBeenCalledWith( 'gla_modal_open', {
 				context: 'request-review',
 			} );
 
 			fireEvent.click( screen.queryByText( 'Cancel' ) );
 			expect( queryByRole( 'dialog' ) ).toBeFalsy();
-			expect( recordEvent ).toHaveBeenCalledWith( 'gla_modal_closed', {
+			expect( recordGlaEvent ).toHaveBeenCalledWith( 'gla_modal_closed', {
 				context: 'request-review',
 				action: 'maybe-later',
 			} );

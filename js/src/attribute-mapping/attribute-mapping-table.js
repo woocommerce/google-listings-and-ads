@@ -5,7 +5,6 @@ import { __ } from '@wordpress/i18n';
 import { Pagination, Table, TablePlaceholder } from '@woocommerce/components';
 import { CardBody, CardFooter, Flex, FlexItem } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -21,7 +20,7 @@ import AttributeMappingSync from './attribute-mapping-sync';
 import useMappingAttributes from '.~/hooks/useMappingAttributes';
 import useMappingRules from '.~/hooks/useMappingRules';
 import usePagination from '.~/hooks/usePagination';
-import { recordTablePageEvent } from '.~/utils/recordEvent';
+import { recordGlaEvent, recordTablePageEvent } from '.~/utils/tracks';
 
 const PER_PAGE = 10;
 const ATTRIBUTE_MAPPING_TABLE_HEADERS = [
@@ -166,7 +165,7 @@ const AttributeMappingTable = () => {
 															onRequestClose={ (
 																action
 															) => {
-																recordEvent(
+																recordGlaEvent(
 																	'gla_modal_closed',
 																	{
 																		context:
@@ -201,7 +200,7 @@ const AttributeMappingTable = () => {
 															onRequestClose={ (
 																action
 															) => {
-																recordEvent(
+																recordGlaEvent(
 																	'gla_modal_closed',
 																	{
 																		context:
@@ -243,7 +242,7 @@ const AttributeMappingTable = () => {
 						modal={
 							<AttributeMappingRuleModal
 								onRequestClose={ ( action ) => {
-									recordEvent( 'gla_modal_closed', {
+									recordGlaEvent( 'gla_modal_closed', {
 										context:
 											'attribute-mapping-create-rule-modal',
 										action,

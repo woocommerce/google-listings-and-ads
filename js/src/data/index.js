@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { registerStore, useDispatch } from '@wordpress/data';
+import { registerStore, useDispatch, dispatch } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 import { getHistory } from '@woocommerce/navigation';
 
@@ -25,6 +25,8 @@ registerStore( STORE_KEY, {
 	controls,
 	reducer,
 } );
+
+dispatch( STORE_KEY ).hydratePrefetchedData( glaData.initialWpData );
 
 apiFetch.use(
 	createErrorResponseCatcher( ( response ) => {

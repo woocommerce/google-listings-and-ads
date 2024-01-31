@@ -1,14 +1,13 @@
 jest.mock( '.~/hooks/useActiveIssueType' );
-jest.mock( '@woocommerce/tracks', () => {
+jest.mock( '.~/utils/tracks', () => {
 	return {
-		recordEvent: jest.fn(),
+		recordGlaEvent: jest.fn(),
 	};
 } );
 /**
  * External dependencies
  */
 import { render, fireEvent } from '@testing-library/react';
-import { recordEvent } from '@woocommerce/tracks';
 import '@testing-library/jest-dom';
 /**
  * Internal dependencies
@@ -17,6 +16,7 @@ import useActiveIssueType from '.~/hooks/useActiveIssueType';
 import mockIssue from '.~/tests/mock-issue';
 import IssuesTableData from './issues-table-data';
 import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 describe( 'Issues Table data', () => {
 	test( 'Render error if no data', () => {
@@ -94,7 +94,7 @@ describe( 'Issues Table data', () => {
 		const link = queryByText( 'Read more about this issue' );
 		fireEvent.click( link );
 		expect( queryByRole( 'dialog' ) ).toBeTruthy();
-		expect( recordEvent ).toHaveBeenCalledWith(
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_click_read_more_about_issue',
 			{
 				context: 'issues-to-resolve',
@@ -122,7 +122,7 @@ describe( 'Issues Table data', () => {
 		const link = queryByText( 'Read more about this issue' );
 		expect( link ).toHaveAttribute( 'href', 'example.com/1' );
 		fireEvent.click( link );
-		expect( recordEvent ).toHaveBeenCalledWith(
+		expect( recordGlaEvent ).toHaveBeenCalledWith(
 			'gla_documentation_link_click',
 			{
 				context: 'issues-to-resolve',

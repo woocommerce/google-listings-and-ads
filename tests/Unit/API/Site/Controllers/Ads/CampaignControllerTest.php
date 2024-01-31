@@ -6,6 +6,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\CampaignController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\TrackingTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -16,6 +17,8 @@ use PHPUnit\Framework\MockObject\MockObject;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
  */
 class CampaignControllerTest extends RESTControllerUnitTest {
+
+	use TrackingTrait;
 
 	/** @var MockObject|AdsCampaign $ads_campaign */
 	protected $ads_campaign;
@@ -178,6 +181,18 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			->method( 'create_campaign' )
 			->with( $campaign_data )
 			->willReturn( $expected );
+
+		$this->expect_track_event(
+			'created_campaign',
+			[
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'status'             => 'enabled',
+				'name'               => 'New Campaign',
+				'amount'             => 20,
+				'country'            => self::BASE_COUNTRY,
+				'targeted_locations' => 'US,GB,TW',
+			]
+		);
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 
@@ -351,6 +366,14 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			->with( self::TEST_CAMPAIGN_ID, $campaign_data )
 			->willReturn( self::TEST_CAMPAIGN_ID );
 
+		$this->expect_track_event(
+			'edited_campaign',
+			[
+				'id'     => self::TEST_CAMPAIGN_ID,
+				'amount' => 44.55,
+			]
+		);
+
 		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', $campaign_data );
 
 		$this->assertEquals(
@@ -402,6 +425,13 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			->method( 'delete_campaign' )
 			->with( self::TEST_CAMPAIGN_ID )
 			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$this->expect_track_event(
+			'deleted_campaign',
+			[
+				'id' => self::TEST_CAMPAIGN_ID,
+			]
+		);
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'DELETE' );
 

@@ -4,7 +4,6 @@
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -12,6 +11,7 @@ import { recordEvent } from '@woocommerce/tracks';
 import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * @param {Object} props React props
@@ -26,7 +26,7 @@ const AdsStepper = ( { formProps } ) => {
 	// Users can only go forward by clicking on the Continue button.
 	const handleStepClick = ( value ) => {
 		if ( value < step ) {
-			recordEvent( 'gla_setup_ads', {
+			recordGlaEvent( 'gla_setup_ads', {
 				triggered_by: `stepper-step${ value }-button`,
 				action: `go-to-step${ value }`,
 			} );
@@ -42,7 +42,7 @@ const AdsStepper = ( { formProps } ) => {
 	const continueStep = ( to ) => {
 		const from = step;
 
-		recordEvent( 'gla_setup_ads', {
+		recordGlaEvent( 'gla_setup_ads', {
 			triggered_by: `step${ from }-continue-button`,
 			action: `go-to-step${ to }`,
 		} );

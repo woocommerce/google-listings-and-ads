@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -15,6 +14,7 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppButton from '.~/components/app-button';
 import AssetGroupSection from './asset-group-section';
 import FaqsSection from './faqs-section';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
 export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
@@ -84,7 +84,7 @@ export default function AssetGroup( { campaign } ) {
 			eventProps[ name ] = finalUrl ? num.toString() : 'unknown';
 		} );
 
-		recordEvent( 'gla_submit_campaign_button_click', eventProps );
+		recordGlaEvent( 'gla_submit_campaign_button_click', eventProps );
 	}
 
 	const handleSkipClick = ( event ) => {

@@ -26,6 +26,7 @@ import './index.scss';
  * Clicking on the button to connect an existing Google Merchant Center account.
  *
  * @event gla_mc_account_connect_button_click
+ * @property {number} id The account ID to be connected.
  */
 
 /**
@@ -111,6 +112,7 @@ const ConnectMC = () => {
 						loading={ resultConnectMC.loading }
 						disabled={ ! value }
 						eventName="gla_mc_account_connect_button_click"
+						eventProps={ { id: Number( value ) } }
 						onClick={ handleConnectMC }
 					>
 						{ __( 'Connect', 'google-listings-and-ads' ) }
