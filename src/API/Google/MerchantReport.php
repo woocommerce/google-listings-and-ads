@@ -96,7 +96,7 @@ class MerchantReport implements OptionsAwareInterface {
 
 			$query = new MerchantProductViewReportQuery(
 				[
-					'ids'       => ['gla_22'],
+					'ids'       => $offer_ids,
 					'next_page' => $next_page_token,
 				]
 			);
@@ -106,9 +106,9 @@ class MerchantReport implements OptionsAwareInterface {
 			->set_client( $this->service, $this->options->get_merchant_id() )
 			->get_results();
 
-			if( $response->count() ) {
+			if ( $response->count() ) {
 				$results = [ ...$results, ...$response->getResults() ];
-			}			
+			}
 
 			$next_page_token = $response->getNextPageToken();
 
