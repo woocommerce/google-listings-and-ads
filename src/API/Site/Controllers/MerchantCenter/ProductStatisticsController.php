@@ -51,6 +51,7 @@ class ProductStatisticsController extends BaseOptionsController {
 	 * @param RESTServer       $server
 	 * @param MerchantStatuses $merchant_statuses
 	 * @param ProductSyncStats $sync_stats
+	 * @param MerchantReport   $merchant_report
 	 */
 	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses, ProductSyncStats $sync_stats, MerchantReport $merchant_report ) {
 		parent::__construct( $server );
