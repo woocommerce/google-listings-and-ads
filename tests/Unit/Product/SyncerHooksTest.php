@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
@@ -14,6 +15,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\SyncerHooks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 
@@ -49,31 +52,30 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	 */
 	protected $notification_service;
 
+	/**
+	 * @var MockObject|ProductNotificationJob
+	 */
+	protected $product_notification_job;
+
 	/** @var WC $wc */
 	protected $wc;
 
 	/** @var SyncerHooks $syncer_hooks */
 	protected $syncer_hooks;
 
-	public function test_create_new_simple_product_schedules_update_job_and_calls_notify() {
+	public function test_create_new_simple_product_schedules_update_job() {
 		$this->update_products_job->expects( $this->once() )
 			->method( 'schedule' );
-
-		$this->notification_service->expects( $this->once() )->method( 'notify' )->with(  $this->isType('int'), NotificationsService::TOPIC_PRODUCT_CREATED );
-
 
 		WC_Helper_Product::create_simple_product( true, [ 'status' => 'publish' ] );
 	}
 
-	public function test_update_simple_product_schedules_update_job_and_calls_notify() {
+	public function test_update_simple_product_schedules_update_job() {
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
 
 		$this->update_products_job->expects( $this->once() )
 			->method( 'schedule' )
 			->with( $this->equalTo( [ [ $product->get_id() ] ] ) );
-
-		$this->notification_service->expects( $this->once() )
-			->method( 'notify' )->with( $product->get_id(), NotificationsService::TOPIC_PRODUCT_UPDATED );
 
 		$product->set_status( 'publish' );
 		$product->save();
@@ -107,14 +109,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$variable_product->save();
 	}
 
-	public function test_adding_variation_schedules_update_job_and_calls_notify() {
+	public function test_adding_variation_schedules_update_job() {
 		$variable_product = $this->create_variation_product();
 
 		$this->update_products_job->expects( $this->once() )
 			->method( 'schedule' );
-
-		$this->notification_service->expects( $this->once() )
-			->method( 'notify' )->with( $this->isType('int'), NotificationsService::TOPIC_PRODUCT_CREATED );
 
 		$this->create_product_variation_object(
 			$variable_product->get_id(),
@@ -138,32 +137,24 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product->delete();
 	}
 
-	public function test_trashing_synced_product_schedules_delete_job_and_calls_notify() {
+	public function test_trashing_synced_product_schedules_delete_job() {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
 		$this->delete_products_job->expects( $this->once() )
 			->method( 'schedule' )
 			->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
-
-		$this->notification_service->expects( $this->once() )
-			->method( 'notify' )
-			->with( $product->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED );
 
 		$product->delete();
 	}
 
-	public function test_force_deleting_synced_product_schedules_delete_job_and_calls_notify() {
+	public function test_force_deleting_synced_product_schedules_delete_job() {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
 		$this->delete_products_job->expects( $this->once() )
 			->method( 'schedule' )
 			->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
-
-		$this->notification_service->expects( $this->once() )
-			->method( 'notify' )
-			->with( $product->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED );
 
 		$product->delete( true );
 	}
@@ -194,7 +185,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$variable_product->delete( true );
 	}
 
-	public function test_trashing_synced_variation_schedules_delete_job_and_calls_notify() {
+	public function test_trashing_synced_variation_schedules_delete_job() {
 		$variable_product = $this->create_variation_product();
 		foreach ( $variable_product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
@@ -205,16 +196,12 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->delete_products_job->expects( $this->once() )
 			->method( 'schedule' )
 			->with( $this->equalTo( [ [ 'online:en:US:gla_' . $variation_to_delete->get_id() => $variation_to_delete->get_id() ] ] ) );
-
-		$this->notification_service->expects( $this->once() )
-			->method( 'notify' )
-			->with( $variation_to_delete->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED );
 
 		$variation_to_delete->delete();
 	}
 
 
-	public function test_force_deleting_synced_variation_schedules_delete_job_and_calls_notify() {
+	public function test_force_deleting_synced_variation_schedules_delete_job() {
 		$variable_product = $this->create_variation_product();
 		foreach ( $variable_product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
@@ -225,10 +212,6 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->delete_products_job->expects( $this->once() )
 			->method( 'schedule' )
 			->with( $this->equalTo( [ [ 'online:en:US:gla_' . $variation_to_delete->get_id() => $variation_to_delete->get_id() ] ] ) );
-
-		$this->notification_service->expects( $this->once() )
-			->method( 'notify' )
-			->with( $variation_to_delete->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED );
 
 		$variation_to_delete->delete( true );
 	}
@@ -244,22 +227,18 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product->save();
 	}
 
-	public function test_trashing_synced_product_wp_post_schedules_delete_job_and_calls_notify() {
+	public function test_trashing_synced_product_wp_post_schedules_delete_joby() {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
 		$this->delete_products_job->expects( $this->once() )
 			->method( 'schedule' )
 			->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
-
-		$this->notification_service->expects( $this->once() )
-			->method( 'notify' )
-			->with( $product->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED );
 
 		wp_trash_post( $product->get_id() );
 	}
 
-	public function test_force_deleting_synced_product_wp_post_schedules_delete_job_and_calls_notify() {
+	public function test_force_deleting_synced_product_wp_post_schedules_delete_job() {
 		$product = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
@@ -267,19 +246,12 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->method( 'schedule' )
 			->with( $this->equalTo( [ [ 'online:en:US:gla_1' => $product->get_id() ] ] ) );
 
-		$this->notification_service->expects( $this->once() )
-			->method( 'notify' )
-			->with( $product->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED );
-
 		wp_delete_post( $product->get_id(), true );
 	}
 
-	public function test_creating_and_updating_post_does_not_schedule_update_job_either_notify() {
+	public function test_creating_and_updating_post_does_not_schedule_update_job() {
 		$this->update_products_job->expects( $this->never() )
 			->method( 'schedule' );
-
-		$this->notification_service->expects( $this->never() )
-			->method( 'notify' );
 
 		$post = $this->factory()->post->create_and_get();
 
@@ -293,12 +265,9 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		wp_untrash_post( $post->ID );
 	}
 
-	public function test_trashing_and_deleting_post_does_not_schedule_delete_job_either_notify() {
+	public function test_trashing_and_deleting_post_does_not_schedule_delete_job() {
 		$this->delete_products_job->expects( $this->never() )
 			->method( 'schedule' );
-
-		$this->notification_service->expects( $this->never() )
-			->method( 'notify' );
 
 		$post = $this->factory()->post->create_and_get();
 
@@ -308,6 +277,37 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		// force delete post
 		wp_delete_post( $post->ID, true );
 	}
+
+	public function test_create_product_triggers_notification_created() {
+		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->product_notification_job->expects( $this->once() )
+			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_CREATED ] ) );
+		$product->set_status( 'publish' );
+		$product->save();
+	}
+
+	public function test_create_product_triggers_notification_updated() {
+		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->product_notification_job->expects( $this->once() )
+			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_UPDATED ] ) );
+		$product->set_status( 'publish' );
+		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
+		$product->save();
+	}
+
+	public function test_create_product_triggers_notification_delete() {
+		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->product_notification_job->expects( $this->once() )
+			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED ] ) );
+		$product->set_status( 'publish' );
+		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
+		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
+		$product->save();
+	}
+
 
 	/**
 	 * Runs before each test is executed.
@@ -322,10 +322,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->method( 'is_ready_for_syncing' )
 			->willReturn( true );
 
-		$this->update_products_job  = $this->createMock( UpdateProducts::class );
-		$this->delete_products_job  = $this->createMock( DeleteProducts::class );
-		$this->job_repository       = $this->createMock( JobRepository::class );
-		$this->notification_service = $this->createMock( NotificationsService::class );
+		$this->update_products_job      = $this->createMock( UpdateProducts::class );
+		$this->delete_products_job      = $this->createMock( DeleteProducts::class );
+		$this->product_notification_job = $this->createMock( ProductNotificationJob::class );
+		$this->job_repository           = $this->createMock( JobRepository::class );
+		$this->notification_service     = $this->createMock( NotificationsService::class );
 
 		$this->job_repository->expects( $this->any() )
 			->method( 'get' )
@@ -333,14 +334,16 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 				[
 					[ UpdateProducts::class, $this->update_products_job ],
 					[ DeleteProducts::class, $this->delete_products_job ],
+					[ ProductNotificationJob::class, $this->product_notification_job ],
 				]
 			);
 
-		$this->batch_helper          = $this->container->get( BatchProductHelper::class );
-		$this->product_helper        = $this->container->get( ProductHelper::class );
-		$this->wc                    = $this->container->get( WC::class );
+		$this->batch_helper   = $this->container->get( BatchProductHelper::class );
+		$this->product_helper = $this->container->get( ProductHelper::class );
+		$this->wc             = $this->container->get( WC::class );
 		$this->syncer_hooks   = new SyncerHooks( $this->batch_helper, $this->product_helper, $this->job_repository, $this->merchant_center, $this->notification_service, $this->wc );
 
+		add_filter( 'woocommerce_gla_notifications_enabled', '__return_false' );
 		$this->syncer_hooks->register();
 	}
 }

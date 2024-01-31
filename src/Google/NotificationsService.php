@@ -13,33 +13,35 @@ defined( 'ABSPATH' ) || exit;
  * Class NotificationsService
  * This class implements a service to Notify a partner about Shop Data Updates
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Google\Notifications
+ * @since x.x.x
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
 class NotificationsService implements Service {
 
 	// List of Topics to be used.
-	public const TOPIC_PRODUCT_CREATED  = 'product.created';
-	public const TOPIC_PRODUCT_DELETED  = 'product.deleted';
-	public const TOPIC_PRODUCT_UPDATED  = 'product.updated';
-	public const TOPIC_COUPON_CREATED   = 'coupon.created';
-	public const TOPIC_COUPON_DELETED   = 'coupon.deleted';
-	public const TOPIC_COUPON_UPDATED   = 'coupon.updated';
+	public const TOPIC_PRODUCT_CREATED  = 'product.create';
+	public const TOPIC_PRODUCT_DELETED  = 'product.delete';
+	public const TOPIC_PRODUCT_UPDATED  = 'product.update';
+	public const TOPIC_COUPON_CREATED   = 'coupon.create';
+	public const TOPIC_COUPON_DELETED   = 'coupon.delete';
+	public const TOPIC_COUPON_UPDATED   = 'coupon.update';
 	public const TOPIC_SHIPPING_SAVED   = 'action.woocommerce_after_shipping_zone_object_save';
 	public const TOPIC_SHIPPING_DELETED = 'action.woocommerce_delete_shipping_zone';
 
 	/**
-	 * The route to send the notification
+	 * The url to send the notification
 	 *
-	 * @var string $route
+	 * @var string $notification_url
 	 */
-	private $route;
+	private $notification_url;
+
 
 	/**
 	 * Class constructor
 	 */
 	public function __construct() {
-		$blog_id     = Jetpack_Options::get_option( 'id' );
-		$this->route = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
+		$blog_id                = Jetpack_Options::get_option( 'id' );
+		$this->notification_url = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
 	}
 
 	/**
@@ -50,7 +52,26 @@ class NotificationsService implements Service {
 	 * @param string $topic
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
-	public function notify( int $item_id, string $topic ) {
+	public function notify( int $item_id, string $topic ): bool {
+		/**
+		 * Allow users to disable the notification request.
+		 *
+		 * @since x.x.x
+		 *
+		 * @param bool $value The current filter value. True by default.
+		 * @param int $item_id The item_id for the notification.
+		 * @param string $topic The topic for the notification.
+		 */
+		if ( ! apply_filters( 'woocommerce_gla_notify', true, $item_id, $topic ) ) {
+			return false;
+		}
+
+		do_action(
+			'woocommerce_gla_debug_message',
+			sprintf( 'Notification - Item ID: %d - Topic: %s', $item_id, $topic ),
+			__METHOD__
+		);
+
 		$remote_args = [
 			'method'  => 'POST',
 			'timeout' => 30,
@@ -60,12 +81,12 @@ class NotificationsService implements Service {
 			'body'    => [
 				'item_id' => $item_id,
 			],
-			'url'     => $this->get_route(),
+			'url'     => $this->get_notification_url(),
 		];
 
 		$response = $this->do_request( $remote_args );
 
-		if( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) >= 400 ) {
+		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) >= 400 ) {
 			$error = is_wp_error( $response ) ? $response->get_error_message() : wp_remote_retrieve_body( $response );
 			$this->notification_error( $item_id, $topic, $error );
 			return false;
@@ -95,7 +116,7 @@ class NotificationsService implements Service {
 	 * @param array $args
 	 * @return array|\WP_Error
 	 */
-	protected function do_request( $args ) {
+	protected function do_request( array $args ) {
 		return Client::remote_request( $args, wp_json_encode( $args['body'] ) );
 	}
 
@@ -104,7 +125,16 @@ class NotificationsService implements Service {
 	 *
 	 * @return string The route.
 	 */
-	public function get_route(): string {
-		return $this->route;
+	public function get_notification_url(): string {
+		return $this->notification_url;
+	}
+
+	/**
+	 * If the Notifications are enabled
+	 *
+	 * @return bool
+	 */
+	public function is_enabled(): bool {
+		return apply_filters( 'woocommerce_gla_notifications_enabled', true );
 	}
 }
