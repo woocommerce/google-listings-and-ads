@@ -15,6 +15,7 @@ use WC_Helper_Product;
 
 /**
  * Class ProductNotificationJobTest
+ *
  * @group Notifications
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
  */
@@ -65,7 +66,7 @@ class ProductNotificationJobTest extends UnitTest {
 
 	public function test_schedule_schedules_immediate_job() {
 		$topic = 'product.create';
-		$id = 1;
+		$id    = 1;
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
@@ -83,7 +84,7 @@ class ProductNotificationJobTest extends UnitTest {
 	}
 
 	public function test_schedule_doesnt_schedules_immediate_job_if_already_scheduled() {
-		$id = 1;
+		$id    = 1;
 		$topic = 'product.create';
 
 		$this->action_scheduler->expects( $this->once() )
@@ -94,11 +95,10 @@ class ProductNotificationJobTest extends UnitTest {
 		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
 
 		$this->job->schedule( [ $id, $topic ] );
-
 	}
 
 	public function test_schedule_doesnt_schedules_immediate_job_if_filtered() {
-		$id = 1;
+		$id    = 1;
 		$topic = 'product.create';
 
 		add_filter( 'woocommerce_gla_product_notification_job_can_schedule', '__return_false' );
@@ -111,14 +111,13 @@ class ProductNotificationJobTest extends UnitTest {
 		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
 
 		$this->job->schedule( [ $id, $topic ] );
-
 	}
 
 	public function test_process_items_calls_notify_and_set_status_on_success() {
 		/** @var \WC_Product $product */
 		$product = WC_Helper_Product::create_simple_product();
-		$id = $product->get_id();
-		$topic = 'product.create';
+		$id      = $product->get_id();
+		$topic   = 'product.create';
 
 		$this->notification_service->expects( $this->once() )
 			->method( 'notify' )
@@ -135,7 +134,6 @@ class ProductNotificationJobTest extends UnitTest {
 			->with( $product, NotificationStatus::NOTIFICATION_CREATED );
 
 		$this->job->handle_process_items_action( [ $id, $topic ] );
-
 	}
 
 	public function test_process_items_doesnt_calls_notify_when_no_args() {
@@ -149,8 +147,8 @@ class ProductNotificationJobTest extends UnitTest {
 	public function test_process_items_doesnt_calls_set_status_on_failure() {
 		/** @var \WC_Product $product */
 		$product = WC_Helper_Product::create_simple_product();
-		$id = $product->get_id();
-		$topic = 'product.create';
+		$id      = $product->get_id();
+		$topic   = 'product.create';
 
 		$this->notification_service->expects( $this->once() )
 			->method( 'notify' )
@@ -164,13 +162,12 @@ class ProductNotificationJobTest extends UnitTest {
 			->method( 'set_notification_status' );
 
 		$this->job->handle_process_items_action( [ $id, $topic ] );
-
 	}
 
 	public function test_get_after_notification_status() {
 		/** @var \WC_Product $product */
 		$product = WC_Helper_Product::create_simple_product();
-		$id = $product->get_id();
+		$id      = $product->get_id();
 
 		$this->notification_service->expects( $this->exactly( 3 ) )
 			->method( 'notify' )
@@ -182,20 +179,20 @@ class ProductNotificationJobTest extends UnitTest {
 
 		$this->product_helper->expects( $this->exactly( 3 ) )
 			->method( 'set_notification_status' )
-			->willReturnCallback( function( $id, $topic ) {
-				if ( $topic === 'product.create' ) {
-					return NotificationStatus::NOTIFICATION_CREATED;
-				} else if ( $topic === 'product.delete' ) {
-					return  NotificationStatus::NOTIFICATION_DELETED;
-				} else {
-					return  NotificationStatus::NOTIFICATION_UPDATED;
+			->willReturnCallback(
+				function ( $id, $topic ) {
+					if ( $topic === 'product.create' ) {
+							return NotificationStatus::NOTIFICATION_CREATED;
+					} elseif ( $topic === 'product.delete' ) {
+						return NotificationStatus::NOTIFICATION_DELETED;
+					} else {
+						return NotificationStatus::NOTIFICATION_UPDATED;
+					}
 				}
-			});
-
+			);
 
 		$this->job->handle_process_items_action( [ $id, 'product.create' ] );
 		$this->job->handle_process_items_action( [ $id, 'product.delete' ] );
 		$this->job->handle_process_items_action( [ $id, 'product.update' ] );
 	}
-
 }

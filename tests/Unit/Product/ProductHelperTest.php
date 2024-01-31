@@ -24,6 +24,7 @@ use WC_Product;
 
 /**
  * Class ProductHelperTest
+ *
  * @group Helpers
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  */
@@ -1130,12 +1131,13 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 	/**
 	 * Set and save product to make it Notification Ready
+	 *
 	 * @param WC_Product $product
 	 * @return WC_Product
 	 */
 	public function get_notification_ready_product( $product ) {
 		$product->set_status( 'publish' );
-		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::SYNC_AND_SHOW , true );
+		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::SYNC_AND_SHOW, true );
 		$product->save();
 		return $product;
 	}
