@@ -261,6 +261,39 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
+	 * Get the slug for the product.
+	 *
+	 * @param int $product_id The product ID.
+	 * @return string The offer ID
+	 * @since x.x.x
+	 * @see https://developers.google.com/shopping-content/reference/rest/v2.1/products#Product.FIELDS-table
+	 */
+	public static function get_offer_id( int $product_id ): string {
+		/** @var ProductHelper $product_helper  */
+		$product_helper = woogle_get_container()->get( ProductHelper::class );
+		$product        = wc_get_product( $product_id );
+		// Check if the product has the google_ids (mc ids) metadata set in the DB. If it has the google_ids we respect the offerID set in the metadata.
+		$has_mc_ids = $product_helper->is_product_synced( $product );
+
+		if ( $has_mc_ids ) {
+			$mc_ids = $product_helper->get_synced_google_product_ids( $product );
+			return $product_helper->get_offer_id_from_mc_id( reset( $mc_ids ) );
+		}
+
+		/**
+		 * Filters a WooCommerce product ID to be used as the Merchant Center product ID.
+		 *
+		 * @param string $mc_product_id Default generated Merchant Center product ID.
+		 * @param int    $product_id    WooCommerce product ID.
+		 * @since 2.4.6
+		 *
+		 * @return string Merchant Center offer ID corresponding to the given WooCommerce product ID.
+		 */
+		// The offer ID will not include the gla slug if the product is new in the MC.
+		return apply_filters( 'woocommerce_gla_get_google_product_offer_id', "{$product_id}", $product_id );
+	}
+
+	/**
 	 *
 	 * @param string $slug
 	 * @param int    $product_id
@@ -276,6 +309,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		 *
 		 * @return string Merchant Center product ID corresponding to the given WooCommerce product ID.
 		 */
+		// The offer ID will not include the gla slug if the product is new in the MC.
 		return apply_filters( 'woocommerce_gla_get_google_product_offer_id', "{$slug}_{$product_id}", $product_id );
 	}
 

@@ -12,6 +12,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class MerchantProductViewReportQuery extends MerchantQuery {
 
+	use ReportQueryTrait;
+
 	/**
 	 * Query constructor.
 	 *
@@ -20,7 +22,7 @@ class MerchantProductViewReportQuery extends MerchantQuery {
 	public function __construct( array $args ) {
 		parent::__construct( 'ProductView' );
 		$this->set_initial_columns();
-		$this->filter( $args );
+		$this->handle_query_args( $args );
 	}
 
 

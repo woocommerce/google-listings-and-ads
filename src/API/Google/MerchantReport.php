@@ -83,28 +83,42 @@ class MerchantReport implements OptionsAwareInterface {
 		];
 
 		$sync_ready_products_ids = $this->product_repository->find_sync_ready_products()->get_product_ids();
-		$offer_ids               = array_map(
+
+		if ( count( $sync_ready_products_ids ) === 0 ) {
+			return $statistics;
+		}
+
+		$offer_ids = array_map(
 			function ( $item ) {
-				return WCProductAdapter::get_google_product_offer_id( $this->get_slug(), $item );
+				return WCProductAdapter::get_offer_id( $item );
 			},
 			$sync_ready_products_ids
 		);
 
-		$query = new MerchantProductViewReportQuery( $offer_ids );
+		$query = new MerchantProductViewReportQuery(
+			[
+				'ids'      => $offer_ids,
+				'per_page' => 1,
+			]
+		);
 
-		/** @var SearchResponse $results  */
-		$results = $query
+		/** @var SearchResponse $response  */
+		$response = $query
 			->set_client( $this->service, $this->options->get_merchant_id() )
 			->get_results();
 
+		//$nex_page_token = $response->getNextPageToken();
+
 		/** @var $row ReportRow  */
-		foreach ( $results->getResults() as $row ) {
+		foreach ( $response->getResults() as $row ) {
 			/** @var ProductView $product_view  */
 			$product_view    = $row->getProductView();
 			$experation_date = $product_view->getExpirationDate();
 
 			$formatted_expiration_date = DateTime::createFromFormat( 'Y-m-d', "{$experation_date->getYear()}-{$experation_date->getMonth()}-{$experation_date->getDay()}" );
-			$formatted_expiration_date->modify( '-3 days' );  // subtract 3 days from the expiration date
+			// Products are marked as expiring 3 days before the expiration date.
+			// @see https://support.google.com/merchants/answer/160491?hl=en-IE#Expiring
+			$formatted_expiration_date->modify( '-3 days' );
 			if ( $formatted_expiration_date < new DateTime() ) {
 				++$statistics[ MCStatus::EXPIRING ];
 				continue;
