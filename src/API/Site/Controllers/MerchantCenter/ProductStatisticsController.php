@@ -118,7 +118,7 @@ class ProductStatisticsController extends BaseOptionsController {
 	protected function get_product_status_stats( Request $request ): Response {
 		try {
 
-			$statistics = $this->merchant_report->get_product_statistics();
+			$statistics = $this->merchant_report->get_product_statuses();
 
 			$response = [
 				'statistics' => $statistics,

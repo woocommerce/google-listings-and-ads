@@ -59,8 +59,9 @@ class MerchantReport implements OptionsAwareInterface {
 	/**
 	 * Merchant Report constructor.
 	 *
-	 * @param ShoppingContent $service
-	 * @param ProductHelper   $product_helper
+	 * @param ShoppingContent   $service
+	 * @param ProductHelper     $product_helper
+	 * @param ProductRepository $product_repository
 	 */
 	public function __construct( ShoppingContent $service, ProductHelper $product_helper, ProductRepository $product_repository ) {
 		$this->service            = $service;
@@ -71,21 +72,14 @@ class MerchantReport implements OptionsAwareInterface {
 	/**
 	 * Get product statuses.
 	 *
+	 * @return array List of product statuses.
 	 * @throws GoogleException If the search call fails.
 	 */
-	public function get_product_statistics() {
-		$statistics = [
-			'active'              => 0,
-			'not_synced'          => 0,
-			MCStatus::EXPIRING    => 0,
-			MCStatus::PENDING     => 0,
-			MCStatus::DISAPPROVED => 0,
-		];
-
+	public function get_product_statuses(): array {
 		$sync_ready_products_ids = $this->product_repository->find_sync_ready_products()->get_product_ids();
 
 		if ( count( $sync_ready_products_ids ) === 0 ) {
-			return $statistics;
+			return $this->calculate_statuses( [] );
 		}
 
 		$offer_ids = array_map(
@@ -95,22 +89,52 @@ class MerchantReport implements OptionsAwareInterface {
 			$sync_ready_products_ids
 		);
 
-		$query = new MerchantProductViewReportQuery(
-			[
-				'ids'      => $offer_ids,
-				'per_page' => 1,
-			]
-		);
+		$next_page_token = null;
+		$results         = [];
 
-		/** @var SearchResponse $response  */
-		$response = $query
+		do {
+
+			$query = new MerchantProductViewReportQuery(
+				[
+					'ids'       => $offer_ids,
+					'next_page' => $next_page_token,
+				]
+			);
+
+			/** @var SearchResponse $response  */
+			$response = $query
 			->set_client( $this->service, $this->options->get_merchant_id() )
 			->get_results();
 
-		//$nex_page_token = $response->getNextPageToken();
+			$results = [ ...$results, ...$response->getResults() ];
+
+			$next_page_token = $response->getNextPageToken();
+
+		} while ( $next_page_token );
+
+		$statistics               = $this->calculate_statuses( $results );
+		$statistics['not_synced'] = count( $sync_ready_products_ids ) - count( $results );
+		return $statistics;
+	}
+
+	/**
+	 * Calculate statistics for a list of report rows.
+	 *
+	 * @param ReportRow[] $rows List of report rows.
+	 *
+	 * @return array List of statistics.
+	 */
+	public function calculate_statuses( array $rows ): array {
+		$statistics = [
+			'active'              => 0,
+			'not_synced'          => 0,
+			MCStatus::EXPIRING    => 0,
+			MCStatus::PENDING     => 0,
+			MCStatus::DISAPPROVED => 0,
+		];
 
 		/** @var $row ReportRow  */
-		foreach ( $response->getResults() as $row ) {
+		foreach ( $rows as $row ) {
 			/** @var ProductView $product_view  */
 			$product_view    = $row->getProductView();
 			$experation_date = $product_view->getExpirationDate();
@@ -139,8 +163,6 @@ class MerchantReport implements OptionsAwareInterface {
 					break;
 			}
 		}
-
-		$statistics['not_synced'] = count( $sync_ready_products_ids ) - $results->count();
 
 		return $statistics;
 	}
