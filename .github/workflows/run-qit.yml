@@ -47,11 +47,6 @@ on:
         description: 'Additional options for `qit` command, like `--optional_features=hpos`.'
         required: false
 
-  # Used to test this PR, to be removed after before merging.
-  push:
-    branches:
-      - dev/qit-workflow
-
 jobs:
   build:
     name: Build extension
@@ -68,18 +63,17 @@ jobs:
           name: google-listings-and-ads.zip
       - name: Run QIT Tests
         # Update it with more stable path once merged.
-        uses: woocommerce/grow/run-qit-extension@add/qit-workflows-test-build
+        uses: woocommerce/grow/run-qit-extension@actions-v1
         with:
           qit-partner-user: ${{ secrets.QIT_PARTNER_USER }}
           qit-partner-secret: ${{ secrets.QIT_PARTNER_SECRET }}
           version: local
-          # Conditional statements are here to allow testing on push trigger, without manual input. To be removed before merging.
-          wait: ${{ inputs.wait || true }}
+          wait: ${{ inputs.wait }}
           extension: 'google-listings-and-ads'
-          test-activation: ${{ inputs.test-activation || true }}
-          test-security: ${{ inputs.test-security || true }}
-          test-phpstan: ${{ inputs.test-phpstan || true }}
-          test-api: ${{ inputs.test-api || true }}
-          test-e2e: ${{ inputs.test-e2e || false }}
-          ignore-fail: ${{ inputs.ignore-fail || true }}
+          test-activation: ${{ inputs.test-activation }}
+          test-security: ${{ inputs.test-security }}
+          test-phpstan: ${{ inputs.test-phpstan }}
+          test-api: ${{ inputs.test-api }}
+          test-e2e: ${{ inputs.test-e2e }}
+          ignore-fail: ${{ inputs.ignore-fail }}
           options: ${{ inputs.options }}
