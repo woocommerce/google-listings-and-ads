@@ -316,6 +316,10 @@ class Merchant implements OptionsAwareInterface {
 		$account   = $this->get_account();
 		$ads_links = $account->getAdsLinks();
 
+		if ( ! is_array( $ads_links ) ) {
+			$ads_links = [];
+		}
+
 		// Stop early if we already have a link setup.
 		foreach ( $ads_links as $link ) {
 			if ( $ads_id === absint( $link->getAdsId() ) ) {
