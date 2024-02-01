@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -97,8 +98,12 @@ class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInte
 		}
 
 		// Check if there are synced products.
-		$statuses = $this->merchant_statuses->get_product_statistics();
-		if ( $statuses['statistics']['active'] <= 0 ) {
+		try {
+			$statuses = $this->merchant_statuses->get_product_statistics();
+			if ( $statuses['statistics']['active'] <= 0 ) {
+				return false;
+			}
+		} catch ( Exception $e ) {
 			return false;
 		}
 
