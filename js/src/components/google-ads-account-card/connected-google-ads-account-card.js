@@ -54,6 +54,7 @@ export default function ConnectedGoogleAdsAccountCard( {
 			{ ...restProps }
 		>
 			{ children }
+
 			<Notice status="success" isDismissible={ false }>
 				<p>
 					{ __(
@@ -62,6 +63,7 @@ export default function ConnectedGoogleAdsAccountCard( {
 					) }
 				</p>
 			</Notice>
+
 			{ ! hideAccountSwitch && (
 				<Section.Card.Footer>
 					<AppButton
