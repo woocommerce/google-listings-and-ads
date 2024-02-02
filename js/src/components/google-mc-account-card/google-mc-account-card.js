@@ -7,7 +7,6 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleMCAccountCard from './connected-google-mc-account-card';
 import DisabledCard from './disabled-card';
 import NonConnected from './non-connected';
-import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 const GoogleMCAccountCard = () => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
