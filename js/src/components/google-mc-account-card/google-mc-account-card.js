@@ -3,13 +3,11 @@
  */
 import SpinnerCard from '.~/components/spinner-card';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleMCAccountCard from './connected-google-mc-account-card';
 import DisabledCard from './disabled-card';
 import NonConnected from './non-connected';
 
 const GoogleMCAccountCard = () => {
-	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { hasFinishedResolution, isPreconditionReady, googleMCAccount } =
 		useGoogleMCAccount();
 
@@ -17,7 +15,7 @@ const GoogleMCAccountCard = () => {
 		return <SpinnerCard />;
 	}
 
-	if ( ! isPreconditionReady || ! googleAdsAccount ) {
+	if ( ! isPreconditionReady ) {
 		return <DisabledCard />;
 	}
 

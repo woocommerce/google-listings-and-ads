@@ -321,9 +321,6 @@ test.describe( 'Set up accounts', () => {
 				// Mock google as connected.
 				setUpAccountsPage.mockGoogleConnected( 'google@example.com' ),
 
-				// Mock Google Ads as connected.
-				setUpAccountsPage.mockAdsAccountConnected(),
-
 				// Mock google ads as connected.
 				setupAdsAccountPage.mockAdsAccountConnected(),
 				// Mock merchant center as not connected.
