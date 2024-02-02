@@ -188,6 +188,16 @@ test.describe( 'Set up accounts', () => {
 
 			// Mock google as connected.
 			await setUpAccountsPage.mockGoogleConnected();
+
+			// Start with no Ads account connected.
+			await setupAdsAccountPage.mockAdsAccountDisconnected();
+			await setupAdsAccountPage.mockAdsHasNoAccounts();
+
+			// Mock MC as not connected and has not existing accounts
+			// to avoid errors when attempting to fetch accounts.
+			await setUpAccountsPage.mockMCNotConnected();
+			await setUpAccountsPage.mockMCHasNoAccounts();
+
 			await setUpAccountsPage.goto();
 		} );
 
@@ -321,8 +331,10 @@ test.describe( 'Set up accounts', () => {
 				// Mock google as connected.
 				setUpAccountsPage.mockGoogleConnected( 'google@example.com' ),
 
-				// Mock google ads as connected.
-				setupAdsAccountPage.mockAdsAccountConnected(),
+				// Mock Google Ads as not connected.
+				setupAdsAccountPage.mockAdsAccountDisconnected(),
+				setupAdsAccountPage.mockAdsHasNoAccounts(),
+
 				// Mock merchant center as not connected.
 				setUpAccountsPage.mockMCNotConnected(),
 			] );
@@ -417,10 +429,6 @@ test.describe( 'Set up accounts', () => {
 						await expect( mcDescriptionRow ).toContainText(
 							`${ host } (12345)`
 						);
-
-						const continueButton =
-							setUpAccountsPage.getContinueButton();
-						await expect( continueButton ).toBeEnabled();
 					} );
 
 					test.describe(
@@ -521,10 +529,6 @@ test.describe( 'Set up accounts', () => {
 								await expect( mcDescriptionRow ).toContainText(
 									`${ host } (12345)`
 								);
-
-								const continueButton =
-									setUpAccountsPage.getContinueButton();
-								await expect( continueButton ).toBeEnabled();
 							} );
 						}
 					);
@@ -622,10 +626,6 @@ test.describe( 'Set up accounts', () => {
 					await expect( mcDescriptionRow ).toContainText(
 						`${ host } (23456)`
 					);
-
-					const continueButton =
-						setUpAccountsPage.getContinueButton();
-					await expect( continueButton ).toBeEnabled();
 				} );
 			} );
 
@@ -688,6 +688,64 @@ test.describe( 'Set up accounts', () => {
 					} );
 				}
 			);
+		} );
+	} );
+
+	test.describe( 'Continue button', () => {
+		test.beforeAll( async () => {
+			// Mock Jetpack as connected
+			await setUpAccountsPage.mockJetpackConnected(
+				'Test user',
+				'jetpack@example.com'
+			);
+
+			// Mock google as connected.
+			await setUpAccountsPage.mockGoogleConnected();
+		} );
+
+		test.describe( 'When only Ads is connected', async () => {
+			test.beforeAll( async () => {
+				await setupAdsAccountPage.mockAdsAccountConnected();
+				await setUpAccountsPage.mockMCNotConnected();
+
+				await setUpAccountsPage.goto();
+			} );
+
+			test( 'should see "Continue" button is disabled without Ads', async () => {
+				const continueButton =
+					await setUpAccountsPage.getContinueButton();
+				await expect( continueButton ).toBeDisabled();
+			} );
+		} );
+
+		test.describe( 'When only MC is disconnected', async () => {
+			test.beforeAll( async () => {
+				await setupAdsAccountPage.mockAdsAccountDisconnected();
+				await setUpAccountsPage.mockMCConnected();
+
+				await setUpAccountsPage.goto();
+			} );
+
+			test( 'should see "Continue" button is disabled without MC', async () => {
+				const continueButton =
+					await setUpAccountsPage.getContinueButton();
+				await expect( continueButton ).toBeDisabled();
+			} );
+		} );
+
+		test.describe( 'When all accounts are connected', async () => {
+			test.beforeAll( async () => {
+				await setupAdsAccountPage.mockAdsAccountConnected();
+				await setUpAccountsPage.mockMCConnected();
+
+				await setUpAccountsPage.goto();
+			} );
+
+			test( 'should see "Continue" button is enabled', async () => {
+				const continueButton =
+					await setUpAccountsPage.getContinueButton();
+				await expect( continueButton ).toBeEnabled();
+			} );
 		} );
 	} );
 

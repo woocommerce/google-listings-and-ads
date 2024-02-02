@@ -495,6 +495,13 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mock MC Ads no accounts.
+	 */
+	async mockAdsHasNoAccounts() {
+		await this.fulfillAdsAccounts( null );
+	}
+
+	/**
 	 * Mock MC as connected.
 	 *
 	 * @param {number} id

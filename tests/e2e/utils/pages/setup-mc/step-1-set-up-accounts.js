@@ -56,7 +56,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getMCCreateAccountButtonFromPage() {
 		const button = this.getCreateAccountButton();
-		return button.locator( ':scope.is-secondary' );
+		return button.locator( ':scope.is-secondary' ).nth( 1 );
 	}
 
 	/**
@@ -210,7 +210,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Merchant Center connected label.
 	 */
 	getMCConnectedLabel() {
-		return this.getConnectedLabelClass().nth( 3 );
+		return this.getConnectedLabelClass().nth( 2 );
 	}
 
 	/**
