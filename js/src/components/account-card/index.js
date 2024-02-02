@@ -93,7 +93,7 @@ const appearanceDict = {
 		icon: googleMCLogo,
 		title: __( 'Google Merchant Center', 'google-listings-and-ads' ),
 		description: __(
-			'Required to sync products and list on Google',
+			'Required to sync products and list on Google.',
 			'google-listings-and-ads'
 		),
 	},
@@ -101,7 +101,7 @@ const appearanceDict = {
 		icon: googleAdsLogo,
 		title: __( 'Google Ads', 'google-listings-and-ads' ),
 		description: __(
-			'Connect with millions of shoppers who are searching for products like yours and drive sales with Google.',
+			'Required to set up conversion measurement and create campaigns. You can also create or connect an account later.',
 			'google-listings-and-ads'
 		),
 	},

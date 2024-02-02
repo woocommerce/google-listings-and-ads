@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { ExternalLink } from '@wordpress/components';
+import { ExternalLink, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -44,14 +44,24 @@ export default function ConnectedGoogleAdsAccountCard( {
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			description={
-				<ExternalLink href="https://ads.google.com/aw/overview">
-					{ toAccountText( googleAdsAccount.id ) }
-				</ExternalLink>
+				<>
+					<ExternalLink href="https://ads.google.com/aw/overview">
+						{ toAccountText( googleAdsAccount.id ) }
+					</ExternalLink>
+				</>
 			}
 			indicator={ <ConnectedIconLabel /> }
 			{ ...restProps }
 		>
 			{ children }
+			<Notice status="success" isDismissible={ false }>
+				<p>
+					{ __(
+						'Conversion measurement has been set up. You can create a campaign later.',
+						'google-listings-and-ads'
+					) }
+				</p>
+			</Notice>
 			{ ! hideAccountSwitch && (
 				<Section.Card.Footer>
 					<AppButton
