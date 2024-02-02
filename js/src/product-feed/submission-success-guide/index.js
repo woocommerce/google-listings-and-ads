@@ -24,6 +24,8 @@ import { getProductFeedUrl } from '.~/utils/urls';
 import wooLogoURL from './woocommerce-logo.svg';
 import googleLogoURL from '.~/images/google-logo.svg';
 import { recordGlaEvent } from '.~/utils/tracks';
+import EnhancedConversion from './EnhancedConversion';
+import EnhancedConversionFooter from './EnhancedConversionFooter';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';
@@ -49,6 +51,19 @@ const image = (
 		</div>
 	</div>
 );
+
+const handleGuideFinish = ( e ) => {
+	getHistory().replace( getProductFeedUrl() );
+
+	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
+	// here is a workaround by identifying the close button's data-aciton attribute.
+	const target = e.currentTarget || e.target;
+	const action = target.dataset.action || 'dismiss';
+	recordGlaEvent( EVENT_NAME, {
+		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
+		action,
+	} );
+};
 
 const pages = [
 	{
@@ -123,25 +138,41 @@ const pages = [
 				</cite>
 			</GuidePageContent>
 		),
+		footer: (
+			<>
+				<div className="gla-submission-success-guide__space_holder" />
+				<AppButton
+					isSecondary
+					data-action="maybe-later"
+					onClick={ handleGuideFinish }
+				>
+					{ __( 'Maybe later', 'google-listings-and-ads' ) }
+				</AppButton>
+				<AddPaidCampaignButton
+					isPrimary
+					isSecondary={ false }
+					isSmall={ false }
+					eventName={ EVENT_NAME }
+					eventProps={ {
+						context: GUIDE_NAMES.SUBMISSION_SUCCESS,
+						action: 'create-paid-campaign',
+					} }
+				>
+					{ __( 'Create paid campaign', 'google-listings-and-ads' ) }
+				</AddPaidCampaignButton>
+			</>
+		),
+	},
+	{
+		image,
+		content: <EnhancedConversion />,
+		footer: <EnhancedConversionFooter />,
 	},
 ];
 
 if ( glaData.adsSetupComplete ) {
 	pages.pop();
 }
-
-const handleGuideFinish = ( e ) => {
-	getHistory().replace( getProductFeedUrl() );
-
-	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
-	// here is a workaround by identifying the close button's data-aciton attribute.
-	const target = e.currentTarget || e.target;
-	const action = target.dataset.action || 'dismiss';
-	recordGlaEvent( EVENT_NAME, {
-		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
-		action,
-	} );
-};
 
 /**
  * Modal window to greet the user at Product Feed, after successful completion of onboarding.
@@ -178,31 +209,6 @@ const SubmissionSuccessGuide = () => {
 				</AppButton>
 			);
 		}
-
-		return (
-			<>
-				<div className="gla-submission-success-guide__space_holder" />
-				<AppButton
-					isSecondary
-					data-action="maybe-later"
-					onClick={ handleGuideFinish }
-				>
-					{ __( 'Maybe later', 'google-listings-and-ads' ) }
-				</AppButton>
-				<AddPaidCampaignButton
-					isPrimary
-					isSecondary={ false }
-					isSmall={ false }
-					eventName={ EVENT_NAME }
-					eventProps={ {
-						context: GUIDE_NAMES.SUBMISSION_SUCCESS,
-						action: 'create-paid-campaign',
-					} }
-				>
-					{ __( 'Create paid campaign', 'google-listings-and-ads' ) }
-				</AddPaidCampaignButton>
-			</>
-		);
 	}, [] );
 
 	return (

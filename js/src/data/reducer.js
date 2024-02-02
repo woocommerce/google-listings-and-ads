@@ -64,6 +64,10 @@ const DEFAULT_STATE = {
 	report: {},
 	store_categories: [],
 	tours: {},
+	conversion_tracking_setting: {
+		accepted_customer_data_terms: false,
+		allow_enhanced_conversions: false,
+	},
 };
 
 /**
@@ -489,6 +493,18 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			} );
 
 			return stateSetter.end();
+		}
+
+		case TYPES.RECEIVE_ACCEPTED_CUSTOMER_DATA_TERMS: {
+			const {
+				data: { status },
+			} = action;
+
+			return setIn(
+				state,
+				'conversion_tracking_setting.accepted_customer_data_terms',
+				status
+			);
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

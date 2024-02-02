@@ -400,3 +400,13 @@ export const getStoreCategories = ( state ) => {
 export const getTour = ( state, tourId ) => {
 	return state.tours[ tourId ] || null;
 };
+
+export const getAcceptedCustomerDataTerms = ( state ) => {
+	return (
+		state.conversion_tracking_setting.accepted_customer_data_terms || false
+	);
+};
+
+export const getAllowEnhanceConversions = ( state ) => {
+	return state.allow_enhanced_conversions || false;
+};

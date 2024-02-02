@@ -277,4 +277,17 @@ class AccountService implements OptionsAwareInterface, Service {
 		$action = $this->container->get( AdsConversionAction::class )->create_conversion_action();
 		$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $action );
 	}
+
+	/**
+	 * Gets the billing setup status and returns a setup URL if available.
+	 *
+	 * @return array
+	 */
+	public function get_accepted_customer_data_terms(): array {
+		$status = $this->container->get( Ads::class )->get_accepted_customer_data_terms();
+
+		return [
+			'status' => $status,
+		];
+	}
 }

@@ -86,6 +86,17 @@ class AccountController extends BaseController {
 				],
 			]
 		);
+
+		$this->register_route(
+			'ads/accepted-customer-data-terms',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_accepted_customer_data_terms_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -159,6 +170,17 @@ class AccountController extends BaseController {
 	protected function get_billing_status_callback(): callable {
 		return function () {
 			return $this->account->get_billing_status();
+		};
+	}
+
+	/**
+	 * Get the callback function for retrieving the billing setup status.
+	 *
+	 * @return callable
+	 */
+	protected function get_accepted_customer_data_terms_callback(): callable {
+		return function () {
+			return $this->account->get_accepted_customer_data_terms();
 		};
 	}
 

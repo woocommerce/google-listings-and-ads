@@ -45,6 +45,7 @@ import {
 	receiveMappingRules,
 	receiveStoreCategories,
 	receiveTour,
+	receiveAcceptedTerms,
 } from './actions';
 
 export function* getShippingRates() {
@@ -470,13 +471,13 @@ getMappingRules.shouldInvalidate = ( action ) => {
 /**
  * Resolver for getting the Store categories.
  */
-export function* getStoreCategories() {
+export function* getAcceptedCustomerDataTerms() {
 	try {
 		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/mapping/categories`,
+			path: `${ API_NAMESPACE }/ads/accepted-customer-data-terms`,
 		} );
 
-		yield receiveStoreCategories( response );
+		yield receiveAcceptedTerms( response );
 	} catch ( error ) {
 		handleApiError(
 			error,
@@ -514,6 +515,27 @@ export function* getTour( tourId ) {
 			error,
 			__(
 				'There was an error getting the tour.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver for getting the Store categories.
+ */
+export function* getStoreCategories() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/mapping/categories`,
+		} );
+
+		yield receiveStoreCategories( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the store categories.',
 				'google-listings-and-ads'
 			)
 		);

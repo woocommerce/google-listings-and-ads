@@ -135,6 +135,9 @@ export default function Guide( {
 							{ backButtonText || __( 'Previous' ) }
 						</Button>
 					) }
+
+					{ pages[ currentPage ]?.footer }
+
 					{ canGoForward && (
 						<Button
 							className="components-guide__forward-button"
@@ -143,6 +146,7 @@ export default function Guide( {
 							{ __( 'Next' ) }
 						</Button>
 					) }
+
 					{ finishBlock }
 				</div>
 			</div>
