@@ -325,10 +325,40 @@ class Ads implements OptionsAwareInterface {
 		throw new Exception( __( 'Merchant link is not available to accept', 'google-listings-and-ads' ) );
 	}
 	
-	public function get_accepted_customer_data_terms(): bool | string {
-		return $this->client->getCustomerServiceClient()->accepted_customer_data_terms;
-		$conversion_tracking_setting = new ConversionTrackingSetting();
-		
-		return $conversion_tracking_setting->getEnhancedConversionsForLeadsEnabled();
+	/**
+	 * Check if the user has accepted the customer data terms for enhanced conversion tracking.
+	 * Returns false for any account that fails.
+	 *
+	 * @return boolean
+	 */
+	public function get_accepted_customer_data_terms(): bool | int | string | array {
+		$ads_id = $this->options->get_ads_id();
+
+		try {
+			$customer = ( new AdsAccountQuery() )
+				->set_client( $this->client, $ads_id )
+				->columns( [ 'customer.conversion_tracking_setting.accepted_customer_data_terms', 'customer.conversion_tracking_setting.conversion_tracking_id', 'customer.conversion_tracking_setting.google_ads_conversion_customer', 'customer.id', 'customer.conversion_tracking_setting.conversion_tracking_status' ] )
+				->get_result()
+				->getCustomer();
+
+			if ( ! $customer ) {
+				return false;
+			}
+
+			$conversion_tracking_setting = $customer->getConversionTrackingSetting();
+
+			// return [
+			// 	'tracking_id' => $conversion_tracking_setting->getConversionTrackingId(),
+			// 	'tracking_status' => $conversion_tracking_setting->getConversionTrackingStatus(),
+			// 	'google_ads_conversion_customer' => $conversion_tracking_setting->getGoogleAdsConversionCustomer(),
+			// 	'id' => $customer->getId(),
+			// ];
+
+			return $conversion_tracking_setting->getAcceptedCustomerDataTerms();
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+		}
+
+		return false;
 	}
 }
