@@ -18,11 +18,7 @@ const GoogleMCAccountCard = () => {
 		return <SpinnerCard />;
 	}
 
-	if (
-		! isPreconditionReady ||
-		! googleAdsAccount ||
-		googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED
-	) {
+	if ( ! isPreconditionReady || ! googleAdsAccount ) {
 		return <DisabledCard />;
 	}
 
