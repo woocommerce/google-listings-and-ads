@@ -83,9 +83,7 @@ class MerchantReport implements OptionsAwareInterface {
 		}
 
 		$offer_ids = array_map(
-			function ( $item ) {
-				return WCProductAdapter::get_offer_id( $item );
-			},
+			[ WCProductAdapter::class, 'get_offer_id' ],
 			$sync_ready_products_ids
 		);
 
