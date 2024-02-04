@@ -49,7 +49,7 @@ class MerchantProductViewReportQuery extends MerchantQuery {
 			[
 				'id'              => 'product_view.id',
 				'offer_id'        => 'product_view.offer_id',
-				'experation_date' => 'product_view.expiration_date',
+				'expiration_date' => 'product_view.expiration_date',
 				'status'          => 'product_view.aggregated_destination_status',
 			]
 		);
