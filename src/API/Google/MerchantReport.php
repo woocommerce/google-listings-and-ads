@@ -137,9 +137,9 @@ class MerchantReport implements OptionsAwareInterface {
 		foreach ( $rows as $row ) {
 			/** @var ProductView $product_view  */
 			$product_view    = $row->getProductView();
-			$experation_date = $product_view->getExpirationDate();
+			$expiration_date = $product_view->getExpirationDate();
 
-			$formatted_expiration_date = DateTime::createFromFormat( 'Y-m-d', "{$experation_date->getYear()}-{$experation_date->getMonth()}-{$experation_date->getDay()}" );
+			$formatted_expiration_date = DateTime::createFromFormat( 'Y-m-d', "{$expiration_date->getYear()}-{$expiration_date->getMonth()}-{$expiration_date->getDay()}" );
 			// Products are marked as expiring 3 days before the expiration date.
 			// @see https://support.google.com/merchants/answer/160491?hl=en-IE#Expiring
 			$formatted_expiration_date->modify( '-3 days' );
