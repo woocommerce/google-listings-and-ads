@@ -105,7 +105,7 @@ class MerchantReport implements OptionsAwareInterface {
 			->get_results();
 
 			if ( $response->count() ) {
-				$results = [ ...$results, ...$response->getResults() ];
+				$results = array_merge( $results, $response->getResults() );
 			}
 
 			$next_page_token = $response->getNextPageToken();
