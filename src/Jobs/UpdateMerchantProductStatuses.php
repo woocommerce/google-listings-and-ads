@@ -60,7 +60,7 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	 * @return string
 	 */
 	public function get_name(): string {
-		return 'update_merchant_statuses';
+		return 'update_merchant_product_statuses';
 	}
 
 	/**
