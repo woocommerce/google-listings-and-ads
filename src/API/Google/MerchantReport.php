@@ -15,7 +15,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as Googl
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ReportRow;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Segments;
-use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\SearchResponse;
 use DateTime;
 use Exception;
@@ -29,7 +28,6 @@ class MerchantReport implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
 	use ReportTrait;
-	use PluginHelper;
 
 	/**
 	 * The shopping service.
