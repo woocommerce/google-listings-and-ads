@@ -39,7 +39,7 @@ jobs:
       - name: Run JavaScript unit tests
         run: npm run test:js
 
-      - name: JS unit coverage report
+      - name: Upload JS unit coverage report
         uses: codecov/codecov-action@v3
         with:
           files: coverage/clover.xml
