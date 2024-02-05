@@ -3,11 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use WP_REST_Response as Response;
 use WP_REST_Request as Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -22,14 +23,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class ProductStatisticsController extends BaseOptionsController {
 
-
-	/**
-	 * The Merchant Report.
-	 *
-	 * @var MerchantReport
-	 */
-	protected $merchant_report;
-
 	/**
 	 * The MerchantProducts object.
 	 *
@@ -43,6 +36,12 @@ class ProductStatisticsController extends BaseOptionsController {
 	 * @var ProductSyncStats
 	 */
 	protected $sync_stats;
+
+	/**
+	 *  The MerchantReport object.
+	 *
+	 * @var MerchantReport $merchant_report
+	 */
 
 
 	/**
@@ -105,6 +104,7 @@ class ProductStatisticsController extends BaseOptionsController {
 	 */
 	protected function get_product_statistics_refresh_callback(): callable {
 		return function ( Request $request ) {
+			$this->update_merchant_statuses->schedule();
 			return $this->get_product_status_stats( $request, true );
 		};
 	}
@@ -113,17 +113,15 @@ class ProductStatisticsController extends BaseOptionsController {
 	 * Get the overall product status statistics array.
 	 *
 	 * @param Request $request
+	 * @param bool    $force_refresh True to force a refresh of the product status statistics.
 	 *
 	 * @return Response
 	 */
-	protected function get_product_status_stats( Request $request ): Response {
+	protected function get_product_status_stats( Request $request, bool $force_refresh = false ): Response {
 		try {
+			$response = $this->merchant_statuses->get_product_statistics( $force_refresh );
 
-			$statistics = $this->merchant_report->get_product_statuses();
-
-			$response = [
-				'statistics' => $statistics,
-			];
+			$response['scheduled_sync'] = $this->sync_stats->get_count();
 
 			return $this->prepare_item_for_response( $response, $request );
 		} catch ( Exception $e ) {
@@ -138,7 +136,13 @@ class ProductStatisticsController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'statistics' => [
+			'timestamp'      => [
+				'type'        => 'number',
+				'description' => __( 'Timestamp reflecting when the product status statistics were last generated.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'statistics'     => [
 				'type'        => 'object',
 				'description' => __( 'Merchant Center product status statistics.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
@@ -170,6 +174,12 @@ class ProductStatisticsController extends BaseOptionsController {
 						'context'     => [ 'view' ],
 					],
 				],
+			],
+			'scheduled_sync' => [
+				'type'        => 'number',
+				'description' => __( 'Amount of scheduled jobs which will sync products to Google.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
 			],
 		];
 	}
