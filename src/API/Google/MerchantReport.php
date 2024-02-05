@@ -62,11 +62,11 @@ class MerchantReport implements OptionsAwareInterface {
 	 *
 	 * @throws GoogleException If the search call fails.
 	 */
-	public function get_product_view_query( $next_page_token = null ): SearchResponse {
+	public function get_product_view_report( $next_page_token = null ): SearchResponse {
 			$query = new MerchantProductViewReportQuery(
 				[
 					'next_page' => $next_page_token,
-					'per_page'  => 1,
+					'per_page'  => 1000,
 				]
 			);
 
