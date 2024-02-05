@@ -197,7 +197,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	 */
 	public function register_custom_blocks( string $build_path, string $uri, array $custom_blocks ): void {
 		foreach ( $custom_blocks as $custom_block ) {
-			$block_json_file = "${build_path}/${custom_block}/block.json";
+			$block_json_file = "{$build_path}/{$custom_block}/block.json";
 
 			if ( ! file_exists( $block_json_file ) ) {
 				continue;
@@ -209,11 +209,11 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 		$assets[] = new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads-product-blocks',
 			$uri,
-			"${build_path}/blocks.asset.php",
+			"{$build_path}/blocks.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) filemtime( "${build_path}/blocks.js" ),
+					'version'      => (string) filemtime( "{$build_path}/blocks.js" ),
 				]
 			)
 		);
@@ -222,7 +222,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 			'google-listings-and-ads-product-blocks-css',
 			$uri,
 			[],
-			(string) filemtime( "${build_path}/blocks.css" )
+			(string) filemtime( "{$build_path}/blocks.css" )
 		);
 
 		$this->assets_handler->register_many( $assets );
