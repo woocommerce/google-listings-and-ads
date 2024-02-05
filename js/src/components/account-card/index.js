@@ -101,7 +101,7 @@ const appearanceDict = {
 		icon: googleAdsLogo,
 		title: __( 'Google Ads', 'google-listings-and-ads' ),
 		description: __(
-			'Required to set up conversion measurement and create campaigns. You can also create or connect an account later.',
+			'Required to set up conversion measurement and create campaigns.',
 			'google-listings-and-ads'
 		),
 	},
