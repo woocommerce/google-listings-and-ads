@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
@@ -267,9 +267,9 @@ class ProductRepository implements Service {
 			'type'       => $types,
 			'meta_query' => [
 				[
-					'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
-					'compare' => '!=',
-					'value'   => SyncStatus::SYNCED,
+					'key'     => ProductMetaHandler::KEY_MC_STATUS,
+					'compare' => '=',
+					'value'   => MCStatus::NOT_SYNCED,
 				],
 				[
 					'key'     => ProductMetaHandler::KEY_VISIBILITY,
