@@ -22,6 +22,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ReportRow;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductView;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Date as ShoppingContentDate;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ShoppingContentDateTrait;
 use DateTime;
 use Exception;
 
@@ -44,6 +47,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 	use ContainerAwareTrait;
 	use PluginHelper;
+	use ShoppingContentDateTrait;
 
 	/**
 	 * The lifetime of the status-related data.
@@ -624,7 +628,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				continue;
 			}
 
-			if ( $this->product_is_expiring( DateTime::createFromFormat( 'Y-m-d', "{$product_view->getExpirationDate()->getYear()}-{$product_view->getExpirationDate()->getMonth()}-{$product_view->getExpirationDate()->getDay()}" ) ) ) {
+			if ( $this->product_is_expiring( $product_view->getExpirationDate() ) ) {
 				$status = MCStatus::EXPIRING;
 			}
 
@@ -643,13 +647,19 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Whether a product is expiring.
 	 *
-	 * @param DateTime $expiration_date
+	 * @param ShoppingContentDate $expiration_date
 	 *
 	 * @return bool Whether the product is expiring.
 	 */
-	protected function product_is_expiring( DateTime $expiration_date ): bool {
-		$expiration_date->modify( '-3 days' );
-		return $expiration_date < new DateTime();
+	protected function product_is_expiring( ShoppingContentDate $expiration_date ): bool {
+		$expiration_date = $this->convert_shopping_content_date( $expiration_date );
+
+		if ( ! $expiration_date ) {
+			return false;
+		}
+
+		// Products are considered expiring if they will expire within 3 days.
+		return time() + 3 * DAY_IN_SECONDS > $expiration_date->getTimestamp();
 	}
 
 	/**
