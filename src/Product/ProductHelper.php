@@ -247,17 +247,6 @@ class ProductHelper implements Service {
 	}
 
 	/**
-	 * @see https://developers.google.com/shopping-content/reference/rest/v2.1/products#id
-	 * @param string $mc_product_id The Merchant Center product ID.
-	 *
-	 * @return string The offer ID (the last part of the Merchant Center product ID).
-	 */
-	public function get_offer_id_from_mc_id( string $mc_product_id ) {
-		$mc_product_id_tokens = explode( ':', $mc_product_id );
-		return end( $mc_product_id_tokens );
-	}
-
-	/**
 	 * See: WCProductAdapter::map_wc_product_id()
 	 *
 	 * @param string $mc_product_id Simple product ID (`merchant_center_id`) or
@@ -266,7 +255,9 @@ class ProductHelper implements Service {
 	 * @return int the ID for the WC product linked to the provided Google product ID (0 if not found)
 	 */
 	public function get_wc_product_id( string $mc_product_id ): int {
-		$mc_product_id = $this->get_offer_id_from_mc_id( $mc_product_id );
+		// Maybe remove everything before the last colon ':'
+		$mc_product_id_tokens = explode( ':', $mc_product_id );
+		$mc_product_id        = end( $mc_product_id_tokens );
 
 		$wc_product_id = 0;
 		$pattern       = '/' . preg_quote( $this->get_slug(), '/' ) . '_(\d+)$/';
