@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupProductsJob;
@@ -625,6 +626,43 @@ class ConnectionTest implements Service, Registerable {
 				</form>
 			<?php } ?>
 
+			<hr />
+
+			<?php if ( $blog_token ) { ?>
+				<h2 class="title">Partner API Pull Integration</h2>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Send partner notification request to WPCOM:</th>
+							<td>
+								<p>
+									<label>
+										Product/Coupon/Shipping ID <input name="item_id" type="text" value="<?php echo ! empty( $_GET['item_id'] ) ? intval( $_GET['item_id'] ) : ''; ?>" />
+									</label>
+									<br />
+									<br />
+									<label>
+										Topic
+										<select name="topic">
+											<option value="product.create" <?php echo (! isset( $_GET['topic'] ) || $_GET['topic'] === 'product.create') ? "selected" : "" ?>>product.create</option>
+											<option value="product.delete" <?php echo $_GET['topic'] === 'product.delete' ? "selected" : ""?>>product.delete</option>
+											<option value="product.update" <?php echo $_GET['topic'] === 'product.update' ? "selected" : ""?>>product.update</option>
+											<option value="coupon.create" <?php echo $_GET['topic'] === 'coupon.create' ? "selected" : ""?>>coupon.create</option>
+											<option value="coupon.delete" <?php echo $_GET['topic'] === 'coupon.delete' ? "selected" : ""?>>coupon.delete</option>
+											<option value="coupon.update" <?php echo $_GET['topic'] === 'coupon.update' ? "selected" : ""?>>coupon.update</option>
+										</select>
+									</label>
+									<button class="button">Send Notification</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'partner-notification' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="partner-notification" type="hidden" />
+				</form>
+			<?php } ?>
+
 		</div>
 		<?php
 	}
@@ -694,6 +732,25 @@ class ConnectionTest implements Service, Registerable {
 			}
 
 			$this->response .= wp_remote_retrieve_body( $response );
+		}
+
+		if ( 'partner-notification' === $_GET['action'] && check_admin_referer( 'partner-notification' ) ) {
+			if ( ! isset( $_GET['topic'], $_GET['item_id'] ) ) {
+				$this->response .= "\n Topic and Item ID are required.";
+				return;
+			}
+
+			$item  = $_GET['item_id'];
+			$topic = $_GET['topic'];
+
+			$service = new NotificationsService();
+			if ( $service->notify( $item, $topic ) ) {
+				$this->response .= "\n Notification success. Item: " . $item . " - Topic: " . $topic;
+			} else {
+				$this->response .= "\n Notification failed. Item: " . $item . " - Topic: " . $topic;
+			}
+
+			return;
 		}
 
 		if ( 'wcs-auth-test' === $_GET['action'] && check_admin_referer( 'wcs-auth-test' ) ) {
