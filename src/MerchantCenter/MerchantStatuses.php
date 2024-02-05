@@ -581,13 +581,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Convert the product view status to the MC status.
+	 * Convert the product view aggregated  status to the MC status.
 	 *
 	 * @param string $status The status of the product.
 	 *
 	 * @return array The MC status.
 	 */
-	protected function convert_product_view_status_to_mc_status( string $status ): string {
+	protected function convert_aggregated_status_to_mc_status( string $status ): string {
 		switch ( $status ) {
 			case 'ELIGIBLE':
 				return MCStatus::APPROVED;
@@ -617,7 +617,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$product_view = $row->getProductView();
 
 			$wc_product_id = $product_helper->get_wc_product_id( $product_view->getId() );
-			$status        = $this->convert_product_view_status_to_mc_status( $product_view->getAggregatedDestinationStatus() );
+			$status        = $this->convert_aggregated_status_to_mc_status( $product_view->getAggregatedDestinationStatus() );
 
 			if ( ! $wc_product_id ) {
 				continue;
