@@ -619,7 +619,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$wc_product_id = $product_helper->get_wc_product_id( $product_view->getId() );
 			$status        = $this->convert_aggregated_status_to_mc_status( $product_view->getAggregatedDestinationStatus() );
 
-			if ( ! $wc_product_id ) {
+			// Skip if the product does not exist or if the sync status has changed to not ready.
+			if ( ! $wc_product_id || ! $product_helper->is_sync_ready( wc_get_product( $wc_product_id ) ) ) {
 				continue;
 			}
 
