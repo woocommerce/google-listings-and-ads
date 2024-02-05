@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ReportRow;
 use DateTime;
 use Exception;
 
@@ -192,7 +193,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		foreach ( array_chunk( $this->get_synced_google_ids(), $chunk_size ) as $google_ids ) {
 			$mc_product_statuses = $this->filter_valid_statuses( $google_ids );
 			$this->refresh_product_issues( $mc_product_statuses );
-			$this->sum_status_counts( $mc_product_statuses );
 		}
 
 		// Update each product's mc_status and then update the global statistics.
@@ -572,20 +572,61 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
+	 * Add products to the product status statistics.
+	 *
+	 * @param ReportRow[] $rows Product statuses of validated products.
+	 */
+	public function add_products_to_status_count( $rows ): void {
+		$this->sum_status_counts( $rows );
+	}
+
+	/**
+	 * Convert the product view status to the MC status.
+	 *
+	 * @param string $status The status of the product.
+	 *
+	 * @return array The MC status.
+	 */
+	protected function convert_product_view_status_to_mc_status( string $status ): string {
+		switch ( $status ) {
+			case 'ELIGIBLE':
+				return MCStatus::APPROVED;
+			case 'ELIGIBLE_LIMITED':
+				return MCStatus::PARTIALLY_APPROVED;
+			case 'NOT_ELIGIBLE_OR_DISAPPROVED':
+				return MCStatus::DISAPPROVED;
+			case 'PENDING':
+				return MCStatus::PENDING;
+			default:
+				return MCStatus::NOT_SYNCED;
+		}
+	}
+
+	/**
 	 * Add the provided status counts to the overall totals.
 	 *
-	 * @param GoogleProductStatus[] $validated_mc_statuses Product statuses of validated products.
+	 * @param ReportRow[] $rows Product View rows.
 	 */
-	protected function sum_status_counts( array $validated_mc_statuses ): void {
+	protected function sum_status_counts( array $rows ): void {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
-		foreach ( $validated_mc_statuses as $product ) {
-			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
-			$status        = $this->get_product_shopping_status( $product );
-			if ( is_null( $status ) ) {
+		foreach ( $rows as $row ) {
+
+			/** @var ProductView $product_view  */
+			$product_view = $row->getProductView();
+
+			$wc_product_id = $product_helper->get_wc_product_id( $product_view->getId() );
+			$status        = $this->convert_product_view_status_to_mc_status( $product_view->getAggregatedDestinationStatus() );
+
+			if ( ! $wc_product_id ) {
 				continue;
 			}
+
+			if ( $this->product_is_expiring( DateTime::createFromFormat( 'Y-m-d', "{$product_view->getExpirationDate()->getYear()}-{$product_view->getExpirationDate()->getMonth()}-{$product_view->getExpirationDate()->getDay()}" ) ) ) {
+				$status = MCStatus::EXPIRING;
+			}
+
 			// Products is used later for global product status statistics.
 			$this->product_statuses['products'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $status ] ?? 0 );
 
@@ -596,6 +637,18 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			}
 			$this->product_statuses['parents'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $status ] ?? 0 );
 		}
+	}
+
+	/**
+	 * Whether a product is expiring.
+	 *
+	 * @param DateTime $expiration_date
+	 *
+	 * @return bool Whether the product is expiring.
+	 */
+	protected function product_is_expiring( DateTime $expiration_date ): bool {
+		$expiration_date->modify( '-3 days' );
+		return $expiration_date < new DateTime();
 	}
 
 	/**
@@ -746,27 +799,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		foreach ( $to_update as $status => $product_ids ) {
 			$product_meta_query_helper->batch_update_values( ProductMetaHandler::KEY_MC_STATUS, $status, $product_ids );
 		}
-	}
-
-	/**
-	 * Return the product's shopping status in the Google Merchant Center.
-	 * Active, Pending, Disapproved, Expiring.
-	 *
-	 * @param GoogleProductStatus $product_status
-	 *
-	 * @return string|null
-	 */
-	protected function get_product_shopping_status( GoogleProductStatus $product_status ): ?string {
-		$status = null;
-		foreach ( $product_status->getDestinationStatuses() as $d ) {
-			if ( 'SurfacesAcrossGoogle' === $d->getDestination() ) {
-				$status = $d->getStatus();
-			} elseif ( 'Shopping' === $d->getDestination() ) {
-				$status = $d->getStatus();
-				break;
-			}
-		}
-		return $status;
 	}
 
 	/**
