@@ -6,6 +6,8 @@ import { registerProductEditorBlockType } from '@woocommerce/product-editor';
 /**
  * Internal dependencies
  */
+import OnboardingPromptEdit from './product-onboarding-prompt/edit';
+import onboardingPromptMetadata from './product-onboarding-prompt/block.json';
 import ChannelVisibilityEdit from './product-channel-visibility/edit';
 import channelVisibilityMetadata from './product-channel-visibility/block.json';
 import DateTimeFieldEdit from './product-date-time-field/edit';
@@ -23,6 +25,7 @@ function registerProductEditorBlock( { name, ...metadata }, Edit ) {
 	} );
 }
 
+registerProductEditorBlock( onboardingPromptMetadata, OnboardingPromptEdit );
 registerProductEditorBlock( channelVisibilityMetadata, ChannelVisibilityEdit );
 registerProductEditorBlock( dateTimeFieldMetadata, DateTimeFieldEdit );
 registerProductEditorBlock( selectFieldMetadata, SelectFieldEdit );
