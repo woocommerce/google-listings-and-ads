@@ -75,7 +75,7 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		$item  = $args[0];
 		$topic = $args[1];
 
-		if ( $this->notifications_service->notify( $item, $topic ) ) {
+		if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $item, $topic ) ) {
 			$this->set_status( $item, $this->get_after_notification_status( $topic ) );
 		}
 	}
@@ -128,6 +128,26 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 			return NotificationStatus::NOTIFICATION_DELETED;
 		} else {
 			return NotificationStatus::NOTIFICATION_UPDATED;
+		}
+	}
+
+	/**
+	 * Checks if the item can be processed based on the topic.
+	 * This is needed because the product can change the Notification Status before
+	 * the Job process the item.
+	 *
+	 * @param int    $product_id
+	 * @param string $topic
+	 * @return bool
+	 */
+	protected function can_process( int $product_id, string $topic ): bool {
+		$product = $this->product_helper->get_wc_product( $product_id );
+		if ( str_contains( $topic, '.create' ) ) {
+			return $this->product_helper->should_trigger_create_notification( $product );
+		} elseif ( str_contains( $topic, '.delete' ) ) {
+			return $this->product_helper->should_trigger_delete_notification( $product );
+		} else {
+			return $this->product_helper->should_trigger_update_notification( $product );
 		}
 	}
 }
