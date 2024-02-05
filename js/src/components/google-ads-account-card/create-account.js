@@ -12,6 +12,7 @@ import AppButton from '.~/components/app-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from './create-account-button';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
@@ -24,6 +25,7 @@ const ClaimTermsAndCreateAccountButton = ( { disabled } ) => {
 			path: `/wc/gla/ads/accounts`,
 			method: 'POST',
 		} );
+	const { google } = useGoogleAccountCheck();
 
 	const handleCreateAccount = async () => {
 		try {
@@ -48,6 +50,10 @@ const ClaimTermsAndCreateAccountButton = ( { disabled } ) => {
 		await fetchGoogleAdsAccount();
 		setFetchAccountLoading( false );
 	};
+
+	if ( ! google || google.active !== 'yes' ) {
+		return null;
+	}
 
 	return (
 		<CreateAccountButton
