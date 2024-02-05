@@ -25,6 +25,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductView;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Date as ShoppingContentDate;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ShoppingContentDateTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use DateTime;
 use Exception;
 
@@ -111,7 +112,16 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @throws Exception If the Merchant Center can't be polled for the statuses.
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
-		$this->maybe_refresh_status_data( $force_refresh );
+		// if not transient, return empty array and scheduled the job to update the statuses.
+		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+		if ( ! $force_refresh && null === $this->mc_statuses ) {
+			// Schedule job to update the statuses.
+			$this->container->get( UpdateMerchantProductStatuses::class )->schedule();
+			return [
+				'timestamp'  => $this->cache_created_time->getTimestamp(),
+				'statistics' => [],
+			];
+		}
 
 		$counting_stats = $this->mc_statuses['statistics'];
 		$counting_stats = array_merge(
@@ -187,8 +197,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			throw new Exception( __( 'Merchant Center account is not set up.', 'google-listings-and-ads' ) );
 		}
 
-		$this->mc_statuses = [];
-
 		// Update account-level issues.
 		$this->refresh_account_issues();
 
@@ -196,6 +204,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$chunk_size = apply_filters( 'woocommerce_gla_merchant_status_google_ids_chunk', 1000 );
 		foreach ( array_chunk( $this->get_synced_google_ids(), $chunk_size ) as $google_ids ) {
 			$mc_product_statuses = $this->filter_valid_statuses( $google_ids );
+			// TODO: Get the product issues with the Product View Report.
 			$this->refresh_product_issues( $mc_product_statuses );
 		}
 
@@ -632,6 +641,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * Update the product status statistics.
 	 */
 	public function update_product_stats() {
+		$this->mc_statuses = [];
 		// Update each product's mc_status and then update the global statistics.
 		$this->update_product_mc_statuses();
 		$this->update_mc_statuses();
