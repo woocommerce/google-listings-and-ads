@@ -199,10 +199,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$this->refresh_product_issues( $mc_product_statuses );
 		}
 
-		// Update each product's mc_status and then update the global statistics.
-		$this->update_product_mc_statuses();
-		$this->update_mc_statuses();
-
 		// Update pre-sync product validation issues.
 		$this->refresh_presync_product_issues();
 
@@ -578,10 +574,67 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Add products to the product status statistics.
 	 *
-	 * @param ReportRow[] $rows Product statuses of validated products.
+	 * @param ReportRow[] $rows Product View rows.
 	 */
-	public function add_products_to_status_count( $rows ): void {
-		$this->sum_status_counts( $rows );
+	public function process_product_report( $rows ): void {
+		/** @var ProductHelper $product_helper */
+		$product_helper      = $this->container->get( ProductHelper::class );
+		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
+
+		foreach ( $rows as $row ) {
+
+			/** @var ProductView $product_view  */
+			$product_view = $row->getProductView();
+
+			$wc_product_id     = $product_helper->get_wc_product_id( $product_view->getId() );
+			$mc_product_status = $this->convert_aggregated_status_to_mc_status( $product_view->getAggregatedDestinationStatus() );
+
+			// Skip if the product does not exist or if the product previously found/validated.
+			if ( ! $wc_product_id || ! empty( $this->product_data_lookup[ $wc_product_id ] ) ) {
+				continue;
+			}
+
+			if ( $this->product_is_expiring( $product_view->getExpirationDate() ) ) {
+				$mc_product_status = MCStatus::EXPIRING;
+			}
+
+			$wc_product = $product_helper->get_wc_product_by_wp_post( $wc_product_id );
+			if ( ! $wc_product || 'product' !== substr( $wc_product->post_type, 0, 7 ) ) {
+				// Should never reach here since the products IDS are retrieved from postmeta.
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $mc_product_id ),
+					__METHOD__ . ' in remove_invalid_statuses()',
+				);
+				continue;
+			}
+
+			$this->product_data_lookup[ $wc_product_id ] = [
+				'name'       => get_the_title( $wc_product ),
+				'visibility' => get_post_meta( $wc_product_id, $visibility_meta_key ),
+				'parent_id'  => $wc_product->post_parent,
+			];
+
+			// Products is used later for global product status statistics.
+			$this->product_statuses['products'][ $wc_product_id ][ $mc_product_status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $mc_product_status ] ?? 0 );
+
+			// Aggregate parent statuses for mc_status postmeta.
+			$wc_parent_id = $this->product_data_lookup[ $wc_product_id ]['parent_id'];
+			if ( ! $wc_parent_id ) {
+				continue;
+			}
+			$this->product_statuses['parents'][ $wc_parent_id ][ $mc_product_status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $mc_product_status ] ?? 0 );
+
+		}
+	}
+
+	/**
+	 * Update the product status statistics.
+	 */
+	public function update_product_stats() {
+		// Update each product's mc_status and then update the global statistics.
+		$this->update_product_mc_statuses();
+		$this->update_mc_statuses();
 	}
 
 	/**
@@ -603,44 +656,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				return MCStatus::PENDING;
 			default:
 				return MCStatus::NOT_SYNCED;
-		}
-	}
-
-	/**
-	 * Add the provided status counts to the overall totals.
-	 *
-	 * @param ReportRow[] $rows Product View rows.
-	 */
-	protected function sum_status_counts( array $rows ): void {
-		/** @var ProductHelper $product_helper */
-		$product_helper = $this->container->get( ProductHelper::class );
-
-		foreach ( $rows as $row ) {
-
-			/** @var ProductView $product_view  */
-			$product_view = $row->getProductView();
-
-			$wc_product_id = $product_helper->get_wc_product_id( $product_view->getId() );
-			$status        = $this->convert_aggregated_status_to_mc_status( $product_view->getAggregatedDestinationStatus() );
-
-			// Skip if the product does not exist or if the sync status has changed to not ready.
-			if ( ! $wc_product_id || ! $product_helper->is_sync_ready( wc_get_product( $wc_product_id ) ) ) {
-				continue;
-			}
-
-			if ( $this->product_is_expiring( $product_view->getExpirationDate() ) ) {
-				$status = MCStatus::EXPIRING;
-			}
-
-			// Products is used later for global product status statistics.
-			$this->product_statuses['products'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $status ] ?? 0 );
-
-			// Aggregate parent statuses for mc_status postmeta.
-			$wc_parent_id = isset( $this->product_data_lookup[ $wc_product_id ]['parent_id'] ) ? intval( $this->product_data_lookup[ $wc_product_id ]['parent_id'] ) : 0;
-			if ( ! $wc_parent_id ) {
-				continue;
-			}
-			$this->product_statuses['parents'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $status ] ?? 0 );
 		}
 	}
 

@@ -23,6 +23,6 @@ trait ShoppingContentDateTrait {
 	 * @return DateTime|false The date converted or false if the date is invalid.
 	 */
 	protected function convert_shopping_content_date( ShoppingContentDate $date ) {
-		return DateTime::createFromFormat( 'Y-m-d|', "{$date()->getYear()}-{$date->getMonth()}-{$date->getDay()}" );
+		return DateTime::createFromFormat( 'Y-m-d|', "{$date->getYear()}-{$date->getMonth()}-{$date->getDay()}" );
 	}
 }
