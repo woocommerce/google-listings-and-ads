@@ -36,7 +36,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\CleanupProductTarget
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\PluginUpdate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateSyncableProductsCount;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
@@ -158,7 +158,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		// Share update syncable products count job
 		$this->share_action_scheduler_job( UpdateSyncableProductsCount::class, ProductRepository::class, ProductHelper::class );
 
-		$this->share_action_scheduler_job( UpdateMerchantStatuses::class, MerchantCenterService::class, MerchantReport::class, MerchantStatuses::class );
+		$this->share_action_scheduler_job( UpdateMerchantProductStatuses::class, MerchantCenterService::class, MerchantReport::class, MerchantStatuses::class );
 	}
 
 	/**

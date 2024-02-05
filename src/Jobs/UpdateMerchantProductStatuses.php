@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class UpdateMerchantStatuses
+ * Class UpdateMerchantProductStatuses
  *
  * Update Product Stats
  *
@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since x.x.x
  */
-class UpdateMerchantStatuses extends AbstractActionSchedulerJob {
+class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	/**
 	 * @var MerchantCenterService
 	 */
