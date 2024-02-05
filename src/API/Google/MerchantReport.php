@@ -15,11 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as Googl
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ReportRow;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Segments;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductView;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\SearchResponse;
 use DateTime;
 use Exception;
@@ -43,13 +39,6 @@ class MerchantReport implements OptionsAwareInterface {
 	protected $service;
 
 	/**
-	 * Product repository.
-	 *
-	 * @var ProductRepository
-	 */
-	protected $product_repository;
-
-	/**
 	 * Product helper class.
 	 *
 	 * @var ProductHelper
@@ -59,113 +48,35 @@ class MerchantReport implements OptionsAwareInterface {
 	/**
 	 * Merchant Report constructor.
 	 *
-	 * @param ShoppingContent   $service
-	 * @param ProductHelper     $product_helper
-	 * @param ProductRepository $product_repository
+	 * @param ShoppingContent $service
+	 * @param ProductHelper   $product_helper
 	 */
-	public function __construct( ShoppingContent $service, ProductHelper $product_helper, ProductRepository $product_repository ) {
-		$this->service            = $service;
-		$this->product_helper     = $product_helper;
-		$this->product_repository = $product_repository;
+	public function __construct( ShoppingContent $service, ProductHelper $product_helper ) {
+		$this->service        = $service;
+		$this->product_helper = $product_helper;
 	}
 
 	/**
-	 * Get product statuses.
+	 * Get ProductView Query response.
 	 *
-	 * @return array List of product statuses.
+	 * @param string|null $next_page_token The next page token.
+	 * @return SearchResponse The response from the search call.
+	 *
 	 * @throws GoogleException If the search call fails.
 	 */
-	public function get_product_statuses(): array {
-		$sync_ready_products_ids = $this->product_repository->find_sync_ready_products()->get_product_ids();
-
-		if ( count( $sync_ready_products_ids ) === 0 ) {
-			return $this->calculate_statuses( [] );
-		}
-
-		$offer_ids = array_map(
-			[ WCProductAdapter::class, 'get_offer_id' ],
-			$sync_ready_products_ids
-		);
-
-		$next_page_token = null;
-		$results         = [];
-
-		do {
-
+	public function get_product_view_query( $next_page_token = null ): SearchResponse {
 			$query = new MerchantProductViewReportQuery(
 				[
-					'ids'       => $offer_ids,
 					'next_page' => $next_page_token,
+					'per_page'  => 1,
 				]
 			);
 
-			/** @var SearchResponse $response  */
-			$response = $query
-			->set_client( $this->service, $this->options->get_merchant_id() )
-			->get_results();
-
-			if ( $response->count() ) {
-				$results = array_merge( $results, $response->getResults() );
-			}
-
-			$next_page_token = $response->getNextPageToken();
-
-		} while ( $next_page_token );
-
-		$statistics               = $this->calculate_statuses( $results );
-		$statistics['not_synced'] = count( $sync_ready_products_ids ) - count( $results );
-		return $statistics;
+		return $query
+		->set_client( $this->service, $this->options->get_merchant_id() )
+		->get_results();
 	}
 
-	/**
-	 * Calculate statistics for a list of report rows.
-	 *
-	 * @param ReportRow[] $rows List of report rows.
-	 *
-	 * @return array List of statistics.
-	 */
-	public function calculate_statuses( array $rows ): array {
-		$statistics = [
-			'active'              => 0,
-			'not_synced'          => 0,
-			MCStatus::EXPIRING    => 0,
-			MCStatus::PENDING     => 0,
-			MCStatus::DISAPPROVED => 0,
-		];
-
-		/** @var $row ReportRow  */
-		foreach ( $rows as $row ) {
-			/** @var ProductView $product_view  */
-			$product_view    = $row->getProductView();
-			$expiration_date = $product_view->getExpirationDate();
-
-			$formatted_expiration_date = DateTime::createFromFormat( 'Y-m-d', "{$expiration_date->getYear()}-{$expiration_date->getMonth()}-{$expiration_date->getDay()}" );
-			// Products are marked as expiring 3 days before the expiration date.
-			// @see https://support.google.com/merchants/answer/160491?hl=en-IE#Expiring
-			$formatted_expiration_date->modify( '-3 days' );
-			if ( $formatted_expiration_date < new DateTime() ) {
-				++$statistics[ MCStatus::EXPIRING ];
-				continue;
-			}
-
-			switch ( $product_view->getAggregatedDestinationStatus() ) {
-				case 'ELIGIBLE':
-				case 'ELIGIBLE_LIMITED':
-					++$statistics['active'];
-					break;
-				case 'PENDING':
-					++$statistics[ MCStatus::PENDING ];
-					break;
-				case 'NOT_ELIGIBLE_OR_DISAPPROVED':
-					++$statistics[ MCStatus::DISAPPROVED ];
-					break;
-				default:
-					break;
-			}
-		}
-
-		return $statistics;
-	}
 
 	/**
 	 * Get report data for free listings.
