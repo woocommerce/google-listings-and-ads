@@ -112,8 +112,8 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	}
 
 	private function setUpBlockMock( MockObject $anchor_group, string $template_id ) {
-		$template = $this->createStub( ProductFormTemplateInterface::class );
-		$group    = $this->createStub( GroupInterface::class );
+		$template = $this->createMock( ProductFormTemplateInterface::class );
+		$group    = $this->createMock( GroupInterface::class );
 
 		$visibility_section = $this->createMock( SectionInterface::class );
 		$attributes_section = $this->createMock( SectionInterface::class );
@@ -196,9 +196,31 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			->expects( $this->exactly( 1 ) )
 			->method( 'add_group' );
 
+		$this->simple['group']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_block' )
+			->with(
+				[
+					'id'         => 'google-listings-and-ads-product-onboarding-prompt',
+					'blockName'  => 'google-listings-and-ads/product-onboarding-prompt',
+					'attributes' => [ 'startUrl' => 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/google/start' ],
+				]
+			);
+
 		$this->variation_anchor_group->get_root_template()
 			->expects( $this->exactly( 1 ) )
 			->method( 'add_group' );
+
+		$this->variation['group']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_block' )
+			->with(
+				[
+					'id'         => 'google-listings-and-ads-product-onboarding-prompt',
+					'blockName'  => 'google-listings-and-ads/product-onboarding-prompt',
+					'attributes' => [ 'startUrl' => 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/google/start' ],
+				]
+			);
 
 		$this->product_blocks_service->register();
 

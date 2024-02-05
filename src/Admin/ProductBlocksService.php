@@ -62,6 +62,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	 * @var string[]
 	 */
 	protected const CUSTOM_BLOCKS = [
+		'product-onboarding-prompt',
 		'product-channel-visibility',
 		'product-date-time-field',
 		'product-select-field',
@@ -139,6 +140,16 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 				);
 
 				if ( ! $this->merchant_center->is_setup_complete() ) {
+					$group->add_block(
+						[
+							'id'         => 'google-listings-and-ads-product-onboarding-prompt',
+							'blockName'  => 'google-listings-and-ads/product-onboarding-prompt',
+							'attributes' => [
+								'startUrl' => $this->get_start_url(),
+							],
+						]
+					);
+
 					return;
 				}
 
