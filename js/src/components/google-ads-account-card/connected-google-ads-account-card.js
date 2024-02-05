@@ -14,6 +14,7 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
+import useMCSetup from '.~/hooks/useMCSetup';
 
 /**
  * Renders a Google Ads account card UI with connected account information.
@@ -32,6 +33,9 @@ export default function ConnectedGoogleAdsAccountCard( {
 } ) {
 	const { disconnectGoogleAdsAccount } = useAppDispatch();
 	const [ isDisconnecting, setDisconnecting ] = useState( false );
+	const { data: mcSetup } = useMCSetup();
+
+	const { status = '' } = mcSetup || {};
 
 	const handleSwitch = () => {
 		setDisconnecting( true );
@@ -55,14 +59,16 @@ export default function ConnectedGoogleAdsAccountCard( {
 		>
 			{ children }
 
-			<Notice status="success" isDismissible={ false }>
-				<p>
-					{ __(
-						'Conversion measurement has been set up. You can create a campaign later.',
-						'google-listings-and-ads'
-					) }
-				</p>
-			</Notice>
+			{ status !== 'complete' && (
+				<Notice status="success" isDismissible={ false }>
+					<p>
+						{ __(
+							'Conversion measurement has been set up. You can create a campaign later.',
+							'google-listings-and-ads'
+						) }
+					</p>
+				</Notice>
+			) }
 
 			{ ! hideAccountSwitch && (
 				<Section.Card.Footer>
