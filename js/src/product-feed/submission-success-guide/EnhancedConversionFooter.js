@@ -7,10 +7,13 @@ import { useCallback } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 import AppButton from '.~/components/app-button';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 
 const EnhancedConversionFooter = () => {
+	const { googleAdsAccount } = useGoogleAdsAccount();
 	const {
 		acceptedCustomerDataTerms: hasAcceptedTerms,
 		hasFinishedResolution,
@@ -21,6 +24,13 @@ const EnhancedConversionFooter = () => {
 			console.log( 'Redirect the user to the TOS page.' );
 		}
 	}, [ hasAcceptedTerms ] );
+
+	if (
+		! googleAdsAccount ||
+		googleAdsAccount?.status !== GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED
+	) {
+		return null;
+	}
 
 	return (
 		<>

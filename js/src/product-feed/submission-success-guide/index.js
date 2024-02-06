@@ -12,6 +12,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import SpinnerCard from '.~/components/spinner-card';
+import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import Guide from '.~/external-components/wordpress/guide';
 import GuidePageContent, {
 	ContentLink,
@@ -29,6 +31,10 @@ import EnhancedConversionFooter from './EnhancedConversionFooter';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';
+const SUCCESS_SCREEN = 'success-screen';
+const GOOGLE_ADS_CREDITS_SCREEN = 'google-ads-credits-screen';
+const ENHANCED_CONVERSION_TRACKING_SCREEN =
+	'enhanced-conversion-tracking-screen';
 
 const image = (
 	<div className="gla-submission-success-guide__logo-block">
@@ -65,8 +71,8 @@ const handleGuideFinish = ( e ) => {
 	} );
 };
 
-const pages = [
-	{
+const PAGES = {
+	[ SUCCESS_SCREEN ]: {
 		image,
 		content: (
 			<GuidePageContent
@@ -105,7 +111,7 @@ const pages = [
 			</GuidePageContent>
 		),
 	},
-	{
+	[ GOOGLE_ADS_CREDITS_SCREEN ]: {
 		image,
 		content: (
 			<GuidePageContent
@@ -163,16 +169,12 @@ const pages = [
 			</>
 		),
 	},
-	{
+	[ ENHANCED_CONVERSION_TRACKING_SCREEN ]: {
 		image,
 		content: <EnhancedConversion />,
 		footer: <EnhancedConversionFooter />,
 	},
-];
-
-if ( glaData.adsSetupComplete ) {
-	pages.pop();
-}
+};
 
 /**
  * Modal window to greet the user at Product Feed, after successful completion of onboarding.
@@ -184,6 +186,8 @@ if ( glaData.adsSetupComplete ) {
  * @fires gla_modal_open with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
  */
 const SubmissionSuccessGuide = () => {
+	const { loaded, data: campaigns } = useAdsCampaigns();
+
 	useEffect( () => {
 		recordGlaEvent( 'gla_modal_open', {
 			context: GUIDE_NAMES.SUBMISSION_SUCCESS,
@@ -210,6 +214,20 @@ const SubmissionSuccessGuide = () => {
 			);
 		}
 	}, [] );
+
+	if ( glaData.adsSetupComplete ) {
+		// Remove the Google Ads credits screens.
+		delete PAGES?.[ GOOGLE_ADS_CREDITS_SCREEN ];
+	} else if ( ! campaigns?.length ) {
+		// There are no campaigns, do not show the enhanced conversion tracking screen.
+		delete PAGES?.[ ENHANCED_CONVERSION_TRACKING_SCREEN ];
+	}
+
+	if ( ! loaded ) {
+		return <SpinnerCard />;
+	}
+
+	const pages = Object.keys( PAGES ).map( ( screen ) => PAGES[ screen ] );
 
 	return (
 		<Guide

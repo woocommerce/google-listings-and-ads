@@ -7,12 +7,22 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import GuidePageContent from '.~/components/guide-page-content';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 
 const EnhancedConversion = () => {
+	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { acceptedCustomerDataTerms: hasAcceptedTerms } =
 		useAcceptedCustomerDataTerms();
+
+	if (
+		! googleAdsAccount ||
+		googleAdsAccount?.status !== GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED
+	) {
+		return null;
+	}
 
 	return (
 		<GuidePageContent
