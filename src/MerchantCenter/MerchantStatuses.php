@@ -653,7 +653,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Convert the product view aggregated  status to the MC status.
+	 * Convert the product view aggregated status to the MC status.
 	 *
 	 * @param string $status The status of the product.
 	 *
