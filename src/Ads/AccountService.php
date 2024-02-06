@@ -279,7 +279,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	}
 
 	/**
-	 * Gets the billing setup status and returns a setup URL if available.
+	 * Gets the accepted customer data terms status.
 	 *
 	 * @return array
 	 */
