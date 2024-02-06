@@ -34,11 +34,8 @@ class MerchantProductViewReportQuery extends MerchantQuery {
 	 * @return $this
 	 */
 	public function filter( array $ids ): QueryInterface {
-		if ( empty( $ids ) ) {
-			return $this;
-		}
-
-		return $this->where( 'product_view.offer_id', $ids, 'IN' );
+		// No filtering used for product view report.
+		return $this;
 	}
 
 	/**
