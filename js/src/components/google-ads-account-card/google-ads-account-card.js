@@ -1,4 +1,10 @@
 /**
+ * External dependencies
+ */
+import { Notice } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
@@ -25,6 +31,17 @@ export default function GoogleAdsAccountCard() {
 	}
 
 	return (
-		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount } />
+		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount }>
+			{ googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.COMPLETE && (
+				<Notice status="success" isDismissible={ false }>
+					<p>
+						{ __(
+							'Conversion measurement has been set up. You can create a campaign later.',
+							'google-listings-and-ads'
+						) }
+					</p>
+				</Notice>
+			) }
+		</ConnectedGoogleAdsAccountCard>
 	);
 }
