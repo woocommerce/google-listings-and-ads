@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use WP_REST_Response as Response;
@@ -104,7 +103,6 @@ class ProductStatisticsController extends BaseOptionsController {
 	 */
 	protected function get_product_statistics_refresh_callback(): callable {
 		return function ( Request $request ) {
-			$this->update_merchant_statuses->schedule();
 			return $this->get_product_status_stats( $request, true );
 		};
 	}
