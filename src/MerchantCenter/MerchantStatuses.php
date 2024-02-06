@@ -112,8 +112,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @throws Exception If the Merchant Center can't be polled for the statuses.
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
-		// if not transient, return empty array and scheduled the job to update the statuses.
 		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+
+		if ( $force_refresh ) {
+			$this->container->get( UpdateMerchantProductStatuses::class )->schedule();
+		}
+
+		// if not transient, return empty array and scheduled the job to update the statuses.
 		if ( ! $force_refresh && null === $this->mc_statuses ) {
 			// Schedule job to update the statuses.
 			$this->container->get( UpdateMerchantProductStatuses::class )->schedule();
