@@ -1,6 +1,7 @@
 name: Build
 
 on:
+  workflow_call:
   push:
     branches:
       - trunk
@@ -69,3 +70,12 @@ jobs:
         uses: woocommerce/grow/publish-extension-dev-build@actions-v1
         with:
           extension-asset-path: google-listings-and-ads.zip
+
+      - name: Publish build artifact
+        if: ${{ ! ( github.event_name == 'push' && github.ref_name == 'develop' ) }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: google-listings-and-ads.zip
+          path: ${{ github.workspace }}/google-listings-and-ads.zip
+          # Do not bloat the storage. Keep in only long enough for a caller workflow to pick it up and follow up with some manual debugging.
+          retention-days: 2
