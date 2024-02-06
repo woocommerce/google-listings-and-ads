@@ -125,11 +125,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WC 8.5 compatibility.
 * Update - Upgrade google/apiclient for PHP 8.3 compatibility.
 
-= 2.5.14 - 2023-12-18 =
-* Dev - Include PHP 8.3 in tested versions for PHPunit.
-* Fix - Item price in purchase event.
-* Tweak - Track Budgets and Audience in Onboarding.
-* Tweak - WC 8.4 compatibility.
-* Update - Change to require Google Ads connection during the onboarding.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
