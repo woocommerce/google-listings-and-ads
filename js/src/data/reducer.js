@@ -64,9 +64,11 @@ const DEFAULT_STATE = {
 	report: {},
 	store_categories: [],
 	tours: {},
-	conversion_tracking_setting: {
-		accepted_customer_data_terms: false,
-		allow_enhanced_conversions: false,
+	ads: {
+		conversion_tracking_setting: {
+			accepted_customer_data_terms: false,
+			allow_enhanced_conversions: false,
+		},
 	},
 };
 
@@ -502,7 +504,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 			return setIn(
 				state,
-				'conversion_tracking_setting.accepted_customer_data_terms',
+				'ads.conversion_tracking_setting.accepted_customer_data_terms',
 				status
 			);
 		}

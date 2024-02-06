@@ -471,13 +471,13 @@ getMappingRules.shouldInvalidate = ( action ) => {
 /**
  * Resolver for getting the Store categories.
  */
-export function* getAcceptedCustomerDataTerms() {
+export function* getStoreCategories() {
 	try {
 		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/ads/accepted-customer-data-terms`,
+			path: `${ API_NAMESPACE }/mc/mapping/categories`,
 		} );
 
-		yield receiveAcceptedTerms( response );
+		yield receiveStoreCategories( response );
 	} catch ( error ) {
 		handleApiError(
 			error,
@@ -522,20 +522,20 @@ export function* getTour( tourId ) {
 }
 
 /**
- * Resolver for getting the Store categories.
+ * Resolver for getting the accepted customer data terms.
  */
-export function* getStoreCategories() {
+export function* getAcceptedCustomerDataTerms() {
 	try {
 		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/mapping/categories`,
+			path: `${ API_NAMESPACE }/ads/accepted-customer-data-terms`,
 		} );
 
-		yield receiveStoreCategories( response );
+		yield receiveAcceptedTerms( response );
 	} catch ( error ) {
 		handleApiError(
 			error,
 			__(
-				'There was an error getting the store categories.',
+				'There was an error getting the accepted customer data terms.',
 				'google-listings-and-ads'
 			)
 		);

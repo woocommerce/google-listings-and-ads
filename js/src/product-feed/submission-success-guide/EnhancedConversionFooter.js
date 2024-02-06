@@ -18,7 +18,7 @@ const EnhancedConversionFooter = () => {
 
 	const handleOnClick = useCallback( () => {
 		if ( hasAcceptedTerms ) {
-			console.log( 'jere' );
+			console.log( 'Redirect the user to the TOS page.' );
 		}
 	}, [ hasAcceptedTerms ] );
 

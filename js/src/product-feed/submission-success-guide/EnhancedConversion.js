@@ -9,13 +9,10 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import GuidePageContent from '.~/components/guide-page-content';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
-import useGoogleAccount from '.~/hooks/useGoogleAccount';
 
 const EnhancedConversion = () => {
 	const { acceptedCustomerDataTerms: hasAcceptedTerms } =
 		useAcceptedCustomerDataTerms();
-	const { google } = useGoogleAccount();
-	console.log( google );
 
 	return (
 		<GuidePageContent

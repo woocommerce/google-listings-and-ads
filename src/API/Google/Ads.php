@@ -331,13 +331,13 @@ class Ads implements OptionsAwareInterface {
 	 *
 	 * @return boolean
 	 */
-	public function get_accepted_customer_data_terms(): bool | int | string | array {
+	public function get_accepted_customer_data_terms(): bool {
 		$ads_id = $this->options->get_ads_id();
 
 		try {
 			$customer = ( new AdsAccountQuery() )
 				->set_client( $this->client, $ads_id )
-				->columns( [ 'customer.conversion_tracking_setting.accepted_customer_data_terms', 'customer.conversion_tracking_setting.conversion_tracking_id', 'customer.conversion_tracking_setting.google_ads_conversion_customer', 'customer.id', 'customer.conversion_tracking_setting.conversion_tracking_status' ] )
+				->columns( [ 'customer.conversion_tracking_setting.accepted_customer_data_terms' ] )
 				->get_result()
 				->getCustomer();
 
@@ -346,13 +346,6 @@ class Ads implements OptionsAwareInterface {
 			}
 
 			$conversion_tracking_setting = $customer->getConversionTrackingSetting();
-
-			// return [
-			// 	'tracking_id' => $conversion_tracking_setting->getConversionTrackingId(),
-			// 	'tracking_status' => $conversion_tracking_setting->getConversionTrackingStatus(),
-			// 	'google_ads_conversion_customer' => $conversion_tracking_setting->getGoogleAdsConversionCustomer(),
-			// 	'id' => $customer->getId(),
-			// ];
 
 			return $conversion_tracking_setting->getAcceptedCustomerDataTerms();
 		} catch ( ApiException $e ) {

@@ -401,12 +401,25 @@ export const getTour = ( state, tourId ) => {
 	return state.tours[ tourId ] || null;
 };
 
+/**
+ * Return the customer accepted data terms.
+ *
+ * @param {Object} state The state
+ * @return {boolean} TRUE if the user signed the TOS.
+ */
 export const getAcceptedCustomerDataTerms = ( state ) => {
 	return (
-		state.conversion_tracking_setting.accepted_customer_data_terms || false
+		state.ads.conversion_tracking_setting.accepted_customer_data_terms ||
+		false
 	);
 };
 
+/**
+ * Return whether the user allowed enhanced conversion tracking.
+ *
+ * @param {Object} state The state
+ * @return {boolean} TRUE if the user allowed enhanced conversion tracking.
+ */
 export const getAllowEnhanceConversions = ( state ) => {
-	return state.allow_enhanced_conversions || false;
+	return state.ads.allow_enhanced_conversions || false;
 };
