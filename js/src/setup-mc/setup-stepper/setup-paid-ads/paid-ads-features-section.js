@@ -84,14 +84,14 @@ export default function PaidAdsFeaturesSection( {
 				<Pill>{ __( 'Recommended', 'google-listings-and-ads' ) }</Pill>
 			}
 			title={ __(
-				'Boost product listings with paid ads',
+				'Performance Max campaign',
 				'google-listings-and-ads'
 			) }
 			description={
 				<>
 					<p>
 						{ __(
-							'Get the most out of your paid ads with Performance Max campaigns. With Google’s machine learning technology, your Performance Max campaigns will be automated to show the most impactful ads at the right time and place.',
+							'Performance Max uses the best of Google’s AI to show the most impactful ads for your products at the right time and place. Google will use your product data to create ads for this campaign. ',
 							'google-listings-and-ads'
 						) }
 					</p>
@@ -101,7 +101,10 @@ export default function PaidAdsFeaturesSection( {
 							linkId="paid-ads-with-performance-max-campaigns-learn-more"
 							href="https://support.google.com/google-ads/answer/10724817"
 						>
-							{ __( 'Learn more', 'google-listings-and-ads' ) }
+							{ __(
+								'Learn more about Performance Max',
+								'google-listings-and-ads'
+							) }
 						</AppDocumentationLink>
 					</p>
 				</>
