@@ -21,10 +21,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ReportRow;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductView;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Date as ShoppingContentDate;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ShoppingContentDateTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use DateTime;
 use Exception;
@@ -48,7 +44,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 	use ContainerAwareTrait;
 	use PluginHelper;
-	use ShoppingContentDateTrait;
+
 
 	/**
 	 * The lifetime of the status-related data.
@@ -586,29 +582,27 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Add products to the product status statistics.
+	 * Process product status statistics.
 	 *
-	 * @param ReportRow[] $rows Product View rows.
+	 * @param array[] $statuses statuses.
+	 * @see MerchantReport::get_product_view_report
 	 */
-	public function process_product_report( $rows ): void {
+	public function process_product_statuses( $statuses ): void {
 		/** @var ProductHelper $product_helper */
 		$product_helper      = $this->container->get( ProductHelper::class );
 		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
-		foreach ( $rows as $row ) {
+		foreach ( $statuses as $product_status ) {
 
-			/** @var ProductView $product_view  */
-			$product_view = $row->getProductView();
-
-			$wc_product_id     = $product_helper->get_wc_product_id( $product_view->getId() );
-			$mc_product_status = $this->convert_aggregated_status_to_mc_status( $product_view->getAggregatedDestinationStatus() );
+			$wc_product_id     = $product_status['product_id'];
+			$mc_product_status = $product_status['status'];
 
 			// Skip if the product does not exist or if the product previously found/validated.
 			if ( ! $wc_product_id || ! empty( $this->product_data_lookup[ $wc_product_id ] ) ) {
 				continue;
 			}
 
-			if ( $this->product_is_expiring( $product_view->getExpirationDate() ) ) {
+			if ( $this->product_is_expiring( $product_status['expiration_date'] ) ) {
 				$mc_product_status = MCStatus::EXPIRING;
 			}
 
@@ -653,37 +647,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Convert the product view aggregated status to the MC status.
-	 *
-	 * @param string $status The status of the product.
-	 *
-	 * @return array The MC status.
-	 */
-	protected function convert_aggregated_status_to_mc_status( string $status ): string {
-		switch ( $status ) {
-			case 'ELIGIBLE':
-				return MCStatus::APPROVED;
-			case 'ELIGIBLE_LIMITED':
-				return MCStatus::PARTIALLY_APPROVED;
-			case 'NOT_ELIGIBLE_OR_DISAPPROVED':
-				return MCStatus::DISAPPROVED;
-			case 'PENDING':
-				return MCStatus::PENDING;
-			default:
-				return MCStatus::NOT_SYNCED;
-		}
-	}
-
-	/**
 	 * Whether a product is expiring.
 	 *
-	 * @param ShoppingContentDate $expiration_date
+	 * @param DateTime $expiration_date
 	 *
 	 * @return bool Whether the product is expiring.
 	 */
-	protected function product_is_expiring( ShoppingContentDate $expiration_date ): bool {
-		$expiration_date = $this->convert_shopping_content_date( $expiration_date );
-
+	protected function product_is_expiring( DateTime $expiration_date ): bool {
 		if ( ! $expiration_date ) {
 			return false;
 		}

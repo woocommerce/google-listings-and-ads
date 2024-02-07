@@ -85,11 +85,11 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 		$next_page_token = null;
 
 		do {
-			$response = $this->merchant_report->get_product_view_report( $next_page_token );
+			$results = $this->merchant_report->get_product_view_report( $next_page_token );
 
-			$this->merchant_statuses->process_product_report( $response->getResults() );
+			$this->merchant_statuses->process_product_statuses( $results['statuses'] );
 
-			$next_page_token = $response->getNextPageToken();
+			$next_page_token = $results['next_page'];
 
 		} while ( $next_page_token );
 
