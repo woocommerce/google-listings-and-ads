@@ -643,8 +643,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public function update_product_stats() {
 		$this->mc_statuses = [];
 		// Update each product's mc_status and then update the global statistics.
-		$this->update_product_mc_statuses();
-		$this->update_mc_statuses();
+		$this->update_products_meta_with_mc_status();
+		$this->update_mc_status_statistics();
 	}
 
 	/**
@@ -722,7 +722,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Calculate the product status statistics and update the transient.
 	 */
-	protected function update_mc_statuses() {
+	protected function update_mc_status_statistics() {
 		$product_statistics = $this->calculate_synced_product_statistics();
 
 		/** @var ProductRepository $product_repository */
@@ -745,7 +745,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Update the Merchant Center status for each product.
 	 */
-	protected function update_product_mc_statuses() {
+	protected function update_products_meta_with_mc_status() {
 		// Generate a product_id=>mc_status array.
 		$new_product_statuses = [];
 		foreach ( $this->product_statuses as $types ) {
