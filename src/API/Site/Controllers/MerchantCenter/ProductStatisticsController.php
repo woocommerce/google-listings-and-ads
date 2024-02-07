@@ -36,12 +36,6 @@ class ProductStatisticsController extends BaseOptionsController {
 	 */
 	protected $sync_stats;
 
-	/**
-	 *  The MerchantReport object.
-	 *
-	 * @var MerchantReport $merchant_report
-	 */
-
 
 	/**
 	 * ProductStatisticsController constructor.
@@ -51,11 +45,10 @@ class ProductStatisticsController extends BaseOptionsController {
 	 * @param ProductSyncStats $sync_stats
 	 * @param MerchantReport   $merchant_report
 	 */
-	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses, ProductSyncStats $sync_stats, MerchantReport $merchant_report ) {
+	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses, ProductSyncStats $sync_stats ) {
 		parent::__construct( $server );
 		$this->merchant_statuses = $merchant_statuses;
 		$this->sync_stats        = $sync_stats;
-		$this->merchant_report   = $merchant_report;
 	}
 
 	/**
