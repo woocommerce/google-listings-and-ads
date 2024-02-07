@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\ChannelVisibilityB
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -27,7 +28,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin
  */
-class ProductBlocksService implements Service, Registerable {
+class ProductBlocksService implements Service, Registerable, Conditional {
 
 	use AttributesTrait;
 	use PluginHelper;
@@ -61,6 +62,7 @@ class ProductBlocksService implements Service, Registerable {
 	 * @var string[]
 	 */
 	protected const CUSTOM_BLOCKS = [
+		'product-onboarding-prompt',
 		'product-channel-visibility',
 		'product-date-time-field',
 		'product-select-field',
@@ -83,26 +85,19 @@ class ProductBlocksService implements Service, Registerable {
 	}
 
 	/**
+	 * Return whether this service is needed to be registered.
+	 *
+	 * @return bool Whether this service is needed to be registered.
+	 */
+	public static function is_needed(): bool {
+		// compatibility-code "WC >= 8.5" -- The Block Template API used requires at least WooCommerce 8.5
+		return version_compare( WC_VERSION, '8.5', '>=' ) && PageController::is_admin_page();
+	}
+
+	/**
 	 * Register a service.
 	 */
 	public function register(): void {
-		// compatibility-code "WC >= 8.5" -- The Block Template API used requires at least WooCommerce 8.5
-		if ( ! version_compare( WC_VERSION, '8.5', '>=' ) ) {
-			return;
-		}
-
-		if ( ! $this->merchant_center->is_setup_complete() ) {
-			return;
-		}
-
-		// To register hooks related to REST APIs, it needs to be called before
-		// the `PageController::is_admin_page()` check.
-		$this->channel_visibility_block->register_hooks();
-
-		if ( ! PageController::is_admin_page() ) {
-			return;
-		}
-
 		add_action(
 			'init',
 			function () {
@@ -143,6 +138,20 @@ class ProductBlocksService implements Service, Registerable {
 						],
 					]
 				);
+
+				if ( ! $this->merchant_center->is_setup_complete() ) {
+					$group->add_block(
+						[
+							'id'         => 'google-listings-and-ads-product-onboarding-prompt',
+							'blockName'  => 'google-listings-and-ads/product-onboarding-prompt',
+							'attributes' => [
+								'startUrl' => $this->get_start_url(),
+							],
+						]
+					);
+
+					return;
+				}
 
 				/** @var SectionInterface */
 				$channel_visibility_section = $group->add_section(
@@ -188,7 +197,7 @@ class ProductBlocksService implements Service, Registerable {
 	 */
 	public function register_custom_blocks( string $build_path, string $uri, array $custom_blocks ): void {
 		foreach ( $custom_blocks as $custom_block ) {
-			$block_json_file = "${build_path}/${custom_block}/block.json";
+			$block_json_file = "{$build_path}/{$custom_block}/block.json";
 
 			if ( ! file_exists( $block_json_file ) ) {
 				continue;
@@ -200,11 +209,11 @@ class ProductBlocksService implements Service, Registerable {
 		$assets[] = new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads-product-blocks',
 			$uri,
-			"${build_path}/blocks.asset.php",
+			"{$build_path}/blocks.asset.php",
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => (string) filemtime( "${build_path}/blocks.js" ),
+					'version'      => (string) filemtime( "{$build_path}/blocks.js" ),
 				]
 			)
 		);
@@ -213,7 +222,7 @@ class ProductBlocksService implements Service, Registerable {
 			'google-listings-and-ads-product-blocks-css',
 			$uri,
 			[],
-			(string) filemtime( "${build_path}/blocks.css" )
+			(string) filemtime( "{$build_path}/blocks.css" )
 		);
 
 		$this->assets_handler->register_many( $assets );

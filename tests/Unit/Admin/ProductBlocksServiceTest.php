@@ -112,8 +112,8 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	}
 
 	private function setUpBlockMock( MockObject $anchor_group, string $template_id ) {
-		$template = $this->createStub( ProductFormTemplateInterface::class );
-		$group    = $this->createStub( GroupInterface::class );
+		$template = $this->createMock( ProductFormTemplateInterface::class );
+		$group    = $this->createMock( GroupInterface::class );
 
 		$visibility_section = $this->createMock( SectionInterface::class );
 		$attributes_section = $this->createMock( SectionInterface::class );
@@ -193,12 +193,34 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		$this->is_mc_setup_complete = false;
 
 		$this->simple_anchor_group->get_root_template()
-			->expects( $this->exactly( 0 ) )
+			->expects( $this->exactly( 1 ) )
 			->method( 'add_group' );
 
+		$this->simple['group']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_block' )
+			->with(
+				[
+					'id'         => 'google-listings-and-ads-product-onboarding-prompt',
+					'blockName'  => 'google-listings-and-ads/product-onboarding-prompt',
+					'attributes' => [ 'startUrl' => 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/google/start' ],
+				]
+			);
+
 		$this->variation_anchor_group->get_root_template()
-			->expects( $this->exactly( 0 ) )
+			->expects( $this->exactly( 1 ) )
 			->method( 'add_group' );
+
+		$this->variation['group']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_block' )
+			->with(
+				[
+					'id'         => 'google-listings-and-ads-product-onboarding-prompt',
+					'blockName'  => 'google-listings-and-ads/product-onboarding-prompt',
+					'attributes' => [ 'startUrl' => 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/google/start' ],
+				]
+			);
 
 		$this->product_blocks_service->register();
 
@@ -209,6 +231,8 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	public function test_register_is_not_admin_page() {
 		unset( $_GET['page'] );
 
+		$this->assertFalse( ProductBlocksService::is_needed() );
+
 		$this->simple_anchor_group->get_root_template()
 			->expects( $this->exactly( 0 ) )
 			->method( 'add_group' );
@@ -217,7 +241,8 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			->expects( $this->exactly( 0 ) )
 			->method( 'add_group' );
 
-		$this->product_blocks_service->register();
+		// Here it doesn't call `product_blocks_service->register()` because it will
+		// be processed by the conditional registration in `GoogleAdsCleanupServices`.
 
 		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
 		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );
