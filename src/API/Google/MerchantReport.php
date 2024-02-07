@@ -60,7 +60,7 @@ class MerchantReport implements OptionsAwareInterface {
 	 * Get ProductView Query response.
 	 *
 	 * @param string|null $next_page_token The next page token.
-	 * @return array Array of products along with their statuses.
+	 * @return array Associative array with product statuses and the next page token.
 	 *
 	 * @throws Exception If the product view report data can't be retrieved.
 	 */
@@ -84,9 +84,7 @@ class MerchantReport implements OptionsAwareInterface {
 			->set_client( $this->service, $this->options->get_merchant_id() )
 			->get_results();
 
-			$rows = $response->getResults();
-
-			foreach ( $rows as $row ) {
+			foreach ( $response->getResults() as $row ) {
 
 				/** @var ProductView $product_view  */
 				$product_view = $row->getProductView();
@@ -119,9 +117,9 @@ class MerchantReport implements OptionsAwareInterface {
 	/**
 	 * Convert the product view aggregated status to the MC status.
 	 *
-	 * @param string $status The status of the product.
+	 * @param string $status The aggregated status of the product.
 	 *
-	 * @return array The MC status.
+	 * @return string The MC status.
 	 */
 	protected function convert_aggregated_status_to_mc_status( string $status ): string {
 		switch ( $status ) {
