@@ -536,7 +536,20 @@ DESCRIPTION;
 			'product_cat',
 			[ 'parent' => $category_2['term_id'] ]
 		);
-		$product->set_category_ids( [ $category_1['term_id'], $category_3['term_id'] ] );
+		$category_4 = wp_insert_term(
+			'Charlie Category',
+			'product_cat',
+			[ 'parent' => $category_3['term_id'] ]
+		);
+		$category_5 = wp_insert_term( 'Delta Category', 'product_cat' );
+
+		$product->set_category_ids(
+			[
+				$category_1['term_id'], // Zulu
+				$category_3['term_id'], // Beta
+				$category_4['term_id'], // Charlie
+			]
+		);
 		$product->save();
 
 		$adapted_product = new WCProductAdapter(
@@ -545,9 +558,17 @@ DESCRIPTION;
 				'targetCountry' => 'US',
 			]
 		);
+
+		// Confirm the selected categories Zulu, Beta and Charlie are included (with their parent types).
 		$this->assertContains( 'Alpha Category > Beta Category', $adapted_product->getProductTypes() );
+		$this->assertContains( 'Alpha Category > Beta Category > Charlie Category', $adapted_product->getProductTypes() );
 		$this->assertContains( 'Zulu Category', $adapted_product->getProductTypes() );
-		$this->assertContains( 'Alpha Category', $adapted_product->getProductTypes() );
+
+		// Confirm Alpha is not included as it should only be included as a parent of Beta and Charlie.
+		$this->assertNotContains( 'Alpha Category', $adapted_product->getProductTypes() );
+
+		// Confirm unrelated category is not included.
+		$this->assertNotContains( 'Delta Category', $adapted_product->getProductTypes() );
 	}
 
 	public function test_images_are_set() {
