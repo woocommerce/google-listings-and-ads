@@ -110,7 +110,7 @@ class MerchantReport implements OptionsAwareInterface {
 			return $product_view_data;
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to retrieve Product View Report.', 'google-listings-and-ads' ), $e->getCode() );
+			throw new Exception( __( 'Unable to retrieve Product View Report.', 'google-listings-and-ads' ) . $e->getMessage(), $e->getCode() );
 		}
 	}
 
