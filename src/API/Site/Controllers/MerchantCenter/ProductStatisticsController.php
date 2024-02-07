@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptions
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use WP_REST_Response as Response;
 use WP_REST_Request as Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -43,7 +42,6 @@ class ProductStatisticsController extends BaseOptionsController {
 	 * @param RESTServer       $server
 	 * @param MerchantStatuses $merchant_statuses
 	 * @param ProductSyncStats $sync_stats
-	 * @param MerchantReport   $merchant_report
 	 */
 	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses, ProductSyncStats $sync_stats ) {
 		parent::__construct( $server );
