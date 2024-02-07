@@ -106,4 +106,13 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook() );
 		}
 	}
+
+	/**
+	 * The job is considered to be scheduled if the "process_item" action is currently pending or in-progress.
+	 *
+	 * @return bool
+	 */
+	public function is_scheduled(): bool {
+		return $this->is_running();
+	}
 }

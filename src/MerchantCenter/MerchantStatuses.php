@@ -109,15 +109,16 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
 		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+		$job               = $this->container->get( UpdateMerchantProductStatuses::class );
 
-		if ( $force_refresh ) {
-			$this->container->get( UpdateMerchantProductStatuses::class )->schedule();
+		// If force_refresh is true or if not transient, return empty array and scheduled the job to update the statuses.
+		if ( ! $job->is_scheduled() && ( $force_refresh || ( ! $force_refresh && null === $this->mc_statuses ) ) ) {
+			// Schedule job to update the statuses.
+			$job->schedule();
 		}
 
-		// if not transient, return empty array and scheduled the job to update the statuses.
-		if ( ! $force_refresh && null === $this->mc_statuses ) {
-			// Schedule job to update the statuses.
-			$this->container->get( UpdateMerchantProductStatuses::class )->schedule();
+		if ( $job->is_scheduled() || null === $this->mc_statuses ) {
+			// TODO: Add a notice to the client to inform that the statuses are being updated, or maybe we can pass the is_scheduled to the client.
 			return [
 				'timestamp'  => $this->cache_created_time->getTimestamp(),
 				'statistics' => [],
