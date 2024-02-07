@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Date as ShoppingContentDate;
-use Datetime;
+use DateTime;
 
 defined( 'ABSPATH' ) || exit;
 
