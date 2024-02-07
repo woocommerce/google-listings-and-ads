@@ -34,12 +34,27 @@ jobs:
         uses: woocommerce/grow/prepare-node@actions-v1
         with:
           node-version-file: ".nvmrc"
-          install-deps: "no"
 
       - name: Prepare annotation formatter
         uses: woocommerce/grow/eslint-annotation@actions-v1
 
       - name: Lint JavaScript and annotate linting errors
-        run: |
-          npm ci --ignore-scripts --cache /tmp/npm-cache-test
-          npm run lint:js -- --quiet --format ./eslintFormatter.cjs
+        run: npm run lint:js -- --quiet --format ./eslintFormatter.cjs
+
+  CSSLintingCheck:
+    name: Lint CSS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Prepare node
+        uses: woocommerce/grow/prepare-node@actions-v1
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Prepare annotation formatter
+        uses: woocommerce/grow/stylelint-annotation@actions-v1
+
+      - name: Lint CSS and annotate linting errors
+        run: npm run lint:css -- --custom-formatter ./stylelintFormatter.cjs
