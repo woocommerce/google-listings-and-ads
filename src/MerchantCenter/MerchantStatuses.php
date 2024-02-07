@@ -617,8 +617,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				// Should never reach here since the products IDS are retrieved from postmeta.
 				do_action(
 					'woocommerce_gla_debug_message',
-					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $mc_product_id ),
-					__METHOD__ . ' in remove_invalid_statuses()',
+					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $wc_product_id ),
+					__METHOD__,
 				);
 				continue;
 			}
