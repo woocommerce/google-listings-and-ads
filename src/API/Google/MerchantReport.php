@@ -16,7 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ReportRow;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Segments;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ShoppingContentDateTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ShoppingContentDateTrait;
 use DateTime;
 use Exception;
 
