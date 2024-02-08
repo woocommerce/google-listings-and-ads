@@ -53,9 +53,9 @@ The "derived value" refers to the computation of a value based on another state 
 
 References:
 
-- At [ProductPage](https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce-admin/client/products/product-page.tsx#L77-L79) and [ProductVariationPage](https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce-admin/client/products/product-variation-page.tsx#L83-L85) layers, they won't render the actual blocks before the product data is fetched
-- The above product data is obtained from [useProductEntityRecord](https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce-admin/client/products/hooks/use-product-entity-record.ts#L19-L23) or [useProductVariationEntityRecord](https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce-admin/client/products/hooks/use-product-variation-entity-record.ts#L16-L22) hook, and both hooks use the `getEntityRecord` selector.
-- This extension obtains product data from [useProductEntityProp](https://github.com/woocommerce/woocommerce/blob/8.3.0/packages/js/product-editor/src/hooks/use-product-entity-prop.ts#L24-L33), which uses the `useEntityProp` hook internally.
+- At [ProductPage](https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce-admin/client/products/product-page.tsx#L77-L79) and [ProductVariationPage](https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce-admin/client/products/product-variation-page.tsx#L83-L85) layers, they won't render the actual blocks before the product data is fetched
+- The above product data is obtained from [useProductEntityRecord](https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce-admin/client/products/hooks/use-product-entity-record.ts#L19-L23) or [useProductVariationEntityRecord](https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce-admin/client/products/hooks/use-product-variation-entity-record.ts#L16-L22) hook, and both hooks use the `getEntityRecord` selector.
+- This extension obtains product data from [useProductEntityProp](https://github.com/woocommerce/woocommerce/blob/8.6.0/packages/js/product-editor/src/hooks/use-product-entity-prop.ts#L24-L34), which uses the `useEntityProp` hook internally.
 - The [useEntityProp](https://github.com/WordPress/gutenberg/blob/wp/6.0/packages/core-data/src/entity-provider.js#L102-L133) hook also uses the `getEntityRecord` selector.
 
 ### Infrastructure adjustments

@@ -85,8 +85,8 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	 * @return bool Whether this service is needed to be registered.
 	 */
 	public static function is_needed(): bool {
-		// compatibility-code "WC >= 8.5" -- The Block Template API used requires at least WooCommerce 8.5
-		return version_compare( WC_VERSION, '8.5', '>=' ) && PageController::is_admin_page();
+		// compatibility-code "WC >= 8.6" -- The Block Template API used requires at least WooCommerce 8.6
+		return version_compare( WC_VERSION, '8.6', '>=' );
 	}
 
 	/**
@@ -97,11 +97,11 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 			add_action( 'init', [ $this, 'hook_init' ] );
 		}
 
-		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/AbstractProductFormTemplate.php#L16
+		// https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce/src/Internal/Features/ProductBlockEditor/ProductTemplates/AbstractProductFormTemplate.php#L19
 		$template_area = 'product-form';
 
-		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/SimpleProductTemplate.php#L18
-		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/ProductVariationTemplate.php#L18
+		// https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce/src/Internal/Features/ProductBlockEditor/ProductTemplates/SimpleProductTemplate.php#L19
+		// https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce/src/Internal/Features/ProductBlockEditor/ProductTemplates/ProductVariationTemplate.php#L19
 		$block_id = 'general';
 
 		add_action(

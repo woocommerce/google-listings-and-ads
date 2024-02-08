@@ -69,9 +69,9 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	protected const GENERAL_GROUP_HOOK = 'woocommerce_block_template_area_product-form_after_add_block_general';
 
 	public function setUp(): void {
-		// compatibility-code "WC >= 8.5" -- The Block Template API used requires at least WooCommerce 8.5
-		if ( ! version_compare( WC_VERSION, '8.5', '>=' ) ) {
-			$this->markTestSkipped( 'This test suite requires WooCommerce version >= 8.5' );
+		// compatibility-code "WC >= 8.6" -- The Block Template API used requires at least WooCommerce 8.6
+		if ( ! ProductBlocksService::is_needed() ) {
+			$this->markTestSkipped( 'This test suite requires WooCommerce version >= 8.6' );
 		}
 
 		parent::setUp();
@@ -97,7 +97,7 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 				}
 			);
 
-		// Ref: https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/PageController.php#L555-L562
+		// Ref: https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce/src/Admin/PageController.php#L555-L562
 		$_GET['page'] = PageController::PAGE_ROOT;
 
 		$this->simple    = $this->setUpBlockMock( $this->simple_anchor_group, 'simple-product' );
