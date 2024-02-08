@@ -648,7 +648,7 @@ class ConnectionTest implements Service, Registerable {
 							<td>
 								<p>
 									<label>
-										Product/Coupon/Shipping ID <input name="item_id" type="text" value="<?php echo ! empty( $_GET['item_id'] ) ? intval( $_GET['item_id'] ) : ''; ?>" />
+										Product/Coupon ID <input name="item_id" type="text" value="<?php echo ! empty( $_GET['item_id'] ) ? intval( $_GET['item_id'] ) : ''; ?>" />
 									</label>
 									<br />
 									<br />
@@ -661,6 +661,7 @@ class ConnectionTest implements Service, Registerable {
 											<option value="coupon.create" <?php echo $_GET['topic'] === 'coupon.create' ? "selected" : ""?>>coupon.create</option>
 											<option value="coupon.delete" <?php echo $_GET['topic'] === 'coupon.delete' ? "selected" : ""?>>coupon.delete</option>
 											<option value="coupon.update" <?php echo $_GET['topic'] === 'coupon.update' ? "selected" : ""?>>coupon.update</option>
+											<option value="shipping.update" <?php echo $_GET['topic'] === 'shipping.update' ? "selected" : ""?>>shipping.update</option>
 										</select>
 									</label>
 									<button class="button">Send Notification</button>
