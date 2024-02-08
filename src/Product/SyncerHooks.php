@@ -256,6 +256,7 @@ class SyncerHooks implements Service, Registerable {
 		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS );
 		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_FAILED_SYNC_ATTEMPTS );
 		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_FAILED_AT );
+		// TODO: After completing the migration to the new sync mechanism, we can remove ProductMetaHandler::KEY_SYNC_STATUS since it's no longer in use.
 		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_STATUS );
 		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
 

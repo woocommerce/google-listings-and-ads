@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use DateTime;
 use Exception;
 
@@ -43,6 +44,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 	use ContainerAwareTrait;
 	use PluginHelper;
+
 
 	/**
 	 * The lifetime of the status-related data.
@@ -106,7 +108,22 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @throws Exception If the Merchant Center can't be polled for the statuses.
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
-		$this->maybe_refresh_status_data( $force_refresh );
+		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+		$job               = $this->container->get( UpdateMerchantProductStatuses::class );
+
+		// If force_refresh is true or if not transient, return empty array and scheduled the job to update the statuses.
+		if ( ! $job->is_scheduled() && ( $force_refresh || ( ! $force_refresh && null === $this->mc_statuses ) ) ) {
+			// Schedule job to update the statuses.
+			$job->schedule();
+		}
+
+		if ( $job->is_scheduled() || null === $this->mc_statuses ) {
+			// TODO: Add a notice to the client to inform that the statuses are being updated, or maybe we can pass the is_scheduled to the client.
+			return [
+				'timestamp'  => $this->cache_created_time->getTimestamp(),
+				'statistics' => [],
+			];
+		}
 
 		$counting_stats = $this->mc_statuses['statistics'];
 		$counting_stats = array_merge(
@@ -182,8 +199,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			throw new Exception( __( 'Merchant Center account is not set up.', 'google-listings-and-ads' ) );
 		}
 
-		$this->mc_statuses = [];
-
 		// Update account-level issues.
 		$this->refresh_account_issues();
 
@@ -191,13 +206,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$chunk_size = apply_filters( 'woocommerce_gla_merchant_status_google_ids_chunk', 1000 );
 		foreach ( array_chunk( $this->get_synced_google_ids(), $chunk_size ) as $google_ids ) {
 			$mc_product_statuses = $this->filter_valid_statuses( $google_ids );
+			// TODO: Get the product issues with the Product View Report.
 			$this->refresh_product_issues( $mc_product_statuses );
-			$this->sum_status_counts( $mc_product_statuses );
 		}
-
-		// Update each product's mc_status and then update the global statistics.
-		$this->update_product_mc_statuses();
-		$this->update_mc_statuses();
 
 		// Update pre-sync product validation issues.
 		$this->refresh_presync_product_issues();
@@ -572,30 +583,84 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Add the provided status counts to the overall totals.
+	 * Process product status statistics.
 	 *
-	 * @param GoogleProductStatus[] $validated_mc_statuses Product statuses of validated products.
+	 * @param array[] $statuses statuses.
+	 * @see MerchantReport::get_product_view_report
 	 */
-	protected function sum_status_counts( array $validated_mc_statuses ): void {
+	public function process_product_statuses( $statuses ): void {
 		/** @var ProductHelper $product_helper */
-		$product_helper = $this->container->get( ProductHelper::class );
+		$product_helper      = $this->container->get( ProductHelper::class );
+		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
-		foreach ( $validated_mc_statuses as $product ) {
-			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
-			$status        = $this->get_product_shopping_status( $product );
-			if ( is_null( $status ) ) {
+		foreach ( $statuses as $product_status ) {
+
+			$wc_product_id     = $product_status['product_id'];
+			$mc_product_status = $product_status['status'];
+
+			// Skip if the product does not exist or if the product previously found/validated.
+			if ( ! $wc_product_id || ! empty( $this->product_data_lookup[ $wc_product_id ] ) ) {
 				continue;
 			}
+
+			if ( $this->product_is_expiring( $product_status['expiration_date'] ) ) {
+				$mc_product_status = MCStatus::EXPIRING;
+			}
+
+			$wc_product = $product_helper->get_wc_product_by_wp_post( $wc_product_id );
+			if ( ! $wc_product || 'product' !== substr( $wc_product->post_type, 0, 7 ) ) {
+				// Should never reach here since the products IDS are retrieved from postmeta.
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $wc_product_id ),
+					__METHOD__,
+				);
+				continue;
+			}
+
+			$this->product_data_lookup[ $wc_product_id ] = [
+				'name'       => get_the_title( $wc_product ),
+				'visibility' => get_post_meta( $wc_product_id, $visibility_meta_key ),
+				'parent_id'  => $wc_product->post_parent,
+			];
+
 			// Products is used later for global product status statistics.
-			$this->product_statuses['products'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $status ] ?? 0 );
+			$this->product_statuses['products'][ $wc_product_id ][ $mc_product_status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $mc_product_status ] ?? 0 );
 
 			// Aggregate parent statuses for mc_status postmeta.
-			$wc_parent_id = intval( $this->product_data_lookup[ $wc_product_id ]['parent_id'] );
+			$wc_parent_id = $this->product_data_lookup[ $wc_product_id ]['parent_id'];
 			if ( ! $wc_parent_id ) {
 				continue;
 			}
-			$this->product_statuses['parents'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $status ] ?? 0 );
+			$this->product_statuses['parents'][ $wc_parent_id ][ $mc_product_status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $mc_product_status ] ?? 0 );
+
 		}
+	}
+
+	/**
+	 * Update the product status statistics.
+	 */
+	public function update_product_stats() {
+		$this->mc_statuses = [];
+		// Update each product's mc_status and then update the global statistics.
+		$this->update_products_meta_with_mc_status();
+		$this->update_mc_status_statistics();
+	}
+
+	/**
+	 * Whether a product is expiring.
+	 *
+	 * @param DateTime $expiration_date
+	 *
+	 * @return bool Whether the product is expiring.
+	 */
+	protected function product_is_expiring( DateTime $expiration_date ): bool {
+		if ( ! $expiration_date ) {
+			return false;
+		}
+
+		// Products are considered expiring if they will expire within 3 days.
+		return time() + 3 * DAY_IN_SECONDS > $expiration_date->getTimestamp();
 	}
 
 	/**
@@ -657,7 +722,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Calculate the product status statistics and update the transient.
 	 */
-	protected function update_mc_statuses() {
+	protected function update_mc_status_statistics() {
 		$product_statistics = $this->calculate_synced_product_statistics();
 
 		/** @var ProductRepository $product_repository */
@@ -680,7 +745,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Update the Merchant Center status for each product.
 	 */
-	protected function update_product_mc_statuses() {
+	protected function update_products_meta_with_mc_status() {
 		// Generate a product_id=>mc_status array.
 		$new_product_statuses = [];
 		foreach ( $this->product_statuses as $types ) {
@@ -746,27 +811,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		foreach ( $to_update as $status => $product_ids ) {
 			$product_meta_query_helper->batch_update_values( ProductMetaHandler::KEY_MC_STATUS, $status, $product_ids );
 		}
-	}
-
-	/**
-	 * Return the product's shopping status in the Google Merchant Center.
-	 * Active, Pending, Disapproved, Expiring.
-	 *
-	 * @param GoogleProductStatus $product_status
-	 *
-	 * @return string|null
-	 */
-	protected function get_product_shopping_status( GoogleProductStatus $product_status ): ?string {
-		$status = null;
-		foreach ( $product_status->getDestinationStatuses() as $d ) {
-			if ( 'SurfacesAcrossGoogle' === $d->getDestination() ) {
-				$status = $d->getStatus();
-			} elseif ( 'Shopping' === $d->getDestination() ) {
-				$status = $d->getStatus();
-				break;
-			}
-		}
-		return $status;
 	}
 
 	/**
