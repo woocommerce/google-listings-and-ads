@@ -40,7 +40,7 @@ class ShippingNotificationJob extends AbstractActionSchedulerJob implements JobI
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
-		NotificationsService $notifications_service,
+		NotificationsService $notifications_service
 	) {
 		$this->notifications_service = $notifications_service;
 		$this->topic                 = NotificationsService::TOPIC_SHIPPING_UPDATED;
