@@ -764,7 +764,7 @@ class ConnectionTest implements Service, Registerable {
 			$topic = $_GET['topic'];
 
 			$service = new NotificationsService();
-			if ( $service->notify( $item, $topic ) ) {
+			if ( $service->notify( $topic, $item ) ) {
 				$this->response .= "\n Notification success. Item: " . $item . " - Topic: " . $topic;
 			} else {
 				$this->response .= "\n Notification failed. Item: " . $item . " - Topic: " . $topic;
