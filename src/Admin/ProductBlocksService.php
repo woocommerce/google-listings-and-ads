@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\Admin\BlockTemplates\BlockInterface;
 use Automattic\WooCommerce\Admin\Features\ProductBlockEditor\BlockRegistry;
@@ -131,7 +132,9 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 
 		$is_variation_template = $this->is_variation_template( $block );
 
-		// Please note that the simple and variable product types use the same product block template 'simple-product'.
+		// Please note that the simple, variable, grouped, and external product types
+		// use the same product block template 'simple-product'. Their dynamic hidden
+		// conditions are added below.
 		if ( 'simple-product' !== $template->get_id() && ! $is_variation_template ) {
 			return;
 		}
@@ -146,6 +149,18 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 				],
 			]
 		);
+
+		$visible_product_types = ProductSyncer::get_supported_product_types();
+
+		if ( $is_variation_template ) {
+			// The property of `editedProduct.type` doesn't exist in the variation product.
+			// The condition returned from `get_hide_condition` won't work, so it uses 'true' directly.
+			if ( ! in_array( 'variation', $visible_product_types, true ) ) {
+				$group->add_hide_condition( 'true' );
+			}
+		} else {
+			$group->add_hide_condition( $this->get_hide_condition( $visible_product_types ) );
+		}
 
 		if ( ! $this->merchant_center->is_setup_complete() ) {
 			$group->add_block(
@@ -271,9 +286,9 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 			} else {
 				$visible_product_types = AttributesForm::get_attribute_product_types( $attribute_type )['visible'];
 
-				// When editing a simple or variable product, its product type on the frontend side can be
-				// changed dynamically. So, it needs to use the ProductTemplates API `add_hide_condition`
-				// to conditionally hide attributes.
+				// When editing a simple, variable, grouped, or external product, its product type on the
+				// frontend side can be changed dynamically. So, it needs to use the ProductTemplates API
+				// `add_hide_condition` to conditionally hide attributes.
 				/** @var BlockInterface */
 				$block = $section->add_block( $input->get_block_config() );
 				$block->add_hide_condition( $this->get_hide_condition( $visible_product_types ) );

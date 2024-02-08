@@ -286,6 +286,42 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		$this->product_blocks_service->hook_block_template( $this->variation_anchor_group );
 	}
 
+	public function test_hook_block_template_group_hidden_condition() {
+		$this->simple['group']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_hide_condition' )
+			->with( "editedProduct.type !== 'simple' && editedProduct.type !== 'variable' && editedProduct.type !== 'variation'" );
+
+		$this->variation['group']
+			->expects( $this->exactly( 0 ) )
+			->method( 'add_hide_condition' );
+
+		$this->product_blocks_service->hook_block_template( $this->simple_anchor_group );
+		$this->product_blocks_service->hook_block_template( $this->variation_anchor_group );
+	}
+
+	public function test_hook_block_template_group_hidden_condition_with_applying_filter() {
+		$this->simple['group']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_hide_condition' )
+			->with( "editedProduct.type !== 'simple'" );
+
+		$this->variation['group']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_hide_condition' )
+			->with( 'true' );
+
+		add_filter(
+			'woocommerce_gla_supported_product_types',
+			function () {
+				return [ 'simple' ];
+			}
+		);
+
+		$this->product_blocks_service->hook_block_template( $this->simple_anchor_group );
+		$this->product_blocks_service->hook_block_template( $this->variation_anchor_group );
+	}
+
 	public function test_hook_block_template_merchant_center_setup_is_not_complete() {
 		$this->is_mc_setup_complete = false;
 
