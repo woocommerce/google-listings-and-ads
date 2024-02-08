@@ -106,74 +106,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 
 		add_action(
 			"woocommerce_block_template_area_{$template_area}_after_add_block_{$block_id}",
-			function ( BlockInterface $general_group ) {
-				/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\ProductFormTemplateInterface */
-				$template = $general_group->get_root_template();
-
-				$is_variation_template = $this->is_variation_template( $general_group );
-
-				// Please note that the simple and variable product types use the same product block template 'simple-product'.
-				if ( 'simple-product' !== $template->get_id() && ! $is_variation_template ) {
-					return;
-				}
-
-				/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\GroupInterface */
-				$group = $template->add_group(
-					[
-						'id'         => 'google-listings-and-ads-group',
-						'order'      => 100,
-						'attributes' => [
-							'title' => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
-						],
-					]
-				);
-
-				if ( ! $this->merchant_center->is_setup_complete() ) {
-					$group->add_block(
-						[
-							'id'         => 'google-listings-and-ads-product-onboarding-prompt',
-							'blockName'  => 'google-listings-and-ads/product-onboarding-prompt',
-							'attributes' => [
-								'startUrl' => $this->get_start_url(),
-							],
-						]
-					);
-
-					return;
-				}
-
-				/** @var SectionInterface */
-				$channel_visibility_section = $group->add_section(
-					[
-						'id'         => 'google-listings-and-ads-channel-visibility-section',
-						'order'      => 1,
-						'attributes' => [
-							'title' => __( 'Channel visibility', 'google-listings-and-ads' ),
-						],
-					]
-				);
-
-				if ( ! $is_variation_template ) {
-					$this->add_channel_visibility_block( $channel_visibility_section );
-				}
-
-				// Add the hidden condition to the channel visibility section because it only has one block.
-				$visible_product_types = $this->channel_visibility_block->get_visible_product_types();
-				$channel_visibility_section->add_hide_condition( $this->get_hide_condition( $visible_product_types ) );
-
-				/** @var SectionInterface */
-				$product_attributes_section = $group->add_section(
-					[
-						'id'         => 'google-listings-and-ads-product-attributes-section',
-						'order'      => 2,
-						'attributes' => [
-							'title' => __( 'Product attributes', 'google-listings-and-ads' ),
-						],
-					]
-				);
-
-				$this->add_product_attribute_blocks( $product_attributes_section );
-			}
+			[ $this, 'hook_block_template' ]
 		);
 	}
 
@@ -185,6 +118,80 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 		$uri        = 'js/build/blocks';
 
 		$this->register_custom_blocks( BlockRegistry::get_instance(), $build_path, $uri, self::CUSTOM_BLOCKS );
+	}
+
+	/**
+	 * Action hanlder for the "woocommerce_block_template_area_{$template_area}_after_add_block_{$block_id}" hook.
+	 *
+	 * @param BlockInterface $block The block just added to get its root template to add this extension's group and blocks.
+	 */
+	public function hook_block_template( BlockInterface $block ): void {
+		/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\ProductFormTemplateInterface */
+		$template = $block->get_root_template();
+
+		$is_variation_template = $this->is_variation_template( $block );
+
+		// Please note that the simple and variable product types use the same product block template 'simple-product'.
+		if ( 'simple-product' !== $template->get_id() && ! $is_variation_template ) {
+			return;
+		}
+
+		/** @var Automattic\WooCommerce\Admin\Features\ProductBlockEditor\ProductTemplates\GroupInterface */
+		$group = $template->add_group(
+			[
+				'id'         => 'google-listings-and-ads-group',
+				'order'      => 100,
+				'attributes' => [
+					'title' => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+				],
+			]
+		);
+
+		if ( ! $this->merchant_center->is_setup_complete() ) {
+			$group->add_block(
+				[
+					'id'         => 'google-listings-and-ads-product-onboarding-prompt',
+					'blockName'  => 'google-listings-and-ads/product-onboarding-prompt',
+					'attributes' => [
+						'startUrl' => $this->get_start_url(),
+					],
+				]
+			);
+
+			return;
+		}
+
+		/** @var SectionInterface */
+		$channel_visibility_section = $group->add_section(
+			[
+				'id'         => 'google-listings-and-ads-channel-visibility-section',
+				'order'      => 1,
+				'attributes' => [
+					'title' => __( 'Channel visibility', 'google-listings-and-ads' ),
+				],
+			]
+		);
+
+		if ( ! $is_variation_template ) {
+			$this->add_channel_visibility_block( $channel_visibility_section );
+		}
+
+		// Add the hidden condition to the channel visibility section because it only has one block.
+		$visible_product_types = $this->channel_visibility_block->get_visible_product_types();
+		$channel_visibility_section->add_hide_condition( $this->get_hide_condition( $visible_product_types ) );
+
+		/** @var SectionInterface */
+		$product_attributes_section = $group->add_section(
+			[
+				'id'         => 'google-listings-and-ads-product-attributes-section',
+				'order'      => 2,
+				'attributes' => [
+					'title' => __( 'Product attributes', 'google-listings-and-ads' ),
+				],
+			]
+		);
+
+		$this->add_product_attribute_blocks( $product_attributes_section );
 	}
 
 	/**
