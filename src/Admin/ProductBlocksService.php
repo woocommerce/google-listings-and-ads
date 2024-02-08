@@ -54,11 +54,6 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	protected $channel_visibility_block;
 
 	/**
-	 * @var BlockRegistry
-	 */
-	protected $block_registry;
-
-	/**
 	 * @var string[]
 	 */
 	protected const CUSTOM_BLOCKS = [
@@ -98,15 +93,9 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	 * Register a service.
 	 */
 	public function register(): void {
-		add_action(
-			'init',
-			function () {
-				$build_path = "{$this->get_root_dir()}/js/build";
-				$uri        = 'js/build/blocks';
-				$this->set_block_registry( BlockRegistry::get_instance() );
-				$this->register_custom_blocks( $build_path, $uri, self::CUSTOM_BLOCKS );
-			}
-		);
+		if ( PageController::is_admin_page() ) {
+			add_action( 'init', [ $this, 'hook_init' ] );
+		}
 
 		// https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/Features/ProductBlockEditor/ProductTemplates/AbstractProductFormTemplate.php#L16
 		$template_area = 'product-form';
@@ -189,13 +178,24 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 	}
 
 	/**
+	 * Action hanlder for the 'init' hook.
+	 */
+	public function hook_init(): void {
+		$build_path = "{$this->get_root_dir()}/js/build";
+		$uri        = 'js/build/blocks';
+
+		$this->register_custom_blocks( BlockRegistry::get_instance(), $build_path, $uri, self::CUSTOM_BLOCKS );
+	}
+
+	/**
 	 * Register the custom blocks and their assets.
 	 *
-	 * @param string   $build_path    The absolute path to the build directory of the assets.
-	 * @param string   $uri           The script URI of the custom blocks.
-	 * @param string[] $custom_blocks The directory names of each custom block under the build path.
+	 * @param BlockRegistry $block_registry BlockRegistry instance getting from Woo Core for registering custom blocks.
+	 * @param string        $build_path     The absolute path to the build directory of the assets.
+	 * @param string        $uri            The script URI of the custom blocks.
+	 * @param string[]      $custom_blocks  The directory names of each custom block under the build path.
 	 */
-	public function register_custom_blocks( string $build_path, string $uri, array $custom_blocks ): void {
+	public function register_custom_blocks( BlockRegistry $block_registry, string $build_path, string $uri, array $custom_blocks ): void {
 		foreach ( $custom_blocks as $custom_block ) {
 			$block_json_file = "{$build_path}/{$custom_block}/block.json";
 
@@ -203,7 +203,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 				continue;
 			}
 
-			$this->block_registry->register_block_type_from_metadata( $block_json_file );
+			$block_registry->register_block_type_from_metadata( $block_json_file );
 		}
 
 		$assets[] = new AdminScriptWithBuiltDependenciesAsset(
@@ -272,15 +272,6 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 				$block->add_hide_condition( $this->get_hide_condition( $visible_product_types ) );
 			}
 		}
-	}
-
-	/**
-	 * Set the block registry for registering custom blocks.
-	 *
-	 * @param BlockRegistry $block_registry
-	 */
-	public function set_block_registry( BlockRegistry $block_registry ): void {
-		$this->block_registry = $block_registry;
 	}
 
 	/**

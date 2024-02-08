@@ -45,9 +45,6 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	/** @var Stub|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
-	/** @var MockObject|BlockRegistry $block_registry */
-	protected $block_registry;
-
 	/** @var MockObject|BlockInterface $simple_anchor_group */
 	protected $simple_anchor_group;
 
@@ -83,15 +80,12 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		$this->channel_visibility_block = $this->container->get( ChannelVisibilityBlock::class );
 		$this->attribute_manager        = $this->container->get( AttributeManager::class );
 		$this->merchant_center          = $this->createStub( MerchantCenterService::class );
-		$this->block_registry           = $this->createMock( BlockRegistry::class );
 
 		$this->simple_anchor_group    = $this->createMock( BlockInterface::class );
 		$this->variation_anchor_group = $this->createMock( BlockInterface::class );
 		$this->mismatching_group      = $this->createMock( BlockInterface::class );
 
 		$this->product_blocks_service = new ProductBlocksService( $this->assets_handler, $this->channel_visibility_block, $this->attribute_manager, $this->merchant_center );
-
-		$this->product_blocks_service->set_block_registry( $this->block_registry );
 
 		// Set up stubs and mocks
 		$this->is_mc_setup_complete = true;
@@ -189,6 +183,22 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 'true', $this->product_blocks_service->get_hide_condition( [] ) );
 	}
 
+	public function test_register() {
+		$this->assertFalse( has_filter( 'init', [ $this->product_blocks_service, 'hook_init' ] ) );
+
+		$this->product_blocks_service->register();
+
+		$this->assertEquals( 10, has_filter( 'init', [ $this->product_blocks_service, 'hook_init' ] ) );
+	}
+
+	public function test_register_is_not_admin_page() {
+		unset( $_GET['page'] );
+
+		$this->product_blocks_service->register();
+
+		$this->assertFalse( has_filter( 'init', [ $this->product_blocks_service, 'hook_init' ] ) );
+	}
+
 	public function test_register_merchant_center_setup_is_not_complete() {
 		$this->is_mc_setup_complete = false;
 
@@ -223,26 +233,6 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			);
 
 		$this->product_blocks_service->register();
-
-		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
-		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );
-	}
-
-	public function test_register_is_not_admin_page() {
-		unset( $_GET['page'] );
-
-		$this->assertFalse( ProductBlocksService::is_needed() );
-
-		$this->simple_anchor_group->get_root_template()
-			->expects( $this->exactly( 0 ) )
-			->method( 'add_group' );
-
-		$this->variation_anchor_group->get_root_template()
-			->expects( $this->exactly( 0 ) )
-			->method( 'add_group' );
-
-		// Here it doesn't call `product_blocks_service->register()` because it will
-		// be processed by the conditional registration in `GoogleAdsCleanupServices`.
 
 		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
 		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );
@@ -283,7 +273,8 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			(string) filemtime( GLA_TESTS_DATA_DIR . '/blocks.css' )
 		);
 
-		$this->block_registry
+		$block_registry = $this->createMock( BlockRegistry::class );
+		$block_registry
 			->expects( $this->exactly( 1 ) )
 			->method( 'register_block_type_from_metadata' )
 			->with( $this->stringContains( 'tests/data/existing-block/block.json' ) );
@@ -298,7 +289,7 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			->method( 'enqueue_many' )
 			->with( [ $expected_script_asset, $expected_style_asset ] );
 
-		$this->product_blocks_service->register_custom_blocks( GLA_TESTS_DATA_DIR, 'tests/data/blocks', $custom_blocks );
+		$this->product_blocks_service->register_custom_blocks( $block_registry, GLA_TESTS_DATA_DIR, 'tests/data/blocks', $custom_blocks );
 	}
 
 	public function test_register_not_add_group_or_section() {
