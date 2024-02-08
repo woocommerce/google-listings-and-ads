@@ -12,7 +12,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSet
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractProductSyncerBatchedJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobInterface;
@@ -24,7 +23,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitExpiringProducts;
@@ -110,13 +108,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_coupon_syncer_job( UpdateCoupon::class );
 		$this->share_coupon_syncer_job( DeleteCoupon::class );
 
-		// share product notifications job
-		$this->share_action_scheduler_job(
-			ProductNotificationJob::class,
-			NotificationsService::class,
-			ProductHelper::class
-		);
-
 		$this->share_with_tags(
 			JobRepository::class,
 			JobInterface::class
@@ -133,7 +124,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 			ProductHelper::class,
 			JobRepository::class,
 			MerchantCenterService::class,
-			NotificationsService::class,
 			WC::class
 		);
 
