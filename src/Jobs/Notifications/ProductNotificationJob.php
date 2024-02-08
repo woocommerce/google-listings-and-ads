@@ -75,7 +75,7 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		$item  = $args[0];
 		$topic = $args[1];
 
-		if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $item, $topic ) ) {
+		if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $topic, $item ) ) {
 			$this->set_status( $item, $this->get_after_notification_status( $topic ) );
 		}
 	}

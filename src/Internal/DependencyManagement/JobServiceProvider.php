@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductNotificationJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ShippingNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitExpiringProducts;
@@ -145,9 +146,15 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( StartProductSync::class, JobRepository::class );
 		$this->share_with_tags( PluginUpdate::class, JobRepository::class );
 
+		// Share shipping notifications job
+		$this->share_action_scheduler_job(
+			ShippingNotificationJob::class,
+			NotificationsService::class
+		);
+
 		// Share shipping settings syncer job and hooks.
 		$this->share_action_scheduler_job( UpdateShippingSettings::class, MerchantCenterService::class, GoogleSettings::class );
-		$this->share_with_tags( Shipping\SyncerHooks::class, MerchantCenterService::class, GoogleSettings::class, JobRepository::class );
+		$this->share_with_tags( Shipping\SyncerHooks::class, MerchantCenterService::class, GoogleSettings::class, JobRepository::class, NotificationsService::class );
 
 		// Share plugin update jobs
 		$this->share_product_syncer_job( CleanupProductTargetCountriesJob::class );

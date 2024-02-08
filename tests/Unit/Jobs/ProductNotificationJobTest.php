@@ -121,7 +121,7 @@ class ProductNotificationJobTest extends UnitTest {
 
 		$this->notification_service->expects( $this->once() )
 			->method( 'notify' )
-			->with( $id, $topic )
+			->with( $topic, $id )
 			->willReturn( true );
 
 		$this->product_helper->expects( $this->exactly( 2 ) )
@@ -157,7 +157,7 @@ class ProductNotificationJobTest extends UnitTest {
 
 		$this->notification_service->expects( $this->once() )
 			->method( 'notify' )
-			->with( $id, $topic )
+			->with( $topic, $id )
 			->willReturn( false );
 
 		$this->product_helper->expects( $this->once() )
