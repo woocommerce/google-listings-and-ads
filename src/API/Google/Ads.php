@@ -361,10 +361,10 @@ class Ads implements OptionsAwareInterface {
 	 * Returns false for any failures.
 	 *
 	 * @param string $status The status value
-	 * 
+	 *
 	 * @return string
 	 */
-	public function update_enhanced_conversion_status(string $status): string {
+	public function update_enhanced_conversion_status( string $status ): string {
 		// @TODO: Wire properly
 		return $status;
 	}

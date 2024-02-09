@@ -7,7 +7,6 @@ import { setWith, clone } from 'lodash';
  * Internal dependencies
  */
 import TYPES from './action-types';
-import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 
 const DEFAULT_STATE = {
 	general: {
