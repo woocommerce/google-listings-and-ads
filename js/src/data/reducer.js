@@ -509,12 +509,26 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			);
 		}
 
-		case TYPES.UPDATE_ENHANCED_ADS_CONVERSION: {
-			const { status } = action;
+		case TYPES.UPDATE_ENHANCED_ADS_CONVERSION_STATUS: {
+			const {
+				response: { status },
+			} = action;
 
 			if ( status === null || status === undefined ) {
 				return state;
 			}
+
+			return setIn(
+				state,
+				'ads.conversion_tracking_setting.allow_enhanced_conversions',
+				status
+			);
+		}
+
+		case TYPES.RECEIVE_ALLOW_ENHANCED_CONVERSIONS: {
+			const {
+				data: { status },
+			} = action;
 
 			return setIn(
 				state,

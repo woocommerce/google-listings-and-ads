@@ -9,10 +9,12 @@ import { useCallback } from '@wordpress/element';
  */
 import { useAppDispatch } from '.~/data';
 import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 
 const EnhancedConversionFooter = ( { handleGuideFinish } ) => {
+	const { createNotice } = useDispatchCoreNotices();
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 	const {
 		acceptedCustomerDataTerms: hasAcceptedTerms,
@@ -28,6 +30,12 @@ const EnhancedConversionFooter = ( { handleGuideFinish } ) => {
 				ENHANCED_ADS_CONVERSION_STATUS.ENABLED
 			);
 
+			createNotice(
+				'info',
+				__( 'Status succesfully set', 'google-listings-and-ads' )
+			);
+
+			handleGuideFinish?.();
 			return;
 		}
 
@@ -35,7 +43,12 @@ const EnhancedConversionFooter = ( { handleGuideFinish } ) => {
 		updateEnhancedAdsConversionStatus(
 			ENHANCED_ADS_CONVERSION_STATUS.PENDING
 		);
-	}, [ hasAcceptedTerms, updateEnhancedAdsConversionStatus ] );
+	}, [
+		hasAcceptedTerms,
+		updateEnhancedAdsConversionStatus,
+		createNotice,
+		handleGuideFinish,
+	] );
 
 	return (
 		<>

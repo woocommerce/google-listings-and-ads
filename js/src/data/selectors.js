@@ -417,6 +417,6 @@ export const getAcceptedCustomerDataTerms = ( state ) => {
  * @param {Object} state The state
  * @return {boolean} TRUE if the user allowed enhanced conversion tracking.
  */
-export const getAllowEnhanceConversions = ( state ) => {
-	return state.ads.allow_enhanced_conversions;
+export const getAllowEnhancedConversions = ( state ) => {
+	return state.ads.conversion_tracking_setting.allow_enhanced_conversions;
 };

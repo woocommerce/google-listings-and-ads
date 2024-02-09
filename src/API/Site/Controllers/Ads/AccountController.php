@@ -108,6 +108,17 @@ class AccountController extends BaseController {
 				],
 			]
 		);
+
+		$this->register_route(
+			'ads/allow-enhance-conversions',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_enhanced_conversion_status_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -209,6 +220,17 @@ class AccountController extends BaseController {
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
+		};
+	}
+
+	/**
+	 * Get the callback function for retrieving the enhanced conversion status.
+	 *
+	 * @return callable
+	 */
+	protected function get_enhanced_conversion_status_callback(): callable {
+		return function () {
+			return $this->account->get_enhanced_conversion_status();
 		};
 	}
 

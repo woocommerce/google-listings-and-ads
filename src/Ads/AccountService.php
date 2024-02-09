@@ -305,4 +305,17 @@ class AccountService implements OptionsAwareInterface, Service {
 			'status' => $updated_status,
 		];
 	}
+
+	/**
+	 * Gets the enhanced conversion status.
+	 *
+	 * @return array
+	 */
+	public function get_enhanced_conversion_status(): array {
+		$status = $this->container->get( Ads::class )->get_enhanced_conversion_status();
+
+		return [
+			'status' => $status,
+		];
+	}
 }

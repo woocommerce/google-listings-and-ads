@@ -578,13 +578,6 @@ export function receiveGoogleMCContactInformation( data ) {
 	};
 }
 
-export function receiveAcceptedTerms( data ) {
-	return {
-		type: TYPES.RECEIVE_ACCEPTED_CUSTOMER_DATA_TERMS,
-		data,
-	};
-}
-
 /**
  * Update the contact information to user's account of Google Merchant Center.
  * It will update the store address of WooCommerce Settings to Google Merchant Center if they are different.
@@ -1255,6 +1248,13 @@ export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
 	}
 }
 
+export function receiveAcceptedTerms( data ) {
+	return {
+		type: TYPES.RECEIVE_ACCEPTED_CUSTOMER_DATA_TERMS,
+		data,
+	};
+}
+
 /**
  * Updates the enhanced ads conversion status.
  *
@@ -1284,4 +1284,11 @@ export function* updateEnhancedAdsConversionStatus( status ) {
 			)
 		);
 	}
+}
+
+export function receiveAllowEnhancedConversions( data ) {
+	return {
+		type: TYPES.RECEIVE_ALLOW_ENHANCED_CONVERSIONS,
+		data,
+	};
 }

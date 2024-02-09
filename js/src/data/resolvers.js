@@ -46,6 +46,7 @@ import {
 	receiveStoreCategories,
 	receiveTour,
 	receiveAcceptedTerms,
+	receiveAllowEnhancedConversions,
 } from './actions';
 
 export function* getShippingRates() {
@@ -536,6 +537,27 @@ export function* getAcceptedCustomerDataTerms() {
 			error,
 			__(
 				'There was an error getting the accepted customer data terms.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver for getting the enhanced conversion status.
+ */
+export function* getAllowEnhancedConversions() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/allow-enhance-conversions`,
+		} );
+
+		yield receiveAllowEnhancedConversions( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the enhance conversions status.',
 				'google-listings-and-ads'
 			)
 		);

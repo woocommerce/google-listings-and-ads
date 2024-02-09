@@ -153,13 +153,10 @@ const SubmissionSuccessGuide = () => {
 	// @todo: Review whether we need that function since we have moved the buttons to be per page now.
 	const renderFinish = useCallback( () => null, [] );
 
-	const showEnhancedConversionTrackingScreen =
-		glaData.adsSetupComplete &&
-		! PAGES[ ENHANCED_CONVERSION_TRACKING_SCREEN ];
+	const showEnhancedConversionTrackingScreen = glaData.adsSetupComplete;
 
 	// @todo: Review logic to display credits screen. How do we get the paid campaigns?
-	const showGoogleAdsCreditsScreen =
-		! campaigns?.length && ! PAGES[ ENHANCED_CONVERSION_TRACKING_SCREEN ];
+	const showGoogleAdsCreditsScreen = ! campaigns?.length;
 
 	if ( showEnhancedConversionTrackingScreen ) {
 		// Add conversion screen if ads setup is complete

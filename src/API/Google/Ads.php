@@ -331,7 +331,7 @@ class Ads implements OptionsAwareInterface {
 	 *
 	 * @return boolean
 	 */
-	public function get_accepted_customer_data_terms(): bool {
+	public function get_accepted_customer_data_terms(): bool | null {
 		$ads_id = $this->options->get_ads_id();
 
 		try {
@@ -352,7 +352,7 @@ class Ads implements OptionsAwareInterface {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 		}
 
-		return false;
+		return null;
 	}
 
 	/**
@@ -367,5 +367,17 @@ class Ads implements OptionsAwareInterface {
 	public function update_enhanced_conversion_status( string $status ): string {
 		// @TODO: Wire properly
 		return $status;
+	}
+
+	/**
+	 * @TODO: wire properly
+	 * Updates the enhanced ads conversion status.
+	 * Returns false for any failures.
+	 *
+	 * @return string
+	 */
+	public function get_enhanced_conversion_status(): string {
+		// @TODO: Wire properly
+		return 'enabled';
 	}
 }

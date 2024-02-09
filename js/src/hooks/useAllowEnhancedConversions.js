@@ -10,13 +10,13 @@ import { STORE_KEY } from '.~/data/constants';
 
 const useAllowEnhancedConversions = () => {
 	return useSelect( ( select ) => {
-		const allowEnhanceConversions =
-			select( STORE_KEY ).getAllowEnhanceConversions();
+		const allowEnhancedConversions =
+			select( STORE_KEY ).getAllowEnhancedConversions();
 		const isResolving = select( STORE_KEY ).isResolving(
-			'getAllowEnhanceConversions'
+			'getAllowEnhancedConversions'
 		);
 
-		return { allowEnhanceConversions, isResolving };
+		return { allowEnhancedConversions, isResolving };
 	}, [] );
 };
 
