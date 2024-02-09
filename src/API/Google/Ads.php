@@ -331,7 +331,7 @@ class Ads implements OptionsAwareInterface {
 	 *
 	 * @return boolean
 	 */
-	public function get_accepted_customer_data_terms(): bool | null {
+	public function get_accepted_customer_data_terms(): ?bool {
 		$ads_id = $this->options->get_ads_id();
 
 		try {
@@ -378,6 +378,6 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function get_enhanced_conversion_status(): string {
 		// @TODO: Wire properly
-		return 'enabled';
+		return 'pending';
 	}
 }

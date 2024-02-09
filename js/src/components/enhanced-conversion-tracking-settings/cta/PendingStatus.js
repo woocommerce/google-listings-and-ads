@@ -8,10 +8,11 @@ import { useEffect } from '@wordpress/element';
  */
 import { useAppDispatch } from '.~/data';
 import { API_NAMESPACE } from '.~/data/constants';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import usePolling from '.~/hooks/usePolling';
 
 const PendingStatus = () => {
-	const { receiveAcceptedTerms } = useAppDispatch();
+	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 
 	const { data, start } = usePolling( {
 		path: `${ API_NAMESPACE }/ads/accepted-customer-data-terms`,
@@ -21,12 +22,12 @@ const PendingStatus = () => {
 		start();
 	}, [ start ] );
 
-	if ( ! data ) {
-		return null;
-	}
-
-	if ( data.status !== null ) {
-		receiveAcceptedTerms( data );
+	if ( data && data.status !== null ) {
+		updateEnhancedAdsConversionStatus(
+			data.status
+				? ENHANCED_ADS_CONVERSION_STATUS.DISABLED
+				: ENHANCED_ADS_CONVERSION_STATUS.ENABLED
+		);
 	}
 };
 
