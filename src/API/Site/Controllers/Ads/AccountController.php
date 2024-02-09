@@ -97,6 +97,17 @@ class AccountController extends BaseController {
 				],
 			]
 		);
+
+		$this->register_route(
+			'ads/update-enhanced-conversion-status',
+			[
+				[
+					'methods'             => TransportMethods::EDITABLE,
+					'callback'            => $this->update_enhanced_ads_conversion_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -174,13 +185,30 @@ class AccountController extends BaseController {
 	}
 
 	/**
-	 * Get the callback function for retrieving the billing setup status.
+	 * Get the callback function for retrieving the accepted customer data terms status.
 	 *
 	 * @return callable
 	 */
 	protected function get_accepted_customer_data_terms_callback(): callable {
 		return function () {
 			return $this->account->get_accepted_customer_data_terms();
+		};
+	}
+
+	/**
+	 * Get the callback function for updating the ads enhanced conversion status.
+	 *
+	 * @return callable
+	 */
+	protected function update_enhanced_ads_conversion_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				$status = $request['status'];
+
+				return $this->account->update_enhanced_conversion_status( $status );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
 		};
 	}
 

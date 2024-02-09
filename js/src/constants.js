@@ -111,3 +111,10 @@ export const ASSET_FORM_KEY = {
 	...ASSET_KEY,
 	...ASSET_GROUP_KEY,
 };
+
+export const ENHANCED_ADS_CONVERSION_STATUS = {
+	UNKNOWN: 'unknown',
+	PENDING: 'pending',
+	ENABLED: 'enabled',
+	DISABLED: 'disabled',
+};

@@ -408,10 +408,7 @@ export const getTour = ( state, tourId ) => {
  * @return {boolean} TRUE if the user signed the TOS.
  */
 export const getAcceptedCustomerDataTerms = ( state ) => {
-	return (
-		state.ads.conversion_tracking_setting.accepted_customer_data_terms ||
-		false
-	);
+	return state.ads.conversion_tracking_setting.accepted_customer_data_terms;
 };
 
 /**
@@ -421,5 +418,5 @@ export const getAcceptedCustomerDataTerms = ( state ) => {
  * @return {boolean} TRUE if the user allowed enhanced conversion tracking.
  */
 export const getAllowEnhanceConversions = ( state ) => {
-	return state.ads.allow_enhanced_conversions || false;
+	return state.ads.allow_enhanced_conversions;
 };

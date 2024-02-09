@@ -7,6 +7,7 @@ import { setWith, clone } from 'lodash';
  * Internal dependencies
  */
 import TYPES from './action-types';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 
 const DEFAULT_STATE = {
 	general: {
@@ -66,8 +67,8 @@ const DEFAULT_STATE = {
 	tours: {},
 	ads: {
 		conversion_tracking_setting: {
-			accepted_customer_data_terms: false,
-			allow_enhanced_conversions: false,
+			accepted_customer_data_terms: null,
+			allow_enhanced_conversions: null,
 		},
 	},
 };
@@ -505,6 +506,20 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn(
 				state,
 				'ads.conversion_tracking_setting.accepted_customer_data_terms',
+				status
+			);
+		}
+
+		case TYPES.UPDATE_ENHANCED_ADS_CONVERSION: {
+			const { status } = action;
+
+			if ( status === null || status === undefined ) {
+				return state;
+			}
+
+			return setIn(
+				state,
+				'ads.conversion_tracking_setting.allow_enhanced_conversions',
 				status
 			);
 		}

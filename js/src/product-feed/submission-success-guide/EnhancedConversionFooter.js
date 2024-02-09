@@ -7,30 +7,35 @@ import { useCallback } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
+import { useAppDispatch } from '.~/data';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import AppButton from '.~/components/app-button';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 
-const EnhancedConversionFooter = () => {
-	const { googleAdsAccount } = useGoogleAdsAccount();
+const EnhancedConversionFooter = ( { handleGuideFinish } ) => {
+	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 	const {
 		acceptedCustomerDataTerms: hasAcceptedTerms,
 		hasFinishedResolution,
 	} = useAcceptedCustomerDataTerms();
 
+	// @todo: Review URL
+	const TOS_URL = 'https://ads.google.com/aw/conversions/customersettings';
+
 	const handleOnClick = useCallback( () => {
 		if ( hasAcceptedTerms ) {
-			console.log( 'Redirect the user to the TOS page.' );
-		}
-	}, [ hasAcceptedTerms ] );
+			updateEnhancedAdsConversionStatus(
+				ENHANCED_ADS_CONVERSION_STATUS.ENABLED
+			);
 
-	if (
-		! googleAdsAccount ||
-		googleAdsAccount?.status !== GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED
-	) {
-		return null;
-	}
+			return;
+		}
+
+		window.open( TOS_URL, '_blank' );
+		updateEnhancedAdsConversionStatus(
+			ENHANCED_ADS_CONVERSION_STATUS.PENDING
+		);
+	}, [ hasAcceptedTerms, updateEnhancedAdsConversionStatus ] );
 
 	return (
 		<>
@@ -50,6 +55,15 @@ const EnhancedConversionFooter = () => {
 						__( 'Confirm', 'google-listings-and-ads' ) }
 				</AppButton>
 			) }
+
+			<AppButton
+				isSecondary
+				// @todo: review data-action label
+				data-action="view-product-feed"
+				onClick={ handleGuideFinish }
+			>
+				{ __( 'Close', 'google-listings-and-ads' ) }
+			</AppButton>
 		</>
 	);
 };

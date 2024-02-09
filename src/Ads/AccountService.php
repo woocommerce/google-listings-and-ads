@@ -290,4 +290,19 @@ class AccountService implements OptionsAwareInterface, Service {
 			'status' => $status,
 		];
 	}
+
+	/**
+	 * Updates the enhanced ads conversion status.
+	 * 
+	 * @param string $status Status which should be updated to. Possible values are: pending, enabled and disabled.
+	 *
+	 * @return array
+	 */
+	public function update_enhanced_conversion_status(string $status): array {
+		$updated_status = $this->container->get( Ads::class )->update_enhanced_conversion_status( $status );
+
+		return [
+			'status' => $updated_status,
+		];
+	}
 }

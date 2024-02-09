@@ -7,22 +7,15 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import LoadingLabel from '.~/components/loading-label';
 import GuidePageContent from '.~/components/guide-page-content';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 
 const EnhancedConversion = () => {
-	const { googleAdsAccount } = useGoogleAdsAccount();
-	const { acceptedCustomerDataTerms: hasAcceptedTerms } =
-		useAcceptedCustomerDataTerms();
-
-	if (
-		! googleAdsAccount ||
-		googleAdsAccount?.status !== GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED
-	) {
-		return null;
-	}
+	const {
+		acceptedCustomerDataTerms: hasAcceptedTerms,
+		hasFinishedResolution,
+	} = useAcceptedCustomerDataTerms();
 
 	return (
 		<GuidePageContent
@@ -43,7 +36,13 @@ const EnhancedConversion = () => {
 				) }
 			</p>
 
-			{ hasAcceptedTerms && (
+			{ ! hasFinishedResolution && (
+				<LoadingLabel
+					text={ __( 'Please wait…', 'google-listings-and-ads' ) }
+				/>
+			) }
+
+			{ hasAcceptedTerms === true && (
 				<p>
 					{ __(
 						'Clicking confirm will enable Enhanced Conversions on your account and update your tags accordingly. This feature can also be managed from Google Listings & Ads > Settings',
@@ -52,7 +51,7 @@ const EnhancedConversion = () => {
 				</p>
 			) }
 
-			{ ! hasAcceptedTerms && (
+			{ hasAcceptedTerms === false && (
 				<p>
 					{ __(
 						'Activating it is easy – just agree to the terms of service on Google Ads and we will make the tagging changes needed for you. This feature can also be managed from Google Listings & Ads > Settings',

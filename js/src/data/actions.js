@@ -1254,3 +1254,34 @@ export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
 		);
 	}
 }
+
+/**
+ * Updates the enhanced ads conversion status.
+ *
+ * @param {string} status to enable/disable enhanced ads conversion. Possible values are pending, enabled and disabled.
+ * @return {boolean} String The updated status.
+ */
+export function* updateEnhancedAdsConversionStatus( status ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/update-enhanced-conversion-status`,
+			method: REQUEST_ACTIONS.POST,
+			data: {
+				status,
+			},
+		} );
+
+		return {
+			type: TYPES.UPDATE_ENHANCED_ADS_CONVERSION_STATUS,
+			response,
+		};
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error updating the enhanced ads conversion status.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}

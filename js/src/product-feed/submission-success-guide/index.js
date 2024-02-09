@@ -12,7 +12,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import SpinnerCard from '.~/components/spinner-card';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import Guide from '.~/external-components/wordpress/guide';
 import GuidePageContent, {
@@ -28,6 +27,7 @@ import googleLogoURL from '.~/images/google-logo.svg';
 import { recordGlaEvent } from '.~/utils/tracks';
 import EnhancedConversion from './EnhancedConversion';
 import EnhancedConversionFooter from './EnhancedConversionFooter';
+import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';
@@ -110,69 +110,15 @@ const PAGES = {
 				</p>
 			</GuidePageContent>
 		),
-	},
-	[ GOOGLE_ADS_CREDITS_SCREEN ]: {
-		image,
-		content: (
-			<GuidePageContent
-				title={ __(
-					'Spend $500 to get $500 in Google Ads credits',
-					'google-listings-and-ads'
-				) }
-			>
-				<p>
-					{ __(
-						'New to Google Ads? Get $500 in ad credit when you spend $500 within your first 60 days* You can edit or cancel your campaign at any time.',
-						'google-listings-and-ads'
-					) }
-				</p>
-				<cite>
-					{ createInterpolateElement(
-						__(
-							'*Full terms and conditions <link>here</link>.',
-							'google-listings-and-ads'
-						),
-						{
-							link: (
-								<ContentLink
-									href="https://www.google.com/ads/coupons/terms/"
-									context="terms-of-ads-coupons"
-								/>
-							),
-						}
-					) }
-				</cite>
-			</GuidePageContent>
-		),
 		footer: (
-			<>
-				<div className="gla-submission-success-guide__space_holder" />
-				<AppButton
-					isSecondary
-					data-action="maybe-later"
-					onClick={ handleGuideFinish }
-				>
-					{ __( 'Maybe later', 'google-listings-and-ads' ) }
-				</AppButton>
-				<AddPaidCampaignButton
-					isPrimary
-					isSecondary={ false }
-					isSmall={ false }
-					eventName={ EVENT_NAME }
-					eventProps={ {
-						context: GUIDE_NAMES.SUBMISSION_SUCCESS,
-						action: 'create-paid-campaign',
-					} }
-				>
-					{ __( 'Create paid campaign', 'google-listings-and-ads' ) }
-				</AddPaidCampaignButton>
-			</>
+			<AppButton
+				isPrimary
+				data-action="view-product-feed"
+				onClick={ handleGuideFinish }
+			>
+				{ __( 'View product feed', 'google-listings-and-ads' ) }
+			</AppButton>
 		),
-	},
-	[ ENHANCED_CONVERSION_TRACKING_SCREEN ]: {
-		image,
-		content: <EnhancedConversion />,
-		footer: <EnhancedConversionFooter />,
 	},
 };
 
@@ -186,7 +132,10 @@ const PAGES = {
  * @fires gla_modal_open with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
  */
 const SubmissionSuccessGuide = () => {
-	const { loaded, data: campaigns } = useAdsCampaigns();
+	const { data: campaigns } = useAdsCampaigns();
+
+	// side effects
+	useAcceptedCustomerDataTerms();
 
 	useEffect( () => {
 		recordGlaEvent( 'gla_modal_open', {
@@ -201,30 +150,93 @@ const SubmissionSuccessGuide = () => {
 		);
 	}, [] );
 
-	const renderFinish = useCallback( () => {
-		if ( glaData.adsSetupComplete ) {
-			return (
-				<AppButton
-					isPrimary
-					data-action="view-product-feed"
-					onClick={ handleGuideFinish }
+	// @todo: Review whether we need that function since we have moved the buttons to be per page now.
+	const renderFinish = useCallback( () => null, [] );
+
+	const showEnhancedConversionTrackingScreen =
+		glaData.adsSetupComplete &&
+		! PAGES[ ENHANCED_CONVERSION_TRACKING_SCREEN ];
+
+	// @todo: Review logic to display credits screen. How do we get the paid campaigns?
+	const showGoogleAdsCreditsScreen =
+		! campaigns?.length && ! PAGES[ ENHANCED_CONVERSION_TRACKING_SCREEN ];
+
+	if ( showEnhancedConversionTrackingScreen ) {
+		// Add conversion screen if ads setup is complete
+		PAGES[ ENHANCED_CONVERSION_TRACKING_SCREEN ] = {
+			image,
+			content: <EnhancedConversion />,
+			footer: (
+				<EnhancedConversionFooter
+					handleGuideFinish={ handleGuideFinish }
+				/>
+			),
+		};
+	} else if ( showGoogleAdsCreditsScreen ) {
+		// There are no campaigns, add Google Ads credit screen
+		PAGES[ GOOGLE_ADS_CREDITS_SCREEN ] = {
+			image,
+			content: (
+				<GuidePageContent
+					title={ __(
+						'Spend $500 to get $500 in Google Ads credits',
+						'google-listings-and-ads'
+					) }
 				>
-					{ __( 'View product feed', 'google-listings-and-ads' ) }
-				</AppButton>
-			);
-		}
-	}, [] );
+					<p>
+						{ __(
+							'New to Google Ads? Get $500 in ad credit when you spend $500 within your first 60 days* You can edit or cancel your campaign at any time.',
+							'google-listings-and-ads'
+						) }
+					</p>
+					<cite>
+						{ createInterpolateElement(
+							__(
+								'*Full terms and conditions <link>here</link>.',
+								'google-listings-and-ads'
+							),
+							{
+								link: (
+									<ContentLink
+										href="https://www.google.com/ads/coupons/terms/"
+										context="terms-of-ads-coupons"
+									/>
+								),
+							}
+						) }
+					</cite>
+				</GuidePageContent>
+			),
+			footer: (
+				<>
+					<div className="gla-submission-success-guide__space_holder" />
 
-	if ( glaData.adsSetupComplete ) {
-		// Remove the Google Ads credits screens.
-		delete PAGES?.[ GOOGLE_ADS_CREDITS_SCREEN ];
-	} else if ( ! campaigns?.length ) {
-		// There are no campaigns, do not show the enhanced conversion tracking screen.
-		delete PAGES?.[ ENHANCED_CONVERSION_TRACKING_SCREEN ];
-	}
+					<AddPaidCampaignButton
+						isPrimary
+						isSecondary={ false }
+						isSmall={ false }
+						eventName={ EVENT_NAME }
+						eventProps={ {
+							context: GUIDE_NAMES.SUBMISSION_SUCCESS,
+							action: 'create-paid-campaign',
+						} }
+					>
+						{ __(
+							'Create paid campaign',
+							'google-listings-and-ads'
+						) }
+					</AddPaidCampaignButton>
 
-	if ( ! loaded ) {
-		return <SpinnerCard />;
+					<AppButton
+						isSecondary
+						data-action="maybe-later"
+						onClick={ handleGuideFinish }
+					>
+						{ __( 'Maybe later', 'google-listings-and-ads' ) }
+					</AppButton>
+				</>
+			),
+		};
 	}
 
 	const pages = Object.keys( PAGES ).map( ( screen ) => PAGES[ screen ] );

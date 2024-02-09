@@ -324,7 +324,7 @@ class Ads implements OptionsAwareInterface {
 
 		throw new Exception( __( 'Merchant link is not available to accept', 'google-listings-and-ads' ) );
 	}
-	
+
 	/**
 	 * Check if the user has accepted the customer data terms for enhanced conversion tracking.
 	 * Returns false for any account that fails.
@@ -353,5 +353,19 @@ class Ads implements OptionsAwareInterface {
 		}
 
 		return false;
+	}
+
+	/**
+	 * @TODO: wire properly
+	 * Updates the enhanced ads conversion status.
+	 * Returns false for any failures.
+	 *
+	 * @param string $status The status value
+	 * 
+	 * @return string
+	 */
+	public function update_enhanced_conversion_status(string $status): string {
+		// @TODO: Wire properly
+		return $status;
 	}
 }
