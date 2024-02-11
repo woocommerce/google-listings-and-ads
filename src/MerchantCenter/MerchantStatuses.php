@@ -656,10 +656,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Update the product status statistics.
+	 * Update the product status statistics for a list of products statuses.
+	 *
+	 * @param array[] $statuses statuses. See statuses format in MerchantReport::get_product_view_report.
 	 */
-	public function update_product_stats() {
+	public function update_product_stats( array $statuses ): void {
 		$this->mc_statuses = [];
+
+		$this->process_product_statuses( $statuses );
+
 		// Update each product's mc_status and then update the global statistics.
 		$this->update_products_meta_with_mc_status();
 		$this->update_mc_status_statistics();
@@ -856,8 +861,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				$to_update[ $new_status ][] = intval( $product_id );
 			}
 		}
-
-		unset( $current_product_statuses, $new_product_statuses );
 
 		// Insert and update changed MC Status postmeta.
 		$product_meta_query_helper->batch_insert_values( ProductMetaHandler::KEY_MC_STATUS, $to_insert );

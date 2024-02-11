@@ -156,7 +156,7 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 
 			$matcher = $this->exactly( 3 );
 			$this->merchant_statuses->expects( $matcher )
-				->method( 'process_product_statuses' )
+				->method( 'update_product_stats' )
 				->willReturnCallback(
 					function ( $statuses ) use ( $matcher ) {
 						$invocation_count = $matcher->getInvocationCount();
@@ -198,9 +198,6 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 						}
 					}
 				);
-
-		$this->merchant_statuses->expects( $this->exactly( 3 ) )
-			->method( 'update_product_stats' );
 
 		$this->merchant_statuses->expects( $this->exactly( 1 ) )
 			->method( 'handle_complete_mc_statuses_fetching' );
