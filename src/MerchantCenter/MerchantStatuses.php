@@ -37,6 +37,7 @@ use Exception;
  * - ProductHelper
  * - ProductRepository
  * - TransientsInterface
+ * - UpdateMerchantProductStatuses
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
@@ -105,9 +106,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @param bool $force_refresh Force refresh of all product status data.
 	 *
 	 * @return array The product status statistics.
-	 * @throws Exception If the Merchant Center can't be polled for the statuses.
+	 * @throws Exception If no Merchant Center account is connected, or account status is not retrievable.
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
+		$this->check_mc_is_connected();
+
 		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
 		$job               = $this->container->get( UpdateMerchantProductStatuses::class );
 
@@ -174,6 +177,25 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
+	 * Check if the Merchant Center account is connected and throw an exception if it's not.
+	 *
+	 * @throws Exception If the Merchant Center account is not connected.
+	 */
+	protected function check_mc_is_connected() {
+		$mc_service = $this->container->get( MerchantCenterService::class );
+
+		if ( ! $mc_service->is_connected() ) {
+
+			// Return a 401 to redirect to reconnect flow if the Google account is not connected.
+			if ( ! $mc_service->is_google_connected() ) {
+				throw new Exception( __( 'Google account is not connected.', 'google-listings-and-ads' ), 401 );
+			}
+
+			throw new Exception( __( 'Merchant Center account is not set up.', 'google-listings-and-ads' ) );
+		}
+	}
+
+	/**
 	 * Update stale status-related data - account issues, product issues, products status stats.
 	 *
 	 * @param bool $force_refresh Force refresh of all status-related data.
@@ -188,16 +210,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 
 		// Save a request if accounts are not connected.
-		$mc_service = $this->container->get( MerchantCenterService::class );
-		if ( ! $mc_service->is_connected() ) {
-
-			// Return a 401 to redirect to reconnect flow if the Google account is not connected.
-			if ( ! $mc_service->is_google_connected() ) {
-				throw new Exception( __( 'Google account is not connected.', 'google-listings-and-ads' ), 401 );
-			}
-
-			throw new Exception( __( 'Merchant Center account is not set up.', 'google-listings-and-ads' ) );
-		}
+		$this->check_mc_is_connected();
 
 		// Update account-level issues.
 		$this->refresh_account_issues();
