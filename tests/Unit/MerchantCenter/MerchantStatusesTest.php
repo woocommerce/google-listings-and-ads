@@ -15,7 +15,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
-use WP_Post;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -45,10 +47,8 @@ class MerchantStatusesTest extends UnitTest {
 	private $merchant_statuses;
 	private $product_repository;
 	private $product_helper;
-	private $product_status;
-	private $product_statuses_custom_batch_response;
-	private $product_statuses_custom_batch_response_entry;
-	private $product_status_destination_status;
+	private $transients;
+	private $update_merchant_product_statuses_job;
 
 	/**
 	 * Runs before each test is executed.
@@ -66,19 +66,21 @@ class MerchantStatusesTest extends UnitTest {
 		$this->product_statuses_custom_batch_response       = $this->createMock( ShoppingContent\ProductstatusesCustomBatchResponse::class );
 		$this->product_statuses_custom_batch_response_entry = $this->createMock( ShoppingContent\ProductstatusesCustomBatchResponseEntry::class );
 		$this->product_status_destination_status            = $this->createMock( ShoppingContent\ProductStatusDestinationStatus::class );
+		$this->transients                                   = $this->createMock( TransientsInterface::class );
+		$this->update_merchant_product_statuses_job         = $this->createMock( UpdateMerchantProductStatuses::class );
 
-		$transients           = $this->createMock( TransientsInterface::class );
 		$merchant_issue_table = $this->createMock( MerchantIssueTable::class );
 
 		$container = new Container();
 		$container->share( Merchant::class, $this->merchant );
 		$container->share( MerchantIssueQuery::class, $this->merchant_issue_query );
 		$container->share( MerchantCenterService::class, $this->merchant_center_service );
-		$container->share( TransientsInterface::class, $transients );
+		$container->share( TransientsInterface::class, $this->transients );
 		$container->share( ProductRepository::class, $this->product_repository );
 		$container->share( ProductMetaQueryHelper::class, $this->product_meta_query_helper );
 		$container->share( ProductHelper::class, $this->product_helper );
 		$container->share( MerchantIssueTable::class, $merchant_issue_table );
+		$container->share( UpdateMerchantProductStatuses::class, $this->update_merchant_product_statuses_job );
 
 		$this->merchant_statuses = new MerchantStatuses();
 		$this->merchant_statuses->set_container( $container );
@@ -171,173 +173,185 @@ class MerchantStatusesTest extends UnitTest {
 	}
 
 	/*
-	 * Test get product statistics.
+	 * Test get product statistics using the transient.
 	 *
-	 * Test data:
-	 * - Product ID: 100, Type: Variable,  Parent: 0,   MC Status: N/A
-	 * - Product ID: 101, Type: Simple,    Parent: 0,   MC Status: disapproved
-	 * - Product ID: 102, Type: Variation, Parent: 100, MC Status: approved
-	 * - Product ID: 103, Type: Variable,  Parent: 0,   MC Status: N/A
-	 * - Product ID: 104, Type: Variation, Parent: 103, MC Status: disapproved
-	 * - Product ID: 105, Type: Variation, Parent: 100, MC Status: disapproved
-	 *
-	 * Note that product 102 and 105 have the same parent so they will be grouped as one.
-	 * The MC status of 102 is approved while that of 105 is disapproved, Since "disapproved"
-	 * has higher priority it'd be marked as disapproved.
 	 */
-	public function test_get_product_statistics() {
-		$this->merchant_center_service->expects( $this->any() )
+	public function test_get_product_statistics_when_mc_is_not_connected() {
+		$this->merchant_center_service->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( false );
+
+			$this->merchant_center_service->expects( $this->once() )
+			->method( 'is_google_connected' )
+			->willReturn( false );
+
+		$this->transients->expects( $this->never() )
+			->method( 'get' );
+
+		$this->update_merchant_product_statuses_job->expects( $this->never() )->method( 'schedule' );
+
+		$this->update_merchant_product_statuses_job->expects( $this->never() )->method( 'is_scheduled' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Google account is not connected.' );
+
+		$this->merchant_statuses->get_product_statistics();
+	}
+
+	public function test_get_product_statistics_with_transient() {
+		$this->merchant_center_service->expects( $this->once() )
 			->method( 'is_connected' )
 			->willReturn( true );
 
-		$this->account_status->expects( $this->any() )
-			->method( 'getAccountLevelIssues' )
-			->willReturn( [] );
-
-		$this->merchant->expects( $this->any() )
-			->method( 'get_accountstatus' )
-			->willReturn( $this->account_status );
-
-		$this->product_repository->expects( $this->once() )
-			->method( 'find_synced_product_ids' )
-			->willReturn( [ 101, 102, 104, 105 ] );
-
-		$this->product_meta_query_helper->expects( $this->exactly( 3 ) )
-			->method( 'get_all_values' )
-			->willReturnOnConsecutiveCalls(
-				[
-					101 => [ 'TW' => 'online:en:TW:gla_101' ],
-					102 => [ 'TW' => 'online:en:TW:gla_102' ],
-					104 => [ 'TW' => 'online:en:TW:gla_104' ],
-					105 => [ 'TW' => 'online:en:TW:gla_105' ],
-				],
-				[],
-				[]
-			);
-
-		$this->product_helper->expects( $this->exactly( 12 ) )
-			->method( 'get_wc_product_id' )
-			->willReturnOnConsecutiveCalls(
-				101,
-				102,
-				104,
-				105,
-				101,
-				102,
-				104,
-				105,
-				101,
-				102,
-				104,
-				105,
-			);
-
-		$this->product_helper->expects( $this->exactly( 4 ) )
-			->method( 'get_wc_product_by_wp_post' )
-			->willReturnOnConsecutiveCalls(
-				new WP_Post(
-					(object) [
-						'ID'          => 101,
-						'post_type'   => 'product',
-						'post_parent' => 0,
-					]
-				),
-				new WP_Post(
-					(object) [
-						'ID'          => 102,
-						'post_type'   => 'product',
-						'post_parent' => 100,
-					]
-				),
-				new WP_Post(
-					(object) [
-						'ID'          => 104,
-						'post_type'   => 'product',
-						'post_parent' => 103,
-					]
-				),
-				new WP_Post(
-					(object) [
-						'ID'          => 105,
-						'post_type'   => 'product',
-						'post_parent' => 100,
-					]
-				),
-			);
-
-		$this->product_status_destination_status->expects( $this->exactly( 4 ) )
-			->method( 'getStatus' )
-			->willReturnOnConsecutiveCalls(
-				'disapproved', // 101
-				'approved',    // 102
-				'disapproved', // 104
-				'disapproved', // 105
-			);
-
-		$this->product_status_destination_status->expects( $this->exactly( 4 ) )
-			->method( 'getDestination' )
-			->willReturn( 'SurfacesAcrossGoogle' );
-
-		$this->product_status->expects( $this->exactly( 4 ) )
-			->method( 'getDestinationStatuses' )
-			->willReturnOnConsecutiveCalls(
-				[ $this->product_status_destination_status ],
-				[ $this->product_status_destination_status ],
-				[ $this->product_status_destination_status ],
-				[ $this->product_status_destination_status ],
-			);
-
-		$this->product_status->expects( $this->exactly( 12 ) )
-			->method( 'getProductId' )
-			->willReturnOnConsecutiveCalls(
-				'gla_101',
-				'gla_102',
-				'gla_104',
-				'gla_105',
-				'gla_101',
-				'gla_102',
-				'gla_104',
-				'gla_105',
-				'gla_101',
-				'gla_102',
-				'gla_104',
-				'gla_105',
-			);
-
-		$this->product_status->expects( $this->any() )
-			->method( 'getItemLevelIssues' )
-			->willReturn( [] );
-
-		$this->product_statuses_custom_batch_response_entry->expects( $this->any() )
-			->method( 'getProductStatus' )
-			->willReturn( $this->product_status );
-
-		$this->product_statuses_custom_batch_response->expects( $this->once() )
-			->method( 'getEntries' )
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
 			->willReturn(
 				[
-					$this->product_statuses_custom_batch_response_entry,
-					$this->product_statuses_custom_batch_response_entry,
-					$this->product_statuses_custom_batch_response_entry,
-					$this->product_statuses_custom_batch_response_entry,
+					'statistics' => [
+						MCStatus::APPROVED           => 3,
+						MCStatus::PARTIALLY_APPROVED => 1,
+						MCStatus::EXPIRING           => 0,
+						MCStatus::PENDING            => 0,
+						MCStatus::DISAPPROVED        => 3,
+						MCStatus::NOT_SYNCED         => 0,
+					],
+					'loading'    => false,
 				]
 			);
 
-		$this->merchant->expects( $this->once() )
-			->method( 'get_productstatuses_batch' )
-			->willReturn( $this->product_statuses_custom_batch_response );
+		$this->update_merchant_product_statuses_job->expects( $this->never() )
+			->method( 'schedule' );
 
-		$product_statistics = $this->merchant_statuses->get_product_statistics( true );
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
+			->method( 'is_scheduled' );
+
+		$product_statistics = $this->merchant_statuses->get_product_statistics();
 
 		$this->assertEquals(
 			[
-				'active'      => 0,
+				'active'      => 4,
 				'expiring'    => 0,
 				'pending'     => 0,
 				'disapproved' => 3,
 				'not_synced'  => 0,
 			],
 			$product_statistics['statistics']
+		);
+
+		$this->assertEquals(
+			false,
+			$product_statistics['loading']
+		);
+	}
+
+	public function test_get_product_statistics_without_transient() {
+		$this->merchant_center_service->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				null
+			);
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
+			->method( 'schedule' );
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
+			->method( 'is_scheduled' );
+
+		$product_statistics = $this->merchant_statuses->get_product_statistics();
+
+		$this->assertEquals(
+			[],
+			$product_statistics['statistics']
+		);
+
+		$this->assertEquals(
+			true,
+			$product_statistics['loading']
+		);
+	}
+
+	public function test_get_product_statistics_with_product_statuses_job_running() {
+		$this->merchant_center_service->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'statistics' => [
+						MCStatus::APPROVED           => 3,
+						MCStatus::PARTIALLY_APPROVED => 1,
+						MCStatus::EXPIRING           => 0,
+						MCStatus::PENDING            => 0,
+						MCStatus::DISAPPROVED        => 3,
+						MCStatus::NOT_SYNCED         => 0,
+					],
+					'loading'    => false,
+				]
+			);
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 0 ) )
+			->method( 'schedule' );
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
+			->method( 'is_scheduled' )->willReturn( true );
+
+		$product_statistics = $this->merchant_statuses->get_product_statistics();
+
+		$this->assertEquals(
+			[],
+			$product_statistics['statistics']
+		);
+
+		$this->assertEquals(
+			true,
+			$product_statistics['loading']
+		);
+	}
+
+	public function test_get_product_statistics_with_force_refresh() {
+		$this->merchant_center_service->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'statistics' => [
+						MCStatus::APPROVED           => 3,
+						MCStatus::PARTIALLY_APPROVED => 1,
+						MCStatus::EXPIRING           => 0,
+						MCStatus::PENDING            => 0,
+						MCStatus::DISAPPROVED        => 3,
+						MCStatus::NOT_SYNCED         => 0,
+					],
+					'loading'    => false,
+				]
+			);
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
+			->method( 'schedule' );
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
+			->method( 'is_scheduled' )->willReturnOnConsecutiveCalls( false, true );
+
+		$force_refresh      = true;
+		$product_statistics = $this->merchant_statuses->get_product_statistics( $force_refresh );
+
+		$this->assertEquals(
+			[],
+			$product_statistics['statistics']
+		);
+
+		$this->assertEquals(
+			true,
+			$product_statistics['loading']
 		);
 	}
 }
