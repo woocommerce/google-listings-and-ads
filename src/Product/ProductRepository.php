@@ -281,6 +281,8 @@ class ProductRepository implements Service {
 	/**
 	 * Find all simple and variable product IDs regardless of MC status or visibility.
 	 *
+	 * @since x.x.x
+	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
 	 *
