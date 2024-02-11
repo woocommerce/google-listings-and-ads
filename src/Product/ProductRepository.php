@@ -250,33 +250,6 @@ class ProductRepository implements Service {
 		return $this->find_ids( $args, $limit, $offset );
 	}
 
-	/**
-	 * Find and return an array of WooCommerce product IDs that are marked as MC not_synced.
-	 * Excludes variations and variable products without variations.
-	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
-	 *
-	 * @return int[] Array of WooCommerce product IDs
-	 */
-	public function find_mc_not_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
-		$types = ProductSyncer::get_supported_product_types();
-		$types = array_diff( $types, [ 'variation' ] );
-		$args  = [
-			'status'     => 'publish',
-			'type'       => $types,
-			'meta_query' => [
-				[
-					'key'     => ProductMetaHandler::KEY_MC_STATUS,
-					'compare' => '=',
-					'value'   => MCStatus::NOT_SYNCED,
-				],
-			],
-		];
-
-		return $this->find_ids( $args, $limit, $offset );
-	}
-
 
 	/**
 	 * Find all simple and variable product IDs regardless of MC status or visibility.
