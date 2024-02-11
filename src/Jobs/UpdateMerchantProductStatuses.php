@@ -82,18 +82,19 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	 * @throws JobException If the shipping settings cannot be synced.
 	 */
 	public function process_items( array $items ) {
-		$next_page_token = null;
+		$next_page_token = $items['next_page_token'] ?? null;
 
-		do {
-			$results = $this->merchant_report->get_product_view_report( $next_page_token );
+		$results         = $this->merchant_report->get_product_view_report( $next_page_token );
+		$next_page_token = $results['next_page'];
 
-			$this->merchant_statuses->process_product_statuses( $results['statuses'] );
-
-			$next_page_token = $results['next_page'];
-
-		} while ( $next_page_token );
-
+		$this->merchant_statuses->process_product_statuses( $results['statuses'] );
 		$this->merchant_statuses->update_product_stats();
+
+		if ( $next_page_token ) {
+			$this->schedule( [ [ 'next_page_token' => $next_page_token ] ] );
+		} else {
+			$this->merchant_statuses->mark_mc_statuses_fetching_as_completed();
+		}
 	}
 
 	/**
@@ -102,8 +103,8 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	 * @param array $args - arguments.
 	 */
 	public function schedule( array $args = [] ) {
-		if ( $this->can_schedule() ) {
-			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook() );
+		if ( $this->can_schedule( $args ) ) {
+			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), $args );
 		}
 	}
 
