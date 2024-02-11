@@ -84,6 +84,11 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	public function process_items( array $items ) {
 		$next_page_token = $items['next_page_token'] ?? null;
 
+		// Clear the cache if we're starting from the beginning.
+		if ( ! $next_page_token ) {
+			$this->merchant_statuses->clear_cache();
+		}
+
 		$results         = $this->merchant_report->get_product_view_report( $next_page_token );
 		$next_page_token = $results['next_page'];
 
@@ -93,7 +98,7 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 		if ( $next_page_token ) {
 			$this->schedule( [ [ 'next_page_token' => $next_page_token ] ] );
 		} else {
-			$this->merchant_statuses->mark_mc_statuses_fetching_as_completed();
+			$this->merchant_statuses->handle_complete_mc_statuses_fetching();
 		}
 	}
 
@@ -109,11 +114,12 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	}
 
 	/**
-	 * The job is considered to be scheduled if the "process_item" action is currently pending or in-progress.
+	 * The job is considered to be scheduled if the "process_item" action is currently pending or in-progress regardless of the arguments.
 	 *
 	 * @return bool
 	 */
 	public function is_scheduled(): bool {
-		return $this->is_running();
+		// We set 'args' to null so that it matches any arguments. This is because it's possible to have multiple instances of the job running with different page tokens
+		return $this->is_running( null );
 	}
 }

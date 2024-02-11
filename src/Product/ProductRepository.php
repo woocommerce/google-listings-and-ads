@@ -277,6 +277,26 @@ class ProductRepository implements Service {
 		return $this->find_ids( $args, $limit, $offset );
 	}
 
+
+	/**
+	 * Find all simple and variable product IDs regardless of MC status or visibility.
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return int[] Array of WooCommerce product IDs
+	 */
+	public function find_all_product_ids( int $limit = -1, int $offset = 0 ): array {
+		$args['return'] = 'ids';
+
+		$args = [
+			'type'   => array_diff( ProductSyncer::get_supported_product_types(), [ 'variation' ] ),
+			'status' => 'publish',
+		];
+
+		return $this->find_ids( $args, $limit, $offset );
+	}
+
 	/**
 	 * Returns an array of Google Product IDs associated with all synced WooCommerce products.
 	 * Note: excludes variable parent products as only the child variation products are actually synced

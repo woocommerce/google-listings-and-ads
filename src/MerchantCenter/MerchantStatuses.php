@@ -118,10 +118,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 
 		if ( $job->is_scheduled() || null === $this->mc_statuses ) {
-			// TODO: Add a notice to the client to inform that the statuses are being updated, or maybe we can pass the is_scheduled to the client.
 			return [
 				'timestamp'  => $this->cache_created_time->getTimestamp(),
 				'statistics' => [],
+				'loading'    => true,
 			];
 		}
 
@@ -589,6 +589,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @see MerchantReport::get_product_view_report
 	 */
 	public function process_product_statuses( $statuses ): void {
+		$this->product_statuses = [
+			'products' => [],
+			'parents'  => [],
+		];
+
 		/** @var ProductHelper $product_helper */
 		$product_helper      = $this->container->get( ProductHelper::class );
 		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
@@ -664,7 +669,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Calculate the synced product status statistics. It will group
+	 * Sum the synced product status statistics. It will group
 	 * the variations for the same parent.
 	 *
 	 * For the case that one variation is approved and the other disapproved:
@@ -675,7 +680,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 *
 	 * @return array Product status statistics.
 	 */
-	protected function calculate_synced_product_statistics(): array {
+	protected function sum_synced_product_statistics(): array {
 		$product_statistics = [
 			MCStatus::APPROVED           => 0,
 			MCStatus::PARTIALLY_APPROVED => 0,
@@ -684,6 +689,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			MCStatus::DISAPPROVED        => 0,
 			MCStatus::NOT_SYNCED         => 0,
 		];
+
+		// If the transient is set, use it to sum the total quantity.
+		$product_statistics_transient = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+		if ( $product_statistics_transient ) {
+			$product_statistics = $product_statistics_transient['statistics'];
+		}
 
 		$product_statistics_priority = [
 			MCStatus::APPROVED           => 6,
@@ -723,15 +734,17 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * Calculate the product status statistics and update the transient.
 	 */
 	protected function update_mc_status_statistics() {
-		$product_statistics = $this->calculate_synced_product_statistics();
+		$product_statistics = $this->sum_synced_product_statistics();
 
-		/** @var ProductRepository $product_repository */
-		$product_repository                         = $this->container->get( ProductRepository::class );
-		$product_statistics[ MCStatus::NOT_SYNCED ] = count( $product_repository->find_mc_not_synced_product_ids() );
-
+		/**
+		 * The loading status will be updated when all the statuses are fetched.
+		 *
+		 * @see Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses::process_items
+		 */
 		$this->mc_statuses = [
 			'timestamp'  => $this->cache_created_time->getTimestamp(),
 			'statistics' => $product_statistics,
+			'loading'    => true,
 		];
 
 		// Update the cached values
@@ -741,6 +754,49 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$this->get_status_lifetime()
 		);
 	}
+
+	/**
+	 * Calculate the total count of products in the MC using the statistics.
+	 *
+	 * @param array $statistics
+	 *
+	 * @return int
+	 */
+	protected function calculate_total_synced_product_statistics( array $statistics ): int {
+		if ( ! count( $statistics ) ) {
+			return 0;
+		}
+
+		$synced_status_values = array_values( array_diff( $statistics, [ $statistics[ MCStatus::NOT_SYNCED ] ] ) );
+		return array_sum( $synced_status_values );
+	}
+
+
+	/**
+	 * Handle the completion of the Merchant Center statuses fetching.
+	 */
+	public function handle_complete_mc_statuses_fetching() {
+		$mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+
+		if ( $mc_statuses ) {
+			$total_synced_products = $this->calculate_total_synced_product_statistics( $mc_statuses['statistics'] );
+
+			/** @var ProductRepository $product_repository */
+			$product_repository                                = $this->container->get( ProductRepository::class );
+			$mc_statuses['statistics'][ MCStatus::NOT_SYNCED ] = count(
+				$product_repository->find_all_product_ids()
+			) - $total_synced_products;
+
+			$mc_statuses['loading'] = false;
+
+			$this->container->get( TransientsInterface::class )->set(
+				Transients::MC_STATUSES,
+				$mc_statuses,
+				$this->get_status_lifetime()
+			);
+		}
+	}
+
 
 	/**
 	 * Update the Merchant Center status for each product.
@@ -767,16 +823,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 		ksort( $new_product_statuses );
 
-		/** @var ProductRepository $product_repository */
-		$product_repository = $this->container->get( ProductRepository::class );
-
 		/** @var ProductMetaQueryHelper $product_meta_query_helper */
 		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
 
 		// Get all MC statuses.
 		$current_product_statuses = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_MC_STATUS );
-		// Get all product IDs.
-		$all_product_ids = array_flip( $product_repository->find_ids() );
 
 		// Format: product_id=>status.
 		$to_insert = [];
@@ -791,20 +842,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				// MC status not same as WC, update.
 				$to_update[ $new_status ][] = intval( $product_id );
 			}
-			// Unset all found statuses from WC products array.
-			unset( $all_product_ids[ $product_id ] );
 		}
 
-		// Set products NOT FOUND in MC to NOT_SYNCED.
-		foreach ( array_keys( $all_product_ids ) as $product_id ) {
-			if ( empty( $current_product_statuses[ $product_id ] ) ) {
-				$to_insert[ $product_id ] = MCStatus::NOT_SYNCED;
-			} elseif ( $current_product_statuses[ $product_id ] !== MCStatus::NOT_SYNCED ) {
-				$to_update[ MCStatus::NOT_SYNCED ][] = $product_id;
-			}
-		}
-
-		unset( $all_product_ids, $current_product_statuses, $new_product_statuses );
+		unset( $current_product_statuses, $new_product_statuses );
 
 		// Insert and update changed MC Status postmeta.
 		$product_meta_query_helper->batch_insert_values( ProductMetaHandler::KEY_MC_STATUS, $to_insert );
