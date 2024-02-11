@@ -110,7 +110,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share_with_container( AdsReportsController::class );
 		$this->share( GoogleAccountController::class, Connection::class );
 		$this->share( JetpackAccountController::class, Manager::class, Middleware::class );
-		$this->share( MerchantCenterProductStatsController::class, MerchantStatuses::class, ProductSyncStats::class );
+		$this->share( MerchantCenterProductStatsController::class, MerchantStatuses::class );
 		$this->share( MerchantCenterIssuesController::class, MerchantStatuses::class, ProductHelper::class );
 		$this->share( MerchantCenterProductFeedController::class, ProductFeedQueryHelper::class );
 		$this->share( MerchantCenterProductVisibilityController::class, ProductHelper::class, MerchantIssueQuery::class );
