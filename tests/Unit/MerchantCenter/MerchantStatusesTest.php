@@ -30,7 +30,6 @@ defined( 'ABSPATH' ) || exit;
  * @property MerchantStatuses $merchant_statuses
  * @property ProductRepository $product_repository
  * @property ProductHelper $product_helper
- * @property ShoppingContent\ProductStatusDestinationStatus $product_status_destination_status
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
  * @group MerchantCenterStatuses
  */
@@ -52,16 +51,15 @@ class MerchantStatusesTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->merchant                                     = $this->createMock( Merchant::class );
-		$this->merchant_issue_query                         = $this->createMock( MerchantIssueQuery::class );
-		$this->merchant_center_service                      = $this->createMock( MerchantCenterService::class );
-		$this->account_status                               = $this->createMock( ShoppingContent\AccountStatus::class );
-		$this->product_meta_query_helper                    = $this->createMock( ProductMetaQueryHelper::class );
-		$this->product_repository                           = $this->createMock( ProductRepository::class );
-		$this->product_helper                               = $this->createMock( ProductHelper::class );
-		$this->product_status_destination_status            = $this->createMock( ShoppingContent\ProductStatusDestinationStatus::class );
-		$this->transients                                   = $this->createMock( TransientsInterface::class );
-		$this->update_merchant_product_statuses_job         = $this->createMock( UpdateMerchantProductStatuses::class );
+		$this->merchant                             = $this->createMock( Merchant::class );
+		$this->merchant_issue_query                 = $this->createMock( MerchantIssueQuery::class );
+		$this->merchant_center_service              = $this->createMock( MerchantCenterService::class );
+		$this->account_status                       = $this->createMock( ShoppingContent\AccountStatus::class );
+		$this->product_meta_query_helper            = $this->createMock( ProductMetaQueryHelper::class );
+		$this->product_repository                   = $this->createMock( ProductRepository::class );
+		$this->product_helper                       = $this->createMock( ProductHelper::class );
+		$this->transients                           = $this->createMock( TransientsInterface::class );
+		$this->update_merchant_product_statuses_job = $this->createMock( UpdateMerchantProductStatuses::class );
 
 		$merchant_issue_table = $this->createMock( MerchantIssueTable::class );
 
