@@ -30,9 +30,6 @@ defined( 'ABSPATH' ) || exit;
  * @property MerchantStatuses $merchant_statuses
  * @property ProductRepository $product_repository
  * @property ProductHelper $product_helper
- * @property ShoppingContent\ProductStatus $product_status
- * @property ShoppingContent\ProductStatusesCustomBatchResponse $product_statuses_custom_batch_response
- * @property ShoppingContent\ProductStatusesCustomBatchResponseEntry $product_statuses_custom_batch_response_entry
  * @property ShoppingContent\ProductStatusDestinationStatus $product_status_destination_status
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
  * @group MerchantCenterStatuses
@@ -62,9 +59,6 @@ class MerchantStatusesTest extends UnitTest {
 		$this->product_meta_query_helper                    = $this->createMock( ProductMetaQueryHelper::class );
 		$this->product_repository                           = $this->createMock( ProductRepository::class );
 		$this->product_helper                               = $this->createMock( ProductHelper::class );
-		$this->product_status                               = $this->createMock( ShoppingContent\ProductStatus::class );
-		$this->product_statuses_custom_batch_response       = $this->createMock( ShoppingContent\ProductstatusesCustomBatchResponse::class );
-		$this->product_statuses_custom_batch_response_entry = $this->createMock( ShoppingContent\ProductstatusesCustomBatchResponseEntry::class );
 		$this->product_status_destination_status            = $this->createMock( ShoppingContent\ProductStatusDestinationStatus::class );
 		$this->transients                                   = $this->createMock( TransientsInterface::class );
 		$this->update_merchant_product_statuses_job         = $this->createMock( UpdateMerchantProductStatuses::class );
