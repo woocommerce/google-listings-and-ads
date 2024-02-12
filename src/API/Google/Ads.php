@@ -383,7 +383,7 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Retrieve the enhanced ads conversion status.
+	 * Retrieve the enhanced ads conversion status. Possible values are: enabled, disabled and pending
 	 *
 	 * @return string|null
 	 */
