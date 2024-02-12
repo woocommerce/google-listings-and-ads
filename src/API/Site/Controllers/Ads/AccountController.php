@@ -229,8 +229,12 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_enhanced_conversion_status_callback(): callable {
-		return function () {
-			return $this->account->get_enhanced_conversion_status();
+		return function ( Request $request ) {
+			try {
+				return $this->account->get_enhanced_conversion_status();
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
 		};
 	}
 

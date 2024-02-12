@@ -356,28 +356,38 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
-	 * @TODO: wire properly
 	 * Updates the enhanced ads conversion status.
-	 * Returns false for any failures.
 	 *
 	 * @param string $status The status value
 	 *
 	 * @return string
+	 * @throws Exception When the status is invalid.
 	 */
 	public function update_enhanced_conversion_status( string $status ): string {
-		// @TODO: Wire properly
-		return $status;
+		$status = strtolower( $status );
+		// Ensure that the option belongs to one of the predefined values.
+		if ( ! in_array( $status, [ 'enabled', 'disabled', 'pending' ], true ) ) {
+			throw new Exception( __( 'Invalid state for enhanced conversion', 'google-listings-and-ads' ), 400 );
+		}
+
+		$result = $this->options->update( OptionsInterface::ENHANCE_CONVERSION_STATUS, $status );
+
+		// Return the status when operation successful.
+		if ( $result ) {
+			return $status;
+		}
+
+		throw new Exception( __( 'Request could not be completed', 'google-listings-and-ads' ), 500 );
 	}
 
 	/**
-	 * @TODO: wire properly
-	 * Updates the enhanced ads conversion status. Possible values are: enabled, disabled and pending
-	 * Returns false for any failures.
+	 * Retrieve the enhanced ads conversion status. Possible values are: enabled, disabled and pending
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_enhanced_conversion_status(): string {
-		// @TODO: Wire properly
-		return 'enabled';
+	public function get_enhanced_conversion_status(): ?string {
+		$result = $this->options->get( OptionsInterface::ENHANCE_CONVERSION_STATUS, null );
+
+		return $result;
 	}
 }
