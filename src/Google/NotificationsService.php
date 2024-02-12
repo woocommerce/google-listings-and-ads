@@ -25,7 +25,9 @@ class NotificationsService implements Service {
 	public const TOPIC_COUPON_CREATED   = 'coupon.create';
 	public const TOPIC_COUPON_DELETED   = 'coupon.delete';
 	public const TOPIC_COUPON_UPDATED   = 'coupon.update';
+	public const TOPIC_SHIPPING_CREATED = 'shipping.create';
 	public const TOPIC_SHIPPING_UPDATED = 'shipping.update';
+	public const TOPIC_SHIPPING_DELETED = 'shipping.delete';
 
 	/**
 	 * The url to send the notification
