@@ -289,6 +289,6 @@ class AdsTest extends UnitTest {
 		->with( OptionsInterface::ENHANCED_CONVERSION_STATUS )
 		->willReturn( 'enabled' );
 
-		$this->assertEquals( 'enabled', $value );
+		$this->assertEquals( 'enabled', $this->ads->get_enhanced_conversion_status() );
 	}
 }
