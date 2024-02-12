@@ -23,6 +23,8 @@ const CTA = ( {
 	disableLabel = __( 'Disable', 'google-listings-and-ads' ),
 	enableLabel = __( 'Enable', 'google-listings-and-ads' ),
 	onAcceptTermsClick,
+	onEnableClick,
+	onDisableClick,
 } ) => {
 	const { updateEnhancedAdsConversionStatus, invalidateResolution } =
 		useAppDispatch();
@@ -34,7 +36,7 @@ const CTA = ( {
 
 	useEffect( () => {
 		if (
-			allowEnhancedConversions !== ENHANCED_ADS_CONVERSION_STATUS.PENDING
+			allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING
 		) {
 			invalidateResolution( 'getAcceptedCustomerDataTerms', [] );
 		}
@@ -58,7 +60,13 @@ const CTA = ( {
 		updateEnhancedAdsConversionStatus(
 			ENHANCED_ADS_CONVERSION_STATUS.DISABLED
 		);
-	}, [ updateEnhancedAdsConversionStatus, acceptedCustomerDataTerms ] );
+
+		onDisableClick?.();
+	}, [
+		updateEnhancedAdsConversionStatus,
+		acceptedCustomerDataTerms,
+		onDisableClick,
+	] );
 
 	const handleEnable = useCallback( () => {
 		if ( ! acceptedCustomerDataTerms ) {
@@ -68,7 +76,13 @@ const CTA = ( {
 		updateEnhancedAdsConversionStatus(
 			ENHANCED_ADS_CONVERSION_STATUS.ENABLED
 		);
-	}, [ updateEnhancedAdsConversionStatus, acceptedCustomerDataTerms ] );
+
+		onEnableClick?.();
+	}, [
+		updateEnhancedAdsConversionStatus,
+		acceptedCustomerDataTerms,
+		onEnableClick,
+	] );
 
 	if ( ! hasFinishedResolution ) {
 		return <Spinner />;

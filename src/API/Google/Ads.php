@@ -371,13 +371,13 @@ class Ads implements OptionsAwareInterface {
 
 	/**
 	 * @TODO: wire properly
-	 * Updates the enhanced ads conversion status.
+	 * Updates the enhanced ads conversion status. Possible values are: enabled, disabled and pending
 	 * Returns false for any failures.
 	 *
 	 * @return string
 	 */
 	public function get_enhanced_conversion_status(): string {
 		// @TODO: Wire properly
-		return 'pending';
+		return 'enabled';
 	}
 }

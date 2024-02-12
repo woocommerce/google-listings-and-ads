@@ -14,7 +14,7 @@ import CTA from '.~/components/enhanced-conversion-tracking-settings/cta';
 const EnhancedConversionFooter = ( { handleGuideFinish } ) => {
 	const { createNotice } = useDispatchCoreNotices();
 
-	const handleOnAcceptTermsClick = useCallback( () => {
+	const handleEnableOrDisableClick = useCallback( () => {
 		createNotice(
 			'info',
 			__( 'Status succesfully set', 'google-listings-and-ads' )
@@ -28,7 +28,8 @@ const EnhancedConversionFooter = ( { handleGuideFinish } ) => {
 			<div className="gla-submission-success-guide__space_holder" />
 
 			<CTA
-				onAcceptTermsClick={ handleOnAcceptTermsClick }
+				onEnableClick={ handleEnableOrDisableClick }
+				onDisableClick={ handleEnableOrDisableClick }
 				acceptTermsLabel={ __(
 					'Sign terms of service on Google Ads',
 					'google-listings-and-ads'
