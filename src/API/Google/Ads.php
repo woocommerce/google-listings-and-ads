@@ -356,9 +356,7 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
-	 * @TODO: wire properly
 	 * Updates the enhanced ads conversion status.
-	 * Returns false for any failures.
 	 *
 	 * @param string $status The status value
 	 *
