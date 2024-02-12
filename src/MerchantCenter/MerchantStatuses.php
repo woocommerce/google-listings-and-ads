@@ -609,8 +609,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			'parents'  => [],
 		];
 
-		/** @var ProductHelper $product_helper */
-		$product_helper      = $this->container->get( ProductHelper::class );
 		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
 		foreach ( $statuses as $product_status ) {
@@ -627,9 +625,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				$mc_product_status = MCStatus::EXPIRING;
 			}
 
-			$wc_product = $product_helper->get_wc_product_by_wp_post( $wc_product_id );
-			if ( ! $wc_product || 'product' !== substr( $wc_product->post_type, 0, 7 ) ) {
-				// Should never reach here since the products IDS are retrieved from postmeta.
+			$wc_product = wc_get_product( $wc_product_id );
+			if ( ! $wc_product ) {
+				// Skip if the product does not exist in WooCommerce.
 				do_action(
 					'woocommerce_gla_debug_message',
 					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $wc_product_id ),
@@ -639,9 +637,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			}
 
 			$this->product_data_lookup[ $wc_product_id ] = [
-				'name'       => get_the_title( $wc_product ),
-				'visibility' => get_post_meta( $wc_product_id, $visibility_meta_key ),
-				'parent_id'  => $wc_product->post_parent,
+				'name'       => $wc_product->get_name(),
+				'visibility' => $wc_product->get_meta( $visibility_meta_key ),
+				'parent_id'  => $wc_product->get_parent_id(),
 			];
 
 			// Products is used later for global product status statistics.
@@ -847,33 +845,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				}
 			}
 		}
+
 		ksort( $new_product_statuses );
-
-		/** @var ProductMetaQueryHelper $product_meta_query_helper */
-		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
-
-		// Get all MC statuses.
-		$current_product_statuses = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_MC_STATUS );
-
-		// Format: product_id=>status.
-		$to_insert = [];
-		// Format: status=>[product_ids].
-		$to_update = [];
-
 		foreach ( $new_product_statuses as $product_id => $new_status ) {
-			if ( ! isset( $current_product_statuses[ $product_id ] ) ) {
-				// MC status not in WC, insert.
-				$to_insert[ $product_id ] = $new_status;
-			} elseif ( $current_product_statuses[ $product_id ] !== $new_status ) {
-				// MC status not same as WC, update.
-				$to_update[ $new_status ][] = intval( $product_id );
-			}
-		}
-
-		// Insert and update changed MC Status postmeta.
-		$product_meta_query_helper->batch_insert_values( ProductMetaHandler::KEY_MC_STATUS, $to_insert );
-		foreach ( $to_update as $status => $product_ids ) {
-			$product_meta_query_helper->batch_update_values( ProductMetaHandler::KEY_MC_STATUS, $status, $product_ids );
+			$product = wc_get_product( $product_id );
+			$product->add_meta_data( ProductMetaHandler::KEY_MC_STATUS, $new_status, true );
 		}
 	}
 
