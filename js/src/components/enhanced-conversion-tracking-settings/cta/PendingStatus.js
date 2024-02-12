@@ -35,6 +35,8 @@ const PendingStatus = () => {
 
 		invalidateResolution( 'getAcceptedCustomerDataTerms', [] );
 	}
+
+	return null;
 };
 
 export default PendingStatus;
