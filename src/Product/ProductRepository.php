@@ -250,7 +250,6 @@ class ProductRepository implements Service {
 		return $this->find_ids( $args, $limit, $offset );
 	}
 
-
 	/**
 	 * Find all simple and variable product IDs regardless of MC status or visibility.
 	 *

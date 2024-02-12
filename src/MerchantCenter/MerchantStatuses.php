@@ -179,6 +179,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Check if the Merchant Center account is connected and throw an exception if it's not.
 	 *
+	 * @since x.x.x
+	 *
 	 * @throws Exception If the Merchant Center account is not connected.
 	 */
 	protected function check_mc_is_connected() {
@@ -601,7 +603,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @param array[] $statuses statuses.
 	 * @see MerchantReport::get_product_view_report
 	 */
-	public function process_product_statuses( $statuses ): void {
+	public function process_product_statuses( array $statuses ): void {
 		$this->product_statuses = [
 			'products' => [],
 			'parents'  => [],
@@ -657,6 +659,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 	/**
 	 * Update the product status statistics for a list of products statuses.
+	 *
+	 * @since x.x.x
 	 *
 	 * @param array[] $statuses statuses. See statuses format in MerchantReport::get_product_view_report.
 	 */
@@ -776,6 +780,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Calculate the total count of products in the MC using the statistics.
 	 *
+	 * @since x.x.x
+	 *
 	 * @param array $statistics
 	 *
 	 * @return int
@@ -792,6 +798,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 	/**
 	 * Handle the completion of the Merchant Center statuses fetching.
+	 *
+	 * @since x.x.x
 	 */
 	public function handle_complete_mc_statuses_fetching() {
 		$mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
