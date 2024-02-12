@@ -54,6 +54,7 @@ interface OptionsInterface {
 		self::CLAIMED_URL_HASH                          => true,
 		self::CONTACT_INFO_SETUP                        => true,
 		self::DB_VERSION                                => true,
+		self::ENHANCED_CONVERSION_STATUS                => true,
 		self::FILE_VERSION                              => true,
 		self::GOOGLE_CONNECTED                          => true,
 		self::INSTALL_TIMESTAMP                         => true,
