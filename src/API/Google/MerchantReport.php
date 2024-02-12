@@ -105,7 +105,7 @@ class MerchantReport implements OptionsAwareInterface {
 
 			}
 
-			$product_view_data['next_page'] = $response->getNextPageToken();
+			$product_view_data['next_page_token'] = $response->getNextPageToken();
 
 			return $product_view_data;
 		} catch ( GoogleException $e ) {

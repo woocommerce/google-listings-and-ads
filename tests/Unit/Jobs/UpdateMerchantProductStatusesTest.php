@@ -88,39 +88,39 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 
 							$this->assertNull( $next_page_token );
 							return [
-								'statuses'  => [
+								'statuses'        => [
 									[
 										'product_id' => 1,
 										'status'     => MCStatus::APPROVED,
 									],
 								],
-								'next_page' => 'ABC=',
+								'next_page_token' => 'ABC=',
 							];
 						}
 
 						if ( $invocation_count === 2 ) {
 							$this->assertEquals( 'ABC=', $next_page_token );
 							return [
-								'statuses'  => [
+								'statuses'        => [
 									[
 										'product_id' => 2,
 										'status'     => MCStatus::APPROVED,
 									],
 								],
-								'next_page' => 'DEF=',
+								'next_page_token' => 'DEF=',
 							];
 						}
 
 						if ( $invocation_count === 3 ) {
 							$this->assertEquals( 'DEF=', $next_page_token );
 							return [
-								'statuses'  => [
+								'statuses'        => [
 									[
 										'product_id' => 3,
 										'status'     => MCStatus::APPROVED,
 									],
 								],
-								'next_page' => null,
+								'next_page_token' => null,
 							];
 						}
 

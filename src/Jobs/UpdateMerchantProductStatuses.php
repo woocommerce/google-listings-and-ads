@@ -90,7 +90,7 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 		}
 
 		$results         = $this->merchant_report->get_product_view_report( $next_page_token );
-		$next_page_token = $results['next_page'];
+		$next_page_token = $results['next_page_token'];
 
 		$this->merchant_statuses->update_product_stats( $results['statuses'] );
 
@@ -118,7 +118,7 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	 * @return bool
 	 */
 	public function is_scheduled(): bool {
-		// We set 'args' to null so that it matches any arguments. This is because it's possible to have multiple instances of the job running with different page tokens
+		// We set 'args' to null so it matches any arguments. This is because it's possible to have multiple instances of the job running with different page tokens
 		return $this->is_running( null );
 	}
 }
