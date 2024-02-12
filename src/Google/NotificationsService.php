@@ -48,7 +48,7 @@ class NotificationsService implements Service {
 	 * https://public-api.wordpress.com/wpcom/v2/sites/{site}/partners/google/notifications
 	 *
 	 * @param string   $topic The topic to use in the notification.
-	 * @param int|null $item_id Tme item ID to notify. It can be null for topics that doesn't need Item ID
+	 * @param int|null $item_id The item ID to notify. It can be null for topics that doesn't need Item ID
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
 	public function notify( string $topic, $item_id = null ): bool {

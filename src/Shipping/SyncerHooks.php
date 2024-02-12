@@ -50,7 +50,7 @@ class SyncerHooks implements Service, Registerable {
 	/**
 	 * @var NotificationsService $notifications_service
 	 */
-	protected $notifiations_service;
+	protected $notifications_service;
 
 	/**
 	 * @var ShippingNotificationJob $shipping_notification_job
@@ -70,7 +70,7 @@ class SyncerHooks implements Service, Registerable {
 		$this->merchant_center           = $merchant_center;
 		$this->update_shipping_job       = $job_repository->get( UpdateShippingSettings::class );
 		$this->shipping_notification_job = $job_repository->get( ShippingNotificationJob::class );
-		$this->notifiations_service      = $notifications_service;
+		$this->notifications_service     = $notifications_service;
 	}
 
 	/**
@@ -144,7 +144,7 @@ class SyncerHooks implements Service, Registerable {
 			return;
 		}
 
-		if ( $this->notifiations_service->is_enabled() ) {
+		if ( $this->notifications_service->is_enabled() ) {
 			$this->shipping_notification_job->schedule();
 		} else {
 			$this->update_shipping_job->schedule();
