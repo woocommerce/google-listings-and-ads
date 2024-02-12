@@ -86,17 +86,7 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 	 * @param array $args
 	 */
 	public function schedule( array $args = [] ): void {
-		/**
-		 * Allow users to disable the notification job schedule.
-		 *
-		 * @since x.x.x
-		 *
-		 * @param bool $value The current filter value. By default, it is the result of `$this->can_schedule` function.
-		 * @param array $args The arguments for the schedule function with the item id and the topic.
-		 */
-		$can_schedule = apply_filters( 'woocommerce_gla_product_notification_job_can_schedule', $this->can_schedule( [ $args ] ), $args );
-
-		if ( $can_schedule ) {
+		if ( $this->can_schedule( $args ) ) {
 			$this->action_scheduler->schedule_immediate(
 				$this->get_process_item_hook(),
 				[ $args ]
@@ -149,5 +139,24 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		} else {
 			return $this->product_helper->should_trigger_update_notification( $product );
 		}
+	}
+
+	/**
+	 * Can the job be scheduled.
+	 *
+	 * @param array|null $args
+	 *
+	 * @return bool Returns true if the job can be scheduled.
+	 */
+	public function can_schedule( $args = [] ): bool {
+		/**
+		 * Allow users to disable the notification job schedule.
+		 *
+		 * @since x.x.x
+		 *
+		 * @param bool $value The current filter value. By default, it is the result of `$this->can_schedule` function.
+		 * @param array $args The arguments for the schedule function with the item id and the topic.
+		 */
+		return apply_filters( 'woocommerce_gla_product_notification_job_can_schedule', $this->notifications_service->is_enabled() && parent::can_schedule( $args ), $args );
 	}
 }
