@@ -282,4 +282,13 @@ class AdsTest extends UnitTest {
 			->willReturn( true );
 		$this->assertTrue( $this->ads->update_billing_url( self::TEST_BILLING_URL ) );
 	}
+
+	public function test_get_enhanced_conversion_status() {
+		$value = $this->options->expects( $this->once() )
+		->method( 'get' )
+		->with( OptionsInterface::ENHANCED_CONVERSION_STATUS )
+		->willReturn( 'enabled' );
+
+		$this->assertEquals( 'enabled', $value );
+	}
 }
