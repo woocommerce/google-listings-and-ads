@@ -22,13 +22,15 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var AccountController $controller */
 	protected $controller;
 
-	protected const ROUTE_ACCOUNTS           = '/wc/gla/ads/accounts';
-	protected const ROUTE_CONNECTION         = '/wc/gla/ads/connection';
-	protected const ROUTE_BILLING_STATUS     = '/wc/gla/ads/billing-status';
-	protected const TEST_ACCOUNT_ID          = 1234567890;
-	protected const TEST_BILLING_URL         = 'https://domain.test/billing/setup/';
-	protected const TEST_BILLING_STATUS      = 'pending';
-	protected const TEST_ACCOUNTS            = [
+	protected const ROUTE_ACCOUNTS            = '/wc/gla/ads/accounts';
+	protected const ROUTE_CONNECTION          = '/wc/gla/ads/connection';
+	protected const ROUTE_BILLING_STATUS      = '/wc/gla/ads/billing-status';
+	protected const ROUTE_ACCEPTED_DATA_TERMS = '/wc/gla/ads/accepted-customer-data-terms';
+	protected const ROUTE_UPDATED_EC_STATUS   = '/wc/gla/ads/update-enhanced-conversion-status';
+	protected const TEST_ACCOUNT_ID           = 1234567890;
+	protected const TEST_BILLING_URL          = 'https://domain.test/billing/setup/';
+	protected const TEST_BILLING_STATUS       = 'pending';
+	protected const TEST_ACCOUNTS             = [
 		[
 			'id'   => self::TEST_ACCOUNT_ID,
 			'name' => 'Ads Account',
@@ -213,5 +215,27 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( self::TEST_BILLING_STATUS_DATA, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_accepted_customer_data_terms() {
+		$expected_response = [ 'status' => 'pending' ];
+		$this->account->expects( $this->once() )
+		->method( 'get_accepted_customer_data_terms' )
+		->willReturn( $expected_response );
+
+		$response = $this->do_request( self::ROUTE_ACCEPTED_DATA_TERMS, 'GET' );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( $expected_response, $response->get_data() );
+	}
+
+	public function test_update_enhanced_conversion_status() {
+		$expected_response = [ 'status' => 'pending' ];
+		$this->account->expects( $this->once() )
+		->method( 'update_enhanced_conversion_status' )
+		->willReturn( $expected_response );
+
+		$response = $this->do_request( self::ROUTE_UPDATED_EC_STATUS, 'POST', [ 'status' => 'pending' ] );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( $expected_response, $response->get_data() );
 	}
 }
