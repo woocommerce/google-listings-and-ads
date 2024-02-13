@@ -370,7 +370,7 @@ class Ads implements OptionsAwareInterface {
 			throw new Exception( __( 'Invalid state for enhanced conversion', 'google-listings-and-ads' ), 400 );
 		}
 
-		$result = $this->options->update( OptionsInterface::ENHANCE_CONVERSION_STATUS, $status );
+		$result = $this->options->update( OptionsInterface::ENHANCED_CONVERSION_STATUS, $status );
 
 		// Return the status when operation successful.
 		if ( $result ) {
@@ -386,7 +386,7 @@ class Ads implements OptionsAwareInterface {
 	 * @return string|null
 	 */
 	public function get_enhanced_conversion_status(): ?string {
-		$result = $this->options->get( OptionsInterface::ENHANCE_CONVERSION_STATUS, null );
+		$result = $this->options->get( OptionsInterface::ENHANCED_CONVERSION_STATUS, null );
 
 		return $result;
 	}

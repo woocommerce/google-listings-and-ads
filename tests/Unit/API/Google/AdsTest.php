@@ -282,4 +282,45 @@ class AdsTest extends UnitTest {
 			->willReturn( true );
 		$this->assertTrue( $this->ads->update_billing_url( self::TEST_BILLING_URL ) );
 	}
+
+	public function test_get_enhanced_conversion_status() {
+		$value = $this->options->expects( $this->once() )
+		->method( 'get' )
+		->with( OptionsInterface::ENHANCED_CONVERSION_STATUS )
+		->willReturn( 'enabled' );
+
+		$this->assertEquals( 'enabled', $this->ads->get_enhanced_conversion_status() );
+	}
+
+	public function test_update_enhanced_conversion_status_with_invalid_status_throws_exception() {
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage('Invalid state for enhanced conversion');
+
+		$this->ads->update_enhanced_conversion_status( 'random_status' );
+	}
+
+	public function test_update_enhanced_conversion_status_with_failed_update_throws_exception() {
+		$this->options->expects( $this->once() )
+		->method( 'update' )
+		->with( OptionsInterface::ENHANCED_CONVERSION_STATUS )
+		->willReturn( false );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage('Request could not be completed');
+
+		// Call with valid status.
+		$this->ads->update_enhanced_conversion_status( 'enabled' );
+	}
+
+	public function test_update_enhanced_conversion_status_with_valid_status_returns_status() {
+		$this->options->expects( $this->once() )
+		->method( 'update' )
+		->with( OptionsInterface::ENHANCED_CONVERSION_STATUS )
+		->willReturn( true );
+
+		// Call with valid status.
+		$status = $this->ads->update_enhanced_conversion_status( 'pending' );
+
+		$this->assertEquals( 'pending', $status );
+	}
 }

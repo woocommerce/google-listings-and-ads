@@ -23,7 +23,7 @@ interface OptionsInterface {
 	public const CONTACT_INFO_SETUP                        = 'contact_info_setup';
 	public const DELAYED_ACTIVATE                          = 'delayed_activate';
 	public const DB_VERSION                                = 'db_version';
-	public const ENHANCE_CONVERSION_STATUS                 = 'enhanced_conversion_status';
+	public const ENHANCED_CONVERSION_STATUS                = 'enhanced_conversion_status';
 	public const FILE_VERSION                              = 'file_version';
 	public const GOOGLE_CONNECTED                          = 'google_connected';
 	public const INSTALL_TIMESTAMP                         = 'install_timestamp';
@@ -54,6 +54,7 @@ interface OptionsInterface {
 		self::CLAIMED_URL_HASH                          => true,
 		self::CONTACT_INFO_SETUP                        => true,
 		self::DB_VERSION                                => true,
+		self::ENHANCED_CONVERSION_STATUS                => true,
 		self::FILE_VERSION                              => true,
 		self::GOOGLE_CONNECTED                          => true,
 		self::INSTALL_TIMESTAMP                         => true,
