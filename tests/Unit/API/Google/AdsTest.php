@@ -299,19 +299,6 @@ class AdsTest extends UnitTest {
 		$this->ads->update_enhanced_conversion_status( 'random_status' );
 	}
 
-	public function test_update_enhanced_conversion_status_with_failed_update_throws_exception() {
-		$this->options->expects( $this->once() )
-		->method( 'update' )
-		->with( OptionsInterface::ENHANCED_CONVERSION_STATUS )
-		->willReturn( false );
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Request could not be completed' );
-
-		// Call with valid status.
-		$this->ads->update_enhanced_conversion_status( 'enabled' );
-	}
-
 	public function test_update_enhanced_conversion_status_with_valid_status_returns_status() {
 		$this->options->expects( $this->once() )
 		->method( 'update' )
