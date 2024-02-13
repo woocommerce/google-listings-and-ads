@@ -8,7 +8,6 @@ import createSelector from 'rememo';
  * Internal dependencies
  */
 import { STORE_KEY } from './constants';
-import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { getReportQuery, getReportKey, getPerformanceQuery } from './utils';
 
 /**

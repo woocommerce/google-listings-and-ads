@@ -38,8 +38,6 @@ const useAutoCheckEnhancedConversionTOS = ( onStatusAccepted = noop ) => {
 
 		try {
 			await onStatusAcceptedRef.current();
-
-			console.log( tosStatus );
 			receiveAcceptedTerms( tosStatus );
 		} catch ( e ) {
 			createNotice(

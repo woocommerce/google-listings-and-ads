@@ -15,17 +15,9 @@ jest.mock( '.~/hooks/useAllowEnhancedConversions', () => ( {
 	default: jest.fn().mockName( 'useAllowEnhancedConversions' ),
 } ) );
 
-jest.mock( '.~/hooks/usePolling', () => ( {
+jest.mock( '.~/hooks/useAutoCheckEnhancedConversionTOS', () => ( {
 	__esModule: true,
-	default: jest
-		.fn()
-		.mockName( 'usePolling' )
-		.mockImplementation( () => {
-			return {
-				start: () => {},
-				data: { status: null },
-			};
-		} ),
+	default: jest.fn().mockName( 'useAutoCheckEnhancedConversionTOS' ),
 } ) );
 
 /**
@@ -39,6 +31,7 @@ import '@testing-library/jest-dom';
  */
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import CTA from './index';
 
 describe( 'Enhanced Conversion CTA', () => {
@@ -87,7 +80,7 @@ describe( 'Enhanced Conversion CTA', () => {
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
-			allowEnhancedConversions: 'disabled',
+			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.DISABLED,
 			isResolving: false,
 		} );
 
@@ -103,7 +96,7 @@ describe( 'Enhanced Conversion CTA', () => {
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
-			allowEnhancedConversions: 'enabled',
+			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
 			isResolving: false,
 		} );
 
@@ -113,13 +106,13 @@ describe( 'Enhanced Conversion CTA', () => {
 
 	test( 'Render a spinner when the status is set to pending', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
-			acceptedCustomerDataTerms: true,
+			acceptedCustomerDataTerms: false,
 			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
-			allowEnhancedConversions: 'pending',
+			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.PENDING,
 			isResolving: false,
 		} );
 
