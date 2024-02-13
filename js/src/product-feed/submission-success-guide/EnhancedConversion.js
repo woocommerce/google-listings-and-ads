@@ -27,11 +27,11 @@ const EnhancedConversion = () => {
 			<p>
 				{ createInterpolateElement(
 					__(
-						'Enhance your conversion tracking accuracy and empower your bidding strategy with our latest feature: <b>Enhanced Conversion Tracking</b>. This feature seamlessly integrates with your existing conversion tags, ensuring the secure and privacy-conscious transmission of conversion data from your website to Google',
+						'Enhance your conversion tracking accuracy and empower your bidding strategy with our latest feature: <strong>Enhanced Conversion Tracking</strong>. This feature seamlessly integrates with your existing conversion tags, ensuring the secure and privacy-conscious transmission of conversion data from your website to Google.',
 						'google-listings-and-ads'
 					),
 					{
-						b: <b />,
+						strong: <strong />,
 					}
 				) }
 			</p>

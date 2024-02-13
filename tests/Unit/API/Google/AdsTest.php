@@ -294,7 +294,7 @@ class AdsTest extends UnitTest {
 
 	public function test_update_enhanced_conversion_status_with_invalid_status_throws_exception() {
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage('Invalid state for enhanced conversion');
+		$this->expectExceptionMessage( 'Invalid state for enhanced conversion' );
 
 		$this->ads->update_enhanced_conversion_status( 'random_status' );
 	}
@@ -306,7 +306,7 @@ class AdsTest extends UnitTest {
 		->willReturn( false );
 
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage('Request could not be completed');
+		$this->expectExceptionMessage( 'Request could not be completed' );
 
 		// Call with valid status.
 		$this->ads->update_enhanced_conversion_status( 'enabled' );
