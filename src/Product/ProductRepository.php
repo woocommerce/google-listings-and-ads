@@ -261,11 +261,10 @@ class ProductRepository implements Service {
 	 * @return int[] Array of WooCommerce product IDs
 	 */
 	public function find_all_product_ids( int $limit = -1, int $offset = 0 ): array {
-		$args['return'] = 'ids';
-
 		$args = [
-			'type'   => array_diff( ProductSyncer::get_supported_product_types(), [ 'variation' ] ),
 			'status' => 'publish',
+			'return' => 'ids',
+			'type'   => 'any',
 		];
 
 		return $this->find_ids( $args, $limit, $offset );
@@ -339,6 +338,11 @@ class ProductRepository implements Service {
 		// only include supported product types
 		if ( empty( $args['type'] ) ) {
 			$args['type'] = ProductSyncer::get_supported_product_types();
+		}
+
+		// It'll fetch all products with the post_type of 'product', excluding variations.
+		if ( $args['type'] === 'any' ) {
+			unset( $args['type'] );
 		}
 
 		// use no ordering unless specified in arguments. overrides the default WooCommerce query args
