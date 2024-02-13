@@ -22,6 +22,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use DateTime;
 use Exception;
 
@@ -41,8 +44,9 @@ use Exception;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
-class MerchantStatuses implements Service, ContainerAwareInterface {
+class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAwareInterface {
 
+	use OptionsAwareTrait;
 	use ContainerAwareTrait;
 	use PluginHelper;
 
@@ -174,6 +178,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	public function clear_cache(): void {
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
+	}
+
+	/**
+	 * Delete the intermediate product status count data.
+	 *
+	 * @since x.x.x
+	 */
+	public function delete_product_status_count_intermediate_data(): void {
+		$this->options->delete( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
 	}
 
 	/**
@@ -671,7 +684,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		// Update each product's mc_status and then update the global statistics.
 		$this->update_products_meta_with_mc_status();
-		$this->update_mc_status_statistics();
+		$this->update_intermediate_product_statistics();
 	}
 
 	/**
@@ -691,7 +704,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Sum the synced product status statistics. It will group
+	 * Sum and update the intermediate product status statistics. It will group
 	 * the variations for the same parent.
 	 *
 	 * For the case that one variation is approved and the other disapproved:
@@ -702,7 +715,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 *
 	 * @return array Product status statistics.
 	 */
-	protected function sum_synced_product_statistics(): array {
+	protected function update_intermediate_product_statistics(): array {
 		$product_statistics = [
 			MCStatus::APPROVED           => 0,
 			MCStatus::PARTIALLY_APPROVED => 0,
@@ -713,9 +726,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		];
 
 		// If the transient is set, use it to sum the total quantity.
-		$product_statistics_transient = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
-		if ( $product_statistics_transient ) {
-			$product_statistics = $product_statistics_transient['statistics'];
+		$product_statistics_intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		if ( $product_statistics_intermediate_data ) {
+			$product_statistics = $product_statistics_intermediate_data;
 		}
 
 		$product_statistics_priority = [
@@ -749,32 +762,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$product_statistics[ $parent_status ] += 1;
 		}
 
+		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $product_statistics );
+
 		return $product_statistics;
-	}
-
-	/**
-	 * Calculate the product status statistics and update the transient.
-	 */
-	protected function update_mc_status_statistics() {
-		$product_statistics = $this->sum_synced_product_statistics();
-
-		/**
-		 * The loading status will be updated when all the statuses are fetched.
-		 *
-		 * @see Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses::process_items
-		 */
-		$this->mc_statuses = [
-			'timestamp'  => $this->cache_created_time->getTimestamp(),
-			'statistics' => $product_statistics,
-			'loading'    => true,
-		];
-
-		// Update the cached values
-		$this->container->get( TransientsInterface::class )->set(
-			Transients::MC_STATUSES,
-			$this->mc_statuses,
-			$this->get_status_lifetime()
-		);
 	}
 
 	/**
@@ -802,24 +792,31 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @since x.x.x
 	 */
 	public function handle_complete_mc_statuses_fetching() {
-		$mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+		$intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
 
-		if ( $mc_statuses ) {
-			$total_synced_products = $this->calculate_total_synced_product_statistics( $mc_statuses['statistics'] );
+		if ( $intermediate_data ) {
+
+			$total_synced_products = $this->calculate_total_synced_product_statistics( $intermediate_data );
 
 			/** @var ProductRepository $product_repository */
-			$product_repository                                = $this->container->get( ProductRepository::class );
-			$mc_statuses['statistics'][ MCStatus::NOT_SYNCED ] = count(
+			$product_repository                        = $this->container->get( ProductRepository::class );
+			$intermediate_data[ MCStatus::NOT_SYNCED ] = count(
 				$product_repository->find_all_product_ids()
 			) - $total_synced_products;
 
-			$mc_statuses['loading'] = false;
+			$mc_statuses = [
+				'timestamp'  => $this->cache_created_time->getTimestamp(),
+				'statistics' => $intermediate_data,
+				'loading'    => false,
+			];
 
 			$this->container->get( TransientsInterface::class )->set(
 				Transients::MC_STATUSES,
 				$mc_statuses,
 				$this->get_status_lifetime()
 			);
+
+			$this->delete_product_status_count_intermediate_data();
 		}
 	}
 
