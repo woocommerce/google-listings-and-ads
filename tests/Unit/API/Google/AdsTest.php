@@ -306,7 +306,7 @@ class AdsTest extends UnitTest {
 		->willReturn( false );
 
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage('Request could not be completed');
+		$this->expectExceptionMessage( 'Request could not be completed' );
 
 		// Call with valid status.
 		$this->ads->update_enhanced_conversion_status( 'enabled' );
