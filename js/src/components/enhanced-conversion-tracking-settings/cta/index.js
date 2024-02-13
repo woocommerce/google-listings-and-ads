@@ -88,6 +88,18 @@ const CTA = ( {
 		return <Spinner />;
 	}
 
+	if (
+		! acceptedCustomerDataTerms &&
+		allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING
+	) {
+		return (
+			<>
+				<AppButton isSecondary disabled loading></AppButton>
+				<PendingStatus />
+			</>
+		);
+	}
+
 	if ( ! acceptedCustomerDataTerms ) {
 		return (
 			<AppButton isPrimary onClick={ handleTOS }>
@@ -104,22 +116,15 @@ const CTA = ( {
 		);
 	}
 
+	// User has accepted TOS but has not enabled enhanced tracking.
 	if (
-		allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.DISABLED
+		allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.DISABLED ||
+		acceptedCustomerDataTerms
 	) {
 		return (
 			<AppButton isPrimary onClick={ handleEnable }>
 				{ enableLabel }
 			</AppButton>
-		);
-	}
-
-	if ( allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING ) {
-		return (
-			<>
-				<AppButton isSecondary disabled loading></AppButton>
-				<PendingStatus />
-			</>
 		);
 	}
 

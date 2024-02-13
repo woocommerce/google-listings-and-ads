@@ -19,7 +19,12 @@ import GuidePageContent, {
 } from '.~/components/guide-page-content';
 import AppButton from '.~/components/app-button';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
-import { glaData, GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
+import {
+	glaData,
+	GUIDE_NAMES,
+	LOCAL_STORAGE_KEYS,
+	GOOGLE_ADS_ACCOUNT_STATUS,
+} from '.~/constants';
 import localStorage from '.~/utils/localStorage';
 import { getProductFeedUrl } from '.~/utils/urls';
 import wooLogoURL from './woocommerce-logo.svg';
@@ -27,7 +32,7 @@ import googleLogoURL from '.~/images/google-logo.svg';
 import { recordGlaEvent } from '.~/utils/tracks';
 import EnhancedConversion from './EnhancedConversion';
 import EnhancedConversionFooter from './EnhancedConversionFooter';
-import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import './index.scss';
 
 const EVENT_NAME = 'gla_modal_closed';
@@ -133,9 +138,7 @@ const PAGES = {
  */
 const SubmissionSuccessGuide = () => {
 	const { data: campaigns } = useAdsCampaigns();
-
-	// side effects
-	useAcceptedCustomerDataTerms();
+	const { googleAdsAccount, hasFinishedResolution } = useGoogleAdsAccount();
 
 	useEffect( () => {
 		recordGlaEvent( 'gla_modal_open', {
@@ -153,10 +156,15 @@ const SubmissionSuccessGuide = () => {
 	// @todo: Review whether we need that function since we have moved the buttons to be per page now.
 	const renderFinish = useCallback( () => null, [] );
 
-	const showEnhancedConversionTrackingScreen = glaData.adsSetupComplete;
+	// @todo: Review condition to display EC tracking screen. How do we get paid campaigns?
+	const showEnhancedConversionTrackingScreen =
+		// campaigns?.length &&
+		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED &&
+		hasFinishedResolution;
 
 	// @todo: Review logic to display credits screen. How do we get the paid campaigns?
-	const showGoogleAdsCreditsScreen = ! campaigns?.length;
+	const showGoogleAdsCreditsScreen =
+		! campaigns?.length && hasFinishedResolution;
 
 	if ( showEnhancedConversionTrackingScreen ) {
 		// Add conversion screen if ads setup is complete

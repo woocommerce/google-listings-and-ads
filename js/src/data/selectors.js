@@ -419,8 +419,5 @@ export const getAcceptedCustomerDataTerms = ( state ) => {
  * @return {string} Possible values are 'pending' | 'enabled' | 'disabled'
  */
 export const getAllowEnhancedConversions = ( state ) => {
-	return (
-		state.ads.conversion_tracking_setting.allow_enhanced_conversions ||
-		ENHANCED_ADS_CONVERSION_STATUS.PENDING
-	);
+	return state.ads.conversion_tracking_setting.allow_enhanced_conversions;
 };

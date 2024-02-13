@@ -42,7 +42,7 @@ const EnhancedConversion = () => {
 				/>
 			) }
 
-			{ hasAcceptedTerms === true && (
+			{ hasAcceptedTerms === true && hasFinishedResolution && (
 				<p>
 					{ __(
 						'Clicking confirm will enable Enhanced Conversions on your account and update your tags accordingly. This feature can also be managed from Google Listings & Ads > Settings',
@@ -51,7 +51,7 @@ const EnhancedConversion = () => {
 				</p>
 			) }
 
-			{ hasAcceptedTerms === false && (
+			{ hasAcceptedTerms === false && hasFinishedResolution && (
 				<p>
 					{ __(
 						'Activating it is easy – just agree to the terms of service on Google Ads and we will make the tagging changes needed for you. This feature can also be managed from Google Listings & Ads > Settings',
