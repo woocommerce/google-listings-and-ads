@@ -27,6 +27,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_BILLING_STATUS      = '/wc/gla/ads/billing-status';
 	protected const ROUTE_ACCEPTED_DATA_TERMS = '/wc/gla/ads/accepted-customer-data-terms';
 	protected const ROUTE_UPDATED_EC_STATUS   = '/wc/gla/ads/update-enhanced-conversion-status';
+	protected const ROUTE_GET_EC_STATUS       = '/wc/gla/ads/allow-enhance-conversions';
 	protected const TEST_ACCOUNT_ID           = 1234567890;
 	protected const TEST_BILLING_URL          = 'https://domain.test/billing/setup/';
 	protected const TEST_BILLING_STATUS       = 'pending';
@@ -235,6 +236,17 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		->willReturn( $expected_response );
 
 		$response = $this->do_request( self::ROUTE_UPDATED_EC_STATUS, 'POST', [ 'status' => 'pending' ] );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( $expected_response, $response->get_data() );
+	}
+
+	public function test_get_enhanced_conversion_status() {
+		$expected_response = [ 'status' => 'pending' ];
+		$this->account->expects( $this->once() )
+		->method( 'get_enhanced_conversion_status' )
+		->willReturn( $expected_response );
+
+		$response = $this->do_request( self::ROUTE_GET_EC_STATUS, 'GET' );
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( $expected_response, $response->get_data() );
 	}
