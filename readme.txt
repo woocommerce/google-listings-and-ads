@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.4
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.5.16
+Stable tag: 2.5.17
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.17 - 2024-02-07 =
+* Dev - Add manual QIT workflow.
+* Dev - Upload coverage report for JS unit tests to codecov.
+* Fix - Only sync selected categories as product type.
+* Fix - Prevent notifications from sending request to Google API when disconnected.
+* Tweak - WC 8.6 compatibility.
+
 = 2.5.16 - 2024-01-30 =
 * Add - Include connected accounts in tracks from the backend.
 * Add - Include plugin version, Google Merchant Center account ID, and Google Ads account ID in all frontend tracking events.
@@ -124,12 +131,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - Update link for developer.woo.com.
 * Tweak - WC 8.5 compatibility.
 * Update - Upgrade google/apiclient for PHP 8.3 compatibility.
-
-= 2.5.14 - 2023-12-18 =
-* Dev - Include PHP 8.3 in tested versions for PHPunit.
-* Fix - Item price in purchase event.
-* Tweak - Track Budgets and Audience in Onboarding.
-* Tweak - WC 8.4 compatibility.
-* Update - Change to require Google Ads connection during the onboarding.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

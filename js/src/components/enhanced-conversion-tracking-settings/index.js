@@ -16,7 +16,7 @@ import CTA from './cta';
 const DESCRIPTION = (
 	<p>
 		{ __(
-			'Improve your conversion tracking accuracy and unlock more powerful bidding.This feature works alongside your existing conversion tags, sending secure, privacy-friendly conversion data from your website to Google',
+			'Improve your conversion tracking accuracy and unlock more powerful bidding. This feature works alongside your existing conversion tags, sending secure, privacy-friendly conversion data from your website to Google.',
 			'google-listings-and-ads'
 		) }
 	</p>
@@ -40,7 +40,7 @@ const EnhancedConversionTrackingSettings = () => {
 	}
 
 	return (
-		<Section title={ TITLE } description={ <div>{ DESCRIPTION }</div> }>
+		<Section title={ TITLE } description={ DESCRIPTION }>
 			{ ! hasFinishedResolution && <SpinnerCard /> }
 
 			{ hasFinishedResolution && (

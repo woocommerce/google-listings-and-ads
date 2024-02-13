@@ -90,7 +90,7 @@ jobs:
         run: XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover=tests/php-coverage/report.xml
 
       - if: env.generate_coverage == 'true'
-        name: PHP unit coverage report
+        name: Upload PHP unit coverage report
         uses: codecov/codecov-action@v3
         with:
           files: tests/php-coverage/report.xml

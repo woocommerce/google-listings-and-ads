@@ -8,6 +8,7 @@ import createSelector from 'rememo';
  * Internal dependencies
  */
 import { STORE_KEY } from './constants';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { getReportQuery, getReportKey, getPerformanceQuery } from './utils';
 
 /**
@@ -415,8 +416,11 @@ export const getAcceptedCustomerDataTerms = ( state ) => {
  * Return whether the user allowed enhanced conversion tracking.
  *
  * @param {Object} state The state
- * @return {boolean} TRUE if the user allowed enhanced conversion tracking.
+ * @return {string} Possible values are 'pending' | 'enabled' | 'disabled'
  */
 export const getAllowEnhancedConversions = ( state ) => {
-	return state.ads.conversion_tracking_setting.allow_enhanced_conversions;
+	return (
+		state.ads.conversion_tracking_setting.allow_enhanced_conversions ||
+		ENHANCED_ADS_CONVERSION_STATUS.PENDING
+	);
 };

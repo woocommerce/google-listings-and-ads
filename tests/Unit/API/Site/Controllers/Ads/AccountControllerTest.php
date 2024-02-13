@@ -40,29 +40,29 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			'name' => 'Other Account',
 		],
 	];
-	protected const TEST_NO_ACCOUNTS         = [];
-	protected const TEST_ACCOUNT_CREATE_DATA = [
+	protected const TEST_NO_ACCOUNTS          = [];
+	protected const TEST_ACCOUNT_CREATE_DATA  = [
 		'id'          => self::TEST_ACCOUNT_ID,
 		'billing_url' => self::TEST_BILLING_URL,
 	];
-	protected const TEST_ACCOUNT_LINK_ARGS   = [ 'id' => self::TEST_ACCOUNT_ID ];
-	protected const TEST_ACCOUNT_LINK_DATA   = [
+	protected const TEST_ACCOUNT_LINK_ARGS    = [ 'id' => self::TEST_ACCOUNT_ID ];
+	protected const TEST_ACCOUNT_LINK_DATA    = [
 		'id'          => self::TEST_ACCOUNT_ID,
 		'billing_url' => null,
 	];
-	protected const TEST_CONNECTED_DATA      = [
+	protected const TEST_CONNECTED_DATA       = [
 		'id'       => self::TEST_ACCOUNT_ID,
 		'currency' => 'EUR',
 		'symbol'   => '€',
 		'status'   => 'connected',
 	];
-	protected const TEST_DISCONNECTED_DATA   = [
+	protected const TEST_DISCONNECTED_DATA    = [
 		'id'       => 0,
 		'currency' => null,
 		'symbol'   => '€',
 		'status'   => 'disconnected',
 	];
-	protected const TEST_BILLING_STATUS_DATA = [
+	protected const TEST_BILLING_STATUS_DATA  = [
 		'status'      => self::TEST_BILLING_STATUS,
 		'billing_url' => self::TEST_BILLING_URL,
 	];
