@@ -37,7 +37,7 @@ interface OptionsInterface {
 	public const SITE_VERIFICATION                         = 'site_verification';
 	public const SYNCABLE_PRODUCTS_COUNT                   = 'syncable_products_count';
 	public const SYNCABLE_PRODUCTS_COUNT_INTERMEDIATE_DATA = 'syncable_products_count_intermediate_data';
-	public const PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  = 'products_statuses_count_intermediate_data';
+	public const PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA  = 'product_statuses_count_intermediate_data';
 	public const TARGET_AUDIENCE                           = 'target_audience';
 	public const TOURS                                     = 'tours';
 	public const UPDATE_ALL_PRODUCTS_LAST_SYNC             = 'update_all_products_last_sync';

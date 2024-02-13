@@ -185,7 +185,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 *
 	 * @since x.x.x
 	 */
-	public function delete_product_status_count_intermediate_data(): void {
+	public function delete_product_statuses_count_intermediate_data(): void {
 		$this->options->delete( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
 	}
 
@@ -725,7 +725,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			MCStatus::NOT_SYNCED         => 0,
 		];
 
-		// If the transient is set, use it to sum the total quantity.
+		// If the option is set, use it to sum the total quantity.
 		$product_statistics_intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
 		if ( $product_statistics_intermediate_data ) {
 			$product_statistics = $product_statistics_intermediate_data;
@@ -816,7 +816,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				$this->get_status_lifetime()
 			);
 
-			$this->delete_product_status_count_intermediate_data();
+			$this->delete_product_statuses_count_intermediate_data();
 		}
 	}
 
