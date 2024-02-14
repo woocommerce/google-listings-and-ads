@@ -63,7 +63,13 @@ class ShippingNotificationJob extends AbstractActionSchedulerJob implements JobI
 	 * @param array $args Arguments with the item id and the topic
 	 */
 	protected function process_items( array $args ): void {
-		$this->notifications_service->notify( $this->topic );
+		if ( ! isset( $args[1] ) ) {
+			return;
+		}
+
+		$item  = $args[0];
+		$topic = $args[1];
+		$this->notifications_service->notify( $topic, $item );
 	}
 
 	/**

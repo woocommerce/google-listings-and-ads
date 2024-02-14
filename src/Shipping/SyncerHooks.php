@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ShippingNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use WC_Data;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -31,6 +32,13 @@ class SyncerHooks implements Service, Registerable {
 	 * @var bool
 	 */
 	protected $already_scheduled = false;
+
+	/**
+	 * This property is used to flag shipping status after save for being used in the notifications.
+	 *
+	 * @var bool
+	 */
+	protected $has_created_shipping = false;
 
 	/**
 	 * @var GoogleSettings
@@ -86,18 +94,37 @@ class SyncerHooks implements Service, Registerable {
 			$this->handle_update_shipping_settings();
 		};
 
+		$flag_zone = function ( WC_Data $instance ) {
+			$this->has_created_shipping = ! (bool) $instance->get_id();
+		};
+
+		$delete_zone = function ( int $id ) {
+			$this->handle_update_shipping_settings( NotificationsService::TOPIC_SHIPPING_DELETED, $id );
+		};
+
+		$zone_saved = function ( WC_Data $instance  ) {
+			$this->handle_update_shipping_settings( $this->has_created_shipping ? NotificationsService::TOPIC_SHIPPING_CREATED : NotificationsService::TOPIC_SHIPPING_UPDATED, $instance->get_id() );
+		};
+
+		$update_method = function ( int $id, $method, $zone_id  ) {
+			$this->handle_update_shipping_settings( NotificationsService::TOPIC_SHIPPING_UPDATED, $zone_id );
+		};
+
 		// After a shipping zone object is saved to database.
-		add_action( 'woocommerce_after_shipping_zone_object_save', $update_settings, 90 );
+		add_action( 'woocommerce_after_shipping_zone_object_save', $zone_saved, 90, 1 );
+
+		// Right before a shipping zone object is saved to database.
+		add_action( 'woocommerce_before_shipping_zone_object_save', $flag_zone, 90, 1 );
 
 		// After a shipping zone is deleted.
-		add_action( 'woocommerce_delete_shipping_zone', $update_settings, 90 );
+		add_action( 'woocommerce_delete_shipping_zone', $delete_zone, 90, 1 );
 
 		// After a shipping method is added to or deleted from a shipping zone.
-		add_action( 'woocommerce_shipping_zone_method_added', $update_settings, 90 );
-		add_action( 'woocommerce_shipping_zone_method_deleted', $update_settings, 90 );
+		add_action( 'woocommerce_shipping_zone_method_added', $update_method, 90, 3 );
+		add_action( 'woocommerce_shipping_zone_method_deleted', $update_method, 90, 3 );
 
 		// After a shipping method is enabled or disabled.
-		add_action( 'woocommerce_shipping_zone_method_status_toggled', $update_settings, 90 );
+		add_action( 'woocommerce_shipping_zone_method_status_toggled', $update_method, 90, 3 );
 
 		// After a shipping class is updated/deleted.
 		add_action( 'woocommerce_shipping_classes_save_class', $update_settings, 90 );
@@ -138,18 +165,19 @@ class SyncerHooks implements Service, Registerable {
 	 *
 	 * @return void
 	 */
-	protected function handle_update_shipping_settings() {
+	protected function handle_update_shipping_settings( $topic = NotificationsService::TOPIC_SHIPPING_UPDATED, $item_id = null) {
 		// Bail if an event is already scheduled in the current request
 		if ( $this->already_scheduled ) {
 			return;
 		}
 
 		if ( $this->notifications_service->is_enabled() ) {
-			$this->shipping_notification_job->schedule();
+			$this->shipping_notification_job->schedule( [ $item_id, $topic ] );
 		} else {
 			$this->update_shipping_job->schedule();
 		}
 
+		$this->has_created_shipping = false;
 		$this->already_scheduled = true;
 	}
 }
