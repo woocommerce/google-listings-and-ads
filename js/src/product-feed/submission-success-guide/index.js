@@ -24,6 +24,7 @@ import {
 	GUIDE_NAMES,
 	LOCAL_STORAGE_KEYS,
 	GOOGLE_ADS_ACCOUNT_STATUS,
+	CAMPAIGN_TYPE_PMAX,
 } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
 import { getProductFeedUrl } from '.~/utils/urls';
@@ -140,6 +141,10 @@ const SubmissionSuccessGuide = () => {
 	const { data: campaigns } = useAdsCampaigns();
 	const { googleAdsAccount, hasFinishedResolution } = useGoogleAdsAccount();
 
+	const pmaxCampaigns = campaigns?.filter(
+		( { type } ) => type === CAMPAIGN_TYPE_PMAX
+	);
+
 	useEffect( () => {
 		recordGlaEvent( 'gla_modal_open', {
 			context: GUIDE_NAMES.SUBMISSION_SUCCESS,
@@ -156,18 +161,15 @@ const SubmissionSuccessGuide = () => {
 	// @todo: Review whether we need that function since we have moved the buttons to be per page now.
 	const renderFinish = useCallback( () => null, [] );
 
-	// @todo: Review condition to display EC tracking screen. How do we get paid campaigns?
 	const showEnhancedConversionTrackingScreen =
-		// campaigns?.length &&
+		pmaxCampaigns?.length &&
 		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED &&
 		hasFinishedResolution;
 
-	// @todo: Review logic to display credits screen. How do we get the paid campaigns?
 	const showGoogleAdsCreditsScreen =
-		! campaigns?.length && hasFinishedResolution;
+		! pmaxCampaigns?.length && hasFinishedResolution;
 
 	if ( showEnhancedConversionTrackingScreen ) {
-		// Add conversion screen if ads setup is complete
 		PAGES[ ENHANCED_CONVERSION_TRACKING_SCREEN ] = {
 			image,
 			content: <EnhancedConversion />,
