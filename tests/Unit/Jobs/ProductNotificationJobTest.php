@@ -68,9 +68,11 @@ class ProductNotificationJobTest extends UnitTest {
 		$topic = 'product.create';
 		$id    = 1;
 
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
-			->with( self::PROCESS_ITEM_HOOK, [ [ $id, $topic ] ] )
+			->with( self::PROCESS_ITEM_HOOK, [ $id, $topic ] )
 			->willReturn( false );
 
 		$this->action_scheduler->expects( $this->once() )
@@ -87,9 +89,11 @@ class ProductNotificationJobTest extends UnitTest {
 		$id    = 1;
 		$topic = 'product.create';
 
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
-			->with( self::PROCESS_ITEM_HOOK, [ [ $id, $topic ] ] )
+			->with( self::PROCESS_ITEM_HOOK, [ $id, $topic ] )
 			->willReturn( true );
 
 		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
@@ -97,16 +101,14 @@ class ProductNotificationJobTest extends UnitTest {
 		$this->job->schedule( [ $id, $topic ] );
 	}
 
-	public function test_schedule_doesnt_schedules_immediate_job_if_filtered() {
+	public function test_schedule_doesnt_schedules_immediate_job_if_not_enabled() {
 		$id    = 1;
 		$topic = 'product.create';
 
-		add_filter( 'woocommerce_gla_product_notification_job_can_schedule', '__return_false' );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( false );
 
-		$this->action_scheduler->expects( $this->once() )
-			->method( 'has_scheduled_action' )
-			->with( self::PROCESS_ITEM_HOOK, [ [ $id, $topic ] ] )
-			->willReturn( false );
+		$this->action_scheduler->expects( $this->never() )
+			->method( 'has_scheduled_action' );
 
 		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
 
@@ -121,7 +123,7 @@ class ProductNotificationJobTest extends UnitTest {
 
 		$this->notification_service->expects( $this->once() )
 			->method( 'notify' )
-			->with( $id, $topic )
+			->with( $topic, $id )
 			->willReturn( true );
 
 		$this->product_helper->expects( $this->exactly( 2 ) )
@@ -157,7 +159,7 @@ class ProductNotificationJobTest extends UnitTest {
 
 		$this->notification_service->expects( $this->once() )
 			->method( 'notify' )
-			->with( $id, $topic )
+			->with( $topic, $id )
 			->willReturn( false );
 
 		$this->product_helper->expects( $this->once() )

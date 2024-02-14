@@ -77,7 +77,7 @@ class NotificationsServiceTest extends UnitTest {
 		];
 
 		$this->service->expects( $this->once() )->method( 'do_request' )->with( $args )->willReturn( [ 'code' => 200 ] );
-		$this->assertTrue( $this->service->notify( $item_id, $topic ) );
+		$this->assertTrue( $this->service->notify( $topic, $item_id ) );
 	}
 
 
@@ -88,7 +88,7 @@ class NotificationsServiceTest extends UnitTest {
 		$this->service = $this->get_mock();
 
 		$this->service->expects( $this->once() )->method( 'do_request' )->willReturn( new \WP_Error( 'error', 'error message' ) );
-		$this->assertFalse( $this->service->notify( 1, 'topic' ) );
+		$this->assertFalse( $this->service->notify( 'topic', 1 ) );
 		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
 	}
 
@@ -106,7 +106,7 @@ class NotificationsServiceTest extends UnitTest {
 				],
 			]
 		);
-		$this->assertFalse( $this->service->notify( 1, 'topic' ) );
+		$this->assertFalse( $this->service->notify( 'topic', 1 ) );
 		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
 	}
 

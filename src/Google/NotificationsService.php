@@ -25,8 +25,7 @@ class NotificationsService implements Service {
 	public const TOPIC_COUPON_CREATED   = 'coupon.create';
 	public const TOPIC_COUPON_DELETED   = 'coupon.delete';
 	public const TOPIC_COUPON_UPDATED   = 'coupon.update';
-	public const TOPIC_SHIPPING_SAVED   = 'action.woocommerce_after_shipping_zone_object_save';
-	public const TOPIC_SHIPPING_DELETED = 'action.woocommerce_delete_shipping_zone';
+	public const TOPIC_SHIPPING_UPDATED = 'shipping.update';
 
 	/**
 	 * The url to send the notification
@@ -48,11 +47,11 @@ class NotificationsService implements Service {
 	 * Calls the Notification endpoint in WPCOM.
 	 * https://public-api.wordpress.com/wpcom/v2/sites/{site}/partners/google/notifications
 	 *
-	 * @param int    $item_id
-	 * @param string $topic
+	 * @param string   $topic The topic to use in the notification.
+	 * @param int|null $item_id The item ID to notify. It can be null for topics that doesn't need Item ID
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
-	public function notify( int $item_id, string $topic ): bool {
+	public function notify( string $topic, $item_id = null ): bool {
 		/**
 		 * Allow users to disable the notification request.
 		 *
@@ -65,12 +64,6 @@ class NotificationsService implements Service {
 		if ( ! apply_filters( 'woocommerce_gla_notify', true, $item_id, $topic ) ) {
 			return false;
 		}
-
-		do_action(
-			'woocommerce_gla_debug_message',
-			sprintf( 'Notification - Item ID: %d - Topic: %s', $item_id, $topic ),
-			__METHOD__
-		);
 
 		$remote_args = [
 			'method'  => 'POST',
@@ -88,9 +81,15 @@ class NotificationsService implements Service {
 
 		if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) >= 400 ) {
 			$error = is_wp_error( $response ) ? $response->get_error_message() : wp_remote_retrieve_body( $response );
-			$this->notification_error( $item_id, $topic, $error );
+			$this->notification_error( $topic, $error, $item_id );
 			return false;
 		}
+
+		do_action(
+			'woocommerce_gla_debug_message',
+			sprintf( 'Notification - Item ID: %s - Topic: %s', $item_id, $topic ),
+			__METHOD__
+		);
 
 		return true;
 	}
@@ -98,14 +97,14 @@ class NotificationsService implements Service {
 	/**
 	 * Logs an error.
 	 *
-	 * @param int    $item_id
-	 * @param string $topic
-	 * @param string $error
+	 * @param string   $topic
+	 * @param string   $error
+	 * @param int|null $item_id
 	 */
-	private function notification_error( int $item_id, string $topic, string $error ): void {
+	private function notification_error( string $topic, string $error, $item_id = null ): void {
 		do_action(
 			'woocommerce_gla_error',
-			sprintf( 'Error sending notification for Item ID %d with topic %s. %s', $item_id, $topic, $error ),
+			sprintf( 'Error sending notification for Item ID %s with topic %s. %s', $item_id, $topic, $error ),
 			__METHOD__
 		);
 	}
