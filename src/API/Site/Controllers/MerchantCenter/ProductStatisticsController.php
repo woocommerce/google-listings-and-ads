@@ -170,6 +170,12 @@ class ProductStatisticsController extends BaseOptionsController {
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
+			'loading'        => [
+				'type'        => 'boolean',
+				'description' => __( 'Whether the product statistics are loading.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
 		];
 	}
 

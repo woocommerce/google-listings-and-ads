@@ -251,27 +251,20 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product IDs that are marked as MC not_synced.
-	 * Excludes variations and variable products without variations.
+	 * Find all simple and variable product IDs regardless of MC status or visibility.
+	 *
+	 * @since x.x.x
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
 	 *
 	 * @return int[] Array of WooCommerce product IDs
 	 */
-	public function find_mc_not_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
-		$types = ProductSyncer::get_supported_product_types();
-		$types = array_diff( $types, [ 'variation' ] );
-		$args  = [
-			'status'     => 'publish',
-			'type'       => $types,
-			'meta_query' => [
-				[
-					'key'     => ProductMetaHandler::KEY_MC_STATUS,
-					'compare' => '=',
-					'value'   => MCStatus::NOT_SYNCED,
-				],
-			],
+	public function find_all_product_ids( int $limit = -1, int $offset = 0 ): array {
+		$args = [
+			'status' => 'publish',
+			'return' => 'ids',
+			'type'   => 'any',
 		];
 
 		return $this->find_ids( $args, $limit, $offset );
@@ -345,6 +338,11 @@ class ProductRepository implements Service {
 		// only include supported product types
 		if ( empty( $args['type'] ) ) {
 			$args['type'] = ProductSyncer::get_supported_product_types();
+		}
+
+		// It'll fetch all products with the post_type of 'product', excluding variations.
+		if ( $args['type'] === 'any' ) {
+			unset( $args['type'] );
 		}
 
 		// use no ordering unless specified in arguments. overrides the default WooCommerce query args
