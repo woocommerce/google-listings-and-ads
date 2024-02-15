@@ -621,12 +621,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	protected function get_wc_products_from_product_view_statuses( array $statuses ): array {
 		$product_repository = $this->container->get( ProductRepository::class );
 		$products           = $product_repository->find_by_ids( array_column( $statuses, 'product_id' ) );
+		$map                = [];
 
 		foreach ( $products as $product ) {
-			$mapped_products[ $product->get_id() ] = $product;
+			$map[ $product->get_id() ] = $product;
 		}
 
-		return $mapped_products;
+		return $map;
 	}
 
 	/**

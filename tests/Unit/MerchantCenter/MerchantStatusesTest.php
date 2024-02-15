@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -55,6 +56,7 @@ class MerchantStatusesTest extends UnitTest {
 	private $product_helper;
 	private $transients;
 	private $update_merchant_product_statuses_job;
+	private $options;
 
 	/**
 	 * Runs before each test is executed.
@@ -70,6 +72,7 @@ class MerchantStatusesTest extends UnitTest {
 		$this->product_helper                       = $this->createMock( ProductHelper::class );
 		$this->transients                           = $this->createMock( TransientsInterface::class );
 		$this->update_merchant_product_statuses_job = $this->createMock( UpdateMerchantProductStatuses::class );
+		$this->options                              = $this->createMock( OptionsInterface::class );
 
 		$merchant_issue_table = $this->createMock( MerchantIssueTable::class );
 
@@ -86,6 +89,7 @@ class MerchantStatusesTest extends UnitTest {
 
 		$this->merchant_statuses = new MerchantStatuses();
 		$this->merchant_statuses->set_container( $container );
+		$this->merchant_statuses->set_options_object( $this->options );
 	}
 
 	public function test_refresh_account_issues() {
@@ -374,12 +378,24 @@ class MerchantStatusesTest extends UnitTest {
 			}
 		);
 
-		$this->transients->expects( $this->exactly( 1 ) )
-			->method( 'get' );
+		$this->product_repository->expects( $this->once() )->method( 'find_by_ids' )->with(
+			[
+				$product_1->get_id(),
+				$product_2->get_id(),
+				$product_3->get_id(),
+				$variation_id_1,
+				$variation_id_2,
+			]
+		)->willReturn( [ $product_1, $product_2, $product_3, wc_get_product( $variation_id_1 ) , wc_get_product( $variation_id_2 ) ] );
 
-		$this->transients->expects( $this->once() )
-			->method( 'set' )->with(
-				Transients::MC_STATUSES,
+		$this->options->expects( $this->exactly( 1 ) )
+			->method( 'get' )
+			->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )
+			->willReturn( null );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )->with(
+				OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA,
 				$this->callback(
 					function ( $value ) {
 						$this->assertEquals(
@@ -392,18 +408,12 @@ class MerchantStatusesTest extends UnitTest {
 								MCStatus::NOT_SYNCED  => 0,
 								MCStatus::PENDING     => 0,
 							],
-							$value['statistics']
-						);
-
-						$this->assertEquals(
-							true,
-							$value['loading']
+							$value
 						);
 
 						return true;
 					}
-				),
-				self::MC_STATUS_LIFETIME
+				)
 			);
 
 		$product_statuses = [
@@ -449,22 +459,19 @@ class MerchantStatusesTest extends UnitTest {
 			}
 		);
 
-		$this->transients->expects( $this->once() )
-			->method( 'get' )->with( Transients::MC_STATUSES )->willReturn(
+		$this->options->expects( $this->once() )
+			->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
 				[
-					'statistics' => [
-						MCStatus::APPROVED           => 3,
-						MCStatus::PARTIALLY_APPROVED => 1,
-						MCStatus::EXPIRING           => 0,
-						MCStatus::PENDING            => 0,
-						MCStatus::DISAPPROVED        => 1,
-						MCStatus::NOT_SYNCED         => 0,
-					],
-					'loading'    => false,
+					MCStatus::APPROVED           => 3,
+					MCStatus::PARTIALLY_APPROVED => 1,
+					MCStatus::EXPIRING           => 0,
+					MCStatus::PENDING            => 0,
+					MCStatus::DISAPPROVED        => 1,
+					MCStatus::NOT_SYNCED         => 0,
 				]
 			);
 
-			$this->product_repository->expects( $this->once() )->method( 'find_all_product_ids' )->willReturn( [ 1, 2, 3,  4, 5, 6 ] );
+			$this->product_repository->expects( $this->once() )->method( 'find_all_product_ids' )->willReturn( [ 1, 2, 3, 4, 5, 6 ] );
 
 			$this->transients->expects( $this->once() )
 			->method( 'set' )->with(
