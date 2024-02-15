@@ -160,4 +160,48 @@ describe( 'Enhanced Conversion CTA', () => {
 		expect( window.open ).toHaveBeenCalledTimes( 1 );
 		expect( handleOnAcceptTerms ).toHaveBeenCalledTimes( 1 );
 	} );
+
+	test( 'Click on enable/confirm button callback', () => {
+		const handleOnEnable = jest.fn().mockName( 'On Enable click' );
+
+		useAcceptedCustomerDataTerms.mockReturnValue( {
+			acceptedCustomerDataTerms: true,
+			isResolving: false,
+			hasFinishedResolution: true,
+		} );
+
+		useAllowEnhancedConversions.mockReturnValue( {
+			allowEnhancedConversions: null,
+			isResolving: false,
+		} );
+
+		render( <CTA onEnableClick={ handleOnEnable } /> );
+
+		const button = screen.getByRole( 'button' );
+		userEvent.click( button );
+
+		expect( handleOnEnable ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'Click on disable button callback', () => {
+		const handleOnDisable = jest.fn().mockName( 'On Disable click' );
+
+		useAcceptedCustomerDataTerms.mockReturnValue( {
+			acceptedCustomerDataTerms: true,
+			isResolving: false,
+			hasFinishedResolution: true,
+		} );
+
+		useAllowEnhancedConversions.mockReturnValue( {
+			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
+			isResolving: false,
+		} );
+
+		render( <CTA onDisableClick={ handleOnDisable } /> );
+
+		const button = screen.getByRole( 'button' );
+		userEvent.click( button );
+
+		expect( handleOnDisable ).toHaveBeenCalledTimes( 1 );
+	} );
 } );
