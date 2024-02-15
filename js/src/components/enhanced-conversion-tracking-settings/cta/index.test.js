@@ -20,10 +20,21 @@ jest.mock( '.~/hooks/useAutoCheckEnhancedConversionTOS', () => ( {
 	default: jest.fn().mockName( 'useAutoCheckEnhancedConversionTOS' ),
 } ) );
 
+jest.mock( '.~/data/actions', () => ( {
+	...jest.requireActual( '.~/data/actions' ),
+	updateEnhancedAdsConversionStatus: jest
+		.fn()
+		.mockName( 'updateEnhancedAdsConversionStatus' )
+		.mockImplementation( () => {
+			return { type: 'test', response: 'enabled' };
+		} ),
+} ) );
+
 /**
  * External dependencies
  */
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
 /**
@@ -35,6 +46,10 @@ import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import CTA from './index';
 
 describe( 'Enhanced Conversion CTA', () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
+	} );
+
 	test( 'When not yet loaded, should render a loading spinner', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
@@ -119,5 +134,30 @@ describe( 'Enhanced Conversion CTA', () => {
 		render( <CTA /> );
 		const spinner = screen.getByRole( 'status', { name: 'spinner' } );
 		expect( spinner ).toBeInTheDocument();
+	} );
+
+	test( 'Click on accept TOS button callback', () => {
+		const handleOnAcceptTerms = jest.fn().mockName( 'On TOS click' );
+
+		window.open = jest.fn();
+
+		useAcceptedCustomerDataTerms.mockReturnValue( {
+			acceptedCustomerDataTerms: false,
+			isResolving: false,
+			hasFinishedResolution: true,
+		} );
+
+		useAllowEnhancedConversions.mockReturnValue( {
+			allowEnhancedConversions: null,
+			isResolving: false,
+		} );
+
+		render( <CTA onAcceptTermsClick={ handleOnAcceptTerms } /> );
+
+		const button = screen.getByRole( 'button' );
+		userEvent.click( button );
+
+		expect( window.open ).toHaveBeenCalledTimes( 1 );
+		expect( handleOnAcceptTerms ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
