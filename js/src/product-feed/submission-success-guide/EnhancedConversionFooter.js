@@ -17,7 +17,7 @@ const EnhancedConversionFooter = ( { handleGuideFinish } ) => {
 	const handleEnableOrDisableClick = useCallback( () => {
 		createNotice(
 			'info',
-			__( 'Status succesfully set', 'google-listings-and-ads' )
+			__( 'Status successfully set', 'google-listings-and-ads' )
 		);
 
 		handleGuideFinish?.();

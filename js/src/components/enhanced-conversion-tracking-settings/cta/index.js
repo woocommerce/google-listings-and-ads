@@ -116,19 +116,12 @@ const CTA = ( {
 		);
 	}
 
-	// User has accepted TOS but has not enabled enhanced tracking.
-	if (
-		allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.DISABLED ||
-		acceptedCustomerDataTerms
-	) {
-		return (
-			<AppButton isPrimary onClick={ handleEnable }>
-				{ enableLabel }
-			</AppButton>
-		);
-	}
-
-	return null;
+	// User has accepted TOS or tracking is disabled.
+	return (
+		<AppButton isPrimary onClick={ handleEnable }>
+			{ enableLabel }
+		</AppButton>
+	);
 };
 
 export default CTA;

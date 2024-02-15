@@ -183,6 +183,28 @@ describe( 'Enhanced Conversion CTA', () => {
 		expect( handleOnEnable ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	test( 'Confirm/enable button callback should not be called if TOS has not been accepted', () => {
+		const handleOnEnable = jest.fn().mockName( 'On Enable click' );
+
+		useAcceptedCustomerDataTerms.mockReturnValue( {
+			acceptedCustomerDataTerms: false,
+			isResolving: false,
+			hasFinishedResolution: true,
+		} );
+
+		useAllowEnhancedConversions.mockReturnValue( {
+			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
+			isResolving: false,
+		} );
+
+		render( <CTA onEnableClick={ handleOnEnable } /> );
+
+		const button = screen.getByRole( 'button' );
+		userEvent.click( button );
+
+		expect( handleOnEnable ).not.toHaveBeenCalled();
+	} );
+
 	test( 'Click on disable button callback', () => {
 		const handleOnDisable = jest.fn().mockName( 'On Disable click' );
 
@@ -203,5 +225,44 @@ describe( 'Enhanced Conversion CTA', () => {
 		userEvent.click( button );
 
 		expect( handleOnDisable ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'Disable button callback should not be called if TOS has not been accepted', () => {
+		const handleOnDisable = jest.fn().mockName( 'On Disable click' );
+
+		useAcceptedCustomerDataTerms.mockReturnValue( {
+			acceptedCustomerDataTerms: false,
+			isResolving: false,
+			hasFinishedResolution: true,
+		} );
+
+		useAllowEnhancedConversions.mockReturnValue( {
+			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
+			isResolving: false,
+		} );
+
+		render( <CTA onDisableClick={ handleOnDisable } /> );
+
+		const button = screen.getByRole( 'button' );
+		userEvent.click( button );
+
+		expect( handleOnDisable ).not.toHaveBeenCalled();
+	} );
+
+	test( 'Should not the enable button if TOS has been accepted', () => {
+		useAcceptedCustomerDataTerms.mockReturnValue( {
+			acceptedCustomerDataTerms: true,
+			isResolving: false,
+			hasFinishedResolution: true,
+		} );
+
+		useAllowEnhancedConversions.mockReturnValue( {
+			allowEnhancedConversions: null,
+			isResolving: false,
+		} );
+
+		render( <CTA /> );
+
+		expect( screen.getByText( 'Enable' ) ).toBeInTheDocument();
 	} );
 } );

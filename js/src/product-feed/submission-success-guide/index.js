@@ -172,6 +172,8 @@ const SubmissionSuccessGuide = () => {
 		! pmaxCampaigns?.length && googleAdsAccountLoaded && adsCampaignsLoaded;
 
 	if ( showEnhancedConversionTrackingScreen ) {
+		delete PAGES[ GOOGLE_ADS_CREDITS_SCREEN ];
+
 		PAGES[ ENHANCED_CONVERSION_TRACKING_SCREEN ] = {
 			image,
 			content: <EnhancedConversion />,
@@ -182,6 +184,8 @@ const SubmissionSuccessGuide = () => {
 			),
 		};
 	} else if ( showGoogleAdsCreditsScreen ) {
+		delete PAGES[ ENHANCED_CONVERSION_TRACKING_SCREEN ];
+
 		// There are no campaigns, add Google Ads credit screen
 		PAGES[ GOOGLE_ADS_CREDITS_SCREEN ] = {
 			image,
