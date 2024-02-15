@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use WC_Product;
+use WC_Customer;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -274,7 +275,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order = wc_get_order( $order_id );
 		// Make sure there is a valid order object and it is not already marked as tracked
 		if ( ! $order || 1 === $order->get_meta( self::ORDER_CONVERSION_META_KEY, true ) ) {
-			return;
+			//return;
 		}
 
 		// Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
@@ -355,6 +356,63 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			join( ',', $item_info ),
 		);
 		wp_print_inline_script_tag( $purchase_page_gtag );
+
+		// Enhanced conversion data.
+		$ec_data         = [];
+		$customer        = new WC_Customer( $order->get_customer_id() );
+		$email           = $customer->get_billing_email();
+		$fname           = $customer->get_billing_first_name();
+		$lname           = $customer->get_billing_last_name();
+		$phone           = $customer->get_billing_phone();
+		$billing_address = $customer->get_billing_address();
+		$postcode        = $customer->get_billing_postcode();
+		$city            = $customer->get_billing_city();
+		$region          = $customer->get_billing_state();
+		$country         = $customer->get_billing_country();
+
+		// Add email in EC data.
+		if ( ! empty( $email ) ) {
+			$ec_data['email'] = $email;
+		}
+
+		// Format phone number in IE64.
+		$phone 		  = preg_replace( '/[^0-9]/', '', $phone );
+		$phone_length = strlen( $phone );
+		if ( $phone_length > 9 && $phone_length < 14 ) {
+			$phone            = sprintf( '%s%d', '+', $phone );
+			$ec_data['email'] = $email;
+		}
+
+		// Check for required address fields.
+		if ( ! empty( $fname ) && ! empty( $lname ) && ! empty( $postcode ) && ! empty( $country ) ) {
+			$ec_data['address']['first_name']  = $fname;
+			$ec_data['address']['last_name']   = $lname;
+			$ec_data['address']['postal_code'] = $postcode;
+			$ec_data['address']['country']     = $country;
+
+			/**
+			 * Add additional data, if present.
+			 */
+
+			// Add street address.
+			if ( ! empty( $billing_address ) ) {
+				$ec_data['address']['street'] = $billing_address;
+			}
+
+			// Add city.
+			if ( ! empty( $city ) ) {
+				$ec_data['address']['city'] = $city;
+			}
+
+			// Add region.
+			if ( ! empty( $region ) ) {
+				$ec_data['address']['region'] = $region;
+			}
+		}
+
+		$purchase_user_data_gtag = sprintf( 'gtag("set", "user_data", %s)', wp_json_encode( $ec_data ) );
+
+		wp_print_inline_script_tag( $purchase_user_data_gtag );
 	}
 
 	/**
