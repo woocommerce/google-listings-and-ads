@@ -275,7 +275,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order = wc_get_order( $order_id );
 		// Make sure there is a valid order object and it is not already marked as tracked
 		if ( ! $order || 1 === $order->get_meta( self::ORDER_CONVERSION_META_KEY, true ) ) {
-			//return;
+			return;
 		}
 
 		// Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
@@ -376,7 +376,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		}
 
 		// Format phone number in IE64.
-		$phone 		  = preg_replace( '/[^0-9]/', '', $phone );
+		$phone        = preg_replace( '/[^0-9]/', '', $phone );
 		$phone_length = strlen( $phone );
 		if ( $phone_length > 9 && $phone_length < 14 ) {
 			$phone            = sprintf( '%s%d', '+', $phone );
