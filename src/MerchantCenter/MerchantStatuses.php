@@ -598,6 +598,25 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
+	 * Get the WC Products from the Merchant Center statuses.
+	 *
+	 * @param array $statuses statuses.
+	 * @see MerchantReport::get_product_view_report
+	 *
+	 * @return WC_Product[] Associative array with the key as the product ID and the value the WooCommerce Product object.
+	 */
+	protected function get_wc_products_from_product_view_statuses( array $statuses ): array {
+		$product_repository = $this->container->get( ProductRepository::class );
+		$products           = $product_repository->find_by_ids( array_column( $statuses, 'product_id' ) );
+
+		foreach ( $products as $product ) {
+			$mapped_products[ $product->get_id() ] = $product;
+		}
+
+		return $mapped_products;
+	}
+
+	/**
 	 * Process product status statistics.
 	 *
 	 * @param array[] $statuses statuses.
@@ -610,6 +629,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		];
 
 		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
+		$products            = $this->get_wc_products_from_product_view_statuses( $statuses );
 
 		foreach ( $statuses as $product_status ) {
 
@@ -621,11 +641,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				continue;
 			}
 
-			if ( $this->product_is_expiring( $product_status['expiration_date'] ) ) {
-				$mc_product_status = MCStatus::EXPIRING;
-			}
+			$wc_product = $products[ $wc_product_id ] ?? null;
 
-			$wc_product = wc_get_product( $wc_product_id );
 			if ( ! $wc_product ) {
 				// Skip if the product does not exist in WooCommerce.
 				do_action(
@@ -641,6 +658,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				'visibility' => $wc_product->get_meta( $visibility_meta_key ),
 				'parent_id'  => $wc_product->get_parent_id(),
 			];
+
+			if ( $this->product_is_expiring( $product_status['expiration_date'] ) ) {
+				$mc_product_status = MCStatus::EXPIRING;
+			}
 
 			// Products is used later for global product status statistics.
 			$this->product_statuses['products'][ $wc_product_id ][ $mc_product_status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $mc_product_status ] ?? 0 );
@@ -848,8 +869,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		ksort( $new_product_statuses );
 		foreach ( $new_product_statuses as $product_id => $new_status ) {
+			// Here the product should be already cached because it was fetched in the process_product_statuses method.
 			$product = wc_get_product( $product_id );
-			$product->add_meta_data( ProductMetaHandler::KEY_MC_STATUS, $new_status, true );
+			$product->add_meta_data( $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS ), $new_status, true );
+			$product->save_meta_data();
 		}
 	}
 
