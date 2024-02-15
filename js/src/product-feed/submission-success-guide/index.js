@@ -138,8 +138,9 @@ const PAGES = {
  * @fires gla_modal_open with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
  */
 const SubmissionSuccessGuide = () => {
-	const { data: campaigns } = useAdsCampaigns();
-	const { googleAdsAccount, hasFinishedResolution } = useGoogleAdsAccount();
+	const { data: campaigns, loaded: adsCampaignsLoaded } = useAdsCampaigns();
+	const { googleAdsAccount, hasFinishedResolution: googleAdsAccountLoaded } =
+		useGoogleAdsAccount();
 
 	const pmaxCampaigns = campaigns?.filter(
 		( { type } ) => type === CAMPAIGN_TYPE_PMAX
@@ -164,10 +165,11 @@ const SubmissionSuccessGuide = () => {
 	const showEnhancedConversionTrackingScreen =
 		pmaxCampaigns?.length &&
 		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED &&
-		hasFinishedResolution;
+		googleAdsAccountLoaded &&
+		adsCampaignsLoaded;
 
 	const showGoogleAdsCreditsScreen =
-		! pmaxCampaigns?.length && hasFinishedResolution;
+		! pmaxCampaigns?.length && googleAdsAccountLoaded && adsCampaignsLoaded;
 
 	if ( showEnhancedConversionTrackingScreen ) {
 		PAGES[ ENHANCED_CONVERSION_TRACKING_SCREEN ] = {
