@@ -869,9 +869,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		ksort( $new_product_statuses );
 		foreach ( $new_product_statuses as $product_id => $new_status ) {
-			// Here the product should be already cached because it was fetched in the process_product_statuses method.
+			// wc_get_product should return the cached product because it was fetched in the process_product_statuses method.
 			$product = wc_get_product( $product_id );
 			$product->add_meta_data( $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS ), $new_status, true );
+			// We use save_meta_data so we don't trigger the woocommerce_update_product hook and the Syncer Hooks.
 			$product->save_meta_data();
 		}
 	}

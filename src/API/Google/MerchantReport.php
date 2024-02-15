@@ -65,7 +65,7 @@ class MerchantReport implements OptionsAwareInterface {
 	 * @throws Exception If the product view report data can't be retrieved.
 	 */
 	public function get_product_view_report( $next_page_token = null ): array {
-		$batch_size = apply_filters( 'woocommerce_gla_product_view_report_page_size', 1000 );
+		$batch_size = apply_filters( 'woocommerce_gla_product_view_report_page_size', 500 );
 
 		try {
 			$product_view_data = [
