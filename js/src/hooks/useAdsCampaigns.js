@@ -39,13 +39,13 @@ const useAdsCampaigns = ( ...query ) => {
 			// which requires force reload using window.location.href.
 			const { adsSetupComplete } = glaData;
 
-			if ( ! adsSetupComplete ) {
-				return {
-					loading: false,
-					loaded: true,
-					data: [],
-				};
-			}
+			// if ( ! adsSetupComplete ) {
+			// 	return {
+			// 		loading: false,
+			// 		loaded: true,
+			// 		data: [],
+			// 	};
+			// }
 
 			const selector = select( STORE_KEY );
 			const data = selector[ selectorName ]( ...queryRefValue );

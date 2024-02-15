@@ -71,6 +71,20 @@ export default class DashboardPage extends MockRequests {
 			symbol: '$',
 			status: 'disconnected',
 		} );
+
+		await this.fulfillAdsCampaignsRequest(
+			{
+				id: 111111111,
+				name: 'Test Campaign',
+				status: 'enabled',
+				type: 'performance_max',
+				amount: 1,
+				country: 'US',
+				targeted_locations: '',
+			},
+			200,
+			[ 'GET' ]
+		);
 	}
 
 	/**

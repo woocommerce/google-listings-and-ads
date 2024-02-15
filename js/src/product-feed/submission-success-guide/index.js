@@ -146,6 +146,8 @@ const SubmissionSuccessGuide = () => {
 		( { type } ) => type === CAMPAIGN_TYPE_PMAX
 	);
 
+	console.log( campaigns, googleAdsAccount );
+
 	useEffect( () => {
 		recordGlaEvent( 'gla_modal_open', {
 			context: GUIDE_NAMES.SUBMISSION_SUCCESS,
