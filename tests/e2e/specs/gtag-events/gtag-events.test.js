@@ -192,4 +192,18 @@ test.describe( 'GTag events', () => {
 			expect( data.country ).toEqual( 'US' );
 		} );
 	} );
+
+	test( 'User data for enhanced conversion event is sent on order complete page', async ( {
+		page,
+	} ) => {
+		await singleProductAddToCart( page, simpleProductID );
+
+		const event = trackGtagEvent( page, 'user_data', 'checkout' );
+		await checkout( page );
+
+		await event.then( ( request ) => {
+			const data = getEventData( request );
+			expect( data.email ).toEqual( 'john.doe@example.com' );
+		} );
+	} );
 } );
