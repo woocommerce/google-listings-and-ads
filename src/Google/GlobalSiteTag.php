@@ -380,7 +380,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$phone_length = strlen( $phone );
 		if ( $phone_length > 9 && $phone_length < 14 ) {
 			$phone            = sprintf( '%s%d', '+', $phone );
-			$ec_data['email'] = $email;
+			$ec_data['phone_number'] = $phone;
 		}
 
 		// Check for required address fields.
