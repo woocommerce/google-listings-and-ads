@@ -335,6 +335,13 @@ class Ads implements OptionsAwareInterface {
 		$ads_id = $this->options->get_ads_id();
 
 		try {
+			$accepted_terms = $this->options->get( OptionsInterface::CUSTOMER_DATA_TERMS, null );
+
+			// Retrieve the terms acceptance data from options.
+			if ( null !== $accepted_terms ) {
+				return $accepted_terms;
+			}
+
 			$customer = ( new AdsAccountQuery() )
 				->set_client( $this->client, $ads_id )
 				->columns( [ 'customer.conversion_tracking_setting.accepted_customer_data_terms' ] )
@@ -347,7 +354,13 @@ class Ads implements OptionsAwareInterface {
 
 			$conversion_tracking_setting = $customer->getConversionTrackingSetting();
 
-			return $conversion_tracking_setting->getAcceptedCustomerDataTerms();
+			$accepted = $conversion_tracking_setting->getAcceptedCustomerDataTerms();
+			$status   = $accepted ? 1 : 0;
+
+			// Save the data terms in options as those cannot be reverted.
+			$this->options->update( OptionsInterface::CUSTOMER_DATA_TERMS, $status );
+
+			return $accepted;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 		}
