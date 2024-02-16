@@ -611,7 +611,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
-	 * Get the WC Products from the Merchant Center statuses.
+	 * Get the WC Products from the Product View statuses report.
 	 *
 	 * @param array $statuses statuses.
 	 * @see MerchantReport::get_product_view_report
