@@ -15,8 +15,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\SearchRequest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\SearchResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Resource\Reports;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception as GoogleException;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\ShoppingContentDateTrait;
 use DateTime;
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -79,7 +81,7 @@ class MerchantReportTest extends UnitTest {
 		return $product_view;
 	}
 
-	public function test_get_free_listing_metrics() {
+	public function test_get_product_view_report() {
 		$test_merchant_id = 432;
 		$wc_product_id_1  = 882;
 		$wc_product_id_2  = 883;
@@ -166,5 +168,19 @@ class MerchantReportTest extends UnitTest {
 			],
 			$this->merchant_report->get_product_view_report()
 		);
+	}
+
+	public function test_get_product_view_report_with_exception() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 432 );
+
+		$this->shopping_client->reports->expects( $this->once() )
+			->method( 'search' )
+			->will(
+				$this->throwException( new GoogleException( 'Test exception' ) )
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Unable to retrieve Product View Report.' );
+		$this->merchant_report->get_product_view_report();
 	}
 }
