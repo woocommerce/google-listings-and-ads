@@ -55,11 +55,11 @@ class ChannelVisibilityBlock implements Service, Registerable {
 			return;
 		}
 
-		// https://github.com/woocommerce/woocommerce/blob/8.5.0/plugins/woocommerce/includes/rest-api/Controllers/Version2/class-wc-rest-products-v2-controller.php#L182-L192
+		// https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce/includes/rest-api/Controllers/Version2/class-wc-rest-products-v2-controller.php#L182-L192
 		add_filter( 'woocommerce_rest_prepare_product_object', [ $this, 'prepare_data' ], 10, 2 );
 
-		// https://github.com/woocommerce/woocommerce/blob/8.5.0/plugins/woocommerce/includes/rest-api/Controllers/Version3/class-wc-rest-crud-controller.php#L200-L207
-		// https://github.com/woocommerce/woocommerce/blob/8.5.0/plugins/woocommerce/includes/rest-api/Controllers/Version3/class-wc-rest-crud-controller.php#L247-L254
+		// https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce/includes/rest-api/Controllers/Version3/class-wc-rest-crud-controller.php#L200-L207
+		// https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce/includes/rest-api/Controllers/Version3/class-wc-rest-crud-controller.php#L247-L254
 		add_action( 'woocommerce_rest_insert_product_object', [ $this, 'update_data' ], 10, 2 );
 	}
 

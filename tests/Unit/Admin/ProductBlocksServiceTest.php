@@ -45,9 +45,6 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	/** @var Stub|MerchantCenterService $merchant_center */
 	protected $merchant_center;
 
-	/** @var MockObject|BlockRegistry $block_registry */
-	protected $block_registry;
-
 	/** @var MockObject|BlockInterface $simple_anchor_group */
 	protected $simple_anchor_group;
 
@@ -72,9 +69,9 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 	protected const GENERAL_GROUP_HOOK = 'woocommerce_block_template_area_product-form_after_add_block_general';
 
 	public function setUp(): void {
-		// compatibility-code "WC >= 8.5" -- The Block Template API used requires at least WooCommerce 8.5
-		if ( ! version_compare( WC_VERSION, '8.5', '>=' ) ) {
-			$this->markTestSkipped( 'This test suite requires WooCommerce version >= 8.5' );
+		// compatibility-code "WC >= 8.6" -- The Block Template API used requires at least WooCommerce 8.6
+		if ( ! ProductBlocksService::is_needed() ) {
+			$this->markTestSkipped( 'This test suite requires WooCommerce version >= 8.6' );
 		}
 
 		parent::setUp();
@@ -83,15 +80,12 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		$this->channel_visibility_block = $this->container->get( ChannelVisibilityBlock::class );
 		$this->attribute_manager        = $this->container->get( AttributeManager::class );
 		$this->merchant_center          = $this->createStub( MerchantCenterService::class );
-		$this->block_registry           = $this->createMock( BlockRegistry::class );
 
 		$this->simple_anchor_group    = $this->createMock( BlockInterface::class );
 		$this->variation_anchor_group = $this->createMock( BlockInterface::class );
 		$this->mismatching_group      = $this->createMock( BlockInterface::class );
 
 		$this->product_blocks_service = new ProductBlocksService( $this->assets_handler, $this->channel_visibility_block, $this->attribute_manager, $this->merchant_center );
-
-		$this->product_blocks_service->set_block_registry( $this->block_registry );
 
 		// Set up stubs and mocks
 		$this->is_mc_setup_complete = true;
@@ -103,7 +97,7 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 				}
 			);
 
-		// Ref: https://github.com/woocommerce/woocommerce/blob/8.3.0/plugins/woocommerce/src/Admin/PageController.php#L555-L562
+		// Ref: https://github.com/woocommerce/woocommerce/blob/8.6.0/plugins/woocommerce/src/Admin/PageController.php#L555-L562
 		$_GET['page'] = PageController::PAGE_ROOT;
 
 		$this->simple    = $this->setUpBlockMock( $this->simple_anchor_group, 'simple-product' );
@@ -189,7 +183,146 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 'true', $this->product_blocks_service->get_hide_condition( [] ) );
 	}
 
-	public function test_register_merchant_center_setup_is_not_complete() {
+	public function test_register() {
+		$this->assertFalse( has_filter( 'init', [ $this->product_blocks_service, 'hook_init' ] ) );
+		$this->assertFalse( has_filter( self::GENERAL_GROUP_HOOK, [ $this->product_blocks_service, 'hook_block_template' ] ) );
+
+		$this->product_blocks_service->register();
+
+		$this->assertEquals( 10, has_filter( 'init', [ $this->product_blocks_service, 'hook_init' ] ) );
+		$this->assertEquals( 10, has_filter( self::GENERAL_GROUP_HOOK, [ $this->product_blocks_service, 'hook_block_template' ] ) );
+	}
+
+	public function test_register_is_not_admin_page() {
+		unset( $_GET['page'] );
+
+		$this->product_blocks_service->register();
+
+		$this->assertFalse( has_filter( 'init', [ $this->product_blocks_service, 'hook_init' ] ) );
+	}
+
+	public function test_hook_block_template() {
+		$this->simple_anchor_group->get_root_template()
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_group' );
+
+		$this->variation_anchor_group->get_root_template()
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_group' );
+
+		$this->simple['template']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_group' )->with(
+				[
+					'id'         => 'google-listings-and-ads-group',
+					'order'      => 100,
+					'attributes' => [
+						'title' => 'Google Listings & Ads',
+					],
+				]
+			);
+
+		$this->simple['group']
+			->expects( $this->exactly( 2 ) )
+			->method( 'add_section' )
+			->withConsecutive(
+				[
+					[
+						'id'         => 'google-listings-and-ads-channel-visibility-section',
+						'order'      => 1,
+						'attributes' => [
+							'title' => __( 'Channel visibility', 'google-listings-and-ads' ),
+						],
+					],
+				],
+				[
+					[
+						'id'         => 'google-listings-and-ads-product-attributes-section',
+						'order'      => 2,
+						'attributes' => [
+							'title' => 'Product attributes',
+						],
+					],
+				]
+			);
+
+		$this->variation['template']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_group' )->with(
+				[
+					'id'         => 'google-listings-and-ads-group',
+					'order'      => 100,
+					'attributes' => [
+						'title' => 'Google Listings & Ads',
+					],
+				]
+			);
+
+		$this->variation['group']
+			->expects( $this->exactly( 2 ) )
+			->method( 'add_section' )
+			->withConsecutive(
+				[
+					[
+						'id'         => 'google-listings-and-ads-channel-visibility-section',
+						'order'      => 1,
+						'attributes' => [
+							'title' => __( 'Channel visibility', 'google-listings-and-ads' ),
+						],
+					],
+				],
+				[
+					[
+						'id'         => 'google-listings-and-ads-product-attributes-section',
+						'order'      => 2,
+						'attributes' => [
+							'title' => 'Product attributes',
+						],
+					],
+				]
+			);
+
+		$this->product_blocks_service->hook_block_template( $this->simple_anchor_group );
+		$this->product_blocks_service->hook_block_template( $this->variation_anchor_group );
+	}
+
+	public function test_hook_block_template_group_hidden_condition() {
+		$this->simple['group']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_hide_condition' )
+			->with( "editedProduct.type !== 'simple' && editedProduct.type !== 'variable' && editedProduct.type !== 'variation'" );
+
+		$this->variation['group']
+			->expects( $this->exactly( 0 ) )
+			->method( 'add_hide_condition' );
+
+		$this->product_blocks_service->hook_block_template( $this->simple_anchor_group );
+		$this->product_blocks_service->hook_block_template( $this->variation_anchor_group );
+	}
+
+	public function test_hook_block_template_group_hidden_condition_with_applying_filter() {
+		$this->simple['group']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_hide_condition' )
+			->with( "editedProduct.type !== 'simple'" );
+
+		$this->variation['group']
+			->expects( $this->exactly( 1 ) )
+			->method( 'add_hide_condition' )
+			->with( 'true' );
+
+		add_filter(
+			'woocommerce_gla_supported_product_types',
+			function () {
+				return [ 'simple' ];
+			}
+		);
+
+		$this->product_blocks_service->hook_block_template( $this->simple_anchor_group );
+		$this->product_blocks_service->hook_block_template( $this->variation_anchor_group );
+	}
+
+	public function test_hook_block_template_merchant_center_setup_is_not_complete() {
 		$this->is_mc_setup_complete = false;
 
 		$this->simple_anchor_group->get_root_template()
@@ -222,86 +355,11 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 				]
 			);
 
-		$this->product_blocks_service->register();
-
-		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
-		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );
+		$this->product_blocks_service->hook_block_template( $this->simple_anchor_group );
+		$this->product_blocks_service->hook_block_template( $this->variation_anchor_group );
 	}
 
-	public function test_register_is_not_admin_page() {
-		unset( $_GET['page'] );
-
-		$this->assertFalse( ProductBlocksService::is_needed() );
-
-		$this->simple_anchor_group->get_root_template()
-			->expects( $this->exactly( 0 ) )
-			->method( 'add_group' );
-
-		$this->variation_anchor_group->get_root_template()
-			->expects( $this->exactly( 0 ) )
-			->method( 'add_group' );
-
-		// Here it doesn't call `product_blocks_service->register()` because it will
-		// be processed by the conditional registration in `GoogleAdsCleanupServices`.
-
-		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
-		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );
-	}
-
-	public function test_register_merchant_center_setup_is_complete_and_is_admin_page() {
-		$this->simple_anchor_group->get_root_template()
-			->expects( $this->exactly( 1 ) )
-			->method( 'add_group' );
-
-		$this->variation_anchor_group->get_root_template()
-			->expects( $this->exactly( 1 ) )
-			->method( 'add_group' );
-
-		$this->product_blocks_service->register();
-
-		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
-		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );
-	}
-
-	public function test_register_custom_blocks() {
-		$custom_blocks         = [ 'existing-block', 'non-existent-block' ];
-		$expected_script_asset = new AdminScriptWithBuiltDependenciesAsset(
-			'google-listings-and-ads-product-blocks',
-			'tests/data/blocks',
-			GLA_TESTS_DATA_DIR . '/blocks.asset.php',
-			new BuiltScriptDependencyArray(
-				[
-					'dependencies' => [],
-					'version'      => (string) filemtime( GLA_TESTS_DATA_DIR . '/blocks.js' ),
-				]
-			)
-		);
-		$expected_style_asset  = new AdminStyleAsset(
-			'google-listings-and-ads-product-blocks-css',
-			'tests/data/blocks',
-			[],
-			(string) filemtime( GLA_TESTS_DATA_DIR . '/blocks.css' )
-		);
-
-		$this->block_registry
-			->expects( $this->exactly( 1 ) )
-			->method( 'register_block_type_from_metadata' )
-			->with( $this->stringContains( 'tests/data/existing-block/block.json' ) );
-
-		$this->assets_handler
-			->expects( $this->exactly( 1 ) )
-			->method( 'register_many' )
-			->with( [ $expected_script_asset, $expected_style_asset ] );
-
-		$this->assets_handler
-			->expects( $this->exactly( 1 ) )
-			->method( 'enqueue_many' )
-			->with( [ $expected_script_asset, $expected_style_asset ] );
-
-		$this->product_blocks_service->register_custom_blocks( GLA_TESTS_DATA_DIR, 'tests/data/blocks', $custom_blocks );
-	}
-
-	public function test_register_not_add_group_or_section() {
+	public function test_hook_block_template_not_add_group_or_section() {
 		$this->simple['template']
 			->expects( $this->exactly( 0 ) )
 			->method( 'add_group' );
@@ -317,98 +375,17 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 		$this->variation['group']
 			->expects( $this->exactly( 0 ) )
 			->method( 'add_section' );
-
-		$this->product_blocks_service->register();
 
 		// Here it intentionally calls with a mismatched template for each
-		do_action( self::GENERAL_GROUP_HOOK, $this->mismatching_group );
-		do_action( self::GENERAL_GROUP_HOOK, $this->mismatching_group );
-	}
-
-	public function test_register_add_group_and_sections() {
-		$this->simple['template']
-			->expects( $this->exactly( 1 ) )
-			->method( 'add_group' )->with(
-				[
-					'id'         => 'google-listings-and-ads-group',
-					'order'      => 100,
-					'attributes' => [
-						'title' => 'Google Listings & Ads',
-					],
-				]
-			);
-
-		$this->simple['group']
-			->expects( $this->exactly( 2 ) )
-			->method( 'add_section' )
-			->withConsecutive(
-				[
-					[
-						'id'         => 'google-listings-and-ads-channel-visibility-section',
-						'order'      => 1,
-						'attributes' => [
-							'title' => __( 'Channel visibility', 'google-listings-and-ads' ),
-						],
-					],
-				],
-				[
-					[
-						'id'         => 'google-listings-and-ads-product-attributes-section',
-						'order'      => 2,
-						'attributes' => [
-							'title' => 'Product attributes',
-						],
-					],
-				]
-			);
-
-		$this->variation['template']
-			->expects( $this->exactly( 1 ) )
-			->method( 'add_group' )->with(
-				[
-					'id'         => 'google-listings-and-ads-group',
-					'order'      => 100,
-					'attributes' => [
-						'title' => 'Google Listings & Ads',
-					],
-				]
-			);
-
-		$this->variation['group']
-			->expects( $this->exactly( 2 ) )
-			->method( 'add_section' )
-			->withConsecutive(
-				[
-					[
-						'id'         => 'google-listings-and-ads-channel-visibility-section',
-						'order'      => 1,
-						'attributes' => [
-							'title' => __( 'Channel visibility', 'google-listings-and-ads' ),
-						],
-					],
-				],
-				[
-					[
-						'id'         => 'google-listings-and-ads-product-attributes-section',
-						'order'      => 2,
-						'attributes' => [
-							'title' => 'Product attributes',
-						],
-					],
-				]
-			);
-
-		$this->product_blocks_service->register();
-
-		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
-		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );
+		$this->product_blocks_service->hook_block_template( $this->mismatching_group );
+		$this->product_blocks_service->hook_block_template( $this->mismatching_group );
 	}
 
 	/**
 	 * Tests that assert the block configs passed to `add_block` are covered by
 	 * `ChannelVisibilityBlockTest`.
 	 */
-	public function test_register_add_channel_visibility_blocks() {
+	public function test_hook_block_template_add_channel_visibility_blocks() {
 		$this->simple['visibility_section']
 			->expects( $this->exactly( 1 ) )
 			->method( 'add_block' );
@@ -435,17 +412,15 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			->expects( $this->exactly( 0 ) )
 			->method( 'add_hide_condition' );
 
-		$this->product_blocks_service->register();
-
-		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
-		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );
+		$this->product_blocks_service->hook_block_template( $this->simple_anchor_group );
+		$this->product_blocks_service->hook_block_template( $this->variation_anchor_group );
 	}
 
 	/**
 	 * Tests that assert the block configs passed to `add_block` are covered by
 	 * `InputTest` and `AttributeInputCollectionTest`.
 	 */
-	public function test_register_add_attribute_blocks() {
+	public function test_hook_block_template_add_attribute_blocks() {
 		// The total number of attribute blocks to be added to the simple product template is 16
 		$this->simple['attributes_section']
 			->expects( $this->exactly( 16 ) )
@@ -464,9 +439,46 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 			->expects( $this->exactly( 0 ) )
 			->method( 'add_hide_condition' );
 
-		$this->product_blocks_service->register();
+		$this->product_blocks_service->hook_block_template( $this->simple_anchor_group );
+		$this->product_blocks_service->hook_block_template( $this->variation_anchor_group );
+	}
 
-		do_action( self::GENERAL_GROUP_HOOK, $this->simple_anchor_group );
-		do_action( self::GENERAL_GROUP_HOOK, $this->variation_anchor_group );
+	public function test_register_custom_blocks() {
+		$custom_blocks         = [ 'existing-block', 'non-existent-block' ];
+		$expected_script_asset = new AdminScriptWithBuiltDependenciesAsset(
+			'google-listings-and-ads-product-blocks',
+			'tests/data/blocks',
+			GLA_TESTS_DATA_DIR . '/blocks.asset.php',
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [],
+					'version'      => (string) filemtime( GLA_TESTS_DATA_DIR . '/blocks.js' ),
+				]
+			)
+		);
+		$expected_style_asset  = new AdminStyleAsset(
+			'google-listings-and-ads-product-blocks-css',
+			'tests/data/blocks',
+			[],
+			(string) filemtime( GLA_TESTS_DATA_DIR . '/blocks.css' )
+		);
+
+		$block_registry = $this->createMock( BlockRegistry::class );
+		$block_registry
+			->expects( $this->exactly( 1 ) )
+			->method( 'register_block_type_from_metadata' )
+			->with( $this->stringContains( 'tests/data/existing-block/block.json' ) );
+
+		$this->assets_handler
+			->expects( $this->exactly( 1 ) )
+			->method( 'register_many' )
+			->with( [ $expected_script_asset, $expected_style_asset ] );
+
+		$this->assets_handler
+			->expects( $this->exactly( 1 ) )
+			->method( 'enqueue_many' )
+			->with( [ $expected_script_asset, $expected_style_asset ] );
+
+		$this->product_blocks_service->register_custom_blocks( $block_registry, GLA_TESTS_DATA_DIR, 'tests/data/blocks', $custom_blocks );
 	}
 }
