@@ -744,7 +744,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		foreach ( $this->product_statuses['products'] as $product_id => $statuses ) {
 			foreach ( $statuses as $status => $num_products ) {
-				$parent_id = $products[ $product_id ]->get_parent_id();
+				$product = $products[ $product_id ] ?? null;
+
+				if ( ! $product ) {
+					continue;
+				}
+
+				$parent_id = $product->get_parent_id();
+
 				if ( ! $parent_id ) {
 					$product_statistics[ $status ] += $num_products;
 				} elseif ( ! isset( $parent_statuses[ $parent_id ] ) ) {
