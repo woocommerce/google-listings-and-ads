@@ -88,6 +88,11 @@ class ProductRepository implements Service {
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
 	public function find_by_ids( array $ids, array $args = [], int $limit = -1, int $offset = 0 ): array {
+		// If no product IDs are supplied then return early to avoid querying and loading every product.
+		if ( empty( $ids ) ) {
+			return [];
+		}
+
 		$args['include'] = $ids;
 
 		return $this->find( $args, $limit, $offset );
