@@ -378,19 +378,25 @@ class MerchantStatusesTest extends UnitTest {
 			}
 		);
 
-		$matcher = $this->exactly(2);
-		$this->product_repository->expects( $matcher )->method( 'find_by_ids_as_associative_array' )->willReturnCallback(function ($args) use ( $matcher, $product_1, $product_2, $product_3, $variable_product, $variation_id_1, $variation_id_2){
-
-			switch ($matcher->getInvocationCount()) {
-				case 1:
-					$this->assertEquals([$product_1->get_id(), $product_2->get_id(), $product_3->get_id(),  $variation_id_1, $variation_id_2 ], $args);
-					return [ $product_1->get_id() => $product_1, $product_2->get_id() => $product_2, $product_3->get_id() => $product_3, $variation_id_1 => wc_get_product( $variation_id_1 ) , $variation_id_2 => wc_get_product( $variation_id_2 ) ];
-				case 2:
-					$this->assertEquals([$variable_product->get_id() ], $args);
-					return [ $variable_product->get_id() => $variable_product ];
+		$matcher = $this->exactly( 2 );
+		$this->product_repository->expects( $matcher )->method( 'find_by_ids_as_associative_array' )->willReturnCallback(
+			function ( $args ) use ( $matcher, $product_1, $product_2, $product_3, $variable_product, $variation_id_1, $variation_id_2 ) {
+				switch ( $matcher->getInvocationCount() ) {
+					case 1:
+						$this->assertEquals( [ $product_1->get_id(), $product_2->get_id(), $product_3->get_id(),  $variation_id_1, $variation_id_2 ], $args );
+						return [
+							$product_1->get_id() => $product_1,
+							$product_2->get_id() => $product_2,
+							$product_3->get_id() => $product_3,
+							$variation_id_1      => wc_get_product( $variation_id_1 ) ,
+							$variation_id_2      => wc_get_product( $variation_id_2 ),
+						];
+					case 2:
+						$this->assertEquals( [ $variable_product->get_id() ], $args );
+						return [ $variable_product->get_id() => $variable_product ];
+				}
 			}
-
-		});
+		);
 
 		$this->options->expects( $this->exactly( 1 ) )
 			->method( 'get' )
