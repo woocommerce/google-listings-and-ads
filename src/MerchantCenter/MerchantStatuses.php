@@ -865,7 +865,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 		}
 
-		ksort( $new_product_statuses );
 		foreach ( $new_product_statuses as $product_id => $new_status ) {
 			// wc_get_product should return the cached product because it was fetched in the process_product_statuses method.
 			$product = wc_get_product( $product_id );
