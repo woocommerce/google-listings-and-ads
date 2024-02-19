@@ -97,7 +97,7 @@ class MerchantReport implements OptionsAwareInterface {
 					continue;
 				}
 
-				$product_view_data['statuses'][ (int) $wc_product_id ] = [
+				$product_view_data['statuses'][ $wc_product_id ] = [
 					'product_id'      => $wc_product_id,
 					'status'          => $mc_product_status,
 					'expiration_date' => $this->convert_shopping_content_date( $product_view->getExpirationDate() ),
