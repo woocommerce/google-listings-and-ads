@@ -85,12 +85,12 @@ class MerchantReportTest extends UnitTest {
 		$test_merchant_id = 432;
 		$wc_product_id_1  = 882;
 		$wc_product_id_2  = 883;
-		$wc_product_id_3  = 884;
+		$page_size        = 800;
 
 		add_filter(
 			'woocommerce_gla_product_view_report_page_size',
-			function () {
-				return 500;
+			function () use ( $page_size ) {
+				return $page_size;
 			}
 		);
 
@@ -98,17 +98,13 @@ class MerchantReportTest extends UnitTest {
 
 		$this->product_helper->method( 'get_wc_product_id' )->will(
 			$this->returnCallback(
-				function ( $mc_id ) use ( $wc_product_id_1, $wc_product_id_2, $wc_product_id_3 ) {
+				function ( $mc_id ) use ( $wc_product_id_1, $wc_product_id_2 ) {
 					if ( $mc_id === 'online:en:ES:gla_' . $wc_product_id_1 ) {
 							return $wc_product_id_1;
 					}
 
 					if ( $mc_id === 'online:en:ES:gla_' . $wc_product_id_2 ) {
 						return $wc_product_id_2;
-					}
-
-					if ( $mc_id === 'online:en:ES:gla_' . $wc_product_id_3 ) {
-						return $wc_product_id_3;
 					}
 
 					return 0;
@@ -118,7 +114,7 @@ class MerchantReportTest extends UnitTest {
 
 		$product_view_1 = $this->create_product_view_product_status( 'online:en:ES:gla_' . $wc_product_id_1 );
 		$product_view_2 = $this->create_product_view_product_status( 'online:en:ES:gla_' . $wc_product_id_2, 'NOT_ELIGIBLE_OR_DISAPPROVED' );
-		$product_view_3 = $this->create_product_view_product_status( 'online:en:ES:external' . $wc_product_id_3 );
+		$product_view_3 = $this->create_product_view_product_status( 'online:en:ES:external' );
 
 		$report_row_1 = new ReportRow();
 		$report_row_1->setProductView( $product_view_1 );
@@ -143,7 +139,7 @@ class MerchantReportTest extends UnitTest {
 			'SELECT product_view.id,product_view.expiration_date,product_view.aggregated_destination_status FROM ProductView'
 		);
 
-		$search_request->setPageSize( 500 );
+		$search_request->setPageSize( $page_size );
 
 		$this->shopping_client->reports->expects( $this->once() )
 			->method( 'search' )
