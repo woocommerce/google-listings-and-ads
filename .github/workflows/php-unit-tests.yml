@@ -40,9 +40,6 @@ jobs:
         uses: woocommerce/grow/get-plugin-releases@actions-v1
         with:
           slug: woocommerce
-          # Temporarily use the RC version as version 8.6.0 has not been released yet.
-          # Will be reverted before merging PR.
-          includeRC: true
 
   UnitTests:
     name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version || 'latest' }}, WC ${{ matrix.wc-versions || 'latest' }}
