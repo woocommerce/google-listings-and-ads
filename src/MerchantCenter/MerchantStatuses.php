@@ -611,47 +611,27 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
-	 * Get the WC Products from the Product View statuses report.
-	 *
-	 * @param array $statuses statuses.
-	 * @see MerchantReport::get_product_view_report
-	 *
-	 * @return WC_Product[] Associative array with the key as the product ID and the value the WooCommerce Product object.
-	 */
-	protected function get_wc_products_from_product_view_statuses( array $statuses ): array {
-		$product_repository = $this->container->get( ProductRepository::class );
-		$products           = $product_repository->find_by_ids( array_column( $statuses, 'product_id' ) );
-		$map                = [];
-
-		foreach ( $products as $product ) {
-			$map[ $product->get_id() ] = $product;
-		}
-
-		return $map;
-	}
-
-	/**
 	 * Process product status statistics.
 	 *
 	 * @param array[] $statuses statuses.
 	 * @see MerchantReport::get_product_view_report
 	 */
 	public function process_product_statuses( array $statuses ): void {
+		$product_repository = $this->container->get( ProductRepository::class );
+		$products           = $product_repository->find_by_ids_as_associative_array( array_column( $statuses, 'product_id' ) );
+
 		$this->product_statuses = [
 			'products' => [],
 			'parents'  => [],
 		];
-
-		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
-		$products            = $this->get_wc_products_from_product_view_statuses( $statuses );
 
 		foreach ( $statuses as $product_status ) {
 
 			$wc_product_id     = $product_status['product_id'];
 			$mc_product_status = $product_status['status'];
 
-			// Skip if the product does not exist or if the product previously found/validated.
-			if ( ! $wc_product_id || ! empty( $this->product_data_lookup[ $wc_product_id ] ) ) {
+			// Skip if the product does not exist in WooCommerce.
+			if ( ! $wc_product_id ) {
 				continue;
 			}
 
@@ -667,12 +647,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				continue;
 			}
 
-			$this->product_data_lookup[ $wc_product_id ] = [
-				'name'       => $wc_product->get_name(),
-				'visibility' => $wc_product->get_meta( $visibility_meta_key ),
-				'parent_id'  => $wc_product->get_parent_id(),
-			];
-
 			if ( $this->product_is_expiring( $product_status['expiration_date'] ) ) {
 				$mc_product_status = MCStatus::EXPIRING;
 			}
@@ -681,13 +655,21 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			$this->product_statuses['products'][ $wc_product_id ][ $mc_product_status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $mc_product_status ] ?? 0 );
 
 			// Aggregate parent statuses for mc_status postmeta.
-			$wc_parent_id = $this->product_data_lookup[ $wc_product_id ]['parent_id'];
+			$wc_parent_id = $wc_product->get_parent_id();
 			if ( ! $wc_parent_id ) {
 				continue;
 			}
 			$this->product_statuses['parents'][ $wc_parent_id ][ $mc_product_status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $mc_product_status ] ?? 0 );
 
 		}
+
+		$parent_keys     = array_values( array_keys( $this->product_statuses['parents'] ) );
+		$parent_products = $product_repository->find_by_ids_as_associative_array( $parent_keys );
+		$products        = $products + $parent_products;
+
+		// Update each product's mc_status and then update the global statistics.
+		$this->update_products_meta_with_mc_status( $products );
+		$this->update_intermediate_product_statistics( $products );
 	}
 
 	/**
@@ -701,10 +683,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$this->mc_statuses = [];
 
 		$this->process_product_statuses( $statuses );
-
-		// Update each product's mc_status and then update the global statistics.
-		$this->update_products_meta_with_mc_status();
-		$this->update_intermediate_product_statistics();
 	}
 
 	/**
@@ -733,9 +711,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * 3. Compare if a higher priority status is found for that variable product.
 	 * 4. Loop through the `$parent_statuses` array at the end to add the final status counts.
 	 *
+	 * @param WC_Product[] $products The products to update. (passed by reference).
+	 *
 	 * @return array Product status statistics.
 	 */
-	protected function update_intermediate_product_statistics(): array {
+	protected function update_intermediate_product_statistics( &$products ): array {
 		$product_statistics = [
 			MCStatus::APPROVED           => 0,
 			MCStatus::PARTIALLY_APPROVED => 0,
@@ -764,7 +744,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		foreach ( $this->product_statuses['products'] as $product_id => $statuses ) {
 			foreach ( $statuses as $status => $num_products ) {
-				$parent_id = $this->product_data_lookup[ $product_id ]['parent_id'];
+				$parent_id = $products[ $product_id ]->get_parent_id();
 				if ( ! $parent_id ) {
 					$product_statistics[ $status ] += $num_products;
 				} elseif ( ! isset( $parent_statuses[ $parent_id ] ) ) {
@@ -843,8 +823,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 	/**
 	 * Update the Merchant Center status for each product.
+	 *
+	 * @param WC_Product[] $products The products to update. (passed by reference).
 	 */
-	protected function update_products_meta_with_mc_status() {
+	protected function update_products_meta_with_mc_status( &$products ) {
 		// Generate a product_id=>mc_status array.
 		$new_product_statuses = [];
 		foreach ( $this->product_statuses as $types ) {
@@ -866,8 +848,18 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		}
 
 		foreach ( $new_product_statuses as $product_id => $new_status ) {
-			// wc_get_product should return the cached product because it was fetched in the process_product_statuses method.
-			$product = wc_get_product( $product_id );
+			$product = $products[ $product_id ] ?? null;
+
+			// At this point, the product should exist in WooCommerce but in the case that product is not found, log it.
+			if ( ! $product ) {
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product_id ),
+					__METHOD__,
+				);
+				continue;
+			}
+
 			$product->add_meta_data( $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS ), $new_status, true );
 			// We use save_meta_data so we don't trigger the woocommerce_update_product hook and the Syncer Hooks.
 			$product->save_meta_data();

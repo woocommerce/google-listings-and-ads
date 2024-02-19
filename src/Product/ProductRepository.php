@@ -94,6 +94,25 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * Find and return an associative array of products with the product ID as the key.
+	 *
+	 * @param int[] $ids    Array of WooCommerce product IDs
+	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
+	 *
+	 * @return WC_Product[] Array of WooCommerce product objects
+	 */
+	public function find_by_ids_as_associative_array( array $ids, array $args = [], int $limit = -1, int $offset = 0 ) {
+		$products = $this->find_by_ids( $ids, $args, $limit, $offset );
+		$map      = [];
+		foreach ( $products as $product ) {
+			$map[ $product->get_id() ] = $product;
+		}
+		return $map;
+	}
+
+	/**
 	 * Find and return an array of WooCommerce product objects already submitted to Google Merchant Center.
 	 *
 	 * @param array $args   Array of WooCommerce args (except 'return' and 'meta_query').
