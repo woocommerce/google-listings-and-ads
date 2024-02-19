@@ -57,6 +57,7 @@ class MerchantStatusesTest extends UnitTest {
 	private $transients;
 	private $update_merchant_product_statuses_job;
 	private $options;
+	private $container;
 
 	/**
 	 * Runs before each test is executed.
@@ -87,6 +88,8 @@ class MerchantStatusesTest extends UnitTest {
 		$container->share( MerchantIssueTable::class, $merchant_issue_table );
 		$container->share( UpdateMerchantProductStatuses::class, $this->update_merchant_product_statuses_job );
 
+		$this->container = $container;
+
 		$this->merchant_statuses = new MerchantStatuses();
 		$this->merchant_statuses->set_container( $container );
 		$this->merchant_statuses->set_options_object( $this->options );
@@ -96,52 +99,52 @@ class MerchantStatusesTest extends UnitTest {
 		$this->product_meta_query_helper->expects( $this->any() )->method( 'get_all_values' )->willReturn( [] );
 
 		$this->account_status->expects( $this->any() )
-			->method( 'getAccountLevelIssues' )
-			->willReturn(
-				[
-					'one'   => new ShoppingContent\AccountStatusAccountLevelIssue(
-						[
-							'id'            => 'id',
-							'title'         => 'title',
-							'country'       => 'US',
-							'destination'   => 'destination',
-							'detail'        => 'detail',
-							'documentation' => 'https://example.com',
-							'severity'      => 'critical',
-						]
-					),
-					'two'   => new ShoppingContent\AccountStatusAccountLevelIssue(
-						[
-							'id'            => 'id2',
-							'title'         => 'title2',
-							'country'       => 'CA',
-							'destination'   => 'destination2',
-							'detail'        => 'detail2',
-							'documentation' => 'https://example.com/2',
-							'severity'      => 'error',
-						]
-					),
-					'three' => new ShoppingContent\AccountStatusAccountLevelIssue(
-						[
-							'id'            => 'id2',
-							'title'         => 'title2',
-							'country'       => 'US',
-							'destination'   => 'destination2',
-							'detail'        => 'detail2',
-							'documentation' => 'https://example.com/2',
-							'severity'      => 'error',
-						]
-					),
-				]
-			);
+		->method( 'getAccountLevelIssues' )
+		->willReturn(
+			[
+				'one'   => new ShoppingContent\AccountStatusAccountLevelIssue(
+					[
+						'id'            => 'id',
+						'title'         => 'title',
+						'country'       => 'US',
+						'destination'   => 'destination',
+						'detail'        => 'detail',
+						'documentation' => 'https://example.com',
+						'severity'      => 'critical',
+					]
+				),
+				'two'   => new ShoppingContent\AccountStatusAccountLevelIssue(
+					[
+						'id'            => 'id2',
+						'title'         => 'title2',
+						'country'       => 'CA',
+						'destination'   => 'destination2',
+						'detail'        => 'detail2',
+						'documentation' => 'https://example.com/2',
+						'severity'      => 'error',
+					]
+				),
+				'three' => new ShoppingContent\AccountStatusAccountLevelIssue(
+					[
+						'id'            => 'id2',
+						'title'         => 'title2',
+						'country'       => 'US',
+						'destination'   => 'destination2',
+						'detail'        => 'detail2',
+						'documentation' => 'https://example.com/2',
+						'severity'      => 'error',
+					]
+				),
+			]
+		);
 
 		$this->merchant_center_service->expects( $this->any() )
-			->method( 'is_connected' )
-			->willReturn( true );
+		->method( 'is_connected' )
+		->willReturn( true );
 
 		$this->merchant->expects( $this->any() )
-			->method( 'get_accountstatus' )
-			->willReturn( $this->account_status );
+		->method( 'get_accountstatus' )
+		->willReturn( $this->account_status );
 
 		$issues = [
 			md5( 'title' )  => [
@@ -173,15 +176,12 @@ class MerchantStatusesTest extends UnitTest {
 		];
 
 		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
-			->method( 'update_or_insert' )
-			->withConsecutive( [ $issues ], [] );
+		->method( 'update_or_insert' )
+		->withConsecutive( [ $issues ], [] );
 		$this->merchant_statuses->maybe_refresh_status_data( true );
 	}
 
-	/*
-	 * Test get product statistics using the transient.
-	 *
-	 */
+
 	public function test_get_product_statistics_when_mc_is_not_connected() {
 		$this->merchant_center_service->expects( $this->once() )
 			->method( 'is_connected' )
@@ -512,5 +512,141 @@ class MerchantStatusesTest extends UnitTest {
 			);
 
 			$this->merchant_statuses->handle_complete_mc_statuses_fetching();
+	}
+
+	public function test_update_product_multiple_variables_stats() {
+		$variable_product = WC_Helper_Product::create_variation_product();
+
+		$variations     = $variable_product->get_available_variations();
+		$variation_id_1 = $variations[0]['variation_id'];
+		$variation_id_2 = $variations[1]['variation_id'];
+
+		add_filter(
+			'woocommerce_gla_mc_status_lifetime',
+			function () {
+				return self::MC_STATUS_LIFETIME;
+			}
+		);
+
+		$matcher = $this->exactly( 4 );
+		$this->product_repository->expects( $matcher )->method( 'find_by_ids_as_associative_array' )->willReturnCallback(
+			function ( $args ) use ( $matcher, $variation_id_1, $variable_product, $variation_id_2 ) {
+				switch ( $matcher->getInvocationCount() ) {
+					case 1:
+						$this->assertEquals( [ $variation_id_1 ], $args );
+						return [
+							$variation_id_1 => wc_get_product( $variation_id_1 ) ,
+						];
+					case 2:
+						$this->assertEquals( [ $variable_product->get_id() ], $args );
+						return [ $variable_product->get_id() => $variable_product ];
+					case 3:
+						$this->assertEquals( [ $variation_id_2 ], $args );
+						return [
+							$variation_id_2 => wc_get_product( $variation_id_2 ) ,
+						];
+					case 4:
+						$this->assertEquals( [ $variable_product->get_id() ], $args );
+						return [ $variable_product->get_id() => $variable_product ];
+				}
+			}
+		);
+
+		$matcher = $this->exactly( 2 );
+		$this->options->expects( $matcher )
+			->method( 'get' )
+			->willReturnCallback(
+				function ( $args ) use ( $matcher, $variable_product ) {
+					switch ( $matcher->getInvocationCount() ) {
+						case 1:
+							$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $args );
+							return null;
+						case 2:
+							$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $args );
+							return [
+								MCStatus::APPROVED    => 1,
+								MCStatus::PARTIALLY_APPROVED => 0,
+								MCStatus::EXPIRING    => 0,
+								MCStatus::DISAPPROVED => 0,
+								MCStatus::NOT_SYNCED  => 0,
+								MCStatus::PENDING     => 0,
+								'parents'             => [ $variable_product->get_id() => MCStatus::APPROVED ],
+							];
+					}
+				}
+			);
+
+		$matcher = $this->exactly( 2 );
+		$this->options->expects( $matcher )
+			->method( 'update' )
+			->willReturnCallback(
+				function ( $option, $intermediate_data ) use ( $matcher, $variable_product ) {
+					$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $option );
+
+					switch ( $matcher->getInvocationCount() ) {
+						case 1:
+							$this->assertEquals(
+								[
+
+									MCStatus::APPROVED    => 1,
+									MCStatus::PARTIALLY_APPROVED => 0,
+									MCStatus::EXPIRING    => 0,
+									MCStatus::DISAPPROVED => 0,
+									MCStatus::NOT_SYNCED  => 0,
+									MCStatus::PENDING     => 0,
+									'parents'             => [ $variable_product->get_id() => MCStatus::APPROVED ],
+								],
+								$intermediate_data
+							);
+							return true;
+						case 2:
+							$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $option );
+							$this->assertEquals(
+								[
+
+									MCStatus::APPROVED    => 0,
+									MCStatus::PARTIALLY_APPROVED => 0,
+									MCStatus::EXPIRING    => 0,
+									MCStatus::DISAPPROVED => 1,
+									MCStatus::NOT_SYNCED  => 0,
+									MCStatus::PENDING     => 0,
+									'parents'             => [ $variable_product->get_id() => MCStatus::DISAPPROVED ],
+								],
+								$intermediate_data
+							);
+							return true;
+					}
+				}
+			);
+
+		$product_statuses_1 = [
+			[
+				'product_id'      => $variation_id_1,
+				'status'          => MCStatus::APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+
+		];
+
+		$product_statuses_2 = [
+			[
+				'product_id'      => $variation_id_2,
+				'status'          => MCStatus::DISAPPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+
+		];
+
+		$this->merchant_statuses->update_product_stats(
+			$product_statuses_1
+		);
+
+		$merchant_statuses_2 = new MerchantStatuses();
+		$merchant_statuses_2->set_container( $this->container );
+		$merchant_statuses_2->set_options_object( $this->options );
+
+		$merchant_statuses_2->update_product_stats(
+			$product_statuses_2
+		);
 	}
 }

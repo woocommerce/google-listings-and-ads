@@ -728,7 +728,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		// If the option is set, use it to sum the total quantity.
 		$product_statistics_intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
 		if ( $product_statistics_intermediate_data ) {
-			$product_statistics = $product_statistics_intermediate_data;
+			$product_statistics = $product_statistics + ['parents' => []];
 		}
 
 		$product_statistics_priority = [
@@ -758,8 +758,18 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 		}
 
-		foreach ( $parent_statuses as $parent_status ) {
-			$product_statistics[ $parent_status ] += 1;
+		foreach ( $parent_statuses as $parent_id => $parent_status ) {
+			$current_parent_intermediate_data_status = $product_statistics_intermediate_data['parents'][ $parent_id ] ?? null;
+
+			if( $current_parent_intermediate_data_status && $product_statistics_priority[ $parent_status ] < $product_statistics_priority[ $current_parent_intermediate_data_status ] &&  $product_statistics[ $current_parent_intermediate_data_status ] > 0 ) {
+				$product_statistics[ $current_parent_intermediate_data_status ] -= 1;
+				$product_statistics[ $parent_status ] += 1;
+			}
+			else{
+				$product_statistics[ $parent_status ] += 1;
+			}
+
+			$product_statistics['parents'][ $parent_id ] = $parent_status;
 		}
 
 		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $product_statistics );
