@@ -44,6 +44,9 @@ class MerchantReportTest extends UnitTest {
 	/** @var MerchantReport $merchant_report */
 	protected $merchant_report;
 
+	/** Merchant ID */
+	protected const MERCHANT_ID = 432;
+
 
 	/**
 	 * Runs before each test is executed.
@@ -57,6 +60,8 @@ class MerchantReportTest extends UnitTest {
 		$this->options         = $this->createMock( OptionsInterface::class );
 		$this->merchant_report = new MerchantReport( $this->shopping_client, $this->product_helper );
 		$this->merchant_report->set_options_object( $this->options );
+
+		$this->options->method( 'get_merchant_id' )->willReturn( self::MERCHANT_ID );
 	}
 
 	/**
@@ -82,10 +87,9 @@ class MerchantReportTest extends UnitTest {
 	}
 
 	public function test_get_product_view_report() {
-		$test_merchant_id = 432;
-		$wc_product_id_1  = 882;
-		$wc_product_id_2  = 883;
-		$page_size        = 800;
+		$wc_product_id_1 = 882;
+		$wc_product_id_2 = 883;
+		$page_size       = 800;
 
 		add_filter(
 			'woocommerce_gla_product_view_report_page_size',
@@ -93,8 +97,6 @@ class MerchantReportTest extends UnitTest {
 				return $page_size;
 			}
 		);
-
-		$this->options->method( 'get_merchant_id' )->willReturn( $test_merchant_id );
 
 		$this->product_helper->method( 'get_wc_product_id' )->will(
 			$this->returnCallback(
@@ -143,7 +145,7 @@ class MerchantReportTest extends UnitTest {
 
 		$this->shopping_client->reports->expects( $this->once() )
 			->method( 'search' )
-			->with( $test_merchant_id, $search_request )
+			->with( self::MERCHANT_ID, $search_request )
 			->willReturn( $response );
 
 		$this->assertEquals(
@@ -167,8 +169,6 @@ class MerchantReportTest extends UnitTest {
 	}
 
 	public function test_get_product_view_report_with_exception() {
-		$this->options->method( 'get_merchant_id' )->willReturn( 432 );
-
 		$this->shopping_client->reports->expects( $this->once() )
 			->method( 'search' )
 			->will(
