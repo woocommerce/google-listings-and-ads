@@ -88,8 +88,7 @@ class MerchantStatusesTest extends UnitTest {
 		$container->share( MerchantIssueTable::class, $merchant_issue_table );
 		$container->share( UpdateMerchantProductStatuses::class, $this->update_merchant_product_statuses_job );
 
-		$this->container = $container;
-
+		$this->container         = $container;
 		$this->merchant_statuses = new MerchantStatuses();
 		$this->merchant_statuses->set_container( $container );
 		$this->merchant_statuses->set_options_object( $this->options );
@@ -417,9 +416,9 @@ class MerchantStatusesTest extends UnitTest {
 								MCStatus::DISAPPROVED => 0,
 								MCStatus::NOT_SYNCED  => 0,
 								MCStatus::PENDING     => 0,
-								'parents' => [
+								'parents'             => [
 									$variable_product->get_id() => MCStatus::PARTIALLY_APPROVED,
-								]
+								],
 							],
 							$value
 						);
