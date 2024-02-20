@@ -228,17 +228,24 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @throws AccountReconnect When an account must be reconnected.
 	 */
 	protected function handle_unauthorized_error( RequestInterface $request, ResponseInterface $response ) {
-		// Log original exception before throwing reconnect exception.
-		do_action( 'woocommerce_gla_exception', RequestException::create( $request, $response ), __METHOD__ );
-
 		$auth_header = $response->getHeader( 'www-authenticate' )[0] ?? '';
 		if ( 0 === strpos( $auth_header, 'X_JP_Auth' ) ) {
+			// Log original exception before throwing reconnect exception.
+			do_action( 'woocommerce_gla_exception', RequestException::create( $request, $response ), __METHOD__ );
+
 			$this->set_jetpack_connected( false );
 			throw AccountReconnect::jetpack_disconnected();
 		}
 
-		$this->set_google_disconnected();
-		throw AccountReconnect::google_disconnected();
+		// Exclude listing customers as it will handle it's own unauthorized errors.
+		$path = $request->getUri()->getPath();
+		if ( false === strpos( $path, 'customers:listAccessibleCustomers' ) ) {
+			// Log original exception before throwing reconnect exception.
+			do_action( 'woocommerce_gla_exception', RequestException::create( $request, $response ), __METHOD__ );
+
+			$this->set_google_disconnected();
+			throw AccountReconnect::google_disconnected();
+		}
 	}
 
 	/**
