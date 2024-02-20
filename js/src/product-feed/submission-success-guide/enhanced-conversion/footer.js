@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useCallback } from '@wordpress/element';
+import { useCallback, Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -11,7 +11,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
 import CTA from '.~/components/enhanced-conversion-tracking-settings/cta';
 
-const EnhancedConversionFooter = ( { handleGuideFinish } ) => {
+const Footer = ( { handleGuideFinish } ) => {
 	const { createNotice } = useDispatchCoreNotices();
 
 	const handleEnableOrDisableClick = useCallback( () => {
@@ -24,8 +24,17 @@ const EnhancedConversionFooter = ( { handleGuideFinish } ) => {
 	}, [ createNotice, handleGuideFinish ] );
 
 	return (
-		<>
+		<Fragment>
 			<div className="gla-submission-success-guide__space_holder" />
+
+			<AppButton
+				isSecondary
+				// @todo: review data-action label
+				data-action="view-product-feed"
+				onClick={ handleGuideFinish }
+			>
+				{ __( 'Close', 'google-listings-and-ads' ) }
+			</AppButton>
 
 			<CTA
 				onEnableClick={ handleEnableOrDisableClick }
@@ -36,17 +45,8 @@ const EnhancedConversionFooter = ( { handleGuideFinish } ) => {
 				) }
 				enableLabel={ __( 'Confirm', 'google-listings-and-ads' ) }
 			/>
-
-			<AppButton
-				isSecondary
-				// @todo: review data-action label
-				data-action="view-product-feed"
-				onClick={ handleGuideFinish }
-			>
-				{ __( 'Close', 'google-listings-and-ads' ) }
-			</AppButton>
-		</>
+		</Fragment>
 	);
 };
 
-export default EnhancedConversionFooter;
+export default Footer;

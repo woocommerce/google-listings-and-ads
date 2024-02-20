@@ -7,15 +7,22 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import {
+	ENHANCED_ADS_CONVERSION_STATUS,
+	ENHANCED_ADS_TOS_BASE_URL,
+} from '.~/constants';
+import TrackableLink from '.~/components/trackable-link';
 import LoadingLabel from '.~/components/loading-label';
 import GuidePageContent from '.~/components/guide-page-content';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
+import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 
 const EnhancedConversion = () => {
 	const {
 		acceptedCustomerDataTerms: hasAcceptedTerms,
 		hasFinishedResolution,
 	} = useAcceptedCustomerDataTerms();
+	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 
 	return (
 		<GuidePageContent
@@ -56,6 +63,28 @@ const EnhancedConversion = () => {
 					{ __(
 						'Activating it is easy – just agree to the terms of service on Google Ads and we will make the tagging changes needed for you. This feature can also be managed from Google Listings & Ads > Settings',
 						'google-listings-and-ads'
+					) }
+				</p>
+			) }
+
+			{ allowEnhancedConversions ===
+				ENHANCED_ADS_CONVERSION_STATUS.PENDING && (
+				<p>
+					{ createInterpolateElement(
+						__(
+							'Enhanced Conversion Tracking will be enabled once you’ve agreed to the terms of service on Google Ads, which can be found in your <link>Google Ads settings screen</link>.',
+							'google-listings-and-ads'
+						),
+						{
+							link: (
+								<TrackableLink
+									href={ ENHANCED_ADS_TOS_BASE_URL }
+									target="_blank"
+									type="external"
+									eventName="gla_ads_tos" // @todo: review eventName
+								/>
+							),
+						}
 					) }
 				</p>
 			) }
