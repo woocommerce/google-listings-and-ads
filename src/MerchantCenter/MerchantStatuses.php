@@ -745,7 +745,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		foreach ( $this->product_statuses['products'] as $product_id => $statuses ) {
 			foreach ( $statuses as $status => $num_products ) {
-				$parent_id = $products[ $product_id ]->get_parent_id();
+				$product = $products[ $product_id ] ?? null;
+
+				if ( ! $product ) {
+					continue;
+				}
+
+				$parent_id = $product->get_parent_id();
+
 				if ( ! $parent_id ) {
 					$product_statistics[ $status ] += $num_products;
 				} elseif ( ! isset( $parent_statuses[ $parent_id ] ) ) {
@@ -865,7 +872,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			if ( ! $product ) {
 				do_action(
 					'woocommerce_gla_debug_message',
-					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product_id ),
+					sprintf( 'Merchant Center product with WooCommerce ID %d is not found in this store.', $product_id ),
 					__METHOD__,
 				);
 				continue;
