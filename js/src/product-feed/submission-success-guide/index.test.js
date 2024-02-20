@@ -2,10 +2,6 @@ jest.mock( '.~/hooks/useAdsCampaigns', () =>
 	jest.fn().mockName( 'useAdsCampaigns' )
 );
 
-jest.mock( '.~/hooks/useGoogleAdsAccount', () =>
-	jest.fn().mockName( 'useGoogleAdsAccount' ).mockReturnValue( {} )
-);
-
 jest.mock( '.~/hooks/useDispatchCoreNotices', () => ( {
 	__esModule: true,
 	default: jest
@@ -30,15 +26,7 @@ import '@testing-library/jest-dom';
  */
 import SubmissionSuccessGuide from './index';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import { CAMPAIGN_TYPE_PMAX } from '.~/constants';
-
-const CONNECTED_ADS_ACCOUNT = {
-	id: 777777,
-	currency: 'PLN',
-	symbol: 'zł',
-	status: 'connected',
-};
 
 const PAID_CAMPAIGN = {
 	id: 10,
@@ -64,11 +52,6 @@ describe( 'SubmissionSuccessGuide', () => {
 	} );
 
 	test( 'Renders the Google Ads credit screen if there are no paid campaigns', () => {
-		useGoogleAdsAccount.mockReturnValue( {
-			googleAdsAccount: CONNECTED_ADS_ACCOUNT,
-			hasFinishedResolution: true,
-		} );
-
 		useAdsCampaigns.mockReturnValue( {
 			data: [ FREE_CAMPAIGN ],
 			loaded: true,
@@ -85,11 +68,6 @@ describe( 'SubmissionSuccessGuide', () => {
 	} );
 
 	test( 'Renders the enhanced tracking screen if there are paid campaigns', () => {
-		useGoogleAdsAccount.mockReturnValue( {
-			googleAdsAccount: CONNECTED_ADS_ACCOUNT,
-			hasFinishedResolution: true,
-		} );
-
 		useAdsCampaigns.mockReturnValue( {
 			data: [ PAID_CAMPAIGN ],
 			loaded: true,
