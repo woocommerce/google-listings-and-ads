@@ -766,16 +766,27 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 		}
 
-		foreach ( $parent_statuses as $parent_id => $parent_status ) {
+		foreach ( $parent_statuses as $parent_id => $new_parent_status ) {
 			$current_parent_intermediate_data_status = $product_statistics_intermediate_data['parents'][ $parent_id ] ?? null;
 
-			// Check if the new parent status has higher priority than the previous one.
-			if ( $current_parent_intermediate_data_status && $product_statistics_priority[ $parent_status ] < $product_statistics_priority[ $current_parent_intermediate_data_status ] && $product_statistics[ $current_parent_intermediate_data_status ] > 0 ) {
-				$product_statistics[ $current_parent_intermediate_data_status ] -= 1;
+			if ( $current_parent_intermediate_data_status === $new_parent_status ) {
+				continue;
 			}
 
-			$product_statistics[ $parent_status ]       += 1;
-			$product_statistics['parents'][ $parent_id ] = $parent_status;
+			if ( ! $current_parent_intermediate_data_status ) {
+				$product_statistics[ $new_parent_status ]   += 1;
+				$product_statistics['parents'][ $parent_id ] = $new_parent_status;
+				continue;
+			}
+
+			// Check if the new parent status has higher priority than the previous one.
+			if ( $product_statistics_priority[ $new_parent_status ] < $product_statistics_priority[ $current_parent_intermediate_data_status ] ) {
+				$product_statistics[ $current_parent_intermediate_data_status ] -= 1;
+				$product_statistics[ $new_parent_status ]                       += 1;
+				$product_statistics['parents'][ $parent_id ]                     = $new_parent_status;
+			} else {
+				$product_statistics['parents'][ $parent_id ] = $current_parent_intermediate_data_status;
+			}
 		}
 
 		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $product_statistics );
