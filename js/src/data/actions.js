@@ -1264,7 +1264,7 @@ export function receiveAcceptedTerms( data ) {
 export function* updateEnhancedAdsConversionStatus( status ) {
 	try {
 		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/ads/update-enhanced-conversion-status`,
+			path: `${ API_NAMESPACE }/ads/enhanced-conversion-status`,
 			method: REQUEST_ACTIONS.POST,
 			data: {
 				status,

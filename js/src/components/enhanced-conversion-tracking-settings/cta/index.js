@@ -16,7 +16,7 @@ import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
-import PendingStatus from './PendingStatus';
+import PendingStatus from './pending-status';
 
 const CTA = ( {
 	acceptTermsLabel = __(
