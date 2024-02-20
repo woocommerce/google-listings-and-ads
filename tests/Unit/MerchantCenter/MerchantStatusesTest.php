@@ -10,6 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -17,7 +19,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Containe
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
+use DateTime;
+use DateInterval;
 use Exception;
+use WC_Helper_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,6 +40,12 @@ defined( 'ABSPATH' ) || exit;
  */
 class MerchantStatusesTest extends UnitTest {
 
+
+	/**
+	 * Lifetime of the MC Status transient.
+	 */
+	protected const MC_STATUS_LIFETIME = 60;
+
 	private $merchant;
 	private $merchant_issue_query;
 	private $merchant_center_service;
@@ -45,6 +56,7 @@ class MerchantStatusesTest extends UnitTest {
 	private $product_helper;
 	private $transients;
 	private $update_merchant_product_statuses_job;
+	private $options;
 
 	/**
 	 * Runs before each test is executed.
@@ -60,6 +72,7 @@ class MerchantStatusesTest extends UnitTest {
 		$this->product_helper                       = $this->createMock( ProductHelper::class );
 		$this->transients                           = $this->createMock( TransientsInterface::class );
 		$this->update_merchant_product_statuses_job = $this->createMock( UpdateMerchantProductStatuses::class );
+		$this->options                              = $this->createMock( OptionsInterface::class );
 
 		$merchant_issue_table = $this->createMock( MerchantIssueTable::class );
 
@@ -76,6 +89,7 @@ class MerchantStatusesTest extends UnitTest {
 
 		$this->merchant_statuses = new MerchantStatuses();
 		$this->merchant_statuses->set_container( $container );
+		$this->merchant_statuses->set_options_object( $this->options );
 	}
 
 	public function test_refresh_account_issues() {
@@ -345,5 +359,158 @@ class MerchantStatusesTest extends UnitTest {
 			true,
 			$product_statistics['loading']
 		);
+	}
+
+	public function test_update_product_stats() {
+		$product_1        = WC_Helper_Product::create_simple_product();
+		$product_2        = WC_Helper_Product::create_simple_product();
+		$product_3        = WC_Helper_Product::create_simple_product();
+		$variable_product = WC_Helper_Product::create_variation_product();
+
+		$variations     = $variable_product->get_available_variations();
+		$variation_id_1 = $variations[0]['variation_id'];
+		$variation_id_2 = $variations[1]['variation_id'];
+
+		add_filter(
+			'woocommerce_gla_mc_status_lifetime',
+			function () {
+				return self::MC_STATUS_LIFETIME;
+			}
+		);
+
+		$matcher = $this->exactly( 2 );
+		$this->product_repository->expects( $matcher )->method( 'find_by_ids_as_associative_array' )->willReturnCallback(
+			function ( $args ) use ( $matcher, $product_1, $product_2, $product_3, $variable_product, $variation_id_1, $variation_id_2 ) {
+				switch ( $matcher->getInvocationCount() ) {
+					case 1:
+						$this->assertEquals( [ $product_1->get_id(), $product_2->get_id(), $product_3->get_id(),  $variation_id_1, $variation_id_2 ], $args );
+						return [
+							$product_1->get_id() => $product_1,
+							$product_2->get_id() => $product_2,
+							$product_3->get_id() => $product_3,
+							$variation_id_1      => wc_get_product( $variation_id_1 ) ,
+							$variation_id_2      => wc_get_product( $variation_id_2 ),
+						];
+					case 2:
+						$this->assertEquals( [ $variable_product->get_id() ], $args );
+						return [ $variable_product->get_id() => $variable_product ];
+				}
+			}
+		);
+
+		$this->options->expects( $this->exactly( 1 ) )
+			->method( 'get' )
+			->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )
+			->willReturn( null );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )->with(
+				OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA,
+				$this->callback(
+					function ( $value ) {
+						$this->assertEquals(
+							[
+
+								MCStatus::APPROVED    => 2,
+								MCStatus::PARTIALLY_APPROVED => 1,
+								MCStatus::EXPIRING    => 1,
+								MCStatus::DISAPPROVED => 0,
+								MCStatus::NOT_SYNCED  => 0,
+								MCStatus::PENDING     => 0,
+							],
+							$value
+						);
+
+						return true;
+					}
+				)
+			);
+
+		$product_statuses = [
+			[
+				'product_id'      => $product_1->get_id(),
+				'status'          => MCStatus::APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+			[
+				'product_id'      => $product_2->get_id(),
+				'status'          => MCStatus::PARTIALLY_APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+			[
+				'product_id'      => $product_3->get_id(),
+				'status'          => MCStatus::APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P1D' ) ), // Expiring tomorrow
+			],
+			// Variations are grouped by parent id.
+			[
+				'product_id'      => $variation_id_1,
+				'status'          => MCStatus::APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+			[
+				'product_id'      => $variation_id_2,
+				'status'          => MCStatus::APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+
+		];
+
+		$this->merchant_statuses->update_product_stats(
+			$product_statuses
+		);
+	}
+
+	public function test_handle_complete_mc_statuses_fetching() {
+		add_filter(
+			'woocommerce_gla_mc_status_lifetime',
+			function () {
+				return self::MC_STATUS_LIFETIME;
+			}
+		);
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
+				[
+					MCStatus::APPROVED           => 3,
+					MCStatus::PARTIALLY_APPROVED => 1,
+					MCStatus::EXPIRING           => 0,
+					MCStatus::PENDING            => 0,
+					MCStatus::DISAPPROVED        => 1,
+					MCStatus::NOT_SYNCED         => 0,
+				]
+			);
+
+			$this->product_repository->expects( $this->once() )->method( 'find_all_product_ids' )->willReturn( [ 1, 2, 3, 4, 5, 6 ] );
+
+			$this->transients->expects( $this->once() )
+			->method( 'set' )->with(
+				Transients::MC_STATUSES,
+				$this->callback(
+					function ( $value ) {
+						$this->assertEquals(
+							[
+								MCStatus::APPROVED    => 3,
+								MCStatus::PARTIALLY_APPROVED => 1,
+								MCStatus::EXPIRING    => 0,
+								MCStatus::PENDING     => 0,
+								MCStatus::DISAPPROVED => 1,
+								MCStatus::NOT_SYNCED  => 1,
+							],
+							$value['statistics']
+						);
+
+						$this->assertEquals(
+							false,
+							$value['loading']
+						);
+
+						return true;
+					}
+				),
+				self::MC_STATUS_LIFETIME
+			);
+
+			$this->merchant_statuses->handle_complete_mc_statuses_fetching();
 	}
 }

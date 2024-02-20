@@ -65,7 +65,7 @@ class MerchantReport implements OptionsAwareInterface {
 	 * @throws Exception If the product view report data can't be retrieved.
 	 */
 	public function get_product_view_report( $next_page_token = null ): array {
-		$batch_size = apply_filters( 'woocommerce_gla_product_view_report_page_size', 1000 );
+		$batch_size = apply_filters( 'woocommerce_gla_product_view_report_page_size', 500 );
 
 		try {
 			$product_view_data = [
@@ -97,7 +97,7 @@ class MerchantReport implements OptionsAwareInterface {
 					continue;
 				}
 
-				$product_view_data['statuses'][] = [
+				$product_view_data['statuses'][ $wc_product_id ] = [
 					'product_id'      => $wc_product_id,
 					'status'          => $mc_product_status,
 					'expiration_date' => $this->convert_shopping_content_date( $product_view->getExpirationDate() ),
