@@ -23,6 +23,8 @@ use DateTime;
 use DateInterval;
 use Exception;
 use WC_Helper_Product;
+use WC_Product_Variation;
+use WC_Product_Variable;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -58,6 +60,7 @@ class MerchantStatusesTest extends UnitTest {
 	private $update_merchant_product_statuses_job;
 	private $options;
 	private $container;
+	private $initial_mc_statuses;
 
 	/**
 	 * Runs before each test is executed.
@@ -92,6 +95,22 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses = new MerchantStatuses();
 		$this->merchant_statuses->set_container( $container );
 		$this->merchant_statuses->set_options_object( $this->options );
+
+		$this->initial_mc_statuses = [
+			MCStatus::APPROVED           => 0,
+			MCStatus::PARTIALLY_APPROVED => 0,
+			MCStatus::EXPIRING           => 0,
+			MCStatus::DISAPPROVED        => 0,
+			MCStatus::NOT_SYNCED         => 0,
+			MCStatus::PENDING            => 0,
+		];
+
+		add_filter(
+			'woocommerce_gla_mc_status_lifetime',
+			function () {
+				return self::MC_STATUS_LIFETIME;
+			}
+		);
 	}
 
 	public function test_refresh_account_issues() {
@@ -370,13 +389,6 @@ class MerchantStatusesTest extends UnitTest {
 		$variation_id_1 = $variations[0]['variation_id'];
 		$variation_id_2 = $variations[1]['variation_id'];
 
-		add_filter(
-			'woocommerce_gla_mc_status_lifetime',
-			function () {
-				return self::MC_STATUS_LIFETIME;
-			}
-		);
-
 		$matcher = $this->exactly( 2 );
 		$this->product_repository->expects( $matcher )->method( 'find_by_ids_as_associative_array' )->willReturnCallback(
 			function ( $args ) use ( $matcher, $product_1, $product_2, $product_3, $variable_product, $variation_id_1, $variation_id_2 ) {
@@ -464,13 +476,6 @@ class MerchantStatusesTest extends UnitTest {
 	}
 
 	public function test_handle_complete_mc_statuses_fetching() {
-		add_filter(
-			'woocommerce_gla_mc_status_lifetime',
-			function () {
-				return self::MC_STATUS_LIFETIME;
-			}
-		);
-
 		$this->options->expects( $this->once() )
 			->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
 				[
@@ -516,114 +521,15 @@ class MerchantStatusesTest extends UnitTest {
 			$this->merchant_statuses->handle_complete_mc_statuses_fetching();
 	}
 
-	public function test_update_product_multiple_variables_stats() {
+	public function test_update_product_with_multiple_variables_and_multiple_batches_with_different_statuses() {
 		$variable_product = WC_Helper_Product::create_variation_product();
-
-		$variations     = $variable_product->get_available_variations();
-		$variation_id_1 = $variations[0]['variation_id'];
-		$variation_id_2 = $variations[1]['variation_id'];
-
-		add_filter(
-			'woocommerce_gla_mc_status_lifetime',
-			function () {
-				return self::MC_STATUS_LIFETIME;
-			}
-		);
-
-		$matcher = $this->exactly( 4 );
-		$this->product_repository->expects( $matcher )->method( 'find_by_ids_as_associative_array' )->willReturnCallback(
-			function ( $args ) use ( $matcher, $variation_id_1, $variable_product, $variation_id_2 ) {
-				switch ( $matcher->getInvocationCount() ) {
-					case 1:
-						$this->assertEquals( [ $variation_id_1 ], $args );
-						return [
-							$variation_id_1 => wc_get_product( $variation_id_1 ) ,
-						];
-					case 2:
-						$this->assertEquals( [ $variable_product->get_id() ], $args );
-						return [ $variable_product->get_id() => $variable_product ];
-					case 3:
-						$this->assertEquals( [ $variation_id_2 ], $args );
-						return [
-							$variation_id_2 => wc_get_product( $variation_id_2 ) ,
-						];
-					case 4:
-						$this->assertEquals( [ $variable_product->get_id() ], $args );
-						return [ $variable_product->get_id() => $variable_product ];
-				}
-			}
-		);
-
-		$matcher = $this->exactly( 2 );
-		$this->options->expects( $matcher )
-			->method( 'get' )
-			->willReturnCallback(
-				function ( $args ) use ( $matcher, $variable_product ) {
-					switch ( $matcher->getInvocationCount() ) {
-						case 1:
-							$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $args );
-							return null;
-						case 2:
-							$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $args );
-							return [
-								MCStatus::APPROVED    => 1,
-								MCStatus::PARTIALLY_APPROVED => 0,
-								MCStatus::EXPIRING    => 0,
-								MCStatus::DISAPPROVED => 0,
-								MCStatus::NOT_SYNCED  => 0,
-								MCStatus::PENDING     => 0,
-								'parents'             => [ $variable_product->get_id() => MCStatus::APPROVED ],
-							];
-					}
-				}
-			);
-
-		$matcher = $this->exactly( 2 );
-		$this->options->expects( $matcher )
-			->method( 'update' )
-			->willReturnCallback(
-				function ( $option, $intermediate_data ) use ( $matcher, $variable_product ) {
-					$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $option );
-
-					switch ( $matcher->getInvocationCount() ) {
-						case 1:
-							$this->assertEquals(
-								[
-
-									MCStatus::APPROVED    => 1,
-									MCStatus::PARTIALLY_APPROVED => 0,
-									MCStatus::EXPIRING    => 0,
-									MCStatus::DISAPPROVED => 0,
-									MCStatus::NOT_SYNCED  => 0,
-									MCStatus::PENDING     => 0,
-									'parents'             => [ $variable_product->get_id() => MCStatus::APPROVED ],
-								],
-								$intermediate_data
-							);
-							return true;
-						case 2:
-							$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $option );
-							$this->assertEquals(
-								[
-
-									MCStatus::APPROVED    => 0,
-									MCStatus::PARTIALLY_APPROVED => 0,
-									MCStatus::EXPIRING    => 0,
-									MCStatus::DISAPPROVED => 1,
-									MCStatus::NOT_SYNCED  => 0,
-									MCStatus::PENDING     => 0,
-									'parents'             => [ $variable_product->get_id() => MCStatus::DISAPPROVED ],
-								],
-								$intermediate_data
-							);
-							return true;
-					}
-				}
-			);
+		$variations       = $variable_product->get_available_variations( 'objects' );
+		$variation_1      = $variations[0];
+		$variation_2      = $variations[1];
 
 		$product_statuses_1 = [
 			[
-				'product_id'      => $variation_id_1,
+				'product_id'      => $variation_1->get_id(),
 				'status'          => MCStatus::APPROVED,
 				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 			],
@@ -632,12 +538,26 @@ class MerchantStatusesTest extends UnitTest {
 
 		$product_statuses_2 = [
 			[
-				'product_id'      => $variation_id_2,
+				'product_id'      => $variation_2->get_id(),
 				'status'          => MCStatus::DISAPPROVED,
 				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 			],
 
 		];
+
+		$this->assert_find_by_ids_for_variations( $variable_product, $variation_1, $variation_2 );
+
+		$this->assert_update_intermediate_data(
+			[
+				MCStatus::APPROVED => 1,
+				'parents'          => [ $variable_product->get_id() => MCStatus::APPROVED ],
+			],
+			[
+				MCStatus::APPROVED    => 0,
+				MCStatus::DISAPPROVED => 1,
+				'parents'             => [ $variable_product->get_id() => MCStatus::DISAPPROVED ],
+			]
+		);
 
 		$this->merchant_statuses->update_product_stats(
 			$product_statuses_1
@@ -649,6 +569,192 @@ class MerchantStatusesTest extends UnitTest {
 
 		$merchant_statuses_2->update_product_stats(
 			$product_statuses_2
+		);
+	}
+
+
+	public function test_update_product_with_multiple_variables_and_multiple_batches_and_same_status() {
+		$variable_product = WC_Helper_Product::create_variation_product();
+		$variations       = $variable_product->get_available_variations( 'objects' );
+		$variation_1      = $variations[0];
+		$variation_2      = $variations[1];
+
+		$product_statuses_1 = [
+			[
+				'product_id'      => $variation_1->get_id(),
+				'status'          => MCStatus::APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+
+		];
+
+		$product_statuses_2 = [
+			[
+				'product_id'      => $variation_2->get_id(),
+				'status'          => MCStatus::APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+
+		];
+
+		$this->assert_find_by_ids_for_variations( $variable_product, $variation_1, $variation_2 );
+
+		$this->assert_update_intermediate_data(
+			[
+				MCStatus::APPROVED => 1,
+				'parents'          => [ $variable_product->get_id() => MCStatus::APPROVED ],
+			],
+			[
+				MCStatus::APPROVED => 1,
+				'parents'          => [ $variable_product->get_id() => MCStatus::APPROVED ],
+			]
+		);
+
+		$this->merchant_statuses->update_product_stats(
+			$product_statuses_1
+		);
+
+		$merchant_statuses_2 = new MerchantStatuses();
+		$merchant_statuses_2->set_container( $this->container );
+		$merchant_statuses_2->set_options_object( $this->options );
+
+		$merchant_statuses_2->update_product_stats(
+			$product_statuses_2
+		);
+	}
+
+
+	public function test_update_product_with_multiple_variables_and_multiple_batches_and_dont_override_previous_state() {
+		$variable_product = WC_Helper_Product::create_variation_product();
+		$variations       = $variable_product->get_available_variations( 'objects' );
+		$variation_1      = $variations[0];
+		$variation_2      = $variations[1];
+
+		$product_statuses_1 = [
+			[
+				'product_id'      => $variation_1->get_id(),
+				'status'          => MCStatus::DISAPPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+
+		];
+
+		$product_statuses_2 = [
+			[
+				'product_id'      => $variation_2->get_id(),
+				'status'          => MCStatus::APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+
+		];
+
+		$this->assert_find_by_ids_for_variations( $variable_product, $variation_1, $variation_2 );
+
+		$this->assert_update_intermediate_data(
+			[
+				MCStatus::DISAPPROVED => 1,
+				'parents'             => [ $variable_product->get_id() => MCStatus::DISAPPROVED ],
+			],
+			[
+				MCStatus::DISAPPROVED => 1,
+				'parents'             => [ $variable_product->get_id() => MCStatus::DISAPPROVED ],
+			]
+		);
+
+		$this->merchant_statuses->update_product_stats(
+			$product_statuses_1
+		);
+
+		$merchant_statuses_2 = new MerchantStatuses();
+		$merchant_statuses_2->set_container( $this->container );
+		$merchant_statuses_2->set_options_object( $this->options );
+
+		$merchant_statuses_2->update_product_stats(
+			$product_statuses_2
+		);
+	}
+
+	/**
+	 *  Assert that the update_product_stats method updates the product stats in two batches.
+	 *
+	 * @param array $first_update_results
+	 * @param array $second_update_results
+	 */
+	protected function assert_update_intermediate_data( array $first_update_results, array $second_update_results ) {
+		$matcher = $this->exactly( 2 );
+		$this->options->expects( $matcher )
+			->method( 'get' )
+			->willReturnCallback(
+				function ( $args ) use ( $matcher, $first_update_results ) {
+					switch ( $matcher->getInvocationCount() ) {
+						case 1:
+							$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $args );
+							return null;
+						case 2:
+							$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $args );
+							return array_merge( $this->initial_mc_statuses, $first_update_results );
+					}
+				}
+			);
+
+		$matcher = $this->exactly( 2 );
+		$this->options->expects( $matcher )
+			->method( 'update' )
+			->willReturnCallback(
+				function ( $option, $intermediate_data ) use ( $matcher, $first_update_results, $second_update_results ) {
+					$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $option );
+
+					switch ( $matcher->getInvocationCount() ) {
+						case 1:
+							$this->assertEquals(
+								array_merge( $this->initial_mc_statuses, $first_update_results ),
+								$intermediate_data
+							);
+							return true;
+						case 2:
+							$this->assertEquals( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $option );
+							$this->assertEquals(
+								array_merge( $this->initial_mc_statuses, $second_update_results ),
+								$intermediate_data
+							);
+							return true;
+					}
+				}
+			);
+	}
+
+	/**
+	 *
+	 *  Assert that the find_by_ids_as_associative_array method is called with the expected arguments for variations when updating the product stats in two batches.
+	 *  Each batch calls find_by_ids_as_associative_array twice, once for the variation and once for the parent product.
+	 *
+	 * @param WC_Product_Variable  $variable_product
+	 * @param WC_Product_Variation $variation_1
+	 * @param WC_Product_Variation $variation_2
+	 */
+	protected function assert_find_by_ids_for_variations( WC_Product_Variable $variable_product, WC_Product_Variation $variation_1, WC_Product_Variation $variation_2 ) {
+		$matcher = $this->exactly( 4 );
+		$this->product_repository->expects( $matcher )->method( 'find_by_ids_as_associative_array' )->willReturnCallback(
+			function ( $args ) use ( $matcher, $variable_product, $variation_1, $variation_2 ) {
+				switch ( $matcher->getInvocationCount() ) {
+					case 1:
+						$this->assertEquals( [ $variation_1->get_id() ], $args );
+						return [
+							$variation_1->get_id() => $variation_1 ,
+						];
+					case 2:
+						$this->assertEquals( [ $variable_product->get_id() ], $args );
+						return [ $variable_product->get_id() => $variable_product ];
+					case 3:
+						$this->assertEquals( [ $variation_2->get_id() ], $args );
+						return [
+							$variation_2->get_id() => $variation_2,
+						];
+					case 4:
+						$this->assertEquals( [ $variable_product->get_id() ], $args );
+						return [ $variable_product->get_id() => $variable_product ];
+				}
+			}
 		);
 	}
 }
