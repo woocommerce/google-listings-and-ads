@@ -10,7 +10,7 @@ import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
 
 const Footer = ( { handleGuideFinish } ) => {
-	if ( ! glaData.adsSetupComplete ) {
+	if ( glaData.adsConnected ) {
 		return null;
 	}
 

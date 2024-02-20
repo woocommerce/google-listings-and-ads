@@ -70,7 +70,7 @@ const pages = [
 	},
 ];
 
-if ( glaData.adsSetupComplete ) {
+if ( ! glaData.adsConnected ) {
 	pages.pop();
 }
 
