@@ -69,8 +69,8 @@ class MerchantReport implements OptionsAwareInterface {
 
 		try {
 			$product_view_data = [
-				'statuses'  => [],
-				'next_page' => null,
+				'statuses'        => [],
+				'next_page_token' => null,
 			];
 
 			$query = new MerchantProductViewReportQuery(
