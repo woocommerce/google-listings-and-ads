@@ -861,7 +861,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			if ( ! $product ) {
 				do_action(
 					'woocommerce_gla_debug_message',
-					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product_id ),
+					sprintf( 'Merchant Center product with WooCommerce ID %d is not found in this store.', $product_id ),
 					__METHOD__,
 				);
 				continue;

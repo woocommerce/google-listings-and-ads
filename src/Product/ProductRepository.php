@@ -108,7 +108,7 @@ class ProductRepository implements Service {
 	 *
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
-	public function find_by_ids_as_associative_array( array $ids, array $args = [], int $limit = -1, int $offset = 0 ) {
+	public function find_by_ids_as_associative_array( array $ids, array $args = [], int $limit = -1, int $offset = 0 ): array {
 		$products = $this->find_by_ids( $ids, $args, $limit, $offset );
 		$map      = [];
 		foreach ( $products as $product ) {
