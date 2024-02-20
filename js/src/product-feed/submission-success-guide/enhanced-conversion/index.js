@@ -7,13 +7,10 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import {
-	ENHANCED_ADS_CONVERSION_STATUS,
-	ENHANCED_ADS_TOS_BASE_URL,
-} from '.~/constants';
-import TrackableLink from '.~/components/trackable-link';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import LoadingLabel from '.~/components/loading-label';
 import GuidePageContent from '.~/components/guide-page-content';
+import PendingNotice from '.~/components/enhanced-conversion-tracking-settings/pending-notice';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 
@@ -68,26 +65,7 @@ const EnhancedConversion = () => {
 			) }
 
 			{ allowEnhancedConversions ===
-				ENHANCED_ADS_CONVERSION_STATUS.PENDING && (
-				<p>
-					{ createInterpolateElement(
-						__(
-							'Enhanced Conversion Tracking will be enabled once you’ve agreed to the terms of service on Google Ads, which can be found in your <link>Google Ads settings screen</link>.',
-							'google-listings-and-ads'
-						),
-						{
-							link: (
-								<TrackableLink
-									href={ ENHANCED_ADS_TOS_BASE_URL }
-									target="_blank"
-									type="external"
-									eventName="gla_ads_tos" // @todo: review eventName
-								/>
-							),
-						}
-					) }
-				</p>
-			) }
+				ENHANCED_ADS_CONVERSION_STATUS.PENDING && <PendingNotice /> }
 		</GuidePageContent>
 	);
 };

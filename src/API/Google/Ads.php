@@ -339,7 +339,7 @@ class Ads implements OptionsAwareInterface {
 
 			// Retrieve the terms acceptance data from options.
 			if ( null !== $accepted_terms ) {
-				return $accepted_terms;
+				return boolval( $accepted_terms );
 			}
 
 			$customer = ( new AdsAccountQuery() )
@@ -355,10 +355,9 @@ class Ads implements OptionsAwareInterface {
 			$conversion_tracking_setting = $customer->getConversionTrackingSetting();
 
 			$accepted = $conversion_tracking_setting->getAcceptedCustomerDataTerms();
-			$status   = $accepted ? 1 : 0;
 
 			// Save the data terms in options as those cannot be reverted.
-			$this->options->update( OptionsInterface::CUSTOMER_DATA_TERMS, $status );
+			$this->options->update( OptionsInterface::CUSTOMER_DATA_TERMS, $accepted );
 
 			return $accepted;
 		} catch ( ApiException $e ) {
