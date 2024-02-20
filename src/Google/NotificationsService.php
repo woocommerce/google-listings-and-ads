@@ -117,7 +117,7 @@ class NotificationsService implements Service {
 	 * @return array|\WP_Error
 	 */
 	protected function do_request( array $args ) {
-		return Client::remote_request( $args, wp_json_encode( $args['body'] ) );
+		return Client::remote_request( $args, $args['body'] );
 	}
 
 	/**
