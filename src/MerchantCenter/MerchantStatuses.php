@@ -723,12 +723,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			MCStatus::PENDING            => 0,
 			MCStatus::DISAPPROVED        => 0,
 			MCStatus::NOT_SYNCED         => 0,
+			'parents'                    => [],
 		];
 
 		// If the option is set, use it to sum the total quantity.
 		$product_statistics_intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
 		if ( $product_statistics_intermediate_data ) {
-			$product_statistics = $product_statistics + [ 'parents' => [] ];
+			$product_statistics = $product_statistics_intermediate_data;
 		}
 
 		$product_statistics_priority = [
@@ -766,8 +767,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				$product_statistics[ $current_parent_intermediate_data_status ] -= 1;
 			}
 
-			$product_statistics[ $parent_status ] += 1;
-
+			$product_statistics[ $parent_status ]       += 1;
 			$product_statistics['parents'][ $parent_id ] = $parent_status;
 		}
 
