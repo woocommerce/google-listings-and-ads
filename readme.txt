@@ -111,6 +111,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.18 - 2024-02-20 =
+* Fix - Prevent product queries by IDs if no arguments are supplied.
+
 = 2.5.17 - 2024-02-07 =
 * Dev - Add manual QIT workflow.
 * Dev - Upload coverage report for JS unit tests to codecov.
