@@ -35,7 +35,9 @@ const DynamicScreenFooter = ( { handleGuideFinish } ) => {
 		pmaxCampaigns?.length &&
 		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED
 	) {
-		return <EnhancedConversionFooter />;
+		return (
+			<EnhancedConversionFooter handleGuideFinish={ handleGuideFinish } />
+		);
 	}
 
 	return <GoogleCreditsFooter handleGuideFinish={ handleGuideFinish } />;
