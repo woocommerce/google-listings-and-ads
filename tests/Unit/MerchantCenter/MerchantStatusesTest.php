@@ -407,16 +407,19 @@ class MerchantStatusesTest extends UnitTest {
 			->method( 'update' )->with(
 				OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA,
 				$this->callback(
-					function ( $value ) {
+					function ( $value ) use ( $variable_product ) {
 						$this->assertEquals(
 							[
 
-								MCStatus::APPROVED    => 2,
-								MCStatus::PARTIALLY_APPROVED => 1,
+								MCStatus::APPROVED    => 1,
+								MCStatus::PARTIALLY_APPROVED => 2,
 								MCStatus::EXPIRING    => 1,
 								MCStatus::DISAPPROVED => 0,
 								MCStatus::NOT_SYNCED  => 0,
 								MCStatus::PENDING     => 0,
+								'parents' => [
+									$variable_product->get_id() => MCStatus::PARTIALLY_APPROVED,
+								]
 							],
 							$value
 						);
@@ -450,7 +453,7 @@ class MerchantStatusesTest extends UnitTest {
 			],
 			[
 				'product_id'      => $variation_id_2,
-				'status'          => MCStatus::APPROVED,
+				'status'          => MCStatus::PARTIALLY_APPROVED,
 				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 			],
 
