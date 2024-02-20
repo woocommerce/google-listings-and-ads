@@ -69,7 +69,7 @@ class NotificationsServiceTest extends UnitTest {
 			'timeout' => 30,
 			'headers' => [
 				'x-woocommerce-topic' => $topic,
-				'Content-Type' => 'application/json'
+				'Content-Type'        => 'application/json',
 			],
 			'body'    => [
 				'item_id' => $item_id,
