@@ -70,6 +70,7 @@ class NotificationsService implements Service {
 			'timeout' => 30,
 			'headers' => [
 				'x-woocommerce-topic' => $topic,
+				'Content-Type'        => 'application/json',
 			],
 			'body'    => [
 				'item_id' => $item_id,
@@ -116,7 +117,7 @@ class NotificationsService implements Service {
 	 * @return array|\WP_Error
 	 */
 	protected function do_request( array $args ) {
-		return Client::remote_request( $args, $args['body'] );
+		return Client::remote_request( $args, wp_json_encode( $args['body'] ) );
 	}
 
 	/**
