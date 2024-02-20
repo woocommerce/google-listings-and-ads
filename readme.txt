@@ -127,9 +127,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Context not tracked in Create Campaign FAQs.
 * Fix - WordPress 6.4 Compatibility: Set an appropriate width for the content in the Popover component.
 
-= 2.5.15 - 2024-01-09 =
-* Dev - Update link for developer.woo.com.
-* Tweak - WC 8.5 compatibility.
-* Update - Upgrade google/apiclient for PHP 8.3 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
