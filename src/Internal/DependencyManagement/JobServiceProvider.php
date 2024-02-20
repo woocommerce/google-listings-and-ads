@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductNotificationJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\SettingsNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ShippingNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
@@ -48,6 +49,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping;
+use Automattic\WooCommerce\GoogleListingsAndAds\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -151,6 +153,15 @@ class JobServiceProvider extends AbstractServiceProvider {
 			ShippingNotificationJob::class,
 			NotificationsService::class
 		);
+
+		// Share settings notifications job
+		$this->share_action_scheduler_job(
+			SettingsNotificationJob::class,
+			NotificationsService::class
+		);
+
+		// Share settings syncer hooks
+		$this->share_with_tags( Settings\SyncerHooks::class, JobRepository::class, NotificationsService::class );
 
 		// Share shipping settings syncer job and hooks.
 		$this->share_action_scheduler_job( UpdateShippingSettings::class, MerchantCenterService::class, GoogleSettings::class );
