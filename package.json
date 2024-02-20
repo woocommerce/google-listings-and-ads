@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
-	"version": "2.5.17",
+	"version": "2.5.18",
 	"description": "google-listings-and-ads",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -76,8 +76,7 @@
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
 		"stylelint-config-standard-scss": "^3.0.0",
-		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?9eb10353728dc915bf5f7bdd4b8e218c625355a9",
-		"woocommerce-grow-storybook": "https://gitpkg.now.sh/woocommerce/grow/packages/js/storybook?fecfad52db350afd3550842e2374dee8dbc587ea"
+		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?9eb10353728dc915bf5f7bdd4b8e218c625355a9"
 	},
 	"overrides": {
 		"engine.io-client": {
@@ -111,9 +110,6 @@
 		"packages-update": "wp-scripts packages-update",
 		"start": "wp-scripts start",
 		"start:hot": "npm run dev -- --config ./webpack-development.config.js && npm start -- --hot --allowed-hosts all",
-		"storybook": "storybook",
-		"storybook:build": "storybook build",
-		"storybook:deploy": "storybook deploy",
 		"test:e2e": "npx playwright test --config=tests/e2e/config/playwright.config.js",
 		"test:e2e-dev": "npx playwright test --config=tests/e2e/config/playwright.config.js --debug",
 		"test:js": "wp-scripts test-unit-js --coverage",
