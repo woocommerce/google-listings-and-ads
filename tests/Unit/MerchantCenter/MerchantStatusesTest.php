@@ -269,6 +269,40 @@ class MerchantStatusesTest extends UnitTest {
 		);
 	}
 
+	public function test_get_product_statistics_with_transient_and_error() {
+		$this->merchant_center_service->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$this->transients->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'statistics' => [],
+					'loading'    => false,
+					'error'      => 'My error message.',
+				]
+			);
+
+		$this->update_merchant_product_statuses_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
+			->method( 'is_scheduled' );
+
+		$product_statistics = $this->merchant_statuses->get_product_statistics();
+
+		$this->assertEquals(
+			'My error message.',
+			$product_statistics['error']
+		);
+
+		$this->assertEquals(
+			false,
+			$product_statistics['loading']
+		);
+	}
+
 	public function test_get_product_statistics_without_transient() {
 		$this->merchant_center_service->expects( $this->once() )
 			->method( 'is_connected' )
@@ -521,6 +555,39 @@ class MerchantStatusesTest extends UnitTest {
 			);
 
 			$this->merchant_statuses->handle_complete_mc_statuses_fetching();
+	}
+
+	public function test_handle_failed_mc_statuses_fetching() {
+		$this->options->expects( $this->once() )
+			->method( 'delete' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+
+			$this->transients->expects( $this->once() )
+			->method( 'set' )->with(
+				Transients::MC_STATUSES,
+				$this->callback(
+					function ( $value ) {
+						$this->assertEquals(
+							[],
+							$value['statistics']
+						);
+
+						$this->assertEquals(
+							'My error message.',
+							$value['error']
+						);
+
+						$this->assertEquals(
+							false,
+							$value['loading']
+						);
+
+						return true;
+					}
+				),
+				self::MC_STATUS_LIFETIME
+			);
+
+			$this->merchant_statuses->handle_failed_mc_statuses_fetching( 'My error message.' );
 	}
 
 	public function test_update_product_with_multiple_variables_and_multiple_batches_with_different_statuses() {
