@@ -60,14 +60,14 @@ class ShippingNotificationJob extends AbstractActionSchedulerJob implements JobI
 	/**
 	 * Logic when processing the items
 	 *
-	 * @param array $args Arguments with the item id and the topic
+	 * @param array $args Arguments for the notification
 	 */
 	protected function process_items( array $args ): void {
 		$this->notifications_service->notify( $this->topic );
 	}
 
 	/**
-	 * Schedule the Product Notification Job
+	 * Schedule the Job
 	 *
 	 * @param array $args
 	 */
