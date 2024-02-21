@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
@@ -27,6 +28,9 @@ defined( 'ABSPATH' ) || exit;
 class ClientTest extends UnitTest {
 	use PluginHelper;
 
+	/** @var MockObject|ReconnectWordPress $note */
+	protected $note;
+
 	/** @var MockObject|OptionsInterface $options */
 	protected $options;
 
@@ -46,9 +50,11 @@ class ClientTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->note    = $this->createMock( ReconnectWordPress::class );
 		$this->options = $this->createMock( OptionsInterface::class );
 
 		$this->container = new Container();
+		$this->container->share( ReconnectWordPress::class, $this->note );
 		$this->container->share( OptionsInterface::class, $this->options );
 
 		$this->provider = new GoogleServiceProvider();
@@ -97,8 +103,14 @@ class ClientTest extends UnitTest {
 			new Response( 401, [ 'www-authenticate' => 'X_JP_Auth' ], 'error' ),
 		];
 
+		// Set Jetpack as previously connected to trigger change note.
+		$this->options->expects( $this->once() )->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( true );
+
 		// Expect Jetpack to be marked as disconnected.
 		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::JETPACK_CONNECTED, false );
+
+		// Expect ReconnectWordPress note to be triggered.
+		$this->note->expects( $this->once() )->method( 'get_entry' );
 
 		$this->expectException( AccountReconnect::class );
 		$this->expectExceptionMessage( AccountReconnect::jetpack_disconnected()->getMessage() );
