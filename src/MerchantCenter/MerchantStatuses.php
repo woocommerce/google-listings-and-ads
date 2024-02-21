@@ -129,7 +129,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				'timestamp'  => $this->cache_created_time->getTimestamp(),
 				'statistics' => [],
 				'loading'    => true,
+				'error'      => null,
 			];
+		}
+
+		if ( $this->mc_statuses['error'] ) {
+			return $this->mc_statuses;
 		}
 
 		$counting_stats = $this->mc_statuses['statistics'];
@@ -812,6 +817,30 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		return array_sum( $synced_status_values );
 	}
 
+	/**
+	 * Handle the failure of the Merchant Center statuses fetching.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $error_message The error message.
+	 */
+	public function handle_failed_mc_statuses_fetching( string $error_message = '' ) {
+		$this->delete_product_statuses_count_intermediate_data();
+
+		$mc_statuses = [
+			'timestamp'  => $this->cache_created_time->getTimestamp(),
+			'statistics' => [],
+			'loading'    => false,
+			'error'      => $error_message,
+		];
+
+		$this->container->get( TransientsInterface::class )->set(
+			Transients::MC_STATUSES,
+			$mc_statuses,
+			$this->get_status_lifetime()
+		);
+	}
+
 
 	/**
 	 * Handle the completion of the Merchant Center statuses fetching.
@@ -837,6 +866,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				'timestamp'  => $this->cache_created_time->getTimestamp(),
 				'statistics' => $intermediate_data,
 				'loading'    => false,
+				'error'      => null,
 			];
 
 			$this->container->get( TransientsInterface::class )->set(
