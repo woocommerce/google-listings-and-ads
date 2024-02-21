@@ -65,7 +65,8 @@ const EnhancedConversion = () => {
 			) }
 
 			{ allowEnhancedConversions ===
-				ENHANCED_ADS_CONVERSION_STATUS.PENDING && <PendingNotice /> }
+				ENHANCED_ADS_CONVERSION_STATUS.PENDING &&
+				! hasAcceptedTerms && <PendingNotice /> }
 		</GuidePageContent>
 	);
 };

@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { ENHANCED_ADS_CONVERSION_STATUS, glaData } from '.~/constants';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
+import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import Section from '.~/wcdl/section';
 import PendingNotice from '.~/components/enhanced-conversion-tracking-settings/pending-notice';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -28,6 +29,7 @@ const TITLE = __( 'Enhanced Conversion Tracking', 'google-listings-and-ads' );
  * Renders the settings panel for enhanced conversion tracking
  */
 const EnhancedConversionTrackingSettings = () => {
+	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 
 	if ( ! glaData.adsConnected ) {
@@ -40,9 +42,8 @@ const EnhancedConversionTrackingSettings = () => {
 				<Section.Card>
 					<Section.Card.Body>
 						{ allowEnhancedConversions ===
-							ENHANCED_ADS_CONVERSION_STATUS.PENDING && (
-							<PendingNotice />
-						) }
+							ENHANCED_ADS_CONVERSION_STATUS.PENDING &&
+							! acceptedCustomerDataTerms && <PendingNotice /> }
 
 						<CTA />
 					</Section.Card.Body>
