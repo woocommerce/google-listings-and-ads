@@ -134,12 +134,12 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$handler_stack = HandlerStack::create();
 			$handler_stack->remove( 'http_errors' );
 			$handler_stack->push( $this->error_handler(), 'http_errors' );
-			$handler_stack->push( $this->add_auth_header() );
+			$handler_stack->push( $this->add_auth_header(), 'auth_header' );
 			$handler_stack->push( $this->add_plugin_version_header(), 'plugin_version_header' );
 
 			// Override endpoint URL if we are using http locally.
 			if ( 0 === strpos( $this->get_connect_server_url_root()->getValue(), 'http://' ) ) {
-				$handler_stack->push( $this->override_http_url() );
+				$handler_stack->push( $this->override_http_url(), 'override_http_url' );
 			}
 
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
