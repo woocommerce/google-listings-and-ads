@@ -60,25 +60,10 @@ class SyncerHooks implements Service, Registerable {
 
 		$update_rest = function ( $option ) {
 			if ( strpos( $option, 'woocommerce_' ) === 0 ) {
-				$this->handle_update_shipping_settings();
+				$this->settings_notification_job->schedule();
 			}
 		};
 
 		add_action( 'update_option', $update_rest, 90, 1 );
-	}
-
-	/**
-	 * Handle updating of Merchant Center shipping settings.
-	 *
-	 * @return void
-	 */
-	protected function handle_update_shipping_settings() {
-		// Bail if an event is already scheduled in the current request
-		if ( $this->already_scheduled ) {
-			return;
-		}
-
-		$this->settings_notification_job->schedule();
-		$this->already_scheduled = true;
 	}
 }
