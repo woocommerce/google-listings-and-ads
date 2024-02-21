@@ -180,7 +180,11 @@ class AccountController extends BaseController {
 	 */
 	protected function get_ads_accoount_has_access(): callable {
 		return function () {
-			return $this->account->get_ads_accoount_has_access();
+			try {
+				return $this->account->get_ads_accoount_has_access();
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
 		};
 	}
 

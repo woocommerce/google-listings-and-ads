@@ -169,6 +169,10 @@ class AccountService implements OptionsAwareInterface, Service {
 						$this->link_merchant_account();
 						break;
 
+					case 'account_access':
+						$this->check_account_access();
+						break;
+
 					default:
 						throw new Exception(
 							/* translators: 1: is a string representing an unknown step name */
@@ -214,16 +218,32 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @return bool
 	 */
 	public function get_ads_accoount_has_access() {
-		$connection_status = $this->container->get( Connection::class )->get_status();
-		$email             = $connection_status['email'] ?? '';
+		try {
+			$connection_status  = $this->container->get( Connection::class )->get_status();
+			$email              = $connection_status['email'] ?? '';
+			$accept_invite_link = $this->options->get( OptionsInterface::ADS_BILLING_URL, '' );
 
-		if ( empty( $email ) ) {
-			return boolval( $email );
+			// If no email, means google account is not connected.
+			if ( empty( $email ) ) {
+				throw new Exception( 'Google account is not connected' );
+			}
+
+			$status = $this->container->get( Ads::class )->has_access( $email );
+			$status = boolval( $status );
+
+			// If no access to ads account and there is no invite_link, throw exception.
+			if ( ! $status && empty( $accept_invite_link ) ) {
+				throw new Exception( 'Billing URL is not present' );
+			}
+
+			return [
+				'has_access'  => $status,
+				'invite_link' => $accept_invite_link,
+			];
+		} catch ( Exception $e ) {
+			$message = $e->getMessage();
+			throw new Exception( $message, 428 );
 		}
-
-		$status = $this->container->get( Ads::class )->has_access( $email );
-
-		return boolval( $status );
 	}
 
 	/**
@@ -296,5 +316,16 @@ class AccountService implements OptionsAwareInterface, Service {
 	private function create_conversion_action(): void {
 		$action = $this->container->get( AdsConversionAction::class )->create_conversion_action();
 		$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $action );
+	}
+
+	/**
+	 * Checks whether the account has access granted.
+	 */
+	private function check_account_access(): void {
+		$data = $this->get_ads_accoount_has_access();
+
+		if ( ! $data['has_access'] ) {
+			throw new Exception( 'Ads account invitation is not accepted', 428 );
+		}
 	}
 }
