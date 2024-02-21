@@ -3,11 +3,16 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use ReflectionClass;
 use ReflectionMethod;
 
 defined( 'ABSPATH' ) || exit;
@@ -28,6 +33,21 @@ class ClientTest extends ContainerAwareUnitTest {
 	public function test_plugin_version_header_in_handler_stack(): void {
 		// Get string representation of the handler stack and confirm if `plugin_version_header` is contained within it.
 		$this->assertStringContainsString( 'plugin_version_header', (string) $this->container->get( Client::class )->getConfig( 'handler' ) );
+	}
+
+	/**
+	 * Confirm that the error handler does not intervene for regular responses.
+	 */
+	public function test_error_handler_regular_response() {
+		$mocked_responses = [
+			new Response( 200, [], 'response' ),
+		];
+
+		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$response = $client->request( 'GET', 'https://testing.local' );
+
+		$this->assertEquals( 200, $response->getStatusCode() );
+		$this->assertEquals( 'response', $response->getBody() );
 	}
 
 	/**
@@ -56,7 +76,28 @@ class ClientTest extends ContainerAwareUnitTest {
 		$handler = new ReflectionMethod( GoogleServiceProvider::class, $handler_function );
 		$handler->setAccessible( true );
 
+		// Get access to internal container to share with service provider.
+		$woogle_container = new ReflectionClass( Container::class );
+		$league_container = $woogle_container->getProperty( 'container' );
+		$league_container->setAccessible( true );
+
 		$provider = new GoogleServiceProvider();
+		$provider->setLeagueContainer( $league_container->getValue( $this->container ) );
 		return $handler->invoke( $provider );
+	}
+
+	/**
+	 * Returns a mock client with an individual handler attached to the stack.
+	 *
+	 * @param string $handler_function Handler function name to include in stack.
+	 * @param array  $mocked_responses List of responses to return.
+	 *
+	 * @return Client Mock client.
+	 */
+	protected function mock_client_with_handler( string $handler_function, array $mocked_responses ) {
+		$mock     = new MockHandler( $mocked_responses );
+		$handlers = HandlerStack::create( $mock );
+		$handlers->push( $this->invoke_handler( 'error_handler' ) );
+		return new Client( [ 'handler' => $handlers ] );
 	}
 }
