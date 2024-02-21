@@ -651,6 +651,7 @@ class ConnectionTest implements Service, Registerable {
 											<option value="coupon.delete" <?php echo $_GET['topic'] === 'coupon.delete' ? "selected" : ""?>>coupon.delete</option>
 											<option value="coupon.update" <?php echo $_GET['topic'] === 'coupon.update' ? "selected" : ""?>>coupon.update</option>
 											<option value="shipping.update" <?php echo $_GET['topic'] === 'shipping.update' ? "selected" : ""?>>shipping.update</option>
+											<option value="settings.update" <?php echo $_GET['topic'] === 'settings.update' ? "selected" : ""?>>settings.update</option>
 										</select>
 									</label>
 									<button class="button">Send Notification</button>
