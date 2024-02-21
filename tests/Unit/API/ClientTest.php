@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
@@ -56,6 +57,36 @@ class ClientTest extends ContainerAwareUnitTest {
 
 		$this->assertEquals( 200, $response->getStatusCode() );
 		$this->assertEquals( 'response', $response->getBody() );
+	}
+
+	/**
+	 * Confirm that the error handler throws an error to reconnect Jetpack when the header is not included.
+	 */
+	public function test_error_handler_reconnect_jetpack() {
+		$mocked_responses = [
+			new Response( 401, [ 'www-authenticate' => 'X_JP_Auth' ], 'error' ),
+		];
+
+		$this->expectException( AccountReconnect::class );
+		$this->expectExceptionMessage( AccountReconnect::jetpack_disconnected()->getMessage() );
+
+		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$response = $client->request( 'GET', 'https://testing.local' );
+	}
+
+	/**
+	 * Confirm that the error handler throws an error to reconnect Google with a permission denied status.
+	 */
+	public function test_error_handler_reconnect_google() {
+		$mocked_responses = [
+			new Response( 401, [], 'error' ),
+		];
+
+		$this->expectException( AccountReconnect::class );
+		$this->expectExceptionMessage( AccountReconnect::google_disconnected()->getMessage() );
+
+		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$response = $client->request( 'GET', 'https://testing.local' );
 	}
 
 	/**
