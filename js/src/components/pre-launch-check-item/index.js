@@ -8,7 +8,6 @@ import {
 	PanelRow,
 	CheckboxControl,
 } from '@wordpress/components';
-import { recordEvent } from '@woocommerce/tracks';
 import { useRef } from '@wordpress/element';
 
 /**
@@ -16,10 +15,11 @@ import { useRef } from '@wordpress/element';
  */
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import AppButton from '.~/components/app-button';
+import { recordGlaEvent } from '.~/utils/tracks';
 import './index.scss';
 
 const getPanelToggleHandler = ( id ) => ( isOpened ) => {
-	recordEvent( 'pre-launch-checklist', {
+	recordGlaEvent( 'pre-launch-checklist', {
 		id,
 		action: isOpened ? 'expand' : 'collapse',
 	} );

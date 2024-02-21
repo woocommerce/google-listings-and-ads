@@ -16,6 +16,11 @@ describe( 'reducer', () => {
 
 	beforeEach( () => {
 		defaultState = deepFreeze( {
+			general: {
+				version: null,
+				mcId: null,
+				adsId: null,
+			},
 			mc: {
 				target_audience: null,
 				countries: null,
@@ -90,6 +95,27 @@ describe( 'reducer', () => {
 			} );
 
 			expect( state ).toBe( originalState );
+		} );
+	} );
+
+	describe( 'General', () => {
+		const path = 'general';
+
+		it( 'should hydrate the prefetched data', () => {
+			const data = {
+				version: '2.3.4',
+				mcId: 123456789,
+				adsId: 987654321,
+			};
+			const state = reducer( prepareState(), {
+				type: TYPES.HYDRATE_PREFETCHED_DATA,
+				data,
+			} );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( `${ path }.version`, data.version );
+			expect( state ).toHaveProperty( `${ path }.mcId`, data.mcId );
+			expect( state ).toHaveProperty( `${ path }.adsId`, data.adsId );
 		} );
 	} );
 

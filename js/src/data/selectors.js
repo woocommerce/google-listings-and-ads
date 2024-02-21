@@ -12,8 +12,19 @@ import { getReportQuery, getReportKey, getPerformanceQuery } from './utils';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ * @typedef {import('.~/data/types.js').GeneralState} GeneralState
  * @typedef {import('.~/data/types.js').AssetEntityGroup} AssetEntityGroup
  */
+
+/**
+ * Select the general state.
+ *
+ * @param {Object} state The current store state will be injected by `wp.data`.
+ * @return {GeneralState} General state.
+ */
+export const getGeneral = ( state ) => {
+	return state.general;
+};
 
 export const getShippingRates = ( state ) => {
 	return state.mc.shipping.rates;

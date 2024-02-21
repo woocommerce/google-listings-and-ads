@@ -3,20 +3,20 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getNewPath } from '@woocommerce/navigation';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * @fires gla_setup_mc with `{ triggered_by: 'back-button', action: 'leave', target: 'back', trigger: 'click' }`.
  */
 const SetupMCTopBar = () => {
 	const handleBackButtonClick = () => {
-		recordEvent( 'gla_setup_mc', {
+		recordGlaEvent( 'gla_setup_mc', {
 			triggered_by: 'back-button',
 			action: 'leave',
 			// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.

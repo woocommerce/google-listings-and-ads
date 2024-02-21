@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -11,8 +10,9 @@ import { recordEvent } from '@woocommerce/tracks';
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AppButton from '.~/components/app-button';
 import AppModal from '.~/components/app-modal';
-import './index.scss';
 import { getEditFreeListingsUrl, getEditCampaignUrl } from '.~/utils/urls';
+import { recordGlaEvent } from '.~/utils/tracks';
+import './index.scss';
 
 /**
  * Triggered when "continue" to edit program button is clicked.
@@ -42,7 +42,7 @@ const EditProgramPromptModal = ( { programId, onRequestClose } ) => {
 
 		getHistory().push( url );
 
-		recordEvent( 'gla_dashboard_edit_program_click', {
+		recordGlaEvent( 'gla_dashboard_edit_program_click', {
 			programId,
 			url,
 		} );

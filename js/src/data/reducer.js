@@ -9,6 +9,11 @@ import { setWith, clone } from 'lodash';
 import TYPES from './action-types';
 
 const DEFAULT_STATE = {
+	general: {
+		version: null,
+		mcId: null,
+		adsId: null,
+	},
 	mc: {
 		target_audience: null,
 		countries: null,
@@ -472,6 +477,18 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.UPSERT_TOUR: {
 			const { tour } = action;
 			return setIn( state, [ 'tours', tour.id ], tour );
+		}
+
+		case TYPES.HYDRATE_PREFETCHED_DATA: {
+			const stateSetter = chainState( state, 'general' );
+
+			[ 'version', 'mcId', 'adsId' ].forEach( ( key ) => {
+				if ( action.data.hasOwnProperty( key ) ) {
+					stateSetter.setIn( key, action.data[ key ] );
+				}
+			} );
+
+			return stateSetter.end();
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

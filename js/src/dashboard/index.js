@@ -5,7 +5,6 @@ import { useState, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { getNewPath, getQuery, getHistory } from '@woocommerce/navigation';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -19,13 +18,14 @@ import SummarySection from './summary-section';
 import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
 import AllProgramsTableCard from './all-programs-table-card';
 import { glaData, GUIDE_NAMES } from '.~/constants';
-import './index.scss';
 import { subpaths, getCreateCampaignUrl } from '.~/utils/urls';
 import isWCTracksEnabled from '.~/utils/isWCTracksEnabled';
 import EditFreeCampaign from '.~/edit-free-campaign';
 import EditPaidAdsCampaign from '.~/pages/edit-paid-ads-campaign';
 import CreatePaidAdsCampaign from '.~/pages/create-paid-ads-campaign';
 import { CTA_CREATE_ANOTHER_CAMPAIGN, CTA_CONFIRM } from './constants';
+import { recordGlaEvent } from '.~/utils/tracks';
+import './index.scss';
 
 /**
  * @fires gla_modal_closed when CES modal is closed.
@@ -48,7 +48,7 @@ const Dashboard = () => {
 				setCESPromptOpen( true );
 			}
 
-			recordEvent( 'gla_modal_closed', {
+			recordGlaEvent( 'gla_modal_closed', {
 				context: GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS,
 				action,
 			} );

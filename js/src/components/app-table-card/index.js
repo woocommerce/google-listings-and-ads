@@ -2,12 +2,12 @@
  * External dependencies
  */
 import { TableCard } from '@woocommerce/components';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import AppTableCardDiv from '.~/components/app-table-card-div';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * Toggling display of table columns
@@ -28,7 +28,7 @@ import AppTableCardDiv from '.~/components/app-table-card-div';
  */
 const recordColumnToggleEvent = ( report, shown, column ) => {
 	const status = shown.includes( column ) ? 'on' : 'off';
-	recordEvent( 'gla_table_header_toggle', {
+	recordGlaEvent( 'gla_table_header_toggle', {
 		report,
 		column,
 		status,
@@ -53,7 +53,7 @@ const recordColumnToggleEvent = ( report, shown, column ) => {
  * @fires gla_table_sort with given props.
  */
 const recordTableSortEvent = ( report, column, direction ) => {
-	recordEvent( 'gla_table_sort', { report, column, direction } );
+	recordGlaEvent( 'gla_table_sort', { report, column, direction } );
 };
 
 /**

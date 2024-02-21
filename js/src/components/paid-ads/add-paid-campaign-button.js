@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getHistory, getNewPath } from '@woocommerce/navigation';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -11,6 +10,7 @@ import { recordEvent } from '@woocommerce/tracks';
 import AppButton from '.~/components/app-button';
 import { glaData } from '.~/constants';
 import { getCreateCampaignUrl } from '.~/utils/urls';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * "Add paid campaign" button is clicked.
@@ -22,11 +22,11 @@ import { getCreateCampaignUrl } from '.~/utils/urls';
 
 /**
  * Renders an AppButton with the text "Add Paid Campaign".
- * Clicking on the button will call `recordEvent` and
+ * Clicking on the button will call `recordGlaEvent` and
  * redirect to Setup MC or Create New Campaign depending on
  * whether the users have completed ads setup or not.
  *
- * `recordEvent` is called with a default eventName `'gla_add_paid_campaign_clicked'`,
+ * `recordGlaEvent` is called with a default eventName `'gla_add_paid_campaign_clicked'`,
  * and a default eventProps `{ context: '', href: newPath }`.
  * You can provide `eventProps` and it will be merged with the default eventProps.
  *
@@ -35,9 +35,9 @@ import { getCreateCampaignUrl } from '.~/utils/urls';
  * @fires gla_add_paid_campaign_clicked with given props, when clicked.
  *
  * @param {Object} props Props
- * @param {string} [props.eventName='gla_add_paid_campaign_clicked'] eventName to be used when calling `recordEvent`.
- * @param {Object} [props.eventProps] eventProps to be used when calling `recordEvent`.
- * @param {string} [props.eventProps.context=''] Context to be used when calling `recordEvent`.
+ * @param {string} [props.eventName='gla_add_paid_campaign_clicked'] eventName to be used when calling `recordGlaEvent`.
+ * @param {Object} [props.eventProps] eventProps to be used when calling `recordGlaEvent`.
+ * @param {string} [props.eventProps.context=''] Context to be used when calling `recordGlaEvent`.
  * @param {string} [props.eventProps.href] Destination path. This would default to a path with
  * `'/google/setup-ads'` when users have not completed ads setup, or
  * `'/google/dashboard'` (with `subpath=/campaigns/create`) when users have completed ads setup.
@@ -58,7 +58,7 @@ const AddPaidCampaignButton = ( props ) => {
 	const defaultEventProps = { context: '', href: url };
 
 	const handleClick = ( ...args ) => {
-		recordEvent( eventName, {
+		recordGlaEvent( eventName, {
 			...defaultEventProps,
 			...eventProps,
 		} );

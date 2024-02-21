@@ -3,7 +3,11 @@
  */
 import { useEffect } from '@wordpress/element';
 import { getPath } from '@woocommerce/navigation';
-import { recordEvent } from '@woocommerce/tracks';
+
+/**
+ * Internal dependencies
+ */
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * Check for whether the phone number for Merchant Center exists or not.
@@ -30,7 +34,7 @@ const usePhoneNumberCheckTrackEventEffect = ( {
 			return;
 		}
 
-		recordEvent( 'gla_mc_phone_number_check', {
+		recordGlaEvent( 'gla_mc_phone_number_check', {
 			path,
 			exist,
 			isValid,

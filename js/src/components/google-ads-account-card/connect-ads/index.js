@@ -25,6 +25,7 @@ import './index.scss';
  * Clicking on the button to connect an existing Google Ads account.
  *
  * @event gla_ads_account_connect_button_click
+ * @property {number} id The account ID to be connected.
  */
 
 /**
@@ -127,6 +128,7 @@ const ConnectAds = ( props ) => {
 							isSecondary
 							disabled={ ! value }
 							eventName="gla_ads_account_connect_button_click"
+							eventProps={ { id: Number( value ) } }
 							onClick={ handleConnectClick }
 						>
 							{ __( 'Connect', 'google-listings-and-ads' ) }

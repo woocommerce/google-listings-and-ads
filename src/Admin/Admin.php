@@ -131,6 +131,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 		) )->add_inline_script(
 			'glaData',
 			[
+				'slug'                     => $this->get_slug(),
 				'mcSetupComplete'          => $this->merchant_center->is_setup_complete(),
 				'mcSupportedCountry'       => $this->merchant_center->is_store_country_supported(),
 				'mcSupportedLanguage'      => $this->merchant_center->is_language_supported(),
@@ -140,6 +141,11 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 				'dateFormat'               => get_option( 'date_format' ),
 				'timeFormat'               => get_option( 'time_format' ),
 				'siteLogoUrl'              => wp_get_attachment_image_url( get_theme_mod( 'custom_logo' ), 'full' ),
+				'initialWpData'            => [
+					'version' => $this->get_version(),
+					'mcId'    => $this->options->get_merchant_id() ?: null,
+					'adsId'   => $this->options->get_ads_id() ?: null,
+				],
 			]
 		);
 
