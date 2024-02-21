@@ -3,18 +3,18 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Response;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use ReflectionClass;
 use ReflectionMethod;
 
 defined( 'ABSPATH' ) || exit;
@@ -24,8 +24,37 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API
  */
-class ClientTest extends ContainerAwareUnitTest {
+class ClientTest extends UnitTest {
 	use PluginHelper;
+
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
+	/**
+	 * @var Container $container
+	 */
+	protected $container;
+
+	/**
+	 * @var Provider $provider
+	 */
+	protected $provider;
+
+	/**
+	 * Runs before each test is executed.
+	 */
+	public function setUp(): void {
+		parent::setUp();
+
+		$this->options = $this->createMock( OptionsInterface::class );
+
+		$this->container = new Container();
+		$this->container->share( OptionsInterface::class, $this->options );
+
+		$this->provider = new GoogleServiceProvider();
+		$this->provider->setLeagueContainer( $this->container );
+		$this->provider->register();
+	}
 
 	/**
 	 * Confirm that the client handler stack includes the following handlers:
@@ -35,7 +64,7 @@ class ClientTest extends ContainerAwareUnitTest {
 	 */
 	public function test_handlers_in_stack(): void {
 		// Get string representation of the handler stack.
-		$handlers = (string) $this->container->get( Client::class )->getConfig( 'handler' );
+		$handlers = (string) woogle_get_container()->get( Client::class )->getConfig( 'handler' );
 
 		$this->assertStringContainsString( 'http_errors', $handlers );
 		$this->assertStringContainsString( 'auth_header', $handlers );
@@ -68,6 +97,9 @@ class ClientTest extends ContainerAwareUnitTest {
 			new Response( 401, [ 'www-authenticate' => 'X_JP_Auth' ], 'error' ),
 		];
 
+		// Expect Jetpack to be marked as disconnected.
+		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::JETPACK_CONNECTED, false );
+
 		$this->expectException( AccountReconnect::class );
 		$this->expectExceptionMessage( AccountReconnect::jetpack_disconnected()->getMessage() );
 
@@ -82,6 +114,9 @@ class ClientTest extends ContainerAwareUnitTest {
 		$mocked_responses = [
 			new Response( 401, [], 'error' ),
 		];
+
+		// Expect Google to be marked as disconnected.
+		$this->options->expects( $this->once() )->method( 'update' )->with( OptionsInterface::GOOGLE_CONNECTED, false );
 
 		$this->expectException( AccountReconnect::class );
 		$this->expectExceptionMessage( AccountReconnect::google_disconnected()->getMessage() );
@@ -146,14 +181,7 @@ class ClientTest extends ContainerAwareUnitTest {
 		$handler = new ReflectionMethod( GoogleServiceProvider::class, $handler_function );
 		$handler->setAccessible( true );
 
-		// Get access to internal container to share with service provider.
-		$woogle_container = new ReflectionClass( Container::class );
-		$league_container = $woogle_container->getProperty( 'container' );
-		$league_container->setAccessible( true );
-
-		$provider = new GoogleServiceProvider();
-		$provider->setLeagueContainer( $league_container->getValue( $this->container ) );
-		return $handler->invoke( $provider );
+		return $handler->invoke( $this->provider );
 	}
 
 	/**
