@@ -70,6 +70,7 @@ class NotificationsService implements Service {
 			'timeout' => 30,
 			'headers' => [
 				'x-woocommerce-topic' => $topic,
+				'Content-Type'        => 'application/json',
 			],
 			'body'    => [
 				'item_id' => $item_id,
