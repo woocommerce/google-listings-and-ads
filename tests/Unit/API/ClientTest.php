@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Psr7\Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use ReflectionMethod;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,14 +36,27 @@ class ClientTest extends ContainerAwareUnitTest {
 	 * @return void
 	 */
 	public function test_plugin_version_headers(): void {
-		$service = new GoogleServiceProvider();
 		$request = new Request( 'GET', 'https://testing.local' );
 
-		$service->add_plugin_version_header()(
+		$this->invoke_handler( 'add_plugin_version_header' )(
 			function ( $request, $options ) {
 				$this->assertEquals( $this->get_client_name(), $request->getHeader( 'x-client-name' )[0] );
 				$this->assertEquals( $this->get_version(), $request->getHeader( 'x-client-version' )[0] );
 			}
 		)( $request, [] );
+	}
+
+	/**
+	 * Calls a handler function through ReflectionMethod to allow testing protected handlers.
+	 *
+	 * @param string $handler_function
+	 * @return callable Handler callback.
+	 */
+	protected function invoke_handler( string $handler_function ) {
+		$handler = new ReflectionMethod( GoogleServiceProvider::class, $handler_function );
+		$handler->setAccessible( true );
+
+		$provider = new GoogleServiceProvider();
+		return $handler->invoke( $provider );
 	}
 }
