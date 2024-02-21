@@ -278,7 +278,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 *
 	 * @return callable
 	 */
-	public function add_plugin_version_header(): callable {
+	protected function add_plugin_version_header(): callable {
 		return function ( callable $handler ) {
 			return function ( RequestInterface $request, array $options ) use ( $handler ) {
 				$request = $request->withHeader( 'x-client-name', $this->get_client_name() )
