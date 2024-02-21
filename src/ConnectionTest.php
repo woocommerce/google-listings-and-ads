@@ -757,12 +757,12 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'partner-notification' === $_GET['action'] && check_admin_referer( 'partner-notification' ) ) {
-			if ( ! isset( $_GET['topic'], $_GET['item_id'] ) ) {
-				$this->response .= "\n Topic and Item ID are required.";
+			if ( ! isset( $_GET['topic'] ) ) {
+				$this->response .= "\n Topic is required.";
 				return;
 			}
 
-			$item  = $_GET['item_id'];
+			$item  = $_GET['item_id'] ?? null;
 			$topic = $_GET['topic'];
 
 			$service = new NotificationsService();
