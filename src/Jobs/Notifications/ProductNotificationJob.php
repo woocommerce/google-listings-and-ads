@@ -86,7 +86,7 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 	 * @param array $args
 	 */
 	public function schedule( array $args = [] ): void {
-		if ( $this->can_schedule( $args ) ) {
+		if ( $this->can_schedule( [ $args ] ) ) {
 			$this->action_scheduler->schedule_immediate(
 				$this->get_process_item_hook(),
 				[ $args ]
