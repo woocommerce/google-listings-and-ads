@@ -240,6 +240,7 @@ class MerchantStatusesTest extends UnitTest {
 						MCStatus::NOT_SYNCED         => 0,
 					],
 					'loading'    => false,
+					'error'      => null,
 				]
 			);
 
@@ -316,6 +317,7 @@ class MerchantStatusesTest extends UnitTest {
 						MCStatus::NOT_SYNCED         => 0,
 					],
 					'loading'    => false,
+					'error'      => null,
 				]
 			);
 

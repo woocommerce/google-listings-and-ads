@@ -12,8 +12,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
+use Error;
 
 /**
  * Class UpdateMerchantProductStatusesTest
@@ -209,5 +211,41 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 			->method( 'delete_product_statuses_count_intermediate_data' );
 
 		$this->job->schedule();
+	}
+
+	public function test_update_merchant_product_statuses_when_view_report_throws_error() {
+		$this->merchant_center_service->method( 'is_connected' )
+		->willReturn( true );
+
+		$this->merchant_report->expects( $this->exactly( 1 ) )
+		->method( 'get_product_view_report' )
+		->willThrowException( new Error( 'error' ) );
+
+		$this->merchant_statuses->expects( $this->exactly( 1 ) )
+			->method( 'handle_failed_mc_statuses_fetching' )
+			->with( 'error' );
+
+		$this->expectException( JobException::class );
+		$this->expectExceptionMessage( 'Error updating merchant product statuses: error' );
+
+		do_action( self::PROCESS_ITEM_HOOK, [] );
+	}
+
+	public function test_update_merchant_product_statuses_when_view_report_throws_exception() {
+		$this->merchant_center_service->method( 'is_connected' )
+		->willReturn( true );
+
+		$this->merchant_report->expects( $this->exactly( 1 ) )
+		->method( 'get_product_view_report' )
+		->willThrowException( new Exception( 'error' ) );
+
+		$this->merchant_statuses->expects( $this->exactly( 1 ) )
+			->method( 'handle_failed_mc_statuses_fetching' )
+			->with( 'error' );
+
+		$this->expectException( JobException::class );
+		$this->expectExceptionMessage( 'Error updating merchant product statuses: error' );
+
+		do_action( self::PROCESS_ITEM_HOOK, [] );
 	}
 }
