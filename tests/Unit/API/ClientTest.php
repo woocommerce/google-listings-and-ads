@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Handler\MockHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
@@ -84,6 +85,21 @@ class ClientTest extends ContainerAwareUnitTest {
 
 		$this->expectException( AccountReconnect::class );
 		$this->expectExceptionMessage( AccountReconnect::google_disconnected()->getMessage() );
+
+		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$response = $client->request( 'GET', 'https://testing.local' );
+	}
+
+	/**
+	 * Confirm that the error handler throws a generic error when the status code is higher than 400 except a 401.
+	 */
+	public function test_error_handler_generic_error_response() {
+		$mocked_responses = [
+			new Response( 404, [], 'not found' ),
+		];
+
+		$this->expectException( RequestException::class );
+		$this->expectExceptionMessage( 'not found' );
 
 		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local' );
