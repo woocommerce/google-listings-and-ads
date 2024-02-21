@@ -91,6 +91,21 @@ class ClientTest extends ContainerAwareUnitTest {
 	}
 
 	/**
+	 * Confirm that a request to listAccessibleCustomers does not return a redirect error.
+	 */
+	public function test_error_handler_list_accessible_customers() {
+		$mocked_responses = [
+			new Response( 401, [], 'error' ),
+		];
+
+		$this->expectException( RequestException::class );
+		$this->expectExceptionMessage( 'error' );
+
+		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
+		$response = $client->request( 'GET', 'https://testing.local/google/google-ads/customers:listAccessibleCustomers' );
+	}
+
+	/**
 	 * Confirm that the error handler throws a generic error when the status code is higher than 400 except a 401.
 	 */
 	public function test_error_handler_generic_error_response() {
