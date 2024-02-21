@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -205,6 +206,24 @@ class AccountService implements OptionsAwareInterface, Service {
 			'status'      => $status,
 			'billing_url' => $this->options->get( OptionsInterface::ADS_BILLING_URL ),
 		];
+	}
+
+	/**
+	 * Gets the ads account access status.
+	 *
+	 * @return bool
+	 */
+	public function get_ads_accoount_has_access() {
+		$connection_status = $this->container->get( Connection::class )->get_status();
+		$email             = $connection_status['email'] ?? '';
+
+		if ( empty( $email ) ) {
+			return boolval( $email );
+		}
+
+		$status = $this->container->get( Ads::class )->has_access( $email );
+
+		return boolval( $status );
 	}
 
 	/**
