@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API;
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\Jetpack\Connection\Tokens;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -66,7 +67,6 @@ class ClientTest extends UnitTest {
 
 		$this->provider = new GoogleServiceProvider();
 		$this->provider->setLeagueContainer( $this->container );
-		$this->provider->register();
 	}
 
 	/**
@@ -76,7 +76,7 @@ class ClientTest extends UnitTest {
 	 * - `plugin_version_header`
 	 */
 	public function test_handlers_in_stack(): void {
-		// Get string representation of the handler stack.
+		// Get string representation of the handler stack (fetches handlers from main container).
 		$handlers = (string) woogle_get_container()->get( Client::class )->getConfig( 'handler' );
 
 		$this->assertStringContainsString( 'http_errors', $handlers );
@@ -85,6 +85,15 @@ class ClientTest extends UnitTest {
 
 		// By default we should not have a http URL.
 		$this->assertStringNotContainsString( 'override_http_url', $handlers );
+	}
+
+	/**
+	 * Confirm that service classes are available from the container after registering.
+	 */
+	public function test_registering_provided_services() {
+		$this->provider->register();
+
+		$this->assertNotNull( $this->container->get( GoogleAdsClient::class ) );
 	}
 
 	/**
