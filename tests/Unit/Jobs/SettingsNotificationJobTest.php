@@ -59,7 +59,7 @@ class SettingsNotificationJobTest extends UnitTest {
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
-			->with( self::PROCESS_ITEM_HOOK, [] )
+			->with( self::PROCESS_ITEM_HOOK )
 			->willReturn( false );
 
 		$this->action_scheduler->expects( $this->once() )
@@ -74,7 +74,7 @@ class SettingsNotificationJobTest extends UnitTest {
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
-			->with( self::PROCESS_ITEM_HOOK, [] )
+			->with( self::PROCESS_ITEM_HOOK )
 			->willReturn( true );
 
 		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
