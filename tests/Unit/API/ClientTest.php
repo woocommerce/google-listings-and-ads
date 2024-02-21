@@ -26,13 +26,21 @@ class ClientTest extends ContainerAwareUnitTest {
 	use PluginHelper;
 
 	/**
-	 * Confirm that the client handler stack includes the `plugin_version_header`
-	 *
-	 * @return void
+	 * Confirm that the client handler stack includes the following handlers:
+	 * - `http_errors`
+	 * - `auth_header`
+	 * - `plugin_version_header`
 	 */
-	public function test_plugin_version_header_in_handler_stack(): void {
-		// Get string representation of the handler stack and confirm if `plugin_version_header` is contained within it.
-		$this->assertStringContainsString( 'plugin_version_header', (string) $this->container->get( Client::class )->getConfig( 'handler' ) );
+	public function test_handlers_in_stack(): void {
+		// Get string representation of the handler stack.
+		$handlers = (string) $this->container->get( Client::class )->getConfig( 'handler' );
+
+		$this->assertStringContainsString( 'http_errors', $handlers );
+		$this->assertStringContainsString( 'auth_header', $handlers );
+		$this->assertStringContainsString( 'plugin_version_header', $handlers );
+
+		// By default we should not have a http URL.
+		$this->assertStringNotContainsString( 'override_http_url', $handlers );
 	}
 
 	/**
