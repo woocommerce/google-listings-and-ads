@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API;
 
+use Automattic\Jetpack\Connection\Manager;
+use Automattic\Jetpack\Connection\Tokens;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
@@ -28,6 +30,9 @@ defined( 'ABSPATH' ) || exit;
 class ClientTest extends UnitTest {
 	use PluginHelper;
 
+	/** @var MockObject|Manager $manager */
+	protected $manager;
+
 	/** @var MockObject|ReconnectWordPress $note */
 	protected $note;
 
@@ -50,10 +55,12 @@ class ClientTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$this->manager = $this->createMock( Manager::class );
 		$this->note    = $this->createMock( ReconnectWordPress::class );
 		$this->options = $this->createMock( OptionsInterface::class );
 
 		$this->container = new Container();
+		$this->container->share( Manager::class, $this->manager );
 		$this->container->share( ReconnectWordPress::class, $this->note );
 		$this->container->share( OptionsInterface::class, $this->options );
 
@@ -165,6 +172,52 @@ class ClientTest extends UnitTest {
 
 		$client   = $this->mock_client_with_handler( 'error_handler', $mocked_responses );
 		$response = $client->request( 'GET', 'https://testing.local' );
+	}
+
+	/**
+	 * Confirm that an auth header is added to the request.
+	 */
+	public function test_add_auth_header() {
+		$request = new Request( 'GET', 'https://testing.local' );
+
+		// Mock JetPack tokens.
+		$tokens = $this->createMock( Tokens::class );
+		$tokens->method( 'get_access_token' )->willReturn(
+			(object) [
+				'secret'           => 'secret.token',
+				'external_user_id' => 123,
+			]
+		);
+		$this->manager->expects( $this->once() )->method( 'get_tokens' )->willReturn( $tokens );
+
+		// Set Jetpack as previously disconnected to trigger removal of note.
+		$this->options->expects( $this->once() )->method( 'get' )->with( OptionsInterface::JETPACK_CONNECTED )->willReturn( false );
+
+		// Expect ReconnectWordPress note to be removed.
+		$this->note->expects( $this->once() )->method( 'delete' );
+
+		$this->invoke_handler( 'add_auth_header' )(
+			function ( $request, $options ) {
+				$this->assertStringStartsWith( 'X_JP_Auth token=', $request->getHeader( 'Authorization' )[0] );
+			}
+		)( $request, [] );
+	}
+
+	/**
+	 * Confirm that an auth header fails when no token is available.
+	 */
+	public function test_add_auth_header_no_token() {
+		$request = new Request( 'GET', 'https://testing.local' );
+
+		// Mock empty JetPack tokens.
+		$this->manager->expects( $this->once() )->method( 'get_tokens' )->willReturn( new Tokens() );
+
+		$this->expectException( AccountReconnect::class );
+		$this->expectExceptionMessage( AccountReconnect::jetpack_disconnected()->getMessage() );
+
+		$this->invoke_handler( 'add_auth_header' )(
+			function ( $request, $options ) {}
+		)( $request, [] );
 	}
 
 	/**
