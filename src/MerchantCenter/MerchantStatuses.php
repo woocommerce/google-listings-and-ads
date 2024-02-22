@@ -360,8 +360,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$product_helper      = $this->container->get( ProductHelper::class );
 		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
-		$google_ids = array_column( $statuses, 'mc_id' );
-
+		$google_ids     = array_column( $statuses, 'mc_id' );
 		$product_issues = [];
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
 		foreach ( $merchant->get_productstatuses_batch( $google_ids )->getEntries() as $response_entry ) {
@@ -513,6 +512,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 		$issue_query->update_or_insert( array_values( $product_issues ) );
+
+		// TODO: Before deleting we should fetch the account and pre-sync issues.
+		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
 	}
 
 	/**
