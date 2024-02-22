@@ -152,11 +152,13 @@ class MerchantReportTest extends UnitTest {
 			[
 				'statuses'        => [
 					$wc_product_id_1 => [
+						'mc_id' => 'online:en:ES:gla_' . $wc_product_id_1,
 						'product_id'      => $wc_product_id_1,
 						'status'          => MCStatus::APPROVED,
 						'expiration_date' => $this->convert_shopping_content_date( $product_view_1->getExpirationDate() ),
 					],
 					$wc_product_id_2 => [
+						'mc_id' => 'online:en:ES:gla_' . $wc_product_id_2,
 						'product_id'      => $wc_product_id_2,
 						'status'          => MCStatus::DISAPPROVED,
 						'expiration_date' => $this->convert_shopping_content_date( $product_view_2->getExpirationDate() ),
