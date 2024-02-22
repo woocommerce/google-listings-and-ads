@@ -72,7 +72,7 @@ class ProductNotificationJobTest extends UnitTest {
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
-			->with( self::PROCESS_ITEM_HOOK, [ $id, $topic ] )
+			->with( self::PROCESS_ITEM_HOOK, [ [ $id, $topic ] ] )
 			->willReturn( false );
 
 		$this->action_scheduler->expects( $this->once() )
@@ -93,7 +93,7 @@ class ProductNotificationJobTest extends UnitTest {
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
-			->with( self::PROCESS_ITEM_HOOK, [ $id, $topic ] )
+			->with( self::PROCESS_ITEM_HOOK, [ [ $id, $topic ] ] )
 			->willReturn( true );
 
 		$this->action_scheduler->expects( $this->never() )->method( 'schedule_immediate' );
