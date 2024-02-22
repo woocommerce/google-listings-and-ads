@@ -38,7 +38,7 @@ abstract class AbstractNotificationJob extends AbstractActionSchedulerJob implem
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
-		NotificationsService $notifications_service,
+		NotificationsService $notifications_service
 	) {
 		$this->notifications_service = $notifications_service;
 		parent::__construct( $action_scheduler, $monitor );
