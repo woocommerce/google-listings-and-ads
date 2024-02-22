@@ -35,17 +35,49 @@ class SyncerHooksTest extends UnitTest {
 	 */
 	protected $sample_class_id;
 
-
-	public function test_saving_woocommerce_settings_schedules_notification_job() {
+	/**
+	 * WooCommerce General Settings IDs
+	 * Copied from https://github.com/woocommerce/woocommerce/blob/af03815134385c72feb7a70abc597eca57442820/plugins/woocommerce/includes/admin/settings/class-wc-settings-general.php#L34
+	 */
+	protected const ALLOWED_SETTINGS = [
+		'store_address',
+		'woocommerce_store_address',
+		'woocommerce_store_address_2',
+		'woocommerce_store_city',
+		'woocommerce_default_country',
+		'woocommerce_store_postcode',
+		'store_address',
+		'general_options',
+		'woocommerce_allowed_countries',
+		'woocommerce_all_except_countries',
+		'woocommerce_specific_allowed_countries',
+		'woocommerce_ship_to_countries',
+		'woocommerce_specific_ship_to_countries',
+		'woocommerce_default_customer_address',
+		'woocommerce_calc_taxes',
+		'woocommerce_enable_coupons',
+		'woocommerce_calc_discounts_sequentially',
+		'general_options',
+		'pricing_options',
+		'woocommerce_currency',
+		'woocommerce_currency_pos',
+		'woocommerce_price_thousand_sep',
+		'woocommerce_price_decimal_sep',
+		'woocommerce_price_num_decimals',
+		'pricing_options',
+	];
+	public function test_saving_woocommerce_general_settings_schedules_notification_job() {
 		$this->notification_service->expects( $this->once() )
 			->method( 'is_enabled' )
 			->willReturn( true );
 
-		$this->settings_notification_job->expects( $this->once() )
+		$this->settings_notification_job->expects( $this->exactly ( count( self::ALLOWED_SETTINGS ) ) )
 			->method( 'schedule' );
 
 		$this->syncer_hooks->register();
-		do_action( 'update_option', 'woocommerce_sample_option' );
+		foreach ( self::ALLOWED_SETTINGS as $setting ) {
+			do_action( 'update_option', $setting );
+		}
 	}
 
 	public function test_saving_other_settings_dont_schedules_notification_job() {
@@ -69,7 +101,7 @@ class SyncerHooksTest extends UnitTest {
 			->method( 'schedule' );
 
 		$this->syncer_hooks->register();
-		do_action( 'update_option', 'woocommerce_sample_option' );
+		do_action( 'update_option', 'store_address' );
 	}
 
 	/**
