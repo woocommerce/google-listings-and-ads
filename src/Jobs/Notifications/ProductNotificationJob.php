@@ -5,9 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractActionSchedulerJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 
@@ -21,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
  */
-class ProductNotificationJob extends AbstractActionSchedulerJob implements JobInterface {
+class ProductNotificationJob extends AbstractNotificationJob {
 
 	/**
 	 * @var NotificationsService $notifications_service
@@ -49,7 +47,7 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 	) {
 		$this->notifications_service = $notifications_service;
 		$this->product_helper        = $product_helper;
-		parent::__construct( $action_scheduler, $monitor );
+		parent::__construct( $action_scheduler, $monitor, $notifications_service );
 	}
 
 	/**
@@ -57,8 +55,8 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 	 *
 	 * @return string
 	 */
-	public function get_name(): string {
-		return 'notifications/products';
+	public function get_job_name(): string {
+		return 'products';
 	}
 
 
@@ -69,6 +67,11 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 	 */
 	protected function process_items( array $args ): void {
 		if ( ! isset( $args[0] ) || ! isset( $args[1] ) ) {
+			do_action(
+				'woocommerce_gla_error',
+				'Error processing Product Notification Job. Item ID and Topic are mandatory.',
+				__METHOD__
+			);
 			return;
 		}
 
@@ -77,20 +80,6 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 
 		if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $topic, $item ) ) {
 			$this->set_status( $item, $this->get_after_notification_status( $topic ) );
-		}
-	}
-
-	/**
-	 * Schedule the Product Notification Job
-	 *
-	 * @param array $args
-	 */
-	public function schedule( array $args = [] ): void {
-		if ( $this->can_schedule( $args ) ) {
-			$this->action_scheduler->schedule_immediate(
-				$this->get_process_item_hook(),
-				[ $args ]
-			);
 		}
 	}
 
@@ -139,24 +128,5 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		} else {
 			return $this->product_helper->should_trigger_update_notification( $product );
 		}
-	}
-
-	/**
-	 * Can the job be scheduled.
-	 *
-	 * @param array|null $args
-	 *
-	 * @return bool Returns true if the job can be scheduled.
-	 */
-	public function can_schedule( $args = [] ): bool {
-		/**
-		 * Allow users to disable the notification job schedule.
-		 *
-		 * @since x.x.x
-		 *
-		 * @param bool $value The current filter value. By default, it is the result of `$this->can_schedule` function.
-		 * @param array $args The arguments for the schedule function with the item id and the topic.
-		 */
-		return apply_filters( 'woocommerce_gla_product_notification_job_can_schedule', $this->notifications_service->is_enabled() && parent::can_schedule( $args ), $args );
 	}
 }
