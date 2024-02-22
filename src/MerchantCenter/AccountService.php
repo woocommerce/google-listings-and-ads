@@ -332,7 +332,15 @@ class AccountService implements OptionsAwareInterface, Service {
 						}
 						break;
 					case 'link_ads':
-						$this->link_ads_account();
+						$ads_id = $this->container->get( Ads::class )->options->get_merchant_id();
+						// As MC and Ads account can be connected interchangeably, this check is necessary.
+						if ( ! empty( $ads_id ) && ! empty( $merchant_id ) ) {
+							$this->link_ads_account();
+						} else {
+							// Mark the step as pending, so that next time can be run.
+							$step['status'] = MerchantAccountState::STEP_PENDING;
+							continue;
+						}
 						break;
 					default:
 						throw new Exception(
@@ -481,11 +489,6 @@ class AccountService implements OptionsAwareInterface, Service {
 	private function link_ads_account() {
 		if ( ! $this->options->get_merchant_id() ) {
 			throw new Exception( 'A Merchant Center account must be connected' );
-		}
-
-		if ( ! $this->options->get_ads_id() ) {
-			// Return early if the ads account hasn't been created yet.
-			return;
 		}
 
 		// Create link for Merchant and accept it in Ads.
