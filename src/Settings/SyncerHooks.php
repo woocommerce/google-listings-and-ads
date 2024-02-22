@@ -23,13 +23,6 @@ defined( 'ABSPATH' ) || exit;
 class SyncerHooks implements Service, Registerable {
 
 	/**
-	 * This property is used to avoid scheduling duplicate jobs in the same request.
-	 *
-	 * @var bool
-	 */
-	protected $already_scheduled = false;
-
-	/**
 	 * @var NotificationsService $notifications_service
 	 */
 	protected $notifications_service;
@@ -38,6 +31,39 @@ class SyncerHooks implements Service, Registerable {
 	 * @var SettingsNotificationJob $settings_notification_job
 	 */
 	protected $settings_notification_job;
+
+	/**
+	 * WooCommerce General Settings IDs
+	 * Copied from https://github.com/woocommerce/woocommerce/blob/af03815134385c72feb7a70abc597eca57442820/plugins/woocommerce/includes/admin/settings/class-wc-settings-general.php#L34
+	 */
+	protected const ALLOWED_SETTINGS = [
+		'store_address',
+		'woocommerce_store_address',
+		'woocommerce_store_address_2',
+		'woocommerce_store_city',
+		'woocommerce_default_country',
+		'woocommerce_store_postcode',
+		'store_address',
+		'general_options',
+		'woocommerce_allowed_countries',
+		'woocommerce_all_except_countries',
+		'woocommerce_specific_allowed_countries',
+		'woocommerce_ship_to_countries',
+		'woocommerce_specific_ship_to_countries',
+		'woocommerce_default_customer_address',
+		'woocommerce_calc_taxes',
+		'woocommerce_enable_coupons',
+		'woocommerce_calc_discounts_sequentially',
+		'general_options',
+		'pricing_options',
+		'woocommerce_currency',
+		'woocommerce_currency_pos',
+		'woocommerce_price_thousand_sep',
+		'woocommerce_price_decimal_sep',
+		'woocommerce_price_num_decimals',
+		'pricing_options',
+	];
+
 
 	/**
 	 * SyncerHooks constructor.
@@ -59,7 +85,7 @@ class SyncerHooks implements Service, Registerable {
 		}
 
 		$update_rest = function ( $option ) {
-			if ( strpos( $option, 'woocommerce_' ) === 0 ) {
+			if ( in_array( $option, self::ALLOWED_SETTINGS, true ) ) {
 				$this->settings_notification_job->schedule();
 			}
 		};
