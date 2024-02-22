@@ -656,13 +656,13 @@ class ConnectionTest implements Service, Registerable {
 										Topic
 										<select name="topic">
 											<option value="product.create" <?php echo (! isset( $_GET['topic'] ) || $_GET['topic'] === 'product.create') ? "selected" : "" ?>>product.create</option>
-											<option value="product.delete" <?php echo $_GET['topic'] === 'product.delete' ? "selected" : ""?>>product.delete</option>
-											<option value="product.update" <?php echo $_GET['topic'] === 'product.update' ? "selected" : ""?>>product.update</option>
-											<option value="coupon.create" <?php echo $_GET['topic'] === 'coupon.create' ? "selected" : ""?>>coupon.create</option>
-											<option value="coupon.delete" <?php echo $_GET['topic'] === 'coupon.delete' ? "selected" : ""?>>coupon.delete</option>
-											<option value="coupon.update" <?php echo $_GET['topic'] === 'coupon.update' ? "selected" : ""?>>coupon.update</option>
-											<option value="shipping.update" <?php echo $_GET['topic'] === 'shipping.update' ? "selected" : ""?>>shipping.update</option>
-											<option value="settings.update" <?php echo $_GET['topic'] === 'settings.update' ? "selected" : ""?>>settings.update</option>
+											<option value="product.delete" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'product.delete' ? "selected" : ""?>>product.delete</option>
+											<option value="product.update" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'product.update' ? "selected" : ""?>>product.update</option>
+											<option value="coupon.create" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'coupon.create' ? "selected" : ""?>>coupon.create</option>
+											<option value="coupon.delete" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'coupon.delete' ? "selected" : ""?>>coupon.delete</option>
+											<option value="coupon.update" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'coupon.update' ? "selected" : ""?>>coupon.update</option>
+											<option value="shipping.update" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'shipping.update' ? "selected" : ""?>>shipping.update</option>
+											<option value="settings.update" <?php echo isset( $_GET['topic'] ) && $_GET['topic'] === 'settings.update' ? "selected" : ""?>>settings.update</option>
 										</select>
 									</label>
 									<button class="button">Send Notification</button>

@@ -66,12 +66,13 @@ class SyncerHooksTest extends UnitTest {
 		'woocommerce_price_num_decimals',
 		'pricing_options',
 	];
+
 	public function test_saving_woocommerce_general_settings_schedules_notification_job() {
 		$this->notification_service->expects( $this->once() )
 			->method( 'is_enabled' )
 			->willReturn( true );
 
-		$this->settings_notification_job->expects( $this->exactly ( count( self::ALLOWED_SETTINGS ) ) )
+		$this->settings_notification_job->expects( $this->exactly( count( self::ALLOWED_SETTINGS ) ) )
 			->method( 'schedule' );
 
 		$this->syncer_hooks->register();
