@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Throwable;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -79,26 +80,31 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	 *
 	 * @param int[] $items An array of job arguments.
 	 *
-	 * @throws JobException If the shipping settings cannot be synced.
+	 * @throws JobException If the merchant product statuses cannot be retrieved..
 	 */
 	public function process_items( array $items ) {
-		$next_page_token = $items['next_page_token'] ?? null;
+		try {
+			$next_page_token = $items['next_page_token'] ?? null;
 
-		// Clear the cache if we're starting from the beginning.
-		if ( ! $next_page_token ) {
-			$this->merchant_statuses->clear_cache();
-			$this->merchant_statuses->delete_product_statuses_count_intermediate_data();
-		}
+			// Clear the cache if we're starting from the beginning.
+			if ( ! $next_page_token ) {
+				$this->merchant_statuses->clear_cache();
+				$this->merchant_statuses->delete_product_statuses_count_intermediate_data();
+			}
 
-		$results         = $this->merchant_report->get_product_view_report( $next_page_token );
-		$next_page_token = $results['next_page_token'];
+			$results         = $this->merchant_report->get_product_view_report( $next_page_token );
+			$next_page_token = $results['next_page_token'];
 
-		$this->merchant_statuses->update_product_stats( $results['statuses'] );
+			$this->merchant_statuses->update_product_stats( $results['statuses'] );
 
-		if ( $next_page_token ) {
-			$this->schedule( [ [ 'next_page_token' => $next_page_token ] ] );
-		} else {
-			$this->merchant_statuses->handle_complete_mc_statuses_fetching();
+			if ( $next_page_token ) {
+				$this->schedule( [ [ 'next_page_token' => $next_page_token ] ] );
+			} else {
+				$this->merchant_statuses->handle_complete_mc_statuses_fetching();
+			}
+		} catch ( Throwable $e ) {
+			$this->merchant_statuses->handle_failed_mc_statuses_fetching( $e->getMessage() );
+			throw new JobException( 'Error updating merchant product statuses: ' . $e->getMessage() );
 		}
 	}
 
