@@ -269,7 +269,7 @@ class ClientTest extends UnitTest {
 	protected function mock_client_with_handler( string $handler_function, array $mocked_responses ) {
 		$mock     = new MockHandler( $mocked_responses );
 		$handlers = HandlerStack::create( $mock );
-		$handlers->push( $this->invoke_handler( 'error_handler' ) );
+		$handlers->push( $this->invoke_handler( $handler_function ) );
 		return new Client( [ 'handler' => $handlers ] );
 	}
 }
