@@ -723,6 +723,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			MCStatus::PENDING            => 0,
 			MCStatus::DISAPPROVED        => 0,
 			MCStatus::NOT_SYNCED         => 0,
+			'parents'                    => [],
 		];
 
 		// If the option is set, use it to sum the total quantity.
@@ -765,8 +766,27 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			}
 		}
 
-		foreach ( $parent_statuses as $parent_status ) {
-			$product_statistics[ $parent_status ] += 1;
+		foreach ( $parent_statuses as $parent_id => $new_parent_status ) {
+			$current_parent_intermediate_data_status = $product_statistics_intermediate_data['parents'][ $parent_id ] ?? null;
+
+			if ( $current_parent_intermediate_data_status === $new_parent_status ) {
+				continue;
+			}
+
+			if ( ! $current_parent_intermediate_data_status ) {
+				$product_statistics[ $new_parent_status ]   += 1;
+				$product_statistics['parents'][ $parent_id ] = $new_parent_status;
+				continue;
+			}
+
+			// Check if the new parent status has higher priority than the previous one.
+			if ( $product_statistics_priority[ $new_parent_status ] < $product_statistics_priority[ $current_parent_intermediate_data_status ] ) {
+				$product_statistics[ $current_parent_intermediate_data_status ] -= 1;
+				$product_statistics[ $new_parent_status ]                       += 1;
+				$product_statistics['parents'][ $parent_id ]                     = $new_parent_status;
+			} else {
+				$product_statistics['parents'][ $parent_id ] = $current_parent_intermediate_data_status;
+			}
 		}
 
 		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $product_statistics );
@@ -802,6 +822,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
 
 		if ( $intermediate_data ) {
+
+			unset( $intermediate_data['parents'] );
 
 			$total_synced_products = $this->calculate_total_synced_product_statistics( $intermediate_data );
 
