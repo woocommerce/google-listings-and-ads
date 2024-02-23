@@ -56,10 +56,11 @@ SQL;
 	 *
 	 * @param DateTime $created_before Delete all records created before this.
 	 */
-	public function delete_stale( DateTime $created_before ) {
-		$query = "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `created_at` < '%s'";
-		$this->wpdb->query( $this->wpdb->prepare( $query, $created_before->format( 'Y-m-d H:i:s' ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
-	}
+	public function delete_stale( DateTime $created_before, string $comparison = '<') {
+		$query = "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `created_at` %s '%s'";
+		error_log( '========>'.$query );
+		$this->wpdb->query( $this->wpdb->prepare( $query, $comparison, $created_before->format( 'Y-m-d H:i:s' ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+	}	
 
 	/**
 	 * Get the columns for the table.

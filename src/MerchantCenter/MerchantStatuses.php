@@ -198,10 +198,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Delete the stale issues from the database.
 	 * 
+	 * @param srting $comparison The comparison operator to use for the created_at field.
+	 * 
 	 * @since x.x.x
 	 */
-	protected function delete_stale_issues() {
-		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
+	protected function delete_stale_issues( string $comparison = '<') {
+		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time, $comparison );
 	}
 
 	/**
@@ -209,7 +211,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 *
 	 * @since x.x.x
 	 */
-	public function clear_product_statuses_cache(): void {
+	public function clear_product_statuses_cache_and_issues(): void {
 		$this->clear_cache();
 		$this->delete_stale_issues();
 		$this->delete_product_statuses_count_intermediate_data();		
@@ -797,6 +799,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 */
 	public function handle_failed_mc_statuses_fetching( string $error_message = '' ) {
 		$this->delete_product_statuses_count_intermediate_data();
+		// Let's remove any issue created during the failed fetch.
+		$this->delete_stale_issues( '=' );
 
 		$mc_statuses = [
 			'timestamp'  => $this->cache_created_time->getTimestamp(),
