@@ -34,7 +34,7 @@ const ClaimAccount = () => {
 			alignIcon="top"
 			indicator={
 				<AppButton isSecondary onClick={ handleClick }>
-					{ __( 'Claim', 'google-listings-and-ads' ) }
+					{ __( 'Claim Account', 'google-listings-and-ads' ) }
 				</AppButton>
 			}
 		>
