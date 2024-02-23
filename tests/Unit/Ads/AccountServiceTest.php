@@ -363,9 +363,6 @@ class AccountServiceTest extends UnitTest {
 				]
 			);
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'An Ads account must be connected' );
-
 		$this->account->setup_account();
 	}
 

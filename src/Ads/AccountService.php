@@ -165,7 +165,7 @@ class AccountService implements OptionsAwareInterface, Service {
 						break;
 
 					case 'link_merchant':
-						$merchant_id = $this->container->get( Merchant::class )->options->get_merchant_id();
+						$merchant_id = $this->options->get_merchant_id();
 						// As MC and Ads account can be connected interchangeably, this check is necessary.
 						if ( ! empty( $ads_id ) && ! empty( $merchant_id ) ) {
 							$this->link_merchant_account();

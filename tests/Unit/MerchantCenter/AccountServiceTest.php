@@ -663,9 +663,6 @@ class AccountServiceTest extends UnitTest {
 				]
 			);
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'A Merchant Center account must be connected' );
-
 		$this->account->setup_account( self::TEST_ACCOUNT_ID );
 	}
 
