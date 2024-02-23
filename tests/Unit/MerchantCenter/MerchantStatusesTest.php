@@ -17,6 +17,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductstatusesCustomBatchResponse;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductstatusesCustomBatchResponseEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatusItemLevelIssue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use DateTime;
@@ -478,33 +482,76 @@ class MerchantStatusesTest extends UnitTest {
 
 		$product_statuses = [
 			[
+				'mc_id'           => $this->get_mc_id( $product_1->get_id() ),
 				'product_id'      => $product_1->get_id(),
 				'status'          => MCStatus::APPROVED,
 				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 			],
 			[
+				'mc_id'           => $this->get_mc_id( $product_2->get_id() ),
 				'product_id'      => $product_2->get_id(),
 				'status'          => MCStatus::PARTIALLY_APPROVED,
 				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 			],
 			[
+				'mc_id'           => $this->get_mc_id( $product_3->get_id() ),
 				'product_id'      => $product_3->get_id(),
 				'status'          => MCStatus::APPROVED,
 				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P1D' ) ), // Expiring tomorrow
 			],
 			// Variations are grouped by parent id.
 			[
+				'mc_id'           => $this->get_mc_id( $variation_id_1 ),
 				'product_id'      => $variation_id_1,
 				'status'          => MCStatus::APPROVED,
 				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 			],
 			[
+				'mc_id'           => $this->get_mc_id( $variation_id_2 ),
 				'product_id'      => $variation_id_2,
 				'status'          => MCStatus::PARTIALLY_APPROVED,
 				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 			],
 
 		];
+
+		$this->product_helper->expects( $this->any() )
+			->method( 'get_wc_product_id' )
+			->willReturnOnConsecutiveCalls(
+				$product_1->get_id(),
+				$product_2->get_id(),
+				$product_3->get_id(),
+				$variation_id_1,
+				$variation_id_2
+			);
+
+		$product_status = $this->get_product_status_item( $product_1->get_id() );
+		$response       = new ProductstatusesCustomBatchResponse();
+		$entry          = new ProductstatusesCustomBatchResponseEntry();
+		$entry->setProductStatus( $product_status );
+		$response->setEntries( [ $entry ] );
+
+		$this->merchant->expects( $this->once() )
+			->method( 'get_productstatuses_batch' )
+			->with( [ $this->get_mc_id( $product_1->get_id() ), $this->get_mc_id( $product_2->get_id() ), $this->get_mc_id( $product_3->get_id() ), $this->get_mc_id( $variation_id_1 ), $this->get_mc_id( $variation_id_2 ) ] )
+			->willReturn( $response );
+
+		$this->merchant_issue_query->expects( $this->once() )->method( 'update_or_insert' )->with(
+			[
+				[
+					'product'              => html_entity_decode( $product_1->get_name() ),
+					'product_id'           => $product_1->get_id(),
+					'created_at'           => $this->merchant_statuses->get_cache_created_time()->format( 'Y-m-d H:i:s' ),
+					'applicable_countries' => json_encode( [ 'ES' ] ),
+					'source'               => 'mc',
+					'code'                 => $product_status->getItemLevelIssues()[0]->getCode(),
+					'issue'                => $product_status->getItemLevelIssues()[0]->getDescription(),
+					'action'               => $product_status->getItemLevelIssues()[0]->getDetail(),
+					'action_url'           => $product_status->getItemLevelIssues()[0]->getDocumentation(),
+					'severity'             => $product_status->getItemLevelIssues()[0]->getServability(),
+				],
+			]
+		);
 
 		$this->merchant_statuses->update_product_stats(
 			$product_statuses
@@ -628,6 +675,13 @@ class MerchantStatusesTest extends UnitTest {
 			]
 		);
 
+		$response = new ProductstatusesCustomBatchResponse();
+		$response->setEntries( [] );
+
+		$this->merchant->expects( $this->exactly( 2 ) )
+			->method( 'get_productstatuses_batch' )
+			->willReturn( $response );
+
 		$this->merchant_statuses->update_product_stats(
 			$product_statuses_1
 		);
@@ -640,7 +694,6 @@ class MerchantStatusesTest extends UnitTest {
 			$product_statuses_2
 		);
 	}
-
 
 	public function test_update_product_with_multiple_variables_and_multiple_batches_and_same_status() {
 		$variable_product = WC_Helper_Product::create_variation_product();
@@ -679,6 +732,13 @@ class MerchantStatusesTest extends UnitTest {
 			]
 		);
 
+		$response = new ProductstatusesCustomBatchResponse();
+		$response->setEntries( [] );
+
+		$this->merchant->expects( $this->exactly( 2 ) )
+			->method( 'get_productstatuses_batch' )
+			->willReturn( $response );
+
 		$this->merchant_statuses->update_product_stats(
 			$product_statuses_1
 		);
@@ -691,7 +751,6 @@ class MerchantStatusesTest extends UnitTest {
 			$product_statuses_2
 		);
 	}
-
 
 	public function test_update_product_with_multiple_variables_and_multiple_batches_and_dont_override_previous_state() {
 		$variable_product = WC_Helper_Product::create_variation_product();
@@ -730,6 +789,13 @@ class MerchantStatusesTest extends UnitTest {
 			]
 		);
 
+		$response = new ProductstatusesCustomBatchResponse();
+		$response->setEntries( [] );
+
+		$this->merchant->expects( $this->exactly( 2 ) )
+			->method( 'get_productstatuses_batch' )
+			->willReturn( $response );
+
 		$this->merchant_statuses->update_product_stats(
 			$product_statuses_1
 		);
@@ -741,6 +807,35 @@ class MerchantStatusesTest extends UnitTest {
 		$merchant_statuses_2->update_product_stats(
 			$product_statuses_2
 		);
+	}
+
+	protected function get_product_status_item( $wc_product_id ): ProductStatus {
+		$product_status = new ProductStatus();
+		$product_status->setProductId( $this->get_mc_id( $wc_product_id ) );
+
+		$issue = new ProductStatusItemLevelIssue();
+		$issue->setResolution( 'merchant_action' );
+		$issue->setApplicableCountries( [ 'ES' ] );
+		$issue->setCode( 'issue_code' );
+		$issue->setDescription( 'issue_description' );
+		$issue->setDetail( 'issue_detail' );
+		$issue->setDocumentation( 'https://example.com' );
+		$issue->setServability( 'critical' );
+
+		$product_status->setItemLevelIssues( [ $issue ] );
+
+		return $product_status;
+	}
+
+	/**
+	 * Get a MC ID for a product.
+	 *
+	 * @param int $wc_id
+	 *
+	 * @return string
+	 */
+	protected function get_mc_id( $wc_id ) {
+		return 'online:en:ES:gla_' . $wc_id;
 	}
 
 	/**
