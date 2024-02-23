@@ -71,7 +71,7 @@ class CouponNotificationJob extends AbstractActionSchedulerJob implements JobInt
 		if ( ! isset( $args[0] ) || ! isset( $args[1] ) ) {
 			do_action(
 				'woocommerce_gla_error',
-				'Error sending Coupon Notification. Topic and Items are mandatory',
+				'Error sending Coupon Notification. Topic and Coupon ID are mandatory',
 				__METHOD__
 			);
 			return;
