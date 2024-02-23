@@ -191,9 +191,29 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 *
 	 * @since x.x.x
 	 */
-	public function delete_product_statuses_count_intermediate_data(): void {
+	protected function delete_product_statuses_count_intermediate_data(): void {
 		$this->options->delete( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
 	}
+
+	/**
+	 * Delete the stale issues from the database.
+	 * 
+	 * @since x.x.x
+	 */
+	protected function delete_stale_issues() {
+		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
+	}
+
+	/**
+	 * Clear the product statuses cache and delete stale issues.
+	 *
+	 * @since x.x.x
+	 */
+	public function clear_product_statuses_cache(): void {
+		$this->clear_cache();
+		$this->delete_stale_issues();
+		$this->delete_product_statuses_count_intermediate_data();		
+	}	
 
 	/**
 	 * Check if the Merchant Center account is connected and throw an exception if it's not.
@@ -512,9 +532,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 		$issue_query->update_or_insert( array_values( $product_issues ) );
-
-		// TODO: Before deleting we should fetch the account and pre-sync issues.
-		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
 	}
 
 	/**

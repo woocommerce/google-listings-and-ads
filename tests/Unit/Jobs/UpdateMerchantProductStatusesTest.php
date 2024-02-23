@@ -205,10 +205,7 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 			->method( 'handle_complete_mc_statuses_fetching' );
 
 		$this->merchant_statuses->expects( $this->exactly( 1 ) )
-			->method( 'clear_cache' );
-
-		$this->merchant_statuses->expects( $this->exactly( 1 ) )
-			->method( 'delete_product_statuses_count_intermediate_data' );
+			->method( 'clear_product_statuses_cache' );
 
 		$this->job->schedule();
 	}
