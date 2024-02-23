@@ -501,7 +501,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ADS_ACCOUNT_STATUS: {
-			console.log( action, 'within recducer' );
 			const {
 				data: { has_access: hasAccess, invite_link: inviteLink },
 			} = action;

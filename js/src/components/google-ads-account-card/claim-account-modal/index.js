@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useCallback } from '@wordpress/element';
+import { useCallback, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -16,9 +16,17 @@ import './index.scss';
 
 const ClaimAccountModal = () => {
 	const {
-		googleAdsAccountStatus: { inviteLink },
+		googleAdsAccountStatus: { inviteLink, hasAccess },
 	} = useGoogleAdsAccount();
 	const { receiveShowAdsClaimAccountModal } = useAppDispatch();
+
+	useEffect( () => {
+		// Close the modal if access has been granted and continue signup process.
+		if ( hasAccess ) {
+			// @todo: what to do with the signup process
+			receiveShowAdsClaimAccountModal( false );
+		}
+	}, [ hasAccess, receiveShowAdsClaimAccountModal ] );
 
 	const handleOnRequestClose = useCallback( () => {
 		receiveShowAdsClaimAccountModal( false );
