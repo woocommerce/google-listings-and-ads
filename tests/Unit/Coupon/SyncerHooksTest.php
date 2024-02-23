@@ -227,13 +227,13 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->method( 'is_ready_for_syncing' )
 			->willReturn( true );
 
-		$this->update_coupon_job = $this->createMock( UpdateCoupon::class );
-		$this->delete_coupon_job = $this->createMock( DeleteCoupon::class );
-		$this->delete_coupon_job = $this->createMock( DeleteCoupon::class );
+		$this->update_coupon_job       = $this->createMock( UpdateCoupon::class );
+		$this->delete_coupon_job       = $this->createMock( DeleteCoupon::class );
+		$this->delete_coupon_job       = $this->createMock( DeleteCoupon::class );
 		$this->coupon_notification_job = $this->createMock( CouponNotificationJob::class );
-		$this->notification_service = $this->createMock( NotificationsService::class );
+		$this->notification_service    = $this->createMock( NotificationsService::class );
 
-		$this->job_repository    = $this->createMock( JobRepository::class );
+		$this->job_repository = $this->createMock( JobRepository::class );
 		$this->job_repository->expects( $this->any() )
 			->method( 'get' )
 			->willReturnMap(
