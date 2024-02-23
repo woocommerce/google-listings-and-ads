@@ -1,19 +1,16 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
 import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '.~/data';
 import toAccountText from '.~/utils/toAccountText';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
-import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
+import AccountSwitch from './account-switch';
 
 /**
  * Renders a Google Ads account card UI with connected account information.
@@ -30,16 +27,6 @@ export default function ConnectedGoogleAdsAccountCard( {
 	children,
 	...restProps
 } ) {
-	const { disconnectGoogleAdsAccount } = useAppDispatch();
-	const [ isDisconnecting, setDisconnecting ] = useState( false );
-
-	const handleSwitch = () => {
-		setDisconnecting( true );
-		disconnectGoogleAdsAccount( true ).catch( () =>
-			setDisconnecting( false )
-		);
-	};
-
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_ADS }
@@ -55,15 +42,7 @@ export default function ConnectedGoogleAdsAccountCard( {
 
 			{ ! hideAccountSwitch && (
 				<Section.Card.Footer>
-					<AppButton
-						isTertiary
-						loading={ isDisconnecting }
-						text={ __(
-							'Or, connect to a different Google Ads account',
-							'google-listings-and-ads'
-						) }
-						onClick={ handleSwitch }
-					/>
+					<AccountSwitch />
 				</Section.Card.Footer>
 			) }
 		</AccountCard>

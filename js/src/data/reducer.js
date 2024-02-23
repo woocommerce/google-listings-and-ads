@@ -64,6 +64,15 @@ const DEFAULT_STATE = {
 	report: {},
 	store_categories: [],
 	tours: {},
+	ads: {
+		accountStatus: {
+			hasAccess: null,
+			inviteLink: null,
+		},
+	},
+	ui: {
+		showAdsClaimAccountModal: false,
+	},
 };
 
 /**
@@ -489,6 +498,24 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			} );
 
 			return stateSetter.end();
+		}
+
+		case TYPES.RECEIVE_ADS_ACCOUNT_STATUS: {
+			console.log( action, 'within recducer' );
+			const {
+				data: { has_access: hasAccess, invite_link: inviteLink },
+			} = action;
+
+			return chainState( state, 'ads.accountStatus' )
+				.setIn( 'hasAccess', hasAccess )
+				.setIn( 'inviteLink', inviteLink )
+				.end();
+		}
+
+		case TYPES.RECEIVE_SHOW_ADS_CLAIM_ACCOUNT_MODAL: {
+			const { value } = action;
+
+			return setIn( state, 'ui.showAdsClaimAccountModal', value );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

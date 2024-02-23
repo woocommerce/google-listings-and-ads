@@ -46,6 +46,14 @@ const useGoogleAdsAccount = () => {
 				GOOGLE_ADS_ACCOUNT_STATUS.INCOMPLETE,
 			].includes( acc?.status );
 
+			const {
+				getAdsAccountStatus,
+				isResolving: isResolvingGoogleAdsAccountStatus,
+				hasFinishedResolution:
+					hasFinishedResolutionGoogleAdsAccountStatus,
+			} = select( STORE_KEY );
+			const googleAdsAccountStatus = getAdsAccountStatus();
+
 			return {
 				googleAdsAccount: acc,
 				isResolving: isResolvingGoogleAdsAccount,
@@ -54,6 +62,9 @@ const useGoogleAdsAccount = () => {
 					googleAdsAccountSelector
 				),
 				hasGoogleAdsConnection,
+				isResolvingGoogleAdsAccountStatus,
+				googleAdsAccountStatus,
+				hasFinishedResolutionGoogleAdsAccountStatus,
 			};
 		},
 		[ google, isResolving, refetchGoogleAdsAccount ]
