@@ -378,7 +378,7 @@ class ProductHelper implements Service {
 		 * @param bool $value The current filter value.
 		 * @param WC_Product $product The product for the notification.
 		 */
-		return apply_filters( 'woocommerce_gla_is_ready_to_notify', $is_ready, $product );
+		return apply_filters( 'woocommerce_gla_product_is_ready_to_notify', $is_ready, $product );
 	}
 
 	/**

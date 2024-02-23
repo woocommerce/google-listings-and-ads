@@ -121,7 +121,6 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	public function register(): void {
 		// only register the hooks if Merchant Center is connected and ready for syncing data.
-		// TODO: Potentially change this after API Pull is implemented as we don't need MC to be connected for the API Pull
 		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
 			return;
 		}

@@ -3,14 +3,17 @@ declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteCoupon;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\CouponNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use WC_Coupon;
 defined( 'ABSPATH' ) || exit();
 
@@ -64,10 +67,21 @@ class SyncerHooks implements Service, Registerable {
 	protected $delete_coupon_job;
 
 	/**
+	 * @var CouponNotificationJob
+	 */
+	protected $coupon_notification_job;
+
+	/**
 	 *
 	 * @var MerchantCenterService
 	 */
 	protected $merchant_center;
+
+	/**
+	 * @var NotificationsService
+	 */
+	protected $notifications_service;
+
 
 	/**
 	 *
@@ -81,19 +95,23 @@ class SyncerHooks implements Service, Registerable {
 	 * @param CouponHelper          $coupon_helper
 	 * @param JobRepository         $job_repository
 	 * @param MerchantCenterService $merchant_center
+	 * @param NotificationsService  $notifications_service
 	 * @param WC                    $wc
 	 */
 	public function __construct(
 		CouponHelper $coupon_helper,
 		JobRepository $job_repository,
 		MerchantCenterService $merchant_center,
+		NotificationsService $notifications_service,
 		WC $wc
 	) {
-		$this->update_coupon_job = $job_repository->get( UpdateCoupon::class );
-		$this->delete_coupon_job = $job_repository->get( DeleteCoupon::class );
-		$this->coupon_helper     = $coupon_helper;
-		$this->merchant_center   = $merchant_center;
-		$this->wc                = $wc;
+		$this->update_coupon_job       = $job_repository->get( UpdateCoupon::class );
+		$this->delete_coupon_job       = $job_repository->get( DeleteCoupon::class );
+		$this->coupon_notification_job = $job_repository->get( CouponNotificationJob::class );
+		$this->coupon_helper           = $coupon_helper;
+		$this->merchant_center         = $merchant_center;
+		$this->notifications_service   = $notifications_service;
+		$this->wc                      = $wc;
 	}
 
 	/**
@@ -152,6 +170,11 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function handle_update_coupon( WC_Coupon $coupon ) {
 		$coupon_id = $coupon->get_id();
+
+		if ( $this->notifications_service->is_enabled() ) {
+			$this->handle_update_coupon_notification( $coupon );
+			return;
+		}
 
 		// Schedule an update job if product sync is enabled.
 		if ( $this->coupon_helper->is_sync_ready( $coupon ) ) {
@@ -232,6 +255,14 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $coupon_id
 	 */
 	protected function handle_delete_coupon( int $coupon_id ) {
+		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
+
+		if ( $coupon instanceof WC_Coupon && $this->notifications_service->is_enabled() && $this->coupon_helper->should_trigger_delete_notification( $coupon ) ) {
+			$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_PENDING_DELETE );
+			$this->coupon_notification_job->schedule( [ $coupon->get_id(), NotificationsService::TOPIC_COUPON_DELETED ] );
+			return;
+		}
+
 		if ( ! isset( $this->delete_requests_map[ $coupon_id ] ) ) {
 			return;
 		}
@@ -321,5 +352,23 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function set_already_scheduled_to_delete( int $coupon_id ): void {
 		$this->set_already_scheduled( $coupon_id, self::SCHEDULE_TYPE_DELETE );
+	}
+
+	/**
+	 * Schedules notifications for an updated product
+	 *
+	 * @param WC_Coupon $coupon
+	 */
+	protected function handle_update_coupon_notification( WC_Coupon $coupon ) {
+		if ( $this->coupon_helper->should_trigger_create_notification( $coupon ) ) {
+			$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_PENDING_CREATE );
+			$this->coupon_notification_job->schedule( [ $coupon->get_id(), NotificationsService::TOPIC_COUPON_CREATED ] );
+		} elseif ( $this->coupon_helper->should_trigger_update_notification( $coupon ) ) {
+			$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_PENDING_UPDATE );
+			$this->coupon_notification_job->schedule( [ $coupon->get_id(), NotificationsService::TOPIC_COUPON_UPDATED ] );
+		} elseif ( $this->coupon_helper->should_trigger_delete_notification( $coupon ) ) {
+			$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_PENDING_DELETE );
+			$this->coupon_notification_job->schedule( [ $coupon->get_id(), NotificationsService::TOPIC_COUPON_DELETED ] );
+		}
 	}
 }
