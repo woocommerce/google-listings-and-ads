@@ -386,6 +386,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$product_issues = [];
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
 		foreach ( $merchant->get_productstatuses_batch( $google_ids )->getEntries() as $response_entry ) {
+			/** @var GoogleProductStatus $mc_product_status */
 			$mc_product_status = $response_entry->getProductStatus();
 			$mc_product_id     = $mc_product_status->getProductId();
 			$wc_product_id     = $product_helper->get_wc_product_id( $mc_product_id );
