@@ -198,12 +198,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Delete the stale issues from the database.
 	 * 
-	 * @param srting $comparison The comparison operator to use for the created_at field.
+	 * @param srting $compare The comparison operator to use for the created_at field.
 	 * 
 	 * @since x.x.x
 	 */
-	protected function delete_stale_issues( string $comparison = '<') {
-		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time, $comparison );
+	protected function delete_stale_issues( string $compare = '<') {
+		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time, $compare );
 	}
 
 	/**
