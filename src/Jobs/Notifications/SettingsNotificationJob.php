@@ -12,13 +12,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class ShippingNotificationJob
- * Class for the Shipping Notifications
+ * Class SettingsNotificationJob
+ * Class for the Settings Notifications
  *
  * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
  */
-class ShippingNotificationJob extends AbstractActionSchedulerJob implements JobInterface {
+class SettingsNotificationJob extends AbstractActionSchedulerJob implements JobInterface {
 
 	/**
 	 * @var NotificationsService $notifications_service
@@ -43,7 +43,7 @@ class ShippingNotificationJob extends AbstractActionSchedulerJob implements JobI
 		NotificationsService $notifications_service
 	) {
 		$this->notifications_service = $notifications_service;
-		$this->topic                 = NotificationsService::TOPIC_SHIPPING_UPDATED;
+		$this->topic                 = NotificationsService::TOPIC_SETTINGS_UPDATED;
 		parent::__construct( $action_scheduler, $monitor );
 	}
 
@@ -53,7 +53,7 @@ class ShippingNotificationJob extends AbstractActionSchedulerJob implements JobI
 	 * @return string
 	 */
 	public function get_name(): string {
-		return 'notifications/shipping';
+		return 'notifications/settings';
 	}
 
 
@@ -72,7 +72,7 @@ class ShippingNotificationJob extends AbstractActionSchedulerJob implements JobI
 	 * @param array $args
 	 */
 	public function schedule( array $args = [] ): void {
-		if ( $this->can_schedule( $args ) ) {
+		if ( $this->can_schedule( [ $args ] ) ) {
 			$this->action_scheduler->schedule_immediate(
 				$this->get_process_item_hook(),
 				[ $args ]
@@ -96,6 +96,6 @@ class ShippingNotificationJob extends AbstractActionSchedulerJob implements JobI
 		 * @param bool $value The current filter value. By default, it is the result of `$this->can_schedule` function.
 		 * @param array $args The arguments for the schedule function with the item id and the topic.
 		 */
-		return apply_filters( 'woocommerce_gla_shipping_notification_job_can_schedule', $this->notifications_service->is_enabled() && parent::can_schedule( $args ), $args );
+		return apply_filters( 'woocommerce_gla_settings_notification_job_can_schedule', $this->notifications_service->is_enabled() && parent::can_schedule( $args ), $args );
 	}
 }
