@@ -216,6 +216,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * Gets the ads account access status.
 	 *
 	 * @return bool
+	 * @throws Exception When email is not present or invite link is empty when email present and has no account access.
 	 */
 	public function get_ads_accoount_has_access() {
 		try {
@@ -320,6 +321,8 @@ class AccountService implements OptionsAwareInterface, Service {
 
 	/**
 	 * Checks whether the account has access granted.
+	 *
+	 * @throws Exception When ads account has no access.
 	 */
 	private function check_account_access(): void {
 		$data = $this->get_ads_accoount_has_access();
