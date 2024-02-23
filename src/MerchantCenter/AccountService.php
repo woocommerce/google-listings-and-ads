@@ -30,6 +30,7 @@ defined( 'ABSPATH' ) || exit;
  * Class AccountService
  *
  * Container used to access:
+ * - Ads
  * - CleanupSyncedProducts
  * - Merchant
  * - MerchantAccountState
