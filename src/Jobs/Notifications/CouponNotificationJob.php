@@ -151,8 +151,8 @@ class CouponNotificationJob extends AbstractActionSchedulerJob implements JobInt
 	/**
 	 * If there is a valid Item ID and topic is a deletion topic. Mark the coupon as unsynced.
 	 *
-	 * @param string   $topic
-	 * @param int $item
+	 * @param string $topic
+	 * @param int    $item
 	 */
 	protected function maybe_mark_as_unsynced( string $topic, int $item ): void {
 		if ( ! str_contains( $topic, '.delete' ) ) {
