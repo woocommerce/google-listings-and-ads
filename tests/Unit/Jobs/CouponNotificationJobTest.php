@@ -187,7 +187,7 @@ class CouponNotificationJobTest extends UnitTest {
 			->method( 'notify' )
 			->willReturn( true );
 
-		$this->coupon_helper->expects( $this->exactly( 6 ) )
+		$this->coupon_helper->expects( $this->exactly( 7 ) )
 			->method( 'get_wc_coupon' )
 			->willReturn( $coupon );
 
@@ -256,5 +256,28 @@ class CouponNotificationJobTest extends UnitTest {
 		$this->job->handle_process_items_action( [ $id, 'coupon.create' ] );
 		$this->job->handle_process_items_action( [ $id, 'coupon.delete' ] );
 		$this->job->handle_process_items_action( [ $id, 'coupon.update' ] );
+	}
+
+	public function test_mark_as_unsynced_when_delete() {
+		/** @var \WC_Coupon $coupon */
+		$coupon = WC_Helper_Coupon::create_coupon();
+		$id     = $coupon->get_id();
+
+		$this->coupon_helper->expects( $this->once() )
+			->method( 'should_trigger_delete_notification' )
+			->with( $coupon )
+			->willReturn( true );
+
+		$this->coupon_helper->expects( $this->exactly( 3 ) )
+			->method( 'get_wc_coupon' )
+			->with( $id )
+			->willReturn( $coupon );
+
+		$this->notification_service->expects( $this->once() )->method( 'notify' )->willReturn( true );
+		$this->coupon_helper->expects( $this->once() )
+			->method( 'mark_as_unsynced' );
+
+
+		$this->job->handle_process_items_action( [ $id, 'coupon.delete' ] );
 	}
 }
