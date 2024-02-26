@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\SettingsNotificationJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\AbstractNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -26,7 +26,7 @@ abstract class AbstractNotificationJobTest extends UnitTest {
 	/** @var MockObject|NotificationsService $notification_service */
 	protected $notification_service;
 
-	/** @var SettingsNotificationJob $job */
+	/** @var AbstractNotificationJob $job */
 	protected $job;
 
 	/**
