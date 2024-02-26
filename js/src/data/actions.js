@@ -1247,3 +1247,17 @@ export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
 		);
 	}
 }
+
+export function receiveAdsAccountStatus( data ) {
+	return {
+		type: TYPES.RECEIVE_ADS_ACCOUNT_STATUS,
+		data,
+	};
+}
+
+export function receiveShowAdsClaimAccountModal( value ) {
+	return {
+		type: TYPES.RECEIVE_SHOW_ADS_CLAIM_ACCOUNT_MODAL,
+		value,
+	};
+}
