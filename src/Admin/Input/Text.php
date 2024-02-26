@@ -15,6 +15,6 @@ class Text extends Input {
 	 * Text constructor.
 	 */
 	public function __construct() {
-		parent::__construct( 'text' );
+		parent::__construct( 'text', 'woocommerce/product-text-field' );
 	}
 }

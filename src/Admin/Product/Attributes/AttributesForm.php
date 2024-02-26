@@ -32,7 +32,7 @@ class AttributesForm extends Form {
 	/**
 	 * AttributesForm constructor.
 	 *
-	 * @param string[] $attribute_types
+	 * @param string[] $attribute_types The names of the attribute classes extending AttributeInterface.
 	 * @param array    $data
 	 */
 	public function __construct( array $attribute_types, array $data = [] ) {
@@ -57,23 +57,11 @@ class AttributesForm extends Form {
 				continue;
 			}
 
-			$attribute_id     = $index;
-			$attribute_type   = $this->attribute_types[ $index ];
-			$applicable_types = call_user_func( [ $attribute_type, 'get_applicable_product_types' ] );
+			$attribute_type          = $this->attribute_types[ $index ];
+			$attribute_product_types = self::get_attribute_product_types( $attribute_type );
 
-			/**
-			 * This filter is documented in AttributeManager::map_attribute_types
-			 *
-			 * @see AttributeManager::map_attribute_types
-			 */
-			$applicable_types = apply_filters( "woocommerce_gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
-
-			/**
-			 * Filters the list of product types to hide the attribute for.
-			 */
-			$hidden_types = apply_filters( "woocommerce_gla_attribute_hidden_product_types_{$attribute_id}", [] );
-
-			$visible_types = array_diff( $applicable_types, $hidden_types );
+			$hidden_types  = $attribute_product_types['hidden'];
+			$visible_types = $attribute_product_types['visible'];
 
 			$input['gla_wrapper_class'] = $input['gla_wrapper_class'] ?? '';
 
@@ -92,12 +80,43 @@ class AttributesForm extends Form {
 	}
 
 	/**
+	 * Get the hidden and visible types of an attribute's applicable product types.
+	 *
+	 * @param string $attribute_type The name of an attribute class extending AttributeInterface.
+	 *
+	 * @return array
+	 */
+	public static function get_attribute_product_types( string $attribute_type ): array {
+		$attribute_id             = call_user_func( [ $attribute_type, 'get_id' ] );
+		$applicable_product_types = call_user_func( [ $attribute_type, 'get_applicable_product_types' ] );
+
+		/**
+		 * This filter is documented in AttributeManager::map_attribute_types
+		 *
+		 * @see AttributeManager::map_attribute_types
+		 */
+		$applicable_product_types = apply_filters( "woocommerce_gla_attribute_applicable_product_types_{$attribute_id}", $applicable_product_types, $attribute_type );
+
+		/**
+		 * Filters the list of product types to hide the attribute for.
+		 */
+		$hidden_product_types = apply_filters( "woocommerce_gla_attribute_hidden_product_types_{$attribute_id}", [] );
+
+		$visible_product_types = array_diff( $applicable_product_types, $hidden_product_types );
+
+		return [
+			'hidden'  => $hidden_product_types,
+			'visible' => $visible_product_types,
+		];
+	}
+
+	/**
 	 * @param InputInterface     $input
 	 * @param AttributeInterface $attribute
 	 *
 	 * @return InputInterface
 	 */
-	protected function init_input( InputInterface $input, AttributeInterface $attribute ) {
+	public static function init_input( InputInterface $input, AttributeInterface $attribute ) {
 		$input->set_id( $attribute::get_id() )
 			->set_name( $attribute::get_id() );
 
@@ -113,7 +132,7 @@ class AttributesForm extends Form {
 				$new_input->set_label( $input->get_label() )
 					->set_description( $input->get_description() );
 
-				return $this->init_input( $new_input, $attribute );
+				return self::init_input( $new_input, $attribute );
 			}
 
 			// add a 'default' value option
@@ -128,8 +147,8 @@ class AttributesForm extends Form {
 	/**
 	 * Add an attribute to the form
 	 *
-	 * @param string      $attribute_type An attribute class extending AttributeInterface
-	 * @param string|null $input_type     An input class extending InputInterface to use for attribute input.
+	 * @param string      $attribute_type The name of an attribute class extending AttributeInterface.
+	 * @param string|null $input_type     The name of an input class extending InputInterface to use for attribute input.
 	 *
 	 * @return AttributesForm
 	 *
@@ -146,7 +165,7 @@ class AttributesForm extends Form {
 
 		$this->validate_interface( $input_type, InputInterface::class );
 
-		$attribute_input = $this->init_input( new $input_type(), new $attribute_type() );
+		$attribute_input = self::init_input( new $input_type(), new $attribute_type() );
 		$this->add( $attribute_input );
 
 		$attribute_id                           = call_user_func( [ $attribute_type, 'get_id' ] );
@@ -158,7 +177,7 @@ class AttributesForm extends Form {
 	/**
 	 * Remove an attribute from the form
 	 *
-	 * @param string $attribute_type An attribute class extending AttributeInterface
+	 * @param string $attribute_type The name of an attribute class extending AttributeInterface.
 	 *
 	 * @return AttributesForm
 	 *
@@ -178,8 +197,8 @@ class AttributesForm extends Form {
 	/**
 	 * Sets the input type for the given attribute.
 	 *
-	 * @param string $attribute_type
-	 * @param string $input_type
+	 * @param string $attribute_type The name of an attribute class extending AttributeInterface.
+	 * @param string $input_type     The name of an input class extending InputInterface to use for attribute input.
 	 *
 	 * @return $this
 	 *
@@ -195,7 +214,7 @@ class AttributesForm extends Form {
 
 		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
 		if ( $this->has( $attribute_id ) ) {
-			$this->children[ $attribute_id ] = $this->init_input( new $input_type(), new $attribute_type() );
+			$this->children[ $attribute_id ] = self::init_input( new $input_type(), new $attribute_type() );
 		}
 
 		return $this;

@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.4
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.5.17
+Stable tag: 2.5.18
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.5.18 - 2024-02-20 =
+* Fix - Prevent product queries by IDs if no arguments are supplied.
+
 = 2.5.17 - 2024-02-07 =
 * Dev - Add manual QIT workflow.
 * Dev - Upload coverage report for JS unit tests to codecov.
@@ -126,10 +129,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - Generate coverage report with xdebug.
 * Fix - Context not tracked in Create Campaign FAQs.
 * Fix - WordPress 6.4 Compatibility: Set an appropriate width for the content in the Popover component.
-
-= 2.5.15 - 2024-01-09 =
-* Dev - Update link for developer.woo.com.
-* Tweak - WC 8.5 compatibility.
-* Update - Upgrade google/apiclient for PHP 8.3 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

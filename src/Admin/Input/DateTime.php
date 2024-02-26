@@ -21,7 +21,7 @@ class DateTime extends Input {
 	 * DateTime constructor.
 	 */
 	public function __construct() {
-		parent::__construct( 'datetime' );
+		parent::__construct( 'datetime', 'google-listings-and-ads/product-date-time-field' );
 	}
 
 	/**
