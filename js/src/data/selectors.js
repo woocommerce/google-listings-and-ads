@@ -400,3 +400,23 @@ export const getStoreCategories = ( state ) => {
 export const getTour = ( state, tourId ) => {
 	return state.tours[ tourId ] || null;
 };
+
+/**
+ * Return whether access has been granted to the ads account.
+ *
+ * @param {Object} state The state
+ * @return {Object} The ads status containing the hasAccess and inviteLink properties.
+ */
+export const getAdsAccountStatus = ( state ) => {
+	return state.ads.accountStatus;
+};
+
+/**
+ * Return if we want to show the Google ads claim account modal.
+ *
+ * @param {Object} state The state
+ * @return {boolean} The visiiblity of the modal
+ */
+export const getShowAdsClaimAccountModal = ( state ) => {
+	return state.ui.showAdsClaimAccountModal;
+};

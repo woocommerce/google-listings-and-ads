@@ -45,6 +45,7 @@ import {
 	receiveMappingRules,
 	receiveStoreCategories,
 	receiveTour,
+	receiveAdsAccountStatus,
 } from './actions';
 
 export function* getShippingRates() {
@@ -514,6 +515,27 @@ export function* getTour( tourId ) {
 			error,
 			__(
 				'There was an error getting the tour.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver for getting the ads account status.
+ */
+export function* getAdsAccountStatus() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/account-status`,
+		} );
+
+		yield receiveAdsAccountStatus( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the access status for the Ads account.',
 				'google-listings-and-ads'
 			)
 		);

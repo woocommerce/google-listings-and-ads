@@ -18,7 +18,8 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const ClaimTermsAndCreateAccountButton = ( { disabled } ) => {
 	const { createNotice } = useDispatchCoreNotices();
-	const { fetchGoogleAdsAccount } = useAppDispatch();
+	const { fetchGoogleAdsAccount, receiveShowAdsClaimAccountModal } =
+		useAppDispatch();
 	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
 	const [ fetchCreateAdsAccount, { loading: createLoading } ] =
 		useApiFetchCallback( {
@@ -49,6 +50,7 @@ const ClaimTermsAndCreateAccountButton = ( { disabled } ) => {
 		setFetchAccountLoading( true );
 		await fetchGoogleAdsAccount();
 		setFetchAccountLoading( false );
+		receiveShowAdsClaimAccountModal( true );
 	};
 
 	if ( ! google || google.active !== 'yes' ) {
