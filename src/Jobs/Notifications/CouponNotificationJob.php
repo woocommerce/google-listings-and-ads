@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractActionSchedulerJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
@@ -82,6 +83,7 @@ class CouponNotificationJob extends AbstractActionSchedulerJob implements JobInt
 
 		if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $topic, $item ) ) {
 			$this->set_status( $item, $this->get_after_notification_status( $topic ) );
+			$this->maybe_mark_as_unsynced( $topic, $item );
 		}
 	}
 
@@ -143,6 +145,25 @@ class CouponNotificationJob extends AbstractActionSchedulerJob implements JobInt
 			return $this->coupon_helper->should_trigger_delete_notification( $coupon );
 		} else {
 			return $this->coupon_helper->should_trigger_update_notification( $coupon );
+		}
+	}
+
+	/**
+	 * If there is a valid Item ID and topic is a deletion topic. Mark the coupon as unsynced.
+	 *
+	 * @param string $topic
+	 * @param int|null $item
+	 */
+	protected function maybe_mark_as_unsynced( string $topic, $item = null ): void {
+		if ( is_null( $item ) || !  str_contains( $topic, '.delete' ) ) {
+			return;
+		}
+
+		try {
+			$coupon = $this->coupon_helper->get_wc_coupon( $item );
+			$this->coupon_helper->mark_as_unsynced( $coupon );
+		} catch ( InvalidValue $e ) {
+			return;
 		}
 	}
 
