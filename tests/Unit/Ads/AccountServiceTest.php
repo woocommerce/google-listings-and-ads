@@ -461,7 +461,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 7 ) )
+		$this->options->expects( $this->exactly( 8 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
@@ -470,7 +470,8 @@ class AccountServiceTest extends UnitTest {
 				[ OptionsInterface::ADS_CONVERSION_ACTION ],
 				[ OptionsInterface::ADS_ID ],
 				[ OptionsInterface::ADS_SETUP_COMPLETED_AT ],
-				[ OptionsInterface::CAMPAIGN_CONVERT_STATUS ]
+				[ OptionsInterface::CAMPAIGN_CONVERT_STATUS ],
+				[ OptionsInterface::CUSTOMER_DATA_TERMS ]
 			);
 
 		$this->transients->expects( $this->exactly( 1 ) )

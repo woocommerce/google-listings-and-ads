@@ -137,6 +137,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 				'mcSupportedLanguage'      => $this->merchant_center->is_language_supported(),
 				'adsCampaignConvertStatus' => $this->options->get( OptionsInterface::CAMPAIGN_CONVERT_STATUS ),
 				'adsSetupComplete'         => $this->ads->is_setup_complete(),
+				'adsConnected'             => $this->ads->is_connected(),
 				'enableReports'            => $this->enableReports(),
 				'dateFormat'               => get_option( 'date_format' ),
 				'timeFormat'               => get_option( 'time_format' ),

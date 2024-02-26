@@ -24,7 +24,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use WC_Product;
-use WC_Customer;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -221,10 +220,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			add_filter(
 				'woocommerce_gtag_snippet',
 				function ( $gtag_snippet ) use ( $ads_conversion_id ) {
-					$config = wp_json_encode( $this->get_config_object() );
 					return preg_replace(
 						'~(\s)</script>~',
-						"\tgtag('config', '" . $ads_conversion_id . "', $config);\n$1</script>",
+						"\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA', 'send_page_view': false });\n$1</script>",
 						$gtag_snippet
 					);
 				}
@@ -240,7 +238,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	protected function display_global_site_tag( string $ads_conversion_id ) {
-		$config = $this->get_config_object();
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 
@@ -252,7 +249,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 			gtag('js', new Date());
 			gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
-			gtag('config', '<?php echo esc_js( $ads_conversion_id ); ?>', <?php echo wp_json_encode( $config ); // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped ?>);
+			gtag('config', '<?php echo esc_js( $ads_conversion_id ); ?>', {
+				'groups': 'GLA',
+				'send_page_view': false
+			});
 		</script>
 
 		<?php
@@ -577,28 +577,5 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$this->get_version(),
 			false
 		);
-	}
-
-	/**
-	 * Get the config object for Google tag.
-	 *
-	 * @return array
-	 */
-	private function get_config_object() {
-		// Standard config.
-		$config = [
-			'groups'         => 'GLA',
-			'send_page_view' => false,
-		];
-
-		// Check if enhanced conversion is enabled.
-		$enhanced_conversion_status  = $this->options->get( OptionsInterface::ENHANCED_CONVERSION_STATUS, null );
-		$enhanced_conversion_enabled = ( 'enabled' === $enhanced_conversion_status );
-
-		if ( $enhanced_conversion_enabled ) {
-			$config['allow_enhanced_conversions'] = true;
-		}
-
-		return $config;
 	}
 }

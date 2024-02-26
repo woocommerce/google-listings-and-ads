@@ -13,7 +13,7 @@ import '@testing-library/jest-dom';
  * Internal dependencies
  */
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
-import EnhancedConversion from './EnhancedConversion';
+import EnhancedConversion from './index';
 
 describe( 'Enhanced Conversion', () => {
 	beforeEach( () => {

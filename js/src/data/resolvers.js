@@ -549,7 +549,7 @@ export function* getAcceptedCustomerDataTerms() {
 export function* getAllowEnhancedConversions() {
 	try {
 		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/ads/allow-enhance-conversions`,
+			path: `${ API_NAMESPACE }/ads/enhanced-conversion-status`,
 		} );
 
 		yield receiveAllowEnhancedConversions( response );

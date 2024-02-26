@@ -27,8 +27,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_CONNECTION          = '/wc/gla/ads/connection';
 	protected const ROUTE_BILLING_STATUS      = '/wc/gla/ads/billing-status';
 	protected const ROUTE_ACCEPTED_DATA_TERMS = '/wc/gla/ads/accepted-customer-data-terms';
-	protected const ROUTE_UPDATED_EC_STATUS   = '/wc/gla/ads/update-enhanced-conversion-status';
-	protected const ROUTE_GET_EC_STATUS       = '/wc/gla/ads/allow-enhance-conversions';
+	protected const ROUTE_UPDATED_EC_STATUS   = '/wc/gla/ads/enhanced-conversion-status';
+	protected const ROUTE_GET_EC_STATUS       = '/wc/gla/ads/enhanced-conversion-status';
 	protected const TEST_ACCOUNT_ID           = 1234567890;
 	protected const TEST_BILLING_URL          = 'https://domain.test/billing/setup/';
 	protected const TEST_BILLING_STATUS       = 'pending';

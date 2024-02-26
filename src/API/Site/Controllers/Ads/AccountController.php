@@ -99,19 +99,13 @@ class AccountController extends BaseController {
 		);
 
 		$this->register_route(
-			'ads/update-enhanced-conversion-status',
+			'ads/enhanced-conversion-status',
 			[
 				[
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->update_enhanced_ads_conversion_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
-			]
-		);
-
-		$this->register_route(
-			'ads/allow-enhance-conversions',
-			[
 				[
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_enhanced_conversion_status_callback(),

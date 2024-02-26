@@ -136,8 +136,6 @@ export default function Guide( {
 						</Button>
 					) }
 
-					{ pages[ currentPage ]?.footer }
-
 					{ canGoForward && (
 						<Button
 							className="components-guide__forward-button"
@@ -148,6 +146,8 @@ export default function Guide( {
 					) }
 
 					{ finishBlock }
+
+					{ pages[ currentPage ]?.footer }
 				</div>
 			</div>
 		</Modal>

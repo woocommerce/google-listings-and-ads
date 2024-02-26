@@ -8,12 +8,15 @@ import { Spinner } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
+import {
+	ENHANCED_ADS_CONVERSION_STATUS,
+	ENHANCED_ADS_TOS_BASE_URL,
+} from '.~/constants';
 import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
-import PendingStatus from './PendingStatus';
+import PendingStatus from './pending-status';
 
 const CTA = ( {
 	acceptTermsLabel = __(
@@ -32,8 +35,6 @@ const CTA = ( {
 		useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 
-	const TOS_URL = 'https://ads.google.com/aw/conversions/customersettings';
-
 	useEffect( () => {
 		if (
 			allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING
@@ -43,7 +44,7 @@ const CTA = ( {
 	}, [ allowEnhancedConversions, invalidateResolution ] );
 
 	const handleTOS = useCallback( () => {
-		window.open( TOS_URL, '_blank' );
+		window.open( ENHANCED_ADS_TOS_BASE_URL, '_blank' );
 
 		updateEnhancedAdsConversionStatus(
 			ENHANCED_ADS_CONVERSION_STATUS.PENDING
