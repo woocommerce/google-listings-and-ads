@@ -77,6 +77,7 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 
 		if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $topic, $item ) ) {
 			$this->set_status( $item, $this->get_after_notification_status( $topic ) );
+			$this->maybe_mark_as_unsynced( $topic, $item );
 		}
 	}
 
@@ -119,6 +120,21 @@ class ProductNotificationJob extends AbstractActionSchedulerJob implements JobIn
 		} else {
 			return NotificationStatus::NOTIFICATION_UPDATED;
 		}
+	}
+
+	/**
+	 * If there is a valid Item ID and topic is a deletion topic. Mark the coupon as unsynced.
+	 *
+	 * @param string $topic
+	 * @param int    $item
+	 */
+	protected function maybe_mark_as_unsynced( string $topic, int $item ): void {
+		if ( ! str_contains( $topic, '.delete' ) ) {
+			return;
+		}
+
+		$product = $this->product_helper->get_wc_product( $item );
+		$this->product_helper->mark_as_unsynced( $product );
 	}
 
 	/**
