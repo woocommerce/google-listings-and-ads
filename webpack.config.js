@@ -63,7 +63,6 @@ const webpackConfig = {
 				 * - https://github.com/WordPress/gutenberg/tree/%40wordpress/scripts%4022.1.0/packages/scripts#default-webpack-config
 				 * - https://github.com/WordPress/gutenberg/blob/%40wordpress/scripts%4022.1.0/packages/scripts/config/webpack.config.js#L232-L240
 				 */
-				'CopyPlugin',
 				'MiniCssExtractPlugin',
 				'ReactRefreshPlugin',
 			];
@@ -78,19 +77,21 @@ const webpackConfig = {
 			chunkFilename: '[name].css?ver=[chunkhash]',
 		} ),
 	],
-	entry: {
+	entry: () => ( {
+		...defaultConfig.entry(),
 		index: path.resolve( process.cwd(), 'js/src', 'index.js' ),
 		'product-attributes': path.resolve(
 			process.cwd(),
 			'js/src/product-attributes',
 			'index.js'
 		),
+		blocks: path.join( __dirname, 'js/src/blocks/index.js' ),
 		'gtag-events': path.resolve(
 			process.cwd(),
 			'js/src/gtag-events',
 			'index.js'
 		),
-	},
+	} ),
 	output: {
 		...defaultConfig.output,
 		path: path.resolve( process.cwd(), 'js/build' ),

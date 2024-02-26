@@ -65,6 +65,18 @@ class ChannelVisibility implements CastableValueInterface, ValueInterface {
 	}
 
 	/**
+	 * Return an array of the values with option labels.
+	 *
+	 * @return array
+	 */
+	public static function get_value_options(): array {
+		return [
+			self::SYNC_AND_SHOW      => __( 'Sync and show', 'google-listings-and-ads' ),
+			self::DONT_SYNC_AND_SHOW => __( 'Don\'t Sync and show', 'google-listings-and-ads' ),
+		];
+	}
+
+	/**
 	 * @return string
 	 */
 	public function __toString(): string {
