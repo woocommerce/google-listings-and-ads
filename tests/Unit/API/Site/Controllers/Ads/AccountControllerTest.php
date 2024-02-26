@@ -25,6 +25,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_ACCOUNTS           = '/wc/gla/ads/accounts';
 	protected const ROUTE_CONNECTION         = '/wc/gla/ads/connection';
 	protected const ROUTE_BILLING_STATUS     = '/wc/gla/ads/billing-status';
+	protected const ROUTE_ACCOUNT_STATUS     = '/wc/gla/ads/account-status';
 	protected const TEST_ACCOUNT_ID          = 1234567890;
 	protected const TEST_BILLING_URL         = 'https://domain.test/billing/setup/';
 	protected const TEST_BILLING_STATUS      = 'pending';
@@ -213,5 +214,15 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( self::TEST_BILLING_STATUS_DATA, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_ads_accoount_has_access() {
+		$response = $this->account->expects( $this->once() )
+			->method( 'get_ads_accoount_has_access' )
+			->willReturn( true );
+
+		$response = $this->do_request( self::ROUTE_ACCOUNT_STATUS, 'GET' );
+
+		$this->assertEquals( true, $response->get_data() );
 	}
 }

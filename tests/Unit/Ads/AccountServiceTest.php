@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -53,6 +54,9 @@ class AccountServiceTest extends UnitTest {
 
 	/** @var OptionsInterface $options */
 	protected $options;
+
+	/** @var Connection $connection */
+	protected $connection;
 
 	protected const TEST_ACCOUNT_ID        = 1234567890;
 	protected const TEST_OLD_ACCOUNT_ID    = 2345678901;
@@ -109,6 +113,7 @@ class AccountServiceTest extends UnitTest {
 		$this->state             = $this->createMock( AdsAccountState::class );
 		$this->options           = $this->createMock( OptionsInterface::class );
 		$this->transients        = $this->createMock( TransientsInterface::class );
+		$this->connection        = $this->createMock( Connection::class );
 
 		$this->container = new Container();
 		$this->container->share( Ads::class, $this->ads );
@@ -117,6 +122,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( Middleware::class, $this->middleware );
 		$this->container->share( AdsAccountState::class, $this->state );
 		$this->container->share( TransientsInterface::class, $this->transients );
+		$this->container->share( Connection::class, $this->connection );
 
 		$this->account = new AccountService( $this->container );
 		$this->account->set_options_object( $this->options );
@@ -458,6 +464,34 @@ class AccountServiceTest extends UnitTest {
 				'billing_url' => self::TEST_BILLING_URL,
 			],
 			$this->account->get_billing_status()
+		);
+	}
+
+	public function test_get_ads_accoount_has_access() {
+		$this->connection->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@domain.com' ] );
+	
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_BILLING_URL, '' )
+			->willReturn( self::TEST_BILLING_URL );
+
+		$this->ads->method( 'has_access' )
+			->with( 'test@domain.com' )
+			->willReturn( false );
+
+		$status = $this->account->get_ads_accoount_has_access();
+
+		$this->assertIsArray( $status );
+		$this->assertArrayHasKey( 'has_access', $status );
+		$this->assertArrayHasKey( 'invite_link', $status );
+		$this->assertCount( 2, $status );
+
+		$this->assertEquals(
+			[
+				'has_access'  => false,
+				'invite_link' => self::TEST_BILLING_URL,
+			],
+			$status
 		);
 	}
 
