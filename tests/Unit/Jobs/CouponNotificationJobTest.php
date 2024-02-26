@@ -277,7 +277,6 @@ class CouponNotificationJobTest extends UnitTest {
 		$this->coupon_helper->expects( $this->once() )
 			->method( 'mark_as_unsynced' );
 
-
 		$this->job->handle_process_items_action( [ $id, 'coupon.delete' ] );
 	}
 }
