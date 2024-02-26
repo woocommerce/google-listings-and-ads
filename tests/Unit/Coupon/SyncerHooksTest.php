@@ -6,20 +6,25 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\SyncerHooks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\WCCouponAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteCoupon;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\CouponNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\CouponTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Coupon;
+use WC_Helper_Coupon;
 
 /**
  * Class SyncerHooksTest
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon
  */
 class SyncerHooksTest extends ContainerAwareUnitTest {
 
@@ -36,6 +41,12 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	/** @var MockObject|UpdateCoupon $update_coupon_job */
 	protected $update_coupon_job;
+
+	/** @var MockObject|CouponNotificationJob $coupon_notification_job */
+	protected $coupon_notification_job;
+
+	/** @var MockObject|NotificationsService $notification_service */
+	protected $notification_service;
 
 	/** @var CouponHelper $coupon_helper */
 	protected $coupon_helper;
@@ -160,6 +171,47 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		wp_untrash_post( $post->ID );
 	}
 
+	public function test_create_coupon_triggers_notification_created() {
+		/**
+		 * @var WC_Coupon $coupon
+		 */
+		$coupon = WC_Helper_Coupon::create_coupon( uniqid(), [ 'status' => 'draft' ] );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->coupon_notification_job->expects( $this->once() )
+			->method( 'schedule' )->with( $this->equalTo( [ $coupon->get_id(), NotificationsService::TOPIC_COUPON_CREATED ] ) );
+		$coupon->set_status( 'publish' );
+		$coupon->add_meta_data( '_wc_gla_visibility', ChannelVisibility::SYNC_AND_SHOW, true );
+		$coupon->save();
+	}
+
+	public function test_update_coupon_triggers_notification_updated() {
+		/**
+		 * @var WC_Coupon $coupon
+		 */
+		$coupon = WC_Helper_Coupon::create_coupon( uniqid() );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->coupon_notification_job->expects( $this->once() )
+			->method( 'schedule' )->with( $this->equalTo( [ $coupon->get_id(), NotificationsService::TOPIC_COUPON_UPDATED ] ) );
+		$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_CREATED );
+		$coupon->set_status( 'publish' );
+		$coupon->add_meta_data( '_wc_gla_visibility', ChannelVisibility::SYNC_AND_SHOW, true );
+		$coupon->save();
+	}
+
+	public function test_delete_coupon_triggers_notification_delete() {
+		/**
+		 * @var WC_Coupon $coupon
+		 */
+		$coupon = WC_Helper_Coupon::create_coupon( uniqid() );
+		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->coupon_notification_job->expects( $this->once() )
+			->method( 'schedule' )->with( $this->equalTo( [ $coupon->get_id(), NotificationsService::TOPIC_COUPON_DELETED ] ) );
+		$coupon->set_status( 'publish' );
+		$coupon->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
+		$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_UPDATED );
+		$coupon->save();
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -175,15 +227,20 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->method( 'is_ready_for_syncing' )
 			->willReturn( true );
 
-		$this->update_coupon_job = $this->createMock( UpdateCoupon::class );
-		$this->delete_coupon_job = $this->createMock( DeleteCoupon::class );
-		$this->job_repository    = $this->createMock( JobRepository::class );
+		$this->update_coupon_job       = $this->createMock( UpdateCoupon::class );
+		$this->delete_coupon_job       = $this->createMock( DeleteCoupon::class );
+		$this->delete_coupon_job       = $this->createMock( DeleteCoupon::class );
+		$this->coupon_notification_job = $this->createMock( CouponNotificationJob::class );
+		$this->notification_service    = $this->createMock( NotificationsService::class );
+
+		$this->job_repository = $this->createMock( JobRepository::class );
 		$this->job_repository->expects( $this->any() )
 			->method( 'get' )
 			->willReturnMap(
 				[
 					[ DeleteCoupon::class, $this->delete_coupon_job ],
 					[ UpdateCoupon::class, $this->update_coupon_job ],
+					[ CouponNotificationJob::class, $this->coupon_notification_job ],
 				]
 			);
 
@@ -193,9 +250,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			$this->coupon_helper,
 			$this->job_repository,
 			$this->merchant_center,
+			$this->notification_service,
 			$this->wc
 		);
 
+		add_filter( 'woocommerce_gla_notifications_enabled', '__return_false' );
 		$this->syncer_hooks->register();
 	}
 }

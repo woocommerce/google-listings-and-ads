@@ -23,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\CouponNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\SettingsNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ShippingNotificationJob;
@@ -117,6 +118,13 @@ class JobServiceProvider extends AbstractServiceProvider {
 			ProductHelper::class
 		);
 
+		// share coupon notifications job
+		$this->share_action_scheduler_job(
+			CouponNotificationJob::class,
+			NotificationsService::class,
+			CouponHelper::class
+		);
+
 		$this->share_with_tags(
 			JobRepository::class,
 			JobInterface::class
@@ -142,6 +150,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 			CouponHelper::class,
 			JobRepository::class,
 			MerchantCenterService::class,
+			NotificationsService::class,
 			WC::class
 		);
 
