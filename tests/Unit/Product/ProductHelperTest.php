@@ -828,6 +828,66 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	 *
 	 * @dataProvider return_test_products
 	 */
+	public function test_update_channel_visibility( WC_Product $product ) {
+		$this->assertNull( $this->product_meta->get_visibility( $product ) );
+
+		$this->product_helper->update_channel_visibility( $product, ChannelVisibility::SYNC_AND_SHOW );
+		$this->assertEquals( ChannelVisibility::SYNC_AND_SHOW, $this->product_meta->get_visibility( $product ) );
+
+		$this->product_helper->update_channel_visibility( $product, ChannelVisibility::DONT_SYNC_AND_SHOW );
+		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $this->product_meta->get_visibility( $product ) );
+	}
+
+	public function test_update_channel_visibility_variation_product_inherits_from_parent() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+
+		$this->product_helper->update_channel_visibility( $parent, ChannelVisibility::DONT_SYNC_AND_SHOW );
+		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $this->product_meta->get_visibility( $parent ) );
+
+		$this->product_helper->update_channel_visibility( $variation, ChannelVisibility::SYNC_AND_SHOW );
+
+		// The `$parent` must be recreated to sync the latest product data updated by
+		// a different instance.
+		$parent = $this->wc->get_product( $parent->get_id() );
+		$this->assertEquals( ChannelVisibility::SYNC_AND_SHOW, $this->product_meta->get_visibility( $parent ) );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @dataProvider return_test_products
+	 */
+	public function test_update_channel_visibility_wont_update_if_invalid_value( WC_Product $product ) {
+		$this->assertNull( $this->product_meta->get_visibility( $product ) );
+		$this->product_helper->update_channel_visibility( $product, 'phpunit-test-disallowed-value' );
+		$this->assertNull( $this->product_meta->get_visibility( $product ) );
+	}
+
+	public function test_update_channel_visibility_wont_update_if_orphan() {
+		$variable  = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $variable->get_children()[0] );
+
+		$this->product_helper->update_channel_visibility( $variable, ChannelVisibility::DONT_SYNC_AND_SHOW );
+		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $this->product_meta->get_visibility( $variable ) );
+
+		// Make the variation orphan by setting its parent to 0.
+		$variation->set_parent_id( 0 );
+		$variation->save();
+
+		$this->product_helper->update_channel_visibility( $variation, ChannelVisibility::SYNC_AND_SHOW );
+
+		// The `$variable` must be recreated to sync the latest product data therefore
+		// it can determine whether a different instance has updated it.
+		$variable = $this->wc->get_product( $variable->get_id() );
+		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $this->product_meta->get_visibility( $variable ) );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @dataProvider return_test_products
+	 */
 	public function test_get_sync_status( WC_Product $product ) {
 		$this->product_meta->update_sync_status( $product, SyncStatus::SYNCED );
 		$this->assertEquals( SyncStatus::SYNCED, $this->product_helper->get_sync_status( $product ) );
