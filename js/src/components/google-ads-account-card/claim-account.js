@@ -16,7 +16,7 @@ import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import AccountSwitch from './account-switch';
 import ClaimPending from './claim-pending';
 
-const ClaimAccount = ( { claimModalOpen = false } ) => {
+const ClaimAccount = () => {
 	const { inviteLink } = useGoogleAdsAccountStatus();
 
 	const handleClick = ( e ) => {
@@ -52,8 +52,7 @@ const ClaimAccount = ( { claimModalOpen = false } ) => {
 				<AccountSwitch />
 			</Section.Card.Footer>
 
-			{ /* The ClaimPending component is also present in he ClaimAccountModal. Loading only one of it to prevent duplicate requests to the API */ }
-			{ ! claimModalOpen && <ClaimPending /> }
+			<ClaimPending />
 		</AccountCard>
 	);
 };
