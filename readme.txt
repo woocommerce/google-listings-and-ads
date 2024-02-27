@@ -111,6 +111,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.6.0 - 2024-02-27 =
+* Add - Support the new product editor (Product Block Editor).
+* Dev - Fix the compatibility issue in starting E2E test environment due to the default charset change in MariaDB v11.3.1.
+* Fix - 401 handling for connected Ads accounts.
+
 = 2.5.18 - 2024-02-20 =
 * Fix - Prevent product queries by IDs if no arguments are supplied.
 
