@@ -470,7 +470,11 @@ class AccountServiceTest extends UnitTest {
 	public function test_get_ads_accoount_has_access() {
 		$this->connection->method( 'get_status' )
 			->willReturn( [ 'email' => 'test@domain.com' ] );
-	
+
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
 		$this->options->method( 'get' )
 			->with( OptionsInterface::ADS_BILLING_URL, '' )
 			->willReturn( self::TEST_BILLING_URL );
@@ -494,6 +498,50 @@ class AccountServiceTest extends UnitTest {
 			$status
 		);
 	}
+
+	public function test_get_ads_accoount_has_access_throws_exception_for_no_google_account() {
+		$this->connection->method( 'get_status' )
+			->willReturn( [] );
+
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_BILLING_URL, '' )
+			->willReturn( '' );
+
+		$this->ads->expects( $this->never() )
+			->method( 'has_access' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Google account is not connected' );
+
+		$this->account->get_ads_accoount_has_access();
+	}
+
+	public function test_get_ads_accoount_has_access_throws_exception_for_empty_invite_link() {
+		$this->connection->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@domain.com' ] );
+
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_BILLING_URL, '' )
+			->willReturn( '' );
+
+		$this->ads->method( 'has_access' )
+			->with( 'test@domain.com' )
+			->willReturn( false );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Billing URL is not present' );
+	
+		$this->account->get_ads_accoount_has_access();
+	}
+
 
 	public function test_disconnect() {
 		$this->options->expects( $this->exactly( 7 ) )

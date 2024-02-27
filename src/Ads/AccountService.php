@@ -218,7 +218,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @return bool
 	 * @throws Exception When email is not present or invite link is empty when email present and has no account access.
 	 */
-	public function get_ads_accoount_has_access() {
+	public function get_ads_account_has_access() {
 		try {
 			// Check if ads id is present.
 			$ads_id = $this->options->get_ads_id();
@@ -332,7 +332,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @throws Exception When ads account has no access.
 	 */
 	private function check_account_access(): void {
-		$data = $this->get_ads_accoount_has_access();
+		$data = $this->get_ads_account_has_access();
 
 		if ( ! $data['has_access'] ) {
 			throw new Exception( 'Ads account invitation is not accepted', 428 );

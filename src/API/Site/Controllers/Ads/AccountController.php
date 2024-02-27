@@ -92,7 +92,7 @@ class AccountController extends BaseController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_ads_accoount_has_access(),
+					'callback'            => $this->get_ads_account_has_access(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -178,10 +178,10 @@ class AccountController extends BaseController {
 	 *
 	 * @return callable
 	 */
-	protected function get_ads_accoount_has_access(): callable {
+	protected function get_ads_account_has_access(): callable {
 		return function () {
 			try {
-				return $this->account->get_ads_accoount_has_access();
+				return $this->account->get_ads_account_has_access();
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
