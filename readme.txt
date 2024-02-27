@@ -121,13 +121,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Prevent notifications from sending request to Google API when disconnected.
 * Tweak - WC 8.6 compatibility.
 
-= 2.5.16 - 2024-01-30 =
-* Add - Include connected accounts in tracks from the backend.
-* Add - Include plugin version, Google Merchant Center account ID, and Google Ads account ID in all frontend tracking events.
-* Add - Send the related tracking event with the account ID to be connected when connecting to an existing Google Merchant Center or Google Ads account.
-* Add - Tracking for completed events.
-* Dev - Generate coverage report with xdebug.
-* Fix - Context not tracked in Create Campaign FAQs.
-* Fix - WordPress 6.4 Compatibility: Set an appropriate width for the content in the Popover component.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
