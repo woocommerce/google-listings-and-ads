@@ -541,3 +541,16 @@ export function* getAdsAccountStatus() {
 		);
 	}
 }
+
+/**
+ * Refresh if Google Ads account is updated.
+ *
+ * @param {Object} action The performed action
+ * @return {boolean} True if the action should be invalidated
+ */
+getAdsAccountStatus.shouldInvalidate = ( action ) => {
+	return (
+		action.type === TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS ||
+		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS
+	);
+};

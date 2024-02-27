@@ -13,7 +13,6 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from './create-account-button';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
-import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
@@ -24,7 +23,6 @@ const ClaimTermsAndCreateAccountButton = ( {
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccount } = useAppDispatch();
 	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
-	const { refetchGoogleAdsAccountStatus } = useGoogleAdsAccountStatus();
 	const [ fetchCreateAdsAccount, { loading: createLoading } ] =
 		useApiFetchCallback( {
 			path: `/wc/gla/ads/accounts`,
@@ -54,7 +52,6 @@ const ClaimTermsAndCreateAccountButton = ( {
 		setFetchAccountLoading( true );
 		await fetchGoogleAdsAccount();
 		onCreateAccount();
-		refetchGoogleAdsAccountStatus();
 		setFetchAccountLoading( false );
 	};
 

@@ -8,18 +8,18 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleAdsAccountCard from './connected-google-ads-account-card';
 import NonConnected from './non-connected';
 import AuthorizeAds from './authorize-ads';
 import ClaimAccount from './claim-account';
-import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 import ClaimAccountModal from './claim-account-modal';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import usePrevious from '.~/hooks/usePrevious';
-import AppSpinner from '../app-spinner';
+import SpinnerCard from '../spinner-card';
 
 export default function GoogleAdsAccountCard() {
 	const [ claimModalOpen, setClaimModalOpen ] = useState( false );
@@ -28,7 +28,8 @@ export default function GoogleAdsAccountCard() {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { hasAccess, hasFinishedResolution } = useGoogleAdsAccountStatus();
 	const previousHasAccess = usePrevious( hasAccess );
-	const [ fetchCreateAdsAccount ] = useApiFetchCallback( {
+
+	const [ fetchCreateAdsAccount, { loading } ] = useApiFetchCallback( {
 		path: `/wc/gla/ads/accounts`,
 		method: 'POST',
 		data: { id: adsAccountID },
@@ -60,7 +61,7 @@ export default function GoogleAdsAccountCard() {
 	}, [ googleAdsAccount ] );
 
 	if ( ! hasFinishedResolution ) {
-		return <AppSpinner />;
+		return <SpinnerCard />;
 	}
 
 	if ( ! google || ! googleAdsAccount ) {
@@ -91,7 +92,7 @@ export default function GoogleAdsAccountCard() {
 	}
 
 	return (
-		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount }>
+		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount } loading={loading}>
 			{ googleAdsAccount.status ===
 				GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED && (
 				<Notice status="success" isDismissible={ false }>
