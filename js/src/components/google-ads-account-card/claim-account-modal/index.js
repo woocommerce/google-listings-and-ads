@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useEffect, useState } from '@wordpress/element';
+import { useCallback, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -12,17 +12,13 @@ import AppModal from '.~/components/app-modal';
 import AppButton from '.~/components/app-button';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
 import './index.scss';
-import ClaimPending from '../claim-pending';
 
 const ClaimAccountModal = ( { onRequestClose = () => {} } ) => {
-	const [ autoCheckStatus, setAutoCheckStatus ] = useState( false );
-	const { inviteLink, hasAccess, refetchGoogleAdsAccountStatus } =
-		useGoogleAdsAccountStatus();
+	const { inviteLink, hasAccess } = useGoogleAdsAccountStatus();
 
 	useEffect( () => {
-		// Close the modal if access has been granted and continue signup process.
+		// Close the modal if access has been granted.
 		if ( hasAccess ) {
-			// @todo: what to do with the signup process
 			onRequestClose();
 		}
 	}, [ onRequestClose, hasAccess ] );
@@ -39,10 +35,8 @@ const ClaimAccountModal = ( { onRequestClose = () => {} } ) => {
 			defaultView.open( inviteLink, '_blank', features );
 
 			onRequestClose();
-			setAutoCheckStatus( true );
-			refetchGoogleAdsAccountStatus();
 		},
-		[ inviteLink, onRequestClose, refetchGoogleAdsAccountStatus ]
+		[ inviteLink, onRequestClose ]
 	);
 
 	return (
@@ -90,8 +84,6 @@ const ClaimAccountModal = ( { onRequestClose = () => {} } ) => {
 					'google-listings-and-ads'
 				) }
 			</p>
-
-			{ autoCheckStatus && <ClaimPending /> }
 		</AppModal>
 	);
 };

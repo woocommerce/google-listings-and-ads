@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Fragment, useCallback, useState } from '@wordpress/element';
+import { Fragment, useCallback, useState, useEffect } from '@wordpress/element';
 import { Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -16,15 +16,20 @@ import AuthorizeAds from './authorize-ads';
 import ClaimAccount from './claim-account';
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 import ClaimAccountModal from './claim-account-modal';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import usePrevious from '.~/hooks/usePrevious';
 
 export default function GoogleAdsAccountCard() {
 	const [ claimModalOpen, setClaimModalOpen ] = useState( false );
 	const { google, scope } = useGoogleAccount();
-	const {
-		googleAdsAccount,
-		googleAdsAccountStatus,
-		hasFinishedResolutionGoogleAdsAccountStatus,
-	} = useGoogleAdsAccount();
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasAccess, hasFinishedResolution } = useGoogleAdsAccountStatus();
+	const previousHasAccess = usePrevious( hasAccess );
+	const [ fetchCreateAdsAccount ] = useApiFetchCallback( {
+		path: `/wc/gla/ads/accounts`,
+		method: 'POST',
+	} );
 
 	const handleOnCreateAccount = useCallback( () => {
 		setClaimModalOpen( true );
@@ -33,6 +38,17 @@ export default function GoogleAdsAccountCard() {
 	const handleOnRequestClose = useCallback( () => {
 		setClaimModalOpen( false );
 	}, [] );
+
+	useEffect( () => {
+		const checkAccessChange = async () => {
+			// Access has changed, continue setup process
+			if ( hasAccess === true && previousHasAccess === false ) {
+				await fetchCreateAdsAccount();
+			}
+		};
+
+		checkAccessChange();
+	} );
 
 	if ( ! google || ! googleAdsAccount ) {
 		return <NonConnected onCreateAccount={ handleOnCreateAccount } />;
@@ -47,11 +63,7 @@ export default function GoogleAdsAccountCard() {
 	}
 
 	// Ads account has been created but we don't have access yet.
-	if (
-		googleAdsAccount.id &&
-		hasFinishedResolutionGoogleAdsAccountStatus &&
-		! googleAdsAccountStatus.hasAccess
-	) {
+	if ( googleAdsAccount.id && hasAccess === false && hasFinishedResolution ) {
 		return (
 			<Fragment>
 				{ claimModalOpen && (
