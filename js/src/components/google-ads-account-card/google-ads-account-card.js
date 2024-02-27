@@ -92,7 +92,10 @@ export default function GoogleAdsAccountCard() {
 	}
 
 	return (
-		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount } loading={loading}>
+		<ConnectedGoogleAdsAccountCard
+			googleAdsAccount={ googleAdsAccount }
+			loading={ loading }
+		>
 			{ googleAdsAccount.status ===
 				GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED && (
 				<Notice status="success" isDismissible={ false }>
