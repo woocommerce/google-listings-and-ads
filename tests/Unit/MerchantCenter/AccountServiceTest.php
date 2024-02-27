@@ -635,17 +635,18 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
 
-		$this->state->expects( $this->once() )
-			->method( 'get' )
-			->willReturn(
-				[
-					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
-				]
-			);
+		$this->merchant->expects( $this->never() )
+			->method( 'link_ads_id' );
 
-		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+		$this->ads->expects( $this->never() )
+			->method( 'accept_merchant_link' );
+
+		$this->account->setup_account( self::TEST_ACCOUNT_ID );
 	}
 
+	/**
+	 * @group testme
+	 */
 	public function test_setup_account_step_link_ads_without_mc() {
 		$this->options->expects( $this->any() )
 			->method( 'get_ads_id' )
@@ -655,13 +656,11 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_merchant_id' )
 			->willReturn( 0 );
 
-		$this->state->expects( $this->once() )
-			->method( 'get' )
-			->willReturn(
-				[
-					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
-				]
-			);
+		$this->merchant->expects( $this->never() )
+			->method( 'link_ads_id' );
+
+		$this->ads->expects( $this->never() )
+			->method( 'accept_merchant_link' );
 
 		$this->account->setup_account( self::TEST_ACCOUNT_ID );
 	}
