@@ -11,7 +11,7 @@ import CreateAccount from './create-account';
 import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
 import ConnectAds from './connect-ads';
 
-const NonConnected = () => {
+const NonConnected = ( { onCreateAccount = () => {} } ) => {
 	const { google, existingAccounts, hasFinishedResolution } =
 		useGoogleAccountCheck();
 	const [ ignoreExisting, setIgnoreExisting ] = useState( false );
@@ -35,6 +35,7 @@ const NonConnected = () => {
 				allowShowExisting={ ignoreExisting }
 				onShowExisting={ handleShowExisting }
 				disabled={ disabled }
+				onCreateAccount={ onCreateAccount }
 			/>
 		);
 	}

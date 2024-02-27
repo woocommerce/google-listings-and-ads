@@ -12,14 +12,12 @@ import Section from '.~/wcdl/section';
 import AppButton from '.~/components/app-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import AccountSwitch from './account-switch';
 import ClaimPending from './claim-pending';
 
-const ClaimAccount = () => {
-	const {
-		googleAdsAccountStatus: { inviteLink },
-	} = useGoogleAdsAccount();
+const ClaimAccount = ( { claimModalOpen = false } ) => {
+	const { inviteLink } = useGoogleAdsAccountStatus();
 
 	const handleClick = ( e ) => {
 		const { defaultView } = e.target.ownerDocument;
@@ -54,7 +52,8 @@ const ClaimAccount = () => {
 				<AccountSwitch />
 			</Section.Card.Footer>
 
-			<ClaimPending />
+			{ /* The ClaimPending component is also present in he ClaimAccountModal. Loading only one of it to prevent duplicate requests to the API */ }
+			{ ! claimModalOpen && <ClaimPending /> }
 		</AccountCard>
 	);
 };

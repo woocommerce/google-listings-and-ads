@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Fragment } from '@wordpress/element';
+import { Fragment, useCallback, useState } from '@wordpress/element';
 import { Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -10,7 +10,6 @@ import { __ } from '@wordpress/i18n';
  */
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useShowAdsClaimAccountModal from '.~/hooks/useShowAdsClaimAccountModal';
 import ConnectedGoogleAdsAccountCard from './connected-google-ads-account-card';
 import NonConnected from './non-connected';
 import AuthorizeAds from './authorize-ads';
@@ -19,7 +18,7 @@ import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 import ClaimAccountModal from './claim-account-modal';
 
 export default function GoogleAdsAccountCard() {
-	const isClaimAccountModalOpen = useShowAdsClaimAccountModal();
+	const [ claimModalOpen, setClaimModalOpen ] = useState( false );
 	const { google, scope } = useGoogleAccount();
 	const {
 		googleAdsAccount,
@@ -27,8 +26,16 @@ export default function GoogleAdsAccountCard() {
 		hasFinishedResolutionGoogleAdsAccountStatus,
 	} = useGoogleAdsAccount();
 
+	const handleOnCreateAccount = useCallback( () => {
+		setClaimModalOpen( true );
+	}, [] );
+
+	const handleOnRequestClose = useCallback( () => {
+		setClaimModalOpen( false );
+	}, [] );
+
 	if ( ! google || ! googleAdsAccount ) {
-		return <NonConnected />;
+		return <NonConnected onCreateAccount={ handleOnCreateAccount } />;
 	}
 
 	if ( ! scope.adsRequired ) {
@@ -36,7 +43,7 @@ export default function GoogleAdsAccountCard() {
 	}
 
 	if ( googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ) {
-		return <NonConnected />;
+		return <NonConnected onCreateAccount={ handleOnCreateAccount } />;
 	}
 
 	// Ads account has been created but we don't have access yet.
@@ -47,8 +54,13 @@ export default function GoogleAdsAccountCard() {
 	) {
 		return (
 			<Fragment>
-				{ isClaimAccountModalOpen && <ClaimAccountModal /> }
-				<ClaimAccount />
+				{ claimModalOpen && (
+					<ClaimAccountModal
+						onRequestClose={ handleOnRequestClose }
+					/>
+				) }
+
+				<ClaimAccount claimModalOpen={ claimModalOpen } />
 			</Fragment>
 		);
 	}

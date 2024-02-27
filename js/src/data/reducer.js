@@ -70,9 +70,6 @@ const DEFAULT_STATE = {
 			inviteLink: null,
 		},
 	},
-	ui: {
-		showAdsClaimAccountModal: false,
-	},
 };
 
 /**
@@ -509,12 +506,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				.setIn( 'hasAccess', hasAccess )
 				.setIn( 'inviteLink', inviteLink )
 				.end();
-		}
-
-		case TYPES.RECEIVE_SHOW_ADS_CLAIM_ACCOUNT_MODAL: {
-			const { value } = action;
-
-			return setIn( state, 'ui.showAdsClaimAccountModal', value );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

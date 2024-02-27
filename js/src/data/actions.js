@@ -1254,10 +1254,3 @@ export function receiveAdsAccountStatus( data ) {
 		data,
 	};
 }
-
-export function receiveShowAdsClaimAccountModal( value ) {
-	return {
-		type: TYPES.RECEIVE_SHOW_ADS_CLAIM_ACCOUNT_MODAL,
-		value,
-	};
-}

@@ -410,13 +410,3 @@ export const getTour = ( state, tourId ) => {
 export const getAdsAccountStatus = ( state ) => {
 	return state.ads.accountStatus;
 };
-
-/**
- * Return if we want to show the Google ads claim account modal.
- *
- * @param {Object} state The state
- * @return {boolean} The visiiblity of the modal
- */
-export const getShowAdsClaimAccountModal = ( state ) => {
-	return state.ui.showAdsClaimAccountModal;
-};

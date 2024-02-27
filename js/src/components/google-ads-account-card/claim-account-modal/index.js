@@ -1,36 +1,35 @@
 /**
  * External dependencies
  */
-import { useCallback, useEffect } from '@wordpress/element';
+import { useCallback, useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '.~/data';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import AppModal from '.~/components/app-modal';
 import AppButton from '.~/components/app-button';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
 import './index.scss';
+import ClaimPending from '../claim-pending';
 
-const ClaimAccountModal = () => {
-	const {
-		googleAdsAccountStatus: { inviteLink, hasAccess },
-	} = useGoogleAdsAccount();
-	const { receiveShowAdsClaimAccountModal } = useAppDispatch();
+const ClaimAccountModal = ( { onRequestClose = () => {} } ) => {
+	const [ autoCheckStatus, setAutoCheckStatus ] = useState( false );
+	const { inviteLink, hasAccess, refetchGoogleAdsAccountStatus } =
+		useGoogleAdsAccountStatus();
 
 	useEffect( () => {
 		// Close the modal if access has been granted and continue signup process.
 		if ( hasAccess ) {
 			// @todo: what to do with the signup process
-			receiveShowAdsClaimAccountModal( false );
+			onRequestClose();
 		}
-	}, [ hasAccess, receiveShowAdsClaimAccountModal ] );
+	}, [ onRequestClose, hasAccess ] );
 
 	const handleOnRequestClose = useCallback( () => {
-		receiveShowAdsClaimAccountModal( false );
-	}, [ receiveShowAdsClaimAccountModal ] );
+		onRequestClose();
+	}, [ onRequestClose ] );
 
 	const handleAcceptInvitationClick = useCallback(
 		( event ) => {
@@ -39,9 +38,11 @@ const ClaimAccountModal = () => {
 
 			defaultView.open( inviteLink, '_blank', features );
 
-			receiveShowAdsClaimAccountModal( false );
+			onRequestClose();
+			setAutoCheckStatus( true );
+			refetchGoogleAdsAccountStatus();
 		},
-		[ receiveShowAdsClaimAccountModal, inviteLink ]
+		[ inviteLink, onRequestClose, refetchGoogleAdsAccountStatus ]
 	);
 
 	return (
@@ -89,6 +90,8 @@ const ClaimAccountModal = () => {
 					'google-listings-and-ads'
 				) }
 			</p>
+
+			{ autoCheckStatus && <ClaimPending /> }
 		</AppModal>
 	);
 };

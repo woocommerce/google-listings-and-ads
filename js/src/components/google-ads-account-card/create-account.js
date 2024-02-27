@@ -16,10 +16,12 @@ import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
-const ClaimTermsAndCreateAccountButton = ( { disabled } ) => {
+const ClaimTermsAndCreateAccountButton = ( {
+	disabled,
+	onCreateAccount = () => {},
+} ) => {
 	const { createNotice } = useDispatchCoreNotices();
-	const { fetchGoogleAdsAccount, receiveShowAdsClaimAccountModal } =
-		useAppDispatch();
+	const { fetchGoogleAdsAccount } = useAppDispatch();
 	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
 	const [ fetchCreateAdsAccount, { loading: createLoading } ] =
 		useApiFetchCallback( {
@@ -50,7 +52,7 @@ const ClaimTermsAndCreateAccountButton = ( { disabled } ) => {
 		setFetchAccountLoading( true );
 		await fetchGoogleAdsAccount();
 		setFetchAccountLoading( false );
-		receiveShowAdsClaimAccountModal( true );
+		onCreateAccount();
 	};
 
 	if ( ! google || google.active !== 'yes' ) {
@@ -67,7 +69,12 @@ const ClaimTermsAndCreateAccountButton = ( { disabled } ) => {
 };
 
 const CreateAccount = ( props ) => {
-	const { allowShowExisting, onShowExisting, disabled } = props;
+	const {
+		allowShowExisting,
+		onShowExisting,
+		disabled,
+		onCreateAccount = () => {},
+	} = props;
 
 	return (
 		<AccountCard
@@ -75,7 +82,10 @@ const CreateAccount = ( props ) => {
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			alignIcon="top"
 			indicator={
-				<ClaimTermsAndCreateAccountButton disabled={ disabled } />
+				<ClaimTermsAndCreateAccountButton
+					disabled={ disabled }
+					onCreateAccount={ onCreateAccount }
+				/>
 			}
 		>
 			{ allowShowExisting && (
