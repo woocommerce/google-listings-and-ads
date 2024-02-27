@@ -220,6 +220,13 @@ class AccountService implements OptionsAwareInterface, Service {
 	 */
 	public function get_ads_accoount_has_access() {
 		try {
+			// Check if ads id is present.
+			$ads_id = $this->options->get_ads_id();
+
+			if ( empty( $ads_id ) ) {
+				throw new Exception( 'Ads ID must be set' );
+			}
+
 			$connection_status  = $this->container->get( Connection::class )->get_status();
 			$email              = $connection_status['email'] ?? '';
 			$accept_invite_link = $this->options->get( OptionsInterface::ADS_BILLING_URL, '' );
