@@ -59,7 +59,6 @@ export default function GoogleAdsAccountCard() {
 		}
 	}, [ googleAdsAccount ] );
 
-	console.log( googleAdsAccount, useGoogleAdsAccountStatus() );
 	if ( ! hasFinishedResolution ) {
 		return <AppSpinner />;
 	}
@@ -77,7 +76,7 @@ export default function GoogleAdsAccountCard() {
 	}
 
 	// Ads account has been created but we don't have access yet.
-	if ( googleAdsAccount.id && hasAccess === false && hasFinishedResolution ) {
+	if ( googleAdsAccount.id && hasAccess === false ) {
 		return (
 			<Fragment>
 				{ claimModalOpen && (
@@ -86,7 +85,7 @@ export default function GoogleAdsAccountCard() {
 					/>
 				) }
 
-				<ClaimAccount claimModalOpen={ claimModalOpen } />
+				<ClaimAccount />
 			</Fragment>
 		);
 	}

@@ -13,11 +13,12 @@ import AppButton from '.~/components/app-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import useAutoCheckAdsAccountStatus from '.~/hooks/useAutoCheckAdsAccountStatus';
 import AccountSwitch from './account-switch';
-import ClaimPending from './claim-pending';
 
 const ClaimAccount = () => {
 	const { inviteLink } = useGoogleAdsAccountStatus();
+	useAutoCheckAdsAccountStatus();
 
 	const handleClick = ( e ) => {
 		const { defaultView } = e.target.ownerDocument;
@@ -51,8 +52,6 @@ const ClaimAccount = () => {
 			<Section.Card.Footer>
 				<AccountSwitch />
 			</Section.Card.Footer>
-
-			<ClaimPending />
 		</AccountCard>
 	);
 };

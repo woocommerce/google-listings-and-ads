@@ -25,6 +25,7 @@ import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
 import Faqs from './faqs';
 import './index.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 
 /**
  * Renders the disclaimer of Comparison Shopping Service (CSS).
@@ -86,6 +87,7 @@ const SetupAccounts = ( props ) => {
 	const { googleMCAccount, isPreconditionReady: isGMCPreconditionReady } =
 		useGoogleMCAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasAccess } = useGoogleAdsAccountStatus();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,
@@ -108,6 +110,7 @@ const SetupAccounts = ( props ) => {
 
 	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
 	const isContinueButtonDisabled =
+		! hasAccess ||
 		googleAdsAccount?.status !== 'connected' ||
 		googleMCAccount?.status !== 'connected';
 
