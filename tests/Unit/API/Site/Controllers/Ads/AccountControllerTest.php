@@ -217,8 +217,8 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_ads_accoount_has_access() {
-		$response = $this->account->expects( $this->once() )
-			->method( 'get_ads_accoount_has_access' )
+		$this->account->expects( $this->once() )
+			->method( 'get_ads_account_has_access' )
 			->willReturn( true );
 
 		$response = $this->do_request( self::ROUTE_ACCOUNT_STATUS, 'GET' );

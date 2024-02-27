@@ -483,7 +483,7 @@ class AccountServiceTest extends UnitTest {
 			->with( 'test@domain.com' )
 			->willReturn( false );
 
-		$status = $this->account->get_ads_accoount_has_access();
+		$status = $this->account->get_ads_account_has_access();
 
 		$this->assertIsArray( $status );
 		$this->assertArrayHasKey( 'has_access', $status );
@@ -517,7 +517,7 @@ class AccountServiceTest extends UnitTest {
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Google account is not connected' );
 
-		$this->account->get_ads_accoount_has_access();
+		$this->account->get_ads_account_has_access();
 	}
 
 	public function test_get_ads_accoount_has_access_throws_exception_for_empty_invite_link() {
@@ -538,8 +538,8 @@ class AccountServiceTest extends UnitTest {
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Billing URL is not present' );
-	
-		$this->account->get_ads_accoount_has_access();
+
+		$this->account->get_ads_account_has_access();
 	}
 
 
