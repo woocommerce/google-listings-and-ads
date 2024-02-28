@@ -339,7 +339,7 @@ class Ads implements OptionsAwareInterface {
 
 			// Retrieve the terms acceptance data from options.
 			if ( null !== $accepted_terms ) {
-				return apply_filters( 'woocommerce_gla_ads_enhanced_conversion_customer_data_terms', boolval( $accepted_terms ) );
+				return (bool) apply_filters( 'woocommerce_gla_ads_enhanced_conversion_customer_data_terms', (bool) $accepted_terms );
 			}
 
 			$customer = ( new AdsAccountQuery() )
