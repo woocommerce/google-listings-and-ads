@@ -140,7 +140,12 @@ class CouponNotificationJobTest extends UnitTest {
 			->method( 'set_notification_status' )
 			->with( $coupon, NotificationStatus::NOTIFICATION_CREATED );
 
-		$this->job->handle_process_items_action( [ $id, $topic ] );
+		$this->job->handle_process_items_action(
+			[
+				'item_id' => $id,
+				'topic'   => $topic,
+			]
+		);
 	}
 
 	public function test_process_items_doesnt_calls_notify_when_no_args() {
@@ -175,7 +180,12 @@ class CouponNotificationJobTest extends UnitTest {
 		$this->coupon_helper->expects( $this->never() )
 			->method( 'set_notification_status' );
 
-		$this->job->handle_process_items_action( [ $id, $topic ] );
+		$this->job->handle_process_items_action(
+			[
+				'item_id' => $id,
+				'topic'   => $topic,
+			]
+		);
 	}
 
 	public function test_get_after_notification_status() {
@@ -220,9 +230,24 @@ class CouponNotificationJobTest extends UnitTest {
 				}
 			);
 
-		$this->job->handle_process_items_action( [ $id, 'coupon.create' ] );
-		$this->job->handle_process_items_action( [ $id, 'coupon.delete' ] );
-		$this->job->handle_process_items_action( [ $id, 'coupon.update' ] );
+		$this->job->handle_process_items_action(
+			[
+				'item_id' => $id,
+				'topic'   => 'coupon.create',
+			]
+		);
+		$this->job->handle_process_items_action(
+			[
+				'item_id' => $id,
+				'topic'   => 'coupon.delete',
+			]
+		);
+		$this->job->handle_process_items_action(
+			[
+				'item_id' => $id,
+				'topic'   => 'coupon.update',
+			]
+		);
 	}
 
 	public function test_dont_process_item_if_status_changed() {
@@ -253,9 +278,24 @@ class CouponNotificationJobTest extends UnitTest {
 
 		$this->coupon_helper->expects( $this->never() )->method( 'set_notification_status' );
 
-		$this->job->handle_process_items_action( [ $id, 'coupon.create' ] );
-		$this->job->handle_process_items_action( [ $id, 'coupon.delete' ] );
-		$this->job->handle_process_items_action( [ $id, 'coupon.update' ] );
+		$this->job->handle_process_items_action(
+			[
+				'item_id' => $id,
+				'topic'   => 'coupon.create',
+			]
+		);
+		$this->job->handle_process_items_action(
+			[
+				'item_id' => $id,
+				'topic'   => 'coupon.delete',
+			]
+		);
+		$this->job->handle_process_items_action(
+			[
+				'item_id' => $id,
+				'topic'   => 'coupon.update',
+			]
+		);
 	}
 
 	public function test_mark_as_unsynced_when_delete() {
@@ -277,6 +317,11 @@ class CouponNotificationJobTest extends UnitTest {
 		$this->coupon_helper->expects( $this->once() )
 			->method( 'mark_as_unsynced' );
 
-		$this->job->handle_process_items_action( [ $id, 'coupon.delete' ] );
+		$this->job->handle_process_items_action(
+			[
+				'item_id' => $id,
+				'topic'   => 'coupon.delete',
+			]
+		);
 	}
 }
