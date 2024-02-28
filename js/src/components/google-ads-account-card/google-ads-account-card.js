@@ -8,7 +8,10 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
+import {
+	GOOGLE_ADS_ACCOUNT_STATUS,
+	GOOGLE_ADS_BILLING_STATUS,
+} from '.~/constants';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleAdsAccountCard from './connected-google-ads-account-card';
@@ -20,13 +23,19 @@ import SpinnerCard from '../spinner-card';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import usePrevious from '.~/hooks/usePrevious';
 import useFetchCreateAdsAccount from '.~/hooks/useFetchCreateAdsAccount';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 export default function GoogleAdsAccountCard() {
 	const [ claimModalOpen, setClaimModalOpen ] = useState( false );
 	const { google, scope } = useGoogleAccount();
-	const { googleAdsAccount } = useGoogleAdsAccount();
+	const {
+		googleAdsAccount,
+		refetchGoogleAdsAccount,
+		hasFinishedResolution: hasResolvedGoogleAdsAccount,
+	} = useGoogleAdsAccount();
 	const { hasAccess, hasFinishedResolution } = useGoogleAdsAccountStatus();
 	const [ fetchCreateAdsAccount, { loading } ] = useFetchCreateAdsAccount();
+	const { createNotice } = useDispatchCoreNotices();
 	const previousHasAccess = usePrevious( hasAccess );
 
 	const handleOnCreateAccount = useCallback( () => {
@@ -41,7 +50,25 @@ export default function GoogleAdsAccountCard() {
 		const checkAccessChange = async () => {
 			// Access has changed, continue setup process
 			if ( hasAccess === true && previousHasAccess === false ) {
-				await fetchCreateAdsAccount();
+				try {
+					await fetchCreateAdsAccount();
+				} catch ( error ) {
+					if (
+						error.status !== 428 &&
+						error?.billing_status !==
+							GOOGLE_ADS_BILLING_STATUS.PENDING
+					) {
+						createNotice(
+							'error',
+							__(
+								'Unable to connect Google Ads account. Please try again later.',
+								'google-listings-and-ads'
+							)
+						);
+					}
+				}
+
+				await refetchGoogleAdsAccount();
 			}
 		};
 
@@ -82,7 +109,7 @@ export default function GoogleAdsAccountCard() {
 	return (
 		<ConnectedGoogleAdsAccountCard
 			googleAdsAccount={ googleAdsAccount }
-			loading={ loading }
+			loading={ loading || ! hasResolvedGoogleAdsAccount }
 		>
 			{ googleAdsAccount.status ===
 				GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED && (
