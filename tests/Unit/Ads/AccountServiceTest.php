@@ -542,6 +542,27 @@ class AccountServiceTest extends UnitTest {
 		$this->account->get_ads_account_has_access();
 	}
 
+	public function test_get_ads_account_has_access_ads_id_not_present() {
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( 0 );
+
+		$this->connection->expects( $this->never() )
+			->method( 'get_status' );
+
+		$this->ads->expects( $this->never() )
+			->method( 'has_access' );
+
+		$response = $this->account->get_ads_account_has_access();
+
+		$this->assertEquals(
+			[
+				'has_access'  => false,
+				'invite_link' => '',
+			],
+			$response
+		);
+	}
 
 	public function test_disconnect() {
 		$this->options->expects( $this->exactly( 7 ) )

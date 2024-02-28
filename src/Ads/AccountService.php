@@ -224,7 +224,10 @@ class AccountService implements OptionsAwareInterface, Service {
 			$ads_id = $this->options->get_ads_id();
 
 			if ( empty( $ads_id ) ) {
-				throw new Exception( 'Ads ID must be set' );
+				return [
+					'has_access'  => false,
+					'invite_link' => '',
+				];
 			}
 
 			$connection_status  = $this->container->get( Connection::class )->get_status();
