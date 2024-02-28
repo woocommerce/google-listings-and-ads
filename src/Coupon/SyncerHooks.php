@@ -355,7 +355,7 @@ class SyncerHooks implements Service, Registerable {
 	}
 
 	/**
-	 * Schedules notifications for an updated product
+	 * Schedules notifications for an updated coupon
 	 *
 	 * @param WC_Coupon $coupon
 	 */
