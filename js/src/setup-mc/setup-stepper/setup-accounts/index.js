@@ -134,9 +134,7 @@ const SetupAccounts = ( props ) => {
 				<VerticalGapLayout size="large">
 					<WPComAccountCard jetpack={ jetpack } />
 					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
-					<GoogleAdsAccountCard
-						disabled={ isGoogleAccountDisabled }
-					/>
+					<GoogleAdsAccountCard />
 				</VerticalGapLayout>
 			</Section>
 			<Section

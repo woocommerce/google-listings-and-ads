@@ -17,7 +17,7 @@ const NonConnected = () => {
 		return <SpinnerCard />;
 	}
 
-	if ( existingAccounts && existingAccounts.length > 0 ) {
+	if ( existingAccounts.length > 0 ) {
 		return <ConnectMC />;
 	}
 
