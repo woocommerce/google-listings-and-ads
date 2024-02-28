@@ -215,10 +215,11 @@ class AccountService implements OptionsAwareInterface, Service {
 		$this->options->delete( OptionsInterface::ADS_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::ADS_BILLING_URL );
 		$this->options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
+		$this->options->delete( OptionsInterface::ADS_CUSTOMER_DATA_TERMS );
+		$this->options->delete( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS );
 		$this->options->delete( OptionsInterface::ADS_ID );
 		$this->options->delete( OptionsInterface::ADS_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::CAMPAIGN_CONVERT_STATUS );
-		$this->options->delete( OptionsInterface::CUSTOMER_DATA_TERMS );
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
 	}
 
