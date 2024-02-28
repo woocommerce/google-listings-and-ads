@@ -16,24 +16,18 @@ import NonConnected from './non-connected';
 import AuthorizeAds from './authorize-ads';
 import ClaimAccount from './claim-account';
 import ClaimAccountModal from './claim-account-modal';
-import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
-import usePrevious from '.~/hooks/usePrevious';
 import SpinnerCard from '../spinner-card';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import usePrevious from '.~/hooks/usePrevious';
+import useFetchCreateAdsAccount from '.~/hooks/useFetchCreateAdsAccount';
 
 export default function GoogleAdsAccountCard() {
 	const [ claimModalOpen, setClaimModalOpen ] = useState( false );
-	const [ adsAccountID, setAdsAccountID ] = useState( null );
 	const { google, scope } = useGoogleAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { hasAccess, hasFinishedResolution } = useGoogleAdsAccountStatus();
+	const [ fetchCreateAdsAccount, { loading } ] = useFetchCreateAdsAccount();
 	const previousHasAccess = usePrevious( hasAccess );
-
-	const [ fetchCreateAdsAccount, { loading } ] = useApiFetchCallback( {
-		path: `/wc/gla/ads/accounts`,
-		method: 'POST',
-		data: { id: adsAccountID },
-	} );
 
 	const handleOnCreateAccount = useCallback( () => {
 		setClaimModalOpen( true );
@@ -53,12 +47,6 @@ export default function GoogleAdsAccountCard() {
 
 		checkAccessChange();
 	} );
-
-	useEffect( () => {
-		if ( googleAdsAccount && googleAdsAccount.id !== 0 ) {
-			setAdsAccountID( googleAdsAccount.id );
-		}
-	}, [ googleAdsAccount ] );
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;

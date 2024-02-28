@@ -21,8 +21,8 @@ const ClaimAccount = () => {
 	const { inviteLink } = useGoogleAdsAccountStatus();
 	useAutoCheckAdsAccountStatus();
 
-	const handleClick = ( e ) => {
-		const { defaultView } = e.target.ownerDocument;
+	const handleClick = ( event ) => {
+		const { defaultView } = event.target.ownerDocument;
 		const features = getWindowFeatures( defaultView, 600, 800 );
 
 		defaultView.open( inviteLink, '_blank', features );

@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import noop from 'lodash/noop';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 
@@ -11,23 +12,20 @@ import Section from '.~/wcdl/section';
 import AppButton from '.~/components/app-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from './create-account-button';
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import useFetchCreateAdsAccount from '.~/hooks/useFetchCreateAdsAccount';
 
 const ClaimTermsAndCreateAccountButton = ( {
 	disabled,
-	onCreateAccount = () => {},
+	onCreateAccount = noop,
 } ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccount } = useAppDispatch();
 	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
 	const [ fetchCreateAdsAccount, { loading: createLoading } ] =
-		useApiFetchCallback( {
-			path: `/wc/gla/ads/accounts`,
-			method: 'POST',
-		} );
+		useFetchCreateAdsAccount();
 	const { google } = useGoogleAccountCheck();
 
 	const handleCreateAccount = async () => {
@@ -73,7 +71,7 @@ const CreateAccount = ( props ) => {
 		allowShowExisting,
 		onShowExisting,
 		disabled,
-		onCreateAccount = () => {},
+		onCreateAccount = noop,
 	} = props;
 
 	return (

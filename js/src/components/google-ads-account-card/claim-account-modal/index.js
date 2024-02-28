@@ -1,8 +1,9 @@
 /**
  * External dependencies
  */
-import { useCallback, useEffect } from '@wordpress/element';
+import noop from 'lodash/noop';
 import { __ } from '@wordpress/i18n';
+import { useCallback, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -13,7 +14,7 @@ import AppButton from '.~/components/app-button';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
 import './index.scss';
 
-const ClaimAccountModal = ( { onRequestClose = () => {} } ) => {
+const ClaimAccountModal = ( { onRequestClose = noop } ) => {
 	const { inviteLink, hasAccess } = useGoogleAdsAccountStatus();
 
 	useEffect( () => {
