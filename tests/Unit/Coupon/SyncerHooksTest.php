@@ -178,7 +178,14 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$coupon = WC_Helper_Coupon::create_coupon( uniqid(), [ 'status' => 'draft' ] );
 		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->coupon_notification_job->expects( $this->once() )
-			->method( 'schedule' )->with( $this->equalTo( [ $coupon->get_id(), NotificationsService::TOPIC_COUPON_CREATED ] ) );
+			->method( 'schedule' )->with(
+				$this->equalTo(
+					[
+						'item_id' => $coupon->get_id(),
+						'topic'   => NotificationsService::TOPIC_COUPON_CREATED,
+					]
+				)
+			);
 		$coupon->set_status( 'publish' );
 		$coupon->add_meta_data( '_wc_gla_visibility', ChannelVisibility::SYNC_AND_SHOW, true );
 		$coupon->save();
@@ -191,7 +198,14 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$coupon = WC_Helper_Coupon::create_coupon( uniqid() );
 		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->coupon_notification_job->expects( $this->once() )
-			->method( 'schedule' )->with( $this->equalTo( [ $coupon->get_id(), NotificationsService::TOPIC_COUPON_UPDATED ] ) );
+			->method( 'schedule' )->with(
+				$this->equalTo(
+					[
+						'item_id' => $coupon->get_id(),
+						'topic'   => NotificationsService::TOPIC_COUPON_UPDATED,
+					]
+				)
+			);
 		$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_CREATED );
 		$coupon->set_status( 'publish' );
 		$coupon->add_meta_data( '_wc_gla_visibility', ChannelVisibility::SYNC_AND_SHOW, true );
@@ -205,7 +219,14 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$coupon = WC_Helper_Coupon::create_coupon( uniqid() );
 		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->coupon_notification_job->expects( $this->once() )
-			->method( 'schedule' )->with( $this->equalTo( [ $coupon->get_id(), NotificationsService::TOPIC_COUPON_DELETED ] ) );
+			->method( 'schedule' )->with(
+				$this->equalTo(
+					[
+						'item_id' => $coupon->get_id(),
+						'topic'   => NotificationsService::TOPIC_COUPON_DELETED,
+					]
+				)
+			);
 		$coupon->set_status( 'publish' );
 		$coupon->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
 		$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_UPDATED );
