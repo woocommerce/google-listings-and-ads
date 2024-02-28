@@ -241,6 +241,13 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $expected_response, $response->get_data() );
 	}
 
+	public function test_update_enhanced_conversion_status_with_invalid_status() {
+		$response = $this->do_request( self::ROUTE_UPDATED_EC_STATUS, 'POST', [ 'status' => 'invalid' ] );
+
+		$this->assertEquals( 400, $response->get_status() );
+		// $this->assertEquals( $expected_response, $response->get_data() );
+	}
+
 	public function test_get_enhanced_conversion_status() {
 		$expected_response = [ 'status' => 'pending' ];
 		$this->account->expects( $this->once() )
