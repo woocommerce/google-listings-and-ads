@@ -89,10 +89,7 @@ const SetupAccounts = ( props ) => {
 		useGoogleMCAccount();
 	const { googleAdsAccount, isResolving: isResolvingGoogleAdsAccount } =
 		useGoogleAdsAccount();
-	const {
-		hasAccess,
-		hasFinishedResolution: hasResolvedGoogleAdsAccountStatus,
-	} = useGoogleAdsAccountStatus();
+	const { hasAccess } = useGoogleAdsAccountStatus();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,
