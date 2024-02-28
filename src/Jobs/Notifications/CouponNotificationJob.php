@@ -69,7 +69,7 @@ class CouponNotificationJob extends AbstractActionSchedulerJob implements JobInt
 	 * @param array $args Arguments with the item id and the topic
 	 */
 	protected function process_items( array $args ): void {
-		if ( ! isset( $args[0] ) || ! isset( $args[1] ) ) {
+		if ( ! isset( $args['item_id'] ) || ! $args['topic']  ) {
 			do_action(
 				'woocommerce_gla_error',
 				'Error sending Coupon Notification. Topic and Coupon ID are mandatory',
@@ -78,8 +78,8 @@ class CouponNotificationJob extends AbstractActionSchedulerJob implements JobInt
 			return;
 		}
 
-		$item  = $args[0];
-		$topic = $args[1];
+		$item  = $args['item_id'];
+		$topic = $args['topic'];
 
 		if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $topic, $item ) ) {
 			$this->set_status( $item, $this->get_after_notification_status( $topic ) );
