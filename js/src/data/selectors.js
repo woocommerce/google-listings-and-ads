@@ -402,7 +402,7 @@ export const getTour = ( state, tourId ) => {
 };
 
 /**
- * Return whether access has been granted to the ads account.
+ * Return object containing properties hasAccess and inviteLink for the connected Google Ads account.
  *
  * @param {Object} state The state
  * @return {Object} The ads status containing the hasAccess and inviteLink properties.

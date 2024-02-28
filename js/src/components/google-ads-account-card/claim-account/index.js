@@ -14,14 +14,15 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useAutoCheckAdsAccountStatus from '.~/hooks/useAutoCheckAdsAccountStatus';
-import AccountSwitch from './account-switch';
+import AccountSwitch from '../account-switch';
+import './index.scss';
 
 const ClaimAccount = () => {
 	const { inviteLink } = useGoogleAdsAccountStatus();
 	useAutoCheckAdsAccountStatus();
 
-	const handleClick = ( e ) => {
-		const { defaultView } = e.target.ownerDocument;
+	const handleClick = ( event ) => {
+		const { defaultView } = event.target.ownerDocument;
 		const features = getWindowFeatures( defaultView, 600, 800 );
 
 		defaultView.open( inviteLink, '_blank', features );
@@ -37,17 +38,19 @@ const ClaimAccount = () => {
 				</AppButton>
 			}
 		>
-			<Section.Card.Body>
-				<Notice status="warning" isDismissible={ false }>
-					{ createInterpolateElement(
-						__(
-							'Your new ads account has been created, but you do not have access to it yet. <link>Claim your new ads account</link> to automatically configure conversion tracking and configure onboarding',
-							'google-listings-and-ads'
-						),
-						{ link: <ExternalLink href={ inviteLink } /> }
-					) }
-				</Notice>
-			</Section.Card.Body>
+			<Notice
+				status="warning"
+				isDismissible={ false }
+				className="gla-ads-claim-account-notice"
+			>
+				{ createInterpolateElement(
+					__(
+						'Your new ads account has been created, but you do not have access to it yet. <link>Claim your new ads account</link> to automatically configure conversion tracking and configure onboarding',
+						'google-listings-and-ads'
+					),
+					{ link: <ExternalLink href={ inviteLink } /> }
+				) }
+			</Notice>
 
 			<Section.Card.Footer>
 				<AccountSwitch />

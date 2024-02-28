@@ -8,31 +8,26 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleAdsAccountCard from './connected-google-ads-account-card';
 import NonConnected from './non-connected';
 import AuthorizeAds from './authorize-ads';
 import ClaimAccount from './claim-account';
-import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 import ClaimAccountModal from './claim-account-modal';
+import SpinnerCard from '../spinner-card';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import usePrevious from '.~/hooks/usePrevious';
-import AppSpinner from '../app-spinner';
+import useFetchCreateAdsAccount from '.~/hooks/useFetchCreateAdsAccount';
 
 export default function GoogleAdsAccountCard() {
 	const [ claimModalOpen, setClaimModalOpen ] = useState( false );
-	const [ adsAccountID, setAdsAccountID ] = useState( null );
 	const { google, scope } = useGoogleAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { hasAccess, hasFinishedResolution } = useGoogleAdsAccountStatus();
+	const [ fetchCreateAdsAccount, { loading } ] = useFetchCreateAdsAccount();
 	const previousHasAccess = usePrevious( hasAccess );
-	const [ fetchCreateAdsAccount ] = useApiFetchCallback( {
-		path: `/wc/gla/ads/accounts`,
-		method: 'POST',
-		data: { id: adsAccountID },
-	} );
 
 	const handleOnCreateAccount = useCallback( () => {
 		setClaimModalOpen( true );
@@ -53,14 +48,8 @@ export default function GoogleAdsAccountCard() {
 		checkAccessChange();
 	} );
 
-	useEffect( () => {
-		if ( googleAdsAccount && googleAdsAccount.id !== 0 ) {
-			setAdsAccountID( googleAdsAccount.id );
-		}
-	}, [ googleAdsAccount ] );
-
 	if ( ! hasFinishedResolution ) {
-		return <AppSpinner />;
+		return <SpinnerCard />;
 	}
 
 	if ( ! google || ! googleAdsAccount ) {
@@ -91,7 +80,10 @@ export default function GoogleAdsAccountCard() {
 	}
 
 	return (
-		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount }>
+		<ConnectedGoogleAdsAccountCard
+			googleAdsAccount={ googleAdsAccount }
+			loading={ loading }
+		>
 			{ googleAdsAccount.status ===
 				GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED && (
 				<Notice status="success" isDismissible={ false }>

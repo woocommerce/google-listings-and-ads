@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import noop from 'lodash/noop';
 import { useState } from '@wordpress/element';
 
 /**
@@ -11,7 +12,7 @@ import CreateAccount from './create-account';
 import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
 import ConnectAds from './connect-ads';
 
-const NonConnected = ( { onCreateAccount = () => {} } ) => {
+const NonConnected = ( { onCreateAccount = noop } ) => {
 	const { google, existingAccounts, hasFinishedResolution } =
 		useGoogleAccountCheck();
 	const [ ignoreExisting, setIgnoreExisting ] = useState( false );

@@ -1,8 +1,9 @@
 /**
  * External dependencies
  */
-import { useCallback, useEffect } from '@wordpress/element';
+import noop from 'lodash/noop';
 import { __ } from '@wordpress/i18n';
+import { useCallback, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -11,9 +12,8 @@ import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import AppModal from '.~/components/app-modal';
 import AppButton from '.~/components/app-button';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
-import './index.scss';
 
-const ClaimAccountModal = ( { onRequestClose = () => {} } ) => {
+const ClaimAccountModal = ( { onRequestClose = noop } ) => {
 	const { inviteLink, hasAccess } = useGoogleAdsAccountStatus();
 
 	useEffect( () => {
@@ -41,7 +41,6 @@ const ClaimAccountModal = ( { onRequestClose = () => {} } ) => {
 
 	return (
 		<AppModal
-			className="gla-ads-claim-account-modal"
 			title={ __(
 				'Accept invitation to claim your Google Ads account',
 				'google-listings-and-ads'

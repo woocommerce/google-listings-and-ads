@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
 
 /**
@@ -11,6 +12,7 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import Section from '.~/wcdl/section';
 import AccountSwitch from './account-switch';
+import LoadingLabel from '.~/components/loading-label';
 
 /**
  * Renders a Google Ads account card UI with connected account information.
@@ -18,12 +20,14 @@ import AccountSwitch from './account-switch';
  * @param {Object} props React props.
  * @param {{ id: number }} props.googleAdsAccount A data payload object containing the user's Google Ads account ID.
  * @param {boolean} [props.hideAccountSwitch=false] Indicate whether hide the account switch block at the card footer.
+ * @param {boolean} [props.loading=false] Indicate whether there is some activity going.
  * @param {JSX.Element} [props.children] Helper content below the Google account email.
  * @param {Object} props.restProps Props to be forwarded to AccountCard.
  */
 export default function ConnectedGoogleAdsAccountCard( {
 	googleAdsAccount,
 	hideAccountSwitch = false,
+	loading = false,
 	children,
 	...restProps
 } ) {
@@ -35,7 +39,15 @@ export default function ConnectedGoogleAdsAccountCard( {
 					{ toAccountText( googleAdsAccount.id ) }
 				</ExternalLink>
 			}
-			indicator={ <ConnectedIconLabel /> }
+			indicator={
+				loading ? (
+					<LoadingLabel
+						text={ __( 'Connecting…', 'google-listings-and-ads' ) }
+					/>
+				) : (
+					<ConnectedIconLabel />
+				)
+			}
 			{ ...restProps }
 		>
 			{ children }
