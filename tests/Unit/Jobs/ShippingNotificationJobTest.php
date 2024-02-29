@@ -15,7 +15,7 @@ class ShippingNotificationJobTest extends AbstractNotificationJobTest {
 
 
 	public function get_topic() {
-		return $this->notification_service::TOPIC_SHIPPING_UPDATED;
+		return 'shipping.update';
 	}
 
 	public function get_job_name() {

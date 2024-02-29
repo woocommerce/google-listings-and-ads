@@ -15,7 +15,7 @@ class SettingsNotificationJobTest extends AbstractNotificationJobTest {
 
 
 	public function get_topic() {
-		return $this->notification_service::TOPIC_SETTINGS_UPDATED;
+		return 'settings.update';
 	}
 
 	public function get_job_name() {
