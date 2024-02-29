@@ -242,13 +242,28 @@ class SyncerHooks implements Service, Registerable {
 	protected function handle_update_product_notification( WC_Product $product ) {
 		if ( $this->product_helper->should_trigger_create_notification( $product ) ) {
 			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_CREATE );
-			$this->product_notification_job->schedule( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_CREATED ] );
+			$this->product_notification_job->schedule(
+				[
+					'item_id' => $product->get_id(),
+					'topic'   => NotificationsService::TOPIC_PRODUCT_CREATED,
+				]
+			);
 		} elseif ( $this->product_helper->should_trigger_update_notification( $product ) ) {
 			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_UPDATE );
-			$this->product_notification_job->schedule( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_UPDATED ] );
+			$this->product_notification_job->schedule(
+				[
+					'item_id' => $product->get_id(),
+					'topic'   => NotificationsService::TOPIC_PRODUCT_UPDATED,
+				]
+			);
 		} elseif ( $this->product_helper->should_trigger_delete_notification( $product ) ) {
 			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-			$this->product_notification_job->schedule( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED ] );
+			$this->product_notification_job->schedule(
+				[
+					'item_id' => $product->get_id(),
+					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
+				]
+			);
 		}
 	}
 
@@ -261,7 +276,12 @@ class SyncerHooks implements Service, Registerable {
 		$product = wc_get_product( $product_id );
 		if ( $product instanceof WC_Product && $this->notifications_service->is_enabled() && $this->product_helper->should_trigger_delete_notification( $product ) ) {
 			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-			$this->product_notification_job->schedule( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED ] );
+			$this->product_notification_job->schedule(
+				[
+					'item_id' => $product->get_id(),
+					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
+				]
+			);
 			return;
 		}
 
