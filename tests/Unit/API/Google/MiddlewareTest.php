@@ -375,6 +375,20 @@ class MiddlewareTest extends UnitTest {
 		$this->assertEquals( 'error', $tos->message() );
 	}
 
+	public function test_mark_tos_accepted_exception() {
+		$this->generate_request_mock_exception( 'error', 'post' );
+		$tos = $this->middleware->mark_tos_accepted( 'google-mc', 'user@email.test' );
+		$this->assertFalse( $tos->accepted() );
+		$this->assertEquals( 'error', $tos->message() );
+	}
+
+	public function test_mark_tos_accepted_account_reconnect_exception() {
+		$this->generate_account_reconnect_exception( 'jetpack', 'post' );
+		$tos = $this->middleware->mark_tos_accepted( 'google-mc', 'user@email.test' );
+		$this->assertFalse( $tos->accepted() );
+		$this->assertEquals( 'Please reconnect your Jetpack account.', $tos->message() );
+	}
+
 	public function test_get_account_review_status() {
 		$this->options->expects( $this->exactly( 2 ) )->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
 
