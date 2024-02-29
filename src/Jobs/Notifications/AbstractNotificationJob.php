@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractActionSchedulerJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 
 
 defined( 'ABSPATH' ) || exit;
@@ -65,23 +64,6 @@ abstract class AbstractNotificationJob extends AbstractActionSchedulerJob implem
 				$this->get_process_item_hook(),
 				[ $args ]
 			);
-		}
-	}
-
-
-	/**
-	 * Get the Notification Status after the notification happens
-	 *
-	 * @param string $topic
-	 * @return string
-	 */
-	protected function get_after_notification_status( string $topic ): string {
-		if ( str_contains( $topic, '.create' ) ) {
-			return NotificationStatus::NOTIFICATION_CREATED;
-		} elseif ( str_contains( $topic, '.delete' ) ) {
-			return NotificationStatus::NOTIFICATION_DELETED;
-		} else {
-			return NotificationStatus::NOTIFICATION_UPDATED;
 		}
 	}
 
