@@ -257,7 +257,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 			gtag('js', new Date());
 			gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
-			<?php echo $this->get_gtag_config( $ads_conversion_id ); ?>
+			<?php echo esc_js( $this->get_gtag_config( $ads_conversion_id ) ); ?>
 		</script>
 
 		<?php
@@ -288,7 +288,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		if ( class_exists( '\WC_Google_Gtag_JS' ) ) {
 			wp_add_inline_script(
 				'woocommerce-google-analytics-integration',
-				$inline_script
+				esc_js( $inline_script )
 			);
 		} else {
 			wp_print_inline_script_tag( $inline_script );
