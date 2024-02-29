@@ -187,7 +187,7 @@ class ProductNotificationJobTest extends UnitTest {
 			->method( 'notify' )
 			->willReturn( true );
 
-		$this->product_helper->expects( $this->exactly( 6 ) )
+		$this->product_helper->expects( $this->exactly( 7 ) )
 			->method( 'get_wc_product' )
 			->willReturn( $product );
 
@@ -256,5 +256,27 @@ class ProductNotificationJobTest extends UnitTest {
 		$this->job->handle_process_items_action( [ $id, 'product.create' ] );
 		$this->job->handle_process_items_action( [ $id, 'product.delete' ] );
 		$this->job->handle_process_items_action( [ $id, 'product.update' ] );
+	}
+
+	public function test_mark_as_unsynced_when_delete() {
+		/** @var \WC_Product $product */
+		$product = WC_Helper_Product::create_simple_product();
+		$id      = $product->get_id();
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'should_trigger_delete_notification' )
+			->with( $product )
+			->willReturn( true );
+
+		$this->product_helper->expects( $this->exactly( 3 ) )
+			->method( 'get_wc_product' )
+			->with( $id )
+			->willReturn( $product );
+
+		$this->notification_service->expects( $this->once() )->method( 'notify' )->willReturn( true );
+		$this->product_helper->expects( $this->once() )
+			->method( 'mark_as_unsynced' );
+
+		$this->job->handle_process_items_action( [ $id, 'product.delete' ] );
 	}
 }
