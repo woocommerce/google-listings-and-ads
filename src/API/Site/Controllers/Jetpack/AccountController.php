@@ -182,6 +182,9 @@ class AccountController extends BaseOptionsController {
 				$this->log_wp_tos_accepted();
 			}
 
+			// Update connection status.
+			$this->options->update( OptionsInterface::JETPACK_CONNECTED, $this->is_jetpack_connected );
+
 			$user_data = $this->get_jetpack_user_data();
 			return [
 				'active'      => $this->display_boolean( $this->is_jetpack_connected() ),
