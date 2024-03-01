@@ -219,12 +219,12 @@ class ConnectionTest implements Service, Registerable {
 				<?php } ?>
 
 				<tr>
-					<th>Toggle Connection:</th>
+					<th>Connection Status:</th>
 					<td>
 						<?php if ( ! $blog_token ) { ?>
 							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'connect' ], $url ), 'connect' ) ); ?>">Connect to WordPress.com</a></p>
 						<?php } else { ?>
-							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'disconnect' ], $url ), 'disconnect' ) ); ?>">Disconnect from WordPress.com</a></p>
+							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wp-status' ], $url ), 'wp-status' ) ); ?>">WordPress.com Connection Status</a></p>
 						<?php } ?>
 					</td>
 				</tr>
@@ -681,6 +681,15 @@ class ConnectionTest implements Service, Registerable {
 				wp_safe_redirect( $redirect );
 				exit;
 			}
+		}
+
+		if ( 'wp-status' === $_GET['action'] && check_admin_referer( 'wp-status' ) ) {
+			$request = new Request( 'GET', '/wc/gla/jetpack/connected' );
+			$this->send_rest_request( $request );
+
+			/** @var OptionsInterface $options */
+			$options = $this->container->get( OptionsInterface::class );
+			$this->response .= "\n\n" . 'Saved Connection option = ' . ( $options->get( OptionsInterface::JETPACK_CONNECTED ) ? 'connected' : 'disconnected' );
 		}
 
 		if ( 'wcs-test' === $_GET['action'] && check_admin_referer( 'wcs-test' ) ) {
