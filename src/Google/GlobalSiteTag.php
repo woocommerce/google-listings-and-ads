@@ -257,7 +257,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 			gtag('js', new Date());
 			gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
-			<?php echo $this->get_gtag_config( $ads_conversion_id ); ?>
+			<?php
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $this->get_gtag_config( $ads_conversion_id );
+			?>
 		</script>
 
 		<?php
