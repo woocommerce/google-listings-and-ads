@@ -112,6 +112,8 @@ class ConnectionTest implements Service, Registerable {
 	 * Render the admin page.
 	 */
 	protected function render_admin_page() {
+		/** @var OptionsInterface $options */
+		$options = $this->container->get( OptionsInterface::class );
 		/** @var Manager $manager */
 		$manager    = $this->container->get( Manager::class );
 		$blog_token = $manager->get_tokens()->get_access_token();
@@ -172,6 +174,17 @@ class ConnectionTest implements Service, Registerable {
 					</td>
 				</tr>
 
+				<?php if ( $blog_token ) { ?>
+				<tr>
+					<th>Test Authenticated WCS Request:</th>
+					<td>
+						<p>
+							<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-auth-test' ], $url ), 'wcs-auth-test' ) ); ?>">Test Authenticated Request</a>
+						</p>
+					</td>
+				</tr>
+				<?php } ?>
+
 			</table>
 
 			<hr />
@@ -207,17 +220,6 @@ class ConnectionTest implements Service, Registerable {
 					</tr>
 				<?php } ?>
 
-				<?php if ( $blog_token ) { ?>
-				<tr>
-					<th>Test Authenticated WCS Request:</th>
-					<td>
-						<p>
-							<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-auth-test' ], $url ), 'wcs-auth-test' ) ); ?>">Test Authenticated Request</a>
-						</p>
-					</td>
-				</tr>
-				<?php } ?>
-
 				<tr>
 					<th>Connection Status:</th>
 					<td>
@@ -228,6 +230,15 @@ class ConnectionTest implements Service, Registerable {
 						<?php } ?>
 					</td>
 				</tr>
+
+				<?php if ( ! $options->get( OptionsInterface::JETPACK_CONNECTED ) ) { ?>
+				<tr>
+					<th>Reconnect WordPress.com:</th>
+					<td>
+						<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'connect' ], $url ), 'connect' ) ); ?>">Reconnect to WordPress.com</a></p>
+					</td>
+				</tr>
+				<?php } ?>
 
 			</table>
 
