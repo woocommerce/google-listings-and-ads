@@ -176,7 +176,7 @@ class ConnectionTest implements Service, Registerable {
 
 			<hr />
 
-			<h2 class="title">Jetpack</h2>
+			<h2 class="title">WordPress.com</h2>
 
 			<table class="form-table" role="presentation">
 
@@ -222,9 +222,9 @@ class ConnectionTest implements Service, Registerable {
 					<th>Toggle Connection:</th>
 					<td>
 						<?php if ( ! $blog_token ) { ?>
-							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'connect' ], $url ), 'connect' ) ); ?>">Connect to Jetpack</a></p>
+							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'connect' ], $url ), 'connect' ) ); ?>">Connect to WordPress.com</a></p>
 						<?php } else { ?>
-							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'disconnect' ], $url ), 'disconnect' ) ); ?>">Disconnect Jetpack</a></p>
+							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'disconnect' ], $url ), 'disconnect' ) ); ?>">Disconnect from WordPress.com</a></p>
 						<?php } ?>
 					</td>
 				</tr>
@@ -672,9 +672,9 @@ class ConnectionTest implements Service, Registerable {
 
 			if ( $plugin && ! $plugin->is_only() ) {
 				$connected_plugins = $manager->get_connected_plugins();
-				$this->response    = 'Cannot disconnect Jetpack connection as there are other plugins using it: ';
+				$this->response    = 'Cannot disconnect WordPress.com connection as there are other plugins using it: ';
 				$this->response   .= implode( ', ', array_keys( $connected_plugins ) ) . "\n";
-				$this->response   .= 'Please disconnect the connection using My Jetpack.';
+				$this->response   .= 'Please disconnect the connection using the Jetpack plugin.';
 				return;
 			} else {
 				$redirect = admin_url( 'admin.php?page=connection-test-admin-page' );
