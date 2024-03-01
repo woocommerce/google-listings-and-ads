@@ -15,6 +15,8 @@ interface OptionsInterface {
 	public const ADS_ACCOUNT_CURRENCY                      = 'ads_account_currency';
 	public const ADS_ACCOUNT_STATE                         = 'ads_account_state';
 	public const ADS_BILLING_URL                           = 'ads_billing_url';
+	public const ADS_CUSTOMER_DATA_TERMS                   = 'ads_customer_data_terms';
+	public const ADS_ENHANCED_CONVERSION_STATUS            = 'ads_enhanced_conversion_status';
 	public const ADS_ID                                    = 'ads_id';
 	public const ADS_CONVERSION_ACTION                     = 'ads_conversion_action';
 	public const ADS_SETUP_COMPLETED_AT                    = 'ads_setup_completed_at';
@@ -23,7 +25,6 @@ interface OptionsInterface {
 	public const CONTACT_INFO_SETUP                        = 'contact_info_setup';
 	public const DELAYED_ACTIVATE                          = 'delayed_activate';
 	public const DB_VERSION                                = 'db_version';
-	public const ENHANCED_CONVERSION_STATUS                = 'enhanced_conversion_status';
 	public const FILE_VERSION                              = 'file_version';
 	public const GOOGLE_CONNECTED                          = 'google_connected';
 	public const INSTALL_TIMESTAMP                         = 'install_timestamp';
@@ -42,12 +43,13 @@ interface OptionsInterface {
 	public const TOURS                                     = 'tours';
 	public const UPDATE_ALL_PRODUCTS_LAST_SYNC             = 'update_all_products_last_sync';
 	public const WP_TOS_ACCEPTED                           = 'wp_tos_accepted';
-	public const CUSTOMER_DATA_TERMS                       = 'customer_data_terms';
 
 	public const VALID_OPTIONS = [
 		self::ADS_ACCOUNT_CURRENCY                      => true,
 		self::ADS_ACCOUNT_STATE                         => true,
 		self::ADS_BILLING_URL                           => true,
+		self::ADS_CUSTOMER_DATA_TERMS                   => true,
+		self::ADS_ENHANCED_CONVERSION_STATUS            => true,
 		self::ADS_ID                                    => true,
 		self::ADS_CONVERSION_ACTION                     => true,
 		self::ADS_SETUP_COMPLETED_AT                    => true,
@@ -55,7 +57,6 @@ interface OptionsInterface {
 		self::CLAIMED_URL_HASH                          => true,
 		self::CONTACT_INFO_SETUP                        => true,
 		self::DB_VERSION                                => true,
-		self::ENHANCED_CONVERSION_STATUS                => true,
 		self::FILE_VERSION                              => true,
 		self::GOOGLE_CONNECTED                          => true,
 		self::INSTALL_TIMESTAMP                         => true,
@@ -75,7 +76,6 @@ interface OptionsInterface {
 		self::TOURS                                     => true,
 		self::UPDATE_ALL_PRODUCTS_LAST_SYNC             => true,
 		self::WP_TOS_ACCEPTED                           => true,
-		self::CUSTOMER_DATA_TERMS                       => true,
 	];
 
 	public const OPTION_TYPES = [

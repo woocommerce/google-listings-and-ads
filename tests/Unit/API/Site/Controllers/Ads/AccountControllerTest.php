@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Exception;
@@ -240,6 +241,12 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $expected_response, $response->get_data() );
 	}
 
+	public function test_update_enhanced_conversion_status_with_invalid_status() {
+		$response = $this->do_request( self::ROUTE_UPDATED_EC_STATUS, 'POST', [ 'status' => 'invalid' ] );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_get_enhanced_conversion_status() {
 		$expected_response = [ 'status' => 'pending' ];
 		$this->account->expects( $this->once() )
@@ -249,5 +256,19 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_GET_EC_STATUS, 'GET' );
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( $expected_response, $response->get_data() );
+	}
+
+	/**
+	 * Test a Google disconnected error since it's a dependency for a connected Ads account.
+	 */
+	public function test_connected_with_google_disconnected() {
+		$this->account->expects( $this->once() )
+			->method( 'get_accounts' )
+			->willThrowException( AccountReconnect::google_disconnected() );
+
+		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'GET' );
+		$this->assertEquals( 'GOOGLE_DISCONNECTED', $response->get_data()['code'] );
+		$this->assertEquals( 401, $response->get_data()['status'] );
+		$this->assertEquals( 401, $response->get_status() );
 	}
 }

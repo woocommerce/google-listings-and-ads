@@ -105,6 +105,15 @@ class AccountController extends BaseController {
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->update_enhanced_ads_conversion_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => [
+						'status' => [
+							'description'       => __( 'Enhanced Conversion status.', 'google-listings-and-ads' ),
+							'type'              => 'string',
+							'enum'              => [ 'enabled', 'disabled', 'pending' ],
+							'validate_callback' => 'rest_validate_request_arg',
+							'required'          => true,
+						],
+					],
 				],
 				[
 					'methods'             => TransportMethods::READABLE,
