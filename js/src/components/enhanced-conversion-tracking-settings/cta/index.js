@@ -16,7 +16,7 @@ import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
-import PendingStatus from './pending-status';
+import useAutoCheckEnhancedConversionTOS from '.~/hooks/useAutoCheckEnhancedConversionTOS';
 
 const CTA = ( {
 	acceptTermsLabel = __(
@@ -25,15 +25,35 @@ const CTA = ( {
 	),
 	disableLabel = __( 'Disable', 'google-listings-and-ads' ),
 	enableLabel = __( 'Enable', 'google-listings-and-ads' ),
-	onAcceptTermsClick,
 	onEnableClick,
 	onDisableClick,
 } ) => {
+	const {
+		startEnhancedConversionTOSPolling,
+		stopEnhancedConversionTOSPolling,
+	} = useAutoCheckEnhancedConversionTOS();
 	const { updateEnhancedAdsConversionStatus, invalidateResolution } =
 		useAppDispatch();
 	const { acceptedCustomerDataTerms, hasFinishedResolution } =
 		useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
+
+	useEffect( () => {
+		if (
+			! acceptedCustomerDataTerms &&
+			allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING
+		) {
+			startEnhancedConversionTOSPolling();
+			return;
+		}
+
+		stopEnhancedConversionTOSPolling();
+	}, [
+		acceptedCustomerDataTerms,
+		allowEnhancedConversions,
+		startEnhancedConversionTOSPolling,
+		stopEnhancedConversionTOSPolling,
+	] );
 
 	useEffect( () => {
 		if (
@@ -49,9 +69,7 @@ const CTA = ( {
 		updateEnhancedAdsConversionStatus(
 			ENHANCED_ADS_CONVERSION_STATUS.PENDING
 		);
-
-		onAcceptTermsClick?.();
-	}, [ updateEnhancedAdsConversionStatus, onAcceptTermsClick ] );
+	}, [ updateEnhancedAdsConversionStatus ] );
 
 	const handleDisable = useCallback( () => {
 		if ( ! acceptedCustomerDataTerms ) {
@@ -96,7 +114,6 @@ const CTA = ( {
 		return (
 			<>
 				<AppButton isSecondary disabled loading></AppButton>
-				<PendingStatus />
 			</>
 		);
 	}

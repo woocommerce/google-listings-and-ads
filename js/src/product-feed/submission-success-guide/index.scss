@@ -1,6 +1,8 @@
 .gla-submission-success-guide {
 	&.components-guide {
 		height: auto;
+		width: 100%;
+
 		@include break-small {
 			max-width: 517px;
 			max-height: none;
@@ -121,9 +123,5 @@
 
 	&__space_holder {
 		flex: 1 1 0;
-	}
-
-	.screen-content--loading {
-		min-width: 469px;
 	}
 }

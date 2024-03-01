@@ -11,7 +11,6 @@ import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import Section from '.~/wcdl/section';
 import PendingNotice from '.~/components/enhanced-conversion-tracking-settings/pending-notice';
-import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import CTA from './cta';
 
 const DESCRIPTION = (
@@ -38,17 +37,15 @@ const EnhancedConversionTrackingSettings = () => {
 
 	return (
 		<Section title={ TITLE } description={ DESCRIPTION }>
-			<VerticalGapLayout size="large">
-				<Section.Card>
-					<Section.Card.Body>
-						{ allowEnhancedConversions ===
-							ENHANCED_ADS_CONVERSION_STATUS.PENDING &&
-							! acceptedCustomerDataTerms && <PendingNotice /> }
+			<Section.Card>
+				<Section.Card.Body>
+					{ allowEnhancedConversions ===
+						ENHANCED_ADS_CONVERSION_STATUS.PENDING &&
+						! acceptedCustomerDataTerms && <PendingNotice /> }
 
-						<CTA />
-					</Section.Card.Body>
-				</Section.Card>
-			</VerticalGapLayout>
+					<CTA />
+				</Section.Card.Body>
+			</Section.Card>
 		</Section>
 	);
 };

@@ -69,7 +69,7 @@ describe( 'Enhanced Conversion Footer', () => {
 	} );
 
 	test( 'Click on enable/disable button callback', () => {
-		const handleGuideFinish = jest.fn().mockName( 'On button click' );
+		const handleOnClose = jest.fn().mockName( 'On button click' );
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
@@ -81,11 +81,11 @@ describe( 'Enhanced Conversion Footer', () => {
 			isResolving: false,
 		} );
 
-		render( <Footer handleGuideFinish={ handleGuideFinish } /> );
+		render( <Footer onClose={ handleOnClose } /> );
 
 		const button = screen.getByRole( 'button', { name: 'Confirm' } );
 		userEvent.click( button );
 
-		expect( handleGuideFinish ).toHaveBeenCalledTimes( 1 );
+		expect( handleOnClose ).toHaveBeenCalledTimes( 1 );
 	} );
 } );

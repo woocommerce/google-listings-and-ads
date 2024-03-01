@@ -18,6 +18,6 @@ describe( 'useAcceptedCustomerDataTerms', () => {
 			return useAcceptedCustomerDataTerms();
 		} );
 
-		expect( result.current.acceptedCustomerDataTerms ).toBeTruthy();
+		expect( result.current.acceptedCustomerDataTerms ).toBe( true );
 	} );
 } );

@@ -405,7 +405,7 @@ export const getTour = ( state, tourId ) => {
  * Return the customer accepted data terms.
  *
  * @param {Object} state The state
- * @return {boolean} TRUE if the user signed the TOS.
+ * @return {boolean|null} TRUE if the user signed the TOS. It will be `null` if not yet fetched or fetched but doesn't exist.
  */
 export const getAcceptedCustomerDataTerms = ( state ) => {
 	return state.ads.conversion_tracking_setting.accepted_customer_data_terms;
@@ -415,7 +415,7 @@ export const getAcceptedCustomerDataTerms = ( state ) => {
  * Return whether the user allowed enhanced conversion tracking.
  *
  * @param {Object} state The state
- * @return {string} Possible values are 'pending' | 'enabled' | 'disabled'
+ * @return {string|null} Possible values are 'pending' | 'enabled' | 'disabled'. It will be `null` if not yet fetched or fetched but doesn't exist.
  */
 export const getAllowEnhancedConversions = ( state ) => {
 	return state.ads.conversion_tracking_setting.allow_enhanced_conversions;

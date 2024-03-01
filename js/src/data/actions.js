@@ -1272,8 +1272,8 @@ export function* updateEnhancedAdsConversionStatus( status ) {
 		} );
 
 		return {
-			type: TYPES.UPDATE_ENHANCED_ADS_CONVERSION_STATUS,
-			response,
+			type: TYPES.RECEIVE_ALLOW_ENHANCED_CONVERSIONS,
+			data: response,
 		};
 	} catch ( error ) {
 		handleApiError(

@@ -17,7 +17,15 @@ jest.mock( '.~/hooks/useAllowEnhancedConversions', () => ( {
 
 jest.mock( '.~/hooks/useAutoCheckEnhancedConversionTOS', () => ( {
 	__esModule: true,
-	default: jest.fn().mockName( 'useAutoCheckEnhancedConversionTOS' ),
+	default: jest
+		.fn()
+		.mockName( 'useAutoCheckEnhancedConversionTOS' )
+		.mockImplementation( () => {
+			return {
+				startEnhancedConversionTOSPolling: jest.fn(),
+				stopEnhancedConversionTOSPolling: jest.fn(),
+			};
+		} ),
 } ) );
 
 jest.mock( '.~/data/actions', () => ( {
@@ -137,8 +145,6 @@ describe( 'Enhanced Conversion CTA', () => {
 	} );
 
 	test( 'Click on accept TOS button callback', () => {
-		const handleOnAcceptTerms = jest.fn().mockName( 'On TOS click' );
-
 		window.open = jest.fn();
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
@@ -152,13 +158,12 @@ describe( 'Enhanced Conversion CTA', () => {
 			isResolving: false,
 		} );
 
-		render( <CTA onAcceptTermsClick={ handleOnAcceptTerms } /> );
+		render( <CTA /> );
 
 		const button = screen.getByRole( 'button' );
 		userEvent.click( button );
 
 		expect( window.open ).toHaveBeenCalledTimes( 1 );
-		expect( handleOnAcceptTerms ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	test( 'Click on enable/confirm button callback', () => {
@@ -249,7 +254,7 @@ describe( 'Enhanced Conversion CTA', () => {
 		expect( handleOnDisable ).not.toHaveBeenCalled();
 	} );
 
-	test( 'Should not the enable button if TOS has been accepted', () => {
+	test( 'Should render the enable button if TOS has been accepted and the status is not enabled', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
 			isResolving: false,
@@ -263,6 +268,8 @@ describe( 'Enhanced Conversion CTA', () => {
 
 		render( <CTA /> );
 
-		expect( screen.getByText( 'Enable' ) ).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Enable' } )
+		).toBeInTheDocument();
 	} );
 } );
