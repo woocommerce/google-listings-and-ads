@@ -231,7 +231,7 @@ class ConnectionTest implements Service, Registerable {
 					</td>
 				</tr>
 
-				<?php if ( ! $options->get( OptionsInterface::JETPACK_CONNECTED ) ) { ?>
+				<?php if ( $blog_token && ! $options->get( OptionsInterface::JETPACK_CONNECTED ) ) { ?>
 				<tr>
 					<th>Reconnect WordPress.com:</th>
 					<td>
@@ -652,14 +652,16 @@ class ConnectionTest implements Service, Registerable {
 		$manager = $this->container->get( Manager::class );
 
 		if ( 'connect' === $_GET['action'] && check_admin_referer( 'connect' ) ) {
-			// Register the site to wp.com.
-			if ( ! $manager->is_connected() ) {
+			// Register the site to WPCOM.
+			if ( $manager->is_connected() ) {
+				$result = $manager->reconnect();
+			} else {
 				$result = $manager->register();
+			}
 
-				if ( is_wp_error( $result ) ) {
-					$this->response .= $result->get_error_message();
-					return;
-				}
+			if ( is_wp_error( $result ) ) {
+				$this->response .= $result->get_error_message();
+				return;
 			}
 
 			// Get an authorization URL which will redirect back to our page.
@@ -668,8 +670,6 @@ class ConnectionTest implements Service, Registerable {
 
 			// Payments flow allows redirect back to the site without showing plans.
 			$auth_url = add_query_arg( [ 'from' => 'google-listings-and-ads' ], $auth_url );
-
-			error_log( $auth_url );
 
 			// Using wp_redirect intentionally because we're redirecting outside.
 			wp_redirect( $auth_url ); // phpcs:ignore WordPress.Security.SafeRedirect
@@ -1177,5 +1177,7 @@ class ConnectionTest implements Service, Registerable {
 		$this->response .= 'Request:  ' . $request->get_method() . ' ' . $request->get_route() . PHP_EOL;
 		$this->response .= 'Status:   ' . $response->get_status() . PHP_EOL;
 		$this->response .= 'Response: ' . $json;
+
+		return $data;
 	}
 }
