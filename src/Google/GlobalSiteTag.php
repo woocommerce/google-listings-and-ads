@@ -257,7 +257,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 			gtag('js', new Date());
 			gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
-			<?php echo esc_js( $this->get_gtag_config( $ads_conversion_id ) ); ?>
+			<?php echo $this->get_gtag_config( $ads_conversion_id ); ?>
 		</script>
 
 		<?php
