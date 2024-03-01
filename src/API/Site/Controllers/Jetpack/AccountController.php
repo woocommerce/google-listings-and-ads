@@ -183,7 +183,7 @@ class AccountController extends BaseOptionsController {
 			}
 
 			// Update connection status.
-			$this->options->update( OptionsInterface::JETPACK_CONNECTED, $this->is_jetpack_connected );
+			$this->options->update( OptionsInterface::JETPACK_CONNECTED, $this->is_jetpack_connected() );
 
 			$user_data = $this->get_jetpack_user_data();
 			return [
