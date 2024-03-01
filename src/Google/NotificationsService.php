@@ -28,6 +28,18 @@ class NotificationsService implements Service {
 	public const TOPIC_SHIPPING_UPDATED = 'shipping.update';
 	public const TOPIC_SETTINGS_UPDATED = 'settings.update';
 
+	// Constant used to get all the allowed topics
+	public const ALLOWED_TOPICS = [
+		self::TOPIC_PRODUCT_CREATED,
+		self::TOPIC_PRODUCT_DELETED,
+		self::TOPIC_PRODUCT_UPDATED,
+		self::TOPIC_COUPON_CREATED,
+		self::TOPIC_COUPON_DELETED,
+		self::TOPIC_COUPON_UPDATED,
+		self::TOPIC_SHIPPING_UPDATED,
+		self::TOPIC_SETTINGS_UPDATED,
+	];
+
 	/**
 	 * The url to send the notification
 	 *
@@ -62,7 +74,7 @@ class NotificationsService implements Service {
 		 * @param int $item_id The item_id for the notification.
 		 * @param string $topic The topic for the notification.
 		 */
-		if ( ! apply_filters( 'woocommerce_gla_notify', true, $item_id, $topic ) ) {
+		if ( ! apply_filters( 'woocommerce_gla_notify', in_array( $topic, self::ALLOWED_TOPICS, true ), $item_id, $topic ) ) {
 			return false;
 		}
 
