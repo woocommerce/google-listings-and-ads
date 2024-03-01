@@ -54,6 +54,14 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$expected_auth_url = $auth_url . '&from=google-listings-and-ads';
 
 		$this->manager->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( false );
+
+		$this->manager->expects( $this->once() )
+			->method( 'register' )
+			->willReturn( true );
+
+		$this->manager->expects( $this->once() )
 			->method( 'get_authorization_url' )
 			->willReturn( $auth_url );
 
@@ -70,6 +78,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	public function test_connect_with_error() {
 		$this->manager->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( false );
+
+		$this->manager->expects( $this->once() )
 			->method( 'register' )
 			->willReturn( new WP_Error( 'error', 'Error message' ) );
 
@@ -83,6 +95,33 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_reconnect() {
+		$auth_url          = 'https://domain.test?auth=1';
+		$expected_auth_url = $auth_url . '&from=google-listings-and-ads';
+
+		$this->manager->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$this->manager->expects( $this->once() )
+			->method( 'reconnect' )
+			->willReturn( true );
+
+		$this->manager->expects( $this->once() )
+			->method( 'get_authorization_url' )
+			->willReturn( $auth_url );
+
+		$response = $this->do_request( self::ROUTE_CONNECT, 'GET' );
+
+		$this->assertEquals(
+			[
+				'url' => $expected_auth_url,
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_disconnect() {
