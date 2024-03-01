@@ -32,6 +32,13 @@ class AccountController extends BaseOptionsController {
 	protected $middleware;
 
 	/**
+	 * Retain the connected state to prevent multiple external calls to validate the token.
+	 *
+	 * @var bool
+	 */
+	private $connected;
+
+	/**
 	 * Mapping between the client page name and its path.
 	 * The first value is also used as a default,
 	 * and changing the order of keys/values may affect things below.
@@ -190,11 +197,18 @@ class AccountController extends BaseOptionsController {
 	 * @return bool
 	 */
 	protected function is_jetpack_connected(): bool {
-		if ( ! $this->manager->has_connected_owner() ) {
+		if ( null !== $this->connected ) {
+			return $this->connected;
+		}
+
+		if ( ! $this->manager->has_connected_owner() || ! $this->manager->is_connected() ) {
+			$this->connected = false;
 			return false;
 		}
 
-		return false !== $this->manager->get_tokens()->get_access_token();
+		// Send an external request to validate the token.
+		$this->connected = $this->manager->get_tokens()->validate_blog_token();
+		return $this->connected;
 	}
 
 	/**
