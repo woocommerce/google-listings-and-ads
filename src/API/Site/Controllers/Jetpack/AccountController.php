@@ -104,19 +104,21 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function get_connect_callback(): callable {
 		return function ( Request $request ) {
-			// Register the site to wp.com.
-			if ( ! $this->manager->is_connected() ) {
+			// Register the site to WPCOM.
+			if ( $this->manager->is_connected() ) {
+				$result = $this->manager->reconnect();
+			} else {
 				$result = $this->manager->register();
+			}
 
-				if ( is_wp_error( $result ) ) {
-					return new Response(
-						[
-							'status'  => 'error',
-							'message' => $result->get_error_message(),
-						],
-						400
-					);
-				}
+			if ( is_wp_error( $result ) ) {
+				return new Response(
+					[
+						'status'  => 'error',
+						'message' => $result->get_error_message(),
+					],
+					400
+				);
 			}
 
 			// Get an authorization URL which will redirect back to our page.
