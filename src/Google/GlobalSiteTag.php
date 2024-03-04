@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use WC_Product;
+use WC_Customer;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -217,12 +218,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	public function activate_global_site_tag( string $ads_conversion_id ) {
 		if ( $this->gtag_js->is_adding_framework() ) {
+			$config = wp_json_encode( $this->get_config_object() );
 			add_filter(
 				'woocommerce_gtag_snippet',
-				function ( $gtag_snippet ) use ( $ads_conversion_id ) {
+				function ( $gtag_snippet ) use ( $ads_conversion_id, $config ) {
 					return preg_replace(
 						'~(\s)</script>~',
-						"\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA', 'send_page_view': false });\n$1</script>",
+						"\tgtag('config', '" . $ads_conversion_id . "', $config);\n$1</script>",
 						$gtag_snippet
 					);
 				}
@@ -238,6 +240,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	protected function display_global_site_tag( string $ads_conversion_id ) {
+		$config = $this->get_config_object();
 		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 
@@ -249,10 +252,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 			gtag('js', new Date());
 			gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
-			gtag('config', '<?php echo esc_js( $ads_conversion_id ); ?>', {
-				'groups': 'GLA',
-				'send_page_view': false
-			});
+			gtag('config', '<?php echo esc_js( $ads_conversion_id ); ?>', <?php echo wp_json_encode( $config ); // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped ?>);
 		</script>
 
 		<?php
@@ -357,62 +357,64 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		);
 		wp_print_inline_script_tag( $purchase_page_gtag );
 
-		// Enhanced conversion data.
-		$ec_data         = [];
-		$customer        = new WC_Customer( $order->get_customer_id() );
-		$email           = $customer->get_billing_email();
-		$fname           = $customer->get_billing_first_name();
-		$lname           = $customer->get_billing_last_name();
-		$phone           = $customer->get_billing_phone();
-		$billing_address = $customer->get_billing_address();
-		$postcode        = $customer->get_billing_postcode();
-		$city            = $customer->get_billing_city();
-		$region          = $customer->get_billing_state();
-		$country         = $customer->get_billing_country();
+		if ( $this->is_enhanced_conversion_enabled() ) {
+			// Enhanced conversion data.
+			$ec_data         = [];
+			$customer        = new WC_Customer( $order->get_customer_id() );
+			$email           = $customer->get_billing_email();
+			$fname           = $customer->get_billing_first_name();
+			$lname           = $customer->get_billing_last_name();
+			$phone           = $customer->get_billing_phone();
+			$billing_address = $customer->get_billing_address();
+			$postcode        = $customer->get_billing_postcode();
+			$city            = $customer->get_billing_city();
+			$region          = $customer->get_billing_state();
+			$country         = $customer->get_billing_country();
 
-		// Add email in EC data.
-		if ( ! empty( $email ) ) {
-			$ec_data['email'] = $email;
-		}
-
-		// Format phone number in IE64.
-		$phone        = preg_replace( '/[^0-9]/', '', $phone );
-		$phone_length = strlen( $phone );
-		if ( $phone_length > 9 && $phone_length < 14 ) {
-			$phone            = sprintf( '%s%d', '+', $phone );
-			$ec_data['phone_number'] = $phone;
-		}
-
-		// Check for required address fields.
-		if ( ! empty( $fname ) && ! empty( $lname ) && ! empty( $postcode ) && ! empty( $country ) ) {
-			$ec_data['address']['first_name']  = $fname;
-			$ec_data['address']['last_name']   = $lname;
-			$ec_data['address']['postal_code'] = $postcode;
-			$ec_data['address']['country']     = $country;
-
-			/**
-			 * Add additional data, if present.
-			 */
-
-			// Add street address.
-			if ( ! empty( $billing_address ) ) {
-				$ec_data['address']['street'] = $billing_address;
+			// Add email in EC data.
+			if ( ! empty( $email ) ) {
+				$ec_data['email'] = $email;
 			}
 
-			// Add city.
-			if ( ! empty( $city ) ) {
-				$ec_data['address']['city'] = $city;
+			// Format phone number in IE64.
+			$phone        = preg_replace( '/[^0-9]/', '', $phone );
+			$phone_length = strlen( $phone );
+			if ( $phone_length > 9 && $phone_length < 14 ) {
+				$phone                   = sprintf( '%s%d', '+', $phone );
+				$ec_data['phone_number'] = $phone;
 			}
 
-			// Add region.
-			if ( ! empty( $region ) ) {
-				$ec_data['address']['region'] = $region;
+			// Check for required address fields.
+			if ( ! empty( $fname ) && ! empty( $lname ) && ! empty( $postcode ) && ! empty( $country ) ) {
+				$ec_data['address']['first_name']  = $fname;
+				$ec_data['address']['last_name']   = $lname;
+				$ec_data['address']['postal_code'] = $postcode;
+				$ec_data['address']['country']     = $country;
+
+				/**
+				 * Add additional data, if present.
+				 */
+
+				// Add street address.
+				if ( ! empty( $billing_address ) ) {
+					$ec_data['address']['street'] = $billing_address;
+				}
+
+				// Add city.
+				if ( ! empty( $city ) ) {
+					$ec_data['address']['city'] = $city;
+				}
+
+				// Add region.
+				if ( ! empty( $region ) ) {
+					$ec_data['address']['region'] = $region;
+				}
 			}
+
+			$purchase_user_data_gtag = sprintf( 'gtag("set", "user_data", %s)', wp_json_encode( $ec_data ) );
+
+			wp_print_inline_script_tag( $purchase_user_data_gtag );
 		}
-
-		$purchase_user_data_gtag = sprintf( 'gtag("set", "user_data", %s)', wp_json_encode( $ec_data ) );
-
-		wp_print_inline_script_tag( $purchase_user_data_gtag );
 	}
 
 	/**
@@ -577,5 +579,36 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$this->get_version(),
 			false
 		);
+	}
+
+	/**
+	 * Get the config object for Google tag.
+	 *
+	 * @return array
+	 */
+	private function get_config_object(): array {
+		// Standard config.
+		$config = [
+			'groups'         => 'GLA',
+			'send_page_view' => false,
+		];
+
+		// Check if enhanced conversion is enabled.
+		if ( $this->is_enhanced_conversion_enabled() ) {
+			$config['allow_enhanced_conversions'] = true;
+		}
+
+		return $config;
+	}
+
+	/**
+	 * Checks if enhanced conversion is enabled.
+	 *
+	 * @return bool
+	 */
+	private function is_enhanced_conversion_enabled(): bool {
+		// Check if enhanced conversion is enabled.
+		$enhanced_conversion_status = $this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS, null );
+		return ( 'enabled' === $enhanced_conversion_status );
 	}
 }
