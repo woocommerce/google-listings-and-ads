@@ -22,7 +22,9 @@ class GoogleGtagJs {
 		$this->wcga_settings = get_option( 'woocommerce_google_analytics_settings', [] );
 
 		// Prime some values.
-		if ( empty( $this->wcga_settings['ga_gtag_enabled'] ) ) {
+		if ( defined( '\WC_GOOGLE_ANALYTICS_INTEGRATION_VERSION' ) && version_compare( \WC_GOOGLE_ANALYTICS_INTEGRATION_VERSION, '2.0.0', '>=' ) ) {
+			$this->wcga_settings['ga_gtag_enabled'] = 'yes';
+		} elseif ( empty( $this->wcga_settings['ga_gtag_enabled'] ) ) {
 			$this->wcga_settings['ga_gtag_enabled'] = 'no';
 		}
 		if ( empty( $this->wcga_settings['ga_standard_tracking_enabled'] ) ) {
