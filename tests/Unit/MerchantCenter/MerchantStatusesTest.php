@@ -65,6 +65,7 @@ class MerchantStatusesTest extends UnitTest {
 	private $options;
 	private $container;
 	private $initial_mc_statuses;
+	private $merchant_issue_table;
 
 	/**
 	 * Runs before each test is executed.
@@ -82,7 +83,7 @@ class MerchantStatusesTest extends UnitTest {
 		$this->update_merchant_product_statuses_job = $this->createMock( UpdateMerchantProductStatuses::class );
 		$this->options                              = $this->createMock( OptionsInterface::class );
 
-		$merchant_issue_table = $this->createMock( MerchantIssueTable::class );
+		$this->merchant_issue_table = $this->createMock( MerchantIssueTable::class );
 
 		$container = new Container();
 		$container->share( Merchant::class, $this->merchant );
@@ -92,7 +93,7 @@ class MerchantStatusesTest extends UnitTest {
 		$container->share( ProductRepository::class, $this->product_repository );
 		$container->share( ProductMetaQueryHelper::class, $this->product_meta_query_helper );
 		$container->share( ProductHelper::class, $this->product_helper );
-		$container->share( MerchantIssueTable::class, $merchant_issue_table );
+		$container->share( MerchantIssueTable::class, $this->merchant_issue_table );
 		$container->share( UpdateMerchantProductStatuses::class, $this->update_merchant_product_statuses_job );
 
 		$this->container         = $container;
@@ -605,8 +606,31 @@ class MerchantStatusesTest extends UnitTest {
 	}
 
 	public function test_handle_failed_mc_statuses_fetching() {
+		$product_1  = WC_Helper_Product::create_simple_product();
+		$product_id = $product_1->get_id();
+
 		$this->options->expects( $this->once() )
 			->method( 'delete' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+
+		$product_statuses_1 = [
+			[
+				'product_id'      => $product_id,
+				'status'          => MCStatus::APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
+
+		];
+
+		$response = new ProductstatusesCustomBatchResponse();
+		$response->setEntries( [] );
+
+		$this->merchant->expects( $this->exactly( 1 ) )
+			->method( 'get_productstatuses_batch' )
+			->willReturn( $response );
+
+		$this->product_repository->expects( $this->exactly( 2 ) )->method( 'find_by_ids_as_associative_array' )->willReturn( [ $product_id => $product_1 ] );
+
+		$this->merchant_issue_table->expects( $this->once() )->method( 'delete_specific_product_issues' )->with( [ $product_id ] );
 
 			$this->transients->expects( $this->once() )
 			->method( 'set' )->with(
@@ -633,6 +657,8 @@ class MerchantStatusesTest extends UnitTest {
 				),
 				self::MC_STATUS_LIFETIME
 			);
+
+			$this->merchant_statuses->update_product_stats( $product_statuses_1 );
 
 			$this->merchant_statuses->handle_failed_mc_statuses_fetching( 'My error message.' );
 	}
