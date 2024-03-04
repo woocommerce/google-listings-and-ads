@@ -68,7 +68,7 @@ describe( 'Enhanced Conversion Footer', () => {
 		).toBeInTheDocument();
 	} );
 
-	test( 'Click on enable/disable button callback', () => {
+	test( 'Click on enable button callback', () => {
 		const handleOnClose = jest.fn().mockName( 'On button click' );
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
@@ -84,6 +84,27 @@ describe( 'Enhanced Conversion Footer', () => {
 		render( <Footer onClose={ handleOnClose } /> );
 
 		const button = screen.getByRole( 'button', { name: 'Confirm' } );
+		userEvent.click( button );
+
+		expect( handleOnClose ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	test( 'Click on disable button callback', () => {
+		const handleOnClose = jest.fn().mockName( 'On button click' );
+
+		useAcceptedCustomerDataTerms.mockReturnValue( {
+			acceptedCustomerDataTerms: true,
+			isResolving: false,
+			hasFinishedResolution: true,
+		} );
+		useAllowEnhancedConversions.mockReturnValue( {
+			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
+			isResolving: false,
+		} );
+
+		render( <Footer onClose={ handleOnClose } /> );
+
+		const button = screen.getByRole( 'button', { name: 'Disable' } );
 		userEvent.click( button );
 
 		expect( handleOnClose ).toHaveBeenCalledTimes( 1 );

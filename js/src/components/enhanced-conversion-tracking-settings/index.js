@@ -31,7 +31,7 @@ const EnhancedConversionTrackingSettings = () => {
 	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 
-	if ( ! glaData.adsConnected ) {
+	if ( ! glaData.initialWpData.adsId ) {
 		return null;
 	}
 

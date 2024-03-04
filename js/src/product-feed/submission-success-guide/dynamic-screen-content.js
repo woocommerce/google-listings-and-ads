@@ -28,7 +28,7 @@ const DynamicScreenContent = () => {
 		);
 	}
 
-	if ( pmaxCampaigns?.length && glaData.adsConnected ) {
+	if ( pmaxCampaigns.length && glaData.initialWpData.adsId ) {
 		return <EnhancedConversion />;
 	}
 
