@@ -803,11 +803,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @since x.x.x
 	 *
 	 * @param string $error_message The error message.
+	 *
+	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
+	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
 	public function handle_failed_mc_statuses_fetching( string $error_message = '' ): void {
 		$this->delete_product_statuses_count_intermediate_data();
 		// Let's remove any issue created during the failed fetch.
-		$this->delete_stale_issues( '=' );
+		$this->container->get( MerchantIssueTable::class )->delete_specific_product_issues( array_keys( $this->product_data_lookup ) );
 
 		$mc_statuses = [
 			'timestamp'  => $this->cache_created_time->getTimestamp(),
