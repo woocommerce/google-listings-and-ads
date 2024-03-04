@@ -373,7 +373,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 			// Add email in EC data.
 			if ( ! empty( $email ) ) {
-				$ec_data['email'] = $email;
+				$ec_data['email'] = $this->normalize_and_hash( $email );
 			}
 
 			// Format phone number in IE64.
@@ -381,15 +381,15 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$phone_length = strlen( $phone );
 			if ( $phone_length > 9 && $phone_length < 14 ) {
 				$phone                   = sprintf( '%s%d', '+', $phone );
-				$ec_data['phone_number'] = $phone;
+				$ec_data['phone_number'] = $this->normalize_and_hash( $phone );
 			}
 
 			// Check for required address fields.
 			if ( ! empty( $fname ) && ! empty( $lname ) && ! empty( $postcode ) && ! empty( $country ) ) {
-				$ec_data['address']['first_name']  = $fname;
-				$ec_data['address']['last_name']   = $lname;
-				$ec_data['address']['postal_code'] = $postcode;
-				$ec_data['address']['country']     = $country;
+				$ec_data['address']['first_name']  = $this->normalize_and_hash( $fname );
+				$ec_data['address']['last_name']   = $this->normalize_and_hash( $lname );
+				$ec_data['address']['postal_code'] = $this->normalize_and_hash( $postcode );
+				$ec_data['address']['country']     = $this->normalize_and_hash( $country );
 
 				/**
 				 * Add additional data, if present.
@@ -397,17 +397,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 				// Add street address.
 				if ( ! empty( $billing_address ) ) {
-					$ec_data['address']['street'] = $billing_address;
+					$ec_data['address']['street'] = $this->normalize_and_hash( $billing_address );
 				}
 
 				// Add city.
 				if ( ! empty( $city ) ) {
-					$ec_data['address']['city'] = $city;
+					$ec_data['address']['city'] = $this->normalize_and_hash( $city );
 				}
 
 				// Add region.
 				if ( ! empty( $region ) ) {
-					$ec_data['address']['region'] = $region;
+					$ec_data['address']['region'] = $this->normalize_and_hash( $region );
 				}
 			}
 
@@ -610,5 +610,27 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		// Check if enhanced conversion is enabled.
 		$enhanced_conversion_status = $this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS, null );
 		return ( 'enabled' === $enhanced_conversion_status );
+	}
+
+	/**
+	 * Return the hashed data to be sent to Google ads for enhanced conversion.
+	 *
+	 * @param string $value Data that needs to be hashed.
+	 * @param string $algo  Algorithm for hashing.
+	 *
+	 * @return string
+	 */
+	private function normalize_and_hash( string $value, $algo = '256' ): string {
+		if ( empty( $value ) ) {
+			return '';
+		}
+
+		// Remove leading and trailing whitespaces.
+		$value = trim( $value );
+
+		// Convert case to lowercase.
+		$value = strtolower( $value );
+
+		return hash( $algo, $value );
 	}
 }
