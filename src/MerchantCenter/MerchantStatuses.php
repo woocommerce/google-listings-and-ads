@@ -239,7 +239,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
-	 * Update stale status-related data - account issues, product issues, products status stats.
+	 * Update stale status-related data - account issues.
 	 *
 	 * @param bool $force_refresh Force refresh of all status-related data.
 	 *
