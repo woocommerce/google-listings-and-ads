@@ -53,6 +53,7 @@ module.exports = {
 			timeFormat: 'g:i a',
 			initialWpData: {
 				version: '1.2.3',
+				adsId: '12345',
 			},
 		},
 	},
