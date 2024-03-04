@@ -1,19 +1,19 @@
 <?php
-	declare( strict_types=1 );
+declare( strict_types=1 );
 
-	namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
 
-	use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
-	use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 
-	defined( 'ABSPATH' ) || exit;
+defined( 'ABSPATH' ) || exit;
 
-	/**
-	 * Class NotificationsServiceTest
-	 *
-	 * @group Notifications
-	 * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google
-	 */
+/**
+ * Class NotificationsServiceTest
+ *
+ * @group Notifications
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google
+ */
 class NotificationsServiceTest extends UnitTest {
 
 	/**
@@ -22,6 +22,28 @@ class NotificationsServiceTest extends UnitTest {
 	public $service;
 
 	public const DUMMY_BLOG_ID = '123';
+
+	// List of Topics to be used.
+	public const TOPIC_PRODUCT_CREATED  = 'product.create';
+	public const TOPIC_PRODUCT_DELETED  = 'product.delete';
+	public const TOPIC_PRODUCT_UPDATED  = 'product.update';
+	public const TOPIC_COUPON_CREATED   = 'coupon.create';
+	public const TOPIC_COUPON_DELETED   = 'coupon.delete';
+	public const TOPIC_COUPON_UPDATED   = 'coupon.update';
+	public const TOPIC_SHIPPING_UPDATED = 'shipping.update';
+	public const TOPIC_SETTINGS_UPDATED = 'settings.update';
+
+	// Constant used to get all the allowed topics
+	public const ALLOWED_TOPICS = [
+		self::TOPIC_PRODUCT_CREATED,
+		self::TOPIC_PRODUCT_DELETED,
+		self::TOPIC_PRODUCT_UPDATED,
+		self::TOPIC_COUPON_CREATED,
+		self::TOPIC_COUPON_DELETED,
+		self::TOPIC_COUPON_UPDATED,
+		self::TOPIC_SHIPPING_UPDATED,
+		self::TOPIC_SETTINGS_UPDATED,
+	];
 
 	/**
 	 * Runs before each test is executed.
@@ -89,7 +111,7 @@ class NotificationsServiceTest extends UnitTest {
 		$this->service = $this->get_mock();
 
 		$this->service->expects( $this->once() )->method( 'do_request' )->willReturn( new \WP_Error( 'error', 'error message' ) );
-		$this->assertFalse( $this->service->notify( 'topic', 1 ) );
+		$this->assertFalse( $this->service->notify( 'product.create', 1 ) );
 		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
 	}
 
@@ -107,8 +129,36 @@ class NotificationsServiceTest extends UnitTest {
 				],
 			]
 		);
-		$this->assertFalse( $this->service->notify( 'topic', 1 ) );
+		$this->assertFalse( $this->service->notify( 'product.create', 1 ) );
 		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
+	}
+
+	/**
+	 * Test notify() function with valid and invalid topics
+	 */
+	public function test_notify_valid_and_invalid_topics() {
+		$this->service = $this->get_mock();
+		$this->service->expects( $this->exactly( count( self::ALLOWED_TOPICS ) ) )
+			->method( 'do_request' )
+			->willReturn( [ 'code' => 200 ] );
+
+		foreach ( self::ALLOWED_TOPICS as $topic ) {
+			$this->assertTrue( $this->service->notify( $topic, 1 ) );
+		}
+
+		$this->assertFalse( $this->service->notify( 'invalid.created', 1 ) );
+	}
+
+	/**
+	 * Test notify() function when it is blocked by `woocommerce_gla_notify` hook
+	 */
+	public function test_notify_blocked_by_hook() {
+		$this->service = $this->get_mock();
+		$this->service->expects( $this->never() )->method( 'do_request' );
+
+		add_filter( 'woocommerce_gla_notify', '__return_false' );
+		$this->assertFalse( $this->service->notify( 'product.created', 1 ) );
+		remove_filter( 'woocommerce_gla_notify', '__return_false' );
 	}
 
 	/**

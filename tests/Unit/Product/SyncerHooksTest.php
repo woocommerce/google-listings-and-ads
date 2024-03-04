@@ -282,7 +282,14 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
 		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->product_notification_job->expects( $this->once() )
-			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_CREATED ] ) );
+			->method( 'schedule' )->with(
+				$this->equalTo(
+					[
+						'item_id' => $product->get_id(),
+						'topic'   => NotificationsService::TOPIC_PRODUCT_CREATED,
+					]
+				)
+			);
 		$product->set_status( 'publish' );
 		$product->save();
 	}
@@ -291,7 +298,14 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
 		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->product_notification_job->expects( $this->once() )
-			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_UPDATED ] ) );
+			->method( 'schedule' )->with(
+				$this->equalTo(
+					[
+						'item_id' => $product->get_id(),
+						'topic'   => NotificationsService::TOPIC_PRODUCT_UPDATED,
+					]
+				)
+			);
 		$product->set_status( 'publish' );
 		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
 		$product->save();
@@ -301,7 +315,14 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
 		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->product_notification_job->expects( $this->once() )
-			->method( 'schedule' )->with( $this->equalTo( [ $product->get_id(), NotificationsService::TOPIC_PRODUCT_DELETED ] ) );
+			->method( 'schedule' )->with(
+				$this->equalTo(
+					[
+						'item_id' => $product->get_id(),
+						'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
+					]
+				)
+			);
 		$product->set_status( 'publish' );
 		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
 		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
