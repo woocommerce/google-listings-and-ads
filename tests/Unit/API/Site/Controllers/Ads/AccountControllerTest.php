@@ -217,12 +217,16 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_ads_account_has_access() {
+		$data = [
+			'has_access'  => false,
+			'invite_link' => self::TEST_BILLING_URL,
+		];
 		$this->account->expects( $this->once() )
 			->method( 'get_ads_account_has_access' )
-			->willReturn( true );
+			->willReturn( $data );
 
 		$response = $this->do_request( self::ROUTE_ACCOUNT_STATUS, 'GET' );
 
-		$this->assertEquals( true, $response->get_data() );
+		$this->assertEquals( $data, $response->get_data() );
 	}
 }
