@@ -28,6 +28,7 @@ defined( 'ABSPATH' ) || exit;
  * - Ads
  * - AdsAccountState
  * - AdsConversionAction
+ * - Connection
  * - Merchant
  * - Middleware
  * - TransientsInterface
@@ -170,7 +171,7 @@ class AccountService implements OptionsAwareInterface, Service {
 						break;
 
 					case 'account_access':
-						$this->check_account_access();
+						$this->get_ads_account_has_access();
 						break;
 
 					default:
@@ -215,46 +216,52 @@ class AccountService implements OptionsAwareInterface, Service {
 	/**
 	 * Gets the ads account access status.
 	 *
-	 * @return bool
+	 * @return array
 	 * @throws Exception When email is not present or invite link is empty when email present and has no account access.
 	 */
 	public function get_ads_account_has_access() {
-		try {
-			// Check if ads id is present.
-			$ads_id = $this->options->get_ads_id();
+		// Check if ads id is present.
+		$ads_id = $this->options->get_ads_id();
 
-			if ( empty( $ads_id ) ) {
-				return [
-					'has_access'  => false,
-					'invite_link' => '',
-				];
-			}
+		if ( empty( $ads_id ) ) {
+			throw new Exception( __( 'Ads id not present', 'google-listings-and-ads' ) );
+		}
 
-			$connection_status  = $this->container->get( Connection::class )->get_status();
-			$email              = $connection_status['email'] ?? '';
-			$accept_invite_link = $this->options->get( OptionsInterface::ADS_BILLING_URL, '' );
+		$connection_status  = $this->container->get( Connection::class )->get_status();
+		$email              = $connection_status['email'] ?? '';
+		$accept_invite_link = $this->options->get( OptionsInterface::ADS_BILLING_URL, '' );
 
-			// If no email, means google account is not connected.
-			if ( empty( $email ) ) {
-				throw new Exception( 'Google account is not connected' );
-			}
+		// If no email, means google account is not connected.
+		if ( empty( $email ) ) {
+			throw new Exception( __( 'Google account is not connected', 'google-listings-and-ads' ) );
+		}
 
-			$status = $this->container->get( Ads::class )->has_access( $email );
-			$status = boolval( $status );
+		$status = $this->container->get( Ads::class )->has_access( $email );
 
-			// If no access to ads account and there is no invite_link, throw exception.
-			if ( ! $status && empty( $accept_invite_link ) ) {
-				throw new Exception( 'Billing URL is not present' );
-			}
+		// If no access to ads account and there is no invite_link, throw exception.
+		if ( ! $status && empty( $accept_invite_link ) ) {
+			throw new Exception( __( 'Billing URL is not present', 'google-listings-and-ads' ) );
+		}
+
+		// If we have access, complete the step so that it won't be called next time.
+		if ( $status ) {
+			$this->state->complete_step( 'account_access' );
 
 			return [
 				'has_access'  => $status,
 				'invite_link' => $accept_invite_link,
 			];
-		} catch ( Exception $e ) {
-			$message = $e->getMessage();
-			throw new Exception( $message, 428 );
 		}
+
+		throw new ExceptionWithResponseData(
+			__( 'Please accept the ads account invitation.', 'google-listings-and-ads' ),
+			428,
+			null,
+			[
+				'has_access'  => false,
+				'invite_link' => $accept_invite_link,
+			]
+		);
 	}
 
 	/**
@@ -327,18 +334,5 @@ class AccountService implements OptionsAwareInterface, Service {
 	private function create_conversion_action(): void {
 		$action = $this->container->get( AdsConversionAction::class )->create_conversion_action();
 		$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $action );
-	}
-
-	/**
-	 * Checks whether the account has access granted.
-	 *
-	 * @throws Exception When ads account has no access.
-	 */
-	private function check_account_access(): void {
-		$data = $this->get_ads_account_has_access();
-
-		if ( ! $data['has_access'] ) {
-			throw new Exception( 'Ads account invitation is not accepted', 428 );
-		}
 	}
 }

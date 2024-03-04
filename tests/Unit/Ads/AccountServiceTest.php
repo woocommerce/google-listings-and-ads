@@ -483,23 +483,13 @@ class AccountServiceTest extends UnitTest {
 			->with( 'test@domain.com' )
 			->willReturn( false );
 
-		$status = $this->account->get_ads_account_has_access();
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionMessage( 'Please accept the ads account invitation.' );
 
-		$this->assertIsArray( $status );
-		$this->assertArrayHasKey( 'has_access', $status );
-		$this->assertArrayHasKey( 'invite_link', $status );
-		$this->assertCount( 2, $status );
-
-		$this->assertEquals(
-			[
-				'has_access'  => false,
-				'invite_link' => self::TEST_BILLING_URL,
-			],
-			$status
-		);
+		$this->account->get_ads_account_has_access();
 	}
 
-	public function test_get_ads_accoount_has_access_throws_exception_for_no_google_account() {
+	public function test_get_ads_account_has_access_throws_exception_for_no_google_account() {
 		$this->connection->method( 'get_status' )
 			->willReturn( [] );
 
@@ -520,7 +510,7 @@ class AccountServiceTest extends UnitTest {
 		$this->account->get_ads_account_has_access();
 	}
 
-	public function test_get_ads_accoount_has_access_throws_exception_for_empty_invite_link() {
+	public function test_get_ads_account_has_access_throws_exception_for_empty_invite_link() {
 		$this->connection->method( 'get_status' )
 			->willReturn( [ 'email' => 'test@domain.com' ] );
 
@@ -553,15 +543,10 @@ class AccountServiceTest extends UnitTest {
 		$this->ads->expects( $this->never() )
 			->method( 'has_access' );
 
-		$response = $this->account->get_ads_account_has_access();
-
-		$this->assertEquals(
-			[
-				'has_access'  => false,
-				'invite_link' => '',
-			],
-			$response
-		);
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Ads id not present' );
+	
+		$this->account->get_ads_account_has_access();
 	}
 
 	public function test_disconnect() {

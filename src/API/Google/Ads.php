@@ -285,7 +285,7 @@ class Ads implements OptionsAwareInterface {
 
 		// Return if no params.
 		if ( empty( $query_string ) ) {
-			return boolval( $query_string );
+			return false;
 		}
 
 		parse_str( $query_string, $params );
