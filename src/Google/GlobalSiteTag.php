@@ -211,7 +211,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Activate the Global Site Tag framework:
 	 * - Insert GST code, or
-	 * - Include the Google Ads conversion ID in WooCommerce Google Analytics Integration output, if available
+	 * - Include the Google Ads conversion ID in WooCommerce Google Analytics for WooCommerce output, if available
 	 *
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
