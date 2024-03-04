@@ -620,7 +620,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 *
 	 * @return string
 	 */
-	private function normalize_and_hash( string $value, $algo = '256' ): string {
+	private function normalize_and_hash( string $value, $algo = 'sha256' ): string {
 		if ( empty( $value ) ) {
 			return '';
 		}
