@@ -371,7 +371,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Get MC product issues from a list of Product View statuses.
 	 *
-	 * @param [] $statuses The list of Product View statuses.
+	 * @param array $statuses The list of Product View statuses.
+	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
+	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 *
 	 * @return array The list of product issues.
 	 */
@@ -510,7 +512,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Refresh product issues in the merchant issues table.
 	 *
-	 * @param [] $product_issues Array of product issues.
+	 * @param array $product_issues Array of product issues.
+	 * @throws InvalidQuery If an invalid column name is provided.
+	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
+	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
 	protected function refresh_product_issues( array $product_issues ): void {
 		// Alphabetize all product/issue country lists.
@@ -597,8 +602,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Process product status statistics.
 	 *
-	 * @param array[] $product_view_statuses Product View statuses.
+	 * @param array $product_view_statuses Product View statuses.
 	 * @see MerchantReport::get_product_view_report
+	 *
+	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
+	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
 	public function process_product_statuses( array $product_view_statuses ): void {
 		$product_repository        = $this->container->get( ProductRepository::class );
@@ -798,7 +806,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 *
 	 * @param string $error_message The error message.
 	 */
-	public function handle_failed_mc_statuses_fetching( string $error_message = '' ) {
+	public function handle_failed_mc_statuses_fetching( string $error_message = '' ): void {
 		$this->delete_product_statuses_count_intermediate_data();
 		// Let's remove any issue created during the failed fetch.
 		$this->delete_stale_issues( '=' );
