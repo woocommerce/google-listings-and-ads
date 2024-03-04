@@ -211,7 +211,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Activate the Global Site Tag framework:
 	 * - Insert GST code, or
-	 * - Include the Google Ads conversion ID in WooCommerce Google Analytics Integration output, if available
+	 * - Include the Google Ads conversion ID in WooCommerce Google Analytics for WooCommerce output, if available
 	 *
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
@@ -254,6 +254,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		<script>
 			window.dataLayer = window.dataLayer || [];
 			function gtag() { dataLayer.push(arguments); }
+			<?php
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $this->get_consent_mode_config();
+			?>
 
 			gtag('js', new Date());
 			gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
@@ -277,6 +281,25 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			'gtag("config", "%1$s", { "groups": "GLA", "send_page_view": false });',
 			esc_js( $ads_conversion_id )
 		);
+	}
+
+	/**
+	 * Get the default consent mode configuration.
+	 */
+	protected function get_consent_mode_config() {
+		$consent_mode_snippet = "gtag( 'consent', 'default', {
+				analytics_storage: 'denied',
+				ad_storage: 'denied',
+				ad_user_data: 'denied',
+				ad_personalization: 'denied',
+				region: ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS', 'IE', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'GB', 'CH'],
+			} );";
+		/**
+		 * Filters the default gtag consent mode configuration.
+		 *
+		 * @param string $consent_mode_snippet Default configuration with all the parameters `denied` for the EEA region.
+		 */
+		return apply_filters( 'woocommerce_gla_gtag_consent', $consent_mode_snippet );
 	}
 
 	/**
