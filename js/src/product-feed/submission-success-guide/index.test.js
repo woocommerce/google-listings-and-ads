@@ -28,21 +28,12 @@ import SubmissionSuccessGuide from './index';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import { CAMPAIGN_TYPE_PMAX } from '.~/constants';
 
-const PAID_CAMPAIGN = {
+const PMAX_CAMPAIGN = {
 	id: 10,
 	name: 'PMax Campaign',
 	status: 'enabled',
 	type: CAMPAIGN_TYPE_PMAX,
 	amount: 20,
-	displayCountries: [ 'US' ],
-};
-
-const FREE_CAMPAIGN = {
-	id: 11,
-	name: 'Free Campaign',
-	status: 'enabled',
-	type: 'shopping',
-	amount: 30,
 	displayCountries: [ 'US' ],
 };
 
@@ -53,7 +44,7 @@ describe( 'SubmissionSuccessGuide', () => {
 
 	test( 'Renders the Google Ads credit screen if there are no paid campaigns', () => {
 		useAdsCampaigns.mockReturnValue( {
-			data: [ FREE_CAMPAIGN ],
+			pmaxCampaigns: [],
 			loaded: true,
 		} );
 
@@ -69,7 +60,7 @@ describe( 'SubmissionSuccessGuide', () => {
 
 	test( 'Renders the enhanced tracking screen if there are paid campaigns', () => {
 		useAdsCampaigns.mockReturnValue( {
-			data: [ PAID_CAMPAIGN ],
+			pmaxCampaigns: [ PMAX_CAMPAIGN ],
 			loaded: true,
 		} );
 

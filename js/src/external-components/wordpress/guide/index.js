@@ -147,7 +147,7 @@ export default function Guide( {
 
 					{ finishBlock }
 
-					{ pages[ currentPage ]?.footer }
+					{ pages[ currentPage ].footer }
 				</div>
 			</div>
 		</Modal>

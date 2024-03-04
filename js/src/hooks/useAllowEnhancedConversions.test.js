@@ -21,7 +21,7 @@ describe( 'useAllowEnhancedConversions', () => {
 			return useAllowEnhancedConversions();
 		} );
 
-		expect( result.current.allowEnhancedConversions ).toEqual(
+		expect( result.current.allowEnhancedConversions ).toBe(
 			ENHANCED_ADS_CONVERSION_STATUS.ENABLED
 		);
 	} );
@@ -36,7 +36,7 @@ describe( 'useAllowEnhancedConversions', () => {
 			return useAllowEnhancedConversions();
 		} );
 
-		expect( result.current.allowEnhancedConversions ).toEqual(
+		expect( result.current.allowEnhancedConversions ).toBe(
 			ENHANCED_ADS_CONVERSION_STATUS.DISABLED
 		);
 	} );

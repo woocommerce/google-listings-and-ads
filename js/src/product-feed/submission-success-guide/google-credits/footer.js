@@ -3,16 +3,17 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
+import noop from 'lodash/noop';
 
 /**
  * Internal dependencies
  */
 import { GUIDE_NAMES } from '.~/constants';
-import { EVENT_NAME } from '../constants';
+import { GLA_MODAL_CLOSED_EVENT_NAME } from '../constants';
 import AppButton from '.~/components/app-button';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 
-const Footer = ( { handleGuideFinish } ) => {
+const Footer = ( { onClose = noop } ) => {
 	return (
 		<Fragment>
 			<div className="gla-submission-success-guide__space_holder" />
@@ -20,7 +21,7 @@ const Footer = ( { handleGuideFinish } ) => {
 			<AppButton
 				isSecondary
 				data-action="maybe-later"
-				onClick={ handleGuideFinish }
+				onClick={ onClose }
 			>
 				{ __( 'Maybe later', 'google-listings-and-ads' ) }
 			</AppButton>
@@ -29,7 +30,7 @@ const Footer = ( { handleGuideFinish } ) => {
 				isPrimary
 				isSecondary={ false }
 				isSmall={ false }
-				eventName={ EVENT_NAME }
+				eventName={ GLA_MODAL_CLOSED_EVENT_NAME }
 				eventProps={ {
 					context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 					action: 'create-paid-campaign',

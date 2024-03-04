@@ -7,7 +7,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data';
-import { glaData } from '.~/constants';
+import { glaData, CAMPAIGN_TYPE_PMAX } from '.~/constants';
 import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 
 const selectorName = 'getAdsCampaigns';
@@ -44,6 +44,7 @@ const useAdsCampaigns = ( ...query ) => {
 					loading: false,
 					loaded: true,
 					data: [],
+					pmaxCampaigns: [],
 				};
 			}
 
@@ -56,10 +57,19 @@ const useAdsCampaigns = ( ...query ) => {
 				queryRefValue
 			);
 
+			let pmaxCampaigns = [];
+
+			if ( loaded && data.length ) {
+				pmaxCampaigns = data.filter(
+					( { type } ) => type === CAMPAIGN_TYPE_PMAX
+				);
+			}
+
 			return {
 				loading,
 				loaded,
 				data,
+				pmaxCampaigns,
 			};
 		},
 		[ queryRefValue ]

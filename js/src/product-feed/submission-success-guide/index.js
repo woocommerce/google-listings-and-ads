@@ -11,7 +11,7 @@ import { getHistory } from '@woocommerce/navigation';
 import { glaData, GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
 import { getProductFeedUrl } from '.~/utils/urls';
 import { recordGlaEvent } from '.~/utils/tracks';
-import { EVENT_NAME } from './constants';
+import { GLA_MODAL_CLOSED_EVENT_NAME } from './constants';
 import Guide from '.~/external-components/wordpress/guide';
 import localStorage from '.~/utils/localStorage';
 import DynamicScreenContent from './dynamic-screen-content';
@@ -51,7 +51,7 @@ const handleGuideFinish = ( e ) => {
 	// here is a workaround by identifying the close button's data-aciton attribute.
 	const target = e.currentTarget || e.target;
 	const action = target.dataset.action || 'dismiss';
-	recordGlaEvent( EVENT_NAME, {
+	recordGlaEvent( GLA_MODAL_CLOSED_EVENT_NAME, {
 		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 		action,
 	} );
@@ -61,16 +61,16 @@ const pages = [
 	{
 		image,
 		content: <SetupSuccess />,
-		footer: <SetupSuccessFooter handleGuideFinish={ handleGuideFinish } />,
+		footer: <SetupSuccessFooter onClose={ handleGuideFinish } />,
 	},
 	{
 		image,
 		content: <DynamicScreenContent />,
-		footer: <DynamicScreenFooter handleGuideFinish={ handleGuideFinish } />,
+		footer: <DynamicScreenFooter onClose={ handleGuideFinish } />,
 	},
 ];
 
-if ( ! glaData.adsConnected ) {
+if ( ! glaData.initialWpData.adsId ) {
 	pages.pop();
 }
 
