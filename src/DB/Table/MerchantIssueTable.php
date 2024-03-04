@@ -55,10 +55,9 @@ SQL;
 	 * Delete stale issue records.
 	 *
 	 * @param DateTime $created_before Delete all records created before this.
-	 * @param string   $compare        Comparison operator to use. Default is '<'.
 	 */
-	public function delete_stale( DateTime $created_before, string $compare = '<' ) {
-		$query = "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `created_at` {$compare} '%s'";
+	public function delete_stale( DateTime $created_before ) {
+		$query = "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `created_at` < '%s'";
 		$this->wpdb->query( $this->wpdb->prepare( $query, $created_before->format( 'Y-m-d H:i:s' ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
