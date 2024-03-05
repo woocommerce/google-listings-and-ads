@@ -217,7 +217,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * Gets the ads account access status.
 	 *
 	 * @return array
-	 * @throws Exception When email is not present or invite link is empty when email present and has no account access.
+	 * @throws Exception When email is not present or has no account access.
 	 */
 	public function get_ads_account_has_access() {
 		// Check if ads id is present.
