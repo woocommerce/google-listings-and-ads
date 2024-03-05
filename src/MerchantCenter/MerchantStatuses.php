@@ -114,10 +114,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws Exception If no Merchant Center account is connected, or account status is not retrievable.
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
-		$this->check_mc_is_connected();
-
-		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
 		$job               = $this->maybe_refresh_status_data( $force_refresh );
+		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
 
 		if ( $job->is_scheduled() || null === $this->mc_statuses ) {
 			return [
