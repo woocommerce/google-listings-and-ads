@@ -117,13 +117,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$this->check_mc_is_connected();
 
 		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
-		$job               = $this->container->get( UpdateMerchantProductStatuses::class );
-
-		// If force_refresh is true or if not transient, return empty array and scheduled the job to update the statuses.
-		if ( ! $job->is_scheduled() && ( $force_refresh || ( ! $force_refresh && null === $this->mc_statuses ) ) ) {
-			// Schedule job to update the statuses.
-			$job->schedule();
-		}
+		$job               = $this->maybe_refresh_status_data( $force_refresh );
 
 		if ( $job->is_scheduled() || null === $this->mc_statuses ) {
 			return [
@@ -168,10 +162,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	public function get_issues( string $type = null, int $per_page = 0, int $page = 1, bool $force_refresh = false ): array {
-		$this->maybe_refresh_status_data( $force_refresh );
+		$job = $this->maybe_refresh_status_data( $force_refresh );
 
 		// Get only error issues
 		$severity_error_issues = $this->fetch_issues( $type, $per_page, $page, true );
+
+		if ( $job->is_scheduled() ) {
+			$severity_error_issues['loading'] = true;
+		}
 
 		// In case there are error issues we show only those, otherwise we show all the issues.
 		return $severity_error_issues['total'] > 0 ? $severity_error_issues : $this->fetch_issues( $type, $per_page, $page );
@@ -237,33 +235,30 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
-	 * Update stale status-related data - account issues.
+	 * Maybe start the job to refresh the status and issues data.
 	 *
 	 * @param bool $force_refresh Force refresh of all status-related data.
 	 *
+	 * @return UpdateMerchantProductStatuses The job to update the statuses.
+	 *
 	 * @throws Exception If no Merchant Center account is connected, or account status is not retrievable.
+	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
+	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
-	public function maybe_refresh_status_data( bool $force_refresh = false ): void {
-		// Only refresh if the current data has expired.
-		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
-		if ( ! $force_refresh && null !== $this->mc_statuses ) {
-			return;
-		}
-
-		// Save a request if accounts are not connected.
+	public function maybe_refresh_status_data( bool $force_refresh = false ): UpdateMerchantProductStatuses {
 		$this->check_mc_is_connected();
 
-		// Update account-level issues.
-		$this->refresh_account_issues();
+		// Only refresh if the current data has expired.
+		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+		$job               = $this->container->get( UpdateMerchantProductStatuses::class );
 
-		// Update pre-sync product validation issues.
-		$this->refresh_presync_product_issues();
+		// If force_refresh is true or if not transient, return empty array and scheduled the job to update the statuses.
+		if ( ! $job->is_scheduled() && ( $force_refresh || ( ! $force_refresh && null === $this->mc_statuses ) ) ) {
+			// Schedule job to update the statuses.
+			$job->schedule();
+		}
 
-		// Include any custom merchant issues.
-		$this->refresh_custom_merchant_issues();
-
-		// Delete stale issues.
-		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
+		return $job;
 	}
 
 	/**
