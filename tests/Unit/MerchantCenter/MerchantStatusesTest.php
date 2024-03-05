@@ -23,6 +23,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use DateTime;
 use DateInterval;
 use Exception;
@@ -46,6 +49,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class MerchantStatusesTest extends UnitTest {
 
+	use PluginHelper;
 
 	/**
 	 * Lifetime of the MC Status transient.
@@ -424,24 +428,30 @@ class MerchantStatusesTest extends UnitTest {
 		$product_1        = WC_Helper_Product::create_simple_product();
 		$product_2        = WC_Helper_Product::create_simple_product();
 		$product_3        = WC_Helper_Product::create_simple_product();
+		$product_4        = WC_Helper_Product::create_simple_product();
 		$variable_product = WC_Helper_Product::create_variation_product();
 
 		$variations     = $variable_product->get_available_variations();
 		$variation_id_1 = $variations[0]['variation_id'];
 		$variation_id_2 = $variations[1]['variation_id'];
 
+		// We should fetch issues for Products with channel visibility set to DONT_SYNC_AND_SHOW.
+		$product_4->update_meta_data( $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY ), ChannelVisibility::DONT_SYNC_AND_SHOW );
+		$product_4->save_meta_data();
+
 		$matcher = $this->exactly( 2 );
 		$this->product_repository->expects( $matcher )->method( 'find_by_ids_as_associative_array' )->willReturnCallback(
-			function ( $args ) use ( $matcher, $product_1, $product_2, $product_3, $variable_product, $variation_id_1, $variation_id_2 ) {
+			function ( $args ) use ( $matcher, $product_1, $product_2, $product_3, $variable_product, $variation_id_1, $variation_id_2, $product_4 ) {
 				switch ( $matcher->getInvocationCount() ) {
 					case 1:
-						$this->assertEquals( [ $product_1->get_id(), $product_2->get_id(), $product_3->get_id(),  $variation_id_1, $variation_id_2 ], $args );
+						$this->assertEquals( [ $product_1->get_id(), $product_2->get_id(), $product_3->get_id(),  $variation_id_1, $variation_id_2, $product_4->get_id() ], $args );
 						return [
 							$product_1->get_id() => $product_1,
 							$product_2->get_id() => $product_2,
 							$product_3->get_id() => $product_3,
 							$variation_id_1      => wc_get_product( $variation_id_1 ) ,
 							$variation_id_2      => wc_get_product( $variation_id_2 ),
+							$product_4->get_id() => $product_4,
 						];
 					case 2:
 						$this->assertEquals( [ $variable_product->get_id() ], $args );
@@ -464,7 +474,7 @@ class MerchantStatusesTest extends UnitTest {
 							[
 
 								MCStatus::APPROVED    => 1,
-								MCStatus::PARTIALLY_APPROVED => 2,
+								MCStatus::PARTIALLY_APPROVED => 3,
 								MCStatus::EXPIRING    => 1,
 								MCStatus::DISAPPROVED => 0,
 								MCStatus::NOT_SYNCED  => 0,
@@ -513,29 +523,38 @@ class MerchantStatusesTest extends UnitTest {
 				'status'          => MCStatus::PARTIALLY_APPROVED,
 				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 			],
+			[
+				'mc_id'           => $this->get_mc_id( $product_4->get_id() ),
+				'product_id'      => $product_4->get_id(),
+				'status'          => MCStatus::PARTIALLY_APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
 
 		];
 
-		$this->product_helper->expects( $this->any() )
-			->method( 'get_wc_product_id' )
-			->willReturnOnConsecutiveCalls(
-				$product_1->get_id(),
-				$product_2->get_id(),
-				$product_3->get_id(),
-				$variation_id_1,
-				$variation_id_2
-			);
-
 		$product_status = $this->get_product_status_item( $product_1->get_id() );
-		$response       = new ProductstatusesCustomBatchResponse();
-		$entry          = new ProductstatusesCustomBatchResponseEntry();
+
+		$entry = new ProductstatusesCustomBatchResponseEntry();
 		$entry->setProductStatus( $product_status );
-		$response->setEntries( [ $entry ] );
+
+		$product_status_2 = $this->get_product_status_item( $product_4->get_id() );
+		$entry_2          = new ProductstatusesCustomBatchResponseEntry();
+		$entry_2->setProductStatus( $product_status_2 );
+
+		$response = new ProductstatusesCustomBatchResponse();
+		$response->setEntries( [ $entry, $entry_2 ] );
 
 		$this->merchant->expects( $this->once() )
 			->method( 'get_productstatuses_batch' )
-			->with( [ $this->get_mc_id( $product_1->get_id() ), $this->get_mc_id( $product_2->get_id() ), $this->get_mc_id( $product_3->get_id() ), $this->get_mc_id( $variation_id_1 ), $this->get_mc_id( $variation_id_2 ) ] )
+			->with( [ $this->get_mc_id( $product_1->get_id() ), $this->get_mc_id( $product_2->get_id() ), $this->get_mc_id( $product_3->get_id() ), $this->get_mc_id( $variation_id_1 ), $this->get_mc_id( $variation_id_2 ),  $this->get_mc_id( $product_4->get_id() ) ] )
 			->willReturn( $response );
+
+		$this->product_helper->expects( $this->exactly( count( $response->getEntries() ) ) )
+			->method( 'get_wc_product_id' )
+			->willReturnOnConsecutiveCalls(
+				$product_1->get_id(),
+				$product_4->get_id(),
+			);
 
 		$this->merchant_issue_query->expects( $this->once() )->method( 'update_or_insert' )->with(
 			[
