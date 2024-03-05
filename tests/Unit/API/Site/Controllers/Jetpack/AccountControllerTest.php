@@ -54,6 +54,14 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$expected_auth_url = $auth_url . '&from=google-listings-and-ads';
 
 		$this->manager->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( false );
+
+		$this->manager->expects( $this->once() )
+			->method( 'register' )
+			->willReturn( true );
+
+		$this->manager->expects( $this->once() )
 			->method( 'get_authorization_url' )
 			->willReturn( $auth_url );
 
@@ -70,6 +78,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	public function test_connect_with_error() {
 		$this->manager->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( false );
+
+		$this->manager->expects( $this->once() )
 			->method( 'register' )
 			->willReturn( new WP_Error( 'error', 'Error message' ) );
 
@@ -83,6 +95,33 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_reconnect() {
+		$auth_url          = 'https://domain.test?auth=1';
+		$expected_auth_url = $auth_url . '&from=google-listings-and-ads';
+
+		$this->manager->expects( $this->once() )
+			->method( 'is_connected' )
+			->willReturn( true );
+
+		$this->manager->expects( $this->once() )
+			->method( 'reconnect' )
+			->willReturn( true );
+
+		$this->manager->expects( $this->once() )
+			->method( 'get_authorization_url' )
+			->willReturn( $auth_url );
+
+		$response = $this->do_request( self::ROUTE_CONNECT, 'GET' );
+
+		$this->assertEquals(
+			[
+				'url' => $expected_auth_url,
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_disconnect() {
@@ -115,10 +154,11 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			'email'        => $email,
 		];
 
-		$this->tokens->method( 'get_access_token' )->willReturn( 'abcd' );
 		$this->manager->method( 'has_connected_owner' )->willReturn( true );
-		$this->manager->method( 'is_connection_owner' )->willReturn( true );
+		$this->manager->method( 'is_connected' )->willReturn( true );
+		$this->tokens->method( 'validate_blog_token' )->willReturn( true );
 		$this->manager->method( 'get_tokens' )->willReturn( $this->tokens );
+		$this->manager->method( 'is_connection_owner' )->willReturn( true );
 
 		// Confirm the WP TOS is marked as accepted for the current user.
 		$this->middleware->expects( $this->once() )
@@ -143,10 +183,37 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	/**
+	 * Tests an invalid token stored locally.
+	 */
 	public function test_connected_invalid_token() {
-		$this->tokens->method( 'get_access_token' )->willReturn( false );
 		$this->manager->method( 'has_connected_owner' )->willReturn( true );
+		$this->manager->method( 'is_connected' )->willReturn( false );
 		$this->manager->method( 'is_connection_owner' )->willReturn( true );
+
+		$response = $this->do_request( self::ROUTE_CONNECTED, 'GET' );
+
+		$this->assertEquals(
+			[
+				'active'      => 'no',
+				'owner'       => 'yes',
+				'displayName' => '',
+				'email'       => '',
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	/**
+	 * Tests a valid token stored locally, but invalid once checked externally.
+	 * The Jetpack connection package handles the external check through `validate_blog_token`.
+	 */
+	public function test_connected_token_does_not_validate() {
+		$this->manager->method( 'has_connected_owner' )->willReturn( true );
+		$this->manager->method( 'is_connected' )->willReturn( true );
+		$this->manager->method( 'is_connection_owner' )->willReturn( true );
+		$this->tokens->method( 'validate_blog_token' )->willReturn( false );
 		$this->manager->method( 'get_tokens' )->willReturn( $this->tokens );
 
 		$response = $this->do_request( self::ROUTE_CONNECTED, 'GET' );

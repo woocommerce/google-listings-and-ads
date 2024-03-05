@@ -211,22 +211,30 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Activate the Global Site Tag framework:
 	 * - Insert GST code, or
-	 * - Include the Google Ads conversion ID in WooCommerce Google Analytics Integration output, if available
+	 * - Include the Google Ads conversion ID in WooCommerce Google Analytics for WooCommerce output, if available
 	 *
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	public function activate_global_site_tag( string $ads_conversion_id ) {
 		if ( $this->gtag_js->is_adding_framework() ) {
-			add_filter(
-				'woocommerce_gtag_snippet',
-				function ( $gtag_snippet ) use ( $ads_conversion_id ) {
-					return preg_replace(
-						'~(\s)</script>~',
-						"\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA', 'send_page_view': false });\n$1</script>",
-						$gtag_snippet
-					);
-				}
-			);
+			if ( version_compare( \WC_GOOGLE_ANALYTICS_INTEGRATION_VERSION, '2.0.0', '>=' ) ) {
+				wp_add_inline_script(
+					'woocommerce-google-analytics-integration',
+					$this->get_gtag_config( $ads_conversion_id )
+				);
+			} else {
+				// Legacy code to support Google Analytics for WooCommerce version < 2.0.0.
+				add_filter(
+					'woocommerce_gtag_snippet',
+					function ( $gtag_snippet ) use ( $ads_conversion_id ) {
+						return preg_replace(
+							'~(\s)</script>~',
+							"\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA', 'send_page_view': false });\n$1</script>",
+							$gtag_snippet
+						);
+					}
+				);
+			}
 		} else {
 			$this->display_global_site_tag( $ads_conversion_id );
 		}
@@ -246,17 +254,71 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		<script>
 			window.dataLayer = window.dataLayer || [];
 			function gtag() { dataLayer.push(arguments); }
+			<?php
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $this->get_consent_mode_config();
+			?>
 
 			gtag('js', new Date());
 			gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
-			gtag('config', '<?php echo esc_js( $ads_conversion_id ); ?>', {
-				'groups': 'GLA',
-				'send_page_view': false
-			});
+			<?php
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $this->get_gtag_config( $ads_conversion_id );
+			?>
 		</script>
 
 		<?php
 		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+	}
+
+	/**
+	 * Get the ads conversion configuration for the Global Site Tag
+	 *
+	 * @param string $ads_conversion_id Google Ads account conversion ID.
+	 */
+	protected function get_gtag_config( string $ads_conversion_id ) {
+		return sprintf(
+			'gtag("config", "%1$s", { "groups": "GLA", "send_page_view": false });',
+			esc_js( $ads_conversion_id )
+		);
+	}
+
+	/**
+	 * Get the default consent mode configuration.
+	 */
+	protected function get_consent_mode_config() {
+		$consent_mode_snippet = "gtag( 'consent', 'default', {
+				analytics_storage: 'denied',
+				ad_storage: 'denied',
+				ad_user_data: 'denied',
+				ad_personalization: 'denied',
+				region: ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS', 'IE', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'GB', 'CH'],
+			} );";
+		/**
+		 * Filters the default gtag consent mode configuration.
+		 *
+		 * @param string $consent_mode_snippet Default configuration with all the parameters `denied` for the EEA region.
+		 */
+		return apply_filters( 'woocommerce_gla_gtag_consent', $consent_mode_snippet );
+	}
+
+	/**
+	 * Add inline JavaScript to the page either as a standalone script or
+	 * attach it to Google Analytics for WooCommerce if it's installed
+	 *
+	 * @param string $inline_script The JavaScript code to display
+	 *
+	 * @return void
+	 */
+	public function add_inline_event_script( string $inline_script ) {
+		if ( class_exists( '\WC_Google_Gtag_JS' ) ) {
+			wp_add_inline_script(
+				'woocommerce-google-analytics-integration',
+				esc_js( $inline_script )
+			);
+		} else {
+			wp_print_inline_script_tag( $inline_script );
+		}
 	}
 
 	/**
@@ -294,7 +356,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $order->get_currency() ),
 			esc_js( $order->get_id() ),
 		);
-		wp_print_inline_script_tag( $conversion_gtag_info );
+		$this->add_inline_event_script( $conversion_gtag_info );
 
 		// Get the item info in the order
 		$item_info = [];
@@ -355,7 +417,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $language ),
 			join( ',', $item_info ),
 		);
-		wp_print_inline_script_tag( $purchase_page_gtag );
+		$this->add_inline_event_script( $purchase_page_gtag );
 	}
 
 	/**
@@ -387,7 +449,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $product->get_name() ),
 			esc_js( join( ' & ', $this->product_helper->get_categories( $product ) ) ),
 		);
-		wp_print_inline_script_tag( $view_item_gtag );
+		$this->add_inline_event_script( $view_item_gtag );
 	}
 
 	/**
@@ -395,7 +457,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	private function display_page_view_event_snippet(): void {
 		if ( ! is_cart() ) {
-			wp_print_inline_script_tag(
+			$this->add_inline_event_script(
 				'gtag("event", "page_view", {send_to: "GLA"});'
 			);
 			return;
@@ -438,7 +500,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$value,
 			join( ',', $item_info ),
 		);
-		wp_print_inline_script_tag( $page_view_gtag );
+		$this->add_inline_event_script( $page_view_gtag );
 	}
 
 	/**
