@@ -36,7 +36,7 @@ class AccountController extends BaseOptionsController {
 	 *
 	 * @var bool
 	 */
-	private $connected;
+	private $jetpack_connected_state;
 
 	/**
 	 * Mapping between the client page name and its path.
@@ -202,18 +202,18 @@ class AccountController extends BaseOptionsController {
 	 * @return bool
 	 */
 	protected function is_jetpack_connected(): bool {
-		if ( null !== $this->connected ) {
-			return $this->connected;
+		if ( null !== $this->jetpack_connected_state ) {
+			return $this->jetpack_connected_state;
 		}
 
 		if ( ! $this->manager->has_connected_owner() || ! $this->manager->is_connected() ) {
-			$this->connected = false;
+			$this->jetpack_connected_state = false;
 			return false;
 		}
 
 		// Send an external request to validate the token.
-		$this->connected = $this->manager->get_tokens()->validate_blog_token();
-		return $this->connected;
+		$this->jetpack_connected_state = $this->manager->get_tokens()->validate_blog_token();
+		return $this->jetpack_connected_state;
 	}
 
 	/**
