@@ -433,6 +433,22 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
+	 * Refresh the account , pre-sync product validation and custom merchant issues.
+	 *
+	 * @throws Exception  If the account state can't be retrieved from Google.
+	 */
+	public function refresh_account_and_presync_issues(): void {
+		// Update account-level issues.
+		$this->refresh_account_issues();
+
+		// Update pre-sync product validation issues.
+		$this->refresh_presync_product_issues();
+
+		// Include any custom merchant issues.
+		$this->refresh_custom_merchant_issues();
+	}
+
+	/**
 	 * Retrieve all account-level issues and store them in the database.
 	 *
 	 * @throws Exception If the account state can't be retrieved from Google.

@@ -89,6 +89,7 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 			// Clear the cache if we're starting from the beginning.
 			if ( ! $next_page_token ) {
 				$this->merchant_statuses->clear_product_statuses_cache_and_issues();
+				$this->merchant_statuses->refresh_account_and_presync_issues();
 			}
 
 			$results         = $this->merchant_report->get_product_view_report( $next_page_token );
