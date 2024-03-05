@@ -835,6 +835,18 @@ class MerchantStatusesTest extends UnitTest {
 		);
 	}
 
+	protected function test_clear_product_statuses_cache_and_issues() {
+		$this->transients->expects( $this->exactly( 1 ) )
+		->method( 'delete' )
+		->with(
+			TransientsInterface::MC_STATUSES
+		);
+
+		$this->merchant_issue_table->expects( $this->once() )->method( 'delete_stale' )->with( $this->merchant_statuses->get_cache_created_time() );
+		$this->options->expects( $this->once() )->method( 'delete' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		$this->merchant_statuses->clear_product_statuses_cache_and_issues();
+	}
+
 	protected function get_product_status_item( $wc_product_id ): ProductStatus {
 		$product_status = new ProductStatus();
 		$product_status->setProductId( $this->get_mc_id( $wc_product_id ) );
