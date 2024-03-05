@@ -111,6 +111,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.6.1 - 2024-03-05 =
+* Add - Consider `ga_gtag_enabled=yes` for  WCGAI >= 2.
+* Add - Google Analytics consent mode support.
+* Add - Support for Google Analytics for WooCommerce version 2.0.0 and above.
+* Dev - Avoid the test-data plugin occasionally missing in the E2E test environment.
+* Fix - Improve WordPress.com account handling.
+
 = 2.6.0 - 2024-02-27 =
 * Add - Support the new product editor (Product Block Editor).
 * Dev - Fix the compatibility issue in starting E2E test environment due to the default charset change in MariaDB v11.3.1.
