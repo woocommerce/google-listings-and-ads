@@ -201,7 +201,7 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_issue_query->expects( $this->exactly( 2 ) )
 		->method( 'update_or_insert' )
 		->withConsecutive( [ $issues ], [] );
-		$this->merchant_statuses->maybe_refresh_status_data( true );
+		$this->merchant_statuses->refresh_account_and_presync_issues();
 	}
 
 
@@ -210,7 +210,7 @@ class MerchantStatusesTest extends UnitTest {
 			->method( 'is_connected' )
 			->willReturn( false );
 
-			$this->merchant_center_service->expects( $this->once() )
+		$this->merchant_center_service->expects( $this->once() )
 			->method( 'is_google_connected' )
 			->willReturn( false );
 
@@ -232,7 +232,7 @@ class MerchantStatusesTest extends UnitTest {
 			->method( 'is_connected' )
 			->willReturn( true );
 
-		$this->transients->expects( $this->once() )
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->willReturn(
 				[
@@ -279,7 +279,7 @@ class MerchantStatusesTest extends UnitTest {
 			->method( 'is_connected' )
 			->willReturn( true );
 
-		$this->transients->expects( $this->once() )
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->willReturn(
 				[
@@ -313,7 +313,7 @@ class MerchantStatusesTest extends UnitTest {
 			->method( 'is_connected' )
 			->willReturn( true );
 
-		$this->transients->expects( $this->once() )
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->willReturn(
 				null
@@ -343,7 +343,7 @@ class MerchantStatusesTest extends UnitTest {
 			->method( 'is_connected' )
 			->willReturn( true );
 
-		$this->transients->expects( $this->once() )
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->willReturn(
 				[
@@ -384,7 +384,7 @@ class MerchantStatusesTest extends UnitTest {
 			->method( 'is_connected' )
 			->willReturn( true );
 
-		$this->transients->expects( $this->once() )
+		$this->transients->expects( $this->exactly( 2 ) )
 			->method( 'get' )
 			->willReturn(
 				[
