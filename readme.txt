@@ -119,11 +119,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 = 2.5.18 - 2024-02-20 =
 * Fix - Prevent product queries by IDs if no arguments are supplied.
 
-= 2.5.17 - 2024-02-07 =
-* Dev - Add manual QIT workflow.
-* Dev - Upload coverage report for JS unit tests to codecov.
-* Fix - Only sync selected categories as product type.
-* Fix - Prevent notifications from sending request to Google API when disconnected.
-* Tweak - WC 8.6 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
