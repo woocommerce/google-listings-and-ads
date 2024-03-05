@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin name: E2E test snippets
+ * Plugin name: GLA Test Snippets
  * Description: A plugin to provide some PHP snippets used in E2E tests.
  *
  * Intended to function as a plugin while tests are running.
