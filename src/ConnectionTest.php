@@ -112,6 +112,8 @@ class ConnectionTest implements Service, Registerable {
 	 * Render the admin page.
 	 */
 	protected function render_admin_page() {
+		/** @var OptionsInterface $options */
+		$options = $this->container->get( OptionsInterface::class );
 		/** @var Manager $manager */
 		$manager    = $this->container->get( Manager::class );
 		$blog_token = $manager->get_tokens()->get_access_token();
@@ -172,11 +174,22 @@ class ConnectionTest implements Service, Registerable {
 					</td>
 				</tr>
 
+				<?php if ( $blog_token ) { ?>
+				<tr>
+					<th>Test Authenticated WCS Request:</th>
+					<td>
+						<p>
+							<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-auth-test' ], $url ), 'wcs-auth-test' ) ); ?>">Test Authenticated Request</a>
+						</p>
+					</td>
+				</tr>
+				<?php } ?>
+
 			</table>
 
 			<hr />
 
-			<h2 class="title">Jetpack</h2>
+			<h2 class="title">WordPress.com</h2>
 
 			<table class="form-table" role="presentation">
 
@@ -207,27 +220,25 @@ class ConnectionTest implements Service, Registerable {
 					</tr>
 				<?php } ?>
 
-				<?php if ( $blog_token ) { ?>
 				<tr>
-					<th>Test Authenticated WCS Request:</th>
-					<td>
-						<p>
-							<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-auth-test' ], $url ), 'wcs-auth-test' ) ); ?>">Test Authenticated Request</a>
-						</p>
-					</td>
-				</tr>
-				<?php } ?>
-
-				<tr>
-					<th>Toggle Connection:</th>
+					<th>Connection Status:</th>
 					<td>
 						<?php if ( ! $blog_token ) { ?>
-							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'connect' ], $url ), 'connect' ) ); ?>">Connect to Jetpack</a></p>
+							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'connect' ], $url ), 'connect' ) ); ?>">Connect to WordPress.com</a></p>
 						<?php } else { ?>
-							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'disconnect' ], $url ), 'disconnect' ) ); ?>">Disconnect Jetpack</a></p>
+							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wp-status' ], $url ), 'wp-status' ) ); ?>">WordPress.com Connection Status</a></p>
 						<?php } ?>
 					</td>
 				</tr>
+
+				<?php if ( $blog_token && ! $options->get( OptionsInterface::JETPACK_CONNECTED ) ) { ?>
+				<tr>
+					<th>Reconnect WordPress.com:</th>
+					<td>
+						<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'connect' ], $url ), 'connect' ) ); ?>">Reconnect to WordPress.com</a></p>
+					</td>
+				</tr>
+				<?php } ?>
 
 			</table>
 
@@ -641,14 +652,16 @@ class ConnectionTest implements Service, Registerable {
 		$manager = $this->container->get( Manager::class );
 
 		if ( 'connect' === $_GET['action'] && check_admin_referer( 'connect' ) ) {
-			// Register the site to wp.com.
-			if ( ! $manager->is_connected() ) {
+			// Register the site to WPCOM.
+			if ( $manager->is_connected() ) {
+				$result = $manager->reconnect();
+			} else {
 				$result = $manager->register();
+			}
 
-				if ( is_wp_error( $result ) ) {
-					$this->response .= $result->get_error_message();
-					return;
-				}
+			if ( is_wp_error( $result ) ) {
+				$this->response .= $result->get_error_message();
+				return;
 			}
 
 			// Get an authorization URL which will redirect back to our page.
@@ -657,8 +670,6 @@ class ConnectionTest implements Service, Registerable {
 
 			// Payments flow allows redirect back to the site without showing plans.
 			$auth_url = add_query_arg( [ 'from' => 'google-listings-and-ads' ], $auth_url );
-
-			error_log( $auth_url );
 
 			// Using wp_redirect intentionally because we're redirecting outside.
 			wp_redirect( $auth_url ); // phpcs:ignore WordPress.Security.SafeRedirect
@@ -672,15 +683,24 @@ class ConnectionTest implements Service, Registerable {
 
 			if ( $plugin && ! $plugin->is_only() ) {
 				$connected_plugins = $manager->get_connected_plugins();
-				$this->response    = 'Cannot disconnect Jetpack connection as there are other plugins using it: ';
+				$this->response    = 'Cannot disconnect WordPress.com connection as there are other plugins using it: ';
 				$this->response   .= implode( ', ', array_keys( $connected_plugins ) ) . "\n";
-				$this->response   .= 'Please disconnect the connection using My Jetpack.';
+				$this->response   .= 'Please disconnect the connection using the Jetpack plugin.';
 				return;
 			} else {
 				$redirect = admin_url( 'admin.php?page=connection-test-admin-page' );
 				wp_safe_redirect( $redirect );
 				exit;
 			}
+		}
+
+		if ( 'wp-status' === $_GET['action'] && check_admin_referer( 'wp-status' ) ) {
+			$request = new Request( 'GET', '/wc/gla/jetpack/connected' );
+			$this->send_rest_request( $request );
+
+			/** @var OptionsInterface $options */
+			$options = $this->container->get( OptionsInterface::class );
+			$this->response .= "\n\n" . 'Saved Connection option = ' . ( $options->get( OptionsInterface::JETPACK_CONNECTED ) ? 'connected' : 'disconnected' );
 		}
 
 		if ( 'wcs-test' === $_GET['action'] && check_admin_referer( 'wcs-test' ) ) {
@@ -1157,5 +1177,7 @@ class ConnectionTest implements Service, Registerable {
 		$this->response .= 'Request:  ' . $request->get_method() . ' ' . $request->get_route() . PHP_EOL;
 		$this->response .= 'Status:   ' . $response->get_status() . PHP_EOL;
 		$this->response .= 'Response: ' . $json;
+
+		return $data;
 	}
 }
