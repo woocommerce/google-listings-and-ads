@@ -52,7 +52,6 @@ export default function ConnectedGoogleAdsAccountCard( {
 			{ ...restProps }
 		>
 			{ children }
-
 			{ ! hideAccountSwitch && (
 				<Section.Card.Footer>
 					<AppButton

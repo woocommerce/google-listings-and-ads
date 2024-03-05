@@ -23,9 +23,7 @@ const CreateAccountButton = ( props ) => {
 	const { onCreateAccount = noop, onClick = noop, ...rest } = props;
 	const [ activeModal, setActiveModal ] = useState( MODALS.NONE );
 	const { data: existingAccounts } = useExistingGoogleMCAccounts();
-	const matchingDomainAccount = getMatchingDomainAccount(
-		existingAccounts ?? []
-	);
+	const matchingDomainAccount = getMatchingDomainAccount( existingAccounts );
 
 	const handleCreateAccountClick = () => {
 		// Display the warning modal only when there is an account with matching domain.

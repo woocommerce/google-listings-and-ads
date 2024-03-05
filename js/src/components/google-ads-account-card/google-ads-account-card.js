@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import SpinnerCard from '.~/components/spinner-card';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleAdsAccountCard from './connected-google-ads-account-card';
@@ -15,18 +16,23 @@ import AuthorizeAds from './authorize-ads';
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 export default function GoogleAdsAccountCard() {
-	const { google, scope } = useGoogleAccount();
-	const { googleAdsAccount } = useGoogleAdsAccount();
+	const {
+		google,
+		scope,
+		isResolving: isResolvingGoogleAccount,
+	} = useGoogleAccount();
+	const { googleAdsAccount, isResolving: isResolvingGoogleAdsAccount } =
+		useGoogleAdsAccount();
 
-	if ( ! google || ! googleAdsAccount ) {
-		return <NonConnected />;
+	if ( isResolvingGoogleAccount || isResolvingGoogleAdsAccount ) {
+		return <SpinnerCard />;
 	}
 
 	if ( ! scope.adsRequired ) {
 		return <AuthorizeAds additionalScopeEmail={ google.email } />;
 	}
 
-	if ( googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ) {
+	if ( googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ) {
 		return <NonConnected />;
 	}
 
@@ -35,12 +41,10 @@ export default function GoogleAdsAccountCard() {
 			{ googleAdsAccount.status ===
 				GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED && (
 				<Notice status="success" isDismissible={ false }>
-					<p>
-						{ __(
-							'Conversion measurement has been set up. You can create a campaign later.',
-							'google-listings-and-ads'
-						) }
-					</p>
+					{ __(
+						'Conversion measurement has been set up. You can create a campaign later.',
+						'google-listings-and-ads'
+					) }
 				</Notice>
 			) }
 		</ConnectedGoogleAdsAccountCard>
