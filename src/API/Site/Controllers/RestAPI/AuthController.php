@@ -5,9 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestA
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
-use Jetpack_Options;
 use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
@@ -18,6 +18,11 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI
  */
 class AuthController extends BaseController {
+
+	/**
+	 * @var OAuthService
+	 */
+	protected $oauth_service;
 
 	/**
 	 * Mapping between the client page name and its path.
@@ -34,10 +39,12 @@ class AuthController extends BaseController {
 	/**
 	 * AuthController constructor.
 	 *
-	 * @param RESTServer $server
+	 * @param RESTServer   $server
+	 * @param OAuthService $oauth_service
 	 */
-	public function __construct( RESTServer $server ) {
+	public function __construct( RESTServer $server, OAuthService $oauth_service ) {
 		parent::__construct( $server );
+		$this->oauth_service = $oauth_service;
 	}
 
 	/**
@@ -64,66 +71,10 @@ class AuthController extends BaseController {
 	 */
 	protected function get_authorize_callback(): callable {
 		return function ( Request $request ) {
-			/*
-			The full auth URL example:
-
-			https://public-api.wordpress.com/oauth2/authorize?
-			client_id=CLIENT_ID&
-			redirect_uri=PARTNER_REDIRECT_URL&
-			response_type=code&
-			blog=BLOD_ID&
-			scope=wc-partner-access&
-			state=BASE64_ENCODED_STRING
-
-			Content of state is an URL query string where the value of its parameter "redirect_url" is being URL encoded.
-			E.g.
-			nonce=nonce-123&redirect_url=https%3A%2F%2Fmerchant-site.example.com%2Fwp-admin%2Fadmin.php%3Fpage%3Dwc-admin%26path%3D%2Fgoogle%2Fsetup-mc
-
-			where its URL decoded version is:
-			nonce=nonce-123&redirect_url=https://merchant-site.example.com/wp-admin/admin.php?page=wc-admin&path=/google/setup-mc
-
-			Ref: https://developer.wordpress.com/docs/oauth2/
-			*/
-
 			try {
-				$auth_url = 'https://public-api.wordpress.com/oauth2/authorize';
-
-				// TODO: Call an API by Google with merchant information and get the below data.
-				// We'd probably need use WCS to communicate with the new API.
-				$client_id    = '91299';
-				$redirect_uri = 'https://woo.com';
-				$nonce        = 'nonce-123';
-
-				$response_type = 'code';
-				$blog_id       = Jetpack_Options::get_option( 'id' );
-				$scope         = 'wc-partner-access';
-
-				$next                  = $request->get_param( 'next_page_name' );
-				$path                  = self::NEXT_PATH_MAPPING[ $next ];
-				$merchant_redirect_url = urlencode_deep( admin_url( "admin.php?page=wc-admin&path={$path}" ) );
-
-				$state = base64_encode(
-					build_query(
-						[
-							'nonce'        => $nonce,
-							'redirect_url' => $merchant_redirect_url,
-						]
-					)
-				);
-
-				$auth_url = esc_url_raw(
-					add_query_arg(
-						[
-							'blog'          => $blog_id,
-							'client_id'     => $client_id,
-							'redirect_uri'  => $redirect_uri,
-							'response_type' => $response_type,
-							'scope'         => $scope,
-							'state'         => $state,
-						],
-						$auth_url
-					)
-				);
+				$next     = $request->get_param( 'next_page_name' );
+				$path     = self::NEXT_PATH_MAPPING[ $next ];
+				$auth_url = $this->oauth_service->get_auth_url( $path );
 
 				$response = [
 					'auth_url' => $auth_url,
