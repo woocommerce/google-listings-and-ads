@@ -31,6 +31,7 @@ import {
 	fetchGoogleAdsAccount,
 	fetchGoogleAdsAccountBillingStatus,
 	fetchExistingGoogleAdsAccounts,
+	fetchGoogleAdsAccountStatus,
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchMCSetup,
@@ -45,7 +46,6 @@ import {
 	receiveMappingRules,
 	receiveStoreCategories,
 	receiveTour,
-	receiveAdsAccountStatus,
 } from './actions';
 
 export function* getShippingRates() {
@@ -521,34 +521,17 @@ export function* getTour( tourId ) {
 	}
 }
 
-/**
- * Resolver for getting the ads account status.
- */
-export function* getAdsAccountStatus() {
-	try {
-		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/ads/account-status`,
-		} );
-
-		yield receiveAdsAccountStatus( response );
-	} catch ( error ) {
-		handleApiError(
-			error,
-			__(
-				'There was an error getting the access status for the Ads account.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+export function* getGoogleAdsAccountStatus() {
+	yield fetchGoogleAdsAccountStatus();
 }
 
 /**
- * Refresh if Google Ads account is updated.
+ * Refresh account status if Google Ads account is updated.
  *
  * @param {Object} action The performed action
  * @return {boolean} True if the action should be invalidated
  */
-getAdsAccountStatus.shouldInvalidate = ( action ) => {
+getGoogleAdsAccountStatus.shouldInvalidate = ( action ) => {
 	return (
 		action.type === TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS ||
 		action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS

@@ -407,6 +407,6 @@ export const getTour = ( state, tourId ) => {
  * @param {Object} state The state
  * @return {Object} The ads status containing the hasAccess and inviteLink properties.
  */
-export const getAdsAccountStatus = ( state ) => {
+export const getGoogleAdsAccountStatus = ( state ) => {
 	return state.ads.accountStatus;
 };

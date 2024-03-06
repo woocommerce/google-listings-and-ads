@@ -497,7 +497,8 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return stateSetter.end();
 		}
 
-		case TYPES.RECEIVE_ADS_ACCOUNT_STATUS: {
+		case TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS: {
+			console.log( 'ZOE ---->', action );
 			const {
 				data: { has_access: hasAccess, invite_link: inviteLink },
 			} = action;

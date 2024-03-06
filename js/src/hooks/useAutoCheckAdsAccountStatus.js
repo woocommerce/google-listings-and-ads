@@ -16,7 +16,7 @@ import useWindowFocusCallbackIntervalEffect from '.~/hooks/useWindowFocusCallbac
 
 const useAutoCheckAdsAccountStatus = ( onAccessGranted = noop ) => {
 	const { createNotice } = useDispatchCoreNotices();
-	const { receiveAdsAccountStatus } = useAppDispatch();
+	const { receiveGoogleAdsAccountStatus } = useAppDispatch();
 	const hasAccessRef = useRef();
 
 	const onAccessGrantedRef = useRef();
@@ -41,7 +41,7 @@ const useAutoCheckAdsAccountStatus = ( onAccessGranted = noop ) => {
 
 		try {
 			await onAccessGrantedRef.current();
-			receiveAdsAccountStatus( accountStatus );
+			receiveGoogleAdsAccountStatus( accountStatus );
 		} catch ( e ) {
 			createNotice(
 				'error',
@@ -51,7 +51,7 @@ const useAutoCheckAdsAccountStatus = ( onAccessGranted = noop ) => {
 				)
 			);
 		}
-	}, [ receiveAdsAccountStatus, createNotice ] );
+	}, [ receiveGoogleAdsAccountStatus, createNotice ] );
 
 	useWindowFocusCallbackIntervalEffect( checkStatus, 30 );
 };

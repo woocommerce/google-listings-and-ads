@@ -48,7 +48,11 @@ const ClaimTermsAndCreateAccountButton = ( {
 		}
 
 		setFetchAccountLoading( true );
-		await fetchGoogleAdsAccount();
+		try {
+			await fetchGoogleAdsAccount();
+		} catch ( e ) {
+			console.log( 'isolated', e );
+		}
 		onCreateAccount();
 		setFetchAccountLoading( false );
 	};

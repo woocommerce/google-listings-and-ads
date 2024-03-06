@@ -1248,9 +1248,34 @@ export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
 	}
 }
 
-export function receiveAdsAccountStatus( data ) {
+export function* fetchGoogleAdsAccountStatus() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/account-status`,
+		} );
+
+		return receiveGoogleAdsAccountStatus( response );
+	} catch ( error ) {
+		// @todo: we don't have the HTTP response status code from the error.
+		console.log( error );
+		if ( error.message === 'Please accept the ads account invitation.' ) {
+			console.log( 'inside', error );
+			return receiveGoogleAdsAccountStatus( error );
+		}
+
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the status of your Google Ads account.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function receiveGoogleAdsAccountStatus( data ) {
 	return {
-		type: TYPES.RECEIVE_ADS_ACCOUNT_STATUS,
+		type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
 		data,
 	};
 }

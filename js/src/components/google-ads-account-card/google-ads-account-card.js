@@ -33,7 +33,8 @@ export default function GoogleAdsAccountCard() {
 		refetchGoogleAdsAccount,
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
 	} = useGoogleAdsAccount();
-	const { hasAccess, hasFinishedResolution } = useGoogleAdsAccountStatus();
+	const { hasAccess, isResolving: isResolvingGoogleAdsAccountStatus } =
+		useGoogleAdsAccountStatus();
 	const [ fetchCreateAdsAccount, { loading } ] = useFetchCreateAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 	const previousHasAccess = usePrevious( hasAccess );
@@ -75,7 +76,7 @@ export default function GoogleAdsAccountCard() {
 		checkAccessChange();
 	} );
 
-	if ( ! hasFinishedResolution ) {
+	if ( isResolvingGoogleAdsAccountStatus ) {
 		return <SpinnerCard />;
 	}
 
