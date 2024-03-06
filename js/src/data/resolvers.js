@@ -34,6 +34,7 @@ import {
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchMCSetup,
+	fetchAcceptedCustomerDataTerms,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -45,7 +46,6 @@ import {
 	receiveMappingRules,
 	receiveStoreCategories,
 	receiveTour,
-	receiveAcceptedTerms,
 	receiveAllowEnhancedConversions,
 } from './actions';
 
@@ -527,11 +527,7 @@ export function* getTour( tourId ) {
  */
 export function* getAcceptedCustomerDataTerms() {
 	try {
-		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/ads/accepted-customer-data-terms`,
-		} );
-
-		yield receiveAcceptedTerms( response );
+		yield fetchAcceptedCustomerDataTerms();
 	} catch ( error ) {
 		handleApiError(
 			error,

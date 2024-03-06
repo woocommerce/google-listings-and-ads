@@ -1292,3 +1292,21 @@ export function receiveAllowEnhancedConversions( data ) {
 		data,
 	};
 }
+
+export function* fetchAcceptedCustomerDataTerms() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/accepted-customer-data-terms`,
+		} );
+
+		return receiveAcceptedTerms( data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to complete request. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
