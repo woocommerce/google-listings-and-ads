@@ -49,8 +49,12 @@ const handleGuideFinish = ( e ) => {
 
 	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
 	// here is a workaround by identifying the close button's data-aciton attribute.
-	const target = e.currentTarget || e.target;
-	const action = target.dataset.action || 'dismiss';
+	let action = 'dismiss';
+
+	if ( e ) {
+		const target = e.currentTarget || e.target;
+		action = target.dataset.action || action;
+	}
 	recordGlaEvent( GLA_MODAL_CLOSED_EVENT_NAME, {
 		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 		action,

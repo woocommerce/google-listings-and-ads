@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
@@ -120,6 +121,25 @@ trait GuzzleClientTrait {
 		$response->method( 'getStatusCode' )->willReturn( $code );
 
 		$exception = new RequestException( $message, $request, $response );
+		$this->client->method( $type )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generates an account reconnect exception when a get_request is sent.
+	 *
+	 * @param string $reconnect_type Type of reconnect 'google' or 'jetpack'.
+	 * @param string $type           Request type get|post.
+	 */
+	protected function generate_account_reconnect_exception( string $reconnect_type, string $type = 'get' ) {
+		switch ( $reconnect_type ) {
+			case 'google':
+				$exception = AccountReconnect::google_disconnected();
+				break;
+			case 'jetpack':
+			default:
+				$exception = AccountReconnect::jetpack_disconnected();
+				break;
+		}
 		$this->client->method( $type )->willThrowException( $exception );
 	}
 
