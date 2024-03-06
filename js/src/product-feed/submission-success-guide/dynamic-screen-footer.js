@@ -24,7 +24,7 @@ const DynamicScreenFooter = ( { onClose } ) => {
 		);
 	}
 
-	if ( pmaxCampaigns.length && glaData.initialWpData.adsId ) {
+	if ( pmaxCampaigns.length && glaData.adsConnected ) {
 		return <EnhancedConversionFooter onClose={ onClose } />;
 	}
 
