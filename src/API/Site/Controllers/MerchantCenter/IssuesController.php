@@ -179,6 +179,12 @@ class IssuesController extends BaseOptionsController {
 				'context'  => [ 'view' ],
 				'readonly' => true,
 			],
+			'loading'        => [
+				'type'        => 'boolean',
+				'description' => __( 'Whether the product issues are loading.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],			
 		];
 	}
 
