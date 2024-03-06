@@ -165,12 +165,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		// Get only error issues
 		$severity_error_issues = $this->fetch_issues( $type, $per_page, $page, true );
 
-		if ( $job->is_scheduled() ) {
-			$severity_error_issues['loading'] = true;
-		}
-
 		// In case there are error issues we show only those, otherwise we show all the issues.
-		return $severity_error_issues['total'] > 0 ? $severity_error_issues : $this->fetch_issues( $type, $per_page, $page );
+		$issues = $severity_error_issues['total'] > 0 ? $severity_error_issues : $this->fetch_issues( $type, $per_page, $page );
+		$issues['loading'] = $job->is_scheduled();
+
+		return $issues;
+
 	}
 
 	/**

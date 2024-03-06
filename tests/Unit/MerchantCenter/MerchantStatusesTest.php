@@ -835,6 +835,48 @@ class MerchantStatusesTest extends UnitTest {
 		);
 	}
 
+	public function test_get_issues_when_job_is_scheduled() {
+		$this->merchant_center_service->expects( $this->any() )
+		->method( 'is_connected' )
+		->willReturn( true );
+
+		$this->update_merchant_product_statuses_job->expects( $this->any() )->method( 'is_scheduled' )->willReturn( true );
+
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )->method( 'get_results' )->willReturn( [] );
+
+		$response = $this->merchant_statuses->get_issues();
+
+		$this->assertEquals(
+			[
+				'loading' => true,
+				'total'   => 0,
+				'issues'  => [],
+			],
+			$response
+		);
+	}
+
+	public function test_get_issues_when_job_is_not_scheduled() {
+		$this->merchant_center_service->expects( $this->any() )
+		->method( 'is_connected' )
+		->willReturn( true );
+
+		$this->update_merchant_product_statuses_job->expects( $this->any() )->method( 'is_scheduled' )->willReturn( false );
+
+		$this->merchant_issue_query->expects( $this->exactly( 2 ) )->method( 'get_results' )->willReturn( [] );
+
+		$response = $this->merchant_statuses->get_issues();
+
+		$this->assertEquals(
+			[
+				'loading' => false,
+				'total'   => 0,
+				'issues'  => [],
+			],
+			$response
+		);
+	}
+
 	protected function get_product_status_item( $wc_product_id ): ProductStatus {
 		$product_status = new ProductStatus();
 		$product_status->setProductId( $this->get_mc_id( $wc_product_id ) );
