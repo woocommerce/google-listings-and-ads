@@ -217,7 +217,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * Gets the ads account access status.
 	 *
 	 * @return array
-	 * @throws Exception When email is not present or invite link is empty when email present and has no account access.
+	 * @throws Exception When email is not present or has no account access.
 	 */
 	public function get_ads_account_has_access() {
 		// Check if ads id is present.
@@ -229,19 +229,14 @@ class AccountService implements OptionsAwareInterface, Service {
 
 		$connection_status  = $this->container->get( Connection::class )->get_status();
 		$email              = $connection_status['email'] ?? '';
-		$accept_invite_link = $this->options->get( OptionsInterface::ADS_BILLING_URL, '' );
 
 		// If no email, means google account is not connected.
 		if ( empty( $email ) ) {
 			throw new Exception( __( 'Google account is not connected', 'google-listings-and-ads' ) );
 		}
 
-		$status = $this->container->get( Ads::class )->has_access( $email );
-
-		// If no access to ads account and there is no invite_link, throw exception.
-		if ( ! $status && empty( $accept_invite_link ) ) {
-			throw new Exception( __( 'Billing URL is not present', 'google-listings-and-ads' ) );
-		}
+		$status             = $this->container->get( Ads::class )->has_access( $email );
+		$accept_invite_link = $this->options->get( OptionsInterface::ADS_BILLING_URL, '' );
 
 		// If we have access, complete the step so that it won't be called next time.
 		if ( $status ) {

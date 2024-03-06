@@ -510,28 +510,6 @@ class AccountServiceTest extends UnitTest {
 		$this->account->get_ads_account_has_access();
 	}
 
-	public function test_get_ads_account_has_access_throws_exception_for_empty_invite_link() {
-		$this->connection->method( 'get_status' )
-			->willReturn( [ 'email' => 'test@domain.com' ] );
-
-		$this->options->expects( $this->once() )
-			->method( 'get_ads_id' )
-			->willReturn( self::TEST_ACCOUNT_ID );
-
-		$this->options->method( 'get' )
-			->with( OptionsInterface::ADS_BILLING_URL, '' )
-			->willReturn( '' );
-
-		$this->ads->method( 'has_access' )
-			->with( 'test@domain.com' )
-			->willReturn( false );
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Billing URL is not present' );
-
-		$this->account->get_ads_account_has_access();
-	}
-
 	public function test_get_ads_account_has_access_ads_id_not_present() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
