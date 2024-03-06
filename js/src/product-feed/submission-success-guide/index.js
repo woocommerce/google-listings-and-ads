@@ -65,12 +65,12 @@ const pages = [
 	{
 		image,
 		content: <SetupSuccess />,
-		footer: <SetupSuccessFooter onClose={ handleGuideFinish } />,
+		footer: <SetupSuccessFooter onModalClose={ handleGuideFinish } />,
 	},
 	{
 		image,
 		content: <DynamicScreenContent />,
-		footer: <DynamicScreenFooter onClose={ handleGuideFinish } />,
+		footer: <DynamicScreenFooter onModalClose={ handleGuideFinish } />,
 	},
 ];
 

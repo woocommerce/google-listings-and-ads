@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Fragment } from '@wordpress/element';
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -13,7 +13,7 @@ import { GLA_MODAL_CLOSED_EVENT_NAME } from '../constants';
 import AppButton from '.~/components/app-button';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 
-const Footer = ( { onClose = noop } ) => {
+const Footer = ( { onModalClose = noop } ) => {
 	return (
 		<Fragment>
 			<div className="gla-submission-success-guide__space_holder" />
@@ -21,7 +21,7 @@ const Footer = ( { onClose = noop } ) => {
 			<AppButton
 				isSecondary
 				data-action="maybe-later"
-				onClick={ onClose }
+				onClick={ onModalClose }
 			>
 				{ __( 'Maybe later', 'google-listings-and-ads' ) }
 			</AppButton>

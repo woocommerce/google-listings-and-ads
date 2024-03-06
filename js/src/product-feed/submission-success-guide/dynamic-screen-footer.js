@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { Fragment } from '@wordpress/element';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -12,7 +13,7 @@ import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import EnhancedConversionFooter from './enhanced-conversion/footer';
 import GoogleCreditsFooter from './google-credits/footer';
 
-const DynamicScreenFooter = ( { onClose } ) => {
+const DynamicScreenFooter = ( { onModalClose = noop } ) => {
 	const { loaded, pmaxCampaigns } = useAdsCampaigns();
 
 	if ( ! loaded ) {
@@ -25,10 +26,10 @@ const DynamicScreenFooter = ( { onClose } ) => {
 	}
 
 	if ( pmaxCampaigns.length && glaData.adsConnected ) {
-		return <EnhancedConversionFooter onClose={ onClose } />;
+		return <EnhancedConversionFooter onModalClose={ onModalClose } />;
 	}
 
-	return <GoogleCreditsFooter onClose={ onClose } />;
+	return <GoogleCreditsFooter onModalClose={ onModalClose } />;
 };
 
 export default DynamicScreenFooter;
