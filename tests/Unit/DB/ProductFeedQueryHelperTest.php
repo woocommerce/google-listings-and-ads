@@ -48,7 +48,6 @@ class ProductFeedQueryHelperTest extends UnitTest {
 	/** @var ProductFeedQueryHelper $product_feed_query_helper */
 	protected $product_feed_query_helper;
 
-
 	/**
 	 * Runs before each test is executed.
 	 */
