@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 
 defined( 'ABSPATH' ) || exit;

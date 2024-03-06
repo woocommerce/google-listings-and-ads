@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
 use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  * This class implements a service to Notify a partner about Shop Data Updates
  *
  * @since x.x.x
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WP
  */
 class NotificationsService implements Service {
 

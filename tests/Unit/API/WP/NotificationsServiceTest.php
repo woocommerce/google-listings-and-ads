@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\WP;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 
 defined( 'ABSPATH' ) || exit;
@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  * Class NotificationsServiceTest
  *
  * @group Notifications
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\WP
  */
 class NotificationsServiceTest extends UnitTest {
 
