@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { ENHANCED_ADS_CONVERSION_STATUS, glaData } from '.~/constants';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import Section from '.~/wcdl/section';
@@ -30,10 +30,6 @@ const TITLE = __( 'Enhanced Conversion Tracking', 'google-listings-and-ads' );
 const EnhancedConversionTrackingSettings = () => {
 	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
-
-	if ( ! glaData.adsConnected ) {
-		return null;
-	}
 
 	return (
 		<Section title={ TITLE } description={ DESCRIPTION }>
