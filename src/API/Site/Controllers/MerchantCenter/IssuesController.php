@@ -113,7 +113,7 @@ class IssuesController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'issues' => [
+			'issues'  => [
 				'type'        => 'array',
 				'description' => __( 'The issues related to the Merchant Center account.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
@@ -169,22 +169,22 @@ class IssuesController extends BaseOptionsController {
 					],
 				],
 			],
-			'total'  => [
+			'total'   => [
 				'type'     => 'numeric',
 				'context'  => [ 'view' ],
 				'readonly' => true,
 			],
-			'page'   => [
+			'page'    => [
 				'type'     => 'numeric',
 				'context'  => [ 'view' ],
 				'readonly' => true,
 			],
-			'loading'        => [
+			'loading' => [
 				'type'        => 'boolean',
 				'description' => __( 'Whether the product issues are loading.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
-			],			
+			],
 		];
 	}
 
