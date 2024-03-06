@@ -23,6 +23,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use DateTime;
 use DateInterval;
 use Exception;
@@ -46,6 +49,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class MerchantStatusesTest extends UnitTest {
 
+	use PluginHelper;
 
 	/**
 	 * Lifetime of the MC Status transient.
@@ -207,15 +211,15 @@ class MerchantStatusesTest extends UnitTest {
 
 	public function test_get_product_statistics_when_mc_is_not_connected() {
 		$this->merchant_center_service->expects( $this->once() )
-			->method( 'is_connected' )
-			->willReturn( false );
+		->method( 'is_connected' )
+		->willReturn( false );
 
 		$this->merchant_center_service->expects( $this->once() )
-			->method( 'is_google_connected' )
-			->willReturn( false );
+		->method( 'is_google_connected' )
+		->willReturn( false );
 
 		$this->transients->expects( $this->never() )
-			->method( 'get' );
+		->method( 'get' );
 
 		$this->update_merchant_product_statuses_job->expects( $this->never() )->method( 'schedule' );
 
@@ -229,31 +233,31 @@ class MerchantStatusesTest extends UnitTest {
 
 	public function test_get_product_statistics_with_transient() {
 		$this->merchant_center_service->expects( $this->once() )
-			->method( 'is_connected' )
-			->willReturn( true );
+		->method( 'is_connected' )
+		->willReturn( true );
 
 		$this->transients->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->willReturn(
-				[
-					'statistics' => [
-						MCStatus::APPROVED           => 3,
-						MCStatus::PARTIALLY_APPROVED => 1,
-						MCStatus::EXPIRING           => 0,
-						MCStatus::PENDING            => 0,
-						MCStatus::DISAPPROVED        => 3,
-						MCStatus::NOT_SYNCED         => 0,
-					],
-					'loading'    => false,
-					'error'      => null,
-				]
-			);
+		->method( 'get' )
+		->willReturn(
+			[
+				'statistics' => [
+					MCStatus::APPROVED           => 3,
+					MCStatus::PARTIALLY_APPROVED => 1,
+					MCStatus::EXPIRING           => 0,
+					MCStatus::PENDING            => 0,
+					MCStatus::DISAPPROVED        => 3,
+					MCStatus::NOT_SYNCED         => 0,
+				],
+				'loading'    => false,
+				'error'      => null,
+			]
+		);
 
 		$this->update_merchant_product_statuses_job->expects( $this->never() )
-			->method( 'schedule' );
+		->method( 'schedule' );
 
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
-			->method( 'is_scheduled' );
+		->method( 'is_scheduled' );
 
 		$product_statistics = $this->merchant_statuses->get_product_statistics();
 
@@ -276,24 +280,24 @@ class MerchantStatusesTest extends UnitTest {
 
 	public function test_get_product_statistics_with_transient_and_error() {
 		$this->merchant_center_service->expects( $this->once() )
-			->method( 'is_connected' )
-			->willReturn( true );
+		->method( 'is_connected' )
+		->willReturn( true );
 
 		$this->transients->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->willReturn(
-				[
-					'statistics' => [],
-					'loading'    => false,
-					'error'      => 'My error message.',
-				]
-			);
+		->method( 'get' )
+		->willReturn(
+			[
+				'statistics' => [],
+				'loading'    => false,
+				'error'      => 'My error message.',
+			]
+		);
 
 		$this->update_merchant_product_statuses_job->expects( $this->never() )
-			->method( 'schedule' );
+		->method( 'schedule' );
 
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
-			->method( 'is_scheduled' );
+		->method( 'is_scheduled' );
 
 		$product_statistics = $this->merchant_statuses->get_product_statistics();
 
@@ -310,20 +314,20 @@ class MerchantStatusesTest extends UnitTest {
 
 	public function test_get_product_statistics_without_transient() {
 		$this->merchant_center_service->expects( $this->once() )
-			->method( 'is_connected' )
-			->willReturn( true );
+		->method( 'is_connected' )
+		->willReturn( true );
 
 		$this->transients->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->willReturn(
-				null
-			);
+		->method( 'get' )
+		->willReturn(
+			null
+		);
 
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
-			->method( 'schedule' );
+		->method( 'schedule' );
 
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
-			->method( 'is_scheduled' );
+		->method( 'is_scheduled' );
 
 		$product_statistics = $this->merchant_statuses->get_product_statistics();
 
@@ -340,31 +344,31 @@ class MerchantStatusesTest extends UnitTest {
 
 	public function test_get_product_statistics_with_product_statuses_job_running() {
 		$this->merchant_center_service->expects( $this->once() )
-			->method( 'is_connected' )
-			->willReturn( true );
+		->method( 'is_connected' )
+		->willReturn( true );
 
 		$this->transients->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->willReturn(
-				[
-					'statistics' => [
-						MCStatus::APPROVED           => 3,
-						MCStatus::PARTIALLY_APPROVED => 1,
-						MCStatus::EXPIRING           => 0,
-						MCStatus::PENDING            => 0,
-						MCStatus::DISAPPROVED        => 3,
-						MCStatus::NOT_SYNCED         => 0,
-					],
-					'loading'    => false,
-					'error'      => null,
-				]
-			);
+		->method( 'get' )
+		->willReturn(
+			[
+				'statistics' => [
+					MCStatus::APPROVED           => 3,
+					MCStatus::PARTIALLY_APPROVED => 1,
+					MCStatus::EXPIRING           => 0,
+					MCStatus::PENDING            => 0,
+					MCStatus::DISAPPROVED        => 3,
+					MCStatus::NOT_SYNCED         => 0,
+				],
+				'loading'    => false,
+				'error'      => null,
+			]
+		);
 
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 0 ) )
-			->method( 'schedule' );
+		->method( 'schedule' );
 
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
-			->method( 'is_scheduled' )->willReturn( true );
+		->method( 'is_scheduled' )->willReturn( true );
 
 		$product_statistics = $this->merchant_statuses->get_product_statistics();
 
@@ -381,30 +385,30 @@ class MerchantStatusesTest extends UnitTest {
 
 	public function test_get_product_statistics_with_force_refresh() {
 		$this->merchant_center_service->expects( $this->once() )
-			->method( 'is_connected' )
-			->willReturn( true );
+		->method( 'is_connected' )
+		->willReturn( true );
 
 		$this->transients->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->willReturn(
-				[
-					'statistics' => [
-						MCStatus::APPROVED           => 3,
-						MCStatus::PARTIALLY_APPROVED => 1,
-						MCStatus::EXPIRING           => 0,
-						MCStatus::PENDING            => 0,
-						MCStatus::DISAPPROVED        => 3,
-						MCStatus::NOT_SYNCED         => 0,
-					],
-					'loading'    => false,
-				]
-			);
+		->method( 'get' )
+		->willReturn(
+			[
+				'statistics' => [
+					MCStatus::APPROVED           => 3,
+					MCStatus::PARTIALLY_APPROVED => 1,
+					MCStatus::EXPIRING           => 0,
+					MCStatus::PENDING            => 0,
+					MCStatus::DISAPPROVED        => 3,
+					MCStatus::NOT_SYNCED         => 0,
+				],
+				'loading'    => false,
+			]
+		);
 
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
-			->method( 'schedule' );
+		->method( 'schedule' );
 
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
-			->method( 'is_scheduled' )->willReturnOnConsecutiveCalls( false, true );
+		->method( 'is_scheduled' )->willReturnOnConsecutiveCalls( false, true );
 
 		$force_refresh      = true;
 		$product_statistics = $this->merchant_statuses->get_product_statistics( $force_refresh );
@@ -424,24 +428,30 @@ class MerchantStatusesTest extends UnitTest {
 		$product_1        = WC_Helper_Product::create_simple_product();
 		$product_2        = WC_Helper_Product::create_simple_product();
 		$product_3        = WC_Helper_Product::create_simple_product();
+		$product_4        = WC_Helper_Product::create_simple_product();
 		$variable_product = WC_Helper_Product::create_variation_product();
 
 		$variations     = $variable_product->get_available_variations();
 		$variation_id_1 = $variations[0]['variation_id'];
 		$variation_id_2 = $variations[1]['variation_id'];
 
+		// We should fetch issues for Products with channel visibility set to DONT_SYNC_AND_SHOW.
+		$product_4->update_meta_data( $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY ), ChannelVisibility::DONT_SYNC_AND_SHOW );
+		$product_4->save_meta_data();
+
 		$matcher = $this->exactly( 2 );
 		$this->product_repository->expects( $matcher )->method( 'find_by_ids_as_associative_array' )->willReturnCallback(
-			function ( $args ) use ( $matcher, $product_1, $product_2, $product_3, $variable_product, $variation_id_1, $variation_id_2 ) {
+			function ( $args ) use ( $matcher, $product_1, $product_2, $product_3, $variable_product, $variation_id_1, $variation_id_2, $product_4 ) {
 				switch ( $matcher->getInvocationCount() ) {
 					case 1:
-						$this->assertEquals( [ $product_1->get_id(), $product_2->get_id(), $product_3->get_id(),  $variation_id_1, $variation_id_2 ], $args );
+						$this->assertEquals( [ $product_1->get_id(), $product_2->get_id(), $product_3->get_id(),  $variation_id_1, $variation_id_2, $product_4->get_id() ], $args );
 						return [
 							$product_1->get_id() => $product_1,
 							$product_2->get_id() => $product_2,
 							$product_3->get_id() => $product_3,
 							$variation_id_1      => wc_get_product( $variation_id_1 ) ,
 							$variation_id_2      => wc_get_product( $variation_id_2 ),
+							$product_4->get_id() => $product_4,
 						];
 					case 2:
 						$this->assertEquals( [ $variable_product->get_id() ], $args );
@@ -451,35 +461,35 @@ class MerchantStatusesTest extends UnitTest {
 		);
 
 		$this->options->expects( $this->exactly( 1 ) )
-			->method( 'get' )
-			->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )
-			->willReturn( null );
+		->method( 'get' )
+		->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )
+		->willReturn( null );
 
 		$this->options->expects( $this->once() )
-			->method( 'update' )->with(
-				OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA,
-				$this->callback(
-					function ( $value ) use ( $variable_product ) {
-						$this->assertEquals(
-							[
+		->method( 'update' )->with(
+			OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA,
+			$this->callback(
+				function ( $value ) use ( $variable_product ) {
+					$this->assertEquals(
+						[
 
-								MCStatus::APPROVED    => 1,
-								MCStatus::PARTIALLY_APPROVED => 2,
-								MCStatus::EXPIRING    => 1,
-								MCStatus::DISAPPROVED => 0,
-								MCStatus::NOT_SYNCED  => 0,
-								MCStatus::PENDING     => 0,
-								'parents'             => [
-									$variable_product->get_id() => MCStatus::PARTIALLY_APPROVED,
-								],
+							MCStatus::APPROVED           => 1,
+							MCStatus::PARTIALLY_APPROVED => 3,
+							MCStatus::EXPIRING           => 1,
+							MCStatus::DISAPPROVED        => 0,
+							MCStatus::NOT_SYNCED         => 0,
+							MCStatus::PENDING            => 0,
+							'parents'                    => [
+								$variable_product->get_id() => MCStatus::PARTIALLY_APPROVED,
 							],
-							$value
-						);
+						],
+						$value
+					);
 
-						return true;
-					}
-				)
-			);
+					return true;
+				}
+			)
+		);
 
 		$product_statuses = [
 			[
@@ -513,29 +523,38 @@ class MerchantStatusesTest extends UnitTest {
 				'status'          => MCStatus::PARTIALLY_APPROVED,
 				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
 			],
+			[
+				'mc_id'           => $this->get_mc_id( $product_4->get_id() ),
+				'product_id'      => $product_4->get_id(),
+				'status'          => MCStatus::PARTIALLY_APPROVED,
+				'expiration_date' => ( new DateTime() )->add( new DateInterval( 'P20D' ) ),
+			],
 
 		];
 
-		$this->product_helper->expects( $this->any() )
-			->method( 'get_wc_product_id' )
-			->willReturnOnConsecutiveCalls(
-				$product_1->get_id(),
-				$product_2->get_id(),
-				$product_3->get_id(),
-				$variation_id_1,
-				$variation_id_2
-			);
-
 		$product_status = $this->get_product_status_item( $product_1->get_id() );
-		$response       = new ProductstatusesCustomBatchResponse();
-		$entry          = new ProductstatusesCustomBatchResponseEntry();
+
+		$entry = new ProductstatusesCustomBatchResponseEntry();
 		$entry->setProductStatus( $product_status );
-		$response->setEntries( [ $entry ] );
+
+		$product_status_2 = $this->get_product_status_item( $product_4->get_id() );
+		$entry_2          = new ProductstatusesCustomBatchResponseEntry();
+		$entry_2->setProductStatus( $product_status_2 );
+
+		$response = new ProductstatusesCustomBatchResponse();
+		$response->setEntries( [ $entry, $entry_2 ] );
 
 		$this->merchant->expects( $this->once() )
-			->method( 'get_productstatuses_batch' )
-			->with( [ $this->get_mc_id( $product_1->get_id() ), $this->get_mc_id( $product_2->get_id() ), $this->get_mc_id( $product_3->get_id() ), $this->get_mc_id( $variation_id_1 ), $this->get_mc_id( $variation_id_2 ) ] )
-			->willReturn( $response );
+		->method( 'get_productstatuses_batch' )
+		->with( [ $this->get_mc_id( $product_1->get_id() ), $this->get_mc_id( $product_2->get_id() ), $this->get_mc_id( $product_3->get_id() ), $this->get_mc_id( $variation_id_1 ), $this->get_mc_id( $variation_id_2 ),  $this->get_mc_id( $product_4->get_id() ) ] )
+		->willReturn( $response );
+
+		$this->product_helper->expects( $this->exactly( count( $response->getEntries() ) ) )
+		->method( 'get_wc_product_id' )
+		->willReturnOnConsecutiveCalls(
+			$product_1->get_id(),
+			$product_4->get_id(),
+		);
 
 		$this->merchant_issue_query->expects( $this->once() )->method( 'update_or_insert' )->with(
 			[
@@ -561,48 +580,48 @@ class MerchantStatusesTest extends UnitTest {
 
 	public function test_handle_complete_mc_statuses_fetching() {
 		$this->options->expects( $this->once() )
-			->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
-				[
-					MCStatus::APPROVED           => 3,
-					MCStatus::PARTIALLY_APPROVED => 1,
-					MCStatus::EXPIRING           => 0,
-					MCStatus::PENDING            => 0,
-					MCStatus::DISAPPROVED        => 1,
-					MCStatus::NOT_SYNCED         => 0,
-				]
-			);
+		->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
+			[
+				MCStatus::APPROVED           => 3,
+				MCStatus::PARTIALLY_APPROVED => 1,
+				MCStatus::EXPIRING           => 0,
+				MCStatus::PENDING            => 0,
+				MCStatus::DISAPPROVED        => 1,
+				MCStatus::NOT_SYNCED         => 0,
+			]
+		);
 
-			$this->product_repository->expects( $this->once() )->method( 'find_all_product_ids' )->willReturn( [ 1, 2, 3, 4, 5, 6 ] );
+		$this->product_repository->expects( $this->once() )->method( 'find_all_product_ids' )->willReturn( [ 1, 2, 3, 4, 5, 6 ] );
 
-			$this->transients->expects( $this->once() )
-			->method( 'set' )->with(
-				Transients::MC_STATUSES,
-				$this->callback(
-					function ( $value ) {
-						$this->assertEquals(
-							[
-								MCStatus::APPROVED    => 3,
-								MCStatus::PARTIALLY_APPROVED => 1,
-								MCStatus::EXPIRING    => 0,
-								MCStatus::PENDING     => 0,
-								MCStatus::DISAPPROVED => 1,
-								MCStatus::NOT_SYNCED  => 1,
-							],
-							$value['statistics']
-						);
+		$this->transients->expects( $this->once() )
+		->method( 'set' )->with(
+			Transients::MC_STATUSES,
+			$this->callback(
+				function ( $value ) {
+					$this->assertEquals(
+						[
+							MCStatus::APPROVED           => 3,
+							MCStatus::PARTIALLY_APPROVED => 1,
+							MCStatus::EXPIRING           => 0,
+							MCStatus::PENDING            => 0,
+							MCStatus::DISAPPROVED        => 1,
+							MCStatus::NOT_SYNCED         => 1,
+						],
+						$value['statistics']
+					);
 
-						$this->assertEquals(
-							false,
-							$value['loading']
-						);
+					$this->assertEquals(
+						false,
+						$value['loading']
+					);
 
-						return true;
-					}
-				),
-				self::MC_STATUS_LIFETIME
-			);
+					return true;
+				}
+			),
+			self::MC_STATUS_LIFETIME
+		);
 
-			$this->merchant_statuses->handle_complete_mc_statuses_fetching();
+		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
 	}
 
 	public function test_handle_failed_mc_statuses_fetching() {
@@ -610,7 +629,7 @@ class MerchantStatusesTest extends UnitTest {
 		$product_id = $product_1->get_id();
 
 		$this->options->expects( $this->once() )
-			->method( 'delete' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		->method( 'delete' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
 
 		$product_statuses_1 = [
 			[
@@ -625,42 +644,42 @@ class MerchantStatusesTest extends UnitTest {
 		$response->setEntries( [] );
 
 		$this->merchant->expects( $this->exactly( 1 ) )
-			->method( 'get_productstatuses_batch' )
-			->willReturn( $response );
+		->method( 'get_productstatuses_batch' )
+		->willReturn( $response );
 
 		$this->product_repository->expects( $this->exactly( 2 ) )->method( 'find_by_ids_as_associative_array' )->willReturn( [ $product_id => $product_1 ] );
 
 		$this->merchant_issue_table->expects( $this->once() )->method( 'delete_specific_product_issues' )->with( [ $product_id ] );
 
-			$this->transients->expects( $this->once() )
-			->method( 'set' )->with(
-				Transients::MC_STATUSES,
-				$this->callback(
-					function ( $value ) {
-						$this->assertEquals(
-							[],
-							$value['statistics']
-						);
+		$this->transients->expects( $this->once() )
+		->method( 'set' )->with(
+			Transients::MC_STATUSES,
+			$this->callback(
+				function ( $value ) {
+					$this->assertEquals(
+						[],
+						$value['statistics']
+					);
 
-						$this->assertEquals(
-							'My error message.',
-							$value['error']
-						);
+					$this->assertEquals(
+						'My error message.',
+						$value['error']
+					);
 
-						$this->assertEquals(
-							false,
-							$value['loading']
-						);
+					$this->assertEquals(
+						false,
+						$value['loading']
+					);
 
-						return true;
-					}
-				),
-				self::MC_STATUS_LIFETIME
-			);
+					return true;
+				}
+			),
+			self::MC_STATUS_LIFETIME
+		);
 
-			$this->merchant_statuses->update_product_stats( $product_statuses_1 );
+		$this->merchant_statuses->update_product_stats( $product_statuses_1 );
 
-			$this->merchant_statuses->handle_failed_mc_statuses_fetching( 'My error message.' );
+		$this->merchant_statuses->handle_failed_mc_statuses_fetching( 'My error message.' );
 	}
 
 	public function test_update_product_with_multiple_variables_and_multiple_batches_with_different_statuses() {
@@ -705,8 +724,8 @@ class MerchantStatusesTest extends UnitTest {
 		$response->setEntries( [] );
 
 		$this->merchant->expects( $this->exactly( 2 ) )
-			->method( 'get_productstatuses_batch' )
-			->willReturn( $response );
+		->method( 'get_productstatuses_batch' )
+		->willReturn( $response );
 
 		$this->merchant_statuses->update_product_stats(
 			$product_statuses_1
@@ -762,8 +781,8 @@ class MerchantStatusesTest extends UnitTest {
 		$response->setEntries( [] );
 
 		$this->merchant->expects( $this->exactly( 2 ) )
-			->method( 'get_productstatuses_batch' )
-			->willReturn( $response );
+		->method( 'get_productstatuses_batch' )
+		->willReturn( $response );
 
 		$this->merchant_statuses->update_product_stats(
 			$product_statuses_1
@@ -819,8 +838,8 @@ class MerchantStatusesTest extends UnitTest {
 		$response->setEntries( [] );
 
 		$this->merchant->expects( $this->exactly( 2 ) )
-			->method( 'get_productstatuses_batch' )
-			->willReturn( $response );
+		->method( 'get_productstatuses_batch' )
+		->willReturn( $response );
 
 		$this->merchant_statuses->update_product_stats(
 			$product_statuses_1
@@ -875,6 +894,17 @@ class MerchantStatusesTest extends UnitTest {
 			],
 			$response
 		);
+	}
+	protected function test_clear_product_statuses_cache_and_issues() {
+		$this->transients->expects( $this->exactly( 1 ) )
+		->method( 'delete' )
+		->with(
+			TransientsInterface::MC_STATUSES
+		);
+
+		$this->merchant_issue_table->expects( $this->once() )->method( 'delete_stale' )->with( $this->merchant_statuses->get_cache_created_time() );
+		$this->options->expects( $this->once() )->method( 'delete' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		$this->merchant_statuses->clear_product_statuses_cache_and_issues();
 	}
 
 	protected function get_product_status_item( $wc_product_id ): ProductStatus {

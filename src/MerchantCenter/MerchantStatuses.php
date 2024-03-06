@@ -195,7 +195,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 *
 	 * @since x.x.x
 	 */
-	protected function delete_stale_issues() {
+	protected function delete_stale_issues(): void {
 		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
 	}
 
