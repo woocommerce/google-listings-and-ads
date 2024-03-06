@@ -86,7 +86,7 @@ class OAuthService implements Service {
 	 *
 	 * @return array An associative array contains required information from Google.
 	 */
-	private function get_data_from_google(): array {
+	protected function get_data_from_google(): array {
 		return [
 			'client_id'    => '91299',
 			'redirect_uri' => 'https://woo.com',
