@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useCallback, useRef } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';

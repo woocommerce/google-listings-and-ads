@@ -44,7 +44,7 @@ jest.mock( '.~/hooks/useDispatchCoreNotices', () => ( {
 		} ),
 } ) );
 
-const CONNECTED_GOOGLE_ADS_ACCOUNTS = {
+const CONNECTED_GOOGLE_ADS_ACCOUNT = {
 	id: 777777,
 	currency: 'PLN',
 	symbol: 'zł',
@@ -76,7 +76,7 @@ describe( 'GoogleAdsAccountCard', () => {
 		} );
 
 		useGoogleAdsAccount.mockReturnValue( {
-			googleAdsAccount: CONNECTED_GOOGLE_ADS_ACCOUNTS,
+			googleAdsAccount: CONNECTED_GOOGLE_ADS_ACCOUNT,
 		} );
 
 		useGoogleAccount.mockReturnValue( {

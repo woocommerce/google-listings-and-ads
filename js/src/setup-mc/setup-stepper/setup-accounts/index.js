@@ -26,7 +26,6 @@ import Faqs from './faqs';
 import './index.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
-import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 /**
  * Renders the disclaimer of Comparison Shopping Service (CSS).
@@ -87,7 +86,7 @@ const SetupAccounts = ( props ) => {
 	const { google, scope } = useGoogleAccount();
 	const { googleMCAccount, isPreconditionReady: isGMCPreconditionReady } =
 		useGoogleMCAccount();
-	const { googleAdsAccount, isResolving: isResolvingGoogleAdsAccount } =
+	const { hasFinishedResolution, hasGoogleAdsConnection } =
 		useGoogleAdsAccount();
 	const { hasAccess } = useGoogleAdsAccountStatus();
 
@@ -113,9 +112,8 @@ const SetupAccounts = ( props ) => {
 	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
 	const isContinueButtonDisabled =
 		hasAccess !== true ||
-		isResolvingGoogleAdsAccount ||
-		! googleAdsAccount ||
-		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ||
+		! hasFinishedResolution ||
+		! hasGoogleAdsConnection ||
 		googleMCAccount?.status !== 'connected';
 
 	return (

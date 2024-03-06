@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 
@@ -15,7 +15,7 @@ import CreateAccountButton from './create-account-button';
 import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import useFetchCreateAdsAccount from '.~/hooks/useFetchCreateAdsAccount';
+import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 
 const ClaimTermsAndCreateAccountButton = ( {
 	disabled,
@@ -24,13 +24,13 @@ const ClaimTermsAndCreateAccountButton = ( {
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccount } = useAppDispatch();
 	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
-	const [ fetchCreateAdsAccount, { loading: createLoading } ] =
-		useFetchCreateAdsAccount();
+	const [ upsertAdsAccount, { loading: createLoading } ] =
+		useUpsertAdsAccount();
 	const { google } = useGoogleAccountCheck();
 
 	const handleCreateAccount = async () => {
 		try {
-			await fetchCreateAdsAccount( { parse: false } );
+			await upsertAdsAccount( { parse: false } );
 		} catch ( e ) {
 			// for status code 428, we want to allow users to continue and proceed,
 			// so we swallow the error for status code 428,

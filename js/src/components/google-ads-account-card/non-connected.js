@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { useState } from '@wordpress/element';
 
 /**

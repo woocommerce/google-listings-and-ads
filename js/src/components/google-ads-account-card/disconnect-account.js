@@ -10,7 +10,7 @@ import { useState, useCallback } from '@wordpress/element';
 import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
 
-const AccountSwitch = () => {
+const DisconnectAccount = () => {
 	const { disconnectGoogleAdsAccount } = useAppDispatch();
 	const [ isDisconnecting, setDisconnecting ] = useState( false );
 
@@ -34,4 +34,4 @@ const AccountSwitch = () => {
 	);
 };
 
-export default AccountSwitch;
+export default DisconnectAccount;

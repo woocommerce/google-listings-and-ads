@@ -14,7 +14,7 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useAutoCheckAdsAccountStatus from '.~/hooks/useAutoCheckAdsAccountStatus';
-import AccountSwitch from '../account-switch';
+import DisconnectAccount from '../disconnect-account';
 import './index.scss';
 
 const ClaimAccount = () => {
@@ -53,7 +53,7 @@ const ClaimAccount = () => {
 			</Notice>
 
 			<Section.Card.Footer>
-				<AccountSwitch />
+				<DisconnectAccount />
 			</Section.Card.Footer>
 		</AccountCard>
 	);

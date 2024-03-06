@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useCallback, useEffect } from '@wordpress/element';
 
@@ -22,10 +22,6 @@ const ClaimAccountModal = ( { onRequestClose = noop } ) => {
 			onRequestClose();
 		}
 	}, [ onRequestClose, hasAccess ] );
-
-	const handleOnRequestClose = useCallback( () => {
-		onRequestClose();
-	}, [ onRequestClose ] );
 
 	const handleAcceptInvitationClick = useCallback(
 		( event ) => {
@@ -55,7 +51,7 @@ const ClaimAccountModal = ( { onRequestClose = noop } ) => {
 					{ __( 'Accept invitation', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
-			onRequestClose={ handleOnRequestClose }
+			onRequestClose={ onRequestClose }
 		>
 			<p>
 				<strong>

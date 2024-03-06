@@ -11,7 +11,7 @@ import toAccountText from '.~/utils/toAccountText';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import Section from '.~/wcdl/section';
-import AccountSwitch from './account-switch';
+import DisconnectAccount from './disconnect-account';
 import LoadingLabel from '.~/components/loading-label';
 
 /**
@@ -54,7 +54,7 @@ export default function ConnectedGoogleAdsAccountCard( {
 
 			{ ! hideAccountSwitch && (
 				<Section.Card.Footer>
-					<AccountSwitch />
+					<DisconnectAccount />
 				</Section.Card.Footer>
 			) }
 		</AccountCard>

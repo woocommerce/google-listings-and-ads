@@ -22,7 +22,7 @@ import ClaimAccountModal from './claim-account-modal';
 import SpinnerCard from '../spinner-card';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import usePrevious from '.~/hooks/usePrevious';
-import useFetchCreateAdsAccount from '.~/hooks/useFetchCreateAdsAccount';
+import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 export default function GoogleAdsAccountCard() {
@@ -35,7 +35,7 @@ export default function GoogleAdsAccountCard() {
 	} = useGoogleAdsAccount();
 	const { hasAccess, isResolving: isResolvingGoogleAdsAccountStatus } =
 		useGoogleAdsAccountStatus();
-	const [ fetchCreateAdsAccount, { loading } ] = useFetchCreateAdsAccount();
+	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 	const previousHasAccess = usePrevious( hasAccess );
 
@@ -52,7 +52,7 @@ export default function GoogleAdsAccountCard() {
 			// Access has changed, continue setup process
 			if ( hasAccess === true && previousHasAccess === false ) {
 				try {
-					await fetchCreateAdsAccount();
+					await upsertAdsAccount();
 				} catch ( error ) {
 					if (
 						error.status !== 428 &&
@@ -81,7 +81,7 @@ export default function GoogleAdsAccountCard() {
 	}
 
 	if ( ! google || ! googleAdsAccount ) {
-		return <NonConnected onCreateAccount={ handleOnCreateAccount } />;
+		return <SpinnerCard />;
 	}
 
 	if ( ! scope.adsRequired ) {
