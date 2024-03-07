@@ -227,8 +227,8 @@ class AccountService implements OptionsAwareInterface, Service {
 			throw new Exception( __( 'Ads id not present', 'google-listings-and-ads' ) );
 		}
 
-		$connection_status  = $this->container->get( Connection::class )->get_status();
-		$email              = $connection_status['email'] ?? '';
+		$connection_status = $this->container->get( Connection::class )->get_status();
+		$email             = $connection_status['email'] ?? '';
 
 		// If no email, means google account is not connected.
 		if ( empty( $email ) ) {

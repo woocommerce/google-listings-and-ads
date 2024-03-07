@@ -11,8 +11,9 @@ const useShouldClaimGoogleAdsAccount = () => {
 		useGoogleAdsAccountStatus();
 
 	return {
-		shouldClaimGoogleAdsAccount:
-			googleAdsAccount && googleAdsAccount.id && hasAccess === false,
+		shouldClaimGoogleAdsAccount: Boolean(
+			googleAdsAccount && googleAdsAccount.id && hasAccess === false
+		),
 		isResolving:
 			isResolvingGoogleAdsAccount || isResolvingGoogleAdsAccountStatus,
 	};

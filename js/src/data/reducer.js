@@ -498,7 +498,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS: {
-			console.log( 'ZOE ---->', action );
 			const {
 				data: { has_access: hasAccess, invite_link: inviteLink },
 			} = action;

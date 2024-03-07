@@ -34,6 +34,7 @@ const NonConnected = () => {
 		shouldClaimGoogleAdsAccount
 	) {
 		const disabled = ! google || google.active === 'no';
+
 		return (
 			<CreateAccount
 				allowShowExisting={ ignoreExisting }

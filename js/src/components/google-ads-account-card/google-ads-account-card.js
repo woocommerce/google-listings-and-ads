@@ -41,11 +41,6 @@ export default function GoogleAdsAccountCard() {
 		isResolving: isResolvingShouldClaimGoogleAdsAccount,
 	} = useShouldClaimGoogleAdsAccount();
 
-	console.log(
-		shouldClaimGoogleAdsAccount,
-		isResolvingShouldClaimGoogleAdsAccount
-	);
-
 	useEffect( () => {
 		const checkAccessChange = async () => {
 			// Access has changed, continue setup process
@@ -82,15 +77,18 @@ export default function GoogleAdsAccountCard() {
 		return <SpinnerCard />;
 	}
 
-	if ( ! scope.adsRequired ) {
-		return <AuthorizeAds additionalScopeEmail={ google.email } />;
-	}
-
 	if (
-		googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ||
+		! google ||
+		google.active === 'no' ||
+		! googleAdsAccount ||
+		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ||
 		shouldClaimGoogleAdsAccount
 	) {
 		return <NonConnected />;
+	}
+
+	if ( ! scope.adsRequired ) {
+		return <AuthorizeAds additionalScopeEmail={ google.email } />;
 	}
 
 	return (

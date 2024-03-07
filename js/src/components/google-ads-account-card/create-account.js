@@ -97,9 +97,13 @@ const CreateAccount = ( props ) => {
 	const [ claimModalOpen, setClaimModalOpen ] = useState( false );
 	const { shouldClaimGoogleAdsAccount } = useShouldClaimGoogleAdsAccount();
 
-	const handleOnRequestClose = useCallback( () => {
+	const handleOnRequestClose = () => {
 		setClaimModalOpen( false );
-	}, [] );
+	};
+
+	const handleOnCreateAccount = () => {
+		setClaimModalOpen( true );
+	};
 
 	return (
 		<AccountCard
@@ -109,7 +113,7 @@ const CreateAccount = ( props ) => {
 			indicator={
 				<ClaimTermsAndCreateAccountButton
 					disabled={ disabled }
-					onCreateAccount={ handleOnRequestClose }
+					onCreateAccount={ handleOnCreateAccount }
 				/>
 			}
 		>

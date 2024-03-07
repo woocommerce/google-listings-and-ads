@@ -8,15 +8,17 @@ import { createInterpolateElement, Fragment } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '.~/data';
 import Section from '.~/wcdl/section';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
-import useAutoCheckAdsAccountStatus from '.~/hooks/useAutoCheckAdsAccountStatus';
+import useWindowFocusCallbackIntervalEffect from '.~/hooks/useWindowFocusCallbackIntervalEffect';
 import DisconnectAccount from '../disconnect-account';
 import './index.scss';
 
 const ClaimAccount = () => {
 	const { inviteLink } = useGoogleAdsAccountStatus();
-	useAutoCheckAdsAccountStatus();
+	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
+	useWindowFocusCallbackIntervalEffect( fetchGoogleAdsAccountStatus, 30 );
 
 	return (
 		<Fragment>

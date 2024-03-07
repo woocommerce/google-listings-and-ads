@@ -1254,13 +1254,17 @@ export function* fetchGoogleAdsAccountStatus() {
 			path: `${ API_NAMESPACE }/ads/account-status`,
 		} );
 
-		return receiveGoogleAdsAccountStatus( response );
+		return {
+			type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
+			data: response,
+		};
 	} catch ( error ) {
 		// @todo: we don't have the HTTP response status code from the error.
-		console.log( error );
 		if ( error.message === 'Please accept the ads account invitation.' ) {
-			console.log( 'inside', error );
-			return receiveGoogleAdsAccountStatus( error );
+			return {
+				type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
+				data: error,
+			};
 		}
 
 		handleApiError(
@@ -1271,11 +1275,4 @@ export function* fetchGoogleAdsAccountStatus() {
 			)
 		);
 	}
-}
-
-export function receiveGoogleAdsAccountStatus( data ) {
-	return {
-		type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
-		data,
-	};
 }
