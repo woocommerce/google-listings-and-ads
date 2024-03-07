@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Fragment, useCallback, useState, useEffect } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 import { Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -17,35 +17,34 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleAdsAccountCard from './connected-google-ads-account-card';
 import NonConnected from './non-connected';
 import AuthorizeAds from './authorize-ads';
-import ClaimAccount from './claim-account';
-import ClaimAccountModal from './claim-account-modal';
 import SpinnerCard from '../spinner-card';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import usePrevious from '.~/hooks/usePrevious';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import useShouldClaimGoogleAdsAccount from '.~/hooks/useShouldClaimGoogleAdsAccount';
 
 export default function GoogleAdsAccountCard() {
-	const [ claimModalOpen, setClaimModalOpen ] = useState( false );
 	const { google, scope } = useGoogleAccount();
 	const {
 		googleAdsAccount,
 		refetchGoogleAdsAccount,
+		isResolving: isResolvingGoogleAdsAccount,
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
 	} = useGoogleAdsAccount();
-	const { hasAccess, isResolving: isResolvingGoogleAdsAccountStatus } =
-		useGoogleAdsAccountStatus();
+	const { hasAccess } = useGoogleAdsAccountStatus();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 	const previousHasAccess = usePrevious( hasAccess );
+	const {
+		shouldClaimGoogleAdsAccount,
+		isResolving: isResolvingShouldClaimGoogleAdsAccount,
+	} = useShouldClaimGoogleAdsAccount();
 
-	const handleOnCreateAccount = useCallback( () => {
-		setClaimModalOpen( true );
-	}, [] );
-
-	const handleOnRequestClose = useCallback( () => {
-		setClaimModalOpen( false );
-	}, [] );
+	console.log(
+		shouldClaimGoogleAdsAccount,
+		isResolvingShouldClaimGoogleAdsAccount
+	);
 
 	useEffect( () => {
 		const checkAccessChange = async () => {
@@ -76,11 +75,10 @@ export default function GoogleAdsAccountCard() {
 		checkAccessChange();
 	} );
 
-	if ( isResolvingGoogleAdsAccountStatus ) {
-		return <SpinnerCard />;
-	}
-
-	if ( ! google || ! googleAdsAccount ) {
+	if (
+		isResolvingGoogleAdsAccount ||
+		isResolvingShouldClaimGoogleAdsAccount
+	) {
 		return <SpinnerCard />;
 	}
 
@@ -88,23 +86,11 @@ export default function GoogleAdsAccountCard() {
 		return <AuthorizeAds additionalScopeEmail={ google.email } />;
 	}
 
-	if ( googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ) {
-		return <NonConnected onCreateAccount={ handleOnCreateAccount } />;
-	}
-
-	// Ads account has been created but we don't have access yet.
-	if ( googleAdsAccount.id && hasAccess === false ) {
-		return (
-			<Fragment>
-				{ claimModalOpen && (
-					<ClaimAccountModal
-						onRequestClose={ handleOnRequestClose }
-					/>
-				) }
-
-				<ClaimAccount />
-			</Fragment>
-		);
+	if (
+		googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ||
+		shouldClaimGoogleAdsAccount
+	) {
+		return <NonConnected />;
 	}
 
 	return (

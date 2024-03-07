@@ -3,7 +3,7 @@
  */
 import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, Fragment, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -16,6 +16,11 @@ import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import useShouldClaimGoogleAdsAccount from '.~/hooks/useShouldClaimGoogleAdsAccount';
+import ClaimAccount from './claim-account';
+import ClaimAccountModal from './claim-account-modal';
+import getWindowFeatures from '.~/utils/getWindowFeatures';
 
 const ClaimTermsAndCreateAccountButton = ( {
 	disabled,
@@ -27,6 +32,8 @@ const ClaimTermsAndCreateAccountButton = ( {
 	const [ upsertAdsAccount, { loading: createLoading } ] =
 		useUpsertAdsAccount();
 	const { google } = useGoogleAccountCheck();
+	const { inviteLink } = useGoogleAdsAccountStatus();
+	const { shouldClaimGoogleAdsAccount } = useShouldClaimGoogleAdsAccount();
 
 	const handleCreateAccount = async () => {
 		try {
@@ -48,17 +55,31 @@ const ClaimTermsAndCreateAccountButton = ( {
 		}
 
 		setFetchAccountLoading( true );
-		try {
-			await fetchGoogleAdsAccount();
-		} catch ( e ) {
-			console.log( 'isolated', e );
-		}
+		await fetchGoogleAdsAccount();
 		onCreateAccount();
 		setFetchAccountLoading( false );
 	};
 
+	const handleClaimAccountClick = useCallback(
+		( event ) => {
+			const { defaultView } = event.target.ownerDocument;
+			const features = getWindowFeatures( defaultView, 600, 800 );
+
+			defaultView.open( inviteLink, '_blank', features );
+		},
+		[ inviteLink ]
+	);
+
 	if ( ! google || google.active !== 'yes' ) {
 		return null;
+	}
+
+	if ( shouldClaimGoogleAdsAccount ) {
+		return (
+			<AppButton isSecondary onClick={ handleClaimAccountClick }>
+				{ __( 'Claim Account', 'google-listings-and-ads' ) }
+			</AppButton>
+		);
 	}
 
 	return (
@@ -71,12 +92,14 @@ const ClaimTermsAndCreateAccountButton = ( {
 };
 
 const CreateAccount = ( props ) => {
-	const {
-		allowShowExisting,
-		onShowExisting,
-		disabled,
-		onCreateAccount = noop,
-	} = props;
+	const { allowShowExisting, onShowExisting, disabled } = props;
+
+	const [ claimModalOpen, setClaimModalOpen ] = useState( false );
+	const { shouldClaimGoogleAdsAccount } = useShouldClaimGoogleAdsAccount();
+
+	const handleOnRequestClose = useCallback( () => {
+		setClaimModalOpen( false );
+	}, [] );
 
 	return (
 		<AccountCard
@@ -86,7 +109,7 @@ const CreateAccount = ( props ) => {
 			indicator={
 				<ClaimTermsAndCreateAccountButton
 					disabled={ disabled }
-					onCreateAccount={ onCreateAccount }
+					onCreateAccount={ handleOnRequestClose }
 				/>
 			}
 		>
@@ -103,6 +126,18 @@ const CreateAccount = ( props ) => {
 						) }
 					</AppButton>
 				</Section.Card.Footer>
+			) }
+
+			{ shouldClaimGoogleAdsAccount && (
+				<Fragment>
+					{ claimModalOpen && (
+						<ClaimAccountModal
+							onRequestClose={ handleOnRequestClose }
+						/>
+					) }
+
+					<ClaimAccount />
+				</Fragment>
 			) }
 		</AccountCard>
 	);

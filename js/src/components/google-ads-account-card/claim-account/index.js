@@ -3,15 +3,12 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Notice, ExternalLink } from '@wordpress/components';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import AppButton from '.~/components/app-button';
-import AccountCard, { APPEARANCE } from '.~/components/account-card';
-import getWindowFeatures from '.~/utils/getWindowFeatures';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useAutoCheckAdsAccountStatus from '.~/hooks/useAutoCheckAdsAccountStatus';
 import DisconnectAccount from '../disconnect-account';
@@ -21,23 +18,8 @@ const ClaimAccount = () => {
 	const { inviteLink } = useGoogleAdsAccountStatus();
 	useAutoCheckAdsAccountStatus();
 
-	const handleClick = ( event ) => {
-		const { defaultView } = event.target.ownerDocument;
-		const features = getWindowFeatures( defaultView, 600, 800 );
-
-		defaultView.open( inviteLink, '_blank', features );
-	};
-
 	return (
-		<AccountCard
-			appearance={ APPEARANCE.GOOGLE_ADS }
-			alignIcon="top"
-			indicator={
-				<AppButton isSecondary onClick={ handleClick }>
-					{ __( 'Claim Account', 'google-listings-and-ads' ) }
-				</AppButton>
-			}
-		>
+		<Fragment>
 			<Notice
 				status="warning"
 				isDismissible={ false }
@@ -55,7 +37,7 @@ const ClaimAccount = () => {
 			<Section.Card.Footer>
 				<DisconnectAccount />
 			</Section.Card.Footer>
-		</AccountCard>
+		</Fragment>
 	);
 };
 

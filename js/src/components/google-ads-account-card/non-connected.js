@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { noop } from 'lodash';
 import { useState } from '@wordpress/element';
 
 /**
@@ -10,25 +9,29 @@ import { useState } from '@wordpress/element';
 import SpinnerCard from '.~/components/spinner-card';
 import CreateAccount from './create-account';
 import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
+import useShouldClaimGoogleAdsAccount from '.~/hooks/useShouldClaimGoogleAdsAccount';
 import ConnectAds from './connect-ads';
 
-const NonConnected = ( { onCreateAccount = noop } ) => {
+const NonConnected = () => {
 	const { google, existingAccounts, hasFinishedResolution } =
 		useGoogleAccountCheck();
 	const [ ignoreExisting, setIgnoreExisting ] = useState( false );
+	const { shouldClaimGoogleAdsAccount, isResolving } =
+		useShouldClaimGoogleAdsAccount();
 
 	const handleShowExisting = () => {
 		setIgnoreExisting( false );
 	};
 
-	if ( ! hasFinishedResolution ) {
+	if ( ! hasFinishedResolution || isResolving ) {
 		return <SpinnerCard />;
 	}
 
 	if (
 		! existingAccounts ||
 		existingAccounts.length === 0 ||
-		ignoreExisting
+		ignoreExisting ||
+		shouldClaimGoogleAdsAccount
 	) {
 		const disabled = ! google || google.active === 'no';
 		return (
@@ -36,7 +39,6 @@ const NonConnected = ( { onCreateAccount = noop } ) => {
 				allowShowExisting={ ignoreExisting }
 				onShowExisting={ handleShowExisting }
 				disabled={ disabled }
-				onCreateAccount={ onCreateAccount }
 			/>
 		);
 	}
