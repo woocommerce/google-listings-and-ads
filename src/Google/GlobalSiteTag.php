@@ -373,23 +373,23 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 			// Add email in EC data.
 			if ( ! empty( $email ) ) {
-				$ec_data['email'] = $this->normalize_and_hash( $email );
+				$ec_data['sha256_email_address'] = $this->normalize_and_hash( $email );
 			}
 
 			// Format phone number in IE64.
 			$phone        = preg_replace( '/[^0-9]/', '', $phone );
 			$phone_length = strlen( $phone );
 			if ( $phone_length > 9 && $phone_length < 14 ) {
-				$phone                   = sprintf( '%s%d', '+', $phone );
-				$ec_data['phone_number'] = $this->normalize_and_hash( $phone );
+				$phone                          = sprintf( '%s%d', '+', $phone );
+				$ec_data['sha256_phone_number'] = $this->normalize_and_hash( $phone );
 			}
 
 			// Check for required address fields.
 			if ( ! empty( $fname ) && ! empty( $lname ) && ! empty( $postcode ) && ! empty( $country ) ) {
-				$ec_data['address']['first_name']  = $this->normalize_and_hash( $fname );
-				$ec_data['address']['last_name']   = $this->normalize_and_hash( $lname );
-				$ec_data['address']['postal_code'] = $this->normalize_and_hash( $postcode );
-				$ec_data['address']['country']     = $this->normalize_and_hash( $country );
+				$ec_data['address']['sha256_first_name']  = $this->normalize_and_hash( $fname );
+				$ec_data['address']['sha256_last_name']   = $this->normalize_and_hash( $lname );
+				$ec_data['address']['sha256_postal_code'] = $this->normalize_and_hash( $postcode );
+				$ec_data['address']['sha256_country']     = $this->normalize_and_hash( $country );
 
 				/**
 				 * Add additional data, if present.
@@ -397,17 +397,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 				// Add street address.
 				if ( ! empty( $billing_address ) ) {
-					$ec_data['address']['street'] = $this->normalize_and_hash( $billing_address );
+					$ec_data['address']['sha256_street'] = $this->normalize_and_hash( $billing_address );
 				}
 
 				// Add city.
 				if ( ! empty( $city ) ) {
-					$ec_data['address']['city'] = $this->normalize_and_hash( $city );
+					$ec_data['address']['sha256_city'] = $this->normalize_and_hash( $city );
 				}
 
 				// Add region.
 				if ( ! empty( $region ) ) {
-					$ec_data['address']['region'] = $this->normalize_and_hash( $region );
+					$ec_data['address']['sha256_region'] = $this->normalize_and_hash( $region );
 				}
 			}
 
@@ -613,7 +613,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	}
 
 	/**
-	 * Return the hashed data to be sent to Google ads for enhanced conversion.
+	 * Return the hashed data to be sent to Google Ads for enhanced conversion.
 	 *
 	 * @param string $value Data that needs to be hashed.
 	 * @param string $algo  Algorithm for hashing.
