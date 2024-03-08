@@ -11,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
-use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
