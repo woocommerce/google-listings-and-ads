@@ -156,7 +156,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @param int         $page The page to start on (1-indexed).
 	 * @param bool        $force_refresh Force refresh of all product status data.
 	 *
-	 * @return array With two indices, results (may be paged) and count (considers type).
+	 * @return array With two indices, results (may be paged), count (considers type) and loading (indicating whether the data is loading).
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	public function get_issues( string $type = null, int $per_page = 0, int $page = 1, bool $force_refresh = false ): array {
@@ -431,6 +431,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 	/**
 	 * Refresh the account , pre-sync product validation and custom merchant issues.
+	 *
+	 * @since x.x.x
 	 *
 	 * @throws Exception  If the account state can't be retrieved from Google.
 	 */
