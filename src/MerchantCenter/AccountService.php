@@ -338,8 +338,14 @@ class AccountService implements OptionsAwareInterface, Service {
 						if ( ! empty( $ads_id ) && ! empty( $merchant_id ) ) {
 							$this->link_ads_account();
 						} else {
-							// Mark the step as pending, so that next time can be run.
-							$step['status'] = MerchantAccountState::STEP_PENDING;
+							/**
+							 * Mark the step as pending, save the state and
+							 * continue the foreach loop with `continue 2`.
+							 *
+							 * Marking the step as pending will make sure to run this step next time.
+							 */
+							$state[ $name ]['status'] = MerchantAccountState::STEP_PENDING;
+							$this->state->update( $state );
 							continue 2;
 						}
 						break;
