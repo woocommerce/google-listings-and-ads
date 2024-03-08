@@ -647,14 +647,23 @@ class AccountServiceTest extends UnitTest {
 	/**
 	 * @group testme
 	 */
-	public function test_setup_account_step_link_ads_without_mc() {
+	public function test_setup_account_step_link_ads_without_ads_id() {
 		$this->options->expects( $this->any() )
 			->method( 'get_ads_id' )
-			->willReturn( self::TEST_ADS_ID );
+			->willReturn( 0 );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
+
 
 		$this->options->expects( $this->any() )
 			->method( 'get_merchant_id' )
-			->willReturn( 0 );
+			->willReturn( self::TEST_ACCOUNT_ID );
 
 		$this->merchant->expects( $this->never() )
 			->method( 'link_ads_id' );

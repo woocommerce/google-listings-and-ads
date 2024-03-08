@@ -371,7 +371,7 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_ads_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
 
-			$this->state->expects( $this->once() )
+		$this->state->expects( $this->once() )
 			->method( 'get' )
 			->willReturn(
 				[
