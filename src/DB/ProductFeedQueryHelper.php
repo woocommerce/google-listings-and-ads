@@ -101,7 +101,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 
 			// If the refresh_status_data_job is scheduled, we don't know the status yet as it is being refreshed.
 			if ( $refresh_status_data_job && $refresh_status_data_job->is_scheduled() ) {
-				$mc_status = '-';
+				$mc_status = null;
 			}
 
 			$products[ $id ] = [

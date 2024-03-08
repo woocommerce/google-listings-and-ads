@@ -145,7 +145,7 @@ class ProductFeedQueryHelperTest extends UnitTest {
 					'id'        => $product->get_id(),
 					'title'     => $product->get_name(),
 					'visible'   => true,
-					'status'    => '-',
+					'status'    => null,
 					'image_url' => wp_get_attachment_image_url( $product->get_image_id(), 'full' ),
 					'price'     => $product->get_price(),
 					'errors'    => [],
