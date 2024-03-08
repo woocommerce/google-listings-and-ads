@@ -340,7 +340,7 @@ class AccountService implements OptionsAwareInterface, Service {
 						} else {
 							// Mark the step as pending, so that next time can be run.
 							$step['status'] = MerchantAccountState::STEP_PENDING;
-							continue;
+							continue 2;
 						}
 						break;
 					default:

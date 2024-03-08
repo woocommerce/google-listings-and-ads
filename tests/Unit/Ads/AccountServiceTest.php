@@ -371,6 +371,14 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_ads_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
 
+			$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
 		$this->options->expects( $this->any() )
 			->method( 'get_merchant_id' )
 			->willReturn( 0 );
