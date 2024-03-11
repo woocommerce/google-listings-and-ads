@@ -12,7 +12,7 @@ import Section from '.~/wcdl/section';
 import AppButton from '.~/components/app-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from './create-account-button';
-import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
+import useGoogleAccount from '.~/hooks/useGoogleAccountCheck';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
@@ -28,7 +28,7 @@ const ClaimTermsAndCreateAccountButton = ( { onCreateAccount = noop } ) => {
 	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
 	const [ upsertAdsAccount, { loading: createLoading } ] =
 		useUpsertAdsAccount();
-	const { google } = useGoogleAccountCheck();
+	const { google } = useGoogleAccount();
 	const { inviteLink } = useGoogleAdsAccountStatus();
 	const { shouldClaimGoogleAdsAccount } = useShouldClaimGoogleAdsAccount();
 
