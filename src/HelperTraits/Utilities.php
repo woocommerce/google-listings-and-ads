@@ -88,7 +88,7 @@ trait Utilities {
 	 *
 	 * @return boolean|string
 	 */
-	protected function base64url_encode( $data ): bool|string {
+	protected function base64url_encode( $data ): string {
 		// First of all you should encode $data to Base64 string
 		$b64 = base64_encode( $data );
 
@@ -113,7 +113,7 @@ trait Utilities {
 	 *
 	 * @return boolean|string
 	 */
-	protected function base64url_decode( $data ): bool|string {
+	protected function base64url_decode( $data ): string {
 		// Convert Base64URL to Base64 by replacing "-" with "+" and "_" with "/"
 		$b64 = strtr( $data, '-_', '+/' );
 
