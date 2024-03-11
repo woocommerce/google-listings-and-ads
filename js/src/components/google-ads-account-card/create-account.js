@@ -13,7 +13,6 @@ import AppButton from '.~/components/app-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from './create-account-button';
 import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
@@ -23,9 +22,7 @@ import ClaimAccount from './claim-account';
 import ClaimAccountModal from './claim-account-modal';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
 
-const ClaimTermsAndCreateAccountButton = ( {
-	onCreateAccount = noop,
-} ) => {
+const ClaimTermsAndCreateAccountButton = ( { onCreateAccount = noop } ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccount } = useAppDispatch();
 	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
