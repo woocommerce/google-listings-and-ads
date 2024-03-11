@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\WP;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 
 defined( 'ABSPATH' ) || exit;
@@ -14,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\WP
  */
 class OAuthServiceTest extends UnitTest {
+
+	use UtilitiesTrait;
 
 	/**
 	 * @var OAuthService
@@ -82,7 +85,7 @@ class OAuthServiceTest extends UnitTest {
 		$merchant_redirect_url         = "{$admin_url}admin.php?page=wc-admin&path={$path}";
 		$merchant_redirect_url_encoded = urlencode_deep( $merchant_redirect_url );
 		$expected_state_raw            = "nonce={$nonce}&redirect_url={$merchant_redirect_url_encoded}";
-		$state                         = base64_encode( $expected_state_raw );
+		$state                         = $this->base64url_encode( $expected_state_raw );
 
 		$expected_auth_url  = 'https://public-api.wordpress.com/oauth2/authorize';
 		$expected_auth_url .= "?blog={$blog_id}";
@@ -96,17 +99,15 @@ class OAuthServiceTest extends UnitTest {
 		$auth_url = $this->service->get_auth_url( $path );
 
 		// Compare the auth URLs.
-		// Removing the "=" sign from the end of the string because sometimes
-		// base64_encode function will add "=" signs as paddings.
 		$this->assertEquals(
-			rtrim( $expected_auth_url, '=' ),
-			rtrim( $auth_url, '=' )
+			$expected_auth_url,
+			$auth_url
 		);
 
 		// Compare the state query parameters from the auth URL.
 		$parsed_url = wp_parse_url( $auth_url );
 		parse_str( $parsed_url['query'], $parsed_query );
-		$state_raw = base64_decode( $parsed_query['state'] );
+		$state_raw = $this->base64url_decode( $parsed_query['state'] );
 		$this->assertEquals(
 			$expected_state_raw,
 			$state_raw

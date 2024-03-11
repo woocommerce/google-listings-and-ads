@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
 use Automattic\Jetpack\Connection\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Jetpack_Options;
 
@@ -17,6 +18,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WP
  */
 class OAuthService implements Service {
+
+	use UtilitiesTrait;
 
 	public const AUTH_URL      = 'https://public-api.wordpress.com/oauth2/authorize';
 	public const RESPONSE_TYPE = 'code';
@@ -52,7 +55,7 @@ class OAuthService implements Service {
 
 		$merchant_redirect_url = urlencode_deep( admin_url( "admin.php?page=wc-admin&path={$path}" ) );
 
-		$state = base64_encode(
+		$state = $this->base64url_encode(
 			build_query(
 				[
 					'nonce'        => $google_data['nonce'],
