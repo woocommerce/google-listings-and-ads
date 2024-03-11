@@ -17,7 +17,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
@@ -264,35 +263,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	public function delete(): void {
 		$this->container->get( TransientsInterface::class )->delete( Transients::MC_STATUSES );
 		$this->container->get( MerchantIssueTable::class )->truncate();
-	}
-
-	/**
-	 * Get the associated Google offer IDs for all synced simple products and product variations.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return array Google offer IDs.
-	 */
-	protected function get_synced_google_ids(): array {
-		/** @var ProductRepository $product_repository */
-		$product_repository = $this->container->get( ProductRepository::class );
-		/** @var ProductMetaQueryHelper $product_meta_query_helper */
-		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
-
-		// Get only synced simple and variations
-		$args['type']         = array_diff( ProductSyncer::get_supported_product_types(), [ 'variable' ] );
-		$filtered_product_ids = array_flip( $product_repository->find_synced_product_ids( $args ) );
-		$all_google_ids       = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_GOOGLE_IDS );
-		$filtered_google_ids  = [];
-		foreach ( array_intersect_key( $all_google_ids, $filtered_product_ids ) as $product_ids ) {
-			if ( empty( $product_ids ) || ! is_array( $product_ids ) ) {
-				// Skip if empty or not an array
-				continue;
-			}
-
-			$filtered_google_ids = array_merge( $filtered_google_ids, array_values( $product_ids ) );
-		}
-		return $filtered_google_ids;
 	}
 
 	/**
