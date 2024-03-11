@@ -347,7 +347,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$google_ids     = array_column( $statuses, 'mc_id' );
 		$product_issues = [];
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		foreach ( $merchant->get_productstatuses_batch( $google_ids )->getEntries() as $response_entry ) {
+		$entries        = $merchant->get_productstatuses_batch( $google_ids )->getEntries() ?? [];
+		foreach ( $entries as $response_entry ) {
 			/** @var GoogleProductStatus $mc_product_status */
 			$mc_product_status = $response_entry->getProductStatus();
 			$mc_product_id     = $mc_product_status->getProductId();
@@ -587,6 +588,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
 	public function process_product_statuses( array $product_view_statuses ): void {
+		$this->mc_statuses         = [];
 		$product_repository        = $this->container->get( ProductRepository::class );
 		$this->product_data_lookup = $product_repository->find_by_ids_as_associative_array( array_column( $product_view_statuses, 'product_id' ) );
 
@@ -637,19 +639,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		$product_issues = $this->get_product_issues( $product_view_statuses );
 		$this->refresh_product_issues( $product_issues );
-	}
-
-	/**
-	 * Update the product status statistics for a list of products statuses.
-	 *
-	 * @since x.x.x
-	 *
-	 * @param array[] $statuses statuses. See statuses format in MerchantReport::get_product_view_report.
-	 */
-	public function update_product_stats( array $statuses ): void {
-		$this->mc_statuses = [];
-
-		$this->process_product_statuses( $statuses );
 	}
 
 	/**

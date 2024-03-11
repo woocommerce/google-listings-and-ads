@@ -424,7 +424,7 @@ class MerchantStatusesTest extends UnitTest {
 		);
 	}
 
-	public function test_update_product_stats() {
+	public function test_process_product_statuses() {
 		$product_1        = WC_Helper_Product::create_simple_product();
 		$product_2        = WC_Helper_Product::create_simple_product();
 		$product_3        = WC_Helper_Product::create_simple_product();
@@ -573,7 +573,7 @@ class MerchantStatusesTest extends UnitTest {
 			]
 		);
 
-		$this->merchant_statuses->update_product_stats(
+		$this->merchant_statuses->process_product_statuses(
 			$product_statuses
 		);
 	}
@@ -677,7 +677,7 @@ class MerchantStatusesTest extends UnitTest {
 			self::MC_STATUS_LIFETIME
 		);
 
-		$this->merchant_statuses->update_product_stats( $product_statuses_1 );
+		$this->merchant_statuses->process_product_statuses( $product_statuses_1 );
 
 		$this->merchant_statuses->handle_failed_mc_statuses_fetching( 'My error message.' );
 	}
@@ -727,7 +727,7 @@ class MerchantStatusesTest extends UnitTest {
 		->method( 'get_productstatuses_batch' )
 		->willReturn( $response );
 
-		$this->merchant_statuses->update_product_stats(
+		$this->merchant_statuses->process_product_statuses(
 			$product_statuses_1
 		);
 
@@ -735,7 +735,7 @@ class MerchantStatusesTest extends UnitTest {
 		$merchant_statuses_2->set_container( $this->container );
 		$merchant_statuses_2->set_options_object( $this->options );
 
-		$merchant_statuses_2->update_product_stats(
+		$merchant_statuses_2->process_product_statuses(
 			$product_statuses_2
 		);
 	}
@@ -784,7 +784,7 @@ class MerchantStatusesTest extends UnitTest {
 		->method( 'get_productstatuses_batch' )
 		->willReturn( $response );
 
-		$this->merchant_statuses->update_product_stats(
+		$this->merchant_statuses->process_product_statuses(
 			$product_statuses_1
 		);
 
@@ -792,7 +792,7 @@ class MerchantStatusesTest extends UnitTest {
 		$merchant_statuses_2->set_container( $this->container );
 		$merchant_statuses_2->set_options_object( $this->options );
 
-		$merchant_statuses_2->update_product_stats(
+		$merchant_statuses_2->process_product_statuses(
 			$product_statuses_2
 		);
 	}
@@ -841,7 +841,7 @@ class MerchantStatusesTest extends UnitTest {
 		->method( 'get_productstatuses_batch' )
 		->willReturn( $response );
 
-		$this->merchant_statuses->update_product_stats(
+		$this->merchant_statuses->process_product_statuses(
 			$product_statuses_1
 		);
 
@@ -849,7 +849,7 @@ class MerchantStatusesTest extends UnitTest {
 		$merchant_statuses_2->set_container( $this->container );
 		$merchant_statuses_2->set_options_object( $this->options );
 
-		$merchant_statuses_2->update_product_stats(
+		$merchant_statuses_2->process_product_statuses(
 			$product_statuses_2
 		);
 	}
@@ -937,7 +937,7 @@ class MerchantStatusesTest extends UnitTest {
 	}
 
 	/**
-	 *  Assert that the update_product_stats method updates the product stats in two batches.
+	 *  Assert that the process_product_statuses method updates the product stats in two batches.
 	 *
 	 * @param array $first_update_results
 	 * @param array $second_update_results
