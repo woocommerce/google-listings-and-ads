@@ -9,8 +9,10 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Snippets;
 
-// Customize/disable the gtag consent mode, to make testing easier by granting everything by default.
-// It's a hack to avoid specifying region for E2E environment, but it tests the customization of consent mode.
+/*
+ * Customize/disable the gtag consent mode, to make testing easier by granting everything by default.
+ * It's a hack to avoid specifying region for E2E environment, but it tests the customization of consent mode.
+ */
 add_filter(
     'woocommerce_gla_gtag_consent',
     function( $old_config ) {
