@@ -534,7 +534,7 @@ class AccountServiceTest extends UnitTest {
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'Ads id not present' );
-	
+
 		$this->account->get_ads_account_has_access();
 	}
 
