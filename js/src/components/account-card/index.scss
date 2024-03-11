@@ -59,13 +59,9 @@
 	.components-notice.is-success {
 		background-color: #edfaef;
 		border: 0;
+		font-size: $helptext-font-size;
 		margin: 0 var(--large-gap) var(--main-gap);
 		padding: $grid-unit-20;
-
-		p {
-			font-size: $helptext-font-size;
-			margin: 0;
-		}
 	}
 
 	@media (max-width: $break-small) {

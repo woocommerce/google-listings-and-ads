@@ -8,22 +8,30 @@ import { useState } from '@wordpress/element';
  */
 import SpinnerCard from '.~/components/spinner-card';
 import CreateAccount from './create-account';
-import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
 import useShouldClaimGoogleAdsAccount from '.~/hooks/useShouldClaimGoogleAdsAccount';
+import useGoogleAccount from '.~/hooks/useGoogleAccount';
+import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import ConnectAds from './connect-ads';
 
 const NonConnected = () => {
-	const { google, existingAccounts, hasFinishedResolution } =
-		useGoogleAccountCheck();
+	const { google, hasFinishedResolution } = useGoogleAccount();
+	const { existingAccounts, isResolving: isResolvingGoogleAdsAccount } =
+		useExistingGoogleAdsAccounts();
 	const [ ignoreExisting, setIgnoreExisting ] = useState( false );
-	const { shouldClaimGoogleAdsAccount, isResolving } =
-		useShouldClaimGoogleAdsAccount();
+	const {
+		shouldClaimGoogleAdsAccount,
+		isResolving: isResolvingShouldClaimGoogleAdsAccount,
+	} = useShouldClaimGoogleAdsAccount();
 
 	const handleShowExisting = () => {
 		setIgnoreExisting( false );
 	};
 
-	if ( ! hasFinishedResolution || isResolving ) {
+	if (
+		! hasFinishedResolution ||
+		isResolvingGoogleAdsAccount ||
+		isResolvingShouldClaimGoogleAdsAccount
+	) {
 		return <SpinnerCard />;
 	}
 

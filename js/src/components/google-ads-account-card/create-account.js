@@ -13,6 +13,7 @@ import AppButton from '.~/components/app-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from './create-account-button';
 import useGoogleAccountCheck from '.~/hooks/useGoogleAccountCheck';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
@@ -23,7 +24,6 @@ import ClaimAccountModal from './claim-account-modal';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
 
 const ClaimTermsAndCreateAccountButton = ( {
-	disabled,
 	onCreateAccount = noop,
 } ) => {
 	const { createNotice } = useDispatchCoreNotices();
@@ -86,7 +86,6 @@ const ClaimTermsAndCreateAccountButton = ( {
 		<CreateAccountButton
 			loading={ createLoading || fetchAccountLoading }
 			onCreateAccount={ handleCreateAccount }
-			disabled={ disabled }
 		/>
 	);
 };

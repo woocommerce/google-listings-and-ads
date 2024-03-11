@@ -12,12 +12,12 @@ import {
 	GOOGLE_ADS_ACCOUNT_STATUS,
 	GOOGLE_ADS_BILLING_STATUS,
 } from '.~/constants';
+import SpinnerCard from '.~/components/spinner-card';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleAdsAccountCard from './connected-google-ads-account-card';
 import NonConnected from './non-connected';
 import AuthorizeAds from './authorize-ads';
-import SpinnerCard from '../spinner-card';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import usePrevious from '.~/hooks/usePrevious';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
@@ -25,7 +25,12 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useShouldClaimGoogleAdsAccount from '.~/hooks/useShouldClaimGoogleAdsAccount';
 
 export default function GoogleAdsAccountCard() {
-	const { google, scope } = useGoogleAccount();
+	const {
+		google,
+		scope,
+		isResolving: isResolvingGoogleAccount,
+	} = useGoogleAccount();
+
 	const {
 		googleAdsAccount,
 		refetchGoogleAdsAccount,
@@ -71,6 +76,7 @@ export default function GoogleAdsAccountCard() {
 	} );
 
 	if (
+		isResolvingGoogleAccount ||
 		isResolvingGoogleAdsAccount ||
 		isResolvingShouldClaimGoogleAdsAccount
 	) {
@@ -99,12 +105,10 @@ export default function GoogleAdsAccountCard() {
 			{ googleAdsAccount.status ===
 				GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED && (
 				<Notice status="success" isDismissible={ false }>
-					<p>
-						{ __(
-							'Conversion measurement has been set up. You can create a campaign later.',
-							'google-listings-and-ads'
-						) }
-					</p>
+					{ __(
+						'Conversion measurement has been set up. You can create a campaign later.',
+						'google-listings-and-ads'
+					) }
 				</Notice>
 			) }
 		</ConnectedGoogleAdsAccountCard>

@@ -30,6 +30,7 @@ defined( 'ABSPATH' ) || exit;
  * Class AccountService
  *
  * Container used to access:
+ * - Ads
  * - CleanupSyncedProducts
  * - Merchant
  * - MerchantAccountState
@@ -332,7 +333,21 @@ class AccountService implements OptionsAwareInterface, Service {
 						}
 						break;
 					case 'link_ads':
-						$this->link_ads_account();
+						$ads_id = $this->options->get_ads_id();
+						// As MC and Ads account can be connected interchangeably, this check is necessary.
+						if ( ! empty( $ads_id ) && ! empty( $merchant_id ) ) {
+							$this->link_ads_account();
+						} else {
+							/**
+							 * Mark the step as pending, save the state and
+							 * continue the foreach loop with `continue 2`.
+							 *
+							 * Marking the step as pending will make sure to run this step next time.
+							 */
+							$state[ $name ]['status'] = MerchantAccountState::STEP_PENDING;
+							$this->state->update( $state );
+							continue 2;
+						}
 						break;
 					default:
 						throw new Exception(
@@ -484,8 +499,7 @@ class AccountService implements OptionsAwareInterface, Service {
 		}
 
 		if ( ! $this->options->get_ads_id() ) {
-			// Return early if the ads account hasn't been created yet.
-			return;
+			throw new Exception( 'An Ads account must be connected' );
 		}
 
 		// Create link for Merchant and accept it in Ads.
