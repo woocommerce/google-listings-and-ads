@@ -4,7 +4,6 @@
 import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useCallback, useEffect } from '@wordpress/element';
-import { Spinner } from '@woocommerce/components';
 
 /**
  * Internal dependencies
