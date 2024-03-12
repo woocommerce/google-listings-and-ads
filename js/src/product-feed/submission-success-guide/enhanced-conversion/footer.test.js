@@ -53,12 +53,10 @@ describe( 'Enhanced Conversion Footer', () => {
 	test( 'Prompt the user to accept the TOS', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: null,
-			isResolving: false,
 		} );
 
 		render( <Footer /> );
@@ -73,12 +71,10 @@ describe( 'Enhanced Conversion Footer', () => {
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.DISABLED,
-			isResolving: false,
 		} );
 
 		render( <Footer onModalClose={ handleOnModalClose } /> );
@@ -94,12 +90,10 @@ describe( 'Enhanced Conversion Footer', () => {
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
-			isResolving: false,
 		} );
 
 		render( <Footer onModalClose={ handleOnModalClose } /> );
