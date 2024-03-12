@@ -144,6 +144,8 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 			array_map( 'wc_get_product', $ids ),
 			$this->product_repository->find_by_ids( $ids )
 		);
+
+		$this->assertEquals( [], $this->product_repository->find_by_ids( [] ) );
 	}
 
 	public function test_find_synced_products() {

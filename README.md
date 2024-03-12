@@ -12,7 +12,6 @@ A native integration with Google offering free listings and Performance Max ads 
 -   [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)
 -   [User documentation](https://woo.com/document/google-listings-and-ads/)
 -   [Feature requests](https://woo.com/feature-requests/google-listings-and-ads/)
--   [Storybook](https://woocommerce.github.io/google-listings-and-ads/)
 
 ## Support
 
@@ -185,6 +184,7 @@ npm run -- wp-env run tests-cli -- wp wc update
 
 - [Usage Tracking](./src/Tracking/README.md)
 - [Hooks defined or used in GLA](./src/Hooks/README.md)
+- [gtag consent mode](./docs/gtag-consent-mode.md)
 
 <p align="center">
 	<br/><br/>

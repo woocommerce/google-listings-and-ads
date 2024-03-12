@@ -450,7 +450,9 @@ class Middleware implements OptionsAwareInterface {
 			);
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
-
+			return new TosAccepted( false, $e->getMessage() );
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 			return new TosAccepted( false, $e->getMessage() );
 		}
 	}

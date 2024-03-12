@@ -6,9 +6,6 @@ wp-env run tests-cli wp theme activate twentytwentytwo
 echo -e 'Install WooCommerce \n'
 wp-env run tests-cli -- wp plugin install woocommerce --activate
 
-echo -e 'Activate Test Data utility plugin \n'
-wp-env run tests-cli -- wp plugin activate test-data
-
 echo -e 'Update URL structure \n'
 wp-env run tests-cli -- wp rewrite structure '/%postname%/' --hard
 

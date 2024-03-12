@@ -194,8 +194,11 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 */
 	protected function map_product_categories() {
 		// set product type using merchants defined product categories
-		$base_product_id            = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
-		$this->product_category_ids = wc_get_product_cat_ids( $base_product_id );
+		$base_product_id = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
+
+		// Fetch only selected term ids without parents.
+		$this->product_category_ids = wc_get_product_term_ids( $base_product_id, 'product_cat' );
+
 		if ( ! empty( $this->product_category_ids ) ) {
 			$google_product_types = self::convert_product_types( $this->product_category_ids );
 			do_action(
@@ -234,6 +237,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
+	 * Return category names including ancestors, separated by ">"
 	 *
 	 * @param int $category_id
 	 *

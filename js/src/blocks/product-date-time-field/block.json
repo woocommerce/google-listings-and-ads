@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 2,
+	"name": "google-listings-and-ads/product-date-time-field",
+	"title": "Product date and time fields",
+	"textdomain": "google-listings-and-ads",
+	"attributes": {
+		"label": {
+			"type": "string"
+		},
+		"tooltip": {
+			"type": "string"
+		},
+		"property": {
+			"type": "string",
+			"__experimentalRole": "content"
+		}
+	},
+	"supports": {
+		"html": false,
+		"inserter": false,
+		"lock": false
+	}
+}
