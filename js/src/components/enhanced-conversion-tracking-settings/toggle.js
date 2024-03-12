@@ -1,7 +1,9 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { useCallback, useEffect } from '@wordpress/element';
+import { Spinner } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -12,10 +14,22 @@ import AppStandaloneToggleControl from '.~/components/app-standalone-toggle-cont
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 
+const TOGGLE_LABEL_MAP = {
+	[ ENHANCED_ADS_CONVERSION_STATUS.DISABLED ]: __(
+		'Enable',
+		'google-listings-and-ads'
+	),
+	[ ENHANCED_ADS_CONVERSION_STATUS.ENABLED ]: __(
+		'Disable',
+		'google-listings-and-ads'
+	),
+};
+
 const Toggle = () => {
 	const { updateEnhancedAdsConversionStatus, invalidateResolution } =
 		useAppDispatch();
-	const { allowEnhancedConversions } = useAllowEnhancedConversions();
+	const { allowEnhancedConversions, isResolving } =
+		useAllowEnhancedConversions();
 	const { acceptedCustomerDataTerms, hasFinishedResolution } =
 		useAcceptedCustomerDataTerms();
 
@@ -42,6 +56,10 @@ const Toggle = () => {
 		[ updateEnhancedAdsConversionStatus, acceptedCustomerDataTerms ]
 	);
 
+	if ( isResolving ) {
+		return <Spinner />;
+	}
+
 	return (
 		<AppStandaloneToggleControl
 			checked={
@@ -50,6 +68,10 @@ const Toggle = () => {
 			}
 			disabled={ ! hasFinishedResolution || ! acceptedCustomerDataTerms }
 			onChange={ handleOnChange }
+			label={
+				TOGGLE_LABEL_MAP[ allowEnhancedConversions ] ||
+				__( 'Enable', 'google-listings-and-ads' )
+			}
 		/>
 	);
 };

@@ -51,7 +51,7 @@ import '@testing-library/jest-dom';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
-import CTA from './index';
+import CTA from './cta';
 
 describe( 'Enhanced Conversion CTA', () => {
 	beforeEach( () => {

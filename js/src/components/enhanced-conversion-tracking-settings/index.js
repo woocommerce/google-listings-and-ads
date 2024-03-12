@@ -6,8 +6,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
-import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import Section from '.~/wcdl/section';
@@ -31,7 +29,6 @@ const TITLE = __( 'Enhanced Conversion Tracking', 'google-listings-and-ads' );
 const EnhancedConversionTrackingSettings = () => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
-	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 
 	if ( ! googleAdsAccount || ! googleAdsAccount.id ) {
 		return null;
