@@ -15,6 +15,11 @@ class Integer extends Input {
 	 * Integer constructor.
 	 */
 	public function __construct() {
-		parent::__construct( 'integer' );
+		// Ideally, it should use the 'woocommerce/product-number-field' block
+		// but the block doesn't support integer validation. Therefore, it uses
+		// the text field block to work around it.
+		parent::__construct( 'integer', 'woocommerce/product-text-field' );
+
+		$this->set_block_attribute( 'type', [ 'value' => 'number' ] );
 	}
 }

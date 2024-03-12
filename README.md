@@ -184,6 +184,7 @@ npm run -- wp-env run tests-cli -- wp wc update
 
 - [Usage Tracking](./src/Tracking/README.md)
 - [Hooks defined or used in GLA](./src/Hooks/README.md)
+- [gtag consent mode](./docs/gtag-consent-mode.md)
 
 <p align="center">
 	<br/><br/>

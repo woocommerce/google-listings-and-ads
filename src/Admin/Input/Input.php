@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -11,6 +13,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input
  */
 class Input extends Form implements InputInterface {
+
+	use PluginHelper;
 
 	/**
 	 * @var string
@@ -21,6 +25,16 @@ class Input extends Form implements InputInterface {
 	 * @var string
 	 */
 	protected $type;
+
+	/**
+	 * @var string
+	 */
+	protected $block_name;
+
+	/**
+	 * @var array
+	 */
+	protected $block_attributes = [];
 
 	/**
 	 * @var string
@@ -41,9 +55,11 @@ class Input extends Form implements InputInterface {
 	 * Input constructor.
 	 *
 	 * @param string $type
+	 * @param string $block_name The name of a generic product block in WooCommerce core or a custom block in this extension.
 	 */
-	public function __construct( string $type ) {
-		$this->type = $type;
+	public function __construct( string $type, string $block_name ) {
+		$this->type       = $type;
+		$this->block_name = $block_name;
 		parent::__construct();
 	}
 
@@ -158,5 +174,61 @@ class Input extends Form implements InputInterface {
 		}
 
 		return sprintf( 'gla_%s', $this->get_name() );
+	}
+
+	/**
+	 * Return the name of a generic product block in WooCommerce core or a custom block in this extension.
+	 *
+	 * @return string
+	 */
+	public function get_block_name(): string {
+		return $this->block_name;
+	}
+
+	/**
+	 * Add or update a block attribute used for block config.
+	 *
+	 * @param string $key   The attribute key defined in the corresponding block.json
+	 * @param mixed  $value The attribute value defined in the corresponding block.json
+	 *
+	 * @return InputInterface
+	 */
+	public function set_block_attribute( string $key, $value ): InputInterface {
+		$this->block_attributes[ $key ] = $value;
+
+		return $this;
+	}
+
+	/**
+	 * Return the attributes of block config used for the input's view within the Product Block Editor.
+	 *
+	 * @return array
+	 */
+	public function get_block_attributes(): array {
+		$meta_key = $this->prefix_meta_key( $this->get_id() );
+
+		return array_merge(
+			[
+				'property' => "meta_data.{$meta_key}",
+				'label'    => $this->get_label(),
+				'tooltip'  => $this->get_description(),
+			],
+			$this->block_attributes
+		);
+	}
+
+	/**
+	 * Return the config used for the input's block within the Product Block Editor.
+	 *
+	 * @return array
+	 */
+	public function get_block_config(): array {
+		$id = $this->get_id();
+
+		return [
+			'id'         => "google-listings-and-ads-product-attributes-{$id}",
+			'blockName'  => $this->get_block_name(),
+			'attributes' => $this->get_block_attributes(),
+		];
 	}
 }

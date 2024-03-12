@@ -23,7 +23,7 @@ export function trackGtagEvent( page, eventName, urlPath = null ) {
 
 		return (
 			url.includes( eventPath ) &&
-			params.get( 'data' ).includes( match ) &&
+			params.get( 'data' )?.includes( match ) &&
 			( urlPath
 				? params
 						.get( 'url' )

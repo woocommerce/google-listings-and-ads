@@ -20,7 +20,7 @@ class Select extends Input {
 	 * Select constructor.
 	 */
 	public function __construct() {
-		parent::__construct( 'select' );
+		parent::__construct( 'select', 'google-listings-and-ads/product-select-field' );
 	}
 
 	/**
@@ -54,5 +54,25 @@ class Select extends Input {
 		$view_data['class'] = 'select short';
 
 		return $view_data;
+	}
+
+	/**
+	 * Return the attributes of block config used for the input's view within the Product Block Editor.
+	 *
+	 * @return array
+	 */
+	public function get_block_attributes(): array {
+		$options = [];
+
+		foreach ( $this->get_options() as $key => $value ) {
+			$options[] = [
+				'label' => $value,
+				'value' => $key,
+			];
+		}
+
+		$this->set_block_attribute( 'options', $options );
+
+		return parent::get_block_attributes();
 	}
 }
