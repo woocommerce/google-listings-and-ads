@@ -578,18 +578,10 @@ class MerchantStatusesTest extends UnitTest {
 		);
 	}
 
-	public function test_handle_complete_mc_statuses_fetching_with_no_intermediate_data(){
+	public function test_handle_complete_mc_statuses_fetching_with_default_intermediate_data() {
 		$this->options->expects( $this->once() )
 		->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
-			[
-				MCStatus::APPROVED           => 0,
-				MCStatus::PARTIALLY_APPROVED => 0,
-				MCStatus::EXPIRING           => 0,
-				MCStatus::PENDING            => 0,
-				MCStatus::DISAPPROVED        => 0,
-				MCStatus::NOT_SYNCED         => 0,
-				'parents'                    => [],
-			]
+			$this->merchant_statuses::DEFAULT_PRODUCT_STATS
 		);
 
 		$expected_product_ids = [ 1, 2, 3, 4, 5, 6 ];
@@ -607,7 +599,7 @@ class MerchantStatusesTest extends UnitTest {
 							MCStatus::EXPIRING           => 0,
 							MCStatus::PENDING            => 0,
 							MCStatus::DISAPPROVED        => 0,
-							MCStatus::NOT_SYNCED         => count( $expected_product_ids),
+							MCStatus::NOT_SYNCED         => count( $expected_product_ids ),
 						],
 						$value['statistics']
 					);
@@ -623,8 +615,7 @@ class MerchantStatusesTest extends UnitTest {
 			self::MC_STATUS_LIFETIME
 		);
 
-		$this->merchant_statuses->handle_complete_mc_statuses_fetching();		
-
+		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
 	}
 
 	public function test_handle_complete_mc_statuses_fetching() {
@@ -677,8 +668,16 @@ class MerchantStatusesTest extends UnitTest {
 		$product_1  = WC_Helper_Product::create_simple_product();
 		$product_id = $product_1->get_id();
 
-		$this->options->expects( $this->once() )
-		->method( 'delete' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		$this->options->expects( $this->exactly( 2 ) )
+		->method( 'update' )->withConsecutive(
+			// The first time we update the intermediate data with the statuses from  product_statuses.
+			[
+				OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA,
+				array_merge( $this->merchant_statuses::DEFAULT_PRODUCT_STATS, [ 'approved' => 1 ] ),
+			],
+			// When the job fails it should revert the intermediate data to the previous state.
+			[ OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $this->merchant_statuses::DEFAULT_PRODUCT_STATS ]
+		);
 
 		$product_statuses_1 = [
 			[

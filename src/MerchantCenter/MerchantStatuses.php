@@ -94,7 +94,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * @var array Default product stats.
 	 */
-	protected $default_product_stats = [
+	public const DEFAULT_PRODUCT_STATS = [
 		MCStatus::APPROVED           => 0,
 		MCStatus::PARTIALLY_APPROVED => 0,
 		MCStatus::EXPIRING           => 0,
@@ -103,6 +103,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		MCStatus::NOT_SYNCED         => 0,
 		'parents'                    => [],
 	];
+
+	/**
+	 * @var array Initial intermediate data for product status counts.
+	 */
+	protected $initial_intermediate_data = self::DEFAULT_PRODUCT_STATS;
 
 	/**
 	 * @var WC_Product[] Lookup of WooCommerce Product Objects.
@@ -684,12 +689,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @return array Product status statistics.
 	 */
 	protected function update_intermediate_product_statistics(): array {
-		$product_statistics = $this->default_product_stats;
+		$product_statistics = self::DEFAULT_PRODUCT_STATS;
 
 		// If the option is set, use it to sum the total quantity.
 		$product_statistics_intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
 		if ( $product_statistics_intermediate_data ) {
-			$product_statistics = $product_statistics_intermediate_data;
+			$product_statistics              = $product_statistics_intermediate_data;
+			$this->initial_intermediate_data = $product_statistics;
 		}
 
 		$product_statistics_priority = [
@@ -783,7 +789,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
 	public function handle_failed_mc_statuses_fetching( string $error_message = '' ): void {
-		$this->delete_product_statuses_count_intermediate_data();
+		// Reset the intermediate data to the initial state when starting the job.
+		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $this->initial_intermediate_data );
 		// Let's remove any issue created during the failed fetch.
 		$this->container->get( MerchantIssueTable::class )->delete_specific_product_issues( array_keys( $this->product_data_lookup ) );
 
@@ -808,7 +815,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @since x.x.x
 	 */
 	public function handle_complete_mc_statuses_fetching() {
-		$intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $this->default_product_stats );
+		$intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, self::DEFAULT_PRODUCT_STATS );
 
 		unset( $intermediate_data['parents'] );
 
