@@ -3,27 +3,19 @@
  */
 import SpinnerCard from '.~/components/spinner-card';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleMCAccountCard from './connected-google-mc-account-card';
 import DisabledCard from './disabled-card';
 import NonConnected from './non-connected';
-import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 const GoogleMCAccountCard = () => {
-	const { isResolving, isPreconditionReady, googleMCAccount } =
+	const { hasFinishedResolution, isPreconditionReady, googleMCAccount } =
 		useGoogleMCAccount();
-	const { googleAdsAccount, isResolving: isResolvingGoogleAdsAccount } =
-		useGoogleAdsAccount();
 
-	if ( isResolving || isResolvingGoogleAdsAccount ) {
+	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
 	}
 
-	if (
-		! isPreconditionReady ||
-		! googleAdsAccount ||
-		googleAdsAccount.status !== GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED
-	) {
+	if ( ! isPreconditionReady ) {
 		return <DisabledCard />;
 	}
 
