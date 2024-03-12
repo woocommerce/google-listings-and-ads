@@ -123,7 +123,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - Fix the compatibility issue in starting E2E test environment due to the default charset change in MariaDB v11.3.1.
 * Fix - 401 handling for connected Ads accounts.
 
-= 2.5.18 - 2024-02-20 =
-* Fix - Prevent product queries by IDs if no arguments are supplied.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
