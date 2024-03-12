@@ -58,7 +58,7 @@ describe( 'GoogleAdsAccountCard', () => {
 
 	it( 'Should show a spinner when the Google Ads status is being resolved', async () => {
 		useGoogleAdsAccountStatus.mockReturnValue( {
-			hasFinishedResolution: false,
+			isResolving: true,
 			hasAccess: false,
 			inviteLink: null,
 		} );
