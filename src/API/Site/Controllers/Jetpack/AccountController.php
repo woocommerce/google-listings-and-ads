@@ -32,6 +32,13 @@ class AccountController extends BaseOptionsController {
 	protected $middleware;
 
 	/**
+	 * Retain the connected state to prevent multiple external calls to validate the token.
+	 *
+	 * @var bool
+	 */
+	private $jetpack_connected_state;
+
+	/**
 	 * Mapping between the client page name and its path.
 	 * The first value is also used as a default,
 	 * and changing the order of keys/values may affect things below.
@@ -97,19 +104,21 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function get_connect_callback(): callable {
 		return function ( Request $request ) {
-			// Register the site to wp.com.
-			if ( ! $this->manager->is_connected() ) {
+			// Register the site to WPCOM.
+			if ( $this->manager->is_connected() ) {
+				$result = $this->manager->reconnect();
+			} else {
 				$result = $this->manager->register();
+			}
 
-				if ( is_wp_error( $result ) ) {
-					return new Response(
-						[
-							'status'  => 'error',
-							'message' => $result->get_error_message(),
-						],
-						400
-					);
-				}
+			if ( is_wp_error( $result ) ) {
+				return new Response(
+					[
+						'status'  => 'error',
+						'message' => $result->get_error_message(),
+					],
+					400
+				);
 			}
 
 			// Get an authorization URL which will redirect back to our page.
@@ -173,6 +182,9 @@ class AccountController extends BaseOptionsController {
 				$this->log_wp_tos_accepted();
 			}
 
+			// Update connection status.
+			$this->options->update( OptionsInterface::JETPACK_CONNECTED, $this->is_jetpack_connected() );
+
 			$user_data = $this->get_jetpack_user_data();
 			return [
 				'active'      => $this->display_boolean( $this->is_jetpack_connected() ),
@@ -190,11 +202,18 @@ class AccountController extends BaseOptionsController {
 	 * @return bool
 	 */
 	protected function is_jetpack_connected(): bool {
-		if ( ! $this->manager->has_connected_owner() ) {
+		if ( null !== $this->jetpack_connected_state ) {
+			return $this->jetpack_connected_state;
+		}
+
+		if ( ! $this->manager->has_connected_owner() || ! $this->manager->is_connected() ) {
+			$this->jetpack_connected_state = false;
 			return false;
 		}
 
-		return false !== $this->manager->get_tokens()->get_access_token();
+		// Send an external request to validate the token.
+		$this->jetpack_connected_state = $this->manager->get_tokens()->validate_blog_token();
+		return $this->jetpack_connected_state;
 	}
 
 	/**

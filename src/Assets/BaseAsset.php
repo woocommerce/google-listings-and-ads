@@ -130,6 +130,10 @@ abstract class BaseAsset implements Asset {
 	 * @return bool
 	 */
 	public function can_enqueue(): bool {
+		if ( is_null( $this->enqueue_condition_callback ) ) {
+			return true;
+		}
+
 		return (bool) call_user_func( $this->enqueue_condition_callback, $this );
 	}
 

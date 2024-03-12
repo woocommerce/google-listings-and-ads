@@ -26,6 +26,8 @@ module.exports = {
 		'import/core-modules': [
 			'webpack',
 			'stylelint',
+			'@woocommerce/product-editor',
+			'@woocommerce/block-templates',
 			'@wordpress/stylelint-config',
 			'@pmmmwh/react-refresh-webpack-plugin',
 			'react-transition-group',
