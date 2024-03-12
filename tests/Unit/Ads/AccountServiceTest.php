@@ -478,7 +478,7 @@ class AccountServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_get_ads_accoount_has_access() {
+	public function test_get_ads_account_has_access() {
 		$this->connection->method( 'get_status' )
 			->willReturn( [ 'email' => 'test@domain.com' ] );
 
