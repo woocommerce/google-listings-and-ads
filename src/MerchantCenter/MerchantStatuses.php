@@ -92,6 +92,19 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	];
 
 	/**
+	 * @var array Default product stats.
+	 */
+	protected $default_product_stats = [
+		MCStatus::APPROVED           => 0,
+		MCStatus::PARTIALLY_APPROVED => 0,
+		MCStatus::EXPIRING           => 0,
+		MCStatus::PENDING            => 0,
+		MCStatus::DISAPPROVED        => 0,
+		MCStatus::NOT_SYNCED         => 0,
+		'parents'                    => [],
+	];
+
+	/**
 	 * @var WC_Product[] Lookup of WooCommerce Product Objects.
 	 */
 	protected $product_data_lookup = [];
@@ -113,7 +126,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws Exception If no Merchant Center account is connected, or account status is not retrievable.
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
-		$job               = $this->maybe_refresh_status_data( $force_refresh );
+		$job = $this->maybe_refresh_status_data( $force_refresh );
+		$job->process_items( [] );
 		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
 
 		if ( $job->is_scheduled() || null === $this->mc_statuses ) {
@@ -670,15 +684,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @return array Product status statistics.
 	 */
 	protected function update_intermediate_product_statistics(): array {
-		$product_statistics = [
-			MCStatus::APPROVED           => 0,
-			MCStatus::PARTIALLY_APPROVED => 0,
-			MCStatus::EXPIRING           => 0,
-			MCStatus::PENDING            => 0,
-			MCStatus::DISAPPROVED        => 0,
-			MCStatus::NOT_SYNCED         => 0,
-			'parents'                    => [],
-		];
+		$product_statistics = $this->default_product_stats;
 
 		// If the option is set, use it to sum the total quantity.
 		$product_statistics_intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
@@ -802,35 +808,32 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @since x.x.x
 	 */
 	public function handle_complete_mc_statuses_fetching() {
-		$intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		$intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $this->default_product_stats );
 
-		if ( $intermediate_data ) {
+		unset( $intermediate_data['parents'] );
 
-			unset( $intermediate_data['parents'] );
+		$total_synced_products = $this->calculate_total_synced_product_statistics( $intermediate_data );
 
-			$total_synced_products = $this->calculate_total_synced_product_statistics( $intermediate_data );
+		/** @var ProductRepository $product_repository */
+		$product_repository                        = $this->container->get( ProductRepository::class );
+		$intermediate_data[ MCStatus::NOT_SYNCED ] = count(
+			$product_repository->find_all_product_ids()
+		) - $total_synced_products;
 
-			/** @var ProductRepository $product_repository */
-			$product_repository                        = $this->container->get( ProductRepository::class );
-			$intermediate_data[ MCStatus::NOT_SYNCED ] = count(
-				$product_repository->find_all_product_ids()
-			) - $total_synced_products;
+		$mc_statuses = [
+			'timestamp'  => $this->cache_created_time->getTimestamp(),
+			'statistics' => $intermediate_data,
+			'loading'    => false,
+			'error'      => null,
+		];
 
-			$mc_statuses = [
-				'timestamp'  => $this->cache_created_time->getTimestamp(),
-				'statistics' => $intermediate_data,
-				'loading'    => false,
-				'error'      => null,
-			];
+		$this->container->get( TransientsInterface::class )->set(
+			Transients::MC_STATUSES,
+			$mc_statuses,
+			$this->get_status_lifetime()
+		);
 
-			$this->container->get( TransientsInterface::class )->set(
-				Transients::MC_STATUSES,
-				$mc_statuses,
-				$this->get_status_lifetime()
-			);
-
-			$this->delete_product_statuses_count_intermediate_data();
-		}
+		$this->delete_product_statuses_count_intermediate_data();
 	}
 
 

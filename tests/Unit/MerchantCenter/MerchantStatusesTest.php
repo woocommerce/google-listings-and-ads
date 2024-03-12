@@ -578,6 +578,55 @@ class MerchantStatusesTest extends UnitTest {
 		);
 	}
 
+	public function test_handle_complete_mc_statuses_fetching_with_no_intermediate_data(){
+		$this->options->expects( $this->once() )
+		->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
+			[
+				MCStatus::APPROVED           => 0,
+				MCStatus::PARTIALLY_APPROVED => 0,
+				MCStatus::EXPIRING           => 0,
+				MCStatus::PENDING            => 0,
+				MCStatus::DISAPPROVED        => 0,
+				MCStatus::NOT_SYNCED         => 0,
+				'parents'                    => [],
+			]
+		);
+
+		$expected_product_ids = [ 1, 2, 3, 4, 5, 6 ];
+		$this->product_repository->expects( $this->once() )->method( 'find_all_product_ids' )->willReturn( $expected_product_ids );
+
+		$this->transients->expects( $this->once() )
+		->method( 'set' )->with(
+			Transients::MC_STATUSES,
+			$this->callback(
+				function ( $value ) use ( $expected_product_ids ) {
+					$this->assertEquals(
+						[
+							MCStatus::APPROVED           => 0,
+							MCStatus::PARTIALLY_APPROVED => 0,
+							MCStatus::EXPIRING           => 0,
+							MCStatus::PENDING            => 0,
+							MCStatus::DISAPPROVED        => 0,
+							MCStatus::NOT_SYNCED         => count( $expected_product_ids),
+						],
+						$value['statistics']
+					);
+
+					$this->assertEquals(
+						false,
+						$value['loading']
+					);
+
+					return true;
+				}
+			),
+			self::MC_STATUS_LIFETIME
+		);
+
+		$this->merchant_statuses->handle_complete_mc_statuses_fetching();		
+
+	}
+
 	public function test_handle_complete_mc_statuses_fetching() {
 		$this->options->expects( $this->once() )
 		->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
