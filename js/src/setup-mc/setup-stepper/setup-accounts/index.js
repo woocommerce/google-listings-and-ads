@@ -114,7 +114,8 @@ const SetupAccounts = ( props ) => {
 		hasAccess !== true ||
 		! hasFinishedResolution ||
 		! hasGoogleAdsConnection ||
-		googleMCAccount?.status !== 'connected';
+		( googleMCAccount?.status !== 'connected' &&
+			googleMCAccount?.step !== 'link_ads' );
 
 	return (
 		<StepContent>
