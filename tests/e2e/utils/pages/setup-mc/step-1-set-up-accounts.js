@@ -410,6 +410,20 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
+	 * Click claim account button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async getClaimAdsAccountButton() {
+		return this.page
+			.getByRole( 'button', {
+				name: 'Claim Account',
+				exact: true,
+			} )
+			.first();
+	}
+
+	/**
 	 * Click create account button.
 	 *
 	 * @return {Promise<void>}
@@ -427,5 +441,25 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getAdsAccountConnectedText() {
 		return this.getGoogleAdsAccountCard().getByText( 'Connected' );
+	}
+
+	/**
+	 * Get ads claim account button.
+	 *
+	 * @return {import('@playwright/test').Locator} Get ads account Claim Account button.
+	 */
+	getAdsClaimAccountButton() {
+		return this.getClaimAdsAccountButton();
+	}
+
+	/**
+	 * Get ads claim account text.
+	 *
+	 * @return {import('@playwright/test').Locator} Get ads account Claim account text.
+	 */
+	getAdsClaimAccountText() {
+		return this.getGoogleAdsAccountCard().getByText(
+			'Your new ads account has been created, but you do not have access to it yet. '
+		);
 	}
 }

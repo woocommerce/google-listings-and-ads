@@ -238,7 +238,9 @@ test.describe( 'Set up accounts', () => {
 					await expect( button ).toBeEnabled();
 				} );
 
-				test( 'should see ads account connected after creating a new ads account', async () => {
+				test( 'should see "Accept invitation" modal after creating account', async () => {
+					// Mock Ads account not claimed.
+					await setupAdsAccountPage.mockAdsAccountNotClaimed();
 					await setupAdsAccountPage.mockAdsAccountsResponse( [
 						{
 							id: 12345,
@@ -246,14 +248,47 @@ test.describe( 'Set up accounts', () => {
 						},
 					] );
 
-					await setupAdsAccountPage.mockAdsAccountConnected();
-
 					await setupAdsAccountPage.clickCreateAccountButtonFromModal();
-					const connectedText =
-						setUpAccountsPage.getAdsAccountConnectedText();
-					await expect( connectedText ).toBeVisible();
+
+					const modal = setupAdsAccountPage.getAcceptAccountModal();
+					await expect( modal ).toBeVisible();
+				} );
+
+				test( 'should see ads account claim message until ads account is accepted', async () => {
+					await setupAdsAccountPage.clickCloseAcceptAccountButtonFromModal();
+
+					const claimButton =
+						await setUpAccountsPage.getAdsClaimAccountButton();
+					const claimText =
+						await setUpAccountsPage.getAdsClaimAccountText();
+
+					await expect( claimButton ).toBeVisible();
+					await expect( claimText ).toBeVisible();
 				} );
 			} );
+
+			// @todo: Add test for the following scenarios.
+			// test.describe( 'Create a claimed account', () => {
+			// 	test.beforeAll( async () => {
+			// 		// Disconnect the Ads account and start over.
+			// 		await setupAdsAccountPage.mockAdsAccountDisconnected();
+			// 		await setupAdsAccountPage.mockAdsAccountsResponse( [] );
+			// 		await setupAdsAccountPage.clickConnectDifferentAccountButton();
+			// 		// await setUpAccountsPage.clickCreateAdsAccountButton();
+			// 		// await setupAdsAccountPage.clickToSCheckboxFromModal();
+			// 	} );
+
+			// 	// @todo: trigger an API request to change the status.
+			// 	test( 'should see ads account connected message once ads account is accepted', async () => {
+			// 		await setupAdsAccountPage.mockAdsAccountClaimed();
+
+			// 		await setupAdsAccountPage.clickCreateAccountButtonFromModal();
+
+			// 		const connectedText =
+			// 			setUpAccountsPage.getAdsAccountConnectedText();
+			// 		await expect( connectedText ).toBeVisible();
+			// 	} );
+			// } );
 
 			test.describe( 'Connect to an existing account', () => {
 				test.beforeAll( async () => {

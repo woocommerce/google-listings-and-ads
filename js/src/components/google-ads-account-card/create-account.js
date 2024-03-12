@@ -90,7 +90,7 @@ const ClaimTermsAndCreateAccountButton = ( { onCreateAccount = noop } ) => {
 const CreateAccount = ( props ) => {
 	const { allowShowExisting, onShowExisting, disabled } = props;
 
-	const [ claimModalOpen, setClaimModalOpen ] = useState( false );
+	const [ claimModalOpen, setClaimModalOpen ] = useState( true );
 	const { shouldClaimGoogleAdsAccount } = useShouldClaimGoogleAdsAccount();
 
 	const handleOnRequestClose = () => {
