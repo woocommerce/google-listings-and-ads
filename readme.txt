@@ -2,10 +2,10 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.9
-Tested up to: 6.4
+Tested up to: 6.5
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.6.1
+Stable tag: 2.6.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.6.2 - 2024-03-12 =
+* Dev - Fix E2E tests for gtags consent mode.
+* Fix - Fatal error when getAdsLinks response is null.
+* Fix - WordPress 6.4 Compatibility: The modal closed event is not sent when clicking on its overlay.
+* Tweak - WC 8.7 compatibility.
+* Tweak - WP 6.5 compatibility.
+
 = 2.6.1 - 2024-03-05 =
 * Add - Consider `ga_gtag_enabled=yes` for  WCGAI >= 2.
 * Add - Google Analytics consent mode support.
@@ -122,8 +129,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Add - Support the new product editor (Product Block Editor).
 * Dev - Fix the compatibility issue in starting E2E test environment due to the default charset change in MariaDB v11.3.1.
 * Fix - 401 handling for connected Ads accounts.
-
-= 2.5.18 - 2024-02-20 =
-* Fix - Prevent product queries by IDs if no arguments are supplied.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

@@ -1,5 +1,12 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 2.6.2 - 2024-03-12 =
+* Dev - Fix E2E tests for gtags consent mode.
+* Fix - Fatal error when getAdsLinks response is null.
+* Fix - WordPress 6.4 Compatibility: The modal closed event is not sent when clicking on its overlay.
+* Tweak - WC 8.7 compatibility.
+* Tweak - WP 6.5 compatibility.
+
 = 2.6.1 - 2024-03-05 =
 * Add - Consider `ga_gtag_enabled=yes` for  WCGAI >= 2.
 * Add - Google Analytics consent mode support.
