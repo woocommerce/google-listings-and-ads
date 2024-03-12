@@ -15,6 +15,7 @@ import {
 } from './constants';
 import { handleApiError } from '.~/utils/handleError';
 import { adaptAdsCampaign } from './adapters';
+import { fetchWithHeaders, awaitPromise } from './controls';
 
 /**
  * @typedef {import('.~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
@@ -1250,25 +1251,27 @@ export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
 
 export function* fetchGoogleAdsAccountStatus() {
 	try {
-		const response = yield apiFetch( {
+		const { data } = yield fetchWithHeaders( {
 			path: `${ API_NAMESPACE }/ads/account-status`,
 		} );
 
 		return {
 			type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
-			data: response,
+			data,
 		};
 	} catch ( error ) {
-		// @todo: we don't have the HTTP response status code from the error.
-		if ( error.message === 'Please accept the ads account invitation.' ) {
+		const errorBodyPromise = error?.json() || error?.text();
+		const errorData = yield awaitPromise( errorBodyPromise );
+
+		if ( error.status === 428 ) {
 			return {
 				type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
-				data: error,
+				data: errorData,
 			};
 		}
 
 		handleApiError(
-			error,
+			errorData,
 			__(
 				'There was an error getting the status of your Google Ads account.',
 				'google-listings-and-ads'

@@ -14,7 +14,7 @@ import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts'
 import ConnectAds from './connect-ads';
 
 const NonConnected = () => {
-	const { google, hasFinishedResolution } = useGoogleAccount();
+	const { google, isResolving } = useGoogleAccount();
 	const { existingAccounts, isResolving: isResolvingGoogleAdsAccount } =
 		useExistingGoogleAdsAccounts();
 	const [ ignoreExisting, setIgnoreExisting ] = useState( false );
@@ -28,7 +28,7 @@ const NonConnected = () => {
 	};
 
 	if (
-		! hasFinishedResolution ||
+		isResolving ||
 		isResolvingGoogleAdsAccount ||
 		isResolvingShouldClaimGoogleAdsAccount
 	) {
