@@ -314,7 +314,7 @@ class Merchant implements OptionsAwareInterface {
 	 */
 	public function link_ads_id( int $ads_id ): bool {
 		$account   = $this->get_account();
-		$ads_links = $account->getAdsLinks();
+		$ads_links = $account->getAdsLinks() ?? [];
 
 		// Stop early if we already have a link setup.
 		foreach ( $ads_links as $link ) {
