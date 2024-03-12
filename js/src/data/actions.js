@@ -1271,10 +1271,7 @@ export function* updateEnhancedAdsConversionStatus( status ) {
 			},
 		} );
 
-		return {
-			type: TYPES.RECEIVE_ALLOW_ENHANCED_CONVERSIONS,
-			data: response,
-		};
+		return receiveAllowEnhancedConversions( response );
 	} catch ( error ) {
 		handleApiError(
 			error,

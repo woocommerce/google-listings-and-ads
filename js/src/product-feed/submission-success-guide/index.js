@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useCallback } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -65,12 +65,12 @@ const pages = [
 	{
 		image,
 		content: <SetupSuccess />,
-		footer: <SetupSuccessFooter onModalClose={ handleGuideFinish } />,
+		actions: <SetupSuccessFooter onModalClose={ handleGuideFinish } />,
 	},
 	{
 		image,
 		content: <DynamicScreenContent />,
-		footer: <DynamicScreenFooter onModalClose={ handleGuideFinish } />,
+		actions: <DynamicScreenFooter onModalClose={ handleGuideFinish } />,
 	},
 ];
 
@@ -101,15 +101,11 @@ const SubmissionSuccessGuide = () => {
 		);
 	}, [] );
 
-	// @todo: Review whether we need that function since we have moved the buttons to be per page now.
-	const renderFinish = useCallback( () => null, [] );
-
 	return (
 		<Guide
 			className="gla-submission-success-guide"
 			backButtonText={ __( 'Back', 'google-listings-and-ads' ) }
 			pages={ pages }
-			renderFinish={ renderFinish }
 			onFinish={ handleGuideFinish }
 		/>
 	);

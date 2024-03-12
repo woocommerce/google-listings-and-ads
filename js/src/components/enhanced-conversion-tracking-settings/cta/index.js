@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useCallback, useEffect } from '@wordpress/element';
 import { Spinner } from '@woocommerce/components';
@@ -25,8 +26,8 @@ const CTA = ( {
 	),
 	disableLabel = __( 'Disable', 'google-listings-and-ads' ),
 	enableLabel = __( 'Enable', 'google-listings-and-ads' ),
-	onEnableClick,
-	onDisableClick,
+	onEnableClick = noop,
+	onDisableClick = noop,
 } ) => {
 	const {
 		startEnhancedConversionTOSPolling,
@@ -80,7 +81,7 @@ const CTA = ( {
 			ENHANCED_ADS_CONVERSION_STATUS.DISABLED
 		);
 
-		onDisableClick?.();
+		onDisableClick();
 	}, [
 		updateEnhancedAdsConversionStatus,
 		acceptedCustomerDataTerms,
@@ -96,26 +97,20 @@ const CTA = ( {
 			ENHANCED_ADS_CONVERSION_STATUS.ENABLED
 		);
 
-		onEnableClick?.();
+		onEnableClick();
 	}, [
 		updateEnhancedAdsConversionStatus,
 		acceptedCustomerDataTerms,
 		onEnableClick,
 	] );
 
-	if ( ! hasFinishedResolution ) {
-		return <Spinner />;
-	}
-
 	if (
-		! acceptedCustomerDataTerms &&
-		allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING
+		! hasFinishedResolution ||
+		( ! acceptedCustomerDataTerms &&
+			allowEnhancedConversions ===
+				ENHANCED_ADS_CONVERSION_STATUS.PENDING )
 	) {
-		return (
-			<>
-				<AppButton isSecondary disabled loading></AppButton>
-			</>
-		);
+		return <AppButton isSecondary disabled loading></AppButton>;
 	}
 
 	if ( ! acceptedCustomerDataTerms ) {

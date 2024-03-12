@@ -21,9 +21,7 @@ const DynamicScreenContent = () => {
 			<GuidePageContent
 				title={ __( 'Please wait', 'google-listings-and-ads' ) }
 			>
-				<div className="screen-content--loading">
-					<LoadingLabel />
-				</div>
+				<LoadingLabel />
 			</GuidePageContent>
 		);
 	}

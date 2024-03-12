@@ -19,6 +19,7 @@ const selectorName = 'getAdsCampaigns';
  * @property {Array<Campaign>|null} data Current campaigns obtained from merchant's Google Ads account if connected. It will be `null` before load finished.
  * @property {boolean} loading Whether the `data` is loading. It's equal to `isResolving` state of wp-data selector.
  * @property {boolean} loaded Whether the `data` is finished loading. It's equal to `hasFinishedResolution` state of wp-data selector.
+ * @property {Array<Campaign>|null} pmaxCampaigns PMAX campaigns filtered from the data.
  */
 
 /**
