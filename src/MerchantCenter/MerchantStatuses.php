@@ -21,6 +21,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -41,6 +43,8 @@ use WC_Product;
  * - ProductRepository
  * - TransientsInterface
  * - UpdateMerchantProductStatuses
+ * - UpdateAllProducts
+ * - DeleteAllProducts
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
@@ -195,7 +199,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @since 1.1.0
 	 */
 	public function clear_cache(): void {
-		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
+		$update_all_products_job = $this->container->get( UpdateAllProducts::class );
+		$delete_all_products_job = $this->container->get( DeleteAllProducts::class );
+
+		// Clear the cache if we are not in the middle of updating/deleting all products. Otherwise, we might update the product stats for each individual batch.
+		// See: ClearProductStatsCache::register
+		if ( $update_all_products_job->can_schedule( null ) && $delete_all_products_job->can_schedule( null ) ) {
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
+		}
 	}
 
 	/**
@@ -222,7 +233,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @since x.x.x
 	 */
 	public function clear_product_statuses_cache_and_issues(): void {
-		$this->clear_cache();
 		$this->delete_stale_issues();
 		$this->delete_product_statuses_count_intermediate_data();
 	}

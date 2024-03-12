@@ -186,6 +186,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 				ProductRepository::class,
 				BatchProductHelper::class,
 				MerchantCenterService::class,
+				MerchantStatuses::class,
 				...$arguments
 			);
 		} else {
