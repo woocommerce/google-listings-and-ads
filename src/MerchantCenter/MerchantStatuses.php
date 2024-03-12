@@ -442,7 +442,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$merchant       = $this->container->get( Merchant::class );
 		$account_issues = [];
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
+		$issues         = $merchant->get_accountstatus()->getAccountLevelIssues() ?? [];
+		foreach ( $issues as $issue ) {
 			$key = md5( $issue->getTitle() );
 
 			if ( isset( $account_issues[ $key ] ) ) {
