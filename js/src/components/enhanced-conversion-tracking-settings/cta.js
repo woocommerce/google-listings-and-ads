@@ -3,20 +3,18 @@
  */
 import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useCallback, useEffect } from '@wordpress/element';
+import { useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import {
-	ENHANCED_ADS_CONVERSION_STATUS,
-	ENHANCED_ADS_TOS_BASE_URL,
-} from '.~/constants';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
-import useAutoCheckEnhancedConversionTOS from '.~/hooks/useAutoCheckEnhancedConversionTOS';
+import useTermsPolling from './useTermsPolling';
+import useOpenTermsURL from './useOpenTermsURL';
 
 const CTA = ( {
 	acceptTermsLabel = __(
@@ -28,48 +26,24 @@ const CTA = ( {
 	onEnableClick = noop,
 	onDisableClick = noop,
 } ) => {
-	const {
-		startEnhancedConversionTOSPolling,
-		stopEnhancedConversionTOSPolling,
-	} = useAutoCheckEnhancedConversionTOS();
-	const { updateEnhancedAdsConversionStatus, invalidateResolution } =
-		useAppDispatch();
+	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 	const { acceptedCustomerDataTerms, hasFinishedResolution } =
 		useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
+	const { openTermsURL } = useOpenTermsURL();
+	useTermsPolling();
 
-	useEffect( () => {
-		if (
-			! acceptedCustomerDataTerms &&
-			allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING
-		) {
-			startEnhancedConversionTOSPolling();
-			return;
-		}
+	const handleTOS = useCallback(
+		( event ) => {
+			event.preventDefault();
 
-		stopEnhancedConversionTOSPolling();
-	}, [
-		acceptedCustomerDataTerms,
-		allowEnhancedConversions,
-		startEnhancedConversionTOSPolling,
-		stopEnhancedConversionTOSPolling,
-	] );
-
-	useEffect( () => {
-		if (
-			allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING
-		) {
-			invalidateResolution( 'getAcceptedCustomerDataTerms', [] );
-		}
-	}, [ allowEnhancedConversions, invalidateResolution ] );
-
-	const handleTOS = useCallback( () => {
-		window.open( ENHANCED_ADS_TOS_BASE_URL, '_blank' );
-
-		updateEnhancedAdsConversionStatus(
-			ENHANCED_ADS_CONVERSION_STATUS.PENDING
-		);
-	}, [ updateEnhancedAdsConversionStatus ] );
+			openTermsURL();
+			updateEnhancedAdsConversionStatus(
+				ENHANCED_ADS_CONVERSION_STATUS.PENDING
+			);
+		},
+		[ updateEnhancedAdsConversionStatus, openTermsURL ]
+	);
 
 	const handleDisable = useCallback( () => {
 		if ( ! acceptedCustomerDataTerms ) {

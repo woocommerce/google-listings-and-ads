@@ -9,9 +9,10 @@ import { __ } from '@wordpress/i18n';
 import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import Section from '.~/wcdl/section';
 import PendingNotice from '.~/components/enhanced-conversion-tracking-settings/pending-notice';
-import CTA from './cta';
+import Toggle from './toggle';
 
 const DESCRIPTION = (
 	<p>
@@ -28,18 +29,21 @@ const TITLE = __( 'Enhanced Conversion Tracking', 'google-listings-and-ads' );
  * Renders the settings panel for enhanced conversion tracking
  */
 const EnhancedConversionTrackingSettings = () => {
+	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
+
+	if ( ! googleAdsAccount || ! googleAdsAccount.id ) {
+		return null;
+	}
 
 	return (
 		<Section title={ TITLE } description={ DESCRIPTION }>
 			<Section.Card>
 				<Section.Card.Body>
-					{ allowEnhancedConversions ===
-						ENHANCED_ADS_CONVERSION_STATUS.PENDING &&
-						! acceptedCustomerDataTerms && <PendingNotice /> }
+					{ ! acceptedCustomerDataTerms && <PendingNotice /> }
 
-					<CTA />
+					<Toggle />
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>
