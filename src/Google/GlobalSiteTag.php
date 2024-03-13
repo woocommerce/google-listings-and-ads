@@ -405,7 +405,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 			$purchase_user_data_gtag = sprintf( 'gtag("set", "user_data", %s)', wp_json_encode( $ec_data ) );
 
-			wp_print_inline_script_tag( $purchase_user_data_gtag );
+			$this->add_inline_event_script( $purchase_user_data_gtag );
 		}
 
 		$conversion_gtag_info =
@@ -481,7 +481,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $language ),
 			join( ',', $item_info ),
 		);
-		wp_print_inline_script_tag( $purchase_page_gtag );
+		$this->add_inline_event_script( $purchase_page_gtag );
 	}
 
 	/**
