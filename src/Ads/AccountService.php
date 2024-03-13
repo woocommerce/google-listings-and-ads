@@ -231,9 +231,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 */
 	public function get_ads_account_has_access() {
 		// Check if ads id is present.
-		$ads_id = $this->options->get_ads_id();
-
-		if ( empty( $ads_id ) ) {
+		if ( ! $this->options->get_ads_id() ) {
 			throw new Exception( __( 'Ads id not present', 'google-listings-and-ads' ) );
 		}
 
