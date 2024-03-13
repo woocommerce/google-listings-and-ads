@@ -216,10 +216,13 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @return array
 	 */
 	public function get_connected_status(): array {
-		$id     = $this->options->get_merchant_id();
+		$id                    = $this->options->get_merchant_id();
+		$wpcom_rest_api_status = $this->options->get( OptionsInterface::WPCOM_REST_API_STATUS );
+
 		$status = [
-			'id'     => $id,
-			'status' => $id ? 'connected' : 'disconnected',
+			'id'                    => $id,
+			'status'                => $id ? 'connected' : 'disconnected',
+			'wpcom_rest_api_status' => $wpcom_rest_api_status === 'approved' ? 'approved' : 'disapproved',
 		];
 
 		$incomplete = $this->state->last_incomplete_step();
