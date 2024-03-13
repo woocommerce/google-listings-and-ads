@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -116,6 +117,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( Merchant::class, $this->merchant );
 		$this->container->share( Middleware::class, $this->middleware );
 		$this->container->share( AdsAccountState::class, $this->state );
+		$this->container->share( MerchantAccountState::class, $this->state );
 		$this->container->share( TransientsInterface::class, $this->transients );
 
 		$this->account = new AccountService( $this->container );

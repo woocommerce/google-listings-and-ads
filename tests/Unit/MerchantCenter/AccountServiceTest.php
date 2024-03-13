@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -136,6 +137,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( ShippingRateTable::class, $this->rate_table );
 		$this->container->share( ShippingTimeTable::class, $this->time_table );
 		$this->container->share( MerchantAccountState::class, $this->state );
+		$this->container->share( AdsAccountState::class, $this->state );
 		$this->container->share( TransientsInterface::class, $this->transients );
 
 		$this->account = new AccountService( $this->container );
