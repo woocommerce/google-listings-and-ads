@@ -11,11 +11,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use Exception;
 
@@ -29,6 +29,7 @@ defined( 'ABSPATH' ) || exit;
  * - AdsAccountState
  * - AdsConversionAction
  * - Merchant
+ * - MerchantAccountState
  * - Middleware
  * - TransientsInterface
  *

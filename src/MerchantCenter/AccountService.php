@@ -15,13 +15,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use Exception;
 
@@ -32,6 +32,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * Container used to access:
  * - Ads
+ * - AdsAccountState
  * - CleanupSyncedProducts
  * - Merchant
  * - MerchantAccountState
