@@ -245,15 +245,15 @@ class AccountService implements OptionsAwareInterface, Service {
 			throw new Exception( __( 'Google account is not connected', 'google-listings-and-ads' ) );
 		}
 
-		$status             = $this->container->get( Ads::class )->has_access( $email );
+		$has_access         = $this->container->get( Ads::class )->has_access( $email );
 		$accept_invite_link = $this->options->get( OptionsInterface::ADS_BILLING_URL, '' );
 
 		// If we have access, complete the step so that it won't be called next time.
-		if ( $status ) {
+		if ( $has_access ) {
 			$this->state->complete_step( 'account_access' );
 
 			return [
-				'has_access'  => $status,
+				'has_access'  => $has_access,
 				'invite_link' => $accept_invite_link,
 			];
 		}
@@ -274,6 +274,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 */
 	public function disconnect() {
 		$this->options->delete( OptionsInterface::ADS_ACCOUNT_CURRENCY );
+		$this->options->delete( OptionsInterface::ADS_ACCOUNT_OCID );
 		$this->options->delete( OptionsInterface::ADS_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::ADS_BILLING_URL );
 		$this->options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
