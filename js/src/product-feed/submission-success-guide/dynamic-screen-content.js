@@ -21,14 +21,12 @@ const DynamicScreenContent = () => {
 			<GuidePageContent
 				title={ __( 'Please wait', 'google-listings-and-ads' ) }
 			>
-				<div className="screen-content--loading">
-					<LoadingLabel />
-				</div>
+				<LoadingLabel />
 			</GuidePageContent>
 		);
 	}
 
-	if ( pmaxCampaigns.length && glaData.initialWpData.adsId ) {
+	if ( pmaxCampaigns.length && glaData.adsConnected ) {
 		return <EnhancedConversion />;
 	}
 
