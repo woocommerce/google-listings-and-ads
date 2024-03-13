@@ -335,21 +335,15 @@ class AccountService implements OptionsAwareInterface, Service {
 						}
 						break;
 					case 'link_ads':
-						$ads_id = $this->options->get_ads_id();
-						// As MC and Ads account can be connected interchangeably, this check is necessary.
-						if ( ! empty( $ads_id ) && ! empty( $merchant_id ) ) {
-							$this->link_ads_account();
-						} else {
-							/**
-							 * Mark the step as pending, save the state and
-							 * continue the foreach loop with `continue 2`.
-							 *
-							 * Marking the step as pending will make sure to run this step next time.
-							 */
+						// Continue to next step if Ads account is not connected yet.
+						if ( ! $this->options->get_ads_id() ) {
+							// Save step as pending and continue the foreach loop with `continue 2`.
 							$state[ $name ]['status'] = MerchantAccountState::STEP_PENDING;
 							$this->state->update( $state );
 							continue 2;
 						}
+
+						$this->link_ads_account();
 						break;
 					default:
 						throw new Exception(
