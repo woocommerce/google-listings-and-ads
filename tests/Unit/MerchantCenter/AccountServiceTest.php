@@ -627,6 +627,10 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_setup_account_step_link_ads_without_ads() {
+		$mc_account_state = [
+			'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+		];
+
 		$this->options->expects( $this->any() )
 			->method( 'get_ads_id' )
 			->willReturn( 0 );
@@ -635,42 +639,45 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
 
-		$this->merchant->expects( $this->never() )
-			->method( 'link_ads_id' );
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn( $mc_account_state );
 
-		$this->ads->expects( $this->never() )
-			->method( 'accept_merchant_link' );
+		$this->state->expects( $this->once() )
+			->method( 'update' )
+			->with( $mc_account_state );
 
-		$this->account->setup_account( self::TEST_ACCOUNT_ID );
+		$this->middleware->expects( $this->never() )
+			->method( 'link_ads_account' );
+
+		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
 	}
 
-	/**
-	 * @group testme
-	 */
-	public function test_setup_account_step_link_ads_without_ads_id() {
+	public function test_setup_account_step_link_ads_without_mc() {
+		$mc_account_state = [
+			'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+		];
+
 		$this->options->expects( $this->any() )
 			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ADS_ID );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
 			->willReturn( 0 );
 
 		$this->state->expects( $this->once() )
 			->method( 'get' )
-			->willReturn(
-				[
-					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
-				]
-			);
+			->willReturn( $mc_account_state );
 
-		$this->options->expects( $this->any() )
-			->method( 'get_merchant_id' )
-			->willReturn( self::TEST_ACCOUNT_ID );
+		$this->state->expects( $this->once() )
+			->method( 'update' )
+			->with( $mc_account_state );
 
-		$this->merchant->expects( $this->never() )
-			->method( 'link_ads_id' );
+		$this->middleware->expects( $this->never() )
+			->method( 'link_ads_account' );
 
-		$this->ads->expects( $this->never() )
-			->method( 'accept_merchant_link' );
-
-		$this->account->setup_account( self::TEST_ACCOUNT_ID );
+		$this->assertEquals( [ 'id' => 0 ], $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
 	}
 
 	public function test_switch_url_invalid() {
