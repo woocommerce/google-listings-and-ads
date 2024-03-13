@@ -1271,10 +1271,7 @@ export function* updateEnhancedAdsConversionStatus( status ) {
 			},
 		} );
 
-		return {
-			type: TYPES.RECEIVE_ALLOW_ENHANCED_CONVERSIONS,
-			data: response,
-		};
+		return receiveAllowEnhancedConversions( response );
 	} catch ( error ) {
 		handleApiError(
 			error,
@@ -1291,4 +1288,22 @@ export function receiveAllowEnhancedConversions( data ) {
 		type: TYPES.RECEIVE_ALLOW_ENHANCED_CONVERSIONS,
 		data,
 	};
+}
+
+export function* fetchAcceptedCustomerDataTerms() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/accepted-customer-data-terms`,
+		} );
+
+		return receiveAcceptedTerms( data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to complete request. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }

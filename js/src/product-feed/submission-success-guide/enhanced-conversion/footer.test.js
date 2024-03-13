@@ -53,12 +53,10 @@ describe( 'Enhanced Conversion Footer', () => {
 	test( 'Prompt the user to accept the TOS', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: null,
-			isResolving: false,
 		} );
 
 		render( <Footer /> );
@@ -69,44 +67,40 @@ describe( 'Enhanced Conversion Footer', () => {
 	} );
 
 	test( 'Click on enable button callback', () => {
-		const handleOnClose = jest.fn().mockName( 'On button click' );
+		const handleOnModalClose = jest.fn().mockName( 'On button click' );
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.DISABLED,
-			isResolving: false,
 		} );
 
-		render( <Footer onClose={ handleOnClose } /> );
+		render( <Footer onModalClose={ handleOnModalClose } /> );
 
 		const button = screen.getByRole( 'button', { name: 'Confirm' } );
 		userEvent.click( button );
 
-		expect( handleOnClose ).toHaveBeenCalledTimes( 1 );
+		expect( handleOnModalClose ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	test( 'Click on disable button callback', () => {
-		const handleOnClose = jest.fn().mockName( 'On button click' );
+		const handleOnModalClose = jest.fn().mockName( 'On button click' );
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
-			isResolving: false,
 		} );
 
-		render( <Footer onClose={ handleOnClose } /> );
+		render( <Footer onModalClose={ handleOnModalClose } /> );
 
 		const button = screen.getByRole( 'button', { name: 'Disable' } );
 		userEvent.click( button );
 
-		expect( handleOnClose ).toHaveBeenCalledTimes( 1 );
+		expect( handleOnModalClose ).toHaveBeenCalledTimes( 1 );
 	} );
 } );

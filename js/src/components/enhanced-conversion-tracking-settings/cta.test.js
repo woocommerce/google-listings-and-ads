@@ -51,7 +51,7 @@ import '@testing-library/jest-dom';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
-import CTA from './index';
+import CTA from './cta';
 
 describe( 'Enhanced Conversion CTA', () => {
 	beforeEach( () => {
@@ -61,13 +61,11 @@ describe( 'Enhanced Conversion CTA', () => {
 	test( 'When not yet loaded, should render a loading spinner', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
-			isResolving: false,
 			hasFinishedResolution: false,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: null,
-			isResolving: false,
 		} );
 
 		render( <CTA /> );
@@ -78,13 +76,11 @@ describe( 'Enhanced Conversion CTA', () => {
 	test( 'Prompt the user to sign the TOS', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: null,
-			isResolving: false,
 		} );
 
 		render(
@@ -98,13 +94,11 @@ describe( 'Enhanced Conversion CTA', () => {
 	test( 'Prompt the user to enable enhanced conversion tracking if the TOS has been accepted', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.DISABLED,
-			isResolving: false,
 		} );
 
 		render( <CTA enableLabel="Confirm" /> );
@@ -114,13 +108,11 @@ describe( 'Enhanced Conversion CTA', () => {
 	test( 'Prompt the user to disable enhanced conversion tracking if enabled', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
-			isResolving: false,
 		} );
 
 		render( <CTA disableLabel="Disable tracking" /> );
@@ -130,13 +122,11 @@ describe( 'Enhanced Conversion CTA', () => {
 	test( 'Render a spinner when the status is set to pending', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.PENDING,
-			isResolving: false,
 		} );
 
 		render( <CTA /> );
@@ -149,13 +139,11 @@ describe( 'Enhanced Conversion CTA', () => {
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: null,
-			isResolving: false,
 		} );
 
 		render( <CTA /> );
@@ -171,13 +159,11 @@ describe( 'Enhanced Conversion CTA', () => {
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: null,
-			isResolving: false,
 		} );
 
 		render( <CTA onEnableClick={ handleOnEnable } /> );
@@ -193,13 +179,11 @@ describe( 'Enhanced Conversion CTA', () => {
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
-			isResolving: false,
 		} );
 
 		render( <CTA onEnableClick={ handleOnEnable } /> );
@@ -215,13 +199,11 @@ describe( 'Enhanced Conversion CTA', () => {
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
-			isResolving: false,
 		} );
 
 		render( <CTA onDisableClick={ handleOnDisable } /> );
@@ -237,13 +219,11 @@ describe( 'Enhanced Conversion CTA', () => {
 
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
-			isResolving: false,
 		} );
 
 		render( <CTA onDisableClick={ handleOnDisable } /> );
@@ -257,13 +237,11 @@ describe( 'Enhanced Conversion CTA', () => {
 	test( 'Should render the enable button if TOS has been accepted and the status is not enabled', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: null,
-			isResolving: false,
 		} );
 
 		render( <CTA /> );

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useCallback } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -49,8 +49,12 @@ const handleGuideFinish = ( e ) => {
 
 	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
 	// here is a workaround by identifying the close button's data-aciton attribute.
-	const target = e.currentTarget || e.target;
-	const action = target.dataset.action || 'dismiss';
+	let action = 'dismiss';
+
+	if ( e ) {
+		const target = e.currentTarget || e.target;
+		action = target.dataset.action || action;
+	}
 	recordGlaEvent( GLA_MODAL_CLOSED_EVENT_NAME, {
 		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 		action,
@@ -61,16 +65,16 @@ const pages = [
 	{
 		image,
 		content: <SetupSuccess />,
-		footer: <SetupSuccessFooter onClose={ handleGuideFinish } />,
+		actions: <SetupSuccessFooter onModalClose={ handleGuideFinish } />,
 	},
 	{
 		image,
 		content: <DynamicScreenContent />,
-		footer: <DynamicScreenFooter onClose={ handleGuideFinish } />,
+		actions: <DynamicScreenFooter onModalClose={ handleGuideFinish } />,
 	},
 ];
 
-if ( ! glaData.initialWpData.adsId ) {
+if ( ! glaData.adsConnected ) {
 	pages.pop();
 }
 
@@ -97,15 +101,11 @@ const SubmissionSuccessGuide = () => {
 		);
 	}, [] );
 
-	// @todo: Review whether we need that function since we have moved the buttons to be per page now.
-	const renderFinish = useCallback( () => null, [] );
-
 	return (
 		<Guide
 			className="gla-submission-success-guide"
 			backButtonText={ __( 'Back', 'google-listings-and-ads' ) }
 			pages={ pages }
-			renderFinish={ renderFinish }
 			onFinish={ handleGuideFinish }
 		/>
 	);

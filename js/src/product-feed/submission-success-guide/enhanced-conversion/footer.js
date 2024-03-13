@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useCallback, Fragment } from '@wordpress/element';
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -12,7 +12,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
 import CTA from '.~/components/enhanced-conversion-tracking-settings/cta';
 
-const Footer = ( { onClose = noop } ) => {
+const Footer = ( { onModalClose = noop } ) => {
 	const { createNotice } = useDispatchCoreNotices();
 
 	const handleEnableOrDisableClick = useCallback( () => {
@@ -21,8 +21,8 @@ const Footer = ( { onClose = noop } ) => {
 			__( 'Status successfully set', 'google-listings-and-ads' )
 		);
 
-		onClose();
-	}, [ createNotice, onClose ] );
+		onModalClose();
+	}, [ createNotice, onModalClose ] );
 
 	return (
 		<Fragment>
@@ -32,7 +32,7 @@ const Footer = ( { onClose = noop } ) => {
 				isSecondary
 				// @todo: review data-action label
 				data-action="view-product-feed"
-				onClick={ onClose }
+				onClick={ onModalClose }
 			>
 				{ __( 'Close', 'google-listings-and-ads' ) }
 			</AppButton>

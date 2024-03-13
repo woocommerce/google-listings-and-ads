@@ -7,9 +7,9 @@
 	"require": {
 		"php": ">=7.4",
 		"ext-json": "*",
-		"automattic/jetpack-autoloader": "^2.4",
-		"automattic/jetpack-config": "^1.4",
-		"automattic/jetpack-connection": "^1.40",
+		"automattic/jetpack-autoloader": "^3.0",
+		"automattic/jetpack-config": "^2.0",
+		"automattic/jetpack-connection": "^2.3",
 		"google/apiclient": "^2.15",
 		"google/apiclient-services": "~0.312",
 		"googleads/google-ads-php": "^19.2",
