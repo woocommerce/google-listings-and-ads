@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -121,6 +122,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( Merchant::class, $this->merchant );
 		$this->container->share( Middleware::class, $this->middleware );
 		$this->container->share( AdsAccountState::class, $this->state );
+		$this->container->share( MerchantAccountState::class, $this->state );
 		$this->container->share( TransientsInterface::class, $this->transients );
 		$this->container->share( Connection::class, $this->connection );
 
@@ -353,10 +355,6 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_setup_account_step_link_merchant_no_ads_id() {
-		$ads_account_state = [
-			'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
-		];
-
 		$this->options->expects( $this->any() )
 			->method( 'get_ads_id' )
 			->willReturn( 0 );
@@ -367,16 +365,16 @@ class AccountServiceTest extends UnitTest {
 
 		$this->state->expects( $this->once() )
 			->method( 'get' )
-			->willReturn( $ads_account_state );
+			->willReturn(
+				[
+					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
 
-		$this->state->expects( $this->once() )
-			->method( 'update' )
-			->with( $ads_account_state );
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'An Ads account must be connected' );
 
-		$this->middleware->expects( $this->never() )
-			->method( 'link_ads_account' );
-
-		$this->assertEquals( [ 'id' => 0 ], $this->account->setup_account() );
+		$this->account->setup_account();
 	}
 
 	public function test_setup_account_step_link_merchant_no_merchant_id() {
