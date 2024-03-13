@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use Exception;
 
@@ -273,9 +274,13 @@ class AccountService implements OptionsAwareInterface, Service {
 			throw new Exception( 'An Ads account must be connected' );
 		}
 
+		$mc_state = $this->container->get( MerchantAccountState::class );
+
 		// Create link for Merchant and accept it in Ads.
 		$this->container->get( Merchant::class )->link_ads_id( $this->options->get_ads_id() );
 		$this->container->get( Ads::class )->accept_merchant_link( $this->options->get_merchant_id() );
+
+		$mc_state->complete_step( 'link_ads' );
 	}
 
 	/**
