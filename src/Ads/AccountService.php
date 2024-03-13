@@ -217,9 +217,27 @@ class AccountService implements OptionsAwareInterface, Service {
 			return [ 'status' => $status ];
 		}
 
+		$billing_url = $this->options->get( OptionsInterface::ADS_BILLING_URL );
+
+		// Check if user has provided the access and ocid is present.
+		$connection_status = $this->container->get( Connection::class )->get_status();
+		$email             = $connection_status['email'] ?? '';
+		$has_access        = $this->container->get( Ads::class )->has_access( $email );
+		$ocid              = $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID, null );
+
+		// Deep link.
+		if ( $has_access && $ocid ) {
+			$billing_url = add_query_arg(
+				[
+					'ocid' => $ocid,
+				],
+				'https://ads.google.com/aw/signup/payment'
+			);
+		}
+
 		return [
 			'status'      => $status,
-			'billing_url' => $this->options->get( OptionsInterface::ADS_BILLING_URL ),
+			'billing_url' => $billing_url,
 		];
 	}
 
