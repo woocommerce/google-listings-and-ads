@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { noop } from 'lodash';
 import { useState } from '@wordpress/element';
 
 /**
@@ -13,7 +14,11 @@ import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import ConnectAds from './connect-ads';
 
-const NonConnected = () => {
+const NonConnected = ( {
+	onCreateAccount = noop,
+	showClaimModal = false,
+	onClaimModalRequestClose = noop,
+} ) => {
 	const { google, isResolving } = useGoogleAccount();
 	const { existingAccounts, isResolving: isResolvingGoogleAdsAccount } =
 		useExistingGoogleAdsAccounts();
@@ -48,6 +53,9 @@ const NonConnected = () => {
 				allowShowExisting={ ignoreExisting }
 				onShowExisting={ handleShowExisting }
 				disabled={ disabled }
+				onCreateAccount={ onCreateAccount }
+				onClaimModalRequestClose={ onClaimModalRequestClose }
+				showClaimModal={ showClaimModal }
 			/>
 		);
 	}

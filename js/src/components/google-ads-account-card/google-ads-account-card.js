@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -37,6 +37,7 @@ export default function GoogleAdsAccountCard() {
 		isResolving: isResolvingGoogleAdsAccount,
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
 	} = useGoogleAdsAccount();
+	const [ showClaimModal, setShowClaimModal ] = useState( false );
 	const { hasAccess } = useGoogleAdsAccountStatus();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
@@ -75,6 +76,14 @@ export default function GoogleAdsAccountCard() {
 		checkAccessChange();
 	} );
 
+	const handleOnCreateAccount = () => {
+		setShowClaimModal( true );
+	};
+
+	const handleClaimModalRequestClose = () => {
+		setShowClaimModal( false );
+	};
+
 	if (
 		isResolvingGoogleAccount ||
 		isResolvingGoogleAdsAccount ||
@@ -90,7 +99,13 @@ export default function GoogleAdsAccountCard() {
 		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ||
 		shouldClaimGoogleAdsAccount
 	) {
-		return <NonConnected />;
+		return (
+			<NonConnected
+				onCreateAccount={ handleOnCreateAccount }
+				showClaimModal={ showClaimModal }
+				onClaimModalRequestClose={ handleClaimModalRequestClose }
+			/>
+		);
 	}
 
 	if ( ! scope.adsRequired ) {
