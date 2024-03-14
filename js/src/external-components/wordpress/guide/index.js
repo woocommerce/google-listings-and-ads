@@ -21,12 +21,6 @@ import FinishButton from './finish-button';
 import './index.scss';
 
 /**
- * @callback renderFinishCallback
- * @param {JSX.Element} finishButton The built-in finish button of this Guide component.
- * @return {JSX.Element} React element for rendering.
- */
-
-/**
  * `Guide` is a React component that renders a user guide in a modal.
  * The guide consists of several pages which the user can step through one by one.
  * The guide is finished when the modal is closed or when the user clicks *Finish* on the last page of the guide.

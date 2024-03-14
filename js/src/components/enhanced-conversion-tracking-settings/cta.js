@@ -83,7 +83,7 @@ const CTA = ( {
 			allowEnhancedConversions ===
 				ENHANCED_ADS_CONVERSION_STATUS.PENDING )
 	) {
-		return <AppButton isSecondary disabled loading></AppButton>;
+		return <AppButton isSecondary disabled loading />;
 	}
 
 	if ( ! acceptedCustomerDataTerms ) {

@@ -8,15 +8,19 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '.~/data/constants';
 
+const selectorName = 'getAllowEnhancedConversions';
+
 const useAllowEnhancedConversions = () => {
 	return useSelect( ( select ) => {
-		const allowEnhancedConversions =
-			select( STORE_KEY ).getAllowEnhancedConversions();
-		const isResolving = select( STORE_KEY ).isResolving(
-			'getAllowEnhancedConversions'
-		);
+		const selector = select( STORE_KEY );
 
-		return { allowEnhancedConversions, isResolving };
+		return {
+			allowEnhancedConversions: selector[ selectorName ](),
+			hasFinishedResolution: selector.hasFinishedResolution(
+				selectorName,
+				[]
+			),
+		};
 	}, [] );
 };
 

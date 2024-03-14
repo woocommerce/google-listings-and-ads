@@ -28,10 +28,12 @@ const TOGGLE_LABEL_MAP = {
 const Toggle = () => {
 	const { updateEnhancedAdsConversionStatus, invalidateResolution } =
 		useAppDispatch();
-	const { allowEnhancedConversions, isResolving } =
+	const { allowEnhancedConversions, hasFinishedResolution } =
 		useAllowEnhancedConversions();
-	const { acceptedCustomerDataTerms, hasFinishedResolution } =
-		useAcceptedCustomerDataTerms();
+	const {
+		acceptedCustomerDataTerms,
+		hasFinishedResolution: hasResolvedAcceptedCustomerDataTerms,
+	} = useAcceptedCustomerDataTerms();
 
 	useEffect( () => {
 		if (
@@ -56,7 +58,7 @@ const Toggle = () => {
 		[ updateEnhancedAdsConversionStatus, acceptedCustomerDataTerms ]
 	);
 
-	if ( isResolving ) {
+	if ( ! hasFinishedResolution ) {
 		return <Spinner />;
 	}
 
@@ -66,7 +68,10 @@ const Toggle = () => {
 				allowEnhancedConversions ===
 				ENHANCED_ADS_CONVERSION_STATUS.ENABLED
 			}
-			disabled={ ! hasFinishedResolution || ! acceptedCustomerDataTerms }
+			disabled={
+				! hasResolvedAcceptedCustomerDataTerms ||
+				! acceptedCustomerDataTerms
+			}
 			onChange={ handleOnChange }
 			label={
 				TOGGLE_LABEL_MAP[ allowEnhancedConversions ] ||
