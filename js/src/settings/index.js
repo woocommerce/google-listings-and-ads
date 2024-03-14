@@ -17,6 +17,7 @@ import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
+import EnableNewProductSyncNotice from '.~/components/enable-new-product-sync-notice';
 import NavigationClassic from '.~/components/navigation-classic';
 import './index.scss';
 
@@ -59,6 +60,7 @@ const Settings = () => {
 
 	return (
 		<div className={ pageClassName }>
+			<EnableNewProductSyncNotice />
 			<NavigationClassic />
 			<ContactInformationPreview />
 			<LinkedAccounts />
