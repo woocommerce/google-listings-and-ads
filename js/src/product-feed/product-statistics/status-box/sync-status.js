@@ -66,7 +66,14 @@ function getSyncResult( {
  * @return {JSX.Element} The status for the Product Sync
  */
 function SyncStatus() {
-	const { data } = useAppSelectDispatch( 'getMCProductStatistics' );
+	const { data, hasFinishedResolution } = useAppSelectDispatch(
+		'getMCProductStatistics'
+	);
+
+	if ( ! hasFinishedResolution ) {
+		return null;
+	}
+
 	const { Icon, status, description } = getSyncResult( data );
 
 	return (
