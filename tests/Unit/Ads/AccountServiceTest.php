@@ -521,7 +521,40 @@ class AccountServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_ads_account_does_not_have_access() {
+	public function test_get_ads_account_has_access() {
+		$this->connection->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@domain.com' ] );
+
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'complete_step' )
+			->with( 'account_access' );
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_BILLING_URL, '' )
+			->willReturn( self::TEST_BILLING_URL );
+
+		$this->state->method( 'last_incomplete_step' )
+			->willReturn( 'conversion_action' );
+
+		$this->ads->method( 'has_access' )
+			->with( 'test@domain.com' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'has_access'  => true,
+				'step'        => 'conversion_action',
+				'invite_link' => self::TEST_BILLING_URL,
+			],
+			$this->account->get_ads_account_has_access()
+		);
+	}
+
+	public function test_get_ads_account_has_access_not_claimed() {
 		$this->connection->method( 'get_status' )
 			->willReturn( [ 'email' => 'test@domain.com' ] );
 
@@ -533,6 +566,9 @@ class AccountServiceTest extends UnitTest {
 			->with( OptionsInterface::ADS_BILLING_URL, '' )
 			->willReturn( self::TEST_BILLING_URL );
 
+		$this->state->method( 'last_incomplete_step' )
+			->willReturn( 'account_access' );
+
 		$this->ads->method( 'has_access' )
 			->with( 'test@domain.com' )
 			->willReturn( false );
@@ -540,10 +576,17 @@ class AccountServiceTest extends UnitTest {
 		$this->expectException( ExceptionWithResponseData::class );
 		$this->expectExceptionMessage( 'Please accept the ads account invitation.' );
 
-		$this->account->get_ads_account_has_access();
+		$this->assertEquals(
+			[
+				'has_access'  => false,
+				'step'        => 'account_access',
+				'invite_link' => self::TEST_BILLING_URL,
+			],
+			$this->account->get_ads_account_has_access()
+		);
 	}
 
-	public function test_get_ads_account_has_access_throws_exception_for_no_google_account() {
+	public function test_get_ads_account_has_access_without_google_id() {
 		$this->connection->method( 'get_status' )
 			->willReturn( [] );
 
@@ -564,7 +607,7 @@ class AccountServiceTest extends UnitTest {
 		$this->account->get_ads_account_has_access();
 	}
 
-	public function test_get_ads_account_has_access_ads_id_not_present() {
+	public function test_get_ads_account_has_access_without_ads_id() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
 			->willReturn( 0 );

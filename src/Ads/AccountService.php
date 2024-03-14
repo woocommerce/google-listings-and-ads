@@ -270,6 +270,7 @@ class AccountService implements OptionsAwareInterface, Service {
 
 			return [
 				'has_access'  => $has_access,
+				'step'        => $this->state->last_incomplete_step(),
 				'invite_link' => $accept_invite_link,
 			];
 		}
@@ -280,6 +281,7 @@ class AccountService implements OptionsAwareInterface, Service {
 			null,
 			[
 				'has_access'  => false,
+				'step'        => $this->state->last_incomplete_step(),
 				'invite_link' => $accept_invite_link,
 			]
 		);
