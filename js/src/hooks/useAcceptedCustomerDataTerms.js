@@ -12,12 +12,11 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
 const selectorName = 'getAcceptedCustomerDataTerms';
 
 const useAcceptedCustomerDataTerms = () => {
-	const { hasGoogleAdsConnection, hasFinishedResolution } =
-		useGoogleAdsAccount();
+	const { googleAdsAccount, hasFinishedResolution } = useGoogleAdsAccount();
 
 	return useSelect(
 		( select ) => {
-			if ( ! hasGoogleAdsConnection ) {
+			if ( ! googleAdsAccount || ! googleAdsAccount.id ) {
 				return {
 					acceptedCustomerDataTerms: null,
 					hasFinishedResolution,
@@ -34,7 +33,7 @@ const useAcceptedCustomerDataTerms = () => {
 				),
 			};
 		},
-		[ hasGoogleAdsConnection, hasFinishedResolution ]
+		[ googleAdsAccount, hasFinishedResolution ]
 	);
 };
 

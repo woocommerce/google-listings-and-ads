@@ -19,6 +19,13 @@ jest.mock( '.~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' ).mockReturnValue( {} )
 );
 
+const CONNECTED_GOOGLE_ADS_ACCOUNT = {
+	id: 777777,
+	currency: 'PLN',
+	symbol: 'zł',
+	status: 'connected',
+};
+
 describe( 'useAcceptedCustomerDataTerms', () => {
 	it( 'Returns the correct status when set to true', () => {
 		useGoogleAccount.mockReturnValue( {
@@ -31,7 +38,7 @@ describe( 'useAcceptedCustomerDataTerms', () => {
 		} );
 
 		useGoogleAdsAccount.mockReturnValue( {
-			hasGoogleAdsConnection: true,
+			googleAdsAccount: CONNECTED_GOOGLE_ADS_ACCOUNT,
 			hasFinishedResolution: true,
 		} );
 
