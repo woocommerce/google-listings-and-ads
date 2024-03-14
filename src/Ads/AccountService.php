@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -30,6 +31,7 @@ defined( 'ABSPATH' ) || exit;
  * - AdsConversionAction
  * - Connection
  * - Merchant
+ * - MerchantAccountState
  * - Middleware
  * - TransientsInterface
  *
@@ -167,21 +169,15 @@ class AccountService implements OptionsAwareInterface, Service {
 						break;
 
 					case 'link_merchant':
-						$merchant_id = $this->options->get_merchant_id();
-						// As MC and Ads account can be connected interchangeably, this check is necessary.
-						if ( ! empty( $ads_id ) && ! empty( $merchant_id ) ) {
-							$this->link_merchant_account();
-						} else {
-							/**
-							 * Mark the step as pending, save the state and
-							 * continue the foreach loop with `continue 2`.
-							 *
-							 * Marking the step as pending will make sure to run this step next time.
-							 */
+						// Continue to next step if the MC account is not connected yet.
+						if ( ! $this->options->get_merchant_id() ) {
+							// Save step as pending and continue the foreach loop with `continue 2`.
 							$state[ $name ]['status'] = AdsAccountState::STEP_PENDING;
 							$this->state->update( $state );
 							continue 2;
 						}
+
+						$this->link_merchant_account();
 						break;
 
 					case 'account_access':
@@ -221,9 +217,27 @@ class AccountService implements OptionsAwareInterface, Service {
 			return [ 'status' => $status ];
 		}
 
+		$billing_url = $this->options->get( OptionsInterface::ADS_BILLING_URL );
+
+		// Check if user has provided the access and ocid is present.
+		$connection_status = $this->container->get( Connection::class )->get_status();
+		$email             = $connection_status['email'] ?? '';
+		$has_access        = $this->container->get( Ads::class )->has_access( $email );
+		$ocid              = $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID, null );
+
+		// Deep link.
+		if ( $has_access && $ocid ) {
+			$billing_url = add_query_arg(
+				[
+					'ocid' => $ocid,
+				],
+				'https://ads.google.com/aw/signup/payment'
+			);
+		}
+
 		return [
 			'status'      => $status,
-			'billing_url' => $this->options->get( OptionsInterface::ADS_BILLING_URL ),
+			'billing_url' => $billing_url,
 		];
 	}
 
@@ -235,9 +249,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 */
 	public function get_ads_account_has_access() {
 		// Check if ads id is present.
-		$ads_id = $this->options->get_ads_id();
-
-		if ( empty( $ads_id ) ) {
+		if ( ! $this->options->get_ads_id() ) {
 			throw new Exception( __( 'Ads id not present', 'google-listings-and-ads' ) );
 		}
 
@@ -249,15 +261,15 @@ class AccountService implements OptionsAwareInterface, Service {
 			throw new Exception( __( 'Google account is not connected', 'google-listings-and-ads' ) );
 		}
 
-		$status             = $this->container->get( Ads::class )->has_access( $email );
+		$has_access         = $this->container->get( Ads::class )->has_access( $email );
 		$accept_invite_link = $this->options->get( OptionsInterface::ADS_BILLING_URL, '' );
 
 		// If we have access, complete the step so that it won't be called next time.
-		if ( $status ) {
+		if ( $has_access ) {
 			$this->state->complete_step( 'account_access' );
 
 			return [
-				'has_access'  => $status,
+				'has_access'  => $has_access,
 				'invite_link' => $accept_invite_link,
 			];
 		}
@@ -278,6 +290,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 */
 	public function disconnect() {
 		$this->options->delete( OptionsInterface::ADS_ACCOUNT_CURRENCY );
+		$this->options->delete( OptionsInterface::ADS_ACCOUNT_OCID );
 		$this->options->delete( OptionsInterface::ADS_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::ADS_BILLING_URL );
 		$this->options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
@@ -325,13 +338,13 @@ class AccountService implements OptionsAwareInterface, Service {
 			throw new Exception( 'An Ads account must be connected' );
 		}
 
-		if ( ! $this->options->get_merchant_id() ) {
-			throw new Exception( 'A Merchant Center account must be connected' );
-		}
+		$mc_state = $this->container->get( MerchantAccountState::class );
 
 		// Create link for Merchant and accept it in Ads.
 		$this->container->get( Merchant::class )->link_ads_id( $this->options->get_ads_id() );
 		$this->container->get( Ads::class )->accept_merchant_link( $this->options->get_merchant_id() );
+
+		$mc_state->complete_step( 'link_ads' );
 	}
 
 	/**

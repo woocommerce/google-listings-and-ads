@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -136,6 +137,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( ShippingRateTable::class, $this->rate_table );
 		$this->container->share( ShippingTimeTable::class, $this->time_table );
 		$this->container->share( MerchantAccountState::class, $this->state );
+		$this->container->share( AdsAccountState::class, $this->state );
 		$this->container->share( TransientsInterface::class, $this->transients );
 
 		$this->account = new AccountService( $this->container );
@@ -654,10 +656,6 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_setup_account_step_link_ads_without_mc() {
-		$mc_account_state = [
-			'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
-		];
-
 		$this->options->expects( $this->any() )
 			->method( 'get_ads_id' )
 			->willReturn( self::TEST_ADS_ID );
@@ -668,16 +666,16 @@ class AccountServiceTest extends UnitTest {
 
 		$this->state->expects( $this->once() )
 			->method( 'get' )
-			->willReturn( $mc_account_state );
+			->willReturn(
+				[
+					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
 
-		$this->state->expects( $this->once() )
-			->method( 'update' )
-			->with( $mc_account_state );
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'A Merchant Center account must be connected' );
 
-		$this->middleware->expects( $this->never() )
-			->method( 'link_ads_account' );
-
-		$this->assertEquals( [ 'id' => 0 ], $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+		$this->account->setup_account( self::TEST_ACCOUNT_ID );
 	}
 
 	public function test_switch_url_invalid() {

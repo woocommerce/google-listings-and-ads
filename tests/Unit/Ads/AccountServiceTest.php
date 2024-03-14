@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -59,6 +60,7 @@ class AccountServiceTest extends UnitTest {
 	protected $connection;
 
 	protected const TEST_ACCOUNT_ID        = 1234567890;
+	protected const TEST_ACCOUNT_OCID      = 9876543210;
 	protected const TEST_OLD_ACCOUNT_ID    = 2345678901;
 	protected const TEST_MERCHANT_ID       = 78123456;
 	protected const TEST_BILLING_URL       = 'https://domain.test/billing/setup/';
@@ -121,6 +123,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( Merchant::class, $this->merchant );
 		$this->container->share( Middleware::class, $this->middleware );
 		$this->container->share( AdsAccountState::class, $this->state );
+		$this->container->share( MerchantAccountState::class, $this->state );
 		$this->container->share( TransientsInterface::class, $this->transients );
 		$this->container->share( Connection::class, $this->connection );
 
@@ -353,10 +356,6 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_setup_account_step_link_merchant_no_ads_id() {
-		$ads_account_state = [
-			'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
-		];
-
 		$this->options->expects( $this->any() )
 			->method( 'get_ads_id' )
 			->willReturn( 0 );
@@ -367,16 +366,16 @@ class AccountServiceTest extends UnitTest {
 
 		$this->state->expects( $this->once() )
 			->method( 'get' )
-			->willReturn( $ads_account_state );
+			->willReturn(
+				[
+					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
 
-		$this->state->expects( $this->once() )
-			->method( 'update' )
-			->with( $ads_account_state );
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'An Ads account must be connected' );
 
-		$this->middleware->expects( $this->never() )
-			->method( 'link_ads_account' );
-
-		$this->assertEquals( [ 'id' => 0 ], $this->account->setup_account() );
+		$this->account->setup_account();
 	}
 
 	public function test_setup_account_step_link_merchant_no_merchant_id() {
@@ -464,10 +463,20 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_billing_status' )
 			->willReturn( BillingSetupStatus::PENDING );
 
-		$this->options->expects( $this->once() )
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn( [] );
+
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
-			->with( OptionsInterface::ADS_BILLING_URL )
-			->willReturn( self::TEST_BILLING_URL );
+			->withConsecutive(
+				[ OptionsInterface::ADS_BILLING_URL ],
+				[ OptionsInterface::ADS_ACCOUNT_OCID, null ]
+			)
+			->willReturnOnConsecutiveCalls(
+				self::TEST_BILLING_URL,
+				null
+			);
 
 		$this->assertEquals(
 			[
@@ -478,7 +487,41 @@ class AccountServiceTest extends UnitTest {
 		);
 	}
 
-	public function test_get_ads_account_has_access() {
+	public function test_get_billing_status_returns_deeplink_url() {
+		$this->ads->expects( $this->once() )
+			->method( 'get_billing_status' )
+			->willReturn( BillingSetupStatus::PENDING );
+
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::ADS_BILLING_URL ],
+				[ OptionsInterface::ADS_ACCOUNT_OCID, null ]
+			)
+			->willReturnOnConsecutiveCalls(
+				self::TEST_BILLING_URL,
+				self::TEST_ACCOUNT_OCID
+			);
+
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@gmail.com' ] );
+
+		$this->ads->expects( $this->once() )
+			->method( 'has_access' )
+			->with( 'test@gmail.com' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'status'      => BillingSetupStatus::PENDING,
+				'billing_url' => 'https://ads.google.com/aw/signup/payment?ocid=' . self::TEST_ACCOUNT_OCID,
+			],
+			$this->account->get_billing_status()
+		);
+	}
+
+	public function test_ads_account_does_not_have_access() {
 		$this->connection->method( 'get_status' )
 			->willReturn( [ 'email' => 'test@domain.com' ] );
 
@@ -539,10 +582,11 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 7 ) )
+		$this->options->expects( $this->exactly( 8 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
+				[ OptionsInterface::ADS_ACCOUNT_OCID ],
 				[ OptionsInterface::ADS_ACCOUNT_STATE ],
 				[ OptionsInterface::ADS_BILLING_URL ],
 				[ OptionsInterface::ADS_CONVERSION_ACTION ],
