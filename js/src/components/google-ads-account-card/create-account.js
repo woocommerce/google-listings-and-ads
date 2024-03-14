@@ -17,20 +17,23 @@ import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
-import useShouldClaimGoogleAdsAccount from '.~/hooks/useShouldClaimGoogleAdsAccount';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ClaimAccount from './claim-account';
 import ClaimAccountModal from './claim-account-modal';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
 
-const ClaimTermsAndCreateAccountButton = ( { onCreateAccount = noop } ) => {
+const ClaimTermsAndCreateAccountButton = ( {
+	onCreateAccount = noop,
+	shouldClaimGoogleAdsAccount = false,
+} ) => {
 	const { createNotice } = useDispatchCoreNotices();
-	const { fetchGoogleAdsAccount } = useAppDispatch();
+	const { fetchGoogleAdsAccount, fetchGoogleAdsAccountStatus } =
+		useAppDispatch();
 	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
 	const [ upsertAdsAccount, { loading: createLoading } ] =
 		useUpsertAdsAccount();
 	const { google } = useGoogleAccount();
 	const { inviteLink } = useGoogleAdsAccountStatus();
-	const { shouldClaimGoogleAdsAccount } = useShouldClaimGoogleAdsAccount();
 
 	const handleCreateAccount = async () => {
 		try {
@@ -52,6 +55,7 @@ const ClaimTermsAndCreateAccountButton = ( { onCreateAccount = noop } ) => {
 		}
 
 		setFetchAccountLoading( true );
+		await fetchGoogleAdsAccountStatus();
 		await fetchGoogleAdsAccount();
 		onCreateAccount();
 		setFetchAccountLoading( false );
@@ -88,35 +92,37 @@ const ClaimTermsAndCreateAccountButton = ( { onCreateAccount = noop } ) => {
 };
 
 const CreateAccount = ( props ) => {
-	const {
-		allowShowExisting,
-		onShowExisting,
-		disabled,
-		onCreateAccount = noop,
-		onClaimModalRequestClose = noop,
-		showClaimModal = false,
-	} = props;
-	const { shouldClaimGoogleAdsAccount } = useShouldClaimGoogleAdsAccount();
+	const { allowShowExisting, onShowExisting } = props;
+	const [ showClaimModal, setShowClaimModal ] = useState( false );
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasAccess } = useGoogleAdsAccountStatus();
+
+	const shouldClaimGoogleAdsAccount = Boolean(
+		googleAdsAccount.id && hasAccess !== true
+	);
+
+	const handleOnRequestClose = () => {
+		setShowClaimModal( false );
+	};
+
+	const handleOnCreateAccount = () => {
+		setShowClaimModal( true );
+	};
 
 	return (
 		<AccountCard
-			disabled={ disabled }
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			alignIcon="top"
 			indicator={
 				<ClaimTermsAndCreateAccountButton
-					disabled={ disabled }
-					onCreateAccount={ onCreateAccount }
+					onCreateAccount={ handleOnCreateAccount }
+					shouldClaimGoogleAdsAccount={ shouldClaimGoogleAdsAccount }
 				/>
 			}
 		>
-			{ allowShowExisting && (
+			{ allowShowExisting && ! shouldClaimGoogleAdsAccount && (
 				<Section.Card.Footer>
-					<AppButton
-						isLink
-						onClick={ onShowExisting }
-						disabled={ disabled }
-					>
+					<AppButton isLink onClick={ onShowExisting }>
 						{ __(
 							'Or, use your existing Google Ads account',
 							'google-listings-and-ads'
@@ -129,7 +135,7 @@ const CreateAccount = ( props ) => {
 				<Fragment>
 					{ showClaimModal && (
 						<ClaimAccountModal
-							onRequestClose={ onClaimModalRequestClose }
+							onRequestClose={ handleOnRequestClose }
 						/>
 					) }
 

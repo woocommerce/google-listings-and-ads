@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { noop } from 'lodash';
 import { useState } from '@wordpress/element';
 
 /**
@@ -9,53 +8,34 @@ import { useState } from '@wordpress/element';
  */
 import SpinnerCard from '.~/components/spinner-card';
 import CreateAccount from './create-account';
-import useShouldClaimGoogleAdsAccount from '.~/hooks/useShouldClaimGoogleAdsAccount';
-import useGoogleAccount from '.~/hooks/useGoogleAccount';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import ConnectAds from './connect-ads';
 
-const NonConnected = ( {
-	onCreateAccount = noop,
-	showClaimModal = false,
-	onClaimModalRequestClose = noop,
-} ) => {
-	const { google, isResolving } = useGoogleAccount();
-	const { existingAccounts, isResolving: isResolvingGoogleAdsAccount } =
-		useExistingGoogleAdsAccounts();
+const NonConnected = () => {
+	const { existingAccounts } = useExistingGoogleAdsAccounts();
 	const [ ignoreExisting, setIgnoreExisting ] = useState( false );
-	const {
-		shouldClaimGoogleAdsAccount,
-		isResolving: isResolvingShouldClaimGoogleAdsAccount,
-	} = useShouldClaimGoogleAdsAccount();
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasAccess } = useGoogleAdsAccountStatus();
 
 	const handleShowExisting = () => {
 		setIgnoreExisting( false );
 	};
 
-	if (
-		isResolving ||
-		isResolvingGoogleAdsAccount ||
-		isResolvingShouldClaimGoogleAdsAccount
-	) {
+	if ( ! existingAccounts ) {
 		return <SpinnerCard />;
 	}
 
 	if (
-		! existingAccounts ||
 		existingAccounts.length === 0 ||
 		ignoreExisting ||
-		shouldClaimGoogleAdsAccount
+		( googleAdsAccount.id && hasAccess !== true )
 	) {
-		const disabled = ! google || google.active === 'no';
-
 		return (
 			<CreateAccount
 				allowShowExisting={ ignoreExisting }
 				onShowExisting={ handleShowExisting }
-				disabled={ disabled }
-				onCreateAccount={ onCreateAccount }
-				onClaimModalRequestClose={ onClaimModalRequestClose }
-				showClaimModal={ showClaimModal }
 			/>
 		);
 	}

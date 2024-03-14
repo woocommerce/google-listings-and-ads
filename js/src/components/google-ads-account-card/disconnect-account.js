@@ -11,8 +11,7 @@ import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
 
 const DisconnectAccount = () => {
-	const { disconnectGoogleAdsAccount, invalidateResolution } =
-		useAppDispatch();
+	const { disconnectGoogleAdsAccount } = useAppDispatch();
 	const [ isDisconnecting, setDisconnecting ] = useState( false );
 
 	const handleSwitch = useCallback( () => {
@@ -20,8 +19,7 @@ const DisconnectAccount = () => {
 		disconnectGoogleAdsAccount( true ).catch( () =>
 			setDisconnecting( false )
 		);
-		invalidateResolution( 'getGoogleAdsAccountStatus', [] );
-	}, [ disconnectGoogleAdsAccount, invalidateResolution ] );
+	}, [ disconnectGoogleAdsAccount ] );
 
 	return (
 		<AppButton

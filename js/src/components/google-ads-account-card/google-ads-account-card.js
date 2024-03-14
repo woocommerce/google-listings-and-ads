@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 import { Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -18,34 +18,29 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ConnectedGoogleAdsAccountCard from './connected-google-ads-account-card';
 import NonConnected from './non-connected';
 import AuthorizeAds from './authorize-ads';
+import DisabledCard from './disabled-card';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import usePrevious from '.~/hooks/usePrevious';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import useShouldClaimGoogleAdsAccount from '.~/hooks/useShouldClaimGoogleAdsAccount';
 
 export default function GoogleAdsAccountCard() {
 	const {
 		google,
 		scope,
-		isResolving: isResolvingGoogleAccount,
+		hasFinishedResolution: hasResolvedGoogleAccount,
 	} = useGoogleAccount();
 
 	const {
 		googleAdsAccount,
 		refetchGoogleAdsAccount,
-		isResolving: isResolvingGoogleAdsAccount,
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
 	} = useGoogleAdsAccount();
-	const [ showClaimModal, setShowClaimModal ] = useState( false );
-	const { hasAccess } = useGoogleAdsAccountStatus();
+	const { hasAccess, hasFinishedResolution: hasResolvedAdsAccountStatus } =
+		useGoogleAdsAccountStatus();
 	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 	const previousHasAccess = usePrevious( hasAccess );
-	const {
-		shouldClaimGoogleAdsAccount,
-		isResolving: isResolvingShouldClaimGoogleAdsAccount,
-	} = useShouldClaimGoogleAdsAccount();
 
 	useEffect( () => {
 		const checkAccessChange = async () => {
@@ -76,40 +71,27 @@ export default function GoogleAdsAccountCard() {
 		checkAccessChange();
 	} );
 
-	const handleOnCreateAccount = () => {
-		setShowClaimModal( true );
-	};
-
-	const handleClaimModalRequestClose = () => {
-		setShowClaimModal( false );
-	};
-
 	if (
-		isResolvingGoogleAccount ||
-		isResolvingGoogleAdsAccount ||
-		isResolvingShouldClaimGoogleAdsAccount
+		! hasResolvedGoogleAccount ||
+		( ! hasResolvedGoogleAdsAccount && ! googleAdsAccount ) ||
+		! hasResolvedAdsAccountStatus
 	) {
 		return <SpinnerCard />;
 	}
 
-	if (
-		! google ||
-		google.active === 'no' ||
-		! googleAdsAccount ||
-		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ||
-		shouldClaimGoogleAdsAccount
-	) {
-		return (
-			<NonConnected
-				onCreateAccount={ handleOnCreateAccount }
-				showClaimModal={ showClaimModal }
-				onClaimModalRequestClose={ handleClaimModalRequestClose }
-			/>
-		);
+	if ( ! google || google.active === 'no' ) {
+		return <DisabledCard />;
 	}
 
 	if ( ! scope.adsRequired ) {
 		return <AuthorizeAds additionalScopeEmail={ google.email } />;
+	}
+
+	if (
+		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ||
+		hasAccess !== true
+	) {
+		return <NonConnected />;
 	}
 
 	return (
