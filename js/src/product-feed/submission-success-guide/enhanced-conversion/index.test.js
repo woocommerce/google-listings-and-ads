@@ -23,7 +23,6 @@ describe( 'Enhanced Conversion', () => {
 	test( 'Render the correct text when TOS has not been accepted', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 
@@ -38,7 +37,6 @@ describe( 'Enhanced Conversion', () => {
 	test( 'Render the correct text when TOS has been accepted', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
-			isResolving: false,
 			hasFinishedResolution: true,
 		} );
 

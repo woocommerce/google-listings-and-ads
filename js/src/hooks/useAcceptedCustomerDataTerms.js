@@ -14,7 +14,6 @@ const selectorName = 'getAcceptedCustomerDataTerms';
 const useAcceptedCustomerDataTerms = () => {
 	const { hasGoogleAdsConnection, hasFinishedResolution } =
 		useGoogleAdsAccount();
-	console.debug( useGoogleAdsAccount() );
 
 	return useSelect(
 		( select ) => {
