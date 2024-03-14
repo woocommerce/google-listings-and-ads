@@ -314,7 +314,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		if ( class_exists( '\WC_Google_Gtag_JS' ) ) {
 			wp_add_inline_script(
 				'woocommerce-google-analytics-integration',
-				esc_js( $inline_script )
+				$inline_script
 			);
 		} else {
 			wp_print_inline_script_tag( $inline_script );
