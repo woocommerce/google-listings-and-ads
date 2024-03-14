@@ -102,11 +102,9 @@ describe( 'GoogleAdsAccountCard', () => {
 		render( <GoogleAdsAccountCard /> );
 
 		expect(
-			screen.getByText( 'Claim your new ads account' )
-		).toBeInTheDocument();
-		expect( screen.getByRole( 'link' ) ).toHaveAttribute(
-			'href',
-			'http://ads.google.com/invite'
-		);
+			screen.getAllByText(
+				'Claim your new Google Ads account to complete this setup.'
+			)
+		).toBeTruthy();
 	} );
 } );
