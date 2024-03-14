@@ -147,7 +147,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 			];
 		}
 
-		if ( $this->mc_statuses['error'] ) {
+		if ( ! empty( $this->mc_statuses['error'] ) ) {
 			return $this->mc_statuses;
 		}
 
