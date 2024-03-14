@@ -18,7 +18,6 @@ const useGoogleAdsAccountStatus = () => {
 		return {
 			hasAccess,
 			inviteLink,
-			isResolving: selector.isResolving( selectorName, [] ),
 			hasFinishedResolution:
 				selector.hasFinishedResolution( selectorName ),
 		};

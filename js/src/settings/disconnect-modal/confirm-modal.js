@@ -98,10 +98,6 @@ export default function ConfirmModal( {
 			.then( () => {
 				onDisconnected();
 				onRequestClose();
-				dispatcher.invalidateResolution(
-					'getGoogleAdsAccountStatus',
-					[]
-				);
 			} )
 			.catch( () => {
 				setDisconnecting( false );
