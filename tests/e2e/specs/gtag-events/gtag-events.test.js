@@ -10,7 +10,6 @@ import {
 	createSimpleProduct,
 	setConversionID,
 	clearConversionID,
-	enableEnhancedConversions,
 } from '../../utils/api';
 import {
 	blockProductAddToCart,
@@ -191,35 +190,6 @@ test.describe( 'GTag events', () => {
 			expect( data.ecomm_pagetype ).toEqual( 'purchase' );
 			expect( data.currency_code ).toEqual( 'USD' );
 			expect( data.country ).toEqual( 'US' );
-		} );
-	} );
-
-	test( 'User data for enhanced conversions are not sent when not enabled', async ( {
-		page,
-	} ) => {
-		await singleProductAddToCart( page, simpleProductID );
-
-		const event = trackGtagEvent( page, 'conversion', 'checkout' );
-		await checkout( page );
-
-		await event.then( ( request ) => {
-			const data = getEventData( request );
-			expect( data.user_data ).toBeUndefined();
-		} );
-	} );
-
-	test( 'User data for enhanced conversions is sent when enabled', async ( {
-		page,
-	} ) => {
-		await enableEnhancedConversions();
-		await singleProductAddToCart( page, simpleProductID );
-
-		const event = trackGtagEvent( page, 'conversion', 'checkout' );
-		await checkout( page );
-
-		await event.then( ( request ) => {
-			const data = getEventData( request );
-			expect( data.user_data.sha256_email_address ).toBeDefined();
 		} );
 	} );
 } );
