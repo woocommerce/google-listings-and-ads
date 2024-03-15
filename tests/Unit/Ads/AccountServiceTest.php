@@ -44,6 +44,9 @@ class AccountServiceTest extends UnitTest {
 	/** @var MockObject|AdsAccountState $state */
 	protected $state;
 
+	/** @var MockObject|MerchantAccountState $merchant_state */
+	protected $merchant_state;
+
 	/** @var MockObject|TransientsInterface $transients */
 	protected $transients;
 
@@ -113,6 +116,7 @@ class AccountServiceTest extends UnitTest {
 		$this->merchant          = $this->createMock( Merchant::class );
 		$this->middleware        = $this->createMock( Middleware::class );
 		$this->state             = $this->createMock( AdsAccountState::class );
+		$this->merchant_state    = $this->createMock( MerchantAccountState::class );
 		$this->options           = $this->createMock( OptionsInterface::class );
 		$this->transients        = $this->createMock( TransientsInterface::class );
 		$this->connection        = $this->createMock( Connection::class );
@@ -123,7 +127,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( Merchant::class, $this->merchant );
 		$this->container->share( Middleware::class, $this->middleware );
 		$this->container->share( AdsAccountState::class, $this->state );
-		$this->container->share( MerchantAccountState::class, $this->state );
+		$this->container->share( MerchantAccountState::class, $this->merchant_state );
 		$this->container->share( TransientsInterface::class, $this->transients );
 		$this->container->share( Connection::class, $this->connection );
 

@@ -16,8 +16,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -74,6 +74,9 @@ class AccountServiceTest extends UnitTest {
 	/** @var MockObject|MerchantAccountState $state */
 	protected $state;
 
+	/** @var MockObject|AdsAccountState $ads_state */
+	protected $ads_state;
+
 	/** @var MockObject|TransientsInterface $transients */
 	protected $transients;
 
@@ -122,6 +125,7 @@ class AccountServiceTest extends UnitTest {
 		$this->rate_table        = $this->createMock( ShippingRateTable::class );
 		$this->time_table        = $this->createMock( ShippingTimeTable::class );
 		$this->state             = $this->createMock( MerchantAccountState::class );
+		$this->ads_state         = $this->createMock( AdsAccountState::class );
 		$this->options           = $this->createMock( OptionsInterface::class );
 		$this->transients        = $this->createMock( TransientsInterface::class );
 
@@ -137,7 +141,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( ShippingRateTable::class, $this->rate_table );
 		$this->container->share( ShippingTimeTable::class, $this->time_table );
 		$this->container->share( MerchantAccountState::class, $this->state );
-		$this->container->share( AdsAccountState::class, $this->state );
+		$this->container->share( AdsAccountState::class, $this->ads_state );
 		$this->container->share( TransientsInterface::class, $this->transients );
 
 		$this->account = new AccountService( $this->container );
