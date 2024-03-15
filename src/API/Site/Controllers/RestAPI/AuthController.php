@@ -60,6 +60,7 @@ class AuthController extends BaseController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_auth_params(),
 				],
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 	}
