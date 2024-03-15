@@ -36,9 +36,13 @@ class OAuthService implements Service {
 	 * response_type=code&
 	 * blog=BLOD_ID&
 	 * scope=wc-partner-access&
-	 * state=BASE64_ENCODED_STRING
+	 * state=URL_SAFE_BASE64_ENCODED_STRING
 	 *
-	 * Content of state is an URL query string where the value of its parameter "redirect_url" is being URL encoded.
+	 * State is an URL safe base64 encoded string.
+	 * E.g.
+	 * state=bm9uY2UtMTIzJnJlZGlyZWN0X3VybD1odHRwcyUzQSUyRiUyRm1lcmNoYW50LXNpdGUuZXhhbXBsZS5jb20lMkZ3cC1hZG1pbiUyRmFkbWluLnBocCUzRnBhZ2UlM0R3Yy1hZG1pbiUyNnBhdGglM0QlMkZnb29nbGUlMkZzZXR1cC1tYw
+	 *
+	 * The decoded content of state is an URL query string where the value of its parameter "redirect_url" is being URL encoded.
 	 * E.g.
 	 * nonce=nonce-123&redirect_url=https%3A%2F%2Fmerchant-site.example.com%2Fwp-admin%2Fadmin.php%3Fpage%3Dwc-admin%26path%3D%2Fgoogle%2Fsetup-mc
 	 *
