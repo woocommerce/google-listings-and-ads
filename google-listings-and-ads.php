@@ -11,7 +11,7 @@
  * Tested up to: 6.5
  * Requires PHP: 7.4
  * Requires PHP Architecture: 64 bits
- *
+ * Requires Plugins: woocommerce
  * WC requires at least: 6.9
  * WC tested up to: 8.7
  * Woo:
