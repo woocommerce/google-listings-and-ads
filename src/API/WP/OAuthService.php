@@ -90,7 +90,10 @@ class OAuthService implements Service {
 	 * TODO: Call an actual API by Google.
 	 * We'd probably need use WCS to communicate with the new API.
 	 *
-	 * @return array An associative array contains required information from Google.
+	 * @return array{client_id: string, redirect_uri: string, nonce: string} An associative array contains required information that is retrived from Google.
+	 * client_id:    Google's WPCOM app client ID, will be used to form the authorization URL.
+	 * redirect_uri: A Google's URL that will be redirected to when the merchant approve the app access. Note that it needs to be matched with the Google WPCOM app client settings.
+	 * nonce:        A string returned by Google that we will put it in the auth URL and the redirect_uri. Google will use it to verify the call.
 	 */
 	protected function get_data_from_google(): array {
 		return [
