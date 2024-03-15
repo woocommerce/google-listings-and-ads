@@ -215,9 +215,10 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		}
 
 		// Check if user is connected to google account.
+		$ads_id                 = $this->options->get_ads_id();
 		$connection_status      = $this->container->get( Connection::class )->get_status();
 		$email                  = $connection_status['email'] ?? null;
-		$has_ads_account_access = $email ? $this->container->get( Ads::class )->has_access( $email ) : false;
+		$has_ads_account_access = ( $ads_id && $email ) ? $this->container->get( Ads::class )->has_access( $email ) : false;
 		$step                   = 'accounts';
 
 		if ( $this->connected_account() && $has_ads_account_access ) {
