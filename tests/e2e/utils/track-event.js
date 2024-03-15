@@ -59,3 +59,19 @@ export function getEventData( request ) {
 
 	return data;
 }
+
+/**
+ * Find a value in the dataLayer
+ *
+ * @param page
+ * @param args
+ */
+export function getDataLayerValue( page, args ) {
+	return page.evaluate( ( { type, key } ) => {
+		return (
+			window.dataLayer.find(
+				( item ) => item[ 0 ] === type && item[ 1 ] === key
+			)[ 2 ] ?? null
+		);
+	}, args );
+}
