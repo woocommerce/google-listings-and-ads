@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
@@ -38,8 +40,14 @@ class MerchantCenterServiceTest extends UnitTest {
 	/** @var MockObject|AddressUtility $address_utility */
 	protected $address_utility;
 
+	/** @var MockObject|Ads $ads */
+	protected $ads;
+
 	/** @var MockObject|ContactInformation $contact_information */
 	protected $contact_information;
+
+	/** @var MockObject|Connection $connection */
+	protected $connection;
 
 	/** @var MockObject|GoogleHelper $google_helper */
 	protected $google_helper;
@@ -91,6 +99,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		$this->address_utility        = $this->createMock( AddressUtility::class );
+		$this->ads                    = $this->createMock( Ads::class );
 		$this->contact_information    = $this->createMock( ContactInformation::class );
 		$this->google_helper          = $this->createMock( GoogleHelper::class );
 		$this->merchant               = $this->createMock( Merchant::class );
@@ -104,9 +113,11 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->wc                     = $this->createMock( WC::class );
 		$this->wp                     = $this->createMock( WP::class );
 		$this->options                = $this->createMock( OptionsInterface::class );
+		$this->connection             = $this->createMock( Connection::class );
 
 		$this->container = new Container();
 		$this->container->share( AddressUtility::class, $this->address_utility );
+		$this->container->share( Ads::class, $this->ads );
 		$this->container->share( ContactInformation::class, $this->contact_information );
 		$this->container->share( GoogleHelper::class, $this->google_helper );
 		$this->container->share( Merchant::class, $this->merchant );
@@ -117,6 +128,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->container->share( ShippingTimeQuery::class, $this->shipping_time_query );
 		$this->container->share( TargetAudience::class, $this->target_audience );
 		$this->container->share( TransientsInterface::class, $this->transients );
+		$this->container->share( Connection::class, $this->connection );
 		$this->container->share( WC::class, $this->wc );
 		$this->container->share( WP::class, $this->wp );
 
@@ -392,6 +404,15 @@ class MerchantCenterServiceTest extends UnitTest {
 	}
 
 	public function test_get_setup_status_step_accounts() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@gmail.com' ] );
+
+		$this->ads->expects( $this->once() )
+			->method( 'has_access' )
+			->with( 'test@gmail.com' )
+			->willReturn( false );
+
 		$this->assertEquals(
 			[
 				'status' => 'incomplete',
@@ -402,6 +423,15 @@ class MerchantCenterServiceTest extends UnitTest {
 	}
 
 	public function test_get_setup_status_step_product_listings() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@gmail.com' ] );
+
+		$this->ads->expects( $this->once() )
+			->method( 'has_access' )
+			->with( 'test@gmail.com' )
+			->willReturn( true );
+
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->options->method( 'get' )
@@ -427,6 +457,15 @@ class MerchantCenterServiceTest extends UnitTest {
 	}
 
 	public function test_get_setup_status_step_store_requirements() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@gmail.com' ] );
+
+		$this->ads->expects( $this->once() )
+			->method( 'has_access' )
+			->with( 'test@gmail.com' )
+			->willReturn( true );
+
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->options->method( 'get' )
@@ -456,6 +495,15 @@ class MerchantCenterServiceTest extends UnitTest {
 	}
 
 	public function test_get_setup_status_shipping_selected_rates() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@gmail.com' ] );
+
+		$this->ads->expects( $this->once() )
+			->method( 'has_access' )
+			->with( 'test@gmail.com' )
+			->willReturn( true );
+
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->options->method( 'get' )
@@ -499,6 +547,15 @@ class MerchantCenterServiceTest extends UnitTest {
 	}
 
 	public function test_get_setup_status_step_paid_ads() {
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@gmail.com' ] );
+
+		$this->ads->expects( $this->once() )
+			->method( 'has_access' )
+			->with( 'test@gmail.com' )
+			->willReturn( true );
+
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->options->method( 'get' )

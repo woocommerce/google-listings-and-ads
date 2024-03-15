@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
@@ -32,6 +34,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * ContainerAware used to access:
  * - AddressUtility
+ * - Ads
+ * - Connection
  * - ContactInformation
  * - Merchant
  * - MerchantAccountState
@@ -210,8 +214,13 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			return [ 'status' => 'complete' ];
 		}
 
-		$step = 'accounts';
-		if ( $this->connected_account() ) {
+		// Check if user is connected to google account.
+		$connection_status      = $this->container->get( Connection::class )->get_status();
+		$email                  = $connection_status['email'] ?? null;
+		$has_ads_account_access = $email ? $this->container->get( Ads::class )->has_access( $email ) : false;
+		$step                   = 'accounts';
+
+		if ( $this->connected_account() && $has_ads_account_access ) {
 			$step = 'product_listings';
 
 			if ( $this->saved_target_audience() && $this->saved_shipping_and_tax_options() ) {

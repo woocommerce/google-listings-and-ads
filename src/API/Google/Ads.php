@@ -18,7 +18,6 @@ use Google\Ads\GoogleAds\V14\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V14\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
 use Google\Ads\GoogleAds\V14\Resources\MerchantCenterLink;
 use Google\Ads\GoogleAds\V14\Services\MerchantCenterLinkOperation;
-use Google\Ads\GoogleAds\V14\Resources\ConversionTrackingSetting;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 
@@ -332,9 +331,12 @@ class Ads implements OptionsAwareInterface {
 	 * @return boolean
 	 */
 	public function get_accepted_customer_data_terms(): bool {
-		$ads_id = $this->options->get_ads_id();
+		if ( ! $this->options->get_ads_id() ) {
+			return false;
+		}
 
 		try {
+			$ads_id         = $this->options->get_ads_id();
 			$accepted_terms = $this->options->get( OptionsInterface::ADS_CUSTOMER_DATA_TERMS, null );
 
 			// Retrieve the terms acceptance data from options.
