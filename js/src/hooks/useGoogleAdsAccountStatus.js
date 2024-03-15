@@ -13,11 +13,12 @@ const selectorName = 'getGoogleAdsAccountStatus';
 const useGoogleAdsAccountStatus = () => {
 	return useSelect( ( select ) => {
 		const selector = select( STORE_KEY );
-		const { hasAccess, inviteLink } = selector[ selectorName ]();
+		const { hasAccess, inviteLink, step } = selector[ selectorName ]();
 
 		return {
 			hasAccess,
 			inviteLink,
+			step,
 			hasFinishedResolution:
 				selector.hasFinishedResolution( selectorName ),
 		};

@@ -71,6 +71,7 @@ describe( 'reducer', () => {
 				accountStatus: {
 					hasAccess: null,
 					inviteLink: null,
+					step: null,
 				},
 			},
 		} );

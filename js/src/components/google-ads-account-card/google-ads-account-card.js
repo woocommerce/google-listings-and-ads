@@ -1,17 +1,13 @@
 /**
  * External dependencies
  */
-import { useEffect } from '@wordpress/element';
 import { Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import {
-	GOOGLE_ADS_ACCOUNT_STATUS,
-	GOOGLE_ADS_BILLING_STATUS,
-} from '.~/constants';
+import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 import SpinnerCard from '.~/components/spinner-card';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
@@ -20,9 +16,6 @@ import NonConnected from './non-connected';
 import AuthorizeAds from './authorize-ads';
 import DisabledCard from './disabled-card';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
-import usePrevious from '.~/hooks/usePrevious';
-import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 export default function GoogleAdsAccountCard() {
 	const {
@@ -33,43 +26,13 @@ export default function GoogleAdsAccountCard() {
 
 	const {
 		googleAdsAccount,
-		refetchGoogleAdsAccount,
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
 	} = useGoogleAdsAccount();
-	const { hasAccess, hasFinishedResolution: hasResolvedAdsAccountStatus } =
-		useGoogleAdsAccountStatus();
-	const [ upsertAdsAccount, { loading } ] = useUpsertAdsAccount();
-	const { createNotice } = useDispatchCoreNotices();
-	const previousHasAccess = usePrevious( hasAccess );
-
-	useEffect( () => {
-		const checkAccessChange = async () => {
-			// Access has changed, continue setup process
-			if ( hasAccess === true && previousHasAccess === false ) {
-				try {
-					await upsertAdsAccount();
-				} catch ( error ) {
-					if (
-						error.status !== 428 &&
-						error?.billing_status !==
-							GOOGLE_ADS_BILLING_STATUS.PENDING
-					) {
-						createNotice(
-							'error',
-							__(
-								'Unable to connect Google Ads account. Please try again later.',
-								'google-listings-and-ads'
-							)
-						);
-					}
-				}
-
-				await refetchGoogleAdsAccount();
-			}
-		};
-
-		checkAccessChange();
-	} );
+	const {
+		hasAccess,
+		step,
+		hasFinishedResolution: hasResolvedAdsAccountStatus,
+	} = useGoogleAdsAccountStatus();
 
 	if (
 		! hasResolvedGoogleAccount ||
@@ -89,16 +52,14 @@ export default function GoogleAdsAccountCard() {
 
 	if (
 		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ||
-		hasAccess !== true
+		hasAccess !== true ||
+		( hasAccess === true && step === 'conversion_action' )
 	) {
 		return <NonConnected />;
 	}
 
 	return (
-		<ConnectedGoogleAdsAccountCard
-			googleAdsAccount={ googleAdsAccount }
-			loading={ loading || ! hasResolvedGoogleAdsAccount }
-		>
+		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount }>
 			{ googleAdsAccount.status ===
 				GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED && (
 				<Notice status="success" isDismissible={ false }>

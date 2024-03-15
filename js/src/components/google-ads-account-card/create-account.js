@@ -3,7 +3,7 @@
  */
 import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useState, Fragment, useCallback } from '@wordpress/element';
+import { useState, Fragment, useCallback, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -22,10 +22,7 @@ import ClaimAccount from './claim-account';
 import ClaimAccountModal from './claim-account-modal';
 import getWindowFeatures from '.~/utils/getWindowFeatures';
 
-const ClaimTermsAndCreateAccountButton = ( {
-	onCreateAccount = noop,
-	shouldClaimGoogleAdsAccount = false,
-} ) => {
+const ClaimTermsAndCreateAccountButton = ( { onCreateAccount = noop } ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccount, fetchGoogleAdsAccountStatus } =
 		useAppDispatch();
@@ -34,8 +31,10 @@ const ClaimTermsAndCreateAccountButton = ( {
 		useUpsertAdsAccount();
 	const { google } = useGoogleAccount();
 	const { inviteLink } = useGoogleAdsAccountStatus();
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
 
-	const handleCreateAccount = async () => {
+	const upsertAccount = useCallback( async () => {
 		try {
 			await upsertAdsAccount( { parse: false } );
 		} catch ( e ) {
@@ -57,9 +56,25 @@ const ClaimTermsAndCreateAccountButton = ( {
 		setFetchAccountLoading( true );
 		await fetchGoogleAdsAccountStatus();
 		await fetchGoogleAdsAccount();
-		onCreateAccount();
 		setFetchAccountLoading( false );
+	}, [
+		createNotice,
+		fetchGoogleAdsAccount,
+		fetchGoogleAdsAccountStatus,
+		upsertAdsAccount,
+	] );
+
+	const handleCreateAccount = async () => {
+		await upsertAccount();
+		onCreateAccount();
 	};
+
+	useEffect( () => {
+		// Continue the setup process only when we are at the conversion_action step
+		if ( hasAccess === true && step === 'conversion_action' ) {
+			upsertAccount();
+		}
+	}, [ hasAccess, upsertAccount, step ] );
 
 	const handleClaimAccountClick = useCallback(
 		( event ) => {
@@ -74,6 +89,10 @@ const ClaimTermsAndCreateAccountButton = ( {
 	if ( ! google || google.active !== 'yes' ) {
 		return null;
 	}
+
+	const shouldClaimGoogleAdsAccount = Boolean(
+		googleAdsAccount.id && hasAccess === false
+	);
 
 	if ( shouldClaimGoogleAdsAccount ) {
 		return (
@@ -98,7 +117,7 @@ const CreateAccount = ( props ) => {
 	const { hasAccess } = useGoogleAdsAccountStatus();
 
 	const shouldClaimGoogleAdsAccount = Boolean(
-		googleAdsAccount.id && hasAccess !== true
+		googleAdsAccount.id && hasAccess === false
 	);
 
 	const handleOnRequestClose = () => {
@@ -116,7 +135,6 @@ const CreateAccount = ( props ) => {
 			indicator={
 				<ClaimTermsAndCreateAccountButton
 					onCreateAccount={ handleOnCreateAccount }
-					shouldClaimGoogleAdsAccount={ shouldClaimGoogleAdsAccount }
 				/>
 			}
 		>
