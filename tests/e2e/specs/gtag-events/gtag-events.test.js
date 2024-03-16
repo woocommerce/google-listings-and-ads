@@ -221,6 +221,8 @@ test.describe( 'GTag events', () => {
 	} ) => {
 		await singleProductAddToCart( page, simpleProductID );
 
+		await checkout( page );
+
 		const dataConfig = await getDataLayerValue( page, {
 			type: 'config',
 			key: 'AW-123456',
