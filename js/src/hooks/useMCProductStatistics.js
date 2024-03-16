@@ -8,6 +8,7 @@ import { useEffect } from '@wordpress/element';
  */
 import useAppSelectDispatch from './useAppSelectDispatch';
 import useCountdown from './useCountdown';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 
 /**
  * Call `useAppSelectDispatch` with `"getMCProductStatistics"`.
@@ -21,6 +22,16 @@ const useMCProductStatistics = () => {
 		useAppSelectDispatch( 'getMCProductStatistics' );
 
 	const isLoading = hasFinishedResolution && data?.loading ? true : false;
+
+	const [ refreshProductStats ] = useApiFetchCallback( {
+		path: `/wc/gla/mc/product-statistics/refresh`,
+		method: 'GET',
+	} );
+
+	const refreshStats = async () => {
+		await refreshProductStats();
+		invalidateResolution( 'getMCProductStatistics', [] );
+	};
 
 	if ( isLoading && callCount === 0 ) {
 		startCountdown( 30 );
@@ -37,6 +48,7 @@ const useMCProductStatistics = () => {
 		data,
 		invalidateResolution,
 		hasFinishedResolution,
+		refreshStats,
 		...rest,
 	};
 };
