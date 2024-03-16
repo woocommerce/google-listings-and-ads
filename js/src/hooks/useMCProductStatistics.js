@@ -22,11 +22,12 @@ const useMCProductStatistics = () => {
 
 	const isLoading = hasFinishedResolution && data?.loading ? true : false;
 
+	if ( isLoading && callCount === 0 ) {
+		startCountdown( 30 );
+	}
+
 	useEffect( () => {
-		if (
-			( second === 0 && callCount > 0 && isLoading === true ) ||
-			( isLoading === true && callCount === 0 )
-		) {
+		if ( second === 0 && callCount > 0 && isLoading === true ) {
 			startCountdown( 30 );
 			invalidateResolution( 'getMCProductStatistics', [] );
 		}
