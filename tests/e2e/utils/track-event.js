@@ -63,8 +63,8 @@ export function getEventData( request ) {
 /**
  * Find a value in the dataLayer
  *
- * @param page
- * @param args
+ * @param {Page} page
+ * @param {Object} args The type and key to search for.
  */
 export function getDataLayerValue( page, args ) {
 	return page.evaluate( ( { type, key } ) => {
