@@ -22,6 +22,7 @@ import {
 import useMCProductStatistics from '.~/hooks/useMCProductStatistics';
 import ProductStatusHelpPopover from './product-status-help-popover';
 import SyncStatus from '.~/product-feed/product-statistics/status-box/sync-status';
+import SyncMCStatus from '.~/product-feed/product-statistics/status-box/sync-mc-status';
 import FeedStatus from '.~/product-feed/product-statistics/status-box/feed-status';
 import AccountStatus from '.~/product-feed/product-statistics/status-box/account-status';
 import AppSpinner from '.~/components/app-spinner';
@@ -29,7 +30,8 @@ import Text from '.~/components/app-text';
 import './index.scss';
 
 const ProductStatistics = () => {
-	const { hasFinishedResolution, data } = useMCProductStatistics();
+	const { hasFinishedResolution, data, refreshStats } =
+		useMCProductStatistics();
 
 	if ( hasFinishedResolution && ! data ) {
 		return __(
@@ -125,6 +127,10 @@ const ProductStatistics = () => {
 				<FeedStatus />
 				<SyncStatus />
 				<AccountStatus />
+				<SyncMCStatus
+					refreshStats={ refreshStats }
+					error={ 'My error' }
+				/>
 			</CardFooter>
 		</Card>
 	);
