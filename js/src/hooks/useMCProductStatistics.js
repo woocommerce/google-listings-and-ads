@@ -22,6 +22,7 @@ const useMCProductStatistics = () => {
 		useAppSelectDispatch( 'getMCProductStatistics' );
 
 	const isLoading = hasFinishedResolution && data?.loading ? true : false;
+	const hasStats = hasFinishedResolution && ! data?.loading ? true : false;
 
 	const [ refreshProductStats ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/product-statistics/refresh`,
@@ -42,16 +43,16 @@ const useMCProductStatistics = () => {
 			invalidateResolution( 'getMCProductStatistics', [] );
 		}
 		// Stop the countdown when the data is loaded.
-		if ( data?.loading === false ) {
+		if ( hasStats ) {
 			startCountdown( 0 );
 		}
 	}, [
 		second,
 		callCount,
 		isLoading,
+		hasStats,
 		invalidateResolution,
 		startCountdown,
-		data,
 	] );
 
 	return {
