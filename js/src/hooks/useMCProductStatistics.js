@@ -33,16 +33,26 @@ const useMCProductStatistics = () => {
 		invalidateResolution( 'getMCProductStatistics', [] );
 	};
 
-	if ( isLoading && callCount === 0 ) {
-		startCountdown( 30 );
-	}
-
 	useEffect( () => {
-		if ( second === 0 && callCount > 0 && isLoading === true ) {
+		if ( isLoading && second === 0 ) {
 			startCountdown( 30 );
+		}
+
+		if ( isLoading && second === 0 && callCount > 0 ) {
 			invalidateResolution( 'getMCProductStatistics', [] );
 		}
-	}, [ second, callCount, isLoading, invalidateResolution, startCountdown ] );
+		// Stop the countdown when the data is loaded.
+		if ( data?.loading === false ) {
+			startCountdown( 0 );
+		}
+	}, [
+		second,
+		callCount,
+		isLoading,
+		invalidateResolution,
+		startCountdown,
+		data,
+	] );
 
 	return {
 		data,
