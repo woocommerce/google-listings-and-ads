@@ -219,6 +219,7 @@ test.describe( 'GTag events', () => {
 	test( 'User data for enhanced conversions is sent when enabled', async ( {
 		page,
 	} ) => {
+		await enableEnhancedConversions();
 		await singleProductAddToCart( page, simpleProductID );
 
 		await checkout( page );
