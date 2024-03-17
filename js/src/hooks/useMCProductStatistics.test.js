@@ -29,29 +29,35 @@ describe( 'useMCProductStatistics', () => {
 		error: null,
 	};
 
-	it( 'The update_merchant_product_statuses job is completed and the response contains the statistics', () => {
-		useCountdown.mockImplementation( () => {
-			return {
-				second: 0,
-				callCount: 0,
-				startCountdown,
-			};
+	describe( 'The update_merchant_product_statuses job is completed', () => {
+		beforeAll( () => {
+			jest.clearAllMocks();
 		} );
 
-		useAppSelectDispatch.mockImplementation( () => {
-			return {
-				hasFinishedResolution: true,
-				invalidateResolution,
-				data: statsData,
-			};
+		it( 'The response contains the statistics', () => {
+			useCountdown.mockImplementation( () => {
+				return {
+					second: 0,
+					callCount: 0,
+					startCountdown,
+				};
+			} );
+
+			useAppSelectDispatch.mockImplementation( () => {
+				return {
+					hasFinishedResolution: true,
+					invalidateResolution,
+					data: statsData,
+				};
+			} );
+
+			const { result } = renderHook( () => useMCProductStatistics() );
+
+			expect( startCountdown ).not.toHaveBeenCalled();
+			expect( invalidateResolution ).not.toHaveBeenCalled();
+			expect( result.current.data ).toEqual( statsData );
+			expect( result.current.hasFinishedResolution ).toEqual( true );
 		} );
-
-		const { result } = renderHook( () => useMCProductStatistics() );
-
-		expect( startCountdown ).not.toHaveBeenCalled();
-		expect( invalidateResolution ).not.toHaveBeenCalled();
-		expect( result.current.data ).toEqual( statsData );
-		expect( result.current.hasFinishedResolution ).toEqual( true );
 	} );
 
 	describe( 'Retry two times until the update_merchant_product_statuses job is completed', () => {
