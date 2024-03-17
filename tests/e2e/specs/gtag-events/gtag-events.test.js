@@ -213,6 +213,7 @@ test.describe( 'GTag events', () => {
 			key: 'AW-123456',
 		} );
 
+		expect( dataConfig ).toBeDefined();
 		expect( dataConfig.allow_enhanced_conversions ).toBeUndefined();
 	} );
 
