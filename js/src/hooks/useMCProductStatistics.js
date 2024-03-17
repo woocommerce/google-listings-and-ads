@@ -32,7 +32,7 @@ const useMCProductStatistics = () => {
 			invalidateResolution( 'getMCProductStatistics', [] );
 		}
 		// Stop the countdown when the data is loaded.
-		if ( hasStats ) {
+		if ( hasStats && callCount > 0 ) {
 			startCountdown( 0 );
 		}
 	}, [
