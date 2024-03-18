@@ -12,7 +12,7 @@ import { useAppDispatch } from '.~/data';
 
 /**
  * Call `useAppSelectDispatch` with `"getMCProductStatistics"`.
- * If the background process is loading, start a countdown and invalidate the resolution to refresh the data.
+ * If the background process is loading, start a countdown and invalidate  the resolution for getMCProductStatistics and getMCProductFeed.
  *
  * @return {useAppSelectDispatch} Result of useAppSelectDispatch.
  */
