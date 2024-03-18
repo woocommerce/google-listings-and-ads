@@ -9,13 +9,22 @@ import { renderHook } from '@testing-library/react-hooks';
 import useMCProductStatistics from '.~/hooks/useMCProductStatistics';
 import useCountdown from '.~/hooks/useCountdown';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import { useAppDispatch } from '.~/data';
 
 jest.mock( '.~/hooks/useAppSelectDispatch' );
 jest.mock( '.~/hooks/useCountdown' );
+jest.mock( '.~/data' );
 
 describe( 'useMCProductStatistics', () => {
 	const startCountdown = jest.fn();
 	const invalidateResolution = jest.fn();
+	const invalidateResolutionForStoreSelector = jest.fn();
+
+	useAppDispatch.mockImplementation( () => {
+		return {
+			invalidateResolutionForStoreSelector,
+		};
+	} );
 
 	const statsData = {
 		loading: false,
@@ -105,10 +114,7 @@ describe( 'useMCProductStatistics', () => {
 			expect( startCountdown ).toHaveBeenCalledTimes( 2 );
 			expect( startCountdown ).toHaveBeenCalledWith( 30 );
 			expect( invalidateResolution ).toHaveBeenCalledTimes( 1 );
-			expect( invalidateResolution ).toHaveBeenCalledWith(
-				'getMCProductStatistics',
-				[]
-			);
+			expect( invalidateResolution ).toHaveBeenCalledWith();
 		} );
 		it( 'The third time the job is completed and the response contains the statistics', () => {
 			useAppSelectDispatch.mockImplementation( () => {
@@ -124,9 +130,12 @@ describe( 'useMCProductStatistics', () => {
 			expect( startCountdown ).toHaveBeenCalledTimes( 3 );
 			expect( startCountdown ).toHaveBeenLastCalledWith( 0 );
 			expect( invalidateResolution ).toHaveBeenCalledTimes( 1 );
-			expect( invalidateResolution ).toHaveBeenCalledWith(
-				'getMCProductStatistics',
-				[]
+			expect( invalidateResolution ).toHaveBeenCalledWith();
+			expect(
+				invalidateResolutionForStoreSelector
+			).toHaveBeenCalledTimes( 1 );
+			expect( invalidateResolutionForStoreSelector ).toHaveBeenCalledWith(
+				'getMCProductFeed'
 			);
 		} );
 	} );
