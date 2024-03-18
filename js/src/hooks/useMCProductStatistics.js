@@ -8,6 +8,7 @@ import { useEffect } from '@wordpress/element';
  */
 import useAppSelectDispatch from './useAppSelectDispatch';
 import useCountdown from './useCountdown';
+import { useAppDispatch } from '.~/data';
 
 /**
  * Call `useAppSelectDispatch` with `"getMCProductStatistics"`.
@@ -17,6 +18,7 @@ import useCountdown from './useCountdown';
  */
 const useMCProductStatistics = () => {
 	const { second, callCount, startCountdown } = useCountdown();
+	const { invalidateResolutionForStoreSelector } = useAppDispatch();
 	const { data, hasFinishedResolution, invalidateResolution, ...rest } =
 		useAppSelectDispatch( 'getMCProductStatistics' );
 
@@ -29,11 +31,13 @@ const useMCProductStatistics = () => {
 		}
 
 		if ( isLoading && second === 0 && callCount > 0 ) {
-			invalidateResolution( 'getMCProductStatistics', [] );
+			invalidateResolution();
 		}
 		// Stop the countdown when the data is loaded.
 		if ( hasStats && callCount > 0 ) {
 			startCountdown( 0 );
+			// Refresh the product feed data so product statuses are updated.
+			invalidateResolutionForStoreSelector( 'getMCProductFeed' );
 		}
 	}, [
 		second,
@@ -41,6 +45,7 @@ const useMCProductStatistics = () => {
 		isLoading,
 		hasStats,
 		invalidateResolution,
+		invalidateResolutionForStoreSelector,
 		startCountdown,
 	] );
 
