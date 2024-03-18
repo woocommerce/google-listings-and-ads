@@ -29,8 +29,9 @@ function getSyncResult( {
 	scheduled_sync: scheduledSync,
 	statistics,
 	timestamp,
+	loading,
 } ) {
-	if ( scheduledSync !== 0 ) {
+	if ( scheduledSync !== 0 || loading ) {
 		return {
 			Icon: SyncIcon,
 			status: __( 'Sync in progress', 'google-listings-and-ads' ),
@@ -70,7 +71,7 @@ function SyncStatus() {
 		'getMCProductStatistics'
 	);
 
-	if ( ! hasFinishedResolution ) {
+	if ( ! hasFinishedResolution || ( hasFinishedResolution && ! data ) ) {
 		return null;
 	}
 
