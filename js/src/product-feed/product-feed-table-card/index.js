@@ -206,10 +206,6 @@ const ProductFeedTableCard = () => {
 						<TablePlaceholder
 							headers={ headers }
 							numberOfRows={ query.per_page }
-							caption={ __(
-								'Loading product feed',
-								'google-listings-and-ads'
-							) }
 						/>
 					) }
 					{ hasFinishedResolution && ! data?.products && (
