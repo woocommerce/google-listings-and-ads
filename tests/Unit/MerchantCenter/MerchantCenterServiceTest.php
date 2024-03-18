@@ -408,7 +408,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	public function test_get_setup_status_step_accounts() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
-			->willReturn( SELF::TST_ADS_ACCOUNT_ID );
+			->willReturn( self::TST_ADS_ACCOUNT_ID );
 
 		$this->connection->expects( $this->once() )
 			->method( 'get_status' )
@@ -431,7 +431,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	public function test_get_setup_status_step_product_listings() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
-			->willReturn( SELF::TST_ADS_ACCOUNT_ID );
+			->willReturn( self::TST_ADS_ACCOUNT_ID );
 
 		$this->connection->expects( $this->once() )
 			->method( 'get_status' )
@@ -469,7 +469,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	public function test_get_setup_status_step_store_requirements() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
-			->willReturn( SELF::TST_ADS_ACCOUNT_ID );
+			->willReturn( self::TST_ADS_ACCOUNT_ID );
 
 		$this->connection->expects( $this->once() )
 			->method( 'get_status' )
@@ -511,7 +511,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	public function test_get_setup_status_shipping_selected_rates() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
-			->willReturn( SELF::TST_ADS_ACCOUNT_ID );
+			->willReturn( self::TST_ADS_ACCOUNT_ID );
 
 		$this->connection->expects( $this->once() )
 			->method( 'get_status' )
@@ -567,7 +567,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	public function test_get_setup_status_step_paid_ads() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
-			->willReturn( SELF::TST_ADS_ACCOUNT_ID );
+			->willReturn( self::TST_ADS_ACCOUNT_ID );
 
 		$this->connection->expects( $this->once() )
 			->method( 'get_status' )
