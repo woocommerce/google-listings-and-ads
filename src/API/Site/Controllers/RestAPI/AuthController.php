@@ -32,8 +32,8 @@ class AuthController extends BaseController {
 	 * @var string[]
 	 */
 	private const NEXT_PATH_MAPPING = [
-		'setup-mc'  => '/google/setup-mc',
-		'reconnect' => '/google/settings',
+		'setup-mc' => '/google/setup-mc',
+		'settings' => '/google/settings',
 	];
 
 	/**
