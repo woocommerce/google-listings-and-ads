@@ -21,6 +21,14 @@ export function getProductBlockEditorUtils( page ) {
 		getPluginTab() {
 			return this.getTab( 'Google Listings & Ads' );
 		},
+
+		getChannelVisibilityHeading() {
+			return page.getByRole( 'heading', { name: 'Channel visibility' } );
+		},
+
+		getProductAttributesHeading() {
+			return page.getByRole( 'heading', { name: 'Product attributes' } );
+		},
 	};
 
 	const asyncActions = {

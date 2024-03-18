@@ -25,3 +25,14 @@ add_filter(
 		";
 	}
 );
+
+/*
+ * Mimic the `WooCommerceBrands` class to test plugin integration in product editor.
+ */
+add_filter(
+	'woocommerce_gla_product_attribute_value_options_brand',
+	function ( array $value_options ) {
+		$value_options[ 'e2e_test_woocommerce_brands' ] = 'E2E test: From WooCommerce Brands';
+		return $value_options;
+	}
+);
