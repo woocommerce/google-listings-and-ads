@@ -30,7 +30,8 @@ const NonConnected = () => {
 	if (
 		existingAccounts.length === 0 ||
 		ignoreExisting ||
-		( googleAdsAccount.id && hasAccess !== true )
+		( googleAdsAccount.id && hasAccess !== true ) ||
+		( hasAccess === true && googleAdsAccount.step === 'conversion_action' )
 	) {
 		return (
 			<CreateAccount
