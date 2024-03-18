@@ -89,7 +89,6 @@ trait Utilities {
 	 * @return string
 	 */
 	protected function base64url_encode( $data ): string {
-		// First of all you should encode $data to Base64 string
 		$b64 = base64_encode( $data );
 
 		// Convert Base64 to Base64URL by replacing "+" with "-" and "/" with "_"
