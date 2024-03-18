@@ -14,14 +14,14 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Snippets;
  * It's a hack to avoid specifying region for E2E environment, but it tests the customization of consent mode.
  */
 add_filter(
-    'woocommerce_gla_gtag_consent',
-    function( $old_config ) {
-        return "gtag( 'consent', 'default', {
-            analytics_storage: 'granted',
-            ad_storage: 'granted',
-            ad_user_data: 'granted',
-            ad_personalization: 'granted',
-        } );
-        ";
-    }
+	'woocommerce_gla_gtag_consent',
+	function( $old_config ) {
+		return "gtag( 'consent', 'default', {
+			analytics_storage: 'granted',
+			ad_storage: 'granted',
+			ad_user_data: 'granted',
+			ad_personalization: 'granted',
+		} );
+		";
+	}
 );
