@@ -140,7 +140,7 @@ const ProductStatistics = () => {
 				{ hasFinishedResolution && data?.error && (
 					<SyncProductStatistics
 						refreshStats={ refreshStats }
-						error={ 'My error' }
+						error={ data.error }
 					/>
 				) }
 			</CardFooter>
