@@ -368,6 +368,11 @@ test.describe( 'Set up Ads account', () => {
 
 	test.describe( 'Set up billing', () => {
 		test.describe( 'Billing status is not approved', () => {
+			test.beforeAll( async () => {
+				await setupBudgetPage.fulfillBillingStatusRequest( {
+					status: 'pending',
+				} );
+			} );
 			test( 'It should say that the billing is not setup', async () => {
 				await page.getByRole( 'button', { name: 'Continue' } ).click();
 				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
@@ -397,6 +402,7 @@ test.describe( 'Set up Ads account', () => {
 				await checkBillingAdsPopup( page );
 			} );
 		} );
+
 		test.describe( 'Billing status is approved', async () => {
 			test.beforeAll( async () => {
 				await setupBudgetPage.fulfillBillingStatusRequest( {
