@@ -10,10 +10,17 @@ import useMCProductStatistics from '.~/hooks/useMCProductStatistics';
 import useCountdown from '.~/hooks/useCountdown';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import { useAppDispatch } from '.~/data';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 
 jest.mock( '.~/hooks/useAppSelectDispatch' );
 jest.mock( '.~/hooks/useCountdown' );
 jest.mock( '.~/data' );
+jest.mock( '.~/hooks/useApiFetchCallback', () => ( {
+	__esModule: true,
+	default: jest.fn().mockImplementation( () => {
+		return [ jest.fn(), null ];
+	} ),
+} ) );
 
 describe( 'useMCProductStatistics', () => {
 	const startCountdown = jest.fn();
@@ -137,6 +144,40 @@ describe( 'useMCProductStatistics', () => {
 			expect( invalidateResolutionForStoreSelector ).toHaveBeenCalledWith(
 				'getMCProductFeed'
 			);
+		} );
+	} );
+	describe( 'Refresh the product statistics', () => {
+		beforeAll( () => {
+			jest.clearAllMocks();
+		} );
+		it( 'The user clicks the refresh button', async () => {
+			const refreshProductStats = jest.fn();
+			useCountdown.mockImplementation( () => {
+				return {
+					second: 0,
+					callCount: 0,
+					startCountdown,
+				};
+			} );
+
+			useAppSelectDispatch.mockImplementation( () => {
+				return {
+					hasFinishedResolution: true,
+					invalidateResolution,
+					data: statsData,
+				};
+			} );
+
+			useApiFetchCallback.mockImplementation( () => {
+				return [ refreshProductStats, null ];
+			} );
+
+			const { result } = renderHook( () => useMCProductStatistics() );
+
+			await result.current.refreshStats();
+
+			expect( refreshProductStats ).toHaveBeenCalledTimes( 1 );
+			expect( invalidateResolution ).toHaveBeenCalledTimes( 1 );
 		} );
 	} );
 } );

@@ -35,7 +35,7 @@ const useMCProductStatistics = () => {
 
 	const refreshStats = async () => {
 		await refreshProductStats();
-		invalidateResolution( 'getMCProductStatistics', [] );
+		invalidateResolution();
 	};
 
 	useEffect( () => {
