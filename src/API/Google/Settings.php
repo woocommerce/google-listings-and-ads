@@ -54,8 +54,8 @@ class Settings {
 
 		return [
 			'shipping_rate'           => $settings['shipping_rate'] ?? '',
-			'offers_free_shipping'    => (bool) $settings['offers_free_shipping'] ?? false,
-			'free_shipping_threshold' => (float) $settings['free_shipping_threshold'] ?? 0,
+			'offers_free_shipping'    => (bool) ( $settings['offers_free_shipping'] ?? false ),
+			'free_shipping_threshold' => (float) ( $settings['free_shipping_threshold'] ?? 0 ),
 			'shipping_time'           => $settings['shipping_time'] ?? '',
 			'tax_rate'                => $settings['tax_rate'] ?? '',
 			'target_countries'        => join( ',', $this->get_target_countries() ),
