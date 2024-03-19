@@ -2,13 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import Status from '.~/product-feed/product-statistics/status-box/status';
 import ErrorIcon from '.~/components/error-icon';
-import { Button } from '@wordpress/components';
 
 /**
  * @typedef {import('.~/data/actions').ProductStatistics } ProductStatistics
