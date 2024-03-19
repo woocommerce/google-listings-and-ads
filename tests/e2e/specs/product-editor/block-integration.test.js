@@ -45,6 +45,24 @@ test.describe( 'Product Block Editor integration', () => {
 		await api.setOnboardedMerchant();
 	} );
 
+	test( 'Hide plugin tab for unsupported product types', async () => {
+		await editorUtils.gotoAddProductPage();
+		await editorUtils.fillProductName();
+
+		const pluginTab = editorUtils.getPluginTab();
+
+		await expect( pluginTab ).toHaveCount( 1 );
+
+		await editorUtils.changeToGroupedProduct();
+		await expect( pluginTab ).toHaveCount( 0 );
+
+		await editorUtils.changeToStandardProduct();
+		await expect( pluginTab ).toHaveCount( 1 );
+
+		await editorUtils.changeToAffiliateProduct();
+		await expect( pluginTab ).toHaveCount( 0 );
+	} );
+
 	test.afterAll( async () => {
 		await editorUtils.toggleBlockFeature( page, false );
 		await api.clearOnboardedMerchant();
