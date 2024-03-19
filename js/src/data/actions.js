@@ -108,7 +108,7 @@ import { adaptAdsCampaign } from './adapters';
  * @property {number} timestamp Timestamp reflecting when the product status statistics were last generated.
  * @property {boolean} loading Whether the product status statistics are being loaded.
  * @property {string | null} error In case of error, it will contain the error message.
- * @property {ProductStatisticsDetails} statistics Statistics information of product status on Google Merchant Center.
+ * @property {ProductStatisticsDetails | null } statistics Statistics information of product status on Google Merchant Center or null if the stats are loading.
  */
 
 /**

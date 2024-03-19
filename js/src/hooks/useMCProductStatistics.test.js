@@ -88,7 +88,7 @@ describe( 'useMCProductStatistics', () => {
 					invalidateResolution,
 					data: {
 						loading: true,
-						statistics: {},
+						statistics: null,
 						error: null,
 					},
 				};

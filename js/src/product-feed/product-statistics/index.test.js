@@ -35,6 +35,7 @@ describe( 'Product Statistics', () => {
 					hasFinishedResolution: true,
 					data: {
 						loading: true,
+						statistics: null,
 					},
 				};
 			} );

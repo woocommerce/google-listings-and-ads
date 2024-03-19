@@ -38,6 +38,7 @@ const ProductStatistics = () => {
 	}
 
 	const isLoading = ! hasFinishedResolution || data?.loading;
+	const hasStats = hasFinishedResolution && data?.statistics ? true : false;
 
 	return (
 		<Card className="gla-product-statistics">
@@ -54,7 +55,7 @@ const ProductStatistics = () => {
 				size={ null }
 			>
 				{ isLoading && <SummaryListPlaceholder numberOfItems={ 5 } /> }
-				{ hasFinishedResolution && ! data?.loading && (
+				{ hasStats && (
 					<SummaryList>
 						{ () => [
 							<SummaryNumber
