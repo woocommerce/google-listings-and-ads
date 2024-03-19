@@ -320,4 +320,13 @@ class AccountService implements OptionsAwareInterface, Service {
 			'status' => $status,
 		];
 	}
+
+	/**
+	 * Get the OCID for account.
+	 *
+	 * @return string
+	 */
+	public function get_ocid() {
+		return $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID, '' );
+	}
 }

@@ -122,6 +122,17 @@ class AccountController extends BaseController {
 				],
 			]
 		);
+
+		$this->register_route(
+			'ads/ocid',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_ocid(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -238,6 +249,17 @@ class AccountController extends BaseController {
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
+		};
+	}
+
+	/**
+	 * Get the callback function for retrieving OCID for ads account.
+	 *
+	 * @return callable
+	 */
+	protected function get_ocid() {
+		return function ( Request $request ) {
+			return $this->account->get_ocid();
 		};
 	}
 

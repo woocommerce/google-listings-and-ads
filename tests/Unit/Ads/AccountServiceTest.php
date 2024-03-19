@@ -55,6 +55,7 @@ class AccountServiceTest extends UnitTest {
 	protected $options;
 
 	protected const TEST_ACCOUNT_ID        = 1234567890;
+	protected const TEST_ACCOUNT_OCID      = '9876565656';
 	protected const TEST_OLD_ACCOUNT_ID    = 2345678901;
 	protected const TEST_MERCHANT_ID       = 78123456;
 	protected const TEST_BILLING_URL       = 'https://domain.test/billing/setup/';
@@ -482,5 +483,16 @@ class AccountServiceTest extends UnitTest {
 			);
 
 		$this->account->disconnect();
+	}
+
+	public function test_get_ocid() {
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::ADS_ACCOUNT_OCID, '' )
+			->willReturn( self::TEST_ACCOUNT_OCID );
+
+		$ocid = $this->account->get_ocid();
+
+		$this->assertEquals( self::TEST_ACCOUNT_OCID, $ocid );
 	}
 }

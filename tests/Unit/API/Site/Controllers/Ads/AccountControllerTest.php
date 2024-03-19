@@ -29,6 +29,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_ACCEPTED_DATA_TERMS = '/wc/gla/ads/accepted-customer-data-terms';
 	protected const ROUTE_UPDATED_EC_STATUS   = '/wc/gla/ads/enhanced-conversion-status';
 	protected const ROUTE_GET_EC_STATUS       = '/wc/gla/ads/enhanced-conversion-status';
+	protected const ROUTE_GET_ADS_OCID        = '/wc/gla/ads/ocid';
 	protected const TEST_ACCOUNT_ID           = 1234567890;
 	protected const TEST_BILLING_URL          = 'https://domain.test/billing/setup/';
 	protected const TEST_BILLING_STATUS       = 'pending';
@@ -68,6 +69,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		'status'      => self::TEST_BILLING_STATUS,
 		'billing_url' => self::TEST_BILLING_URL,
 	];
+	protected const TEST_ADS_OCID             = '123456789';
 
 	public function setUp(): void {
 		parent::setUp();
@@ -206,6 +208,19 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			$response->get_data()
 		);
 		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	/**
+	 * @group ocid
+	 */
+	public function test_get_ocid() {
+		$this->account->expects( $this->once() )
+			->method( 'get_ocid' )
+			->willReturn( self::TEST_ADS_OCID );
+
+		$response = $this->do_request( self::ROUTE_GET_ADS_OCID, 'GET' );
+
+		$this->assertEquals( self::TEST_ADS_OCID, $response->get_data() );
 	}
 
 	public function test_get_billing_status() {
