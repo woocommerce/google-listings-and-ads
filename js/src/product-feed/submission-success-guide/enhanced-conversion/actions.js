@@ -12,7 +12,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
 import CTA from '.~/components/enhanced-conversion-tracking-settings/cta';
 
-const Footer = ( { onModalClose = noop } ) => {
+const Actions = ( { onModalClose = noop } ) => {
 	const { createNotice } = useDispatchCoreNotices();
 
 	const handleEnableOrDisableClick = useCallback( () => {
@@ -50,4 +50,4 @@ const Footer = ( { onModalClose = noop } ) => {
 	);
 };
 
-export default Footer;
+export default Actions;

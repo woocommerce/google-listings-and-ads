@@ -6,7 +6,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
 import LoadingLabel from '.~/components/loading-label';
 import GuidePageContent from '.~/components/guide-page-content';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
@@ -26,7 +25,7 @@ const DynamicScreenContent = () => {
 		);
 	}
 
-	if ( pmaxCampaigns.length && glaData.adsConnected ) {
+	if ( pmaxCampaigns.length ) {
 		return <EnhancedConversion />;
 	}
 

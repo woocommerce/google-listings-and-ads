@@ -47,7 +47,6 @@ module.exports = {
 			mcSupportedCountry: true,
 			mcSupportedLanguage: true,
 			adsSetupComplete: true,
-			adsConnected: true,
 			enableReports: true,
 			dateFormat: 'F j, Y',
 			timeFormat: 'g:i a',

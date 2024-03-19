@@ -13,7 +13,7 @@ import { GLA_MODAL_CLOSED_EVENT_NAME } from '../constants';
 import AppButton from '.~/components/app-button';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 
-const Footer = ( { onModalClose = noop } ) => {
+const Actions = ( { onModalClose = noop } ) => {
 	return (
 		<Fragment>
 			<div className="gla-submission-success-guide__space_holder" />
@@ -42,4 +42,4 @@ const Footer = ( { onModalClose = noop } ) => {
 	);
 };
 
-export default Footer;
+export default Actions;

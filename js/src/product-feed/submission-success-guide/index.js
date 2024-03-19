@@ -8,16 +8,15 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { glaData, GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
+import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
 import { getProductFeedUrl } from '.~/utils/urls';
 import { recordGlaEvent } from '.~/utils/tracks';
 import { GLA_MODAL_CLOSED_EVENT_NAME } from './constants';
 import Guide from '.~/external-components/wordpress/guide';
 import localStorage from '.~/utils/localStorage';
 import DynamicScreenContent from './dynamic-screen-content';
-import DynamicScreenFooter from './dynamic-screen-footer';
+import DynamicScreenActions from './dynamic-screen-actions';
 import SetupSuccess from './setup-success';
-import SetupSuccessFooter from './setup-success/footer';
 import wooLogoURL from './woocommerce-logo.svg';
 import googleLogoURL from '.~/images/google-logo.svg';
 import './index.scss';
@@ -61,22 +60,18 @@ const handleGuideFinish = ( e ) => {
 	} );
 };
 
+// There will always be at least 2 pages because we will require a connected Ads account during onboarding.
 const pages = [
 	{
 		image,
 		content: <SetupSuccess />,
-		actions: <SetupSuccessFooter onModalClose={ handleGuideFinish } />,
 	},
 	{
 		image,
 		content: <DynamicScreenContent />,
-		actions: <DynamicScreenFooter onModalClose={ handleGuideFinish } />,
+		actions: <DynamicScreenActions onModalClose={ handleGuideFinish } />,
 	},
 ];
-
-if ( ! glaData.adsConnected ) {
-	pages.pop();
-}
 
 /**
  * Modal window to greet the user at Product Feed, after successful completion of onboarding.

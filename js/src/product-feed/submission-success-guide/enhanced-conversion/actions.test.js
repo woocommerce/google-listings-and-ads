@@ -43,7 +43,7 @@ import '@testing-library/jest-dom';
 import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
-import Footer from './footer';
+import Actions from './actions';
 
 describe( 'Enhanced Conversion Footer', () => {
 	beforeEach( () => {
@@ -59,7 +59,7 @@ describe( 'Enhanced Conversion Footer', () => {
 			allowEnhancedConversions: null,
 		} );
 
-		render( <Footer /> );
+		render( <Actions /> );
 
 		expect(
 			screen.getByText( 'Sign terms of service on Google Ads' )
@@ -77,7 +77,7 @@ describe( 'Enhanced Conversion Footer', () => {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.DISABLED,
 		} );
 
-		render( <Footer onModalClose={ handleOnModalClose } /> );
+		render( <Actions onModalClose={ handleOnModalClose } /> );
 
 		const button = screen.getByRole( 'button', { name: 'Confirm' } );
 		userEvent.click( button );
@@ -96,7 +96,7 @@ describe( 'Enhanced Conversion Footer', () => {
 			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
 		} );
 
-		render( <Footer onModalClose={ handleOnModalClose } /> );
+		render( <Actions onModalClose={ handleOnModalClose } /> );
 
 		const button = screen.getByRole( 'button', { name: 'Disable' } );
 		userEvent.click( button );

@@ -7,13 +7,12 @@ import { noop } from 'lodash';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
 import LoadingLabel from '.~/components/loading-label';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
-import EnhancedConversionFooter from './enhanced-conversion/footer';
-import GoogleCreditsFooter from './google-credits/footer';
+import EnhancedConversionActions from './enhanced-conversion/actions';
+import GoogleCreditsActions from './google-credits/actions';
 
-const DynamicScreenFooter = ( { onModalClose = noop } ) => {
+const DynamicScreenActions = ( { onModalClose = noop } ) => {
 	const { loaded, pmaxCampaigns } = useAdsCampaigns();
 
 	if ( ! loaded ) {
@@ -25,11 +24,11 @@ const DynamicScreenFooter = ( { onModalClose = noop } ) => {
 		);
 	}
 
-	if ( pmaxCampaigns.length && glaData.adsConnected ) {
-		return <EnhancedConversionFooter onModalClose={ onModalClose } />;
+	if ( pmaxCampaigns.length ) {
+		return <EnhancedConversionActions onModalClose={ onModalClose } />;
 	}
 
-	return <GoogleCreditsFooter onModalClose={ onModalClose } />;
+	return <GoogleCreditsActions onModalClose={ onModalClose } />;
 };
 
-export default DynamicScreenFooter;
+export default DynamicScreenActions;
