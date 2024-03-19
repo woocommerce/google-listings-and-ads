@@ -136,7 +136,18 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
 		$job               = $this->maybe_refresh_status_data( $force_refresh );
+		$failure_rate_msg  = $job->get_failure_rate_message();
 		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+
+		// If the failure rate is too high, return an error message so the UI can stop polling.
+		if ( $failure_rate_msg && null === $this->mc_statuses ) {
+			return [
+				'timestamp'  => $this->cache_created_time->getTimestamp(),
+				'statistics' => [],
+				'loading'    => false,
+				'error'      => $failure_rate_msg,
+			];
+		}
 
 		if ( $job->is_scheduled() || null === $this->mc_statuses ) {
 			return [
