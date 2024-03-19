@@ -29,29 +29,28 @@ const stats = {
 
 describe( 'Product Statistics', () => {
 	describe( `When the data still being populated or the request still in progress`, () => {
-		it( 'Should render placeholder if the data is loading', () => {
+		it( 'Should render AppSpinner if the data is loading', () => {
 			useMCProductStatistics.mockImplementation( () => {
 				return {
 					hasFinishedResolution: true,
 					data: {
 						loading: true,
+						statistics: null,
 					},
 				};
 			} );
 
-			render( <ProductStatistics /> );
+			const { container } = render( <ProductStatistics /> );
 
-			const placeHolders = screen.queryAllByTestId(
-				'summary-placeholder'
-			);
-
-			expect( placeHolders[ 0 ] ).toHaveClass( 'is-placeholder' );
+			expect(
+				container.querySelectorAll( '.woocommerce-spinner' ).length
+			).toBe( 5 );
 		} );
 		it( 'Should render placeholder if hasFinishedResolution = false', () => {
 			useMCProductStatistics.mockImplementation( () => {
 				return {
 					hasFinishedResolution: false,
-					data: {},
+					data: null,
 				};
 			} );
 

@@ -340,7 +340,7 @@ class MerchantStatusesTest extends UnitTest {
 		$product_statistics = $this->merchant_statuses->get_product_statistics();
 
 		$this->assertEquals(
-			[],
+			null,
 			$product_statistics['statistics']
 		);
 
@@ -381,7 +381,7 @@ class MerchantStatusesTest extends UnitTest {
 		$product_statistics = $this->merchant_statuses->get_product_statistics();
 
 		$this->assertEquals(
-			[],
+			null,
 			$product_statistics['statistics']
 		);
 
@@ -422,7 +422,7 @@ class MerchantStatusesTest extends UnitTest {
 		$product_statistics = $this->merchant_statuses->get_product_statistics( $force_refresh );
 
 		$this->assertEquals(
-			[],
+			null,
 			$product_statistics['statistics']
 		);
 
@@ -713,7 +713,7 @@ class MerchantStatusesTest extends UnitTest {
 			$this->callback(
 				function ( $value ) {
 					$this->assertEquals(
-						[],
+						null,
 						$value['statistics']
 					);
 

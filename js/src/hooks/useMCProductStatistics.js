@@ -23,8 +23,10 @@ const useMCProductStatistics = () => {
 	const { data, hasFinishedResolution, invalidateResolution, ...rest } =
 		useAppSelectDispatch( 'getMCProductStatistics' );
 
-	const isLoading = hasFinishedResolution && data?.loading ? true : false;
-	const hasStats = hasFinishedResolution && ! data?.loading ? true : false;
+	// Weather the AS job is still processing the data.
+	const isCalculatingStats =
+		hasFinishedResolution && data?.loading ? true : false;
+	const hasStats = hasFinishedResolution && data?.statistics ? true : false;
 
 	const [ refreshProductStats ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/product-statistics/refresh`,
@@ -37,13 +39,15 @@ const useMCProductStatistics = () => {
 	};
 
 	useEffect( () => {
-		if ( isLoading && second === 0 ) {
-			startCountdown( 30 );
+		// If the job is still processing the data, start the countdown.
+		if ( isCalculatingStats && second === 0 ) {
+			startCountdown( 15 );
+			// If the job is still processing the data, invalidate the resolution/refetch the data to get the latest status.
+			if ( callCount > 0 ) {
+				invalidateResolution();
+			}
 		}
 
-		if ( isLoading && second === 0 && callCount > 0 ) {
-			invalidateResolution();
-		}
 		// Stop the countdown when the data is loaded.
 		if ( hasStats && callCount > 0 ) {
 			startCountdown( 0 );
@@ -53,7 +57,7 @@ const useMCProductStatistics = () => {
 	}, [
 		second,
 		callCount,
-		isLoading,
+		isCalculatingStats,
 		hasStats,
 		invalidateResolution,
 		invalidateResolutionForStoreSelector,

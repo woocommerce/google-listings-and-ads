@@ -26,6 +26,7 @@ import SyncProductStatistics from '.~/product-feed/product-statistics/status-box
 import FeedStatus from '.~/product-feed/product-statistics/status-box/feed-status';
 import AccountStatus from '.~/product-feed/product-statistics/status-box/account-status';
 import Text from '.~/components/app-text';
+import AppSpinner from '.~/components/app-spinner';
 import './index.scss';
 
 const ProductStatistics = () => {
@@ -40,6 +41,15 @@ const ProductStatistics = () => {
 	}
 
 	const isLoading = ! hasFinishedResolution || data?.loading;
+	const hasStats = hasFinishedResolution && data?.statistics ? true : false;
+
+	let summaryNumberLoadingProps = {};
+
+	if ( isLoading ) {
+		summaryNumberLoadingProps = {
+			children: <AppSpinner />,
+		};
+	}
 
 	return (
 		<Card className="gla-product-statistics">
@@ -55,8 +65,10 @@ const ProductStatistics = () => {
 				className="gla-product-statistics__summaries"
 				size={ null }
 			>
-				{ isLoading && <SummaryListPlaceholder numberOfItems={ 5 } /> }
-				{ hasFinishedResolution && ! data?.loading && (
+				{ ! hasFinishedResolution && (
+					<SummaryListPlaceholder numberOfItems={ 5 } />
+				) }
+				{ hasFinishedResolution && (
 					<SummaryList>
 						{ () => [
 							<SummaryNumber
@@ -65,7 +77,8 @@ const ProductStatistics = () => {
 									'Active',
 									'google-listings-and-ads'
 								) }
-								value={ data.statistics.active }
+								value={ hasStats ? data.statistics.active : '' }
+								{ ...summaryNumberLoadingProps }
 							/>,
 							<SummaryNumber
 								key="expiring"
@@ -73,7 +86,10 @@ const ProductStatistics = () => {
 									'Expiring',
 									'google-listings-and-ads'
 								) }
-								value={ data.statistics.expiring }
+								value={
+									hasStats ? data.statistics.expiring : ''
+								}
+								{ ...summaryNumberLoadingProps }
 							/>,
 							<SummaryNumber
 								key="pending"
@@ -81,7 +97,10 @@ const ProductStatistics = () => {
 									'Pending',
 									'google-listings-and-ads'
 								) }
-								value={ data.statistics.pending }
+								value={
+									hasStats ? data.statistics.pending : ''
+								}
+								{ ...summaryNumberLoadingProps }
 							/>,
 							<SummaryNumber
 								key="disapproved"
@@ -89,7 +108,10 @@ const ProductStatistics = () => {
 									'Disapproved',
 									'google-listings-and-ads'
 								) }
-								value={ data.statistics.disapproved }
+								value={
+									hasStats ? data.statistics.disapproved : ''
+								}
+								{ ...summaryNumberLoadingProps }
 							/>,
 							<SummaryNumber
 								key="not_synced"
@@ -97,7 +119,10 @@ const ProductStatistics = () => {
 									'Not Synced',
 									'google-listings-and-ads'
 								) }
-								value={ data.statistics.not_synced }
+								value={
+									hasStats ? data.statistics.not_synced : ''
+								}
+								{ ...summaryNumberLoadingProps }
 							/>,
 						] }
 					</SummaryList>
