@@ -119,4 +119,33 @@ describe( 'Product Statistics', () => {
 			} );
 		} );
 	} );
+	describe( `When there is an error`, () => {
+		it( 'Should render the error', () => {
+			useMCProductStatistics.mockImplementation( () => {
+				return {
+					hasFinishedResolution: true,
+					data: {
+						loading: false,
+						statistics: null,
+						error: 'Error loading stats!',
+					},
+				};
+			} );
+
+			const { getByText, container } = render( <ProductStatistics /> );
+
+			const notAvailableStats = container.querySelectorAll(
+				'.woocommerce-summary__item-value'
+			);
+
+			expect( notAvailableStats.length ).toBe( 5 );
+
+			for ( let i = 0; i < notAvailableStats.length; i++ ) {
+				expect( notAvailableStats[ i ].textContent ).toBe( 'N/A' );
+			}
+
+			expect( getByText( 'Overview Stats:' ) ).toBeInTheDocument();
+			expect( getByText( 'Error loading stats!' ) ).toBeInTheDocument();
+		} );
+	} );
 } );
