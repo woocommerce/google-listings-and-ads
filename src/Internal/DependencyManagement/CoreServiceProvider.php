@@ -28,6 +28,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
@@ -44,7 +45,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -213,6 +214,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MerchantAccountService::class    => true,
 		AttributeMapping::class          => true,
 		MarketingChannelRegistrar::class => true,
+		OAuthService::class              => true,
 	];
 
 	/**
@@ -253,6 +255,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Set up Notifications service.
 		$this->share_with_tags( NotificationsService::class );
+
+		// Set up OAuthService service.
+		$this->share_with_tags( OAuthService::class );
 
 		$this->getLeagueContainer()
 			->inflector( MerchantCenterAwareInterface::class )

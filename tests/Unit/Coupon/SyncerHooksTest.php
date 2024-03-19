@@ -6,7 +6,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\SyncerHooks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\WCCouponAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\CouponNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateCoupon;

@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Settings;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\SettingsNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Settings\SyncerHooks;

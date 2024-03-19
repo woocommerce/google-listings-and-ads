@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\AsyncActionRunne
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractProductSyncerBatchedJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobInterface;
