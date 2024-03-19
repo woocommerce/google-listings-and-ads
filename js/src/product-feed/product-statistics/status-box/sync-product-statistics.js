@@ -39,7 +39,7 @@ function SyncProductStatistics( { refreshStats, error } ) {
 					) }
 				</Button>
 			}
-			description={ null }
+			description={ error }
 		/>
 	);
 }
