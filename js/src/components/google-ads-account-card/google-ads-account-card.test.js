@@ -11,6 +11,7 @@ import GoogleAdsAccountCard from './google-ads-account-card';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
+import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 
 jest.mock( '.~/hooks/useGoogleAdsAccountStatus', () => ( {
 	__esModule: true,
@@ -30,6 +31,10 @@ jest.mock( '.~/hooks/useGoogleAdsAccount', () =>
 
 jest.mock( '.~/hooks/useGoogleAccount', () =>
 	jest.fn().mockName( 'useGoogleAccount' ).mockReturnValue( {} )
+);
+
+jest.mock( '.~/hooks/useExistingGoogleAdsAccounts', () =>
+	jest.fn().mockName( 'useExistingGoogleAdsAccounts' ).mockReturnValue( {} )
 );
 
 jest.mock( '.~/hooks/useDispatchCoreNotices', () => ( {
@@ -72,11 +77,13 @@ describe( 'GoogleAdsAccountCard', () => {
 		useGoogleAdsAccountStatus.mockReturnValue( {
 			hasFinishedResolution: true,
 			hasAccess: false,
+			isResolving: false,
 			inviteLink: 'http://ads.google.com/invite',
 		} );
 
 		useGoogleAdsAccount.mockReturnValue( {
 			googleAdsAccount: CONNECTED_GOOGLE_ADS_ACCOUNT,
+			hasFinishedResolution: true,
 		} );
 
 		useGoogleAccount.mockReturnValue( {
@@ -88,14 +95,16 @@ describe( 'GoogleAdsAccountCard', () => {
 			google: true,
 		} );
 
+		useExistingGoogleAdsAccounts.mockReturnValue( {
+			existingAccounts: [],
+		} );
+
 		render( <GoogleAdsAccountCard /> );
 
 		expect(
-			screen.getByText( 'Claim your new ads account' )
-		).toBeInTheDocument();
-		expect( screen.getByRole( 'link' ) ).toHaveAttribute(
-			'href',
-			'http://ads.google.com/invite'
-		);
+			screen.getAllByText(
+				'Claim your new Google Ads account to complete this setup.'
+			)
+		).toBeTruthy();
 	} );
 } );

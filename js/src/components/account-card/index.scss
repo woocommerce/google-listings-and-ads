@@ -64,6 +64,14 @@
 		padding: $grid-unit-20;
 	}
 
+	.components-notice.is-warning {
+		background-color: #ffeec1;
+		border: 0;
+		font-size: $helptext-font-size;
+		margin: 0 var(--large-gap) var(--main-gap);
+		padding: $grid-unit-20;
+	}
+
 	@media (max-width: $break-small) {
 		.components-card__body > .components-flex {
 			flex-direction: column;

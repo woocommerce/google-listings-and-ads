@@ -1259,11 +1259,23 @@ export function* fetchGoogleAdsAccountStatus() {
 			type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
 			data,
 		};
-	} catch ( error ) {
-		const errorBodyPromise = error?.json() || error?.text();
+	} catch ( response ) {
+		// Swallow the exception when there is not an Ads account connected.
+		if ( response.status === 400 ) {
+			return {
+				type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
+				data: {
+					has_access: null,
+					invite_link: null,
+				},
+			};
+		}
+
+		const errorBodyPromise = response?.json() || response?.text();
 		const errorData = yield awaitPromise( errorBodyPromise );
 
-		if ( error.status === 428 ) {
+		if ( response.status === 428 ) {
+			// Update to the data store as the "errorData" is valid account status data.
 			return {
 				type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
 				data: errorData,

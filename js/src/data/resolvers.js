@@ -532,5 +532,5 @@ export function* getGoogleAdsAccountStatus() {
  * @return {boolean} True if the action should be invalidated
  */
 getGoogleAdsAccountStatus.shouldInvalidate = ( action ) => {
-	return action.type === TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS;
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS;
 };

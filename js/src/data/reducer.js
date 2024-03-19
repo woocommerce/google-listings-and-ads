@@ -68,6 +68,7 @@ const DEFAULT_STATE = {
 		accountStatus: {
 			hasAccess: null,
 			inviteLink: null,
+			step: null,
 		},
 	},
 };
@@ -499,12 +500,13 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS: {
 			const {
-				data: { has_access: hasAccess, invite_link: inviteLink },
+				data: { has_access: hasAccess, invite_link: inviteLink, step },
 			} = action;
 
 			return chainState( state, 'ads.accountStatus' )
 				.setIn( 'hasAccess', hasAccess )
 				.setIn( 'inviteLink', inviteLink )
+				.setIn( 'step', step )
 				.end();
 		}
 
