@@ -22,7 +22,7 @@ import {
 import useMCProductStatistics from '.~/hooks/useMCProductStatistics';
 import ProductStatusHelpPopover from './product-status-help-popover';
 import SyncStatus from '.~/product-feed/product-statistics/status-box/sync-status';
-import SyncMCStatus from '.~/product-feed/product-statistics/status-box/sync-mc-status';
+import SyncProductStatistics from '.~/product-feed/product-statistics/status-box/sync-product-statistics';
 import FeedStatus from '.~/product-feed/product-statistics/status-box/feed-status';
 import AccountStatus from '.~/product-feed/product-statistics/status-box/account-status';
 import Text from '.~/components/app-text';
@@ -107,10 +107,12 @@ const ProductStatistics = () => {
 				<FeedStatus />
 				<SyncStatus />
 				<AccountStatus />
-				<SyncMCStatus
-					refreshStats={ refreshStats }
-					error={ 'My error' }
-				/>
+				{ hasFinishedResolution && data?.error && (
+					<SyncProductStatistics
+						refreshStats={ refreshStats }
+						error={ 'My error' }
+					/>
+				) }
 			</CardFooter>
 		</Card>
 	);

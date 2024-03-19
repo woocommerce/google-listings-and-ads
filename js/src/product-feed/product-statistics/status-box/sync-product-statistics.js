@@ -22,7 +22,7 @@ import { Button } from '@wordpress/components';
  * @param {string} props.error
  * @return {JSX.Element} The status for the Product Sync
  */
-function SyncMCStatus( { refreshStats, error } ) {
+function SyncProductStatistics( { refreshStats, error } ) {
 	return (
 		<Status
 			title={ __( 'Overview Stats:', 'google-listings-and-ads' ) }
@@ -34,7 +34,8 @@ function SyncMCStatus( { refreshStats, error } ) {
 					className="overview-stats-error-button"
 				>
 					{ __(
-						'There was an error loading the Overview Stats. Click to retry.'
+						'There was an error loading the Overview Stats. Click to retry.',
+						'google-listings-and-ads'
 					) }
 				</Button>
 			}
@@ -43,4 +44,4 @@ function SyncMCStatus( { refreshStats, error } ) {
 	);
 }
 
-export default SyncMCStatus;
+export default SyncProductStatistics;
