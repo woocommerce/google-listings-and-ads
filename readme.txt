@@ -125,9 +125,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - Avoid the test-data plugin occasionally missing in the E2E test environment.
 * Fix - Improve WordPress.com account handling.
 
-= 2.6.0 - 2024-02-27 =
-* Add - Support the new product editor (Product Block Editor).
-* Dev - Fix the compatibility issue in starting E2E test environment due to the default charset change in MariaDB v11.3.1.
-* Fix - 401 handling for connected Ads accounts.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
