@@ -14,7 +14,7 @@ class GoogleGtagJs {
 	private $wcga_settings;
 
 	/** @var bool $ga4c_v2 True if Google Analytics for WooCommerce version 2 or higher is installed */
-	private $ga4w_v2;
+	public $ga4w_v2;
 
 	/**
 	 * GoogleGtagJs constructor.
