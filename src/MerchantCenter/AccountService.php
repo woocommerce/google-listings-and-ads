@@ -222,7 +222,7 @@ class AccountService implements OptionsAwareInterface, Service {
 		$status = [
 			'id'                    => $id,
 			'status'                => $id ? 'connected' : 'disconnected',
-			'wpcom_rest_api_status' => $wpcom_rest_api_status === 'approved' ? 'approved' : 'disapproved',
+			'wpcom_rest_api_status' => $wpcom_rest_api_status,
 		];
 
 		$incomplete = $this->state->last_incomplete_step();
@@ -491,5 +491,14 @@ class AccountService implements OptionsAwareInterface, Service {
 		}
 
 		return new ExceptionWithResponseData( $message, $code ?: 400, null, $data );
+	}
+
+	/**
+	 * Delete the option regarding WPCOM authorization
+	 *
+	 * @return bool
+	 */
+	public function reset_wpcom_api_authorization(): bool {
+		return $this->options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
 	}
 }
