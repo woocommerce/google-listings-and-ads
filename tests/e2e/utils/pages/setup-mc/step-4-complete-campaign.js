@@ -88,16 +88,7 @@ export default class CompleteCampaign extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get budget section.
 	 */
 	getBudgetSection() {
-		return this.getSections().nth( 4 );
-	}
-
-	/**
-	 * Get gla-tooltip__children-container class.
-	 *
-	 * @return {import('@playwright/test').Locator} Get gla-tooltip__children-container class.
-	 */
-	getSyncableProductsCountTooltip() {
-		return this.page.locator( '.gla-tooltip__children-container' );
+		return this.page.locator( '.gla-budget-section' ).nth( 0 );
 	}
 
 	/**
