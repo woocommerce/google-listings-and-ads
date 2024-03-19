@@ -22,6 +22,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatusItemLevelIssue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
@@ -66,6 +68,8 @@ class MerchantStatusesTest extends UnitTest {
 	private $product_helper;
 	private $transients;
 	private $update_merchant_product_statuses_job;
+	private $update_all_product_job;
+	private $delete_all_product_job;
 	private $options;
 	private $container;
 	private $initial_mc_statuses;
@@ -85,6 +89,8 @@ class MerchantStatusesTest extends UnitTest {
 		$this->product_helper                       = $this->createMock( ProductHelper::class );
 		$this->transients                           = $this->createMock( TransientsInterface::class );
 		$this->update_merchant_product_statuses_job = $this->createMock( UpdateMerchantProductStatuses::class );
+		$this->update_all_product_job               = $this->createMock( UpdateAllProducts::class );
+		$this->delete_all_product_job               = $this->createMock( DeleteAllProducts::class );
 		$this->options                              = $this->createMock( OptionsInterface::class );
 
 		$this->merchant_issue_table = $this->createMock( MerchantIssueTable::class );
@@ -99,6 +105,8 @@ class MerchantStatusesTest extends UnitTest {
 		$container->share( ProductHelper::class, $this->product_helper );
 		$container->share( MerchantIssueTable::class, $this->merchant_issue_table );
 		$container->share( UpdateMerchantProductStatuses::class, $this->update_merchant_product_statuses_job );
+		$container->share( UpdateAllProducts::class, $this->update_all_product_job );
+		$container->share( DeleteAllProducts::class, $this->delete_all_product_job );
 
 		$this->container         = $container;
 		$this->merchant_statuses = new MerchantStatuses();
@@ -424,7 +432,7 @@ class MerchantStatusesTest extends UnitTest {
 		);
 	}
 
-	public function test_update_product_stats() {
+	public function test_process_product_statuses() {
 		$product_1        = WC_Helper_Product::create_simple_product();
 		$product_2        = WC_Helper_Product::create_simple_product();
 		$product_3        = WC_Helper_Product::create_simple_product();
@@ -573,9 +581,49 @@ class MerchantStatusesTest extends UnitTest {
 			]
 		);
 
-		$this->merchant_statuses->update_product_stats(
+		$this->merchant_statuses->process_product_statuses(
 			$product_statuses
 		);
+	}
+
+	public function test_handle_complete_mc_statuses_fetching_with_default_intermediate_data() {
+		$this->options->expects( $this->once() )
+		->method( 'get' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA )->willReturn(
+			$this->merchant_statuses::DEFAULT_PRODUCT_STATS
+		);
+
+		$expected_product_ids = [ 1, 2, 3, 4, 5, 6 ];
+		$this->product_repository->expects( $this->once() )->method( 'find_all_product_ids' )->willReturn( $expected_product_ids );
+
+		$this->transients->expects( $this->once() )
+		->method( 'set' )->with(
+			Transients::MC_STATUSES,
+			$this->callback(
+				function ( $value ) use ( $expected_product_ids ) {
+					$this->assertEquals(
+						[
+							MCStatus::APPROVED           => 0,
+							MCStatus::PARTIALLY_APPROVED => 0,
+							MCStatus::EXPIRING           => 0,
+							MCStatus::PENDING            => 0,
+							MCStatus::DISAPPROVED        => 0,
+							MCStatus::NOT_SYNCED         => count( $expected_product_ids ),
+						],
+						$value['statistics']
+					);
+
+					$this->assertEquals(
+						false,
+						$value['loading']
+					);
+
+					return true;
+				}
+			),
+			self::MC_STATUS_LIFETIME
+		);
+
+		$this->merchant_statuses->handle_complete_mc_statuses_fetching();
 	}
 
 	public function test_handle_complete_mc_statuses_fetching() {
@@ -628,8 +676,16 @@ class MerchantStatusesTest extends UnitTest {
 		$product_1  = WC_Helper_Product::create_simple_product();
 		$product_id = $product_1->get_id();
 
-		$this->options->expects( $this->once() )
-		->method( 'delete' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		$this->options->expects( $this->exactly( 2 ) )
+		->method( 'update' )->withConsecutive(
+			// The first time we update the intermediate data with the statuses from  product_statuses.
+			[
+				OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA,
+				array_merge( $this->merchant_statuses::DEFAULT_PRODUCT_STATS, [ 'approved' => 1 ] ),
+			],
+			// When the job fails it should revert the intermediate data to the previous state.
+			[ OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $this->merchant_statuses::DEFAULT_PRODUCT_STATS ]
+		);
 
 		$product_statuses_1 = [
 			[
@@ -677,7 +733,7 @@ class MerchantStatusesTest extends UnitTest {
 			self::MC_STATUS_LIFETIME
 		);
 
-		$this->merchant_statuses->update_product_stats( $product_statuses_1 );
+		$this->merchant_statuses->process_product_statuses( $product_statuses_1 );
 
 		$this->merchant_statuses->handle_failed_mc_statuses_fetching( 'My error message.' );
 	}
@@ -727,7 +783,7 @@ class MerchantStatusesTest extends UnitTest {
 		->method( 'get_productstatuses_batch' )
 		->willReturn( $response );
 
-		$this->merchant_statuses->update_product_stats(
+		$this->merchant_statuses->process_product_statuses(
 			$product_statuses_1
 		);
 
@@ -735,7 +791,7 @@ class MerchantStatusesTest extends UnitTest {
 		$merchant_statuses_2->set_container( $this->container );
 		$merchant_statuses_2->set_options_object( $this->options );
 
-		$merchant_statuses_2->update_product_stats(
+		$merchant_statuses_2->process_product_statuses(
 			$product_statuses_2
 		);
 	}
@@ -784,7 +840,7 @@ class MerchantStatusesTest extends UnitTest {
 		->method( 'get_productstatuses_batch' )
 		->willReturn( $response );
 
-		$this->merchant_statuses->update_product_stats(
+		$this->merchant_statuses->process_product_statuses(
 			$product_statuses_1
 		);
 
@@ -792,7 +848,7 @@ class MerchantStatusesTest extends UnitTest {
 		$merchant_statuses_2->set_container( $this->container );
 		$merchant_statuses_2->set_options_object( $this->options );
 
-		$merchant_statuses_2->update_product_stats(
+		$merchant_statuses_2->process_product_statuses(
 			$product_statuses_2
 		);
 	}
@@ -841,7 +897,7 @@ class MerchantStatusesTest extends UnitTest {
 		->method( 'get_productstatuses_batch' )
 		->willReturn( $response );
 
-		$this->merchant_statuses->update_product_stats(
+		$this->merchant_statuses->process_product_statuses(
 			$product_statuses_1
 		);
 
@@ -849,7 +905,7 @@ class MerchantStatusesTest extends UnitTest {
 		$merchant_statuses_2->set_container( $this->container );
 		$merchant_statuses_2->set_options_object( $this->options );
 
-		$merchant_statuses_2->update_product_stats(
+		$merchant_statuses_2->process_product_statuses(
 			$product_statuses_2
 		);
 	}
@@ -895,6 +951,30 @@ class MerchantStatusesTest extends UnitTest {
 			$response
 		);
 	}
+
+	public function test_clear_cache_no_bulk_sync() {
+		$this->update_all_product_job->expects( $this->once() )->method( 'can_schedule' )->with( null )->willReturn( true );
+		$this->delete_all_product_job->expects( $this->once() )->method( 'can_schedule' )->with( null )->willReturn( true );
+
+		$this->transients->expects( $this->exactly( 1 ) )
+		->method( 'delete' )
+		->with(
+			TransientsInterface::MC_STATUSES
+		);
+
+		$this->merchant_statuses->clear_cache();
+	}
+
+	public function test_clear_cache_with_bulk_sync() {
+		$this->update_all_product_job->expects( $this->once() )->method( 'can_schedule' )->with( null )->willReturn( false );
+		$this->delete_all_product_job->expects( $this->never() )->method( 'can_schedule' )->with( null )->willReturn( true );
+
+		$this->transients->expects( $this->exactly( 0 ) )
+		->method( 'delete' );
+
+		$this->merchant_statuses->clear_cache();
+	}
+
 	protected function test_clear_product_statuses_cache_and_issues() {
 		$this->transients->expects( $this->exactly( 1 ) )
 		->method( 'delete' )
@@ -937,7 +1017,7 @@ class MerchantStatusesTest extends UnitTest {
 	}
 
 	/**
-	 *  Assert that the update_product_stats method updates the product stats in two batches.
+	 *  Assert that the process_product_statuses method updates the product stats in two batches.
 	 *
 	 * @param array $first_update_results
 	 * @param array $second_update_results

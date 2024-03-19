@@ -84,7 +84,9 @@ class MerchantReport implements OptionsAwareInterface {
 			->set_client( $this->service, $this->options->get_merchant_id() )
 			->get_results();
 
-			foreach ( $response->getResults() as $row ) {
+			$results = $response->getResults() ?? [];
+
+			foreach ( $results as $row ) {
 
 				/** @var ProductView $product_view  */
 				$product_view = $row->getProductView();

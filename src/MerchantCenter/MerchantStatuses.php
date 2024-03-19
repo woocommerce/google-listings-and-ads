@@ -17,11 +17,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -42,6 +43,8 @@ use WC_Product;
  * - ProductRepository
  * - TransientsInterface
  * - UpdateMerchantProductStatuses
+ * - UpdateAllProducts
+ * - DeleteAllProducts
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
@@ -91,6 +94,24 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		'products' => [],
 		'parents'  => [],
 	];
+
+	/**
+	 * @var array Default product stats.
+	 */
+	public const DEFAULT_PRODUCT_STATS = [
+		MCStatus::APPROVED           => 0,
+		MCStatus::PARTIALLY_APPROVED => 0,
+		MCStatus::EXPIRING           => 0,
+		MCStatus::PENDING            => 0,
+		MCStatus::DISAPPROVED        => 0,
+		MCStatus::NOT_SYNCED         => 0,
+		'parents'                    => [],
+	];
+
+	/**
+	 * @var array Initial intermediate data for product status counts.
+	 */
+	protected $initial_intermediate_data = self::DEFAULT_PRODUCT_STATS;
 
 	/**
 	 * @var WC_Product[] Lookup of WooCommerce Product Objects.
@@ -178,7 +199,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @since 1.1.0
 	 */
 	public function clear_cache(): void {
-		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
+		$update_all_products_job = $this->container->get( UpdateAllProducts::class );
+		$delete_all_products_job = $this->container->get( DeleteAllProducts::class );
+
+		// Clear the cache if we are not in the middle of updating/deleting all products. Otherwise, we might update the product stats for each individual batch.
+		// See: ClearProductStatsCache::register
+		if ( $update_all_products_job->can_schedule( null ) && $delete_all_products_job->can_schedule( null ) ) {
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
+		}
 	}
 
 	/**
@@ -205,7 +233,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @since x.x.x
 	 */
 	public function clear_product_statuses_cache_and_issues(): void {
-		$this->clear_cache();
 		$this->delete_stale_issues();
 		$this->delete_product_statuses_count_intermediate_data();
 	}
@@ -264,35 +291,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	public function delete(): void {
 		$this->container->get( TransientsInterface::class )->delete( Transients::MC_STATUSES );
 		$this->container->get( MerchantIssueTable::class )->truncate();
-	}
-
-	/**
-	 * Get the associated Google offer IDs for all synced simple products and product variations.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return array Google offer IDs.
-	 */
-	protected function get_synced_google_ids(): array {
-		/** @var ProductRepository $product_repository */
-		$product_repository = $this->container->get( ProductRepository::class );
-		/** @var ProductMetaQueryHelper $product_meta_query_helper */
-		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
-
-		// Get only synced simple and variations
-		$args['type']         = array_diff( ProductSyncer::get_supported_product_types(), [ 'variable' ] );
-		$filtered_product_ids = array_flip( $product_repository->find_synced_product_ids( $args ) );
-		$all_google_ids       = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_GOOGLE_IDS );
-		$filtered_google_ids  = [];
-		foreach ( array_intersect_key( $all_google_ids, $filtered_product_ids ) as $product_ids ) {
-			if ( empty( $product_ids ) || ! is_array( $product_ids ) ) {
-				// Skip if empty or not an array
-				continue;
-			}
-
-			$filtered_google_ids = array_merge( $filtered_google_ids, array_values( $product_ids ) );
-		}
-		return $filtered_google_ids;
 	}
 
 	/**
@@ -377,7 +375,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$google_ids     = array_column( $statuses, 'mc_id' );
 		$product_issues = [];
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		foreach ( $merchant->get_productstatuses_batch( $google_ids )->getEntries() as $response_entry ) {
+		$entries        = $merchant->get_productstatuses_batch( $google_ids )->getEntries() ?? [];
+		foreach ( $entries as $response_entry ) {
 			/** @var GoogleProductStatus $mc_product_status */
 			$mc_product_status = $response_entry->getProductStatus();
 			$mc_product_id     = $mc_product_status->getProductId();
@@ -457,7 +456,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		$merchant       = $this->container->get( Merchant::class );
 		$account_issues = [];
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
+		$issues         = $merchant->get_accountstatus()->getAccountLevelIssues() ?? [];
+		foreach ( $issues as $issue ) {
 			$key = md5( $issue->getTitle() );
 
 			if ( isset( $account_issues[ $key ] ) ) {
@@ -617,6 +617,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
 	public function process_product_statuses( array $product_view_statuses ): void {
+		$this->mc_statuses         = [];
 		$product_repository        = $this->container->get( ProductRepository::class );
 		$this->product_data_lookup = $product_repository->find_by_ids_as_associative_array( array_column( $product_view_statuses, 'product_id' ) );
 
@@ -670,19 +671,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
-	 * Update the product status statistics for a list of products statuses.
-	 *
-	 * @since x.x.x
-	 *
-	 * @param array[] $statuses statuses. See statuses format in MerchantReport::get_product_view_report.
-	 */
-	public function update_product_stats( array $statuses ): void {
-		$this->mc_statuses = [];
-
-		$this->process_product_statuses( $statuses );
-	}
-
-	/**
 	 * Whether a product is expiring.
 	 *
 	 * @param DateTime $expiration_date
@@ -711,20 +699,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @return array Product status statistics.
 	 */
 	protected function update_intermediate_product_statistics(): array {
-		$product_statistics = [
-			MCStatus::APPROVED           => 0,
-			MCStatus::PARTIALLY_APPROVED => 0,
-			MCStatus::EXPIRING           => 0,
-			MCStatus::PENDING            => 0,
-			MCStatus::DISAPPROVED        => 0,
-			MCStatus::NOT_SYNCED         => 0,
-			'parents'                    => [],
-		];
+		$product_statistics = self::DEFAULT_PRODUCT_STATS;
 
 		// If the option is set, use it to sum the total quantity.
 		$product_statistics_intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
 		if ( $product_statistics_intermediate_data ) {
-			$product_statistics = $product_statistics_intermediate_data;
+			$product_statistics              = $product_statistics_intermediate_data;
+			$this->initial_intermediate_data = $product_statistics;
 		}
 
 		$product_statistics_priority = [
@@ -818,7 +799,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
 	public function handle_failed_mc_statuses_fetching( string $error_message = '' ): void {
-		$this->delete_product_statuses_count_intermediate_data();
+		// Reset the intermediate data to the initial state when starting the job.
+		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $this->initial_intermediate_data );
 		// Let's remove any issue created during the failed fetch.
 		$this->container->get( MerchantIssueTable::class )->delete_specific_product_issues( array_keys( $this->product_data_lookup ) );
 
@@ -843,35 +825,32 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 * @since x.x.x
 	 */
 	public function handle_complete_mc_statuses_fetching() {
-		$intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		$intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, self::DEFAULT_PRODUCT_STATS );
 
-		if ( $intermediate_data ) {
+		unset( $intermediate_data['parents'] );
 
-			unset( $intermediate_data['parents'] );
+		$total_synced_products = $this->calculate_total_synced_product_statistics( $intermediate_data );
 
-			$total_synced_products = $this->calculate_total_synced_product_statistics( $intermediate_data );
+		/** @var ProductRepository $product_repository */
+		$product_repository                        = $this->container->get( ProductRepository::class );
+		$intermediate_data[ MCStatus::NOT_SYNCED ] = count(
+			$product_repository->find_all_product_ids()
+		) - $total_synced_products;
 
-			/** @var ProductRepository $product_repository */
-			$product_repository                        = $this->container->get( ProductRepository::class );
-			$intermediate_data[ MCStatus::NOT_SYNCED ] = count(
-				$product_repository->find_all_product_ids()
-			) - $total_synced_products;
+		$mc_statuses = [
+			'timestamp'  => $this->cache_created_time->getTimestamp(),
+			'statistics' => $intermediate_data,
+			'loading'    => false,
+			'error'      => null,
+		];
 
-			$mc_statuses = [
-				'timestamp'  => $this->cache_created_time->getTimestamp(),
-				'statistics' => $intermediate_data,
-				'loading'    => false,
-				'error'      => null,
-			];
+		$this->container->get( TransientsInterface::class )->set(
+			Transients::MC_STATUSES,
+			$mc_statuses,
+			$this->get_status_lifetime()
+		);
 
-			$this->container->get( TransientsInterface::class )->set(
-				Transients::MC_STATUSES,
-				$mc_statuses,
-				$this->get_status_lifetime()
-			);
-
-			$this->delete_product_statuses_count_intermediate_data();
-		}
+		$this->delete_product_statuses_count_intermediate_data();
 	}
 
 
