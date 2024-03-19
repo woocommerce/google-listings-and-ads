@@ -429,7 +429,12 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {Promise<void>}
 	 */
 	async clickCreateAdsAccountButton() {
-		const button = await this.getCreateAdsAccountButton();
+		const adsAccountCard = this.getGoogleAdsAccountCard();
+		const button = adsAccountCard.getByRole( 'button', {
+			name: 'Create account',
+			exact: true,
+		} );
+		await button.isVisible();
 		await button.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
@@ -441,6 +446,17 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getAdsAccountConnectedText() {
 		return this.getGoogleAdsAccountCard().getByText( 'Connected' );
+	}
+
+	/**
+	 * Get Ads account connected notice text.
+	 *
+	 * @return {import('@playwright/test').Locator} Get ads account connected text.
+	 */
+	getAdsAccountConnectedNotice() {
+		return this.getGoogleAdsAccountCard().getByText(
+			'Conversion measurement has been set up. You can create a campaign later.'
+		);
 	}
 
 	/**
@@ -459,7 +475,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getAdsClaimAccountText() {
 		return this.getGoogleAdsAccountCard().getByText(
-			'Your new ads account has been created, but you do not have access to it yet. '
+			'Claim your new Google Ads account to complete this setup.'
 		);
 	}
 }

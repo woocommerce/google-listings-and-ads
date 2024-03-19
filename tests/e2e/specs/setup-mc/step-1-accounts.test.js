@@ -70,7 +70,10 @@ test.describe( 'Set up accounts', () => {
 		await expect( googleAccountCard.getByRole( 'button' ) ).toBeDisabled();
 
 		const mcAccountCard = setUpAccountsPage.getMCAccountCard();
-		await expect( mcAccountCard.getByRole( 'button' ) ).toBeDisabled();
+		await expect( mcAccountCard.getByRole( 'button' ) ).not.toBeVisible();
+
+		const adsAccountCard = setUpAccountsPage.getGoogleAdsAccountCard();
+		await expect( adsAccountCard.getByRole( 'button' ) ).not.toBeVisible();
 
 		const continueButton = setUpAccountsPage.getContinueButton();
 		await expect( continueButton ).toBeDisabled();
@@ -151,7 +154,14 @@ test.describe( 'Set up accounts', () => {
 			).toBeEnabled();
 
 			const mcAccountCard = setUpAccountsPage.getMCAccountCard();
-			await expect( mcAccountCard.getByRole( 'button' ) ).toBeDisabled();
+			await expect(
+				mcAccountCard.getByRole( 'button' )
+			).not.toBeVisible();
+
+			const adsAccountCard = setUpAccountsPage.getGoogleAdsAccountCard();
+			await expect(
+				adsAccountCard.getByRole( 'button' )
+			).not.toBeVisible();
 
 			const continueButton = setUpAccountsPage.getContinueButton();
 			await expect( continueButton ).toBeDisabled();
@@ -191,6 +201,7 @@ test.describe( 'Set up accounts', () => {
 
 			// Start with no Ads account connected.
 			await setupAdsAccountPage.mockAdsAccountDisconnected();
+			await setupAdsAccountPage.mockAdsStatusDisconnected();
 			await setupAdsAccountPage.mockAdsHasNoAccounts();
 
 			// Mock MC as not connected and has not existing accounts
@@ -199,6 +210,7 @@ test.describe( 'Set up accounts', () => {
 			await setUpAccountsPage.mockMCHasNoAccounts();
 
 			await setUpAccountsPage.goto();
+			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 		} );
 
 		test( 'should see Google Ads section', async () => {
@@ -240,7 +252,8 @@ test.describe( 'Set up accounts', () => {
 
 				test( 'should see "Accept invitation" modal after creating account', async () => {
 					// Mock Ads account not claimed.
-					await setupAdsAccountPage.mockAdsAccountNotClaimed();
+					await setupAdsAccountPage.mockAdsAccountConnected();
+					await setupAdsAccountPage.mockAdsStatusNotClaimed();
 					await setupAdsAccountPage.mockAdsAccountsResponse( [
 						{
 							id: 12345,
@@ -267,28 +280,28 @@ test.describe( 'Set up accounts', () => {
 				} );
 			} );
 
-			// @todo: Add test for the following scenarios.
-			// test.describe( 'Create a claimed account', () => {
-			// 	test.beforeAll( async () => {
-			// 		// Disconnect the Ads account and start over.
-			// 		await setupAdsAccountPage.mockAdsAccountDisconnected();
-			// 		await setupAdsAccountPage.mockAdsAccountsResponse( [] );
-			// 		await setupAdsAccountPage.clickConnectDifferentAccountButton();
-			// 		// await setUpAccountsPage.clickCreateAdsAccountButton();
-			// 		// await setupAdsAccountPage.clickToSCheckboxFromModal();
-			// 	} );
+			test.describe( 'Create a claimed account', () => {
+				test.beforeAll( async () => {
+					// Start with no Ads account connected.
+					await setupAdsAccountPage.mockAdsStatusClaimed();
 
-			// 	// @todo: trigger an API request to change the status.
-			// 	test( 'should see ads account connected message once ads account is accepted', async () => {
-			// 		await setupAdsAccountPage.mockAdsAccountClaimed();
+					await setUpAccountsPage.goto();
+					await page.waitForLoadState(
+						LOAD_STATE.DOM_CONTENT_LOADED
+					);
+				} );
 
-			// 		await setupAdsAccountPage.clickCreateAccountButtonFromModal();
+				test( 'should see ads account connected message once ads account is accepted', async () => {
+					const connectedText =
+						setUpAccountsPage.getAdsAccountConnectedText();
 
-			// 		const connectedText =
-			// 			setUpAccountsPage.getAdsAccountConnectedText();
-			// 		await expect( connectedText ).toBeVisible();
-			// 	} );
-			// } );
+					const connectedNotice =
+						setUpAccountsPage.getAdsAccountConnectedNotice();
+
+					await expect( connectedText ).toBeVisible();
+					await expect( connectedNotice ).toBeVisible();
+				} );
+			} );
 
 			test.describe( 'Connect to an existing account', () => {
 				test.beforeAll( async () => {

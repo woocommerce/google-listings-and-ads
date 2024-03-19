@@ -469,19 +469,23 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Mock Google Ads account as connected but not claimed.
+	 * Mock Google Ads status when disconnected.
 	 *
 	 * @return {Promise<void>}
 	 */
-	async mockAdsAccountNotClaimed() {
-		await this.fulfillAdsConnection( {
-			id: 12345,
-			currency: 'TWD',
-			symbol: 'NT$',
-			status: 'incomplete',
-			step: 'account_access',
+	async mockAdsStatusDisconnected() {
+		await this.fulfillAdsAccountStatus( {
+			has_access: false,
+			invite_link: '',
 		} );
+	}
 
+	/**
+	 * Mock Google Ads account status as not claimed.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockAdsStatusNotClaimed() {
 		await this.fulfillAdsAccountStatus( {
 			message: 'Please accept the ads account invitation.',
 			has_access: false,
@@ -490,13 +494,11 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Mock Google Ads account as connected and claimed.
+	 * Mock Google Ads account status as claimed.
 	 *
 	 * @return {Promise<void>}
 	 */
-	async mockAdsAccountClaimed() {
-		await this.mockAdsAccountConnected();
-
+	async mockAdsStatusClaimed() {
 		await this.fulfillAdsAccountStatus( {
 			has_access: true,
 			invite_link: '',
@@ -547,7 +549,7 @@ export default class MockRequests {
 	 * Mock MC Ads no accounts.
 	 */
 	async mockAdsHasNoAccounts() {
-		await this.fulfillAdsAccounts( null );
+		await this.fulfillAdsAccounts( [] );
 	}
 
 	/**
