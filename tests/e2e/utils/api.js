@@ -34,17 +34,13 @@ export function apiWP() {
 /**
  * Creates a simple product.
  *
- * @return {number} Product ID of the created product.
+ * @return {Promise<number>} Product ID of the created product.
  */
 export async function createSimpleProduct() {
 	const product = config.products.simple;
 
 	return await api()
-		.post( 'products', {
-			name: product.name,
-			type: 'simple',
-			regular_price: String( product.regularPrice ),
-		} )
+		.post( 'products', product )
 		.then( ( response ) => response.data.id );
 }
 
