@@ -132,7 +132,7 @@ test.describe( 'Set up Ads account', () => {
 
 			await expect(
 				page.getByText(
-					'Connect with millions of shoppers who are searching for products like yours and drive sales with Google.'
+					'Required to set up conversion measurement and create campaigns.'
 				)
 			).toBeVisible();
 
@@ -175,7 +175,7 @@ test.describe( 'Set up Ads account', () => {
 			] );
 
 			//Mock request to fulfill Ads connection
-			setupAdsAccounts.fulfillAdsConnection( {
+			await setupAdsAccounts.fulfillAdsConnection( {
 				id: ADS_ACCOUNTS[ 1 ].id,
 				currency: 'EUR',
 				symbol: '\u20ac',
@@ -185,6 +185,11 @@ test.describe( 'Set up Ads account', () => {
 			await setupAdsAccounts.getCreateAdsAccountButtonModal().click();
 
 			await connectAdsAccountRequest;
+
+			await setupAdsAccounts.fulfillAdsAccountStatus( {
+				has_access: true,
+				invite_link: '',
+			} );
 
 			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 
@@ -206,6 +211,12 @@ test.describe( 'Set up Ads account', () => {
 				symbol: '\u20ac',
 				status: 'disconnected',
 			} );
+
+			await setupAdsAccounts.fulfillAdsAccountStatus( {
+				has_access: true,
+				invite_link: '',
+			} );
+
 			await page.reload();
 		} );
 
