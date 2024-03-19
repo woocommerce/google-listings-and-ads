@@ -289,6 +289,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		// If force_refresh is true or if not transient, return empty array and scheduled the job to update the statuses.
 		if ( ! $job->is_scheduled() && ( $force_refresh || ( ! $force_refresh && null === $this->mc_statuses ) ) ) {
+			// Delete the transient before scheduling the job because some errors, like the failure rate message, can occur before the job is scheduled.
+			$this->clear_cache();
 			// Schedule job to update the statuses.
 			$job->schedule();
 		}
