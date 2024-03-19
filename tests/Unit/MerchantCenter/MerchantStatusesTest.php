@@ -334,6 +334,18 @@ class MerchantStatusesTest extends UnitTest {
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
 		->method( 'schedule' );
 
+		$this->update_all_product_job->expects( $this->exactly( 1 ) )
+		->method( 'can_schedule' )
+		->with( null )
+		->willReturn( true );
+
+		$this->delete_all_product_job->expects( $this->exactly( 1 ) )
+		->method( 'can_schedule' )
+		->with( null )
+		->willReturn( true );
+
+		$this->transients->expects( $this->exactly( 1 ) )->method( 'delete' )->with( Transients::MC_STATUSES );
+
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
 		->method( 'is_scheduled' );
 
