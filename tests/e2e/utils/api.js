@@ -45,6 +45,36 @@ export async function createSimpleProduct() {
 }
 
 /**
+ * Creates a variable product.
+ *
+ * @return {Promise<number>} Product ID of the created product.
+ */
+export async function createVariableProduct() {
+	const variableProduct = config.products.variable;
+
+	return await api()
+		.post( 'products', variableProduct )
+		.then( ( response ) => response.data.id );
+}
+
+/**
+ * Creates variation products.
+ *
+ * @param {number|string} productId The product ID to be associated with the variation products to be created.
+ *
+ * @return {Promise<number[]>} Product IDs of the created products.
+ */
+export async function createVariationProducts( productId ) {
+	const variationProducts = config.products.variations;
+
+	return await api()
+		.post( `products/${ productId }/variations/batch`, {
+			create: variationProducts,
+		} )
+		.then( ( response ) => response.data.create.map( ( { id } ) => id ) );
+}
+
+/**
  * Set Test Conversion ID.
  */
 export async function setConversionID() {
