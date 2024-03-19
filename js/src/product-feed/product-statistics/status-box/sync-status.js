@@ -71,7 +71,7 @@ function SyncStatus() {
 		'getMCProductStatistics'
 	);
 
-	if ( ! hasFinishedResolution || ! data ) {
+	if ( ! hasFinishedResolution || ! data?.statistics ) {
 		return null;
 	}
 

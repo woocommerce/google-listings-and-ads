@@ -41,7 +41,6 @@ const ProductStatistics = () => {
 	}
 
 	const isLoading = ! hasFinishedResolution || data?.loading;
-	const hasStats = hasFinishedResolution && data?.statistics ? true : false;
 
 	let summaryNumberLoadingProps = {};
 
@@ -77,7 +76,9 @@ const ProductStatistics = () => {
 									'Active',
 									'google-listings-and-ads'
 								) }
-								value={ hasStats ? data.statistics.active : '' }
+								value={
+									isLoading ? '' : data?.statistics?.active
+								}
 								{ ...summaryNumberLoadingProps }
 							/>,
 							<SummaryNumber
@@ -87,7 +88,7 @@ const ProductStatistics = () => {
 									'google-listings-and-ads'
 								) }
 								value={
-									hasStats ? data.statistics.expiring : ''
+									isLoading ? '' : data?.statistics?.expiring
 								}
 								{ ...summaryNumberLoadingProps }
 							/>,
@@ -98,7 +99,7 @@ const ProductStatistics = () => {
 									'google-listings-and-ads'
 								) }
 								value={
-									hasStats ? data.statistics.pending : ''
+									isLoading ? '' : data?.statistics?.pending
 								}
 								{ ...summaryNumberLoadingProps }
 							/>,
@@ -109,7 +110,9 @@ const ProductStatistics = () => {
 									'google-listings-and-ads'
 								) }
 								value={
-									hasStats ? data.statistics.disapproved : ''
+									isLoading
+										? ''
+										: data?.statistics?.disapproved
 								}
 								{ ...summaryNumberLoadingProps }
 							/>,
@@ -120,7 +123,9 @@ const ProductStatistics = () => {
 									'google-listings-and-ads'
 								) }
 								value={
-									hasStats ? data.statistics.not_synced : ''
+									isLoading
+										? ''
+										: data?.statistics?.not_synced
 								}
 								{ ...summaryNumberLoadingProps }
 							/>,
