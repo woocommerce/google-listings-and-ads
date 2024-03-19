@@ -30,7 +30,7 @@ const useMCProductStatistics = () => {
 	useEffect( () => {
 		// If the job is still processing the data, start the countdown.
 		if ( isCalculatingStats && second === 0 ) {
-			startCountdown( 30 );
+			startCountdown( 15 );
 			// If the job is still processing the data, invalidate the resolution/refetch the data to get the latest status.
 			if ( callCount > 0 ) {
 				invalidateResolution();

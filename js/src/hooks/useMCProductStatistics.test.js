@@ -97,7 +97,7 @@ describe( 'useMCProductStatistics', () => {
 			renderHook( () => useMCProductStatistics() );
 
 			expect( startCountdown ).toHaveBeenCalledTimes( 1 );
-			expect( startCountdown ).toHaveBeenCalledWith( 30 );
+			expect( startCountdown ).toHaveBeenCalledWith( 15 );
 			expect( invalidateResolution ).not.toHaveBeenCalled();
 		} );
 		it( 'The countdown is completed, so we invalidate the call and try again', () => {
@@ -112,7 +112,7 @@ describe( 'useMCProductStatistics', () => {
 			renderHook( () => useMCProductStatistics() );
 
 			expect( startCountdown ).toHaveBeenCalledTimes( 2 );
-			expect( startCountdown ).toHaveBeenCalledWith( 30 );
+			expect( startCountdown ).toHaveBeenCalledWith( 15 );
 			expect( invalidateResolution ).toHaveBeenCalledTimes( 1 );
 			expect( invalidateResolution ).toHaveBeenCalledWith();
 		} );
