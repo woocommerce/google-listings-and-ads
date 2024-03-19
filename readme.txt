@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.5
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.6.2
+Stable tag: 2.6.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,15 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.6.3 - 2024-03-19 =
+* Fix - Handle parse JSON exception when Creating Ads Account.
+* Fix - Inline Javascript encoding for gtag events.
+* Fix - Undefined keys `offers_free_shipping ` or `free_shipping_threshold`.
+* Tweak - Add WP 6.5 Require plugins header.
+* Update - Newer version of bcmath_compat and phpseclib packages.
+* Update - Set default connect server URL to api.woocommerce.com.
+* Update is_gtag_page to support Google Analytics for WooCommerce version 2.0.0+.
+
 = 2.6.2 - 2024-03-12 =
 * Dev - Fix E2E tests for gtags consent mode.
 * Fix - Fatal error when getAdsLinks response is null.
@@ -124,10 +133,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Add - Support for Google Analytics for WooCommerce version 2.0.0 and above.
 * Dev - Avoid the test-data plugin occasionally missing in the E2E test environment.
 * Fix - Improve WordPress.com account handling.
-
-= 2.6.0 - 2024-02-27 =
-* Add - Support the new product editor (Product Block Editor).
-* Dev - Fix the compatibility issue in starting E2E test environment due to the default charset change in MariaDB v11.3.1.
-* Fix - 401 handling for connected Ads accounts.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

@@ -1,5 +1,14 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 2.6.3 - 2024-03-19 =
+* Fix - Handle parse JSON exception when Creating Ads Account.
+* Fix - Inline Javascript encoding for gtag events.
+* Fix - Undefined keys `offers_free_shipping ` or `free_shipping_threshold`.
+* Tweak - Add WP 6.5 Require plugins header.
+* Update - Newer version of bcmath_compat and phpseclib packages.
+* Update - Set default connect server URL to api.woocommerce.com.
+* Update is_gtag_page to support Google Analytics for WooCommerce version 2.0.0+.
+
 = 2.6.2 - 2024-03-12 =
 * Dev - Fix E2E tests for gtags consent mode.
 * Fix - Fatal error when getAdsLinks response is null.
