@@ -3,6 +3,11 @@
  */
 import { Page } from '@playwright/test';
 
+/**
+ * Internal dependencies
+ */
+import * as api from './api';
+
 const REGEX_URL_PRODUCTS = /\/wc\/v3\/products\/\d+(\/variations\/\d+)?\?/;
 
 /**
@@ -57,6 +62,25 @@ export function getProductBlockEditorUtils( page ) {
 			return page.goto(
 				'/wp-admin/admin.php?page=wc-admin&path=%2Fadd-product'
 			);
+		},
+
+		async gotoEditVariableProductPage() {
+			const variableId = await api.createVariableProduct();
+			await api.createVariationProducts( variableId );
+
+			return page.goto(
+				`/wp-admin/admin.php?page=wc-admin&path=%2Fproduct%2F${ variableId }`
+			);
+		},
+
+		async gotoEditVariationProductPage( index = 0 ) {
+			await this.clickTab( 'Variations' );
+
+			return page
+				.getByRole( 'tabpanel' )
+				.getByRole( 'link', { name: 'Edit' } )
+				.nth( index )
+				.click();
 		},
 
 		waitForSaved() {

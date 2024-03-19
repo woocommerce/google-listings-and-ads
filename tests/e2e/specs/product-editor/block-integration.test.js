@@ -180,6 +180,82 @@ test.describe( 'Product Block Editor integration', () => {
 		}
 	} );
 
+	test( 'Check existence of fields for variable and variation products', async () => {
+		await editorUtils.gotoEditVariableProductPage();
+		await editorUtils.clickPluginTab();
+
+		const panel = page.getByRole( 'tabpanel' );
+
+		/*
+		 * 2 Sections for variable product
+		 */
+		await expect( editorUtils.getChannelVisibilityHeading() ).toBeVisible();
+		await expect( editorUtils.getProductAttributesHeading() ).toBeVisible();
+
+		/*
+		 * 3 <select> for variable product:
+		 * - Channel visibility
+		 * - Brand (dynamically changed to google-listings-and-ads/product-select-with-text-field)
+		 * - Adult content
+		 */
+		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 3 );
+
+		/*
+		 * 0 <input type="text|date|time"> for variable product.
+		 */
+		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 0 );
+
+		/*
+		 * 0 <input type="number"> for variable product.
+		 */
+		await expect( panel.getByRole( 'spinbutton' ) ).toHaveCount( 0 );
+
+		// ===============================
+		// Go to edit the first variation.
+		// ===============================
+		await editorUtils.gotoEditVariationProductPage();
+		await editorUtils.clickPluginTab();
+
+		/*
+		 * 1 Section for variation product
+		 */
+		await expect( editorUtils.getProductAttributesHeading() ).toBeVisible();
+		await expect( editorUtils.getChannelVisibilityHeading() ).toHaveCount(
+			0
+		);
+
+		/*
+		 * 7 <select> for variation product:
+		 * - Condition
+		 * - Gender
+		 * - Size system
+		 * - Size type
+		 * - Age group
+		 * - Is bundle
+		 * - Adult content
+		 */
+		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 7 );
+
+		/*
+		 * 8 <input type="text|date|time"> for variation product:
+		 * - GTIN
+		 * - MPN
+		 * - Size
+		 * - Color
+		 * - Material
+		 * - Pattern
+		 * - Availability date
+		 * - Availability time
+		 */
+		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 8 );
+
+		/*
+		 * 1 <input type="number"> for variation product:
+		 * - Multipack
+		 */
+		await expect( panel.getByRole( 'spinbutton' ) ).toHaveCount( 1 );
+	} );
+
 	test.afterAll( async () => {
 		await editorUtils.toggleBlockFeature( page, false );
 		await api.clearOnboardedMerchant();
