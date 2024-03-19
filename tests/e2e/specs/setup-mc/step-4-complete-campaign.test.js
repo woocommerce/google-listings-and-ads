@@ -131,13 +131,13 @@ test.describe( 'Complete your campaign', () => {
 	test( 'should see the heading and the texts below', async () => {
 		await expect(
 			page.getByRole( 'heading', {
-				name: 'Complete your campaign with paid ads',
+				name: 'Create a campaign to advertise your products',
 			} )
 		).toBeVisible();
 
 		await expect(
 			page.getByText(
-				'As soon as your products are approved, your listings and ads will be live. In the meantime, let’s set up your ads.'
+				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.'
 			)
 		).toBeVisible();
 	} );
