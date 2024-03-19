@@ -7,30 +7,27 @@ import { createInterpolateElement, useCallback } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import {
-	ENHANCED_ADS_TOS_BASE_URL,
-	ENHANCED_ADS_CONVERSION_STATUS,
-} from '.~/constants';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { useAppDispatch } from '.~/data';
 import TrackableLink from '.~/components/trackable-link';
 import useTermsPolling from './useTermsPolling';
-import useOpenTermsURL from './useOpenTermsURL';
+import useGoogleAdsEnhancedConversionTermsURL from '.~/hooks/useGoogleAdsTermsURL';
 
 const PendingNotice = () => {
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
-	const { openTermsURL } = useOpenTermsURL();
+	const { url } = useGoogleAdsEnhancedConversionTermsURL();
 	useTermsPolling();
 
 	const handleOnClick = useCallback(
 		( event ) => {
 			event.preventDefault();
 
-			openTermsURL();
+			window.open( url, '_blank' );
 			updateEnhancedAdsConversionStatus(
 				ENHANCED_ADS_CONVERSION_STATUS.PENDING
 			);
 		},
-		[ updateEnhancedAdsConversionStatus, openTermsURL ]
+		[ updateEnhancedAdsConversionStatus, url ]
 	);
 
 	return (
@@ -43,7 +40,7 @@ const PendingNotice = () => {
 				{
 					link: (
 						<TrackableLink
-							href={ ENHANCED_ADS_TOS_BASE_URL } // @todo: should deep link
+							href={ url }
 							target="_blank"
 							type="external"
 							eventName="gla_ads_tos" // @todo: review eventName

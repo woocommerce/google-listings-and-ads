@@ -65,6 +65,7 @@ const DEFAULT_STATE = {
 	store_categories: [],
 	tours: {},
 	ads: {
+		ocid: '123',
 		conversion_tracking_setting: {
 			accepted_customer_data_terms: null,
 			allow_enhanced_conversions: null,
@@ -523,6 +524,18 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				'ads.conversion_tracking_setting.allow_enhanced_conversions',
 				status
 			);
+		}
+
+		case TYPES.RECEIVE_GOOGLE_ADS_OCID: {
+			const {
+				data: { ocid },
+			} = action;
+
+			if ( ocid === null || ocid === undefined ) {
+				return state;
+			}
+
+			return setIn( state, 'ads.ocid', ocid );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

@@ -68,6 +68,7 @@ describe( 'reducer', () => {
 			store_categories: [],
 			tours: {},
 			ads: {
+				ocid: null,
 				conversion_tracking_setting: {
 					accepted_customer_data_terms: null,
 					allow_enhanced_conversions: null,

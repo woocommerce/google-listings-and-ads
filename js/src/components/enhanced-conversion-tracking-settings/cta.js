@@ -14,7 +14,7 @@ import AppButton from '.~/components/app-button';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useTermsPolling from './useTermsPolling';
-import useOpenTermsURL from './useOpenTermsURL';
+import useGoogleAdsEnhancedConversionTermsURL from '.~/hooks/useGoogleAdsTermsURL';
 
 const CTA = ( {
 	acceptTermsLabel = __(
@@ -30,19 +30,19 @@ const CTA = ( {
 	const { acceptedCustomerDataTerms, hasFinishedResolution } =
 		useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
-	const { openTermsURL } = useOpenTermsURL();
+	const { url } = useGoogleAdsEnhancedConversionTermsURL();
 	useTermsPolling();
 
 	const handleTOS = useCallback(
 		( event ) => {
 			event.preventDefault();
 
-			openTermsURL();
+			window.open( url, '_blank' );
 			updateEnhancedAdsConversionStatus(
 				ENHANCED_ADS_CONVERSION_STATUS.PENDING
 			);
 		},
-		[ updateEnhancedAdsConversionStatus, openTermsURL ]
+		[ updateEnhancedAdsConversionStatus, url ]
 	);
 
 	const handleDisable = useCallback( () => {
