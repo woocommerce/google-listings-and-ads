@@ -182,14 +182,14 @@ test.describe( 'Set up Ads account', () => {
 				status: 'connected',
 			} );
 
-			await setupAdsAccounts.getCreateAdsAccountButtonModal().click();
-
-			await connectAdsAccountRequest;
-
 			await setupAdsAccounts.fulfillAdsAccountStatus( {
 				has_access: true,
 				invite_link: '',
 			} );
+
+			await setupAdsAccounts.getCreateAdsAccountButtonModal().click();
+
+			await connectAdsAccountRequest;
 
 			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 
