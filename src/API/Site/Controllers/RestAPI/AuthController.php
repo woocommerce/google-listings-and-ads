@@ -45,13 +45,13 @@ class AuthController extends BaseController {
 	/**
 	 * AuthController constructor.
 	 *
-	 * @param RESTServer   $server
-	 * @param OAuthService $oauth_service
+	 * @param RESTServer     $server
+	 * @param OAuthService   $oauth_service
 	 * @param AccountService $account_service
 	 */
 	public function __construct( RESTServer $server, OAuthService $oauth_service, AccountService $account_service ) {
 		parent::__construct( $server );
-		$this->oauth_service = $oauth_service;
+		$this->oauth_service   = $oauth_service;
 		$this->account_service = $account_service;
 	}
 
