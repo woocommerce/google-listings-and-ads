@@ -11,16 +11,12 @@ import { useCallback } from '@wordpress/element';
 import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
+import AcceptTerms from './accept-terms';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useTermsPolling from './useTermsPolling';
-import useOpenTermsURL from './useOpenTermsURL';
 
 const CTA = ( {
-	acceptTermsLabel = __(
-		'Accept Terms & Conditions',
-		'google-listings-and-ads'
-	),
 	disableLabel = __( 'Disable', 'google-listings-and-ads' ),
 	enableLabel = __( 'Enable', 'google-listings-and-ads' ),
 	onEnableClick = noop,
@@ -30,20 +26,7 @@ const CTA = ( {
 	const { acceptedCustomerDataTerms, hasFinishedResolution } =
 		useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
-	const { openTermsURL } = useOpenTermsURL();
 	useTermsPolling();
-
-	const handleTOS = useCallback(
-		( event ) => {
-			event.preventDefault();
-
-			openTermsURL();
-			updateEnhancedAdsConversionStatus(
-				ENHANCED_ADS_CONVERSION_STATUS.PENDING
-			);
-		},
-		[ updateEnhancedAdsConversionStatus, openTermsURL ]
-	);
 
 	const handleDisable = useCallback( () => {
 		if ( ! acceptedCustomerDataTerms ) {
@@ -87,11 +70,7 @@ const CTA = ( {
 	}
 
 	if ( ! acceptedCustomerDataTerms ) {
-		return (
-			<AppButton isPrimary onClick={ handleTOS }>
-				{ acceptTermsLabel }
-			</AppButton>
-		);
+		return <AcceptTerms />;
 	}
 
 	if ( allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.ENABLED ) {

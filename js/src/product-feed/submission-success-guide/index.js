@@ -19,6 +19,8 @@ import DynamicScreenActions from './dynamic-screen-actions';
 import SetupSuccess from './setup-success';
 import wooLogoURL from './woocommerce-logo.svg';
 import googleLogoURL from '.~/images/google-logo.svg';
+import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
+import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import './index.scss';
 
 const image = (
@@ -95,6 +97,10 @@ const SubmissionSuccessGuide = () => {
 			true
 		);
 	}, [] );
+
+	// Side effect to try to get the data we need for the modals as soon as possible.
+	useAcceptedCustomerDataTerms();
+	useAllowEnhancedConversions();
 
 	return (
 		<Guide

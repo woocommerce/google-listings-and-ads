@@ -40,12 +40,6 @@ const EnhancedConversion = () => {
 				) }
 			</p>
 
-			{ ! hasFinishedResolution && (
-				<LoadingLabel
-					text={ __( 'Please wait…', 'google-listings-and-ads' ) }
-				/>
-			) }
-
 			{ hasAcceptedTerms === true && hasFinishedResolution && (
 				<p>
 					{ __(

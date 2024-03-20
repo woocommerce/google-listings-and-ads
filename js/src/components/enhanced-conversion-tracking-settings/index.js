@@ -6,11 +6,14 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import Section from '.~/wcdl/section';
 import PendingNotice from '.~/components/enhanced-conversion-tracking-settings/pending-notice';
+import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import Toggle from './toggle';
+import AcceptTerms from './accept-terms';
 
 const DESCRIPTION = (
 	<p>
@@ -29,19 +32,31 @@ const TITLE = __( 'Enhanced Conversion Tracking', 'google-listings-and-ads' );
 const EnhancedConversionTrackingSettings = () => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
+	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 
 	if ( ! googleAdsAccount || ! googleAdsAccount.id ) {
 		return null;
 	}
 
+	const getCardBody = () => {
+		if (
+			! acceptedCustomerDataTerms &&
+			allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING
+		) {
+			return <PendingNotice />;
+		}
+
+		if ( ! acceptedCustomerDataTerms ) {
+			return <AcceptTerms />;
+		}
+
+		return <Toggle />;
+	};
+
 	return (
 		<Section title={ TITLE } description={ DESCRIPTION }>
 			<Section.Card>
-				<Section.Card.Body>
-					{ ! acceptedCustomerDataTerms && <PendingNotice /> }
-
-					<Toggle />
-				</Section.Card.Body>
+				<Section.Card.Body>{ getCardBody() }</Section.Card.Body>
 			</Section.Card>
 		</Section>
 	);
