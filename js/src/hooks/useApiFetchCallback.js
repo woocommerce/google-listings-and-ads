@@ -173,11 +173,16 @@ const useApiFetchCallback = ( options, initialState = defaultState ) => {
 				}
 
 				const response = e;
+				let error;
 
-				const responseClone = response.clone();
-				const error = responseClone.json
-					? await responseClone.json()
-					: new Error( 'No content body in fetch response.' );
+				try {
+					const responseClone = response.clone();
+					error = responseClone.json
+						? await responseClone.json()
+						: new Error( 'No content body in fetch response.' );
+				} catch ( exception ) {
+					error = new Error( 'Error parsing response.' );
+				}
 
 				dispatch( {
 					type: TYPES.ERROR,

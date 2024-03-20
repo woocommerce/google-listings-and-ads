@@ -51,7 +51,6 @@ class AuthControllerTest extends RESTControllerUnitTest {
 			->willReturn( $expected_auth_url );
 
 		$response = $this->do_request( self::ROUTE_AUTHORIZE );
-		$data     = $response->get_data();
 
 		$this->assertEquals(
 			[

@@ -38,8 +38,8 @@ class AuthController extends BaseController {
 	 * @var string[]
 	 */
 	private const NEXT_PATH_MAPPING = [
-		'setup-mc'  => '/google/setup-mc',
-		'reconnect' => '/google/settings',
+		'setup-mc' => '/google/setup-mc',
+		'settings' => '/google/settings',
 	];
 
 	/**
@@ -73,6 +73,7 @@ class AuthController extends BaseController {
 					'callback'            => $this->delete_authorize_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 	}
