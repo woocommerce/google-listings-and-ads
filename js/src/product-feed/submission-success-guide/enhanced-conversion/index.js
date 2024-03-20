@@ -8,7 +8,6 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
-import LoadingLabel from '.~/components/loading-label';
 import GuidePageContent from '.~/components/guide-page-content';
 import PendingNotice from '.~/components/enhanced-conversion-tracking-settings/pending-notice';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
