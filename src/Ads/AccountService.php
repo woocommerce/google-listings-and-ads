@@ -74,12 +74,15 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @return array
 	 */
 	public function get_connected_account(): array {
-		$id = $this->options->get_ads_id();
+		$id       = $this->options->get_ads_id();
+		$ocid     = $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID, '' );
+		$currency = $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY );
 
 		$status = [
 			'id'       => $id,
-			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
-			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) ),
+			'currency' => $currency,
+			'ocid'     => $ocid,
+			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $currency ) ),
 			'status'   => $id ? 'connected' : 'disconnected',
 		];
 

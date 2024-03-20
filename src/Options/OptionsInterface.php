@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 interface OptionsInterface {
 
 	public const ADS_ACCOUNT_CURRENCY                      = 'ads_account_currency';
+	public const ADS_ACCOUNT_OCID                          = 'ads_account_ocid';
 	public const ADS_ACCOUNT_STATE                         = 'ads_account_state';
 	public const ADS_BILLING_URL                           = 'ads_billing_url';
 	public const ADS_CUSTOMER_DATA_TERMS                   = 'ads_customer_data_terms';
@@ -46,6 +47,7 @@ interface OptionsInterface {
 
 	public const VALID_OPTIONS = [
 		self::ADS_ACCOUNT_CURRENCY                      => true,
+		self::ADS_ACCOUNT_OCID                          => true,
 		self::ADS_ACCOUNT_STATE                         => true,
 		self::ADS_BILLING_URL                           => true,
 		self::ADS_CUSTOMER_DATA_TERMS                   => true,

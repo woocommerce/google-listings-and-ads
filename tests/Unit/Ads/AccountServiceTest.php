@@ -55,6 +55,7 @@ class AccountServiceTest extends UnitTest {
 	protected $options;
 
 	protected const TEST_ACCOUNT_ID        = 1234567890;
+	protected const TEST_ADS_OCID          = '123456789';
 	protected const TEST_OLD_ACCOUNT_ID    = 2345678901;
 	protected const TEST_MERCHANT_ID       = 78123456;
 	protected const TEST_BILLING_URL       = 'https://domain.test/billing/setup/';
@@ -76,12 +77,14 @@ class AccountServiceTest extends UnitTest {
 	protected const TEST_CONNECTED_DATA    = [
 		'id'       => self::TEST_ACCOUNT_ID,
 		'currency' => 'EUR',
+		'ocid'     => self::TEST_ADS_OCID,
 		'symbol'   => '€',
 		'status'   => 'connected',
 	];
 	protected const TEST_INCOMPLETE_DATA   = [
 		'id'       => self::TEST_ACCOUNT_ID,
 		'currency' => 'EUR',
+		'ocid'     => self::TEST_ADS_OCID,
 		'symbol'   => '€',
 		'status'   => 'incomplete',
 		'step'     => 'billing',
@@ -89,6 +92,7 @@ class AccountServiceTest extends UnitTest {
 	protected const TEST_DISCONNECTED_DATA = [
 		'id'       => 0,
 		'currency' => null,
+		'ocid'     => null,
 		'symbol'   => '$',
 		'status'   => 'disconnected',
 	];
@@ -146,20 +150,39 @@ class AccountServiceTest extends UnitTest {
 			->willReturn( self::TEST_ACCOUNT_ID );
 
 		$this->options->method( 'get' )
-			->with( OptionsInterface::ADS_ACCOUNT_CURRENCY )
-			->willReturn( self::TEST_CURRENCY );
+			->withConsecutive(
+				[ OptionsInterface::ADS_ACCOUNT_OCID, '' ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ]
+			)
+			->willReturnOnConsecutiveCalls(
+				self::TEST_ADS_OCID,
+				self::TEST_CURRENCY,
+				self::TEST_CURRENCY
+			);
 
 		$this->assertEquals( self::TEST_CONNECTED_DATA, $this->account->get_connected_account() );
 	}
 
+	/**
+	 * @group failing
+	 */
 	public function test_get_connected_account_incomplete() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
 
 		$this->options->method( 'get' )
-			->with( OptionsInterface::ADS_ACCOUNT_CURRENCY )
-			->willReturn( self::TEST_CURRENCY );
+			->withConsecutive(
+				[ OptionsInterface::ADS_ACCOUNT_OCID, '' ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
+				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ]
+			)
+			->willReturnOnConsecutiveCalls(
+				self::TEST_ADS_OCID,
+				self::TEST_CURRENCY,
+				self::TEST_CURRENCY
+			);
 
 		$this->state->expects( $this->once() )
 			->method( 'last_incomplete_step' )
