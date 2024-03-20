@@ -39,7 +39,12 @@ const EnableNewProductSyncNotice = () => {
 					'google-listings-and-ads'
 				),
 				{
-					enableButton: <EnableNewProductSyncButton />,
+					enableButton: (
+						<EnableNewProductSyncButton
+							eventName="gla_enable_product_sync_click"
+							eventProps={ { context: 'banner' } }
+						/>
+					),
 				}
 			) }
 		</Notice>

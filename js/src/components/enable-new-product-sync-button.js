@@ -17,12 +17,9 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
  * Button to initiate auth process for WP Rest API
  *
  * @param {Object} params The component params
- * @param {string} params.buttonText The text to show in the enable button
  * @return {JSX.Element} The button.
  */
-const EnableNewProductSyncButton = ( {
-	buttonText = __( 'Enable it', 'google-listings-and-ads' ),
-} ) => {
+const EnableNewProductSyncButton = ( params ) => {
 	const { createNotice } = useDispatchCoreNotices();
 
 	const nextPageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
@@ -45,9 +42,7 @@ const EnableNewProductSyncButton = ( {
 	};
 
 	return (
-		<AppButton isSecondary onClick={ handleEnableClick }>
-			{ buttonText }
-		</AppButton>
+		<AppButton isSecondary onClick={ handleEnableClick } { ...params } />
 	);
 };
 

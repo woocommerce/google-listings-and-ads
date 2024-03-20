@@ -669,6 +669,14 @@ class ConnectionTest implements Service, Registerable {
 								</p>
 							</td>
 						</tr>
+						<tr>
+							<th>Disconnect WP API Product SYNC:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'disconnect-wp-api' ), $url ), 'disconnect-wp-api' ) ); ?>">Disconnect</a>
+								</p>
+							</td>
+						</tr>
 					</table>
 					<?php wp_nonce_field( 'partner-notification' ); ?>
 					<input name="page" value="connection-test-admin-page" type="hidden" />
@@ -773,6 +781,11 @@ class ConnectionTest implements Service, Registerable {
 			}
 
 			return;
+		}
+
+		if ( 'disconnect-wp-api' === $_GET['action'] && check_admin_referer( 'disconnect-wp-api' ) ) {
+			$request = new Request( 'DELETE', '/wc/gla/rest-api/authorize' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-auth-test' === $_GET['action'] && check_admin_referer( 'wcs-auth-test' ) ) {
