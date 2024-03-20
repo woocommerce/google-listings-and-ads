@@ -68,12 +68,6 @@ class AuthController extends BaseController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_auth_params(),
 				],
-			]
-		);
-
-		$this->register_route(
-			'rest-api/authorize',
-			[
 				[
 					'methods'             => TransportMethods::DELETABLE,
 					'callback'            => $this->delete_authorize_callback(),

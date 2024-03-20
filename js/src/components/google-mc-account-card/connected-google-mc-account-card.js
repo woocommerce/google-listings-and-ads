@@ -113,7 +113,7 @@ const ConnectedGoogleMCAccountCard = ( {
 			createNotice(
 				'error',
 				__(
-					'Unable to disconnect your Google Merchant Center account. Please try again later.',
+					'Unable to disable new product sync. Please try again later.',
 					'google-listings-and-ads'
 				)
 			);
@@ -122,13 +122,16 @@ const ConnectedGoogleMCAccountCard = ( {
 		removeNotice( notice.id );
 	};
 
+	// Show the button if the status is "approved" and the Notification Service is not hidden.
 	const showDisconnectNotificationsButton =
 		! hideNotificationService &&
 		googleMCAccount.wpcom_rest_api_status === 'approved';
 
+	// Show the error if the status is set but is not "approved" and the Notification Service is not hidden.
 	const showErrorNotificationsNotice =
 		! hideNotificationService &&
-		googleMCAccount.wpcom_rest_api_status === 'error';
+		googleMCAccount.wpcom_rest_api_status &&
+		googleMCAccount.wpcom_rest_api_status !== 'approved';
 
 	const showFooter = ! hideAccountSwitch || showDisconnectNotificationsButton;
 
@@ -166,7 +169,7 @@ const ConnectedGoogleMCAccountCard = ( {
 			{ showErrorNotificationsNotice && (
 				<AppNotice status="warning" isDismissible={ false }>
 					{ __(
-						'It was a problem granting access to Google for fetching your products.',
+						'There was an issue granting access to Google for fetching your products.',
 						'google-listings-and-ads'
 					) }
 				</AppNotice>

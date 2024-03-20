@@ -14,7 +14,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 /**
- * Button to initiate auth process for WC Rest API
+ * Button to initiate auth process for WP Rest API
  *
  * @param {Object} params The component params
  * @param {string} params.buttonText The text to show in the enable button
