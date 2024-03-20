@@ -42,6 +42,9 @@ export function getProductBlockEditorUtils( page ) {
 			return {
 				selection: block.getByRole( 'combobox' ),
 				help: block.locator( '.components-base-control__help' ),
+				notice: block.locator( '.components-notice' ),
+				status: block.locator( 'section p' ).first(),
+				issues: block.getByRole( 'listitem' ),
 			};
 		},
 	};
@@ -157,8 +160,28 @@ export function getProductBlockEditorUtils( page ) {
 		},
 	};
 
+	const mocks = {
+		async mockChannelVisibility( syncStatus, issues = [] ) {
+			const key = 'google_listings_and_ads__channel_visibility';
+
+			await page.route( REGEX_URL_PRODUCTS, async ( route ) => {
+				// If the test case has reached the end but there is still any route awaiting fulfillment, it will cause "Request context disposed" errors and further lead to the test case being considered a failure. Therefore, here it catches and ignores errors.
+				try {
+					const response = await route.fetch();
+					const product = await response.json();
+
+					product[ key ].sync_status = syncStatus;
+					product[ key ].issues = issues;
+
+					await route.fulfill( { response, json: product } );
+				} catch ( e ) {}
+			} );
+		},
+	};
+
 	return {
 		...locators,
 		...asyncActions,
+		...mocks,
 	};
 }

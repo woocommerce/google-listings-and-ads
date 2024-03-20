@@ -288,6 +288,96 @@ test.describe( 'Product Block Editor integration', () => {
 		await expect( help ).toHaveCount( 0 );
 	} );
 
+	test( 'Change channel visibility and check its notice, status, and issues', async () => {
+		await editorUtils.gotoAddProductPage();
+		await editorUtils.fillProductName();
+		await editorUtils.clickPluginTab();
+
+		const issueTexts = [ 'Invalid price', 'Invalid GTIN' ];
+		const { selection, notice, status, issues } =
+			editorUtils.getChannelVisibility();
+
+		// Save another value and revert it to atomically re-fetch
+		// the current product with newly mocked data.
+		async function refetchProductData() {
+			await selection.selectOption( 'dont-sync-and-show' );
+			await editorUtils.save();
+			await selection.selectOption( 'sync-and-show' );
+			await editorUtils.save();
+		}
+
+		/*
+		 * Assert:
+		 * - The value is saved to 'dont-sync-and-show'
+		 * - The notice won't be shown even if there are issues
+		 */
+		await editorUtils.mockChannelVisibility( 'has-errors', issueTexts );
+		await selection.selectOption( 'dont-sync-and-show' );
+		await editorUtils.save();
+
+		await expect( selection ).toHaveValue( 'dont-sync-and-show' );
+		await expect( notice ).toHaveCount( 0 );
+		await expect( status ).toHaveCount( 0 );
+		await expect( issues ).toHaveCount( 0 );
+
+		/*
+		 * Assert:
+		 * - The value is saved to 'sync-and-show'
+		 * - The warning notice is shown with "Issues detected" status and issue contents
+		 */
+		await selection.selectOption( 'sync-and-show' );
+		await editorUtils.save();
+
+		await expect( selection ).toHaveValue( 'sync-and-show' );
+		await expect( notice ).toBeVisible();
+		await expect( notice ).toHaveClass( /(^| )is-warning( |$)/ );
+		await expect( status ).toHaveText( /^Issues detected$/i );
+		await expect( issues ).toHaveCount( issueTexts.length );
+
+		for ( const [ index, issueText ] of issueTexts.entries() ) {
+			await expect( issues.nth( index ) ).toHaveText( issueText );
+		}
+
+		/*
+		 * Assert:
+		 * - The info notice is shown with "Not synced" status
+		 */
+		await editorUtils.mockChannelVisibility( 'not-synced' );
+		await refetchProductData();
+
+		await expect( notice ).toBeVisible();
+		await expect( notice ).toHaveClass( /(^| )is-info( |$)/ );
+		await expect( status ).toHaveText( /^Not synced$/i );
+		await expect( issues ).toHaveCount( 0 );
+
+		/*
+		 * Assert:
+		 * - The info notice is shown with "Pending" status
+		 */
+		await editorUtils.mockChannelVisibility( 'pending' );
+		await refetchProductData();
+
+		await expect( notice ).toBeVisible();
+		await expect( notice ).toHaveClass( /(^| )is-info( |$)/ );
+		await expect( status ).toHaveText( /^Pending$/i );
+		await expect( issues ).toHaveCount( 0 );
+
+		/*
+		 * Assert:
+		 * - The notice won't be shown when the status is 'synced'
+		 */
+		await editorUtils.mockChannelVisibility( 'synced' );
+		await refetchProductData();
+
+		await expect( notice ).toHaveCount( 0 );
+		await expect( status ).toHaveCount( 0 );
+		await expect( issues ).toHaveCount( 0 );
+	} );
+
+	test.afterEach( async () => {
+		await page.unrouteAll();
+	} );
+
 	test.afterAll( async () => {
 		await editorUtils.toggleBlockFeature( page, false );
 		await api.clearOnboardedMerchant();
