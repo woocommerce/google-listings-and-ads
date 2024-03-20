@@ -444,6 +444,44 @@ class MerchantStatusesTest extends UnitTest {
 		);
 	}
 
+	public function test_get_product_statistics_with_failure_rate() {
+		$this->merchant_center_service->expects( $this->once() )
+		->method( 'is_connected' )
+		->willReturn( true );
+
+		$this->transients->expects( $this->exactly( 2 ) )
+		->method( 'get' )
+		->willReturn(
+			null
+		);
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
+		->method( 'get_failure_rate_message' )->willReturn( 'Failure rate!' );
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
+		->method( 'schedule' );
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
+		->method( 'is_scheduled' )->willReturn( false );
+
+		$product_statistics = $this->merchant_statuses->get_product_statistics();
+
+		$this->assertEquals(
+			null,
+			$product_statistics['statistics']
+		);
+
+		$this->assertEquals(
+			false,
+			$product_statistics['loading']
+		);
+
+		$this->assertEquals(
+			'Failure rate!',
+			$product_statistics['error']
+		);
+	}
+
 	public function test_process_product_statuses() {
 		$product_1        = WC_Helper_Product::create_simple_product();
 		$product_2        = WC_Helper_Product::create_simple_product();
