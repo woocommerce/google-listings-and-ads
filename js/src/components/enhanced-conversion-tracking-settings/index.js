@@ -34,6 +34,7 @@ const EnhancedConversionTrackingSettings = () => {
 	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 
+	// @todo: Remove condition once R1 PRs are merged since there should always be a connected Ads account.
 	if ( ! googleAdsAccount || ! googleAdsAccount.id ) {
 		return null;
 	}
