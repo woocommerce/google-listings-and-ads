@@ -143,7 +143,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		if ( $failure_rate_msg && null === $this->mc_statuses ) {
 			return [
 				'timestamp'  => $this->cache_created_time->getTimestamp(),
-				'statistics' => [],
+				'statistics' => null,
 				'loading'    => false,
 				'error'      => $failure_rate_msg,
 			];
@@ -289,9 +289,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		// If force_refresh is true or if not transient, return empty array and scheduled the job to update the statuses.
 		if ( ! $job->is_scheduled() && ( $force_refresh || ( ! $force_refresh && null === $this->mc_statuses ) ) ) {
-			// Delete the transient before scheduling the job because some errors, like the failure rate message, can occur before the job is scheduled.
+			// Delete the transient before scheduling the job because some errors, like the failure rate message, can occur before the job is executed.
 			$this->clear_cache();
-			// Schedule job to update the statuses.
+			// Schedule job to update the statuses. If the failure rate is too high, the job will not be scheduled.
 			$job->schedule();
 		}
 
