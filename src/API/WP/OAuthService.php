@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
-use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Jetpack_Options;
@@ -37,9 +36,13 @@ class OAuthService implements Service {
 	 * response_type=code&
 	 * blog=BLOD_ID&
 	 * scope=wc-partner-access&
-	 * state=BASE64_ENCODED_STRING
+	 * state=URL_SAFE_BASE64_ENCODED_STRING
 	 *
-	 * Content of state is an URL query string where the value of its parameter "redirect_url" is being URL encoded.
+	 * State is an URL safe base64 encoded string.
+	 * E.g.
+	 * state=bm9uY2UtMTIzJnJlZGlyZWN0X3VybD1odHRwcyUzQSUyRiUyRm1lcmNoYW50LXNpdGUuZXhhbXBsZS5jb20lMkZ3cC1hZG1pbiUyRmFkbWluLnBocCUzRnBhZ2UlM0R3Yy1hZG1pbiUyNnBhdGglM0QlMkZnb29nbGUlMkZzZXR1cC1tYw
+	 *
+	 * The decoded content of state is an URL query string where the value of its parameter "redirect_url" is being URL encoded.
 	 * E.g.
 	 * nonce=nonce-123&redirect_url=https%3A%2F%2Fmerchant-site.example.com%2Fwp-admin%2Fadmin.php%3Fpage%3Dwc-admin%26path%3D%2Fgoogle%2Fsetup-mc
 	 *
@@ -87,7 +90,10 @@ class OAuthService implements Service {
 	 * TODO: Call an actual API by Google.
 	 * We'd probably need use WCS to communicate with the new API.
 	 *
-	 * @return array An associative array contains required information from Google.
+	 * @return array{client_id: string, redirect_uri: string, nonce: string} An associative array contains required information that is retrived from Google.
+	 * client_id:    Google's WPCOM app client ID, will be used to form the authorization URL.
+	 * redirect_uri: A Google's URL that will be redirected to when the merchant approve the app access. Note that it needs to be matched with the Google WPCOM app client settings.
+	 * nonce:        A string returned by Google that we will put it in the auth URL and the redirect_uri. Google will use it to verify the call.
 	 */
 	protected function get_data_from_google(): array {
 		return [
