@@ -579,7 +579,11 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$this->target_audience = $this->createMock( TargetAudience::class );
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
-			->method( 'is_ready_for_syncing' )
+			->method( 'is_ready' )
+			->willReturn( true );
+
+		$this->merchant_center->expects( $this->any() )
+			->method( 'should_sync' )
 			->willReturn( true );
 
 		$this->google_service = $this->createMock( GoogleProductService::class );

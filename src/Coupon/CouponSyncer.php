@@ -461,7 +461,7 @@ class CouponSyncer implements Service {
 	 * @throws CouponSyncerException If Google Merchant Center is not set up and connected.
 	 */
 	protected function validate_merchant_center_setup(): void {
-		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
+		if ( ! $this->merchant_center->is_ready() ) {
 			do_action(
 				'woocommerce_gla_error',
 				'Cannot sync any coupons before setting up Google Merchant Center.',
@@ -471,6 +471,21 @@ class CouponSyncer implements Service {
 			throw new CouponSyncerException(
 				__(
 					'Google Merchant Center has not been set up correctly. Please review your configuration.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+
+		if ( ! $this->merchant_center->should_sync() ) {
+			do_action(
+				'woocommerce_gla_error',
+				'Cannot sync any coupons because they are being fetched automatically.',
+				__METHOD__
+			);
+
+			throw new CouponSyncerException(
+				__(
+					'Manual Coupon sync will not run if the automatic data fetching is enabled. Please review your configuration in Google Listing and Ads settings.',
 					'google-listings-and-ads'
 				)
 			);

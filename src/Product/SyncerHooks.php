@@ -121,7 +121,7 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	public function register(): void {
 		// only register the hooks if Merchant Center is connected and ready for syncing data.
-		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
+		if ( ! $this->merchant_center->is_ready() ) {
 			return;
 		}
 
@@ -273,15 +273,8 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_delete_product( int $product_id ) {
-		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product && $this->notifications_service->is_enabled() && $this->product_helper->should_trigger_delete_notification( $product ) ) {
-			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-			$this->product_notification_job->schedule(
-				[
-					'item_id' => $product->get_id(),
-					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
-				]
-			);
+		if ( $this->notifications_service->is_enabled() ) {
+			$this->maybe_send_delete_notification( $product_id );
 			return;
 		}
 
@@ -291,6 +284,25 @@ class SyncerHooks implements Service, Registerable {
 				$this->delete_products_job->schedule( [ $product_id_map ] );
 				$this->set_already_scheduled_to_delete( $product_id );
 			}
+		}
+	}
+
+	/**
+	 * Send the notification for product deletion
+	 *
+	 * @since x.x.x
+	 * @param int $product_id
+	 */
+	protected function maybe_send_delete_notification( int $product_id ) {
+		$product = wc_get_product( $product_id );
+		if ( $product instanceof WC_Product && $this->product_helper->should_trigger_delete_notification( $product ) ) {
+			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
+			$this->product_notification_job->schedule(
+				[
+					'item_id' => $product->get_id(),
+					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
+				]
+			);
 		}
 	}
 

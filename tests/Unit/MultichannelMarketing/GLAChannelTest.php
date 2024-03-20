@@ -90,18 +90,18 @@ class GLAChannelTest extends UnitTest {
 	}
 
 	public function test_get_product_listings_status_returns_not_applicable_if_not_sync_ready() {
-		$this->merchant_center->expects( $this->once() )->method( 'is_ready_for_syncing' )->willReturn( false );
+		$this->merchant_center->expects( $this->once() )->method( 'is_ready' )->willReturn( false );
 		$this->assertEquals( MarketingChannelInterface::PRODUCT_LISTINGS_NOT_APPLICABLE, $this->gla_channel->get_product_listings_status() );
 	}
 
 	public function test_get_product_listings_status_returns_in_progress_if_there_are_product_sync_jobs_in_queue() {
-		$this->merchant_center->expects( $this->once() )->method( 'is_ready_for_syncing' )->willReturn( true );
+		$this->merchant_center->expects( $this->once() )->method( 'is_ready' )->willReturn( true );
 		$this->product_sync_stats->expects( $this->once() )->method( 'get_count' )->willReturn( 1 );
 		$this->assertEquals( MarketingChannelInterface::PRODUCT_LISTINGS_SYNC_IN_PROGRESS, $this->gla_channel->get_product_listings_status() );
 	}
 
 	public function test_get_product_listings_status_returns_synced_if_there_are_no_product_sync_jobs_in_queue() {
-		$this->merchant_center->expects( $this->once() )->method( 'is_ready_for_syncing' )->willReturn( true );
+		$this->merchant_center->expects( $this->once() )->method( 'is_ready' )->willReturn( true );
 		$this->product_sync_stats->expects( $this->once() )->method( 'get_count' )->willReturn( 0 );
 		$this->assertEquals( MarketingChannelInterface::PRODUCT_LISTINGS_SYNCED, $this->gla_channel->get_product_listings_status() );
 	}

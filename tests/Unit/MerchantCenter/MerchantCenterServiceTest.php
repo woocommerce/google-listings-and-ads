@@ -185,7 +185,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->assertFalse( $this->mc_service->is_google_connected() );
 	}
 
-	public function test_is_ready_for_syncing() {
+	public function test_is_ready() {
 		$hash = md5( site_url() );
 		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( $hash );
 		$this->options->method( 'get' )
@@ -198,10 +198,10 @@ class MerchantCenterServiceTest extends UnitTest {
 				self::TEST_SETUP_COMPLETED
 			);
 
-		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
+		$this->assertTrue( $this->mc_service->is_ready() );
 	}
 
-	public function test_is_ready_for_syncing_not_setup() {
+	public function test_is_ready_not_setup() {
 		$hash = md5( site_url() );
 		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( $hash );
 		$this->options->method( 'get' )
@@ -218,10 +218,10 @@ class MerchantCenterServiceTest extends UnitTest {
 			->method( 'get' )
 			->with( TransientsInterface::URL_MATCHES );
 
-		$this->assertFalse( $this->mc_service->is_ready_for_syncing() );
+		$this->assertFalse( $this->mc_service->is_ready() );
 	}
 
-	public function test_is_ready_for_syncing_filter_override() {
+	public function test_is_ready_filter_override() {
 		$hash = md5( 'https://staging-site.test' );
 		$this->merchant->method( 'get_claimed_url_hash' )->willReturn( $hash );
 		$this->options->method( 'get' )
@@ -234,12 +234,12 @@ class MerchantCenterServiceTest extends UnitTest {
 				self::TEST_SETUP_COMPLETED
 			);
 
-		add_filter( 'woocommerce_gla_ready_for_syncing', '__return_true' );
+		add_filter( 'woocommerce_gla_is_mc_ready', '__return_true' );
 
-		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
+		$this->assertTrue( $this->mc_service->is_ready() );
 	}
 
-	public function test_is_ready_for_syncing_fetch_from_transient() {
+	public function test_is_ready_fetch_from_transient() {
 		$hash = md5( site_url() );
 		$this->merchant->expects( $this->once() )
 			->method( 'get_claimed_url_hash' )
@@ -273,8 +273,8 @@ class MerchantCenterServiceTest extends UnitTest {
 			->with( TransientsInterface::URL_MATCHES, 'yes', HOUR_IN_SECONDS * 12 );
 
 		// Call twice to ensure we are getting the value from the transient the second time.
-		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
-		$this->assertTrue( $this->mc_service->is_ready_for_syncing() );
+		$this->assertTrue( $this->mc_service->is_ready() );
+		$this->assertTrue( $this->mc_service->is_ready() );
 	}
 
 	public function test_is_store_country_supported() {

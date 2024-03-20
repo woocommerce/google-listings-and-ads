@@ -80,7 +80,11 @@ class UpdateAllProductsTest extends UnitTest {
 		);
 
 		$this->merchant_center
-			->method( 'is_ready_for_syncing' )
+			->method( 'is_ready' )
+			->willReturn( true );
+
+		$this->merchant_center
+			->method( 'should_sync' )
 			->willReturn( true );
 
 		/* adding a filter to make batch smaller for testing */

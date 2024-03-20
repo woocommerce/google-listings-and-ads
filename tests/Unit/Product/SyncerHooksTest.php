@@ -340,7 +340,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
-			->method( 'is_ready_for_syncing' )
+			->method( 'is_ready' )
 			->willReturn( true );
 
 		$this->update_products_job      = $this->createMock( UpdateProducts::class );

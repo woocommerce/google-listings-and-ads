@@ -119,7 +119,7 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	public function register(): void {
 		// only register the hooks if Merchant Center is set up and ready for syncing data.
-		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
+		if ( ! $this->merchant_center->is_ready() ) {
 			return;
 		}
 
@@ -217,6 +217,10 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $coupon_id
 	 */
 	protected function handle_pre_delete_coupon( int $coupon_id ) {
+		if ( $this->notifications_service->is_enabled() ) {
+			return;
+		}
+
 		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
 
 		if ( $coupon instanceof WC_Coupon &&
@@ -255,16 +259,8 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $coupon_id
 	 */
 	protected function handle_delete_coupon( int $coupon_id ) {
-		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
-
-		if ( $coupon instanceof WC_Coupon && $this->notifications_service->is_enabled() && $this->coupon_helper->should_trigger_delete_notification( $coupon ) ) {
-			$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-			$this->coupon_notification_job->schedule(
-				[
-					'item_id' => $coupon->get_id(),
-					'topic'   => NotificationsService::TOPIC_COUPON_DELETED,
-				]
-			);
+		if ( $this->notifications_service->is_enabled() ) {
+			$this->maybe_send_delete_notification( $coupon_id );
 			return;
 		}
 
@@ -281,6 +277,26 @@ class SyncerHooks implements Service, Registerable {
 				]
 			);
 			$this->set_already_scheduled_to_delete( $coupon_id );
+		}
+	}
+
+	/**
+	 * Send the notification for coupon deletion
+	 *
+	 * @since x.x.x
+	 * @param int $coupon_id
+	 */
+	protected function maybe_send_delete_notification( int $coupon_id ): void {
+		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
+
+		if ( $coupon instanceof WC_Coupon && $this->coupon_helper->should_trigger_delete_notification( $coupon ) ) {
+			$this->coupon_helper->set_notification_status( $coupon, NotificationStatus::NOTIFICATION_PENDING_DELETE );
+			$this->coupon_notification_job->schedule(
+				[
+					'item_id' => $coupon->get_id(),
+					'topic'   => NotificationsService::TOPIC_COUPON_DELETED,
+				]
+			);
 		}
 	}
 

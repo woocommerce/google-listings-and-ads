@@ -140,4 +140,11 @@ interface OptionsInterface {
 	 * @return int
 	 */
 	public function get_ads_id(): int;
+
+	/**
+	 * If the Notifications are enabled
+	 *
+	 * @return bool
+	 */
+	public function notifications_enabled(): bool;
 }
