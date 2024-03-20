@@ -132,7 +132,7 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	/**
 	 * Validate the failure rate of the job.
 	 *
-	 * @return string|null Returns an error message if the failure rate is too high, otherwise null.
+	 * @return string|void Returns an error message if the failure rate is too high, otherwise null.
 	 */
 	public function get_failure_rate_message() {
 		try {
