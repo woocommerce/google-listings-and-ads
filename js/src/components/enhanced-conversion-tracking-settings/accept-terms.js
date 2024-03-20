@@ -10,7 +10,7 @@ import { useCallback } from '@wordpress/element';
 import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
-import useOpenTermsURL from './useOpenTermsURL';
+import useGoogleAdsEnhancedConversionTermsURL from '.~/hooks/useGoogleAdsTermsURL';
 
 const AcceptTerms = ( {
 	acceptTermsLabel = __(
@@ -18,19 +18,19 @@ const AcceptTerms = ( {
 		'google-listings-and-ads'
 	),
 } ) => {
+	const { url } = useGoogleAdsEnhancedConversionTermsURL();
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
-	const { openTermsURL } = useOpenTermsURL();
 
 	const handleAcceptTerms = useCallback(
 		( event ) => {
 			event.preventDefault();
 
-			openTermsURL();
+			window.open( url, '_blank' );
 			updateEnhancedAdsConversionStatus(
 				ENHANCED_ADS_CONVERSION_STATUS.PENDING
 			);
 		},
-		[ updateEnhancedAdsConversionStatus, openTermsURL ]
+		[ updateEnhancedAdsConversionStatus, url ]
 	);
 
 	return (
