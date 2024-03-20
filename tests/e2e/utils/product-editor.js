@@ -47,6 +47,18 @@ export function getProductBlockEditorUtils( page ) {
 				issues: block.getByRole( 'listitem' ),
 			};
 		},
+
+		getSelectWithTextField() {
+			const block = page
+				.locator(
+					'[data-type="google-listings-and-ads/product-select-with-text-field"]'
+				)
+				.first();
+			return {
+				selection: block.getByRole( 'combobox' ),
+				input: block.getByRole( 'textbox' ),
+			};
+		},
 	};
 
 	const asyncActions = {
