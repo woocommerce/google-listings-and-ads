@@ -141,13 +141,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 		if ( $job->is_scheduled() || null === $this->mc_statuses ) {
 			return [
 				'timestamp'  => $this->cache_created_time->getTimestamp(),
-				'statistics' => [],
+				'statistics' => null,
 				'loading'    => true,
 				'error'      => null,
 			];
 		}
 
-		if ( $this->mc_statuses['error'] ) {
+		if ( ! empty( $this->mc_statuses['error'] ) ) {
 			return $this->mc_statuses;
 		}
 
@@ -806,7 +806,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		$mc_statuses = [
 			'timestamp'  => $this->cache_created_time->getTimestamp(),
-			'statistics' => [],
+			'statistics' => null,
 			'loading'    => false,
 			'error'      => $error_message,
 		];
