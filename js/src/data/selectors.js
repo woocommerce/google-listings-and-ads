@@ -420,13 +420,3 @@ export const getAcceptedCustomerDataTerms = ( state ) => {
 export const getAllowEnhancedConversions = ( state ) => {
 	return state.ads.conversion_tracking_setting.allow_enhanced_conversions;
 };
-
-/**
- * Return the OCID for the user.
- *
- * @param {Object} state The state
- * @return {string|null} It will be `null` if not yet fetched or fetched but doesn't exist.
- */
-export const getGoogleAdsOcid = ( state ) => {
-	return state.ads.ocid;
-};
