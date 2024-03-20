@@ -83,11 +83,9 @@ describe( 'Enhanced Conversion CTA', () => {
 			allowEnhancedConversions: null,
 		} );
 
-		render(
-			<CTA acceptTermsLabel="Sign terms of service on Google Ads" />
-		);
+		render( <CTA /> );
 		expect(
-			screen.getByText( 'Sign terms of service on Google Ads' )
+			screen.getByText( 'Accept Terms & Conditions' )
 		).toBeInTheDocument();
 	} );
 

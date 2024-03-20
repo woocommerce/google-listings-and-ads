@@ -62,7 +62,7 @@ describe( 'Enhanced Conversion Footer', () => {
 		render( <Actions /> );
 
 		expect(
-			screen.getByText( 'Sign terms of service on Google Ads' )
+			screen.getByText( 'Accept Terms & Conditions' )
 		).toBeInTheDocument();
 	} );
 

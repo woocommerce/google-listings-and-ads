@@ -17,7 +17,6 @@ import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useTermsPolling from './useTermsPolling';
 
 const CTA = ( {
-	acceptTermsLabel,
 	disableLabel = __( 'Disable', 'google-listings-and-ads' ),
 	enableLabel = __( 'Enable', 'google-listings-and-ads' ),
 	onEnableClick = noop,
@@ -71,7 +70,7 @@ const CTA = ( {
 	}
 
 	if ( ! acceptedCustomerDataTerms ) {
-		return <AcceptTerms acceptTermsLabel={ acceptTermsLabel } />;
+		return <AcceptTerms />;
 	}
 
 	if ( allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.ENABLED ) {
