@@ -348,6 +348,66 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
 		$order->save_meta_data();
 
+		// Prepare and enqueue the enhanced conversion data, if enabled.
+		if ( $this->is_enhanced_conversion_enabled() ) {
+			// Enhanced conversion data.
+			$ec_data         = [];
+			$customer        = new WC_Customer( $order->get_customer_id() );
+			$email           = $customer->get_billing_email();
+			$fname           = $customer->get_billing_first_name();
+			$lname           = $customer->get_billing_last_name();
+			$phone           = $customer->get_billing_phone();
+			$billing_address = $customer->get_billing_address();
+			$postcode        = $customer->get_billing_postcode();
+			$city            = $customer->get_billing_city();
+			$region          = $customer->get_billing_state();
+			$country         = $customer->get_billing_country();
+
+			// Add email in EC data.
+			if ( ! empty( $email ) ) {
+				$ec_data['sha256_email_address'] = $this->normalize_and_hash( $email );
+			}
+
+			// Format phone number in IE64.
+			$phone        = preg_replace( '/[^0-9]/', '', $phone );
+			$phone_length = strlen( $phone );
+			if ( $phone_length > 9 && $phone_length < 14 ) {
+				$phone                          = sprintf( '%s%d', '+', $phone );
+				$ec_data['sha256_phone_number'] = $this->normalize_and_hash( $phone );
+			}
+
+			// Check for required address fields.
+			if ( ! empty( $fname ) && ! empty( $lname ) && ! empty( $postcode ) && ! empty( $country ) ) {
+				$ec_data['address']['sha256_first_name']  = $this->normalize_and_hash( $fname );
+				$ec_data['address']['sha256_last_name']   = $this->normalize_and_hash( $lname );
+				$ec_data['address']['sha256_postal_code'] = $this->normalize_and_hash( $postcode );
+				$ec_data['address']['sha256_country']     = $this->normalize_and_hash( $country );
+
+				/**
+				 * Add additional data, if present.
+				 */
+
+				// Add street address.
+				if ( ! empty( $billing_address ) ) {
+					$ec_data['address']['sha256_street'] = $this->normalize_and_hash( $billing_address );
+				}
+
+				// Add city.
+				if ( ! empty( $city ) ) {
+					$ec_data['address']['sha256_city'] = $this->normalize_and_hash( $city );
+				}
+
+				// Add region.
+				if ( ! empty( $region ) ) {
+					$ec_data['address']['sha256_region'] = $this->normalize_and_hash( $region );
+				}
+			}
+
+			$purchase_user_data_gtag = sprintf( 'gtag("set", "user_data", %s)', wp_json_encode( $ec_data ) );
+
+			$this->add_inline_event_script( $purchase_user_data_gtag );
+		}
+
 		$conversion_gtag_info =
 		sprintf(
 			'gtag("event", "conversion", {
@@ -422,6 +482,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			join( ',', $item_info ),
 		);
 
+		$this->add_inline_event_script( $purchase_page_gtag );
+
 		if ( $this->is_enhanced_conversion_enabled() ) {
 			// Enhanced conversion data.
 			$ec_data         = [];
@@ -487,8 +549,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 			$this->add_inline_event_script( $purchase_user_data_gtag );
 		}
-
-		$this->add_inline_event_script( $purchase_page_gtag );
 	}
 
 	/**

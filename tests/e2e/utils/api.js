@@ -75,3 +75,17 @@ export async function setOnboardedMerchant() {
 export async function clearOnboardedMerchant() {
 	await api().delete( 'gla-test/onboarded-merchant' );
 }
+
+/**
+ * Enable Enhanced Conversions.
+ */
+export async function enableEnhancedConversions() {
+	await api().post( 'gla-test/enhanced-conversions' );
+}
+
+/**
+ * Disable Enhanced Conversions.
+ */
+export async function disableEnhancedConversions() {
+	await api().delete( 'gla-test/enhanced-conversions' );
+}
