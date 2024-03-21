@@ -32,6 +32,7 @@ use WC_Product;
 
 /**
  * Class ProductSyncerTest
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  */
 class ProductSyncerTest extends ContainerAwareUnitTest {
@@ -548,7 +549,6 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_update_throws_exception_when_mc_is_blocked() {
-
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
 			->method( 'should_sync' )

@@ -22,6 +22,7 @@ use WC_Helper_Product;
 
 /**
  * Class SyncerHooksTest
+ *
  * @group SyncerHooks
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  */
@@ -66,22 +67,19 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	public function test_create_new_simple_product_schedules_update_job() {
 		$this->set_mc_and_notifications();
 
-
 		$this->update_products_job->expects( $this->once() )
 			->method( 'schedule' );
 
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		WC_Helper_Product::create_simple_product( true, [ 'status' => 'publish' ] );
 	}
 
 	public function test_update_simple_product_schedules_update_job() {
-
 		$this->set_mc_and_notifications();
 
-
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->update_products_job->expects( $this->once() )
 			->method( 'schedule' )
@@ -92,12 +90,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_multiple_update_events_for_same_product_only_schedules_update_job_once() {
-
 		$this->set_mc_and_notifications();
 
-
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->update_products_job->expects( $this->once() )
 			->method( 'schedule' )
@@ -113,13 +109,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_create_variable_product_schedules_update_job_for_all_variations() {
-
 		$this->set_mc_and_notifications();
-
 
 		$variable_product = $this->create_variation_product( null, [ 'status' => 'draft' ] );
 		$variation_ids    = $variable_product->get_children();
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->update_products_job->expects( $this->once() )
 			->method( 'schedule' )
@@ -132,9 +126,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	public function test_adding_variation_schedules_update_job() {
 		$this->set_mc_and_notifications();
 
-
 		$variable_product = $this->create_variation_product();
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->update_products_job->expects( $this->once() )
 			->method( 'schedule' );
@@ -152,12 +145,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_trashing_product_does_not_schedules_delete_job_if_product_is_not_synced() {
-
 		$this->set_mc_and_notifications();
 
-
 		$product = WC_Helper_Product::create_simple_product();
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->delete_products_job->expects( $this->never() )
 			->method( 'schedule' )
@@ -167,13 +158,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_trashing_synced_product_schedules_delete_job() {
-
 		$this->set_mc_and_notifications();
-
 
 		$product = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->delete_products_job->expects( $this->once() )
 			->method( 'schedule' )
@@ -185,10 +174,9 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	public function test_force_deleting_synced_product_schedules_delete_job() {
 		$this->set_mc_and_notifications();
 
-
 		$product = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->delete_products_job->expects( $this->once() )
 			->method( 'schedule' )
@@ -198,12 +186,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_trashing_synced_variable_schedules_delete_job_for_all_variations() {
-
 		$this->set_mc_and_notifications();
 
-
 		$variable_product = $this->create_variation_product();
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		foreach ( $variable_product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
@@ -217,12 +203,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_force_deleting_synced_variable_schedules_delete_job_for_all_variations() {
-
 		$this->set_mc_and_notifications();
 
-
 		$variable_product = $this->create_variation_product();
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		foreach ( $variable_product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
@@ -236,12 +220,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_trashing_synced_variation_schedules_delete_job() {
-
 		$this->set_mc_and_notifications();
 
-
 		$variable_product = $this->create_variation_product();
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		foreach ( $variable_product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
@@ -258,12 +240,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 
 	public function test_force_deleting_synced_variation_schedules_delete_job() {
-
 		$this->set_mc_and_notifications();
 
-
 		$variable_product = $this->create_variation_product();
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		foreach ( $variable_product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
@@ -279,12 +259,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_saving_synced_but_not_sync_ready_product_schedules_delete_job() {
-
 		$this->set_mc_and_notifications();
 
-
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
@@ -296,12 +274,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_trashing_synced_product_wp_post_schedules_delete_job() {
-
 		$this->set_mc_and_notifications();
 
-
 		$product = WC_Helper_Product::create_simple_product();
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
@@ -315,9 +291,8 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	public function test_force_deleting_synced_product_wp_post_schedules_delete_job() {
 		$this->set_mc_and_notifications();
 
-
 		$product = WC_Helper_Product::create_simple_product();
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
 
@@ -329,12 +304,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_creating_and_updating_post_does_not_schedule_update_job() {
-
 		$this->set_mc_and_notifications();
 
 		$this->update_products_job->expects( $this->never() )
 			->method( 'schedule' );
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$post = $this->factory()->post->create_and_get();
 
@@ -349,12 +323,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_trashing_and_deleting_post_does_not_schedule_delete_job() {
-
 		$this->set_mc_and_notifications();
 
 		$this->delete_products_job->expects( $this->never() )
 			->method( 'schedule' );
-		$this->product_notification_job->expects( $this->never() )->method('schedule' );
+		$this->product_notification_job->expects( $this->never() )->method( 'schedule' );
 
 		$post = $this->factory()->post->create_and_get();
 
@@ -387,7 +360,6 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_create_product_triggers_notification_updated() {
-
 		$this->set_mc_and_notifications( true, true );
 
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
@@ -433,36 +405,35 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	public function test_actions_not_defined_when_mc_not_ready() {
 		$this->set_mc_and_notifications( false );
 
-		$this->assertFalse( has_action('woocommerce_new_product', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertFalse( has_action('woocommerce_new_product_variation', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertFalse( has_action('woocommerce_update_product', [ $this->syncer_hooks, 'update_by_object' ] ) );
-		$this->assertFalse( has_action('woocommerce_update_product_variation', [ $this->syncer_hooks, 'update_by_object' ] ) );
-		$this->assertFalse( has_action('woocommerce_process_product_meta', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertFalse( has_action('wp_trash_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
-		$this->assertFalse( has_action('before_delete_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
-		$this->assertFalse( has_action('woocommerce_before_delete_product_variation', [ $this->syncer_hooks, 'pre_delete' ] ) );
-		$this->assertFalse( has_action('trashed_post', [ $this->syncer_hooks, 'delete' ] ) );
-		$this->assertFalse( has_action('deleted_post', [ $this->syncer_hooks, 'delete' ] ) );
-		$this->assertFalse( has_action('untrashed_post', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertFalse( has_filter('woocommerce_duplicate_product_exclude_meta', [ $this->syncer_hooks, 'duplicate_product_exclude_meta' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_new_product', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_new_product_variation', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_update_product', [ $this->syncer_hooks, 'update_by_object' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_update_product_variation', [ $this->syncer_hooks, 'update_by_object' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_process_product_meta', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertFalse( has_action( 'wp_trash_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertFalse( has_action( 'before_delete_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_before_delete_product_variation', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertFalse( has_action( 'trashed_post', [ $this->syncer_hooks, 'delete' ] ) );
+		$this->assertFalse( has_action( 'deleted_post', [ $this->syncer_hooks, 'delete' ] ) );
+		$this->assertFalse( has_action( 'untrashed_post', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertFalse( has_filter( 'woocommerce_duplicate_product_exclude_meta', [ $this->syncer_hooks, 'duplicate_product_exclude_meta' ] ) );
 	}
 
 	public function test_actions_defined_when_mc_ready() {
-
 		$this->set_mc_and_notifications();
 
-		$this->assertEquals( 90, has_action('woocommerce_new_product', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertEquals( 90, has_action('woocommerce_new_product_variation', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertEquals( 90, has_action('woocommerce_update_product', [ $this->syncer_hooks, 'update_by_object' ] ) );
-		$this->assertEquals( 90, has_action('woocommerce_update_product_variation', [ $this->syncer_hooks, 'update_by_object' ] ) );
-		$this->assertEquals( 90, has_action('woocommerce_process_product_meta', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertEquals( 90, has_action('wp_trash_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
-		$this->assertEquals( 90, has_action('before_delete_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
-		$this->assertEquals( 90, has_action('woocommerce_before_delete_product_variation', [ $this->syncer_hooks, 'pre_delete' ] ) );
-		$this->assertEquals( 90, has_action('trashed_post', [ $this->syncer_hooks, 'delete' ] ) );
-		$this->assertEquals( 90, has_action('deleted_post', [ $this->syncer_hooks, 'delete' ] ) );
-		$this->assertEquals( 90, has_action('untrashed_post', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertEquals( 90, has_filter('woocommerce_duplicate_product_exclude_meta', [ $this->syncer_hooks, 'duplicate_product_exclude_meta' ] ) );
+		$this->assertEquals( 90, has_action( 'woocommerce_new_product', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertEquals( 90, has_action( 'woocommerce_new_product_variation', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertEquals( 90, has_action( 'woocommerce_update_product', [ $this->syncer_hooks, 'update_by_object' ] ) );
+		$this->assertEquals( 90, has_action( 'woocommerce_update_product_variation', [ $this->syncer_hooks, 'update_by_object' ] ) );
+		$this->assertEquals( 90, has_action( 'woocommerce_process_product_meta', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertEquals( 90, has_action( 'wp_trash_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertEquals( 90, has_action( 'before_delete_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertEquals( 90, has_action( 'woocommerce_before_delete_product_variation', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertEquals( 90, has_action( 'trashed_post', [ $this->syncer_hooks, 'delete' ] ) );
+		$this->assertEquals( 90, has_action( 'deleted_post', [ $this->syncer_hooks, 'delete' ] ) );
+		$this->assertEquals( 90, has_action( 'untrashed_post', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertEquals( 90, has_filter( 'woocommerce_duplicate_product_exclude_meta', [ $this->syncer_hooks, 'duplicate_product_exclude_meta' ] ) );
 	}
 
 
@@ -472,7 +443,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	 * @param bool $mc_status True if MC is ready. { @see MerchantCenterService::is_ready() }
 	 * @param bool $notifications_status True if NotificationsService is enabled. { @see NotificationsService::is_enabled() }
 	 */
-	public function set_mc_and_notifications(bool $mc_status = true, bool $notifications_status = false ) {
+	public function set_mc_and_notifications( bool $mc_status = true, bool $notifications_status = false ) {
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_ready' )
 			->willReturn( $mc_status );
@@ -481,7 +452,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->method( 'is_enabled' )
 			->willReturn( $notifications_status );
 
-		$this->syncer_hooks   = new SyncerHooks( $this->batch_helper, $this->product_helper, $this->job_repository, $this->merchant_center, $this->notification_service, $this->wc );
+		$this->syncer_hooks = new SyncerHooks( $this->batch_helper, $this->product_helper, $this->job_repository, $this->merchant_center, $this->notification_service, $this->wc );
 		$this->syncer_hooks->register();
 	}
 
@@ -493,7 +464,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 		$this->login_as_administrator();
 
-		$this->merchant_center = $this->createMock( MerchantCenterService::class );
+		$this->merchant_center          = $this->createMock( MerchantCenterService::class );
 		$this->update_products_job      = $this->createMock( UpdateProducts::class );
 		$this->delete_products_job      = $this->createMock( DeleteProducts::class );
 		$this->product_notification_job = $this->createMock( ProductNotificationJob::class );

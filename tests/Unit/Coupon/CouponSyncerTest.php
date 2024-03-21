@@ -21,6 +21,7 @@ use WC_Coupon;
 
 /**
  * Class CouponSyncerTest
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon
  */
 class CouponSyncerTest extends ContainerAwareUnitTest {
@@ -146,7 +147,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_update_throws_exception_when_mc_is_blocked() {
-		$coupon = $this->create_ready_to_sync_coupon();
+		$coupon          = $this->create_ready_to_sync_coupon();
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
 			->method( 'should_sync' )
@@ -159,7 +160,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_delete_throws_exception_when_mc_is_blocked() {
-		$coupon = $this->create_ready_to_delete_coupon();
+		$coupon          = $this->create_ready_to_delete_coupon();
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
 			->method( 'should_sync' )
@@ -195,12 +196,12 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 	 * @param object[] $args
 	 */
 	private function get_coupon_syncer( $args = [] ): CouponSyncer {
-		$args['google_service']     = $args['google_service'] ?? $this->google_service;
-		$args['coupon_helper']      = $args['coupon_helper'] ?? $this->coupon_helper;
-		$args['validator']          = $args['validator'] ?? $this->validator;
-		$args['merchant_center']    = $args['merchant_center'] ?? $this->merchant_center;
-		$args['target_audience']    = $args['target_audience'] ?? $this->target_audience;
-		$args['wc']                 = $args['wc'] ?? $this->wc;
+		$args['google_service']  = $args['google_service'] ?? $this->google_service;
+		$args['coupon_helper']   = $args['coupon_helper'] ?? $this->coupon_helper;
+		$args['validator']       = $args['validator'] ?? $this->validator;
+		$args['merchant_center'] = $args['merchant_center'] ?? $this->merchant_center;
+		$args['target_audience'] = $args['target_audience'] ?? $this->target_audience;
+		$args['wc']              = $args['wc'] ?? $this->wc;
 
 		return new CouponSyncer(
 			$args['google_service'],

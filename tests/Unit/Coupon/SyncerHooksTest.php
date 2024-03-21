@@ -23,6 +23,7 @@ use WC_Helper_Coupon;
 
 /**
  * Class SyncerHooksTest
+ *
  * @group SyncerHooks
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon
  */
@@ -135,7 +136,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->coupon_notification_job->expects( $this->never() )
 			->method( 'schedule' );
 
-		$coupon = $this->create_ready_to_delete_coupon();
+		$coupon         = $this->create_ready_to_delete_coupon();
 		$adapted_coupon = new WCCouponAdapter( [ 'wc_coupon' => $coupon ] );
 		$adapted_coupon->disable_promotion( $coupon );
 		$expected_coupon_entry = new DeleteCouponEntry(
@@ -267,29 +268,29 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	public function test_actions_not_defined_when_mc_not_ready() {
 		$this->set_mc_and_notifications( false );
 
-		$this->assertFalse( has_action('woocommerce_new_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertFalse( has_action('woocommerce_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertFalse( has_action('woocommerce_gla_bulk_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertFalse( has_action('wp_trash_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
-		$this->assertFalse( has_action('before_delete_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
-		$this->assertFalse( has_action('trashed_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
-		$this->assertFalse( has_action('deleted_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
-		$this->assertFalse( has_action('woocommerce_delete_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
-		$this->assertFalse( has_action('woocommerce_trash_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_new_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_gla_bulk_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertFalse( has_action( 'wp_trash_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertFalse( has_action( 'before_delete_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertFalse( has_action( 'trashed_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertFalse( has_action( 'deleted_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_delete_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertFalse( has_action( 'woocommerce_trash_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
 	}
 
 	public function test_actions_defined_when_mc_ready() {
 		$this->set_mc_and_notifications();
 
-		$this->assertEquals( 90, has_action('woocommerce_new_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertEquals( 90, has_action('woocommerce_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertEquals( 90, has_action('woocommerce_gla_bulk_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
-		$this->assertEquals( 90, has_action('wp_trash_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
-		$this->assertEquals( 90, has_action('before_delete_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
-		$this->assertEquals( 90, has_action('trashed_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
-		$this->assertEquals( 90, has_action('deleted_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
-		$this->assertEquals( 90, has_action('woocommerce_delete_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
-		$this->assertEquals( 90, has_action('woocommerce_trash_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertEquals( 90, has_action( 'woocommerce_new_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertEquals( 90, has_action( 'woocommerce_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertEquals( 90, has_action( 'woocommerce_gla_bulk_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertEquals( 90, has_action( 'wp_trash_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertEquals( 90, has_action( 'before_delete_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertEquals( 90, has_action( 'trashed_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertEquals( 90, has_action( 'deleted_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertEquals( 90, has_action( 'woocommerce_delete_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertEquals( 90, has_action( 'woocommerce_trash_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
 	}
 
 	/**
@@ -298,7 +299,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	 * @param bool $mc_status True if MC is ready. { @see MerchantCenterService::is_ready() }
 	 * @param bool $notifications_status True if NotificationsService is enabled. { @see NotificationsService::is_enabled() }
 	 */
-	public function set_mc_and_notifications(bool $mc_status = true, bool $notifications_status = false ) {
+	public function set_mc_and_notifications( bool $mc_status = true, bool $notifications_status = false ) {
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_ready' )
 			->willReturn( $mc_status );
@@ -307,7 +308,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->method( 'is_enabled' )
 			->willReturn( $notifications_status );
 
-		$this->syncer_hooks  = new SyncerHooks(
+		$this->syncer_hooks = new SyncerHooks(
 			$this->coupon_helper,
 			$this->job_repository,
 			$this->merchant_center,
