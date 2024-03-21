@@ -996,6 +996,7 @@ class MerchantStatusesTest extends UnitTest {
 
 		$this->merchant_issue_table->expects( $this->once() )->method( 'delete_stale' )->with( $this->merchant_statuses->get_cache_created_time() );
 		$this->options->expects( $this->once() )->method( 'delete' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		$this->product_meta_query_helper->expects($this->once())->method('delete_meta_key')->with(ProductMetaHandler::KEY_MC_STATUS);
 		$this->merchant_statuses->clear_product_statuses_cache_and_issues();
 	}
 
