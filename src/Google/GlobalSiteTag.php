@@ -430,6 +430,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$this->add_inline_event_script( $purchase_page_gtag );
 	}
 
+	/**
+	 * Add enhanced conversion data to the page.
+	 *
+	 * @param WC_Order $order The order object.
+	 */
 	private function add_enhanced_conversion_data( $order ) {
 		// Enhanced conversion data.
 		$ec_data         = [];
