@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestA
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
@@ -25,6 +26,11 @@ class AuthController extends BaseController {
 	protected $oauth_service;
 
 	/**
+	 * @var AccountService
+	 */
+	protected $account_service;
+
+	/**
 	 * Mapping between the client page name and its path.
 	 * The first value is also used as a default,
 	 * and changing the order of keys/values may affect things below.
@@ -39,12 +45,14 @@ class AuthController extends BaseController {
 	/**
 	 * AuthController constructor.
 	 *
-	 * @param RESTServer   $server
-	 * @param OAuthService $oauth_service
+	 * @param RESTServer     $server
+	 * @param OAuthService   $oauth_service
+	 * @param AccountService $account_service
 	 */
-	public function __construct( RESTServer $server, OAuthService $oauth_service ) {
+	public function __construct( RESTServer $server, OAuthService $oauth_service, AccountService $account_service ) {
 		parent::__construct( $server );
-		$this->oauth_service = $oauth_service;
+		$this->oauth_service   = $oauth_service;
+		$this->account_service = $account_service;
 	}
 
 	/**
@@ -59,6 +67,11 @@ class AuthController extends BaseController {
 					'callback'            => $this->get_authorize_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_auth_params(),
+				],
+				[
+					'methods'             => TransportMethods::DELETABLE,
+					'callback'            => $this->delete_authorize_callback(),
+					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -82,6 +95,22 @@ class AuthController extends BaseController {
 				];
 
 				return $this->prepare_item_for_response( $response, $request );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for the delete authorization request.
+	 *
+	 * @return callable
+	 */
+	protected function delete_authorize_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				$this->account_service->reset_wpcom_api_authorization();
+				return $this->prepare_item_for_response( [], $request );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}

@@ -46,6 +46,7 @@ class DisconnectController extends BaseController {
 				'mc/connection',
 				'google/connect',
 				'jetpack/connect',
+				'rest-api/authorize',
 			];
 
 			$errors    = [];
