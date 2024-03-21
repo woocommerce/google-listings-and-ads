@@ -2,6 +2,7 @@
 declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
@@ -20,7 +21,6 @@ use WC_Coupon;
 
 /**
  * Class CouponSyncerTest
- *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon
  */
 class CouponSyncerTest extends ContainerAwareUnitTest {
@@ -145,6 +145,33 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		);
 	}
 
+	public function test_update_throws_exception_when_mc_is_blocked() {
+		$coupon = $this->create_ready_to_sync_coupon();
+		$merchant_center = $this->createMock( MerchantCenterService::class );
+		$merchant_center->expects( $this->any() )
+			->method( 'should_sync' )
+			->willReturn( false );
+		$this->coupon_syncer = $this->get_coupon_syncer( [ 'merchant_center' => $merchant_center ] );
+
+		$this->expectException( CouponSyncerException::class );
+
+		$this->coupon_syncer->update( $coupon );
+	}
+
+	public function test_delete_throws_exception_when_mc_is_blocked() {
+		$coupon = $this->create_ready_to_delete_coupon();
+		$merchant_center = $this->createMock( MerchantCenterService::class );
+		$merchant_center->expects( $this->any() )
+			->method( 'should_sync' )
+			->willReturn( false );
+		$this->coupon_syncer = $this->get_coupon_syncer( [ 'merchant_center' => $merchant_center ] );
+
+		$this->expectException( CouponSyncerException::class );
+
+		$this->coupon_syncer->delete( $this->generate_delete_coupon_entry( $coupon ) );
+	}
+
+
 	protected function mock_google_service( WC_Coupon $coupon ): void {
 		$callback = function ( $promotion ) use ( $coupon ) {
 			if ( $promotion->getGenericRedemptionCode() === $coupon->get_code() ) {
@@ -160,6 +187,29 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$this->google_service->expects( $this->any() )
 			->method( 'create' )
 			->willReturnCallback( $callback );
+	}
+
+	/**
+	 * Function to return an instance of CouponSyncer.
+	 *
+	 * @param object[] $args
+	 */
+	private function get_coupon_syncer( $args = [] ): CouponSyncer {
+		$args['google_service']     = $args['google_service'] ?? $this->google_service;
+		$args['coupon_helper']      = $args['coupon_helper'] ?? $this->coupon_helper;
+		$args['validator']          = $args['validator'] ?? $this->validator;
+		$args['merchant_center']    = $args['merchant_center'] ?? $this->merchant_center;
+		$args['target_audience']    = $args['target_audience'] ?? $this->target_audience;
+		$args['wc']                 = $args['wc'] ?? $this->wc;
+
+		return new CouponSyncer(
+			$args['google_service'],
+			$args['coupon_helper'],
+			$args['validator'],
+			$args['merchant_center'],
+			$args['target_audience'],
+			$args['wc']
+		);
 	}
 
 	/**
@@ -189,13 +239,6 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$this->coupon_meta   = $this->container->get( CouponMetaHandler::class );
 		$this->coupon_helper = $this->container->get( CouponHelper::class );
 		$this->wc            = $this->container->get( WC::class );
-		$this->coupon_syncer = new CouponSyncer(
-			$this->google_service,
-			$this->coupon_helper,
-			$this->validator,
-			$this->merchant_center,
-			$this->target_audience,
-			$this->wc
-		);
+		$this->coupon_syncer = $this->get_coupon_syncer();
 	}
 }
