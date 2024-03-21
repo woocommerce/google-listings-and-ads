@@ -118,46 +118,42 @@ class SyncerHooks implements Service, Registerable {
 	 * Register a service.
 	 */
 	public function register(): void {
-		// only register the hooks if Merchant Center is set up and ready for syncing data.
+		// only register the hooks if Merchant Center is set up correctly.
 		if ( ! $this->merchant_center->is_ready() ) {
 			return;
 		}
 
-		$update_by_id = function ( int $coupon_id ) {
-			$coupon = $this->wc->maybe_get_coupon( $coupon_id );
-			if ( $coupon instanceof WC_Coupon ) {
-				$this->handle_update_coupon( $coupon );
-			}
-		};
-
-		$pre_delete = function ( int $coupon_id ) {
-			$this->handle_pre_delete_coupon( $coupon_id );
-		};
-
-		$delete_by_id = function ( int $coupon_id ) {
-			$this->handle_delete_coupon( $coupon_id );
-		};
-
 		// when a coupon is added / updated, schedule a update job.
-		add_action( 'woocommerce_new_coupon', $update_by_id, 90, 2 );
-		add_action( 'woocommerce_update_coupon', $update_by_id, 90, 2 );
-		add_action( 'woocommerce_gla_bulk_update_coupon', $update_by_id, 90 );
+		add_action( 'woocommerce_new_coupon', [ $this, 'update_by_id' ], 90, 2 );
+		add_action( 'woocommerce_update_coupon', [ $this, 'update_by_id' ], 90, 2 );
+		add_action( 'woocommerce_gla_bulk_update_coupon', [ $this, 'update_by_id' ], 90 );
 
 		// when a coupon is trashed or removed, schedule a delete job.
-		add_action( 'wp_trash_post', $pre_delete, 90 );
-		add_action( 'before_delete_post', $pre_delete, 90 );
-		add_action(
-			'woocommerce_before_delete_product_variation',
-			$pre_delete,
-			90
-		);
-		add_action( 'trashed_post', $delete_by_id, 90 );
-		add_action( 'deleted_post', $delete_by_id, 90 );
-		add_action( 'woocommerce_delete_coupon', $delete_by_id, 90, 2 );
-		add_action( 'woocommerce_trash_coupon', $delete_by_id, 90, 2 );
+		add_action( 'wp_trash_post', [ $this, 'pre_delete' ], 90 );
+		add_action( 'before_delete_post', [ $this, 'pre_delete' ], 90 );
+		add_action( 'trashed_post', [ $this, 'delete_by_id' ], 90 );
+		add_action( 'deleted_post', [ $this, 'delete_by_id' ], 90 );
+		add_action( 'woocommerce_delete_coupon', [ $this, 'delete_by_id' ], 90, 2 );
+		add_action( 'woocommerce_trash_coupon', [ $this, 'delete_by_id' ], 90, 2 );
 
 		// when a coupon is restored from trash, schedule a update job.
-		add_action( 'untrashed_post', $update_by_id, 90 );
+		add_action( 'untrashed_post', [ $this, 'update_by_id' ], 90 );
+	}
+
+
+	public function update_by_id( int $coupon_id ) {
+		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
+		if ( $coupon instanceof WC_Coupon ) {
+			$this->handle_update_coupon( $coupon );
+		}
+	}
+
+	public function delete_by_id( int $coupon_id ) {
+		$this->handle_delete_coupon( $coupon_id );
+	}
+
+	public function pre_delete( int $coupon_id ) {
+		$this->handle_pre_delete_coupon( $coupon_id );
 	}
 
 	/**

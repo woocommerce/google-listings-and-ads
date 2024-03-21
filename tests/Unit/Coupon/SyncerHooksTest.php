@@ -23,7 +23,7 @@ use WC_Helper_Coupon;
 
 /**
  * Class SyncerHooksTest
- *
+ * @group SyncerHooks
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon
  */
 class SyncerHooksTest extends ContainerAwareUnitTest {
@@ -58,6 +58,9 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	protected $syncer_hooks;
 
 	public function test_create_new_simple_coupon_schedules_update_job() {
+		$this->set_mc_and_notifications();
+		$this->coupon_notification_job->expects( $this->never() )
+			->method( 'schedule' );
 		$this->update_coupon_job->expects( $this->once() )
 			->method( 'schedule' );
 		$string_code = 'test_coupon_codes';
@@ -68,6 +71,9 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_update_simple_coupon_schedules_update_job() {
+		$this->set_mc_and_notifications();
+		$this->coupon_notification_job->expects( $this->never() )
+			->method( 'schedule' );
 		$string_code = 'test_coupon_codes';
 		$coupon      = new WC_Coupon();
 		$this->coupon_helper->mark_as_synced( $coupon, 'fake_google_id', 'US' );
@@ -82,6 +88,9 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_update_invisible_coupon_does_not_schedule_update_job() {
+		$this->set_mc_and_notifications();
+		$this->coupon_notification_job->expects( $this->never() )
+			->method( 'schedule' );
 		$string_code = 'test_coupon_codes';
 		$coupon      = new WC_Coupon();
 		$coupon->update_meta_data( '_wc_gla_visibility', 'dont-sync-and-show' );
@@ -96,6 +105,9 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_trash_simple_coupon_schedules_delete_job() {
+		$this->set_mc_and_notifications();
+		$this->coupon_notification_job->expects( $this->never() )
+			->method( 'schedule' );
 		$coupon = $this->create_ready_to_delete_coupon();
 
 		$adapted_coupon = new WCCouponAdapter( [ 'wc_coupon' => $coupon ] );
@@ -119,8 +131,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_delete_simple_coupon_schedules_delete_job() {
-		$coupon = $this->create_ready_to_delete_coupon();
+		$this->set_mc_and_notifications();
+		$this->coupon_notification_job->expects( $this->never() )
+			->method( 'schedule' );
 
+		$coupon = $this->create_ready_to_delete_coupon();
 		$adapted_coupon = new WCCouponAdapter( [ 'wc_coupon' => $coupon ] );
 		$adapted_coupon->disable_promotion( $coupon );
 		$expected_coupon_entry = new DeleteCouponEntry(
@@ -143,6 +158,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_untrash_simple_coupon_schedules_update_job() {
+		$this->set_mc_and_notifications();
+		$this->coupon_notification_job->expects( $this->never() )
+			->method( 'schedule' );
+
 		$coupon    = $this->create_ready_to_delete_coupon();
 		$coupon_id = $coupon->get_id();
 		$coupon->delete();
@@ -156,6 +175,10 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_modify_post_does_not_schedule_update_job() {
+		$this->set_mc_and_notifications();
+		$this->coupon_notification_job->expects( $this->never() )
+			->method( 'schedule' );
+
 		$this->update_coupon_job->expects( $this->never() )
 			->method( 'schedule' );
 
@@ -172,11 +195,14 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_create_coupon_triggers_notification_created() {
+		$this->set_mc_and_notifications( true, true );
+		$this->update_coupon_job->expects( $this->never() )
+			->method( 'schedule' );
+
 		/**
 		 * @var WC_Coupon $coupon
 		 */
 		$coupon = WC_Helper_Coupon::create_coupon( uniqid(), [ 'status' => 'draft' ] );
-		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->coupon_notification_job->expects( $this->once() )
 			->method( 'schedule' )->with(
 				$this->equalTo(
@@ -192,11 +218,13 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_update_coupon_triggers_notification_updated() {
+		$this->set_mc_and_notifications( true, true );
+		$this->update_coupon_job->expects( $this->never() )
+			->method( 'schedule' );
 		/**
 		 * @var WC_Coupon $coupon
 		 */
 		$coupon = WC_Helper_Coupon::create_coupon( uniqid() );
-		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->coupon_notification_job->expects( $this->once() )
 			->method( 'schedule' )->with(
 				$this->equalTo(
@@ -213,11 +241,14 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_delete_coupon_triggers_notification_delete() {
+		$this->set_mc_and_notifications( true, true );
+		$this->delete_coupon_job->expects( $this->never() )
+			->method( 'schedule' );
+
 		/**
 		 * @var WC_Coupon $coupon
 		 */
 		$coupon = WC_Helper_Coupon::create_coupon( uniqid() );
-		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 		$this->coupon_notification_job->expects( $this->once() )
 			->method( 'schedule' )->with(
 				$this->equalTo(
@@ -233,6 +264,60 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$coupon->save();
 	}
 
+	public function test_actions_not_defined_when_mc_not_ready() {
+		$this->set_mc_and_notifications( false );
+
+		$this->assertFalse( has_action('woocommerce_new_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertFalse( has_action('woocommerce_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertFalse( has_action('woocommerce_gla_bulk_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertFalse( has_action('wp_trash_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertFalse( has_action('before_delete_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertFalse( has_action('trashed_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertFalse( has_action('deleted_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertFalse( has_action('woocommerce_delete_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertFalse( has_action('woocommerce_trash_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+	}
+
+	public function test_actions_defined_when_mc_ready() {
+		$this->set_mc_and_notifications();
+
+		$this->assertEquals( 90, has_action('woocommerce_new_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertEquals( 90, has_action('woocommerce_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertEquals( 90, has_action('woocommerce_gla_bulk_update_coupon', [ $this->syncer_hooks, 'update_by_id' ] ) );
+		$this->assertEquals( 90, has_action('wp_trash_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertEquals( 90, has_action('before_delete_post', [ $this->syncer_hooks, 'pre_delete' ] ) );
+		$this->assertEquals( 90, has_action('trashed_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertEquals( 90, has_action('deleted_post', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertEquals( 90, has_action('woocommerce_delete_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+		$this->assertEquals( 90, has_action('woocommerce_trash_coupon', [ $this->syncer_hooks, 'delete_by_id' ] ) );
+	}
+
+	/**
+	 * Set the SyncerHooks class with specific features.
+	 *
+	 * @param bool $mc_status True if MC is ready. { @see MerchantCenterService::is_ready() }
+	 * @param bool $notifications_status True if NotificationsService is enabled. { @see NotificationsService::is_enabled() }
+	 */
+	public function set_mc_and_notifications(bool $mc_status = true, bool $notifications_status = false ) {
+		$this->merchant_center->expects( $this->any() )
+			->method( 'is_ready' )
+			->willReturn( $mc_status );
+
+		$this->notification_service->expects( $this->any() )
+			->method( 'is_enabled' )
+			->willReturn( $notifications_status );
+
+		$this->syncer_hooks  = new SyncerHooks(
+			$this->coupon_helper,
+			$this->job_repository,
+			$this->merchant_center,
+			$this->notification_service,
+			$this->wc
+		);
+
+		$this->syncer_hooks->register();
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -244,9 +329,6 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->merchant_center = $this->createMock(
 			MerchantCenterService::class
 		);
-		$this->merchant_center->expects( $this->any() )
-			->method( 'is_ready' )
-			->willReturn( true );
 
 		$this->update_coupon_job       = $this->createMock( UpdateCoupon::class );
 		$this->delete_coupon_job       = $this->createMock( DeleteCoupon::class );
@@ -267,15 +349,5 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 		$this->wc            = $this->container->get( WC::class );
 		$this->coupon_helper = $this->container->get( CouponHelper::class );
-		$this->syncer_hooks  = new SyncerHooks(
-			$this->coupon_helper,
-			$this->job_repository,
-			$this->merchant_center,
-			$this->notification_service,
-			$this->wc
-		);
-
-		add_filter( 'woocommerce_gla_notifications_enabled', '__return_false' );
-		$this->syncer_hooks->register();
 	}
 }
