@@ -147,15 +147,26 @@ class SyncerHooks implements Service, Registerable {
 		// exclude the sync metadata when duplicating the product
 		add_filter(
 			'woocommerce_duplicate_product_exclude_meta',
-			[ $this, 'duplicate_product_exclude_meta'],
+			[ $this, 'duplicate_product_exclude_meta' ],
 			90
 		);
 	}
 
+	/**
+	 * Update a Product by WC_Product
+	 *
+	 * @param int        $product_id
+	 * @param WC_Product $product
+	 */
 	public function update_by_object( int $product_id, WC_Product $product ) {
 		$this->handle_update_products( [ $product ] );
 	}
 
+	/**
+	 * Update a Product by the ID
+	 *
+	 * @param int $product_id
+	 */
 	public function update_by_id( int $product_id ) {
 		$product = $this->wc->maybe_get_product( $product_id );
 		if ( $product instanceof WC_Product ) {
@@ -163,14 +174,30 @@ class SyncerHooks implements Service, Registerable {
 		}
 	}
 
+	/**
+	 * Pre delete a Product by the ID
+	 *
+	 * @param int $product_id
+	 */
 	public function pre_delete( int $product_id ) {
 		$this->handle_pre_delete_product( $product_id );
 	}
 
+	/**
+	 * Delete a Product by the ID
+	 *
+	 * @param int $product_id
+	 */
 	public function delete( int $product_id ) {
 		$this->handle_delete_product( $product_id );
 	}
 
+	/**
+	 * Filters woocommerce_duplicate_product_exclude_meta adding some custom prefix
+	 *
+	 * @param array $exclude_meta
+	 * @return array
+	 */
 	public function duplicate_product_exclude_meta( array $exclude_meta ): array {
 		return $this->get_duplicated_product_excluded_meta( $exclude_meta );
 	}

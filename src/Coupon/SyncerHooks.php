@@ -140,7 +140,11 @@ class SyncerHooks implements Service, Registerable {
 		add_action( 'untrashed_post', [ $this, 'update_by_id' ], 90 );
 	}
 
-
+	/**
+	 * Update a coupon by the ID
+	 *
+	 * @param int $coupon_id
+	 */
 	public function update_by_id( int $coupon_id ) {
 		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
 		if ( $coupon instanceof WC_Coupon ) {
@@ -148,10 +152,20 @@ class SyncerHooks implements Service, Registerable {
 		}
 	}
 
+	/**
+	 * Delete a coupon by the ID
+	 *
+	 * @param int $coupon_id
+	 */
 	public function delete_by_id( int $coupon_id ) {
 		$this->handle_delete_coupon( $coupon_id );
 	}
 
+	/**
+	 * Pre Delete a coupon by the ID
+	 *
+	 * @param int $coupon_id
+	 */
 	public function pre_delete( int $coupon_id ) {
 		$this->handle_pre_delete_coupon( $coupon_id );
 	}
