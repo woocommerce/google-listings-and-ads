@@ -3,7 +3,7 @@
  */
 import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useCallback, useState } from '@wordpress/element';
+import { useCallback, useState, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -15,7 +15,6 @@ import AcceptTerms from './accept-terms';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useTermsPolling from './useTermsPolling';
-import { useEffect } from 'react';
 
 const CTA = ( {
 	disableLabel = __( 'Disable', 'google-listings-and-ads' ),

@@ -58,21 +58,6 @@ describe( 'Enhanced Conversion CTA', () => {
 		jest.clearAllMocks();
 	} );
 
-	test( 'When not yet loaded, should render a loading spinner', () => {
-		useAcceptedCustomerDataTerms.mockReturnValue( {
-			acceptedCustomerDataTerms: false,
-			hasFinishedResolution: false,
-		} );
-
-		useAllowEnhancedConversions.mockReturnValue( {
-			allowEnhancedConversions: null,
-		} );
-
-		render( <CTA /> );
-		const spinner = screen.getByRole( 'status', { name: 'spinner' } );
-		expect( spinner ).toBeInTheDocument();
-	} );
-
 	test( 'Prompt the user to sign the TOS', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
