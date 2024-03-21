@@ -90,6 +90,31 @@ export function getProductBlockEditorUtils( page ) {
 				help: block.locator( '.components-base-control__help' ),
 			};
 		},
+
+		getAllProductAttributes() {
+			const { dateInput: availabilityDate, timeInput: availabilityTime } =
+				this.getDateAndTimeFields();
+
+			return {
+				gtin: page.getByLabel( 'GTIN' ),
+				mpn: page.getByLabel( 'MPN' ),
+				brand: page.getByLabel( 'Brand' ),
+				condition: page.getByLabel( 'Condition', { exact: true } ),
+				gender: page.getByLabel( 'Gender' ),
+				size: page.getByLabel( 'Size', { exact: true } ),
+				sizeSystem: page.getByLabel( 'Size system' ),
+				sizeType: page.getByLabel( 'Size type' ),
+				color: page.getByLabel( 'Color' ),
+				material: page.getByLabel( 'Material' ),
+				pattern: page.getByLabel( 'Pattern' ),
+				ageGroup: page.getByLabel( 'Age Group' ),
+				multipack: page.getByLabel( 'Multipack' ),
+				isBundle: page.getByLabel( 'Is Bundle' ),
+				availabilityDate,
+				availabilityTime,
+				adultContent: page.getByLabel( 'Adult content' ),
+			};
+		},
 	};
 
 	const asyncActions = {
@@ -204,6 +229,20 @@ export function getProductBlockEditorUtils( page ) {
 
 		evaluateValidationMessage( input ) {
 			return input.evaluate( ( element ) => element.validationMessage );
+		},
+
+		async setAttributeValue( locator, value ) {
+			const tagName = await locator.evaluate(
+				( element ) => element.tagName
+			);
+
+			if ( tagName === 'SELECT' ) {
+				await locator.selectOption( value );
+			} else {
+				await locator.fill( value );
+			}
+
+			await expect( locator ).toHaveValue( value );
 		},
 	};
 
