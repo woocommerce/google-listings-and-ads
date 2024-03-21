@@ -640,6 +640,47 @@ test.describe( 'Product Block Editor integration', () => {
 		}
 	} );
 
+	test( 'Save product attributes to variation product', async () => {
+		await editorUtils.gotoEditVariableProductPage();
+		await editorUtils.gotoEditVariationProductPage();
+		await editorUtils.clickPluginTab();
+
+		/*
+		 * Since the testing of all attributes is already covered in the simple product test case above.
+		 * This case only tests a few key attributes to ensure the data saving works for variation product.
+		 */
+		const {
+			condition,
+			color,
+			multipack,
+			availabilityDate,
+			availabilityTime,
+		} = editorUtils.getAllProductAttributes();
+
+		const pairs = [
+			[ condition, 'new' ],
+			[ color, 'Cherry blossom' ],
+			[ multipack, '9999' ],
+			[ availabilityDate, '2024-02-29' ],
+			[ availabilityTime, '23:59' ],
+		];
+
+		for ( const [ attribute ] of pairs ) {
+			await expect( attribute ).toHaveValue( '' );
+		}
+
+		for ( const [ attribute, value ] of pairs ) {
+			await expect( attribute ).toHaveValue( '' );
+			await editorUtils.setAttributeValue( attribute, value );
+		}
+
+		await editorUtils.save();
+
+		for ( const [ attribute, value ] of pairs ) {
+			await expect( attribute ).toHaveValue( value );
+		}
+	} );
+
 	test.afterEach( async () => {
 		await page.unrouteAll();
 	} );
