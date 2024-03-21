@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { noop } from 'lodash';
 import { useCallback } from '@wordpress/element';
 
 /**
@@ -17,6 +18,7 @@ const AcceptTerms = ( {
 		'Accept Terms & Conditions',
 		'google-listings-and-ads'
 	),
+	onAcceptTerms = noop,
 } ) => {
 	const { url } = useGoogleAdsEnhancedConversionTermsURL();
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
@@ -29,8 +31,9 @@ const AcceptTerms = ( {
 			updateEnhancedAdsConversionStatus(
 				ENHANCED_ADS_CONVERSION_STATUS.PENDING
 			);
+			onAcceptTerms();
 		},
-		[ updateEnhancedAdsConversionStatus, url ]
+		[ updateEnhancedAdsConversionStatus, url, onAcceptTerms ]
 	);
 
 	return (

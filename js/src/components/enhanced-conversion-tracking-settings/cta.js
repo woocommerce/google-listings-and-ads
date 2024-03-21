@@ -3,7 +3,7 @@
  */
 import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useCallback } from '@wordpress/element';
+import { useCallback, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -22,11 +22,12 @@ const CTA = ( {
 	onEnableClick = noop,
 	onDisableClick = noop,
 } ) => {
+	const [ startBackgroundPoll, setStartBackgroundPoll ] = useState( false );
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 	const { acceptedCustomerDataTerms, hasFinishedResolution } =
 		useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
-	useTermsPolling();
+	useTermsPolling( startBackgroundPoll );
 
 	const handleDisable = useCallback( () => {
 		if ( ! acceptedCustomerDataTerms ) {
@@ -60,17 +61,16 @@ const CTA = ( {
 		onEnableClick,
 	] );
 
-	if (
-		! hasFinishedResolution ||
-		( ! acceptedCustomerDataTerms &&
-			allowEnhancedConversions ===
-				ENHANCED_ADS_CONVERSION_STATUS.PENDING )
-	) {
+	const handleOnAcceptTerms = () => {
+		setStartBackgroundPoll( true );
+	};
+
+	if ( ! hasFinishedResolution || startBackgroundPoll ) {
 		return <AppButton isSecondary disabled loading />;
 	}
 
 	if ( ! acceptedCustomerDataTerms ) {
-		return <AcceptTerms />;
+		return <AcceptTerms onAcceptTerms={ handleOnAcceptTerms } />;
 	}
 
 	if ( allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.ENABLED ) {

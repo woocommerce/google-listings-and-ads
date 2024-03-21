@@ -117,21 +117,6 @@ describe( 'Enhanced Conversion CTA', () => {
 		expect( screen.getByText( 'Disable tracking' ) ).toBeInTheDocument();
 	} );
 
-	test( 'Render a spinner when the status is set to pending', () => {
-		useAcceptedCustomerDataTerms.mockReturnValue( {
-			acceptedCustomerDataTerms: false,
-			hasFinishedResolution: true,
-		} );
-
-		useAllowEnhancedConversions.mockReturnValue( {
-			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.PENDING,
-		} );
-
-		render( <CTA /> );
-		const spinner = screen.getByRole( 'status', { name: 'spinner' } );
-		expect( spinner ).toBeInTheDocument();
-	} );
-
 	test( 'Click on accept TOS button callback', () => {
 		window.open = jest.fn();
 

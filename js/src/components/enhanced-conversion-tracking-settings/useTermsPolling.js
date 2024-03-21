@@ -12,7 +12,7 @@ import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms'
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useAutoCheckEnhancedConversionTOS from '.~/hooks/useAutoCheckEnhancedConversionTOS';
 
-const useTermsPolling = () => {
+const useTermsPolling = ( startBackgroundPoll = false ) => {
 	const { invalidateResolution } = useAppDispatch();
 	const {
 		startEnhancedConversionTOSPolling,
@@ -24,7 +24,9 @@ const useTermsPolling = () => {
 	useEffect( () => {
 		if (
 			! acceptedCustomerDataTerms &&
-			allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING
+			allowEnhancedConversions ===
+				ENHANCED_ADS_CONVERSION_STATUS.PENDING &&
+			startBackgroundPoll
 		) {
 			startEnhancedConversionTOSPolling();
 			return;
@@ -36,6 +38,7 @@ const useTermsPolling = () => {
 		allowEnhancedConversions,
 		startEnhancedConversionTOSPolling,
 		stopEnhancedConversionTOSPolling,
+		startBackgroundPoll,
 	] );
 
 	useEffect( () => {
