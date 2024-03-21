@@ -58,7 +58,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * The lifetime of the status-related data.
 	 */
-	public const STATUS_LIFETIME = HOUR_IN_SECONDS;
+	public const STATUS_LIFETIME = 12 * HOUR_IN_SECONDS;
 
 	/**
 	 * The types of issues.
