@@ -686,7 +686,7 @@ class AccountServiceTest extends UnitTest {
 				'id'                    => self::TEST_ACCOUNT_ID,
 				'status'                => 'incomplete',
 				'step'                  => 'verify',
-				'wpcom_rest_api_status' => 'disapproved',
+				'wpcom_rest_api_status' => null,
 			],
 			$this->account->get_connected_status()
 		);
