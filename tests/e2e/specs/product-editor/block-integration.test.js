@@ -518,6 +518,51 @@ test.describe( 'Product Block Editor integration', () => {
 		await expect( timeHelp ).toHaveCount( 0 );
 	} );
 
+	test( 'Generic block transformation: Non-negative integer input field', async () => {
+		await editorUtils.gotoAddProductPage();
+		await editorUtils.fillProductName();
+		await editorUtils.clickPluginTab();
+
+		const { input, help } = editorUtils.getMultipackField();
+
+		await expect( input ).toHaveValue( '' );
+		await expect( help ).toHaveCount( 0 );
+
+		await input.fill( '-1' );
+
+		await editorUtils.assertUnableSave();
+		await expect( help ).toBeVisible();
+		await expect( help ).toHaveText(
+			await editorUtils.evaluateValidationMessage( input )
+		);
+
+		await input.fill( '9.5' );
+
+		await editorUtils.assertUnableSave();
+		await expect( help ).toBeVisible();
+		await expect( help ).toHaveText(
+			await editorUtils.evaluateValidationMessage( input )
+		);
+
+		await input.fill( '0' );
+		await editorUtils.save();
+
+		await expect( input ).toHaveValue( '0' );
+		await expect( help ).toHaveCount( 0 );
+
+		await input.fill( '100' );
+		await editorUtils.save();
+
+		await expect( input ).toHaveValue( '100' );
+		await expect( help ).toHaveCount( 0 );
+
+		await input.clear();
+		await editorUtils.save();
+
+		await expect( input ).toHaveValue( '' );
+		await expect( help ).toHaveCount( 0 );
+	} );
+
 	test.afterEach( async () => {
 		await page.unrouteAll();
 	} );

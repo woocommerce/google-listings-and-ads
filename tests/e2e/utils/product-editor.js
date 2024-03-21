@@ -80,6 +80,16 @@ export function getProductBlockEditorUtils( page ) {
 					.locator( '.components-base-control__help' ),
 			};
 		},
+
+		getMultipackField() {
+			const block = page.locator(
+				'[data-template-block-id="google-listings-and-ads-product-attributes-multipack"]'
+			);
+			return {
+				input: block.locator( 'input' ),
+				help: block.locator( '.components-base-control__help' ),
+			};
+		},
 	};
 
 	const asyncActions = {
