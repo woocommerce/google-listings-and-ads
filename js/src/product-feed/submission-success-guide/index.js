@@ -20,6 +20,7 @@ import SetupSuccess from './setup-success';
 import wooLogoURL from './woocommerce-logo.svg';
 import googleLogoURL from '.~/images/google-logo.svg';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
+import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import './index.scss';
 
@@ -98,7 +99,8 @@ const SubmissionSuccessGuide = () => {
 		);
 	}, [] );
 
-	// Side effect to try to get the data we need for the modals as soon as possible.
+	// Side effects to try to get the data we need for the modals as soon as possible.
+	useAdsCampaigns();
 	useAcceptedCustomerDataTerms();
 	useAllowEnhancedConversions();
 

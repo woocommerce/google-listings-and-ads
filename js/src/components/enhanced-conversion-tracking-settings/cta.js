@@ -15,6 +15,7 @@ import AcceptTerms from './accept-terms';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useTermsPolling from './useTermsPolling';
+import { useEffect } from 'react';
 
 const CTA = ( {
 	disableLabel = __( 'Disable', 'google-listings-and-ads' ),
@@ -24,8 +25,7 @@ const CTA = ( {
 } ) => {
 	const [ startBackgroundPoll, setStartBackgroundPoll ] = useState( false );
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
-	const { acceptedCustomerDataTerms, hasFinishedResolution } =
-		useAcceptedCustomerDataTerms();
+	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 	useTermsPolling( startBackgroundPoll );
 
@@ -44,6 +44,13 @@ const CTA = ( {
 		acceptedCustomerDataTerms,
 		onDisableClick,
 	] );
+
+	// Turn off polling when the user has accepted the terms.
+	useEffect( () => {
+		if ( acceptedCustomerDataTerms && startBackgroundPoll ) {
+			setStartBackgroundPoll( false );
+		}
+	}, [ acceptedCustomerDataTerms, startBackgroundPoll ] );
 
 	const handleEnable = useCallback( () => {
 		if ( ! acceptedCustomerDataTerms ) {
@@ -65,7 +72,7 @@ const CTA = ( {
 		setStartBackgroundPoll( true );
 	};
 
-	if ( ! hasFinishedResolution || startBackgroundPoll ) {
+	if ( startBackgroundPoll ) {
 		return <AppButton isSecondary disabled loading />;
 	}
 
