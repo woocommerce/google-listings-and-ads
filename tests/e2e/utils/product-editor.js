@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -57,6 +57,27 @@ export function getProductBlockEditorUtils( page ) {
 			return {
 				selection: block.getByRole( 'combobox' ),
 				input: block.getByRole( 'textbox' ),
+			};
+		},
+
+		getDateAndTimeFields() {
+			const block = page
+				.locator(
+					'[data-type="google-listings-and-ads/product-date-time-field"]'
+				)
+				.first();
+
+			return {
+				dateInput: block.locator( 'input[type=date]' ),
+				timeInput: block.locator( 'input[type=time]' ),
+				dateHelp: block
+					.locator( '.components-input-control' )
+					.nth( 0 )
+					.locator( '.components-base-control__help' ),
+				timeHelp: block
+					.locator( '.components-input-control' )
+					.nth( 1 )
+					.locator( '.components-base-control__help' ),
 			};
 		},
 	};
@@ -170,6 +191,10 @@ export function getProductBlockEditorUtils( page ) {
 			name += ` - ${ Date.now() }`;
 			return page.getByRole( 'textbox', { name: 'name' } ).fill( name );
 		},
+
+		evaluateValidationMessage( input ) {
+			return input.evaluate( ( element ) => element.validationMessage );
+		},
 	};
 
 	const mocks = {
@@ -191,9 +216,26 @@ export function getProductBlockEditorUtils( page ) {
 		},
 	};
 
+	const assertions = {
+		async assertUnableSave() {
+			await this.clickSave();
+
+			const failureNotice = page
+				.getByRole( 'button' )
+				.filter( { hasText: 'Failed to save product' } );
+
+			await expect( failureNotice ).toBeVisible();
+
+			// Dismiss the notice.
+			await failureNotice.click();
+			await expect( failureNotice ).toHaveCount( 0 );
+		},
+	};
+
 	return {
 		...locators,
 		...asyncActions,
 		...mocks,
+		...assertions,
 	};
 }

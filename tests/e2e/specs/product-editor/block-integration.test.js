@@ -427,6 +427,97 @@ test.describe( 'Product Block Editor integration', () => {
 		await expect( input ).toHaveValue( 'Cute Cat' );
 	} );
 
+	test( 'Custom block: Product date and time fields', async () => {
+		await editorUtils.gotoAddProductPage();
+		await editorUtils.fillProductName();
+		await editorUtils.clickPluginTab();
+
+		const { dateInput, timeInput, dateHelp, timeHelp } =
+			editorUtils.getDateAndTimeFields();
+
+		/*
+		 * Assert:
+		 * - The default values are empty strings
+		 */
+		await expect( dateInput ).toHaveValue( '' );
+		await expect( timeInput ).toHaveValue( '' );
+		await expect( dateHelp ).toHaveCount( 0 );
+		await expect( timeHelp ).toHaveCount( 0 );
+
+		/*
+		 * Assert:
+		 * - After entering an invalid date or time value, the help shows an error message
+		 * - Saving an invalid date or time value shows a failure notice
+		 *
+		 * Please note that this part needs to be run before successfully saving data,
+		 * otherwise it cannot simulate the invalid value status on the date or time input
+		 * via Playwright. It's probably because the React "Controlled Components" runs
+		 * a little differently in Playwright.
+		 */
+		await dateInput.pressSequentially( '9' );
+
+		await editorUtils.assertUnableSave();
+		await expect( dateHelp ).toBeVisible();
+		await expect( dateHelp ).toHaveText(
+			await editorUtils.evaluateValidationMessage( dateInput )
+		);
+
+		await dateInput.clear();
+
+		await timeInput.pressSequentially( '9' );
+
+		await editorUtils.assertUnableSave();
+		await expect( timeHelp ).toBeVisible();
+		await expect( timeHelp ).toHaveText(
+			await editorUtils.evaluateValidationMessage( timeInput )
+		);
+
+		await timeInput.clear();
+
+		/*
+		 * Assert:
+		 * - When valid values are entered, the help messages are not shown
+		 * - After saving, the field values remain the same
+		 */
+		await dateInput.fill( '2024-02-29' );
+		await timeInput.fill( '18:30' );
+
+		await expect( dateInput ).toHaveValue( '2024-02-29' );
+		await expect( timeInput ).toHaveValue( '18:30' );
+		await expect( dateHelp ).toHaveCount( 0 );
+		await expect( timeHelp ).toHaveCount( 0 );
+
+		await editorUtils.save();
+
+		await expect( dateInput ).toHaveValue( '2024-02-29' );
+		await expect( timeInput ).toHaveValue( '18:30' );
+		await expect( dateHelp ).toHaveCount( 0 );
+		await expect( timeHelp ).toHaveCount( 0 );
+
+		/*
+		 * Assert:
+		 * - It can enter only the date and leave the time empty
+		 */
+		await timeInput.clear();
+		await editorUtils.save();
+
+		await expect( dateInput ).toHaveValue( '2024-02-29' );
+		await expect( timeInput ).toHaveValue( '' );
+		await expect( timeHelp ).toHaveCount( 0 );
+
+		/*
+		 * Assert:
+		 * - It allows to save empty values
+		 */
+		await dateInput.clear();
+		await editorUtils.save();
+
+		await expect( dateInput ).toHaveValue( '' );
+		await expect( timeInput ).toHaveValue( '' );
+		await expect( dateHelp ).toHaveCount( 0 );
+		await expect( timeHelp ).toHaveCount( 0 );
+	} );
+
 	test.afterEach( async () => {
 		await page.unrouteAll();
 	} );
