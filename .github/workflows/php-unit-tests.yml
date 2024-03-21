@@ -113,7 +113,7 @@ jobs:
 
   ReleaseCandidateUnitTests:
     if: github.event_name == 'workflow_dispatch'
-    name: PHP unit tests - PHP ${{ inputs.php-version }}, WP ${{ inputs.wp-rc-version }}, WC ${{ inputs.wc-rc-version }}
+    name: PHP unit tests (for Release Candidates)
     runs-on: ubuntu-latest
     env:
       WP_CORE_DIR: "/tmp/wordpress/src"
@@ -136,4 +136,4 @@ jobs:
 
       - name: Run PHP unit tests
         run: composer test-unit
-        
+     
