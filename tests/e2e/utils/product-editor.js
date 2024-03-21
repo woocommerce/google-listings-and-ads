@@ -34,6 +34,16 @@ export function getProductBlockEditorUtils( page ) {
 		getProductAttributesHeading() {
 			return page.getByRole( 'heading', { name: 'Product attributes' } );
 		},
+
+		getChannelVisibility() {
+			const block = page.locator(
+				'[data-type="google-listings-and-ads/product-channel-visibility"]'
+			);
+			return {
+				selection: block.getByRole( 'combobox' ),
+				help: block.locator( '.components-base-control__help' ),
+			};
+		},
 	};
 
 	const asyncActions = {
@@ -81,6 +91,19 @@ export function getProductBlockEditorUtils( page ) {
 				.getByRole( 'link', { name: 'Edit' } )
 				.nth( index )
 				.click();
+		},
+
+		clickSave() {
+			return page
+				.getByRole( 'region', { name: 'Header' } )
+				.getByRole( 'button', { name: /^(Save draft|Update)$/ } )
+				.click();
+		},
+
+		async save() {
+			const observer = this.waitForSaved();
+			await this.clickSave();
+			await observer;
 		},
 
 		waitForSaved() {

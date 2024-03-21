@@ -256,6 +256,38 @@ test.describe( 'Product Block Editor integration', () => {
 		await expect( panel.getByRole( 'spinbutton' ) ).toHaveCount( 1 );
 	} );
 
+	test( 'Channel visibility is disabled when hiding in product catalog', async () => {
+		await editorUtils.gotoAddProductPage();
+		await editorUtils.fillProductName();
+
+		const { selection, help } = editorUtils.getChannelVisibility();
+
+		await editorUtils.clickPluginTab();
+		await expect( selection ).toBeEnabled();
+		await expect( selection ).toHaveValue( 'sync-and-show' );
+		await expect( help ).toHaveCount( 0 );
+
+		await editorUtils.clickTab( 'Organization' );
+		await page.getByLabel( 'Hide in product catalog' ).setChecked( true );
+		await editorUtils.save();
+
+		await editorUtils.clickPluginTab();
+		await expect( selection ).toBeDisabled();
+		await expect( selection ).toHaveValue( 'dont-sync-and-show' );
+		await expect( help ).toBeVisible();
+		await expect( help ).toContainText(
+			'This product cannot be shown on any channel because it is hidden from your store catalog.'
+		);
+
+		await editorUtils.clickTab( 'Organization' );
+		await page.getByLabel( 'Hide in product catalog' ).setChecked( false );
+		await editorUtils.save();
+
+		await editorUtils.clickPluginTab();
+		await expect( selection ).toBeEnabled();
+		await expect( help ).toHaveCount( 0 );
+	} );
+
 	test.afterAll( async () => {
 		await editorUtils.toggleBlockFeature( page, false );
 		await api.clearOnboardedMerchant();
