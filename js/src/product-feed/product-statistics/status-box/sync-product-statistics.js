@@ -2,13 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import Status from '.~/product-feed/product-statistics/status-box/status';
 import ErrorIcon from '.~/components/error-icon';
+import AppButton from '.~/components/app-button';
 
 /**
  * @typedef {import('.~/data/actions').ProductStatistics } ProductStatistics
@@ -28,16 +28,17 @@ function SyncProductStatistics( { refreshStats, error } ) {
 			title={ __( 'Overview Stats:', 'google-listings-and-ads' ) }
 			icon={ <ErrorIcon size={ 24 } /> }
 			label={
-				<Button
+				<AppButton
 					aria-label={ error }
 					onClick={ refreshStats }
 					className="overview-stats-error-button"
+					eventName="gla_retry_loading_product_stats"
 				>
 					{ __(
 						'There was an error loading the Overview Stats. Click to retry.',
 						'google-listings-and-ads'
 					) }
-				</Button>
+				</AppButton>
 			}
 			description={ error }
 		/>
