@@ -22,7 +22,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 const EnableNewProductSyncButton = ( params ) => {
 	const { createNotice } = useDispatchCoreNotices();
 
-	const nextPageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
+	const nextPageName = glaData.mcSetupComplete ? 'settings' : 'setup-mc';
 	const query = { next_page_name: nextPageName };
 	const path = addQueryArgs( `${ API_NAMESPACE }/rest-api/authorize`, query );
 	const [ fetchRestAPIAuthorize ] = useApiFetchCallback( { path } );
