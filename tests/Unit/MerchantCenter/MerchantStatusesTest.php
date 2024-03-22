@@ -456,7 +456,7 @@ class MerchantStatusesTest extends UnitTest {
 		);
 
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
-		->method( 'get_failure_rate_message' )->willReturn( 'Failure rate!' );
+		->method( 'get_failure_rate_message' )->willReturn( 'The scheduled job has been paused due to a high failure rate.' );
 
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
 		->method( 'schedule' );
@@ -477,7 +477,7 @@ class MerchantStatusesTest extends UnitTest {
 		);
 
 		$this->assertEquals(
-			'Failure rate!',
+			'The scheduled job has been paused due to a high failure rate.',
 			$product_statistics['error']
 		);
 	}
