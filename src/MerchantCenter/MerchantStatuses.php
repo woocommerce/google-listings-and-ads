@@ -145,7 +145,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				'timestamp'  => $this->cache_created_time->getTimestamp(),
 				'statistics' => null,
 				'loading'    => false,
-				'error'      => $failure_rate_msg,
+				'error'      => __( 'The scheduled job has been paused due to a high failure rate.', 'google-listings-and-ads' ),
 			];
 		}
 
