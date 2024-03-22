@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect } from '@wordpress/element';
+import { useEffect, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -33,10 +33,10 @@ const useMCProductStatistics = () => {
 		method: 'GET',
 	} );
 
-	const refreshStats = async () => {
+	const refreshStats = useCallback( async () => {
 		await refreshProductStats();
 		invalidateResolution();
-	};
+	}, [ refreshProductStats, invalidateResolution ] );
 
 	useEffect( () => {
 		// If the job is still processing the data, start the countdown.
