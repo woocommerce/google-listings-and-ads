@@ -62,6 +62,8 @@ class ProductMetaQueryHelper implements Service {
 	/**
 	 * Delete all values for a given meta_key.
 	 *
+	 * @since x.x.x
+	 *
 	 * @param string $meta_key The meta key to delete.
 	 *
 	 * @throws InvalidMeta If the meta key isn't valid.
