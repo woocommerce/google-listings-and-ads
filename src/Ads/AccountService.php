@@ -245,7 +245,8 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * Gets the ads account access status.
 	 *
 	 * @return array
-	 * @throws Exception When email is not present or has no account access.
+	 * @throws ExceptionWithResponseData When Google or Ads accounts are not connected or
+	 *                                   when the Ads account has not yet been accepted.
 	 */
 	public function get_ads_account_has_access() {
 		// Check if ads id is present.
@@ -257,9 +258,9 @@ class AccountService implements OptionsAwareInterface, Service {
 				[
 					'has_access'  => false,
 					'step'        => $this->state->last_incomplete_step(),
-					'invite_link' => ''
+					'invite_link' => '',
 				]
-			 );
+			);
 		}
 
 		$connection_status = $this->container->get( Connection::class )->get_status();
@@ -274,9 +275,9 @@ class AccountService implements OptionsAwareInterface, Service {
 				[
 					'has_access'  => false,
 					'step'        => $this->state->last_incomplete_step(),
-					'invite_link' => ''
+					'invite_link' => '',
 				]
-			 );
+			);
 		}
 
 		$has_access         = $this->container->get( Ads::class )->has_access( $email );
