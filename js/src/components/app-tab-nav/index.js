@@ -8,6 +8,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
+import AttributeMappingNavigationTour from '.~/attribute-mapping/attribute-mapping-navigation-tour';
 import './index.scss';
 
 const TabLink = ( { tabId, href, children, selected, ...rest } ) => {
@@ -54,6 +55,9 @@ const AppTabNav = ( props ) => {
 					</TabLink>
 				) ) }
 			</NavigableMenu>
+			{ selectedKey !== 'attribute-mapping' && (
+				<AttributeMappingNavigationTour />
+			) }
 		</div>
 	);
 };

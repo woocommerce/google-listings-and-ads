@@ -92,7 +92,7 @@ const AttributeMappingTable = () => {
 	}, [ page, rules, rulesHasFinishedResolution, setPage ] );
 
 	return (
-		<AppTableCardDiv>
+		<AppTableCardDiv className="gla-attribute-mapping__table">
 			<Card>
 				<CardBody size={ null }>
 					{ isLoading ? (

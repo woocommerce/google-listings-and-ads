@@ -7,6 +7,20 @@ jest.mock( '@wordpress/date', () => {
 	};
 } );
 
+jest.mock( '.~/hooks/useTour', () => ( {
+	__esModule: true,
+	default: jest
+		.fn()
+		.mockName( 'useTour' )
+		.mockImplementation( () => {
+			return {
+				tour: undefined,
+				showTour: false,
+				setTour: jest.fn(),
+			};
+		} ),
+} ) );
+
 jest.mock( '.~/data/actions', () => ( {
 	...jest.requireActual( '.~/data/actions' ),
 	createMappingRule: jest
