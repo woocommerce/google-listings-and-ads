@@ -88,7 +88,7 @@ const SetupAccounts = ( props ) => {
 		useGoogleMCAccount();
 	const { hasFinishedResolution, hasGoogleAdsConnection } =
 		useGoogleAdsAccount();
-	const { hasAccess } = useGoogleAdsAccountStatus();
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,
@@ -111,14 +111,14 @@ const SetupAccounts = ( props ) => {
 
 	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
 	const isContinueButtonDisabled =
-		hasAccess !== true ||
 		! hasFinishedResolution ||
 		! hasGoogleAdsConnection ||
+		! hasAccess ||
+		( hasAccess === true && step !== 'billing' ) ||
 		( googleMCAccount?.status !== 'connected' &&
 			! (
 				googleMCAccount?.status === 'incomplete' &&
-				googleMCAccount?.step === 'link_ads' &&
-				hasAccess === true
+				googleMCAccount?.step === 'link_ads'
 			) );
 
 	return (

@@ -6,6 +6,8 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
 import useApiFetchCallback from './useApiFetchCallback';
 
 const useUpsertAdsAccount = () => {
+	// Check if there is a connected Google Ads account which in this case will update the account.
+	// If not, it means we are creating a new account.
 	const { googleAdsAccount } = useGoogleAdsAccount();
 
 	return useApiFetchCallback( {

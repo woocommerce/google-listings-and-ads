@@ -36,7 +36,7 @@ export default function GoogleAdsAccountCard() {
 
 	if (
 		! hasResolvedGoogleAccount ||
-		( ! hasResolvedGoogleAdsAccount && ! googleAdsAccount ) ||
+		! hasResolvedGoogleAdsAccount ||
 		! hasResolvedAdsAccountStatus
 	) {
 		return <SpinnerCard />;
@@ -51,7 +51,7 @@ export default function GoogleAdsAccountCard() {
 	}
 
 	if (
-		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ||
+		googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ||
 		hasAccess !== true ||
 		( hasAccess === true && step === 'conversion_action' )
 	) {
