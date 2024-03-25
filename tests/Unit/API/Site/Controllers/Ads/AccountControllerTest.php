@@ -217,18 +217,27 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	/**
+	 * This tests that the API endpoint returns data from the AccountService class.
+	 * The logic for actual return values is tested in the AccountServiceTest.
+	 */
 	public function test_get_ads_account_has_access() {
 		$data = [
-			'has_access'  => false,
+			'has_access'  => true,
+			'step'        => 'conversion_action',
 			'invite_link' => self::TEST_BILLING_URL,
 		];
-		$this->account->expects( $this->once() )
-			->method( 'get_ads_account_has_access' )
+
+		$this->account->method( 'get_ads_account_has_access' )
 			->willReturn( $data );
+
+		$this->account->expects( $this->once() )
+			->method( 'get_ads_account_has_access' );
 
 		$response = $this->do_request( self::ROUTE_ACCOUNT_STATUS, 'GET' );
 
 		$this->assertEquals( $data, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	/**
