@@ -13,6 +13,9 @@ class GoogleGtagJs {
 	/** @var array */
 	private $wcga_settings;
 
+	/** @var bool $ga4c_v2 True if Google Analytics for WooCommerce version 2 or higher is installed */
+	public $ga4w_v2;
+
 	/**
 	 * GoogleGtagJs constructor.
 	 *
@@ -20,9 +23,10 @@ class GoogleGtagJs {
 	 */
 	public function __construct() {
 		$this->wcga_settings = get_option( 'woocommerce_google_analytics_settings', [] );
+		$this->ga4w_v2       = defined( '\WC_GOOGLE_ANALYTICS_INTEGRATION_VERSION' ) && version_compare( \WC_GOOGLE_ANALYTICS_INTEGRATION_VERSION, '2.0.0', '>=' );
 
 		// Prime some values.
-		if ( defined( '\WC_GOOGLE_ANALYTICS_INTEGRATION_VERSION' ) && version_compare( \WC_GOOGLE_ANALYTICS_INTEGRATION_VERSION, '2.0.0', '>=' ) ) {
+		if ( $this->ga4w_v2 ) {
 			$this->wcga_settings['ga_gtag_enabled'] = 'yes';
 		} elseif ( empty( $this->wcga_settings['ga_gtag_enabled'] ) ) {
 			$this->wcga_settings['ga_gtag_enabled'] = 'no';
@@ -57,7 +61,7 @@ class GoogleGtagJs {
 		$standard_tracking_enabled = 'yes' === $this->wcga_settings['ga_standard_tracking_enabled'];
 		$is_wc_page                = is_order_received_page() || is_woocommerce() || is_cart() || is_checkout();
 
-		return $standard_tracking_enabled || $is_wc_page;
+		return $this->ga4w_v2 || $standard_tracking_enabled || $is_wc_page;
 	}
 
 	/**
