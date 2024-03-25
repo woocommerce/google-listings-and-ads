@@ -58,7 +58,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * The lifetime of the status-related data.
 	 */
-	public const STATUS_LIFETIME = HOUR_IN_SECONDS;
+	public const STATUS_LIFETIME = 12 * HOUR_IN_SECONDS;
 
 	/**
 	 * The types of issues.
@@ -136,7 +136,18 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
 		$job               = $this->maybe_refresh_status_data( $force_refresh );
+		$failure_rate_msg  = $job->get_failure_rate_message();
 		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+
+		// If the failure rate is too high, return an error message so the UI can stop polling.
+		if ( $failure_rate_msg && null === $this->mc_statuses ) {
+			return [
+				'timestamp'  => $this->cache_created_time->getTimestamp(),
+				'statistics' => null,
+				'loading'    => false,
+				'error'      => __( 'The scheduled job has been paused due to a high failure rate.', 'google-listings-and-ads' ),
+			];
+		}
 
 		if ( $job->is_scheduled() || null === $this->mc_statuses ) {
 			return [
@@ -228,12 +239,23 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
+	 * Delete the stale mc statuses from the database.
+	 *
+	 * @since x.x.x
+	 */
+	protected function delete_stale_mc_statuses(): void {
+		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
+		$product_meta_query_helper->delete_all_values( ProductMetaHandler::KEY_MC_STATUS );
+	}
+
+	/**
 	 * Clear the product statuses cache and delete stale issues.
 	 *
 	 * @since x.x.x
 	 */
 	public function clear_product_statuses_cache_and_issues(): void {
 		$this->delete_stale_issues();
+		$this->delete_stale_mc_statuses();
 		$this->delete_product_statuses_count_intermediate_data();
 	}
 
@@ -278,7 +300,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 
 		// If force_refresh is true or if not transient, return empty array and scheduled the job to update the statuses.
 		if ( ! $job->is_scheduled() && ( $force_refresh || ( ! $force_refresh && null === $this->mc_statuses ) ) ) {
-			// Schedule job to update the statuses.
+			// Delete the transient before scheduling the job because some errors, like the failure rate message, can occur before the job is executed.
+			$this->clear_cache();
+			// Schedule job to update the statuses. If the failure rate is too high, the job will not be scheduled.
 			$job->schedule();
 		}
 

@@ -334,6 +334,18 @@ class MerchantStatusesTest extends UnitTest {
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
 		->method( 'schedule' );
 
+		$this->update_all_product_job->expects( $this->exactly( 1 ) )
+		->method( 'can_schedule' )
+		->with( null )
+		->willReturn( true );
+
+		$this->delete_all_product_job->expects( $this->exactly( 1 ) )
+		->method( 'can_schedule' )
+		->with( null )
+		->willReturn( true );
+
+		$this->transients->expects( $this->exactly( 1 ) )->method( 'delete' )->with( Transients::MC_STATUSES );
+
 		$this->update_merchant_product_statuses_job->expects( $this->exactly( 2 ) )
 		->method( 'is_scheduled' );
 
@@ -429,6 +441,44 @@ class MerchantStatusesTest extends UnitTest {
 		$this->assertEquals(
 			true,
 			$product_statistics['loading']
+		);
+	}
+
+	public function test_get_product_statistics_with_failure_rate() {
+		$this->merchant_center_service->expects( $this->once() )
+		->method( 'is_connected' )
+		->willReturn( true );
+
+		$this->transients->expects( $this->exactly( 2 ) )
+		->method( 'get' )
+		->willReturn(
+			null
+		);
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
+		->method( 'get_failure_rate_message' )->willReturn( 'The scheduled job has been paused due to a high failure rate.' );
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
+		->method( 'schedule' );
+
+		$this->update_merchant_product_statuses_job->expects( $this->exactly( 1 ) )
+		->method( 'is_scheduled' )->willReturn( false );
+
+		$product_statistics = $this->merchant_statuses->get_product_statistics();
+
+		$this->assertEquals(
+			null,
+			$product_statistics['statistics']
+		);
+
+		$this->assertEquals(
+			false,
+			$product_statistics['loading']
+		);
+
+		$this->assertEquals(
+			'The scheduled job has been paused due to a high failure rate.',
+			$product_statistics['error']
 		);
 	}
 
@@ -975,15 +1025,10 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses->clear_cache();
 	}
 
-	protected function test_clear_product_statuses_cache_and_issues() {
-		$this->transients->expects( $this->exactly( 1 ) )
-		->method( 'delete' )
-		->with(
-			TransientsInterface::MC_STATUSES
-		);
-
+	public function test_clear_product_statuses_cache_and_issues() {
 		$this->merchant_issue_table->expects( $this->once() )->method( 'delete_stale' )->with( $this->merchant_statuses->get_cache_created_time() );
 		$this->options->expects( $this->once() )->method( 'delete' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		$this->product_meta_query_helper->expects( $this->once() )->method( 'delete_all_values' )->with( ProductMetaHandler::KEY_MC_STATUS );
 		$this->merchant_statuses->clear_product_statuses_cache_and_issues();
 	}
 

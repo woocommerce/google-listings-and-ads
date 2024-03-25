@@ -248,4 +248,23 @@ class UpdateMerchantProductStatusesTest extends UnitTest {
 
 		do_action( self::PROCESS_ITEM_HOOK, [] );
 	}
+
+	public function test_get_failure_rate_message() {
+		$this->merchant_center_service->method( 'is_connected' )
+		->willReturn( true );
+
+		$this->monitor->expects( $this->exactly( 1 ) )->method( 'validate_failure_rate' )
+		->willThrowException( new JobException( 'The "update_merchant_product_statuses" job was stopped because its failure rate is above the allowed threshold.' ) );
+
+		$this->assertEquals( 'The "update_merchant_product_statuses" job was stopped because its failure rate is above the allowed threshold.', $this->job->get_failure_rate_message() );
+	}
+
+	public function test_get_with_no_failure_rate_message() {
+		$this->merchant_center_service->method( 'is_connected' )
+		->willReturn( true );
+
+		$this->monitor->expects( $this->exactly( 1 ) )->method( 'validate_failure_rate' );
+
+		$this->assertNull( $this->job->get_failure_rate_message() );
+	}
 }

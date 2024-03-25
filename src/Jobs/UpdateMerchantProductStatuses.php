@@ -128,4 +128,17 @@ class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 		// We set 'args' to null so it matches any arguments. This is because it's possible to have multiple instances of the job running with different page tokens
 		return $this->is_running( null );
 	}
+
+	/**
+	 * Validate the failure rate of the job.
+	 *
+	 * @return string|void Returns an error message if the failure rate is too high, otherwise null.
+	 */
+	public function get_failure_rate_message() {
+		try {
+			$this->monitor->validate_failure_rate( $this, $this->get_process_item_hook() );
+		} catch ( JobException $e ) {
+			return $e->getMessage();
+		}
+	}
 }

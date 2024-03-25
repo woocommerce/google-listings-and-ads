@@ -1,13 +1,14 @@
 /**
  * External dependencies
  */
-import { useEffect } from '@wordpress/element';
+import { useEffect, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import useAppSelectDispatch from './useAppSelectDispatch';
 import useCountdown from './useCountdown';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 
 /**
@@ -26,6 +27,16 @@ const useMCProductStatistics = () => {
 	const isCalculatingStats =
 		hasFinishedResolution && data?.loading ? true : false;
 	const hasStats = hasFinishedResolution && data?.statistics ? true : false;
+
+	const [ refreshProductStats ] = useApiFetchCallback( {
+		path: `/wc/gla/mc/product-statistics/refresh`,
+		method: 'GET',
+	} );
+
+	const refreshStats = useCallback( async () => {
+		await refreshProductStats();
+		invalidateResolution();
+	}, [ refreshProductStats, invalidateResolution ] );
 
 	useEffect( () => {
 		// If the job is still processing the data, start the countdown.
@@ -57,6 +68,7 @@ const useMCProductStatistics = () => {
 		data,
 		invalidateResolution,
 		hasFinishedResolution,
+		refreshStats,
 		...rest,
 	};
 };
