@@ -351,9 +351,9 @@ class ProductSyncer implements Service {
 	}
 
 	/**
-	 * Validates whether Merchant Center is connected and ready for syncing data.
+	 * Validates whether Merchant Center is connected and ready for pushing data.
 	 *
-	 * @throws ProductSyncerException If the Google Merchant Center connection is not ready.
+	 * @throws ProductSyncerException If the Google Merchant Center connection is not ready or cannot push data.
 	 */
 	protected function validate_merchant_center_setup(): void {
 		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
@@ -365,13 +365,13 @@ class ProductSyncer implements Service {
 		if ( ! $this->merchant_center->should_push() ) {
 			do_action(
 				'woocommerce_gla_error',
-				'Cannot sync any products because they are being fetched automatically.',
+				'Cannot push any products because they are being fetched automatically.',
 				__METHOD__
 			);
 
 			throw new ProductSyncerException(
 				__(
-					'Manual product sync will not run if the automatic data fetching is enabled. Please review your configuration in Google Listing and Ads settings.',
+					'Pushing products will not run if the automatic data fetching is enabled. Please review your configuration in Google Listing and Ads settings.',
 					'google-listings-and-ads'
 				)
 			);
