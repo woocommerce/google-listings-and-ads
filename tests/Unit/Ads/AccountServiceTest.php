@@ -606,7 +606,8 @@ class AccountServiceTest extends UnitTest {
 			->method( 'has_access' );
 
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Google account is not connected' );
+		$this->expectExceptionCode( 428 );
+		$this->expectExceptionMessage( 'A Google account must be connected.' );
 
 		$this->account->get_ads_account_has_access();
 	}
@@ -623,7 +624,8 @@ class AccountServiceTest extends UnitTest {
 			->method( 'has_access' );
 
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Ads id not present' );
+		$this->expectExceptionCode( 428 );
+		$this->expectExceptionMessage( 'A Google Ads account must be connected.' );
 
 		$this->account->get_ads_account_has_access();
 	}

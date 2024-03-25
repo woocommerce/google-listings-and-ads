@@ -250,7 +250,16 @@ class AccountService implements OptionsAwareInterface, Service {
 	public function get_ads_account_has_access() {
 		// Check if ads id is present.
 		if ( ! $this->options->get_ads_id() ) {
-			throw new Exception( __( 'Ads id not present', 'google-listings-and-ads' ) );
+			throw new ExceptionWithResponseData(
+				__( 'A Google Ads account must be connected.', 'google-listings-and-ads' ),
+				428,
+				null,
+				[
+					'has_access'  => false,
+					'step'        => $this->state->last_incomplete_step(),
+					'invite_link' => ''
+				]
+			 );
 		}
 
 		$connection_status = $this->container->get( Connection::class )->get_status();
@@ -258,7 +267,16 @@ class AccountService implements OptionsAwareInterface, Service {
 
 		// If no email, means google account is not connected.
 		if ( empty( $email ) ) {
-			throw new Exception( __( 'Google account is not connected', 'google-listings-and-ads' ) );
+			throw new ExceptionWithResponseData(
+				__( 'A Google account must be connected.', 'google-listings-and-ads' ),
+				428,
+				null,
+				[
+					'has_access'  => false,
+					'step'        => $this->state->last_incomplete_step(),
+					'invite_link' => ''
+				]
+			 );
 		}
 
 		$has_access         = $this->container->get( Ads::class )->has_access( $email );
