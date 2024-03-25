@@ -150,7 +150,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$coupon          = $this->create_ready_to_sync_coupon();
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
-			->method( 'should_sync' )
+			->method( 'should_push' )
 			->willReturn( false );
 		$this->coupon_syncer = $this->get_coupon_syncer( [ 'merchant_center' => $merchant_center ] );
 
@@ -163,7 +163,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		$coupon          = $this->create_ready_to_delete_coupon();
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
-			->method( 'should_sync' )
+			->method( 'should_push' )
 			->willReturn( false );
 		$this->coupon_syncer = $this->get_coupon_syncer( [ 'merchant_center' => $merchant_center ] );
 
@@ -220,10 +220,10 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 		parent::setUp();
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
-			->method( 'is_ready' )
+			->method( 'is_ready_for_syncing' )
 			->willReturn( true );
 		$this->merchant_center->expects( $this->any() )
-			->method( 'should_sync' )
+			->method( 'should_push' )
 			->willReturn( true );
 		$this->merchant_center->expects( $this->any() )
 			->method( 'is_promotion_supported_country' )

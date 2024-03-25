@@ -103,7 +103,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * @since 1.13.0
 	 * @return boolean
 	 */
-	public function is_ready(): bool {
+	public function is_ready_for_syncing(): bool {
 		if ( ! $this->is_connected() ) {
 			return false;
 		}
@@ -115,7 +115,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		if ( null === $url_matches ) {
 			$claimed_url_hash = $this->container->get( Merchant::class )->get_claimed_url_hash();
 			$site_url_hash    = md5( untrailingslashit( $this->get_site_url() ) );
-			$url_matches      = apply_filters( 'woocommerce_gla_is_mc_ready', $claimed_url_hash === $site_url_hash ) ? 'yes' : 'no';
+			$url_matches      = apply_filters( 'woocommerce_gla_ready_for_syncing', $claimed_url_hash === $site_url_hash ) ? 'yes' : 'no';
 			$transients->set( TransientsInterface::URL_MATCHES, $url_matches, HOUR_IN_SECONDS * 12 );
 		}
 
@@ -123,15 +123,15 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
-	 * Whether we should run sync into MC. Only if:
-	 * - MC is ready for syncing {@see is_ready}
+	 * Whether we should push data into MC. Only if:
+	 * - MC is ready for syncing {@see is_ready_for_syncing}
 	 * - Notifications Service is not enabled
 	 *
 	 * @return bool
 	 * @since x.x.x
 	 */
-	public function should_sync(): bool {
-		return $this->is_ready() && ! $this->options->notifications_enabled();
+	public function should_push(): bool {
+		return $this->is_ready_for_syncing() && ! $this->options->notifications_enabled();
 	}
 
 

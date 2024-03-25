@@ -141,7 +141,7 @@ class GLAChannel implements MarketingChannelInterface {
 	 * @return string
 	 */
 	public function get_product_listings_status(): string {
-		if ( ! $this->merchant_center->is_ready() ) {
+		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
 			return self::PRODUCT_LISTINGS_NOT_APPLICABLE;
 		}
 

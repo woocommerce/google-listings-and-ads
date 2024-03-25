@@ -551,7 +551,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	public function test_update_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
-			->method( 'should_sync' )
+			->method( 'should_push' )
 			->willReturn( false );
 		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
@@ -563,7 +563,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	public function test_update_by_batch_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
-			->method( 'should_sync' )
+			->method( 'should_push' )
 			->willReturn( false );
 		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
@@ -575,7 +575,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	public function test_delete_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
-			->method( 'should_sync' )
+			->method( 'should_push' )
 			->willReturn( false );
 		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
@@ -587,7 +587,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	public function test_delete_by_batch_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
-			->method( 'should_sync' )
+			->method( 'should_push' )
 			->willReturn( false );
 		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
 
@@ -627,11 +627,11 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		$this->target_audience = $this->createMock( TargetAudience::class );
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
-			->method( 'is_ready' )
+			->method( 'is_ready_for_syncing' )
 			->willReturn( true );
 
 		$this->merchant_center->expects( $this->any() )
-			->method( 'should_sync' )
+			->method( 'should_push' )
 			->willReturn( true );
 
 		$this->google_service = $this->createMock( GoogleProductService::class );

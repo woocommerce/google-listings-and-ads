@@ -71,6 +71,6 @@ abstract class AbstractProductSyncerBatchedJob extends AbstractBatchedActionSche
 	 * @return bool Returns true if the job can be scheduled.
 	 */
 	public function can_schedule( $args = [] ): bool {
-		return ! $this->is_running( $args ) && $this->merchant_center->should_sync();
+		return ! $this->is_running( $args ) && $this->merchant_center->should_push();
 	}
 }

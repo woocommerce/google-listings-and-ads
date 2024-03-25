@@ -121,7 +121,7 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	public function register(): void {
 		// only register the hooks if Merchant Center is connected correctly.
-		if ( ! $this->merchant_center->is_ready() ) {
+		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
 			return;
 		}
 
@@ -317,7 +317,7 @@ class SyncerHooks implements Service, Registerable {
 	}
 
 	/**
-	 * Send the notification for product deletion
+	 * Schedules a job to send the product deletion notification
 	 *
 	 * @since x.x.x
 	 * @param int $product_id
