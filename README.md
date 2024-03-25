@@ -136,6 +136,37 @@ $ vendor/bin/phpunit
 
 The tests will execute and you'll be presented with a summary.
 
+### Running tests using `wp-env`
+
+To run PHPUnit from within the included `wp-env` environment, you will need to load the development version of the WooCommerce plugin in your environment.
+
+First, clone the WooCommerce repo, replacing `${WC_VERSION}` with the latest version of the plugin (e.g. 8.6.1):
+
+```bash
+$ git clone --depth=1 --branch="${WC_VERSION}" https://github.com/woocommerce/woocommerce.git ../woocommerce/`
+```
+
+Build the woocommerce plugin (see [this document](DEVELOPMENT.md) for additional instructions): 
+ - Go to the plugin directory: `cd ../woocommerce/plugins/woocommerce/`
+ - Install dependencies: `pnpm install`
+ - Build the plugin: `pnpm --filter=@woocommerce/plugin-woocommerce build`
+
+Go back to the Google Listings and Ads directory and create a `.wp-env.override.json` file containing the following:
+```json
+{
+	"plugins": [
+		"../woocommerce/plugins/woocommerce",
+		"."
+	]
+}
+```
+
+Restart your wp-env environment: `npm run wp-env start`
+
+You should now be able to run unit tests locally via the CLI: `npm run test:php`.
+
+To pass additional arguments to PHPUnit, make sure they are preceded by an additional `--`, like `npm run test:php -- --filter my_test_method`.
+
 ## E2E Testing
 
 E2E testing uses [wp-env](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/) which requires [Docker](https://www.docker.com/).
