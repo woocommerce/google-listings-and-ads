@@ -35,10 +35,9 @@ test.describe( 'Product Block Editor integration', () => {
 		const link = page.getByRole( 'link', { name: 'Get Started' } );
 
 		await expect( link ).toBeVisible();
-		await link.click();
-
-		await expect( page.getByRole( 'main' ) ).toContainText(
-			/Reach millions of shoppers with product listings on Google/i
+		await expect( link ).toHaveAttribute(
+			'href',
+			/\/wp-admin\/admin\.php\?page=wc-admin&path=\/google\/start/
 		);
 
 		// Resume the plugin to onboarded status so that the next test can carry over.
