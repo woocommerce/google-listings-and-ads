@@ -58,7 +58,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * The lifetime of the status-related data.
 	 */
-	public const STATUS_LIFETIME = HOUR_IN_SECONDS;
+	public const STATUS_LIFETIME = 12 * HOUR_IN_SECONDS;
 
 	/**
 	 * The types of issues.
@@ -239,12 +239,23 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	}
 
 	/**
+	 * Delete the stale mc statuses from the database.
+	 *
+	 * @since x.x.x
+	 */
+	protected function delete_stale_mc_statuses(): void {
+		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
+		$product_meta_query_helper->delete_all_values( ProductMetaHandler::KEY_MC_STATUS );
+	}
+
+	/**
 	 * Clear the product statuses cache and delete stale issues.
 	 *
 	 * @since x.x.x
 	 */
 	public function clear_product_statuses_cache_and_issues(): void {
 		$this->delete_stale_issues();
+		$this->delete_stale_mc_statuses();
 		$this->delete_product_statuses_count_intermediate_data();
 	}
 

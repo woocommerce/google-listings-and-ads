@@ -1025,15 +1025,10 @@ class MerchantStatusesTest extends UnitTest {
 		$this->merchant_statuses->clear_cache();
 	}
 
-	protected function test_clear_product_statuses_cache_and_issues() {
-		$this->transients->expects( $this->exactly( 1 ) )
-		->method( 'delete' )
-		->with(
-			TransientsInterface::MC_STATUSES
-		);
-
+	public function test_clear_product_statuses_cache_and_issues() {
 		$this->merchant_issue_table->expects( $this->once() )->method( 'delete_stale' )->with( $this->merchant_statuses->get_cache_created_time() );
 		$this->options->expects( $this->once() )->method( 'delete' )->with( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		$this->product_meta_query_helper->expects( $this->once() )->method( 'delete_all_values' )->with( ProductMetaHandler::KEY_MC_STATUS );
 		$this->merchant_statuses->clear_product_statuses_cache_and_issues();
 	}
 
