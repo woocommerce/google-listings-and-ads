@@ -15,6 +15,11 @@
 				// don't display the delta in Summary component.
 				display: none;
 			}
+
+			.app-spinner {
+				padding: 0;
+				justify-content: left;
+			}
 		}
 	}
 
@@ -87,6 +92,12 @@
 
 		.gridicons-sync {
 			transform: rotateZ(90deg);
+		}
+
+		.overview-stats-error-button {
+			height: auto;
+			padding-top: 0;
+			padding-left: 0;
 		}
 	}
 }

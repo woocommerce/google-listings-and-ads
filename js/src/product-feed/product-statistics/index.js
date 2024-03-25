@@ -22,13 +22,33 @@ import {
 import useMCProductStatistics from '.~/hooks/useMCProductStatistics';
 import ProductStatusHelpPopover from './product-status-help-popover';
 import SyncStatus from '.~/product-feed/product-statistics/status-box/sync-status';
+import SyncProductStatistics from '.~/product-feed/product-statistics/status-box/sync-product-statistics';
 import FeedStatus from '.~/product-feed/product-statistics/status-box/feed-status';
 import AccountStatus from '.~/product-feed/product-statistics/status-box/account-status';
 import Text from '.~/components/app-text';
+import AppSpinner from '.~/components/app-spinner';
 import './index.scss';
 
 const ProductStatistics = () => {
-	const { hasFinishedResolution, data } = useMCProductStatistics();
+	const { hasFinishedResolution, data, refreshStats } =
+		useMCProductStatistics();
+
+	if ( hasFinishedResolution && ! data ) {
+		return __(
+			'An error occurred while retrieving your product feed. Please try again later.',
+			'google-listings-and-ads'
+		);
+	}
+
+	const isLoading = ! hasFinishedResolution || data?.loading;
+
+	let summaryNumberLoadingProps = {};
+
+	if ( isLoading ) {
+		summaryNumberLoadingProps = {
+			children: <AppSpinner />,
+		};
+	}
 
 	return (
 		<Card className="gla-product-statistics">
@@ -47,7 +67,7 @@ const ProductStatistics = () => {
 				{ ! hasFinishedResolution && (
 					<SummaryListPlaceholder numberOfItems={ 5 } />
 				) }
-				{ hasFinishedResolution && data && (
+				{ hasFinishedResolution && (
 					<SummaryList>
 						{ () => [
 							<SummaryNumber
@@ -56,7 +76,10 @@ const ProductStatistics = () => {
 									'Active',
 									'google-listings-and-ads'
 								) }
-								value={ data.statistics.active }
+								value={
+									isLoading ? '' : data?.statistics?.active
+								}
+								{ ...summaryNumberLoadingProps }
 							/>,
 							<SummaryNumber
 								key="expiring"
@@ -64,7 +87,10 @@ const ProductStatistics = () => {
 									'Expiring',
 									'google-listings-and-ads'
 								) }
-								value={ data.statistics.expiring }
+								value={
+									isLoading ? '' : data?.statistics?.expiring
+								}
+								{ ...summaryNumberLoadingProps }
 							/>,
 							<SummaryNumber
 								key="pending"
@@ -72,7 +98,10 @@ const ProductStatistics = () => {
 									'Pending',
 									'google-listings-and-ads'
 								) }
-								value={ data.statistics.pending }
+								value={
+									isLoading ? '' : data?.statistics?.pending
+								}
+								{ ...summaryNumberLoadingProps }
 							/>,
 							<SummaryNumber
 								key="disapproved"
@@ -80,7 +109,12 @@ const ProductStatistics = () => {
 									'Disapproved',
 									'google-listings-and-ads'
 								) }
-								value={ data.statistics.disapproved }
+								value={
+									isLoading
+										? ''
+										: data?.statistics?.disapproved
+								}
+								{ ...summaryNumberLoadingProps }
 							/>,
 							<SummaryNumber
 								key="not_synced"
@@ -88,7 +122,12 @@ const ProductStatistics = () => {
 									'Not Synced',
 									'google-listings-and-ads'
 								) }
-								value={ data.statistics.not_synced }
+								value={
+									isLoading
+										? ''
+										: data?.statistics?.not_synced
+								}
+								{ ...summaryNumberLoadingProps }
 							/>,
 						] }
 					</SummaryList>
@@ -98,6 +137,12 @@ const ProductStatistics = () => {
 				<FeedStatus />
 				<SyncStatus />
 				<AccountStatus />
+				{ hasFinishedResolution && data?.error && (
+					<SyncProductStatistics
+						refreshStats={ refreshStats }
+						error={ data.error }
+					/>
+				) }
 			</CardFooter>
 		</Card>
 	);
