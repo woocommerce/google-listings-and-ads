@@ -501,4 +501,15 @@ class AccountService implements OptionsAwareInterface, Service {
 	public function reset_wpcom_api_authorization(): bool {
 		return $this->options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
 	}
+
+	/**
+	 * Update the status of the merchant granting access to Google's WPCOM app in the database.
+	 *
+	 * @param string $status The status of the merchant granting access to Google's WPCOM app.
+	 *
+	 * @return string Status.
+	 */
+	public function update_wpcom_api_authorization( string $status ): bool {
+		return $this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $status );
+	}
 }

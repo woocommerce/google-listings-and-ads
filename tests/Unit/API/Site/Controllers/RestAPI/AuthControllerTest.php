@@ -55,6 +55,7 @@ class AuthControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals(
 			[
 				'auth_url' => $expected_auth_url,
+				'status'   => null,
 			],
 			$response->get_data()
 		);
@@ -77,6 +78,31 @@ class AuthControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_AUTHORIZE );
 
 		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_update_authorize() {
+		$this->account_service->expects( $this->once() )
+			->method( 'update_wpcom_api_authorization' )
+			->willReturn( true );
+
+		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'status' => 'approved' ] );
+
+		$this->assertEquals( [ 'status' => 'approved' ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_update_authorize_missing_params() {
+		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST' );
+
+		$this->assertEquals( 'Missing parameter(s): status', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_update_authorize_wrong_params() {
+		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'status' => 'wrong-param' ] );
+
+		$this->assertEquals( 'Invalid parameter(s): status', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 }

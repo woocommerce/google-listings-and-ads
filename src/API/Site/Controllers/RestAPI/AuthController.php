@@ -73,6 +73,12 @@ class AuthController extends BaseController {
 					'callback'            => $this->delete_authorize_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
+				[
+					'methods'             => TransportMethods::EDITABLE,
+					'callback'            => $this->get_update_authorize_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_update_authorize_params(),
+				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
@@ -118,6 +124,22 @@ class AuthController extends BaseController {
 	}
 
 	/**
+	 * Get the callback function for the update authorize request.
+	 *
+	 * @return callable
+	 */
+	protected function get_update_authorize_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				$this->account_service->update_wpcom_api_authorization( $request['status'] );
+				return [ 'status' => $request['status'] ];
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
 	 * Get the query params for the authorize request.
 	 *
 	 * @return array
@@ -135,6 +157,23 @@ class AuthController extends BaseController {
 	}
 
 	/**
+	 * Get the query params for the update authorize request.
+	 *
+	 * @return array
+	 */
+	protected function get_update_authorize_params(): array {
+		return [
+			'status' => [
+				'description'       => __( 'The status of the merchant granting access to Google\'s WPCOM app', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'enum'              => [ 'approved', 'disapproved', 'error' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => true,
+			],
+		];
+	}
+
+	/**
 	 * Get the item schema properties for the controller.
 	 *
 	 * @return array
@@ -144,6 +183,12 @@ class AuthController extends BaseController {
 			'auth_url' => [
 				'type'        => 'string',
 				'description' => __( 'The authorization URL for granting access to Google WPCOM App.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
+			'status'   => [
+				'type'        => 'string',
+				'description' => __( 'The status of the merchant granting access to Google\'s WPCOM app', 'google-listings-and-ads' ),
+				'enum'        => [ 'approved', 'disapproved', 'error' ],
 				'context'     => [ 'view' ],
 			],
 		];
