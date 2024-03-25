@@ -28,11 +28,17 @@ export default function GoogleAdsAccountCard() {
 		googleAdsAccount,
 		hasFinishedResolution: hasResolvedGoogleAdsAccount,
 	} = useGoogleAdsAccount();
+
 	const {
 		hasAccess,
 		step,
 		hasFinishedResolution: hasResolvedAdsAccountStatus,
 	} = useGoogleAdsAccountStatus();
+
+	const showSuccessNotice =
+		hasResolvedGoogleAdsAccount &&
+		( googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
+			googleAdsAccount.step === 'link_merchant' );
 
 	if (
 		! hasResolvedGoogleAccount ||
@@ -60,15 +66,14 @@ export default function GoogleAdsAccountCard() {
 
 	return (
 		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount }>
-			{ googleAdsAccount.status ===
-				GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED && (
+			{ showSuccessNotice ? (
 				<Notice status="success" isDismissible={ false }>
 					{ __(
 						'Conversion measurement has been set up. You can create a campaign later.',
 						'google-listings-and-ads'
 					) }
 				</Notice>
-			) }
+			) : null }
 		</ConnectedGoogleAdsAccountCard>
 	);
 }
