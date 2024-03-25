@@ -14,7 +14,14 @@ npm run test-proxy
 Or, if you want to use a local connect server:
 
 ```
-WOOCOMMERCE_CONNECT_SERVER=http://localhost:5000 npm run test-proxy
+WOOCOMMERCE_CONNECT_SERVER=http://localhost:5500 npm run test-proxy
+```
+
+### Define port for the proxy
+To run the proxy using a custom port you can start it as follows:
+
+```
+PROXY_PORT=50505 npm run test-proxy
 ```
 
 ### Run the proxy in a specific mode
@@ -40,13 +47,13 @@ PROXY_LOG_RESPONSES=true npm run test-proxy
 On your test site you will need to run a PHP snippet to use the proxy to handle any requests:
 
 ```php
-define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://localhost:5500' );
+define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://localhost:5555' );
 ```
 
 Or, if your test site is running within a docker container, the PHP snippet would be the following instead:
 
 ```php
-define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5500' );
+define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5555' );
 ```
 
 ### Non Mac users
