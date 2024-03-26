@@ -127,11 +127,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WC 8.7 compatibility.
 * Tweak - WP 6.5 compatibility.
 
-= 2.6.1 - 2024-03-05 =
-* Add - Consider `ga_gtag_enabled=yes` for  WCGAI >= 2.
-* Add - Google Analytics consent mode support.
-* Add - Support for Google Analytics for WooCommerce version 2.0.0 and above.
-* Dev - Avoid the test-data plugin occasionally missing in the E2E test environment.
-* Fix - Improve WordPress.com account handling.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
