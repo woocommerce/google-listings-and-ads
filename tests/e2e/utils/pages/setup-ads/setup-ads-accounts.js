@@ -55,6 +55,15 @@ export default class SetupAdsAccount extends MockRequests {
 	}
 
 	/**
+	 * Get the accept account modal.
+	 *
+	 * @return {import('@playwright/test').Locator} The create account modal.
+	 */
+	getAcceptAccountModal() {
+		return this.page.locator( '.gla-ads-invite-modal' );
+	}
+
+	/**
 	 * Get Accept terms checkbox.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Accept terms checkbox.
@@ -73,6 +82,18 @@ export default class SetupAdsAccount extends MockRequests {
 	getCreateAdsAccountButtonModal() {
 		return this.getCreateAccountModal().getByRole( 'button', {
 			name: 'Create account',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get Close button in the Accept Invitation modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Close modal button.
+	 */
+	getCloseAcceptAccountButtonModal() {
+		return this.getAcceptAccountModal().getByRole( 'button', {
+			name: 'Close',
 			exact: true,
 		} );
 	}
@@ -150,6 +171,11 @@ export default class SetupAdsAccount extends MockRequests {
 	 */
 	async clickCreateAccountButtonFromModal() {
 		const button = this.getCreateAdsAccountButtonModal();
+		await button.click();
+	}
+
+	async clickCloseAcceptAccountButtonFromModal() {
+		const button = this.getCloseAcceptAccountButtonModal();
 		await button.click();
 	}
 

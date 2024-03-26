@@ -132,7 +132,7 @@ test.describe( 'Set up Ads account', () => {
 
 			await expect(
 				page.getByText(
-					'Connect with millions of shoppers who are searching for products like yours and drive sales with Google.'
+					'Required to set up conversion measurement and create campaigns.'
 				)
 			).toBeVisible();
 
@@ -175,11 +175,16 @@ test.describe( 'Set up Ads account', () => {
 			] );
 
 			//Mock request to fulfill Ads connection
-			setupAdsAccounts.fulfillAdsConnection( {
+			await setupAdsAccounts.fulfillAdsConnection( {
 				id: ADS_ACCOUNTS[ 1 ].id,
 				currency: 'EUR',
 				symbol: '\u20ac',
 				status: 'connected',
+			} );
+
+			await setupAdsAccounts.fulfillAdsAccountStatus( {
+				has_access: true,
+				invite_link: '',
 			} );
 
 			await setupAdsAccounts.getCreateAdsAccountButtonModal().click();
@@ -206,6 +211,12 @@ test.describe( 'Set up Ads account', () => {
 				symbol: '\u20ac',
 				status: 'disconnected',
 			} );
+
+			await setupAdsAccounts.fulfillAdsAccountStatus( {
+				has_access: true,
+				invite_link: '',
+			} );
+
 			await page.reload();
 		} );
 
@@ -357,6 +368,11 @@ test.describe( 'Set up Ads account', () => {
 
 	test.describe( 'Set up billing', () => {
 		test.describe( 'Billing status is not approved', () => {
+			test.beforeAll( async () => {
+				await setupBudgetPage.fulfillBillingStatusRequest( {
+					status: 'pending',
+				} );
+			} );
 			test( 'It should say that the billing is not setup', async () => {
 				await page.getByRole( 'button', { name: 'Continue' } ).click();
 				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
@@ -386,6 +402,7 @@ test.describe( 'Set up Ads account', () => {
 				await checkBillingAdsPopup( page );
 			} );
 		} );
+
 		test.describe( 'Billing status is approved', async () => {
 			test.beforeAll( async () => {
 				await setupBudgetPage.fulfillBillingStatusRequest( {

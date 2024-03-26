@@ -61,11 +61,16 @@ test.describe( 'Complete your campaign', () => {
 			// Mock Merchant Center as connected
 			completeCampaign.mockMCConnected(),
 
-			// Mock Google Ads as not yet connected.
-			setupAdsAccountPage.mockAdsAccountDisconnected(),
+			// Mock Ads account as connected.
+			setupAdsAccountPage.mockAdsAccountConnected(),
 
 			// Mock there is no existing Google Ads account.
 			setupAdsAccountPage.mockAdsAccountsResponse( [] ),
+
+			// Mock that billing is pending.
+			setupBudgetPage.fulfillBillingStatusRequest( {
+				status: 'pending',
+			} ),
 
 			// Mock MC step as paid_ads
 			completeCampaign.mockMCSetup( 'incomplete', 'paid_ads' ),
@@ -126,23 +131,15 @@ test.describe( 'Complete your campaign', () => {
 	test( 'should see the heading and the texts below', async () => {
 		await expect(
 			page.getByRole( 'heading', {
-				name: 'Complete your campaign with paid ads',
+				name: 'Create a campaign to advertise your products',
 			} )
 		).toBeVisible();
 
 		await expect(
 			page.getByText(
-				'As soon as your products are approved, your listings and ads will be live. In the meantime, let’s set up your ads.'
+				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.'
 			)
 		).toBeVisible();
-	} );
-
-	test.describe( 'Product feed status', () => {
-		test( 'should see the correct syncable products count', async () => {
-			const syncableProductCountTooltip =
-				completeCampaign.getSyncableProductsCountTooltip();
-			await expect( syncableProductCountTooltip ).toContainText( '1024' );
-		} );
 	} );
 
 	test.describe( 'FAQ panels', () => {
@@ -189,11 +186,7 @@ test.describe( 'Complete your campaign', () => {
 				await expect( skipPaidAdsCreationButton ).toBeEnabled();
 			} );
 
-			test.describe( 'Allow to disconnect Google Ads account', () => {
-				test.beforeAll( async () => {
-					await setupAdsAccountPage.mockAdsAccountConnected();
-				} );
-
+			test.describe( 'Setup up ads to a Google Ads account', () => {
 				test( 'should see "Ads audience" section is enabled', async () => {
 					const adsAudienceSection =
 						completeCampaign.getAdsAudienceSection();
@@ -209,10 +202,6 @@ test.describe( 'Complete your campaign', () => {
 				test( 'should see "Set your budget" section is enabled', async () => {
 					const budgetSection = completeCampaign.getBudgetSection();
 					await expect( budgetSection ).toBeVisible();
-
-					// Cannot use toBeDisabled() because <section> is not a native control element
-					// such as <button> or <input> so it will be always enabled.
-					await expect( budgetSection ).toHaveClass( /wcdl-section/ );
 				} );
 
 				test( 'should see both "Skip paid ads creation" is enabled and "Complete setup" button is disabled', async () => {

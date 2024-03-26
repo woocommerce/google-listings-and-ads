@@ -514,7 +514,7 @@ test.describe( 'Confirm store requirements', () => {
 					);
 					await expect(
 						page.getByRole( 'heading', {
-							name: 'Complete your campaign with paid ads',
+							name: 'Create a campaign to advertise your products',
 							exact: true,
 						} )
 					).toBeVisible();

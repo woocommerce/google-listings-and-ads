@@ -223,6 +223,19 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Fulfill the Ads Account Status request.
+	 *
+	 * @param {Object} payload
+	 * @return {Promise<void>}
+	 */
+	async fulfillAdsAccountStatus( payload ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/ads\/account-status\b/,
+			payload
+		);
+	}
+
+	/**
 	 * Fulfill the Sync Settings Connection request.
 	 *
 	 * @param {Object} payload
@@ -443,6 +456,43 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mock Google Ads status when disconnected.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockAdsStatusDisconnected() {
+		await this.fulfillAdsAccountStatus( {
+			has_access: false,
+			invite_link: '',
+		} );
+	}
+
+	/**
+	 * Mock Google Ads account status as not claimed.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockAdsStatusNotClaimed() {
+		await this.fulfillAdsAccountStatus( {
+			message: 'Please accept the ads account invitation.',
+			has_access: false,
+			invite_link: 'https://example.com',
+		} );
+	}
+
+	/**
+	 * Mock Google Ads account status as claimed.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async mockAdsStatusClaimed() {
+		await this.fulfillAdsAccountStatus( {
+			has_access: true,
+			invite_link: '',
+		} );
+	}
+
+	/**
 	 * Mock Google Ads account as connected but its billing setup is incomplete.
 	 *
 	 * @return {Promise<void>}
@@ -453,6 +503,7 @@ export default class MockRequests {
 			currency: 'TWD',
 			symbol: 'NT$',
 			status: 'incomplete',
+			step: 'billing',
 		} );
 	}
 
@@ -485,7 +536,7 @@ export default class MockRequests {
 	 * Mock MC Ads no accounts.
 	 */
 	async mockAdsHasNoAccounts() {
-		await this.fulfillAdsAccounts( null );
+		await this.fulfillAdsAccounts( [] );
 	}
 
 	/**
