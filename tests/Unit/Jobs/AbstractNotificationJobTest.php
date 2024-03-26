@@ -7,12 +7,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\AbstractNotificationJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\NotificationJobException;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Generic Class for NotificationJobTests
- *
+ * @group Notifications
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
  */
 abstract class AbstractNotificationJobTest extends UnitTest {
@@ -26,6 +28,9 @@ abstract class AbstractNotificationJobTest extends UnitTest {
 	/** @var MockObject|NotificationsService $notification_service */
 	protected $notification_service;
 
+	/** @var MockObject|MerchantCenterService $merchant_center */
+	protected $merchant_center;
+
 	/** @var AbstractNotificationJob $job */
 	protected $job;
 
@@ -38,6 +43,7 @@ abstract class AbstractNotificationJobTest extends UnitTest {
 		$this->action_scheduler     = $this->createMock( ActionScheduler::class );
 		$this->monitor              = $this->createMock( ActionSchedulerJobMonitor::class );
 		$this->notification_service = $this->createMock( NotificationsService::class );
+		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
 		$this->job                  = $this->get_job();
 
 		$this->job->init();
@@ -48,6 +54,10 @@ abstract class AbstractNotificationJobTest extends UnitTest {
 	}
 
 	public function test_schedule_schedules_immediate_job() {
+		$this->merchant_center->expects( $this->once() )
+			->method( 'is_ready_for_syncing' )
+			->willReturn( true );
+
 		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 
 		$this->action_scheduler->expects( $this->once() )
@@ -63,6 +73,10 @@ abstract class AbstractNotificationJobTest extends UnitTest {
 	}
 
 	public function test_schedule_doesnt_schedules_immediate_job_if_already_scheduled() {
+		$this->merchant_center->expects( $this->once() )
+			->method( 'is_ready_for_syncing' )
+			->willReturn( true );
+
 		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
 
 		$this->action_scheduler->expects( $this->once() )
@@ -76,6 +90,10 @@ abstract class AbstractNotificationJobTest extends UnitTest {
 	}
 
 	public function test_schedule_doesnt_schedules_immediate_job_if_not_enabled() {
+		$this->merchant_center->expects( $this->once() )
+			->method( 'is_ready_for_syncing' )
+			->willReturn( true );
+
 		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( false );
 
 		$this->action_scheduler->expects( $this->never() )
@@ -93,6 +111,15 @@ abstract class AbstractNotificationJobTest extends UnitTest {
 			->willReturn( true );
 
 		$this->job->handle_process_items_action();
+	}
+
+	public function test_can_schedule_blocked() {
+		$this->merchant_center->expects( $this->once() )
+			->method( 'is_ready_for_syncing' )
+			->willReturn( false );
+
+		$this->expectException( NotificationJobException::class );
+		$this->job->can_schedule( [] );
 	}
 
 	public function get_name() {

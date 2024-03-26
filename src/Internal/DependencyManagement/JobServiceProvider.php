@@ -115,6 +115,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_action_scheduler_job(
 			ProductNotificationJob::class,
 			NotificationsService::class,
+			MerchantCenterService::class,
 			ProductHelper::class
 		);
 
@@ -122,6 +123,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_action_scheduler_job(
 			CouponNotificationJob::class,
 			NotificationsService::class,
+			MerchantCenterService::class,
 			CouponHelper::class
 		);
 
@@ -160,13 +162,15 @@ class JobServiceProvider extends AbstractServiceProvider {
 		// Share shipping notifications job
 		$this->share_action_scheduler_job(
 			ShippingNotificationJob::class,
-			NotificationsService::class
+			NotificationsService::class,
+			MerchantCenterService::class
 		);
 
 		// Share settings notifications job
 		$this->share_action_scheduler_job(
 			SettingsNotificationJob::class,
-			NotificationsService::class
+			NotificationsService::class,
+			MerchantCenterService::class
 		);
 
 		// Share settings syncer hooks

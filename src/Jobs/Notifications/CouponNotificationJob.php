@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -30,17 +31,18 @@ class CouponNotificationJob extends AbstractItemNotificationJob {
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param NotificationsService      $notifications_service
+	 * @param MerchantCenterService     $merchant_center
 	 * @param CouponHelper              $coupon_helper
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
 		NotificationsService $notifications_service,
+		MerchantCenterService $merchant_center,
 		CouponHelper $coupon_helper
 	) {
-		$this->notifications_service = $notifications_service;
-		$this->helper                = $coupon_helper;
-		parent::__construct( $action_scheduler, $monitor, $notifications_service );
+		$this->helper = $coupon_helper;
+		parent::__construct( $action_scheduler, $monitor, $notifications_service, $merchant_center );
 	}
 
 	/**

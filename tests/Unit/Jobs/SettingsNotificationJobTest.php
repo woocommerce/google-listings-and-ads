@@ -26,7 +26,8 @@ class SettingsNotificationJobTest extends AbstractNotificationJobTest {
 		return new SettingsNotificationJob(
 			$this->action_scheduler,
 			$this->monitor,
-			$this->notification_service
+			$this->notification_service,
+			$this->merchant_center
 		);
 	}
 }
