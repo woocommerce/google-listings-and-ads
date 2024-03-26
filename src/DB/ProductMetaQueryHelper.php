@@ -62,7 +62,7 @@ class ProductMetaQueryHelper implements Service {
 	/**
 	 * Delete all values for a given meta_key.
 	 *
-	 * @since x.x.x
+	 * @since 2.6.4
 	 *
 	 * @param string $meta_key The meta key to delete.
 	 *
