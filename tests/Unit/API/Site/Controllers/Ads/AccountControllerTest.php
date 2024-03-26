@@ -258,6 +258,15 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $expected_response, $response->get_data() );
 	}
 
+	public function test_update_enhanced_conversion_status_only_accepts_lowercase_arg() {
+		$response = $this->do_request( self::ROUTE_UPDATED_EC_STATUS, 'POST', [ 'status' => 'PENDING' ] );
+
+		$data = $response->get_data();
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( $data['code'], 'rest_invalid_param' );
+	}
+
 	/**
 	 * Test a Google disconnected error since it's a dependency for a connected Ads account.
 	 */

@@ -333,6 +333,11 @@ class Ads implements OptionsAwareInterface {
 	public function get_accepted_customer_data_terms(): bool {
 		$ads_id = $this->options->get_ads_id();
 
+		// Return if no ads id present.
+		if ( ! $ads_id ) {
+			return false;
+		}
+
 		try {
 			$accepted_terms = $this->options->get( OptionsInterface::ADS_CUSTOMER_DATA_TERMS, null );
 
@@ -374,8 +379,6 @@ class Ads implements OptionsAwareInterface {
 	 * @return string
 	 */
 	public function update_enhanced_conversion_status( string $status ): string {
-		$status = strtolower( $status );
-
 		$this->options->update( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS, $status );
 
 		return $status;
