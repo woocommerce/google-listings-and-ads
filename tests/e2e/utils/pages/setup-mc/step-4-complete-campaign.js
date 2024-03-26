@@ -47,15 +47,6 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
-	 * Get product feed status section.
-	 *
-	 * @return {import('@playwright/test').Locator} Get product feed status section.
-	 */
-	getProductFeedStatusSection() {
-		return this.getSections().first();
-	}
-
-	/**
 	 * Get ads account section.
 	 *
 	 * @return {import('@playwright/test').Locator} Get ads account section.

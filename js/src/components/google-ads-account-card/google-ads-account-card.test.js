@@ -63,9 +63,9 @@ describe( 'GoogleAdsAccountCard', () => {
 
 	it( 'Should show a spinner when the Google Ads status is being resolved', async () => {
 		useGoogleAdsAccountStatus.mockReturnValue( {
-			isResolving: true,
-			hasAccess: false,
-			inviteLink: null,
+			hasAccess: true,
+			step: 'link_merchant',
+			hasFinishedResolution: true,
 		} );
 
 		render( <GoogleAdsAccountCard /> );
@@ -77,7 +77,6 @@ describe( 'GoogleAdsAccountCard', () => {
 		useGoogleAdsAccountStatus.mockReturnValue( {
 			hasFinishedResolution: true,
 			hasAccess: false,
-			isResolving: false,
 			inviteLink: 'http://ads.google.com/invite',
 		} );
 
@@ -88,7 +87,6 @@ describe( 'GoogleAdsAccountCard', () => {
 
 		useGoogleAccount.mockReturnValue( {
 			hasFinishedResolution: true,
-			isResolving: false,
 			scope: {
 				adsRequired: true,
 			},
@@ -102,9 +100,9 @@ describe( 'GoogleAdsAccountCard', () => {
 		render( <GoogleAdsAccountCard /> );
 
 		expect(
-			screen.getAllByText(
+			screen.getByText(
 				'Claim your new Google Ads account to complete this setup.'
 			)
-		).toBeTruthy();
+		).toBeInTheDocument();
 	} );
 } );

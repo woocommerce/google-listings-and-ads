@@ -15,6 +15,7 @@ import { ConnectedGoogleAccountCard } from '.~/components/google-account-card';
 import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
 import FreeAdCredit from './free-ad-credit';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
 import AppSpinner from '.~/components/app-spinner';
@@ -24,13 +25,14 @@ const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { google } = useGoogleAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasAccess } = useGoogleAdsAccountStatus();
 	const hasFreeAdCredit = useFreeAdCredit();
 
 	if ( ! google || ( google.active === 'yes' && ! googleAdsAccount ) ) {
 		return <AppSpinner />;
 	}
 
-	const isContinueButtonDisabled = ! googleAdsAccount.id;
+	const isContinueButtonDisabled = ! ( googleAdsAccount.id && hasAccess );
 
 	return (
 		<StepContent>

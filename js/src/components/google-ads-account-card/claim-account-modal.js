@@ -46,8 +46,8 @@ const ClaimAccountModal = ( { onRequestClose = noop } ) => {
 				<AppButton
 					key="1"
 					isPrimary
-					eventName="gla_ads_accept_invitation_button_click" // @todo: review event name
 					onClick={ handleAcceptInvitationClick }
+					// @todo: Review and add eventName prop
 				>
 					{ __(
 						'Claim account in Google Ads',

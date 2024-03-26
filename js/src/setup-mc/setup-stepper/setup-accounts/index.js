@@ -88,7 +88,7 @@ const SetupAccounts = ( props ) => {
 		useGoogleMCAccount();
 	const { hasFinishedResolution, hasGoogleAdsConnection } =
 		useGoogleAdsAccount();
-	const { hasAccess } = useGoogleAdsAccountStatus();
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,
@@ -110,16 +110,29 @@ const SetupAccounts = ( props ) => {
 	}
 
 	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
-	const isContinueButtonDisabled =
-		hasAccess !== true ||
-		! hasFinishedResolution ||
-		! hasGoogleAdsConnection ||
-		( googleMCAccount?.status !== 'connected' &&
-			! (
-				googleMCAccount?.status === 'incomplete' &&
-				googleMCAccount?.step === 'link_ads' &&
-				hasAccess === true
-			) );
+
+	// Ads is ready when we have a connection and verified and verified access.
+	// Billing is not required, and the 'link_merchant' step will be resolved
+	// when the MC the account is connected.
+	const isGoogleAdsReady =
+		hasGoogleAdsConnection &&
+		hasAccess &&
+		[ '', 'billing', 'link_merchant' ].includes( step );
+
+	// MC is ready when we have a connection and preconditions are met.
+	// The `link_ads` step will be resolved when the Ads account is connected
+	// since these can be connected in any order.
+	const isGoogleMCReady =
+		isGMCPreconditionReady &&
+		( googleMCAccount?.status === 'connected' ||
+			( googleMCAccount?.status === 'incomplete' &&
+				googleMCAccount?.step === 'link_ads' ) );
+
+	const isContinueButtonDisabled = ! (
+		hasFinishedResolution &&
+		isGoogleAdsReady &&
+		isGoogleMCReady
+	);
 
 	return (
 		<StepContent>

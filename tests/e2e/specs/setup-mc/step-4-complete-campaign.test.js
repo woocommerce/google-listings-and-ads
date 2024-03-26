@@ -86,11 +86,6 @@ test.describe( 'Complete your campaign', () => {
 				[ 'GET' ]
 			),
 
-			// Mock syncable products count
-			completeCampaign.fulfillSyncableProductsCountRequest( {
-				count: 1024,
-			} ),
-
 			// The following mocks are requests will happen after completing the onboarding
 			completeCampaign.mockSuccessfulSettingsSyncRequest(),
 

@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Notice } from '@wordpress/components';
 import { Fragment } from '@wordpress/element';
 
 /**
@@ -20,16 +19,12 @@ const ClaimAccount = () => {
 
 	return (
 		<Fragment>
-			<Notice
-				status="warning"
-				isDismissible={ false }
-				className="gla-ads-claim-account-notice"
-			>
+			<p className="gla-ads-claim-account-notice">
 				{ __(
 					'Claim your new Google Ads account to complete this setup.',
 					'google-listings-and-ads'
 				) }
-			</Notice>
+			</p>
 
 			<Section.Card.Footer>
 				<DisconnectAccount />
