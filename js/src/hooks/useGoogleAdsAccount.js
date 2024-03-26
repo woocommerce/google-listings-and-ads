@@ -15,7 +15,7 @@ import useGoogleAccount from './useGoogleAccount';
 const googleAdsAccountSelector = 'getGoogleAdsAccount';
 
 const useGoogleAdsAccount = () => {
-	const { google, isResolving } = useGoogleAccount();
+	const { google, isResolving, hasFinishedResolution } = useGoogleAccount();
 
 	const dispatcher = useAppDispatch();
 	const refetchGoogleAdsAccount = useCallback( () => {
@@ -28,6 +28,7 @@ const useGoogleAdsAccount = () => {
 				return {
 					googleAdsAccount: undefined,
 					isResolving,
+					hasFinishedResolution,
 				};
 			}
 
@@ -56,7 +57,7 @@ const useGoogleAdsAccount = () => {
 				hasGoogleAdsConnection,
 			};
 		},
-		[ google, isResolving, refetchGoogleAdsAccount ]
+		[ google, isResolving, hasFinishedResolution, refetchGoogleAdsAccount ]
 	);
 };
 

@@ -19,7 +19,11 @@ const GoogleMCAccountCard = () => {
 		return <DisabledCard />;
 	}
 
-	if ( googleMCAccount.id === 0 || googleMCAccount.status !== 'connected' ) {
+	if (
+		googleMCAccount.id === 0 ||
+		( googleMCAccount.status !== 'connected' &&
+			googleMCAccount.step !== 'link_ads' )
+	) {
 		return <NonConnected />;
 	}
 

@@ -64,6 +64,13 @@ const DEFAULT_STATE = {
 	report: {},
 	store_categories: [],
 	tours: {},
+	ads: {
+		accountStatus: {
+			hasAccess: null,
+			inviteLink: null,
+			step: null,
+		},
+	},
 };
 
 /**
@@ -489,6 +496,18 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			} );
 
 			return stateSetter.end();
+		}
+
+		case TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS: {
+			const {
+				data: { has_access: hasAccess, invite_link: inviteLink, step },
+			} = action;
+
+			return chainState( state, 'ads.accountStatus' )
+				.setIn( 'hasAccess', hasAccess )
+				.setIn( 'inviteLink', inviteLink )
+				.setIn( 'step', step )
+				.end();
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

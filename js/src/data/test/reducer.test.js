@@ -67,6 +67,13 @@ describe( 'reducer', () => {
 			report: {},
 			store_categories: [],
 			tours: {},
+			ads: {
+				accountStatus: {
+					hasAccess: null,
+					inviteLink: null,
+					step: null,
+				},
+			},
 		} );
 
 		prepareState = prepareImmutableStateWithRefCheck.bind(

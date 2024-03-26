@@ -19,6 +19,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AdsAccountSelectControl from './ads-account-select-control';
+import { useAppDispatch } from '.~/data';
 import './index.scss';
 
 /**
@@ -45,6 +46,7 @@ const ConnectAds = ( props ) => {
 	} );
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
+	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
 
 	/**
 	 * Boolean to display blurb message to advise users
@@ -62,6 +64,7 @@ const ConnectAds = ( props ) => {
 		setLoading( true );
 		try {
 			await fetchConnectAdsAccount();
+			await fetchGoogleAdsAccountStatus();
 			await refetchGoogleAdsAccount();
 		} catch ( error ) {
 			setLoading( false );

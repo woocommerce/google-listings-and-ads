@@ -15,6 +15,7 @@ import {
 } from './constants';
 import { handleApiError } from '.~/utils/handleError';
 import { adaptAdsCampaign } from './adapters';
+import { fetchWithHeaders, awaitPromise } from './controls';
 
 /**
  * @typedef {import('.~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
@@ -1242,6 +1243,38 @@ export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
 			error,
 			__(
 				'There was an error updating the tour.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* fetchGoogleAdsAccountStatus() {
+	try {
+		const { data } = yield fetchWithHeaders( {
+			path: `${ API_NAMESPACE }/ads/account-status`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
+			data,
+		};
+	} catch ( response ) {
+		const errorBodyPromise = response?.json() || response?.text();
+		const errorData = yield awaitPromise( errorBodyPromise );
+
+		if ( response.status === 428 ) {
+			// Update to the data store as the "errorData" is valid account status data.
+			return {
+				type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
+				data: errorData,
+			};
+		}
+
+		handleApiError(
+			errorData,
+			__(
+				'There was an error getting the status of your Google Ads account.',
 				'google-listings-and-ads'
 			)
 		);

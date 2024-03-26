@@ -284,19 +284,6 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Fulfill syncable products count request.
-	 *
-	 * @param {Object} payload
-	 * @return {Promise<void>}
-	 */
-	async fulfillSyncableProductsCountRequest( payload ) {
-		await this.fulfillRequest(
-			/\/wc\/gla\/mc\/syncable-products-count\b/,
-			payload
-		);
-	}
-
-	/**
 	 * Fulfill the MC account issues request.
 	 *
 	 * @param {Object} payload

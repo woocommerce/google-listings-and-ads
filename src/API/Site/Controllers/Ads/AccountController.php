@@ -86,6 +86,17 @@ class AccountController extends BaseController {
 				],
 			]
 		);
+
+		$this->register_route(
+			'ads/account-status',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_ads_account_has_access(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -159,6 +170,21 @@ class AccountController extends BaseController {
 	protected function get_billing_status_callback(): callable {
 		return function () {
 			return $this->account->get_billing_status();
+		};
+	}
+
+	/**
+	 * Get the callback function for retrieving the account access status for ads.
+	 *
+	 * @return callable
+	 */
+	protected function get_ads_account_has_access(): callable {
+		return function () {
+			try {
+				return $this->account->get_ads_account_has_access();
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
 		};
 	}
 

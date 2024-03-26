@@ -8,35 +8,35 @@ import { useState } from '@wordpress/element';
  */
 import SpinnerCard from '.~/components/spinner-card';
 import CreateAccount from './create-account';
-import useGoogleAccount from '.~/hooks/useGoogleAccount';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import ConnectAds from './connect-ads';
 
 const NonConnected = () => {
-	const { google, hasFinishedResolution } = useGoogleAccount();
-	const { existingAccounts, isResolving } = useExistingGoogleAdsAccounts();
+	const { existingAccounts } = useExistingGoogleAdsAccounts();
 	const [ ignoreExisting, setIgnoreExisting ] = useState( false );
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
 
 	const handleShowExisting = () => {
 		setIgnoreExisting( false );
 	};
 
-	if ( ! hasFinishedResolution || isResolving ) {
+	if ( ! existingAccounts ) {
 		return <SpinnerCard />;
 	}
 
 	if (
-		! existingAccounts ||
 		existingAccounts.length === 0 ||
-		ignoreExisting
+		ignoreExisting ||
+		( googleAdsAccount.id && hasAccess !== true ) ||
+		( hasAccess === true && step === 'conversion_action' )
 	) {
-		const disabled = ! google || google.active === 'no';
-
 		return (
 			<CreateAccount
 				allowShowExisting={ ignoreExisting }
 				onShowExisting={ handleShowExisting }
-				disabled={ disabled }
 			/>
 		);
 	}
