@@ -90,7 +90,7 @@ class NotificationsService implements Service {
 		 * @param int $item_id The item_id for the notification.
 		 * @param string $topic The topic for the notification.
 		 */
-		if ( ! apply_filters( 'woocommerce_gla_notify', in_array( $topic, self::ALLOWED_TOPICS, true ), $item_id, $topic ) ) {
+		if ( ! apply_filters( 'woocommerce_gla_notify', $this->is_enabled() && in_array( $topic, self::ALLOWED_TOPICS, true ), $item_id, $topic ) ) {
 			return false;
 		}
 
