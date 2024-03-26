@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
 use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -47,12 +48,22 @@ class NotificationsService implements Service {
 	 */
 	private $notification_url;
 
+	/**
+	 * The Merchant center service
+	 *
+	 * @var MerchantCenterService $merchant_center
+	 */
+	public MerchantCenterService $merchant_center;
+
 
 	/**
 	 * Class constructor
+	 *
+	 * @param MerchantCenterService $merchant_center
 	 */
-	public function __construct() {
+	public function __construct( MerchantCenterService $merchant_center ) {
 		$blog_id                = Jetpack_Options::get_option( 'id' );
+		$this->merchant_center  = $merchant_center;
 		$this->notification_url = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
 	}
 
@@ -65,6 +76,11 @@ class NotificationsService implements Service {
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
 	public function notify( string $topic, $item_id = null ): bool {
+		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
+			$this->notification_error( $topic, 'Cannot sync any products before setting up Google Merchant Center.', $item_id );
+			return false;
+		}
+
 		/**
 		 * Allow users to disable the notification request.
 		 *

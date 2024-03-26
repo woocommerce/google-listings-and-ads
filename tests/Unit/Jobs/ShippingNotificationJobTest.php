@@ -26,8 +26,7 @@ class ShippingNotificationJobTest extends AbstractNotificationJobTest {
 		return new ShippingNotificationJob(
 			$this->action_scheduler,
 			$this->monitor,
-			$this->notification_service,
-			$this->merchant_center
+			$this->notification_service
 		);
 	}
 }

@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractActionSchedulerJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,26 +26,18 @@ abstract class AbstractNotificationJob extends AbstractActionSchedulerJob implem
 	protected $notifications_service;
 
 	/**
-	 * @var MerchantCenterService $merchant_center
-	 */
-	protected $merchant_center;
-
-	/**
 	 * Notifications Jobs constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param NotificationsService      $notifications_service
-	 * @param MerchantCenterService     $merchant_center
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
-		NotificationsService $notifications_service,
-		MerchantCenterService $merchant_center
+		NotificationsService $notifications_service
 	) {
 		$this->notifications_service = $notifications_service;
-		$this->merchant_center       = $merchant_center;
 		parent::__construct( $action_scheduler, $monitor );
 	}
 
@@ -81,14 +72,8 @@ abstract class AbstractNotificationJob extends AbstractActionSchedulerJob implem
 	 * @param array|null $args
 	 *
 	 * @return bool Returns true if the job can be scheduled.
-	 * @throws NotificationJobException When MC is not ready.
 	 */
 	public function can_schedule( $args = [] ): bool {
-		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
-			do_action( 'woocommerce_gla_error', 'Cannot sync any products before setting up Google Merchant Center.', __METHOD__ );
-			throw new NotificationJobException( __( 'Google Merchant Center has not been set up correctly. Please review your configuration.', 'google-listings-and-ads' ) );
-		}
-
 		/**
 		 * Allow users to disable the notification job schedule.
 		 *

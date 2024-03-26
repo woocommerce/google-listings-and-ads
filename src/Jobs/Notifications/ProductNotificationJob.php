@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 
 defined( 'ABSPATH' ) || exit;
@@ -31,18 +30,16 @@ class ProductNotificationJob extends AbstractItemNotificationJob {
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param NotificationsService      $notifications_service
-	 * @param MerchantCenterService     $merchant_center
 	 * @param ProductHelper             $helper
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
 		NotificationsService $notifications_service,
-		MerchantCenterService $merchant_center,
 		ProductHelper $helper
 	) {
 		$this->helper = $helper;
-		parent::__construct( $action_scheduler, $monitor, $notifications_service, $merchant_center );
+		parent::__construct( $action_scheduler, $monitor, $notifications_service );
 	}
 
 	/**

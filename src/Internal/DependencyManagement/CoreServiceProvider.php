@@ -254,7 +254,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( MerchantCenterService::class );
 
 		// Set up Notifications service.
-		$this->share_with_tags( NotificationsService::class );
+		$this->share_with_tags( NotificationsService::class, MerchantCenterService::class );
 
 		// Set up OAuthService service.
 		$this->share_with_tags( OAuthService::class );
