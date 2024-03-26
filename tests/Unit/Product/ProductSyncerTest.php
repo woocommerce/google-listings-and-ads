@@ -550,7 +550,10 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 	public function test_update_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->any() )
+		$merchant_center->expects( $this->once() )
+			->method( 'is_ready_for_syncing' )
+			->willReturn( true );
+		$merchant_center->expects( $this->once() )
 			->method( 'should_push' )
 			->willReturn( false );
 		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
@@ -562,7 +565,10 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 	public function test_update_by_batch_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->any() )
+		$merchant_center->expects( $this->once() )
+			->method( 'is_ready_for_syncing' )
+			->willReturn( true );
+		$merchant_center->expects( $this->once() )
 			->method( 'should_push' )
 			->willReturn( false );
 		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
@@ -574,7 +580,10 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 	public function test_delete_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->any() )
+		$merchant_center->expects( $this->once() )
+			->method( 'is_ready_for_syncing' )
+			->willReturn( true );
+		$merchant_center->expects( $this->once() )
 			->method( 'should_push' )
 			->willReturn( false );
 		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );
@@ -586,7 +595,10 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 	public function test_delete_by_batch_throws_exception_when_mc_is_blocked() {
 		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->any() )
+		$merchant_center->expects( $this->once() )
+			->method( 'is_ready_for_syncing' )
+			->willReturn( true );
+		$merchant_center->expects( $this->once() )
 			->method( 'should_push' )
 			->willReturn( false );
 		$this->product_syncer = $this->get_product_syncer( [ 'merchant_center' => $merchant_center ] );

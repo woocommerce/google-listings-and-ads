@@ -149,7 +149,10 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 	public function test_update_throws_exception_when_mc_is_blocked() {
 		$coupon          = $this->create_ready_to_sync_coupon();
 		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->any() )
+		$merchant_center->expects( $this->once() )
+			->method( 'is_ready_for_syncing' )
+			->willReturn( true );
+		$merchant_center->expects( $this->once() )
 			->method( 'should_push' )
 			->willReturn( false );
 		$this->coupon_syncer = $this->get_coupon_syncer( [ 'merchant_center' => $merchant_center ] );
@@ -162,7 +165,10 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 	public function test_delete_throws_exception_when_mc_is_blocked() {
 		$coupon          = $this->create_ready_to_delete_coupon();
 		$merchant_center = $this->createMock( MerchantCenterService::class );
-		$merchant_center->expects( $this->any() )
+		$merchant_center->expects( $this->once() )
+			->method( 'is_ready_for_syncing' )
+			->willReturn( true );
+		$merchant_center->expects( $this->once() )
 			->method( 'should_push' )
 			->willReturn( false );
 		$this->coupon_syncer = $this->get_coupon_syncer( [ 'merchant_center' => $merchant_center ] );
