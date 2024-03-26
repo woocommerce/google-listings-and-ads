@@ -223,7 +223,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Delete the intermediate product status count data.
 	 *
-	 * @since x.x.x
+	 * @since 2.6.4
 	 */
 	protected function delete_product_statuses_count_intermediate_data(): void {
 		$this->options->delete( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
@@ -232,7 +232,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Delete the stale issues from the database.
 	 *
-	 * @since x.x.x
+	 * @since 2.6.4
 	 */
 	protected function delete_stale_issues(): void {
 		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
@@ -241,7 +241,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Delete the stale mc statuses from the database.
 	 *
-	 * @since x.x.x
+	 * @since 2.6.4
 	 */
 	protected function delete_stale_mc_statuses(): void {
 		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
@@ -251,7 +251,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Clear the product statuses cache and delete stale issues.
 	 *
-	 * @since x.x.x
+	 * @since 2.6.4
 	 */
 	public function clear_product_statuses_cache_and_issues(): void {
 		$this->delete_stale_issues();
@@ -262,7 +262,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Check if the Merchant Center account is connected and throw an exception if it's not.
 	 *
-	 * @since x.x.x
+	 * @since 2.6.4
 	 *
 	 * @throws Exception If the Merchant Center account is not connected.
 	 */
@@ -455,7 +455,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Refresh the account , pre-sync product validation and custom merchant issues.
 	 *
-	 * @since x.x.x
+	 * @since 2.6.4
 	 *
 	 * @throws Exception  If the account state can't be retrieved from Google.
 	 */
@@ -797,7 +797,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Calculate the total count of products in the MC using the statistics.
 	 *
-	 * @since x.x.x
+	 * @since 2.6.4
 	 *
 	 * @param array $statistics
 	 *
@@ -815,7 +815,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Handle the failure of the Merchant Center statuses fetching.
 	 *
-	 * @since x.x.x
+	 * @since 2.6.4
 	 *
 	 * @param string $error_message The error message.
 	 *
@@ -846,7 +846,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 	/**
 	 * Handle the completion of the Merchant Center statuses fetching.
 	 *
-	 * @since x.x.x
+	 * @since 2.6.4
 	 */
 	public function handle_complete_mc_statuses_fetching() {
 		$intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, self::DEFAULT_PRODUCT_STATS );

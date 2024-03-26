@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  *
- * @since x.x.x
+ * @since 2.6.4
  */
 class UpdateMerchantProductStatuses extends AbstractActionSchedulerJob {
 	/**

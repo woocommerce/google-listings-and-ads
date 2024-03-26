@@ -54,7 +54,7 @@ class DeleteAllProducts extends AbstractProductSyncerBatchedJob {
 	/**
 	 * Called when the job is completed.
 	 *
-	 * @since x.x.x
+	 * @since 2.6.4
 	 *
 	 * @param int $final_batch_number The final batch number when the job was completed.
 	 *                                If equal to 1 then no items were processed by the job.
