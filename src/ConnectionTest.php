@@ -22,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
@@ -764,8 +765,8 @@ class ConnectionTest implements Service, Registerable {
 
 			$item  = $_GET['item_id'] ?? null;
 			$topic = $_GET['topic'];
-
-			$service = new NotificationsService();
+			$mc    = $this->container->get( MerchantCenterService::class );
+			$service = new NotificationsService( $mc );
 			if ( $service->notify( $topic, $item ) ) {
 				$this->response .= "\n Notification success. Item: " . $item . " - Topic: " . $topic;
 			} else {
