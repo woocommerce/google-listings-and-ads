@@ -225,11 +225,11 @@ class AccountService implements OptionsAwareInterface, Service {
 		$has_access        = $this->container->get( Ads::class )->has_access( $email );
 		$ocid              = $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID, null );
 
-		// Deep link.
-		if ( $has_access && $ocid ) {
+		// Link directly to the payment page if the customer already has access.
+		if ( $has_access ) {
 			$billing_url = add_query_arg(
 				[
-					'ocid' => $ocid,
+					'ocid' => $ocid ?? '',
 				],
 				'https://ads.google.com/aw/signup/payment'
 			);
