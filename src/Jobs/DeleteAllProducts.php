@@ -50,4 +50,16 @@ class DeleteAllProducts extends AbstractProductSyncerBatchedJob {
 		$product_entries = $this->batch_product_helper->generate_delete_request_entries( $products );
 		$this->product_syncer->delete_by_batch_requests( $product_entries );
 	}
+
+	/**
+	 * Called when the job is completed.
+	 *
+	 * @since 2.6.4
+	 *
+	 * @param int $final_batch_number The final batch number when the job was completed.
+	 *                                If equal to 1 then no items were processed by the job.
+	 */
+	protected function handle_complete( int $final_batch_number ) {
+		$this->merchant_statuses->maybe_refresh_status_data( true );
+	}
 }

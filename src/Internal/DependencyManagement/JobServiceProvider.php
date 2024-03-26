@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\AsyncActionRunner;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -33,6 +34,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\CleanupProductTarget
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\PluginUpdate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateSyncableProductsCount;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
@@ -42,6 +44,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\StartProductSync;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping;
@@ -144,6 +147,8 @@ class JobServiceProvider extends AbstractServiceProvider {
 
 		// Share update syncable products count job
 		$this->share_action_scheduler_job( UpdateSyncableProductsCount::class, ProductRepository::class, ProductHelper::class );
+
+		$this->share_action_scheduler_job( UpdateMerchantProductStatuses::class, MerchantCenterService::class, MerchantReport::class, MerchantStatuses::class );
 	}
 
 	/**
@@ -181,6 +186,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 				ProductRepository::class,
 				BatchProductHelper::class,
 				MerchantCenterService::class,
+				MerchantStatuses::class,
 				...$arguments
 			);
 		} else {

@@ -100,7 +100,7 @@ class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInte
 		// Check if there are synced products.
 		try {
 			$statuses = $this->merchant_statuses->get_product_statistics();
-			if ( $statuses['statistics']['active'] <= 0 ) {
+			if ( isset( $statuses['statistics']['active'] ) && $statuses['statistics']['active'] <= 0 ) {
 				return false;
 			}
 		} catch ( Exception $e ) {

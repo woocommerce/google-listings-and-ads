@@ -22,3 +22,6 @@ wp-env run tests-cli wp option update blogname 'WooCommerce E2E Test Suite'
 
 echo -e 'Adding basic WooCommerce settings... \n'
 wp-env run tests-cli wp wc payment_gateway update cod --enabled=1 --user=admin
+
+echo -e 'Set the tour of product block editor to not display \n'
+wp-env run tests-cli wp option update woocommerce_block_product_tour_shown 'yes'
