@@ -36,9 +36,8 @@ export default function GoogleAdsAccountCard() {
 	} = useGoogleAdsAccountStatus();
 
 	const showSuccessNotice =
-		hasResolvedGoogleAdsAccount &&
-		( googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
-			googleAdsAccount.step === 'link_merchant' );
+		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
+		googleAdsAccount?.step === 'link_merchant';
 
 	if (
 		! hasResolvedGoogleAccount ||
