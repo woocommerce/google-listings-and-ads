@@ -19,6 +19,7 @@ import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
 import EnableNewProductSyncNotice from '.~/components/enable-new-product-sync-notice';
 import NavigationClassic from '.~/components/navigation-classic';
+import useUpdateRestAPIAuthorizeStatus from './useUpdateRestAPIAuthorizeStatus';
 import './index.scss';
 
 const pageClassName = 'gla-settings';
@@ -27,6 +28,8 @@ const Settings = () => {
 	const { subpath } = getQuery();
 	// Make the component highlight GLA entry in the WC legacy menu.
 	useLegacyMenuEffect();
+
+	useUpdateRestAPIAuthorizeStatus();
 
 	const { google } = useGoogleAccount();
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
@@ -41,7 +44,7 @@ const Settings = () => {
 		}
 	}, [ isReconnectGooglePage, google ] );
 
-	// Navigate to subpath is any.
+	// Navigate to subpath if any.
 	switch ( subpath ) {
 		case subpaths.reconnectWPComAccount:
 			return (
