@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use WC_Product;
+use WC_Customer;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -224,12 +225,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				);
 			} else {
 				// Legacy code to support Google Analytics for WooCommerce version < 2.0.0.
+				$config = wp_json_encode( $this->get_config_object() );
 				add_filter(
 					'woocommerce_gtag_snippet',
-					function ( $gtag_snippet ) use ( $ads_conversion_id ) {
+					function ( $gtag_snippet ) use ( $ads_conversion_id, $config ) {
 						return preg_replace(
 							'~(\s)</script>~',
-							"\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA', 'send_page_view': false });\n$1</script>",
+							"\tgtag('config', '" . $ads_conversion_id . "', $config);\n$1</script>",
 							$gtag_snippet
 						);
 					}
@@ -277,9 +279,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	protected function get_gtag_config( string $ads_conversion_id ) {
+		$config = $this->get_config_object();
 		return sprintf(
-			'gtag("config", "%1$s", { "groups": "GLA", "send_page_view": false });',
-			esc_js( $ads_conversion_id )
+			'gtag("config", "%1$s", %2$s);',
+			esc_js( $ads_conversion_id ),
+			wp_json_encode( $config )
 		);
 	}
 
@@ -343,6 +347,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		// Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
 		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
 		$order->save_meta_data();
+
+		// Prepare and enqueue the enhanced conversion data, if enabled.
+		if ( $this->is_enhanced_conversion_enabled() ) {
+			$this->add_enhanced_conversion_data( $order );
+		}
 
 		$conversion_gtag_info =
 		sprintf(
@@ -417,7 +426,79 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $language ),
 			join( ',', $item_info ),
 		);
+
 		$this->add_inline_event_script( $purchase_page_gtag );
+	}
+
+	/**
+	 * Add enhanced conversion data to the page.
+	 *
+	 * @param WC_Order $order The order object.
+	 */
+	private function add_enhanced_conversion_data( $order ) {
+		// Enhanced conversion data.
+		$ec_data         = [];
+		$email           = $order->get_billing_email();
+		$fname           = $order->get_billing_first_name();
+		$lname           = $order->get_billing_last_name();
+		$phone           = $order->get_billing_phone();
+		$billing_address = $order->get_billing_address_1();
+		$postcode        = $order->get_billing_postcode();
+		$city            = $order->get_billing_city();
+		$region          = $order->get_billing_state();
+		$country         = $order->get_billing_country();
+
+		// Add email in EC data.
+		if ( ! empty( $email ) ) {
+			$normalized_email = strtolower( $email );
+			$email_parts      = explode( '@', $normalized_email );
+
+			if ( count( $email_parts ) > 1 && preg_match( '/^(gmail|googlemail)\.com\s*/', $email_parts[1] ) ) {
+				$email_parts[0]   = str_replace( '.', '', $email_parts[0] );
+				$normalized_email = sprintf( '%s@%s', $email_parts[0], $email_parts[1] );
+			}
+
+			$ec_data['sha256_email_address'] = $this->normalize_and_hash( $normalized_email );
+		}
+
+		// Format phone number in IE64.
+		$phone        = preg_replace( '/[^0-9]/', '', $phone );
+		$phone_length = strlen( $phone );
+		if ( $phone_length > 9 && $phone_length < 14 ) {
+			$phone                          = sprintf( '%s%d', '+', $phone );
+			$ec_data['sha256_phone_number'] = $this->normalize_and_hash( $phone );
+		}
+
+		// Check for required address fields.
+		if ( ! empty( $fname ) && ! empty( $lname ) && ! empty( $postcode ) && ! empty( $country ) ) {
+			$ec_data['address']['sha256_first_name'] = $this->normalize_and_hash( $fname );
+			$ec_data['address']['sha256_last_name']  = $this->normalize_and_hash( $lname );
+			$ec_data['address']['postal_code']       = $postcode;
+			$ec_data['address']['country']           = $country;
+
+			/**
+			 * Add additional data, if present.
+			 */
+
+			// Add street address.
+			if ( ! empty( $billing_address ) ) {
+				$ec_data['address']['sha256_street'] = $this->normalize_and_hash( $billing_address );
+			}
+
+			// Add city.
+			if ( ! empty( $city ) ) {
+				$ec_data['address']['city'] = $city;
+			}
+
+			// Add region.
+			if ( ! empty( $region ) ) {
+				$ec_data['address']['region'] = $region;
+			}
+		}
+
+		$purchase_user_data_gtag = sprintf( 'gtag("set", "user_data", %s)', wp_json_encode( $ec_data ) );
+
+		$this->add_inline_event_script( $purchase_user_data_gtag );
 	}
 
 	/**
@@ -582,5 +663,63 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			$this->get_version(),
 			false
 		);
+	}
+
+	/**
+	 * Get the config object for Google tag.
+	 *
+	 * @return array
+	 */
+	private function get_config_object(): array {
+		// Standard config.
+		$config = [
+			'groups'         => 'GLA',
+			'send_page_view' => false,
+		];
+
+		// Check if enhanced conversion is enabled.
+		if ( $this->is_enhanced_conversion_enabled() ) {
+			$config['allow_enhanced_conversions'] = true;
+		}
+
+		return $config;
+	}
+
+	/**
+	 * Checks if enhanced conversion is enabled.
+	 *
+	 * @return bool
+	 */
+	private function is_enhanced_conversion_enabled(): bool {
+		// Check if enhanced conversion is enabled.
+		$enhanced_conversion_status = $this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS, null );
+		return ( 'enabled' === $enhanced_conversion_status );
+	}
+
+	/**
+	 * Return the hashed data to be sent to Google Ads for enhanced conversion.
+	 *
+	 * @param string $value Data that needs to be hashed.
+	 * @param string $algo  Algorithm for hashing.
+	 * @param bool   $trim_intermediate_spaces Whether to trim intermediate spaces in values. Default true.
+	 *
+	 * @return string
+	 */
+	private function normalize_and_hash( string $value, $algo = 'sha256', bool $trim_intermediate_spaces = true ): string {
+		if ( empty( $value ) ) {
+			return '';
+		}
+
+		// Convert case to lowercase.
+		$normalized_value = strtolower( $value );
+
+		if ( $trim_intermediate_spaces ) {
+			$normalized_value = str_replace( ' ', '', $normalized_value );
+		} else {
+			// Remove leading and trailing whitespaces.
+			$normalized_value = trim( $normalized_value );
+		}
+
+		return hash( $algo, strtolower( trim( $normalized_value ) ) );
 	}
 }

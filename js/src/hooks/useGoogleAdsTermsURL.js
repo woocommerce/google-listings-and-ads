@@ -17,7 +17,7 @@ const useGoogleAdsEnhancedConversionTermsURL = () => {
 		const adsAccount = select( STORE_KEY ).getGoogleAdsAccount();
 
 		const url = addQueryArgs( ENHANCED_CONVERSION_TERMS_BASE_URL, {
-			ocid: adsAccount?.ocid,
+			ocid: adsAccount?.ocid || 0,
 			eppn: 'customerDataTerms',
 		} );
 

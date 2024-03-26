@@ -14,10 +14,8 @@ import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms'
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 
 const EnhancedConversion = () => {
-	const {
-		acceptedCustomerDataTerms: hasAcceptedTerms,
-		hasFinishedResolution,
-	} = useAcceptedCustomerDataTerms();
+	const { acceptedCustomerDataTerms: hasAcceptedTerms } =
+		useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 
 	return (
@@ -38,28 +36,30 @@ const EnhancedConversion = () => {
 					}
 				) }
 			</p>
-
-			{ hasAcceptedTerms === true && hasFinishedResolution && (
+			{ hasAcceptedTerms &&
+			allowEnhancedConversions !==
+				ENHANCED_ADS_CONVERSION_STATUS.ENABLED ? (
 				<p>
 					{ __(
 						'Clicking confirm will enable Enhanced Conversions on your account and update your tags accordingly. This feature can also be managed from Google Listings & Ads > Settings',
 						'google-listings-and-ads'
 					) }
 				</p>
-			) }
-
-			{ hasAcceptedTerms === false && hasFinishedResolution && (
-				<p>
-					{ __(
-						'Activating it is easy – just agree to the terms of service on Google Ads and we will make the tagging changes needed for you. This feature can also be managed from Google Listings & Ads > Settings',
-						'google-listings-and-ads'
-					) }
-				</p>
-			) }
-
-			{ allowEnhancedConversions ===
-				ENHANCED_ADS_CONVERSION_STATUS.PENDING &&
-				! hasAcceptedTerms && <PendingNotice /> }
+			) : null }
+			{ ! hasAcceptedTerms ? (
+				<>
+					<p>
+						{ __(
+							'Activating it is easy – just agree to the terms of service on Google Ads and we will make the tagging changes needed for you. This feature can also be managed from Google Listings & Ads > Settings',
+							'google-listings-and-ads'
+						) }
+					</p>
+					{ allowEnhancedConversions ===
+					ENHANCED_ADS_CONVERSION_STATUS.PENDING ? (
+						<PendingNotice />
+					) : null }
+				</>
+			) : null }
 		</GuidePageContent>
 	);
 };
