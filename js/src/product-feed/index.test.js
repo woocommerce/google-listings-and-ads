@@ -27,6 +27,18 @@ jest.mock( '.~/utils/localStorage', () => {
 	};
 } );
 
+jest.mock( '.~/hooks/useDispatchCoreNotices', () => ( {
+	__esModule: true,
+	default: jest
+		.fn()
+		.mockName( 'useDispatchCoreNotices' )
+		.mockImplementation( () => {
+			return {
+				createNotice: jest.fn(),
+			};
+		} ),
+} ) );
+
 jest.mock( '.~/utils/isWCTracksEnabled', () => jest.fn() );
 
 const SUBMISSION_SUCCESS_GUIDE_TEXT =

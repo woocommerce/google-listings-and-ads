@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -44,6 +45,11 @@ class CleanupSyncedProductsTest extends UnitTest {
 	/** @var CleanupSyncedProducts $job */
 	protected $job;
 
+	/**
+	 * @var MerchantStatuses|MockObject
+	 */
+	protected $merchant_statuses;
+
 	protected const JOB_NAME          = 'cleanup_synced_products';
 	protected const CREATE_BATCH_HOOK = 'gla/jobs/' . self::JOB_NAME . '/create_batch';
 	protected const PROCESS_ITEM_HOOK = 'gla/jobs/' . self::JOB_NAME . '/process_item';
@@ -61,13 +67,15 @@ class CleanupSyncedProductsTest extends UnitTest {
 		$this->product_repository   = $this->createMock( ProductRepository::class );
 		$this->batch_product_helper = $this->createMock( BatchProductHelper::class );
 		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
+		$this->merchant_statuses    = $this->createMock( MerchantStatuses::class );
 		$this->job                  = new CleanupSyncedProducts(
 			$this->action_scheduler,
 			$this->monitor,
 			$this->product_syncer,
 			$this->product_repository,
 			$this->batch_product_helper,
-			$this->merchant_center
+			$this->merchant_center,
+			$this->merchant_statuses
 		);
 
 		$this->job->init();
