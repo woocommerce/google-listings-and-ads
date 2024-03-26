@@ -10,6 +10,7 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 import { API_RESPONSE_CODES } from '.~/constants';
 import useLegacyMenuEffect from '.~/hooks/useLegacyMenuEffect';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
+import useUpdateRestAPIAuthorizeStatus from '.~/hooks/useUpdateRestAPIAuthorizeStatus';
 import { subpaths, getReconnectAccountUrl } from '.~/utils/urls';
 import { ContactInformationPreview } from '.~/components/contact-information';
 import LinkedAccounts from './linked-accounts';
@@ -19,7 +20,6 @@ import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
 import EnableNewProductSyncNotice from '.~/components/enable-new-product-sync-notice';
 import NavigationClassic from '.~/components/navigation-classic';
-import useUpdateRestAPIAuthorizeStatus from './useUpdateRestAPIAuthorizeStatus';
 import './index.scss';
 
 const pageClassName = 'gla-settings';
