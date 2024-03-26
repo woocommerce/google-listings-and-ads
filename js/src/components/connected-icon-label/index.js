@@ -1,33 +1,39 @@
 /**
  * External dependencies
  */
-import classnames from 'classnames';
 import { __ } from '@wordpress/i18n';
-import { Flex, FlexItem } from '@wordpress/components';
 import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
 
 /**
  * Internal dependencies
  */
-import './index.scss';
+import { css, defineShadowStylesHost } from '.~/utils/defineShadowStylesHost';
 
-const ConnectedIconLabel = ( props ) => {
-	const { className } = props;
+export const ConnectedIconLabelStyle = css`
+	:host {
+		display: inline-flex;
+		fill: currentcolor;
+		color: #23a713;
+		gap: var( --wp-grid-gap, 4px );
+		align-items: center;
 
-	return (
-		<Flex
-			className={ classnames( 'gla-connected-icon-label', className ) }
-			align="center"
-			gap={ 1 }
-		>
-			<FlexItem>
-				<GridiconCheckmarkCircle />
-			</FlexItem>
-			<FlexItem>
-				{ __( 'Connected', 'google-listings-and-ads' ) }
-			</FlexItem>
-		</Flex>
-	);
-};
+		direction: row;
+		justify-content: space-between;
+	}
+	::slotted( svg ) {
+		display: block;
+	}
+`;
+
+defineShadowStylesHost( 'gla-connected-icon-label', [
+	ConnectedIconLabelStyle,
+] );
+
+const ConnectedIconLabel = ( { className, ...props } ) => (
+	<gla-connected-icon-label class={ className } { ...props }>
+		<GridiconCheckmarkCircle />
+		{ __( 'Connected', 'google-listings-and-ads' ) }
+	</gla-connected-icon-label>
+);
 
 export default ConnectedIconLabel;
