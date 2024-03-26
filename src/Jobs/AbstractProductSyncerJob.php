@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob implements ProductSyncerJobInterface {
+abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob {
 
 	/**
 	 * @var ProductSyncer
@@ -55,15 +55,6 @@ abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob imple
 	}
 
 	/**
-	 * Get whether Merchant Center is connected and ready for syncing data.
-	 *
-	 * @return bool
-	 */
-	public function is_mc_ready_for_syncing(): bool {
-		return $this->merchant_center->is_ready_for_syncing();
-	}
-
-	/**
 	 * Can the job be scheduled.
 	 *
 	 * @param array|null $args
@@ -71,6 +62,6 @@ abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob imple
 	 * @return bool Returns true if the job can be scheduled.
 	 */
 	public function can_schedule( $args = [] ): bool {
-		return ! $this->is_running( $args ) && $this->is_mc_ready_for_syncing();
+		return ! $this->is_running( $args ) && $this->merchant_center->should_push();
 	}
 }

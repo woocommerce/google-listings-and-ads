@@ -27,7 +27,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\CouponNotific
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ProductNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\SettingsNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ShippingNotificationJob;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitExpiringProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
@@ -206,11 +205,8 @@ class JobServiceProvider extends AbstractServiceProvider {
 	 *
 	 * @param string $class_name   The class name to add.
 	 * @param mixed  ...$arguments Constructor arguments for the class.
-	 *
-	 * @throws InvalidClass When the given class does not implement the ProductSyncerJobInterface.
 	 */
 	protected function share_product_syncer_job( string $class_name, ...$arguments ) {
-		$this->validate_interface( $class_name, ProductSyncerJobInterface::class );
 		if ( is_subclass_of( $class_name, AbstractProductSyncerBatchedJob::class ) ) {
 			$this->share_action_scheduler_job(
 				$class_name,
@@ -236,12 +232,8 @@ class JobServiceProvider extends AbstractServiceProvider {
 	 *
 	 * @param string $class_name   The class name to add.
 	 * @param mixed  ...$arguments Constructor arguments for the class.
-	 *
-	 * @throws InvalidClass When the given class does not implement the ProductSyncerJobInterface.
 	 */
 	protected function share_coupon_syncer_job( string $class_name, ...$arguments ) {
-		// Coupon related jobs also should implement ProductSyncerJobInterface.
-		$this->validate_interface( $class_name, ProductSyncerJobInterface::class );
 		$this->share_action_scheduler_job(
 			$class_name,
 			CouponHelper::class,
