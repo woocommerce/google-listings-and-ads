@@ -229,7 +229,7 @@ class AccountService implements OptionsAwareInterface, Service {
 		if ( $has_access ) {
 			$billing_url = add_query_arg(
 				[
-					'ocid' => $ocid ?? '',
+					'ocid' => $ocid ?: 0,
 				],
 				'https://ads.google.com/aw/signup/payment'
 			);
