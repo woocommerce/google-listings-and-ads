@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\HelperNotificationInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -36,7 +37,7 @@ class ProductNotificationJob extends AbstractItemNotificationJob {
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
 		NotificationsService $notifications_service,
-		ProductHelper $helper
+		HelperNotificationInterface $helper
 	) {
 		$this->notifications_service = $notifications_service;
 		$this->helper                = $helper;
@@ -58,7 +59,7 @@ class ProductNotificationJob extends AbstractItemNotificationJob {
 	 *
 	 * @return ProductHelper
 	 */
-	public function get_helper() {
+	public function get_helper(): HelperNotificationInterface {
 		return $this->helper;
 	}
 

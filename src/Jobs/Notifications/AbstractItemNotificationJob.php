@@ -3,9 +3,8 @@ declare(strict_types=1);
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\HelperNotificationInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -116,7 +115,7 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	/**
 	 * Get the helper
 	 *
-	 * @return CouponHelper|ProductHelper
+	 * @return HelperNotificationInterface
 	 */
-	abstract public function get_helper();
+	abstract public function get_helper(): HelperNotificationInterface;
 }

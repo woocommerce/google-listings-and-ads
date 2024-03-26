@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product as GoogleProduct;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\HelperNotificationInterface;
 use WC_Product;
 use WC_Product_Variation;
 use WP_Post;
@@ -25,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class ProductHelper implements Service {
+class ProductHelper implements Service, HelperNotificationInterface {
 
 	use PluginHelper;
 
@@ -103,7 +104,7 @@ class ProductHelper implements Service {
 	/**
 	 * @param WC_Product $product
 	 */
-	public function mark_as_unsynced( WC_Product $product ) {
+	public function mark_as_unsynced( $product ): void {
 		$this->meta_handler->delete_synced_at( $product );
 		if ( ! $this->is_sync_ready( $product ) ) {
 			$this->meta_handler->delete_sync_status( $product );
@@ -390,7 +391,7 @@ class ProductHelper implements Service {
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_create_notification( WC_Product $product ): bool {
+	public function should_trigger_create_notification( $product ): bool {
 		return $this->is_ready_to_notify( $product ) && ! $this->has_notified_creation( $product );
 	}
 
@@ -402,7 +403,7 @@ class ProductHelper implements Service {
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_update_notification( WC_Product $product ): bool {
+	public function should_trigger_update_notification( $product ): bool {
 		return $this->is_ready_to_notify( $product ) && $this->has_notified_creation( $product );
 	}
 
@@ -414,7 +415,7 @@ class ProductHelper implements Service {
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_delete_notification( WC_Product $product ): bool {
+	public function should_trigger_delete_notification( $product ): bool {
 		return ! $this->is_ready_to_notify( $product ) && $this->has_notified_creation( $product );
 	}
 
@@ -447,7 +448,7 @@ class ProductHelper implements Service {
 	 * @param WC_Product $product
 	 * @param string     $status
 	 */
-	public function set_notification_status( WC_Product $product, $status ): void {
+	public function set_notification_status( $product, $status ): void {
 		$this->meta_handler->update_notification_status( $product, $status );
 	}
 

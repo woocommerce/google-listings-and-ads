@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\HelperNotificationInterface;
 use WC_Coupon;
 defined( 'ABSPATH' ) || exit();
 
@@ -18,7 +19,7 @@ defined( 'ABSPATH' ) || exit();
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Coupon
  */
-class CouponHelper implements Service {
+class CouponHelper implements Service, HelperNotificationInterface {
 
 	use PluginHelper;
 
@@ -92,7 +93,7 @@ class CouponHelper implements Service {
 	 *
 	 * @param WC_Coupon $coupon
 	 */
-	public function mark_as_unsynced( WC_Coupon $coupon ) {
+	public function mark_as_unsynced( $coupon ): void {
 		$this->meta_handler->delete_synced_at( $coupon );
 		$this->meta_handler->update_sync_status( $coupon, SyncStatus::NOT_SYNCED );
 		$this->meta_handler->delete_google_ids( $coupon );
@@ -375,7 +376,7 @@ class CouponHelper implements Service {
 	 * @param WC_Coupon $coupon
 	 * @param string    $status
 	 */
-	public function set_notification_status( WC_Coupon $coupon, $status ): void {
+	public function set_notification_status( $coupon, $status ): void {
 		$this->meta_handler->update_notification_status( $coupon, $status );
 	}
 
@@ -387,7 +388,7 @@ class CouponHelper implements Service {
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_create_notification( WC_Coupon $coupon ): bool {
+	public function should_trigger_create_notification( $coupon ): bool {
 		return $this->is_ready_to_notify( $coupon ) && ! $this->has_notified_creation( $coupon );
 	}
 
@@ -399,7 +400,7 @@ class CouponHelper implements Service {
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_update_notification( WC_Coupon $coupon ): bool {
+	public function should_trigger_update_notification( $coupon ): bool {
 		return $this->is_ready_to_notify( $coupon ) && $this->has_notified_creation( $coupon );
 	}
 
@@ -411,7 +412,7 @@ class CouponHelper implements Service {
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_delete_notification( WC_Coupon $coupon ): bool {
+	public function should_trigger_delete_notification( $coupon ): bool {
 		return ! $this->is_ready_to_notify( $coupon ) && $this->has_notified_creation( $coupon );
 	}
 }
