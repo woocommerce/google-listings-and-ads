@@ -369,7 +369,7 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 				'topic'   => $this->get_topic_name() . '.create',
 			]
 		);
-	}	
+	}
 
 	public function get_name() {
 		return 'notifications/' . $this->get_job_name();
