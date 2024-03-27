@@ -28,10 +28,10 @@ class CouponNotificationJob extends AbstractItemNotificationJob {
 	/**
 	 * Notifications Jobs constructor.
 	 *
-	 * @param ActionSchedulerInterface  $action_scheduler
-	 * @param ActionSchedulerJobMonitor $monitor
-	 * @param NotificationsService      $notifications_service
-	 * @param CouponHelper              $coupon_helper
+	 * @param ActionSchedulerInterface    $action_scheduler
+	 * @param ActionSchedulerJobMonitor   $monitor
+	 * @param NotificationsService        $notifications_service
+	 * @param HelperNotificationInterface $coupon_helper
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,

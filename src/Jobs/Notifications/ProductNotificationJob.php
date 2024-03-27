@@ -28,10 +28,10 @@ class ProductNotificationJob extends AbstractItemNotificationJob {
 	/**
 	 * Notifications Jobs constructor.
 	 *
-	 * @param ActionSchedulerInterface  $action_scheduler
-	 * @param ActionSchedulerJobMonitor $monitor
-	 * @param NotificationsService      $notifications_service
-	 * @param ProductHelper             $helper
+	 * @param ActionSchedulerInterface    $action_scheduler
+	 * @param ActionSchedulerJobMonitor   $monitor
+	 * @param NotificationsService        $notifications_service
+	 * @param HelperNotificationInterface $helper
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,

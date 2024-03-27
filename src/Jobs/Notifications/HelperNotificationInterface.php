@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
  */
-interface  HelperNotificationInterface {
+interface HelperNotificationInterface {
 
 	/**
 	 * Checks if the item can be processed based on the topic.
@@ -39,25 +39,33 @@ interface  HelperNotificationInterface {
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_update_notification( $item ): bool;	
+	public function should_trigger_update_notification( $item ): bool;
 
 	/**
 	 * Marks the item as unsynced.
 	 *
 	 * @param WC_Product|WC_Coupon $item
 	 *
-	 * @return bool
-	 */	
+	 * @return void
+	 */
 	public function mark_as_unsynced( $item ): void;
 
 	/**
 	 * Set the notification status for an item.
 	 *
 	 * @param WC_Product|WC_Coupon $product
-	 * @param string     $status
+	 * @param string               $status
 	 *
-	 * @return bool
-	 */	
-	public function set_notification_status( $item, $status ): void;	
+	 * @return void
+	 */
+	public function set_notification_status( $item, $status ): void;
 
+	/**
+	 * Marks the item as notified.
+	 *
+	 * @param WC_Product|WC_Coupon $item
+	 *
+	 * @return void
+	 */
+	public function mark_as_notified( $item ): void;
 }
