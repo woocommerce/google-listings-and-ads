@@ -58,17 +58,26 @@ const ClaimTermsAndCreateAccountButton = () => {
 };
 
 const CreateAccount = ( props ) => {
-	const { allowShowExisting, onShowExisting } = props;
+	const { allowShowExisting, onShowExisting, disabled } = props;
 
 	return (
 		<AccountCard
+			disabled={ disabled }
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			alignIcon="top"
-			indicator={ <ClaimTermsAndCreateAccountButton /> }
+			indicator={
+				disabled ? null : (
+					<ClaimTermsAndCreateAccountButton disabled={ disabled } />
+				)
+			}
 		>
 			{ allowShowExisting && (
 				<Section.Card.Footer>
-					<AppButton isLink onClick={ onShowExisting }>
+					<AppButton
+						isLink
+						onClick={ onShowExisting }
+						disabled={ disabled }
+					>
 						{ __(
 							'Or, use your existing Google Ads account',
 							'google-listings-and-ads'

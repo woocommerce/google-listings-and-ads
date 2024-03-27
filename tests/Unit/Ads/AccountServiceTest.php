@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -41,6 +42,9 @@ class AccountServiceTest extends UnitTest {
 
 	/** @var MockObject|AdsAccountState $state */
 	protected $state;
+
+	/** @var MockObject|MerchantAccountState $merchant_state */
+	protected $merchant_state;
 
 	/** @var MockObject|TransientsInterface $transients */
 	protected $transients;
@@ -107,6 +111,7 @@ class AccountServiceTest extends UnitTest {
 		$this->merchant          = $this->createMock( Merchant::class );
 		$this->middleware        = $this->createMock( Middleware::class );
 		$this->state             = $this->createMock( AdsAccountState::class );
+		$this->merchant_state    = $this->createMock( MerchantAccountState::class );
 		$this->options           = $this->createMock( OptionsInterface::class );
 		$this->transients        = $this->createMock( TransientsInterface::class );
 
@@ -116,6 +121,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( Merchant::class, $this->merchant );
 		$this->container->share( Middleware::class, $this->middleware );
 		$this->container->share( AdsAccountState::class, $this->state );
+		$this->container->share( MerchantAccountState::class, $this->merchant_state );
 		$this->container->share( TransientsInterface::class, $this->transients );
 
 		$this->account = new AccountService( $this->container );
@@ -370,22 +376,30 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_setup_account_step_link_merchant_no_merchant_id() {
+		$ads_account_state = [
+			'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
+		];
+
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
 		$this->options->expects( $this->any() )
 			->method( 'get_merchant_id' )
 			->willReturn( 0 );
 
 		$this->state->expects( $this->once() )
 			->method( 'get' )
-			->willReturn(
-				[
-					'link_merchant' => [ 'status' => AdsAccountState::STEP_PENDING ],
-				]
-			);
+			->willReturn( $ads_account_state );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'A Merchant Center account must be connected' );
+		$this->state->expects( $this->once() )
+			->method( 'update' )
+			->with( $ads_account_state );
 
-		$this->account->setup_account();
+		$this->middleware->expects( $this->never() )
+			->method( 'link_ads_account' );
+
+		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
 	}
 
 	public function test_setup_account_step_conversion_action() {

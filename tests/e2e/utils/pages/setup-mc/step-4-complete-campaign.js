@@ -61,7 +61,7 @@ export default class CompleteCampaign extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get ads account section.
 	 */
 	getAdsAccountSection() {
-		return this.getSections().nth( 1 );
+		return this.getSections().nth( 2 );
 	}
 
 	/**

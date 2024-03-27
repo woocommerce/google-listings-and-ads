@@ -30,7 +30,7 @@ class MerchantAccountState extends AccountState {
 	 * @return string[]
 	 */
 	protected function account_creation_steps(): array {
-		return [ 'set_id', 'verify', 'link', 'claim' ];
+		return [ 'set_id', 'verify', 'link', 'claim', 'link_ads' ];
 	}
 
 	/**

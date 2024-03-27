@@ -1,4 +1,10 @@
 /**
+ * External dependencies
+ */
+import { Notice } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import SpinnerCard from '.~/components/spinner-card';
@@ -10,10 +16,15 @@ import AuthorizeAds from './authorize-ads';
 import { GOOGLE_ADS_ACCOUNT_STATUS } from '.~/constants';
 
 export default function GoogleAdsAccountCard() {
-	const { google, scope } = useGoogleAccount();
-	const { googleAdsAccount } = useGoogleAdsAccount();
+	const {
+		google,
+		scope,
+		isResolving: isResolvingGoogleAccount,
+	} = useGoogleAccount();
+	const { googleAdsAccount, isResolving: isResolvingGoogleAdsAccount } =
+		useGoogleAdsAccount();
 
-	if ( ! google || ! googleAdsAccount ) {
+	if ( isResolvingGoogleAccount || isResolvingGoogleAdsAccount ) {
 		return <SpinnerCard />;
 	}
 
@@ -21,11 +32,21 @@ export default function GoogleAdsAccountCard() {
 		return <AuthorizeAds additionalScopeEmail={ google.email } />;
 	}
 
-	if ( googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ) {
+	if ( googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.DISCONNECTED ) {
 		return <NonConnected />;
 	}
 
 	return (
-		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount } />
+		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount }>
+			{ googleAdsAccount.status ===
+				GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED && (
+				<Notice status="success" isDismissible={ false }>
+					{ __(
+						'Conversion measurement has been set up. You can create a campaign later.',
+						'google-listings-and-ads'
+					) }
+				</Notice>
+			) }
+		</ConnectedGoogleAdsAccountCard>
 	);
 }

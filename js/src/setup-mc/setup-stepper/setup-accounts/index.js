@@ -21,8 +21,10 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import WPComAccountCard from '.~/components/wpcom-account-card';
 import GoogleAccountCard from '.~/components/google-account-card';
 import GoogleMCAccountCard from '.~/components/google-mc-account-card';
+import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
 import Faqs from './faqs';
 import './index.scss';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 
 /**
  * Renders the disclaimer of Comparison Shopping Service (CSS).
@@ -83,6 +85,7 @@ const SetupAccounts = ( props ) => {
 	const { google, scope } = useGoogleAccount();
 	const { googleMCAccount, isPreconditionReady: isGMCPreconditionReady } =
 		useGoogleMCAccount();
+	const { googleAdsAccount } = useGoogleAdsAccount();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,
@@ -104,7 +107,9 @@ const SetupAccounts = ( props ) => {
 	}
 
 	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
-	const isContinueButtonDisabled = googleMCAccount?.status !== 'connected';
+	const isContinueButtonDisabled =
+		googleAdsAccount?.status !== 'connected' ||
+		googleMCAccount?.status !== 'connected';
 
 	return (
 		<StepContent>
@@ -129,6 +134,7 @@ const SetupAccounts = ( props ) => {
 				<VerticalGapLayout size="large">
 					<WPComAccountCard jetpack={ jetpack } />
 					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
+					<GoogleAdsAccountCard />
 				</VerticalGapLayout>
 			</Section>
 			<Section

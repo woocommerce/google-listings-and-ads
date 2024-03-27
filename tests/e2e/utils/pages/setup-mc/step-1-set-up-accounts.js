@@ -56,7 +56,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getMCCreateAccountButtonFromPage() {
 		const button = this.getCreateAccountButton();
-		return button.locator( ':scope.is-secondary' );
+		return button.locator( ':scope.is-secondary' ).nth( 1 );
 	}
 
 	/**
@@ -111,7 +111,16 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Merchant Center description row.
 	 */
 	getMCDescriptionRow() {
-		return this.getCardDescriptionClass().nth( 2 );
+		return this.getCardDescriptionClass().nth( 3 );
+	}
+
+	/**
+	 * Get Google Ads title.
+	 *
+	 * @return {import('@playwright/test').Locator} Get Google Ads title.
+	 */
+	getAdsTitleRow() {
+		return this.getCardTitleClass().nth( 2 );
 	}
 
 	/**
@@ -120,7 +129,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get Google Merchant Center title.
 	 */
 	getMCTitleRow() {
-		return this.getCardTitleClass().nth( 2 );
+		return this.getCardTitleClass().nth( 3 );
 	}
 
 	/**
@@ -261,7 +270,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get select existing Merchant Center account title.
 	 */
 	getSelectExistingMCAccountTitle() {
-		return this.getSubSectionTitleRow().nth( 3 );
+		return this.getSubSectionTitleRow().nth( 4 );
 	}
 
 	/**
@@ -313,12 +322,21 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
+	 * Get WordPress account card.
+	 *
+	 * @return {import('@playwright/test').Locator} Get WordPress account card.
+	 */
+	getGoogleAdsAccountCard() {
+		return this.getAccountCards().nth( 2 );
+	}
+
+	/**
 	 * Get Merchant Center account card.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Merchant Center account card.
 	 */
 	getMCAccountCard() {
-		return this.getAccountCards().nth( 2 );
+		return this.getAccountCards().nth( 3 );
 	}
 
 	/**
@@ -375,5 +393,39 @@ export default class SetUpAccountsPage extends MockRequests {
 			name,
 			exact: true,
 		} );
+	}
+
+	/**
+	 * Click create account button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async getCreateAdsAccountButton() {
+		return this.page
+			.getByRole( 'button', {
+				name: 'Create account',
+				exact: true,
+			} )
+			.first();
+	}
+
+	/**
+	 * Click create account button.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickCreateAdsAccountButton() {
+		const button = await this.getCreateAdsAccountButton();
+		await button.click();
+		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+	}
+
+	/**
+	 * Get ads account connected text.
+	 *
+	 * @return {import('@playwright/test').Locator} Get ads account connected text.
+	 */
+	getAdsAccountConnectedText() {
+		return this.getGoogleAdsAccountCard().getByText( 'Connected' );
 	}
 }
