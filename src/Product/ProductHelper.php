@@ -59,6 +59,31 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	}
 
 	/**
+	 * Mark the item as notified.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return void
+	 */
+	public function mark_as_notified( $product ): void {
+		$this->meta_handler->delete_failed_delete_attempts( $product );
+		$this->meta_handler->update_synced_at( $product, time() );
+		$this->meta_handler->update_sync_status( $product, SyncStatus::SYNCED );
+		$this->update_empty_visibility( $product );
+
+		// mark the parent product as synced if it's a variation
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
+
+			$this->mark_as_notified( $parent_product );
+		}
+	}
+
+	/**
 	 * Mark a product as synced in the local database.
 	 * This function also handles the following cleanup tasks:
 	 * - Remove any failed delete attempts
