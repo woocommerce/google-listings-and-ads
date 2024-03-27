@@ -53,7 +53,7 @@ interface HelperNotificationInterface {
 	/**
 	 * Set the notification status for an item.
 	 *
-	 * @param WC_Product|WC_Coupon $product
+	 * @param WC_Product|WC_Coupon $item
 	 * @param string               $status
 	 *
 	 * @return void
