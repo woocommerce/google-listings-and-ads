@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { sprintf, __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 // The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
 // See https://github.com/woocommerce/woocommerce-admin/issues/7781
@@ -19,6 +20,10 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import EnableNewProductSyncButton from '.~/components/enable-new-product-sync-button';
 import AppNotice from '.~/components/app-notice';
+import DisconnectModal, {
+	API_DATA_FETCH_FEATURE,
+} from '.~/settings/disconnect-modal';
+import { getSettingsUrl } from '.~/utils/urls';
 
 /**
  * Clicking on the "connect to a different Google Merchant Center account" button.
@@ -57,6 +62,14 @@ const ConnectedGoogleMCAccountCard = ( {
 		path: `${ API_NAMESPACE }/rest-api/authorize`,
 		method: 'DELETE',
 	} );
+
+	/**
+	 * Temporary code for disabling the API PULL Beta Feature from the GMC Card
+	 */
+	const [ openedModal, setOpenedModal ] = useState( null );
+	const dismissModal = () => setOpenedModal( null );
+	const openDisableDataFetchModal = () =>
+		setOpenedModal( API_DATA_FETCH_FEATURE );
 
 	const domain = new URL( getSetting( 'homeUrl' ) ).host;
 
@@ -174,6 +187,17 @@ const ConnectedGoogleMCAccountCard = ( {
 				</AppNotice>
 			) }
 
+			{ openedModal && (
+				<DisconnectModal
+					onRequestClose={ dismissModal }
+					onDisconnected={ () => {
+						window.location.href = getSettingsUrl();
+					} }
+					disconnectTarget={ openedModal }
+					disconnectAction={ disableNotifications }
+				/>
+			) }
+
 			{ showFooter && (
 				<Section.Card.Footer>
 					{ ! hideAccountSwitch && (
@@ -198,7 +222,7 @@ const ConnectedGoogleMCAccountCard = ( {
 								'google-listings-and-ads'
 							) }
 							eventName="gla_mc_account_disconnect_wpcom_rest_api"
-							onClick={ disableNotifications }
+							onClick={ openDisableDataFetchModal }
 						/>
 					) }
 				</Section.Card.Footer>
