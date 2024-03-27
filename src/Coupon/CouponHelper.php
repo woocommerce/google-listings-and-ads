@@ -59,6 +59,19 @@ class CouponHelper implements Service, HelperNotificationInterface {
 	}
 
 	/**
+	 * Mark the item as notified.
+	 *
+	 * @param WC_Coupon $coupon
+	 *
+	 * @return void
+	 */
+	public function mark_as_notified( $coupon ): void {
+		$this->meta_handler->update_synced_at( $coupon, time() );
+		$this->meta_handler->update_sync_status( $coupon, SyncStatus::SYNCED );
+		$this->update_empty_visibility( $coupon );
+	}
+
+	/**
 	 * Mark a coupon as synced. This function accepts nullable $google_id,
 	 * which guarantees version compatibility for Alpha, Beta and stable verison promtoion APIs.
 	 *
