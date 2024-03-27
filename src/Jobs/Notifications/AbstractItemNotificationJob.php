@@ -37,7 +37,7 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 
 		if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $topic, $item ) ) {
 			$this->set_status( $item, $this->get_after_notification_status( $topic ) );
-			$this->maybe_mark_as_unsynced( $topic, $item );
+			$this->handle_notified( $topic, $item );
 		}
 	}
 
@@ -90,18 +90,19 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	}
 
 	/**
-	 * If there is a valid Item ID and topic is a deletion topic. Mark the item as unsynced.
+	 * Handle the item after the notification.
 	 *
 	 * @param string $topic
 	 * @param int    $item
 	 */
-	protected function maybe_mark_as_unsynced( string $topic, int $item ): void {
-		if ( ! str_contains( $topic, '.delete' ) ) {
-			return;
+	protected function handle_notified( string $topic, int $item ): void {
+		if ( str_contains( $topic, '.delete' ) ) {
+			$this->get_helper()->mark_as_unsynced( $this->get_item( $item ) );
 		}
 
-		$item = $this->get_item( $item );
-		$this->get_helper()->mark_as_unsynced( $item );
+		if ( str_contains( $topic, '.create' ) ) {
+			$this->get_helper()->mark_as_notified( $this->get_item( $item ) );
+		}
 	}
 
 	/**
