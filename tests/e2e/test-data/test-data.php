@@ -49,6 +49,22 @@ function register_routes() {
 			],
 		],
 	);
+	register_rest_route(
+		'wc/v3',
+		'gla-test/enhanced-conversions',
+		[
+			[
+				'methods'             => 'POST',
+				'callback'            => __NAMESPACE__ . '\enable_enhanced_conversions',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+			[
+				'methods'             => 'DELETE',
+				'callback'            => __NAMESPACE__ . '\disable_enhanced_conversions',
+				'permission_callback' => __NAMESPACE__ . '\permissions',
+			],
+		],
+	);
 }
 
 /**
@@ -105,6 +121,30 @@ function clear_conversion_id() {
 	/** @var OptionsInterface $options */
 	$options = woogle_get_container()->get( OptionsInterface::class );
 	$options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
+}
+
+/**
+ * Enable enhanced conversions.
+ */
+function enable_enhanced_conversions() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update(
+		OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS,
+		'enabled'
+	);
+}
+
+/**
+ * Disable enhanced conversions.
+ */
+function disable_enhanced_conversions() {
+	/** @var OptionsInterface $options */
+	$options = woogle_get_container()->get( OptionsInterface::class );
+	$options->update(
+		OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS,
+		'disabled'
+	);
 }
 
 /**

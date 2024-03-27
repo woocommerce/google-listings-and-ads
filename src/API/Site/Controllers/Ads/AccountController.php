@@ -86,6 +86,42 @@ class AccountController extends BaseController {
 				],
 			]
 		);
+
+		$this->register_route(
+			'ads/accepted-customer-data-terms',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_accepted_customer_data_terms_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+
+		$this->register_route(
+			'ads/enhanced-conversion-status',
+			[
+				[
+					'methods'             => TransportMethods::EDITABLE,
+					'callback'            => $this->update_enhanced_ads_conversion_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => [
+						'status' => [
+							'description'       => __( 'Enhanced Conversion status.', 'google-listings-and-ads' ),
+							'type'              => 'string',
+							'enum'              => [ 'enabled', 'disabled', 'pending' ],
+							'validate_callback' => 'rest_validate_request_arg',
+							'required'          => true,
+						],
+					],
+				],
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_enhanced_conversion_status_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -159,6 +195,49 @@ class AccountController extends BaseController {
 	protected function get_billing_status_callback(): callable {
 		return function () {
 			return $this->account->get_billing_status();
+		};
+	}
+
+	/**
+	 * Get the callback function for retrieving the accepted customer data terms status.
+	 *
+	 * @return callable
+	 */
+	protected function get_accepted_customer_data_terms_callback(): callable {
+		return function () {
+			return $this->account->get_accepted_customer_data_terms();
+		};
+	}
+
+	/**
+	 * Get the callback function for updating the ads enhanced conversion status.
+	 *
+	 * @return callable
+	 */
+	protected function update_enhanced_ads_conversion_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				$status = $request['status'];
+
+				return $this->account->update_enhanced_conversion_status( $status );
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for retrieving the enhanced conversion status.
+	 *
+	 * @return callable
+	 */
+	protected function get_enhanced_conversion_status_callback(): callable {
+		return function ( Request $request ) {
+			try {
+				return $this->account->get_enhanced_conversion_status();
+			} catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
+			}
 		};
 	}
 

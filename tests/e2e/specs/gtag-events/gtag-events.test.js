@@ -10,6 +10,8 @@ import {
 	createSimpleProduct,
 	setConversionID,
 	clearConversionID,
+	enableEnhancedConversions,
+	disableEnhancedConversions,
 } from '../../utils/api';
 import {
 	blockProductAddToCart,
@@ -18,7 +20,11 @@ import {
 	singleProductAddToCart,
 } from '../../utils/customer';
 import { createBlockShopPage } from '../../utils/block-page';
-import { getEventData, trackGtagEvent } from '../../utils/track-event';
+import {
+	getEventData,
+	trackGtagEvent,
+	getDataLayerValue,
+} from '../../utils/track-event';
 
 const config = require( '../../config/default' );
 const productPrice = config.products.simple.regular_price;
@@ -28,6 +34,7 @@ let simpleProductID;
 test.describe( 'GTag events', () => {
 	test.beforeAll( async () => {
 		await setConversionID();
+		await enableEnhancedConversions();
 		simpleProductID = await createSimpleProduct();
 	} );
 
@@ -191,5 +198,44 @@ test.describe( 'GTag events', () => {
 			expect( data.currency_code ).toEqual( 'USD' );
 			expect( data.country ).toEqual( 'US' );
 		} );
+	} );
+
+	test( 'User data for enhanced conversions are not sent when not enabled', async ( {
+		page,
+	} ) => {
+		await disableEnhancedConversions();
+		await singleProductAddToCart( page, simpleProductID );
+
+		await checkout( page );
+
+		const dataConfig = await getDataLayerValue( page, {
+			type: 'config',
+			key: 'AW-123456',
+		} );
+
+		expect( dataConfig ).toBeDefined();
+		expect( dataConfig.allow_enhanced_conversions ).toBeUndefined();
+	} );
+
+	test( 'User data for enhanced conversions is sent when enabled', async ( {
+		page,
+	} ) => {
+		await enableEnhancedConversions();
+		await singleProductAddToCart( page, simpleProductID );
+
+		await checkout( page );
+
+		const dataConfig = await getDataLayerValue( page, {
+			type: 'config',
+			key: 'AW-123456',
+		} );
+
+		const dataUserData = await getDataLayerValue( page, {
+			type: 'set',
+			key: 'user_data',
+		} );
+
+		expect( dataConfig.allow_enhanced_conversions ).toBeTruthy();
+		expect( dataUserData.sha256_email_address ).toBeDefined();
 	} );
 } );

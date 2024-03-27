@@ -67,6 +67,12 @@ describe( 'reducer', () => {
 			report: {},
 			store_categories: [],
 			tours: {},
+			ads: {
+				conversion_tracking_setting: {
+					accepted_customer_data_terms: null,
+					allow_enhanced_conversions: null,
+				},
+			},
 		} );
 
 		prepareState = prepareImmutableStateWithRefCheck.bind(

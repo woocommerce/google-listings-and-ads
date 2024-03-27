@@ -34,6 +34,7 @@ import {
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchMCSetup,
+	fetchAcceptedCustomerDataTerms,
 	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
@@ -45,6 +46,7 @@ import {
 	receiveMappingRules,
 	receiveStoreCategories,
 	receiveTour,
+	receiveAllowEnhancedConversions,
 } from './actions';
 
 export function* getShippingRates() {
@@ -514,6 +516,44 @@ export function* getTour( tourId ) {
 			error,
 			__(
 				'There was an error getting the tour.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver for getting the accepted customer data terms.
+ */
+export function* getAcceptedCustomerDataTerms() {
+	try {
+		yield fetchAcceptedCustomerDataTerms();
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the accepted customer data terms.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Resolver for getting the enhanced conversion status.
+ */
+export function* getAllowEnhancedConversions() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/enhanced-conversion-status`,
+		} );
+
+		yield receiveAllowEnhancedConversions( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the enhance conversions status.',
 				'google-listings-and-ads'
 			)
 		);

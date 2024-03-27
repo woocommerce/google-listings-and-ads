@@ -64,6 +64,12 @@ const DEFAULT_STATE = {
 	report: {},
 	store_categories: [],
 	tours: {},
+	ads: {
+		conversion_tracking_setting: {
+			accepted_customer_data_terms: null,
+			allow_enhanced_conversions: null,
+		},
+	},
 };
 
 /**
@@ -489,6 +495,34 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			} );
 
 			return stateSetter.end();
+		}
+
+		case TYPES.RECEIVE_ACCEPTED_CUSTOMER_DATA_TERMS: {
+			const {
+				data: { status },
+			} = action;
+
+			return setIn(
+				state,
+				'ads.conversion_tracking_setting.accepted_customer_data_terms',
+				status
+			);
+		}
+
+		case TYPES.RECEIVE_ALLOW_ENHANCED_CONVERSIONS: {
+			const {
+				data: { status },
+			} = action;
+
+			if ( status === null || status === undefined ) {
+				return state;
+			}
+
+			return setIn(
+				state,
+				'ads.conversion_tracking_setting.allow_enhanced_conversions',
+				status
+			);
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

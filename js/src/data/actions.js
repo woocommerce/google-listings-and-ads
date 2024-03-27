@@ -1249,3 +1249,63 @@ export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
 		);
 	}
 }
+
+export function receiveAcceptedTerms( data ) {
+	return {
+		type: TYPES.RECEIVE_ACCEPTED_CUSTOMER_DATA_TERMS,
+		data,
+	};
+}
+
+/**
+ * Updates the enhanced ads conversion status.
+ *
+ * @param {string} status to enable/disable enhanced ads conversion. Possible values are pending, enabled and disabled.
+ * @return {boolean} String The updated status.
+ */
+export function* updateEnhancedAdsConversionStatus( status ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/enhanced-conversion-status`,
+			method: REQUEST_ACTIONS.POST,
+			data: {
+				status,
+			},
+		} );
+
+		return receiveAllowEnhancedConversions( response );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error updating the enhanced ads conversion status.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function receiveAllowEnhancedConversions( data ) {
+	return {
+		type: TYPES.RECEIVE_ALLOW_ENHANCED_CONVERSIONS,
+		data,
+	};
+}
+
+export function* fetchAcceptedCustomerDataTerms() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/accepted-customer-data-terms`,
+		} );
+
+		return receiveAcceptedTerms( data );
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'Unable to complete request. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}

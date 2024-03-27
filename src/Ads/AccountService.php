@@ -74,12 +74,15 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @return array
 	 */
 	public function get_connected_account(): array {
-		$id = $this->options->get_ads_id();
+		$id       = $this->options->get_ads_id();
+		$ocid     = $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID, '' );
+		$currency = $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY );
 
 		$status = [
 			'id'       => $id,
-			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
-			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) ),
+			'currency' => $currency,
+			'ocid'     => $ocid,
+			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $currency ) ),
 			'status'   => $id ? 'connected' : 'disconnected',
 		];
 
@@ -215,6 +218,8 @@ class AccountService implements OptionsAwareInterface, Service {
 		$this->options->delete( OptionsInterface::ADS_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::ADS_BILLING_URL );
 		$this->options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
+		$this->options->delete( OptionsInterface::ADS_CUSTOMER_DATA_TERMS );
+		$this->options->delete( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS );
 		$this->options->delete( OptionsInterface::ADS_ID );
 		$this->options->delete( OptionsInterface::ADS_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::CAMPAIGN_CONVERT_STATUS );
@@ -276,5 +281,46 @@ class AccountService implements OptionsAwareInterface, Service {
 	private function create_conversion_action(): void {
 		$action = $this->container->get( AdsConversionAction::class )->create_conversion_action();
 		$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $action );
+	}
+
+	/**
+	 * Gets the accepted customer data terms status.
+	 *
+	 * @return array
+	 */
+	public function get_accepted_customer_data_terms(): array {
+		$status = $this->container->get( Ads::class )->get_accepted_customer_data_terms();
+
+		return [
+			'status' => $status,
+		];
+	}
+
+	/**
+	 * Updates the enhanced ads conversion status.
+	 *
+	 * @param string $status Status which should be updated to. Possible values are: pending, enabled and disabled.
+	 *
+	 * @return array
+	 */
+	public function update_enhanced_conversion_status( string $status ): array {
+		$updated_status = $this->container->get( Ads::class )->update_enhanced_conversion_status( $status );
+
+		return [
+			'status' => $updated_status,
+		];
+	}
+
+	/**
+	 * Gets the enhanced conversion status.
+	 *
+	 * @return array
+	 */
+	public function get_enhanced_conversion_status(): array {
+		$status = $this->container->get( Ads::class )->get_enhanced_conversion_status();
+
+		return [
+			'status' => $status,
+		];
 	}
 }
