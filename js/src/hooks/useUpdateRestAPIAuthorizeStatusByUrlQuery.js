@@ -20,7 +20,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
  * They will add a query param `google_wpcom_app_status` to the URL, we will store this status to
  * the DB by calling an API `POST /wc/gla/rest-api/authorize`.
  */
-const useUpdateRestAPIAuthorizeStatus = () => {
+const useUpdateRestAPIAuthorizeStatusByUrlQuery = () => {
 	const { google_wpcom_app_status: googleWPCOMAppStatus } = getQuery();
 	const { invalidateResolution } = useAppDispatch();
 
@@ -62,4 +62,4 @@ const useUpdateRestAPIAuthorizeStatus = () => {
 	}, [ googleWPCOMAppStatus, handleUpdateRestAPIAuthorize ] );
 };
 
-export default useUpdateRestAPIAuthorizeStatus;
+export default useUpdateRestAPIAuthorizeStatusByUrlQuery;

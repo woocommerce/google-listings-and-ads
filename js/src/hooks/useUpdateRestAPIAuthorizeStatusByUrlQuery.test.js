@@ -7,13 +7,13 @@ import { getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import useUpdateRestAPIAuthorizeStatus from './useUpdateRestAPIAuthorizeStatus';
+import useUpdateRestAPIAuthorizeStatusByUrlQuery from './useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 
 jest.mock( '@woocommerce/navigation' );
 jest.mock( '.~/hooks/useApiFetchCallback' );
 
-describe( 'useUpdateRestAPIAuthorizeStatus', () => {
+describe( 'useUpdateRestAPIAuthorizeStatusByUrlQuery', () => {
 	let fetchUpdateRestAPIAuthorize;
 
 	beforeEach( () => {
@@ -27,7 +27,7 @@ describe( 'useUpdateRestAPIAuthorizeStatus', () => {
 		getQuery.mockReturnValue( {
 			google_wpcom_app_status: 'approved',
 		} );
-		renderHook( () => useUpdateRestAPIAuthorizeStatus() );
+		renderHook( () => useUpdateRestAPIAuthorizeStatusByUrlQuery() );
 		expect( fetchUpdateRestAPIAuthorize ).toHaveBeenCalledTimes( 1 );
 		expect( fetchUpdateRestAPIAuthorize ).toHaveBeenCalledWith( {
 			data: {
@@ -40,7 +40,7 @@ describe( 'useUpdateRestAPIAuthorizeStatus', () => {
 		getQuery.mockReturnValue( {
 			google_wpcom_app_status: 'disapproved',
 		} );
-		renderHook( () => useUpdateRestAPIAuthorizeStatus() );
+		renderHook( () => useUpdateRestAPIAuthorizeStatusByUrlQuery() );
 		expect( fetchUpdateRestAPIAuthorize ).toHaveBeenCalledTimes( 1 );
 		expect( fetchUpdateRestAPIAuthorize ).toHaveBeenCalledWith( {
 			data: {
@@ -53,7 +53,7 @@ describe( 'useUpdateRestAPIAuthorizeStatus', () => {
 		getQuery.mockReturnValue( {
 			google_wpcom_app_status: 'error',
 		} );
-		renderHook( () => useUpdateRestAPIAuthorizeStatus() );
+		renderHook( () => useUpdateRestAPIAuthorizeStatusByUrlQuery() );
 		expect( fetchUpdateRestAPIAuthorize ).toHaveBeenCalledTimes( 1 );
 		expect( fetchUpdateRestAPIAuthorize ).toHaveBeenCalledWith( {
 			data: {
@@ -66,7 +66,7 @@ describe( 'useUpdateRestAPIAuthorizeStatus', () => {
 		getQuery.mockReturnValue( {
 			google_wpcom_app_status: 'does-not-exist',
 		} );
-		renderHook( () => useUpdateRestAPIAuthorizeStatus() );
+		renderHook( () => useUpdateRestAPIAuthorizeStatusByUrlQuery() );
 		expect( fetchUpdateRestAPIAuthorize ).toHaveBeenCalledTimes( 0 );
 	} );
 } );
