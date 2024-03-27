@@ -3,9 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use WP_REST_Response;
 use WP_REST_Request;
 
@@ -18,7 +22,25 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Integration
  */
-class WPCOMProxy implements Service, Registerable {
+class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
+
+	use OptionsAwareTrait;
+
+	/**
+	 * The ShippingTimeQuery object.
+	 *
+	 * @var ShippingTimeQuery
+	 */
+	protected $shipping_time_query;
+
+	/**
+	 * WPCOMProxy constructor.
+	 *
+	 * @param ShippingTimeQuery $shipping_time_query The ShippingTimeQuery object.
+	 */
+	public function __construct( ShippingTimeQuery $shipping_time_query ) {
+		$this->shipping_time_query = $shipping_time_query;
+	}
 
 	/**
 	 * The meta key used to filter the items.
@@ -73,6 +95,8 @@ class WPCOMProxy implements Service, Registerable {
 			}
 		);
 
+		$this->register_callbacks();
+
 		foreach ( array_keys( self::$post_types_to_filter ) as $object_type ) {
 			$this->register_object_types_filter( $object_type );
 		}
@@ -107,13 +131,48 @@ class WPCOMProxy implements Service, Registerable {
 	}
 
 	/**
-	 * Whether the data should be filtered.
+	 * Register the callbacks.
+	 */
+	protected function register_callbacks() {
+		add_filter(
+			'rest_request_after_callbacks',
+			function ( WP_REST_Response $response, $handler, WP_REST_Request $request ) {
+				if ( ! $this->is_gla_request( $request ) ) {
+					return $response;
+				}
+
+				if ( $request->get_route() === '/wc/v3/settings/general' ) {
+					$data   = $response->get_data();
+					$data[] = [
+						'id'    => 'gla_target_audience',
+						'label' => 'Google Listings and Ads: Target Audience',
+						'value' => $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] ),
+					];
+
+					$data[] = [
+						'id'    => 'gla_shipping_times',
+						'label' => 'Google Listings and Ads: Shipping Times',
+						'value' => $this->shipping_time_query->get_all_shipping_times(),
+					];
+
+					$response->set_data( array_values( $data ) );
+				}
+
+				return $response;
+			},
+			10,
+			3
+		);
+	}
+
+	/**
+	 * Whether the request is coming from the WPCOM proxy.
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 *
 	 * @return bool
 	 */
-	protected function should_filter_data( WP_REST_Request $request ): bool {
+	protected function is_gla_request( WP_REST_Request $request ): bool {
 		// WPCOM proxy will set the gla_syncable to 1 if the request is coming from the proxy and it is the Google App.
 		return $request->get_param( 'gla_syncable' ) === '1';
 	}
@@ -128,7 +187,7 @@ class WPCOMProxy implements Service, Registerable {
 	 * @return WP_REST_Response The response object updated.
 	 */
 	public function filter_response_by_syncable_item( $response, $item, WP_REST_Request $request ): WP_REST_Response {
-		if ( ! $this->should_filter_data( $request ) ) {
+		if ( ! $this->is_gla_request( $request ) ) {
 			return $response;
 		}
 
@@ -173,7 +232,7 @@ class WPCOMProxy implements Service, Registerable {
 	 * @return array The query args updated.
 	 * */
 	public function filter_by_metaquery( array $args, WP_REST_Request $request ): array {
-		if ( ! $this->should_filter_data( $request ) ) {
+		if ( ! $this->is_gla_request( $request ) ) {
 			return $args;
 		}
 
@@ -199,7 +258,7 @@ class WPCOMProxy implements Service, Registerable {
 	 * @return WP_REST_Response The response object updated.
 	 */
 	public function filter_metadata( WP_REST_Response $response, $item, WP_REST_Request $request ): WP_REST_Response {
-		if ( ! $this->should_filter_data( $request ) ) {
+		if ( ! $this->is_gla_request( $request ) ) {
 			return $response;
 		}
 
