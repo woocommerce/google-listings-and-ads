@@ -61,5 +61,6 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob implements Optio
 	 */
 	protected function handle_complete( int $final_batch_number ) {
 		$this->options->update( OptionsInterface::UPDATE_ALL_PRODUCTS_LAST_SYNC, strtotime( 'now' ) );
+		$this->merchant_statuses->maybe_refresh_status_data( true );
 	}
 }

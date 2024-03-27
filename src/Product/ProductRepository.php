@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
@@ -96,6 +95,25 @@ class ProductRepository implements Service {
 		$args['include'] = $ids;
 
 		return $this->find( $args, $limit, $offset );
+	}
+
+	/**
+	 * Find and return an associative array of products with the product ID as the key.
+	 *
+	 * @param int[] $ids    Array of WooCommerce product IDs
+	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
+	 *
+	 * @return WC_Product[] Array of WooCommerce product objects
+	 */
+	public function find_by_ids_as_associative_array( array $ids, array $args = [], int $limit = -1, int $offset = 0 ): array {
+		$products = $this->find_by_ids( $ids, $args, $limit, $offset );
+		$map      = [];
+		foreach ( $products as $product ) {
+			$map[ $product->get_id() ] = $product;
+		}
+		return $map;
 	}
 
 	/**
@@ -256,32 +274,20 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product IDs that are marked as MC not_synced.
-	 * Excludes variations and variable products without variations.
+	 * Find all simple and variable product IDs regardless of MC status or visibility.
+	 *
+	 * @since 2.6.4
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
 	 *
 	 * @return int[] Array of WooCommerce product IDs
 	 */
-	public function find_mc_not_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
-		$types = ProductSyncer::get_supported_product_types();
-		$types = array_diff( $types, [ 'variation' ] );
-		$args  = [
-			'status'     => 'publish',
-			'type'       => $types,
-			'meta_query' => [
-				[
-					'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
-					'compare' => '!=',
-					'value'   => SyncStatus::SYNCED,
-				],
-				[
-					'key'     => ProductMetaHandler::KEY_VISIBILITY,
-					'compare' => '=',
-					'value'   => ChannelVisibility::SYNC_AND_SHOW,
-				],
-			],
+	public function find_all_product_ids( int $limit = -1, int $offset = 0 ): array {
+		$args = [
+			'status' => 'publish',
+			'return' => 'ids',
+			'type'   => 'any',
 		];
 
 		return $this->find_ids( $args, $limit, $offset );
@@ -355,6 +361,11 @@ class ProductRepository implements Service {
 		// only include supported product types
 		if ( empty( $args['type'] ) ) {
 			$args['type'] = ProductSyncer::get_supported_product_types();
+		}
+
+		// It'll fetch all products with the post_type of 'product', excluding variations.
+		if ( $args['type'] === 'any' ) {
+			unset( $args['type'] );
 		}
 
 		// use no ordering unless specified in arguments. overrides the default WooCommerce query args

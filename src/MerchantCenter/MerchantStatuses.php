@@ -17,12 +17,18 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateMerchantProductStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use DateTime;
 use Exception;
+use WC_Product;
 
 /**
  * Class MerchantStatuses.
@@ -36,18 +42,23 @@ use Exception;
  * - ProductHelper
  * - ProductRepository
  * - TransientsInterface
+ * - UpdateMerchantProductStatuses
+ * - UpdateAllProducts
+ * - DeleteAllProducts
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
-class MerchantStatuses implements Service, ContainerAwareInterface {
+class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAwareInterface {
 
+	use OptionsAwareTrait;
 	use ContainerAwareTrait;
 	use PluginHelper;
+
 
 	/**
 	 * The lifetime of the status-related data.
 	 */
-	public const STATUS_LIFETIME = HOUR_IN_SECONDS;
+	public const STATUS_LIFETIME = 12 * HOUR_IN_SECONDS;
 
 	/**
 	 * The types of issues.
@@ -85,7 +96,25 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	];
 
 	/**
-	 * @var string[] Lookup of WooCommerce Product Names.
+	 * @var array Default product stats.
+	 */
+	public const DEFAULT_PRODUCT_STATS = [
+		MCStatus::APPROVED           => 0,
+		MCStatus::PARTIALLY_APPROVED => 0,
+		MCStatus::EXPIRING           => 0,
+		MCStatus::PENDING            => 0,
+		MCStatus::DISAPPROVED        => 0,
+		MCStatus::NOT_SYNCED         => 0,
+		'parents'                    => [],
+	];
+
+	/**
+	 * @var array Initial intermediate data for product status counts.
+	 */
+	protected $initial_intermediate_data = self::DEFAULT_PRODUCT_STATS;
+
+	/**
+	 * @var WC_Product[] Lookup of WooCommerce Product Objects.
 	 */
 	protected $product_data_lookup = [];
 
@@ -103,10 +132,35 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @param bool $force_refresh Force refresh of all product status data.
 	 *
 	 * @return array The product status statistics.
-	 * @throws Exception If the Merchant Center can't be polled for the statuses.
+	 * @throws Exception If no Merchant Center account is connected, or account status is not retrievable.
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
-		$this->maybe_refresh_status_data( $force_refresh );
+		$job               = $this->maybe_refresh_status_data( $force_refresh );
+		$failure_rate_msg  = $job->get_failure_rate_message();
+		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+
+		// If the failure rate is too high, return an error message so the UI can stop polling.
+		if ( $failure_rate_msg && null === $this->mc_statuses ) {
+			return [
+				'timestamp'  => $this->cache_created_time->getTimestamp(),
+				'statistics' => null,
+				'loading'    => false,
+				'error'      => __( 'The scheduled job has been paused due to a high failure rate.', 'google-listings-and-ads' ),
+			];
+		}
+
+		if ( $job->is_scheduled() || null === $this->mc_statuses ) {
+			return [
+				'timestamp'  => $this->cache_created_time->getTimestamp(),
+				'statistics' => null,
+				'loading'    => true,
+				'error'      => null,
+			];
+		}
+
+		if ( ! empty( $this->mc_statuses['error'] ) ) {
+			return $this->mc_statuses;
+		}
 
 		$counting_stats = $this->mc_statuses['statistics'];
 		$counting_stats = array_merge(
@@ -134,17 +188,20 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @param int         $page The page to start on (1-indexed).
 	 * @param bool        $force_refresh Force refresh of all product status data.
 	 *
-	 * @return array With two indices, results (may be paged) and count (considers type).
+	 * @return array With two indices, results (may be paged), count (considers type) and loading (indicating whether the data is loading).
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	public function get_issues( string $type = null, int $per_page = 0, int $page = 1, bool $force_refresh = false ): array {
-		$this->maybe_refresh_status_data( $force_refresh );
+		$job = $this->maybe_refresh_status_data( $force_refresh );
 
 		// Get only error issues
 		$severity_error_issues = $this->fetch_issues( $type, $per_page, $page, true );
 
 		// In case there are error issues we show only those, otherwise we show all the issues.
-		return $severity_error_issues['total'] > 0 ? $severity_error_issues : $this->fetch_issues( $type, $per_page, $page );
+		$issues            = $severity_error_issues['total'] > 0 ? $severity_error_issues : $this->fetch_issues( $type, $per_page, $page );
+		$issues['loading'] = $job->is_scheduled();
+
+		return $issues;
 	}
 
 	/**
@@ -153,25 +210,65 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @since 1.1.0
 	 */
 	public function clear_cache(): void {
-		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
+		$update_all_products_job = $this->container->get( UpdateAllProducts::class );
+		$delete_all_products_job = $this->container->get( DeleteAllProducts::class );
+
+		// Clear the cache if we are not in the middle of updating/deleting all products. Otherwise, we might update the product stats for each individual batch.
+		// See: ClearProductStatsCache::register
+		if ( $update_all_products_job->can_schedule( null ) && $delete_all_products_job->can_schedule( null ) ) {
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
+		}
 	}
 
 	/**
-	 * Update stale status-related data - account issues, product issues, products status stats.
+	 * Delete the intermediate product status count data.
 	 *
-	 * @param bool $force_refresh Force refresh of all status-related data.
-	 *
-	 * @throws Exception If no Merchant Center account is connected, or account status is not retrievable.
+	 * @since 2.6.4
 	 */
-	public function maybe_refresh_status_data( bool $force_refresh = false ): void {
-		// Only refresh if the current data has expired.
-		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
-		if ( ! $force_refresh && null !== $this->mc_statuses ) {
-			return;
-		}
+	protected function delete_product_statuses_count_intermediate_data(): void {
+		$this->options->delete( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+	}
 
-		// Save a request if accounts are not connected.
+	/**
+	 * Delete the stale issues from the database.
+	 *
+	 * @since 2.6.4
+	 */
+	protected function delete_stale_issues(): void {
+		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
+	}
+
+	/**
+	 * Delete the stale mc statuses from the database.
+	 *
+	 * @since 2.6.4
+	 */
+	protected function delete_stale_mc_statuses(): void {
+		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
+		$product_meta_query_helper->delete_all_values( ProductMetaHandler::KEY_MC_STATUS );
+	}
+
+	/**
+	 * Clear the product statuses cache and delete stale issues.
+	 *
+	 * @since 2.6.4
+	 */
+	public function clear_product_statuses_cache_and_issues(): void {
+		$this->delete_stale_issues();
+		$this->delete_stale_mc_statuses();
+		$this->delete_product_statuses_count_intermediate_data();
+	}
+
+	/**
+	 * Check if the Merchant Center account is connected and throw an exception if it's not.
+	 *
+	 * @since 2.6.4
+	 *
+	 * @throws Exception If the Merchant Center account is not connected.
+	 */
+	protected function check_mc_is_connected() {
 		$mc_service = $this->container->get( MerchantCenterService::class );
+
 		if ( ! $mc_service->is_connected() ) {
 
 			// Return a 401 to redirect to reconnect flow if the Google account is not connected.
@@ -181,32 +278,35 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 			throw new Exception( __( 'Merchant Center account is not set up.', 'google-listings-and-ads' ) );
 		}
+	}
 
-		$this->mc_statuses = [];
+	/**
+	 * Maybe start the job to refresh the status and issues data.
+	 *
+	 * @param bool $force_refresh Force refresh of all status-related data.
+	 *
+	 * @return UpdateMerchantProductStatuses The job to update the statuses.
+	 *
+	 * @throws Exception If no Merchant Center account is connected, or account status is not retrievable.
+	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
+	 * @throws ContainerExceptionInterface If the container throws an exception.
+	 */
+	public function maybe_refresh_status_data( bool $force_refresh = false ): UpdateMerchantProductStatuses {
+		$this->check_mc_is_connected();
 
-		// Update account-level issues.
-		$this->refresh_account_issues();
+		// Only refresh if the current data has expired.
+		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+		$job               = $this->container->get( UpdateMerchantProductStatuses::class );
 
-		// Update MC product issues and tabulate statistics in batches.
-		$chunk_size = apply_filters( 'woocommerce_gla_merchant_status_google_ids_chunk', 1000 );
-		foreach ( array_chunk( $this->get_synced_google_ids(), $chunk_size ) as $google_ids ) {
-			$mc_product_statuses = $this->filter_valid_statuses( $google_ids );
-			$this->refresh_product_issues( $mc_product_statuses );
-			$this->sum_status_counts( $mc_product_statuses );
+		// If force_refresh is true or if not transient, return empty array and scheduled the job to update the statuses.
+		if ( ! $job->is_scheduled() && ( $force_refresh || ( ! $force_refresh && null === $this->mc_statuses ) ) ) {
+			// Delete the transient before scheduling the job because some errors, like the failure rate message, can occur before the job is executed.
+			$this->clear_cache();
+			// Schedule job to update the statuses. If the failure rate is too high, the job will not be scheduled.
+			$job->schedule();
 		}
 
-		// Update each product's mc_status and then update the global statistics.
-		$this->update_product_mc_statuses();
-		$this->update_mc_statuses();
-
-		// Update pre-sync product validation issues.
-		$this->refresh_presync_product_issues();
-
-		// Include any custom merchant issues.
-		$this->refresh_custom_merchant_issues();
-
-		// Delete stale issues.
-		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
+		return $job;
 	}
 
 	/**
@@ -215,35 +315,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public function delete(): void {
 		$this->container->get( TransientsInterface::class )->delete( Transients::MC_STATUSES );
 		$this->container->get( MerchantIssueTable::class )->truncate();
-	}
-
-	/**
-	 * Get the associated Google offer IDs for all synced simple products and product variations.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return array Google offer IDs.
-	 */
-	protected function get_synced_google_ids(): array {
-		/** @var ProductRepository $product_repository */
-		$product_repository = $this->container->get( ProductRepository::class );
-		/** @var ProductMetaQueryHelper $product_meta_query_helper */
-		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
-
-		// Get only synced simple and variations
-		$args['type']         = array_diff( ProductSyncer::get_supported_product_types(), [ 'variable' ] );
-		$filtered_product_ids = array_flip( $product_repository->find_synced_product_ids( $args ) );
-		$all_google_ids       = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_GOOGLE_IDS );
-		$filtered_google_ids  = [];
-		foreach ( array_intersect_key( $all_google_ids, $filtered_product_ids ) as $product_ids ) {
-			if ( empty( $product_ids ) || ! is_array( $product_ids ) ) {
-				// Skip if empty or not an array
-				continue;
-			}
-
-			$filtered_google_ids = array_merge( $filtered_google_ids, array_values( $product_ids ) );
-		}
-		return $filtered_google_ids;
 	}
 
 	/**
@@ -310,49 +381,34 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Return only the valid statuses from a provided array of Google IDs. Invalid statuses:
-	 * - Aren't synced by this extension (invalid ID format), or
-	 * - Map to products no longer in WooCommerce (deleted or uploaded by a previous connection).
-	 * Also populates the product_data_lookup used in refresh_product_issues()
+	 * Get MC product issues from a list of Product View statuses.
 	 *
-	 * @param string[] $google_ids
+	 * @param array $statuses The list of Product View statuses.
+	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
+	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 *
-	 * @return GoogleProductStatus[] Statuses found to be valid.
+	 * @return array The list of product issues.
 	 */
-	protected function filter_valid_statuses( array $google_ids ): array {
+	protected function get_product_issues( array $statuses ): array {
 		/** @var Merchant $merchant */
 		$merchant = $this->container->get( Merchant::class );
 		/** @var ProductHelper $product_helper */
 		$product_helper      = $this->container->get( ProductHelper::class );
 		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
-		$valid_statuses = [];
-		foreach ( $merchant->get_productstatuses_batch( $google_ids )->getEntries() as $response_entry ) {
+		$google_ids     = array_column( $statuses, 'mc_id' );
+		$product_issues = [];
+		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
+		$entries        = $merchant->get_productstatuses_batch( $google_ids )->getEntries() ?? [];
+		foreach ( $entries as $response_entry ) {
+			/** @var GoogleProductStatus $mc_product_status */
 			$mc_product_status = $response_entry->getProductStatus();
-			if ( ! $mc_product_status ) {
-				do_action(
-					'woocommerce_gla_debug_message',
-					'A Google ID was not found in Merchant Center.',
-					__METHOD__
-				);
-				continue;
-			}
-			$mc_product_id = $mc_product_status->getProductId();
-			$wc_product_id = $product_helper->get_wc_product_id( $mc_product_id );
+			$mc_product_id     = $mc_product_status->getProductId();
+			$wc_product_id     = $product_helper->get_wc_product_id( $mc_product_id );
+			$wc_product        = $this->product_data_lookup[ $wc_product_id ] ?? null;
+
 			// Skip products not synced by this extension.
-			if ( ! $wc_product_id ) {
-				continue;
-			}
-
-			// Product previously found/validated.
-			if ( ! empty( $this->product_data_lookup[ $wc_product_id ] ) ) {
-				$valid_statuses[] = $response_entry->getProductStatus();
-				continue;
-			}
-
-			$wc_product = $product_helper->get_wc_product_by_wp_post( $wc_product_id );
-			if ( ! $wc_product || 'product' !== substr( $wc_product->post_type, 0, 7 ) ) {
-				// Should never reach here since the products IDS are retrieved from postmeta.
+			if ( ! $wc_product ) {
 				do_action(
 					'woocommerce_gla_debug_message',
 					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $mc_product_id ),
@@ -360,17 +416,58 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				);
 				continue;
 			}
+			// Unsynced issues shouldn't be shown.
+			if ( ChannelVisibility::DONT_SYNC_AND_SHOW === $wc_product->get_meta( $visibility_meta_key ) ) {
+				continue;
+			}
 
-			$this->product_data_lookup[ $wc_product_id ] = [
-				'name'       => get_the_title( $wc_product ),
-				'visibility' => get_post_meta( $wc_product_id, $visibility_meta_key ),
-				'parent_id'  => $wc_product->post_parent,
+			$product_issue_template = [
+				'product'              => html_entity_decode( $wc_product->get_name() ),
+				'product_id'           => $wc_product_id,
+				'created_at'           => $created_at,
+				'applicable_countries' => [],
+				'source'               => 'mc',
 			];
+			foreach ( $mc_product_status->getItemLevelIssues() as $item_level_issue ) {
+				if ( 'merchant_action' !== $item_level_issue->getResolution() ) {
+					continue;
+				}
+				$hash_key = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
 
-			$valid_statuses[] = $response_entry->getProductStatus();
+				$this->product_issue_countries[ $hash_key ] = array_merge(
+					$this->product_issue_countries[ $hash_key ] ?? [],
+					$item_level_issue->getApplicableCountries()
+				);
+
+				$product_issues[ $hash_key ] = $product_issue_template + [
+					'code'       => $item_level_issue->getCode(),
+					'issue'      => $item_level_issue->getDescription(),
+					'action'     => $item_level_issue->getDetail(),
+					'action_url' => $item_level_issue->getDocumentation(),
+					'severity'   => $item_level_issue->getServability(),
+				];
+			}
 		}
 
-		return $valid_statuses;
+		return $product_issues;
+	}
+
+	/**
+	 * Refresh the account , pre-sync product validation and custom merchant issues.
+	 *
+	 * @since 2.6.4
+	 *
+	 * @throws Exception  If the account state can't be retrieved from Google.
+	 */
+	public function refresh_account_and_presync_issues(): void {
+		// Update account-level issues.
+		$this->refresh_account_issues();
+
+		// Update pre-sync product validation issues.
+		$this->refresh_presync_product_issues();
+
+		// Include any custom merchant issues.
+		$this->refresh_custom_merchant_issues();
 	}
 
 	/**
@@ -383,7 +480,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$merchant       = $this->container->get( Merchant::class );
 		$account_issues = [];
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
+		$issues         = $merchant->get_accountstatus()->getAccountLevelIssues() ?? [];
+		foreach ( $issues as $issue ) {
 			$key = md5( $issue->getTitle() );
 
 			if ( isset( $account_issues[ $key ] ) ) {
@@ -444,52 +542,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Retrieve all product-level issues and store them in the database.
+	 * Refresh product issues in the merchant issues table.
 	 *
-	 * @param GoogleProductStatus[] $validated_mc_statuses Product statuses of validated products.
+	 * @param array $product_issues Array of product issues.
+	 * @throws InvalidQuery If an invalid column name is provided.
+	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
+	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
-	protected function refresh_product_issues( array $validated_mc_statuses ): void {
-		/** @var ProductHelper $product_helper */
-		$product_helper = $this->container->get( ProductHelper::class );
-
-		$product_issues = [];
-		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		foreach ( $validated_mc_statuses as $product ) {
-			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
-
-			// Unsynced issues shouldn't be shown.
-			if ( ChannelVisibility::DONT_SYNC_AND_SHOW === $this->product_data_lookup[ $wc_product_id ]['visibility'] ) {
-				continue;
-			}
-
-			$product_issue_template = [
-				'product'              => html_entity_decode( $this->product_data_lookup[ $wc_product_id ]['name'] ),
-				'product_id'           => $wc_product_id,
-				'created_at'           => $created_at,
-				'applicable_countries' => [],
-				'source'               => 'mc',
-			];
-			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
-				if ( 'merchant_action' !== $item_level_issue->getResolution() ) {
-					continue;
-				}
-				$hash_key = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
-
-				$this->product_issue_countries[ $hash_key ] = array_merge(
-					$this->product_issue_countries[ $hash_key ] ?? [],
-					$item_level_issue->getApplicableCountries()
-				);
-
-				$product_issues[ $hash_key ] = $product_issue_template + [
-					'code'       => $item_level_issue->getCode(),
-					'issue'      => $item_level_issue->getDescription(),
-					'action'     => $item_level_issue->getDetail(),
-					'action_url' => $item_level_issue->getDocumentation(),
-					'severity'   => $item_level_issue->getServability(),
-				];
-			}
-		}
-
+	protected function refresh_product_issues( array $product_issues ): void {
 		// Alphabetize all product/issue country lists.
 		array_walk(
 			$this->product_issue_countries,
@@ -572,34 +632,86 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Add the provided status counts to the overall totals.
+	 * Process product status statistics.
 	 *
-	 * @param GoogleProductStatus[] $validated_mc_statuses Product statuses of validated products.
+	 * @param array $product_view_statuses Product View statuses.
+	 * @see MerchantReport::get_product_view_report
+	 *
+	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
+	 * @throws ContainerExceptionInterface If the container throws an exception.
 	 */
-	protected function sum_status_counts( array $validated_mc_statuses ): void {
-		/** @var ProductHelper $product_helper */
-		$product_helper = $this->container->get( ProductHelper::class );
+	public function process_product_statuses( array $product_view_statuses ): void {
+		$this->mc_statuses         = [];
+		$product_repository        = $this->container->get( ProductRepository::class );
+		$this->product_data_lookup = $product_repository->find_by_ids_as_associative_array( array_column( $product_view_statuses, 'product_id' ) );
 
-		foreach ( $validated_mc_statuses as $product ) {
-			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
-			$status        = $this->get_product_shopping_status( $product );
-			if ( is_null( $status ) ) {
+		$this->product_statuses = [
+			'products' => [],
+			'parents'  => [],
+		];
+
+		foreach ( $product_view_statuses as $product_status ) {
+
+			$wc_product_id     = $product_status['product_id'];
+			$mc_product_status = $product_status['status'];
+			$wc_product        = $this->product_data_lookup[ $wc_product_id ] ?? null;
+
+			if ( ! $wc_product || ! $wc_product_id ) {
+				// Skip if the product does not exist in WooCommerce.
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $wc_product_id ),
+					__METHOD__,
+				);
 				continue;
 			}
+
+			if ( $this->product_is_expiring( $product_status['expiration_date'] ) ) {
+				$mc_product_status = MCStatus::EXPIRING;
+			}
+
 			// Products is used later for global product status statistics.
-			$this->product_statuses['products'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $status ] ?? 0 );
+			$this->product_statuses['products'][ $wc_product_id ][ $mc_product_status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $mc_product_status ] ?? 0 );
 
 			// Aggregate parent statuses for mc_status postmeta.
-			$wc_parent_id = intval( $this->product_data_lookup[ $wc_product_id ]['parent_id'] );
+			$wc_parent_id = $wc_product->get_parent_id();
 			if ( ! $wc_parent_id ) {
 				continue;
 			}
-			$this->product_statuses['parents'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $status ] ?? 0 );
+			$this->product_statuses['parents'][ $wc_parent_id ][ $mc_product_status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $mc_product_status ] ?? 0 );
+
 		}
+
+		$parent_keys               = array_values( array_keys( $this->product_statuses['parents'] ) );
+		$parent_products           = $product_repository->find_by_ids_as_associative_array( $parent_keys );
+		$this->product_data_lookup = $this->product_data_lookup + $parent_products;
+
+		// Update each product's mc_status and then update the global statistics.
+		$this->update_products_meta_with_mc_status();
+		$this->update_intermediate_product_statistics();
+
+		$product_issues = $this->get_product_issues( $product_view_statuses );
+		$this->refresh_product_issues( $product_issues );
 	}
 
 	/**
-	 * Calculate the synced product status statistics. It will group
+	 * Whether a product is expiring.
+	 *
+	 * @param DateTime $expiration_date
+	 *
+	 * @return bool Whether the product is expiring.
+	 */
+	protected function product_is_expiring( DateTime $expiration_date ): bool {
+		if ( ! $expiration_date ) {
+			return false;
+		}
+
+		// Products are considered expiring if they will expire within 3 days.
+		return time() + 3 * DAY_IN_SECONDS > $expiration_date->getTimestamp();
+	}
+
+	/**
+	 * Sum and update the intermediate product status statistics. It will group
 	 * the variations for the same parent.
 	 *
 	 * For the case that one variation is approved and the other disapproved:
@@ -610,15 +722,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 *
 	 * @return array Product status statistics.
 	 */
-	protected function calculate_synced_product_statistics(): array {
-		$product_statistics = [
-			MCStatus::APPROVED           => 0,
-			MCStatus::PARTIALLY_APPROVED => 0,
-			MCStatus::EXPIRING           => 0,
-			MCStatus::PENDING            => 0,
-			MCStatus::DISAPPROVED        => 0,
-			MCStatus::NOT_SYNCED         => 0,
-		];
+	protected function update_intermediate_product_statistics(): array {
+		$product_statistics = self::DEFAULT_PRODUCT_STATS;
+
+		// If the option is set, use it to sum the total quantity.
+		$product_statistics_intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA );
+		if ( $product_statistics_intermediate_data ) {
+			$product_statistics              = $product_statistics_intermediate_data;
+			$this->initial_intermediate_data = $product_statistics;
+		}
 
 		$product_statistics_priority = [
 			MCStatus::APPROVED           => 6,
@@ -633,7 +745,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		foreach ( $this->product_statuses['products'] as $product_id => $statuses ) {
 			foreach ( $statuses as $status => $num_products ) {
-				$parent_id = $this->product_data_lookup[ $product_id ]['parent_id'];
+				$product = $this->product_data_lookup[ $product_id ] ?? null;
+
+				if ( ! $product ) {
+					continue;
+				}
+
+				$parent_id = $product->get_parent_id();
+
 				if ( ! $parent_id ) {
 					$product_statistics[ $status ] += $num_products;
 				} elseif ( ! isset( $parent_statuses[ $parent_id ] ) ) {
@@ -647,40 +766,122 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			}
 		}
 
-		foreach ( $parent_statuses as $parent_status ) {
-			$product_statistics[ $parent_status ] += 1;
+		foreach ( $parent_statuses as $parent_id => $new_parent_status ) {
+			$current_parent_intermediate_data_status = $product_statistics_intermediate_data['parents'][ $parent_id ] ?? null;
+
+			if ( $current_parent_intermediate_data_status === $new_parent_status ) {
+				continue;
+			}
+
+			if ( ! $current_parent_intermediate_data_status ) {
+				$product_statistics[ $new_parent_status ]   += 1;
+				$product_statistics['parents'][ $parent_id ] = $new_parent_status;
+				continue;
+			}
+
+			// Check if the new parent status has higher priority than the previous one.
+			if ( $product_statistics_priority[ $new_parent_status ] < $product_statistics_priority[ $current_parent_intermediate_data_status ] ) {
+				$product_statistics[ $current_parent_intermediate_data_status ] -= 1;
+				$product_statistics[ $new_parent_status ]                       += 1;
+				$product_statistics['parents'][ $parent_id ]                     = $new_parent_status;
+			} else {
+				$product_statistics['parents'][ $parent_id ] = $current_parent_intermediate_data_status;
+			}
 		}
+
+		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $product_statistics );
 
 		return $product_statistics;
 	}
 
 	/**
-	 * Calculate the product status statistics and update the transient.
+	 * Calculate the total count of products in the MC using the statistics.
+	 *
+	 * @since 2.6.4
+	 *
+	 * @param array $statistics
+	 *
+	 * @return int
 	 */
-	protected function update_mc_statuses() {
-		$product_statistics = $this->calculate_synced_product_statistics();
+	protected function calculate_total_synced_product_statistics( array $statistics ): int {
+		if ( ! count( $statistics ) ) {
+			return 0;
+		}
 
-		/** @var ProductRepository $product_repository */
-		$product_repository                         = $this->container->get( ProductRepository::class );
-		$product_statistics[ MCStatus::NOT_SYNCED ] = count( $product_repository->find_mc_not_synced_product_ids() );
+		$synced_status_values = array_values( array_diff( $statistics, [ $statistics[ MCStatus::NOT_SYNCED ] ] ) );
+		return array_sum( $synced_status_values );
+	}
 
-		$this->mc_statuses = [
+	/**
+	 * Handle the failure of the Merchant Center statuses fetching.
+	 *
+	 * @since 2.6.4
+	 *
+	 * @param string $error_message The error message.
+	 *
+	 * @throws NotFoundExceptionInterface  If the class is not found in the container.
+	 * @throws ContainerExceptionInterface If the container throws an exception.
+	 */
+	public function handle_failed_mc_statuses_fetching( string $error_message = '' ): void {
+		// Reset the intermediate data to the initial state when starting the job.
+		$this->options->update( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, $this->initial_intermediate_data );
+		// Let's remove any issue created during the failed fetch.
+		$this->container->get( MerchantIssueTable::class )->delete_specific_product_issues( array_keys( $this->product_data_lookup ) );
+
+		$mc_statuses = [
 			'timestamp'  => $this->cache_created_time->getTimestamp(),
-			'statistics' => $product_statistics,
+			'statistics' => null,
+			'loading'    => false,
+			'error'      => $error_message,
 		];
 
-		// Update the cached values
 		$this->container->get( TransientsInterface::class )->set(
 			Transients::MC_STATUSES,
-			$this->mc_statuses,
+			$mc_statuses,
 			$this->get_status_lifetime()
 		);
 	}
 
+
+	/**
+	 * Handle the completion of the Merchant Center statuses fetching.
+	 *
+	 * @since 2.6.4
+	 */
+	public function handle_complete_mc_statuses_fetching() {
+		$intermediate_data = $this->options->get( OptionsInterface::PRODUCT_STATUSES_COUNT_INTERMEDIATE_DATA, self::DEFAULT_PRODUCT_STATS );
+
+		unset( $intermediate_data['parents'] );
+
+		$total_synced_products = $this->calculate_total_synced_product_statistics( $intermediate_data );
+
+		/** @var ProductRepository $product_repository */
+		$product_repository                        = $this->container->get( ProductRepository::class );
+		$intermediate_data[ MCStatus::NOT_SYNCED ] = count(
+			$product_repository->find_all_product_ids()
+		) - $total_synced_products;
+
+		$mc_statuses = [
+			'timestamp'  => $this->cache_created_time->getTimestamp(),
+			'statistics' => $intermediate_data,
+			'loading'    => false,
+			'error'      => null,
+		];
+
+		$this->container->get( TransientsInterface::class )->set(
+			Transients::MC_STATUSES,
+			$mc_statuses,
+			$this->get_status_lifetime()
+		);
+
+		$this->delete_product_statuses_count_intermediate_data();
+	}
+
+
 	/**
 	 * Update the Merchant Center status for each product.
 	 */
-	protected function update_product_mc_statuses() {
+	protected function update_products_meta_with_mc_status() {
 		// Generate a product_id=>mc_status array.
 		$new_product_statuses = [];
 		foreach ( $this->product_statuses as $types ) {
@@ -700,73 +901,24 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				}
 			}
 		}
-		ksort( $new_product_statuses );
-
-		/** @var ProductRepository $product_repository */
-		$product_repository = $this->container->get( ProductRepository::class );
-
-		/** @var ProductMetaQueryHelper $product_meta_query_helper */
-		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
-
-		// Get all MC statuses.
-		$current_product_statuses = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_MC_STATUS );
-		// Get all product IDs.
-		$all_product_ids = array_flip( $product_repository->find_ids() );
-
-		// Format: product_id=>status.
-		$to_insert = [];
-		// Format: status=>[product_ids].
-		$to_update = [];
 
 		foreach ( $new_product_statuses as $product_id => $new_status ) {
-			if ( ! isset( $current_product_statuses[ $product_id ] ) ) {
-				// MC status not in WC, insert.
-				$to_insert[ $product_id ] = $new_status;
-			} elseif ( $current_product_statuses[ $product_id ] !== $new_status ) {
-				// MC status not same as WC, update.
-				$to_update[ $new_status ][] = intval( $product_id );
+			$product = $this->product_data_lookup[ $product_id ] ?? null;
+
+			// At this point, the product should exist in WooCommerce but in the case that product is not found, log it.
+			if ( ! $product ) {
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Merchant Center product with WooCommerce ID %d is not found in this store.', $product_id ),
+					__METHOD__,
+				);
+				continue;
 			}
-			// Unset all found statuses from WC products array.
-			unset( $all_product_ids[ $product_id ] );
-		}
 
-		// Set products NOT FOUND in MC to NOT_SYNCED.
-		foreach ( array_keys( $all_product_ids ) as $product_id ) {
-			if ( empty( $current_product_statuses[ $product_id ] ) ) {
-				$to_insert[ $product_id ] = MCStatus::NOT_SYNCED;
-			} elseif ( $current_product_statuses[ $product_id ] !== MCStatus::NOT_SYNCED ) {
-				$to_update[ MCStatus::NOT_SYNCED ][] = $product_id;
-			}
+			$product->add_meta_data( $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS ), $new_status, true );
+			// We use save_meta_data so we don't trigger the woocommerce_update_product hook and the Syncer Hooks.
+			$product->save_meta_data();
 		}
-
-		unset( $all_product_ids, $current_product_statuses, $new_product_statuses );
-
-		// Insert and update changed MC Status postmeta.
-		$product_meta_query_helper->batch_insert_values( ProductMetaHandler::KEY_MC_STATUS, $to_insert );
-		foreach ( $to_update as $status => $product_ids ) {
-			$product_meta_query_helper->batch_update_values( ProductMetaHandler::KEY_MC_STATUS, $status, $product_ids );
-		}
-	}
-
-	/**
-	 * Return the product's shopping status in the Google Merchant Center.
-	 * Active, Pending, Disapproved, Expiring.
-	 *
-	 * @param GoogleProductStatus $product_status
-	 *
-	 * @return string|null
-	 */
-	protected function get_product_shopping_status( GoogleProductStatus $product_status ): ?string {
-		$status = null;
-		foreach ( $product_status->getDestinationStatuses() as $d ) {
-			if ( 'SurfacesAcrossGoogle' === $d->getDestination() ) {
-				$status = $d->getStatus();
-			} elseif ( 'Shopping' === $d->getDestination() ) {
-				$status = $d->getStatus();
-				break;
-			}
-		}
-		return $status;
 	}
 
 	/**

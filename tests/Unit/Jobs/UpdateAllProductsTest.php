@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
@@ -53,6 +54,11 @@ class UpdateAllProductsTest extends UnitTest {
 	/** @var UpdateAllProducts $job */
 	protected $job;
 
+	/**
+	 * @var MerchantStatuses|MockObject
+	 */
+	protected $merchant_statuses;
+
 	protected const JOB_NAME          = 'update_all_products';
 	protected const CREATE_BATCH_HOOK = 'gla/jobs/' . self::JOB_NAME . '/create_batch';
 	protected const PROCESS_ITEM_HOOK = 'gla/jobs/' . self::JOB_NAME . '/process_item';
@@ -70,13 +76,15 @@ class UpdateAllProductsTest extends UnitTest {
 		$this->product_repository = $this->createMock( ProductRepository::class );
 		$this->product_helper     = $this->createMock( BatchProductHelper::class );
 		$this->merchant_center    = $this->createMock( MerchantCenterService::class );
+		$this->merchant_statuses  = $this->createMock( MerchantStatuses::class );
 		$this->job                = new UpdateAllProducts(
 			$this->action_scheduler,
 			$this->monitor,
 			$this->product_syncer,
 			$this->product_repository,
 			$this->product_helper,
-			$this->merchant_center
+			$this->merchant_center,
+			$this->merchant_statuses
 		);
 
 		$this->merchant_center

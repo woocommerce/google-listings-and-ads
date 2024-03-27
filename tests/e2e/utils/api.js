@@ -34,18 +34,44 @@ export function apiWP() {
 /**
  * Creates a simple product.
  *
- * @return {number} Product ID of the created product.
+ * @return {Promise<number>} Product ID of the created product.
  */
 export async function createSimpleProduct() {
 	const product = config.products.simple;
 
 	return await api()
-		.post( 'products', {
-			name: product.name,
-			type: 'simple',
-			regular_price: String( product.regularPrice ),
-		} )
+		.post( 'products', product )
 		.then( ( response ) => response.data.id );
+}
+
+/**
+ * Creates a variable product.
+ *
+ * @return {Promise<number>} Product ID of the created product.
+ */
+export async function createVariableProduct() {
+	const variableProduct = config.products.variable;
+
+	return await api()
+		.post( 'products', variableProduct )
+		.then( ( response ) => response.data.id );
+}
+
+/**
+ * Creates variation products.
+ *
+ * @param {number|string} productId The product ID to be associated with the variation products to be created.
+ *
+ * @return {Promise<number[]>} Product IDs of the created products.
+ */
+export async function createVariationProducts( productId ) {
+	const variationProducts = config.products.variations;
+
+	return await api()
+		.post( `products/${ productId }/variations/batch`, {
+			create: variationProducts,
+		} )
+		.then( ( response ) => response.data.create.map( ( { id } ) => id ) );
 }
 
 /**
