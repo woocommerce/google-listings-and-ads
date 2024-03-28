@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -23,6 +24,7 @@ class OAuthService implements Service {
 	public const AUTH_URL      = 'https://public-api.wordpress.com/oauth2/authorize';
 	public const RESPONSE_TYPE = 'code';
 	public const SCOPE         = 'wc-partner-access';
+	public const NONCE_PREFIX  = 'google_wpcom_rest_api_auth_';
 
 	public const STATUS_APPROVED    = 'approved';
 	public const STATUS_DISAPPROVED = 'disapproved';
@@ -33,6 +35,38 @@ class OAuthService implements Service {
 		self::STATUS_DISAPPROVED,
 		self::STATUS_ERROR,
 	];
+
+	/**
+	 * The blod ID.
+	 *
+	 * @var string $blog_id
+	 */
+	private $blog_id;
+
+	/**
+	 * The nonce name.
+	 *
+	 * @var string $nonce_name
+	 */
+	private $nonce_name;
+
+	/**
+	 * WP Proxy
+	 *
+	 * @var WP
+	 */
+	protected WP $wp;
+
+	/**
+	 * Class constructor
+	 *
+	 * @param WP $wp The WordPress proxy.
+	 */
+	public function __construct( WP $wp ) {
+		$this->blog_id    = Jetpack_Options::get_option( 'id' );
+		$this->nonce_name = self::NONCE_PREFIX . $this->blog_id;
+		$this->wp         = $wp;
+	}
 
 	/**
 	 * Returns WordPress.com OAuth authorization URL.
@@ -64,14 +98,15 @@ class OAuthService implements Service {
 	 * @return string Auth URL.
 	 */
 	public function get_auth_url( string $path ): string {
-		$google_data = $this->get_data_from_google();
-
+		$google_data           = $this->get_data_from_google();
 		$merchant_redirect_url = urlencode_deep( admin_url( "admin.php?page=wc-admin&path={$path}" ) );
+		$site_nonce            = $this->wp->wp_create_nonce( $this->nonce_name );
 
 		$state = $this->base64url_encode(
 			build_query(
 				[
 					'nonce'        => $google_data['nonce'],
+					'site_nonce'   => $site_nonce,
 					'redirect_url' => $merchant_redirect_url,
 				]
 			)
@@ -80,7 +115,7 @@ class OAuthService implements Service {
 		$auth_url = esc_url_raw(
 			add_query_arg(
 				[
-					'blog'          => Jetpack_Options::get_option( 'id' ),
+					'blog'          => $this->blog_id,
 					'client_id'     => $google_data['client_id'],
 					'redirect_uri'  => $google_data['redirect_uri'],
 					'response_type' => self::RESPONSE_TYPE,
@@ -92,6 +127,17 @@ class OAuthService implements Service {
 		);
 
 		return $auth_url;
+	}
+
+	/**
+	 * Verify the site nonce that sent back from Google.
+	 *
+	 * @param string $site_nonce A nonce generated when creating auth URL and is sent back from Google.
+	 *
+	 * @return int|bool
+	 */
+	public function verify_site_nonce( string $site_nonce ) {
+		return $this->wp->wp_verify_nonce( $site_nonce, $this->nonce_name );
 	}
 
 	/**
