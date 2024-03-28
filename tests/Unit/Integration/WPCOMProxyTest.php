@@ -7,6 +7,7 @@ use Automattic\WooCommerce\RestApi\UnitTests\Helpers\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPCOMProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use WC_Meta_Data;
 use WP_REST_Response;
 
@@ -375,4 +376,42 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->assertEquals( $this->get_test_metadata(), $this->format_metadata( $response_mapped[ $coupon_1->get_id() ]['meta_data'] ) );
 		$this->assertEquals( $this->get_test_metadata( 'dont-sync-and-show' ), $this->format_metadata( $response_mapped[ $coupon_2->get_id() ]['meta_data'] ) );
 	}
+
+	public function test_get_settings_without_gla_syncable_param() {
+
+		$response = $this->do_request( '/wc/v3/settings/general', 'GET' );
+
+		$this->assertEquals( 200, $response->get_status() );
+
+		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
+
+		$this->assertArrayNotHasKey( 'gla_target_audience', $response_mapped );
+		$this->assertArrayNotHasKey( 'gla_shipping_times', $response_mapped );			
+	}	
+
+	public function test_get_settings_with_gla_syncable_param() {
+
+		global $wpdb;
+
+		$target_audience = [
+			'countries' => ['US'],
+		];
+
+		update_option( "gla_".OptionsInterface::TARGET_AUDIENCE , $target_audience );
+
+		// As the shipping time tables are not created in the test environment, we need to suppress the errors.
+		$wpdb->suppress_errors = true;
+
+		$response = $this->do_request( '/wc/v3/settings/general', 'GET', [ 'gla_syncable' => '1' ] );
+
+		$wpdb->suppress_errors = false;
+
+		$this->assertEquals( 200, $response->get_status() );
+
+		$response_mapped = $this->maps_the_response_with_the_item_id( $response );
+
+		$this->assertArrayHasKey( 'gla_target_audience', $response_mapped );
+		$this->assertArrayHasKey( 'gla_shipping_times', $response_mapped );			
+		$this->assertEquals( $target_audience, $response_mapped['gla_target_audience']['value'] );
+	}	
 }
