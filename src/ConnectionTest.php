@@ -22,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
@@ -640,9 +641,21 @@ class ConnectionTest implements Service, Registerable {
 			<hr />
 
 			<?php if ( $blog_token ) { ?>
+				<?php
+				  $wp_api_status = $this->container->get( OptionsInterface::class )->get( OptionsInterface::WPCOM_REST_API_STATUS );
+				?>
 				<h2 class="title">Partner API Pull Integration</h2>
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 					<table class="form-table" role="presentation">
+						<tr>
+							<th><label>WPCOM REST API Status:</label></th>
+							<td>
+								<p>
+									<code><?php echo $wp_api_status ?? 'NOT SET'; ?></code>
+									<?php if ( $wp_api_status === 'approved' ) { ?> <a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'disconnect-wp-api' ), $url ), 'disconnect-wp-api' ) ); ?>">Disconnect</a> <?php }  ?>
+								</p>
+							</td>
+						</tr>
 						<tr>
 							<th>Send partner notification request to WPCOM:</th>
 							<td>
@@ -764,8 +777,8 @@ class ConnectionTest implements Service, Registerable {
 
 			$item  = $_GET['item_id'] ?? null;
 			$topic = $_GET['topic'];
-
-			$service = new NotificationsService();
+			$mc    = $this->container->get( MerchantCenterService::class );
+			$service = new NotificationsService( $mc );
 			if ( $service->notify( $topic, $item ) ) {
 				$this->response .= "\n Notification success. Item: " . $item . " - Topic: " . $topic;
 			} else {
@@ -773,6 +786,11 @@ class ConnectionTest implements Service, Registerable {
 			}
 
 			return;
+		}
+
+		if ( 'disconnect-wp-api' === $_GET['action'] && check_admin_referer( 'disconnect-wp-api' ) ) {
+			$request = new Request( 'DELETE', '/wc/gla/rest-api/authorize' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-auth-test' === $_GET['action'] && check_admin_referer( 'wcs-auth-test' ) ) {

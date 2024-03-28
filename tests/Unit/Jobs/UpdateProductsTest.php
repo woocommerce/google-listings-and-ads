@@ -100,6 +100,9 @@ class UpdateProductsTest extends UnitTest {
 		$this->merchant_center
 			->method( 'is_ready_for_syncing' )
 			->willReturn( true );
+		$this->merchant_center
+			->method( 'should_push' )
+			->willReturn( true );
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
 			->with(

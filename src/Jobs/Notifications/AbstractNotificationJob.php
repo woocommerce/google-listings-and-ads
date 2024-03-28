@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractActionSchedulerJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -25,7 +24,6 @@ abstract class AbstractNotificationJob extends AbstractActionSchedulerJob implem
 	 * @var NotificationsService $notifications_service
 	 */
 	protected $notifications_service;
-
 
 	/**
 	 * Notifications Jobs constructor.

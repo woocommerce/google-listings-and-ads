@@ -5,6 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
 use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,7 +19,9 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WP
  */
-class NotificationsService implements Service {
+class NotificationsService implements Service, OptionsAwareInterface {
+
+	use OptionsAwareTrait;
 
 	// List of Topics to be used.
 	public const TOPIC_PRODUCT_CREATED  = 'product.create';
@@ -47,12 +52,22 @@ class NotificationsService implements Service {
 	 */
 	private $notification_url;
 
+	/**
+	 * The Merchant center service
+	 *
+	 * @var MerchantCenterService $merchant_center
+	 */
+	public MerchantCenterService $merchant_center;
+
 
 	/**
 	 * Class constructor
+	 *
+	 * @param MerchantCenterService $merchant_center
 	 */
-	public function __construct() {
+	public function __construct( MerchantCenterService $merchant_center ) {
 		$blog_id                = Jetpack_Options::get_option( 'id' );
+		$this->merchant_center  = $merchant_center;
 		$this->notification_url = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
 	}
 
@@ -65,6 +80,11 @@ class NotificationsService implements Service {
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
 	public function notify( string $topic, $item_id = null ): bool {
+		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
+			$this->notification_error( $topic, 'Cannot sync any products before setting up Google Merchant Center.', $item_id );
+			return false;
+		}
+
 		/**
 		 * Allow users to disable the notification request.
 		 *
@@ -74,7 +94,7 @@ class NotificationsService implements Service {
 		 * @param int $item_id The item_id for the notification.
 		 * @param string $topic The topic for the notification.
 		 */
-		if ( ! apply_filters( 'woocommerce_gla_notify', in_array( $topic, self::ALLOWED_TOPICS, true ), $item_id, $topic ) ) {
+		if ( ! apply_filters( 'woocommerce_gla_notify', $this->is_enabled() && in_array( $topic, self::ALLOWED_TOPICS, true ), $item_id, $topic ) ) {
 			return false;
 		}
 
@@ -148,6 +168,6 @@ class NotificationsService implements Service {
 	 * @return bool
 	 */
 	public function is_enabled(): bool {
-		return apply_filters( 'woocommerce_gla_notifications_enabled', true );
+		return $this->options->notifications_enabled();
 	}
 }

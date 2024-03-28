@@ -216,10 +216,13 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @return array
 	 */
 	public function get_connected_status(): array {
-		$id     = $this->options->get_merchant_id();
+		$id                    = $this->options->get_merchant_id();
+		$wpcom_rest_api_status = $this->options->get( OptionsInterface::WPCOM_REST_API_STATUS );
+
 		$status = [
-			'id'     => $id,
-			'status' => $id ? 'connected' : 'disconnected',
+			'id'                    => $id,
+			'status'                => $id ? 'connected' : 'disconnected',
+			'wpcom_rest_api_status' => $wpcom_rest_api_status,
 		];
 
 		$incomplete = $this->state->last_incomplete_step();
@@ -488,5 +491,25 @@ class AccountService implements OptionsAwareInterface, Service {
 		}
 
 		return new ExceptionWithResponseData( $message, $code ?: 400, null, $data );
+	}
+
+	/**
+	 * Delete the option regarding WPCOM authorization
+	 *
+	 * @return bool
+	 */
+	public function reset_wpcom_api_authorization(): bool {
+		return $this->options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
+	}
+
+	/**
+	 * Update the status of the merchant granting access to Google's WPCOM app in the database.
+	 *
+	 * @param string $status The status of the merchant granting access to Google's WPCOM app.
+	 *
+	 * @return string Status.
+	 */
+	public function update_wpcom_api_authorization( string $status ): bool {
+		return $this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $status );
 	}
 }

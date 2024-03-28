@@ -23,7 +23,12 @@ const GoogleMCAccountCard = () => {
 		return <NonConnected />;
 	}
 
-	return <ConnectedGoogleMCAccountCard googleMCAccount={ googleMCAccount } />;
+	return (
+		<ConnectedGoogleMCAccountCard
+			hideNotificationService
+			googleMCAccount={ googleMCAccount }
+		/>
+	);
 };
 
 export default GoogleMCAccountCard;

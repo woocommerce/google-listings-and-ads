@@ -120,57 +120,86 @@ class SyncerHooks implements Service, Registerable {
 	 * Register a service.
 	 */
 	public function register(): void {
-		// only register the hooks if Merchant Center is connected and ready for syncing data.
+		// only register the hooks if Merchant Center is connected correctly.
 		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
 			return;
 		}
 
-		$update_by_object = function ( int $product_id, WC_Product $product ) {
-			$this->handle_update_products( [ $product ] );
-		};
-
-		$update_by_id = function ( int $product_id ) {
-			$product = $this->wc->maybe_get_product( $product_id );
-			if ( $product instanceof WC_Product ) {
-				$this->handle_update_products( [ $product ] );
-			}
-		};
-
-		$pre_delete = function ( int $product_id ) {
-			$this->handle_pre_delete_product( $product_id );
-		};
-
-		$delete = function ( int $product_id ) {
-			$this->handle_delete_product( $product_id );
-		};
-
 		// when a product is added / updated, schedule an "update" job.
-		add_action( 'woocommerce_new_product', $update_by_id, 90 );
-		add_action( 'woocommerce_new_product_variation', $update_by_id, 90 );
-		add_action( 'woocommerce_update_product', $update_by_object, 90, 2 );
-		add_action( 'woocommerce_update_product_variation', $update_by_object, 90, 2 );
+		add_action( 'woocommerce_new_product', [ $this, 'update_by_id' ], 90 );
+		add_action( 'woocommerce_new_product_variation', [ $this, 'update_by_id' ], 90 );
+		add_action( 'woocommerce_update_product', [ $this, 'update_by_object' ], 90, 2 );
+		add_action( 'woocommerce_update_product_variation', [ $this, 'update_by_object' ], 90, 2 );
 
 		// if we don't attach to these we miss product gallery updates.
-		add_action( 'woocommerce_process_product_meta', $update_by_id, 90 );
+		add_action( 'woocommerce_process_product_meta', [ $this, 'update_by_id' ], 90 );
 
 		// when a product is trashed or removed, schedule a "delete" job.
-		add_action( 'wp_trash_post', $pre_delete, 90 );
-		add_action( 'before_delete_post', $pre_delete, 90 );
-		add_action( 'woocommerce_before_delete_product_variation', $pre_delete, 90 );
-		add_action( 'trashed_post', $delete, 90 );
-		add_action( 'deleted_post', $delete, 90 );
+		add_action( 'wp_trash_post', [ $this, 'pre_delete' ], 90 );
+		add_action( 'before_delete_post', [ $this, 'pre_delete' ], 90 );
+		add_action( 'woocommerce_before_delete_product_variation', [ $this, 'pre_delete' ], 90 );
+		add_action( 'trashed_post', [ $this, 'delete' ], 90 );
+		add_action( 'deleted_post', [ $this, 'delete' ], 90 );
 
 		// when a product is restored from the trash, schedule an "update" job.
-		add_action( 'untrashed_post', $update_by_id, 90 );
+		add_action( 'untrashed_post', [ $this, 'update_by_id' ], 90 );
 
 		// exclude the sync metadata when duplicating the product
-		add_action(
+		add_filter(
 			'woocommerce_duplicate_product_exclude_meta',
-			function ( array $exclude_meta ) {
-				return $this->get_duplicated_product_excluded_meta( $exclude_meta );
-			},
+			[ $this, 'duplicate_product_exclude_meta' ],
 			90
 		);
+	}
+
+	/**
+	 * Update a Product by WC_Product
+	 *
+	 * @param int        $product_id
+	 * @param WC_Product $product
+	 */
+	public function update_by_object( int $product_id, WC_Product $product ) {
+		$this->handle_update_products( [ $product ] );
+	}
+
+	/**
+	 * Update a Product by the ID
+	 *
+	 * @param int $product_id
+	 */
+	public function update_by_id( int $product_id ) {
+		$product = $this->wc->maybe_get_product( $product_id );
+		if ( $product instanceof WC_Product ) {
+			$this->handle_update_products( [ $product ] );
+		}
+	}
+
+	/**
+	 * Pre delete a Product by the ID
+	 *
+	 * @param int $product_id
+	 */
+	public function pre_delete( int $product_id ) {
+		$this->handle_pre_delete_product( $product_id );
+	}
+
+	/**
+	 * Delete a Product by the ID
+	 *
+	 * @param int $product_id
+	 */
+	public function delete( int $product_id ) {
+		$this->handle_delete_product( $product_id );
+	}
+
+	/**
+	 * Filters woocommerce_duplicate_product_exclude_meta adding some custom prefix
+	 *
+	 * @param array $exclude_meta
+	 * @return array
+	 */
+	public function duplicate_product_exclude_meta( array $exclude_meta ): array {
+		return $this->get_duplicated_product_excluded_meta( $exclude_meta );
 	}
 
 	/**
@@ -273,15 +302,8 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_delete_product( int $product_id ) {
-		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product && $this->notifications_service->is_enabled() && $this->product_helper->should_trigger_delete_notification( $product ) ) {
-			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-			$this->product_notification_job->schedule(
-				[
-					'item_id' => $product->get_id(),
-					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
-				]
-			);
+		if ( $this->notifications_service->is_enabled() ) {
+			$this->maybe_send_delete_notification( $product_id );
 			return;
 		}
 
@@ -291,6 +313,25 @@ class SyncerHooks implements Service, Registerable {
 				$this->delete_products_job->schedule( [ $product_id_map ] );
 				$this->set_already_scheduled_to_delete( $product_id );
 			}
+		}
+	}
+
+	/**
+	 * Schedules a job to send the product deletion notification
+	 *
+	 * @since x.x.x
+	 * @param int $product_id
+	 */
+	protected function maybe_send_delete_notification( int $product_id ) {
+		$product = wc_get_product( $product_id );
+		if ( $product instanceof WC_Product && $this->product_helper->should_trigger_delete_notification( $product ) ) {
+			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
+			$this->product_notification_job->schedule(
+				[
+					'item_id' => $product->get_id(),
+					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
+				]
+			);
 		}
 	}
 

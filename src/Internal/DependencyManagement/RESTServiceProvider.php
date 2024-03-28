@@ -140,7 +140,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( AttributeMappingCategoriesController::class );
 		$this->share( AttributeMappingSyncerController::class, ProductSyncStats::class );
 		$this->share( TourController::class );
-		$this->share( RestAPIAuthController::class, OAuthService::class );
+		$this->share( RestAPIAuthController::class, OAuthService::class, MerchantAccountService::class );
 	}
 
 	/**

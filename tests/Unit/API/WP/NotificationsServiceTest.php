@@ -3,8 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\WP;
 
+use Automattic\WooCommerce\Admin\RemoteInboxNotifications\TransformerService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,6 +23,11 @@ class NotificationsServiceTest extends UnitTest {
 	 * @var NotificationsService
 	 */
 	public $service;
+
+	/**
+	 * @var MockObject|MerchantCenterService
+	 */
+	public $merchant_center;
 
 	public const DUMMY_BLOG_ID = '123';
 
@@ -50,7 +58,6 @@ class NotificationsServiceTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-
 		// Mock the Blog ID from Jetpack
 		add_filter(
 			'jetpack_options',
@@ -70,7 +77,7 @@ class NotificationsServiceTest extends UnitTest {
 	 * Test if the route is correct
 	 */
 	public function test_route() {
-		$this->service = $this->get_mock( [] );
+		$this->service = $this->get_mock();
 
 		$blog_id = self::DUMMY_BLOG_ID;
 		$this->assertEquals( $this->service->get_notification_url(), "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications" );
@@ -162,12 +169,27 @@ class NotificationsServiceTest extends UnitTest {
 	}
 
 	/**
+	 * Test notify() function logs an error when MC is not ready for syncing
+	 */
+	public function test_notify_show_error_when_mc_not_ready() {
+		$this->service = $this->get_mock( false );
+		$this->service->expects( $this->never() )->method( 'do_request' );
+		$this->assertFalse( $this->service->notify( 'product.create', 1 ) );
+		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
+	}
+
+	/**
 	 * Mocks the service
 	 *
-	 * @return NotificationsService
+	 * @param bool $mc_ready
+	 * @return TransformerService
 	 */
-	public function get_mock() {
+	public function get_mock( $mc_ready = true ) {
+		$this->merchant_center = $this->createMock( MerchantCenterService::class );
+		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( $mc_ready );
+
 		return $this->getMockBuilder( NotificationsService::class )
+			->setConstructorArgs( [ $this->merchant_center ] )
 			->onlyMethods( [ 'do_request' ] )
 			->getMock();
 	}

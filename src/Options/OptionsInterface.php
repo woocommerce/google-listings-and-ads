@@ -42,6 +42,7 @@ interface OptionsInterface {
 	public const TOURS                                     = 'tours';
 	public const UPDATE_ALL_PRODUCTS_LAST_SYNC             = 'update_all_products_last_sync';
 	public const WP_TOS_ACCEPTED                           = 'wp_tos_accepted';
+	public const WPCOM_REST_API_STATUS                     = 'wpcom_rest_api_status';
 
 	public const VALID_OPTIONS = [
 		self::ADS_ACCOUNT_CURRENCY                      => true,
@@ -74,6 +75,7 @@ interface OptionsInterface {
 		self::TOURS                                     => true,
 		self::UPDATE_ALL_PRODUCTS_LAST_SYNC             => true,
 		self::WP_TOS_ACCEPTED                           => true,
+		self::WPCOM_REST_API_STATUS                     => true,
 	];
 
 	public const OPTION_TYPES = [
@@ -140,4 +142,11 @@ interface OptionsInterface {
 	 * @return int
 	 */
 	public function get_ads_id(): int;
+
+	/**
+	 * If the Notifications are enabled
+	 *
+	 * @return bool
+	 */
+	public function notifications_enabled(): bool;
 }

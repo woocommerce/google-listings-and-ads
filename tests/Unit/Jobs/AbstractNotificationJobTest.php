@@ -13,6 +13,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 /**
  * Generic Class for NotificationJobTests
  *
+ * @group Notifications
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Jobs
  */
 abstract class AbstractNotificationJobTest extends UnitTest {
