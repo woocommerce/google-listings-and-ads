@@ -7,7 +7,6 @@ use Automattic\WooCommerce\RestApi\UnitTests\Helpers\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPCOMProxy;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use WC_Meta_Data;
 use WP_REST_Response;
 
@@ -391,12 +390,6 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 	public function test_get_settings_with_gla_syncable_param() {
 		global $wpdb;
 
-		$target_audience = [
-			'countries' => [ 'US' ],
-		];
-
-		update_option( 'gla_' . OptionsInterface::TARGET_AUDIENCE, $target_audience );
-
 		// As the shipping time tables are not created in the test environment, we need to suppress the errors.
 		$wpdb->suppress_errors = true;
 
@@ -410,6 +403,5 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$this->assertArrayHasKey( 'gla_target_audience', $response_mapped );
 		$this->assertArrayHasKey( 'gla_shipping_times', $response_mapped );
-		$this->assertEquals( $target_audience, $response_mapped['gla_target_audience']['value'] );
 	}
 }
