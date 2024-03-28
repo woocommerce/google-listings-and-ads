@@ -69,7 +69,7 @@ class SyncerHooksTest extends UnitTest {
 
 	public function test_saving_woocommerce_general_settings_schedules_notification_job() {
 		$this->notification_service->expects( $this->once() )
-			->method( 'is_enabled' )
+			->method( 'is_ready' )
 			->willReturn( true );
 
 		$this->settings_notification_job->expects( $this->exactly( count( self::ALLOWED_SETTINGS ) ) )
@@ -83,7 +83,7 @@ class SyncerHooksTest extends UnitTest {
 
 	public function test_saving_other_settings_dont_schedules_notification_job() {
 		$this->notification_service->expects( $this->once() )
-			->method( 'is_enabled' )
+			->method( 'is_ready' )
 			->willReturn( true );
 
 		$this->settings_notification_job->expects( $this->never() )
@@ -95,7 +95,7 @@ class SyncerHooksTest extends UnitTest {
 
 	public function test_dont_register_if_notifications_disabled() {
 		$this->notification_service->expects( $this->once() )
-			->method( 'is_enabled' )
+			->method( 'is_ready' )
 			->willReturn( false );
 
 		$this->settings_notification_job->expects( $this->never() )
