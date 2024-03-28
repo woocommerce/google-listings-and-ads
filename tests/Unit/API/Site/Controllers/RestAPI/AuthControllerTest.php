@@ -86,23 +86,68 @@ class AuthControllerTest extends RESTControllerUnitTest {
 			->method( 'update_wpcom_api_authorization' )
 			->willReturn( true );
 
-		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'status' => 'approved' ] );
+		$this->oauth_service->expects( $this->once() )
+			->method( 'verify_site_nonce' )
+			->willReturn( 1 );
+
+		$response = $this->do_request(
+			self::ROUTE_AUTHORIZE,
+			'POST',
+			[
+				'status'     => 'approved',
+				'site_nonce' => 'site-nonce-123',
+			]
+		);
 
 		$this->assertEquals( [ 'status' => 'approved' ], $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_update_authorize_missing_params() {
-		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST' );
+	public function test_update_authorize_missing_status_param() {
+		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'site_nonce' => 'site-nonce-123' ] );
 
 		$this->assertEquals( 'Missing parameter(s): status', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_update_authorize_missing_site_nonce_param() {
+		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'status' => 'approved' ] );
+
+		$this->assertEquals( 'Missing parameter(s): site_nonce', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_update_authorize_wrong_params() {
-		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'status' => 'wrong-param' ] );
+		$response = $this->do_request(
+			self::ROUTE_AUTHORIZE,
+			'POST',
+			[
+				'status'     => 'wrong-param',
+				'site_nonce' => 'site-nonce-123',
+			]
+		);
 
 		$this->assertEquals( 'Invalid parameter(s): status', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_update_authorize_verify_site_nonce_error() {
+		$this->account_service->expects( $this->never() )->method( 'update_wpcom_api_authorization' );
+
+		$this->oauth_service->expects( $this->once() )
+			->method( 'verify_site_nonce' )
+			->willReturn( false );
+
+		$response = $this->do_request(
+			self::ROUTE_AUTHORIZE,
+			'POST',
+			[
+				'status'     => 'approved',
+				'site_nonce' => 'site-nonce-123',
+			]
+		);
+
+		$this->assertEquals( [ 'message' => 'Failed to verify site nonce when updating WPCOM REST API auth status.' ], $response->get_data() );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 }
