@@ -47,6 +47,8 @@ class ShippingTimeQuery extends Query {
 	/**
 	 * Get all shipping times.
 	 *
+	 * @since x.x.x
+	 *
 	 * @return array
 	 */
 	public function get_all_shipping_times() {
