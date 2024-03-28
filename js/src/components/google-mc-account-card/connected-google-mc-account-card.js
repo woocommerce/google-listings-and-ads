@@ -13,6 +13,7 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import Section from '.~/wcdl/section';
+import { GOOGLE_WPCOM_APP_CONNECTED_STATUS } from '.~/constants';
 import { API_NAMESPACE } from '.~/data/constants';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
@@ -125,13 +126,15 @@ const ConnectedGoogleMCAccountCard = ( {
 	// Show the button if the status is "approved" and the Notification Service is not hidden.
 	const showDisconnectNotificationsButton =
 		! hideNotificationService &&
-		googleMCAccount.wpcom_rest_api_status === 'approved';
+		googleMCAccount.wpcom_rest_api_status ===
+			GOOGLE_WPCOM_APP_CONNECTED_STATUS.APPROVED;
 
 	// Show the error if the status is set but is not "approved" and the Notification Service is not hidden.
 	const showErrorNotificationsNotice =
 		! hideNotificationService &&
 		googleMCAccount.wpcom_rest_api_status &&
-		googleMCAccount.wpcom_rest_api_status !== 'approved';
+		googleMCAccount.wpcom_rest_api_status !==
+			GOOGLE_WPCOM_APP_CONNECTED_STATUS.APPROVED;
 
 	const showFooter = ! hideAccountSwitch || showDisconnectNotificationsButton;
 

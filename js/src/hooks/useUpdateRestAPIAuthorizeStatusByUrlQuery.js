@@ -55,7 +55,9 @@ const useUpdateRestAPIAuthorizeStatusByUrlQuery = () => {
 			await handleUpdateRestAPIAuthorize( googleWPCOMAppStatus );
 		}
 		if (
-			GOOGLE_WPCOM_APP_CONNECTED_STATUS.includes( googleWPCOMAppStatus )
+			Object.values( GOOGLE_WPCOM_APP_CONNECTED_STATUS ).includes(
+				googleWPCOMAppStatus
+			)
 		) {
 			updateStatus();
 		}
