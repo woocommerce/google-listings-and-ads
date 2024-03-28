@@ -136,12 +136,19 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	protected function register_callbacks() {
 		add_filter(
 			'rest_request_after_callbacks',
-			function ( WP_REST_Response $response, $handler, WP_REST_Request $request ) {
+			/**
+			 * Add the Google Listings and Ads settings to the settings/general response.
+			 *
+			 * @param WP_REST_Response|WP_HTTP_Response|WP_Error|mixed $response The response object.
+			 * @param mixed                                             $handler  The handler.
+			 * @param WP_REST_Request                                   $request  The request object.
+			 */
+			function ( $response, $handler, $request ) {
 				if ( ! $this->is_gla_request( $request ) ) {
 					return $response;
 				}
 
-				if ( $request->get_route() === '/wc/v3/settings/general' ) {
+				if ( $request->get_route() === '/wc/v3/settings/general' && $response instanceof WP_REST_Response ) {
 					$data   = $response->get_data();
 					$data[] = [
 						'id'    => 'gla_target_audience',
