@@ -24,6 +24,16 @@ class OAuthService implements Service {
 	public const RESPONSE_TYPE = 'code';
 	public const SCOPE         = 'wc-partner-access';
 
+	public const STATUS_APPROVED    = 'approved';
+	public const STATUS_DISAPPROVED = 'disapproved';
+	public const STATUS_ERROR       = 'error';
+
+	public const ALLOWED_STATUSES = [
+		self::STATUS_APPROVED,
+		self::STATUS_DISAPPROVED,
+		self::STATUS_ERROR,
+	];
+
 	/**
 	 * Returns WordPress.com OAuth authorization URL.
 	 * https://developer.wordpress.com/docs/oauth2/
