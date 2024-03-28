@@ -206,4 +206,13 @@ final class Options implements OptionsInterface, Service {
 	protected function prefix_name( string $name ): string {
 		return "{$this->get_slug()}_{$name}";
 	}
+
+	/**
+	 * Checks if Notifications are enabled.
+	 *
+	 * @return bool
+	 */
+	public function notifications_enabled(): bool {
+		return apply_filters( 'woocommerce_gla_notifications_enabled', $this->get( self::WPCOM_REST_API_STATUS ) === 'approved' );
+	}
 }
