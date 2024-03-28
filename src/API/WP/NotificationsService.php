@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -17,7 +19,9 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WP
  */
-class NotificationsService implements Service {
+class NotificationsService implements Service, OptionsAwareInterface {
+
+	use OptionsAwareTrait;
 
 	// List of Topics to be used.
 	public const TOPIC_PRODUCT_CREATED  = 'product.create';
@@ -164,6 +168,6 @@ class NotificationsService implements Service {
 	 * @return bool
 	 */
 	public function is_enabled(): bool {
-		return apply_filters( 'woocommerce_gla_notifications_enabled', true );
+		return $this->options->notifications_enabled();
 	}
 }

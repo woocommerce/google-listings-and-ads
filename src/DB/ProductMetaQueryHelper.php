@@ -60,6 +60,23 @@ class ProductMetaQueryHelper implements Service {
 	}
 
 	/**
+	 * Delete all values for a given meta_key.
+	 *
+	 * @since 2.6.4
+	 *
+	 * @param string $meta_key The meta key to delete.
+	 *
+	 * @throws InvalidMeta If the meta key isn't valid.
+	 */
+	public function delete_all_values( string $meta_key ) {
+		self::validate_meta_key( $meta_key );
+		$meta_key = $this->prefix_meta_key( $meta_key );
+		$query    = "DELETE FROM {$this->wpdb->postmeta} WHERE meta_key = %s";
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$this->wpdb->query( $this->wpdb->prepare( $query, $meta_key ) );
+	}
+
+	/**
 	 * Insert a meta value for multiple posts.
 	 *
 	 * @param string $meta_key The meta value to insert.

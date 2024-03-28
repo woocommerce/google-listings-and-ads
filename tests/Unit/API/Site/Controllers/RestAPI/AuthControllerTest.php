@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI\AuthController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 use Exception;
@@ -19,6 +20,9 @@ class AuthControllerTest extends RESTControllerUnitTest {
 	/** @var MockObject|OAuthService $oauth_service */
 	protected $oauth_service;
 
+	/** @var MockObject|AccountService $oauth_service */
+	protected $account_service;
+
 	/** @var AuthController $controller */
 	protected $controller;
 
@@ -27,8 +31,9 @@ class AuthControllerTest extends RESTControllerUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->oauth_service = $this->createMock( OAuthService::class );
-		$this->controller    = new AuthController( $this->server, $this->oauth_service );
+		$this->oauth_service   = $this->createMock( OAuthService::class );
+		$this->account_service = $this->createMock( AccountService::class );
+		$this->controller      = new AuthController( $this->server, $this->oauth_service, $this->account_service );
 		$this->controller->register();
 	}
 
@@ -40,17 +45,17 @@ class AuthControllerTest extends RESTControllerUnitTest {
 		$expected_auth_url .= '&response_type=code';
 		$expected_auth_url .= '&scope=wc-partner-access';
 		$expected_auth_url .= '&state=base64_encoded_string';
-		$expected_auth_url  = $expected_auth_url;
 
 		$this->oauth_service->expects( $this->once() )
 			->method( 'get_auth_url' )
 			->willReturn( $expected_auth_url );
 
-		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'GET' );
+		$response = $this->do_request( self::ROUTE_AUTHORIZE );
 
 		$this->assertEquals(
 			[
 				'auth_url' => $expected_auth_url,
+				'status'   => null,
 			],
 			$response->get_data()
 		);
@@ -70,9 +75,79 @@ class AuthControllerTest extends RESTControllerUnitTest {
 			->method( 'get_auth_url' )
 			->willThrowException( new Exception( 'error', 400 ) );
 
-		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'GET' );
+		$response = $this->do_request( self::ROUTE_AUTHORIZE );
 
 		$this->assertEquals( [ 'message' => 'error' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_update_authorize() {
+		$this->account_service->expects( $this->once() )
+			->method( 'update_wpcom_api_authorization' )
+			->willReturn( true );
+
+		$this->oauth_service->expects( $this->once() )
+			->method( 'verify_site_nonce' )
+			->willReturn( 1 );
+
+		$response = $this->do_request(
+			self::ROUTE_AUTHORIZE,
+			'POST',
+			[
+				'status'     => 'approved',
+				'site_nonce' => 'site-nonce-123',
+			]
+		);
+
+		$this->assertEquals( [ 'status' => 'approved' ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_update_authorize_missing_status_param() {
+		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'site_nonce' => 'site-nonce-123' ] );
+
+		$this->assertEquals( 'Missing parameter(s): status', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_update_authorize_missing_site_nonce_param() {
+		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'status' => 'approved' ] );
+
+		$this->assertEquals( 'Missing parameter(s): site_nonce', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_update_authorize_wrong_params() {
+		$response = $this->do_request(
+			self::ROUTE_AUTHORIZE,
+			'POST',
+			[
+				'status'     => 'wrong-param',
+				'site_nonce' => 'site-nonce-123',
+			]
+		);
+
+		$this->assertEquals( 'Invalid parameter(s): status', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_update_authorize_verify_site_nonce_error() {
+		$this->account_service->expects( $this->never() )->method( 'update_wpcom_api_authorization' );
+
+		$this->oauth_service->expects( $this->once() )
+			->method( 'verify_site_nonce' )
+			->willReturn( false );
+
+		$response = $this->do_request(
+			self::ROUTE_AUTHORIZE,
+			'POST',
+			[
+				'status'     => 'approved',
+				'site_nonce' => 'site-nonce-123',
+			]
+		);
+
+		$this->assertEquals( [ 'message' => 'Failed to verify site nonce when updating WPCOM REST API auth status.' ], $response->get_data() );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 }

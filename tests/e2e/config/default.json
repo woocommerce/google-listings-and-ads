@@ -13,52 +13,42 @@
 	"products": {
 		"simple": {
 			"name": "Simple product",
-			"regularPrice": 9.99
+			"type": "simple",
+			"regular_price": "9.99"
 		},
 		"variable": {
-			"name": "Variable Product with Three Attributes",
-			"defaultAttributes": [
+			"name": "Variable product",
+			"type": "variable",
+			"default_attributes": [
 				{
-					"id": 0,
 					"name": "Size",
 					"option": "Medium"
 				},
 				{
-					"id": 0,
 					"name": "Colour",
 					"option": "Blue"
 				}
 			],
 			"attributes": [
 				{
-					"id": 0,
 					"name": "Colour",
-					"isVisibleOnProductPage": true,
-					"isForVariations": true,
+					"visible": false,
+					"variation": true,
 					"options": [ "Red", "Green", "Blue" ],
-					"sortOrder": 0
+					"position": 0
 				},
 				{
-					"id": 0,
 					"name": "Size",
-					"isVisibleOnProductPage": true,
-					"isForVariations": true,
+					"visible": false,
+					"variation": true,
 					"options": [ "Small", "Medium", "Large" ],
-					"sortOrder": 0
-				},
-				{
-					"id": 0,
-					"name": "Logo",
-					"isVisibleOnProductPage": true,
-					"isForVariations": true,
-					"options": [ "Woo", "WordPress" ],
-					"sortOrder": 0
+					"position": 1
 				}
 			]
 		},
 		"variations": [
 			{
-				"regularPrice": "19.99",
+				"regular_price": "19.99",
 				"attributes": [
 					{
 						"name": "Size",
@@ -71,7 +61,7 @@
 				]
 			},
 			{
-				"regularPrice": "18.99",
+				"regular_price": "18.99",
 				"attributes": [
 					{
 						"name": "Size",
@@ -84,7 +74,7 @@
 				]
 			},
 			{
-				"regularPrice": "17.99",
+				"regular_price": "17.99",
 				"attributes": [
 					{
 						"name": "Size",
@@ -96,30 +86,7 @@
 					}
 				]
 			}
-		],
-		"grouped": {
-			"name": "Grouped Product with Three Children",
-			"groupedProducts": [
-				{
-					"name": "Base Unit",
-					"regularPrice": "29.99"
-				},
-				{
-					"name": "Add-on A",
-					"regularPrice": "11.95"
-				},
-				{
-					"name": "Add-on B",
-					"regularPrice": "18.97"
-				}
-			]
-		},
-		"external": {
-			"name": "External product",
-			"regularPrice": "24.99",
-			"buttonText": "Buy now",
-			"externalUrl": "https://wordpress.org/plugins/woocommerce"
-		}
+		]
 	},
 	"coupons": {
 		"percentage": {

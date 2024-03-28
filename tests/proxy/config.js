@@ -1,6 +1,6 @@
 'use strict';
 module.exports = {
-	port: 5500,
+	port: process.env.PROXY_PORT || 5555,
 	host: 'localhost',
 	connectServer:
 		process.env.WOOCOMMERCE_CONNECT_SERVER ||

@@ -657,10 +657,16 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
 
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::WPCOM_REST_API_STATUS )
+			->willReturn( 'approved' );
+
 		$this->assertEquals(
 			[
-				'id'     => self::TEST_ACCOUNT_ID,
-				'status' => 'connected',
+				'id'                    => self::TEST_ACCOUNT_ID,
+				'status'                => 'connected',
+				'wpcom_rest_api_status' => 'approved',
 			],
 			$this->account->get_connected_status()
 		);
@@ -677,9 +683,10 @@ class AccountServiceTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'     => self::TEST_ACCOUNT_ID,
-				'status' => 'incomplete',
-				'step'   => 'verify',
+				'id'                    => self::TEST_ACCOUNT_ID,
+				'status'                => 'incomplete',
+				'step'                  => 'verify',
+				'wpcom_rest_api_status' => null,
 			],
 			$this->account->get_connected_status()
 		);

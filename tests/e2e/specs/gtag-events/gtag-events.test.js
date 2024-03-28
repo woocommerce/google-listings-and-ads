@@ -21,7 +21,7 @@ import { createBlockShopPage } from '../../utils/block-page';
 import { getEventData, trackGtagEvent } from '../../utils/track-event';
 
 const config = require( '../../config/default' );
-const productPrice = config.products.simple.regularPrice;
+const productPrice = config.products.simple.regular_price;
 
 let simpleProductID;
 
@@ -171,7 +171,7 @@ test.describe( 'GTag events', () => {
 
 		await event.then( ( request ) => {
 			const data = getEventData( request );
-			expect( data.value ).toEqual( String( productPrice ) );
+			expect( data.value ).toEqual( productPrice );
 			expect( data.currency_code ).toEqual( 'USD' );
 		} );
 	} );
@@ -186,7 +186,7 @@ test.describe( 'GTag events', () => {
 
 		await event.then( ( request ) => {
 			const data = getEventData( request );
-			expect( data.value ).toEqual( String( productPrice ) );
+			expect( data.value ).toEqual( productPrice );
 			expect( data.ecomm_pagetype ).toEqual( 'purchase' );
 			expect( data.currency_code ).toEqual( 'USD' );
 			expect( data.country ).toEqual( 'US' );

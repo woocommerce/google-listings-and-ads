@@ -5,7 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\WP;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,6 +25,9 @@ class OAuthServiceTest extends UnitTest {
 	 */
 	protected $service;
 
+	/** @var MockObject|WP $wp */
+	protected $wp;
+
 	protected const DUMMY_BLOG_ID   = '123';
 	protected const DUMMY_ADMIN_URL = 'https://admin-example.com/wp-admin/';
 
@@ -31,10 +36,6 @@ class OAuthServiceTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-
-		$this->service = $this->getMockBuilder( OAuthService::class )
-			->onlyMethods( [ 'get_data_from_google' ] )
-			->getMock();
 
 		// Mock the Blog ID from Jetpack.
 		add_filter(
@@ -59,6 +60,12 @@ class OAuthServiceTest extends UnitTest {
 			10,
 			2
 		);
+
+		$this->wp      = $this->createMock( WP::class );
+		$this->service = $this->getMockBuilder( OAuthService::class )
+			->onlyMethods( [ 'get_data_from_google' ] )
+			->setConstructorArgs( [ $this->wp ] )
+			->getMock();
 	}
 
 	/**
@@ -68,9 +75,14 @@ class OAuthServiceTest extends UnitTest {
 		$client_id    = '12345';
 		$redirect_uri = 'https://example.com';
 		$nonce        = 'nonce-999';
+		$site_nonce   = 'site-nonce-999';
 		$blog_id      = self::DUMMY_BLOG_ID;
 		$admin_url    = self::DUMMY_ADMIN_URL;
 		$path         = '/google/setup-mc';
+
+		$this->wp->expects( $this->once() )
+			->method( 'wp_create_nonce' )
+			->willReturn( $site_nonce );
 
 		$this->service->expects( $this->once() )
 			->method( 'get_data_from_google' )
@@ -84,7 +96,7 @@ class OAuthServiceTest extends UnitTest {
 
 		$merchant_redirect_url         = "{$admin_url}admin.php?page=wc-admin&path={$path}";
 		$merchant_redirect_url_encoded = urlencode_deep( $merchant_redirect_url );
-		$expected_state_raw            = "nonce={$nonce}&redirect_url={$merchant_redirect_url_encoded}";
+		$expected_state_raw            = "nonce={$nonce}&site_nonce={$site_nonce}&redirect_url={$merchant_redirect_url_encoded}";
 		$state                         = $this->base64url_encode( $expected_state_raw );
 
 		$expected_auth_url  = 'https://public-api.wordpress.com/oauth2/authorize';

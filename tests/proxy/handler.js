@@ -16,6 +16,11 @@ module.exports.checkRequest = ( request ) => {
 	}
 	if ( request.params.path.includes( 'reports/search' ) ) {
 		const body = JSON.parse( request.payload );
+
+		if ( body.query.includes( 'ProductView' ) ) {
+			return false;
+		}
+
 		const file = body.query.includes( 'segments.offer_id' )
 			? 'products'
 			: 'programs';

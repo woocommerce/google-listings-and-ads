@@ -29,8 +29,9 @@ function getSyncResult( {
 	scheduled_sync: scheduledSync,
 	statistics,
 	timestamp,
+	loading,
 } ) {
-	if ( scheduledSync !== 0 ) {
+	if ( scheduledSync !== 0 || loading ) {
 		return {
 			Icon: SyncIcon,
 			status: __( 'Sync in progress', 'google-listings-and-ads' ),
@@ -66,7 +67,14 @@ function getSyncResult( {
  * @return {JSX.Element} The status for the Product Sync
  */
 function SyncStatus() {
-	const { data } = useAppSelectDispatch( 'getMCProductStatistics' );
+	const { data, hasFinishedResolution } = useAppSelectDispatch(
+		'getMCProductStatistics'
+	);
+
+	if ( ! hasFinishedResolution || ! data?.statistics ) {
+		return null;
+	}
+
 	const { Icon, status, description } = getSyncResult( data );
 
 	return (
