@@ -144,9 +144,9 @@ interface OptionsInterface {
 	public function get_ads_id(): int;
 
 	/**
-	 * If the Notifications are enabled
+	 * If the WPCOM API is authorized
 	 *
 	 * @return bool
 	 */
-	public function notifications_enabled(): bool;
+	public function is_wpcom_api_authorized(): bool;
 }

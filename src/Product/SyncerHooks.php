@@ -213,7 +213,7 @@ class SyncerHooks implements Service, Registerable {
 		$products_to_update = [];
 		$products_to_delete = [];
 
-		if ( $this->notifications_service->is_enabled() ) {
+		if ( $this->notifications_service->is_ready() ) {
 			$this->handle_update_product_notification( $products[0] );
 			return;
 		}
@@ -302,7 +302,7 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_delete_product( int $product_id ) {
-		if ( $this->notifications_service->is_enabled() ) {
+		if ( $this->notifications_service->is_ready() ) {
 			$this->maybe_send_delete_notification( $product_id );
 			return;
 		}
@@ -342,7 +342,7 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_pre_delete_product( int $product_id ) {
-		if ( $this->notifications_service->is_enabled() ) {
+		if ( $this->notifications_service->is_ready() ) {
 			return;
 		}
 

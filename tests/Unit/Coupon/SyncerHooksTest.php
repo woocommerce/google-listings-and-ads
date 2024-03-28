@@ -297,7 +297,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	 * Set the SyncerHooks class with specific features.
 	 *
 	 * @param bool $mc_status True if MC is ready. { @see MerchantCenterService::is_ready_for_syncing() }
-	 * @param bool $notifications_status True if NotificationsService is enabled. { @see NotificationsService::is_enabled() }
+	 * @param bool $notifications_status True if NotificationsService is enabled. { @see NotificationsService::is_ready() }
 	 */
 	public function set_mc_and_notifications( bool $mc_status = true, bool $notifications_status = false ) {
 		$this->merchant_center->expects( $this->any() )
@@ -305,7 +305,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 			->willReturn( $mc_status );
 
 		$this->notification_service->expects( $this->any() )
-			->method( 'is_enabled' )
+			->method( 'is_ready' )
 			->willReturn( $notifications_status );
 
 		$this->syncer_hooks = new SyncerHooks(

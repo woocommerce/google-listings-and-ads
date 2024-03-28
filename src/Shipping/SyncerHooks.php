@@ -144,7 +144,7 @@ class SyncerHooks implements Service, Registerable {
 			return;
 		}
 
-		if ( $this->notifications_service->is_enabled() ) {
+		if ( $this->notifications_service->is_ready() ) {
 			$this->shipping_notification_job->schedule();
 		} else {
 			$this->update_shipping_job->schedule();

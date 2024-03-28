@@ -208,11 +208,11 @@ final class Options implements OptionsInterface, Service {
 	}
 
 	/**
-	 * Checks if Notifications are enabled.
+	 * Checks if WPCOM API is Authorized.
 	 *
 	 * @return bool
 	 */
-	public function notifications_enabled(): bool {
-		return apply_filters( 'woocommerce_gla_notifications_enabled', $this->get( self::WPCOM_REST_API_STATUS ) === 'approved' );
+	public function is_wpcom_api_authorized(): bool {
+		return $this->get( self::WPCOM_REST_API_STATUS ) === 'approved';
 	}
 }

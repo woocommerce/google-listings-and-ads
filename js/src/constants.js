@@ -116,4 +116,5 @@ export const GOOGLE_WPCOM_APP_CONNECTED_STATUS = {
 	APPROVED: 'approved',
 	DISAPPROVED: 'disapproved',
 	ERROR: 'error',
+	DISABLED: 'disabled',
 };

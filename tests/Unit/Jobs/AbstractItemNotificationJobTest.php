@@ -53,7 +53,7 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 		$topic = $this->get_topic_name() . '.create';
 		$id    = 1;
 
-		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->notification_service->expects( $this->once() )->method( 'is_ready' )->willReturn( true );
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
@@ -92,7 +92,7 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 		$topic = $this->get_topic_name() . '.create';
 		$id    = 1;
 
-		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->notification_service->expects( $this->once() )->method( 'is_ready' )->willReturn( true );
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
@@ -121,7 +121,7 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 		$topic = $this->get_topic_name() . '.create';
 		$id    = 1;
 
-		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( false );
+		$this->notification_service->expects( $this->once() )->method( 'is_ready' )->willReturn( false );
 
 		$this->action_scheduler->expects( $this->never() )
 			->method( 'has_scheduled_action' );
