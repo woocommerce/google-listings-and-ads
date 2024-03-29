@@ -55,7 +55,7 @@ export default class SetupAdsAccount extends MockRequests {
 	}
 
 	/**
-	 * Get the accept account modal.
+	 * Get the accept invite for google ads account modal.
 	 *
 	 * @return {import('@playwright/test').Locator} The create account modal.
 	 */

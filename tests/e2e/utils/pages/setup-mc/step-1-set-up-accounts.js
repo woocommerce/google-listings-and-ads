@@ -396,23 +396,9 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
-	 * Click create account button.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async getCreateAdsAccountButton() {
-		return this.page
-			.getByRole( 'button', {
-				name: 'Create account',
-				exact: true,
-			} )
-			.first();
-	}
-
-	/**
 	 * Click claim account button.
 	 *
-	 * @return {Promise<void>}
+	 * @return {import('@playwright/test').Locator} Locator instance.
 	 */
 	async getClaimAdsAccountButton() {
 		return this.page

@@ -47,30 +47,12 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
-	 * Get ads account section.
-	 *
-	 * @return {import('@playwright/test').Locator} Get ads account section.
-	 */
-	getAdsAccountSection() {
-		return this.getSections().nth( 2 );
-	}
-
-	/**
-	 * Get paid ads features section.
-	 *
-	 * @return {import('@playwright/test').Locator} Get paid ads features section.
-	 */
-	getPaidAdsFeaturesSection() {
-		return this.getSections().nth( 2 );
-	}
-
-	/**
 	 * Get ads audience section.
 	 *
 	 * @return {import('@playwright/test').Locator} Get ads audience section.
 	 */
 	getAdsAudienceSection() {
-		return this.getSections().nth( 3 );
+		return this.getSections().nth( 1 );
 	}
 
 	/**
@@ -131,27 +113,6 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
-	 * Get create account button.
-	 *
-	 * @return {import('@playwright/test').Locator} Get create account button.
-	 */
-	getCreateAccountButton() {
-		return this.page.getByRole( 'button', {
-			name: 'Create account',
-			exact: true,
-		} );
-	}
-
-	/**
-	 * Get ads account connected text.
-	 *
-	 * @return {import('@playwright/test').Locator} Get ads account connected text.
-	 */
-	getAdsAccountConnectedText() {
-		return this.getAdsAccountSection().getByText( 'Connected' );
-	}
-
-	/**
 	 * Click skip this step for now button.
 	 *
 	 * @return {Promise<void>}
@@ -180,17 +141,6 @@ export default class CompleteCampaign extends MockRequests {
 	 */
 	async clickCreatePaidAdButton() {
 		const button = this.getCreatePaidAdButton();
-		await button.click();
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	}
-
-	/**
-	 * Click create account button.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async clickCreateAccountButton() {
-		const button = this.getCreateAccountButton();
 		await button.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}

@@ -187,16 +187,15 @@ test.describe( 'Complete your campaign', () => {
 			} );
 
 			test.describe( 'Setup up ads to a Google Ads account', () => {
-				test( 'should see "Ads audience" section is enabled', async () => {
+				test( 'should see "Ads audience" section is enabled', async ( page ) => {
 					const adsAudienceSection =
 						completeCampaign.getAdsAudienceSection();
 					await expect( adsAudienceSection ).toBeVisible();
 
-					// Cannot use toBeDisabled() because <section> is not a native control element
-					// such as <button> or <input> so it will be always enabled.
-					await expect( adsAudienceSection ).toHaveClass(
-						/wcdl-section/
-					);
+					// check if the section has the class.
+					await expect(
+						adsAudienceSection.locator( 'h1' )
+					).toContainText( 'Ads audience' );
 				} );
 
 				test( 'should see "Set your budget" section is enabled', async () => {
@@ -204,7 +203,7 @@ test.describe( 'Complete your campaign', () => {
 					await expect( budgetSection ).toBeVisible();
 				} );
 
-				test( 'should see both "Skip paid ads creation" is enabled and "Complete setup" button is disabled', async () => {
+				test( 'should see "Skip paid ads creation" is enabled and "Complete setup" button is disabled', async () => {
 					const completeButton =
 						completeCampaign.getCompleteSetupButton();
 					await expect( completeButton ).toBeVisible();
