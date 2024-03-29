@@ -15,6 +15,7 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import ClaimAccount from './claim-account';
 import ClaimAccountModal from './claim-account-modal';
 import ClaimTermsAndCreateAccountButton from './claim-terms-create-account-button';
+import ClaimAccountButton from './claim-account-button';
 
 const CreateAccount = ( props ) => {
 	const { allowShowExisting, onShowExisting } = props;
@@ -39,9 +40,13 @@ const CreateAccount = ( props ) => {
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			alignIcon="top"
 			indicator={
-				<ClaimTermsAndCreateAccountButton
-					onCreateAccount={ handleOnCreateAccount }
-				/>
+				shouldClaimGoogleAdsAccount ? (
+					<ClaimAccountButton />
+				) : (
+					<ClaimTermsAndCreateAccountButton
+						onCreateAccount={ handleOnCreateAccount }
+					/>
+				)
 			}
 		>
 			{ allowShowExisting && ! shouldClaimGoogleAdsAccount && (

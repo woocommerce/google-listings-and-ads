@@ -61,16 +61,32 @@ describe( 'GoogleAdsAccountCard', () => {
 		jest.clearAllMocks();
 	} );
 
-	it( 'Should show a spinner when the Google Ads status is being resolved', async () => {
+	it( 'Should show a spinner when the Google Ads status is being resolved and not render it once the status has been resolved', async () => {
 		useGoogleAdsAccountStatus.mockReturnValue( {
-			hasAccess: true,
-			step: 'link_merchant',
+			hasFinishedResolution: false,
+		} );
+		useGoogleAdsAccount.mockReturnValue( {
+			hasFinishedResolution: true,
+		} );
+		useGoogleAccount.mockReturnValue( {
 			hasFinishedResolution: true,
 		} );
 
-		render( <GoogleAdsAccountCard /> );
-		const spinner = screen.getByRole( 'status', { name: 'spinner' } );
-		expect( spinner ).toBeInTheDocument();
+		const { rerender } = render( <GoogleAdsAccountCard /> );
+
+		expect(
+			screen.queryByRole( 'status', { name: 'spinner' } )
+		).toBeInTheDocument();
+
+		useGoogleAdsAccountStatus.mockReturnValue( {
+			hasFinishedResolution: true,
+		} );
+
+		rerender( <GoogleAdsAccountCard /> );
+
+		expect(
+			screen.queryByRole( 'status', { name: 'spinner' } )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'Should show a claim account component when hasAccess is false and there is a valid Google Ads ID', async () => {

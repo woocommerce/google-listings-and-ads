@@ -8,14 +8,11 @@ import { useState, useCallback, useEffect } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import AppButton from '.~/components/app-button';
 import CreateAccountButton from './create-account-button';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import getWindowFeatures from '.~/utils/getWindowFeatures';
 
 const ClaimTermsAndCreateAccountButton = ( { onCreateAccount = noop } ) => {
 	const { createNotice } = useDispatchCoreNotices();
@@ -24,8 +21,6 @@ const ClaimTermsAndCreateAccountButton = ( { onCreateAccount = noop } ) => {
 	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
 	const [ upsertAdsAccount, { loading: createLoading } ] =
 		useUpsertAdsAccount();
-	const { inviteLink } = useGoogleAdsAccountStatus();
-	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { hasAccess, step } = useGoogleAdsAccountStatus();
 
 	const upsertAccount = useCallback( async () => {
@@ -69,28 +64,6 @@ const ClaimTermsAndCreateAccountButton = ( { onCreateAccount = noop } ) => {
 			upsertAccount();
 		}
 	}, [ hasAccess, upsertAccount, step ] );
-
-	const handleClaimAccountClick = useCallback(
-		( event ) => {
-			const { defaultView } = event.target.ownerDocument;
-			const features = getWindowFeatures( defaultView, 600, 800 );
-
-			defaultView.open( inviteLink, '_blank', features );
-		},
-		[ inviteLink ]
-	);
-
-	const shouldClaimGoogleAdsAccount = Boolean(
-		googleAdsAccount.id && hasAccess === false
-	);
-
-	if ( shouldClaimGoogleAdsAccount ) {
-		return (
-			<AppButton isSecondary onClick={ handleClaimAccountClick }>
-				{ __( 'Claim Account', 'google-listings-and-ads' ) }
-			</AppButton>
-		);
-	}
 
 	return (
 		<CreateAccountButton
