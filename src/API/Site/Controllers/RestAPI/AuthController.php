@@ -17,6 +17,8 @@ defined( 'ABSPATH' ) || exit;
  * Class AuthController
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI
+ *
+ * @since x.x.x
  */
 class AuthController extends BaseController {
 
@@ -166,7 +168,7 @@ class AuthController extends BaseController {
 			'status' => [
 				'description'       => __( 'The status of the merchant granting access to Google\'s WPCOM app', 'google-listings-and-ads' ),
 				'type'              => 'string',
-				'enum'              => [ 'approved', 'disapproved', 'error' ],
+				'enum'              => OAuthService::ALLOWED_STATUSES,
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],
@@ -188,7 +190,7 @@ class AuthController extends BaseController {
 			'status'   => [
 				'type'        => 'string',
 				'description' => __( 'The status of the merchant granting access to Google\'s WPCOM app', 'google-listings-and-ads' ),
-				'enum'        => [ 'approved', 'disapproved', 'error' ],
+				'enum'        => OAuthService::ALLOWED_STATUSES,
 				'context'     => [ 'view' ],
 			],
 		];
