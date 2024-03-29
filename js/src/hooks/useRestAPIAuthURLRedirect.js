@@ -19,12 +19,16 @@ const useRestAPIAuthURLRedirect = () => {
 	const nextPageName = glaData.mcSetupComplete ? 'settings' : 'setup-mc';
 	const query = { next_page_name: nextPageName };
 	const path = addQueryArgs( `${ API_NAMESPACE }/rest-api/authorize`, query );
-	const [ fetchRestAPIAuthorize ] = useApiFetchCallback( { path } );
+	const [ fetchRestAPIAuthorize, { loading } ] = useApiFetchCallback( {
+		path,
+	} );
 
 	const handleRestAPIAuthURLRedirect = useCallback( async () => {
 		try {
-			const d = await fetchRestAPIAuthorize();
-			window.location.href = d.auth_url;
+			if ( ! loading ) {
+				const d = await fetchRestAPIAuthorize();
+				window.location.href = d.auth_url;
+			}
 		} catch ( error ) {
 			createNotice(
 				'error',
@@ -34,7 +38,7 @@ const useRestAPIAuthURLRedirect = () => {
 				)
 			);
 		}
-	}, [ fetchRestAPIAuthorize, createNotice ] );
+	}, [ fetchRestAPIAuthorize, createNotice, loading ] );
 
 	return [ handleRestAPIAuthURLRedirect ];
 };
