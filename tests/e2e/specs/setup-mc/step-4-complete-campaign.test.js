@@ -187,7 +187,7 @@ test.describe( 'Complete your campaign', () => {
 			} );
 
 			test.describe( 'Setup up ads to a Google Ads account', () => {
-				test( 'should see "Ads audience" section is enabled', async ( page ) => {
+				test( 'should see "Ads audience" section is enabled', async () => {
 					const adsAudienceSection =
 						completeCampaign.getAdsAudienceSection();
 					await expect( adsAudienceSection ).toBeVisible();
