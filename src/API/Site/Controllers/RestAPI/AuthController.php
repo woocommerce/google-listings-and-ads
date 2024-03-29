@@ -133,12 +133,6 @@ class AuthController extends BaseController {
 	protected function get_update_authorize_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$verified = $this->oauth_service->verify_site_nonce( $request['site_nonce'] );
-
-				if ( ! $verified ) {
-					throw new Exception( __( 'Failed to verify site nonce when updating WPCOM REST API auth status.', 'google-listings-and-ads' ) );
-				}
-
 				$this->account_service->update_wpcom_api_authorization( $request['status'] );
 				return [ 'status' => $request['status'] ];
 			} catch ( Exception $e ) {
@@ -171,16 +165,10 @@ class AuthController extends BaseController {
 	 */
 	protected function get_update_authorize_params(): array {
 		return [
-			'status'     => [
+			'status' => [
 				'description'       => __( 'The status of the merchant granting access to Google\'s WPCOM app', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'enum'              => OAuthService::ALLOWED_STATUSES,
-				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
-			],
-			'site_nonce' => [
-				'description'       => __( 'The nonce that was generated when creating OAuth URL, and was sent back from Google.', 'google-listings-and-ads' ),
-				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],

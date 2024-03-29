@@ -257,7 +257,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( NotificationsService::class );
 
 		// Set up OAuthService service.
-		$this->share_with_tags( OAuthService::class, WP::class );
+		$this->share_with_tags( OAuthService::class );
 
 		$this->getLeagueContainer()
 			->inflector( MerchantCenterAwareInterface::class )

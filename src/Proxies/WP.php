@@ -318,32 +318,4 @@ class WP {
 	public function wp_remote_get( string $url, array $args = [] ) {
 		return wp_remote_get( $url, $args );
 	}
-
-	/**
-	 * Creates a cryptographic token tied to a specific action, user, user session, and window of time.
-	 *
-	 * @since x.x.x
-	 *
-	 * @param string|int $action Optional. Scalar value to add context to the nonce.
-	 *
-	 * @return string The token.
-	 */
-	public function wp_create_nonce( $action = -1 ): string {
-		return wp_create_nonce( $action );
-	}
-
-	/**
-	 * Verifies that a correct security nonce was used with time limit.
-	 *
-	 * @since x.x.x
-	 *
-	 * @param string     $nonce  Nonce value that was used for verification, usually via a form field.
-	 * @param string|int $action Optional. Should give context to what is taking place and be the same when nonce was created.
-	 *
-	 * @return int|false 1 if the nonce is valid and generated between 0-12 hours ago, 2 if the nonce is valid and generated between 12-24 hours ago.
-	 *                   False if the nonce is invalid.
-	 */
-	public function wp_verify_nonce( string $nonce, $action = -1 ) {
-		return wp_verify_nonce( $nonce, $action );
-	}
 }
