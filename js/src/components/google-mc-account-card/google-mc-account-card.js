@@ -31,12 +31,7 @@ const GoogleMCAccountCard = () => {
 		return <SpinnerCard />;
 	}
 
-	return (
-		<ConnectedGoogleMCAccountCard
-			hideNotificationService
-			googleMCAccount={ googleMCAccount }
-		/>
-	);
+	return <ConnectedGoogleMCAccountCard googleMCAccount={ googleMCAccount } />;
 };
 
 export default GoogleMCAccountCard;
