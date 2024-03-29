@@ -21,10 +21,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
  * the DB by calling an API `PUT /wc/gla/rest-api/authorize`.
  */
 const useUpdateRestAPIAuthorizeStatusByUrlQuery = () => {
-	const {
-		google_wpcom_app_status: googleWPCOMAppStatus,
-		site_nonce: siteNonce,
-	} = getQuery();
+	const { google_wpcom_app_status: googleWPCOMAppStatus } = getQuery();
 	const { invalidateResolution } = useAppDispatch();
 
 	const path = `${ API_NAMESPACE }/rest-api/authorize`;
@@ -36,10 +33,7 @@ const useUpdateRestAPIAuthorizeStatusByUrlQuery = () => {
 	const handleUpdateRestAPIAuthorize = useCallback( async () => {
 		try {
 			await fetchUpdateRestAPIAuthorize( {
-				data: {
-					status: googleWPCOMAppStatus,
-					site_nonce: siteNonce,
-				},
+				data: { status: googleWPCOMAppStatus },
 			} );
 
 			// Refetch Google MC account so we can get the latest gla_wpcom_rest_api_status.
@@ -53,7 +47,6 @@ const useUpdateRestAPIAuthorizeStatusByUrlQuery = () => {
 	}, [
 		fetchUpdateRestAPIAuthorize,
 		googleWPCOMAppStatus,
-		siteNonce,
 		invalidateResolution,
 	] );
 
