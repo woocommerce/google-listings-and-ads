@@ -225,11 +225,11 @@ class AccountService implements OptionsAwareInterface, Service {
 		$has_access        = $this->container->get( Ads::class )->has_access( $email );
 		$ocid              = $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID, null );
 
-		// Deep link.
-		if ( $has_access && $ocid ) {
+		// Link directly to the payment page if the customer already has access.
+		if ( $has_access ) {
 			$billing_url = add_query_arg(
 				[
-					'ocid' => $ocid,
+					'ocid' => $ocid ?: 0,
 				],
 				'https://ads.google.com/aw/signup/payment'
 			);
@@ -245,12 +245,22 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * Gets the ads account access status.
 	 *
 	 * @return array
-	 * @throws Exception When email is not present or has no account access.
+	 * @throws ExceptionWithResponseData When Google or Ads accounts are not connected or
+	 *                                   when the Ads account has not yet been accepted.
 	 */
 	public function get_ads_account_has_access() {
 		// Check if ads id is present.
 		if ( ! $this->options->get_ads_id() ) {
-			throw new Exception( __( 'Ads id not present', 'google-listings-and-ads' ) );
+			throw new ExceptionWithResponseData(
+				__( 'A Google Ads account must be connected.', 'google-listings-and-ads' ),
+				428,
+				null,
+				[
+					'has_access'  => false,
+					'step'        => $this->state->last_incomplete_step(),
+					'invite_link' => '',
+				]
+			);
 		}
 
 		$connection_status = $this->container->get( Connection::class )->get_status();
@@ -258,7 +268,16 @@ class AccountService implements OptionsAwareInterface, Service {
 
 		// If no email, means google account is not connected.
 		if ( empty( $email ) ) {
-			throw new Exception( __( 'Google account is not connected', 'google-listings-and-ads' ) );
+			throw new ExceptionWithResponseData(
+				__( 'A Google account must be connected.', 'google-listings-and-ads' ),
+				428,
+				null,
+				[
+					'has_access'  => false,
+					'step'        => $this->state->last_incomplete_step(),
+					'invite_link' => '',
+				]
+			);
 		}
 
 		$has_access         = $this->container->get( Ads::class )->has_access( $email );

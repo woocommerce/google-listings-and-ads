@@ -1260,17 +1260,6 @@ export function* fetchGoogleAdsAccountStatus() {
 			data,
 		};
 	} catch ( response ) {
-		// Swallow the exception when there is not an Ads account connected.
-		if ( response.status === 400 ) {
-			return {
-				type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
-				data: {
-					has_access: null,
-					invite_link: null,
-				},
-			};
-		}
-
 		const errorBodyPromise = response?.json() || response?.text();
 		const errorData = yield awaitPromise( errorBodyPromise );
 

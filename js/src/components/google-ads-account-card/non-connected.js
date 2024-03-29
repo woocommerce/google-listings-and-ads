@@ -17,7 +17,7 @@ const NonConnected = () => {
 	const { existingAccounts } = useExistingGoogleAdsAccounts();
 	const [ ignoreExisting, setIgnoreExisting ] = useState( false );
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	const { hasAccess } = useGoogleAdsAccountStatus();
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
 
 	const handleShowExisting = () => {
 		setIgnoreExisting( false );
@@ -31,7 +31,7 @@ const NonConnected = () => {
 		existingAccounts.length === 0 ||
 		ignoreExisting ||
 		( googleAdsAccount.id && hasAccess !== true ) ||
-		( hasAccess === true && googleAdsAccount.step === 'conversion_action' )
+		( hasAccess === true && step === 'conversion_action' )
 	) {
 		return (
 			<CreateAccount
