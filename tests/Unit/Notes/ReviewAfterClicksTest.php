@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Notes;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterClicks;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterConversions;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 
@@ -30,7 +29,7 @@ class ReviewAfterClicksTest extends UnitTest {
 	/** @var MockObject|WP $wp */
 	protected $wp;
 
-	/** @var ReviewAfterConversions $note */
+	/** @var ReviewAfterClicks $note */
 	protected $note;
 
 	/**
