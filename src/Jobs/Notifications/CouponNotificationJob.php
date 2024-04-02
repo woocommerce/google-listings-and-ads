@@ -39,8 +39,7 @@ class CouponNotificationJob extends AbstractItemNotificationJob {
 		NotificationsService $notifications_service,
 		HelperNotificationInterface $coupon_helper
 	) {
-		$this->notifications_service = $notifications_service;
-		$this->helper                = $coupon_helper;
+		$this->helper = $coupon_helper;
 		parent::__construct( $action_scheduler, $monitor, $notifications_service );
 	}
 

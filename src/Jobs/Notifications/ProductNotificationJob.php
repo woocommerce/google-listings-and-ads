@@ -39,8 +39,7 @@ class ProductNotificationJob extends AbstractItemNotificationJob {
 		NotificationsService $notifications_service,
 		HelperNotificationInterface $helper
 	) {
-		$this->notifications_service = $notifications_service;
-		$this->helper                = $helper;
+		$this->helper = $helper;
 		parent::__construct( $action_scheduler, $monitor, $notifications_service );
 	}
 
