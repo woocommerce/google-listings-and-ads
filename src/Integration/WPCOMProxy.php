@@ -20,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * Initializes the hooks to filter the data sent to the WPCOM proxy depending on the query parameter gla_syncable.
  *
+ * @since x.x.x
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Integration
  */
 class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
