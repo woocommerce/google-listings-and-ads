@@ -363,7 +363,6 @@ class AccountServiceTest extends UnitTest {
 			->method( 'create_conversion_action' );
 
 		$this->account->setup_account();
-
 	}
 
 	public function test_setup_account_step_billing() {
