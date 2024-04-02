@@ -287,6 +287,85 @@ class AccountServiceTest extends UnitTest {
 		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
 	}
 
+	public function test_setup_account_step_account_access() {
+		// Mock return values
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_BILLING_URL, '' )
+			->willReturn( self::TEST_BILLING_URL );
+
+		$this->connection->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@domain.com' ] );
+
+		$this->ads->method( 'has_access' )
+			->with( 'test@domain.com' )
+			->willReturn( true );
+
+		// Expectations.
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'account_access'    => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'conversion_action' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		// Account access should be marked as completed.
+		$this->state->expects( $this->once() )
+			->method( 'complete_step' )
+			->with( 'account_access' );
+
+		// The conversion action should run.
+		$this->conversion_action->expects( $this->once() )
+			->method( 'create_conversion_action' );
+
+		$this->account->setup_account();
+	}
+
+	public function test_setup_account_step_account_access_pending() {
+		// Mock return values
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_BILLING_URL, '' )
+			->willReturn( self::TEST_BILLING_URL );
+
+		$this->connection->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@domain.com' ] );
+
+		$this->ads->method( 'has_access' )
+			->with( 'test@domain.com' )
+			->willReturn( false );
+
+		// Expectations.
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'account_access'    => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'conversion_action' => [ 'status' => AdsAccountState::STEP_PENDING ],
+				]
+			);
+
+		// Account access should not be marked as completed.
+		$this->state->expects( $this->never() )
+			->method( 'complete_step' )
+			->with( 'account_access' );
+
+		// Make sure the conversion action is never run.
+		$this->conversion_action->expects( $this->never() )
+			->method( 'create_conversion_action' );
+
+		$this->account->setup_account();
+
+	}
+
 	public function test_setup_account_step_billing() {
 		$this->options->expects( $this->once() )
 			->method( 'get_ads_id' )
@@ -577,9 +656,6 @@ class AccountServiceTest extends UnitTest {
 			->with( 'test@domain.com' )
 			->willReturn( false );
 
-		$this->expectException( ExceptionWithResponseData::class );
-		$this->expectExceptionMessage( 'Please accept the ads account invitation.' );
-
 		$this->assertEquals(
 			[
 				'has_access'  => false,
@@ -605,10 +681,6 @@ class AccountServiceTest extends UnitTest {
 		$this->ads->expects( $this->never() )
 			->method( 'has_access' );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionCode( 428 );
-		$this->expectExceptionMessage( 'A Google account must be connected.' );
-
 		$this->account->get_ads_account_has_access();
 	}
 
@@ -622,10 +694,6 @@ class AccountServiceTest extends UnitTest {
 
 		$this->ads->expects( $this->never() )
 			->method( 'has_access' );
-
-		$this->expectException( Exception::class );
-		$this->expectExceptionCode( 428 );
-		$this->expectExceptionMessage( 'A Google Ads account must be connected.' );
 
 		$this->account->get_ads_account_has_access();
 	}
