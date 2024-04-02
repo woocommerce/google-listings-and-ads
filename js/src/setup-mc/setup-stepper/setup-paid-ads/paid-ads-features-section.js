@@ -20,29 +20,20 @@ function FeatureList( { hideBudgetContent } ) {
 		{
 			Icon: GridiconCheckmark,
 			content: __(
-				'Promote your products across Google Search, YouTube, Display, Discover, Maps, Gmail, and more.',
+				'Set a daily budget, and only pay when people click on your ads.',
 				'google-listings-and-ads'
 			),
 		},
 	];
 
 	if ( ! hideBudgetContent ) {
-		featuresItems.push(
-			{
-				Icon: GridiconCheckmark,
-				content: __(
-					'Set a daily budget, and only pay when someone clicks.',
-					'google-listings-and-ads'
-				),
-			},
-			{
-				Icon: GridiconGift,
-				content: __(
-					'Claim $500 in ads credit when you spend your first $500 with Google Ads. Terms and conditions apply.',
-					'google-listings-and-ads'
-				),
-			}
-		);
+		featuresItems.push( {
+			Icon: GridiconGift,
+			content: __(
+				'Claim $500 in ads credit when you spend your first $500 with Google Ads. Terms and conditions apply.',
+				'google-listings-and-ads'
+			),
+		} );
 	}
 
 	return (
@@ -120,25 +111,19 @@ export default function PaidAdsFeaturesSection( {
 						<FlexBlock>
 							<Section.Card.Title>
 								{ __(
-									'Drive more traffic and sales by using both free listings and paid ads',
+									'Drive more sales with Performance Max',
 									'google-listings-and-ads'
 								) }
 							</Section.Card.Title>
 							<div className="gla-paid-ads-features-section__subtitle">
 								{ __(
-									'Using free listings and paid ads together can double impressions and increase clicks by 50%*',
+									'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your products are included as soon as they’re approved.',
 									'google-listings-and-ads'
 								) }
 							</div>
 							<FeatureList
 								hideBudgetContent={ hideBudgetContent }
 							/>
-							<cite className="gla-paid-ads-features-section__cite">
-								{ __(
-									'Source: Google Internal Data, July 2020',
-									'google-listings-and-ads'
-								) }
-							</cite>
 						</FlexBlock>
 						<FlexItem>
 							<CampaignPreview />
