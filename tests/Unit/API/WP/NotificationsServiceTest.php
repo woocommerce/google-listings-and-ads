@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\WP;
 use Automattic\WooCommerce\Admin\RemoteInboxNotifications\TransformerService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -53,6 +54,9 @@ class NotificationsServiceTest extends UnitTest {
 		self::TOPIC_SETTINGS_UPDATED,
 	];
 
+	/** @var OptionsInterface $options */
+	protected $options;
+
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -71,6 +75,8 @@ class NotificationsServiceTest extends UnitTest {
 			10,
 			2
 		);
+
+		add_filter( 'woocommerce_gla_notifications_enabled', '__return_true' );
 	}
 
 	/**
@@ -179,18 +185,46 @@ class NotificationsServiceTest extends UnitTest {
 	}
 
 	/**
+	 * Test notify() function logs an error when WPCOM Auth is not authorized
+	 */
+	public function test_notify_show_error_when_wpcom_not_authorized() {
+		$this->service = $this->get_mock( true, false );
+		$this->service->expects( $this->never() )->method( 'do_request' );
+		$this->assertFalse( $this->service->notify( 'product.create', 1 ) );
+		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
+	}
+
+	/**
+	 * Test notify() function logs an error when disabled
+	 */
+	public function test_notify_show_error_when_disabled() {
+		$this->service = $this->get_mock();
+		remove_filter( 'woocommerce_gla_notifications_enabled', '__return_true' );
+		add_filter( 'woocommerce_gla_notifications_enabled', '__return_false' );
+		$this->service->expects( $this->never() )->method( 'do_request' );
+		$this->assertFalse( $this->service->notify( 'product.create', 1 ) );
+		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
+		remove_filter( 'woocommerce_gla_notifications_enabled', '__return_false' );
+	}
+
+	/**
 	 * Mocks the service
 	 *
 	 * @param bool $mc_ready
 	 * @return TransformerService
 	 */
-	public function get_mock( $mc_ready = true ) {
+	public function get_mock( $mc_ready = true, $wpcom_authorized = true ) {
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->method( 'is_ready_for_syncing' )->willReturn( $mc_ready );
+		$this->options = $this->createMock( OptionsInterface::class );
+		$this->options->method( 'is_wpcom_api_authorized' )->willReturn( $wpcom_authorized );
 
-		return $this->getMockBuilder( NotificationsService::class )
+		/** @var NotificationsService $mock */
+		$mock = $this->getMockBuilder( NotificationsService::class )
 			->setConstructorArgs( [ $this->merchant_center ] )
 			->onlyMethods( [ 'do_request' ] )
 			->getMock();
+		$mock->set_options_object( $this->options );
+		return $mock;
 	}
 }

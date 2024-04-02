@@ -80,11 +80,6 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
 	public function notify( string $topic, $item_id = null ): bool {
-		if ( ! $this->merchant_center->is_ready_for_syncing() ) {
-			$this->notification_error( $topic, 'Cannot sync any products before setting up Google Merchant Center.', $item_id );
-			return false;
-		}
-
 		/**
 		 * Allow users to disable the notification request.
 		 *
@@ -94,7 +89,8 @@ class NotificationsService implements Service, OptionsAwareInterface {
 		 * @param int $item_id The item_id for the notification.
 		 * @param string $topic The topic for the notification.
 		 */
-		if ( ! apply_filters( 'woocommerce_gla_notify', $this->is_enabled() && in_array( $topic, self::ALLOWED_TOPICS, true ), $item_id, $topic ) ) {
+		if ( ! apply_filters( 'woocommerce_gla_notify', $this->is_ready() && in_array( $topic, self::ALLOWED_TOPICS, true ), $item_id, $topic ) ) {
+			$this->notification_error( $topic, 'Notification was not sent because the Notification Service is not ready or the topic is not valid.', $item_id );
 			return false;
 		}
 
@@ -169,7 +165,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 * @return bool
 	 */
 	public function is_ready(): bool {
-		return $this->options->is_wpcom_api_authorized() && $this->is_enabled();
+		return $this->options->is_wpcom_api_authorized() && $this->is_enabled() && $this->merchant_center->is_ready_for_syncing();
 	}
 
 	/**
