@@ -49,7 +49,7 @@ abstract class AbstractNotificationJobTest extends UnitTest {
 	}
 
 	public function test_schedule_schedules_immediate_job() {
-		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->notification_service->expects( $this->once() )->method( 'is_ready' )->willReturn( true );
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
@@ -64,7 +64,7 @@ abstract class AbstractNotificationJobTest extends UnitTest {
 	}
 
 	public function test_schedule_doesnt_schedules_immediate_job_if_already_scheduled() {
-		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
+		$this->notification_service->expects( $this->once() )->method( 'is_ready' )->willReturn( true );
 
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'has_scheduled_action' )
@@ -77,7 +77,7 @@ abstract class AbstractNotificationJobTest extends UnitTest {
 	}
 
 	public function test_schedule_doesnt_schedules_immediate_job_if_not_enabled() {
-		$this->notification_service->expects( $this->once() )->method( 'is_enabled' )->willReturn( false );
+		$this->notification_service->expects( $this->once() )->method( 'is_ready' )->willReturn( false );
 
 		$this->action_scheduler->expects( $this->never() )
 			->method( 'has_scheduled_action' );

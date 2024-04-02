@@ -83,7 +83,7 @@ abstract class AbstractNotificationJob extends AbstractActionSchedulerJob implem
 		 * @param string $job_name The current Job name.
 		 * @param array $args The arguments for the schedule function with the item id and the topic.
 		 */
-		return apply_filters( 'woocommerce_gla_notification_job_can_schedule', $this->notifications_service->is_enabled() && parent::can_schedule( $args ), $this->get_job_name(), $args );
+		return apply_filters( 'woocommerce_gla_notification_job_can_schedule', $this->notifications_service->is_ready() && parent::can_schedule( $args ), $this->get_job_name(), $args );
 	}
 
 	/**

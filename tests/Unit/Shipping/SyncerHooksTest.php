@@ -197,7 +197,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->notification_service->expects( $this->once() )
-			->method( 'is_enabled' );
+			->method( 'is_ready' );
 
 		$this->shipping_notification_job->expects( $this->never() )
 			->method( 'schedule' );
@@ -212,7 +212,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->mock_sync_ready_flags_and_register_hooks( true, true );
 
 		$this->notification_service->expects( $this->once() )
-			->method( 'is_enabled' )->willReturn( true );
+			->method( 'is_ready' )->willReturn( true );
 
 		$this->shipping_notification_job->expects( $this->once() )
 			->method( 'schedule' );

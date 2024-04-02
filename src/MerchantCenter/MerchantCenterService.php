@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -131,7 +132,9 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * @since x.x.x
 	 */
 	public function should_push(): bool {
-		return $this->is_ready_for_syncing() && ! $this->options->notifications_enabled();
+		/** @var NotificationsService $notifications_service */
+		$notifications_service = $this->container->get( NotificationsService::class );
+		return $this->is_ready_for_syncing() && ! $notifications_service->is_ready();
 	}
 
 

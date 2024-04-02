@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
@@ -72,6 +73,9 @@ class AccountServiceTest extends UnitTest {
 	/** @var MockObject|TransientsInterface $transients */
 	protected $transients;
 
+	/** @var MockObject|NotificationsService $transients */
+	protected $notifications_service;
+
 	/** @var AccountService $account */
 	protected $account;
 
@@ -105,18 +109,19 @@ class AccountServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->cleanup_synced    = $this->createMock( CleanupSyncedProducts::class );
-		$this->merchant          = $this->createMock( Merchant::class );
-		$this->mc_service        = $this->createMock( MerchantCenterService::class );
-		$this->issue_table       = $this->createMock( MerchantIssueTable::class );
-		$this->merchant_statuses = $this->createMock( MerchantStatuses::class );
-		$this->middleware        = $this->createMock( Middleware::class );
-		$this->site_verification = $this->createMock( SiteVerification::class );
-		$this->rate_table        = $this->createMock( ShippingRateTable::class );
-		$this->time_table        = $this->createMock( ShippingTimeTable::class );
-		$this->state             = $this->createMock( MerchantAccountState::class );
-		$this->options           = $this->createMock( OptionsInterface::class );
-		$this->transients        = $this->createMock( TransientsInterface::class );
+		$this->cleanup_synced        = $this->createMock( CleanupSyncedProducts::class );
+		$this->merchant              = $this->createMock( Merchant::class );
+		$this->mc_service            = $this->createMock( MerchantCenterService::class );
+		$this->issue_table           = $this->createMock( MerchantIssueTable::class );
+		$this->merchant_statuses     = $this->createMock( MerchantStatuses::class );
+		$this->middleware            = $this->createMock( Middleware::class );
+		$this->site_verification     = $this->createMock( SiteVerification::class );
+		$this->rate_table            = $this->createMock( ShippingRateTable::class );
+		$this->time_table            = $this->createMock( ShippingTimeTable::class );
+		$this->state                 = $this->createMock( MerchantAccountState::class );
+		$this->options               = $this->createMock( OptionsInterface::class );
+		$this->transients            = $this->createMock( TransientsInterface::class );
+		$this->notifications_service = $this->createMock( NotificationsService::class );
 
 		$this->container = new Container();
 		$this->container->share( CleanupSyncedProducts::class, $this->cleanup_synced );
@@ -130,6 +135,8 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( ShippingTimeTable::class, $this->time_table );
 		$this->container->share( MerchantAccountState::class, $this->state );
 		$this->container->share( TransientsInterface::class, $this->transients );
+		$this->container->share( TransientsInterface::class, $this->transients );
+		$this->container->share( NotificationsService::class, $this->notifications_service );
 
 		$this->account = new AccountService( $this->container );
 		$this->account->set_options_object( $this->options );
@@ -657,6 +664,10 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
 
+		$this->notifications_service->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
 		$this->options->expects( $this->once() )
 			->method( 'get' )
 			->with( OptionsInterface::WPCOM_REST_API_STATUS )
@@ -672,10 +683,38 @@ class AccountServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_get_connected_status_when_notifications_disabled() {
+		$this->options->expects( $this->once() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->notifications_service->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::WPCOM_REST_API_STATUS )
+			->willReturn( 'approved' );
+
+		$this->assertEquals(
+			[
+				'id'                    => self::TEST_ACCOUNT_ID,
+				'status'                => 'connected',
+				'wpcom_rest_api_status' => 'disabled',
+			],
+			$this->account->get_connected_status()
+		);
+	}
+
 	public function test_get_connected_status_incomplete() {
 		$this->options->expects( $this->once() )
 			->method( 'get_merchant_id' )
 			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->notifications_service->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
 
 		$this->state->expects( $this->once() )
 			->method( 'last_incomplete_step' )
