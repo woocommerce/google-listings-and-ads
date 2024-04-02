@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
+import { getHistory, getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -24,17 +24,11 @@ const SetupStepper = () => {
 		return null;
 	}
 
-	let { status, step } = mcSetup;
+	const { status, step } = mcSetup;
 
 	if ( status === 'complete' ) {
 		getHistory().replace( getNewPath( {}, '/google/dashboard' ) );
 		return null;
-	}
-
-	const queries = getQuery();
-
-	if ( queries.step && stepNameKeyMap[ queries.step ] ) {
-		step = queries.step;
 	}
 
 	return <SavedSetupStepper savedStep={ stepNameKeyMap[ step ] } />;
