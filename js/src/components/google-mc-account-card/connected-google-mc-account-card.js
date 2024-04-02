@@ -147,7 +147,9 @@ const ConnectedGoogleMCAccountCard = ( {
 		! hideNotificationService &&
 		googleMCAccount.wpcom_rest_api_status &&
 		googleMCAccount.wpcom_rest_api_status !==
-			GOOGLE_WPCOM_APP_CONNECTED_STATUS.APPROVED;
+			GOOGLE_WPCOM_APP_CONNECTED_STATUS.APPROVED &&
+		googleMCAccount.wpcom_rest_api_status !==
+			GOOGLE_WPCOM_APP_CONNECTED_STATUS.DISABLED;
 
 	const showFooter = ! hideAccountSwitch || showDisconnectNotificationsButton;
 
