@@ -31,7 +31,12 @@ const GoogleMCAccountCard = () => {
 		return <SpinnerCard />;
 	}
 
-	return <ConnectedGoogleMCAccountCard googleMCAccount={ googleMCAccount } />;
+	return (
+		<ConnectedGoogleMCAccountCard
+			googleMCAccount={ googleMCAccount }
+			hideDisableProductFetch
+		/>
+	);
 };
 
 export default GoogleMCAccountCard;
