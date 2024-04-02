@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ReviewAfterConversions
  *
- * Note for requesting a review after at 10+ ad conversions.
+ * Note for requesting a review after one ad conversion.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
@@ -77,17 +77,8 @@ class ReviewAfterConversions extends AbstractNote implements AdsAwareInterface {
 	 * @throws Exception When unable to get data.
 	 */
 	public function get_entry(): NoteEntry {
-		// Round to nearest 10
-		$conversions_count_rounded = floor( $this->get_ads_conversions_count() / 10 ) * 10;
-
 		$note = new NoteEntry();
-		$note->set_title(
-			sprintf(
-				/* translators: %s number of conversions */
-				__( 'You’ve gotten %s+ conversions through Google Ads! 🎉', 'google-listings-and-ads' ),
-				$this->wp->number_format_i18n( $conversions_count_rounded )
-			)
-		);
+		$note->set_title( __( 'You got your first conversion on Google Ads! 🎉', 'google-listings-and-ads' ), );
 		$note->set_content(
 			__( 'Congratulations! Tell us what you think about Google Listings & Ads by leaving a review. Your feedback will help us make WooCommerce even better for you.', 'google-listings-and-ads' )
 		);
@@ -103,7 +94,7 @@ class ReviewAfterConversions extends AbstractNote implements AdsAwareInterface {
 	/**
 	 * Checks if a note can and should be added.
 	 *
-	 * - checks there are more than 10 ad conversions
+	 * - checks there is at least one ad conversion
 	 *
 	 * @throws Exception When unable to get data.
 	 *
@@ -118,7 +109,7 @@ class ReviewAfterConversions extends AbstractNote implements AdsAwareInterface {
 			return false;
 		}
 
-		if ( $this->get_ads_conversions_count() <= 10 ) {
+		if ( $this->get_ads_conversions_count() < 1 ) {
 			return false;
 		}
 
