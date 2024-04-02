@@ -211,6 +211,7 @@ class NotificationsServiceTest extends UnitTest {
 	 * Mocks the service
 	 *
 	 * @param bool $mc_ready
+	 * @param bool $wpcom_authorized
 	 * @return TransformerService
 	 */
 	public function get_mock( $mc_ready = true, $wpcom_authorized = true ) {
