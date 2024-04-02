@@ -147,11 +147,21 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	}
 
 	/**
+	 * If the Notifications are ready
+	 * This happens when the WPCOM API is Authorized and the feature is enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_ready(): bool {
+		return $this->options->is_wpcom_api_authorized() && $this->is_enabled();
+	}
+
+	/**
 	 * If the Notifications are enabled
 	 *
 	 * @return bool
 	 */
 	public function is_enabled(): bool {
-		return $this->options->notifications_enabled();
+		return apply_filters( 'woocommerce_gla_notifications_enabled', false );
 	}
 }
