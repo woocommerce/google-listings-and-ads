@@ -147,7 +147,7 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 			->with( $topic, $id )
 			->willReturn( true );
 
-		$this->job->get_helper()->expects( $this->exactly( 2 ) )
+		$this->job->get_helper()->expects( $this->exactly( 3 ) )
 			->method( 'get_wc_' . $this->get_topic_name() )
 			->with( $id )
 			->willReturn( $item );
@@ -218,7 +218,7 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 			->method( 'notify' )
 			->willReturn( true );
 
-		$this->job->get_helper()->expects( $this->exactly( 7 ) )
+		$this->job->get_helper()->expects( $this->exactly( 8 ) )
 			->method( 'get_wc_' . $this->get_topic_name() )
 			->willReturn( $item );
 
@@ -341,6 +341,32 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 			[
 				'item_id' => $id,
 				'topic'   => $this->get_topic_name() . '.delete',
+			]
+		);
+	}
+
+	public function test_mark_as_notified_when_create() {
+		$item = $this->create_item();
+		$id   = $item->get_id();
+
+		$this->job->get_helper()->expects( $this->once() )
+			->method( 'should_trigger_create_notification' )
+			->with( $item )
+			->willReturn( true );
+
+		$this->job->get_helper()->expects( $this->exactly( 3 ) )
+			->method( 'get_wc_' . $this->get_topic_name() )
+			->with( $id )
+			->willReturn( $item );
+
+		$this->notification_service->expects( $this->once() )->method( 'notify' )->willReturn( true );
+		$this->job->get_helper()->expects( $this->once() )
+			->method( 'mark_as_notified' );
+
+		$this->job->handle_process_items_action(
+			[
+				'item_id' => $id,
+				'topic'   => $this->get_topic_name() . '.create',
 			]
 		);
 	}
