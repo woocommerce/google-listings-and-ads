@@ -123,6 +123,19 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
+	 * Whether we should push data into MC. Only if:
+	 * - MC is ready for syncing {@see is_ready_for_syncing}
+	 * - Notifications Service is not enabled
+	 *
+	 * @return bool
+	 * @since x.x.x
+	 */
+	public function should_push(): bool {
+		return $this->is_ready_for_syncing() && ! $this->options->notifications_enabled();
+	}
+
+
+	/**
 	 * Get whether the country is supported by the Merchant Center.
 	 *
 	 * @return bool True if the country is in the list of MC-supported countries.
