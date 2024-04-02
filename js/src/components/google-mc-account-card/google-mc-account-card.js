@@ -26,7 +26,7 @@ const GoogleMCAccountCard = () => {
 		return <NonConnected />;
 	}
 
-	if ( googleMCAccount.wpcom_rest_api_status !== 'approved' ) {
+	if ( ! googleMCAccount.wpcom_rest_api_status ) {
 		handleRestAPIAuthURLRedirect();
 		return <SpinnerCard />;
 	}

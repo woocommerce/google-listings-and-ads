@@ -401,15 +401,38 @@ class MerchantCenterServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_get_setup_status_step_grant_rest_api_access() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::WPCOM_REST_API_STATUS ],
+			)->willReturnOnConsecutiveCalls(
+				false,
+				''
+			);
+
+		$this->assertEquals(
+			[
+				'status' => 'incomplete',
+				'step'   => 'grant_rest_api_access',
+			],
+			$this->mc_service->get_setup_status()
+		);
+	}
+
 	public function test_get_setup_status_step_product_listings() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::WPCOM_REST_API_STATUS ],
 				[ OptionsInterface::TARGET_AUDIENCE ]
 			)->willReturnOnConsecutiveCalls(
 				false,
+				'approved',
 				[
 					'location'  => 'selected',
 					'countries' => [ 'US' ],
@@ -432,10 +455,12 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::WPCOM_REST_API_STATUS ],
 				[ OptionsInterface::TARGET_AUDIENCE ],
 				[ OptionsInterface::MERCHANT_CENTER, [] ]
 			)->willReturnOnConsecutiveCalls(
 				false,
+				'approved',
 				[
 					'location'  => 'selected',
 					'countries' => [ 'US' ],
@@ -461,9 +486,11 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::WPCOM_REST_API_STATUS ],
 				[ OptionsInterface::TARGET_AUDIENCE ]
 			)->willReturnOnConsecutiveCalls(
 				false,
+				'approved',
 				[
 					'location'  => 'selected',
 					'countries' => [ 'US' ],
@@ -504,11 +531,13 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::WPCOM_REST_API_STATUS ],
 				[ OptionsInterface::TARGET_AUDIENCE ],
 				[ OptionsInterface::MERCHANT_CENTER, [] ],
 				[ OptionsInterface::MERCHANT_CENTER, [] ]
 			)->willReturnOnConsecutiveCalls(
 				false,
+				'approved',
 				[
 					'location'  => 'selected',
 					'countries' => [ 'GB' ],

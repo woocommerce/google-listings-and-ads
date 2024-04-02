@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -225,13 +226,17 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		$step = 'accounts';
 		if ( $this->connected_account() ) {
-			$step = 'product_listings';
+			$step = 'grant_rest_api_access';
 
-			if ( $this->saved_target_audience() && $this->saved_shipping_and_tax_options() ) {
-				$step = 'store_requirements';
+			if ( $this->is_rest_api_granted() ) {
+				$step = 'product_listings';
 
-				if ( $this->is_mc_contact_information_setup() && $this->checked_pre_launch_checklist() ) {
-					$step = 'paid_ads';
+				if ( $this->saved_target_audience() && $this->saved_shipping_and_tax_options() ) {
+					$step = 'store_requirements';
+
+					if ( $this->is_mc_contact_information_setup() && $this->checked_pre_launch_checklist() ) {
+						$step = 'paid_ads';
+					}
 				}
 			}
 		}
@@ -447,5 +452,16 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		$statuses = $this->container->get( MerchantStatuses::class )->get_product_statistics();
 
 		return $statuses['statistics']['active'] >= 1;
+	}
+
+	/**
+	 * Check if REST API has been granted.
+	 *
+	 * @since x.x.x
+	 * @return bool
+	 */
+	public function is_rest_api_granted(): bool {
+		$wpcom_rest_api_status = $this->options->get( OptionsInterface::WPCOM_REST_API_STATUS );
+		return $wpcom_rest_api_status === OAuthService::STATUS_APPROVED;
 	}
 }
