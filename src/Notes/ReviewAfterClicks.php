@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ReviewAfterClicks
  *
- * Note for requesting a review after at 100+ clicks.
+ * Note for requesting a review after 10 clicks.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
@@ -66,8 +66,8 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 	public function get_entry(): NoteEntry {
 		$clicks_count = $this->get_free_listing_clicks_count();
 
-		// Round to nearest 100
-		$clicks_count_rounded = floor( $clicks_count / 100 ) * 100;
+		// Round to nearest 10
+		$clicks_count_rounded = floor( $clicks_count / 10 ) * 10;
 
 		$note = new NoteEntry();
 		$note->set_title(
@@ -92,7 +92,7 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 	/**
 	 * Checks if a note can and should be added.
 	 *
-	 * - checks there is more than 100 clicks
+	 * - checks there are more than 10 clicks
 	 *
 	 * @throws Exception When unable to get clicks data.
 	 *
@@ -104,7 +104,7 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 		}
 
 		$clicks_count = $this->get_free_listing_clicks_count();
-		return $clicks_count > 100;
+		return $clicks_count > 10;
 	}
 
 	/**
