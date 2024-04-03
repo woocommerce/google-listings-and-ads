@@ -778,7 +778,11 @@ class ConnectionTest implements Service, Registerable {
 			$item  = $_GET['item_id'] ?? null;
 			$topic = $_GET['topic'];
 			$mc    = $this->container->get( MerchantCenterService::class );
+			/** @var OptionsInterface $options */
+			$options = $this->container->get( OptionsInterface::class );
 			$service = new NotificationsService( $mc );
+			$service->set_options_object( $options );
+
 			if ( $service->notify( $topic, $item ) ) {
 				$this->response .= "\n Notification success. Item: " . $item . " - Topic: " . $topic;
 			} else {
