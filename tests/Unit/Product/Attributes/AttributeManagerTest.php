@@ -13,6 +13,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\IsBundle;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use WC_Helper_Product;
 
 /**
@@ -26,6 +28,12 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 
 	/** @var AttributeManager $attribute_manager */
 	protected $attribute_manager;
+
+	/** @var MockObject|AttributeMappingRulesQuery $attribute_mapping_rules_query */
+	protected $attribute_mapping_rules_query;
+
+	/** @var MockObject|WC $wc */
+	protected $wc;
 
 	public function test_update_throws_exception_if_attribute_inapplicable_to_product() {
 		$variable  = WC_Helper_Product::create_variation_product();
@@ -185,7 +193,7 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		// We need a new instance of AttributeManager because the attribute map created by `AttributeManager:map_attribute_types`
 		// is cached when called previously, which mean that it can not be modified by filters.
 		// Since we can not place the filters to run before `AttributeManager:map_attribute_types`, it's best to create a new instance of our class.
-		$attribute_manager = new AttributeManager();
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc);
 
 		$brand_id = Brand::get_id();
 		add_filter(
@@ -213,7 +221,7 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		// We need a new instance of AttributeManager because the attribute map created by `AttributeManager:map_attribute_types`
 		// is cached when called previously, which mean that it can not be modified by filters.
 		// Since we can not place the filters to run before `AttributeManager:map_attribute_types`, it's best to create a new instance of our class.
-		$attribute_manager = new AttributeManager();
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc);
 
 		add_filter(
 			'woocommerce_gla_product_attribute_types',
@@ -228,7 +236,7 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		// We need a new instance of AttributeManager because the attribute map created by `AttributeManager:map_attribute_types`
 		// is cached when called previously, which mean that it can not be modified by filters.
 		// Since we can not place the filters to run before `AttributeManager:map_attribute_types`, it's best to create a new instance of our class.
-		$attribute_manager = new AttributeManager();
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc);
 
 		add_filter(
 			'woocommerce_gla_product_attribute_types',
@@ -248,6 +256,11 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
+
+		$this->attribute_mapping_rules_query   = $this->createMock( AttributeMappingRulesQuery::class );
+		$this->wc = $this->createMock( WC::class );
+
+
 		$this->attribute_manager = $this->container->get( AttributeManager::class );
 	}
 }
