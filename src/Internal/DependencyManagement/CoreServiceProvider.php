@@ -331,7 +331,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class );
 
 		// Product attributes
-		$this->conditionally_share_with_tags( AttributeManager::class, AttributeMappingRulesQuery::class );
+		$this->conditionally_share_with_tags( AttributeManager::class, AttributeMappingRulesQuery::class, WC::class );
 		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 

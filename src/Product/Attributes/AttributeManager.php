@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
@@ -11,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use WC_Product;
+use WC_Product_Variation;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -49,18 +51,27 @@ class AttributeManager implements Service {
 	protected $attribute_mapping_rules_query;
 
 	/**
-	 * AttributeManager constructor.
-	 *
-	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
+	 * @var WC
 	 */
-	public function __construct( AttributeMappingRulesQuery $attribute_mapping_rules_query ) {
-		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
-	}
+	protected $wc;
 
 	/**
 	 * @var array Attribute types mapped to product types
 	 */
 	protected $attribute_types_map;
+
+	/**
+	 * AttributeManager constructor.
+	 *
+	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
+	 * @param WC                         $wc
+	 */
+	public function __construct( AttributeMappingRulesQuery $attribute_mapping_rules_query, WC $wc ) {
+		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
+		$this->wc                            = $wc;
+	}
+
+
 
 	/**
 	 * @param WC_Product         $product
@@ -150,7 +161,7 @@ class AttributeManager implements Service {
 	 *
 	 * @return array of attribute values
 	 */
-	public function get_all_values( WC_Product $product, $apply_rules = false ): array {
+	public function get_all_values( WC_Product $product ): array {
 		$all_attributes = [];
 		foreach ( array_keys( $this->get_attribute_types_for_product( $product ) ) as $attribute_id ) {
 			$attribute = $this->get_value( $product, $attribute_id );
@@ -159,13 +170,29 @@ class AttributeManager implements Service {
 			}
 		}
 
-		if ( $apply_rules ) {
-			$mapping_rules        = $this->attribute_mapping_rules_query->get_results();
-			$mapping_rules_values = $this->get_attribute_mapping_rules_values( $product, $mapping_rules );
-			return array_merge( $all_attributes, $mapping_rules_values );
+		return $all_attributes;
+	}
+
+	/**
+	 * Return all attribute values for the given product, including the ones from the attribute mapping rules
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return array of attribute values
+	 */
+	public function get_all_aggregated_values( WC_Product $product ): array {
+		$attributes = $this->get_all_values( $product );
+
+		// merge with parent's attributes if it's a variation product
+		if ( $product instanceof WC_Product_Variation ) {
+			$parent_product    = $this->wc->get_product( $product->get_parent_id() );
+			$parent_attributes = $this->get_all_values( $parent_product );
+			$attributes        = array_merge( $parent_attributes, $attributes );
 		}
 
-		return $all_attributes;
+		$mapping_rules        = $this->attribute_mapping_rules_query->get_results();
+		$mapping_rules_values = $this->get_attribute_mapping_rules_values( $product, $mapping_rules );
+		return array_merge( $attributes, $mapping_rules_values );
 	}
 
 	/**
