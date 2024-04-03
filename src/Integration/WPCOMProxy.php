@@ -132,7 +132,7 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		add_filter(
 			'woocommerce_rest_prepare_' . $object_type . '_object',
 			[ $this, 'filter_response_by_syncable_item' ],
-			9,
+			1000, // Run this filter last.
 			3
 		);
 
