@@ -206,18 +206,18 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	}
 
 	/**
-	 * Get the resource endpoint.
+	 * Get route pieces: resource and id, if present.
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 *
-	 * @return string The resource endpoint.
+	 * @return array The route pieces.
 	 */
-	protected function get_resource_endpoint( WP_REST_Request $request ): string {
+	protected function get_route_pieces( WP_REST_Request $request ): array {
 		$route   = $request->get_route();
-		$pattern = '/(?P<resource>[\w]+)\/(?P<id>[\d]+$)/';
+		$pattern = '/(?P<resource>[\w]+)(?:\/(?P<id>[\d]+))?$/';
 		preg_match( $pattern, $route, $matches );
 
-		return $matches['resource'] ?? '';
+		return $matches;
 	}
 
 	/**
@@ -234,9 +234,9 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			return $response;
 		}
 
-		$resource = $this->get_resource_endpoint( $request );
+		$pieces = $this->get_route_pieces( $request );
 
-		if ( ! isset( $matches['id'] ) || ! $resource || ! in_array( $resource, self::PROTECTED_RESOURCES, true ) ) {
+		if ( ! isset( $pieces['id'] ) || ! isset( $pieces['resource'] ) || ! in_array( $pieces['resource'], self::PROTECTED_RESOURCES, true ) ) {
 			return $response;
 		}
 
@@ -302,9 +302,10 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			return $response;
 		}
 
-		$data = $response->get_data();
+		$data     = $response->get_data();
+		$resource = $this->get_route_pieces( $request )['resource'] ?? null;
 
-		if ( $item instanceof WC_Product && $this->get_resource_endpoint( $request ) === 'products' ) {
+		if ( $item instanceof WC_Product && $resource === 'products' ) {
 			$attr                   = $this->attribute_manager->get_all_aggregated_values( $item );
 			$data['gla_attributes'] = $attr;
 		}
