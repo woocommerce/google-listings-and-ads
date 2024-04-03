@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
@@ -53,6 +54,9 @@ class MerchantCenterServiceTest extends UnitTest {
 	/** @var MockObject|MerchantStatuses $merchant_statuses */
 	protected $merchant_statuses;
 
+	/** @var MockObject|NotificationsService $notifications_service */
+	protected $notifications_service;
+
 	/** @var MockObject|Settings $settings */
 	protected $settings;
 
@@ -96,6 +100,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->merchant               = $this->createMock( Merchant::class );
 		$this->merchant_account_state = $this->createMock( MerchantAccountState::class );
 		$this->merchant_statuses      = $this->createMock( MerchantStatuses::class );
+		$this->notifications_service  = $this->createMock( NotificationsService::class );
 		$this->settings               = $this->createMock( Settings::class );
 		$this->shipping_rate_query    = $this->createMock( ShippingRateQuery::class );
 		$this->shipping_time_query    = $this->createMock( ShippingTimeQuery::class );
@@ -112,6 +117,7 @@ class MerchantCenterServiceTest extends UnitTest {
 		$this->container->share( Merchant::class, $this->merchant );
 		$this->container->share( MerchantAccountState::class, $this->merchant_account_state );
 		$this->container->share( MerchantStatuses::class, $this->merchant_statuses );
+		$this->container->share( NotificationsService::class, $this->notifications_service );
 		$this->container->share( Settings::class, $this->settings );
 		$this->container->share( ShippingRateQuery::class, $this->shipping_rate_query );
 		$this->container->share( ShippingTimeQuery::class, $this->shipping_time_query );
@@ -412,11 +418,38 @@ class MerchantCenterServiceTest extends UnitTest {
 				false,
 				''
 			);
+		$this->notifications_service->method( 'is_enabled' )->willReturn( true );
 
 		$this->assertEquals(
 			[
 				'status' => 'incomplete',
 				'step'   => 'grant_rest_api_access',
+			],
+			$this->mc_service->get_setup_status()
+		);
+	}
+
+	public function test_get_setup_status_step_product_listings_when_notifications_not_enabled() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
+		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
+		$this->options->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
+				[ OptionsInterface::TARGET_AUDIENCE ]
+			)->willReturnOnConsecutiveCalls(
+				false,
+				[
+					'location'  => 'selected',
+					'countries' => [ 'US' ],
+				]
+			);
+		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->notifications_service->method( 'is_enabled' )->willReturn( false );
+
+		$this->assertEquals(
+			[
+				'status' => 'incomplete',
+				'step'   => 'product_listings',
 			],
 			$this->mc_service->get_setup_status()
 		);
@@ -439,6 +472,7 @@ class MerchantCenterServiceTest extends UnitTest {
 				]
 			);
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'US' ] );
+		$this->notifications_service->method( 'is_enabled' )->willReturn( true );
 
 		$this->assertEquals(
 			[
@@ -470,6 +504,7 @@ class MerchantCenterServiceTest extends UnitTest {
 					'shipping_time' => 'manual',
 				]
 			);
+		$this->notifications_service->method( 'is_enabled' )->willReturn( true );
 
 		$this->assertEquals(
 			[
@@ -515,6 +550,7 @@ class MerchantCenterServiceTest extends UnitTest {
 				]
 			);
 		$this->target_audience->method( 'get_target_countries' )->willReturn( [ 'GB' ] );
+		$this->notifications_service->method( 'is_enabled' )->willReturn( true );
 
 		$this->assertEquals(
 			[
@@ -576,6 +612,7 @@ class MerchantCenterServiceTest extends UnitTest {
 			->willReturn( $this->get_sample_address() );
 		$this->address_utility->method( 'compare_addresses' )
 			->willReturn( true );
+		$this->notifications_service->method( 'is_enabled' )->willReturn( true );
 
 		$this->assertEquals(
 			[

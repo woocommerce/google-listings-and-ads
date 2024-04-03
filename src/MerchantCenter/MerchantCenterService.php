@@ -231,7 +231,9 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		if ( $this->connected_account() ) {
 			$step = 'grant_rest_api_access';
 
-			if ( $this->is_rest_api_granted() ) {
+			$notifications_enabled = $this->container->get( NotificationsService::class )->is_enabled();
+
+			if ( ! $notifications_enabled || $this->is_rest_api_granted() ) {
 				$step = 'product_listings';
 
 				if ( $this->saved_target_audience() && $this->saved_shipping_and_tax_options() ) {
