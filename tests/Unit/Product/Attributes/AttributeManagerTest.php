@@ -11,9 +11,16 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInte
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Size;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\IsBundle;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Multipack;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Material;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Pattern;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Color;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use WC_Helper_Product;
 
@@ -25,6 +32,7 @@ use WC_Helper_Product;
 class AttributeManagerTest extends ContainerAwareUnitTest {
 
 	use PluginHelper;
+	use ProductTrait;
 
 	/** @var AttributeManager $attribute_manager */
 	protected $attribute_manager;
@@ -193,7 +201,7 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		// We need a new instance of AttributeManager because the attribute map created by `AttributeManager:map_attribute_types`
 		// is cached when called previously, which mean that it can not be modified by filters.
 		// Since we can not place the filters to run before `AttributeManager:map_attribute_types`, it's best to create a new instance of our class.
-		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc);
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
 
 		$brand_id = Brand::get_id();
 		add_filter(
@@ -221,7 +229,7 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		// We need a new instance of AttributeManager because the attribute map created by `AttributeManager:map_attribute_types`
 		// is cached when called previously, which mean that it can not be modified by filters.
 		// Since we can not place the filters to run before `AttributeManager:map_attribute_types`, it's best to create a new instance of our class.
-		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc);
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
 
 		add_filter(
 			'woocommerce_gla_product_attribute_types',
@@ -236,7 +244,7 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		// We need a new instance of AttributeManager because the attribute map created by `AttributeManager:map_attribute_types`
 		// is cached when called previously, which mean that it can not be modified by filters.
 		// Since we can not place the filters to run before `AttributeManager:map_attribute_types`, it's best to create a new instance of our class.
-		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc);
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
 
 		add_filter(
 			'woocommerce_gla_product_attribute_types',
@@ -252,14 +260,124 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 	}
 
 	/**
+	 * Test static sources for attributes
+	 */
+	public function test_simple_product_with_static_sources() {
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+
+		$rules = $this->get_sample_rules();
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $rules );
+
+		$product    = WC_Helper_Product::create_simple_product( false );
+		$attributes = $attribute_manager->get_all_aggregated_values( $product );
+
+		foreach ( $rules as $rule ) {
+			$this->assertEquals( $rule['source'], $attributes[ $rule['attribute'] ] );
+		}
+	}
+
+	public function test_maps_rules_simple_products() {
+		$rules = [
+			[
+				'attribute'               => Brand::get_id(),
+				'source'                  => 'product:title',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => Size::get_id(),
+				'source'                  => 'product:name',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => GTIN::get_id(),
+				'source'                  => 'product:sku',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => Multipack::get_id(),
+				'source'                  => 'product:stock_quantity',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => Material::get_id(),
+				'source'                  => 'product:stock_status',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => MPN::get_id(),
+				'source'                  => 'product:weight',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => Pattern::get_id(),
+				'source'                  => 'product:weight_with_unit',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => Color::get_id(),
+				'source'                  => 'product:tax_class',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $rules );
+		$this->wc->expects( $this->exactly( 0 ) )->method( 'get_product' );
+
+		// Simple Product
+		$attributes = $attribute_manager->get_all_aggregated_values( $this->generate_attribute_mapping_simple_product() );
+		$this->assertEquals( 'Dummy Product', $attributes[ Brand::get_id() ] );
+		$this->assertEquals( 'Dummy Product', $attributes[ Size::get_id() ] );
+		$this->assertEquals( 'DUMMY SKU', $attributes[ GTIN::get_id() ] );
+		// $this->assertEquals( 1, $attributes[ Multipack::get_id() ] );
+		$this->assertEquals( 'instock', $attributes[ Material::get_id() ] );
+		$this->assertEquals( 1.1, $attributes[ MPN::get_id() ] );
+		$this->assertEquals( '1.1 kg', $attributes[ Pattern::get_id() ] );
+		$this->assertEquals( 'mytax', $attributes[ Color::get_id() ] );
+	}
+
+	/**
+	 * Test dynamic product name source
+	 */
+	public function test_maps_rules_product_fields_name() {
+		$rules = [
+			[
+				'attribute'               => Size::get_id(),
+				'source'                  => 'product:name',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 2 ) )->method( 'get_results' )->willReturn( $rules );
+
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+		$attributes        = $attribute_manager->get_all_aggregated_values( $this->generate_attribute_mapping_simple_product() );
+		$this->assertEquals( 'Dummy Product', $attributes[ Size::get_id() ] );
+
+		$variation = $this->generate_attribute_mapping_variant_product();
+		$this->wc->expects( $this->exactly( 1 ) )->method( 'get_product' )->willReturn( $variation['parent'] );
+		$attributes = $attribute_manager->get_all_aggregated_values( $variation['variation'] );
+		$this->assertEquals( 'Dummy Variable Product', $attributes[ Size::get_id() ] );
+	}
+
+	/**
 	 * Runs before each test is executed.
 	 */
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->attribute_mapping_rules_query   = $this->createMock( AttributeMappingRulesQuery::class );
-		$this->wc = $this->createMock( WC::class );
-
+		$this->attribute_mapping_rules_query = $this->createMock( AttributeMappingRulesQuery::class );
+		$this->wc                            = $this->createMock( WC::class );
 
 		$this->attribute_manager = $this->container->get( AttributeManager::class );
 	}

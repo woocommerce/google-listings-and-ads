@@ -176,6 +176,8 @@ class AttributeManager implements Service {
 	/**
 	 * Return all attribute values for the given product, including the ones from the attribute mapping rules
 	 *
+	 * @since x.x.x
+	 *
 	 * @param WC_Product $product
 	 *
 	 * @return array of attribute values
@@ -197,6 +199,8 @@ class AttributeManager implements Service {
 
 	/**
 	 * Get the values for the attribute mapping rules
+	 *
+	 * @since x.x.x
 	 *
 	 * @param WC_Product $product
 	 * @param array      $mapping_rules
@@ -225,6 +229,8 @@ class AttributeManager implements Service {
 	/**
 	 * Get a source value for attribute mapping
 	 *
+	 * @since x.x.x
+	 *
 	 * @param WC_Product $product The product to get the value from
 	 * @param string     $source The source to get the value
 	 * @return string The source value for this product
@@ -242,7 +248,7 @@ class AttributeManager implements Service {
 		// Detect if the source_type is kind of product, taxonomy or attribute. Otherwise, we take it the full source as a static value.
 		switch ( $source_type ) {
 			case 'product':
-				return $this->get_product_field( $source_value, $product );
+				return $this->get_product_field( $product, $source_value );
 			case 'taxonomy':
 				return $this->get_product_taxonomy( $product, $source_value );
 			case 'attribute':
@@ -254,6 +260,8 @@ class AttributeManager implements Service {
 
 	/**
 	 * Gets a custom attribute from a product
+	 *
+	 * @since x.x.x
 	 *
 	 * @param WC_Product $product - The product to get the attribute from.
 	 * @param string     $attribute_name - The attribute name to get.
@@ -280,6 +288,8 @@ class AttributeManager implements Service {
 	 * Get product source type  for attribute mapping.
 	 * Those are fields belonging to the product core data. Like title, weight, SKU...
 	 *
+	 * @since x.x.x
+	 *
 	 * @param WC_Product $product The product to get the value from
 	 * @param string     $field The field to get
 	 * @return string|null The field value (null if data is not available)
@@ -301,6 +311,8 @@ class AttributeManager implements Service {
 	/**
 	 * Get taxonomy source type for attribute mapping
 	 *
+	 * @since x.x.x
+	 *
 	 * @param WC_Product $product The product to get the taxonomy from
 	 * @param string     $taxonomy The taxonomy to get
 	 * @return string The taxonomy value
@@ -314,7 +326,7 @@ class AttributeManager implements Service {
 			}
 
 			if ( ! $values ) { // if the value is still not available at this point, we try to get it from the parent
-				$parent = wc_get_product( $product->get_parent_id() );
+				$parent = $this->wc->get_product( $product->get_parent_id() );
 				$values = $parent->get_attribute( $taxonomy );
 
 				if ( ! $values ) {
@@ -339,6 +351,8 @@ class AttributeManager implements Service {
 	/**
 	 * Get a taxonomy term names from a product using
 	 *
+	 * @since x.x.x
+	 *
 	 * @param int    $product_id - The product ID to get the taxonomy term
 	 * @param string $taxonomy - The taxonomy to get.
 	 * @return string[] An array of term names.
@@ -352,6 +366,8 @@ class AttributeManager implements Service {
 	/**
 	 *
 	 * Formats the attribute for sending it via Google API
+	 *
+	 * @since x.x.x
 	 *
 	 * @param string $value The value to format
 	 * @param string $attribute_id The attribute ID for which this value belongs
@@ -374,6 +390,8 @@ class AttributeManager implements Service {
 	/**
 	 * Check if the current product match the conditions for applying the Attribute mapping rule.
 	 * For now the conditions are just matching with the product category conditions.
+	 *
+	 * @since x.x.x
 	 *
 	 * @param WC_Product $product The product to check
 	 * @param array      $rule The attribute mapping rule

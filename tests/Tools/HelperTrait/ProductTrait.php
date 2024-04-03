@@ -549,4 +549,61 @@ trait ProductTrait {
 			]
 		);
 	}
+
+	/**
+	 * Creates a simple product ready for being tested in Attribute Mapping
+	 *
+	 * @param array $categories The Categories attached to this product.
+	 * @return WC_Product The simple product.
+	 */
+	protected function generate_attribute_mapping_simple_product( $categories = [] ) {
+		$product = WC_Helper_Product::create_simple_product( false );
+
+		$attributes = [
+			WC_Helper_Product::create_product_attribute_object( 'size', [ 's', 'xs' ] ),
+		];
+
+		$product->set_attributes( $attributes );
+		$product->add_meta_data( 'custom', 'test' );
+		$product->add_meta_data( 'array', [ 'foo' => 'bar' ] );
+		$product->add_meta_data( 'multiple', 'Value1 | Value 2' );
+
+		if ( ! empty( $categories ) ) {
+			$product->set_category_ids( $categories );
+		}
+
+		$product->set_stock_quantity( 1 );
+		$product->set_tax_class( 'mytax' );
+
+		$product->save();
+
+		return $product;
+	}
+
+	/**
+	 * Creates a variant with variations ready for being tested in Attribute Mapping
+	 *
+	 * @param array $categories The Categories attached to the variation parent.
+	 * @return array The variation and the parent product.
+	 */
+	protected function generate_attribute_mapping_variant_product( $categories = [] ) {
+		$variable = WC_Helper_Product::create_variation_product();
+		if ( ! empty( $categories ) ) {
+			$variable->set_category_ids( $categories );
+		}
+		$variable->save();
+
+		$variation = wc_get_product( $variable->get_children()[ count( $variable->get_children() ) - 1 ] );
+		$variation->set_stock_quantity( 1 );
+		$variation->set_weight( 1.2 );
+		$variation->set_tax_class( 'mytax' );
+		$variation->add_meta_data( 'custom', 'test' );
+		$variation->add_meta_data( 'array', [ 'foo' => 'bar' ] );
+		$variation->add_meta_data( 'multiple', 'Value1 | Value 2' );
+
+		return [
+			'parent'    => $variable,
+			'variation' => $variation,
+		];
+	}
 }
