@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\AttributeMapping\AttributeMappingHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
@@ -40,6 +42,20 @@ class AttributeManager implements Service {
 		AvailabilityDate::class,
 		Adult::class,
 	];
+
+	/**
+	 * @var AttributeMappingRulesQuery
+	 */
+	protected $attribute_mapping_rules_query;
+
+	/**
+	 * AttributeManager constructor.
+	 *
+	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
+	 */
+	public function __construct( AttributeMappingRulesQuery $attribute_mapping_rules_query ) {
+		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
+	}
 
 	/**
 	 * @var array Attribute types mapped to product types
@@ -130,10 +146,11 @@ class AttributeManager implements Service {
 	 * Return all attribute values for the given product
 	 *
 	 * @param WC_Product $product
+	 * @param bool       $apply_rules Whether to apply attribute mapping rules
 	 *
 	 * @return array of attribute values
 	 */
-	public function get_all_values( WC_Product $product ): array {
+	public function get_all_values( WC_Product $product, $apply_rules = false ): array {
 		$all_attributes = [];
 		foreach ( array_keys( $this->get_attribute_types_for_product( $product ) ) as $attribute_id ) {
 			$attribute = $this->get_value( $product, $attribute_id );
@@ -142,7 +159,222 @@ class AttributeManager implements Service {
 			}
 		}
 
+		if ( $apply_rules ) {
+			$mapping_rules        = $this->attribute_mapping_rules_query->get_results();
+			$mapping_rules_values = $this->get_attribute_mapping_rules_values( $product, $mapping_rules );
+			return array_merge( $all_attributes, $mapping_rules_values );
+		}
+
 		return $all_attributes;
+	}
+
+	/**
+	 * Get the values for the attribute mapping rules
+	 *
+	 * @param WC_Product $product
+	 * @param array      $mapping_rules
+	 *
+	 * @return array
+	 */
+	public function get_attribute_mapping_rules_values( WC_Product $product, array $mapping_rules ) {
+		$attributes = [];
+		foreach ( $mapping_rules as $mapping_rule ) {
+			if ( $this->rule_match_conditions( $product, $mapping_rule ) ) {
+				$attribute_id                = $mapping_rule['attribute'];
+				$attributes[ $attribute_id ] = $this->format_attribute(
+					apply_filters(
+						"woocommerce_gla_product_attribute_value_{$attribute_id}",
+						$this->get_source( $product, $mapping_rule['source'] ),
+						$product
+					),
+					$attribute_id
+				);
+			}
+		}
+
+		return $attributes;
+	}
+
+	/**
+	 * Get a source value for attribute mapping
+	 *
+	 * @param WC_Product $product The product to get the value from
+	 * @param string     $source The source to get the value
+	 * @return string The source value for this product
+	 */
+	protected function get_source( WC_Product $product, string $source ) {
+		$source_type = null;
+
+		$type_separator = strpos( $source, ':' );
+
+		if ( $type_separator ) {
+			$source_type  = substr( $source, 0, $type_separator );
+			$source_value = substr( $source, $type_separator + 1 );
+		}
+
+		// Detect if the source_type is kind of product, taxonomy or attribute. Otherwise, we take it the full source as a static value.
+		switch ( $source_type ) {
+			case 'product':
+				return $this->get_product_field( $source_value, $product );
+			case 'taxonomy':
+				return $this->get_product_taxonomy( $product, $source_value );
+			case 'attribute':
+				return $this->get_custom_attribute( $product, $source_value );
+			default:
+				return $source;
+		}
+	}
+
+	/**
+	 * Gets a custom attribute from a product
+	 *
+	 * @param WC_Product $product - The product to get the attribute from.
+	 * @param string     $attribute_name - The attribute name to get.
+	 * @return string|null The attribute value or null if no value is found
+	 */
+	protected function get_custom_attribute( WC_Product $product, $attribute_name ) {
+		$attribute_value = $product->get_attribute( $attribute_name );
+
+		if ( ! $attribute_value ) {
+			$attribute_value = $product->get_meta( $attribute_name );
+		}
+
+		// We only support scalar values.
+		if ( ! is_scalar( $attribute_value ) ) {
+			return '';
+		}
+
+		$values = explode( WC_DELIMITER, (string) $attribute_value );
+		$values = array_filter( array_map( 'trim', $values ) );
+		return empty( $values ) ? '' : $values[0];
+	}
+
+	/**
+	 * Get product source type  for attribute mapping.
+	 * Those are fields belonging to the product core data. Like title, weight, SKU...
+	 *
+	 * @param WC_Product $product The product to get the value from
+	 * @param string     $field The field to get
+	 * @return string|null The field value (null if data is not available)
+	 */
+	protected function get_product_field( WC_Product $product, $field ) {
+		if ( 'weight_with_unit' === $field ) {
+			$weight = $product->get_weight();
+			return $weight ? $weight . ' ' . get_option( 'woocommerce_weight_unit' ) : null;
+		}
+
+		if ( is_callable( [ $product, 'get_' . $field ] ) ) {
+			$getter = 'get_' . $field;
+			return $product->$getter();
+		}
+
+		return '';
+	}
+
+	/**
+	 * Get taxonomy source type for attribute mapping
+	 *
+	 * @param WC_Product $product The product to get the taxonomy from
+	 * @param string     $taxonomy The taxonomy to get
+	 * @return string The taxonomy value
+	 */
+	protected function get_product_taxonomy( WC_Product $product, $taxonomy ) {
+		if ( $product->is_type( 'variation' ) ) {
+			$values = $product->get_attribute( $taxonomy );
+
+			if ( ! $values ) { // if taxonomy is not a global attribute (ie product_tag), attempt to get is with wc_get_product_terms
+				$values = $this->get_taxonomy_term_names( $product->get_id(), $taxonomy );
+			}
+
+			if ( ! $values ) { // if the value is still not available at this point, we try to get it from the parent
+				$parent = wc_get_product( $product->get_parent_id() );
+				$values = $parent->get_attribute( $taxonomy );
+
+				if ( ! $values ) {
+					$values = $this->get_taxonomy_term_names( $parent->get_id(), $taxonomy );
+				}
+			}
+
+			if ( is_string( $values ) ) {
+				$values = explode( ', ', $values );
+			}
+		} else {
+			$values = $this->get_taxonomy_term_names( $product->get_id(), $taxonomy );
+		}
+
+		if ( empty( $values ) || is_wp_error( $values ) ) {
+			return '';
+		}
+
+		return $values[0];
+	}
+
+	/**
+	 * Get a taxonomy term names from a product using
+	 *
+	 * @param int    $product_id - The product ID to get the taxonomy term
+	 * @param string $taxonomy - The taxonomy to get.
+	 * @return string[] An array of term names.
+	 */
+	protected function get_taxonomy_term_names( $product_id, $taxonomy ) {
+		$values = wc_get_product_terms( $product_id, $taxonomy );
+		return wp_list_pluck( $values, 'name' );
+	}
+
+
+	/**
+	 *
+	 * Formats the attribute for sending it via Google API
+	 *
+	 * @param string $value The value to format
+	 * @param string $attribute_id The attribute ID for which this value belongs
+	 * @return string|bool|int The attribute formatted based on theit attribute type
+	 */
+	protected function format_attribute( $value, $attribute_id ) {
+		$attribute = AttributeMappingHelper::get_attribute_by_id( $attribute_id );
+
+		if ( in_array( $attribute::get_value_type(), [ 'bool', 'boolean' ], true ) ) {
+			return wc_string_to_bool( $value );
+		}
+
+		if ( in_array( $attribute::get_value_type(), [ 'int', 'integer' ], true ) ) {
+			return (int) $value;
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Check if the current product match the conditions for applying the Attribute mapping rule.
+	 * For now the conditions are just matching with the product category conditions.
+	 *
+	 * @param WC_Product $product The product to check
+	 * @param array      $rule The attribute mapping rule
+	 * @return bool True if the rule is applicable
+	 */
+	protected function rule_match_conditions( WC_Product $product, array $rule ): bool {
+		$attribute               = $rule['attribute'];
+		$category_condition_type = $rule['category_condition_type'];
+
+		if ( $category_condition_type === AttributeMappingHelper::CATEGORY_CONDITION_TYPE_ALL ) {
+			return true;
+		}
+
+		// size is not the real attribute, the real attribute is sizes
+		if ( ! property_exists( $this, $attribute ) && $attribute !== 'size' ) {
+			return false;
+		}
+
+		$base_product_id           = $product->get_parent_id() ?: $product->get_id();
+		$product_category_ids      = wc_get_product_term_ids( $base_product_id, 'product_cat' );
+		$categories                = explode( ',', $rule['categories'] );
+		$contains_rules_categories = ! empty( array_intersect( $categories, $product_category_ids ) );
+
+		if ( $category_condition_type === AttributeMappingHelper::CATEGORY_CONDITION_TYPE_ONLY ) {
+			return $contains_rules_categories;
+		}
+
+		return ! $contains_rules_categories;
 	}
 
 	/**
