@@ -20,6 +20,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Pattern;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Color;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Condition;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use WC_Helper_Product;
@@ -42,6 +44,9 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 
 	/** @var MockObject|WC $wc */
 	protected $wc;
+
+	/** @var array $sample_categories */
+	protected $sample_categories = [];
 
 	public function test_update_throws_exception_if_attribute_inapplicable_to_product() {
 		$variable  = WC_Helper_Product::create_variation_product();
@@ -276,8 +281,229 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		}
 	}
 
+	/**
+	 * Test dynamic product name source with a simple product
+	 */
 	public function test_maps_rules_simple_products() {
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $this->get_sample_dynamic_source_mapping_rules() );
+		$this->wc->expects( $this->exactly( 0 ) )->method( 'get_product' );
+
+		// Simple Product
+		$attributes = $attribute_manager->get_all_aggregated_values( $this->generate_attribute_mapping_simple_product() );
+
+		$this->assertEquals( 'Dummy Product', $attributes[ Brand::get_id() ] );
+		$this->assertEquals( 'Dummy Product', $attributes[ Size::get_id() ] );
+		$this->assertEquals( 'DUMMY SKU', $attributes[ GTIN::get_id() ] );
+		$this->assertEquals( 1, $attributes[ Multipack::get_id() ] );
+		$this->assertEquals( 'instock', $attributes[ Material::get_id() ] );
+		$this->assertEquals( 1.1, $attributes[ MPN::get_id() ] );
+		$this->assertEquals( '1.1 kg', $attributes[ Pattern::get_id() ] );
+		$this->assertEquals( 'mytax', $attributes[ Color::get_id() ] );
+	}
+
+	/**
+	 * Test dynamic product name source with a variant product
+	 */
+	public function test_maps_rules_variant_products() {
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $this->get_sample_dynamic_source_mapping_rules() );
+
+		$product = $this->generate_attribute_mapping_variant_product();
+		$this->wc->expects( $this->exactly( 1 ) )->method( 'get_product' )->willReturn( $product['parent'] );
+
+		// Variation product
+		$attributes = $attribute_manager->get_all_aggregated_values( $product['variation'] );
+		$this->assertEquals( 'Dummy Variable Product', $attributes[ Brand::get_id() ] );
+		$this->assertEquals( 'Dummy Variable Product', $attributes[ Size::get_id() ] );
+		$this->assertEquals( 'DUMMY SKU VARIABLE HUGE BLUE ANY NUMBER', $attributes[ GTIN::get_id() ] );
+		$this->assertEquals( 1, $attributes[ Multipack::get_id() ] );
+		$this->assertEquals( 'instock', $attributes[ Material::get_id() ] );
+		$this->assertEquals( 1.2, $attributes[ MPN::get_id() ] );
+		$this->assertEquals( '1.2 kg', $attributes[ Pattern::get_id() ] );
+		$this->assertEquals( 'mytax', $attributes[ Color::get_id() ] );
+	}
+
+	/**
+	 * Test dynamic taxonomy source with simple products
+	 */
+	public function test_maps_rules_simple_product_taxonomies() {
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $this->get_sample_taxonomy_mapping_rules() );
+		$this->wc->expects( $this->exactly( 0 ) )->method( 'get_product' );
+
+		// Simple Product
+		$attributes = $attribute_manager->get_all_aggregated_values( $this->generate_attribute_mapping_simple_product( $this->sample_categories ) );
+		$this->assertEquals( 's', $attributes[ Size::get_id() ] );
+		$this->assertEquals( '', $attributes[ Color::get_id() ] );
+		$this->assertEquals( 'Alpha Category', $attributes[ Brand::get_id() ] );
+		$this->assertEquals( '', $attributes[ MPN::get_id() ] );
+	}
+
+	/**
+	 * Test dynamic taxonomy source with variable products
+	 */
+	public function test_maps_rules_simple_variable_taxonomies() {
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+
+		$product = $this->generate_attribute_mapping_variant_product( $this->sample_categories );
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $this->get_sample_taxonomy_mapping_rules() );
+		$this->wc->method( 'get_product' )->willReturn( $product['parent'] );
+
+		// Variation product
+		$attributes = $attribute_manager->get_all_aggregated_values( $product['variation'] );
+
+		$this->assertEquals( 'huge', $attributes[ Size::get_id() ] );
+		$this->assertEquals( '0', $attributes[ Color::get_id() ] );
+		$this->assertEquals( 'Alpha Category', $attributes[ Brand::get_id() ] );
+		$this->assertEquals( '', $attributes[ MPN::get_id() ] );
+	}
+
+	/**
+	 * Test mpapping rules with custom attributes
+	 */
+	public function test_custom_attributes() {
 		$rules = [
+			[
+				'attribute'               => Color::get_id(),
+				'source'                  => 'attribute:custom',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => GTIN::get_id(),
+				'source'                  => 'attribute:array', // This won't be loaded because we only accept scalars.
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => Brand::get_id(),
+				'source'                  => 'attribute:multiple', // Only first value will be loaded.
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+		$product           = $this->generate_attribute_mapping_variant_product( $this->sample_categories );
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $rules );
+		$this->wc->method( 'get_product' )->willReturn( $product['parent'] );
+
+		// Variation product
+		$attributes = $attribute_manager->get_all_aggregated_values( $product['variation'] );
+		$this->assertEquals( 'test', $attributes[ Color::get_id() ] );
+		$this->assertEquals( '', $attributes[ GTIN::get_id() ] );
+		$this->assertEquals( 'Value1', $attributes[ Brand::get_id() ] );
+	}
+
+	/**
+	 * Test Rule Category Type ONLY and EXCEPT matching logic
+	 */
+	public function test_rule_only_categories() {
+		$category = wp_insert_term( 'Test Category', 'product_cat' );
+		$term     = $category['term_id'];
+
+		$rules = [
+			[
+				'attribute'               => Color::get_id(),
+				'source'                  => 'test',
+				'category_condition_type' => 'ONLY',
+				'categories'              => strval( $term ),
+			],
+			[
+				'attribute'               => Brand::get_id(),
+				'source'                  => 'test',
+				'category_condition_type' => 'ONLY',
+				'categories'              => '999',
+			],
+			[
+				'attribute'               => GTIN::get_id(),
+				'source'                  => 'test',
+				'category_condition_type' => 'EXCEPT',
+				'categories'              => '999',
+			],
+			[
+				'attribute'               => MPN::get_id(),
+				'source'                  => 'test',
+				'category_condition_type' => 'EXCEPT',
+				'categories'              => strval( $term ),
+			],
+		];
+
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $rules );
+		$this->wc->expects( $this->exactly( 0 ) )->method( 'get_product' );
+
+		// Simple Product
+		$attributes = $attribute_manager->get_all_aggregated_values( $this->generate_attribute_mapping_simple_product( [ $term ] ) );
+		$this->assertEquals( 'test', $attributes[ Color::get_id() ] );
+		$this->assertEquals( 'test', $attributes[ GTIN::get_id() ] );
+
+		$this->assertArrayNotHasKey( Brand::get_id(), $attributes );
+		$this->assertArrayNotHasKey( MPN::get_id(), $attributes );
+	}
+
+	/**
+	 * Test rules priority
+	 */
+	public function test_gla_attribute_has_priority_over_attribute_mapping_rules() {
+		$rules = $this->get_sample_rules();
+
+		// 'gla_attributes' => [ 'gender' => 'man' ],
+
+		$product = $this->generate_attribute_mapping_simple_product();
+
+		$product->add_meta_data( $this->prefix_meta_key( Gender::get_id() ), 'man' );
+
+		$product->save_meta_data();
+
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $rules );
+		$this->wc->expects( $this->exactly( 0 ) )->method( 'get_product' );
+
+		// Simple Product
+		$attributes = $attribute_manager->get_all_aggregated_values( $product );
+
+		$this->assertEquals( $this->get_rule_attribute( 'condition' ), $attributes[ Condition::get_id() ] );
+		$this->assertEquals( 'man', $attributes[ Gender::get_id() ] );
+	}
+
+
+	protected function get_sample_taxonomy_mapping_rules() {
+		return [
+			[
+				'attribute'               => Size::get_id(),
+				'source'                  => 'taxonomy:pa_size',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => Color::get_id(),
+				'source'                  => 'taxonomy:pa_number', // set as any
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => Brand::get_id(),
+				'source'                  => 'taxonomy:product_cat',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => MPN::get_id(),
+				'source'                  => 'taxonomy:pa_other',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+		];
+	}
+
+	protected function get_sample_dynamic_source_mapping_rules() {
+		return [
 			[
 				'attribute'               => Brand::get_id(),
 				'source'                  => 'product:title',
@@ -327,47 +553,6 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 				'categories'              => '',
 			],
 		];
-
-		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
-
-		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $rules );
-		$this->wc->expects( $this->exactly( 0 ) )->method( 'get_product' );
-
-		// Simple Product
-		$attributes = $attribute_manager->get_all_aggregated_values( $this->generate_attribute_mapping_simple_product() );
-		$this->assertEquals( 'Dummy Product', $attributes[ Brand::get_id() ] );
-		$this->assertEquals( 'Dummy Product', $attributes[ Size::get_id() ] );
-		$this->assertEquals( 'DUMMY SKU', $attributes[ GTIN::get_id() ] );
-		// $this->assertEquals( 1, $attributes[ Multipack::get_id() ] );
-		$this->assertEquals( 'instock', $attributes[ Material::get_id() ] );
-		$this->assertEquals( 1.1, $attributes[ MPN::get_id() ] );
-		$this->assertEquals( '1.1 kg', $attributes[ Pattern::get_id() ] );
-		$this->assertEquals( 'mytax', $attributes[ Color::get_id() ] );
-	}
-
-	/**
-	 * Test dynamic product name source
-	 */
-	public function test_maps_rules_product_fields_name() {
-		$rules = [
-			[
-				'attribute'               => Size::get_id(),
-				'source'                  => 'product:name',
-				'category_condition_type' => 'ALL',
-				'categories'              => '',
-			],
-		];
-
-		$this->attribute_mapping_rules_query->expects( $this->exactly( 2 ) )->method( 'get_results' )->willReturn( $rules );
-
-		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
-		$attributes        = $attribute_manager->get_all_aggregated_values( $this->generate_attribute_mapping_simple_product() );
-		$this->assertEquals( 'Dummy Product', $attributes[ Size::get_id() ] );
-
-		$variation = $this->generate_attribute_mapping_variant_product();
-		$this->wc->expects( $this->exactly( 1 ) )->method( 'get_product' )->willReturn( $variation['parent'] );
-		$attributes = $attribute_manager->get_all_aggregated_values( $variation['variation'] );
-		$this->assertEquals( 'Dummy Variable Product', $attributes[ Size::get_id() ] );
 	}
 
 	/**
@@ -376,9 +561,23 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
+		$category_1 = wp_insert_term( 'Zulu Category', 'product_cat' );
+		$category_2 = wp_insert_term( 'Alpha Category', 'product_cat' );
+
+		$this->sample_categories = [ $category_1['term_id'], $category_2['term_id'] ];
+
 		$this->attribute_mapping_rules_query = $this->createMock( AttributeMappingRulesQuery::class );
 		$this->wc                            = $this->createMock( WC::class );
 
 		$this->attribute_manager = $this->container->get( AttributeManager::class );
+		\WC_Tax::create_tax_class( 'mytax' );
+	}
+
+	/**
+	 * Test suite tear down
+	 */
+	public function tearDown(): void {
+		parent::tearDown();
+		\WC_Tax::delete_tax_class_by( 'name', 'mytax' );
 	}
 }
