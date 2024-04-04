@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.5
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.6.4
+Stable tag: 2.6.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.6.5 - 2024-04-04 =
+* Dev - Update test proxy port.
+* Tweak - Show Review Inbox Notices when 11 clicks and 1 Conversion.
+
 = 2.6.4 - 2024-03-26 =
 * Add - Filter WC REST API responses for gla_syncable param.
 * Add - Missing functions for the WPCOM OAuth flow.
@@ -126,12 +130,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Newer version of bcmath_compat and phpseclib packages.
 * Update - Set default connect server URL to api.woocommerce.com.
 * Update is_gtag_page to support Google Analytics for WooCommerce version 2.0.0+.
-
-= 2.6.2 - 2024-03-12 =
-* Dev - Fix E2E tests for gtags consent mode.
-* Fix - Fatal error when getAdsLinks response is null.
-* Fix - WordPress 6.4 Compatibility: The modal closed event is not sent when clicking on its overlay.
-* Tweak - WC 8.7 compatibility.
-* Tweak - WP 6.5 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
