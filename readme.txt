@@ -127,11 +127,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Set default connect server URL to api.woocommerce.com.
 * Update is_gtag_page to support Google Analytics for WooCommerce version 2.0.0+.
 
-= 2.6.2 - 2024-03-12 =
-* Dev - Fix E2E tests for gtags consent mode.
-* Fix - Fatal error when getAdsLinks response is null.
-* Fix - WordPress 6.4 Compatibility: The modal closed event is not sent when clicking on its overlay.
-* Tweak - WC 8.7 compatibility.
-* Tweak - WP 6.5 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
