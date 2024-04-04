@@ -557,10 +557,11 @@ trait ProductTrait {
 	 * @return WC_Product The simple product.
 	 */
 	protected function generate_attribute_mapping_simple_product( $categories = [] ) {
-		$product = WC_Helper_Product::create_simple_product( false );
+		$product = WC_Helper_Product::create_simple_product();
 
 		$attributes = [
 			WC_Helper_Product::create_product_attribute_object( 'size', [ 's', 'xs' ] ),
+			WC_Helper_Product::create_product_attribute_object( 'gender', [ 'man' ] ),
 		];
 
 		$product->set_attributes( $attributes );
@@ -572,10 +573,10 @@ trait ProductTrait {
 			$product->set_category_ids( $categories );
 		}
 
+		$product->save();
+
 		$product->set_stock_quantity( 1 );
 		$product->set_tax_class( 'mytax' );
-
-		$product->save();
 
 		return $product;
 	}
