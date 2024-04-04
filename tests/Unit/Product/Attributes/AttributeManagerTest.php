@@ -452,8 +452,6 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 	public function test_gla_attribute_has_priority_over_attribute_mapping_rules() {
 		$rules = $this->get_sample_rules();
 
-		// 'gla_attributes' => [ 'gender' => 'man' ],
-
 		$product = $this->generate_attribute_mapping_simple_product();
 
 		$product->add_meta_data( $this->prefix_meta_key( Gender::get_id() ), 'man' );

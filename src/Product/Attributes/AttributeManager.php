@@ -157,7 +157,6 @@ class AttributeManager implements Service {
 	 * Return all attribute values for the given product
 	 *
 	 * @param WC_Product $product
-	 * @param bool       $apply_rules Whether to apply attribute mapping rules
 	 *
 	 * @return array of attribute values
 	 */
@@ -174,7 +173,8 @@ class AttributeManager implements Service {
 	}
 
 	/**
-	 * Return all attribute values for the given product, including the ones from the attribute mapping rules
+	 * Return all attribute values for the given product, including the ones from the attribute mapping rules.
+	 * GLA Attributes has priority over the product attributes.
 	 *
 	 * @since x.x.x
 	 *
@@ -406,7 +406,7 @@ class AttributeManager implements Service {
 		}
 
 		// size is not the real attribute, the real attribute is sizes
-		if ( ! in_array( $attribute, $this->get_attribute_ids() ) && $attribute !== 'size' ) {
+		if ( ! in_array( $attribute, $this->get_attribute_ids(), true ) && $attribute !== 'size' ) {
 			return false;
 		}
 
@@ -431,13 +431,12 @@ class AttributeManager implements Service {
 		$attributes = [];
 		foreach ( self::ATTRIBUTES as $attribute_type ) {
 			if ( method_exists( $attribute_type, 'get_id' ) ) {
-				$attribute_id                = call_user_func( [ $attribute_type, 'get_id' ] );
+				$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
 				$attributes[] = $attribute_id;
 			}
 		}
 
 		return $attributes;
-	
 	}
 
 	/**

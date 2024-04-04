@@ -289,7 +289,7 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	 * Prepares the response when the request is coming from the WPCOM proxy:
 	 *
 	 * Filter all the private metadata and returns only the public metadata and those prefixed with _wc_gla
-	 * For WooCommerce products, it will add the attribute values.
+	 * For WooCommerce products, it will add the attribute mapping values.
 	 *
 	 * @param WP_REST_Response $response The response object.
 	 * @param mixed            $item     The item.
