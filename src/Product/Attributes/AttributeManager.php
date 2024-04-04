@@ -194,7 +194,7 @@ class AttributeManager implements Service {
 
 		$mapping_rules        = $this->attribute_mapping_rules_query->get_results();
 		$mapping_rules_values = $this->get_attribute_mapping_rules_values( $product, $mapping_rules );
-		return array_merge( $attributes, $mapping_rules_values );
+		return array_merge( $mapping_rules_values, $attributes );
 	}
 
 	/**
@@ -406,7 +406,7 @@ class AttributeManager implements Service {
 		}
 
 		// size is not the real attribute, the real attribute is sizes
-		if ( ! property_exists( $this, $attribute ) && $attribute !== 'size' ) {
+		if ( ! in_array( $attribute, $this->get_attribute_ids() ) && $attribute !== 'size' ) {
 			return false;
 		}
 
@@ -420,6 +420,24 @@ class AttributeManager implements Service {
 		}
 
 		return ! $contains_rules_categories;
+	}
+
+	/**
+	 * Get attribute IDs
+	 *
+	 * @return array Attribute IDs
+	 */
+	protected function get_attribute_ids(): array {
+		$attributes = [];
+		foreach ( self::ATTRIBUTES as $attribute_type ) {
+			if ( method_exists( $attribute_type, 'get_id' ) ) {
+				$attribute_id                = call_user_func( [ $attribute_type, 'get_id' ] );
+				$attributes[] = $attribute_id;
+			}
+		}
+
+		return $attributes;
+	
 	}
 
 	/**
