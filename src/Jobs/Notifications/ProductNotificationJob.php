@@ -7,7 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\HelperNotificationInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -41,6 +41,20 @@ class ProductNotificationJob extends AbstractItemNotificationJob {
 	) {
 		$this->helper = $helper;
 		parent::__construct( $action_scheduler, $monitor, $notifications_service );
+	}
+
+	/**
+	 * Override Product Notification adding Offer ID for deletions.
+	 * @param $args
+	 *
+	 * @return void
+	 */
+	protected function process_items( $args ): void {
+		if ( isset( $args['topic'] ) && isset( $args['item_id'] ) && $this->is_delete_topic( $args['topic'] ) ) {
+			$args['data'] = [ 'offer_id' => WCProductAdapter::get_google_product_offer_id( 'gla', $args['item_id'] ) ];
+		}
+
+		parent::process_items( $args );
 	}
 
 	/**

@@ -77,9 +77,10 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 *
 	 * @param string   $topic The topic to use in the notification.
 	 * @param int|null $item_id The item ID to notify. It can be null for topics that doesn't need Item ID
+	 * @param array $data Optional data to send in the request.
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
-	public function notify( string $topic, $item_id = null ): bool {
+	public function notify( string $topic, $item_id = null, $data = [] ): bool {
 		/**
 		 * Allow users to disable the notification request.
 		 *
@@ -101,9 +102,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 				'x-woocommerce-topic' => $topic,
 				'Content-Type'        => 'application/json',
 			],
-			'body'    => [
-				'item_id' => $item_id,
-			],
+			'body'    => array_merge( $data, [ 'item_id' => $item_id ] ),
 			'url'     => $this->get_notification_url(),
 		];
 
