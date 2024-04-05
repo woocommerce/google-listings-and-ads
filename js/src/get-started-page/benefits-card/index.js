@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, FlexItem } from '@wordpress/components';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
