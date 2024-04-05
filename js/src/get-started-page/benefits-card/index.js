@@ -32,12 +32,9 @@ const BenefitsCard = () => {
 						variant="title-medium"
 						className="gla-get-started-benefits-card__title"
 					>
-						{ createInterpolateElement(
-							__(
-								'Reach your sales goals by creating a campaign',
-								'google-listings-and-ads'
-							),
-							{ strong: <strong /> }
+						{ __(
+							'Reach your sales goals by creating a campaign',
+							'google-listings-and-ads'
 						) }
 					</Text>
 					<Text
