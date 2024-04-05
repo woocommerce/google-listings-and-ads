@@ -1263,14 +1263,6 @@ export function* fetchGoogleAdsAccountStatus() {
 		const errorBodyPromise = response?.json() || response?.text();
 		const errorData = yield awaitPromise( errorBodyPromise );
 
-		if ( response.status === 428 ) {
-			// Update to the data store as the "errorData" is valid account status data.
-			return {
-				type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
-				data: errorData,
-			};
-		}
-
 		handleApiError(
 			errorData,
 			__(
