@@ -15,7 +15,6 @@ import {
 } from './constants';
 import { handleApiError } from '.~/utils/handleError';
 import { adaptAdsCampaign } from './adapters';
-import { fetchWithHeaders, awaitPromise } from './controls';
 
 /**
  * @typedef {import('.~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
