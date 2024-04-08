@@ -1250,7 +1250,7 @@ export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
 
 export function* fetchGoogleAdsAccountStatus() {
 	try {
-		const { data } = yield apiFetch( {
+		const data = yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/account-status`,
 		} );
 
