@@ -61,11 +61,9 @@ test.describe( 'Complete your campaign', () => {
 			// Mock Merchant Center as connected
 			completeCampaign.mockMCConnected(),
 
-			// Mock Ads account as connected.
+			// Mock Ads account as connected and claimed.
 			setupAdsAccountPage.mockAdsAccountConnected(),
-
-			// Mock there is no existing Google Ads account.
-			setupAdsAccountPage.mockAdsAccountsResponse( [] ),
+			setupAdsAccountPage.mockAdsStatusClaimed(),
 
 			// Mock that billing is pending.
 			setupBudgetPage.fulfillBillingStatusRequest( {
@@ -162,8 +160,6 @@ test.describe( 'Complete your campaign', () => {
 	test.describe( 'Set up paid ads', () => {
 		test.describe( 'Click "Create a paid ad campaign" button', () => {
 			test.beforeAll( async () => {
-				await setupAdsAccountPage.mockAdsAccountConnected();
-				await completeCampaign.goto();
 				await completeCampaign.clickCreatePaidAdButton();
 			} );
 

@@ -83,7 +83,7 @@ export default class CompleteCampaign extends MockRequests {
 	 */
 	getCreatePaidAdButton() {
 		return this.page.getByRole( 'button', {
-			name: 'Create a paid ad campaign',
+			name: 'Create campaign',
 			exact: true,
 		} );
 	}
