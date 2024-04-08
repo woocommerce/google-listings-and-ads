@@ -77,7 +77,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 *
 	 * @param string   $topic The topic to use in the notification.
 	 * @param int|null $item_id The item ID to notify. It can be null for topics that doesn't need Item ID
-	 * @param array $data Optional data to send in the request.
+	 * @param array    $data Optional data to send in the request.
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
 	public function notify( string $topic, $item_id = null, $data = [] ): bool {
