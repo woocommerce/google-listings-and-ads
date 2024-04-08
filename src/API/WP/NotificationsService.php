@@ -116,7 +116,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 
 		do_action(
 			'woocommerce_gla_debug_message',
-			sprintf( 'Notification - Item ID: %s - Topic: %s', $item_id, $topic ),
+			sprintf( 'Notification - Item ID: %s - Topic: %s - Data %s', $item_id, $topic, json_encode( $data ) ),
 			__METHOD__
 		);
 
