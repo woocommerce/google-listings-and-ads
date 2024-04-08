@@ -112,7 +112,7 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 *
 	 * @return bool
 	 */
-	protected function is_delete_topic( $topic ) {
+	protected function is_delete_topic( $topic ): bool {
 		return str_contains( $topic, '.delete' );
 	}
 
@@ -123,7 +123,7 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 *
 	 * @return bool
 	 */
-	protected function is_create_topic( $topic ) {
+	protected function is_create_topic( $topic ): bool {
 		return str_contains( $topic, '.create' );
 	}
 	/**
