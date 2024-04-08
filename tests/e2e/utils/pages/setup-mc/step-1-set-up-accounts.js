@@ -322,9 +322,9 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
-	 * Get WordPress account card.
+	 * Get Google Ads account card.
 	 *
-	 * @return {import('@playwright/test').Locator} Get WordPress account card.
+	 * @return {import('@playwright/test').Locator} Get Google Ads account card.
 	 */
 	getGoogleAdsAccountCard() {
 		return this.getAccountCards().nth( 2 );

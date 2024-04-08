@@ -57,7 +57,7 @@ export default class SetupAdsAccount extends MockRequests {
 	/**
 	 * Get the accept invite for google ads account modal.
 	 *
-	 * @return {import('@playwright/test').Locator} The create account modal.
+	 * @return {import('@playwright/test').Locator} The accept invite account modal.
 	 */
 	getAcceptAccountModal() {
 		return this.page.locator( '.gla-ads-invite-modal' );
@@ -101,7 +101,7 @@ export default class SetupAdsAccount extends MockRequests {
 	/**
 	 * Get Claim button in the Accept Invitation modal.
 	 *
-	 * @return {import('@playwright/test').Locator} Close modal button.
+	 * @return {import('@playwright/test').Locator} Claim account in modal button.
 	 */
 	getClaimAcceptAccountButtonModal() {
 		return this.getAcceptAccountModal().getByRole( 'button', {
@@ -113,7 +113,7 @@ export default class SetupAdsAccount extends MockRequests {
 	/**
 	 * Click claim account button.
 	 *
-	 * @return {import('@playwright/test').Locator} Locator instance.
+	 * @return {import('@playwright/test').Locator} Claim account in card button.
 	 */
 	getAdsClaimAccountButton() {
 		return this.page
@@ -211,6 +211,11 @@ export default class SetupAdsAccount extends MockRequests {
 		await button.click();
 	}
 
+	/**
+	 * Click close button from modal.
+	 *
+	 * @return {Promise<void>}
+	 */
 	async clickCloseAcceptAccountButtonFromModal() {
 		const button = this.getCloseAcceptAccountButtonModal();
 		await button.click();
