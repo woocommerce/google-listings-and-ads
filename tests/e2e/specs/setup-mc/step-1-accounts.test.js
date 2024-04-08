@@ -756,14 +756,14 @@ test.describe( 'Set up accounts', () => {
 				await setUpAccountsPage.goto();
 			} );
 
-			test( 'should see "Continue" button is disabled when ads is disconnected', async () => {
+			test( 'should see "Continue" button is disabled when only Ads is connected', async () => {
 				const continueButton =
 					await setUpAccountsPage.getContinueButton();
 				await expect( continueButton ).toBeDisabled();
 			} );
 		} );
 
-		test.describe( 'When only MC is disconnected', async () => {
+		test.describe( 'When only MC is connected', async () => {
 			test.beforeAll( async () => {
 				await setupAdsAccountPage.mockAdsAccountDisconnected();
 				await setUpAccountsPage.mockMCConnected();
@@ -771,7 +771,7 @@ test.describe( 'Set up accounts', () => {
 				await setUpAccountsPage.goto();
 			} );
 
-			test( 'should see "Continue" button is disabled when MC is disconnected', async () => {
+			test( 'should see "Continue" button is disabled when only MC is connected', async () => {
 				const continueButton =
 					await setUpAccountsPage.getContinueButton();
 				await expect( continueButton ).toBeDisabled();
