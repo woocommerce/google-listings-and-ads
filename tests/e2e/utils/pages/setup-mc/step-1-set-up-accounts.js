@@ -396,20 +396,6 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
-	 * Click claim account button.
-	 *
-	 * @return {import('@playwright/test').Locator} Locator instance.
-	 */
-	async getClaimAdsAccountButton() {
-		return this.page
-			.getByRole( 'button', {
-				name: 'Claim Account',
-				exact: true,
-			} )
-			.first();
-	}
-
-	/**
 	 * Click create account button.
 	 *
 	 * @return {Promise<void>}
@@ -442,26 +428,6 @@ export default class SetUpAccountsPage extends MockRequests {
 	getAdsAccountConnectedNotice() {
 		return this.getGoogleAdsAccountCard().getByText(
 			'Conversion measurement has been set up. You can create a campaign later.'
-		);
-	}
-
-	/**
-	 * Get ads claim account button.
-	 *
-	 * @return {import('@playwright/test').Locator} Get ads account Claim Account button.
-	 */
-	getAdsClaimAccountButton() {
-		return this.getClaimAdsAccountButton();
-	}
-
-	/**
-	 * Get ads claim account text.
-	 *
-	 * @return {import('@playwright/test').Locator} Get ads account Claim account text.
-	 */
-	getAdsClaimAccountText() {
-		return this.getGoogleAdsAccountCard().getByText(
-			'Claim your new Google Ads account to complete this setup.'
 		);
 	}
 }

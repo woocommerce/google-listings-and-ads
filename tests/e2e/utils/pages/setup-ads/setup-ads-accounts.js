@@ -99,6 +99,43 @@ export default class SetupAdsAccount extends MockRequests {
 	}
 
 	/**
+	 * Get Claim button in the Accept Invitation modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Close modal button.
+	 */
+	getClaimAcceptAccountButtonModal() {
+		return this.getAcceptAccountModal().getByRole( 'button', {
+			name: 'Claim account in Google Ads',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Click claim account button.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator instance.
+	 */
+	getAdsClaimAccountButton() {
+		return this.page
+			.getByRole( 'button', {
+				name: 'Claim Account',
+				exact: true,
+			} )
+			.first();
+	}
+
+	/**
+	 * Get ads claim account text.
+	 *
+	 * @return {import('@playwright/test').Locator} Get ads account Claim account text.
+	 */
+	getAdsClaimAccountText() {
+		return this.page.getByText(
+			'Claim your new Google Ads account to complete this setup.'
+		);
+	}
+
+	/**
 	 * Get connect to a different account button.
 	 *
 	 * @return {import('@playwright/test').Locator} Get connect to a different account button.

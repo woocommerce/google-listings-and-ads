@@ -265,9 +265,9 @@ test.describe( 'Set up accounts', () => {
 					await setupAdsAccountPage.clickCloseAcceptAccountButtonFromModal();
 
 					const claimButton =
-						await setUpAccountsPage.getAdsClaimAccountButton();
+						await setupAdsAccountPage.getAdsClaimAccountButton();
 					const claimText =
-						await setUpAccountsPage.getAdsClaimAccountText();
+						await setupAdsAccountPage.getAdsClaimAccountText();
 
 					await expect( claimButton ).toBeVisible();
 					await expect( claimText ).toBeVisible();

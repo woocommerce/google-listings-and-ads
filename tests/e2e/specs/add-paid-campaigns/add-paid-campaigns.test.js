@@ -165,39 +165,68 @@ test.describe( 'Set up Ads account', () => {
 			).toBeEnabled();
 		} );
 
-		test( 'Create Ads account', async () => {
-			//Intercept Ads connection request
+		test( 'Create and Ads account', async () => {
+			// Intercept Ads connection request.
 			const connectAdsAccountRequest =
 				setupAdsAccounts.registerConnectAdsAccountRequests();
 
-			await setupAdsAccounts.mockAdsAccountsResponse( [
-				ADS_ACCOUNTS[ 1 ],
-			] );
+			await setupAdsAccounts.mockAdsAccountsResponse( ADS_ACCOUNTS );
 
-			//Mock request to fulfill Ads connection
+			// Mock request to fulfill Ads connection.
 			await setupAdsAccounts.fulfillAdsConnection( {
-				id: ADS_ACCOUNTS[ 1 ].id,
-				currency: 'EUR',
-				symbol: '\u20ac',
-				status: 'connected',
+				id: ADS_ACCOUNTS[ 0 ].id,
+				currency: 'USD',
+				symbol: '$',
+				status: 'incomplete',
+				step: 'account_access',
 			} );
 
-			await setupAdsAccounts.fulfillAdsAccountStatus( {
-				has_access: true,
-				invite_link: '',
-			} );
+			await setupAdsAccounts.mockAdsStatusNotClaimed();
 
 			await setupAdsAccounts.getCreateAdsAccountButtonModal().click();
 
 			await connectAdsAccountRequest;
 
+			const modal = await setupAdsAccounts.getAcceptAccountModal();
+			await expect( modal ).toBeVisible();
+		} );
+
+		test( 'Show Unclaimed Ads account', async () => {
+			await setupAdsAccounts.clickCloseAcceptAccountButtonFromModal();
+
+			const claimButton =
+				await setupAdsAccounts.getAdsClaimAccountButton();
+			const claimText = await setupAdsAccounts.getAdsClaimAccountText();
+
+			await expect( claimButton ).toBeVisible();
+			await expect( claimText ).toBeVisible();
+
+			await expect( setupAdsAccounts.getContinueButton() ).toBeDisabled();
+		} );
+
+		test( 'Show Claimed Ads account', async () => {
+			// Intercept Ads connection request.
+			await setupAdsAccounts.fulfillAdsConnection( {
+				id: ADS_ACCOUNTS[ 0 ].id,
+				currency: 'USD',
+				symbol: '$',
+				status: 'connected',
+				step: '',
+			} );
+
+			await setupAdsAccounts.mockAdsStatusClaimed();
+
+			await page.reload();
+
 			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 
 			await expect(
 				page.getByRole( 'link', {
-					name: `Account ${ ADS_ACCOUNTS[ 1 ].id }`,
+					name: `Account ${ ADS_ACCOUNTS[ 0 ].id }`,
 				} )
 			).toBeVisible();
+
+			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 		} );
 	} );
 
@@ -210,11 +239,6 @@ test.describe( 'Set up Ads account', () => {
 				currency: 'EUR',
 				symbol: '\u20ac',
 				status: 'disconnected',
-			} );
-
-			await setupAdsAccounts.fulfillAdsAccountStatus( {
-				has_access: true,
-				invite_link: '',
 			} );
 
 			await page.reload();
