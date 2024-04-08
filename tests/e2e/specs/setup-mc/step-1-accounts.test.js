@@ -781,6 +781,7 @@ test.describe( 'Set up accounts', () => {
 		test.describe( 'When all accounts are connected', async () => {
 			test.beforeAll( async () => {
 				await setupAdsAccountPage.mockAdsAccountConnected();
+				await setupAdsAccountPage.mockAdsStatusClaimed();
 				await setUpAccountsPage.mockMCConnected();
 
 				await setUpAccountsPage.goto();
@@ -789,6 +790,7 @@ test.describe( 'Set up accounts', () => {
 			test( 'should see "Continue" button is enabled', async () => {
 				const continueButton =
 					await setUpAccountsPage.getContinueButton();
+
 				await expect( continueButton ).toBeEnabled();
 			} );
 		} );

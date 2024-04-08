@@ -464,6 +464,7 @@ export default class MockRequests {
 		await this.fulfillAdsAccountStatus( {
 			has_access: false,
 			invite_link: '',
+			step: '',
 		} );
 	}
 
@@ -474,9 +475,9 @@ export default class MockRequests {
 	 */
 	async mockAdsStatusNotClaimed() {
 		await this.fulfillAdsAccountStatus( {
-			message: 'Please accept the ads account invitation.',
 			has_access: false,
 			invite_link: 'https://example.com',
+			step: 'account_access',
 		} );
 	}
 
@@ -489,6 +490,7 @@ export default class MockRequests {
 		await this.fulfillAdsAccountStatus( {
 			has_access: true,
 			invite_link: '',
+			step: '',
 		} );
 	}
 
