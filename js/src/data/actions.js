@@ -1251,7 +1251,7 @@ export function* upsertTour( tour, upsertingClientStoreFirst = false ) {
 
 export function* fetchGoogleAdsAccountStatus() {
 	try {
-		const { data } = yield fetchWithHeaders( {
+		const { data } = yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/account-status`,
 		} );
 
@@ -1259,12 +1259,9 @@ export function* fetchGoogleAdsAccountStatus() {
 			type: TYPES.RECEIVE_GOOGLE_ADS_ACCOUNT_STATUS,
 			data,
 		};
-	} catch ( response ) {
-		const errorBodyPromise = response?.json() || response?.text();
-		const errorData = yield awaitPromise( errorBodyPromise );
-
+	} catch ( error ) {
 		handleApiError(
-			errorData,
+			error,
 			__(
 				'There was an error getting the status of your Google Ads account.',
 				'google-listings-and-ads'
