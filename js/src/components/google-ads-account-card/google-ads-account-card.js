@@ -35,14 +35,11 @@ export default function GoogleAdsAccountCard() {
 		hasFinishedResolution: hasResolvedAdsAccountStatus,
 	} = useGoogleAdsAccountStatus();
 
-	const showSuccessNotice =
-		googleAdsAccount?.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
-		googleAdsAccount?.step === 'link_merchant';
-
 	if (
 		! hasResolvedGoogleAccount ||
 		! hasResolvedGoogleAdsAccount ||
-		! hasResolvedAdsAccountStatus
+		! hasResolvedAdsAccountStatus ||
+		googleAdsAccount === null // Catch errors retrieving accounts.
 	) {
 		return <SpinnerCard />;
 	}
@@ -62,6 +59,10 @@ export default function GoogleAdsAccountCard() {
 	) {
 		return <NonConnected />;
 	}
+
+	const showSuccessNotice =
+		googleAdsAccount.status === GOOGLE_ADS_ACCOUNT_STATUS.CONNECTED ||
+		googleAdsAccount.step === 'link_merchant';
 
 	return (
 		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount }>

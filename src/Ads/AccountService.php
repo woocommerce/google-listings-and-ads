@@ -181,7 +181,14 @@ class AccountService implements OptionsAwareInterface, Service {
 						break;
 
 					case 'account_access':
-						$this->get_ads_account_has_access();
+						if ( ! $this->check_ads_account_has_access() ) {
+							$state[ $name ]['status'] = AdsAccountState::STEP_PENDING;
+							$this->state->update( $state );
+
+							// Exit the setup loop.
+							break 2;
+						}
+
 						break;
 
 					default:
@@ -242,68 +249,54 @@ class AccountService implements OptionsAwareInterface, Service {
 	}
 
 	/**
-	 * Gets the ads account access status.
+	 * Check if the Ads account has access.
 	 *
-	 * @return array
-	 * @throws ExceptionWithResponseData When Google or Ads accounts are not connected or
-	 *                                   when the Ads account has not yet been accepted.
+	 * @throws Exception If the account doesn't have access.
+	 */
+	private function check_ads_account_has_access() {
+		$access_status = $this->get_ads_account_has_access();
+
+		return $access_status['has_access'];
+	}
+
+	/**
+	 * Gets the Ads account access status.
+	 *
+	 * @return array {
+	 *     Returns the access status, last completed account setup step,
+	 *     and invite link if available.
+	 *
+	 *     @type bool   $has_access  Whether the customer has access to the account.
+	 *     @type string $step        The last completed setup step for the Ads account.
+	 *     @type string $invite_link The URL to the invite link.
+	 * }
 	 */
 	public function get_ads_account_has_access() {
-		// Check if ads id is present.
-		if ( ! $this->options->get_ads_id() ) {
-			throw new ExceptionWithResponseData(
-				__( 'A Google Ads account must be connected.', 'google-listings-and-ads' ),
-				428,
-				null,
-				[
-					'has_access'  => false,
-					'step'        => $this->state->last_incomplete_step(),
-					'invite_link' => '',
-				]
-			);
+		$has_access  = false;
+		$invite_link = '';
+		$email       = '';
+
+		// Check if an Ads ID is present.
+		if ( $this->options->get_ads_id() ) {
+			$connection_status = $this->container->get( Connection::class )->get_status();
+			$email             = $connection_status['email'] ?? '';
 		}
-
-		$connection_status = $this->container->get( Connection::class )->get_status();
-		$email             = $connection_status['email'] ?? '';
-
 		// If no email, means google account is not connected.
-		if ( empty( $email ) ) {
-			throw new ExceptionWithResponseData(
-				__( 'A Google account must be connected.', 'google-listings-and-ads' ),
-				428,
-				null,
-				[
-					'has_access'  => false,
-					'step'        => $this->state->last_incomplete_step(),
-					'invite_link' => '',
-				]
-			);
+		if ( ! empty( $email ) ) {
+			$has_access  = $this->container->get( Ads::class )->has_access( $email );
+			$invite_link = $this->options->get( OptionsInterface::ADS_BILLING_URL, '' );
 		}
-
-		$has_access         = $this->container->get( Ads::class )->has_access( $email );
-		$accept_invite_link = $this->options->get( OptionsInterface::ADS_BILLING_URL, '' );
 
 		// If we have access, complete the step so that it won't be called next time.
 		if ( $has_access ) {
 			$this->state->complete_step( 'account_access' );
-
-			return [
-				'has_access'  => $has_access,
-				'step'        => $this->state->last_incomplete_step(),
-				'invite_link' => $accept_invite_link,
-			];
 		}
 
-		throw new ExceptionWithResponseData(
-			__( 'Please accept the ads account invitation.', 'google-listings-and-ads' ),
-			428,
-			null,
-			[
-				'has_access'  => false,
-				'step'        => $this->state->last_incomplete_step(),
-				'invite_link' => $accept_invite_link,
-			]
-		);
+		return [
+			'has_access'  => $has_access,
+			'step'        => $this->state->last_incomplete_step(),
+			'invite_link' => $invite_link,
+		];
 	}
 
 	/**
