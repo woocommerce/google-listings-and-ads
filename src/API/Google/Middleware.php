@@ -574,7 +574,7 @@ class Middleware implements OptionsAwareInterface {
 			$client = $this->container->get( Client::class );
 
 			// For each region we request a new review
-			foreach ( $regions as $region_code ) {
+			foreach ( $regions as $region_code => $region_types ) {
 				$result = $client->post(
 					$this->get_manager_url( 'account-review-request' ),
 					[
@@ -582,6 +582,7 @@ class Middleware implements OptionsAwareInterface {
 							[
 								'accountId'  => $this->options->get_merchant_id(),
 								'regionCode' => $region_code,
+								'types'      => $region_types,
 							]
 						),
 					]
