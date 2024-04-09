@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.6.6 - 2024-04-09 =
+* Dev - Add snippet to bypass WooCommerce dependency in E2E tests.
+* Tweak - WC 8.8 compatibility.
+
 = 2.6.5 - 2024-04-04 =
 * Dev - Update test proxy port.
 * Tweak - Show Review Inbox Notices when 11 clicks and 1 Conversion.
