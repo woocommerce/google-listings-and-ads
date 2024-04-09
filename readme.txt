@@ -116,19 +116,7 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Show Review Inbox Notices when 11 clicks and 1 Conversion.
 
 = 2.6.4 - 2024-03-26 =
-* Add - Filter WC REST API responses for gla_syncable param.
-* Add - Missing functions for the WPCOM OAuth flow.
-* Add - Notify when product changes.
 * Dev - Add a manual workflow run for PHP unit tests.
 * Update - Refactor Product Stats.
-
-= 2.6.3 - 2024-03-19 =
-* Fix - Handle parse JSON exception when Creating Ads Account.
-* Fix - Inline Javascript encoding for gtag events.
-* Fix - Undefined keys `offers_free_shipping ` or `free_shipping_threshold`.
-* Tweak - Add WP 6.5 Require plugins header.
-* Update - Newer version of bcmath_compat and phpseclib packages.
-* Update - Set default connect server URL to api.woocommerce.com.
-* Update is_gtag_page to support Google Analytics for WooCommerce version 2.0.0+.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
