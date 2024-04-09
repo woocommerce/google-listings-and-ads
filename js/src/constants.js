@@ -117,3 +117,6 @@ export const ENHANCED_ADS_CONVERSION_STATUS = {
 	ENABLED: 'enabled',
 	DISABLED: 'disabled',
 };
+
+export const ENHANCED_CONVERSION_TERMS_BASE_URL =
+	'https://ads.google.com/aw/conversions/customersettings';

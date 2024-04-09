@@ -16,7 +16,7 @@ const useGoogleAdsEnhancedConversionTermsURL = () => {
 
 		const url = addQueryArgs( ENHANCED_CONVERSION_TERMS_BASE_URL, {
 			ocid: adsAccount?.ocid || 0,
-			eppn: 'customerDataTerms',
+			eppn: 'enhancedconversionsaccountlevelsettings',
 		} );
 
 		return { url };

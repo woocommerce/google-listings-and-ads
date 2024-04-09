@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import LoadingLabel from '.~/components/loading-label';
 import GuidePageContent from '.~/components/guide-page-content';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
-import EnhancedConversion from './enhanced-conversion';
+import EnhancedConversions from './enhanced-conversions';
 import GoogleCredits from './google-credits';
 
 const DynamicScreenContent = () => {
@@ -26,7 +26,7 @@ const DynamicScreenContent = () => {
 	}
 
 	if ( pmaxCampaigns.length ) {
-		return <EnhancedConversion />;
+		return <EnhancedConversions />;
 	}
 
 	return <GoogleCredits />;

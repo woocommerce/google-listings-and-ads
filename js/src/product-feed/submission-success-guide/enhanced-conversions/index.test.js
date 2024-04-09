@@ -29,7 +29,7 @@ describe( 'Enhanced Conversion', () => {
 		render( <EnhancedConversion /> );
 		expect(
 			screen.getByText(
-				'Activating it is easy – just agree to the terms of service on Google Ads and we will make the tagging changes needed for you. This feature can also be managed from Google Listings & Ads > Settings'
+				'Optimize your conversion tracking with Enhanced Conversions'
 			)
 		).toBeInTheDocument();
 	} );
@@ -42,9 +42,7 @@ describe( 'Enhanced Conversion', () => {
 
 		render( <EnhancedConversion /> );
 		expect(
-			screen.getByText(
-				'Clicking confirm will enable Enhanced Conversions on your account and update your tags accordingly. This feature can also be managed from Google Listings & Ads > Settings'
-			)
+			screen.getByText( 'Your Enhanced Conversions are almost ready' )
 		).toBeInTheDocument();
 	} );
 } );

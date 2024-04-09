@@ -62,7 +62,7 @@ describe( 'Enhanced Conversion Footer', () => {
 		render( <Actions /> );
 
 		expect(
-			screen.getByText( 'Accept Terms & Conditions' )
+			screen.getByText( 'Enable Enhanced Conversions' )
 		).toBeInTheDocument();
 	} );
 
@@ -80,25 +80,6 @@ describe( 'Enhanced Conversion Footer', () => {
 		render( <Actions onModalClose={ handleOnModalClose } /> );
 
 		const button = screen.getByRole( 'button', { name: 'Confirm' } );
-		userEvent.click( button );
-
-		expect( handleOnModalClose ).toHaveBeenCalledTimes( 1 );
-	} );
-
-	test( 'Click on disable button callback', () => {
-		const handleOnModalClose = jest.fn().mockName( 'On button click' );
-
-		useAcceptedCustomerDataTerms.mockReturnValue( {
-			acceptedCustomerDataTerms: true,
-			hasFinishedResolution: true,
-		} );
-		useAllowEnhancedConversions.mockReturnValue( {
-			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.ENABLED,
-		} );
-
-		render( <Actions onModalClose={ handleOnModalClose } /> );
-
-		const button = screen.getByRole( 'button', { name: 'Disable' } );
 		userEvent.click( button );
 
 		expect( handleOnModalClose ).toHaveBeenCalledTimes( 1 );

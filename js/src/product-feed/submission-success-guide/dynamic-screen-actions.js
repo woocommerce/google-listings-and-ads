@@ -9,7 +9,7 @@ import { noop } from 'lodash';
  */
 import LoadingLabel from '.~/components/loading-label';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
-import EnhancedConversionActions from './enhanced-conversion/actions';
+import EnhancedConversionsActions from './enhanced-conversions/actions';
 import GoogleCreditsActions from './google-credits/actions';
 
 const DynamicScreenActions = ( { onModalClose = noop } ) => {
@@ -25,7 +25,7 @@ const DynamicScreenActions = ( { onModalClose = noop } ) => {
 	}
 
 	if ( pmaxCampaigns.length ) {
-		return <EnhancedConversionActions onModalClose={ onModalClose } />;
+		return <EnhancedConversionsActions onModalClose={ onModalClose } />;
 	}
 
 	return <GoogleCreditsActions onModalClose={ onModalClose } />;
