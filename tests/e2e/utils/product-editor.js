@@ -21,14 +21,34 @@ export function getClassicProductEditorUtils( page ) {
 			return page.locator( '.gla_attributes_tab' );
 		},
 
+		getPluginPanel() {
+			return page.locator( '#gla_attributes' );
+		},
+
 		getChannelVisibilityMetaBox() {
 			return page.locator( '#channel_visibility' );
+		},
+
+		getChannelVisibilityHeading() {
+			return this.getChannelVisibilityMetaBox().getByRole( 'heading', {
+				name: 'Channel visibility',
+			} );
+		},
+
+		getProductAttributesHeading() {
+			return this.getPluginPanel().getByRole( 'heading', {
+				name: 'Product attributes',
+			} );
 		},
 	};
 
 	const asyncActions = {
 		gotoAddProductPage() {
 			return page.goto( '/wp-admin/post-new.php?post_type=product' );
+		},
+
+		clickPluginTab() {
+			return this.getPluginTab().click();
 		},
 
 		async changeProductType( type ) {
