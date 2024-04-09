@@ -269,27 +269,28 @@ class SyncerHooks implements Service, Registerable {
 	 * @param WC_Product $product
 	 */
 	protected function handle_update_product_notification( WC_Product $product ) {
-		if ( $this->product_helper->should_trigger_create_notification( $product ) ) {
+		$product_id = $product->get_id();
+		if ( $this->product_helper->should_trigger_create_notification( $product_id ) ) {
 			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_CREATE );
 			$this->product_notification_job->schedule(
 				[
-					'item_id' => $product->get_id(),
+					'item_id' => $product_id,
 					'topic'   => NotificationsService::TOPIC_PRODUCT_CREATED,
 				]
 			);
-		} elseif ( $this->product_helper->should_trigger_update_notification( $product ) ) {
+		} elseif ( $this->product_helper->should_trigger_update_notification( $product_id ) ) {
 			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_UPDATE );
 			$this->product_notification_job->schedule(
 				[
-					'item_id' => $product->get_id(),
+					'item_id' => $product_id,
 					'topic'   => NotificationsService::TOPIC_PRODUCT_UPDATED,
 				]
 			);
-		} elseif ( $this->product_helper->should_trigger_delete_notification( $product ) ) {
+		} elseif ( $this->product_helper->should_trigger_delete_notification( $product_id ) ) {
 			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
 			$this->product_notification_job->schedule(
 				[
-					'item_id' => $product->get_id(),
+					'item_id' => $product_id,
 					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
 				]
 			);
@@ -323,12 +324,18 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function maybe_send_delete_notification( int $product_id ) {
-		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product && $this->product_helper->should_trigger_delete_notification( $product ) ) {
+		$product = $this->wc->maybe_get_product( $product_id );
+		if ( is_null( $product ) ) {
+			// In case product is not anymore in DB we send the notification directly.
+			$this->notifications_service->notify( NotificationsService::TOPIC_PRODUCT_DELETED, $product_id );
+			return;
+		}
+
+		if ( $product instanceof WC_Product && $this->product_helper->should_trigger_delete_notification( $product_id ) ) {
 			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
 			$this->product_notification_job->schedule(
 				[
-					'item_id' => $product->get_id(),
+					'item_id' => $product_id,
 					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
 				]
 			);

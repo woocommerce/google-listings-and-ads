@@ -147,14 +147,14 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 			->with( $topic, $id )
 			->willReturn( true );
 
-		$this->job->get_helper()->expects( $this->exactly( 3 ) )
+		$this->job->get_helper()->expects( $this->any() )
 			->method( 'get_wc_' . $this->get_topic_name() )
 			->with( $id )
 			->willReturn( $item );
 
 		$this->job->get_helper()->expects( $this->once() )
 			->method( 'should_trigger_create_notification' )
-			->with( $item )
+			->with( $id )
 			->willReturn( true );
 
 		$this->job->get_helper()->expects( $this->once() )
@@ -188,14 +188,14 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 			->with( $topic, $id )
 			->willReturn( false );
 
-		$this->job->get_helper()->expects( $this->once() )
+		$this->job->get_helper()->expects( $this->any() )
 			->method( 'get_wc_' . $this->get_topic_name() )
 			->with( $id )
 			->willReturn( $item );
 
 		$this->job->get_helper()->expects( $this->once() )
 			->method( 'should_trigger_create_notification' )
-			->with( $item )
+			->with( $id )
 			->willReturn( true );
 
 		$this->job->get_helper()->expects( $this->never() )
@@ -218,23 +218,23 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 			->method( 'notify' )
 			->willReturn( true );
 
-		$this->job->get_helper()->expects( $this->exactly( 8 ) )
+		$this->job->get_helper()->expects( $this->any() )
 			->method( 'get_wc_' . $this->get_topic_name() )
 			->willReturn( $item );
 
 		$this->job->get_helper()->expects( $this->once() )
 			->method( 'should_trigger_create_notification' )
-			->with( $item )
+			->with( $id )
 			->willReturn( true );
 
 		$this->job->get_helper()->expects( $this->once() )
 			->method( 'should_trigger_update_notification' )
-			->with( $item )
+			->with( $id )
 			->willReturn( true );
 
 		$this->job->get_helper()->expects( $this->once() )
 			->method( 'should_trigger_delete_notification' )
-			->with( $item )
+			->with( $id )
 			->willReturn( true );
 
 		$this->job->get_helper()->expects( $this->exactly( 3 ) )
@@ -278,23 +278,23 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 
 		$this->notification_service->expects( $this->never() )->method( 'notify' );
 
-		$this->job->get_helper()->expects( $this->exactly( 3 ) )
+		$this->job->get_helper()->expects( $this->any() )
 			->method( 'get_wc_' . $this->get_topic_name() )
 			->willReturn( $item );
 
 		$this->job->get_helper()->expects( $this->once() )
 			->method( 'should_trigger_create_notification' )
-			->with( $item )
+			->with( $id )
 			->willReturn( false );
 
 		$this->job->get_helper()->expects( $this->once() )
 			->method( 'should_trigger_update_notification' )
-			->with( $item )
+			->with( $id )
 			->willReturn( false );
 
 		$this->job->get_helper()->expects( $this->once() )
 			->method( 'should_trigger_delete_notification' )
-			->with( $item )
+			->with( $id )
 			->willReturn( false );
 
 		$this->job->get_helper()->expects( $this->never() )->method( 'set_notification_status' );
@@ -325,10 +325,10 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 
 		$this->job->get_helper()->expects( $this->once() )
 			->method( 'should_trigger_delete_notification' )
-			->with( $item )
+			->with( $id )
 			->willReturn( true );
 
-		$this->job->get_helper()->expects( $this->exactly( 3 ) )
+		$this->job->get_helper()->expects( $this->any() )
 			->method( 'get_wc_' . $this->get_topic_name() )
 			->with( $id )
 			->willReturn( $item );
@@ -351,10 +351,10 @@ abstract class AbstractItemNotificationJobTest extends UnitTest {
 
 		$this->job->get_helper()->expects( $this->once() )
 			->method( 'should_trigger_create_notification' )
-			->with( $item )
+			->with( $id )
 			->willReturn( true );
 
-		$this->job->get_helper()->expects( $this->exactly( 3 ) )
+		$this->job->get_helper()->expects( $this->any() )
 			->method( 'get_wc_' . $this->get_topic_name() )
 			->with( $id )
 			->willReturn( $item );

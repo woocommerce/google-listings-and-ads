@@ -16,30 +16,30 @@ interface HelperNotificationInterface {
 	/**
 	 * Checks if the item can be processed based on the topic.
 	 *
-	 * @param WC_Product|WC_Coupon $item
+	 * @param int $item_id
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_create_notification( $item ): bool;
+	public function should_trigger_create_notification( int $item_id ): bool;
 
 
 	/**
 	 * Indicates if the item ready for sending a delete Notification.
 	 *
-	 * @param WC_Product|WC_Coupon $item
+	 * @param int $item_id
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_delete_notification( $item ): bool;
+	public function should_trigger_delete_notification( int $item_id ): bool;
 
 	/**
 	 * Indicates if the item ready for sending an update Notification.
 	 *
-	 * @param WC_Product|WC_Coupon $item
+	 * @param int $item_id
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_update_notification( $item ): bool;
+	public function should_trigger_update_notification( int $item_id ): bool;
 
 	/**
 	 * Marks the item as unsynced.
