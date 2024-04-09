@@ -46,6 +46,34 @@ test.describe( 'Classic Product Editor integration', () => {
 		await api.setOnboardedMerchant();
 	} );
 
+	test( 'Hide plugin tab and meta box for unsupported product types', async () => {
+		await editorUtils.gotoAddProductPage();
+
+		const channelVisibilityMetaBox =
+			editorUtils.getChannelVisibilityMetaBox();
+
+		const pluginTab = editorUtils.getPluginTab();
+
+		await expect( channelVisibilityMetaBox ).toBeVisible();
+		await expect( pluginTab ).toBeVisible();
+
+		await editorUtils.changeToGroupedProduct();
+		await expect( channelVisibilityMetaBox ).toBeHidden();
+		await expect( pluginTab ).toBeHidden();
+
+		await editorUtils.changeToSimpleProduct();
+		await expect( channelVisibilityMetaBox ).toBeVisible();
+		await expect( pluginTab ).toBeVisible();
+
+		await editorUtils.changeToExternalProduct();
+		await expect( channelVisibilityMetaBox ).toBeHidden();
+		await expect( pluginTab ).toBeHidden();
+
+		await editorUtils.changeToVariableProduct();
+		await expect( channelVisibilityMetaBox ).toBeVisible();
+		await expect( pluginTab ).toBeVisible();
+	} );
+
 	test.afterAll( async () => {
 		await api.clearOnboardedMerchant();
 		await page.close();

@@ -30,6 +30,26 @@ export function getClassicProductEditorUtils( page ) {
 		gotoAddProductPage() {
 			return page.goto( '/wp-admin/post-new.php?post_type=product' );
 		},
+
+		async changeProductType( type ) {
+			await page.locator( '#product-type' ).selectOption( type );
+		},
+
+		changeToSimpleProduct() {
+			return this.changeProductType( 'simple' );
+		},
+
+		changeToGroupedProduct() {
+			return this.changeProductType( 'grouped' );
+		},
+
+		changeToExternalProduct() {
+			return this.changeProductType( 'external' );
+		},
+
+		changeToVariableProduct() {
+			return this.changeProductType( 'variable' );
+		},
 	};
 
 	return {
