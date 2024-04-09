@@ -28,22 +28,13 @@ const Actions = ( { onModalClose = noop } ) => {
 		<Fragment>
 			<div className="gla-submission-success-guide__space_holder" />
 
-			<AppButton
-				isSecondary
-				// @todo: review data-action label
-				data-action="view-product-feed"
-				onClick={ onModalClose }
-			>
+			<AppButton isSecondary data-action="close" onClick={ onModalClose }>
 				{ __( 'Close', 'google-listings-and-ads' ) }
 			</AppButton>
 
 			<CTA
 				onEnableClick={ handleEnableOrDisableClick }
 				onDisableClick={ handleEnableOrDisableClick }
-				acceptTermsLabel={ __(
-					'Sign terms of service on Google Ads',
-					'google-listings-and-ads'
-				) }
 				enableLabel={ __( 'Confirm', 'google-listings-and-ads' ) }
 			/>
 		</Fragment>

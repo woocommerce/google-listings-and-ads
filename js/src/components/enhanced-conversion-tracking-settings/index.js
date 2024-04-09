@@ -11,6 +11,7 @@ import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms'
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import Section from '.~/wcdl/section';
 import PendingNotice from '.~/components/enhanced-conversion-tracking-settings/pending-notice';
+import AppSpinner from '.~/components/app-spinner';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import Toggle from './toggle';
 import AcceptTerms from './accept-terms';
@@ -31,15 +32,19 @@ const TITLE = __( 'Enhanced Conversion Tracking', 'google-listings-and-ads' );
  */
 const EnhancedConversionTrackingSettings = () => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
+	const { acceptedCustomerDataTerms, hasFinishedResolution } =
+		useAcceptedCustomerDataTerms();
 	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 
-	// @todo: Remove condition once R1 PRs are merged since there should always be a connected Ads account.
 	if ( ! googleAdsAccount || ! googleAdsAccount.id ) {
 		return null;
 	}
 
 	const getCardBody = () => {
+		if ( ! hasFinishedResolution ) {
+			return <AppSpinner />;
+		}
+
 		if (
 			! acceptedCustomerDataTerms &&
 			allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING

@@ -11,24 +11,18 @@ import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { useAppDispatch } from '.~/data';
 import TrackableLink from '.~/components/trackable-link';
 import useTermsPolling from './useTermsPolling';
-import useGoogleAdsEnhancedConversionTermsURL from '.~/hooks/useGoogleAdsTermsURL';
+import useGoogleAdsEnhancedConversionTermsURL from '.~/hooks/useGoogleAdsEnhancedConversionTermsURL';
 
 const PendingNotice = () => {
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 	const { url } = useGoogleAdsEnhancedConversionTermsURL();
 	useTermsPolling();
 
-	const handleOnClick = useCallback(
-		( event ) => {
-			event.preventDefault();
-
-			window.open( url, '_blank' );
-			updateEnhancedAdsConversionStatus(
-				ENHANCED_ADS_CONVERSION_STATUS.PENDING
-			);
-		},
-		[ updateEnhancedAdsConversionStatus, url ]
-	);
+	const handleOnClick = useCallback( () => {
+		updateEnhancedAdsConversionStatus(
+			ENHANCED_ADS_CONVERSION_STATUS.PENDING
+		);
+	}, [ updateEnhancedAdsConversionStatus ] );
 
 	return (
 		<p>
@@ -43,8 +37,8 @@ const PendingNotice = () => {
 							href={ url }
 							target="_blank"
 							type="external"
-							eventName="gla_ads_tos" // @todo: review eventName
 							onClick={ handleOnClick }
+							// @todo: Review and add eventName prop
 						/>
 					),
 				}

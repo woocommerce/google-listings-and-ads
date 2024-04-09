@@ -28,15 +28,6 @@ const CONNECTED_GOOGLE_ADS_ACCOUNT = {
 
 describe( 'useAcceptedCustomerDataTerms', () => {
 	it( 'Returns the correct status when set to true', () => {
-		useGoogleAccount.mockReturnValue( {
-			hasFinishedResolution: true,
-			isResolving: false,
-			scope: {
-				adsRequired: true,
-			},
-			google: true,
-		} );
-
 		useGoogleAdsAccount.mockReturnValue( {
 			googleAdsAccount: CONNECTED_GOOGLE_ADS_ACCOUNT,
 			hasFinishedResolution: true,

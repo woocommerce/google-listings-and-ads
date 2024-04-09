@@ -11,7 +11,7 @@ import { useCallback } from '@wordpress/element';
 import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
-import useGoogleAdsEnhancedConversionTermsURL from '.~/hooks/useGoogleAdsTermsURL';
+import useGoogleAdsEnhancedConversionTermsURL from '.~/hooks/useGoogleAdsEnhancedConversionTermsURL';
 
 const AcceptTerms = ( {
 	acceptTermsLabel = __(
@@ -23,18 +23,13 @@ const AcceptTerms = ( {
 	const { url } = useGoogleAdsEnhancedConversionTermsURL();
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 
-	const handleAcceptTerms = useCallback(
-		( event ) => {
-			event.preventDefault();
-
-			window.open( url, '_blank' );
-			updateEnhancedAdsConversionStatus(
-				ENHANCED_ADS_CONVERSION_STATUS.PENDING
-			);
-			onAcceptTerms();
-		},
-		[ updateEnhancedAdsConversionStatus, url, onAcceptTerms ]
-	);
+	const handleAcceptTerms = useCallback( () => {
+		window.open( url, '_blank' );
+		updateEnhancedAdsConversionStatus(
+			ENHANCED_ADS_CONVERSION_STATUS.PENDING
+		);
+		onAcceptTerms();
+	}, [ updateEnhancedAdsConversionStatus, url, onAcceptTerms ] );
 
 	return (
 		<AppButton isPrimary onClick={ handleAcceptTerms }>

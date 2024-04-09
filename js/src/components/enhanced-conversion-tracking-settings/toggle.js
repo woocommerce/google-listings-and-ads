@@ -45,17 +45,13 @@ const Toggle = () => {
 
 	const handleOnChange = useCallback(
 		( value ) => {
-			if ( ! acceptedCustomerDataTerms ) {
-				return;
-			}
-
 			updateEnhancedAdsConversionStatus(
 				value
 					? ENHANCED_ADS_CONVERSION_STATUS.ENABLED
 					: ENHANCED_ADS_CONVERSION_STATUS.DISABLED
 			);
 		},
-		[ updateEnhancedAdsConversionStatus, acceptedCustomerDataTerms ]
+		[ updateEnhancedAdsConversionStatus ]
 	);
 
 	if ( ! hasFinishedResolution ) {
@@ -68,10 +64,7 @@ const Toggle = () => {
 				allowEnhancedConversions ===
 				ENHANCED_ADS_CONVERSION_STATUS.ENABLED
 			}
-			disabled={
-				! hasResolvedAcceptedCustomerDataTerms ||
-				! acceptedCustomerDataTerms
-			}
+			disabled={ ! hasResolvedAcceptedCustomerDataTerms }
 			onChange={ handleOnChange }
 			label={
 				TOGGLE_LABEL_MAP[ allowEnhancedConversions ] ||
