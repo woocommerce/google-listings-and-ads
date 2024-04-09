@@ -48,6 +48,8 @@ class ProductNotificationJob extends AbstractItemNotificationJob {
 
 	/**
 	 * Override Product Notification adding Offer ID for deletions.
+	 * The offer_id might match the real offer ID or not, depending on whether the product has been synced by us or not.
+	 * Google should check on their side if the product actually exists.
 	 *
 	 * @param array $args Arguments with the item id and the topic.
 	 */
