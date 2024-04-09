@@ -12,7 +12,7 @@ import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
 import useGoogleAdsEnhancedConversionTermsURL from '.~/hooks/useGoogleAdsEnhancedConversionTermsURL';
 
-const Enable = ( { onEnableEnhancedConversions = noop } ) => {
+const EnableButton = ( { onEnableEnhancedConversions = noop } ) => {
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 	const { url } = useGoogleAdsEnhancedConversionTermsURL();
 
@@ -31,4 +31,4 @@ const Enable = ( { onEnableEnhancedConversions = noop } ) => {
 	);
 };
 
-export default Enable;
+export default EnableButton;

@@ -6,15 +6,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import Section from '.~/wcdl/section';
-import PendingNotice from '.~/components/enhanced-conversion-tracking-settings/pending-notice';
 import AppSpinner from '.~/components/app-spinner';
-import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import Toggle from './toggle';
-import AcceptTerms from './accept-terms';
+import Enable from './enable';
 
 const DESCRIPTION = (
 	<p>
@@ -34,7 +31,6 @@ const EnhancedConversionTrackingSettings = () => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { acceptedCustomerDataTerms, hasFinishedResolution } =
 		useAcceptedCustomerDataTerms();
-	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 
 	if ( ! googleAdsAccount || ! googleAdsAccount.id ) {
 		return null;
@@ -45,15 +41,8 @@ const EnhancedConversionTrackingSettings = () => {
 			return <AppSpinner />;
 		}
 
-		if (
-			! acceptedCustomerDataTerms &&
-			allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING
-		) {
-			return <PendingNotice />;
-		}
-
 		if ( ! acceptedCustomerDataTerms ) {
-			return <AcceptTerms />;
+			return <Enable />;
 		}
 
 		return <Toggle />;

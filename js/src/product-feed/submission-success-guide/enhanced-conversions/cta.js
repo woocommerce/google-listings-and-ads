@@ -10,8 +10,8 @@ import { useCallback, useState, useEffect } from '@wordpress/element';
 import AppButton from '.~/components/app-button';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useTermsPolling from './useTermsPolling';
-import Enable from './enable';
-import Confirm from './confirm';
+import EnableButton from './enable-button';
+import ConfirmButton from './confirm-button';
 
 const CTA = ( { onConfirm = noop } ) => {
 	const [ startBackgroundPoll, setStartBackgroundPoll ] = useState( false );
@@ -40,13 +40,13 @@ const CTA = ( { onConfirm = noop } ) => {
 
 	if ( ! acceptedCustomerDataTerms ) {
 		return (
-			<Enable
+			<EnableButton
 				onEnableEnhancedConversion={ handleOnEnableEnhancedConversions }
 			/>
 		);
 	}
 
-	return <Confirm onConfirm={ onConfirm } />;
+	return <ConfirmButton onConfirm={ onConfirm } />;
 };
 
 export default CTA;
