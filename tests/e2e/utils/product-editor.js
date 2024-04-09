@@ -11,6 +11,34 @@ import * as api from './api';
 const REGEX_URL_PRODUCTS = /\/wc\/v3\/products\/\d+(\/variations\/\d+)?\?/;
 
 /**
+ * Gets E2E test utils for facilitating writing tests for the classic product editor.
+ *
+ * @param {Page} page Playwright page object.
+ */
+export function getClassicProductEditorUtils( page ) {
+	const locators = {
+		getPluginTab() {
+			return page.locator( '.gla_attributes_tab' );
+		},
+
+		getChannelVisibilityMetaBox() {
+			return page.locator( '#channel_visibility' );
+		},
+	};
+
+	const asyncActions = {
+		gotoAddProductPage() {
+			return page.goto( '/wp-admin/post-new.php?post_type=product' );
+		},
+	};
+
+	return {
+		...locators,
+		...asyncActions,
+	};
+}
+
+/**
  * Gets E2E test utils for facilitating writing tests for Product Block Editor.
  *
  * @param {Page} page Playwright page object.
