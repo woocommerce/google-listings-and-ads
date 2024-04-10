@@ -1,9 +1,9 @@
 /**
  * External dependencies
  */
+import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useCallback, Fragment } from '@wordpress/element';
-import { noop } from 'lodash';
 
 /**
  * Internal dependencies

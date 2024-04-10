@@ -11,7 +11,7 @@ import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
 
-const Confirm = ( { onConfirm = noop } ) => {
+const ConfirmButton = ( { onConfirm = noop } ) => {
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 
 	const handleConfirm = () => {
@@ -29,4 +29,4 @@ const Confirm = ( { onConfirm = noop } ) => {
 	);
 };
 
-export default Confirm;
+export default ConfirmButton;

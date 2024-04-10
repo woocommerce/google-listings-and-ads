@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import EnableButton from '.~/product-feed/submission-success-guide/enhanced-conversions/enable-button';
+import CTA from '.~/product-feed/submission-success-guide/enhanced-conversions/cta';
 
 const Enable = () => {
 	return (
@@ -18,7 +18,8 @@ const Enable = () => {
 					'google-listings-and-ads'
 				) }
 			</p>
-			<EnableButton />
+
+			<CTA />
 		</Fragment>
 	);
 };

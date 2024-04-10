@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -12,7 +11,7 @@ import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
 import useGoogleAdsEnhancedConversionTermsURL from '.~/hooks/useGoogleAdsEnhancedConversionTermsURL';
 
-const EnableButton = ( { onEnableEnhancedConversions = noop } ) => {
+const EnableButton = () => {
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 	const { url } = useGoogleAdsEnhancedConversionTermsURL();
 
@@ -21,7 +20,6 @@ const EnableButton = ( { onEnableEnhancedConversions = noop } ) => {
 		updateEnhancedAdsConversionStatus(
 			ENHANCED_ADS_CONVERSION_STATUS.PENDING
 		);
-		onEnableEnhancedConversions();
 	};
 
 	return (

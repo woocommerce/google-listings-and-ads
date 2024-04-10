@@ -4,17 +4,16 @@
 import { __ } from '@wordpress/i18n';
 import {
 	useCallback,
-	useEffect,
 	Fragment,
 	createInterpolateElement,
 } from '@wordpress/element';
-import { Spinner } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
 import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { useAppDispatch } from '.~/data';
+import AppSpinner from '.~/components/app-spinner';
 import AppStandaloneToggleControl from '.~/components/app-standalone-toggle-control';
 import TrackableLink from '.~/components/trackable-link';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
@@ -49,7 +48,7 @@ const Toggle = () => {
 	);
 
 	if ( ! hasFinishedResolution ) {
-		return <Spinner />;
+		return <AppSpinner />;
 	}
 
 	return (

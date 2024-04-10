@@ -1,25 +1,25 @@
 /**
  * External dependencies
  */
-import { useCallback, useState } from '@wordpress/element';
+import { useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { useAppDispatch } from '.~/data';
 import useWindowFocusCallbackIntervalEffect from '.~/hooks/useWindowFocusCallbackIntervalEffect';
+import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
+import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 
 const useAutoCheckEnhancedConversionTOS = () => {
-	const [ polling, setPolling ] = useState( false );
+	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
+	const { allowEnhancedConversions } = useAllowEnhancedConversions();
 	const { fetchAcceptedCustomerDataTerms } = useAppDispatch();
 
-	const startEnhancedConversionTOSPolling = useCallback( () => {
-		setPolling( true );
-	}, [] );
-
-	const stopEnhancedConversionTOSPolling = useCallback( () => {
-		setPolling( false );
-	}, [] );
+	const polling =
+		! acceptedCustomerDataTerms &&
+		allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING;
 
 	const checkStatus = useCallback( async () => {
 		if ( ! polling ) {
@@ -31,10 +31,7 @@ const useAutoCheckEnhancedConversionTOS = () => {
 
 	useWindowFocusCallbackIntervalEffect( checkStatus, 30 );
 
-	return {
-		startEnhancedConversionTOSPolling,
-		stopEnhancedConversionTOSPolling,
-	};
+	return polling;
 };
 
 export default useAutoCheckEnhancedConversionTOS;
