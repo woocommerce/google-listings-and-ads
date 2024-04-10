@@ -51,6 +51,9 @@ export function getClassicProductEditorUtils( page ) {
 			return {
 				selection: metaBox.getByRole( 'combobox' ),
 				help: metaBox.locator( '.description' ),
+				notice: metaBox.locator( '.sync-status' ),
+				status: metaBox.locator( '.sync-status p' ).nth( 1 ),
+				issues: metaBox.getByRole( 'listitem' ),
 			};
 		},
 	};
@@ -139,9 +142,24 @@ export function getClassicProductEditorUtils( page ) {
 		},
 	};
 
+	const mocks = {
+		async mockChannelVisibility( syncStatus, issues = [] ) {
+			const url = new URL( page.url() );
+			const productId = url.searchParams.get( 'post' );
+
+			await api.api().put( `products/${ productId }`, {
+				meta_data: [
+					{ key: '_wc_gla_sync_status', value: syncStatus },
+					{ key: '_wc_gla_errors', value: issues },
+				],
+			} );
+		},
+	};
+
 	return {
 		...locators,
 		...asyncActions,
+		...mocks,
 	};
 }
 
