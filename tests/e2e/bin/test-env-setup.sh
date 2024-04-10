@@ -3,9 +3,6 @@
 echo -e 'Activate twentytwentytwo theme \n'
 wp-env run tests-cli wp theme activate twentytwentytwo
 
-echo -e 'Install WooCommerce \n'
-wp-env run tests-cli -- wp plugin install woocommerce --activate
-
 echo -e 'Update URL structure \n'
 wp-env run tests-cli -- wp rewrite structure '/%postname%/' --hard
 
