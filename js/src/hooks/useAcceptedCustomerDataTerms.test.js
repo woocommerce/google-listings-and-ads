@@ -8,7 +8,6 @@ import { renderHook } from '@testing-library/react-hooks';
  */
 import { useAppDispatch } from '.~/data';
 import useAcceptedCustomerDataTerms from './useAcceptedCustomerDataTerms';
-import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 
 jest.mock( '.~/hooks/useGoogleAdsAccount', () =>
