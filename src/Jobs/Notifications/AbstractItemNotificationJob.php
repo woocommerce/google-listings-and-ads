@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\HelperNotificationInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,8 +34,9 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 
 		$item  = $args['item_id'];
 		$topic = $args['topic'];
+		$data  = $args['data'] ?? [];
 
-		if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $topic, $item ) ) {
+		if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $topic, $item, $data ) ) {
 			$this->set_status( $item, $this->get_after_notification_status( $topic ) );
 			$this->handle_notified( $topic, $item );
 		}
@@ -65,9 +65,9 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 * @return string
 	 */
 	protected function get_after_notification_status( string $topic ): string {
-		if ( str_contains( $topic, '.create' ) ) {
+		if ( $this->is_create_topic( $topic ) ) {
 			return NotificationStatus::NOTIFICATION_CREATED;
-		} elseif ( str_contains( $topic, '.delete' ) ) {
+		} elseif ( $this->is_delete_topic( $topic ) ) {
 			return NotificationStatus::NOTIFICATION_DELETED;
 		} else {
 			return NotificationStatus::NOTIFICATION_UPDATED;
@@ -84,9 +84,9 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 * @return bool
 	 */
 	protected function can_process( int $item_id, string $topic ): bool {
-		if ( str_contains( $topic, '.create' ) ) {
+		if ( $this->is_create_topic( $topic ) ) {
 			return $this->get_helper()->should_trigger_create_notification( $item_id );
-		} elseif ( str_contains( $topic, '.delete' ) ) {
+		} elseif ( $this->is_delete_topic( $topic ) ) {
 			return $this->get_helper()->should_trigger_delete_notification( $item_id );
 		} else {
 			return $this->get_helper()->should_trigger_update_notification( $item_id );
@@ -106,15 +106,36 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 			return;
 		}
 
-		if ( str_contains( $topic, '.delete' ) ) {
+		if ( $this->is_delete_topic( $topic ) ) {
 			$this->get_helper()->mark_as_unsynced( $item );
 		}
 
-		if ( str_contains( $topic, '.create' ) ) {
+		if ( $this->is_create_topic( $topic ) ) {
 			$this->get_helper()->mark_as_notified( $item );
 		}
 	}
 
+	/**
+	 * If a topic is a delete topic
+	 *
+	 * @param string $topic The topic to check
+	 *
+	 * @return bool
+	 */
+	protected function is_delete_topic( $topic ): bool {
+		return str_contains( $topic, '.delete' );
+	}
+
+	/**
+	 * If a topic is a create topic
+	 *
+	 * @param string $topic The topic to check
+	 *
+	 * @return bool
+	 */
+	protected function is_create_topic( $topic ): bool {
+		return str_contains( $topic, '.create' );
+	}
 	/**
 	 * Get the item
 	 *
