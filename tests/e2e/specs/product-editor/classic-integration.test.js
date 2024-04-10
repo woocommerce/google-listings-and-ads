@@ -401,6 +401,59 @@ test.describe( 'Classic Product Editor integration', () => {
 		await expect( issues ).toBeHidden();
 	} );
 
+	test( 'Custom input: Select with text input', async () => {
+		await editorUtils.gotoAddProductPage();
+		await editorUtils.fillProductName();
+		await editorUtils.clickPluginTab();
+
+		const { selection, input } = editorUtils.getSelectWithTextInput();
+
+		/*
+		 * Assert:
+		 * - The "Default" option is selected and the text field is not shown
+		 */
+		await expect( selection ).toHaveValue( '' );
+		await expect( input ).toBeHidden();
+
+		/*
+		 * Assert:
+		 * - When the "From WooCommerce Brands" option is selected, the text field is not shown
+		 * - After saving, the field value and state remain the same
+		 */
+		await selection.selectOption( 'e2e_test_woocommerce_brands' );
+		await expect( input ).toBeHidden();
+
+		await editorUtils.save();
+		await editorUtils.clickPluginTab();
+
+		await expect( selection ).toHaveValue( 'e2e_test_woocommerce_brands' );
+		await expect( input ).toBeHidden();
+
+		/*
+		 * Assert:
+		 * - When the "Enter a custom value" option is selected, the text field is shown
+		 * - After saving, the field value and state remain the same
+		 */
+		await selection.selectOption( '_gla_custom_value' );
+		await expect( input ).toBeVisible();
+
+		await input.fill( 'Cute Cat' );
+		await editorUtils.save();
+		await editorUtils.clickPluginTab();
+
+		await expect( selection ).toHaveValue( '_gla_custom_value' );
+		await expect( input ).toHaveValue( 'Cute Cat' );
+
+		/*
+		 * Assert:
+		 * - When switching to another value and back, the entered value in the text field is kept
+		 */
+		await selection.selectOption( '' );
+		await expect( input ).toBeHidden();
+		await selection.selectOption( '_gla_custom_value' );
+		await expect( input ).toHaveValue( 'Cute Cat' );
+	} );
+
 	test.afterAll( async () => {
 		await api.clearOnboardedMerchant();
 		await page.close();

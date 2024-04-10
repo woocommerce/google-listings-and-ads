@@ -56,20 +56,31 @@ export function getClassicProductEditorUtils( page ) {
 				issues: metaBox.getByRole( 'listitem' ),
 			};
 		},
+
+		getSelectWithTextInput() {
+			const field = page.locator( '.select-with-text-input' ).first();
+
+			return {
+				selection: field.getByRole( 'combobox' ),
+				input: field.getByRole( 'textbox' ),
+			};
+		},
 	};
 
 	const asyncActions = {
-		gotoAddProductPage() {
-			return page.goto( '/wp-admin/post-new.php?post_type=product' );
+		async gotoAddProductPage() {
+			await page.goto( '/wp-admin/post-new.php?post_type=product' );
+			await this.waitForInteractionReady();
 		},
 
 		async gotoEditVariableProductPage() {
 			const variableId = await api.createVariableProduct();
 			await api.createVariationProducts( variableId );
 
-			return page.goto(
+			await page.goto(
 				`/wp-admin/post.php?post=${ variableId }&action=edit`
 			);
+			await this.waitForInteractionReady();
 		},
 
 		async gotoEditVariation() {
@@ -103,9 +114,18 @@ export function getClassicProductEditorUtils( page ) {
 
 			await this.clickSave();
 			await observer;
+			await this.waitForInteractionReady();
 		},
 
-		clickPluginTab() {
+		waitForInteractionReady() {
+			// Avoiding tests may start to operate the UI before jQuery interactions are initialized,
+			// leading to random failures.
+			return expect(
+				page.locator( '.product_data_tabs li.active' )
+			).toHaveCount( 1 );
+		},
+
+		async clickPluginTab() {
 			return this.getPluginTab().click();
 		},
 
