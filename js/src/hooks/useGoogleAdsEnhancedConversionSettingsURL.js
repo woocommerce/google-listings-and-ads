@@ -8,7 +8,9 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
-import { ENHANCED_CONVERSION_TERMS_BASE_URL } from '.~/constants';
+
+const ENHANCED_CONVERSION_TERMS_BASE_URL =
+	'https://ads.google.com/aw/conversions/customersettings';
 
 const useGoogleAdsEnhancedConversionSettingsURL = () => {
 	return useSelect( ( select ) => {
@@ -19,7 +21,7 @@ const useGoogleAdsEnhancedConversionSettingsURL = () => {
 			eppn: 'enhancedconversionsaccountlevelsettings',
 		} );
 
-		return { url };
+		return url;
 	}, [] );
 };
 

@@ -31,10 +31,10 @@ const TOGGLE_LABEL_MAP = {
 };
 
 const Toggle = () => {
-	const { url } = useGoogleAdsEnhancedConversionSettingsURL();
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 	const { allowEnhancedConversions, hasFinishedResolution } =
 		useAllowEnhancedConversions();
+	const url = useGoogleAdsEnhancedConversionSettingsURL();
 
 	const handleOnChange = useCallback(
 		( value ) => {

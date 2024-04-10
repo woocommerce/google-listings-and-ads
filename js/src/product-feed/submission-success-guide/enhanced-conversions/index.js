@@ -16,7 +16,7 @@ import AppSpinner from '.~/components/app-spinner';
 const EnhancedConversions = () => {
 	const { acceptedCustomerDataTerms, hasFinishedResolution } =
 		useAcceptedCustomerDataTerms();
-	const { url } = useGoogleAdsEnhancedConversionSettingsURL();
+	const url = useGoogleAdsEnhancedConversionSettingsURL();
 
 	let title = __(
 		'Optimize your conversion tracking with Enhanced Conversions',

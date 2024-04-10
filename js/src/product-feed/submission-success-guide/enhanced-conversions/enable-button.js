@@ -14,7 +14,7 @@ import useGoogleAdsEnhancedConversionSettingsURL from '.~/hooks/useGoogleAdsEnha
 
 const EnableButton = ( { onEnable = noop } ) => {
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
-	const { url } = useGoogleAdsEnhancedConversionSettingsURL();
+	const url = useGoogleAdsEnhancedConversionSettingsURL();
 
 	const handleOnEnableEnhancedConversions = () => {
 		window.open( url, '_blank' );
