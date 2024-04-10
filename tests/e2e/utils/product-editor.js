@@ -25,6 +25,10 @@ export function getClassicProductEditorUtils( page ) {
 			return page.locator( '#gla_attributes' );
 		},
 
+		getPluginVariationMetaBox() {
+			return page.locator( '.gla-metabox:visible' ).first();
+		},
+
 		getChannelVisibilityMetaBox() {
 			return page.locator( '#channel_visibility' );
 		},
@@ -45,6 +49,27 @@ export function getClassicProductEditorUtils( page ) {
 	const asyncActions = {
 		gotoAddProductPage() {
 			return page.goto( '/wp-admin/post-new.php?post_type=product' );
+		},
+
+		async gotoEditVariableProductPage() {
+			const variableId = await api.createVariableProduct();
+			await api.createVariationProducts( variableId );
+
+			return page.goto(
+				`/wp-admin/post.php?post=${ variableId }&action=edit`
+			);
+		},
+
+		async gotoEditVariation() {
+			await page.locator( '.variations_tab' ).click();
+
+			const variation = page.locator( '.woocommerce_variation' ).first();
+
+			await variation.getByRole( 'link', { name: 'Edit' } ).click();
+
+			return variation
+				.getByRole( 'heading', { name: 'Google Listings & Ads' } )
+				.click();
 		},
 
 		clickPluginTab() {

@@ -213,6 +213,87 @@ test.describe( 'Classic Product Editor integration', () => {
 		}
 	} );
 
+	test( 'Check existence of fields for variable and variation products', async () => {
+		await editorUtils.gotoEditVariableProductPage();
+		await editorUtils.clickPluginTab();
+
+		const panel = editorUtils.getPluginPanel();
+
+		/*
+		 * 2 Sections for variable product
+		 */
+		await expect( editorUtils.getChannelVisibilityHeading() ).toBeVisible();
+		await expect( editorUtils.getProductAttributesHeading() ).toBeVisible();
+
+		/*
+		 * Description of where to edit attributes for variations
+		 */
+		await expect(
+			panel.getByText(
+				'As this is a variable product, you can add additional product attributes by going to Variations > Select one variation > Google Listings & Ads.'
+			)
+		).toBeVisible();
+
+		/*
+		 * 1 + 2 <select> for variable product:
+		 * - Channel visibility
+		 * - Brand (dynamically changed to `SelectWithTextInput`)
+		 * - Adult content
+		 */
+		await expect(
+			editorUtils.getChannelVisibilityMetaBox().getByRole( 'combobox' )
+		).toHaveCount( 1 );
+		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 2 );
+
+		/*
+		 * 0 <input type="text|date|time"> for variable product.
+		 */
+		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 0 );
+
+		/*
+		 * 0 <input type="number"> for variable product.
+		 */
+		await expect( panel.getByRole( 'spinbutton' ) ).toHaveCount( 0 );
+
+		// ===============================
+		// Go to edit the first variation.
+		// ===============================
+		await editorUtils.gotoEditVariation();
+
+		const variation = editorUtils.getPluginVariationMetaBox();
+
+		/*
+		 * 7 <select> for variation product:
+		 * - Condition
+		 * - Gender
+		 * - Size system
+		 * - Size type
+		 * - Age group
+		 * - Is bundle
+		 * - Adult content
+		 */
+		await expect( variation.getByRole( 'combobox' ) ).toHaveCount( 7 );
+
+		/*
+		 * 8 <input type="text|date|time"> for variation product:
+		 * - GTIN
+		 * - MPN
+		 * - Size
+		 * - Color
+		 * - Material
+		 * - Pattern
+		 * - Availability date
+		 * - Availability time
+		 */
+		await expect( variation.getByRole( 'textbox' ) ).toHaveCount( 8 );
+
+		/*
+		 * 1 <input type="number"> for variation product:
+		 * - Multipack
+		 */
+		await expect( variation.getByRole( 'spinbutton' ) ).toHaveCount( 1 );
+	} );
+
 	test.afterAll( async () => {
 		await api.clearOnboardedMerchant();
 		await page.close();
