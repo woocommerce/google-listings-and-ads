@@ -10,7 +10,7 @@ import { addQueryArgs } from '@wordpress/url';
 import { STORE_KEY } from '.~/data/constants';
 import { ENHANCED_CONVERSION_TERMS_BASE_URL } from '.~/constants';
 
-const useGoogleAdsEnhancedConversionTermsURL = () => {
+const useGoogleAdsEnhancedConversionSettingsURL = () => {
 	return useSelect( ( select ) => {
 		const adsAccount = select( STORE_KEY ).getGoogleAdsAccount();
 
@@ -23,4 +23,4 @@ const useGoogleAdsEnhancedConversionTermsURL = () => {
 	}, [] );
 };
 
-export default useGoogleAdsEnhancedConversionTermsURL;
+export default useGoogleAdsEnhancedConversionSettingsURL;
