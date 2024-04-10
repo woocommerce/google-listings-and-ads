@@ -327,7 +327,11 @@ class SyncerHooks implements Service, Registerable {
 		$product = $this->wc->maybe_get_product( $product_id );
 		if ( is_null( $product ) ) {
 			// In case product is not anymore in DB we send the notification directly.
-			$this->notifications_service->notify( NotificationsService::TOPIC_PRODUCT_DELETED, $product_id );
+			$this->notifications_service->notify(
+				NotificationsService::TOPIC_PRODUCT_DELETED,
+				$product_id,
+				[ 'offer_id' => WCProductAdapter::get_google_product_offer_id( $this->get_slug(), $product_id ) ]
+			);
 			return;
 		}
 
