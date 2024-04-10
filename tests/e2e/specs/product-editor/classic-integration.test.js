@@ -294,6 +294,36 @@ test.describe( 'Classic Product Editor integration', () => {
 		await expect( variation.getByRole( 'spinbutton' ) ).toHaveCount( 1 );
 	} );
 
+	test( 'Channel visibility is disabled when hiding in product catalog', async () => {
+		await editorUtils.gotoAddProductPage();
+		await editorUtils.fillProductName();
+
+		const { selection, help } = editorUtils.getChannelVisibility();
+		const catalogVisibility = page.locator( '#catalog-visibility' );
+
+		await expect( selection ).toBeEnabled();
+		await expect( selection ).toHaveValue( 'sync-and-show' );
+		await expect( help ).toBeHidden();
+
+		await catalogVisibility.getByRole( 'link', { name: 'Edit' } ).click();
+		await catalogVisibility.getByLabel( 'Search results only' ).click();
+		await editorUtils.save();
+
+		await expect( selection ).toBeDisabled();
+		await expect( selection ).toHaveValue( 'dont-sync-and-show' );
+		await expect( help ).toBeVisible();
+		await expect( help ).toContainText(
+			'This product cannot be shown on any channel because it is hidden from your store catalog.'
+		);
+
+		await catalogVisibility.getByRole( 'link', { name: 'Edit' } ).click();
+		await catalogVisibility.getByLabel( 'Shop and search results' ).click();
+		await editorUtils.save();
+
+		await expect( selection ).toBeEnabled();
+		await expect( help ).toBeHidden();
+	} );
+
 	test.afterAll( async () => {
 		await api.clearOnboardedMerchant();
 		await page.close();

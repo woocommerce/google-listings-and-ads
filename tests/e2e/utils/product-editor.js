@@ -44,6 +44,15 @@ export function getClassicProductEditorUtils( page ) {
 				name: 'Product attributes',
 			} );
 		},
+
+		getChannelVisibility() {
+			const metaBox = this.getChannelVisibilityMetaBox();
+
+			return {
+				selection: metaBox.getByRole( 'combobox' ),
+				help: metaBox.locator( '.description' ),
+			};
+		},
 	};
 
 	const asyncActions = {
@@ -72,6 +81,27 @@ export function getClassicProductEditorUtils( page ) {
 				.click();
 		},
 
+		clickSave() {
+			return page.getByRole( 'button', { name: 'Save Draft' } ).click();
+		},
+
+		async save() {
+			const observer = page.waitForResponse( ( response ) => {
+				const url = new URL( response.url() );
+
+				return (
+					url.pathname === '/wp-admin/post.php' &&
+					url.searchParams.has( 'post' ) &&
+					url.searchParams.has( 'action', 'edit' ) &&
+					response.ok() &&
+					response.request().method() === 'GET'
+				);
+			} );
+
+			await this.clickSave();
+			await observer;
+		},
+
 		clickPluginTab() {
 			return this.getPluginTab().click();
 		},
@@ -94,6 +124,18 @@ export function getClassicProductEditorUtils( page ) {
 
 		changeToVariableProduct() {
 			return this.changeProductType( 'variable' );
+		},
+
+		async fillProductName( name = 'Cat Teaser' ) {
+			const input = page.getByRole( 'textbox', { name: 'Product name' } );
+
+			await input.fill( name );
+
+			// After filling in the product name and losing focus for the first time,
+			// an auto-save is triggered and a permanent link is generated. Wait here
+			// for these processes to complete to avoid some random race conditions.
+			await input.blur();
+			await expect( page.locator( '#sample-permalink' ) ).toBeVisible();
 		},
 	};
 
