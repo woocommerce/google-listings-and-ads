@@ -65,6 +65,17 @@ export function getClassicProductEditorUtils( page ) {
 				input: field.getByRole( 'textbox' ),
 			};
 		},
+
+		getDateAndTimeInputs() {
+			const field = page.locator(
+				'.gla_attributes_availabilityDate_field'
+			);
+
+			return {
+				dateInput: field.locator( 'input[type=date]' ),
+				timeInput: field.locator( 'input[type=time]' ),
+			};
+		},
 	};
 
 	const asyncActions = {
@@ -159,6 +170,10 @@ export function getClassicProductEditorUtils( page ) {
 			// for these processes to complete to avoid some random race conditions.
 			await input.blur();
 			await expect( page.locator( '#sample-permalink' ) ).toBeVisible();
+		},
+
+		evaluateValidity( input ) {
+			return input.evaluate( ( element ) => element.validity.valid );
 		},
 	};
 

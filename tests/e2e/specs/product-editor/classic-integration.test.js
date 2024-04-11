@@ -454,6 +454,75 @@ test.describe( 'Classic Product Editor integration', () => {
 		await expect( input ).toHaveValue( 'Cute Cat' );
 	} );
 
+	test( 'Custom input: Date and time inputs', async () => {
+		await editorUtils.gotoAddProductPage();
+		await editorUtils.fillProductName();
+		await editorUtils.clickPluginTab();
+
+		const { dateInput, timeInput } = editorUtils.getDateAndTimeInputs();
+
+		/*
+		 * Assert:
+		 * - The default values are empty strings
+		 */
+		await expect( dateInput ).toHaveValue( '' );
+		await expect( timeInput ).toHaveValue( '' );
+
+		/*
+		 * Assert:
+		 * - After entering an invalid date or time value, its validity.valid is false
+		 */
+		await dateInput.pressSequentially( '9' );
+		await editorUtils.clickSave();
+
+		expect( await editorUtils.evaluateValidity( dateInput ) ).toBe( false );
+
+		await dateInput.clear();
+
+		await timeInput.pressSequentially( '9' );
+		await editorUtils.clickSave();
+
+		expect( await editorUtils.evaluateValidity( timeInput ) ).toBe( false );
+
+		await timeInput.clear();
+
+		/*
+		 * Assert:
+		 * - When valid values are entered, it allows to save
+		 * - After saving, the field values remain the same
+		 */
+		await dateInput.fill( '2024-02-29' );
+		await timeInput.fill( '18:30' );
+		await editorUtils.save();
+		await editorUtils.clickPluginTab();
+
+		await expect( dateInput ).toHaveValue( '2024-02-29' );
+		await expect( timeInput ).toHaveValue( '18:30' );
+
+		/*
+		 * Assert:
+		 * - It can enter only the date and leave the time empty
+		 * - After saving, the empty time value is considered as 00:00
+		 */
+		await timeInput.clear();
+		await editorUtils.save();
+		await editorUtils.clickPluginTab();
+
+		await expect( dateInput ).toHaveValue( '2024-02-29' );
+		await expect( timeInput ).toHaveValue( '00:00' );
+
+		/*
+		 * Assert:
+		 * - It allows to save empty values
+		 */
+		await dateInput.clear();
+		await editorUtils.save();
+		await editorUtils.clickPluginTab();
+
+		await expect( dateInput ).toHaveValue( '' );
+		await expect( timeInput ).toHaveValue( '' );
+	} );
+
 	test.afterAll( async () => {
 		await api.clearOnboardedMerchant();
 		await page.close();
