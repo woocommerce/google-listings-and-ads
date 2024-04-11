@@ -305,7 +305,7 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		$data     = $response->get_data();
 		$resource = $this->get_route_pieces( $request )['resource'] ?? null;
 
-		if ( $item instanceof WC_Product && $resource === 'products' ) {
+		if ( $item instanceof WC_Product && ( $resource === 'products' || $resource === 'variations' ) ) {
 			$attr                   = $this->attribute_manager->get_all_aggregated_values( $item );
 			$data['gla_attributes'] = $attr;
 		}
