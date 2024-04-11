@@ -523,6 +523,44 @@ test.describe( 'Classic Product Editor integration', () => {
 		await expect( timeInput ).toHaveValue( '' );
 	} );
 
+	test( 'Custom input: Non-negative integer input', async () => {
+		await editorUtils.gotoAddProductPage();
+		await editorUtils.fillProductName();
+		await editorUtils.clickPluginTab();
+
+		const input = editorUtils.getMultipackInput();
+
+		await expect( input ).toHaveValue( '' );
+
+		await input.fill( '-1' );
+		await editorUtils.clickSave();
+
+		expect( await editorUtils.evaluateValidity( input ) ).toBe( false );
+
+		await input.fill( '9.5' );
+		await editorUtils.clickSave();
+
+		expect( await editorUtils.evaluateValidity( input ) ).toBe( false );
+
+		await input.fill( '0' );
+		await editorUtils.save();
+		await editorUtils.clickPluginTab();
+
+		await expect( input ).toHaveValue( '0' );
+
+		await input.fill( '100' );
+		await editorUtils.save();
+		await editorUtils.clickPluginTab();
+
+		await expect( input ).toHaveValue( '100' );
+
+		await input.clear();
+		await editorUtils.save();
+		await editorUtils.clickPluginTab();
+
+		await expect( input ).toHaveValue( '' );
+	} );
+
 	test.afterAll( async () => {
 		await api.clearOnboardedMerchant();
 		await page.close();

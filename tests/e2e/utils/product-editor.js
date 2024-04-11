@@ -76,6 +76,10 @@ export function getClassicProductEditorUtils( page ) {
 				timeInput: field.locator( 'input[type=time]' ),
 			};
 		},
+
+		getMultipackInput() {
+			return page.locator( '.gla_attributes_multipack_field input' );
+		},
 	};
 
 	const asyncActions = {
