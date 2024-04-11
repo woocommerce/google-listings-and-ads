@@ -19,6 +19,58 @@ test.describe( 'Classic Product Editor integration', () => {
 	let page = null;
 	let editorUtils = null;
 
+	async function getAvailableProductAttributesWithTestValues( locator ) {
+		const {
+			gtin,
+			mpn,
+			brand,
+			condition,
+			gender,
+			size,
+			sizeSystem,
+			sizeType,
+			color,
+			material,
+			pattern,
+			ageGroup,
+			multipack,
+			isBundle,
+			availabilityDate,
+			availabilityTime,
+			adultContent,
+		} = editorUtils.getAllProductAttributes( locator );
+
+		const allPairs = [
+			[ gtin, '3234567890126' ],
+			[ mpn, 'GO12345OOGLE' ],
+			[ brand, 'e2e_test_woocommerce_brands' ],
+			[ condition, 'new' ],
+			[ gender, 'unisex' ],
+			[ size, 'Good for everybody' ],
+			[ sizeSystem, 'JP' ],
+			[ sizeType, 'regular' ],
+			[ color, 'Cherry blossom' ],
+			[ material, 'Titanium alloy' ],
+			[ pattern, 'Cyberpunk' ],
+			[ ageGroup, 'kids' ],
+			[ multipack, '9999' ],
+			[ isBundle, 'no' ],
+			[ availabilityDate, '2024-02-29' ],
+			[ availabilityTime, '23:59' ],
+			[ adultContent, 'no' ],
+		];
+
+		const availablePairs = [];
+
+		for ( const pair of allPairs ) {
+			if ( await pair[ 0 ].isVisible() ) {
+				availablePairs.push( pair );
+			}
+		}
+
+		return availablePairs;
+	}
+
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		editorUtils = getClassicProductEditorUtils( page );
@@ -559,6 +611,49 @@ test.describe( 'Classic Product Editor integration', () => {
 		await editorUtils.clickPluginTab();
 
 		await expect( input ).toHaveValue( '' );
+	} );
+
+	test( 'Save all product attributes to simple product', async () => {
+		await editorUtils.gotoAddProductPage();
+		await editorUtils.fillProductName();
+		await editorUtils.clickPluginTab();
+
+		const pairs = await getAvailableProductAttributesWithTestValues();
+
+		expect( pairs ).toHaveLength( 17 );
+
+		/*
+		 * Assert:
+		 * - All attributes are empty or default
+		 * - Save all attributes
+		 * - After saving, attribute values remain the same
+		 */
+		for ( const [ attribute, value ] of pairs ) {
+			await expect( attribute ).toHaveValue( '' );
+			await editorUtils.setAttributeValue( attribute, value );
+		}
+
+		await editorUtils.save();
+		await editorUtils.clickPluginTab();
+
+		for ( const [ attribute, value ] of pairs ) {
+			await expect( attribute ).toHaveValue( value );
+		}
+
+		/*
+		 * Assert:
+		 * - It allows to save all attributes to empty or default
+		 */
+		for ( const [ attribute ] of pairs ) {
+			await editorUtils.setAttributeValue( attribute, '' );
+		}
+
+		await editorUtils.save();
+		await editorUtils.clickPluginTab();
+
+		for ( const [ attribute ] of pairs ) {
+			await expect( attribute ).toHaveValue( '' );
+		}
 	} );
 
 	test.afterAll( async () => {

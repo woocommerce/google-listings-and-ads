@@ -10,6 +10,18 @@ import * as api from './api';
 
 const REGEX_URL_PRODUCTS = /\/wc\/v3\/products\/\d+(\/variations\/\d+)?\?/;
 
+async function setAttributeValue( locator, value ) {
+	const tagName = await locator.evaluate( ( element ) => element.tagName );
+
+	if ( tagName === 'SELECT' ) {
+		await locator.selectOption( value );
+	} else {
+		await locator.fill( value );
+	}
+
+	await expect( locator ).toHaveValue( value );
+}
+
 /**
  * Gets E2E test utils for facilitating writing tests for the classic product editor.
  *
@@ -66,8 +78,8 @@ export function getClassicProductEditorUtils( page ) {
 			};
 		},
 
-		getDateAndTimeInputs() {
-			const field = page.locator(
+		getDateAndTimeInputs( locator = page ) {
+			const field = locator.locator(
 				'.gla_attributes_availabilityDate_field'
 			);
 
@@ -79,6 +91,31 @@ export function getClassicProductEditorUtils( page ) {
 
 		getMultipackInput() {
 			return page.locator( '.gla_attributes_multipack_field input' );
+		},
+
+		getAllProductAttributes( locator = page ) {
+			const { dateInput: availabilityDate, timeInput: availabilityTime } =
+				this.getDateAndTimeInputs( locator );
+
+			return {
+				gtin: locator.getByLabel( /\(GTIN\)$/ ),
+				mpn: locator.getByLabel( 'MPN' ),
+				brand: locator.getByLabel( 'Brand', { exact: true } ),
+				condition: locator.getByLabel( 'Condition', { exact: true } ),
+				gender: locator.getByLabel( 'Gender', { exact: true } ),
+				size: locator.getByLabel( 'Size', { exact: true } ),
+				sizeSystem: locator.getByLabel( 'Size system' ),
+				sizeType: locator.getByLabel( 'Size type' ),
+				color: locator.getByLabel( 'Color', { exact: true } ),
+				material: locator.getByLabel( 'Material', { exact: true } ),
+				pattern: locator.getByLabel( 'Pattern', { exact: true } ),
+				ageGroup: locator.getByLabel( 'Age Group', { exact: true } ),
+				multipack: locator.getByLabel( 'Multipack', { exact: true } ),
+				isBundle: locator.getByLabel( 'Is Bundle' ),
+				availabilityDate,
+				availabilityTime,
+				adultContent: locator.getByLabel( 'Adult content' ),
+			};
 		},
 	};
 
@@ -179,6 +216,8 @@ export function getClassicProductEditorUtils( page ) {
 		evaluateValidity( input ) {
 			return input.evaluate( ( element ) => element.validity.valid );
 		},
+
+		setAttributeValue,
 	};
 
 	const mocks = {
@@ -423,19 +462,7 @@ export function getProductBlockEditorUtils( page ) {
 			return input.evaluate( ( element ) => element.validationMessage );
 		},
 
-		async setAttributeValue( locator, value ) {
-			const tagName = await locator.evaluate(
-				( element ) => element.tagName
-			);
-
-			if ( tagName === 'SELECT' ) {
-				await locator.selectOption( value );
-			} else {
-				await locator.fill( value );
-			}
-
-			await expect( locator ).toHaveValue( value );
-		},
+		setAttributeValue,
 	};
 
 	const mocks = {
