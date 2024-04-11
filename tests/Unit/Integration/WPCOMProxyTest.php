@@ -122,6 +122,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( $product_1->get_id(), $response->get_data()[0]['id'] );
 		$this->assertEquals( $expected_metadata, $this->format_metadata( $response->get_data()[0]['meta_data'] ) );
+		$this->assertArrayHasKey( 'gla_attributes', $response->get_data()[0] );
 	}
 
 	public function test_get_products_with_gla_syncable_false() {
@@ -143,6 +144,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( $this->get_test_metadata(), $this->format_metadata( $response_mapped[ $product_1->get_id() ]['meta_data'] ) );
 		$this->assertEquals( $this->get_test_metadata( ChannelVisibility::DONT_SYNC_AND_SHOW ), $this->format_metadata( $response_mapped[ $product_2->get_id() ]['meta_data'] ) );
+		$this->assertArrayNotHasKey( 'gla_attributes', $response->get_data()[0] );
 	}
 
 	public function test_get_products_without_gla_visibility_metadata() {
@@ -164,6 +166,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( $product_2->get_id(), $response->get_data()[0]['id'] );
 		$this->assertEquals( $expected_metadata, $this->format_metadata( $response->get_data()[0]['meta_data'] ) );
+		$this->assertArrayHasKey( 'gla_attributes', $response->get_data()[0] );
 	}
 
 	public function test_get_product_without_gla_visibility_metadata() {
@@ -244,6 +247,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		foreach ( $variations as $variation ) {
 			$this->assertArrayHasKey( $variation['variation_id'], $response_mapped );
 			$this->assertEquals( $expected_metadata, $this->format_metadata( $response_mapped[ $variation['variation_id'] ]['meta_data'] ) );
+			$this->assertArrayHasKey( 'gla_attributes', $response->get_data()[0] );
 		}
 	}
 
@@ -271,7 +275,45 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		foreach ( $variations as $variation ) {
 			$this->assertArrayHasKey( $variation['variation_id'], $response_mapped );
 			$this->assertEquals( $expected_metadata, $this->format_metadata( $response_mapped[ $variation['variation_id'] ]['meta_data'] ) );
+			$this->assertArrayNotHasKey( 'gla_attributes', $response->get_data()[0] );
 		}
+	}
+
+	public function test_get_specific_variation_with_gla_syncable() {
+		$product   = ProductHelper::create_variation_product();
+		$variation = $product->get_available_variations()[0];
+
+		$this->add_metadata( $variation['variation_id'], $this->get_test_metadata( null ) );
+
+		$response = $this->do_request( '/wc/v3/products/' . $product->get_id() . '/variations/' . $variation['variation_id'], 'GET', [ 'gla_syncable' => '1' ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+
+		$expected_metadata = [
+			'public_meta' => 'public',
+		];
+
+		$this->assertEquals( $expected_metadata, $this->format_metadata( $response->get_data()['meta_data'] ) );
+		$this->assertArrayHasKey( 'gla_attributes', $response->get_data() );
+	}
+
+	public function test_get_specific_variation_without_gla_syncable() {
+		$product   = ProductHelper::create_variation_product();
+		$variation = $product->get_available_variations()[0];
+
+		$this->add_metadata( $variation['variation_id'], $this->get_test_metadata( null ) );
+
+		$response = $this->do_request( '/wc/v3/products/' . $product->get_id() . '/variations/' . $variation['variation_id'], 'GET', [ 'gla_syncable' => '0' ] );
+
+		$this->assertEquals( 200, $response->get_status() );
+
+		$expected_metadata = [
+			'public_meta'   => 'public',
+			'_private_meta' => 'private',
+		];
+
+		$this->assertEquals( $expected_metadata, $this->format_metadata( $response->get_data()['meta_data'] ) );
+		$this->assertArrayNotHasKey( 'gla_attributes', $response->get_data() );
 	}
 
 	public function test_get_coupons() {
