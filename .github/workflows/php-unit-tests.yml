@@ -44,7 +44,7 @@ jobs:
     steps:
       - name: Get Release versions from Wordpress
         id: wp
-        uses: woocommerce/grow/get-plugin-releases@actions-v1
+        uses: woocommerce/grow/get-plugin-releases@tweak/prevent-unstable-releases-test-build
         with:
           slug: wordpress
       - name: Get Release versions from WooCommerce
