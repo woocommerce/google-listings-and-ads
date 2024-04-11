@@ -10,6 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use WC_Product;
 use WP_REST_Response;
 use WP_REST_Request;
 
@@ -36,12 +38,29 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	protected $shipping_time_query;
 
 	/**
+	 * The AttributeManager object.
+	 *
+	 * @var AttributeManager
+	 */
+	protected $attribute_manager;
+
+	/**
+	 * The protected resources. Only items with visibility set to sync-and-show will be returned.
+	 */
+	protected const PROTECTED_RESOURCES = [
+		'products',
+		'coupons',
+	];
+
+	/**
 	 * WPCOMProxy constructor.
 	 *
 	 * @param ShippingTimeQuery $shipping_time_query The ShippingTimeQuery object.
+	 * @param AttributeManager  $attribute_manager   The AttributeManager object.
 	 */
-	public function __construct( ShippingTimeQuery $shipping_time_query ) {
+	public function __construct( ShippingTimeQuery $shipping_time_query, AttributeManager $attribute_manager ) {
 		$this->shipping_time_query = $shipping_time_query;
+		$this->attribute_manager   = $attribute_manager;
 	}
 
 	/**
@@ -113,13 +132,13 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		add_filter(
 			'woocommerce_rest_prepare_' . $object_type . '_object',
 			[ $this, 'filter_response_by_syncable_item' ],
-			9,
+			1000, // Run this filter last to override any other response.
 			3
 		);
 
 		add_filter(
 			'woocommerce_rest_prepare_' . $object_type . '_object',
-			[ $this, 'filter_metadata' ],
+			[ $this, 'prepare_response' ],
 			10,
 			3
 		);
@@ -187,6 +206,21 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	}
 
 	/**
+	 * Get route pieces: resource and id, if present.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 *
+	 * @return array The route pieces.
+	 */
+	protected function get_route_pieces( WP_REST_Request $request ): array {
+		$route   = $request->get_route();
+		$pattern = '/(?P<resource>[\w]+)(?:\/(?P<id>[\d]+))?$/';
+		preg_match( $pattern, $route, $matches );
+
+		return $matches;
+	}
+
+	/**
 	 * Filter response by syncable item.
 	 *
 	 * @param WP_REST_Response $response The response object.
@@ -200,15 +234,9 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			return $response;
 		}
 
-		$route               = $request->get_route();
-		$pattern             = '/(?P<resource>[\w]+)\/(?P<id>[\d]+$)/';
-		$protected_resources = [
-			'products',
-			'coupons',
-		];
-		preg_match( $pattern, $route, $matches );
+		$pieces = $this->get_route_pieces( $request );
 
-		if ( ! isset( $matches['id'] ) || ! isset( $matches['resource'] ) || ! in_array( $matches['resource'], $protected_resources, true ) ) {
+		if ( ! isset( $pieces['id'] ) || ! isset( $pieces['resource'] ) || ! in_array( $pieces['resource'], self::PROTECTED_RESOURCES, true ) ) {
 			return $response;
 		}
 
@@ -258,7 +286,10 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	}
 
 	/**
-	 * Filter the response metadata returning all public metadata and those prefixed with _wc_gla
+	 * Prepares the response when the request is coming from the WPCOM proxy:
+	 *
+	 * Filter all the private metadata and returns only the public metadata and those prefixed with _wc_gla
+	 * For WooCommerce products, it will add the attribute mapping values.
 	 *
 	 * @param WP_REST_Response $response The response object.
 	 * @param mixed            $item     The item.
@@ -266,18 +297,20 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	 *
 	 * @return WP_REST_Response The response object updated.
 	 */
-	public function filter_metadata( WP_REST_Response $response, $item, WP_REST_Request $request ): WP_REST_Response {
+	public function prepare_response( WP_REST_Response $response, $item, WP_REST_Request $request ): WP_REST_Response {
 		if ( ! $this->is_gla_request( $request ) ) {
 			return $response;
 		}
 
-		$data = $response->get_data();
+		$data     = $response->get_data();
+		$resource = $this->get_route_pieces( $request )['resource'] ?? null;
 
-		if ( ! isset( $data['meta_data'] ) ) {
-			return $response;
+		if ( $item instanceof WC_Product && $resource === 'products' ) {
+			$attr                   = $this->attribute_manager->get_all_aggregated_values( $item );
+			$data['gla_attributes'] = $attr;
 		}
 
-		foreach ( $data['meta_data'] as $key => $meta ) {
+		foreach ( $data['meta_data'] ?? [] as $key => $meta ) {
 			if ( str_starts_with( $meta->key, '_' ) && ! str_starts_with( $meta->key, '_wc_gla' ) ) {
 				unset( $data['meta_data'][ $key ] );
 			}

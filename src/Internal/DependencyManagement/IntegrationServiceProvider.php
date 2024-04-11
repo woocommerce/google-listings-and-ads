@@ -49,7 +49,7 @@ class IntegrationServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( WooCommerceProductBundles::class, AttributeManager::class );
 		$this->share_with_tags( WooCommercePreOrders::class, ProductHelper::class );
 		$this->conditionally_share_with_tags( JetpackWPCOM::class );
-		$this->share_with_tags( WPCOMProxy::class, ShippingTimeQuery::class );
+		$this->share_with_tags( WPCOMProxy::class, ShippingTimeQuery::class, AttributeManager::class );
 
 		$this->share_with_tags(
 			IntegrationInitializer::class,
