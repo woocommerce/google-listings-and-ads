@@ -26,7 +26,7 @@ class AttributeManager implements Service {
 	use PluginHelper;
 	use ValidateInterface;
 
-	public const ATTRIBUTES = [
+	protected const ATTRIBUTES = [
 		GTIN::class,
 		MPN::class,
 		Brand::class,
@@ -127,6 +127,7 @@ class AttributeManager implements Service {
 	 * @param WC_Product $product
 	 *
 	 * @return array of attribute values
+	 * @throws InvalidValue When the product does not exist.
 	 */
 	public function get_all_aggregated_values( WC_Product $product ) {
 		$attributes = $this->get_all_values( $product );
@@ -145,7 +146,7 @@ class AttributeManager implements Service {
 			[
 				'wc_product'        => $product,
 				'parent_wc_product' => $parent_product,
-				'targetCountry'     => 'US',
+				'targetCountry'     => 'US', // targetCountry is required to create a new WCProductAdapter instance, but it's not used in the attributes context.
 				'gla_attributes'    => $attributes,
 				'mapping_rules'     => $mapping_rules,
 			]
@@ -153,6 +154,10 @@ class AttributeManager implements Service {
 
 		foreach ( self::ATTRIBUTES as $attribute_class ) {
 			$attribute_id = $attribute_class::get_id();
+			if ( $attribute_id === 'size' ) {
+				$attribute_id = 'sizes';
+			}
+
 			if ( isset( $adapted_product->$attribute_id ) ) {
 				$attributes[ $attribute_id ] = $adapted_product->$attribute_id;
 			}
