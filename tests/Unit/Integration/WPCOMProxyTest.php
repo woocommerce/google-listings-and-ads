@@ -7,6 +7,9 @@ use Automattic\WooCommerce\RestApi\UnitTests\Helpers\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WPCOMProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\AttributeMappingRulesTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use WC_Meta_Data;
 use WP_REST_Response;
 
@@ -18,8 +21,17 @@ use WP_REST_Response;
  */
 class WPCOMProxyTest extends RESTControllerUnitTest {
 
+	/**
+	 * @var ContainerInterface
+	 */
+	protected $container;
+
 	public function setUp(): void {
 		parent::setUp();
+		$this->container = woogle_get_container();
+		// Since the shipping time tables and attributeMappingRules aren't set up in the test environment, we install them to prevent warnings.
+		$this->container->get( AttributeMappingRulesTable::class )->install();
+		$this->container->get( ShippingTimeTable::class )->install();
 		do_action( 'rest_api_init' );
 	}
 
@@ -388,14 +400,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_settings_with_gla_syncable_param() {
-		global $wpdb;
-
-		// As the shipping time tables are not created in the test environment, we need to suppress the errors.
-		$wpdb->suppress_errors = true;
-
 		$response = $this->do_request( '/wc/v3/settings/general', 'GET', [ 'gla_syncable' => '1' ] );
-
-		$wpdb->suppress_errors = false;
 
 		$this->assertEquals( 200, $response->get_status() );
 
