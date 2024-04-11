@@ -5,6 +5,7 @@ on:
     branches:
       - trunk
       - develop
+      - test/get-plugin-releases
     paths:
       - "**.php"
       - composer.json
@@ -49,7 +50,7 @@ jobs:
           slug: wordpress
       - name: Get Release versions from WooCommerce
         id: wc
-        uses: woocommerce/grow/get-plugin-releases@actions-v1
+        uses: woocommerce/grow/get-plugin-releases@tweak/prevent-unstable-releases-test-build
         with:
           slug: woocommerce
 
