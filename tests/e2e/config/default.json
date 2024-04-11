@@ -48,6 +48,7 @@
 		},
 		"variations": [
 			{
+				"menu_order": 1,
 				"regular_price": "19.99",
 				"attributes": [
 					{
@@ -61,6 +62,7 @@
 				]
 			},
 			{
+				"menu_order": 2,
 				"regular_price": "18.99",
 				"attributes": [
 					{
@@ -74,6 +76,7 @@
 				]
 			},
 			{
+				"menu_order": 3,
 				"regular_price": "17.99",
 				"attributes": [
 					{

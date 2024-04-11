@@ -656,6 +656,50 @@ test.describe( 'Classic Product Editor integration', () => {
 		}
 	} );
 
+	test( 'Save all product attributes to variation product', async () => {
+		await editorUtils.gotoEditVariableProductPage();
+		await editorUtils.gotoEditVariation();
+
+		const pairs = await getAvailableProductAttributesWithTestValues(
+			editorUtils.getPluginVariationMetaBox()
+		);
+
+		expect( pairs ).toHaveLength( 16 );
+
+		/*
+		 * Assert:
+		 * - All attributes are empty or default
+		 * - Save all attributes
+		 * - After saving, attribute values remain the same
+		 */
+		for ( const [ attribute, value ] of pairs ) {
+			await expect( attribute ).toHaveValue( '' );
+			await editorUtils.setAttributeValue( attribute, value );
+		}
+
+		await editorUtils.save();
+		await editorUtils.gotoEditVariation();
+
+		for ( const [ attribute, value ] of pairs ) {
+			await expect( attribute ).toHaveValue( value );
+		}
+
+		/*
+		 * Assert:
+		 * - It allows to save all attributes to empty or default
+		 */
+		for ( const [ attribute ] of pairs ) {
+			await editorUtils.setAttributeValue( attribute, '' );
+		}
+
+		await editorUtils.save();
+		await editorUtils.gotoEditVariation();
+
+		for ( const [ attribute ] of pairs ) {
+			await expect( attribute ).toHaveValue( '' );
+		}
+	} );
+
 	test.afterAll( async () => {
 		await api.clearOnboardedMerchant();
 		await page.close();

@@ -79,9 +79,13 @@ export function getClassicProductEditorUtils( page ) {
 		},
 
 		getDateAndTimeInputs( locator = page ) {
-			const field = locator.locator(
+			const simple = locator.locator(
 				'.gla_attributes_availabilityDate_field'
 			);
+			const variation = locator.locator(
+				'.gla_variation_attributes\\[0\\]_availabilityDate_field'
+			);
+			const field = simple.or( variation );
 
 			return {
 				dateInput: field.locator( 'input[type=date]' ),
@@ -148,7 +152,9 @@ export function getClassicProductEditorUtils( page ) {
 		},
 
 		clickSave() {
-			return page.getByRole( 'button', { name: 'Save Draft' } ).click();
+			return page
+				.getByRole( 'button', { name: /^(Save Draft|Update)$/ } )
+				.click();
 		},
 
 		async save() {
