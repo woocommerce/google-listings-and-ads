@@ -82,6 +82,9 @@
 		"engine.io-client": {
 			"xmlhttprequest-ssl@<1.6.2": "1.6.2",
 			"ws@<6.2.2": "6.2.2"
+		},
+		"socket.io-client": {
+			"debug@<4.3.1": "4.3.1"
 		}
 	},
 	"scripts": {
