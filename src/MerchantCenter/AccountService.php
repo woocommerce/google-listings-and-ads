@@ -220,13 +220,15 @@ class AccountService implements OptionsAwareInterface, Service {
 		/** @var NotificationsService $notifications_service */
 		$notifications_service = $this->container->get( NotificationsService::class );
 
-		$id                    = $this->options->get_merchant_id();
-		$wpcom_rest_api_status = $this->options->get( OptionsInterface::WPCOM_REST_API_STATUS );
+		$id                      = $this->options->get_merchant_id();
+		$wpcom_rest_api_status   = $this->options->get( OptionsInterface::WPCOM_REST_API_STATUS );
+		$google_wpcom_auth_nonce = $this->options->get( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
 
 		$status = [
-			'id'                    => $id,
-			'status'                => $id ? 'connected' : 'disconnected',
-			'wpcom_rest_api_status' => $notifications_service->is_enabled() ? $wpcom_rest_api_status : 'disabled',
+			'id'                      => $id,
+			'status'                  => $id ? 'connected' : 'disconnected',
+			'wpcom_rest_api_status'   => $notifications_service->is_enabled() ? $wpcom_rest_api_status : 'disabled',
+			'google_wpcom_auth_nonce' => $google_wpcom_auth_nonce,
 		];
 
 		$incomplete = $this->state->last_incomplete_step();
