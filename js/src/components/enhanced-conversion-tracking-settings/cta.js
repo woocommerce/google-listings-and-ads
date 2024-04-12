@@ -34,8 +34,6 @@ const CTA = ( { onConfirm = noop } ) => {
 	useEffect( () => {
 		// As soon as the terms are accepted, do not show the spinner
 		if ( acceptedCustomerDataTerms && isPolling ) {
-			// We were in a polling state, so now the user has accepted the terms, we confirm that EC is enabled.
-			handleConfirm();
 			setIsPolling( false );
 		}
 	}, [ acceptedCustomerDataTerms, setIsPolling, isPolling, handleConfirm ] );

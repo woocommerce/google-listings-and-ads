@@ -10,28 +10,34 @@ import { Fragment, createInterpolateElement } from '@wordpress/element';
 import GuidePageContent from '.~/components/guide-page-content';
 import TrackableLink from '.~/components/trackable-link';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
+import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useGoogleAdsEnhancedConversionSettingsURL from '.~/hooks/useGoogleAdsEnhancedConversionSettingsURL';
 import AppSpinner from '.~/components/app-spinner';
 
 const EnhancedConversions = () => {
 	const { acceptedCustomerDataTerms, hasFinishedResolution } =
 		useAcceptedCustomerDataTerms();
+	const {
+		allowEnhancedConversions,
+		hasFinishedResolution: hasResolvedAllowEnhancedConversions,
+	} = useAllowEnhancedConversions();
 	const url = useGoogleAdsEnhancedConversionSettingsURL();
 
-	let title = __(
-		'Optimize your conversion tracking with Enhanced Conversions',
-		'google-listings-and-ads'
-	);
-
-	if ( acceptedCustomerDataTerms ) {
-		title = __(
-			'Your Enhanced Conversions are almost ready',
-			'google-listings-and-ads'
-		);
-	}
+	const title = acceptedCustomerDataTerms
+		? __(
+				'Your Enhanced Conversions are almost ready',
+				'google-listings-and-ads'
+		  )
+		: __(
+				'Optimize your conversion tracking with Enhanced Conversions',
+				'google-listings-and-ads'
+		  );
 
 	const getPageContentBody = () => {
-		if ( ! hasFinishedResolution ) {
+		if (
+			! hasFinishedResolution ||
+			! hasResolvedAllowEnhancedConversions
+		) {
 			return <AppSpinner />;
 		}
 
@@ -39,20 +45,9 @@ const EnhancedConversions = () => {
 			return (
 				<Fragment>
 					<p>
-						{ createInterpolateElement(
-							__(
-								'Enhance your conversion tracking accuracy and empower your bidding strategy with our latest feature: <strong>Enhanced Conversion Tracking</strong>',
-								'google-listings-and-ads'
-							),
-							{
-								strong: <strong />,
-							}
-						) }
-					</p>
-					<p>
 						{ __(
-							'You can activate this feature in a few simple steps:',
-							'google-listing-ads'
+							'Improve conversion tracking accuracy to gain deeper insights and improve campaign performance.',
+							'google-listings-and-ads'
 						) }
 					</p>
 
@@ -60,7 +55,7 @@ const EnhancedConversions = () => {
 						<li>
 							{ createInterpolateElement(
 								__(
-									'Click below to <strong>Enable Enhanced Conversions</strong>',
+									'Click <strong>Enable Enhanced Conversions</strong> below to go to Google Ads Settings.',
 									'google-listings-and-ads'
 								),
 								{
@@ -69,52 +64,14 @@ const EnhancedConversions = () => {
 							) }
 						</li>
 						<li>
-							{ createInterpolateElement(
-								__(
-									'Check the box in Google Ads to <strong>Turn on Enhanced Conversions</strong>',
-									'google-listings-and-ads'
-								),
-								{
-									strong: <strong />,
-								}
-							) }
-						</li>
-						<li>
-							{ createInterpolateElement(
-								__(
-									'Confirm you <strong>Agree</strong> to the <strong>Customer Data Terms</strong>',
-									'google-listings-and-ads'
-								),
-								{
-									strong: <strong />,
-								}
-							) }
-						</li>
-						<li>
-							{ createInterpolateElement(
-								__(
-									'In the drop-down, choose <strong>Google Tag</strong> as your set-up method',
-									'google-listings-and-ads'
-								),
-								{
-									strong: <strong />,
-								}
-							) }
-						</li>
-						<li>
-							{ createInterpolateElement(
-								__(
-									'Click <strong>Save</strong> and return to this screen',
-									'google-listings-and-ads'
-								),
-								{
-									strong: <strong />,
-								}
+							{ __(
+								'Turn on Enhanced Conversions, accept Terms, and then select “Google Tag” as your setup method. Click Save.',
+								'google-listings-and-ads'
 							) }
 						</li>
 					</ol>
 
-					<p>
+					<cite>
 						{ createInterpolateElement(
 							__(
 								'For more information, feel free to consult our <link>help center article</link>',
@@ -130,7 +87,7 @@ const EnhancedConversions = () => {
 								),
 							}
 						) }
-					</p>
+					</cite>
 				</Fragment>
 			);
 		}
