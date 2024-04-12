@@ -25,6 +25,7 @@ interface OptionsInterface {
 	public const DB_VERSION                                = 'db_version';
 	public const FILE_VERSION                              = 'file_version';
 	public const GOOGLE_CONNECTED                          = 'google_connected';
+	public const GOOGLE_WPCOM_AUTH_NONCE                   = 'google_wpcom_auth_nonce';
 	public const INSTALL_TIMESTAMP                         = 'install_timestamp';
 	public const JETPACK_CONNECTED                         = 'jetpack_connected';
 	public const MC_SETUP_COMPLETED_AT                     = 'mc_setup_completed_at';
@@ -76,6 +77,7 @@ interface OptionsInterface {
 		self::UPDATE_ALL_PRODUCTS_LAST_SYNC             => true,
 		self::WP_TOS_ACCEPTED                           => true,
 		self::WPCOM_REST_API_STATUS                     => true,
+		self::GOOGLE_WPCOM_AUTH_NONCE                   => true,
 	];
 
 	public const OPTION_TYPES = [
