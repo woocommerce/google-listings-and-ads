@@ -685,7 +685,7 @@ test.describe( 'Product Block Editor integration', () => {
 	} );
 
 	test.afterAll( async () => {
-		await editorUtils.toggleBlockFeature( page, false );
+		await editorUtils.toggleBlockFeature( false );
 		await api.clearOnboardedMerchant();
 		await page.close();
 	} );
