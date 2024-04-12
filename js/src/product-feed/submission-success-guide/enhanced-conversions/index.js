@@ -10,17 +10,12 @@ import { Fragment, createInterpolateElement } from '@wordpress/element';
 import GuidePageContent from '.~/components/guide-page-content';
 import TrackableLink from '.~/components/trackable-link';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
-import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useGoogleAdsEnhancedConversionSettingsURL from '.~/hooks/useGoogleAdsEnhancedConversionSettingsURL';
 import AppSpinner from '.~/components/app-spinner';
 
 const EnhancedConversions = () => {
 	const { acceptedCustomerDataTerms, hasFinishedResolution } =
 		useAcceptedCustomerDataTerms();
-	const {
-		allowEnhancedConversions,
-		hasFinishedResolution: hasResolvedAllowEnhancedConversions,
-	} = useAllowEnhancedConversions();
 	const url = useGoogleAdsEnhancedConversionSettingsURL();
 
 	const title = acceptedCustomerDataTerms
@@ -34,10 +29,7 @@ const EnhancedConversions = () => {
 		  );
 
 	const getPageContentBody = () => {
-		if (
-			! hasFinishedResolution ||
-			! hasResolvedAllowEnhancedConversions
-		) {
+		if ( ! hasFinishedResolution ) {
 			return <AppSpinner />;
 		}
 
