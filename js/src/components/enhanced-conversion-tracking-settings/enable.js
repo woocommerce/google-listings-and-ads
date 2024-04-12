@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import CTA from '.~/product-feed/submission-success-guide/enhanced-conversions/cta';
+import CTA from './cta';
 
 const Enable = () => {
 	return (

@@ -3,6 +3,7 @@
  */
 import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
+import { external as externalIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -26,9 +27,16 @@ const EnableButton = ( { onEnable = noop } ) => {
 	};
 
 	return (
-		<AppButton isPrimary onClick={ handleOnEnableEnhancedConversions }>
-			{ __( 'Enable Enhanced Conversions', 'google-listings-and-ads' ) }
-		</AppButton>
+		<AppButton
+			icon={ externalIcon }
+			iconPosition="right"
+			isPrimary
+			onClick={ handleOnEnableEnhancedConversions }
+			text={ __(
+				'Enable Enhanced Conversions',
+				'google-listings-and-ads'
+			) }
+		/>
 	);
 };
 

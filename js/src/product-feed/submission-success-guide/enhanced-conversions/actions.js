@@ -3,31 +3,54 @@
  */
 import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useCallback, Fragment } from '@wordpress/element';
+import { Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import CTA from './cta';
+import AppButton from '.~/components/app-button';
+import CTA from '.~/components/enhanced-conversion-tracking-settings/cta';
+import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
+import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 
 const Actions = ( { onModalClose = noop } ) => {
-	const { createNotice } = useDispatchCoreNotices();
+	const { acceptedCustomerDataTerms, hasFinishedResolution } =
+		useAcceptedCustomerDataTerms();
+	const {
+		allowEnhancedConversions,
+		hasFinishedResolution: hasResolvedAllowEnhancedConversions,
+	} = useAllowEnhancedConversions();
 
-	const handleOnConfirm = useCallback( () => {
-		createNotice(
-			'info',
-			__( 'Status successfully set', 'google-listings-and-ads' )
+	const getCTA = () => {
+		if (
+			! hasFinishedResolution ||
+			! hasResolvedAllowEnhancedConversions
+		) {
+			return null;
+		}
+
+		if (
+			! acceptedCustomerDataTerms ||
+			( acceptedCustomerDataTerms &&
+				allowEnhancedConversions !==
+					ENHANCED_ADS_CONVERSION_STATUS.ENABLED )
+		) {
+			return <CTA />;
+		}
+
+		return (
+			<AppButton isSecondary data-action="close" onClick={ onModalClose }>
+				{ __( 'Close', 'google-listings-and-ads' ) }
+			</AppButton>
 		);
-
-		onModalClose();
-	}, [ createNotice, onModalClose ] );
+	};
 
 	return (
 		<Fragment>
 			<div className="gla-submission-success-guide__space_holder" />
 
-			<CTA onConfirm={ handleOnConfirm } />
+			{ getCTA() }
 		</Fragment>
 	);
 };

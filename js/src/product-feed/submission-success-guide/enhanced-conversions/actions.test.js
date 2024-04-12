@@ -8,18 +8,6 @@ jest.mock( '.~/hooks/useAllowEnhancedConversions', () => ( {
 	default: jest.fn().mockName( 'useAllowEnhancedConversions' ),
 } ) );
 
-jest.mock( '.~/hooks/useDispatchCoreNotices', () => ( {
-	__esModule: true,
-	default: jest
-		.fn()
-		.mockName( 'useDispatchCoreNotices' )
-		.mockImplementation( () => {
-			return {
-				createNotice: jest.fn(),
-			};
-		} ),
-} ) );
-
 jest.mock( '.~/data/actions', () => ( {
 	...jest.requireActual( '.~/data/actions' ),
 	updateEnhancedAdsConversionStatus: jest
