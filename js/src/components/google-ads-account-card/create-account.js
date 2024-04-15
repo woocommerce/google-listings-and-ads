@@ -30,7 +30,7 @@ const CreateAccount = ( props ) => {
 		step,
 		hasFinishedResolution: hasFinishedAdsStatusResolution,
 	} = useGoogleAdsAccountStatus();
-	const [ upsertAccount, { loading: isAdsCreateAccountLoading } ] =
+	const [ upsertAdsAccount, { loading: isAdsCreateAccountLoading } ] =
 		useUpsertAdsAccount();
 	const shouldClaimGoogleAdsAccount = Boolean(
 		googleAdsAccount.id && hasAccess === false
@@ -41,7 +41,7 @@ const CreateAccount = ( props ) => {
 	};
 
 	const handleOnCreateAccount = () => {
-		upsertAccount();
+		upsertAdsAccount();
 		setShowClaimModal( true );
 	};
 
@@ -52,9 +52,9 @@ const CreateAccount = ( props ) => {
 	useEffect( () => {
 		// Continue the setup process only when we are at the conversion_action step
 		if ( hasAccess === true && step === 'conversion_action' ) {
-			upsertAccount();
+			upsertAdsAccount();
 		}
-	}, [ hasAccess, upsertAccount, step ] );
+	}, [ hasAccess, upsertAdsAccount, step ] );
 
 	return (
 		<AccountCard

@@ -2,6 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useCallback } from '@wordpress/element'; // Add this line
+
 /**
  * Internal dependencies
  */
@@ -32,9 +34,9 @@ const useUpsertAdsAccount = () => {
 		},
 	} );
 
-	const upsertAdsAccount = async () => {
+	const upsertAdsAccount = useCallback( async () => {
 		try {
-			await fetchCreateAccount();
+			await fetchCreateAccount( { parse: false } );
 		} catch ( e ) {
 			// For status code 428, we want to allow users to continue and proceed,
 			// so we swallow the error for status code 428,
@@ -48,13 +50,17 @@ const useUpsertAdsAccount = () => {
 					)
 				);
 			}
-			return;
 		}
 
 		// Update Google Ads data in the data store after posting an account update.
 		await fetchGoogleAdsAccount();
 		await fetchGoogleAdsAccountStatus();
-	};
+	}, [
+		createNotice,
+		fetchCreateAccount,
+		fetchGoogleAdsAccount,
+		fetchGoogleAdsAccountStatus,
+	] );
 
 	return [ upsertAdsAccount, data ];
 };
