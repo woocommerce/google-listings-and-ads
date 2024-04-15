@@ -567,45 +567,10 @@ test.describe( 'Product Block Editor integration', () => {
 		await editorUtils.fillProductName();
 		await editorUtils.clickPluginTab();
 
-		const {
-			gtin,
-			mpn,
-			brand,
-			condition,
-			gender,
-			size,
-			sizeSystem,
-			sizeType,
-			color,
-			material,
-			pattern,
-			ageGroup,
-			multipack,
-			isBundle,
-			availabilityDate,
-			availabilityTime,
-			adultContent,
-		} = editorUtils.getAllProductAttributes();
+		const pairs =
+			await editorUtils.getAvailableProductAttributesWithTestValues();
 
-		const pairs = [
-			[ gtin, '3234567890126' ],
-			[ mpn, 'GO12345OOGLE' ],
-			[ brand, 'e2e_test_woocommerce_brands' ],
-			[ condition, 'new' ],
-			[ gender, 'unisex' ],
-			[ size, 'Good for everybody' ],
-			[ sizeSystem, 'JP' ],
-			[ sizeType, 'regular' ],
-			[ color, 'Cherry blossom' ],
-			[ material, 'Titanium alloy' ],
-			[ pattern, 'Cyberpunk' ],
-			[ ageGroup, 'kids' ],
-			[ multipack, '9999' ],
-			[ isBundle, 'no' ],
-			[ availabilityDate, '2024-02-29' ],
-			[ availabilityTime, '23:59' ],
-			[ adultContent, 'no' ],
-		];
+		expect( pairs ).toHaveLength( 17 );
 
 		/*
 		 * Assert:
@@ -639,35 +604,22 @@ test.describe( 'Product Block Editor integration', () => {
 		}
 	} );
 
-	test( 'Save product attributes to variation product', async () => {
+	test( 'Save all product attributes to variation product', async () => {
 		await editorUtils.gotoEditVariableProductPage();
 		await editorUtils.gotoEditVariationProductPage();
 		await editorUtils.clickPluginTab();
 
+		const pairs =
+			await editorUtils.getAvailableProductAttributesWithTestValues();
+
+		expect( pairs ).toHaveLength( 16 );
+
 		/*
-		 * Since the testing of all attributes is already covered in the simple product test case above.
-		 * This case only tests a few key attributes to ensure the data saving works for variation product.
+		 * Assert:
+		 * - All attributes are empty or default
+		 * - Save all attributes
+		 * - After saving, attribute values remain the same
 		 */
-		const {
-			condition,
-			color,
-			multipack,
-			availabilityDate,
-			availabilityTime,
-		} = editorUtils.getAllProductAttributes();
-
-		const pairs = [
-			[ condition, 'new' ],
-			[ color, 'Cherry blossom' ],
-			[ multipack, '9999' ],
-			[ availabilityDate, '2024-02-29' ],
-			[ availabilityTime, '23:59' ],
-		];
-
-		for ( const [ attribute ] of pairs ) {
-			await expect( attribute ).toHaveValue( '' );
-		}
-
 		for ( const [ attribute, value ] of pairs ) {
 			await expect( attribute ).toHaveValue( '' );
 			await editorUtils.setAttributeValue( attribute, value );
@@ -677,6 +629,20 @@ test.describe( 'Product Block Editor integration', () => {
 
 		for ( const [ attribute, value ] of pairs ) {
 			await expect( attribute ).toHaveValue( value );
+		}
+
+		/*
+		 * Assert:
+		 * - It allows to save all attributes to empty or default
+		 */
+		for ( const [ attribute ] of pairs ) {
+			await editorUtils.setAttributeValue( attribute, '' );
+		}
+
+		await editorUtils.save();
+
+		for ( const [ attribute ] of pairs ) {
+			await expect( attribute ).toHaveValue( '' );
 		}
 	} );
 

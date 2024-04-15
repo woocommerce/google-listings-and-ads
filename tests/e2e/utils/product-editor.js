@@ -10,29 +10,58 @@ import * as api from './api';
 
 const REGEX_URL_PRODUCTS = /\/wc\/v3\/products\/\d+(\/variations\/\d+)?\?/;
 
-function getAllProductAttributes( locator, funcGetDateAndTime ) {
+async function getAvailableProductAttributesWithTestValues(
+	locator,
+	funcGetDateAndTime
+) {
 	const { dateInput: availabilityDate, timeInput: availabilityTime } =
 		funcGetDateAndTime( locator );
 
-	return {
-		gtin: locator.getByLabel( /\(GTIN\)$/ ),
-		mpn: locator.getByLabel( 'MPN' ),
-		brand: locator.getByLabel( 'Brand', { exact: true } ),
-		condition: locator.getByLabel( 'Condition', { exact: true } ),
-		gender: locator.getByLabel( 'Gender', { exact: true } ),
-		size: locator.getByLabel( 'Size', { exact: true } ),
-		sizeSystem: locator.getByLabel( 'Size system' ),
-		sizeType: locator.getByLabel( 'Size type' ),
-		color: locator.getByLabel( 'Color', { exact: true } ),
-		material: locator.getByLabel( 'Material', { exact: true } ),
-		pattern: locator.getByLabel( 'Pattern', { exact: true } ),
-		ageGroup: locator.getByLabel( 'Age Group', { exact: true } ),
-		multipack: locator.getByLabel( 'Multipack', { exact: true } ),
-		isBundle: locator.getByLabel( 'Is Bundle' ),
-		availabilityDate,
-		availabilityTime,
-		adultContent: locator.getByLabel( 'Adult content' ),
-	};
+	const gtin = locator.getByLabel( /\(GTIN\)$/ );
+	const mpn = locator.getByLabel( 'MPN' );
+	const brand = locator.getByLabel( 'Brand', { exact: true } );
+	const condition = locator.getByLabel( 'Condition', { exact: true } );
+	const gender = locator.getByLabel( 'Gender', { exact: true } );
+	const size = locator.getByLabel( 'Size', { exact: true } );
+	const sizeSystem = locator.getByLabel( 'Size system' );
+	const sizeType = locator.getByLabel( 'Size type' );
+	const color = locator.getByLabel( 'Color', { exact: true } );
+	const material = locator.getByLabel( 'Material', { exact: true } );
+	const pattern = locator.getByLabel( 'Pattern', { exact: true } );
+	const ageGroup = locator.getByLabel( 'Age Group', { exact: true } );
+	const multipack = locator.getByLabel( 'Multipack', { exact: true } );
+	const isBundle = locator.getByLabel( 'Is Bundle' );
+	const adultContent = locator.getByLabel( 'Adult content' );
+
+	const allPairs = [
+		[ gtin, '3234567890126' ],
+		[ mpn, 'GO12345OOGLE' ],
+		[ brand, 'e2e_test_woocommerce_brands' ],
+		[ condition, 'new' ],
+		[ gender, 'unisex' ],
+		[ size, 'Good for everybody' ],
+		[ sizeSystem, 'JP' ],
+		[ sizeType, 'regular' ],
+		[ color, 'Cherry blossom' ],
+		[ material, 'Titanium alloy' ],
+		[ pattern, 'Cyberpunk' ],
+		[ ageGroup, 'kids' ],
+		[ multipack, '9999' ],
+		[ isBundle, 'no' ],
+		[ availabilityDate, '2024-02-29' ],
+		[ availabilityTime, '23:59' ],
+		[ adultContent, 'no' ],
+	];
+
+	const availablePairs = [];
+
+	for ( const pair of allPairs ) {
+		if ( await pair[ 0 ].isVisible() ) {
+			availablePairs.push( pair );
+		}
+	}
+
+	return availablePairs;
 }
 
 async function setAttributeValue( locator, value ) {
@@ -122,8 +151,8 @@ export function getClassicProductEditorUtils( page ) {
 			return page.locator( '.gla_attributes_multipack_field input' );
 		},
 
-		getAllProductAttributes( locator = page ) {
-			return getAllProductAttributes(
+		async getAvailableProductAttributesWithTestValues( locator = page ) {
+			return getAvailableProductAttributesWithTestValues(
 				locator,
 				this.getDateAndTimeInputs
 			);
@@ -334,8 +363,11 @@ export function getProductBlockEditorUtils( page ) {
 			};
 		},
 
-		getAllProductAttributes() {
-			return getAllProductAttributes( page, this.getDateAndTimeFields );
+		async getAvailableProductAttributesWithTestValues() {
+			return getAvailableProductAttributesWithTestValues(
+				page,
+				this.getDateAndTimeFields
+			);
 		},
 	};
 
