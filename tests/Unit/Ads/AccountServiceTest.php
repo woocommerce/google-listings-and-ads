@@ -309,8 +309,8 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get' )
 			->willReturn(
 				[
-					'account_access'    => [ 'status' => AdsAccountState::STEP_PENDING ],
-					'conversion_action' => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'account_access'    => [ 'status' => null ],
+					'conversion_action' => [ 'status' => null ],
 				]
 			);
 
@@ -326,7 +326,7 @@ class AccountServiceTest extends UnitTest {
 		$this->account->setup_account();
 	}
 
-	public function test_setup_account_step_account_access_pending() {
+	public function test_setup_account_step_account_access_without_access() {
 		// Mock return values
 		$this->options->method( 'get' )
 			->with( OptionsInterface::ADS_BILLING_URL, '' )
@@ -348,17 +348,16 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get' )
 			->willReturn(
 				[
-					'account_access'    => [ 'status' => AdsAccountState::STEP_PENDING ],
-					'conversion_action' => [ 'status' => AdsAccountState::STEP_PENDING ],
+					'account_access'    => [ 'status' => null ],
+					'conversion_action' => [ 'status' => null ],
 				]
 			);
 
-		// Account access should not be marked as completed.
-		$this->state->expects( $this->never() )
-			->method( 'complete_step' )
-			->with( 'account_access' );
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 428 );
+		$this->expectExceptionMessage( 'Account must be accepted before completing setup.' );
 
-		// Make sure the conversion action is never run.
+		// The conversion action should not be run.
 		$this->conversion_action->expects( $this->never() )
 			->method( 'create_conversion_action' );
 

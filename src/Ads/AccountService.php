@@ -181,14 +181,7 @@ class AccountService implements OptionsAwareInterface, Service {
 						break;
 
 					case 'account_access':
-						if ( ! $this->check_ads_account_has_access() ) {
-							$state[ $name ]['status'] = AdsAccountState::STEP_PENDING;
-							$this->state->update( $state );
-
-							// Exit the setup loop.
-							break 2;
-						}
-
+						$this->check_ads_account_has_access();
 						break;
 
 					default:
@@ -251,12 +244,19 @@ class AccountService implements OptionsAwareInterface, Service {
 	/**
 	 * Check if the Ads account has access.
 	 *
-	 * @throws Exception If the account doesn't have access.
+	 * @throws ExceptionWithResponseData If the account doesn't have access.
 	 */
 	private function check_ads_account_has_access() {
 		$access_status = $this->get_ads_account_has_access();
 
-		return $access_status['has_access'];
+		if ( ! $access_status['has_access'] ) {
+			throw new ExceptionWithResponseData(
+				__( 'Account must be accepted before completing setup.', 'google-listings-and-ads' ),
+				428,
+				null,
+				$access_status
+			);
+		}
 	}
 
 	/**
@@ -272,19 +272,17 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * }
 	 */
 	public function get_ads_account_has_access() {
-		$has_access  = false;
-		$invite_link = '';
-		$email       = '';
+		$has_access = false;
 
 		// Check if an Ads ID is present.
 		if ( $this->options->get_ads_id() ) {
 			$connection_status = $this->container->get( Connection::class )->get_status();
 			$email             = $connection_status['email'] ?? '';
 		}
+
 		// If no email, means google account is not connected.
 		if ( ! empty( $email ) ) {
-			$has_access  = $this->container->get( Ads::class )->has_access( $email );
-			$invite_link = $this->options->get( OptionsInterface::ADS_BILLING_URL, '' );
+			$has_access = $this->container->get( Ads::class )->has_access( $email );
 		}
 
 		// If we have access, complete the step so that it won't be called next time.
@@ -295,7 +293,7 @@ class AccountService implements OptionsAwareInterface, Service {
 		return [
 			'has_access'  => $has_access,
 			'step'        => $this->state->last_incomplete_step(),
-			'invite_link' => $invite_link,
+			'invite_link' => $this->options->get( OptionsInterface::ADS_BILLING_URL, '' ),
 		];
 	}
 
