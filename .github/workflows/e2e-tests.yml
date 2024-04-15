@@ -5,6 +5,8 @@ on:
     branches:
       - "release/**"
   pull_request:
+    branches:
+      - "release/**"
   workflow_dispatch:
     inputs:
       wp-rc-version:
