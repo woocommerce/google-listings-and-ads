@@ -18,6 +18,7 @@ import { GOOGLE_WPCOM_APP_CONNECTED_STATUS } from '.~/constants';
 import { API_NAMESPACE } from '.~/data/constants';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import useUpdateRestAPIAuthorizeStatusByUrlQuery from '.~/hooks/useUpdateRestAPIAuthorizeStatusByUrlQuery';
 import { useAppDispatch } from '.~/data';
 import EnableNewProductSyncButton from '.~/components/enable-new-product-sync-button';
 import AppNotice from '.~/components/app-notice';
@@ -47,6 +48,10 @@ const ConnectedGoogleMCAccountCard = ( {
 	hideAccountSwitch = false,
 	hideNotificationService = false,
 } ) => {
+	useUpdateRestAPIAuthorizeStatusByUrlQuery(
+		googleMCAccount.google_wpcom_auth_nonce
+	);
+
 	const { createNotice, removeNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 
