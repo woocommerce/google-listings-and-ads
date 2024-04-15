@@ -456,7 +456,7 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Mock Google Ads status when disconnected.
+	 * Mock Google Ads status as disconnected.
 	 *
 	 * @return {Promise<void>}
 	 */

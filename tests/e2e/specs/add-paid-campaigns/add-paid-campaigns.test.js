@@ -165,7 +165,7 @@ test.describe( 'Set up Ads account', () => {
 			).toBeEnabled();
 		} );
 
-		test( 'Create and Ads account', async () => {
+		test( 'Create an Ads account', async () => {
 			// Intercept Ads connection request.
 			const connectAdsAccountRequest =
 				setupAdsAccounts.registerConnectAdsAccountRequests();
@@ -187,16 +187,15 @@ test.describe( 'Set up Ads account', () => {
 
 			await connectAdsAccountRequest;
 
-			const modal = await setupAdsAccounts.getAcceptAccountModal();
+			const modal = setupAdsAccounts.getAcceptAccountModal();
 			await expect( modal ).toBeVisible();
 		} );
 
 		test( 'Show Unclaimed Ads account', async () => {
 			await setupAdsAccounts.clickCloseAcceptAccountButtonFromModal();
 
-			const claimButton =
-				await setupAdsAccounts.getAdsClaimAccountButton();
-			const claimText = await setupAdsAccounts.getAdsClaimAccountText();
+			const claimButton = setupAdsAccounts.getAdsClaimAccountButton();
+			const claimText = setupAdsAccounts.getAdsClaimAccountText();
 
 			await expect( claimButton ).toBeVisible();
 			await expect( claimText ).toBeVisible();

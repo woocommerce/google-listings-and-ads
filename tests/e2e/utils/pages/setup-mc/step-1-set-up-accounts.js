@@ -406,7 +406,6 @@ export default class SetUpAccountsPage extends MockRequests {
 			name: 'Create account',
 			exact: true,
 		} );
-		await button.isVisible();
 		await button.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
@@ -414,7 +413,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	/**
 	 * Get ads account connected text.
 	 *
-	 * @return {import('@playwright/test').Locator} Get ads account connected text.
+	 * @return {import('@playwright/test').Locator} Ads account connected text.
 	 */
 	getAdsAccountConnectedText() {
 		return this.getGoogleAdsAccountCard().getByText( 'Connected' );
@@ -423,7 +422,7 @@ export default class SetUpAccountsPage extends MockRequests {
 	/**
 	 * Get Ads account connected notice text.
 	 *
-	 * @return {import('@playwright/test').Locator} Get ads account connected text.
+	 * @return {import('@playwright/test').Locator} Ads account connected notice text.
 	 */
 	getAdsAccountConnectedNotice() {
 		return this.getGoogleAdsAccountCard().getByText(

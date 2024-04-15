@@ -99,9 +99,9 @@ export default class SetupAdsAccount extends MockRequests {
 	}
 
 	/**
-	 * Get Claim button in the Accept Invitation modal.
+	 * Get Claim account button in the Accept Invitation modal.
 	 *
-	 * @return {import('@playwright/test').Locator} Claim account in modal button.
+	 * @return {import('@playwright/test').Locator} Claim account button.
 	 */
 	getClaimAcceptAccountButtonModal() {
 		return this.getAcceptAccountModal().getByRole( 'button', {
@@ -111,23 +111,21 @@ export default class SetupAdsAccount extends MockRequests {
 	}
 
 	/**
-	 * Click claim account button.
+	 * Get claim account button in the Google Ads card.
 	 *
-	 * @return {import('@playwright/test').Locator} Claim account in card button.
+	 * @return {import('@playwright/test').Locator} Claim account button.
 	 */
 	getAdsClaimAccountButton() {
-		return this.page
-			.getByRole( 'button', {
-				name: 'Claim Account',
-				exact: true,
-			} )
-			.first();
+		return this.page.getByRole( 'button', {
+			name: 'Claim Account',
+			exact: true,
+		} );
 	}
 
 	/**
-	 * Get ads claim account text.
+	 * Get claim Google Ads account text.
 	 *
-	 * @return {import('@playwright/test').Locator} Get ads account Claim account text.
+	 * @return {import('@playwright/test').Locator} Claim Google Ads account text.
 	 */
 	getAdsClaimAccountText() {
 		return this.page.getByText(

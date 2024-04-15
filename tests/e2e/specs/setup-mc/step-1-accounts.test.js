@@ -278,7 +278,7 @@ test.describe( 'Set up accounts', () => {
 				'Create an ads account with invitation accepted',
 				() => {
 					test.beforeAll( async () => {
-						// Start with no Ads account connected.
+						// Mock the ads account as claimed.
 						await setupAdsAccountPage.mockAdsStatusClaimed();
 
 						await setUpAccountsPage.goto();
