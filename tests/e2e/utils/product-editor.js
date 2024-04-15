@@ -130,8 +130,7 @@ export function getClassicProductEditorUtils( page ) {
 		},
 
 		async gotoEditVariableProductPage() {
-			const variableId = await api.createVariableProduct();
-			await api.createVariationProducts( variableId );
+			const variableId = await api.createVariableWithVariationProducts();
 
 			await page.goto(
 				`/wp-admin/post.php?post=${ variableId }&action=edit`
@@ -383,8 +382,7 @@ export function getProductBlockEditorUtils( page ) {
 		},
 
 		async gotoEditVariableProductPage() {
-			const variableId = await api.createVariableProduct();
-			await api.createVariationProducts( variableId );
+			const variableId = await api.createVariableWithVariationProducts();
 
 			return page.goto(
 				`/wp-admin/admin.php?page=wc-admin&path=%2Fproduct%2F${ variableId }`
