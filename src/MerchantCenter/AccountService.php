@@ -518,4 +518,13 @@ class AccountService implements OptionsAwareInterface, Service {
 	public function update_wpcom_api_authorization( string $status ): bool {
 		return $this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $status );
 	}
+
+	/**
+	 * Delete the nonce of "verifying Google is the one redirect back to merchant site and set the auth status" in the database.
+	 *
+	 * @return bool
+	 */
+	public function delete_wpcom_api_auth_nonce(): bool {
+		return $this->options->delete( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
+	}
 }

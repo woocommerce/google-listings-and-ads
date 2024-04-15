@@ -134,6 +134,7 @@ class AuthController extends BaseController {
 		return function ( Request $request ) {
 			try {
 				$this->account_service->update_wpcom_api_authorization( $request['status'] );
+				$this->account_service->delete_wpcom_api_auth_nonce();
 				return [ 'status' => $request['status'] ];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );

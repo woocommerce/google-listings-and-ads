@@ -86,6 +86,10 @@ class AuthControllerTest extends RESTControllerUnitTest {
 			->method( 'update_wpcom_api_authorization' )
 			->willReturn( true );
 
+		$this->account_service->expects( $this->once() )
+			->method( 'delete_wpcom_api_auth_nonce' )
+			->willReturn( true );
+
 		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'status' => 'approved' ] );
 
 		$this->assertEquals( [ 'status' => 'approved' ], $response->get_data() );
