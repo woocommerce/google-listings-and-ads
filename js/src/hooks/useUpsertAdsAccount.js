@@ -16,7 +16,11 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 /**
  * Set up a Google Ads account.
  *
- * @return {[Function, Object]} Returns a function to create or update a Google Ads account and the data returned by the API request.
+ * @return {Array} [ upsertAdsAccount, fetchResult ]
+ * 		- `upsertAdsAccount` A function to be called to trigger `apiFetch` to create or update a Google Ads account.
+ * 		- `fetchResult`      An object containing data about the `apiFetchCallback`
+ *
+ * @see useApiFetchCallback
  */
 const useUpsertAdsAccount = () => {
 	// Check if there is a connected Google Ads account which in this case will update the account.
