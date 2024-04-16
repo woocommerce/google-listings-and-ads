@@ -100,9 +100,6 @@ describe( 'SavedSetupStepper', () => {
 				withBaseProperties( {
 					action: 'go-to-step2',
 					triggered_by: 'step1-continue-button',
-					// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.
-					target: 'step1_continue',
-					trigger: 'click',
 				} )
 			);
 			expect( recordEvent ).toHaveBeenNthCalledWith(
@@ -111,9 +108,6 @@ describe( 'SavedSetupStepper', () => {
 				withBaseProperties( {
 					action: 'go-to-step3',
 					triggered_by: 'step2-continue-button',
-					// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.
-					target: 'step2_continue',
-					trigger: 'click',
 				} )
 			);
 			expect( recordEvent ).toHaveBeenNthCalledWith(
@@ -122,9 +116,6 @@ describe( 'SavedSetupStepper', () => {
 				withBaseProperties( {
 					action: 'go-to-step4',
 					triggered_by: 'step3-continue-button',
-					// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.
-					target: 'step3_continue',
-					trigger: 'click',
 				} )
 			);
 		} );
