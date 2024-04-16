@@ -605,7 +605,7 @@ A modal is closed.
 - [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`Dashboard`](../../js/src/dashboard/index.js#L33) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L155) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
+- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L159) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
 
 ### [`gla_modal_content_link_click`](../../js/src/components/guide-page-content/index.js#L28)
 Clicking on a text link within the modal content
@@ -626,7 +626,7 @@ A modal is open
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L155) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L159) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
 ### [`gla_onboarding_complete_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L49)
 Clicking on the skip paid ads button to complete the onboarding flow.
