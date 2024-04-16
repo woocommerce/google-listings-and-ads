@@ -119,8 +119,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - Update test proxy port.
 * Tweak - Show Review Inbox Notices when 11 clicks and 1 Conversion.
 
-= 2.6.4 - 2024-03-26 =
-* Dev - Add a manual workflow run for PHP unit tests.
-* Update - Refactor Product Stats.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
