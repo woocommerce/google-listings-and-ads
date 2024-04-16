@@ -75,6 +75,17 @@ export async function createVariationProducts( productId ) {
 }
 
 /**
+ * Creates a variable product with 3 variation products.
+ *
+ * @return {Promise<number>} Product ID of the created variable product.
+ */
+export async function createVariableWithVariationProducts() {
+	const variableId = await createVariableProduct();
+	await createVariationProducts( variableId );
+	return variableId;
+}
+
+/**
  * Set Test Conversion ID.
  */
 export async function setConversionID() {

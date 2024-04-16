@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
-	"version": "2.6.6",
+	"version": "2.6.7",
 	"description": "google-listings-and-ads",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -82,6 +82,9 @@
 		"engine.io-client": {
 			"xmlhttprequest-ssl@<1.6.2": "1.6.2",
 			"ws@<6.2.2": "6.2.2"
+		},
+		"socket.io-client": {
+			"debug@<4.3.1": "4.3.1"
 		}
 	},
 	"scripts": {
