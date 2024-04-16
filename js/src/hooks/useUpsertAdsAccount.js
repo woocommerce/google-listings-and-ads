@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useCallback } from '@wordpress/element'; // Add this line
+import { useCallback, useState } from '@wordpress/element'; // Add this line
 
 /**
  * Internal dependencies
@@ -29,14 +29,16 @@ const useUpsertAdsAccount = () => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccount, fetchGoogleAdsAccountStatus } =
 		useAppDispatch();
+	const [ isFetchingAdsData, setFetchingAdsData ] = useState( false );
 
-	const [ fetchCreateAccount, data ] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/ads/accounts`,
-		method: 'POST',
-		data: {
-			id: googleAdsAccount?.id || undefined,
-		},
-	} );
+	const [ fetchCreateAccount, { loading: isAccountUpdateLoading, ...data } ] =
+		useApiFetchCallback( {
+			path: `${ API_NAMESPACE }/ads/accounts`,
+			method: 'POST',
+			data: {
+				id: googleAdsAccount?.id || undefined,
+			},
+		} );
 
 	const upsertAdsAccount = useCallback( async () => {
 		try {
@@ -57,8 +59,10 @@ const useUpsertAdsAccount = () => {
 		}
 
 		// Update Google Ads data in the data store after posting an account update.
+		setFetchingAdsData( true );
 		await fetchGoogleAdsAccount();
 		await fetchGoogleAdsAccountStatus();
+		setFetchingAdsData( false );
 	}, [
 		createNotice,
 		fetchCreateAccount,
@@ -66,7 +70,13 @@ const useUpsertAdsAccount = () => {
 		fetchGoogleAdsAccountStatus,
 	] );
 
-	return [ upsertAdsAccount, data ];
+	return [
+		upsertAdsAccount,
+		{
+			...data,
+			loading: isAccountUpdateLoading || isFetchingAdsData,
+		},
+	];
 };
 
 export default useUpsertAdsAccount;

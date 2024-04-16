@@ -7,16 +7,11 @@ import { Fragment } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '.~/data';
 import Section from '.~/wcdl/section';
-import useWindowFocusCallbackIntervalEffect from '.~/hooks/useWindowFocusCallbackIntervalEffect';
 import DisconnectAccount from '../disconnect-account';
 import './index.scss';
 
 const ClaimAccount = () => {
-	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
-	useWindowFocusCallbackIntervalEffect( fetchGoogleAdsAccountStatus, 30 );
-
 	return (
 		<Fragment>
 			<p className="gla-ads-claim-account-notice">

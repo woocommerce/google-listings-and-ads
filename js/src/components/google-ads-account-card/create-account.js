@@ -2,35 +2,32 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect, Fragment } from '@wordpress/element';
+import { useState, useEffect, useCallback, Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import Section from '.~/wcdl/section';
-import AppButton from '.~/components/app-button';
+import { useAppDispatch } from '.~/data';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
-import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
+import AppButton from '.~/components/app-button';
 import ClaimAccount from './claim-account';
+import ClaimAccountButton from './claim-account-button';
 import ClaimAccountModal from './claim-account-modal';
 import CreateAccountButton from './create-account-button';
-import ClaimAccountButton from './claim-account-button';
+import Section from '.~/wcdl/section';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
+import useWindowFocusCallbackIntervalEffect from '.~/hooks/useWindowFocusCallbackIntervalEffect';
+import LoadingLabel from '../loading-label/loading-label';
 
 const CreateAccount = ( props ) => {
 	const { allowShowExisting, onShowExisting } = props;
 	const [ showClaimModal, setShowClaimModal ] = useState( false );
-	const {
-		googleAdsAccount,
-		hasFinishedResolution: hasFinishedAdsAccountResolution,
-	} = useGoogleAdsAccount();
-	const {
-		hasAccess,
-		step,
-		hasFinishedResolution: hasFinishedAdsStatusResolution,
-	} = useGoogleAdsAccountStatus();
-	const [ upsertAdsAccount, { loading: isAdsCreateAccountLoading } ] =
+	const [ isClaiming, setIsClaiming ] = useState( false );
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
+	const [ upsertAdsAccount, { loading: isUpsertAdsAccountLoading } ] =
 		useUpsertAdsAccount();
 	const shouldClaimGoogleAdsAccount = Boolean(
 		googleAdsAccount.id && hasAccess === false
@@ -38,38 +35,66 @@ const CreateAccount = ( props ) => {
 
 	const handleOnRequestClose = () => {
 		setShowClaimModal( false );
+		setIsClaiming( false );
 	};
 
-	const handleOnCreateAccount = () => {
-		upsertAdsAccount();
+	const handleOnCreateAccount = async () => {
+		setIsClaiming( true );
+		await upsertAdsAccount();
 		setShowClaimModal( true );
 	};
 
-	const isLoading =
-		isAdsCreateAccountLoading ||
-		! ( hasFinishedAdsAccountResolution && hasFinishedAdsStatusResolution );
+	const handleOnClaimClick = () => {
+		setIsClaiming( true );
+	};
 
+	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
+
+	const refreshAdsStatus = useCallback( async () => {
+		if ( ! shouldClaimGoogleAdsAccount ) {
+			return false;
+		}
+
+		await fetchGoogleAdsAccountStatus();
+	}, [ fetchGoogleAdsAccountStatus, shouldClaimGoogleAdsAccount ] );
+
+	useWindowFocusCallbackIntervalEffect( refreshAdsStatus, 30 );
+
+	// Update the Ads account once we have access.
 	useEffect( () => {
-		// Continue the setup process only when we are at the conversion_action step
 		if ( hasAccess === true && step === 'conversion_action' ) {
+			setIsClaiming( false );
 			upsertAdsAccount();
 		}
 	}, [ hasAccess, upsertAdsAccount, step ] );
+
+	const getIndicator = () => {
+		if ( shouldClaimGoogleAdsAccount ) {
+			return (
+				<ClaimAccountButton
+					loading={ isClaiming || showClaimModal }
+					onClaimClick={ handleOnClaimClick }
+				/>
+			);
+		}
+
+		return googleAdsAccount.id && isUpsertAdsAccountLoading ? (
+			<LoadingLabel
+				text={ __( 'Updating…', 'google-listings-and-ads' ) }
+			/>
+		) : (
+			<CreateAccountButton
+				onCreateAccount={ handleOnCreateAccount }
+				loading={ isUpsertAdsAccountLoading }
+			/>
+		);
+	};
 
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			alignIcon="top"
-			indicator={
-				shouldClaimGoogleAdsAccount ? (
-					<ClaimAccountButton />
-				) : (
-					<CreateAccountButton
-						onCreateAccount={ handleOnCreateAccount }
-						loading={ isLoading }
-					/>
-				)
-			}
+			indicator={ getIndicator() }
 		>
 			{ allowShowExisting && ! shouldClaimGoogleAdsAccount && (
 				<Section.Card.Footer>
