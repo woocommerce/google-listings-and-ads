@@ -22,7 +22,10 @@ import SetupFreeListings from '.~/components/free-listings/setup-free-listings';
 import StoreRequirements from './store-requirements';
 import SetupPaidAds from './setup-paid-ads';
 import stepNameKeyMap from './stepNameKeyMap';
-import { recordGlaEvent } from '.~/utils/tracks';
+import {
+	recordStepperChangeEvent,
+	recordStepContinueEvent,
+} from '.~/utils/tracks';
 
 /**
  * @param {Object} props React props
@@ -82,10 +85,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const continueStep = ( to ) => {
 		const from = step;
 
-		recordGlaEvent( 'gla_setup_mc', {
-			triggered_by: `step${ from }-continue-button`,
-			action: `go-to-step${ to }`,
-		} );
+		recordStepContinueEvent( 'gla_setup_mc', from, to );
 		setStep( to );
 	};
 
@@ -104,10 +104,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const handleStepClick = ( stepKey ) => {
 		// Only allow going back to the previous steps.
 		if ( Number( stepKey ) < Number( step ) ) {
-			recordGlaEvent( 'gla_setup_mc', {
-				triggered_by: `stepper-step${ stepKey }-button`,
-				action: `go-to-step${ stepKey }`,
-			} );
+			recordStepperChangeEvent( 'gla_setup_mc', stepKey );
 			setStep( stepKey );
 		}
 	};
