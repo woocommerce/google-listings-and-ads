@@ -2,6 +2,10 @@ jest.mock( '.~/hooks/useAcceptedCustomerDataTerms', () => ( {
 	__esModule: true,
 	default: jest.fn().mockName( 'useAcceptedCustomerDataTerms' ),
 } ) );
+jest.mock( '.~/hooks/useAllowEnhancedConversions', () => ( {
+	__esModule: true,
+	default: jest.fn().mockName( 'useAllowEnhancedConversions' ),
+} ) );
 
 /**
  * External dependencies
@@ -12,8 +16,10 @@ import '@testing-library/jest-dom';
 /**
  * Internal dependencies
  */
+import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import EnhancedConversion from './index';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 
 describe( 'Enhanced Conversion', () => {
 	beforeEach( () => {
@@ -23,6 +29,10 @@ describe( 'Enhanced Conversion', () => {
 	test( 'Render the correct text when TOS has not been accepted', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: false,
+			hasFinishedResolution: true,
+		} );
+		useAllowEnhancedConversions.mockReturnValue( {
+			allowEnhancedConversions: null,
 			hasFinishedResolution: true,
 		} );
 
@@ -37,6 +47,10 @@ describe( 'Enhanced Conversion', () => {
 	test( 'Render the correct text when TOS has been accepted', () => {
 		useAcceptedCustomerDataTerms.mockReturnValue( {
 			acceptedCustomerDataTerms: true,
+			hasFinishedResolution: true,
+		} );
+		useAllowEnhancedConversions.mockReturnValue( {
+			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.PENDING,
 			hasFinishedResolution: true,
 		} );
 

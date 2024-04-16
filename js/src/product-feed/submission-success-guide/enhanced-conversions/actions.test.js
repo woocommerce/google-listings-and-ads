@@ -22,13 +22,11 @@ jest.mock( '.~/data/actions', () => ( {
  * External dependencies
  */
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
 /**
  * Internal dependencies
  */
-import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
 import Actions from './actions';
@@ -45,6 +43,7 @@ describe( 'Enhanced Conversion Footer', () => {
 		} );
 		useAllowEnhancedConversions.mockReturnValue( {
 			allowEnhancedConversions: null,
+			hasFinishedResolution: true,
 		} );
 
 		render( <Actions /> );
@@ -52,24 +51,5 @@ describe( 'Enhanced Conversion Footer', () => {
 		expect(
 			screen.getByText( 'Enable Enhanced Conversions' )
 		).toBeInTheDocument();
-	} );
-
-	test( 'Click on enable button callback', () => {
-		const handleOnModalClose = jest.fn().mockName( 'On button click' );
-
-		useAcceptedCustomerDataTerms.mockReturnValue( {
-			acceptedCustomerDataTerms: true,
-			hasFinishedResolution: true,
-		} );
-		useAllowEnhancedConversions.mockReturnValue( {
-			allowEnhancedConversions: ENHANCED_ADS_CONVERSION_STATUS.DISABLED,
-		} );
-
-		render( <Actions onModalClose={ handleOnModalClose } /> );
-
-		const button = screen.getByRole( 'button', { name: 'Confirm' } );
-		userEvent.click( button );
-
-		expect( handleOnModalClose ).toHaveBeenCalledTimes( 1 );
 	} );
 } );

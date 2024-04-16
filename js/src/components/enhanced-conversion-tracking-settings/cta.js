@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { noop } from 'lodash';
 import { useEffect, useCallback } from '@wordpress/element';
 
 /**
@@ -15,7 +14,7 @@ import ConfirmButton from './confirm-button';
 import useAutoCheckEnhancedConversionTOS from '.~/hooks/useAutoCheckEnhancedConversionTOS';
 import useEnhancedConversionsSkipConfirmation from '.~/hooks/useEnhancedConversionsSkipConfirmation';
 
-const CTA = ( { onConfirm = noop } ) => {
+const CTA = () => {
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 	const {
 		acceptedCustomerDataTerms,
@@ -29,26 +28,17 @@ const CTA = ( { onConfirm = noop } ) => {
 		updateEnhancedAdsConversionStatus(
 			ENHANCED_ADS_CONVERSION_STATUS.ENABLED
 		);
-
-		onConfirm();
-	}, [ onConfirm, updateEnhancedAdsConversionStatus ] );
+	}, [ updateEnhancedAdsConversionStatus ] );
 
 	useEffect( () => {
 		// As soon as the terms are accepted, do not show the spinner
 		if ( acceptedCustomerDataTerms && isPolling ) {
 			// We automatically set the status to enabled.
-			updateEnhancedAdsConversionStatus(
-				ENHANCED_ADS_CONVERSION_STATUS.ENABLED
-			);
+			handleConfirm();
 
 			setIsPolling( false );
 		}
-	}, [
-		acceptedCustomerDataTerms,
-		setIsPolling,
-		isPolling,
-		updateEnhancedAdsConversionStatus,
-	] );
+	}, [ acceptedCustomerDataTerms, setIsPolling, isPolling, handleConfirm ] );
 
 	const handleOnEnable = () => {
 		setIsPolling( true );
