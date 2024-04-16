@@ -1307,3 +1307,10 @@ export function* fetchAcceptedCustomerDataTerms() {
 		);
 	}
 }
+
+export function updateEnhancedConversionsSkipConfirmation( enabled ) {
+	return {
+		type: TYPES.UPDATE_ENHANCED_CONVERSIONS_SKIP_CONFIRMATION,
+		enabled,
+	};
+}

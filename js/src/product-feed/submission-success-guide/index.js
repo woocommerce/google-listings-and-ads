@@ -50,7 +50,7 @@ const handleGuideFinish = ( e ) => {
 	getHistory().replace( getProductFeedUrl() );
 
 	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
-	// here is a workaround by identifying the close button's data-aciton attribute.
+	// here is a workaround by identifying the close button's data-action attribute.
 	let action = 'dismiss';
 
 	if ( e ) {

@@ -68,6 +68,7 @@ const DEFAULT_STATE = {
 		conversion_tracking_setting: {
 			accepted_customer_data_terms: null,
 			allow_enhanced_conversions: null,
+			skip_confirmation: false,
 		},
 	},
 };
@@ -522,6 +523,16 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				state,
 				'ads.conversion_tracking_setting.allow_enhanced_conversions',
 				status
+			);
+		}
+
+		case TYPES.UPDATE_ENHANCED_CONVERSIONS_SKIP_CONFIRMATION: {
+			const { enabled } = action;
+
+			return setIn(
+				state,
+				'ads.conversion_tracking_setting.skip_confirmation',
+				enabled
 			);
 		}
 
