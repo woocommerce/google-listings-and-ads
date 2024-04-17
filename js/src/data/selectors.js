@@ -420,3 +420,13 @@ export const getAcceptedCustomerDataTerms = ( state ) => {
 export const getAllowEnhancedConversions = ( state ) => {
 	return state.ads.conversion_tracking_setting.allow_enhanced_conversions;
 };
+
+/**
+ * Return whether the confirmation screen should be skipped when enabling enhance conversions.
+ *
+ * @param {Object} state The state
+ * @return {string|null} Possible values are 'true' | 'false'
+ */
+export const getEnhancedConversionsSkipConfirmation = ( state ) => {
+	return state.ads.conversion_tracking_setting.skip_confirmation;
+};

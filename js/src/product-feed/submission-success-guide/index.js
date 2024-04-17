@@ -50,7 +50,7 @@ const handleGuideFinish = ( e ) => {
 	getHistory().replace( getProductFeedUrl() );
 
 	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
-	// here is a workaround by identifying the close button's data-aciton attribute.
+	// here is a workaround by identifying the close button's data-action attribute.
 	let action = 'dismiss';
 
 	if ( e ) {
@@ -82,7 +82,7 @@ const pages = [
  * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
  * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
  *
- * @fires gla_modal_closed with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
+ * @fires gla_modal_closed with `action: 'create-paid-campaign' | 'maybe-later' | 'close' | 'dismiss'`
  * @fires gla_modal_open with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
  */
 const SubmissionSuccessGuide = () => {

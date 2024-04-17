@@ -2,97 +2,67 @@
  * External dependencies
  */
 import { noop } from 'lodash';
-import { __ } from '@wordpress/i18n';
-import { useCallback, useState, useEffect } from '@wordpress/element';
+import { useEffect, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import { useAppDispatch } from '.~/data';
+import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import AppButton from '.~/components/app-button';
-import AcceptTerms from './accept-terms';
-import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
-import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
-import useTermsPolling from './useTermsPolling';
+import EnableButton from './enable-button';
+import ConfirmButton from './confirm-button';
+import useAutoCheckEnhancedConversionTOS from '.~/hooks/useAutoCheckEnhancedConversionTOS';
+import useEnhancedConversionsSkipConfirmation from '.~/hooks/useEnhancedConversionsSkipConfirmation';
 
-const CTA = ( {
-	disableLabel = __( 'Disable', 'google-listings-and-ads' ),
-	enableLabel = __( 'Enable', 'google-listings-and-ads' ),
-	onEnableClick = noop,
-	onDisableClick = noop,
-} ) => {
-	const [ startBackgroundPoll, setStartBackgroundPoll ] = useState( false );
+const CTA = ( { onEnable = noop } ) => {
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
-	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
-	const { allowEnhancedConversions } = useAllowEnhancedConversions();
-	useTermsPolling( startBackgroundPoll );
-
-	const handleDisable = useCallback( () => {
-		if ( ! acceptedCustomerDataTerms ) {
-			return;
-		}
-
-		updateEnhancedAdsConversionStatus(
-			ENHANCED_ADS_CONVERSION_STATUS.DISABLED
-		);
-
-		onDisableClick();
-	}, [
-		updateEnhancedAdsConversionStatus,
+	const {
 		acceptedCustomerDataTerms,
-		onDisableClick,
-	] );
+		hasFinishedResolution,
+		isPolling,
+		setIsPolling,
+	} = useAutoCheckEnhancedConversionTOS();
+	const { skipConfirmation } = useEnhancedConversionsSkipConfirmation();
 
-	// Turn off polling when the user has accepted the terms.
-	useEffect( () => {
-		if ( acceptedCustomerDataTerms && startBackgroundPoll ) {
-			setStartBackgroundPoll( false );
-		}
-	}, [ acceptedCustomerDataTerms, startBackgroundPoll ] );
-
-	const handleEnable = useCallback( () => {
-		if ( ! acceptedCustomerDataTerms ) {
-			return;
-		}
-
+	const handleConfirm = useCallback( () => {
 		updateEnhancedAdsConversionStatus(
 			ENHANCED_ADS_CONVERSION_STATUS.ENABLED
 		);
+	}, [ updateEnhancedAdsConversionStatus ] );
 
-		onEnableClick();
-	}, [
-		updateEnhancedAdsConversionStatus,
-		acceptedCustomerDataTerms,
-		onEnableClick,
-	] );
+	useEffect( () => {
+		// As soon as the terms are accepted, do not show the spinner
+		if ( acceptedCustomerDataTerms && isPolling ) {
+			// We automatically set the status to enabled.
+			handleConfirm();
 
-	const handleOnAcceptTerms = () => {
-		setStartBackgroundPoll( true );
+			setIsPolling( false );
+		}
+	}, [ acceptedCustomerDataTerms, setIsPolling, isPolling, handleConfirm ] );
+
+	const handleOnEnable = () => {
+		setIsPolling( true );
+		onEnable();
 	};
 
-	if ( startBackgroundPoll ) {
+	if ( ! hasFinishedResolution ) {
+		return null;
+	}
+
+	if ( isPolling ) {
 		return <AppButton isSecondary disabled loading />;
 	}
 
 	if ( ! acceptedCustomerDataTerms ) {
-		return <AcceptTerms onAcceptTerms={ handleOnAcceptTerms } />;
+		return <EnableButton onEnable={ handleOnEnable } />;
 	}
 
-	if ( allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.ENABLED ) {
-		return (
-			<AppButton isPrimary isDestructive onClick={ handleDisable }>
-				{ disableLabel }
-			</AppButton>
-		);
+	if ( skipConfirmation ) {
+		return null;
 	}
 
-	// User has accepted TOS or tracking is disabled.
-	return (
-		<AppButton isPrimary onClick={ handleEnable }>
-			{ enableLabel }
-		</AppButton>
-	);
+	return <ConfirmButton onConfirm={ handleConfirm } />;
 };
 
 export default CTA;

@@ -6,14 +6,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import Section from '.~/wcdl/section';
-import PendingNotice from '.~/components/enhanced-conversion-tracking-settings/pending-notice';
-import useAllowEnhancedConversions from '.~/hooks/useAllowEnhancedConversions';
+import AppSpinner from '.~/components/app-spinner';
 import Toggle from './toggle';
-import AcceptTerms from './accept-terms';
+import Enable from './enable';
 
 const DESCRIPTION = (
 	<p>
@@ -31,24 +29,20 @@ const TITLE = __( 'Enhanced Conversion Tracking', 'google-listings-and-ads' );
  */
 const EnhancedConversionTrackingSettings = () => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	const { acceptedCustomerDataTerms } = useAcceptedCustomerDataTerms();
-	const { allowEnhancedConversions } = useAllowEnhancedConversions();
+	const { acceptedCustomerDataTerms, hasFinishedResolution } =
+		useAcceptedCustomerDataTerms();
 
-	// @todo: Remove condition once R1 PRs are merged since there should always be a connected Ads account.
 	if ( ! googleAdsAccount || ! googleAdsAccount.id ) {
 		return null;
 	}
 
 	const getCardBody = () => {
-		if (
-			! acceptedCustomerDataTerms &&
-			allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.PENDING
-		) {
-			return <PendingNotice />;
+		if ( ! hasFinishedResolution ) {
+			return <AppSpinner />;
 		}
 
 		if ( ! acceptedCustomerDataTerms ) {
-			return <AcceptTerms />;
+			return <Enable />;
 		}
 
 		return <Toggle />;

@@ -235,7 +235,7 @@ test.describe( 'GTag events', () => {
 			key: 'user_data',
 		} );
 
-		expect( dataConfig.allow_enhanced_conversions ).toBeTruthy();
+		expect( dataConfig.allow_enhanced_conversions ).toBe( true );
 		expect( dataUserData.sha256_email_address ).toBeDefined();
 	} );
 } );

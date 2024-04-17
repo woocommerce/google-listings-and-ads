@@ -70,7 +70,9 @@ describe( 'SubmissionSuccessGuide', () => {
 		userEvent.click( button );
 
 		expect(
-			screen.getByText( 'Enhanced Conversion Tracking' )
+			screen.getByText(
+				'Optimize your conversion tracking with Enhanced Conversions'
+			)
 		).toBeInTheDocument();
 	} );
 } );
