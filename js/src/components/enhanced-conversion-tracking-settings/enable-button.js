@@ -14,19 +14,14 @@ import AppButton from '.~/components/app-button';
 import useGoogleAdsEnhancedConversionSettingsURL from '.~/hooks/useGoogleAdsEnhancedConversionSettingsURL';
 
 const EnableButton = ( { onEnable = noop } ) => {
-	const {
-		updateEnhancedAdsConversionStatus,
-		updateEnhancedConversionsSkipConfirmation,
-	} = useAppDispatch();
 	const url = useGoogleAdsEnhancedConversionSettingsURL();
+	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 
 	const handleOnEnableEnhancedConversions = () => {
 		window.open( url, '_blank' );
 		updateEnhancedAdsConversionStatus(
 			ENHANCED_ADS_CONVERSION_STATUS.PENDING
 		);
-		updateEnhancedConversionsSkipConfirmation( true );
-
 		onEnable();
 	};
 

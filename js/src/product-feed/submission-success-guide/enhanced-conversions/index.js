@@ -161,11 +161,8 @@ const EnhancedConversions = () => {
 			return 'loading';
 		}
 
-		if (
-			acceptedCustomerDataTerms &&
-			allowEnhancedConversions === ENHANCED_ADS_CONVERSION_STATUS.ENABLED
-		) {
-			return 'success';
+		if ( ! acceptedCustomerDataTerms ) {
+			return 'accept-terms';
 		}
 
 		if (
@@ -177,7 +174,7 @@ const EnhancedConversions = () => {
 			return 'confirm';
 		}
 
-		return 'accept-terms';
+		return 'success';
 	};
 
 	const currentPage = getCurrentPage();

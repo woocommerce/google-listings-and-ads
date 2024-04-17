@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { noop } from 'lodash';
 import { useEffect, useCallback } from '@wordpress/element';
 
 /**
@@ -14,7 +15,7 @@ import ConfirmButton from './confirm-button';
 import useAutoCheckEnhancedConversionTOS from '.~/hooks/useAutoCheckEnhancedConversionTOS';
 import useEnhancedConversionsSkipConfirmation from '.~/hooks/useEnhancedConversionsSkipConfirmation';
 
-const CTA = () => {
+const CTA = ( { onEnable = noop } ) => {
 	const { updateEnhancedAdsConversionStatus } = useAppDispatch();
 	const {
 		acceptedCustomerDataTerms,
@@ -42,6 +43,7 @@ const CTA = () => {
 
 	const handleOnEnable = () => {
 		setIsPolling( true );
+		onEnable();
 	};
 
 	if ( ! hasFinishedResolution ) {

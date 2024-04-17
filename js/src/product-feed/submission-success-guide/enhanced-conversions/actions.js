@@ -2,13 +2,14 @@
  * External dependencies
  */
 import { noop } from 'lodash';
-import { Fragment } from '@wordpress/element';
+import { Fragment, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { ENHANCED_ADS_CONVERSION_STATUS } from '.~/constants';
+import { useAppDispatch } from '.~/data';
 import AppButton from '.~/components/app-button';
 import CTA from '.~/components/enhanced-conversion-tracking-settings/cta';
 import useAcceptedCustomerDataTerms from '.~/hooks/useAcceptedCustomerDataTerms';
@@ -21,6 +22,12 @@ const Actions = ( { onModalClose = noop } ) => {
 		allowEnhancedConversions,
 		hasFinishedResolution: hasResolvedAllowEnhancedConversions,
 	} = useAllowEnhancedConversions();
+	const { updateEnhancedConversionsSkipConfirmation } = useAppDispatch();
+
+	const handleOnEnable = useCallback( () => {
+		// Skipping the confirmation screen applies to the modal only.
+		updateEnhancedConversionsSkipConfirmation( true );
+	}, [ updateEnhancedConversionsSkipConfirmation ] );
 
 	const getCTA = () => {
 		if (
@@ -36,7 +43,7 @@ const Actions = ( { onModalClose = noop } ) => {
 				allowEnhancedConversions !==
 					ENHANCED_ADS_CONVERSION_STATUS.ENABLED )
 		) {
-			return <CTA />;
+			return <CTA onEnable={ handleOnEnable } />;
 		}
 
 		return (
