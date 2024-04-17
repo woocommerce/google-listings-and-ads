@@ -1,6 +1,6 @@
 === Google Listings & Ads ===
 Contributors: automattic, google, woocommerce
-Tags: woocommerce, google, listings, ads
+Tags: woocommerce, google, product feed, ads, listings
 Requires at least: 5.9
 Tested up to: 6.5
 Requires PHP: 7.4
