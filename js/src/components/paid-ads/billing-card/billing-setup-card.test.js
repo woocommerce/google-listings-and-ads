@@ -14,13 +14,6 @@ jest.mock( '.~/hooks/useGoogleAdsAccount', () =>
 	jest.fn().mockName( 'useGoogleAdsAccount' ).mockReturnValue( {} )
 );
 
-jest.mock( '.~/hooks/useDispatchCoreNotices', () =>
-	jest
-		.fn()
-		.mockName( 'useDispatchCoreNotices' )
-		.mockReturnValue( { createNotice: () => {} } )
-);
-
 jest.mock( '.~/hooks/useWindowFocus', () =>
 	jest.fn().mockName( 'useWindowFocus' ).mockReturnValue( true )
 );
