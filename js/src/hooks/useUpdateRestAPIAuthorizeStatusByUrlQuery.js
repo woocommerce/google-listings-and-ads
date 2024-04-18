@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useCallback, useEffect } from '@wordpress/element';
-import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -37,7 +37,7 @@ const useUpdateRestAPIAuthorizeStatusByUrlQuery = ( googleWPCOMAuthNonce ) => {
 
 	const handleUpdateRestAPIAuthorize = useCallback( async () => {
 		try {
-			if ( ! nonceFromURLQuery && ! googleWPCOMAuthNonce ) {
+			if ( ! googleWPCOMAuthNonce || ! nonceFromURLQuery ) {
 				return;
 			}
 
@@ -50,10 +50,6 @@ const useUpdateRestAPIAuthorizeStatusByUrlQuery = ( googleWPCOMAuthNonce ) => {
 			await fetchUpdateRestAPIAuthorize( {
 				data: { status: googleWPCOMAppStatus },
 			} );
-
-			// Remove the nonce from query parameter to prevent the hook from trying to
-			// update the auth status again after connected-google-mc-account-card component gets updated.
-			updateQueryString( { nonce: null } );
 
 			// Refetch Google MC account so we can get the latest gla_wpcom_rest_api_status.
 			invalidateResolution( 'getGoogleMCAccount', [] );
