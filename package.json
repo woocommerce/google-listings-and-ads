@@ -76,7 +76,7 @@
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
 		"stylelint-config-standard-scss": "^3.0.0",
-		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?update/jsdoc-deps"
+		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?eabdb5c3e6f089499a9bc62ec2e5e2251d7b23ca"
 	},
 	"overrides": {
 		"engine.io-client": {
