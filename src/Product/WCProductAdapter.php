@@ -904,7 +904,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 				 * @param WC_Product $wc_product      The WooCommerce product object.
 				 *
 				 * @see AttributeManager::ATTRIBUTES for the list of attributes that their values can be modified using this filter.
-				 * @see WCProductAdapter::override_attributes for the docuemntation of the `woocommerce_gla_product_attribute_values` filter.
+				 * @see WCProductAdapter::override_attributes for the documentation of the `woocommerce_gla_product_attribute_values` filter.
 				 */
 				$gla_attributes[ $attribute_id ] = apply_filters( "woocommerce_gla_product_attribute_value_{$attribute_id}", $attribute_value, $this->get_wc_product() );
 			}
