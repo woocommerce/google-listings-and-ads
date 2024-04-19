@@ -20,3 +20,15 @@ global.ResizeObserver = jest
 	} ) );
 
 global.wpNavMenuClassChange = jest.fn().mockName( 'wpNavMenuClassChange' );
+
+// The data store of 'core/notices' namespace is registered by the `@wordpress/notices`
+// in WordPress Core in runtime. It's always unavailable when running jest so here it's
+// mocked globally.
+//
+// Ref: https://github.com/WordPress/gutenberg/tree/trunk/packages/notices#usage
+jest.mock( '.~/hooks/useDispatchCoreNotices', () =>
+	jest
+		.fn()
+		.mockName( 'useDispatchCoreNotices' )
+		.mockReturnValue( { createNotice: () => {} } )
+);
