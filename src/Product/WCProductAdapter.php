@@ -210,6 +210,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 				),
 				__METHOD__
 			);
+			$google_product_types = array_slice( $google_product_types, 0, 10 );
 			$this->setProductTypes( $google_product_types );
 		}
 		return $this;

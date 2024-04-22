@@ -571,6 +571,48 @@ DESCRIPTION;
 		$this->assertNotContains( 'Delta Category', $adapted_product->getProductTypes() );
 	}
 
+	public function test_product_types_are_limited_to_five_categories() {
+		$product     = WC_Helper_Product::create_simple_product();
+		$category_1  = wp_insert_term( 'Zulu Category', 'product_cat' );
+		$category_2  = wp_insert_term( 'Alpha Category', 'product_cat' );
+		$category_3  = wp_insert_term( 'Beta Category', 'product_cat' );
+		$category_4  = wp_insert_term( 'Charlie Category', 'product_cat' );
+		$category_5  = wp_insert_term( 'Delta Category', 'product_cat' );
+		$category_6  = wp_insert_term( 'Echo Category', 'product_cat' );
+		$category_7  = wp_insert_term( 'Foxtrot Category', 'product_cat' );
+		$category_8  = wp_insert_term( 'Golf Category', 'product_cat' );
+		$category_9  = wp_insert_term( 'Hotel Category', 'product_cat' );
+		$category_10 = wp_insert_term( 'India Category', 'product_cat' );
+		$category_11 = wp_insert_term( 'Juliet Category', 'product_cat' );
+
+		$product->set_category_ids(
+			[
+				$category_1['term_id'], // Zulu
+				$category_2['term_id'], // Alpha
+				$category_3['term_id'], // Beta
+				$category_4['term_id'], // Charlie
+				$category_5['term_id'], // Delta
+				$category_6['term_id'], // Echo
+				$category_7['term_id'], // Foxtrot
+				$category_8['term_id'], // Golf
+				$category_9['term_id'], // Hotel
+				$category_10['term_id'], // India
+				$category_11['term_id'], // Juliet
+			]
+		);
+		$product->save();
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		// Confirm only 10 categories are included.
+		$this->assertCount( 10, $adapted_product->getProductTypes() );
+	}
+
 	public function test_images_are_set() {
 		$product = WC_Helper_Product::create_simple_product();
 
