@@ -90,21 +90,42 @@ class AuthControllerTest extends RESTControllerUnitTest {
 			->method( 'delete_wpcom_api_auth_nonce' )
 			->willReturn( true );
 
-		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'status' => 'approved' ] );
+		$response = $this->do_request(
+			self::ROUTE_AUTHORIZE,
+			'POST',
+			[
+				'status' => 'approved',
+				'nonce'  => 'nonce-123',
+			]
+		);
 
 		$this->assertEquals( [ 'status' => 'approved' ], $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
-	public function test_update_authorize_missing_params() {
-		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST' );
+	public function test_update_authorize_missing_status_param() {
+		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'nonce' => 'nonce-123' ] );
 
 		$this->assertEquals( 'Missing parameter(s): status', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
-	public function test_update_authorize_wrong_params() {
-		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'status' => 'wrong-param' ] );
+	public function test_update_authorize_missing_nonce_param() {
+		$response = $this->do_request( self::ROUTE_AUTHORIZE, 'POST', [ 'status' => 'approved' ] );
+
+		$this->assertEquals( 'Missing parameter(s): nonce', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_update_authorize_wrong_status_param() {
+		$response = $this->do_request(
+			self::ROUTE_AUTHORIZE,
+			'POST',
+			[
+				'status' => 'wrong-param',
+				'nonce'  => 'nonce-123',
+			]
+		);
 
 		$this->assertEquals( 'Invalid parameter(s): status', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );

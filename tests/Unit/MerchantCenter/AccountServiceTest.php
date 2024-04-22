@@ -783,4 +783,88 @@ class AccountServiceTest extends UnitTest {
 
 		$this->account->disconnect();
 	}
+
+	public function test_update_wpcom_api_authorization() {
+		$status = 'approved';
+		$nonce  = 'nonce-123';
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->willReturn( 'nonce-123' );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::WPCOM_REST_API_STATUS, 'approved' );
+
+		$this->account->update_wpcom_api_authorization( $status, $nonce );
+	}
+
+	public function test_update_wpcom_api_authorization_nonce_not_provided() {
+		$status = 'approved';
+		$nonce  = '';
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->willReturn( 'nonce-123' );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		try {
+			$this->account->update_wpcom_api_authorization( $status, $nonce );
+		} catch ( Exception $e ) {
+			$this->assertInstanceOf( ExceptionWithResponseData::class, $e );
+			$this->assertEquals( 400, $e->getCode() );
+			$this->assertEquals(
+				'Nonce is not provided, skip updating auth status.',
+				$e->getMessage()
+			);
+		}
+	}
+
+	public function test_update_wpcom_api_authorization_stored_nonce_not_in_db() {
+		$status = 'approved';
+		$nonce  = 'nonce-123';
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->willReturn( '' );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		try {
+			$this->account->update_wpcom_api_authorization( $status, $nonce );
+		} catch ( Exception $e ) {
+			$this->assertInstanceOf( ExceptionWithResponseData::class, $e );
+			$this->assertEquals( 400, $e->getCode() );
+			$this->assertEquals(
+				'No stored nonce found in the database, skip updating auth status.',
+				$e->getMessage()
+			);
+		}
+	}
+
+	public function test_update_wpcom_api_authorization_nonces_mismatch() {
+		$status = 'approved';
+		$nonce  = 'nonce-123';
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->willReturn( 'nonce-456' );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		try {
+			$this->account->update_wpcom_api_authorization( $status, $nonce );
+		} catch ( Exception $e ) {
+			$this->assertInstanceOf( ExceptionWithResponseData::class, $e );
+			$this->assertEquals( 400, $e->getCode() );
+			$this->assertEquals(
+				'Nonces mismatch, skip updating auth status.',
+				$e->getMessage()
+			);
+		}
+	}
 }

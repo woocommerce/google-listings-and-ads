@@ -512,10 +512,31 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * Update the status of the merchant granting access to Google's WPCOM app in the database.
 	 *
 	 * @param string $status The status of the merchant granting access to Google's WPCOM app.
+	 * @param string $nonce  The nonce provided by Google in the URL query parameter when Google redirects back to merchant's site.
 	 *
 	 * @return string Status.
+	 * @throws ExceptionWithResponseData If the stored nonce / nonce from query param is not provided, or the nonces mismatch.
 	 */
-	public function update_wpcom_api_authorization( string $status ): bool {
+	public function update_wpcom_api_authorization( string $status, string $nonce ): bool {
+		$stored_nonce = $this->options->get( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
+		if ( empty( $stored_nonce ) ) {
+			throw $this->prepare_exception(
+				__( 'No stored nonce found in the database, skip updating auth status.', 'google-listings-and-ads' )
+			);
+		}
+
+		if ( empty( $nonce ) ) {
+			throw $this->prepare_exception(
+				__( 'Nonce is not provided, skip updating auth status.', 'google-listings-and-ads' )
+			);
+		}
+
+		if ( $stored_nonce !== $nonce ) {
+			throw $this->prepare_exception(
+				__( 'Nonces mismatch, skip updating auth status.', 'google-listings-and-ads' )
+			);
+		}
+
 		return $this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $status );
 	}
 
