@@ -12,16 +12,13 @@ import HelpIconButton from '.~/components/help-icon-button';
 import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
- * @fires gla_setup_mc with `{ triggered_by: 'back-button', action: 'leave', target: 'back', trigger: 'click' }`.
+ * @fires gla_setup_mc with `{ triggered_by: 'back-button', action: 'leave' }`.
  */
 const SetupMCTopBar = () => {
 	const handleBackButtonClick = () => {
 		recordGlaEvent( 'gla_setup_mc', {
 			triggered_by: 'back-button',
 			action: 'leave',
-			// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.
-			target: 'back',
-			trigger: 'click',
 		} );
 	};
 

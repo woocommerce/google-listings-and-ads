@@ -1,11 +1,11 @@
 === Google Listings & Ads ===
 Contributors: automattic, google, woocommerce
-Tags: woocommerce, google, listings, ads
+Tags: woocommerce, google, product feed, ads, listings
 Requires at least: 5.9
 Tested up to: 6.5
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.6.7
+Stable tag: 2.6.8
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.6.8 - 2024-04-23 =
+* Tweak - Remove deprecated event properties marked as removable after Q1 2024 from the onboarding event tracking.
+* Tweak - Update tags in readme.txt.
+* Update - Restrict product types to be limited to only 10 when converting from categories.
+
 = 2.6.7 - 2024-04-16 =
 * Dev - Add E2E tests for the integration in the classic product editor.
 * Dev - Update e2e test environment to install WooCommerce earlier.
@@ -119,9 +124,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 = 2.6.6 - 2024-04-09 =
 * Dev - Add snippet to bypass WooCommerce dependency in E2E tests.
 * Tweak - WC 8.8 compatibility.
-
-= 2.6.5 - 2024-04-04 =
-* Dev - Update test proxy port.
-* Tweak - Show Review Inbox Notices when 11 clicks and 1 Conversion.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

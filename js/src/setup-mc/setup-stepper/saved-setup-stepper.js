@@ -22,12 +22,15 @@ import SetupFreeListings from '.~/components/free-listings/setup-free-listings';
 import StoreRequirements from './store-requirements';
 import SetupPaidAds from './setup-paid-ads';
 import stepNameKeyMap from './stepNameKeyMap';
-import { recordGlaEvent } from '.~/utils/tracks';
+import {
+	recordStepperChangeEvent,
+	recordStepContinueEvent,
+} from '.~/utils/tracks';
 
 /**
  * @param {Object} props React props
  * @param {string} [props.savedStep] A saved step overriding the current step
- * @fires gla_setup_mc with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', 'step3-continue-button', action: 'go-to-step2' | 'go-to-step3' | 'go-to-step4', target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
+ * @fires gla_setup_mc with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', 'step3-continue-button', action: 'go-to-step2' | 'go-to-step3' | 'go-to-step4' }`.
  * @fires gla_setup_mc with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button' | 'stepper-step3-button', action: 'go-to-step1' | 'go-to-step2' | 'go-to-step3' }`.
  */
 const SavedSetupStepper = ( { savedStep } ) => {
@@ -82,13 +85,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const continueStep = ( to ) => {
 		const from = step;
 
-		recordGlaEvent( 'gla_setup_mc', {
-			triggered_by: `step${ from }-continue-button`,
-			action: `go-to-step${ to }`,
-			// 'target' and 'trigger' were deprecated and can be removed after Q1 2024.
-			target: `step${ from }_continue`,
-			trigger: 'click',
-		} );
+		recordStepContinueEvent( 'gla_setup_mc', from, to );
 		setStep( to );
 	};
 
@@ -107,10 +104,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const handleStepClick = ( stepKey ) => {
 		// Only allow going back to the previous steps.
 		if ( Number( stepKey ) < Number( step ) ) {
-			recordGlaEvent( 'gla_setup_mc', {
-				triggered_by: `stepper-step${ stepKey }-button`,
-				action: `go-to-step${ stepKey }`,
-			} );
+			recordStepperChangeEvent( 'gla_setup_mc', stepKey );
 			setStep( stepKey );
 		}
 	};
