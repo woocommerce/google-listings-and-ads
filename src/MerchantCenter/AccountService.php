@@ -508,6 +508,7 @@ class AccountService implements OptionsAwareInterface, Service {
 
 	/**
 	 * Update the status of the merchant granting access to Google's WPCOM app in the database.
+	 * Before update status in the DB it will comapre the nonce stored in the DB and the nonce passed to the API.
 	 *
 	 * @param string $status The status of the merchant granting access to Google's WPCOM app.
 	 * @param string $nonce  The nonce provided by Google in the URL query parameter when Google redirects back to merchant's site.
