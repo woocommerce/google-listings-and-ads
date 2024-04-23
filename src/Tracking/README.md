@@ -296,6 +296,9 @@ When a documentation link is clicked.
 `href` | `string` | link's URL
 #### Emitters
 - [`AppDocumentationLink`](../../js/src/components/app-documentation-link/index.js#L29)
+- [`ChooseAudienceSection`](../../js/src/components/free-listings/choose-audience-section/choose-audience-section.js#L29) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
+- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L37) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
+- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woo.com/document/google-listings-and-ads/#required-google-permissions' }`
 - [`ContactInformation`](../../js/src/components/contact-information/index.js#L91)
 	- with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://woo.com/document/google-listings-and-ads/#contact-information' }`
 	- with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://woo.com/document/google-listings-and-ads/#contact-information' }`
@@ -304,24 +307,8 @@ When a documentation link is clicked.
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
-- [`ChooseAudienceSection`](../../js/src/components/free-listings/choose-audience-section/choose-audience-section.js#L29) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
-- [`ShippingTimeSection`](../../js/src/components/free-listings/configure-product-listings/shipping-time-section.js#L17) with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
-- [`TaxRate`](../../js/src/components/free-listings/configure-product-listings/tax-rate.js#L22)
-	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-read-more', href: 'https://support.google.com/merchants/answer/160162' }`
-	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
-- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woo.com/document/google-listings-and-ads/#required-google-permissions' }`
-- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woo.com/document/google-listings-and-ads/#required-google-permissions' }`
-- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L37) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
-- [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L32)
-	- with `{ context: 'setup-ads', link_id: 'shopping-ads-policies', href: 'https://support.google.com/merchants/answer/6149970' }`
-	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
-- [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L41) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
-- [`TermsModal`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L29) with `{ context: 'setup-mc', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
-- [`exports`](../../js/src/components/paid-ads/ads-campaign.js#L38) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
-- [`FaqsSection`](../../js/src/components/paid-ads/asset-group/faqs-section.js#L73) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
-- [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L23)
-	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
-	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
+- [`EditPhoneNumber`](../../js/src/settings/edit-phone-number.js#L29) with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://woo.com/document/google-listings-and-ads/#contact-information" }`
+- [`EditStoreAddress`](../../js/src/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://woo.com/document/google-listings-and-ads/#contact-information" }`
 - [`Faqs`](../../js/src/get-started-page/faqs/index.js#L276)
 	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woo.com/document/google-listings-and-ads/#general-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
@@ -330,19 +317,32 @@ When a documentation link is clicked.
 	- with `{ context: 'faqs', linkId: 'free-listings', href: 'https://woo.com/document/google-listings-and-ads/#free-listings-on-google' }`.
 	- with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woo.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
 	- with `{ context: 'faqs', linkId: 'terms-and-conditions-of-google-ads-coupons', href: 'https://www.google.com/ads/coupons/terms/' }`.
+- [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L68) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
+- [`FaqsSection`](../../js/src/components/paid-ads/asset-group/faqs-section.js#L73) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
+- [`FreeAdCredit`](../../js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L27) with `{ context: 'setup-ads', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
 - [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L23) with `{ context: 'get-started', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
 - [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L23) with `{ context: 'get-started-with-video', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
-- [`UnsupportedLanguage`](../../js/src/get-started-page/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
-- [`UnsupportedCountry`](../../js/src/get-started-page/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
-- [`IssuesTableDataModal`](../../js/src/product-feed/issues-table-card/issues-table-data-modal.js#L21) with { context: 'issues-data-table-modal' }
-- [`ProductStatusHelpPopover`](../../js/src/product-feed/product-statistics/product-status-help-popover/index.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
-- [`EditPhoneNumber`](../../js/src/settings/edit-phone-number.js#L29) with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://woo.com/document/google-listings-and-ads/#contact-information" }`
-- [`EditStoreAddress`](../../js/src/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://woo.com/document/google-listings-and-ads/#contact-information" }`
-- [`FreeAdCredit`](../../js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L27) with `{ context: 'setup-ads', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
-- [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L68) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
 - [`GoogleMCDisclaimer`](../../js/src/setup-mc/setup-stepper/setup-accounts/index.js#L33)
 	- with `{ context: 'setup-mc-accounts', link_id: 'comparison-shopping-services', href: 'https://support.google.com/merchants/topic/9080307' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'comparison-shopping-partners-find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
+- [`IssuesTableDataModal`](../../js/src/product-feed/issues-table-card/issues-table-data-modal.js#L21) with { context: 'issues-data-table-modal' }
+- [`ProductStatusHelpPopover`](../../js/src/product-feed/product-statistics/product-status-help-popover/index.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
+- [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L41) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
+- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woo.com/document/google-listings-and-ads/#required-google-permissions' }`
+- [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L23)
+	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
+	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
+- [`ShippingTimeSection`](../../js/src/components/free-listings/configure-product-listings/shipping-time-section.js#L17) with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
+- [`TaxRate`](../../js/src/components/free-listings/configure-product-listings/tax-rate.js#L22)
+	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-read-more', href: 'https://support.google.com/merchants/answer/160162' }`
+	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
+- [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L32)
+	- with `{ context: 'setup-ads', link_id: 'shopping-ads-policies', href: 'https://support.google.com/merchants/answer/6149970' }`
+	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
+- [`TermsModal`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L29) with `{ context: 'setup-mc', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
+- [`UnsupportedCountry`](../../js/src/get-started-page/unsupported-notices/index.js#L73) with `{ context: "get-started", link_id: "supported-countries" }`
+- [`UnsupportedLanguage`](../../js/src/get-started-page/unsupported-notices/index.js#L30) with `{ context: 'get-started', link_id: 'supported-languages', href: 'https://support.google.com/merchants/answer/160637' }`
+- [`exports`](../../js/src/components/paid-ads/ads-campaign.js#L38) with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
 
 ### [`gla_edit_mc_phone_number`](../../js/src/components/contact-information/phone-number-card/phone-number-card-preview.js#L14)
 Triggered when phone number edit button is clicked.
@@ -403,9 +403,6 @@ Clicking on faq item to collapse or expand it.
 `action` | `string` | (`expand`\|`collapse`)
 `context` | `string` | Indicates which page / module the FAQ is in
 #### Emitters
-- [`FaqsSection`](../../js/src/components/paid-ads/asset-group/faqs-section.js#L73)
-	- with `{ context: 'campaign-management', id: 'what-will-my-ads-look-like', action: 'expand' | 'collapse' }`.
-	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-product-ads', action: 'expand' | 'collapse' }`.
 - [`Faqs`](../../js/src/get-started-page/faqs/index.js#L276)
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'expand' }`.
 	- with `{ context: 'get-started', id: 'what-do-i-need-to-get-started', action: 'collapse' }`.
@@ -430,6 +427,9 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-wp-account', action: 'collapse' }`.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'expand' }`.
 	- with `{ context: 'setup-mc-accounts', id: 'why-do-i-need-a-google-mc-account', action: 'collapse' }`.
+- [`FaqsSection`](../../js/src/components/paid-ads/asset-group/faqs-section.js#L73)
+	- with `{ context: 'campaign-management', id: 'what-will-my-ads-look-like', action: 'expand' | 'collapse' }`.
+	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-product-ads', action: 'expand' | 'collapse' }`.
 
 ### [`gla_filter`](../../js/src/utils/tracks.js#L122)
 Triggered when changing products & variations filter,
@@ -467,13 +467,13 @@ Clicking on the button to connect Google account.
 `context` | `string` | (`setup-mc`\|`setup-ads`\|`reconnect`) - indicate the button is clicked from which page.
 `action` | `string` | (`authorization`\|`scope`) 	- `authorization` is used when the plugin has not been authorized yet and requests Google account access and permission scopes from users.   - `scope` is used when requesting required permission scopes from users in order to proceed with more plugin functions. Added with the Partial OAuth feature (aka Incremental Authorization).
 #### Emitters
+- [`AuthorizeAds`](../../js/src/components/google-ads-account-card/authorize-ads.js#L20) with `{ action: 'scope', context: 'setup-ads' }`
 - [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23)
 	- with `{ action: 'authorization', context: 'reconnect' }`
 	- with `{ action: 'authorization', context: 'setup-mc' }`
 - [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26)
 	- with `{ action: 'scope', context: 'reconnect' }`
 	- with `{ action: 'scope', context: 'setup-mc' }`
-- [`AuthorizeAds`](../../js/src/components/google-ads-account-card/authorize-ads.js#L20) with `{ action: 'scope', context: 'setup-ads' }`
 
 ### [`gla_google_account_connect_different_account_button_click`](../../js/src/components/google-account-card/connected-google-account-card.js#L15)
 Clicking on the "connect to a different Google account" button.
@@ -605,7 +605,7 @@ A modal is closed.
 - [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
 - [`Dashboard`](../../js/src/dashboard/index.js#L33) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L155) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
+- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L159) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
 
 ### [`gla_modal_content_link_click`](../../js/src/components/guide-page-content/index.js#L28)
 Clicking on a text link within the modal content
@@ -626,7 +626,7 @@ A modal is open
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is open with `{ context: 'attribute-mapping-manage-rule-modal' | 'attribute-mapping-create-rule-modal' }`
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
-- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L155) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+- [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L159) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
 ### [`gla_onboarding_complete_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L49)
 Clicking on the skip paid ads button to complete the onboarding flow.
@@ -792,8 +792,8 @@ Toggling display of table columns
 `column` | `string` | Name of the column
 `status` | `'on' \| 'off'` | Indicates if the column was toggled on or off.
 #### Emitters
-- [`recordColumnToggleEvent`](../../js/src/components/app-table-card/index.js#L29) with given `report: trackEventReportId, column: toggled`
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon toggling column visibility
+- [`recordColumnToggleEvent`](../../js/src/components/app-table-card/index.js#L29) with given `report: trackEventReportId, column: toggled`
 
 ### [`gla_table_page_click`](../../js/src/utils/tracks.js#L25)
 When table pagination is clicked
@@ -815,8 +815,8 @@ Sorting table
 `column` | `string` | Name of the column
 `direction` | `string` | (`asc`\|`desc`)
 #### Emitters
-- [`recordTableSortEvent`](../../js/src/components/app-table-card/index.js#L55) with given props.
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon sorting table by column
+- [`recordTableSortEvent`](../../js/src/components/app-table-card/index.js#L55) with given props.
 
 ### [`gla_tooltip_viewed`](../../js/src/components/help-popover/index.js#L16)
 Viewing tooltip

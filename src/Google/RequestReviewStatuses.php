@@ -36,7 +36,7 @@ class RequestReviewStatuses implements Service {
 		$valid_program_states    = [ self::ENABLED, self::NO_OFFERS ];
 		$review_eligible_regions = [];
 
-		foreach ( $response as $program_type ) {
+		foreach ( $response as $program_type_name => $program_type ) {
 
 			// In case any Program is with no offers we consider it Onboarding
 			if ( $program_type['data']['globalState'] === self::NO_OFFERS ) {
@@ -54,7 +54,7 @@ class RequestReviewStatuses implements Service {
 				$issues                  = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
 				$cooldown                = $this->maybe_update_cooldown_period( $region_status, $cooldown );
 				$status                  = $this->maybe_update_status( $region_status['eligibilityStatus'], $status );
-				$review_eligible_regions = $this->maybe_load_eligible_region( $region_status, $review_eligible_regions );
+				$review_eligible_regions = $this->maybe_load_eligible_region( $region_status, $review_eligible_regions, $program_type_name );
 			}
 		}
 
@@ -120,18 +120,28 @@ class RequestReviewStatuses implements Service {
 	/**
 	 * Updates the regions where a request review is allowed.
 	 *
-	 * @param array $region_status Associative array containing the region eligibility.
-	 * @param array $review_eligible_regions Indexed array with the current eligible regions.
+	 * @param array                                      $region_status Associative array containing the region eligibility.
+	 * @param array                                      $review_eligible_regions Indexed array with the current eligible regions.
+	 * @param "freeListingsProgram"|"shoppingAdsProgram" $type The program type.
 	 *
 	 * @return array The (maybe) modified $review_eligible_regions array
 	 */
-	private function maybe_load_eligible_region( array $region_status, array $review_eligible_regions ) {
+	private function maybe_load_eligible_region( array $region_status, array $review_eligible_regions, string $type = 'freeListingsProgram' ) {
 		if (
 			! empty( $region_status['regionCodes'] ) &&
 			isset( $region_status['reviewEligibilityStatus'] ) &&
 			$region_status['reviewEligibilityStatus'] === self::ELIGIBLE
 		) {
-			array_push( $review_eligible_regions, $region_status['regionCodes'][0] );
+
+			sort( $region_status['regionCodes'] ); // sometimes the regions come unsorted between the different programs
+			$region_id = $region_status['regionCodes'][0];
+
+			if ( ! isset( $review_eligible_regions[ $region_id ] ) ) {
+				$review_eligible_regions[ $region_id ] = [];
+			}
+
+			$review_eligible_regions[ $region_id ][] = strtolower( $type ); // lowercase as is how we expect it in WCS
+
 		}
 
 		return $review_eligible_regions;
