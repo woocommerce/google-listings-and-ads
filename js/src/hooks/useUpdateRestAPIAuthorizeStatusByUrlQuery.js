@@ -19,10 +19,8 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
  * redirect back to the merchant site, either the settings page or onboarding setup account page.
  * They will add a query param `google_wpcom_app_status` to the URL, we will store this status to
  * the DB by calling an API `PUT /wc/gla/rest-api/authorize`.
- *
- * @param {string} googleWPCOMAuthNonce A nonce stored in the option where it was provided by an Google API when we start the granting Google WPCOM app access flow.
  */
-const useUpdateRestAPIAuthorizeStatusByUrlQuery = ( googleWPCOMAuthNonce ) => {
+const useUpdateRestAPIAuthorizeStatusByUrlQuery = () => {
 	const {
 		google_wpcom_app_status: googleWPCOMAppStatus,
 		nonce: nonceFromURLQuery,
@@ -37,18 +35,11 @@ const useUpdateRestAPIAuthorizeStatusByUrlQuery = ( googleWPCOMAuthNonce ) => {
 
 	const handleUpdateRestAPIAuthorize = useCallback( async () => {
 		try {
-			if ( ! googleWPCOMAuthNonce || ! nonceFromURLQuery ) {
-				return;
-			}
-
-			if ( nonceFromURLQuery !== googleWPCOMAuthNonce ) {
-				throw new Error(
-					'Nonces mismatch when updating REST API authorize status.'
-				);
-			}
-
 			await fetchUpdateRestAPIAuthorize( {
-				data: { status: googleWPCOMAppStatus },
+				data: {
+					status: googleWPCOMAppStatus,
+					nonce: nonceFromURLQuery,
+				},
 			} );
 
 			// Refetch Google MC account so we can get the latest gla_wpcom_rest_api_status.
@@ -57,12 +48,11 @@ const useUpdateRestAPIAuthorizeStatusByUrlQuery = ( googleWPCOMAuthNonce ) => {
 			// Only show in the console when failed to update rest API authorize status
 			// since the user doesn't need to know about it.
 			// eslint-disable-next-line no-console
-			console.error( e );
+			console.error( e.message );
 		}
 	}, [
 		fetchUpdateRestAPIAuthorize,
 		googleWPCOMAppStatus,
-		googleWPCOMAuthNonce,
 		invalidateResolution,
 		nonceFromURLQuery,
 	] );
