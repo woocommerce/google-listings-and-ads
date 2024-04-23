@@ -530,6 +530,7 @@ class AccountService implements OptionsAwareInterface, Service {
 		}
 
 		if ( $stored_nonce !== $nonce ) {
+			$this->delete_wpcom_api_auth_nonce();
 			throw $this->prepare_exception(
 				__( 'Nonces mismatch, skip updating auth status.', 'google-listings-and-ads' )
 			);

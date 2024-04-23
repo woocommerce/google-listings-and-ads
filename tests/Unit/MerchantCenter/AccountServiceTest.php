@@ -781,6 +781,9 @@ class AccountServiceTest extends UnitTest {
 			->method( 'update' )
 			->with( OptionsInterface::WPCOM_REST_API_STATUS, 'approved' );
 
+		$this->options->expects( $this->never() )
+			->method( 'delete' );
+
 		$this->account->update_wpcom_api_authorization( $status, $nonce );
 	}
 
@@ -794,6 +797,9 @@ class AccountServiceTest extends UnitTest {
 
 		$this->options->expects( $this->never() )
 			->method( 'update' );
+
+		$this->options->expects( $this->never() )
+			->method( 'delete' );
 
 		try {
 			$this->account->update_wpcom_api_authorization( $status, $nonce );
@@ -818,6 +824,9 @@ class AccountServiceTest extends UnitTest {
 		$this->options->expects( $this->never() )
 			->method( 'update' );
 
+		$this->options->expects( $this->never() )
+			->method( 'delete' );
+
 		try {
 			$this->account->update_wpcom_api_authorization( $status, $nonce );
 		} catch ( Exception $e ) {
@@ -840,6 +849,10 @@ class AccountServiceTest extends UnitTest {
 
 		$this->options->expects( $this->never() )
 			->method( 'update' );
+
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
 
 		try {
 			$this->account->update_wpcom_api_authorization( $status, $nonce );
