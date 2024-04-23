@@ -111,6 +111,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.6.8 - 2024-04-23 =
+* Tweak - Remove deprecated event properties marked as removable after Q1 2024 from the onboarding event tracking.
+* Tweak - Update tags in readme.txt.
+* Update - Restrict product types to be limited to only 10 when converting from categories.
+
 = 2.6.7 - 2024-04-16 =
 * Dev - Add E2E tests for the integration in the classic product editor.
 * Dev - Update e2e test environment to install WooCommerce earlier.
