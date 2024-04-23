@@ -421,6 +421,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface, OptionsAware
 				continue;
 			}
 
+			// Confirm there are issues for this product.
+			if ( empty( $mc_product_status->getItemLevelIssues() ) ) {
+				continue;
+			}
+
 			$product_issue_template = [
 				'product'              => html_entity_decode( $wc_product->get_name() ),
 				'product_id'           => $wc_product_id,
