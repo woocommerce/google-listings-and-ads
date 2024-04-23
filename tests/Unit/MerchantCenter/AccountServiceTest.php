@@ -669,21 +669,14 @@ class AccountServiceTest extends UnitTest {
 			->willReturn( true );
 
 		$this->options->method( 'get' )
-			->withConsecutive(
-				[ OptionsInterface::WPCOM_REST_API_STATUS ],
-				[ OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE ]
-			)
-			->willReturnOnConsecutiveCalls(
-				'approved',
-				'nonce-123'
-			);
+			->with( OptionsInterface::WPCOM_REST_API_STATUS )
+			->willReturn( 'approved' );
 
 		$this->assertEquals(
 			[
-				'id'                      => self::TEST_ACCOUNT_ID,
-				'status'                  => 'connected',
-				'wpcom_rest_api_status'   => 'approved',
-				'google_wpcom_auth_nonce' => 'nonce-123',
+				'id'                    => self::TEST_ACCOUNT_ID,
+				'status'                => 'connected',
+				'wpcom_rest_api_status' => 'approved',
 			],
 			$this->account->get_connected_status()
 		);
@@ -699,21 +692,14 @@ class AccountServiceTest extends UnitTest {
 			->willReturn( false );
 
 		$this->options->method( 'get' )
-			->withConsecutive(
-				[ OptionsInterface::WPCOM_REST_API_STATUS ],
-				[ OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE ]
-			)
-			->willReturnOnConsecutiveCalls(
-				'approved',
-				'nonce-123'
-			);
+			->with( OptionsInterface::WPCOM_REST_API_STATUS )
+			->willReturn( 'approved' );
 
 		$this->assertEquals(
 			[
-				'id'                      => self::TEST_ACCOUNT_ID,
-				'status'                  => 'connected',
-				'wpcom_rest_api_status'   => 'disabled',
-				'google_wpcom_auth_nonce' => 'nonce-123',
+				'id'                    => self::TEST_ACCOUNT_ID,
+				'status'                => 'connected',
+				'wpcom_rest_api_status' => 'disabled',
 			],
 			$this->account->get_connected_status()
 		);
@@ -734,11 +720,10 @@ class AccountServiceTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'                      => self::TEST_ACCOUNT_ID,
-				'status'                  => 'incomplete',
-				'step'                    => 'verify',
-				'wpcom_rest_api_status'   => null,
-				'google_wpcom_auth_nonce' => null,
+				'id'                    => self::TEST_ACCOUNT_ID,
+				'status'                => 'incomplete',
+				'step'                  => 'verify',
+				'wpcom_rest_api_status' => null,
 			],
 			$this->account->get_connected_status()
 		);
