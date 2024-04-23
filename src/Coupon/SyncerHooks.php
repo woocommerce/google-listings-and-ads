@@ -186,7 +186,7 @@ class SyncerHooks implements Service, Registerable {
 			return;
 		}
 
-		// Schedule an update job if product sync is enabled.
+		// Schedule an update job if coupon sync is enabled.
 		if ( $this->coupon_helper->is_sync_ready( $coupon ) ) {
 			$this->coupon_helper->mark_as_pending( $coupon );
 			$this->update_coupon_job->schedule(
@@ -300,7 +300,7 @@ class SyncerHooks implements Service, Registerable {
 		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
 
 		if ( is_null( $coupon ) ) {
-			// In case product is not anymore in DB we send the notification directly.
+			// In case coupon is not anymore in DB we send the notification directly.
 			$this->notifications_service->notify( NotificationsService::TOPIC_COUPON_DELETED, $coupon_id );
 			return;
 		}

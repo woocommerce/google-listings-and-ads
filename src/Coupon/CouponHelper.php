@@ -378,7 +378,7 @@ class CouponHelper implements Service, HelperNotificationInterface {
 		try {
 			$coupon = $this->get_wc_coupon( $coupon_id );
 		} catch ( InvalidValue $e ) {
-			return true; // Sent true for forcing delete notification as the product doesn't exist anymore.
+			return true; // Sent true for forcing delete notification as the coupon doesn't exist anymore.
 		}
 
 		$valid_has_notified_creation_statuses = [
