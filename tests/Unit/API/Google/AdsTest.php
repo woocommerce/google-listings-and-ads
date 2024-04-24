@@ -10,8 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Exception;
-use Google\Ads\GoogleAds\V14\Enums\BillingSetupStatusEnum\BillingSetupStatus as AdsBillingSetupStatus;
-use Google\Ads\GoogleAds\V14\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
+use Google\Ads\GoogleAds\V16\Enums\BillingSetupStatusEnum\BillingSetupStatus as AdsBillingSetupStatus;
+use Google\Ads\GoogleAds\V16\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
 

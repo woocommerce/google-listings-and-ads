@@ -5,7 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidProperty;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Google\Ads\GoogleAds\V14\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V16\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V16\Services\SearchGoogleAdsRequest;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\PagedListResponse;
 
@@ -83,17 +84,17 @@ abstract class AdsQuery extends Query {
 	 *
 	 * @throws ApiException If the search call fails.
 	 * @throws InvalidProperty If the client is not set.
+	 *
+	 *
 	 */
 	protected function query_results() {
 		if ( ! $this->client || ! $this->id ) {
 			throw InvalidProperty::not_null( get_class( $this ), 'client' );
 		}
 
-		/** @var PagedListResponse $this->results */
-		$this->results = $this->client->getGoogleAdsServiceClient()->search(
-			$this->id,
-			$this->build_query(),
-			$this->search_args
-		);
+		$request = new SearchGoogleAdsRequest();
+		$request->setQuery( $this->build_query() );
+		$request->setCustomerId( $this->id );
+		$this->results = $this->client->getGoogleAdsServiceClient()->search( $request );
 	}
 }

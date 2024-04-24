@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Util;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception;
 use Composer\Script\Event;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -26,7 +27,7 @@ class GoogleAdsCleanupServices {
 	 *
 	 * @var string
 	 */
-	protected $version = 'V14';
+	protected $version = 'V16';
 
 	/**
 	 * @var Event Composer event.
@@ -67,7 +68,7 @@ class GoogleAdsCleanupServices {
 	 */
 	public static function remove( Event $event = null ) {
 		$cleanup = new GoogleAdsCleanupServices( $event );
-		$cleanup->remove_services();
+		//$cleanup->remove_services();
 		$cleanup->remove_enums();
 	}
 
@@ -84,6 +85,10 @@ class GoogleAdsCleanupServices {
 					'Service'
 				),
 				$this->find_library_file_pattern(
+					"{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Services/Client",
+					'Service'
+				),
+				$this->find_library_file_pattern(
 					"{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Resources"
 				),
 			)
@@ -91,6 +96,9 @@ class GoogleAdsCleanupServices {
 
 		$used = array_unique(
 			array_merge(
+				$this->find_used_pattern(
+					"use Google\\\\Ads\\\\GoogleAds\\\\{$this->version}\\\\Services\\\\Client\\\\([A-Za-z0-9]+)ServiceClient;"
+				),
 				$this->find_used_pattern(
 					"use Google\\\\Ads\\\\GoogleAds\\\\{$this->version}\\\\Services\\\\([A-Za-z0-9]+)ServiceClient;"
 				),
@@ -403,7 +411,22 @@ class GoogleAdsCleanupServices {
 			return;
 		}
 
-		rmdir( $directory ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
+		if ( $this->is_empty_directory( $directory ) ) {
+			rmdir( $directory ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
+		} else {
+			$this->warning( sprintf( 'Directory not empty: %s', $directory ) );
+		}
+	}
+
+	/**
+	 * Check if a directory is empty
+	 *
+	 * @param string $directory
+	 *
+	 * @return bool True if empty
+	 */
+	protected function is_empty_directory( string $directory ): bool {
+		return ( count( scandir( $directory ) ) == 2);
 	}
 
 	/**

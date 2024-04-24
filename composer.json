@@ -10,9 +10,9 @@
 		"automattic/jetpack-autoloader": "^3.0",
 		"automattic/jetpack-config": "^2.0",
 		"automattic/jetpack-connection": "^2.3",
-		"google/apiclient": "^2.15",
-		"google/apiclient-services": "~0.312",
-		"googleads/google-ads-php": "^19.2",
+		"google/apiclient": "^2.16",
+		"google/apiclient-services": "^0.350.0",
+		"googleads/google-ads-php": "dev-legacy-v22.1.0",
 		"league/container": "^3.4",
 		"league/iso3166": "^4.1",
 		"phpseclib/bcmath_compat": "^2.0",
@@ -60,10 +60,10 @@
 	"scripts": {
 		"install-scripts": [
 			"Google\\Task\\Composer::cleanup",
+			"php ./bin/prefix-vendor-namespace.php",
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\SymfonyPolyfillCleanup::remove",
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\Util\\GoogleAdsCleanupServices::remove",
 			"composer run-script remove-google-ads-api-version-support -- 11 12 13",
-			"php ./bin/prefix-vendor-namespace.php",
 			"bash ./bin/cleanup-vendor-files.sh",
 			"composer dump-autoload"
 		],
