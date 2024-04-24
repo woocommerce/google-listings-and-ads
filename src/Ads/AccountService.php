@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -28,6 +29,7 @@ defined( 'ABSPATH' ) || exit;
  * - Ads
  * - AdsAccountState
  * - AdsConversionAction
+ * - Connection
  * - Merchant
  * - MerchantAccountState
  * - Middleware
@@ -178,6 +180,10 @@ class AccountService implements OptionsAwareInterface, Service {
 						$this->link_merchant_account();
 						break;
 
+					case 'account_access':
+						$this->check_ads_account_has_access();
+						break;
+
 					default:
 						throw new Exception(
 							/* translators: 1: is a string representing an unknown step name */
@@ -211,9 +217,83 @@ class AccountService implements OptionsAwareInterface, Service {
 			return [ 'status' => $status ];
 		}
 
+		$billing_url = $this->options->get( OptionsInterface::ADS_BILLING_URL );
+
+		// Check if user has provided the access and ocid is present.
+		$connection_status = $this->container->get( Connection::class )->get_status();
+		$email             = $connection_status['email'] ?? '';
+		$has_access        = $this->container->get( Ads::class )->has_access( $email );
+		$ocid              = $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID, null );
+
+		// Link directly to the payment page if the customer already has access.
+		if ( $has_access ) {
+			$billing_url = add_query_arg(
+				[
+					'ocid' => $ocid ?: 0,
+				],
+				'https://ads.google.com/aw/signup/payment'
+			);
+		}
+
 		return [
 			'status'      => $status,
-			'billing_url' => $this->options->get( OptionsInterface::ADS_BILLING_URL ),
+			'billing_url' => $billing_url,
+		];
+	}
+
+	/**
+	 * Check if the Ads account has access.
+	 *
+	 * @throws ExceptionWithResponseData If the account doesn't have access.
+	 */
+	private function check_ads_account_has_access() {
+		$access_status = $this->get_ads_account_has_access();
+
+		if ( ! $access_status['has_access'] ) {
+			throw new ExceptionWithResponseData(
+				__( 'Account must be accepted before completing setup.', 'google-listings-and-ads' ),
+				428,
+				null,
+				$access_status
+			);
+		}
+	}
+
+	/**
+	 * Gets the Ads account access status.
+	 *
+	 * @return array {
+	 *     Returns the access status, last completed account setup step,
+	 *     and invite link if available.
+	 *
+	 *     @type bool   $has_access  Whether the customer has access to the account.
+	 *     @type string $step        The last completed setup step for the Ads account.
+	 *     @type string $invite_link The URL to the invite link.
+	 * }
+	 */
+	public function get_ads_account_has_access() {
+		$has_access = false;
+
+		// Check if an Ads ID is present.
+		if ( $this->options->get_ads_id() ) {
+			$connection_status = $this->container->get( Connection::class )->get_status();
+			$email             = $connection_status['email'] ?? '';
+		}
+
+		// If no email, means google account is not connected.
+		if ( ! empty( $email ) ) {
+			$has_access = $this->container->get( Ads::class )->has_access( $email );
+		}
+
+		// If we have access, complete the step so that it won't be called next time.
+		if ( $has_access ) {
+			$this->state->complete_step( 'account_access' );
+		}
+
+		return [
+			'has_access'  => $has_access,
+			'step'        => $this->state->last_incomplete_step(),
+			'invite_link' => $this->options->get( OptionsInterface::ADS_BILLING_URL, '' ),
 		];
 	}
 
@@ -222,6 +302,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 */
 	public function disconnect() {
 		$this->options->delete( OptionsInterface::ADS_ACCOUNT_CURRENCY );
+		$this->options->delete( OptionsInterface::ADS_ACCOUNT_OCID );
 		$this->options->delete( OptionsInterface::ADS_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::ADS_BILLING_URL );
 		$this->options->delete( OptionsInterface::ADS_CONVERSION_ACTION );

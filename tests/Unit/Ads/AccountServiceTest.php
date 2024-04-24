@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -58,7 +59,11 @@ class AccountServiceTest extends UnitTest {
 	/** @var OptionsInterface $options */
 	protected $options;
 
+	/** @var Connection $connection */
+	protected $connection;
+
 	protected const TEST_ACCOUNT_ID        = 1234567890;
+	protected const TEST_ACCOUNT_OCID      = 9876543210;
 	protected const TEST_OLD_ACCOUNT_ID    = 2345678901;
 	protected const TEST_MERCHANT_ID       = 78123456;
 	protected const TEST_BILLING_URL       = 'https://domain.test/billing/setup/';
@@ -114,6 +119,7 @@ class AccountServiceTest extends UnitTest {
 		$this->merchant_state    = $this->createMock( MerchantAccountState::class );
 		$this->options           = $this->createMock( OptionsInterface::class );
 		$this->transients        = $this->createMock( TransientsInterface::class );
+		$this->connection        = $this->createMock( Connection::class );
 
 		$this->container = new Container();
 		$this->container->share( Ads::class, $this->ads );
@@ -123,6 +129,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( AdsAccountState::class, $this->state );
 		$this->container->share( MerchantAccountState::class, $this->merchant_state );
 		$this->container->share( TransientsInterface::class, $this->transients );
+		$this->container->share( Connection::class, $this->connection );
 
 		$this->account = new AccountService( $this->container );
 		$this->account->set_options_object( $this->options );
@@ -278,6 +285,83 @@ class AccountServiceTest extends UnitTest {
 			->method( 'update' );
 
 		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
+	}
+
+	public function test_setup_account_step_account_access() {
+		// Mock return values
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_BILLING_URL, '' )
+			->willReturn( self::TEST_BILLING_URL );
+
+		$this->connection->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@domain.com' ] );
+
+		$this->ads->method( 'has_access' )
+			->with( 'test@domain.com' )
+			->willReturn( true );
+
+		// Expectations.
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'account_access'    => [ 'status' => null ],
+					'conversion_action' => [ 'status' => null ],
+				]
+			);
+
+		// Account access should be marked as completed.
+		$this->state->expects( $this->once() )
+			->method( 'complete_step' )
+			->with( 'account_access' );
+
+		// The conversion action should run.
+		$this->conversion_action->expects( $this->once() )
+			->method( 'create_conversion_action' );
+
+		$this->account->setup_account();
+	}
+
+	public function test_setup_account_step_account_access_without_access() {
+		// Mock return values
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_BILLING_URL, '' )
+			->willReturn( self::TEST_BILLING_URL );
+
+		$this->connection->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@domain.com' ] );
+
+		$this->ads->method( 'has_access' )
+			->with( 'test@domain.com' )
+			->willReturn( false );
+
+		// Expectations.
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'account_access'    => [ 'status' => null ],
+					'conversion_action' => [ 'status' => null ],
+				]
+			);
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionCode( 428 );
+		$this->expectExceptionMessage( 'Account must be accepted before completing setup.' );
+
+		// The conversion action should not be run.
+		$this->conversion_action->expects( $this->never() )
+			->method( 'create_conversion_action' );
+
+		$this->account->setup_account();
 	}
 
 	public function test_setup_account_step_billing() {
@@ -460,10 +544,20 @@ class AccountServiceTest extends UnitTest {
 			->method( 'get_billing_status' )
 			->willReturn( BillingSetupStatus::PENDING );
 
-		$this->options->expects( $this->once() )
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn( [] );
+
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'get' )
-			->with( OptionsInterface::ADS_BILLING_URL )
-			->willReturn( self::TEST_BILLING_URL );
+			->withConsecutive(
+				[ OptionsInterface::ADS_BILLING_URL ],
+				[ OptionsInterface::ADS_ACCOUNT_OCID, null ]
+			)
+			->willReturnOnConsecutiveCalls(
+				self::TEST_BILLING_URL,
+				null
+			);
 
 		$this->assertEquals(
 			[
@@ -474,11 +568,140 @@ class AccountServiceTest extends UnitTest {
 		);
 	}
 
+	public function test_get_billing_status_returns_deeplink_url() {
+		$this->ads->expects( $this->once() )
+			->method( 'get_billing_status' )
+			->willReturn( BillingSetupStatus::PENDING );
+
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive(
+				[ OptionsInterface::ADS_BILLING_URL ],
+				[ OptionsInterface::ADS_ACCOUNT_OCID, null ]
+			)
+			->willReturnOnConsecutiveCalls(
+				self::TEST_BILLING_URL,
+				self::TEST_ACCOUNT_OCID
+			);
+
+		$this->connection->expects( $this->once() )
+			->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@gmail.com' ] );
+
+		$this->ads->expects( $this->once() )
+			->method( 'has_access' )
+			->with( 'test@gmail.com' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'status'      => BillingSetupStatus::PENDING,
+				'billing_url' => 'https://ads.google.com/aw/signup/payment?ocid=' . self::TEST_ACCOUNT_OCID,
+			],
+			$this->account->get_billing_status()
+		);
+	}
+
+	public function test_get_ads_account_has_access() {
+		$this->connection->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@domain.com' ] );
+
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'complete_step' )
+			->with( 'account_access' );
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_BILLING_URL, '' )
+			->willReturn( self::TEST_BILLING_URL );
+
+		$this->state->method( 'last_incomplete_step' )
+			->willReturn( 'conversion_action' );
+
+		$this->ads->method( 'has_access' )
+			->with( 'test@domain.com' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'has_access'  => true,
+				'step'        => 'conversion_action',
+				'invite_link' => self::TEST_BILLING_URL,
+			],
+			$this->account->get_ads_account_has_access()
+		);
+	}
+
+	public function test_get_ads_account_has_access_not_claimed() {
+		$this->connection->method( 'get_status' )
+			->willReturn( [ 'email' => 'test@domain.com' ] );
+
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_BILLING_URL, '' )
+			->willReturn( self::TEST_BILLING_URL );
+
+		$this->state->method( 'last_incomplete_step' )
+			->willReturn( 'account_access' );
+
+		$this->ads->method( 'has_access' )
+			->with( 'test@domain.com' )
+			->willReturn( false );
+
+		$this->assertEquals(
+			[
+				'has_access'  => false,
+				'step'        => 'account_access',
+				'invite_link' => self::TEST_BILLING_URL,
+			],
+			$this->account->get_ads_account_has_access()
+		);
+	}
+
+	public function test_get_ads_account_has_access_without_google_id() {
+		$this->connection->method( 'get_status' )
+			->willReturn( [] );
+
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::ADS_BILLING_URL, '' )
+			->willReturn( '' );
+
+		$this->ads->expects( $this->never() )
+			->method( 'has_access' );
+
+		$this->account->get_ads_account_has_access();
+	}
+
+	public function test_get_ads_account_has_access_without_ads_id() {
+		$this->options->expects( $this->once() )
+			->method( 'get_ads_id' )
+			->willReturn( 0 );
+
+		$this->connection->expects( $this->never() )
+			->method( 'get_status' );
+
+		$this->ads->expects( $this->never() )
+			->method( 'has_access' );
+
+		$this->account->get_ads_account_has_access();
+	}
+
 	public function test_disconnect() {
-		$this->options->expects( $this->exactly( 7 ) )
+		$this->options->expects( $this->exactly( 8 ) )
 			->method( 'delete' )
 			->withConsecutive(
 				[ OptionsInterface::ADS_ACCOUNT_CURRENCY ],
+				[ OptionsInterface::ADS_ACCOUNT_OCID ],
 				[ OptionsInterface::ADS_ACCOUNT_STATE ],
 				[ OptionsInterface::ADS_BILLING_URL ],
 				[ OptionsInterface::ADS_CONVERSION_ACTION ],

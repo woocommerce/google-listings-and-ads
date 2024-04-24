@@ -181,7 +181,7 @@ export default function SetupPaidAds() {
 					<AppButton
 						isPrimary
 						text={ __(
-							'Create a paid ad campaign',
+							'Create campaign',
 							'google-listings-and-ads'
 						) }
 						disabled={ completing === ACTION_SKIP }

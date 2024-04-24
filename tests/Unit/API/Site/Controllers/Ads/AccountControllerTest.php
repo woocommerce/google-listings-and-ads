@@ -26,6 +26,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_ACCOUNTS           = '/wc/gla/ads/accounts';
 	protected const ROUTE_CONNECTION         = '/wc/gla/ads/connection';
 	protected const ROUTE_BILLING_STATUS     = '/wc/gla/ads/billing-status';
+	protected const ROUTE_ACCOUNT_STATUS     = '/wc/gla/ads/account-status';
 	protected const TEST_ACCOUNT_ID          = 1234567890;
 	protected const TEST_BILLING_URL         = 'https://domain.test/billing/setup/';
 	protected const TEST_BILLING_STATUS      = 'pending';
@@ -213,6 +214,29 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_BILLING_STATUS, 'GET' );
 
 		$this->assertEquals( self::TEST_BILLING_STATUS_DATA, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	/**
+	 * This tests that the API endpoint returns data from the AccountService class.
+	 * The logic for actual return values is tested in the AccountServiceTest.
+	 */
+	public function test_get_ads_account_has_access() {
+		$data = [
+			'has_access'  => true,
+			'step'        => 'conversion_action',
+			'invite_link' => self::TEST_BILLING_URL,
+		];
+
+		$this->account->method( 'get_ads_account_has_access' )
+			->willReturn( $data );
+
+		$this->account->expects( $this->once() )
+			->method( 'get_ads_account_has_access' );
+
+		$response = $this->do_request( self::ROUTE_ACCOUNT_STATUS, 'GET' );
+
+		$this->assertEquals( $data, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 

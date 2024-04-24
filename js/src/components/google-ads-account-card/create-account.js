@@ -2,88 +2,121 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useEffect, useCallback, Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import Section from '.~/wcdl/section';
-import AppButton from '.~/components/app-button';
-import AccountCard, { APPEARANCE } from '.~/components/account-card';
-import CreateAccountButton from './create-account-button';
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import AccountCard, { APPEARANCE } from '.~/components/account-card';
+import AppButton from '.~/components/app-button';
+import ClaimAccount from './claim-account';
+import ClaimAccountButton from './claim-account-button';
+import ClaimAccountModal from './claim-account-modal';
+import CreateAccountButton from './create-account-button';
+import Section from '.~/wcdl/section';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
+import useWindowFocusCallbackIntervalEffect from '.~/hooks/useWindowFocusCallbackIntervalEffect';
+import LoadingLabel from '../loading-label/loading-label';
 
-const ClaimTermsAndCreateAccountButton = () => {
-	const { createNotice } = useDispatchCoreNotices();
-	const { fetchGoogleAdsAccount } = useAppDispatch();
-	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
-	const [ fetchCreateAdsAccount, { loading: createLoading } ] =
-		useApiFetchCallback( {
-			path: `/wc/gla/ads/accounts`,
-			method: 'POST',
-		} );
+const CreateAccount = ( props ) => {
+	const { allowShowExisting, onShowExisting } = props;
+	const [ showClaimModal, setShowClaimModal ] = useState( false );
+	const [ isClaiming, setIsClaiming ] = useState( false );
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
+	const [ upsertAdsAccount, { loading: isUpsertAdsAccountLoading } ] =
+		useUpsertAdsAccount();
+	const shouldClaimGoogleAdsAccount = Boolean(
+		googleAdsAccount.id && hasAccess === false
+	);
 
-	const handleCreateAccount = async () => {
-		try {
-			await fetchCreateAdsAccount( { parse: false } );
-		} catch ( e ) {
-			// for status code 428, we want to allow users to continue and proceed,
-			// so we swallow the error for status code 428,
-			// and only display error message and exit this function for non-428 error.
-			if ( e.status !== 428 ) {
-				createNotice(
-					'error',
-					__(
-						'Unable to create Google Ads account. Please try again later.',
-						'google-listings-and-ads'
-					)
-				);
-				return;
-			}
+	const handleOnRequestClose = () => {
+		setShowClaimModal( false );
+		setIsClaiming( false );
+	};
+
+	const handleOnCreateAccount = async () => {
+		setIsClaiming( true );
+		await upsertAdsAccount();
+		setShowClaimModal( true );
+	};
+
+	const handleOnClaimClick = () => {
+		setIsClaiming( true );
+	};
+
+	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
+
+	const refreshAdsStatus = useCallback( async () => {
+		if ( ! shouldClaimGoogleAdsAccount ) {
+			return false;
 		}
 
-		setFetchAccountLoading( true );
-		await fetchGoogleAdsAccount();
-		setFetchAccountLoading( false );
+		await fetchGoogleAdsAccountStatus();
+	}, [ fetchGoogleAdsAccountStatus, shouldClaimGoogleAdsAccount ] );
+
+	useWindowFocusCallbackIntervalEffect( refreshAdsStatus, 30 );
+
+	// Update the Ads account once we have access.
+	useEffect( () => {
+		if ( hasAccess === true && step === 'conversion_action' ) {
+			setIsClaiming( false );
+			upsertAdsAccount();
+		}
+	}, [ hasAccess, upsertAdsAccount, step ] );
+
+	const getIndicator = () => {
+		if ( shouldClaimGoogleAdsAccount ) {
+			return (
+				<ClaimAccountButton
+					loading={ isClaiming || showClaimModal }
+					onClaimClick={ handleOnClaimClick }
+				/>
+			);
+		}
+
+		return googleAdsAccount.id && isUpsertAdsAccountLoading ? (
+			<LoadingLabel
+				text={ __( 'Updating…', 'google-listings-and-ads' ) }
+			/>
+		) : (
+			<CreateAccountButton
+				onCreateAccount={ handleOnCreateAccount }
+				loading={ isUpsertAdsAccountLoading }
+			/>
+		);
 	};
 
 	return (
-		<CreateAccountButton
-			loading={ createLoading || fetchAccountLoading }
-			onCreateAccount={ handleCreateAccount }
-		/>
-	);
-};
-
-const CreateAccount = ( props ) => {
-	const { allowShowExisting, onShowExisting, disabled } = props;
-
-	return (
 		<AccountCard
-			disabled={ disabled }
 			appearance={ APPEARANCE.GOOGLE_ADS }
 			alignIcon="top"
-			indicator={
-				disabled ? null : (
-					<ClaimTermsAndCreateAccountButton disabled={ disabled } />
-				)
-			}
+			indicator={ getIndicator() }
 		>
-			{ allowShowExisting && (
+			{ allowShowExisting && ! shouldClaimGoogleAdsAccount && (
 				<Section.Card.Footer>
-					<AppButton
-						isLink
-						onClick={ onShowExisting }
-						disabled={ disabled }
-					>
+					<AppButton isLink onClick={ onShowExisting }>
 						{ __(
 							'Or, use your existing Google Ads account',
 							'google-listings-and-ads'
 						) }
 					</AppButton>
 				</Section.Card.Footer>
+			) }
+
+			{ shouldClaimGoogleAdsAccount && (
+				<Fragment>
+					{ showClaimModal && (
+						<ClaimAccountModal
+							onRequestClose={ handleOnRequestClose }
+						/>
+					) }
+
+					<ClaimAccount />
+				</Fragment>
 			) }
 		</AccountCard>
 	);
