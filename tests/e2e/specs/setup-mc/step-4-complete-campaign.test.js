@@ -188,7 +188,7 @@ test.describe( 'Complete your campaign', () => {
 						completeCampaign.getAdsAudienceSection();
 					await expect( adsAudienceSection ).toBeVisible();
 
-					// check if the section has the class.
+					// Confirm that the section title contains the correct text.
 					await expect(
 						adsAudienceSection.locator( 'h1' )
 					).toContainText( 'Ads audience' );
