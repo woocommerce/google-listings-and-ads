@@ -513,7 +513,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @param string $status The status of the merchant granting access to Google's WPCOM app.
 	 * @param string $nonce  The nonce provided by Google in the URL query parameter when Google redirects back to merchant's site.
 	 *
-	 * @return string Status.
+	 * @return bool
 	 * @throws ExceptionWithResponseData If the stored nonce / nonce from query param is not provided, or the nonces mismatch.
 	 */
 	public function update_wpcom_api_authorization( string $status, string $nonce ): bool {
