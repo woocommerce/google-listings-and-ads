@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useCallback, useState } from '@wordpress/element'; // Add this line
+import { useCallback, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
