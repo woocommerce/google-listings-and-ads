@@ -775,6 +775,7 @@ class AccountServiceTest extends UnitTest {
 
 		$this->options->expects( $this->once() )
 			->method( 'get' )
+			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE )
 			->willReturn( 'nonce-123' );
 
 		$this->options->expects( $this->once() )
