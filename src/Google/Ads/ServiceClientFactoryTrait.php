@@ -30,8 +30,7 @@ use Google\Ads\GoogleAds\V16\Services\Client\CustomerServiceClient;
 use Google\Ads\GoogleAds\V16\Services\Client\CustomerUserAccessServiceClient;
 use Google\Ads\GoogleAds\V16\Services\Client\GeoTargetConstantServiceClient;
 use Google\Ads\GoogleAds\V16\Services\Client\GoogleAdsServiceClient;
-use GPBMetadata\Google\Ads\GoogleAds\V16\Services\ProductLinkInvitationService;
-use GPBMetadata\Google\Ads\GoogleAds\V16\Services\ProductLinkService;
+use Google\Ads\GoogleAds\V16\Services\Client\ProductLinkInvitationServiceClient;
 
 /**
  * Contains service client factory methods.
@@ -197,23 +196,9 @@ trait ServiceClientFactoryTrait {
 	}
 
 	/**
-	 * @return MerchantCenterLinkServiceClient
+	 * @return ProductLinkInvitationServiceClient
 	 */
-	public function getMerchantCenterLinkServiceClient(): MerchantCenterLinkServiceClient {
-		return new MerchantCenterLinkServiceClient( $this->getGoogleAdsClientOptions() );
-	}
-
-	/**
-	 * @return ProductLinkService
-	 */
-	public function getProductLinkService(): ProductLinkService {
-		return new ProductLinkService();
-	}
-
-	/**
-	 * @return ProductLinkInvitationService
-	 */
-	public function getProductLinkInvitationService(): ProductLinkInvitationService {
-		return new ProductLinkInvitationService();
+	public function getProductLinkInvitationServiceClient(): ProductLinkInvitationServiceClient {
+		return new ProductLinkInvitationServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 }
