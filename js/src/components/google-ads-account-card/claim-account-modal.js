@@ -37,6 +37,7 @@ const ClaimAccountModal = ( { onRequestClose = noop } ) => {
 
 	return (
 		<AppModal
+			className="gla-ads-invite-modal"
 			title={ __(
 				'Claim your Google Ads account',
 				'google-listings-and-ads'

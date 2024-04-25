@@ -322,9 +322,9 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
-	 * Get WordPress account card.
+	 * Get Google Ads account card.
 	 *
-	 * @return {import('@playwright/test').Locator} Get WordPress account card.
+	 * @return {import('@playwright/test').Locator} Get Google Ads account card.
 	 */
 	getGoogleAdsAccountCard() {
 		return this.getAccountCards().nth( 2 );
@@ -400,22 +400,12 @@ export default class SetUpAccountsPage extends MockRequests {
 	 *
 	 * @return {Promise<void>}
 	 */
-	async getCreateAdsAccountButton() {
-		return this.page
-			.getByRole( 'button', {
-				name: 'Create account',
-				exact: true,
-			} )
-			.first();
-	}
-
-	/**
-	 * Click create account button.
-	 *
-	 * @return {Promise<void>}
-	 */
 	async clickCreateAdsAccountButton() {
-		const button = await this.getCreateAdsAccountButton();
+		const adsAccountCard = this.getGoogleAdsAccountCard();
+		const button = adsAccountCard.getByRole( 'button', {
+			name: 'Create account',
+			exact: true,
+		} );
 		await button.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
@@ -423,9 +413,20 @@ export default class SetUpAccountsPage extends MockRequests {
 	/**
 	 * Get ads account connected text.
 	 *
-	 * @return {import('@playwright/test').Locator} Get ads account connected text.
+	 * @return {import('@playwright/test').Locator} Ads account connected text.
 	 */
 	getAdsAccountConnectedText() {
 		return this.getGoogleAdsAccountCard().getByText( 'Connected' );
+	}
+
+	/**
+	 * Get Ads account connected notice text.
+	 *
+	 * @return {import('@playwright/test').Locator} Ads account connected notice text.
+	 */
+	getAdsAccountConnectedNotice() {
+		return this.getGoogleAdsAccountCard().getByText(
+			'Conversion measurement has been set up. You can create a campaign later.'
+		);
 	}
 }

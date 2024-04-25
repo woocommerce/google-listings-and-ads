@@ -55,6 +55,15 @@ export default class SetupAdsAccount extends MockRequests {
 	}
 
 	/**
+	 * Get the accept invite for google ads account modal.
+	 *
+	 * @return {import('@playwright/test').Locator} The accept invite account modal.
+	 */
+	getAcceptAccountModal() {
+		return this.page.locator( '.gla-ads-invite-modal' );
+	}
+
+	/**
 	 * Get Accept terms checkbox.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Accept terms checkbox.
@@ -75,6 +84,53 @@ export default class SetupAdsAccount extends MockRequests {
 			name: 'Create account',
 			exact: true,
 		} );
+	}
+
+	/**
+	 * Get Close button in the Accept Invitation modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Close modal button.
+	 */
+	getCloseAcceptAccountButtonModal() {
+		return this.getAcceptAccountModal().getByRole( 'button', {
+			name: 'Close',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get Claim account button in the Accept Invitation modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Claim account button.
+	 */
+	getClaimAcceptAccountButtonModal() {
+		return this.getAcceptAccountModal().getByRole( 'button', {
+			name: 'Claim account in Google Ads',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get claim account button in the Google Ads card.
+	 *
+	 * @return {import('@playwright/test').Locator} Claim account button.
+	 */
+	getAdsClaimAccountButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Claim Account',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Get claim Google Ads account text.
+	 *
+	 * @return {import('@playwright/test').Locator} Claim Google Ads account text.
+	 */
+	getAdsClaimAccountText() {
+		return this.page.getByText(
+			'Claim your new Google Ads account to complete this setup.'
+		);
 	}
 
 	/**
@@ -150,6 +206,16 @@ export default class SetupAdsAccount extends MockRequests {
 	 */
 	async clickCreateAccountButtonFromModal() {
 		const button = this.getCreateAdsAccountButtonModal();
+		await button.click();
+	}
+
+	/**
+	 * Click close button from modal.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async clickCloseAcceptAccountButtonFromModal() {
+		const button = this.getCloseAcceptAccountButtonModal();
 		await button.click();
 	}
 

@@ -24,15 +24,23 @@ import Section from '.~/wcdl/section';
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { google } = useGoogleAccount();
-	const { googleAdsAccount } = useGoogleAdsAccount();
-	const { hasAccess } = useGoogleAdsAccountStatus();
+	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
 	const hasFreeAdCredit = useFreeAdCredit();
 
 	if ( ! google || ( google.active === 'yes' && ! googleAdsAccount ) ) {
 		return <AppSpinner />;
 	}
 
-	const isContinueButtonDisabled = ! ( googleAdsAccount.id && hasAccess );
+	// Ads is ready when we have a connection and verified and verified access.
+	// Billing is not required, and the 'link_merchant' step will be resolved
+	// when the MC the account is connected.
+	const isGoogleAdsReady =
+		hasGoogleAdsConnection &&
+		hasAccess &&
+		[ '', 'billing', 'link_merchant' ].includes( step );
+
+	const isContinueButtonDisabled = ! isGoogleAdsReady;
 
 	return (
 		<StepContent>
