@@ -503,6 +503,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @return bool
 	 */
 	public function reset_wpcom_api_authorization(): bool {
+		$this->delete_wpcom_api_auth_nonce();
 		return $this->options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
 	}
 
@@ -537,6 +538,7 @@ class AccountService implements OptionsAwareInterface, Service {
 			);
 		}
 
+		$this->delete_wpcom_api_auth_nonce();
 		return $this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $status );
 	}
 

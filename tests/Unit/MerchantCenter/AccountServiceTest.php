@@ -782,8 +782,9 @@ class AccountServiceTest extends UnitTest {
 			->method( 'update' )
 			->with( OptionsInterface::WPCOM_REST_API_STATUS, 'approved' );
 
-		$this->options->expects( $this->never() )
-			->method( 'delete' );
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
 
 		$this->account->update_wpcom_api_authorization( $status, $nonce );
 	}
@@ -847,5 +848,16 @@ class AccountServiceTest extends UnitTest {
 		$this->expectExceptionMessage( 'Nonces mismatch, skip updating auth status.' );
 
 		$this->account->update_wpcom_api_authorization( $status, $nonce );
+	}
+
+	public function test_reset_wpcom_api_authorization() {
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE ],
+				[ OptionsInterface::WPCOM_REST_API_STATUS ],
+			);
+
+		$this->account->reset_wpcom_api_authorization();
 	}
 }
