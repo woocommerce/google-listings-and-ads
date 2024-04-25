@@ -68,7 +68,7 @@ class GoogleAdsCleanupServices {
 	 */
 	public static function remove( Event $event = null ) {
 		$cleanup = new GoogleAdsCleanupServices( $event );
-		//$cleanup->remove_services();
+		$cleanup->remove_services();
 		$cleanup->remove_enums();
 	}
 
@@ -85,10 +85,6 @@ class GoogleAdsCleanupServices {
 					'Service'
 				),
 				$this->find_library_file_pattern(
-					"{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Services/Client",
-					'Service'
-				),
-				$this->find_library_file_pattern(
 					"{$this->path}/metadata/Google/Ads/GoogleAds/{$this->version}/Resources"
 				),
 			)
@@ -100,7 +96,7 @@ class GoogleAdsCleanupServices {
 					"use Google\\\\Ads\\\\GoogleAds\\\\{$this->version}\\\\Services\\\\Client\\\\([A-Za-z0-9]+)ServiceClient;"
 				),
 				$this->find_used_pattern(
-					"use Google\\\\Ads\\\\GoogleAds\\\\{$this->version}\\\\Services\\\\([A-Za-z0-9]+)ServiceClient;"
+					"use Google\\\\Ads\\\\GoogleAds\\\\{$this->version}\\\\Services\\\\([A-Za-z0-9]+);"
 				),
 				$this->find_used_pattern(
 					"use Google\\\\Ads\\\\GoogleAds\\\\{$this->version}\\\\Resources\\\\([A-Za-z0-9]+);"
