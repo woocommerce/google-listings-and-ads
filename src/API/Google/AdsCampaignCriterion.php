@@ -23,7 +23,7 @@ class AdsCampaignCriterion {
 	 * Returns a set of operations to create multiple campaign criteria.
 	 *
 	 * @param string $campaign_resource_name Campaign resource name.
-	 * @param array  $location_ids           Targeted locations IDs.
+	 * @param array  $location_ids Targeted locations IDs.
 	 *
 	 * @return array
 	 */
@@ -40,7 +40,7 @@ class AdsCampaignCriterion {
 	 * Returns a new campaign criterion create operation.
 	 *
 	 * @param string $campaign_resource_name Campaign resource name.
-	 * @param int    $location_id            Targeted location ID.
+	 * @param int    $location_id Targeted location ID.
 	 *
 	 * @return MutateOperation
 	 */

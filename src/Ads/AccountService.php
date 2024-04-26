@@ -263,7 +263,6 @@ class AccountService implements OptionsAwareInterface, Service {
 			throw new Exception( 'An Ads account must be connected' );
 		}
 
-
 		// Create link for Merchant and accept it in Ads.
 		$this->container->get( Merchant::class )->link_ads_id( $this->options->get_ads_id() );
 		$this->container->get( Ads::class )->accept_merchant_link( $this->options->get_merchant_id() );

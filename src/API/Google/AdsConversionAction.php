@@ -20,6 +20,7 @@ use Google\Ads\GoogleAds\V16\Services\ConversionActionOperation;
 use Google\Ads\GoogleAds\V16\Services\Client\ConversionActionServiceClient;
 use Google\Ads\GoogleAds\V16\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V16\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V16\Services\MutateConversionActionsRequest;
 use Google\ApiCore\ApiException;
 
 /**
@@ -84,9 +85,11 @@ class AdsConversionAction implements OptionsAwareInterface {
 			);
 
 			// Create the conversion.
+			$request = new MutateConversionActionsRequest();
+			$request->setCustomerId( $this->options->get_ads_id() );
+			$request->setOperations( [ $conversion_action_operation ] );
 			$response = $this->client->getConversionActionServiceClient()->mutateConversionActions(
-				$this->options->get_ads_id(),
-				[ $conversion_action_operation ]
+				$request
 			);
 
 			/** @var MutateConversionActionResult $added_conversion_action */

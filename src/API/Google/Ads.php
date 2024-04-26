@@ -13,7 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Exception;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
+use Google\Ads\GoogleAds\Util\V16\ResourceNames;
 use Google\Ads\GoogleAds\V16\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V16\Enums\ProductLinkInvitationStatusEnum\ProductLinkInvitationStatus;
 use Google\Ads\GoogleAds\V16\Resources\ProductLinkInvitation;
@@ -129,18 +129,16 @@ class Ads implements OptionsAwareInterface {
 	 * @throws Exception When a link is unavailable.
 	 */
 	public function accept_merchant_link( int $merchant_id ) {
-		$link = $this->get_merchant_link( $merchant_id );
-		$linkStatus = $link->getStatus();
-		if ( $linkStatus === ProductLinkInvitationStatus::ACCEPTED ) {
+		$link        = $this->get_merchant_link( $merchant_id );
+		$link_status = $link->getStatus();
+		if ( $link_status === ProductLinkInvitationStatus::ACCEPTED ) {
 			return;
 		}
-
-		$service = $this->client->getProductLinkInvitationServiceClient();
 		$request = new UpdateProductLinkInvitationRequest();
 		$request->setCustomerId( $this->options->get_ads_id() );
 		$request->setResourceName( $link->getResourceName() );
-		$request->setProductLinkInvitationStatus(ProductLinkInvitationStatus::ACCEPTED );
-		$service->updateProductLinkInvitation( $request );
+		$request->setProductLinkInvitationStatus( ProductLinkInvitationStatus::ACCEPTED );
+		$this->client->getProductLinkInvitationServiceClient()->updateProductLinkInvitation( $request );
 	}
 
 	/**
@@ -308,14 +306,15 @@ class Ads implements OptionsAwareInterface {
 	 */
 	private function get_merchant_link( int $merchant_id ): ProductLinkInvitation {
 		$res = ( new AdsProductLinkInvitationQuery() )
-			->set_client( $this->client, $this->options->get_ads_id() )->get_results();
-
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'product_link_invitation.status', [ ProductLinkInvitationStatus::name( ProductLinkInvitationStatus::ACCEPTED ), ProductLinkInvitationStatus::name( ProductLinkInvitationStatus::PENDING_APPROVAL ) ], 'IN' )
+			->get_results();
 
 		foreach ( $res->iterateAllElements() as $row ) {
-			$link = $row->getProductLinkInvitation();
-			$mc   = $link->getMerchantCenter();
-			$mcId = $mc->getMerchantCenterId();
-			if ( absint( $mcId ) === $merchant_id ) {
+			$link  = $row->getProductLinkInvitation();
+			$mc    = $link->getMerchantCenter();
+			$mc_id = $mc->getMerchantCenterId();
+			if ( absint( $mc_id ) === $merchant_id ) {
 				return $link;
 			}
 		}

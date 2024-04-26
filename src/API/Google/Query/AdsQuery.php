@@ -84,8 +84,6 @@ abstract class AdsQuery extends Query {
 	 *
 	 * @throws ApiException If the search call fails.
 	 * @throws InvalidProperty If the client is not set.
-	 *
-	 *
 	 */
 	protected function query_results() {
 		if ( ! $this->client || ! $this->id ) {

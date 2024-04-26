@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Util;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception;
 use Composer\Script\Event;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -50,10 +49,17 @@ class GoogleAdsCleanupServices {
 	protected $code_path = null;
 
 	/**
+	 * @var string[] List of Service to NOT remove even when usage is not found.
+	 */
+	protected $avoid_cleanup = [
+		'ExtensionFeedItem',
+	];
+
+	/**
 	 * Constructor.
 	 *
 	 * @param Event|null  $event Composer event.
-	 * @param string|null $path  Path of the Ads library.
+	 * @param string|null $path Path of the Ads library.
 	 */
 	public function __construct( Event $event = null, string $path = null ) {
 		$this->event     = $event;
@@ -115,6 +121,11 @@ class GoogleAdsCleanupServices {
 	 * @param string $service Service name.
 	 */
 	protected function remove_service( string $service ) {
+		if ( in_array( $service, $this->avoid_cleanup, true ) ) {
+			$this->output_text( "Skip Removing service {$service}" );
+			return;
+		}
+
 		$this->output_text( "Removing service {$service}" );
 		$this->src_path = '/src/Google/Ads/GoogleAds';
 
@@ -189,8 +200,9 @@ class GoogleAdsCleanupServices {
 	/**
 	 * Find a list of files in a path, including subdirectories, matching a pattern.
 	 *
-	 * @param string $path    Package path
+	 * @param string $path Package path
 	 * @param string $pattern Regex pattern to match
+	 *
 	 * @return array Matching files
 	 */
 	protected function get_dir_contents( $path, $pattern ) {
@@ -247,7 +259,7 @@ class GoogleAdsCleanupServices {
 	 * Find a specific filename pattern within the library.
 	 *
 	 * @param string      $pattern Regexp pattern to match.
-	 * @param string|null $suffix  Suffix to remove from filename.
+	 * @param string|null $suffix Suffix to remove from filename.
 	 *
 	 * @return array List of matched names.
 	 */
@@ -261,6 +273,7 @@ class GoogleAdsCleanupServices {
 		return array_map(
 			function ( $file ) use ( $suffix ) {
 				$name = pathinfo( $file, PATHINFO_FILENAME );
+
 				return $suffix ? $this->remove_suffix( $suffix, $name ) : $name;
 			},
 			$output
@@ -271,7 +284,7 @@ class GoogleAdsCleanupServices {
 	 * Optionally remove a suffix from a string.
 	 *
 	 * @param string $suffix Suffix to remove.
-	 * @param string $text   Text to remove the suffix from.
+	 * @param string $text Text to remove the suffix from.
 	 *
 	 * @return string
 	 */
@@ -286,7 +299,7 @@ class GoogleAdsCleanupServices {
 	 * @param string $name
 	 */
 	protected function remove_use_statement( string $file, string $name ) {
-		$pattern = '/\s*use\s+[\w\d\\\]+' . preg_quote( $name, '/' ) . ';/';
+		$pattern = '/\s*use\s+[\w\d\\\]+\\\{1}' . preg_quote( $name, '/' ) . ';/';
 		$this->remove_pattern( $file, $pattern );
 	}
 
@@ -300,6 +313,7 @@ class GoogleAdsCleanupServices {
 		$file = $this->file_path( $file );
 		if ( ! file_exists( $file ) ) {
 			$this->warning( sprintf( 'File does not exist: %s', $file ) );
+
 			return;
 		}
 
@@ -308,6 +322,7 @@ class GoogleAdsCleanupServices {
 		$pattern = '/function ' . preg_quote( $name, '/' ) . '\(/';
 		if ( ! preg_match( $pattern, $contents, $matches, PREG_OFFSET_CAPTURE ) ) {
 			$this->warning( sprintf( 'Function %s not found in %s', $name, $file ) );
+
 			return;
 		}
 
@@ -316,7 +331,7 @@ class GoogleAdsCleanupServices {
 		$bracket = 0;
 
 		// Parse until we find beginning of doc block.
-		$start = strrpos( $contents, '/**', ( $length - $offset ) * -1 );
+		$start = strrpos( $contents, '/**', ( $length - $offset ) * - 1 );
 
 		// Parse until we encounter closing bracket.
 		for ( $end = $offset; $end < $length; $end++ ) {
@@ -333,6 +348,7 @@ class GoogleAdsCleanupServices {
 
 		if ( false === $start || 0 > $start || $end >= $length ) {
 			$this->warning( sprintf( 'Function %s not found in %s', $name, $file ) );
+
 			return;
 		}
 
@@ -346,6 +362,7 @@ class GoogleAdsCleanupServices {
 
 		if ( empty( $new ) ) {
 			$this->warning( sprintf( 'Replace failed for function %s in %s', $name, $file ) );
+
 			return;
 		}
 
@@ -362,18 +379,21 @@ class GoogleAdsCleanupServices {
 		$file = $this->file_path( $file );
 		if ( ! file_exists( $file ) ) {
 			$this->warning( sprintf( 'File does not exist: %s', $file ) );
+
 			return;
 		}
 
 		$contents = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 		if ( ! preg_match( $pattern, $contents, $matches ) ) {
 			$this->warning( sprintf( 'Pattern %s not found in %s', $pattern, $file ) );
+
 			return;
 		}
 
 		$new = preg_replace( $pattern, '', $contents );
 		if ( empty( $new ) ) {
 			$this->warning( sprintf( 'Replace failed for pattern %s in %s', $pattern, $file ) );
+
 			return;
 		}
 
@@ -389,6 +409,7 @@ class GoogleAdsCleanupServices {
 		$file = $this->file_path( $file );
 		if ( ! file_exists( $file ) ) {
 			$this->warning( sprintf( 'File does not exist: %s', $file ) );
+
 			return;
 		}
 
@@ -404,6 +425,7 @@ class GoogleAdsCleanupServices {
 		$directory = $this->file_path( $directory );
 		if ( ! is_dir( $directory ) ) {
 			$this->warning( sprintf( 'Directory does not exist: %s', $directory ) );
+
 			return;
 		}
 
@@ -422,7 +444,7 @@ class GoogleAdsCleanupServices {
 	 * @return bool True if empty
 	 */
 	protected function is_empty_directory( string $directory ): bool {
-		return ( count( scandir( $directory ) ) == 2);
+		return ( count( scandir( $directory ) ) === 2 );
 	}
 
 	/**
