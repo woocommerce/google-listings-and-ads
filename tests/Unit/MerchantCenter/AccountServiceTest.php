@@ -668,8 +668,7 @@ class AccountServiceTest extends UnitTest {
 			->method( 'is_enabled' )
 			->willReturn( true );
 
-		$this->options->expects( $this->once() )
-			->method( 'get' )
+		$this->options->method( 'get' )
 			->with( OptionsInterface::WPCOM_REST_API_STATUS )
 			->willReturn( 'approved' );
 
@@ -692,8 +691,7 @@ class AccountServiceTest extends UnitTest {
 			->method( 'is_enabled' )
 			->willReturn( false );
 
-		$this->options->expects( $this->once() )
-			->method( 'get' )
+		$this->options->method( 'get' )
 			->with( OptionsInterface::WPCOM_REST_API_STATUS )
 			->willReturn( 'approved' );
 
@@ -769,5 +767,97 @@ class AccountServiceTest extends UnitTest {
 			);
 
 		$this->account->disconnect();
+	}
+
+	public function test_update_wpcom_api_authorization() {
+		$status = 'approved';
+		$nonce  = 'nonce-123';
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE )
+			->willReturn( 'nonce-123' );
+
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::WPCOM_REST_API_STATUS, 'approved' );
+
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
+
+		$this->account->update_wpcom_api_authorization( $status, $nonce );
+	}
+
+	public function test_update_wpcom_api_authorization_nonce_not_provided() {
+		$status = 'approved';
+		$nonce  = '';
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->willReturn( 'nonce-123' );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		$this->options->expects( $this->never() )
+			->method( 'delete' );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionMessage( 'Nonce is not provided, skip updating auth status.' );
+
+		$this->account->update_wpcom_api_authorization( $status, $nonce );
+	}
+
+	public function test_update_wpcom_api_authorization_stored_nonce_not_in_db() {
+		$status = 'approved';
+		$nonce  = 'nonce-123';
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->willReturn( '' );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		$this->options->expects( $this->never() )
+			->method( 'delete' );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionMessage( 'No stored nonce found in the database, skip updating auth status.' );
+
+		$this->account->update_wpcom_api_authorization( $status, $nonce );
+	}
+
+	public function test_update_wpcom_api_authorization_nonces_mismatch() {
+		$status = 'approved';
+		$nonce  = 'nonce-123';
+
+		$this->options->expects( $this->once() )
+			->method( 'get' )
+			->willReturn( 'nonce-456' );
+
+		$this->options->expects( $this->never() )
+			->method( 'update' );
+
+		$this->options->expects( $this->once() )
+			->method( 'delete' )
+			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
+
+		$this->expectException( ExceptionWithResponseData::class );
+		$this->expectExceptionMessage( 'Nonces mismatch, skip updating auth status.' );
+
+		$this->account->update_wpcom_api_authorization( $status, $nonce );
+	}
+
+	public function test_reset_wpcom_api_authorization() {
+		$this->options->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE ],
+				[ OptionsInterface::WPCOM_REST_API_STATUS ],
+			);
+
+		$this->account->reset_wpcom_api_authorization();
 	}
 }
