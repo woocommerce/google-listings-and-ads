@@ -10,6 +10,7 @@ use Google\Ads\GoogleAds\V16\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V16\Enums\AssetTypeEnum\AssetType;
 use Google\Ads\GoogleAds\V16\Resources\Asset;
 use Google\Ads\GoogleAds\V16\Services\AssetOperation;
+use Google\Ads\GoogleAds\V16\Services\MutateGoogleAdsRequest;
 use Google\Ads\GoogleAds\V16\Services\MutateOperation;
 use Google\Ads\GoogleAds\Util\V16\ResourceNames;
 use Google\Ads\GoogleAds\V16\Common\TextAsset;
@@ -295,11 +296,11 @@ class AdsAsset implements OptionsAwareInterface {
 	 * @throws ApiException If any of the operations fail.
 	 */
 	protected function mutate( array $operations ): array {
-		$arns      = [];
-		$responses = $this->client->getGoogleAdsServiceClient()->mutate(
-			$this->options->get_ads_id(),
-			$operations
-		);
+		$arns    = [];
+		$request = new MutateGoogleAdsRequest();
+		$request->setCustomerId( $this->options->get_ads_id() );
+		$request->setMutateOperations( $operations );
+		$responses = $this->client->getGoogleAdsServiceClient()->mutate( $request );
 
 		foreach ( $responses->getMutateOperationResponses() as $response ) {
 			if ( 'asset_result' === $response->getResponse() ) {

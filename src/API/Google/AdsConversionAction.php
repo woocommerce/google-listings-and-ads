@@ -131,7 +131,7 @@ class AdsConversionAction implements OptionsAwareInterface {
 		try {
 			// Accept IDs too
 			if ( is_numeric( $resource_name ) ) {
-				$resource_name = ConversionActionServiceClient::conversionActionName( $this->options->get_ads_id(), $resource_name );
+				$resource_name = ConversionActionServiceClient::conversionActionName( strval( $this->options->get_ads_id() ), strval( $resource_name ) );
 			}
 
 			$results = ( new AdsConversionActionQuery() )->set_client( $this->client, $this->options->get_ads_id() )

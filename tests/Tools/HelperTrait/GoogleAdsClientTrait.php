@@ -37,18 +37,18 @@ use Google\Ads\GoogleAds\V16\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V16\Resources\ConversionAction;
 use Google\Ads\GoogleAds\V16\Resources\Customer;
 use Google\Ads\GoogleAds\V16\Resources\CustomerUserAccess;
-use Google\Ads\GoogleAds\V16\Resources\MerchantCenterLink;
 use Google\Ads\GoogleAds\V16\Resources\ShoppingPerformanceView;
 use Google\Ads\GoogleAds\V16\Services\Client\ConversionActionServiceClient;
 use Google\Ads\GoogleAds\V16\Services\Client\CustomerServiceClient;
+use Google\Ads\GoogleAds\V16\Services\Client\ProductLinkInvitationServiceClient;
 use Google\Ads\GoogleAds\V16\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V16\Services\Client\GoogleAdsServiceClient;
 use Google\Ads\GoogleAds\V16\Services\ListAccessibleCustomersResponse;
-use Google\Ads\GoogleAds\V16\Services\ListMerchantCenterLinksResponse;
-use Google\Ads\GoogleAds\V16\Services\Client\MerchantCenterLinkServiceClient;
 use Google\Ads\GoogleAds\V16\Services\MutateCampaignResult;
 use Google\Ads\GoogleAds\V16\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V16\Services\MutateConversionActionsRequest;
 use Google\Ads\GoogleAds\V16\Services\MutateConversionActionsResponse;
+use Google\Ads\GoogleAds\V16\Services\MutateGoogleAdsRequest;
 use Google\Ads\GoogleAds\V16\Services\MutateGoogleAdsResponse;
 use Google\Ads\GoogleAds\V16\Services\MutateOperationResponse;
 use Google\Ads\GoogleAds\V16\Services\MutateOperation;
@@ -130,7 +130,8 @@ trait GoogleAdsClientTrait {
 		$this->service_client->expects( $this->once() )
 			->method( 'mutate' )
 			->willReturnCallback(
-				function ( int $ads_id, array $operations ) use ( $type, $response ) {
+				function ( MutateGoogleAdsRequest $request ) use ( $type, $response ) {
+					$operations = $request->getMutateOperations();
 					// Assert that the campaign operation is the right type.
 					foreach ( $operations as $operation ) {
 						if ( 'campaign_operation' === $operation->getOperation() ) {
@@ -274,7 +275,7 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_campaign_row_mock( array $data ): GoogleAdsRow {
 		$setting = $this->createMock( ShoppingSetting::class );
-		$setting->method( 'getSalesCountry' )->willReturn( $data['country'] );
+		$setting->method( 'getFeedLabel' )->willReturn( $data['country'] );
 
 		$campaign = $this->createMock( Campaign::class );
 		$campaign->method( 'getId' )->willReturn( $data['id'] );
@@ -414,34 +415,18 @@ trait GoogleAdsClientTrait {
 	 * @param array $links
 	 */
 	protected function generate_mc_link_mock( array $links ) {
-		$mc_link_service = $this->createMock( MerchantCenterLinkServiceClient::class );
-		$this->client->method( 'getMerchantCenterLinkServiceClient' )->willReturn( $mc_link_service );
+		$mc_link_service = $this->createMock( ProductLinkInvitationServiceClient::class );
+		$this->client->method( 'getProductLinkInvitationServiceClient' )->willReturn( $mc_link_service );
 
 		$links = array_map(
 			function ( $link ) {
-				return new MerchantCenterLink( $link );
+				return ( new GoogleAdsRow() )->setProductLinkInvitation( $link );
 			},
 			$links
 		);
 
-		$list = $this->createMock( ListMerchantCenterLinksResponse::class );
-		$list->method( 'getMerchantCenterLinks' )->willReturn( $links );
-
-		$mc_link_service->method( 'listMerchantCenterLinks' )->willReturn( $list );
-
+		$this->generate_ads_query_mock( $links );
 		return $mc_link_service;
-	}
-
-	/**
-	 * Generates a mocked exception when a Merchant Center link is requested.
-	 *
-	 * @param ApiException $exception
-	 */
-	protected function generate_mc_link_mock_exception( ApiException $exception ) {
-		$mc_link_service = $this->createMock( MerchantCenterLinkServiceClient::class );
-		$this->client->method( 'getMerchantCenterLinkServiceClient' )->willReturn( $mc_link_service );
-
-		$mc_link_service->method( 'listMerchantCenterLinks' )->willThrowException( $exception );
 	}
 
 	/**
@@ -462,7 +447,8 @@ trait GoogleAdsClientTrait {
 		$this->conversion_action_service->expects( $this->once() )
 			->method( 'mutateConversionActions' )
 			->willReturnCallback(
-				function ( int $ads_id, array $operations ) use ( $type, $response ) {
+				function ( MutateConversionActionsRequest $request ) use ( $type, $response ) {
+					$operations = $request->getOperations();
 					// Assert that the operation is the right type.
 					foreach ( $operations as $operation ) {
 						if ( 'conversion_action_operation' === $operation->getOperation() ) {
@@ -732,7 +718,8 @@ trait GoogleAdsClientTrait {
 		$this->service_client->expects( $this->once() )
 			->method( 'mutate' )
 			->willReturnCallback(
-				function ( int $ads_id, array $operations ) use ( $type, $response, $include_assets ) {
+				function ( MutateGoogleAdsRequest $request ) use ( $type, $response, $include_assets ) {
+					$operations       = $request->getMutateOperations();
 					$operations_names = [];
 
 					if ( $type === 'update' && count( $operations ) ) {
@@ -855,7 +842,8 @@ trait GoogleAdsClientTrait {
 		$this->service_client->expects( $this->once() )
 			->method( 'mutate' )
 			->willReturnCallback(
-				function ( int $ads_id, array $operations ) use ( $type, $response, $asset ) {
+				function ( MutateGoogleAdsRequest $request ) use ( $type, $response, $asset ) {
+					$operations = $request->getMutateOperations();
 					// Assert that the asset group operation is the right type.
 					$operations_names = [];
 					foreach ( $operations as $operation ) {
@@ -878,9 +866,9 @@ trait GoogleAdsClientTrait {
 		$this->service_client->expects( $matcher )
 		->method( 'mutate' )
 		->willReturnCallback(
-			function ( int $ads_id, array $operations ) use ( $matcher, $asset_batches_callback ) {
-				$responses = [];
-
+			function ( MutateGoogleAdsRequest $request ) use ( $matcher, $asset_batches_callback ) {
+				$responses  = [];
+				$operations = $request->getMutateOperations();
 				$asset_batches_callback( $matcher, $operations );
 
 				foreach ( $operations as $operation ) {

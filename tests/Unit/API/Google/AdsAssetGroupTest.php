@@ -9,8 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Google\Ads\GoogleAds\V16\Enums\AssetGroupStatusEnum\AssetGroupStatus;
+use Google\Ads\GoogleAds\V16\Enums\ListingGroupFilterListingSourceEnum\ListingGroupFilterListingSource;
 use Google\Ads\GoogleAds\V16\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
-use Google\Ads\GoogleAds\V16\Enums\ListingGroupFilterVerticalEnum\ListingGroupFilterVertical;
 use PHPUnit\Framework\MockObject\MockObject;
 use Google\ApiCore\ApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -82,7 +82,7 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->assertEquals( 'New Campaign Asset Group', $asset_group->getName() );
 		$this->assertEquals( $asset_group_resource_name, $listing_group->getAssetGroup() );
 		$this->assertEquals( ListingGroupFilterType::UNIT_INCLUDED, $listing_group->getType() );
-		$this->assertEquals( ListingGroupFilterVertical::SHOPPING, $listing_group->getVertical() );
+		$this->assertEquals( ListingGroupFilterListingSource::SHOPPING, $listing_group->getListingSource() );
 	}
 
 	public function test_get_asset_groups_by_campaign_id_with_assets() {

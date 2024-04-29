@@ -16,6 +16,7 @@ use Google\Ads\GoogleAds\V16\Resources\AssetGroupListingGroupFilter;
 use Google\Ads\GoogleAds\V16\Services\AssetGroupListingGroupFilterOperation;
 use Google\Ads\GoogleAds\V16\Services\AssetGroupOperation;
 use Google\Ads\GoogleAds\V16\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V16\Services\MutateGoogleAdsRequest;
 use Google\Ads\GoogleAds\V16\Services\MutateOperation;
 use Google\Ads\GoogleAds\V16\Services\Client\AssetGroupServiceClient;
 use Google\ApiCore\ApiException;
@@ -395,10 +396,10 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * @throws Exception If the resource name is not in the expected format.
 	 */
 	protected function mutate( array $operations ): int {
-		$responses = $this->client->getGoogleAdsServiceClient()->mutate(
-			$this->options->get_ads_id(),
-			$operations
-		);
+		$request = new MutateGoogleAdsRequest();
+		$request->setCustomerId( $this->options->get_ads_id() );
+		$request->setMutateOperations( $operations );
+		$responses = $this->client->getGoogleAdsServiceClient()->mutate( $request );
 
 		foreach ( $responses->getMutateOperationResponses() as $response ) {
 			if ( 'asset_group_result' === $response->getResponse() ) {
