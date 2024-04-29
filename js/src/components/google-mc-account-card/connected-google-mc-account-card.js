@@ -40,12 +40,12 @@ import { getSettingsUrl } from '.~/utils/urls';
  * @param {Object} props React props.
  * @param {{ id: number }} props.googleMCAccount A data payload object containing the user's Google Merchant Center account ID.
  * @param {boolean} [props.hideAccountSwitch=false] Indicate whether hide the account switch block at the card footer.
- * @param {boolean} [props.hideNotificationService=true] Indicate whether hide the enable Notification service block at the card footer.
+ * @param {boolean} [props.hideDisableProductFetch=true] Indicate whether hide the disable product fetch block at the card footer.
  */
 const ConnectedGoogleMCAccountCard = ( {
 	googleMCAccount,
 	hideAccountSwitch = false,
-	hideNotificationService = false,
+	hideDisableProductFetch = false,
 } ) => {
 	const { createNotice, removeNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
@@ -136,18 +136,18 @@ const ConnectedGoogleMCAccountCard = ( {
 		removeNotice( notice.id );
 	};
 
-	// Show the button if the status is "approved" and the Notification Service is not hidden.
-	const showDisconnectNotificationsButton =
-		! hideNotificationService &&
+	const isGoogleWPCOMAppApproved =
 		googleMCAccount.wpcom_rest_api_status ===
-			GOOGLE_WPCOM_APP_CONNECTED_STATUS.APPROVED;
+		GOOGLE_WPCOM_APP_CONNECTED_STATUS.APPROVED;
 
-	// Show the error if the status is set but is not "approved" and the Notification Service is not hidden.
+	// Show the button if the status is "approved" and the "disable product fetch" is not hidden.
+	const showDisconnectNotificationsButton =
+		! hideDisableProductFetch && isGoogleWPCOMAppApproved;
+
+	// Show the error if the status is set but is not "approved".
 	const showErrorNotificationsNotice =
-		! hideNotificationService &&
 		googleMCAccount.wpcom_rest_api_status &&
-		googleMCAccount.wpcom_rest_api_status !==
-			GOOGLE_WPCOM_APP_CONNECTED_STATUS.APPROVED &&
+		! isGoogleWPCOMAppApproved &&
 		googleMCAccount.wpcom_rest_api_status !==
 			GOOGLE_WPCOM_APP_CONNECTED_STATUS.DISABLED;
 
@@ -174,7 +174,7 @@ const ConnectedGoogleMCAccountCard = ( {
 				)
 			}
 		>
-			{ showDisconnectNotificationsButton && (
+			{ isGoogleWPCOMAppApproved && (
 				<AppNotice status="success" isDismissible={ false }>
 					{ __(
 						'Google has been granted access to fetch your product data.',
