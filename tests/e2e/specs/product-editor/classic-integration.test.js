@@ -7,12 +7,12 @@ import { expect, test, Page } from '@playwright/test';
  * Internal dependencies
  */
 import * as api from '../../utils/api';
-import { getProductBlockEditorUtils } from '../../utils/product-editor';
+import { getClassicProductEditorUtils } from '../../utils/product-editor';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 test.describe.configure( { mode: 'serial' } );
 
-test.describe( 'Product Block Editor integration', () => {
+test.describe( 'Classic Product Editor integration', () => {
 	/**
 	 * @type {Page}
 	 */
@@ -21,18 +21,20 @@ test.describe( 'Product Block Editor integration', () => {
 
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
-		editorUtils = getProductBlockEditorUtils( page );
+		editorUtils = getClassicProductEditorUtils( page );
 
-		await editorUtils.toggleBlockFeature( true );
 		await api.setOnboardedMerchant();
 	} );
 
 	test( 'Prompt to Get Started when not yet finished onboarding', async () => {
 		await api.clearOnboardedMerchant();
 		await editorUtils.gotoAddProductPage();
-		await editorUtils.clickPluginTab();
 
-		const link = page.getByRole( 'link', { name: 'Get Started' } );
+		await expect( editorUtils.getPluginTab() ).toBeHidden();
+
+		const link = editorUtils
+			.getChannelVisibilityMetaBox()
+			.getByRole( 'link', { name: 'Complete setup' } );
 
 		await expect( link ).toBeVisible();
 		await expect( link ).toHaveAttribute(
@@ -44,42 +46,51 @@ test.describe( 'Product Block Editor integration', () => {
 		await api.setOnboardedMerchant();
 	} );
 
-	test( 'Hide plugin tab for unsupported product types', async () => {
+	test( 'Hide plugin tab and meta box for unsupported product types', async () => {
 		await editorUtils.gotoAddProductPage();
-		await editorUtils.fillProductName();
+
+		const channelVisibilityMetaBox =
+			editorUtils.getChannelVisibilityMetaBox();
 
 		const pluginTab = editorUtils.getPluginTab();
 
-		await expect( pluginTab ).toHaveCount( 1 );
+		await expect( channelVisibilityMetaBox ).toBeVisible();
+		await expect( pluginTab ).toBeVisible();
 
 		await editorUtils.changeToGroupedProduct();
-		await expect( pluginTab ).toHaveCount( 0 );
+		await expect( channelVisibilityMetaBox ).toBeHidden();
+		await expect( pluginTab ).toBeHidden();
 
-		await editorUtils.changeToStandardProduct();
-		await expect( pluginTab ).toHaveCount( 1 );
+		await editorUtils.changeToSimpleProduct();
+		await expect( channelVisibilityMetaBox ).toBeVisible();
+		await expect( pluginTab ).toBeVisible();
 
-		await editorUtils.changeToAffiliateProduct();
-		await expect( pluginTab ).toHaveCount( 0 );
+		await editorUtils.changeToExternalProduct();
+		await expect( channelVisibilityMetaBox ).toBeHidden();
+		await expect( pluginTab ).toBeHidden();
+
+		await editorUtils.changeToVariableProduct();
+		await expect( channelVisibilityMetaBox ).toBeVisible();
+		await expect( pluginTab ).toBeVisible();
 	} );
 
 	test( 'Check existence and availability of fields for simple product', async () => {
 		await editorUtils.gotoAddProductPage();
 		await editorUtils.clickPluginTab();
 
-		const panel = page.getByRole( 'tabpanel' );
+		const panel = editorUtils.getPluginPanel();
 
 		/*
-		 * 2 Sections
+		 * 2 Headings
 		 */
 		await expect( editorUtils.getChannelVisibilityHeading() ).toBeVisible();
 		await expect( editorUtils.getProductAttributesHeading() ).toBeVisible();
 
 		/*
-		 * 9 <select>:
+		 * 1 + 8 <select>:
 		 * - Channel visibility
 		 * - Brand
-		 *   - This is dynamically changed from woocommerce/product-text-field
-		 *     to google-listings-and-ads/product-select-with-text-field.
+		 *   - This is dynamically changed from `Select` to `SelectWithTextInput`.
 		 *   - Code ref: `AttributesForm::init_input`
 		 *   - E2E setup: 'woocommerce_gla_product_attribute_value_options_brand' filter in test-snippets.php
 		 * - Condition
@@ -90,7 +101,11 @@ test.describe( 'Product Block Editor integration', () => {
 		 * - Is bundle
 		 * - Adult content
 		 */
-		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 9 );
+		await expect(
+			editorUtils.getChannelVisibilityMetaBox().getByRole( 'combobox' )
+		).toHaveCount( 1 );
+
+		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 8 );
 
 		/*
 		 * 8 <input type="text|date|time">:
@@ -127,55 +142,74 @@ test.describe( 'Product Block Editor integration', () => {
 		 * - Age group
 		 * - Multipack
 		 * - Is bundle
-		 * - Availability date
-		 *   Availability time has an invisible pair for layout alignment purpose
+		 * - Availability date and time
 		 * - Adult content
 		 */
-		await expect(
-			panel.locator( 'label' ).filter( { hasText: /\w+/ } )
-		).toHaveCount( 16 );
-
-		await expect(
-			panel.getByRole( 'button', { name: 'help' } )
-		).toHaveCount( 16 );
+		await expect( panel.locator( 'label:visible' ) ).toHaveCount( 16 );
+		await expect( panel.locator( '.woocommerce-help-tip' ) ).toHaveCount(
+			16
+		);
 
 		/*
-		 * Click the help icon to view the popover and its content for each type of field block
-		 * with the tuple of block name and containing text.
+		 * Hover the help icon to view the tooltip and its content for each type of field
+		 * with the tuple of field CSS name and containing text.
 		 */
-		const blocks = [
+		const fields = [
+			// Text
 			[
-				'woocommerce/product-text-field',
+				'.gla_attributes_gtin_field',
 				/global trade item number \(gtin\) for your item/i,
 			],
+
+			// Select with text
 			[
-				'google-listings-and-ads/product-select-with-text-field',
+				'.gla_attributes_brand__gla_select_field',
 				/brand of the product/i,
 			],
+
+			// Select
 			[
-				'google-listings-and-ads/product-select-field',
+				'.gla_attributes_condition_field',
 				/condition or state of the item/i,
 			],
+
+			// Integer
 			[
-				'google-listings-and-ads/product-date-time-field',
+				'.gla_attributes_multipack_field',
+				/number of identical products in a multipack/i,
+			],
+
+			// Boolean select
+			[
+				'.gla_attributes_isBundle_field',
+				/whether the item is a bundle of products/i,
+			],
+
+			// Date and time
+			[
+				'.gla_attributes_availabilityDate_field',
 				/date a preordered or backordered product becomes available for delivery/i,
 			],
 		];
 
-		for ( const [ name, expectedText ] of blocks ) {
-			await panel
-				.locator( `[data-type="${ name }"]` )
-				.first()
-				.getByRole( 'button', { name: 'help' } )
-				.click();
+		for ( const [ cssName, expectedText ] of fields ) {
+			// Since the testing hovers to the next help icon very quickly
+			// after the Tooltip disappears, which could randomly cause
+			// the next hover not to be triggered, here use `toPass` to
+			// reset the hovering attempt.
+			await expect( async () => {
+				const tooltip = page.locator( '#tiptip_holder' );
 
-			const popover = page.locator( '.components-popover:visible' );
-			await expect( popover ).toBeVisible();
-			await expect( popover ).toContainText( expectedText );
+				await page.mouse.move( 0, 0 );
+				await expect( tooltip ).toBeHidden();
 
-			// To close popover
-			await editorUtils.clickPluginTab();
-			await expect( popover ).toHaveCount( 0 );
+				await panel
+					.locator( `${ cssName } .woocommerce-help-tip` )
+					.hover();
+
+				await expect( tooltip ).toBeVisible( { timeout: 1000 } );
+				await expect( tooltip ).toContainText( expectedText );
+			} ).toPass();
 		}
 	} );
 
@@ -183,7 +217,7 @@ test.describe( 'Product Block Editor integration', () => {
 		await editorUtils.gotoEditVariableProductPage();
 		await editorUtils.clickPluginTab();
 
-		const panel = page.getByRole( 'tabpanel' );
+		const panel = editorUtils.getPluginPanel();
 
 		/*
 		 * 2 Sections for variable product
@@ -192,12 +226,24 @@ test.describe( 'Product Block Editor integration', () => {
 		await expect( editorUtils.getProductAttributesHeading() ).toBeVisible();
 
 		/*
-		 * 3 <select> for variable product:
+		 * Description of where to edit attributes for variations
+		 */
+		await expect(
+			panel.getByText(
+				'As this is a variable product, you can add additional product attributes by going to Variations > Select one variation > Google Listings & Ads.'
+			)
+		).toBeVisible();
+
+		/*
+		 * 1 + 2 <select> for variable product:
 		 * - Channel visibility
-		 * - Brand (dynamically changed to google-listings-and-ads/product-select-with-text-field)
+		 * - Brand (dynamically changed to `SelectWithTextInput`)
 		 * - Adult content
 		 */
-		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 3 );
+		await expect(
+			editorUtils.getChannelVisibilityMetaBox().getByRole( 'combobox' )
+		).toHaveCount( 1 );
+		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 2 );
 
 		/*
 		 * 0 <input type="text|date|time"> for variable product.
@@ -212,16 +258,9 @@ test.describe( 'Product Block Editor integration', () => {
 		// ===============================
 		// Go to edit the first variation.
 		// ===============================
-		await editorUtils.gotoEditVariationProductPage();
-		await editorUtils.clickPluginTab();
+		await editorUtils.gotoEditVariation();
 
-		/*
-		 * 1 Section for variation product
-		 */
-		await expect( editorUtils.getProductAttributesHeading() ).toBeVisible();
-		await expect( editorUtils.getChannelVisibilityHeading() ).toHaveCount(
-			0
-		);
+		const variation = editorUtils.getPluginVariationMetaBox();
 
 		/*
 		 * 7 <select> for variation product:
@@ -233,7 +272,7 @@ test.describe( 'Product Block Editor integration', () => {
 		 * - Is bundle
 		 * - Adult content
 		 */
-		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 7 );
+		await expect( variation.getByRole( 'combobox' ) ).toHaveCount( 7 );
 
 		/*
 		 * 8 <input type="text|date|time"> for variation product:
@@ -246,13 +285,13 @@ test.describe( 'Product Block Editor integration', () => {
 		 * - Availability date
 		 * - Availability time
 		 */
-		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 8 );
+		await expect( variation.getByRole( 'textbox' ) ).toHaveCount( 8 );
 
 		/*
 		 * 1 <input type="number"> for variation product:
 		 * - Multipack
 		 */
-		await expect( panel.getByRole( 'spinbutton' ) ).toHaveCount( 1 );
+		await expect( variation.getByRole( 'spinbutton' ) ).toHaveCount( 1 );
 	} );
 
 	test( 'Channel visibility is disabled when hiding in product catalog', async () => {
@@ -260,17 +299,16 @@ test.describe( 'Product Block Editor integration', () => {
 		await editorUtils.fillProductName();
 
 		const { selection, help } = editorUtils.getChannelVisibility();
+		const catalogVisibility = page.locator( '#catalog-visibility' );
 
-		await editorUtils.clickPluginTab();
 		await expect( selection ).toBeEnabled();
 		await expect( selection ).toHaveValue( 'sync-and-show' );
-		await expect( help ).toHaveCount( 0 );
+		await expect( help ).toBeHidden();
 
-		await editorUtils.clickTab( 'Organization' );
-		await page.getByLabel( 'Hide in product catalog' ).setChecked( true );
+		await catalogVisibility.getByRole( 'link', { name: 'Edit' } ).click();
+		await catalogVisibility.getByLabel( 'Search results only' ).click();
 		await editorUtils.save();
 
-		await editorUtils.clickPluginTab();
 		await expect( selection ).toBeDisabled();
 		await expect( selection ).toHaveValue( 'dont-sync-and-show' );
 		await expect( help ).toBeVisible();
@@ -278,32 +316,22 @@ test.describe( 'Product Block Editor integration', () => {
 			'This product cannot be shown on any channel because it is hidden from your store catalog.'
 		);
 
-		await editorUtils.clickTab( 'Organization' );
-		await page.getByLabel( 'Hide in product catalog' ).setChecked( false );
+		await catalogVisibility.getByRole( 'link', { name: 'Edit' } ).click();
+		await catalogVisibility.getByLabel( 'Shop and search results' ).click();
 		await editorUtils.save();
 
-		await editorUtils.clickPluginTab();
 		await expect( selection ).toBeEnabled();
-		await expect( help ).toHaveCount( 0 );
+		await expect( help ).toBeHidden();
 	} );
 
 	test( 'Change channel visibility and check its notice, status, and issues', async () => {
 		await editorUtils.gotoAddProductPage();
 		await editorUtils.fillProductName();
-		await editorUtils.clickPluginTab();
+		await editorUtils.save();
 
 		const issueTexts = [ 'Invalid price', 'Invalid GTIN' ];
 		const { selection, notice, status, issues } =
 			editorUtils.getChannelVisibility();
-
-		// Save another value and revert it to atomically re-fetch
-		// the current product with newly mocked data.
-		async function refetchProductData() {
-			await selection.selectOption( 'dont-sync-and-show' );
-			await editorUtils.save();
-			await selection.selectOption( 'sync-and-show' );
-			await editorUtils.save();
-		}
 
 		/*
 		 * Assert:
@@ -315,9 +343,9 @@ test.describe( 'Product Block Editor integration', () => {
 		await editorUtils.save();
 
 		await expect( selection ).toHaveValue( 'dont-sync-and-show' );
-		await expect( notice ).toHaveCount( 0 );
-		await expect( status ).toHaveCount( 0 );
-		await expect( issues ).toHaveCount( 0 );
+		await expect( notice ).toBeHidden();
+		await expect( status ).toBeHidden();
+		await expect( issues ).toBeHidden();
 
 		/*
 		 * Assert:
@@ -329,7 +357,7 @@ test.describe( 'Product Block Editor integration', () => {
 
 		await expect( selection ).toHaveValue( 'sync-and-show' );
 		await expect( notice ).toBeVisible();
-		await expect( notice ).toHaveClass( /(^| )is-warning( |$)/ );
+		await expect( notice ).toHaveClass( /(^| )notice-warning( |$)/ );
 		await expect( status ).toHaveText( /^Issues detected$/i );
 		await expect( issues ).toHaveCount( issueTexts.length );
 
@@ -342,50 +370,50 @@ test.describe( 'Product Block Editor integration', () => {
 		 * - The info notice is shown with "Not synced" status
 		 */
 		await editorUtils.mockChannelVisibility( 'not-synced' );
-		await refetchProductData();
+		await page.reload();
 
 		await expect( notice ).toBeVisible();
-		await expect( notice ).toHaveClass( /(^| )is-info( |$)/ );
+		await expect( notice ).not.toHaveClass( /(^| )notice-warning( |$)/ );
 		await expect( status ).toHaveText( /^Not synced$/i );
-		await expect( issues ).toHaveCount( 0 );
+		await expect( issues ).toBeHidden();
 
 		/*
 		 * Assert:
 		 * - The info notice is shown with "Pending" status
 		 */
 		await editorUtils.mockChannelVisibility( 'pending' );
-		await refetchProductData();
+		await page.reload();
 
 		await expect( notice ).toBeVisible();
-		await expect( notice ).toHaveClass( /(^| )is-info( |$)/ );
+		await expect( notice ).not.toHaveClass( /(^| )notice-warning( |$)/ );
 		await expect( status ).toHaveText( /^Pending$/i );
-		await expect( issues ).toHaveCount( 0 );
+		await expect( issues ).toBeHidden();
 
 		/*
 		 * Assert:
 		 * - The notice won't be shown when the status is 'synced'
 		 */
 		await editorUtils.mockChannelVisibility( 'synced' );
-		await refetchProductData();
+		await page.reload();
 
-		await expect( notice ).toHaveCount( 0 );
-		await expect( status ).toHaveCount( 0 );
-		await expect( issues ).toHaveCount( 0 );
+		await expect( notice ).toBeHidden();
+		await expect( status ).toBeHidden();
+		await expect( issues ).toBeHidden();
 	} );
 
-	test( 'Custom block: Product select with text field', async () => {
+	test( 'Custom input: Select with text input', async () => {
 		await editorUtils.gotoAddProductPage();
 		await editorUtils.fillProductName();
 		await editorUtils.clickPluginTab();
 
-		const { selection, input } = editorUtils.getSelectWithTextField();
+		const { selection, input } = editorUtils.getSelectWithTextInput();
 
 		/*
 		 * Assert:
 		 * - The "Default" option is selected and the text field is not shown
 		 */
 		await expect( selection ).toHaveValue( '' );
-		await expect( input ).toHaveCount( 0 );
+		await expect( input ).toBeHidden();
 
 		/*
 		 * Assert:
@@ -393,12 +421,13 @@ test.describe( 'Product Block Editor integration', () => {
 		 * - After saving, the field value and state remain the same
 		 */
 		await selection.selectOption( 'e2e_test_woocommerce_brands' );
-		await expect( selection ).toHaveValue( 'e2e_test_woocommerce_brands' );
-		await expect( input ).toHaveCount( 0 );
+		await expect( input ).toBeHidden();
 
 		await editorUtils.save();
+		await editorUtils.clickPluginTab();
+
 		await expect( selection ).toHaveValue( 'e2e_test_woocommerce_brands' );
-		await expect( input ).toHaveCount( 0 );
+		await expect( input ).toBeHidden();
 
 		/*
 		 * Assert:
@@ -406,11 +435,11 @@ test.describe( 'Product Block Editor integration', () => {
 		 * - After saving, the field value and state remain the same
 		 */
 		await selection.selectOption( '_gla_custom_value' );
-		await expect( selection ).toHaveValue( '_gla_custom_value' );
 		await expect( input ).toBeVisible();
 
 		await input.fill( 'Cute Cat' );
 		await editorUtils.save();
+		await editorUtils.clickPluginTab();
 
 		await expect( selection ).toHaveValue( '_gla_custom_value' );
 		await expect( input ).toHaveValue( 'Cute Cat' );
@@ -420,19 +449,17 @@ test.describe( 'Product Block Editor integration', () => {
 		 * - When switching to another value and back, the entered value in the text field is kept
 		 */
 		await selection.selectOption( '' );
-		await expect( input ).toHaveCount( 0 );
+		await expect( input ).toBeHidden();
 		await selection.selectOption( '_gla_custom_value' );
-		await expect( selection ).toHaveValue( '_gla_custom_value' );
 		await expect( input ).toHaveValue( 'Cute Cat' );
 	} );
 
-	test( 'Custom block: Product date and time fields', async () => {
+	test( 'Custom input: Date and time inputs', async () => {
 		await editorUtils.gotoAddProductPage();
 		await editorUtils.fillProductName();
 		await editorUtils.clickPluginTab();
 
-		const { dateInput, timeInput, dateHelp, timeHelp } =
-			editorUtils.getDateAndTimeFields();
+		const { dateInput, timeInput } = editorUtils.getDateAndTimeInputs();
 
 		/*
 		 * Assert:
@@ -440,69 +467,49 @@ test.describe( 'Product Block Editor integration', () => {
 		 */
 		await expect( dateInput ).toHaveValue( '' );
 		await expect( timeInput ).toHaveValue( '' );
-		await expect( dateHelp ).toHaveCount( 0 );
-		await expect( timeHelp ).toHaveCount( 0 );
 
 		/*
 		 * Assert:
-		 * - After entering an invalid date or time value, the help shows an error message
-		 * - Saving an invalid date or time value shows a failure notice
-		 *
-		 * Please note that this part needs to be run before successfully saving data,
-		 * otherwise it cannot simulate the invalid value status on the date or time input
-		 * via Playwright. It's probably because the React "Controlled Components" runs
-		 * a little differently in Playwright.
+		 * - After entering an invalid date or time value, its validity.valid is false
 		 */
 		await dateInput.pressSequentially( '9' );
+		await editorUtils.clickSave();
 
-		await editorUtils.assertUnableSave();
-		await expect( dateHelp ).toBeVisible();
-		await expect( dateHelp ).toHaveText(
-			await editorUtils.evaluateValidationMessage( dateInput )
-		);
+		expect( await editorUtils.evaluateValidity( dateInput ) ).toBe( false );
 
 		await dateInput.clear();
 
 		await timeInput.pressSequentially( '9' );
+		await editorUtils.clickSave();
 
-		await editorUtils.assertUnableSave();
-		await expect( timeHelp ).toBeVisible();
-		await expect( timeHelp ).toHaveText(
-			await editorUtils.evaluateValidationMessage( timeInput )
-		);
+		expect( await editorUtils.evaluateValidity( timeInput ) ).toBe( false );
 
 		await timeInput.clear();
 
 		/*
 		 * Assert:
-		 * - When valid values are entered, the help messages are not shown
+		 * - When valid values are entered, it allows to save
 		 * - After saving, the field values remain the same
 		 */
 		await dateInput.fill( '2024-02-29' );
 		await timeInput.fill( '18:30' );
-
-		await expect( dateInput ).toHaveValue( '2024-02-29' );
-		await expect( timeInput ).toHaveValue( '18:30' );
-		await expect( dateHelp ).toHaveCount( 0 );
-		await expect( timeHelp ).toHaveCount( 0 );
-
 		await editorUtils.save();
+		await editorUtils.clickPluginTab();
 
 		await expect( dateInput ).toHaveValue( '2024-02-29' );
 		await expect( timeInput ).toHaveValue( '18:30' );
-		await expect( dateHelp ).toHaveCount( 0 );
-		await expect( timeHelp ).toHaveCount( 0 );
 
 		/*
 		 * Assert:
 		 * - It can enter only the date and leave the time empty
+		 * - After saving, the empty time value is considered as 00:00
 		 */
 		await timeInput.clear();
 		await editorUtils.save();
+		await editorUtils.clickPluginTab();
 
 		await expect( dateInput ).toHaveValue( '2024-02-29' );
-		await expect( timeInput ).toHaveValue( '' );
-		await expect( timeHelp ).toHaveCount( 0 );
+		await expect( timeInput ).toHaveValue( '00:00' );
 
 		/*
 		 * Assert:
@@ -510,56 +517,48 @@ test.describe( 'Product Block Editor integration', () => {
 		 */
 		await dateInput.clear();
 		await editorUtils.save();
+		await editorUtils.clickPluginTab();
 
 		await expect( dateInput ).toHaveValue( '' );
 		await expect( timeInput ).toHaveValue( '' );
-		await expect( dateHelp ).toHaveCount( 0 );
-		await expect( timeHelp ).toHaveCount( 0 );
 	} );
 
-	test( 'Generic block transformation: Non-negative integer input field', async () => {
+	test( 'Custom input: Non-negative integer input', async () => {
 		await editorUtils.gotoAddProductPage();
 		await editorUtils.fillProductName();
 		await editorUtils.clickPluginTab();
 
-		const { input, help } = editorUtils.getMultipackField();
+		const input = editorUtils.getMultipackInput();
 
 		await expect( input ).toHaveValue( '' );
-		await expect( help ).toHaveCount( 0 );
 
 		await input.fill( '-1' );
+		await editorUtils.clickSave();
 
-		await editorUtils.assertUnableSave();
-		await expect( help ).toBeVisible();
-		await expect( help ).toHaveText(
-			await editorUtils.evaluateValidationMessage( input )
-		);
+		expect( await editorUtils.evaluateValidity( input ) ).toBe( false );
 
 		await input.fill( '9.5' );
+		await editorUtils.clickSave();
 
-		await editorUtils.assertUnableSave();
-		await expect( help ).toBeVisible();
-		await expect( help ).toHaveText(
-			await editorUtils.evaluateValidationMessage( input )
-		);
+		expect( await editorUtils.evaluateValidity( input ) ).toBe( false );
 
 		await input.fill( '0' );
 		await editorUtils.save();
+		await editorUtils.clickPluginTab();
 
 		await expect( input ).toHaveValue( '0' );
-		await expect( help ).toHaveCount( 0 );
 
 		await input.fill( '100' );
 		await editorUtils.save();
+		await editorUtils.clickPluginTab();
 
 		await expect( input ).toHaveValue( '100' );
-		await expect( help ).toHaveCount( 0 );
 
 		await input.clear();
 		await editorUtils.save();
+		await editorUtils.clickPluginTab();
 
 		await expect( input ).toHaveValue( '' );
-		await expect( help ).toHaveCount( 0 );
 	} );
 
 	test( 'Save all product attributes to simple product', async () => {
@@ -584,6 +583,7 @@ test.describe( 'Product Block Editor integration', () => {
 		}
 
 		await editorUtils.save();
+		await editorUtils.clickPluginTab();
 
 		for ( const [ attribute, value ] of pairs ) {
 			await expect( attribute ).toHaveValue( value );
@@ -598,6 +598,7 @@ test.describe( 'Product Block Editor integration', () => {
 		}
 
 		await editorUtils.save();
+		await editorUtils.clickPluginTab();
 
 		for ( const [ attribute ] of pairs ) {
 			await expect( attribute ).toHaveValue( '' );
@@ -606,11 +607,12 @@ test.describe( 'Product Block Editor integration', () => {
 
 	test( 'Save all product attributes to variation product', async () => {
 		await editorUtils.gotoEditVariableProductPage();
-		await editorUtils.gotoEditVariationProductPage();
-		await editorUtils.clickPluginTab();
+		await editorUtils.gotoEditVariation();
 
 		const pairs =
-			await editorUtils.getAvailableProductAttributesWithTestValues();
+			await editorUtils.getAvailableProductAttributesWithTestValues(
+				editorUtils.getPluginVariationMetaBox()
+			);
 
 		expect( pairs ).toHaveLength( 16 );
 
@@ -626,6 +628,7 @@ test.describe( 'Product Block Editor integration', () => {
 		}
 
 		await editorUtils.save();
+		await editorUtils.gotoEditVariation();
 
 		for ( const [ attribute, value ] of pairs ) {
 			await expect( attribute ).toHaveValue( value );
@@ -640,18 +643,14 @@ test.describe( 'Product Block Editor integration', () => {
 		}
 
 		await editorUtils.save();
+		await editorUtils.gotoEditVariation();
 
 		for ( const [ attribute ] of pairs ) {
 			await expect( attribute ).toHaveValue( '' );
 		}
 	} );
 
-	test.afterEach( async () => {
-		await page.unrouteAll();
-	} );
-
 	test.afterAll( async () => {
-		await editorUtils.toggleBlockFeature( false );
 		await api.clearOnboardedMerchant();
 		await page.close();
 	} );

@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
 use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Jetpack_Options;
@@ -51,12 +52,22 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 */
 	private $notification_url;
 
+	/**
+	 * The Merchant center service
+	 *
+	 * @var MerchantCenterService $merchant_center
+	 */
+	public MerchantCenterService $merchant_center;
+
 
 	/**
 	 * Class constructor
+	 *
+	 * @param MerchantCenterService $merchant_center
 	 */
-	public function __construct() {
+	public function __construct( MerchantCenterService $merchant_center ) {
 		$blog_id                = Jetpack_Options::get_option( 'id' );
+		$this->merchant_center  = $merchant_center;
 		$this->notification_url = "https://public-api.wordpress.com/wpcom/v2/sites/{$blog_id}/partners/google/notifications";
 	}
 
@@ -66,9 +77,10 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 *
 	 * @param string   $topic The topic to use in the notification.
 	 * @param int|null $item_id The item ID to notify. It can be null for topics that doesn't need Item ID
+	 * @param array    $data Optional data to send in the request.
 	 * @return bool True is the notification is successful. False otherwise.
 	 */
-	public function notify( string $topic, $item_id = null ): bool {
+	public function notify( string $topic, $item_id = null, $data = [] ): bool {
 		/**
 		 * Allow users to disable the notification request.
 		 *
@@ -78,7 +90,8 @@ class NotificationsService implements Service, OptionsAwareInterface {
 		 * @param int $item_id The item_id for the notification.
 		 * @param string $topic The topic for the notification.
 		 */
-		if ( ! apply_filters( 'woocommerce_gla_notify', in_array( $topic, self::ALLOWED_TOPICS, true ), $item_id, $topic ) ) {
+		if ( ! apply_filters( 'woocommerce_gla_notify', $this->is_ready() && in_array( $topic, self::ALLOWED_TOPICS, true ), $item_id, $topic ) ) {
+			$this->notification_error( $topic, 'Notification was not sent because the Notification Service is not ready or the topic is not valid.', $item_id );
 			return false;
 		}
 
@@ -89,9 +102,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 				'x-woocommerce-topic' => $topic,
 				'Content-Type'        => 'application/json',
 			],
-			'body'    => [
-				'item_id' => $item_id,
-			],
+			'body'    => array_merge( $data, [ 'item_id' => $item_id ] ),
 			'url'     => $this->get_notification_url(),
 		];
 
@@ -105,7 +116,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 
 		do_action(
 			'woocommerce_gla_debug_message',
-			sprintf( 'Notification - Item ID: %s - Topic: %s', $item_id, $topic ),
+			sprintf( 'Notification - Item ID: %s - Topic: %s - Data %s', $item_id, $topic, json_encode( $data ) ),
 			__METHOD__
 		);
 
@@ -153,7 +164,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 * @return bool
 	 */
 	public function is_ready(): bool {
-		return $this->options->is_wpcom_api_authorized() && $this->is_enabled();
+		return $this->options->is_wpcom_api_authorized() && $this->is_enabled() && $this->merchant_center->is_ready_for_syncing();
 	}
 
 	/**

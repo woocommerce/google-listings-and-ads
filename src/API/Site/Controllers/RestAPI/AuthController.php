@@ -133,7 +133,7 @@ class AuthController extends BaseController {
 	protected function get_update_authorize_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$this->account_service->update_wpcom_api_authorization( $request['status'] );
+				$this->account_service->update_wpcom_api_authorization( $request['status'], $request['nonce'] );
 				return [ 'status' => $request['status'] ];
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -169,6 +169,12 @@ class AuthController extends BaseController {
 				'description'       => __( 'The status of the merchant granting access to Google\'s WPCOM app', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'enum'              => OAuthService::ALLOWED_STATUSES,
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => true,
+			],
+			'nonce'  => [
+				'description'       => __( 'The nonce provided by Google in the URL query parameter when Google redirects back to merchant\'s site', 'google-listings-and-ads' ),
+				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],

@@ -254,7 +254,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( MerchantCenterService::class );
 
 		// Set up Notifications service.
-		$this->share_with_tags( NotificationsService::class );
+		$this->share_with_tags( NotificationsService::class, MerchantCenterService::class );
 
 		// Set up OAuthService service.
 		$this->share_with_tags( OAuthService::class );
@@ -331,7 +331,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class );
 
 		// Product attributes
-		$this->conditionally_share_with_tags( AttributeManager::class );
+		$this->conditionally_share_with_tags( AttributeManager::class, AttributeMappingRulesQuery::class, WC::class );
 		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 

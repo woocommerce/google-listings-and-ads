@@ -6,6 +6,7 @@ bin export-ignore
 tests export-ignore
 js/src export-ignore
 js/build-dev export-ignore
+docs export-ignore
 README.md export-ignore
 package.json export-ignore
 package-lock.json export-ignore
@@ -20,6 +21,7 @@ webpack.config.js export-ignore
 webpack-development.config.js export-ignore
 jest.config.js export-ignore
 wordpress_org_assets export-ignore
+.codecov.yml export-ignore
 .editorconfig export-ignore
 .externalized.json export-ignore
 .prettierrc.js export-ignore
@@ -28,5 +30,7 @@ wordpress_org_assets export-ignore
 .eslintrc.js export-ignore
 .stylelintignore export-ignore
 .stylelintrc.json export-ignore
+.npmrc export-ignore
 .nvmrc export-ignore
 .jsdocrc.json export-ignore
+.wp-env.json export-ignore

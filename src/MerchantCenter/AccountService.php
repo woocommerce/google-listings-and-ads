@@ -503,17 +503,51 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @return bool
 	 */
 	public function reset_wpcom_api_authorization(): bool {
+		$this->delete_wpcom_api_auth_nonce();
 		return $this->options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
 	}
 
 	/**
 	 * Update the status of the merchant granting access to Google's WPCOM app in the database.
+	 * Before updating the status in the DB it will compare the nonce stored in the DB with the nonce passed to the API.
 	 *
 	 * @param string $status The status of the merchant granting access to Google's WPCOM app.
+	 * @param string $nonce  The nonce provided by Google in the URL query parameter when Google redirects back to merchant's site.
 	 *
-	 * @return string Status.
+	 * @return bool
+	 * @throws ExceptionWithResponseData If the stored nonce / nonce from query param is not provided, or the nonces mismatch.
 	 */
-	public function update_wpcom_api_authorization( string $status ): bool {
+	public function update_wpcom_api_authorization( string $status, string $nonce ): bool {
+		$stored_nonce = $this->options->get( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
+		if ( empty( $stored_nonce ) ) {
+			throw $this->prepare_exception(
+				__( 'No stored nonce found in the database, skip updating auth status.', 'google-listings-and-ads' )
+			);
+		}
+
+		if ( empty( $nonce ) ) {
+			throw $this->prepare_exception(
+				__( 'Nonce is not provided, skip updating auth status.', 'google-listings-and-ads' )
+			);
+		}
+
+		if ( $stored_nonce !== $nonce ) {
+			$this->delete_wpcom_api_auth_nonce();
+			throw $this->prepare_exception(
+				__( 'Nonces mismatch, skip updating auth status.', 'google-listings-and-ads' )
+			);
+		}
+
+		$this->delete_wpcom_api_auth_nonce();
 		return $this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $status );
+	}
+
+	/**
+	 * Delete the nonce of "verifying Google is the one redirect back to merchant site and set the auth status" in the database.
+	 *
+	 * @return bool
+	 */
+	public function delete_wpcom_api_auth_nonce(): bool {
+		return $this->options->delete( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
 	}
 }

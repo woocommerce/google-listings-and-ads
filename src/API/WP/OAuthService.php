@@ -5,6 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,8 +19,9 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WP
  */
-class OAuthService implements Service {
+class OAuthService implements Service, OptionsAwareInterface {
 
+	use OptionsAwareTrait;
 	use UtilitiesTrait;
 
 	public const AUTH_URL      = 'https://public-api.wordpress.com/oauth2/authorize';
@@ -106,10 +110,12 @@ class OAuthService implements Service {
 	 * nonce:        A string returned by Google that we will put it in the auth URL and the redirect_uri. Google will use it to verify the call.
 	 */
 	protected function get_data_from_google(): array {
+		$nonce = 'nonce-123';
+		$this->options->update( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE, $nonce );
 		return [
 			'client_id'    => '91299',
 			'redirect_uri' => 'https://woo.com',
-			'nonce'        => 'nonce-123',
+			'nonce'        => $nonce,
 		];
 	}
 }

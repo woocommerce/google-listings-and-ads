@@ -21,7 +21,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
  * the DB by calling an API `PUT /wc/gla/rest-api/authorize`.
  */
 const useUpdateRestAPIAuthorizeStatusByUrlQuery = () => {
-	const { google_wpcom_app_status: googleWPCOMAppStatus } = getQuery();
+	const { google_wpcom_app_status: googleWPCOMAppStatus, nonce } = getQuery();
 	const { invalidateResolution } = useAppDispatch();
 
 	const path = `${ API_NAMESPACE }/rest-api/authorize`;
@@ -33,7 +33,10 @@ const useUpdateRestAPIAuthorizeStatusByUrlQuery = () => {
 	const handleUpdateRestAPIAuthorize = useCallback( async () => {
 		try {
 			await fetchUpdateRestAPIAuthorize( {
-				data: { status: googleWPCOMAppStatus },
+				data: {
+					status: googleWPCOMAppStatus,
+					nonce,
+				},
 			} );
 
 			// Refetch Google MC account so we can get the latest gla_wpcom_rest_api_status.
@@ -42,12 +45,13 @@ const useUpdateRestAPIAuthorizeStatusByUrlQuery = () => {
 			// Only show in the console when failed to update rest API authorize status
 			// since the user doesn't need to know about it.
 			// eslint-disable-next-line no-console
-			console.error( e );
+			console.error( e.message );
 		}
 	}, [
 		fetchUpdateRestAPIAuthorize,
 		googleWPCOMAppStatus,
 		invalidateResolution,
+		nonce,
 	] );
 
 	useEffect( () => {

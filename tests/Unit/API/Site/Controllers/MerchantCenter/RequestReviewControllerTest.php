@@ -222,7 +222,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				'status'                => RequestReviewStatuses::DISAPPROVED,
 				'issues'                => [ 'one', 'two' ],
 				'cooldown'              => 0,
-				'reviewEligibleRegions' => [ 'US' ],
+				'reviewEligibleRegions' => [ 'US' => [ 'programtypea', 'programtypeb' ] ],
 			],
 			$response->get_data()
 		);
@@ -317,7 +317,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				'status'                => RequestReviewStatuses::DISAPPROVED,
 				'issues'                => [ 'one', 'two' ],
 				'cooldown'              => 0,
-				'reviewEligibleRegions' => [ 'US' ],
+				'reviewEligibleRegions' => [ 'US' => [ 'programtypea' ] ],
 			],
 			$response->get_data()
 		);
@@ -390,7 +390,7 @@ class RequestReviewControllerTest extends RESTControllerUnitTest {
 				'status'                => RequestReviewStatuses::DISAPPROVED,
 				'issues'                => [ 'one', 'two' ],
 				'cooldown'              => 1651058331000, // 27/04/2022
-				'reviewEligibleRegions' => [ 'US' ],
+				'reviewEligibleRegions' => [ 'US' => [ 'freelistingsprogram' ] ],
 			],
 			$response->get_data()
 		);

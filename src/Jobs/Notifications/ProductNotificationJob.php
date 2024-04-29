@@ -6,8 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\HelperNotificationInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
  */
 class ProductNotificationJob extends AbstractItemNotificationJob {
+
+	use PluginHelper;
 
 	/**
 	 * @var ProductHelper $helper
@@ -39,9 +42,23 @@ class ProductNotificationJob extends AbstractItemNotificationJob {
 		NotificationsService $notifications_service,
 		HelperNotificationInterface $helper
 	) {
-		$this->notifications_service = $notifications_service;
-		$this->helper                = $helper;
+		$this->helper = $helper;
 		parent::__construct( $action_scheduler, $monitor, $notifications_service );
+	}
+
+	/**
+	 * Override Product Notification adding Offer ID for deletions.
+	 * The offer_id might match the real offer ID or not, depending on whether the product has been synced by us or not.
+	 * Google should check on their side if the product actually exists.
+	 *
+	 * @param array $args Arguments with the item id and the topic.
+	 */
+	protected function process_items( $args ): void {
+		if ( isset( $args['topic'] ) && isset( $args['item_id'] ) && $this->is_delete_topic( $args['topic'] ) ) {
+			$args['data'] = [ 'offer_id' => WCProductAdapter::get_google_product_offer_id( $this->get_slug(), $args['item_id'] ) ];
+		}
+
+		parent::process_items( $args );
 	}
 
 	/**

@@ -3,9 +3,6 @@
 echo -e 'Activate twentytwentytwo theme \n'
 wp-env run tests-cli wp theme activate twentytwentytwo
 
-echo -e 'Install WooCommerce \n'
-wp-env run tests-cli -- wp plugin install woocommerce --activate
-
 echo -e 'Update URL structure \n'
 wp-env run tests-cli -- wp rewrite structure '/%postname%/' --hard
 
@@ -25,3 +22,6 @@ wp-env run tests-cli wp wc payment_gateway update cod --enabled=1 --user=admin
 
 echo -e 'Set the tour of product block editor to not display \n'
 wp-env run tests-cli wp option update woocommerce_block_product_tour_shown 'yes'
+
+echo -e 'Set the variable product tour of classic product editor to not display \n'
+wp-env run tests-cli wp user meta update admin woocommerce_admin_variable_product_tour_shown '"yes"'
