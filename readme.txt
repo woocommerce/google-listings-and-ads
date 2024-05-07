@@ -111,6 +111,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.6.9 - 2024-05-07 =
+* Tweak - Confirm issues are present when retrieving product status.
+
 = 2.6.8 - 2024-04-23 =
 * Tweak - Remove deprecated event properties marked as removable after Q1 2024 from the onboarding event tracking.
 * Tweak - Update tags in readme.txt.
