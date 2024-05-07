@@ -121,8 +121,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - Update e2e test environment to install WooCommerce earlier.
 * Fix - Exception in request review.
 
-= 2.6.6 - 2024-04-09 =
-* Dev - Add snippet to bypass WooCommerce dependency in E2E tests.
-* Tweak - WC 8.8 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
