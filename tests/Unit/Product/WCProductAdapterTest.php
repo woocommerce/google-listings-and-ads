@@ -930,6 +930,28 @@ DESCRIPTION;
 		$this->assertEquals( 1000, $adapted_product->getShippingWeight()->getValue() );
 	}
 
+	public function test_shipping_weight_unit_uses_lb_if_wc_option_is_lbs() {
+		update_option( 'woocommerce_weight_unit', 'lbs' );
+
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'height' => '3',
+				'length' => '4',
+				'width'  => '5',
+				'weight' => '1',
+			]
+		);
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+		$this->assertEquals( 'lb', $adapted_product->getShippingWeight()->getUnit() );
+	}
+
 	/**
 	 * @param array $shipping_dimensions
 	 *
