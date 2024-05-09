@@ -55,8 +55,10 @@ jobs:
 
       - name: Prepare BundleWatch env values - pull request
         if: ${{ github.event_name == 'pull_request' }}
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
-          echo "CI_BRANCH=${{ github.head_ref }}" >> $GITHUB_ENV
+          echo "CI_BRANCH=${HEAD_REF}" >> $GITHUB_ENV
           echo "CI_BRANCH_BASE=${{ github.base_ref }}" >> $GITHUB_ENV
           echo "CI_COMMIT_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
 
