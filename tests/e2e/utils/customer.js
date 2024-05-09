@@ -35,7 +35,7 @@ export async function singleProductAddToCart( page, productID ) {
 }
 
 /**
- * Adds a related product to the cart.
+ * Adds a related single product to the cart.
  *
  * @param {Page} page
  * @return {number} Product ID of the added product.
