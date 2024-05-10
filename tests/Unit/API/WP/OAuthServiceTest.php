@@ -82,9 +82,9 @@ class OAuthServiceTest extends UnitTest {
 				]
 			);
 
-		$merchant_redirect_url         = "{$admin_url}admin.php?page=wc-admin&path={$path}";
-		$merchant_redirect_url_encoded = urlencode_deep( $merchant_redirect_url );
-		$expected_state_raw            = "nonce={$nonce}&redirect_url={$merchant_redirect_url_encoded}";
+		$store_url         = "{$admin_url}admin.php?page=wc-admin&path={$path}";
+		$store_url_encoded = urlencode_deep( $store_url );
+		$expected_state_raw            = "nonce={$nonce}&store_url={$store_url_encoded}";
 		$state                         = $this->base64url_encode( $expected_state_raw );
 
 		$expected_auth_url  = 'https://public-api.wordpress.com/oauth2/authorize';
@@ -120,8 +120,8 @@ class OAuthServiceTest extends UnitTest {
 			$parsed_state['nonce']
 		);
 		$this->assertEquals(
-			$merchant_redirect_url,
-			$parsed_state['redirect_url']
+			$store_url,
+			$parsed_state['store_url']
 		);
 	}
 }
