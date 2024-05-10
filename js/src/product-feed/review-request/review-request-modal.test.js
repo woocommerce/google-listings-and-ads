@@ -4,18 +4,6 @@ jest.mock( '.~/utils/tracks', () => {
 	};
 } );
 
-jest.mock( '.~/hooks/useDispatchCoreNotices', () => ( {
-	__esModule: true,
-	default: jest
-		.fn()
-		.mockName( 'useDispatchCoreNotices' )
-		.mockImplementation( () => {
-			return {
-				createNotice: jest.fn(),
-			};
-		} ),
-} ) );
-
 jest.mock( '.~/data', () => ( {
 	__esModule: true,
 	useAppDispatch: jest.fn( () => {
