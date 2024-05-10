@@ -75,7 +75,7 @@ class OAuthService implements Service, OptionsAwareInterface {
 		$state = $this->base64url_encode(
 			build_query(
 				[
-					'nonce'        => $google_data['nonce'],
+					'nonce'     => $google_data['nonce'],
 					'store_url' => $store_url,
 				]
 			)

@@ -82,10 +82,10 @@ class OAuthServiceTest extends UnitTest {
 				]
 			);
 
-		$store_url         = "{$admin_url}admin.php?page=wc-admin&path={$path}";
-		$store_url_encoded = urlencode_deep( $store_url );
-		$expected_state_raw            = "nonce={$nonce}&store_url={$store_url_encoded}";
-		$state                         = $this->base64url_encode( $expected_state_raw );
+		$store_url          = "{$admin_url}admin.php?page=wc-admin&path={$path}";
+		$store_url_encoded  = urlencode_deep( $store_url );
+		$expected_state_raw = "nonce={$nonce}&store_url={$store_url_encoded}";
+		$state              = $this->base64url_encode( $expected_state_raw );
 
 		$expected_auth_url  = 'https://public-api.wordpress.com/oauth2/authorize';
 		$expected_auth_url .= "?blog={$blog_id}";
