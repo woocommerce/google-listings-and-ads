@@ -627,26 +627,26 @@ class MerchantCenterServiceTest extends UnitTest {
 
 	public function test_has_at_least_one_synced_product_when_no_actives() {
 		$this->merchant_statuses->method( 'get_product_statistics' )
-		                        ->willReturn(
-			                        [
-				                        'statistics' => [
-					                        'active'     => 0,
-					                        'pending'    => 4,
-					                        'not_synced' => 5,
-				                        ],
-			                        ]
-		                        );
+								->willReturn(
+									[
+										'statistics' => [
+											'active'     => 0,
+											'pending'    => 4,
+											'not_synced' => 5,
+										],
+									]
+								);
 
 		$this->assertFalse( $this->mc_service->has_at_least_one_synced_product() );
 	}
 
 	public function test_has_at_least_one_synced_product_when_null_statistics() {
 		$this->merchant_statuses->method( 'get_product_statistics' )
-		                        ->willReturn(
-			                        [
-				                        'statistics' => null
-			                        ]
-		                        );
+								->willReturn(
+									[
+										'statistics' => null,
+									]
+								);
 
 		$this->assertFalse( $this->mc_service->has_at_least_one_synced_product() );
 	}
