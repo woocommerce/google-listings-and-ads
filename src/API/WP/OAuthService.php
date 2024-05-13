@@ -52,18 +52,18 @@ class OAuthService implements Service, OptionsAwareInterface {
 	 * scope=wc-partner-access&
 	 * state=URL_SAFE_BASE64_ENCODED_STRING
 	 *
-	 * State is an URL safe base64 encoded string.
+	 * State is a URL safe base64 encoded string.
 	 * E.g.
 	 * state=bm9uY2UtMTIzJnJlZGlyZWN0X3VybD1odHRwcyUzQSUyRiUyRm1lcmNoYW50LXNpdGUuZXhhbXBsZS5jb20lMkZ3cC1hZG1pbiUyRmFkbWluLnBocCUzRnBhZ2UlM0R3Yy1hZG1pbiUyNnBhdGglM0QlMkZnb29nbGUlMkZzZXR1cC1tYw
 	 *
-	 * The decoded content of state is an URL query string where the value of its parameter "store_url" is being URL encoded.
+	 * The decoded content of state is a URL query string where the value of its parameter "store_url" is being URL encoded.
 	 * E.g.
 	 * nonce=nonce-123&store_url=https%3A%2F%2Fmerchant-site.example.com%2Fwp-admin%2Fadmin.php%3Fpage%3Dwc-admin%26path%3D%2Fgoogle%2Fsetup-mc
 	 *
 	 * where its URL decoded version is:
 	 * nonce=nonce-123&store_url=https://merchant-site.example.com/wp-admin/admin.php?page=wc-admin&path=/google/setup-mc
 	 *
-	 * @param string $path An URL parameter for the path within GL&A page, which will be added in the merchant redirect URL.
+	 * @param string $path A URL parameter for the path within GL&A page, which will be added in the merchant redirect URL.
 	 *
 	 * @return string Auth URL.
 	 */
