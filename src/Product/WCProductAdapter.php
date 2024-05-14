@@ -572,6 +572,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		}
 
 		$weight = wc_get_weight( $this->wc_product->get_weight(), $unit );
+
+		// Use lb if the unit is lbs, since GMC uses lb.
+		if ( 'lbs' === $unit ) {
+			$unit = 'lb';
+		}
+
 		$this->setShippingWeight(
 			new GoogleProductShippingWeight(
 				[

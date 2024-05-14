@@ -6,18 +6,19 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAccountAccessQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAccountQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsBillingStatusQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsProductLinkInvitationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Exception;
-use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Enums\AccessRoleEnum\AccessRole;
-use Google\Ads\GoogleAds\V14\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
-use Google\Ads\GoogleAds\V14\Resources\MerchantCenterLink;
-use Google\Ads\GoogleAds\V14\Services\MerchantCenterLinkOperation;
+use Google\Ads\GoogleAds\Util\V16\ResourceNames;
+use Google\Ads\GoogleAds\V16\Enums\AccessRoleEnum\AccessRole;
+use Google\Ads\GoogleAds\V16\Enums\ProductLinkInvitationStatusEnum\ProductLinkInvitationStatus;
+use Google\Ads\GoogleAds\V16\Resources\ProductLinkInvitation;
+use Google\Ads\GoogleAds\V16\Services\ListAccessibleCustomersRequest;
+use Google\Ads\GoogleAds\V16\Services\UpdateProductLinkInvitationRequest;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 
@@ -57,7 +58,7 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function get_ads_accounts(): array {
 		try {
-			$customers = $this->client->getCustomerServiceClient()->listAccessibleCustomers();
+			$customers = $this->client->getCustomerServiceClient()->listAccessibleCustomers( new ListAccessibleCustomersRequest() );
 			$accounts  = [];
 
 			foreach ( $customers->getResourceNames() as $name ) {
@@ -128,22 +129,16 @@ class Ads implements OptionsAwareInterface {
 	 * @throws Exception When a link is unavailable.
 	 */
 	public function accept_merchant_link( int $merchant_id ) {
-		$link = $this->get_merchant_link( $merchant_id );
-
-		if ( $link->getStatus() === MerchantCenterLinkStatus::ENABLED ) {
+		$link        = $this->get_merchant_link( $merchant_id );
+		$link_status = $link->getStatus();
+		if ( $link_status === ProductLinkInvitationStatus::ACCEPTED ) {
 			return;
 		}
-
-		$link->setStatus( MerchantCenterLinkStatus::ENABLED );
-
-		$operation = new MerchantCenterLinkOperation();
-		$operation->setUpdate( $link );
-		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $link ) );
-
-		$this->client->getMerchantCenterLinkServiceClient()->mutateMerchantCenterLink(
-			$this->options->get_ads_id(),
-			$operation
-		);
+		$request = new UpdateProductLinkInvitationRequest();
+		$request->setCustomerId( $this->options->get_ads_id() );
+		$request->setResourceName( $link->getResourceName() );
+		$request->setProductLinkInvitationStatus( ProductLinkInvitationStatus::ACCEPTED );
+		$this->client->getProductLinkInvitationServiceClient()->updateProductLinkInvitation( $request );
 	}
 
 	/**
@@ -306,17 +301,20 @@ class Ads implements OptionsAwareInterface {
 	 *
 	 * @param int $merchant_id Merchant Center account id.
 	 *
-	 * @return MerchantCenterLink
+	 * @return ProductLinkInvitation
 	 * @throws Exception When the merchant link hasn't been created.
 	 */
-	private function get_merchant_link( int $merchant_id ): MerchantCenterLink {
-		$response = $this->client->getMerchantCenterLinkServiceClient()->listMerchantCenterLinks(
-			$this->options->get_ads_id()
-		);
+	private function get_merchant_link( int $merchant_id ): ProductLinkInvitation {
+		$res = ( new AdsProductLinkInvitationQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'product_link_invitation.status', [ ProductLinkInvitationStatus::name( ProductLinkInvitationStatus::ACCEPTED ), ProductLinkInvitationStatus::name( ProductLinkInvitationStatus::PENDING_APPROVAL ) ], 'IN' )
+			->get_results();
 
-		foreach ( $response->getMerchantCenterLinks() as $link ) {
-			/** @var MerchantCenterLink $link */
-			if ( $merchant_id === absint( $link->getId() ) ) {
+		foreach ( $res->iterateAllElements() as $row ) {
+			$link  = $row->getProductLinkInvitation();
+			$mc    = $link->getMerchantCenter();
+			$mc_id = $mc->getMerchantCenterId();
+			if ( absint( $mc_id ) === $merchant_id ) {
 				return $link;
 			}
 		}

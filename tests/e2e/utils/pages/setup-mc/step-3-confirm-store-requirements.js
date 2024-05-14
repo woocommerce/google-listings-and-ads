@@ -38,21 +38,12 @@ export default class StoreRequirements extends MockRequests {
 	}
 
 	/**
-	 * Get components-card class.
-	 *
-	 * @return {import('@playwright/test').Locator} Get components-card class.
-	 */
-	getComponentsCard() {
-		return this.page.locator( '.components-card' );
-	}
-
-	/**
 	 * Get phone verification card.
 	 *
 	 * @return {import('@playwright/test').Locator} Get phone verification card.
 	 */
 	getPhoneVerificationCard() {
-		return this.getComponentsCard().first();
+		return this.page.locator( '.gla-phone-number-card' );
 	}
 
 	/**
@@ -61,7 +52,7 @@ export default class StoreRequirements extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get store address card.
 	 */
 	getStoreAddressCard() {
-		return this.getComponentsCard().nth( 1 );
+		return this.page.locator( '.gla-store-address-card' );
 	}
 
 	/**
@@ -70,7 +61,7 @@ export default class StoreRequirements extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Get checklist card.
 	 */
 	getChecklistCard() {
-		return this.getComponentsCard().nth( 2 );
+		return this.page.locator( '.gla-pre-launch-checklist' );
 	}
 
 	/**
