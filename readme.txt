@@ -111,6 +111,12 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.7.0 - 2024-05-14 =
+* Fix - Convert `lbs` to `lb` when mapping WC products to Google products.
+* Fix - E2E tests
+* Tweak - WC 8.9 compatibility.
+* Update - Update Google API to V16.
+
 = 2.6.9 - 2024-05-07 =
 * Tweak - Confirm issues are present when retrieving product status.
 
