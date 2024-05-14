@@ -8,18 +8,19 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Exception;
-use Google\Ads\GoogleAds\V14\Common\TagSnippet;
-use Google\Ads\GoogleAds\V14\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
-use Google\Ads\GoogleAds\V14\Enums\ConversionActionStatusEnum\ConversionActionStatus;
-use Google\Ads\GoogleAds\V14\Enums\ConversionActionTypeEnum\ConversionActionType;
-use Google\Ads\GoogleAds\V14\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
-use Google\Ads\GoogleAds\V14\Enums\TrackingCodeTypeEnum\TrackingCodeType;
-use Google\Ads\GoogleAds\V14\Resources\ConversionAction;
-use Google\Ads\GoogleAds\V14\Resources\ConversionAction\ValueSettings;
-use Google\Ads\GoogleAds\V14\Services\ConversionActionOperation;
-use Google\Ads\GoogleAds\V14\Services\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V14\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V14\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V16\Common\TagSnippet;
+use Google\Ads\GoogleAds\V16\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
+use Google\Ads\GoogleAds\V16\Enums\ConversionActionStatusEnum\ConversionActionStatus;
+use Google\Ads\GoogleAds\V16\Enums\ConversionActionTypeEnum\ConversionActionType;
+use Google\Ads\GoogleAds\V16\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
+use Google\Ads\GoogleAds\V16\Enums\TrackingCodeTypeEnum\TrackingCodeType;
+use Google\Ads\GoogleAds\V16\Resources\ConversionAction;
+use Google\Ads\GoogleAds\V16\Resources\ConversionAction\ValueSettings;
+use Google\Ads\GoogleAds\V16\Services\ConversionActionOperation;
+use Google\Ads\GoogleAds\V16\Services\Client\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V16\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V16\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V16\Services\MutateConversionActionsRequest;
 use Google\ApiCore\ApiException;
 
 /**
@@ -84,9 +85,11 @@ class AdsConversionAction implements OptionsAwareInterface {
 			);
 
 			// Create the conversion.
+			$request = new MutateConversionActionsRequest();
+			$request->setCustomerId( $this->options->get_ads_id() );
+			$request->setOperations( [ $conversion_action_operation ] );
 			$response = $this->client->getConversionActionServiceClient()->mutateConversionActions(
-				$this->options->get_ads_id(),
-				[ $conversion_action_operation ]
+				$request
 			);
 
 			/** @var MutateConversionActionResult $added_conversion_action */
@@ -128,7 +131,7 @@ class AdsConversionAction implements OptionsAwareInterface {
 		try {
 			// Accept IDs too
 			if ( is_numeric( $resource_name ) ) {
-				$resource_name = ConversionActionServiceClient::conversionActionName( $this->options->get_ads_id(), $resource_name );
+				$resource_name = ConversionActionServiceClient::conversionActionName( strval( $this->options->get_ads_id() ), strval( $resource_name ) );
 			}
 
 			$results = ( new AdsConversionActionQuery() )->set_client( $this->client, $this->options->get_ads_id() )

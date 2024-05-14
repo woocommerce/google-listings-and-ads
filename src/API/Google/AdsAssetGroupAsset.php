@@ -7,13 +7,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupAs
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\V14\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V14\Resources\AssetGroupAsset;
+use Google\Ads\GoogleAds\V16\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V16\Resources\AssetGroupAsset;
 use Google\ApiCore\ApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Google\Ads\GoogleAds\V14\Services\MutateOperation;
-use Google\Ads\GoogleAds\V14\Services\AssetGroupAssetOperation;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
+use Google\Ads\GoogleAds\V16\Services\MutateOperation;
+use Google\Ads\GoogleAds\V16\Services\AssetGroupAssetOperation;
+use Google\Ads\GoogleAds\Util\V16\ResourceNames;
 
 
 
@@ -22,7 +22,7 @@ use Google\Ads\GoogleAds\Util\V14\ResourceNames;
  * Class AdsAssetGroupAsset
  *
  * Use to get assets group assets for specific asset groups.
- * https://developers.google.com/google-ads/api/fields/v14/asset_group_asset
+ * https://developers.google.com/google-ads/api/fields/V16/asset_group_asset
  *
  * @since 2.4.0
  *

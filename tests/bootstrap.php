@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests;
 
+use DG\BypassFinals;
 use WC_Install;
 
 define( 'GLA_TESTS_DIR', __DIR__ );
@@ -33,6 +34,10 @@ validate_file_exits( "{$wc_dir}/woocommerce.php" );
 
 // Require the composer autoloader.
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+
+// Enable this Library for avoiding errors mocking final Google API Classes.
+// @see https://github.com/googleads/google-ads-php/issues/1008
+BypassFinals::enable();
 
 // Give access to tests_add_filter() function.
 require_once "{$wp_tests_dir}/includes/functions.php";
