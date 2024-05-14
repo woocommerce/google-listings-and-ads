@@ -331,7 +331,7 @@ class GoogleAdsCleanupServices {
 		$bracket = 0;
 
 		// Parse until we find beginning of doc block.
-		$start = strrpos( $contents, '/**', ( $length - $offset ) * - 1 );
+		$start = strrpos( $contents, '/**', ( $length - $offset ) * -1 );
 
 		// Parse until we encounter closing bracket.
 		for ( $end = $offset; $end < $length; $end++ ) {
