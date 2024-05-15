@@ -180,7 +180,7 @@ npm run -- wp-env run tests-cli -- wp plugin update woocommerce --version=8.0.0-
 npm run -- wp-env run tests-cli -- wp wc update
 ```
 
-## Google Ads API Client Library 
+### Google Ads API Client Library 
 
 The new Google Ads API Client Library version is now available with PHP 7.4 support under this "legacy" branch.
 It can be used in composer like this:
