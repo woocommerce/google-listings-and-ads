@@ -1,7 +1,6 @@
 {
 	"phpVersion": "8.0",
 	"plugins": [
-		"https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip",
 		"https://github.com/WP-API/Basic-Auth/archive/master.zip",
 		"./tests/e2e/test-data",
 		"./tests/e2e/test-snippets",

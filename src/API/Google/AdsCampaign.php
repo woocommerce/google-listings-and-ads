@@ -17,15 +17,16 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Common\MaximizeConversionValue;
-use Google\Ads\GoogleAds\V14\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
-use Google\Ads\GoogleAds\V14\Resources\Campaign;
-use Google\Ads\GoogleAds\V14\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V14\Services\CampaignServiceClient;
-use Google\Ads\GoogleAds\V14\Services\CampaignOperation;
-use Google\Ads\GoogleAds\V14\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V14\Services\MutateOperation;
+use Google\Ads\GoogleAds\Util\V16\ResourceNames;
+use Google\Ads\GoogleAds\V16\Common\MaximizeConversionValue;
+use Google\Ads\GoogleAds\V16\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
+use Google\Ads\GoogleAds\V16\Resources\Campaign;
+use Google\Ads\GoogleAds\V16\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V16\Services\Client\CampaignServiceClient;
+use Google\Ads\GoogleAds\V16\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V16\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V16\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V16\Services\MutateOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
@@ -446,8 +447,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				'url_expansion_opt_out'     => true,
 				'shopping_setting'          => new ShoppingSetting(
 					[
-						'merchant_id'   => $this->options->get_merchant_id(),
-						'sales_country' => $country,
+						'merchant_id' => $this->options->get_merchant_id(),
+						'feed_label'  => $country,
 					]
 				),
 			]
@@ -514,7 +515,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		$shopping = $campaign->getShoppingSetting();
 		if ( $shopping ) {
 			$data += [
-				'country' => $shopping->getSalesCountry(),
+				'country' => $shopping->getFeedLabel(),
 			];
 		}
 
@@ -573,11 +574,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @throws ApiException If any of the operations fail.
 	 */
 	protected function mutate( array $operations ): int {
-		$responses = $this->client->getGoogleAdsServiceClient()->mutate(
-			$this->options->get_ads_id(),
-			$operations
-		);
-
+		$request = new MutateGoogleAdsRequest();
+		$request->setCustomerId( $this->options->get_ads_id() );
+		$request->setMutateOperations( $operations );
+		$responses = $this->client->getGoogleAdsServiceClient()->mutate( $request );
 		foreach ( $responses->getMutateOperationResponses() as $response ) {
 			if ( 'campaign_result' === $response->getResponse() ) {
 				$campaign_result = $response->getCampaignResult();

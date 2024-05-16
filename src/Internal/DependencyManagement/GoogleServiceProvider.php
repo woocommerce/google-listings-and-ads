@@ -46,7 +46,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definiti
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\RequestInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
-use Google\Ads\GoogleAds\Util\V14\GoogleAdsFailures;
+use Google\Ads\GoogleAds\Util\V16\GoogleAdsFailures;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;

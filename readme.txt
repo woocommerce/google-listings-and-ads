@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.5
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.6.9
+Stable tag: 2.7.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,12 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.7.0 - 2024-05-14 =
+* Fix - Convert `lbs` to `lb` when mapping WC products to Google products.
+* Fix - E2E tests
+* Tweak - WC 8.9 compatibility.
+* Update - Update Google API to V16.
+
 = 2.6.9 - 2024-05-07 =
 * Tweak - Confirm issues are present when retrieving product status.
 
@@ -118,10 +124,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Remove deprecated event properties marked as removable after Q1 2024 from the onboarding event tracking.
 * Tweak - Update tags in readme.txt.
 * Update - Restrict product types to be limited to only 10 when converting from categories.
-
-= 2.6.7 - 2024-04-16 =
-* Dev - Add E2E tests for the integration in the classic product editor.
-* Dev - Update e2e test environment to install WooCommerce earlier.
-* Fix - Exception in request review.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
