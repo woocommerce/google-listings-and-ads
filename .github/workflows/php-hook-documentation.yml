@@ -26,7 +26,7 @@ jobs:
         # This generates the documentation string. The `id` property is used to reference the output in the next step.
       - name: Generate hook documentation
         id: generate-hook-docs
-        uses: eason9487/grow/hook-documentation@actions-v2
+        uses: woocommerce/grow/hook-documentation@actions-v2
         with:
           source-directories: src/,views/,google-listings-and-ads.php,uninstall.php
 
