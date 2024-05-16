@@ -44,12 +44,12 @@ jobs:
     steps:
       - name: Get Release versions from Wordpress
         id: wp
-        uses: woocommerce/grow/get-plugin-releases@actions-v2
+        uses: eason9487/grow/get-plugin-releases@actions-v2
         with:
           slug: wordpress
       - name: Get Release versions from WooCommerce
         id: wc
-        uses: woocommerce/grow/get-plugin-releases@actions-v2
+        uses: eason9487/grow/get-plugin-releases@actions-v2
         with:
           slug: woocommerce
 
@@ -84,13 +84,13 @@ jobs:
         run: echo "generate_coverage=true" >> $GITHUB_ENV
 
       - name: Prepare PHP
-        uses: woocommerce/grow/prepare-php@actions-v2
+        uses: eason9487/grow/prepare-php@actions-v2
         with:
           php-version: "${{ matrix.php }}"
           coverage: "${{ env.generate_coverage == 'true' && 'xdebug' || 'none' }}"
 
       - name: Prepare MySQL
-        uses: woocommerce/grow/prepare-mysql@actions-v2
+        uses: eason9487/grow/prepare-mysql@actions-v2
 
       - name: Install WP tests
         run: ./bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wp-version }} ${{ matrix.wc-versions }}
@@ -125,12 +125,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare PHP
-        uses: woocommerce/grow/prepare-php@actions-v2
+        uses: eason9487/grow/prepare-php@actions-v2
         with:
           php-version: "${{ inputs.php-version }}"
 
       - name: Prepare MySQL
-        uses: woocommerce/grow/prepare-mysql@actions-v2
+        uses: eason9487/grow/prepare-mysql@actions-v2
 
       - name: Install WP tests
         env:

@@ -31,12 +31,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare node
-        uses: woocommerce/grow/prepare-node@actions-v2
+        uses: eason9487/grow/prepare-node@actions-v2
         with:
           node-version-file: ".nvmrc"
 
       - name: Prepare annotation formatter
-        uses: woocommerce/grow/eslint-annotation@actions-v2
+        uses: eason9487/grow/eslint-annotation@actions-v2
 
       - name: Lint JavaScript and annotate linting errors
         run: npm run lint:js -- --quiet --format ./eslintFormatter.cjs
@@ -49,12 +49,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare node
-        uses: woocommerce/grow/prepare-node@actions-v2
+        uses: eason9487/grow/prepare-node@actions-v2
         with:
           node-version-file: ".nvmrc"
 
       - name: Prepare annotation formatter
-        uses: woocommerce/grow/stylelint-annotation@actions-v2
+        uses: eason9487/grow/stylelint-annotation@actions-v2
 
       - name: Lint CSS and annotate linting errors
         run: npm run lint:css -- --custom-formatter ./stylelintFormatter.cjs
