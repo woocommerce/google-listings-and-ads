@@ -3,12 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Common\LocationInfo;
-use Google\Ads\GoogleAds\V14\Enums\CampaignCriterionStatusEnum\CampaignCriterionStatus;
-use Google\Ads\GoogleAds\V14\Resources\CampaignCriterion;
-use Google\Ads\GoogleAds\V14\Services\CampaignCriterionOperation;
-use Google\Ads\GoogleAds\V14\Services\MutateOperation;
+use Google\Ads\GoogleAds\Util\V16\ResourceNames;
+use Google\Ads\GoogleAds\V16\Common\LocationInfo;
+use Google\Ads\GoogleAds\V16\Enums\CampaignCriterionStatusEnum\CampaignCriterionStatus;
+use Google\Ads\GoogleAds\V16\Resources\CampaignCriterion;
+use Google\Ads\GoogleAds\V16\Services\CampaignCriterionOperation;
+use Google\Ads\GoogleAds\V16\Services\MutateOperation;
 
 /**
  * Class AdsCampaignCriterion
@@ -23,7 +23,7 @@ class AdsCampaignCriterion {
 	 * Returns a set of operations to create multiple campaign criteria.
 	 *
 	 * @param string $campaign_resource_name Campaign resource name.
-	 * @param array  $location_ids           Targeted locations IDs.
+	 * @param array  $location_ids Targeted locations IDs.
 	 *
 	 * @return array
 	 */
@@ -40,7 +40,7 @@ class AdsCampaignCriterion {
 	 * Returns a new campaign criterion create operation.
 	 *
 	 * @param string $campaign_resource_name Campaign resource name.
-	 * @param int    $location_id            Targeted location ID.
+	 * @param int    $location_id Targeted location ID.
 	 *
 	 * @return MutateOperation
 	 */

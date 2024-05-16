@@ -78,14 +78,15 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 	 * @throws Exception If the status data can't be retrieved from Google.
 	 */
 	public function get( WP_REST_Request $request ): array {
-		$this->request          = $request;
-		$products               = [];
-		$args                   = $this->prepare_query_args();
-		list( $limit, $offset ) = $this->prepare_query_pagination();
+		$this->request           = $request;
+		$products                = [];
+		$args                    = $this->prepare_query_args();
+		$refresh_status_data_job = null;
+		list( $limit, $offset )  = $this->prepare_query_pagination();
 
 		$mc_service = $this->container->get( MerchantCenterService::class );
 		if ( $mc_service->is_connected() ) {
-			$this->container->get( MerchantStatuses::class )->maybe_refresh_status_data();
+			$refresh_status_data_job = $this->container->get( MerchantStatuses::class )->maybe_refresh_status_data();
 		}
 
 		/** @var ProductHelper $product_helper */
@@ -94,14 +95,20 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 
 		foreach ( $this->product_repository->find( $args, $limit, $offset ) as $product ) {
-			$id     = $product->get_id();
-			$errors = $product_helper->get_validation_errors( $product );
+			$id        = $product->get_id();
+			$errors    = $product_helper->get_validation_errors( $product );
+			$mc_status = $product_helper->get_mc_status( $product ) ?: $product_helper->get_sync_status( $product );
+
+			// If the refresh_status_data_job is scheduled, we don't know the status yet as it is being refreshed.
+			if ( $refresh_status_data_job && $refresh_status_data_job->is_scheduled() ) {
+				$mc_status = null;
+			}
 
 			$products[ $id ] = [
 				'id'        => $id,
 				'title'     => $product->get_name(),
 				'visible'   => $product_helper->get_channel_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
-				'status'    => $product_helper->get_mc_status( $product ) ?: $product_helper->get_sync_status( $product ),
+				'status'    => $mc_status,
 				'image_url' => wp_get_attachment_image_url( $product->get_image_id(), 'full' ),
 				'price'     => $product->get_price(),
 				'errors'    => array_values( $errors ),

@@ -35,15 +35,15 @@ export async function singleProductAddToCart( page, productID ) {
 }
 
 /**
- * Adds a related product to the cart.
+ * Adds a related single product to the cart.
  *
  * @param {Page} page
  * @return {number} Product ID of the added product.
  */
 export async function relatedProductAddToCart( page ) {
 	const addToCart = ( await page.locator( '.related.products' ).isVisible() )
-		? '.related.products .add_to_cart_button'
-		: '.wp-block-woocommerce-related-products .add_to_cart_button';
+		? '.related.products .add_to_cart_button.product_type_simple'
+		: '.wp-block-woocommerce-related-products .add_to_cart_button.product_type_simple';
 
 	const addToCartButton = await page.locator( addToCart ).first();
 	await addToCartButton.click();

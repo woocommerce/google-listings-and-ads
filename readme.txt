@@ -1,11 +1,11 @@
 === Google Listings & Ads ===
 Contributors: automattic, google, woocommerce
-Tags: woocommerce, google, listings, ads
+Tags: woocommerce, google, product feed, ads, listings
 Requires at least: 5.9
-Tested up to: 6.4
+Tested up to: 6.5
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.6.0
+Stable tag: 2.7.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,19 +111,18 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 2.6.0 - 2024-02-27 =
-* Add - Support the new product editor (Product Block Editor).
-* Dev - Fix the compatibility issue in starting E2E test environment due to the default charset change in MariaDB v11.3.1.
-* Fix - 401 handling for connected Ads accounts.
+= 2.7.0 - 2024-05-14 =
+* Fix - Convert `lbs` to `lb` when mapping WC products to Google products.
+* Fix - E2E tests
+* Tweak - WC 8.9 compatibility.
+* Update - Update Google API to V16.
 
-= 2.5.18 - 2024-02-20 =
-* Fix - Prevent product queries by IDs if no arguments are supplied.
+= 2.6.9 - 2024-05-07 =
+* Tweak - Confirm issues are present when retrieving product status.
 
-= 2.5.17 - 2024-02-07 =
-* Dev - Add manual QIT workflow.
-* Dev - Upload coverage report for JS unit tests to codecov.
-* Fix - Only sync selected categories as product type.
-* Fix - Prevent notifications from sending request to Google API when disconnected.
-* Tweak - WC 8.6 compatibility.
+= 2.6.8 - 2024-04-23 =
+* Tweak - Remove deprecated event properties marked as removable after Q1 2024 from the onboarding event tracking.
+* Tweak - Update tags in readme.txt.
+* Update - Restrict product types to be limited to only 10 when converting from categories.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

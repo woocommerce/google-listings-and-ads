@@ -137,8 +137,6 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @property {string} triggered_by Indicates which button triggered this event
  * @property {string} action User's action or/and objective (e.g. `leave`, `go-to-step-2`)
  * @property {string | undefined} context Indicates which CTA is clicked
- * @property {string | undefined} target (**Deprecated: this property should not be used after Q1 2024**) Button ID
- * @property {string | undefined} trigger (**Deprecated: this property should not be used after Q1 2024**) Action (e.g. `click`)
  */
 
 /**
@@ -173,8 +171,6 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @event gla_setup_ads
  * @property {string} triggered_by Indicates which button triggered this event
  * @property {string} action User's action or/and objective (e.g. `leave`, `go-to-step-2`)
- * @property {string | undefined} target (**Deprecated: this property should not be used after Q1 2024**) Button ID
- * @property {string | undefined} trigger (**Deprecated: this property should not be used after Q1 2024**) Action (e.g. `click`)
  */
 
 /**

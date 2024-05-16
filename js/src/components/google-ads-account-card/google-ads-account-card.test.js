@@ -37,18 +37,6 @@ jest.mock( '.~/hooks/useExistingGoogleAdsAccounts', () =>
 	jest.fn().mockName( 'useExistingGoogleAdsAccounts' ).mockReturnValue( {} )
 );
 
-jest.mock( '.~/hooks/useDispatchCoreNotices', () => ( {
-	__esModule: true,
-	default: jest
-		.fn()
-		.mockName( 'useDispatchCoreNotices' )
-		.mockImplementation( () => {
-			return {
-				createNotice: jest.fn(),
-			};
-		} ),
-} ) );
-
 const CONNECTED_GOOGLE_ADS_ACCOUNT = {
 	id: 777777,
 	currency: 'PLN',

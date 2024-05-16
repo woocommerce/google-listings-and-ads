@@ -10,8 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AssetFieldType;
-use Google\Ads\GoogleAds\V14\Enums\AssetTypeEnum\AssetType;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
+use Google\Ads\GoogleAds\V16\Enums\AssetTypeEnum\AssetType;
+use Google\Ads\GoogleAds\Util\V16\ResourceNames;
 
 defined( 'ABSPATH' ) || exit;
 

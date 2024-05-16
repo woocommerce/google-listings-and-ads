@@ -11,7 +11,10 @@ import { useState } from '@wordpress/element';
 import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
-import { recordGlaEvent } from '.~/utils/tracks';
+import {
+	recordStepperChangeEvent,
+	recordStepContinueEvent,
+} from '.~/utils/tracks';
 
 /**
  * @param {Object} props React props
@@ -26,10 +29,7 @@ const AdsStepper = ( { formProps } ) => {
 	// Users can only go forward by clicking on the Continue button.
 	const handleStepClick = ( value ) => {
 		if ( value < step ) {
-			recordGlaEvent( 'gla_setup_ads', {
-				triggered_by: `stepper-step${ value }-button`,
-				action: `go-to-step${ value }`,
-			} );
+			recordStepperChangeEvent( 'gla_setup_ads', value );
 			setStep( value );
 		}
 	};
@@ -42,10 +42,7 @@ const AdsStepper = ( { formProps } ) => {
 	const continueStep = ( to ) => {
 		const from = step;
 
-		recordGlaEvent( 'gla_setup_ads', {
-			triggered_by: `step${ from }-continue-button`,
-			action: `go-to-step${ to }`,
-		} );
+		recordStepContinueEvent( 'gla_setup_ads', from, to );
 		setStep( to );
 	};
 

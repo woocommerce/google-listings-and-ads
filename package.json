@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
-	"version": "2.6.0",
+	"version": "2.7.0",
 	"description": "google-listings-and-ads",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -51,7 +51,7 @@
 	"devDependencies": {
 		"@hapi/h2o2": "^9.1.0",
 		"@hapi/hapi": "^20.2.2",
-		"@playwright/test": "^1.33.0",
+		"@playwright/test": "^1.42.0",
 		"@testing-library/jest-dom": "^5.16.5",
 		"@testing-library/react": "^12.1.5",
 		"@testing-library/react-hooks": "^8.0.1",
@@ -76,12 +76,15 @@
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
 		"stylelint-config-standard-scss": "^3.0.0",
-		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?9eb10353728dc915bf5f7bdd4b8e218c625355a9"
+		"woocommerce-grow-jsdoc": "https://gitpkg.now.sh/woocommerce/grow/packages/js/jsdoc?eabdb5c3e6f089499a9bc62ec2e5e2251d7b23ca"
 	},
 	"overrides": {
 		"engine.io-client": {
 			"xmlhttprequest-ssl@<1.6.2": "1.6.2",
 			"ws@<6.2.2": "6.2.2"
+		},
+		"socket.io-client": {
+			"debug@<4.3.1": "4.3.1"
 		}
 	},
 	"scripts": {

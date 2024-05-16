@@ -74,7 +74,7 @@ class ReviewAfterConversionsTest extends UnitTest {
 		$this->merchant_metrics->expects( $this->once() )
 			->method( 'get_cached_ads_metrics' )
 			->willReturn(
-				[ 'conversions' => 5 ]
+				[ 'conversions' => 0 ]
 			);
 
 		$this->assertFalse( $this->note->should_be_added() );
@@ -85,7 +85,7 @@ class ReviewAfterConversionsTest extends UnitTest {
 		$this->merchant_metrics->expects( $this->once() )
 			->method( 'get_cached_ads_metrics' )
 			->willReturn(
-				[ 'conversions' => 17 ]
+				[ 'conversions' => 1 ]
 			);
 
 		$this->assertTrue( $this->note->should_be_added() );

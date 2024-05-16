@@ -4,21 +4,21 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAssetGroupQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsListingGroupFilterQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\Util\V14\ResourceNames;
-use Google\Ads\GoogleAds\V14\Enums\AssetGroupStatusEnum\AssetGroupStatus;
-use Google\Ads\GoogleAds\V14\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
-use Google\Ads\GoogleAds\V14\Enums\ListingGroupFilterVerticalEnum\ListingGroupFilterVertical;
-use Google\Ads\GoogleAds\V14\Resources\AssetGroup;
-use Google\Ads\GoogleAds\V14\Resources\AssetGroupListingGroupFilter;
-use Google\Ads\GoogleAds\V14\Services\AssetGroupListingGroupFilterOperation;
-use Google\Ads\GoogleAds\V14\Services\AssetGroupOperation;
-use Google\Ads\GoogleAds\V14\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V14\Services\MutateOperation;
-use Google\Ads\GoogleAds\V14\Services\AssetGroupServiceClient;
+use Google\Ads\GoogleAds\Util\V16\ResourceNames;
+use Google\Ads\GoogleAds\V16\Enums\ListingGroupFilterListingSourceEnum\ListingGroupFilterListingSource;
+use Google\Ads\GoogleAds\V16\Enums\AssetGroupStatusEnum\AssetGroupStatus;
+use Google\Ads\GoogleAds\V16\Enums\ListingGroupFilterTypeEnum\ListingGroupFilterType;
+use Google\Ads\GoogleAds\V16\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V16\Resources\AssetGroupListingGroupFilter;
+use Google\Ads\GoogleAds\V16\Services\AssetGroupListingGroupFilterOperation;
+use Google\Ads\GoogleAds\V16\Services\AssetGroupOperation;
+use Google\Ads\GoogleAds\V16\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V16\Services\MutateGoogleAdsRequest;
+use Google\Ads\GoogleAds\V16\Services\MutateOperation;
+use Google\Ads\GoogleAds\V16\Services\Client\AssetGroupServiceClient;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Google\Protobuf\FieldMask;
@@ -150,23 +150,6 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Returns a set of operations to delete an asset group.
-	 *
-	 * @param string $campaign_resource_name
-	 * @return array
-	 */
-	public function delete_operations( string $campaign_resource_name ): array {
-		$asset_group_operations   = $this->asset_group_delete_operations( $campaign_resource_name );
-		$listing_group_operations = $this->listing_group_delete_operations();
-
-		// All assets must be deleted from the group before deleting the asset group.
-		return array_merge(
-			$listing_group_operations,
-			$asset_group_operations
-		);
-	}
-
-	/**
 	 * Returns an asset group create operation.
 	 *
 	 * @param string $campaign_resource_name
@@ -196,9 +179,9 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	protected function listing_group_create_operation(): MutateOperation {
 		$listing_group = new AssetGroupListingGroupFilter(
 			[
-				'asset_group' => $this->temporary_resource_name(),
-				'type'        => ListingGroupFilterType::UNIT_INCLUDED,
-				'vertical'    => ListingGroupFilterVertical::SHOPPING,
+				'asset_group'    => $this->temporary_resource_name(),
+				'type'           => ListingGroupFilterType::UNIT_INCLUDED,
+				'listing_source' => ListingGroupFilterListingSource::SHOPPING,
 			]
 		);
 
@@ -228,32 +211,6 @@ class AdsAssetGroup implements OptionsAwareInterface {
 			$this->asset_groups[] = $resource_name;
 			$operation            = ( new AssetGroupOperation() )->setRemove( $resource_name );
 			$operations[]         = ( new MutateOperation() )->setAssetGroupOperation( $operation );
-		}
-
-		return $operations;
-	}
-
-	/**
-	 * Returns an asset group listing group filter delete operation.
-	 *
-	 * @return MutateOperation[]
-	 */
-	protected function listing_group_delete_operations(): array {
-		if ( empty( $this->asset_groups ) ) {
-			return [];
-		}
-
-		$operations = [];
-		$results    = ( new AdsListingGroupFilterQuery() )
-			->set_client( $this->client, $this->options->get_ads_id() )
-			->where( 'asset_group_listing_group_filter.asset_group', $this->asset_groups, 'IN' )
-			->get_results();
-
-		/** @var GoogleAdsRow $row */
-		foreach ( $results->iterateAllElements() as $row ) {
-			$resource_name = $row->getAssetGroupListingGroupFilter()->getResourceName();
-			$operation     = ( new AssetGroupListingGroupFilterOperation() )->setRemove( $resource_name );
-			$operations[]  = ( new MutateOperation() )->setAssetGroupListingGroupFilterOperation( $operation );
 		}
 
 		return $operations;
@@ -439,10 +396,10 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	 * @throws Exception If the resource name is not in the expected format.
 	 */
 	protected function mutate( array $operations ): int {
-		$responses = $this->client->getGoogleAdsServiceClient()->mutate(
-			$this->options->get_ads_id(),
-			$operations
-		);
+		$request = new MutateGoogleAdsRequest();
+		$request->setCustomerId( $this->options->get_ads_id() );
+		$request->setMutateOperations( $operations );
+		$responses = $this->client->getGoogleAdsServiceClient()->mutate( $request );
 
 		foreach ( $responses->getMutateOperationResponses() as $response ) {
 			if ( 'asset_group_result' === $response->getResponse() ) {

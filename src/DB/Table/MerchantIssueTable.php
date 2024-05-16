@@ -56,9 +56,24 @@ SQL;
 	 *
 	 * @param DateTime $created_before Delete all records created before this.
 	 */
-	public function delete_stale( DateTime $created_before ) {
+	public function delete_stale( DateTime $created_before ): void {
 		$query = "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `created_at` < '%s'";
 		$this->wpdb->query( $this->wpdb->prepare( $query, $created_before->format( 'Y-m-d H:i:s' ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+	}
+
+	/**
+	 * Delete product issues for specific products and source.
+	 *
+	 * @param array  $products_ids Array of product IDs to delete issues for.
+	 * @param string $source       The source of the issues. Default is 'mc'.
+	 */
+	public function delete_specific_product_issues( array $products_ids, string $source = 'mc' ): void {
+		if ( empty( $products_ids ) ) {
+			return;
+		}
+
+		$placeholder = '(' . implode( ',', array_fill( 0, count( $products_ids ), '%d' ) ) . ')';
+		$this->wpdb->query( $this->wpdb->prepare( "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `product_id` IN {$placeholder} AND `source` = %s", array_merge( $products_ids, [ $source ] ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
 	/**

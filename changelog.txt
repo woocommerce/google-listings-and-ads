@@ -1,5 +1,62 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 2.7.0 - 2024-05-14 =
+* Fix - Convert `lbs` to `lb` when mapping WC products to Google products.
+* Fix - E2E tests
+* Tweak - WC 8.9 compatibility.
+* Update - Update Google API to V16.
+
+= 2.6.9 - 2024-05-07 =
+* Tweak - Confirm issues are present when retrieving product status.
+
+= 2.6.8 - 2024-04-23 =
+* Tweak - Remove deprecated event properties marked as removable after Q1 2024 from the onboarding event tracking.
+* Tweak - Update tags in readme.txt.
+* Update - Restrict product types to be limited to only 10 when converting from categories.
+
+= 2.6.7 - 2024-04-16 =
+* Dev - Add E2E tests for the integration in the classic product editor.
+* Dev - Update e2e test environment to install WooCommerce earlier.
+* Fix - Exception in request review.
+
+= 2.6.6 - 2024-04-09 =
+* Dev - Add snippet to bypass WooCommerce dependency in E2E tests.
+* Tweak - WC 8.8 compatibility.
+
+= 2.6.5 - 2024-04-04 =
+* Dev - Update test proxy port.
+* Tweak - Show Review Inbox Notices when 11 clicks and 1 Conversion.
+
+= 2.6.4 - 2024-03-26 =
+* Add - Filter WC REST API responses for gla_syncable param.
+* Add - Missing functions for the WPCOM OAuth flow.
+* Add - Notify when product changes.
+* Dev - Add a manual workflow run for PHP unit tests.
+* Update - Refactor Product Stats.
+
+= 2.6.3 - 2024-03-19 =
+* Fix - Handle parse JSON exception when Creating Ads Account.
+* Fix - Inline Javascript encoding for gtag events.
+* Fix - Undefined keys `offers_free_shipping ` or `free_shipping_threshold`.
+* Tweak - Add WP 6.5 Require plugins header.
+* Update - Newer version of bcmath_compat and phpseclib packages.
+* Update - Set default connect server URL to api.woocommerce.com.
+* Update is_gtag_page to support Google Analytics for WooCommerce version 2.0.0+.
+
+= 2.6.2 - 2024-03-12 =
+* Dev - Fix E2E tests for gtags consent mode.
+* Fix - Fatal error when getAdsLinks response is null.
+* Fix - WordPress 6.4 Compatibility: The modal closed event is not sent when clicking on its overlay.
+* Tweak - WC 8.7 compatibility.
+* Tweak - WP 6.5 compatibility.
+
+= 2.6.1 - 2024-03-05 =
+* Add - Consider `ga_gtag_enabled=yes` for  WCGAI >= 2.
+* Add - Google Analytics consent mode support.
+* Add - Support for Google Analytics for WooCommerce version 2.0.0 and above.
+* Dev - Avoid the test-data plugin occasionally missing in the E2E test environment.
+* Fix - Improve WordPress.com account handling.
+
 = 2.6.0 - 2024-02-27 =
 * Add - Support the new product editor (Product Block Editor).
 * Dev - Fix the compatibility issue in starting E2E test environment due to the default charset change in MariaDB v11.3.1.

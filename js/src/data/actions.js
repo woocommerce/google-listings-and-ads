@@ -106,7 +106,9 @@ import { adaptAdsCampaign } from './adapters';
  * @typedef {Object} ProductStatistics
  * @property {number} scheduled_sync Number of scheduled jobs which will sync products to Google.
  * @property {number} timestamp Timestamp reflecting when the product status statistics were last generated.
- * @property {ProductStatisticsDetails} statistics Statistics information of product status on Google Merchant Center.
+ * @property {boolean} loading Whether the product status statistics are being loaded.
+ * @property {string | null} error In case of error, it will contain the error message.
+ * @property {ProductStatisticsDetails | null } statistics Statistics information of product status on Google Merchant Center or null if the stats are loading.
  */
 
 /**
