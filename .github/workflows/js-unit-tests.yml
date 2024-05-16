@@ -29,10 +29,10 @@ jobs:
       FORCE_COLOR: 2
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Prepare node
-        uses: woocommerce/grow/prepare-node@actions-v1
+        uses: woocommerce/grow/prepare-node@actions-v2
         with:
           node-version-file: ".nvmrc"
 
@@ -40,8 +40,9 @@ jobs:
         run: npm run test:js
 
       - name: Upload JS unit coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage/clover.xml
           flags: js-unit-tests
           name: js-coverage-report
