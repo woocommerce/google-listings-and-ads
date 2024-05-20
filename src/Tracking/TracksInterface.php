@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking;
 
 /**
- * Tracks interface for Google Listings and Ads.
+ * Tracks interface for Google for WooCommerce.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */

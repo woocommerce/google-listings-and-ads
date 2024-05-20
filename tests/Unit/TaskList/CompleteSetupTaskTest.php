@@ -55,7 +55,7 @@ class CompleteSetupTaskTest extends UnitTest {
 	}
 
 	public function test_title() {
-		$this->assertEquals( 'Set up Google Listings & Ads', $this->task->get_title() );
+		$this->assertEquals( 'Set up Google for WooCommerce', $this->task->get_title() );
 	}
 
 	public function test_content() {

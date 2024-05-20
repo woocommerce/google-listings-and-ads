@@ -142,7 +142,7 @@ const SetupAccounts = ( props ) => {
 					'google-listings-and-ads'
 				) }
 				description={ __(
-					'Connect the accounts required to use Google Listings & Ads.',
+					'Connect the accounts required to use Google for WooCommerce.',
 					'google-listings-and-ads'
 				) }
 			/>
@@ -150,7 +150,7 @@ const SetupAccounts = ( props ) => {
 				className="gla-wp-google-accounts-section"
 				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
 				description={ __(
-					'The following accounts are required to use the Google Listings & Ads plugin.',
+					'The following accounts are required to use the Google for WooCommerce plugin.',
 					'google-listings-and-ads'
 				) }
 			>

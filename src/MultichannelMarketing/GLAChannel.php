@@ -101,7 +101,7 @@ class GLAChannel implements MarketingChannelInterface {
 	 * @return string
 	 */
 	public function get_name(): string {
-		return __( 'Google Listings & Ads', 'google-listings-and-ads' );
+		return __( 'Google for WooCommerce', 'google-listings-and-ads' );
 	}
 
 	/**

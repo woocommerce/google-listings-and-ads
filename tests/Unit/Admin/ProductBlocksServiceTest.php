@@ -217,7 +217,7 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 					'id'         => 'google-listings-and-ads-group',
 					'order'      => 100,
 					'attributes' => [
-						'title' => 'Google Listings & Ads',
+						'title' => 'Google for WooCommerce',
 					],
 				]
 			);
@@ -253,7 +253,7 @@ class ProductBlocksServiceTest extends ContainerAwareUnitTest {
 					'id'         => 'google-listings-and-ads-group',
 					'order'      => 100,
 					'attributes' => [
-						'title' => 'Google Listings & Ads',
+						'title' => 'Google for WooCommerce',
 					],
 				]
 			);
