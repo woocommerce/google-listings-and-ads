@@ -42,7 +42,7 @@ const UnsupportedLanguage = () => {
 		>
 			{ createInterpolateElement(
 				__(
-					'Your site language is <language />. This language is currently not supported by Google Listings & Ads. <settingsLink>You can change your site language here</settingsLink>. <supportedLanguagesLink>Read more about supported languages</supportedLanguagesLink>',
+					'Your site language is <language />. This language is currently not supported by Google for WooCommerce. <settingsLink>You can change your site language here</settingsLink>. <supportedLanguagesLink>Read more about supported languages</supportedLanguagesLink>',
 					'google-listings-and-ads'
 				),
 				{
@@ -85,7 +85,7 @@ const UnsupportedCountry = () => {
 		>
 			{ createInterpolateElement(
 				__(
-					'Your store’s country is <country />. This country is currently not supported by Google Listings & Ads. However, you can still choose to list your products in another supported country, if you are able to sell your products to customers there. <settingsLink>Change your store’s country here</settingsLink>. <supportedCountriesLink>Read more about supported countries</supportedCountriesLink>',
+					'Your store’s country is <country />. This country is currently not supported by Google for WooCommerce. However, you can still choose to list your products in another supported country, if you are able to sell your products to customers there. <settingsLink>Change your store’s country here</settingsLink>. <supportedCountriesLink>Read more about supported countries</supportedCountriesLink>',
 					'google-listings-and-ads'
 				),
 				{

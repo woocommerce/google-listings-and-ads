@@ -56,7 +56,7 @@ const pages = [
 		content: (
 			<GuidePageContent
 				title={ __(
-					'You’ve successfully set up Google Listings & Ads! 🎉',
+					'You’ve successfully set up Google for WooCommerce! 🎉',
 					'google-listings-and-ads'
 				) }
 			>

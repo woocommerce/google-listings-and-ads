@@ -56,10 +56,10 @@ class ReconnectWordPress extends AbstractNote implements MerchantCenterAwareInte
 	public function get_entry(): NoteEntry {
 		$note = new NoteEntry();
 		$note->set_title(
-			__( 'Re-connect your store to Google Listings & Ads', 'google-listings-and-ads' )
+			__( 'Re-connect your store to Google for WooCommerce', 'google-listings-and-ads' )
 		);
 		$note->set_content(
-			__( 'Your WordPress.com account has been disconnected from Google Listings & Ads. Connect your WordPress.com account again to ensure your products stay listed on Google through the Google Listings & Ads extension.<br/><br/>If you do not re-connect, any existing listings may be removed from Google.', 'google-listings-and-ads' )
+			__( 'Your WordPress.com account has been disconnected from Google for WooCommerce. Connect your WordPress.com account again to ensure your products stay listed on Google through the Google for WooCommerce extension.<br/><br/>If you do not re-connect, any existing listings may be removed from Google.', 'google-listings-and-ads' )
 		);
 		$note->set_content_data( (object) [] );
 		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
@@ -67,7 +67,7 @@ class ReconnectWordPress extends AbstractNote implements MerchantCenterAwareInte
 		$note->set_source( $this->get_slug() );
 		$note->add_action(
 			'reconnect-wordpress',
-			__( 'Go to Google Listings & Ads', 'google-listings-and-ads' ),
+			__( 'Go to Google for WooCommerce', 'google-listings-and-ads' ),
 			add_query_arg( 'subpath', '/reconnect-wpcom-account', $this->get_settings_url() )
 		);
 

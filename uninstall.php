@@ -1,8 +1,8 @@
 <?php
 /**
- * Google Listings and Ads Uninstall
+ * Google for WooCommerce Uninstall
  *
- * Uninstalling Google Listings and Ads unschedules any pending jobs, deletes its custom tables, related transients,
+ * Uninstalling Google for WooCommerce unschedules any pending jobs, deletes its custom tables, related transients,
  * options, and product metadata.
  *
  * @since 1.3.0

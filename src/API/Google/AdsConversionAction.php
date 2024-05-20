@@ -50,7 +50,7 @@ class AdsConversionAction implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Create the 'Google Listings and Ads purchase action' conversion action.
+	 * Create the 'Google for WooCommerce purchase action' conversion action.
 	 *
 	 * @return array An array with some conversion action details.
 	 * @throws Exception If the conversion action can't be created or retrieved.
@@ -67,7 +67,7 @@ class AdsConversionAction implements OptionsAwareInterface {
 							'woocommerce_gla_conversion_action_name',
 							sprintf(
 							/* translators: %1 is a random 4-digit string */
-								__( '[%1$s] Google Listings and Ads purchase action', 'google-listings-and-ads' ),
+								__( '[%1$s] Google for WooCommerce purchase action', 'google-listings-and-ads' ),
 								$unique
 							)
 						),

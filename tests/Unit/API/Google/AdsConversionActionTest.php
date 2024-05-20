@@ -30,7 +30,7 @@ class AdsConversionActionTest extends UnitTest {
 	protected $conversion_action;
 
 	protected const TEST_CONVERSION_ACTION_ID = 1234567890;
-	protected const TEST_CONVERSION_NAME      = '[a12b] Google Listings and Ads purchase action';
+	protected const TEST_CONVERSION_NAME      = '[a12b] Google for WooCommerce purchase action';
 	protected const TEST_CONVERSION_ID        = 'AW-12345';
 	protected const TEST_CONVERSION_LABEL     = 'abCD12ef';
 	protected const TEST_CONVERSION_SNIPPET   = "'send_to': 'AW-12345/abCD12ef'";

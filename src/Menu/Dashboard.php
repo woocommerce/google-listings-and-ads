@@ -38,7 +38,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 					$this->register_classic_submenu_page(
 						[
 							'id'     => 'google-listings-and-ads',
-							'title'  => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+							'title'  => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
 							'parent' => 'woocommerce-marketing',
 							'path'   => self::PATH,
 						]
@@ -55,11 +55,11 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 		wc_admin_register_page(
 			[
 				'id'       => 'google-listings-and-ads-category',
-				'title'    => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+				'title'    => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
 				'parent'   => 'woocommerce',
 				'path'     => self::PATH,
 				'nav_args' => [
-					'title'        => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+					'title'        => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
 					'is_category'  => true,
 					'menuId'       => 'plugins',
 					'is_top_level' => true,

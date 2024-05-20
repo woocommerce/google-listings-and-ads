@@ -289,7 +289,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 			<p class="privacy-policy-tutorial">' . $policy_text . '</p>
 			<style>#privacy-settings-accordion-block-google-listings-ads .privacy-settings-accordion-actions { display: none }</style>';
 
-		wp_add_privacy_policy_content( 'Google Listings & Ads', wpautop( $content, false ) );
+		wp_add_privacy_policy_content( 'Google for WooCommerce', wpautop( $content, false ) );
 	}
 
 	/**

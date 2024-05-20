@@ -6,7 +6,7 @@ wp-env run tests-cli wp theme activate twentytwentytwo
 echo -e 'Install WooCommerce \n'
 wp-env run tests-cli -- wp plugin install woocommerce --activate
 
-echo -e 'Activate Google Listings and Ads \n'
+echo -e 'Activate Google for WooCommerce \n'
 wp-env run tests-cli -- wp plugin activate google-listings-and-ads
 
 echo -e 'Update URL structure \n'
