@@ -189,7 +189,7 @@ const faqItems = [
 		answer: (
 			<p>
 				{ __(
-					'The Google Listings and Ads plugin allows you to upload your store and product data to Google. Your products will sync automatically to make relevant information available for free listings, Google Ads, and other Google services. You can create a new Merchant Center account or link an existing account to connect your store and list products across Google.',
+					'The Google for WooCommerce plugin allows you to upload your store and product data to Google. Your products will sync automatically to make relevant information available for free listings, Google Ads, and other Google services. You can create a new Merchant Center account or link an existing account to connect your store and list products across Google.',
 					'google-listings-and-ads'
 				) }
 			</p>
@@ -220,7 +220,7 @@ const faqItems = [
 			<>
 				<p>
 					{ __(
-						'Create a new Google Ads account through Google Listings & Ads and a promotional code will be automatically applied to your account. You’ll have 60 days to spend $500 to qualify for the $500 ads credit.',
+						'Create a new Google Ads account through Google for WooCommerce and a promotional code will be automatically applied to your account. You’ll have 60 days to spend $500 to qualify for the $500 ads credit.',
 						'google-listings-and-ads'
 					) }
 				</p>

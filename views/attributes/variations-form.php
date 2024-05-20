@@ -19,7 +19,7 @@ $children = $this->children;
 <?php if ( $this->is_root ) : ?>
 <div class="gla-metabox wc-metabox closed">
 	<h3>
-		<strong><?php esc_html_e( 'Google Listings & Ads', 'google-listings-and-ads' ); ?></strong>
+		<strong><?php esc_html_e( 'Google for WooCommerce', 'google-listings-and-ads' ); ?></strong>
 		<div class="handlediv" aria-label="Click to toggle"></div>
 	</h3>
 	<div class="wc-metabox-content" style="display: none;">

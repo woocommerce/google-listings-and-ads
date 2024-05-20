@@ -145,7 +145,7 @@ class ProductBlocksService implements Service, Registerable, Conditional {
 				'id'         => 'google-listings-and-ads-group',
 				'order'      => 100,
 				'attributes' => [
-					'title' => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+					'title' => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
 				],
 			]
 		);

@@ -25,7 +25,7 @@ const SetupMCTopBar = () => {
 	return (
 		<TopBar
 			title={ __(
-				'Get started with Google Listings & Ads',
+				'Get started with Google for WooCommerce',
 				'google-listings-and-ads'
 			) }
 			helpButton={ <HelpIconButton eventContext="setup-mc" /> }

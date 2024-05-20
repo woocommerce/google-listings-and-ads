@@ -182,7 +182,7 @@ export function getClassicProductEditorUtils( page ) {
 			await variation.getByRole( 'link', { name: 'Edit' } ).click();
 
 			return variation
-				.getByRole( 'heading', { name: 'Google Listings & Ads' } )
+				.getByRole( 'heading', { name: 'Google for WooCommerce' } )
 				.click();
 		},
 
@@ -296,7 +296,7 @@ export function getProductBlockEditorUtils( page ) {
 		},
 
 		getPluginTab() {
-			return this.getTab( 'Google Listings & Ads' );
+			return this.getTab( 'Google for WooCommerce' );
 		},
 
 		getChannelVisibilityHeading() {
