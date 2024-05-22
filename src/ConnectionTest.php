@@ -863,7 +863,7 @@ class ConnectionTest implements Service, Registerable {
 			$integration_status_args = [
 				'method'  => 'GET',
 				'timeout' => 30,
-				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/remote-site-status?partner=google&XDEBUG_SESSION_START=XDEBUG_OMATTIC',
+				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/remote-site-status?partner=google',
 				'user_id' => get_current_user_id(),
 			];
 
