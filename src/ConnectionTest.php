@@ -748,6 +748,14 @@ class ConnectionTest implements Service, Registerable {
 								</td>
 							</tr>																																
 						<?php } ?>
+						<tr>
+							<th><label>Revoke WPCOM Partner Access:</label></th>
+							<td>
+								<p>									
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'revoke-wpcom-partner-access' ], $url ), 'revoke-wpcom-partner-access' ) ); ?>">Revoke WPCOM Partner Access</a>
+								</p>
+							</td>
+						</tr>
 					</table>
 					<?php wp_nonce_field( 'partner-notification' ); ?>
 					<input name="page" value="connection-test-admin-page" type="hidden" />
@@ -863,7 +871,7 @@ class ConnectionTest implements Service, Registerable {
 			$integration_status_args = [
 				'method'  => 'GET',
 				'timeout' => 30,
-				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/remote-site-status?partner=google',
+				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/remote-site-status?partner=google&XDEBUG_SESSION_START=XDEBUG_OMATTIC',
 				'user_id' => get_current_user_id(),
 			];
 
@@ -873,6 +881,24 @@ class ConnectionTest implements Service, Registerable {
 				$this->integration_status_response['errors']['request_error'] = $integration_remote_request_response->get_error_message();
 			} else {
 				$this->integration_status_response = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [];
+			}
+		}
+
+		if ( 'revoke-wpcom-partner-access' === $_GET['action'] && check_admin_referer( 'revoke-wpcom-partner-access' ) ) {
+
+			$revoke_args = [
+				'method'  => 'DELETE',
+				'timeout' => 30,
+				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/revoke-token/google',
+				'user_id' => get_current_user_id(),
+			];
+
+			$revoke_response = Client::remote_request( $revoke_args, null );
+
+			if ( is_wp_error( $revoke_response ) ) {
+				$this->response .= $revoke_response->get_error_message();
+			} else {
+				$this->response .= wp_remote_retrieve_body( $revoke_response );
 			}
 		}
 
