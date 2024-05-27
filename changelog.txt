@@ -651,7 +651,7 @@
 * Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
 
 = 1.4.2 - 2021-08-24 =
-* Fix - Fix a potential fatal error when WooCommerce isn't active while activating Google for WooCommerce.
+* Fix - Fix a potential fatal error when WooCommerce isn't active while activating Google Listings and Ads.
 * Fix - Fix margin/padding styles for the AppButton when having spinner/icon/text.
 * Fix - Make audience country searchable in Setup Ads.
 * Fix - Remove file autoloads for namespaced packages.
