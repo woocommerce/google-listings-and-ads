@@ -62,8 +62,10 @@ const useUpsertAdsAccount = () => {
 		}
 
 		// Update Google Ads data in the data store after posting an account update.
-		await fetchGoogleAdsAccount();
-		await fetchGoogleAdsAccountStatus();
+		await Promise.all( [
+			fetchGoogleAdsAccount(),
+			fetchGoogleAdsAccountStatus(),
+		] );
 
 		setCurrentAction( null );
 	}, [
