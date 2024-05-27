@@ -56,9 +56,11 @@ class MerchantTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->service           = $this->createMock( ShoppingContent::class );
-		$this->service->accounts = $this->createMock( Accounts::class );
-		$this->service->products = $this->createMock( Products::class );
+		$this->service                      = $this->createMock( ShoppingContent::class );
+		$this->service->accounts            = $this->createMock( Accounts::class );
+		$this->service->products            = $this->createMock( Products::class );
+		$this->service->freelistingsprogram = $this->createMock( ShoppingContent\Resource\Freelistingsprogram::class );
+		$this->service->shoppingadsprogram  = $this->createMock( ShoppingContent\Resource\Shoppingadsprogram::class );
 
 		$this->options  = $this->createMock( OptionsInterface::class );
 		$this->merchant = new Merchant( $this->service );
@@ -488,6 +490,98 @@ class MerchantTest extends UnitTest {
 			->with( OptionsInterface::MERCHANT_ID, $this->merchant_id )
 			->willReturn( true );
 		$this->assertTrue( $this->merchant->update_merchant_id( $this->merchant_id ) );
+	}
+
+	public function test_get_account_review_status() {
+		$this->options->expects( $this->once() )->method( 'get_merchant_id' )->willReturn( $this->merchant_id );
+
+		$review_status = [
+			'freeListingsProgram' => 'freeListingsProgram',
+			'shoppingAdsProgram'  => 'shoppingAdsProgram',
+		];
+
+		$this->service->freelistingsprogram->expects( $this->once() )
+								->method( 'get' )
+								->with( $this->merchant_id )
+								->willReturn( 'freeListingsProgram' );
+
+		$this->service->shoppingadsprogram->expects( $this->once() )
+											->method( 'get' )
+											->with( $this->merchant_id )
+											->willReturn( 'shoppingAdsProgram' );
+
+		$this->assertEquals( $this->merchant->get_account_review_status(), $review_status );
+	}
+
+	public function test_get_account_review_status_exception() {
+		$this->options->expects( $this->once() )->method( 'get_merchant_id' )->willReturn( $this->merchant_id );
+
+		$this->service->freelistingsprogram->expects( $this->once() )
+											->method( 'get' )
+											->with( $this->merchant_id )
+											->willThrowException(
+												new GoogleException( 'Some exception', 400 )
+											);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Some exception' );
+		$this->expectExceptionCode( 400 );
+
+		$this->merchant->get_account_review_status();
+	}
+
+	public function test_request_review_freelistings() {
+		$types    = [ 'freelistingsprogram', 'shoppingadsprogram' ];
+		$response = [ 'statusCode' => 200 ];
+		$this->service->freelistingsprogram->expects( $this->once() )
+											->method( 'requestreview' )
+											->willReturn( $response );
+
+		$this->service->shoppingadsprogram->expects( $this->never() )
+											->method( 'requestreview' );
+
+		$this->assertEquals( $this->merchant->account_request_review( 'ES', $types ), $response );
+	}
+
+	public function test_request_review_shoppingads() {
+		$types    = [ 'shoppingadsprogram' ];
+		$response = [ 'statusCode' => 200 ];
+		$this->service->shoppingadsprogram->expects( $this->once() )
+											->method( 'requestreview' )
+											->willReturn( $response );
+
+		$this->service->freelistingsprogram->expects( $this->never() )
+											->method( 'requestreview' );
+
+		$this->assertEquals( $this->merchant->account_request_review( 'ES', $types ), $response );
+	}
+
+	public function test_request_review_no_valid_type() {
+		$types = [ 'bad_dummy_type' ];
+		$this->service->freelistingsprogram->expects( $this->never() )
+											->method( 'requestreview' );
+
+		$this->service->shoppingadsprogram->expects( $this->never() )
+											->method( 'requestreview' );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Program type not supported' );
+		$this->expectExceptionCode( 400 );
+
+		$this->merchant->account_request_review( 'ES', $types );
+	}
+
+	public function test_request_review_exception() {
+		$types = [ 'freelistingsprogram' ];
+		$this->service->freelistingsprogram->expects( $this->once() )
+											->method( 'requestreview' )
+											->willThrowException( new GoogleException( 'Some exception', 400 ) );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Some exception' );
+		$this->expectExceptionCode( 400 );
+
+		$this->merchant->account_request_review( 'ES', $types );
 	}
 
 	private function mock_get_account( Account $account ) {
