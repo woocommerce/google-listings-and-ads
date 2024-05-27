@@ -374,6 +374,8 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * Get the review status for an MC account
 	 *
+	 * @since x.x.x
+	 *
 	 * @return array An array with the status for freeListingsProgram and shoppingAdsProgram
 	 * @throws Exception When an exception happens in the Google API.
 	 */
@@ -392,6 +394,8 @@ class Merchant implements OptionsAwareInterface {
 
 	/**
 	 * Request a review for an MC account
+	 *
+	 * @since x.x.x
 	 *
 	 * @param string $region_code The region code to request the review
 	 * @param array  $types The types of programs to request the review
