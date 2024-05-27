@@ -18,6 +18,7 @@ import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
 import NavigationClassic from '.~/components/navigation-classic';
+import RebrandingTour from '.~/components/tours/rebranding-tour';
 import './index.scss';
 
 const pageClassName = 'gla-settings';
@@ -60,6 +61,7 @@ const Settings = () => {
 	return (
 		<div className={ pageClassName }>
 			<NavigationClassic />
+			<RebrandingTour />
 			<ContactInformationPreview />
 			<LinkedAccounts />
 		</div>
