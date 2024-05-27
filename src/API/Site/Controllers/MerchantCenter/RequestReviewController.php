@@ -277,17 +277,9 @@ class RequestReviewController extends BaseOptionsController {
 				return [];
 			}
 
-			/** @var array| Exception $response */
 			$response = $this->merchant->get_account_review_status();
-
-			if ( isset( $response['freeListingsProgram'] ) || isset( $response['shoppingAdsProgram'] ) ) {
-				do_action( 'woocommerce_gla_request_review_response', $response );
-				return $response;
-			}
-
-			do_action( 'woocommerce_gla_invalid_response', $response, __METHOD__ );
-			$error = $response['message'] ?? __( 'Invalid response getting account review status', 'google-listings-and-ads' );
-			throw new Exception( $error, $response->getCode() );
+			do_action( 'woocommerce_gla_request_review_response', $response );
+			return $response;
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 			throw new Exception(
