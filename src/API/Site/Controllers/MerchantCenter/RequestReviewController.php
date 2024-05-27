@@ -254,7 +254,7 @@ class RequestReviewController extends BaseOptionsController {
 	 * @throws Exception If the get_account_review_status API call fails.
 	 */
 	private function get_review_status(): ?array {
-		$review_status = null;
+		$review_status = $this->get_cached_review_status();
 
 		if ( is_null( $review_status ) ) {
 			$response      = $this->get_account_review_status();
