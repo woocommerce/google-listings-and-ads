@@ -133,8 +133,9 @@ class RequestReviewStatuses implements Service {
 			$region_status['reviewEligibilityStatus'] === self::ELIGIBLE
 		) {
 
-			sort( $region_status['regionCodes'] ); // sometimes the regions come unsorted between the different programs
-			$region_id = $region_status['regionCodes'][0];
+			$region_codes = $region_status['regionCodes'];
+			sort( $region_codes ); // sometimes the regions come unsorted between the different programs
+			$region_id = $region_codes[0];
 
 			if ( ! isset( $review_eligible_regions[ $region_id ] ) ) {
 				$review_eligible_regions[ $region_id ] = [];
