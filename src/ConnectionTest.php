@@ -863,17 +863,22 @@ class ConnectionTest implements Service, Registerable {
 			$integration_status_args = [
 				'method'  => 'GET',
 				'timeout' => 30,
-				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/remote-site-status?partner=google',
+				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/google/remote-site-status',
 				'user_id' => get_current_user_id(),
 			];
 
 			$integration_remote_request_response = Client::remote_request( $integration_status_args, null );
 
-			if ( is_wp_error( $this->integration_status_response ) ) {
-				$this->integration_status_response['errors']['request_error'] = $integration_remote_request_response->get_error_message();
+			if ( is_wp_error( $integration_remote_request_response ) ) {
+				$this->response .= $integration_remote_request_response->get_error_message();
 			} else {
 				$this->integration_status_response = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [];
+
+				if ( json_last_error() || ! isset( $this->integration_status_response['site'] ) ) {
+					$this->response .= wp_remote_retrieve_body( $integration_remote_request_response );
+				}
 			}
+
 		}
 
 		if ( 'disconnect-wp-api' === $_GET['action'] && check_admin_referer( 'disconnect-wp-api' ) ) {
