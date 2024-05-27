@@ -8,7 +8,7 @@ import GridiconTrending from 'gridicons/dist/trending';
 /**
  * Internal dependencies
  */
-import useTour from '.~/hooks/useTour';
+import useTour from '../../hooks/useTour';
 import './campaign-assets-tour.scss';
 
 const TOUR_ID = 'dashboard-feature--campaign-assets';
