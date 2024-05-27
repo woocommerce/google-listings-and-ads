@@ -6,24 +6,33 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import CreateAccount from './create-account';
-import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import SpinnerCard from '.~/components/spinner-card';
+import CreateAccount from './create-account';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
 import ConnectAds from './connect-ads';
 
 const NonConnected = () => {
 	const { existingAccounts } = useExistingGoogleAdsAccounts();
 	const [ ignoreExisting, setIgnoreExisting ] = useState( false );
-
-	if ( ! existingAccounts ) {
-		return <SpinnerCard />;
-	}
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
 
 	const handleShowExisting = () => {
 		setIgnoreExisting( false );
 	};
 
-	if ( existingAccounts.length === 0 || ignoreExisting ) {
+	if ( ! existingAccounts ) {
+		return <SpinnerCard />;
+	}
+
+	if (
+		existingAccounts.length === 0 ||
+		ignoreExisting ||
+		( googleAdsAccount.id && hasAccess !== true ) ||
+		( hasAccess === true && step === 'conversion_action' )
+	) {
 		return (
 			<CreateAccount
 				allowShowExisting={ ignoreExisting }

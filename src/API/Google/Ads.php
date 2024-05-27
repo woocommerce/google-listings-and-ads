@@ -267,6 +267,32 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Update the OCID for the account so that we can reference it later in order
+	 * to link to accept invite link or to send customer to conversion settings page
+	 * in their account.
+	 *
+	 * @param string $url Billing flow URL.
+	 *
+	 * @return bool
+	 */
+	public function update_ocid_from_billing_url( string $url ): bool {
+		$query_string = wp_parse_url( $url, PHP_URL_QUERY );
+
+		// Return if no params.
+		if ( empty( $query_string ) ) {
+			return false;
+		}
+
+		parse_str( $query_string, $params );
+
+		if ( empty( $params['ocid'] ) ) {
+			return false;
+		}
+
+		return $this->options->update( OptionsInterface::ADS_ACCOUNT_OCID, $params['ocid'] );
+	}
+
+	/**
 	 * Fetch the account details.
 	 * Returns null for any account that fails or is not the right type.
 	 *

@@ -216,10 +216,7 @@ const SavedSetupStepper = ( { savedStep } ) => {
 				},
 				{
 					key: stepNameKeyMap.paid_ads,
-					label: __(
-						'Complete your campaign',
-						'google-listings-and-ads'
-					),
+					label: __( 'Create a campaign', 'google-listings-and-ads' ),
 					content: <SetupPaidAds />,
 					onClick: handleStepClick,
 				},
