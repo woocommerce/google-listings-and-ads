@@ -16,9 +16,9 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 /**
  * Set up a Google Ads account.
  *
- * @return {Array} [ upsertAdsAccount, fetchResult ]
+ * @return {Array} [ upsertAdsAccount, hookState ]
  * 		- `upsertAdsAccount` A function to be called to trigger `apiFetch` to create or update a Google Ads account.
- * 		- `fetchResult`      An object containing data about the `apiFetchCallback`
+ * 		- `hookState`        An object containing the state of this hook.
  *
  * @see useApiFetchCallback
  */
@@ -29,18 +29,21 @@ const useUpsertAdsAccount = () => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccount, fetchGoogleAdsAccountStatus } =
 		useAppDispatch();
-	const [ isFetchingAdsData, setFetchingAdsData ] = useState( false );
+	const [ currentAction, setCurrentAction ] = useState( null );
 
-	const [ fetchCreateAccount, { loading: isAccountUpdateLoading, ...data } ] =
-		useApiFetchCallback( {
-			path: `${ API_NAMESPACE }/ads/accounts`,
-			method: 'POST',
-			data: {
-				id: googleAdsAccount?.id || undefined,
-			},
-		} );
+	const isCreation = ! googleAdsAccount?.id;
+
+	const [ fetchCreateAccount ] = useApiFetchCallback( {
+		path: `${ API_NAMESPACE }/ads/accounts`,
+		method: 'POST',
+		data: {
+			id: googleAdsAccount?.id || undefined,
+		},
+	} );
 
 	const upsertAdsAccount = useCallback( async () => {
+		setCurrentAction( isCreation ? 'create' : 'update' );
+
 		try {
 			await fetchCreateAccount( { parse: false } );
 		} catch ( e ) {
@@ -59,11 +62,12 @@ const useUpsertAdsAccount = () => {
 		}
 
 		// Update Google Ads data in the data store after posting an account update.
-		setFetchingAdsData( true );
 		await fetchGoogleAdsAccount();
 		await fetchGoogleAdsAccountStatus();
-		setFetchingAdsData( false );
+
+		setCurrentAction( null );
 	}, [
+		isCreation,
 		createNotice,
 		fetchCreateAccount,
 		fetchGoogleAdsAccount,
@@ -73,8 +77,8 @@ const useUpsertAdsAccount = () => {
 	return [
 		upsertAdsAccount,
 		{
-			...data,
-			loading: isAccountUpdateLoading || isFetchingAdsData,
+			loading: currentAction !== null,
+			action: currentAction,
 		},
 	];
 };
