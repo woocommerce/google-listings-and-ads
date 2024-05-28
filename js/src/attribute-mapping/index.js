@@ -10,7 +10,7 @@ import Section from '.~/wcdl/section';
 import AttributeMappingDescription from './attribute-mapping-description';
 import AttributeMappingTable from './attribute-mapping-table';
 import NavigationClassic from '.~/components/navigation-classic';
-import RebrandingTour from ".~/components/tours/rebranding-tour";
+import RebrandingTour from '.~/components/tours/rebranding-tour';
 import './index.scss';
 
 /**
