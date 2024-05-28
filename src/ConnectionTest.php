@@ -889,7 +889,7 @@ class ConnectionTest implements Service, Registerable {
 			$revoke_args = [
 				'method'  => 'DELETE',
 				'timeout' => 30,
-				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/revoke-token/google',
+				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/google/revoke-token',
 				'user_id' => get_current_user_id(),
 			];
 
