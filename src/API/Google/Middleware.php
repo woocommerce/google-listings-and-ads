@@ -482,6 +482,18 @@ class Middleware implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get the Google Shopping Data Integration auth endpoint URL
+	 *
+	 * @return string
+	 */
+	protected function get_sdi_auth_endpoint(): string {
+		return $this->container->get( 'connect_server_root' )
+		       . 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
+		       . $this->options->get_merchant_id()
+		       . '/oauth/redirect:generate';
+	}
+
+	/**
 	 * Generate a descriptive name for a new account.
 	 * Use site name if available.
 	 *
@@ -648,5 +660,38 @@ class Middleware implements OptionsAwareInterface {
 
 		// since transients don't support booleans, we save them as 0/1 and do the conversion here
 		return boolval( $is_subaccount );
+	}
+
+	public function get_sdi_auth_params() {
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->get( $this->get_sdi_auth_endpoint() );
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 !== $result->getStatusCode() ) {
+				do_action(
+					'woocommerce_gla_partner_app_auth_failure',
+					[
+						'error'       => 'response',
+						'response'    => $response,
+					]
+				);
+				do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
+				$error = $response['message'] ?? __( 'Invalid response authenticating partner app.', 'google-listings-and-ads' );
+				throw new Exception( $error, $result->getStatusCode() );
+			}
+
+			return $response;
+
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error authenticating Google Partner APP.', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
+		}
+
 	}
 }

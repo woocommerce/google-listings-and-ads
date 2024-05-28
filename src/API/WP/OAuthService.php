@@ -3,8 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -19,10 +22,11 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WP
  */
-class OAuthService implements Service, OptionsAwareInterface {
+class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInterface {
 
 	use OptionsAwareTrait;
 	use UtilitiesTrait;
+	use ContainerAwareTrait;
 
 	public const AUTH_URL      = 'https://public-api.wordpress.com/oauth2/authorize';
 	public const RESPONSE_TYPE = 'code';
@@ -99,10 +103,7 @@ class OAuthService implements Service, OptionsAwareInterface {
 	}
 
 	/**
-	 * Calls an API by Google to get required information in order to form an auth URL.
-	 *
-	 * TODO: Call an actual API by Google.
-	 * We'd probably need use WCS to communicate with the new API.
+	 * Calls an API by Google via WCS to get required information in order to form an auth URL.
 	 *
 	 * @return array{client_id: string, redirect_uri: string, nonce: string} An associative array contains required information that is retrived from Google.
 	 * client_id:    Google's WPCOM app client ID, will be used to form the authorization URL.
@@ -110,11 +111,14 @@ class OAuthService implements Service, OptionsAwareInterface {
 	 * nonce:        A string returned by Google that we will put it in the auth URL and the redirect_uri. Google will use it to verify the call.
 	 */
 	protected function get_data_from_google(): array {
-		$nonce = 'nonce-123';
+		/** @var Middleware $middleware */
+		$middleware = $this->container->get( Middleware::class );
+		$response = $middleware->get_sdi_auth_params();
+		$nonce = $response['nonce'];
 		$this->options->update( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE, $nonce );
 		return [
-			'client_id'    => '91299',
-			'redirect_uri' => 'https://woo.com',
+			'client_id'    => $response['clientId'],
+			'redirect_uri' => str_replace('WooCommerce', 'WOO_COMMERCE', $response['redirectUri']),
 			'nonce'        => $nonce,
 		];
 	}
