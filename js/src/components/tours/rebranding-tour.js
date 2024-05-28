@@ -19,6 +19,10 @@ const TOUR_ID = 'rebranding-tour';
 export default function RebrandingTour() {
 	const { tourChecked, setTourChecked } = useTour( TOUR_ID );
 
+	if ( tourChecked ) {
+		return null;
+	}
+
 	const config = {
 		steps: [
 			{
