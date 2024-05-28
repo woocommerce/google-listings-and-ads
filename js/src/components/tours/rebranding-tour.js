@@ -8,7 +8,7 @@ import GridIconSpeaker from 'gridicons/dist/speaker';
 /**
  * Internal dependencies
  */
-import useTour from '../../hooks/useTour';
+import useTour from '.~/hooks/useTour';
 import './rebrading-tour.scss';
 
 const TOUR_ID = 'rebranding-tour';
