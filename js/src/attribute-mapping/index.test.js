@@ -395,7 +395,7 @@ describe( 'Attribute Mapping', () => {
 			expect( tour ).not.toBeInTheDocument();
 		} );
 
-		test( 'Rendered in UI when it is not checked', () => {
+		test( 'Rendered in UI', () => {
 			RebrandingTour.mockImplementation( () => {
 				return <div role="dialog" aria-label="tour" />;
 			} );
