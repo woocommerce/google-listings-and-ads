@@ -17,7 +17,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingCo
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\ProductstatusesCustomBatchRequest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestPhoneVerificationRequest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestReviewFreeListingsRequest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\RequestReviewShoppingAdsRequest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Service\ShoppingContent\VerifyPhoneNumberRequest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Message\ResponseInterface;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -366,5 +369,59 @@ class Merchant implements OptionsAwareInterface {
 	 */
 	public function update_merchant_id( int $id ): bool {
 		return $this->options->update( OptionsInterface::MERCHANT_ID, $id );
+	}
+
+	/**
+	 * Get the review status for an MC account
+	 *
+	 * @since 2.7.1
+	 *
+	 * @return array An array with the status for freeListingsProgram and shoppingAdsProgram
+	 * @throws Exception When an exception happens in the Google API.
+	 */
+	public function get_account_review_status() {
+		try {
+			$id = $this->options->get_merchant_id();
+			return [
+				'freeListingsProgram' => $this->service->freelistingsprogram->get( $id ),
+				'shoppingAdsProgram'  => $this->service->shoppingadsprogram->get( $id ),
+			];
+		} catch ( GoogleException $e ) {
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+			throw new Exception( $e->getMessage(), $e->getCode() );
+		}
+	}
+
+	/**
+	 * Request a review for an MC account
+	 *
+	 * @since 2.7.1
+	 *
+	 * @param string $region_code The region code to request the review
+	 * @param array  $types The types of programs to request the review
+	 *
+	 * @return ResponseInterface The Google API response
+	 * @throws Exception When the request review produces an exception in the Google side or when
+	 * the programs are not supported.
+	 */
+	public function account_request_review( $region_code, $types ) {
+		try {
+			$id = $this->options->get_merchant_id();
+
+			if ( in_array( 'freelistingsprogram', $types, true ) ) {
+				$request = new RequestReviewFreeListingsRequest();
+				$request->setRegionCode( $region_code );
+				return $this->service->freelistingsprogram->requestreview( $id, $request );
+			} elseif ( in_array( 'shoppingadsprogram', $types, true ) ) {
+				$request = new RequestReviewShoppingAdsRequest();
+				$request->setRegionCode( $region_code );
+				return $this->service->shoppingadsprogram->requestreview( $id, $request );
+			} else {
+				throw new Exception( 'Program type not supported', 400 );
+			}
+		} catch ( GoogleException $e ) {
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+			throw new Exception( $e->getMessage(), $e->getCode() );
+		}
 	}
 }

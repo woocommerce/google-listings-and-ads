@@ -433,6 +433,6 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	public function has_at_least_one_synced_product(): bool {
 		$statuses = $this->container->get( MerchantStatuses::class )->get_product_statistics();
 
-		return $statuses['statistics']['active'] >= 1;
+		return isset( $statuses['statistics']['active'] ) && $statuses['statistics']['active'] >= 1;
 	}
 }
