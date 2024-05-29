@@ -39,18 +39,18 @@ class RequestReviewStatuses implements Service {
 		foreach ( $response as $program_type_name => $program_type ) {
 
 			// In case any Program is with no offers we consider it Onboarding
-			if ( $program_type['data']['globalState'] === self::NO_OFFERS ) {
+			if ( $program_type['globalState'] === self::NO_OFFERS ) {
 				$status = self::ONBOARDING;
 				break;
 			}
 
 			// In case any Program is not enabled or there are no regionStatuses we return null status
-			if ( ! isset( $program_type['data']['regionStatuses'] ) || ! in_array( $program_type['data']['globalState'], $valid_program_states, true ) ) {
+			if ( ! isset( $program_type['regionStatuses'] ) || ! in_array( $program_type['globalState'], $valid_program_states, true ) ) {
 				continue;
 			}
 
 			// Otherwise, we compute the new status, issues and cooldown period
-			foreach ( $program_type['data']['regionStatuses'] as $region_status ) {
+			foreach ( $program_type['regionStatuses'] as $region_status ) {
 				$issues                  = array_merge( $issues, $region_status['reviewIssues'] ?? [] );
 				$cooldown                = $this->maybe_update_cooldown_period( $region_status, $cooldown );
 				$status                  = $this->maybe_update_status( $region_status['eligibilityStatus'], $status );
@@ -126,15 +126,16 @@ class RequestReviewStatuses implements Service {
 	 *
 	 * @return array The (maybe) modified $review_eligible_regions array
 	 */
-	private function maybe_load_eligible_region( array $region_status, array $review_eligible_regions, string $type = 'freeListingsProgram' ) {
+	private function maybe_load_eligible_region( $region_status, $review_eligible_regions, $type = 'freeListingsProgram' ) {
 		if (
 			! empty( $region_status['regionCodes'] ) &&
 			isset( $region_status['reviewEligibilityStatus'] ) &&
 			$region_status['reviewEligibilityStatus'] === self::ELIGIBLE
 		) {
 
-			sort( $region_status['regionCodes'] ); // sometimes the regions come unsorted between the different programs
-			$region_id = $region_status['regionCodes'][0];
+			$region_codes = $region_status['regionCodes'];
+			sort( $region_codes ); // sometimes the regions come unsorted between the different programs
+			$region_id = $region_codes[0];
 
 			if ( ! isset( $review_eligible_regions[ $region_id ] ) ) {
 				$review_eligible_regions[ $region_id ] = [];
