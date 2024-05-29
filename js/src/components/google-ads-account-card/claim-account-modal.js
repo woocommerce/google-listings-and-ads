@@ -1,20 +1,25 @@
 /**
  * External dependencies
  */
-import { noop } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useCallback, useEffect } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import AppModal from '.~/components/app-modal';
-import AppButton from '.~/components/app-button';
-import getWindowFeatures from '.~/utils/getWindowFeatures';
+import ClaimAccountButton from './claim-account-button';
 
-const ClaimAccountModal = ( { onRequestClose = noop } ) => {
-	const { inviteLink, hasAccess } = useGoogleAdsAccountStatus();
+/**
+ * Renders a modal for opening a pop-up window to claim the newly created Google Ads account.
+ * The modal is displayed when the user has successfully created a Google Ads account and needs to claim it.
+ *
+ * @param {Object} props React props.
+ * @param {Function} props.onRequestClose Function called back when the modal is requested to be closed.
+ */
+const ClaimAccountModal = ( { onRequestClose } ) => {
+	const { hasAccess } = useGoogleAdsAccountStatus();
 
 	useEffect( () => {
 		// Close the modal if access has been granted.
@@ -22,18 +27,6 @@ const ClaimAccountModal = ( { onRequestClose = noop } ) => {
 			onRequestClose();
 		}
 	}, [ onRequestClose, hasAccess ] );
-
-	const handleAcceptInvitationClick = useCallback(
-		( event ) => {
-			const { defaultView } = event.target.ownerDocument;
-			const features = getWindowFeatures( defaultView, 600, 800 );
-
-			defaultView.open( inviteLink, '_blank', features );
-
-			onRequestClose();
-		},
-		[ inviteLink, onRequestClose ]
-	);
 
 	return (
 		<AppModal
@@ -43,17 +36,16 @@ const ClaimAccountModal = ( { onRequestClose = noop } ) => {
 				'google-listings-and-ads'
 			) }
 			buttons={ [
-				<AppButton
+				<ClaimAccountButton
 					key="1"
 					isPrimary
-					onClick={ handleAcceptInvitationClick }
-					// @todo: Review and add eventName prop
+					onClick={ onRequestClose }
 				>
 					{ __(
 						'Claim account in Google Ads',
 						'google-listings-and-ads'
 					) }
-				</AppButton>,
+				</ClaimAccountButton>,
 			] }
 			onRequestClose={ onRequestClose }
 		>
