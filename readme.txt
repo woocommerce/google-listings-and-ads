@@ -111,6 +111,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.7.1 - 2024-05-29 =
+* Dev - Add info about  Legacy Google Ads API Client Library  in Readme.
+* Fix - Prevent PHP Warning when Statistics is null.
+* Update - Implement Account Request Review Requests in the extension.
+
 = 2.7.0 - 2024-05-14 =
 * Fix - Convert `lbs` to `lb` when mapping WC products to Google products.
 * Fix - E2E tests
