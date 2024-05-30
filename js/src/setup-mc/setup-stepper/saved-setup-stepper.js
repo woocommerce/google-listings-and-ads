@@ -9,6 +9,7 @@ import { useState, useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
+import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import useTargetAudienceWithSuggestions from './useTargetAudienceWithSuggestions';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
@@ -25,6 +26,8 @@ import stepNameKeyMap from './stepNameKeyMap';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
+	FILTER_ONBOARDING,
+	CONTEXT_EXTENSION_ONBOARDING,
 } from '.~/utils/tracks';
 
 /**
@@ -53,6 +56,11 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	const { saveShippingRates } = useSaveShippingRates();
 	const { saveShippingTimes } = useSaveShippingTimes();
 	const { createNotice } = useDispatchCoreNotices();
+
+	useEventPropertiesFilter( FILTER_ONBOARDING, {
+		context: CONTEXT_EXTENSION_ONBOARDING,
+		step,
+	} );
 
 	// Auto-save the suggested audience data as the initial values to fall back with the original implementation.
 	// Ref: https://github.com/woocommerce/google-listings-and-ads/blob/2.0.2/js/src/setup-mc/setup-stepper/choose-audience/form-content.js#L37
