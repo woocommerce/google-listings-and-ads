@@ -3,6 +3,7 @@
  */
 import { recordEvent, queueRecordEvent } from '@woocommerce/tracks';
 import { select } from '@wordpress/data';
+import { createHooks } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -13,6 +14,30 @@ import { STORE_KEY } from '.~/data';
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */
+
+export const hooks = createHooks();
+
+export const NAMESPACE = 'tracking';
+export const FILTER_ONBOARDING = 'FILTER_ONBOARDING';
+
+export const filterPropertiesMap = new Map();
+
+filterPropertiesMap.set( FILTER_ONBOARDING, [ 'context', 'step' ] );
+
+/*
+ * Please be aware of when to use these context values
+ * - 'setup-mc': Extension onboarding (a.k.a Merchant Center Setup or MC Setup)
+ * - 'setup-ads': Ads onboarding (a.k.a Google Ads Setup)
+ *
+ * Since Google Ads Setup has been added to the extension onboarding,
+ * the 'setup-mc' is no longer an appropriate value to identify it.
+ * The same is the case for 'setup-ads', which represents Google Ads Setup.
+ *
+ * However, as these values are heavily used in codebase and event tracking,
+ * these values continue to be used at present for consistency.
+ */
+export const CONTEXT_EXTENSION_ONBOARDING = 'setup-mc';
+export const CONTEXT_ADS_ONBOARDING = 'setup-ads';
 
 /**
  * When table pagination is changed by entering page via "Go to page" input.
