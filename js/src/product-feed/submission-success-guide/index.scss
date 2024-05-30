@@ -1,6 +1,8 @@
 .gla-submission-success-guide {
 	&.components-guide {
 		height: auto;
+		width: 100%;
+
 		@include break-small {
 			max-width: 517px;
 			max-height: none;

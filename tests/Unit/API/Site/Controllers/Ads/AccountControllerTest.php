@@ -23,13 +23,16 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	/** @var AccountController $controller */
 	protected $controller;
 
-	protected const ROUTE_ACCOUNTS           = '/wc/gla/ads/accounts';
-	protected const ROUTE_CONNECTION         = '/wc/gla/ads/connection';
-	protected const ROUTE_BILLING_STATUS     = '/wc/gla/ads/billing-status';
-	protected const TEST_ACCOUNT_ID          = 1234567890;
-	protected const TEST_BILLING_URL         = 'https://domain.test/billing/setup/';
-	protected const TEST_BILLING_STATUS      = 'pending';
-	protected const TEST_ACCOUNTS            = [
+	protected const ROUTE_ACCOUNTS            = '/wc/gla/ads/accounts';
+	protected const ROUTE_CONNECTION          = '/wc/gla/ads/connection';
+	protected const ROUTE_BILLING_STATUS      = '/wc/gla/ads/billing-status';
+	protected const ROUTE_ACCEPTED_DATA_TERMS = '/wc/gla/ads/accepted-customer-data-terms';
+	protected const ROUTE_UPDATED_EC_STATUS   = '/wc/gla/ads/enhanced-conversion-status';
+	protected const ROUTE_GET_EC_STATUS       = '/wc/gla/ads/enhanced-conversion-status';
+	protected const TEST_ACCOUNT_ID           = 1234567890;
+	protected const TEST_BILLING_URL          = 'https://domain.test/billing/setup/';
+	protected const TEST_BILLING_STATUS       = 'pending';
+	protected const TEST_ACCOUNTS             = [
 		[
 			'id'   => self::TEST_ACCOUNT_ID,
 			'name' => 'Ads Account',
@@ -39,29 +42,29 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			'name' => 'Other Account',
 		],
 	];
-	protected const TEST_NO_ACCOUNTS         = [];
-	protected const TEST_ACCOUNT_CREATE_DATA = [
+	protected const TEST_NO_ACCOUNTS          = [];
+	protected const TEST_ACCOUNT_CREATE_DATA  = [
 		'id'          => self::TEST_ACCOUNT_ID,
 		'billing_url' => self::TEST_BILLING_URL,
 	];
-	protected const TEST_ACCOUNT_LINK_ARGS   = [ 'id' => self::TEST_ACCOUNT_ID ];
-	protected const TEST_ACCOUNT_LINK_DATA   = [
+	protected const TEST_ACCOUNT_LINK_ARGS    = [ 'id' => self::TEST_ACCOUNT_ID ];
+	protected const TEST_ACCOUNT_LINK_DATA    = [
 		'id'          => self::TEST_ACCOUNT_ID,
 		'billing_url' => null,
 	];
-	protected const TEST_CONNECTED_DATA      = [
+	protected const TEST_CONNECTED_DATA       = [
 		'id'       => self::TEST_ACCOUNT_ID,
 		'currency' => 'EUR',
 		'symbol'   => '€',
 		'status'   => 'connected',
 	];
-	protected const TEST_DISCONNECTED_DATA   = [
+	protected const TEST_DISCONNECTED_DATA    = [
 		'id'       => 0,
 		'currency' => null,
 		'symbol'   => '€',
 		'status'   => 'disconnected',
 	];
-	protected const TEST_BILLING_STATUS_DATA = [
+	protected const TEST_BILLING_STATUS_DATA  = [
 		'status'      => self::TEST_BILLING_STATUS,
 		'billing_url' => self::TEST_BILLING_URL,
 	];
@@ -214,6 +217,54 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( self::TEST_BILLING_STATUS_DATA, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_accepted_customer_data_terms() {
+		$expected_response = [ 'status' => 'pending' ];
+		$this->account->expects( $this->once() )
+		->method( 'get_accepted_customer_data_terms' )
+		->willReturn( $expected_response );
+
+		$response = $this->do_request( self::ROUTE_ACCEPTED_DATA_TERMS, 'GET' );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( $expected_response, $response->get_data() );
+	}
+
+	public function test_update_enhanced_conversion_status() {
+		$expected_response = [ 'status' => 'pending' ];
+		$this->account->expects( $this->once() )
+		->method( 'update_enhanced_conversion_status' )
+		->willReturn( $expected_response );
+
+		$response = $this->do_request( self::ROUTE_UPDATED_EC_STATUS, 'POST', [ 'status' => 'pending' ] );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( $expected_response, $response->get_data() );
+	}
+
+	public function test_update_enhanced_conversion_status_with_invalid_status() {
+		$response = $this->do_request( self::ROUTE_UPDATED_EC_STATUS, 'POST', [ 'status' => 'invalid' ] );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_get_enhanced_conversion_status() {
+		$expected_response = [ 'status' => 'pending' ];
+		$this->account->expects( $this->once() )
+		->method( 'get_enhanced_conversion_status' )
+		->willReturn( $expected_response );
+
+		$response = $this->do_request( self::ROUTE_GET_EC_STATUS, 'GET' );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( $expected_response, $response->get_data() );
+	}
+
+	public function test_update_enhanced_conversion_status_only_accepts_lowercase_arg() {
+		$response = $this->do_request( self::ROUTE_UPDATED_EC_STATUS, 'POST', [ 'status' => 'PENDING' ] );
+
+		$data = $response->get_data();
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( $data['code'], 'rest_invalid_param' );
 	}
 
 	/**

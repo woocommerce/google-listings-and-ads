@@ -21,12 +21,6 @@ import FinishButton from './finish-button';
 import './index.scss';
 
 /**
- * @callback renderFinishCallback
- * @param {JSX.Element} finishButton The built-in finish button of this Guide component.
- * @return {JSX.Element} React element for rendering.
- */
-
-/**
  * `Guide` is a React component that renders a user guide in a modal.
  * The guide consists of several pages which the user can step through one by one.
  * The guide is finished when the modal is closed or when the user clicks *Finish* on the last page of the guide.
@@ -37,7 +31,6 @@ import './index.scss';
  *                                    It is required for accessibility reasons.
  * @param {string} [props.backButtonText] Use this to customize the label of the *Previous* button shown at the end of the guide.
  * @param {string} [props.finishButtonText] Use this to customize the label of the *Finish* button shown at the end of the guide.
- * @param {renderFinishCallback} [props.renderFinish] A function for rendering custom finish block shown at the end of the guide.
  * @param {Function} props.onFinish A function which is called when the guide is finished.
  *                                  The guide is finished when the modal is closed
  *                                  or when the user clicks *Finish* on the last page of the guide.
@@ -49,7 +42,6 @@ export default function Guide( {
 	contentLabel,
 	backButtonText,
 	finishButtonText,
-	renderFinish = ( finishButton ) => finishButton,
 	onFinish,
 	pages,
 } ) {
@@ -76,8 +68,8 @@ export default function Guide( {
 
 	let finishBlock = null;
 
-	if ( ! canGoForward ) {
-		const finishButton = (
+	if ( ! canGoForward && ! pages[ currentPage ].actions ) {
+		finishBlock = (
 			<FinishButton
 				className="components-guide__finish-button"
 				onClick={ onFinish }
@@ -85,8 +77,6 @@ export default function Guide( {
 				{ finishButtonText || __( 'Finish' ) }
 			</FinishButton>
 		);
-
-		finishBlock = renderFinish( finishButton );
 	}
 
 	const guideClassName = classnames(
@@ -135,6 +125,7 @@ export default function Guide( {
 							{ backButtonText || __( 'Previous' ) }
 						</Button>
 					) }
+
 					{ canGoForward && (
 						<Button
 							className="components-guide__forward-button"
@@ -143,7 +134,10 @@ export default function Guide( {
 							{ __( 'Next' ) }
 						</Button>
 					) }
+
 					{ finishBlock }
+
+					{ pages[ currentPage ].actions }
 				</div>
 			</div>
 		</Modal>

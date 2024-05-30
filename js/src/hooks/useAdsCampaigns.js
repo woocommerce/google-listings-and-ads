@@ -7,7 +7,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data';
-import { glaData } from '.~/constants';
+import { glaData, CAMPAIGN_TYPE_PMAX } from '.~/constants';
 import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 
 const selectorName = 'getAdsCampaigns';
@@ -19,6 +19,7 @@ const selectorName = 'getAdsCampaigns';
  * @property {Array<Campaign>|null} data Current campaigns obtained from merchant's Google Ads account if connected. It will be `null` before load finished.
  * @property {boolean} loading Whether the `data` is loading. It's equal to `isResolving` state of wp-data selector.
  * @property {boolean} loaded Whether the `data` is finished loading. It's equal to `hasFinishedResolution` state of wp-data selector.
+ * @property {Array<Campaign>|null} pmaxCampaigns PMAX campaigns filtered from the data.
  */
 
 /**
@@ -44,6 +45,7 @@ const useAdsCampaigns = ( ...query ) => {
 					loading: false,
 					loaded: true,
 					data: [],
+					pmaxCampaigns: [],
 				};
 			}
 
@@ -56,10 +58,19 @@ const useAdsCampaigns = ( ...query ) => {
 				queryRefValue
 			);
 
+			let pmaxCampaigns = [];
+
+			if ( loaded && data.length ) {
+				pmaxCampaigns = data.filter(
+					( { type } ) => type === CAMPAIGN_TYPE_PMAX
+				);
+			}
+
 			return {
 				loading,
 				loaded,
 				data,
+				pmaxCampaigns,
 			};
 		},
 		[ queryRefValue ]

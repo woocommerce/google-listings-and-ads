@@ -321,4 +321,79 @@ class Ads implements OptionsAwareInterface {
 
 		throw new Exception( __( 'Merchant link is not available to accept', 'google-listings-and-ads' ) );
 	}
+
+	/**
+	 * Check if the user has accepted the customer data terms for enhanced conversion tracking.
+	 * Returns false for any account that fails.
+	 *
+	 * @return boolean
+	 */
+	public function get_accepted_customer_data_terms(): bool {
+		$ads_id = $this->options->get_ads_id();
+
+		// Return if no ads id present.
+		if ( ! $ads_id ) {
+			return false;
+		}
+
+		try {
+			$accepted_terms = $this->options->get( OptionsInterface::ADS_CUSTOMER_DATA_TERMS, null );
+
+			// Retrieve the terms acceptance data from options.
+			if ( null !== $accepted_terms ) {
+				return (bool) apply_filters( 'woocommerce_gla_ads_enhanced_conversion_customer_data_terms', (bool) $accepted_terms );
+			}
+
+			$customer = ( new AdsAccountQuery() )
+				->set_client( $this->client, $ads_id )
+				->columns( [ 'customer.conversion_tracking_setting.accepted_customer_data_terms' ] )
+				->get_result()
+				->getCustomer();
+
+			if ( ! $customer ) {
+				return false;
+			}
+
+			$conversion_tracking_setting = $customer->getConversionTrackingSetting();
+
+			$accepted = $conversion_tracking_setting->getAcceptedCustomerDataTerms();
+
+			// Save the data terms in options as those cannot be reverted.
+			$this->options->update( OptionsInterface::ADS_CUSTOMER_DATA_TERMS, $accepted );
+
+			return (bool) apply_filters( 'woocommerce_gla_ads_enhanced_conversion_customer_data_terms', (bool) $accepted );
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Updates the enhanced ads conversion status.
+	 *
+	 * @param string $status The status value
+	 *
+	 * @return string
+	 */
+	public function update_enhanced_conversion_status( string $status ): string {
+		$this->options->update( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS, $status );
+
+		return $status;
+	}
+
+	/**
+	 * Retrieve the enhanced ads conversion status. Possible values are: enabled, disabled and pending
+	 *
+	 * @return string|null
+	 */
+	public function get_enhanced_conversion_status(): ?string {
+		$result = $this->options->get( OptionsInterface::ADS_ENHANCED_CONVERSION_STATUS, null );
+
+		if ( ! is_scalar( $result ) ) {
+			return null;
+		}
+
+		return strval( $result );
+	}
 }

@@ -12,6 +12,7 @@ import useLegacyMenuEffect from '.~/hooks/useLegacyMenuEffect';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import { subpaths, getReconnectAccountUrl } from '.~/utils/urls';
 import { ContactInformationPreview } from '.~/components/contact-information';
+import EnhancedConversionTrackingSettings from '.~/components/enhanced-conversion-tracking-settings';
 import LinkedAccounts from './linked-accounts';
 import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
@@ -62,6 +63,7 @@ const Settings = () => {
 			<NavigationClassic />
 			<ContactInformationPreview />
 			<LinkedAccounts />
+			<EnhancedConversionTrackingSettings />
 		</div>
 	);
 };
