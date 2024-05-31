@@ -23,7 +23,7 @@ import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 /**
  * Renders a button for opening a pop-up window to claim the newly created Google Ads account.
  *
- * @fires gla_open_ads_account_claim_invitation_button_click When the user clicks on the button to claim the account with `{ context: 'setup-mc' | 'setup-ads' }`.
+ * @fires gla_open_ads_account_claim_invitation_button_click When the user clicks on the button to claim the account.
  *
  * @param {Object} props React props.
  * @param {Function} [props.onClick] Function called back when the button is clicked.
