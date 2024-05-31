@@ -1,17 +1,24 @@
 /**
  * External dependencies
  */
-import { render, act } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
+import userEvent from '@testing-library/user-event';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import BillingSetupCard from './billing-setup-card';
 import useWindowFocus from '.~/hooks/useWindowFocus';
+import { FILTER_ONBOARDING } from '.~/utils/tracks';
+import expectEventWithPropertiesFilter from '.~/tests/expectEventWithPropertiesFilter';
 
 jest.mock( '.~/hooks/useGoogleAdsAccount', () =>
-	jest.fn().mockName( 'useGoogleAdsAccount' ).mockReturnValue( {} )
+	jest
+		.fn()
+		.mockName( 'useGoogleAdsAccount' )
+		.mockReturnValue( { googleAdsAccount: {} } )
 );
 
 jest.mock( '.~/hooks/useWindowFocus', () =>
@@ -24,10 +31,19 @@ jest.mock( '@wordpress/api-fetch', () => {
 	return impl;
 } );
 
+jest.mock( '@woocommerce/tracks', () => {
+	return {
+		recordEvent: jest.fn().mockName( 'recordEvent' ),
+	};
+} );
+
 describe( 'BillingSetupCard', () => {
+	let windowOpen;
 	let fetchBillingStatus;
 
 	beforeEach( () => {
+		windowOpen = jest.spyOn( global, 'open' );
+
 		fetchBillingStatus = jest
 			.fn()
 			.mockResolvedValue( { status: 'approved' } );
@@ -44,6 +60,11 @@ describe( 'BillingSetupCard', () => {
 					throw new Error( `No mocked apiFetch for path: ${ path }` );
 			}
 		} );
+	} );
+
+	afterEach( () => {
+		windowOpen.mockReset();
+		recordEvent.mockClear();
 	} );
 
 	it( 'Should only call back `onSetupComplete` once regardless of its reference change', async () => {
@@ -103,4 +124,60 @@ describe( 'BillingSetupCard', () => {
 
 		expect( onSetupComplete ).toHaveBeenCalledTimes( 1 );
 	} );
+
+	it( 'should open the billing setup link in a pop-up window', async () => {
+		render( <BillingSetupCard billingUrl="https://example.com" /> );
+
+		expect( windowOpen ).toHaveBeenCalledTimes( 0 );
+
+		await userEvent.click( screen.getByRole( 'button' ) );
+
+		expect( windowOpen ).toHaveBeenCalledTimes( 1 );
+		expect( windowOpen ).toHaveBeenCalledWith(
+			'https://example.com',
+			'_blank',
+			// Ignore the value of the window features.
+			expect.any( String )
+		);
+	} );
+
+	it( 'should record click events and the `link_id` and `href` event properties for the billing setup button and link', async () => {
+		render( <BillingSetupCard billingUrl="https://test.com" /> );
+
+		expect( recordEvent ).toHaveBeenCalledTimes( 0 );
+
+		await userEvent.click( screen.getByRole( 'button' ) );
+
+		expect( recordEvent ).toHaveBeenCalledTimes( 1 );
+		expect( recordEvent ).toHaveBeenNthCalledWith(
+			1,
+			'gla_ads_set_up_billing_click',
+			{ link_id: 'set-up-billing', href: 'https://test.com' }
+		);
+
+		await userEvent.click( screen.getByRole( 'link' ) );
+
+		expect( recordEvent ).toHaveBeenCalledTimes( 2 );
+		expect( recordEvent ).toHaveBeenNthCalledWith(
+			2,
+			'gla_ads_set_up_billing_click',
+			{ link_id: 'set-up-billing', href: 'https://test.com' }
+		);
+	} );
+
+	it.each( [ 'button', 'link' ] )(
+		'should record click events for the billing setup %s and be aware of extra event properties from filters',
+		async ( role ) => {
+			await expectEventWithPropertiesFilter(
+				() => <BillingSetupCard billingUrl="https://test.com" />,
+				FILTER_ONBOARDING,
+				() => screen.getByRole( role ),
+				'gla_ads_set_up_billing_click',
+				[
+					{ context: 'setup-mc', step: '1' },
+					{ context: 'setup-ads', step: '2' },
+				]
+			);
+		}
+	);
 } );
