@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useEffect, useCallback, useReducer } from '@wordpress/element';
-import { pick } from 'lodash';
+import { pick, uniqueId } from 'lodash';
 
 /**
  * Internal dependencies
@@ -32,8 +32,10 @@ export default function useEventPropertiesFilter(
 	const [ , forceUpdate ] = useReducer( ( x ) => x + 1, 0 );
 
 	useEffect( () => {
+		const namespace = `${ NAMESPACE }/${ uniqueId() }`;
+
 		if ( Object.keys( validExtraProperties ).length ) {
-			hooks.addFilter( filterName, NAMESPACE, ( properties ) => {
+			hooks.addFilter( filterName, namespace, ( properties ) => {
 				return {
 					...properties,
 					...validExtraProperties,
@@ -44,7 +46,7 @@ export default function useEventPropertiesFilter(
 		forceUpdate();
 
 		return () => {
-			hooks.removeFilter( filterName, NAMESPACE );
+			hooks.removeFilter( filterName, namespace );
 		};
 	}, [ filterName, validExtraProperties ] );
 
