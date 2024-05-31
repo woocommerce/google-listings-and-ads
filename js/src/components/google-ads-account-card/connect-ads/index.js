@@ -18,8 +18,10 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import AdsAccountSelectControl from './ads-account-select-control';
 import { useAppDispatch } from '.~/data';
+import { FILTER_ONBOARDING } from '.~/utils/tracks';
 import './index.scss';
 
 /**
@@ -27,6 +29,8 @@ import './index.scss';
  *
  * @event gla_ads_account_connect_button_click
  * @property {number} id The account ID to be connected.
+ * @property {string} [context] Indicates the place where the button is located.
+ * @property {string} [step] Indicates the step in the onboarding process.
  */
 
 /**
@@ -45,6 +49,7 @@ const ConnectAds = ( props ) => {
 		data: { id: value },
 	} );
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
+	const getEventProps = useEventPropertiesFilter( FILTER_ONBOARDING );
 	const { createNotice } = useDispatchCoreNotices();
 	const { fetchGoogleAdsAccountStatus } = useAppDispatch();
 
@@ -131,7 +136,9 @@ const ConnectAds = ( props ) => {
 							isSecondary
 							disabled={ ! value }
 							eventName="gla_ads_account_connect_button_click"
-							eventProps={ { id: Number( value ) } }
+							eventProps={ getEventProps( {
+								id: Number( value ),
+							} ) }
 							onClick={ handleConnectClick }
 						>
 							{ __( 'Connect', 'google-listings-and-ads' ) }

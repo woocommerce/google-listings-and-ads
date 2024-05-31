@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from '@woocommerce/tracks';
 
@@ -44,7 +44,9 @@ export default async function expectEventWithPropertiesFilter(
 			rerender( <Component /> );
 		}
 
-		await userEvent.click( await queryElement() );
+		await act( async () => {
+			await userEvent.click( await queryElement() );
+		} );
 
 		const times = i + 1;
 
@@ -52,7 +54,15 @@ export default async function expectEventWithPropertiesFilter(
 		expect( recordEvent ).toHaveBeenNthCalledWith(
 			times,
 			eventName,
-			extraProperties || {}
+			extraProperties
+				? expect.objectContaining( extraProperties )
+				: expect.anything()
+		);
+		expect( recordEvent ).not.toHaveBeenCalledWith(
+			eventName,
+			expect.objectContaining( {
+				__testInvalidPropertyNameShouldBeIgnored: expect.anything(),
+			} )
 		);
 	}
 }
