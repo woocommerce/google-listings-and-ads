@@ -145,30 +145,48 @@ Do not edit it manually!
 #### Emitters
 - [`AddPaidCampaignButton`](../../js/src/components/paid-ads/add-paid-campaign-button.js#L46) with given props, when clicked.
 
-### [`gla_ads_account_connect_button_click`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L24)
+### [`gla_ads_account_connect_button_click`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L27)
 Clicking on the button to connect an existing Google Ads account.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
 `id` | `number` | The account ID to be connected.
+`context` | `string` | Indicates the place where the button is located.
+`step` | `string` | Indicates the step in the onboarding process.
 #### Emitters
-- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L37) when "Connect" button is clicked.
+- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L42) when "Connect" button is clicked.
 
-### [`gla_ads_account_create_button_click`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L16)
+### [`gla_ads_account_create_button_click`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L18)
 Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates the place where the button is located.
+`step` | `string` | Indicates the step in the onboarding process.
 #### Emitters
-- [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L32) When agreed by clicking "Create account".
+- [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L36) When agreed by clicking "Create account".
 
-### [`gla_ads_set_up_billing_click`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L36)
+### [`gla_ads_account_disconnect_button_click`](../../js/src/components/google-ads-account-card/disconnect-account.js#L15)
+Clicking on the button to disconnect the Google Ads account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates the place where the button is located.
+`step` | `string` | Indicates the step in the onboarding process.
+#### Emitters
+- [`DisconnectAccount`](../../js/src/components/google-ads-account-card/disconnect-account.js#L28) When the user clicks on the button to disconnect the Google Ads account.
+
+### [`gla_ads_set_up_billing_click`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L22)
 "Set up billing" button for Google Ads account is clicked.
 #### Properties
 | name | type | description |
 | ---- | ---- | ----------- |
-`context` | `string` | Indicates the place where the button is located, e.g. `setup-ads`.
 `link_id` | `string` | A unique ID for the button within the context, e.g. `set-up-billing`.
 `href` | `string` | Indicates the destination where the users is directed to.
+`context` | `string` | Indicates the place where the button is located, e.g. `setup-mc` or `setup-ads`.
+`step` | `string` | Indicates the step in the onboarding process.
 #### Emitters
-- [`BillingSetupCard`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L52) with `{ context: 'setup-ads', link_id: 'set-up-billing',	href: billingUrl }`
+- [`BillingSetupCard`](../../js/src/components/paid-ads/billing-card/billing-setup-card.js#L39) When the user clicks on the button to set up billing in Google Ads.
 
 ### [`gla_attribute_mapping_create_rule`](../../js/src/attribute-mapping/attribute-mapping-rule-modal.js#L32)
 Creates the rule successfully
@@ -271,7 +289,7 @@ Triggered when "continue" to edit program button is clicked.
 #### Emitters
 - [`EditProgramPromptModal`](../../js/src/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal/index.js#L32) when "Continue to edit" is clicked.
 
-### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L110)
+### [`gla_datepicker_update`](../../js/src/utils/tracks.js#L135)
 Triggered when datepicker (date ranger picker) is updated,
  with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
 #### Properties
@@ -305,7 +323,7 @@ When a documentation link is clicked.
 #### Emitters
 - [`AppDocumentationLink`](../../js/src/components/app-documentation-link/index.js#L29)
 - [`ChooseAudienceSection`](../../js/src/components/free-listings/choose-audience-section/choose-audience-section.js#L29) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
-- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L37) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
+- [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L42) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
 - [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woo.com/document/google-listings-and-ads/#required-google-permissions' }`
 - [`ContactInformation`](../../js/src/components/contact-information/index.js#L91)
 	- with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://woo.com/document/google-listings-and-ads/#contact-information' }`
@@ -330,7 +348,7 @@ When a documentation link is clicked.
 - [`FreeAdCredit`](../../js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L27) with `{ context: 'setup-ads', link_id: 'free-ad-credit-terms', href: 'https://www.google.com/ads/coupons/terms/' }`
 - [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L23) with `{ context: 'get-started', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
 - [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L23) with `{ context: 'get-started-with-video', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
-- [`GoogleMCDisclaimer`](../../js/src/setup-mc/setup-stepper/setup-accounts/index.js#L33)
+- [`GoogleMCDisclaimer`](../../js/src/setup-mc/setup-stepper/setup-accounts/index.js#L36)
 	- with `{ context: 'setup-mc-accounts', link_id: 'comparison-shopping-services', href: 'https://support.google.com/merchants/topic/9080307' }`
 	- with `{ context: 'setup-mc-accounts', link_id: 'comparison-shopping-partners-find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
 - [`IssuesTableDataModal`](../../js/src/product-feed/issues-table-card/issues-table-data-modal.js#L21) with { context: 'issues-data-table-modal' }
@@ -344,7 +362,7 @@ When a documentation link is clicked.
 - [`TaxRate`](../../js/src/components/free-listings/configure-product-listings/tax-rate.js#L22)
 	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-read-more', href: 'https://support.google.com/merchants/answer/160162' }`
 	- with `{ context: 'setup-mc-tax-rate', link_id: 'tax-rate-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
-- [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L32)
+- [`TermsModal`](../../js/src/components/google-ads-account-card/terms-modal/index.js#L36)
 	- with `{ context: 'setup-ads', link_id: 'shopping-ads-policies', href: 'https://support.google.com/merchants/answer/6149970' }`
 	- with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
 - [`TermsModal`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L29) with `{ context: 'setup-mc', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
@@ -439,7 +457,7 @@ Clicking on faq item to collapse or expand it.
 	- with `{ context: 'campaign-management', id: 'what-will-my-ads-look-like', action: 'expand' | 'collapse' }`.
 	- with `{ context: 'campaign-management', id: 'what-makes-these-ads-different-from-product-ads', action: 'expand' | 'collapse' }`.
 
-### [`gla_filter`](../../js/src/utils/tracks.js#L122)
+### [`gla_filter`](../../js/src/utils/tracks.js#L147)
 Triggered when changing products & variations filter,
  with data that comes from
  `FilterPicker`'s `onFilterSelect` callback.
@@ -467,7 +485,7 @@ Saving changes to the free campaign.
 #### Emitters
 - [`EditFreeCampaign`](../../js/src/edit-free-campaign/index.js#L46)
 
-### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L150)
+### [`gla_google_account_connect_button_click`](../../js/src/utils/tracks.js#L175)
 Clicking on the button to connect Google account.
 #### Properties
 | name | type | description |
@@ -499,7 +517,7 @@ Clicking on a Google Ads account text link.
 #### Emitters
 - [`BillingSavedCard`](../../js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
 
-### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L160)
+### [`gla_google_mc_link_click`](../../js/src/utils/tracks.js#L185)
 Clicking on a Google Merchant Center link.
 #### Properties
 | name | type | description |
@@ -528,7 +546,7 @@ Clicking on the "Scan for assets" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/assets-loader.js#L96)
 
-### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L142)
+### [`gla_launch_paid_campaign_button_click`](../../js/src/utils/tracks.js#L167)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign in the Google Ads setup flow.
 #### Properties
 | name | type | description |
@@ -602,7 +620,7 @@ Clicking on the Merchant Center phone number edit button.
 #### Emitters
 - [`PhoneNumberCard`](../../js/src/components/contact-information/phone-number-card/phone-number-card.js#L127)
 
-### [`gla_modal_closed`](../../js/src/utils/tracks.js#L216)
+### [`gla_modal_closed`](../../js/src/utils/tracks.js#L241)
 A modal is closed.
 #### Properties
 | name | type | description |
@@ -625,7 +643,7 @@ Clicking on a text link within the modal content
 #### Emitters
 - [`ContentLink`](../../js/src/components/guide-page-content/index.js#L46) with given `context, href`
 
-### [`gla_modal_open`](../../js/src/utils/tracks.js#L229)
+### [`gla_modal_open`](../../js/src/utils/tracks.js#L254)
 A modal is open
 #### Properties
 | name | type | description |
@@ -636,7 +654,7 @@ A modal is open
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L159) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
-### [`gla_onboarding_complete_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L49)
+### [`gla_onboarding_complete_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L47)
 Clicking on the skip paid ads button to complete the onboarding flow.
  The 'unknown' value of properties may means:
  - the paid ads setup is not opened
@@ -650,9 +668,9 @@ Clicking on the skip paid ads button to complete the onboarding flow.
 `billing_method_status` | `string` | aaa, The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
 `campaign_form_validation` | `string` | Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
 #### Emitters
-- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L71)
+- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L69)
 
-### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L41)
+### [`gla_onboarding_complete_with_paid_ads_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L39)
 Clicking on the "Complete setup" button to complete the onboarding flow with paid ads.
 #### Properties
 | name | type | description |
@@ -660,14 +678,24 @@ Clicking on the "Complete setup" button to complete the onboarding flow with pai
 `budget` | `number` | The budget for the campaign
 `audiences` | `string` | The targeted audiences for the campaign
 #### Emitters
-- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L71)
+- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L69)
 
-### [`gla_onboarding_open_paid_ads_setup_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L35)
+### [`gla_onboarding_open_paid_ads_setup_button_click`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L33)
 Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
 #### Emitters
-- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L71)
+- [`exports`](../../js/src/setup-mc/setup-stepper/setup-paid-ads/setup-paid-ads.js#L69)
 
-### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L176)
+### [`gla_open_ads_account_claim_invitation_button_click`](../../js/src/components/google-ads-account-card/claim-account-button.js#L15)
+Clicking on the button to open the invitation page for claiming the newly created Google Ads account.
+#### Properties
+| name | type | description |
+| ---- | ---- | ----------- |
+`context` | `string` | Indicates the place where the button is located.
+`step` | `string` | Indicates the step in the onboarding process.
+#### Emitters
+- [`ClaimAccountButton`](../../js/src/components/google-ads-account-card/claim-account-button.js#L32) When the user clicks on the button to claim the account.
+
+### [`gla_paid_campaign_step`](../../js/src/utils/tracks.js#L201)
 Triggered when moving to another step during creating/editing a campaign.
 #### Properties
 | name | type | description |
@@ -712,7 +740,7 @@ Clicking on the "Or, select another page" button.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/final-url-card.js#L39)
 
-### [`gla_setup_ads`](../../js/src/utils/tracks.js#L168)
+### [`gla_setup_ads`](../../js/src/utils/tracks.js#L193)
 Triggered on events during ads onboarding
 #### Properties
 | name | type | description |
@@ -720,7 +748,7 @@ Triggered on events during ads onboarding
 `triggered_by` | `string` | Indicates which button triggered this event
 `action` | `string` | User's action or/and objective (e.g. `leave`, `go-to-step-2`)
 #### Emitters
-- [`AdsStepper`](../../js/src/setup-ads/ads-stepper/index.js#L25)
+- [`AdsStepper`](../../js/src/setup-ads/ads-stepper/index.js#L28)
 	- with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button' , action: 'go-to-step2' | 'go-to-step3' }`.
 	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
 - [`SetupAdsTopBar`](../../js/src/setup-ads/top-bar/index.js#L17) with given `{ triggered_by: 'back-button', action: 'leave' }` when back button is clicked.
@@ -735,7 +763,7 @@ Clicking on faq items to collapse or expand it in the Onboarding Flow or creatin
 #### Emitters
 - [`FaqsSection`](../../js/src/components/paid-ads/faqs-section.js#L89)
 
-### [`gla_setup_mc`](../../js/src/utils/tracks.js#L133)
+### [`gla_setup_mc`](../../js/src/utils/tracks.js#L158)
 Setup Merchant Center
 #### Properties
 | name | type | description |
@@ -746,7 +774,7 @@ Setup Merchant Center
 #### Emitters
 - [`GetStartedCard`](../../js/src/get-started-page/get-started-card/index.js#L23) with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started' }`.
 - [`GetStartedWithVideoCard`](../../js/src/get-started-page/get-started-with-video-card/index.js#L23) with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started-with-video' }`.
-- [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L36)
+- [`SavedSetupStepper`](../../js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L39)
 	- with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', 'step3-continue-button', action: 'go-to-step2' | 'go-to-step3' | 'go-to-step4' }`.
 	- with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button' | 'stepper-step3-button', action: 'go-to-step1' | 'go-to-step2' | 'go-to-step3' }`.
 - [`SetupMCTopBar`](../../js/src/setup-mc/top-bar/index.js#L17) with `{ triggered_by: 'back-button', action: 'leave' }`.
@@ -776,7 +804,7 @@ Clicking on the submit button on the campaign creation or editing page.
 #### Emitters
 - [`exports`](../../js/src/components/paid-ads/asset-group/asset-group.js#L60)
 
-### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L17)
+### [`gla_table_go_to_page`](../../js/src/utils/tracks.js#L42)
 When table pagination is changed by entering page via "Go to page" input.
 #### Properties
 | name | type | description |
@@ -785,7 +813,7 @@ When table pagination is changed by entering page via "Go to page" input.
 `page` | `string` | Page number (starting at 1)
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
-- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L96) with the given `{ context, page }`.
+- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L121) with the given `{ context, page }`.
 
 ### [`gla_table_header_toggle`](../../js/src/components/app-table-card/index.js#L12)
 Toggling display of table columns
@@ -799,7 +827,7 @@ Toggling display of table columns
 - [`AppTableCard`](../../js/src/components/app-table-card/index.js#L74) upon toggling column visibility
 - [`recordColumnToggleEvent`](../../js/src/components/app-table-card/index.js#L29) with given `report: trackEventReportId, column: toggled`
 
-### [`gla_table_page_click`](../../js/src/utils/tracks.js#L25)
+### [`gla_table_page_click`](../../js/src/utils/tracks.js#L50)
 When table pagination is clicked
 #### Properties
 | name | type | description |
@@ -808,7 +836,7 @@ When table pagination is clicked
 `direction` | `string` | Direction of page to be changed. `("next" \| "previous")`
 #### Emitters
 - [`ProductFeedTableCard`](../../js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
-- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L96) with the given `{ context, direction }`.
+- [`recordTablePageEvent`](../../js/src/utils/tracks.js#L121) with the given `{ context, direction }`.
 
 ### [`gla_table_sort`](../../js/src/components/app-table-card/index.js#L38)
 Sorting table
