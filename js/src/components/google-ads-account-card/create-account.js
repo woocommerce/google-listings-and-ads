@@ -56,7 +56,11 @@ const CreateAccount = ( props ) => {
 		}
 
 		if ( shouldClaimGoogleAdsAccount ) {
-			return <ClaimAccountButton />;
+			return (
+				<ClaimAccountButton isSecondary>
+					{ __( 'Claim Account', 'google-listings-and-ads' ) }
+				</ClaimAccountButton>
+			);
 		}
 
 		return (

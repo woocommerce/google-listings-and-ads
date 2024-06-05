@@ -69,21 +69,16 @@ describe( 'index', () => {
 			);
 		}
 
-		function updateAccountIds( mcId, adsId ) {
-			dispatch( STORE_KEY ).hydratePrefetchedData( { mcId, adsId } );
-		}
-
 		beforeEach( () => {
 			// To initialize `pagePaths`.
 			applyFilters( 'woocommerce_admin_pages_list', [] );
 		} );
 
-		afterEach( () => {
-			updateAccountIds( null, null );
-		} );
-
 		it( "When the `path` of `wcadmin_page_view` tracking event is one of this plugin's route paths, it should add base properties", () => {
 			expect( pagePaths.size ).toBeGreaterThan( 0 );
+
+			// Simulate that the version has been hydrated via the initialization of .~/data/index.js
+			dispatch( STORE_KEY ).hydratePrefetchedData( { version: '1.2.3' } );
 
 			pagePaths.forEach( ( path ) => {
 				const properties = getProperties( path );
@@ -91,7 +86,10 @@ describe( 'index', () => {
 				expect( properties ).toEqual( { path, gla_version: '1.2.3' } );
 			} );
 
-			updateAccountIds( 123, 456 );
+			dispatch( STORE_KEY ).hydratePrefetchedData( {
+				mcId: 123,
+				adsId: 456,
+			} );
 
 			pagePaths.forEach( ( path ) => {
 				const properties = getProperties( path );
