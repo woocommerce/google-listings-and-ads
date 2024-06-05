@@ -14,7 +14,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import { useAppDispatch } from '.~/data';
 import { FILTER_ONBOARDING } from '.~/utils/tracks';
-import expectEventWithPropertiesFilter from '.~/tests/expectEventWithPropertiesFilter';
+import expectComponentToRecordEventWithFilteredProperties from '.~/tests/expectComponentToRecordEventWithFilteredProperties';
 
 jest.mock( '.~/hooks/useApiFetchCallback', () =>
 	jest.fn().mockName( 'useApiFetchCallback' )
@@ -211,13 +211,13 @@ describe( 'ConnectAds', () => {
 		// Prevent the component from locking in the connecting state
 		fetchGoogleAdsAccountStatus.mockRejectedValue();
 
-		await expectEventWithPropertiesFilter(
+		await expectComponentToRecordEventWithFilteredProperties(
 			() => <ConnectAds accounts={ accounts } />,
 			FILTER_ONBOARDING,
 			async () => {
 				const combobox = screen.getByRole( 'combobox' );
 				await userEvent.selectOptions( combobox, '1' );
-				return getConnectButton();
+				await userEvent.click( getConnectButton() );
 			},
 			'gla_ads_account_connect_button_click',
 			[

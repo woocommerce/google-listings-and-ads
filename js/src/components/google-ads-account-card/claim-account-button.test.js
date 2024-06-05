@@ -12,7 +12,7 @@ import { recordEvent } from '@woocommerce/tracks';
 import ClaimAccountButton from './claim-account-button';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 import { FILTER_ONBOARDING } from '.~/utils/tracks';
-import expectEventWithPropertiesFilter from '.~/tests/expectEventWithPropertiesFilter';
+import expectComponentToRecordEventWithFilteredProperties from '.~/tests/expectComponentToRecordEventWithFilteredProperties';
 
 jest.mock( '.~/hooks/useGoogleAdsAccountStatus', () =>
 	jest.fn().mockName( 'useGoogleAdsAccountStatus' )
@@ -80,10 +80,10 @@ describe( 'ClaimAccountButton', () => {
 	} );
 
 	it( 'should record click events and be aware of extra event properties from filters', async () => {
-		await expectEventWithPropertiesFilter(
+		await expectComponentToRecordEventWithFilteredProperties(
 			ClaimAccountButton,
 			FILTER_ONBOARDING,
-			() => screen.getByRole( 'button' ),
+			async () => await userEvent.click( screen.getByRole( 'button' ) ),
 			'gla_open_ads_account_claim_invitation_button_click',
 			[
 				{ context: 'setup-mc', step: '1' },

@@ -12,7 +12,7 @@ import { recordEvent } from '@woocommerce/tracks';
 import DisconnectAccount from './disconnect-account';
 import { useAppDispatch } from '.~/data';
 import { FILTER_ONBOARDING } from '.~/utils/tracks';
-import expectEventWithPropertiesFilter from '.~/tests/expectEventWithPropertiesFilter';
+import expectComponentToRecordEventWithFilteredProperties from '.~/tests/expectComponentToRecordEventWithFilteredProperties';
 
 jest.mock( '.~/data', () => ( {
 	...jest.requireActual( '.~/data' ),
@@ -87,10 +87,10 @@ describe( 'DisconnectAccount', () => {
 		// Prevent the component from locking in the disconnecting state
 		disconnectGoogleAdsAccount.mockRejectedValue();
 
-		await expectEventWithPropertiesFilter(
+		await expectComponentToRecordEventWithFilteredProperties(
 			DisconnectAccount,
 			FILTER_ONBOARDING,
-			() => screen.getByRole( 'button' ),
+			async () => await userEvent.click( screen.getByRole( 'button' ) ),
 			'gla_ads_account_disconnect_button_click',
 			[
 				{ context: 'setup-mc', step: '1' },

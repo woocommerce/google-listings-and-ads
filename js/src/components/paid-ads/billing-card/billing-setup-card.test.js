@@ -12,7 +12,7 @@ import { recordEvent } from '@woocommerce/tracks';
 import BillingSetupCard from './billing-setup-card';
 import useWindowFocus from '.~/hooks/useWindowFocus';
 import { FILTER_ONBOARDING } from '.~/utils/tracks';
-import expectEventWithPropertiesFilter from '.~/tests/expectEventWithPropertiesFilter';
+import expectComponentToRecordEventWithFilteredProperties from '.~/tests/expectComponentToRecordEventWithFilteredProperties';
 
 jest.mock( '.~/hooks/useGoogleAdsAccount', () =>
 	jest
@@ -168,10 +168,10 @@ describe( 'BillingSetupCard', () => {
 	it.each( [ 'button', 'link' ] )(
 		'should record click events for the billing setup %s and be aware of extra event properties from filters',
 		async ( role ) => {
-			await expectEventWithPropertiesFilter(
+			await expectComponentToRecordEventWithFilteredProperties(
 				() => <BillingSetupCard billingUrl="https://test.com" />,
 				FILTER_ONBOARDING,
-				() => screen.getByRole( role ),
+				async () => await userEvent.click( screen.getByRole( role ) ),
 				'gla_ads_set_up_billing_click',
 				[
 					{ context: 'setup-mc', step: '1' },

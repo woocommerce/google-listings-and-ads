@@ -11,7 +11,7 @@ import { recordEvent } from '@woocommerce/tracks';
  */
 import TermsModal from './';
 import { FILTER_ONBOARDING } from '.~/utils/tracks';
-import expectEventWithPropertiesFilter from '.~/tests/expectEventWithPropertiesFilter';
+import expectComponentToRecordEventWithFilteredProperties from '.~/tests/expectComponentToRecordEventWithFilteredProperties';
 
 jest.mock( '@woocommerce/tracks', () => {
 	return {
@@ -65,7 +65,7 @@ describe( 'TermsModal', () => {
 	} );
 
 	it( 'should record click events for the "Create account" button and be aware of extra event properties from filters', async () => {
-		await expectEventWithPropertiesFilter(
+		await expectComponentToRecordEventWithFilteredProperties(
 			TermsModal,
 			FILTER_ONBOARDING,
 			async () => {
@@ -73,7 +73,10 @@ describe( 'TermsModal', () => {
 				if ( ! checkbox.checked ) {
 					await userEvent.click( screen.getByRole( 'checkbox' ) );
 				}
-				return screen.getByRole( 'button', { name: 'Create account' } );
+
+				await userEvent.click(
+					screen.getByRole( 'button', { name: 'Create account' } )
+				);
 			},
 			'gla_ads_account_create_button_click',
 			[
