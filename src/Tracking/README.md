@@ -20,6 +20,14 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
 
 All event names are prefixed by `wcadmin_`.
 
+### Global event properties
+
+Most events have the following properties:
+
+- `gla_version`: Plugin version
+- `gla_mc_id`: Google Merchant Center account ID if connected
+- `gla_ads_id`: Google Ads account ID if connected
+
 ### `gla_activated_from_source`
 Plugin is activated from the "Add Plugins" page in the admin, and has `utm` query parameters indicating deep linking. Parameters currently tracked (and sent as properties):
  - `utm_source`

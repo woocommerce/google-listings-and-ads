@@ -67,7 +67,15 @@ export default async function expectComponentToRecordEventWithFilteredProperties
 		expect( recordEvent ).toHaveBeenNthCalledWith(
 			times,
 			eventName,
-			extraProperties || {}
+			extraProperties
+				? expect.objectContaining( extraProperties )
+				: expect.anything()
+		);
+		expect( recordEvent ).not.toHaveBeenCalledWith(
+			eventName,
+			expect.objectContaining( {
+				__testInvalidPropertyNameShouldBeIgnored: expect.anything(),
+			} )
 		);
 	}
 }
