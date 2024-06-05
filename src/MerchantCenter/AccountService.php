@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -14,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -29,6 +31,8 @@ defined( 'ABSPATH' ) || exit;
  * Class AccountService
  *
  * Container used to access:
+ * - Ads
+ * - AdsAccountState
  * - CleanupSyncedProducts
  * - Merchant
  * - MerchantAccountState
@@ -330,6 +334,17 @@ class AccountService implements OptionsAwareInterface, Service {
 							$merchant->claimwebsite();
 						}
 						break;
+					case 'link_ads':
+						// Continue to next step if Ads account is not connected yet.
+						if ( ! $this->options->get_ads_id() ) {
+							// Save step as pending and continue the foreach loop with `continue 2`.
+							$state[ $name ]['status'] = MerchantAccountState::STEP_PENDING;
+							$this->state->update( $state );
+							continue 2;
+						}
+
+						$this->link_ads_account();
+						break;
 					default:
 						throw new Exception(
 							sprintf(
@@ -467,6 +482,25 @@ class AccountService implements OptionsAwareInterface, Service {
 
 			do_action( 'woocommerce_gla_url_switch_success', [] );
 		}
+	}
+
+	/**
+	 * Get the callback function for linking an Ads account.
+	 *
+	 * @throws Exception When the merchant account hasn't been set yet.
+	 */
+	private function link_ads_account() {
+		if ( ! $this->options->get_merchant_id() ) {
+			throw new Exception( 'A Merchant Center account must be connected' );
+		}
+
+		$ads_state = $this->container->get( AdsAccountState::class );
+
+		// Create link for Merchant and accept it in Ads.
+		$this->container->get( Merchant::class )->link_ads_id( $this->options->get_ads_id() );
+		$this->container->get( Ads::class )->accept_merchant_link( $this->options->get_merchant_id() );
+
+		$ads_state->complete_step( 'link_merchant' );
 	}
 
 	/**

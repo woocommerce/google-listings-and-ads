@@ -21,8 +21,11 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import WPComAccountCard from '.~/components/wpcom-account-card';
 import GoogleAccountCard from '.~/components/google-account-card';
 import GoogleMCAccountCard from '.~/components/google-mc-account-card';
+import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
 import Faqs from './faqs';
 import './index.scss';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
 
 /**
  * Renders the disclaimer of Comparison Shopping Service (CSS).
@@ -83,6 +86,9 @@ const SetupAccounts = ( props ) => {
 	const { google, scope } = useGoogleAccount();
 	const { googleMCAccount, isPreconditionReady: isGMCPreconditionReady } =
 		useGoogleMCAccount();
+	const { hasFinishedResolution, hasGoogleAdsConnection } =
+		useGoogleAdsAccount();
+	const { hasAccess, step } = useGoogleAdsAccountStatus();
 
 	/**
 	 * When jetpack is loading, or when google account is loading,
@@ -104,7 +110,29 @@ const SetupAccounts = ( props ) => {
 	}
 
 	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
-	const isContinueButtonDisabled = googleMCAccount?.status !== 'connected';
+
+	// Ads is ready when we have a connection and verified and verified access.
+	// Billing is not required, and the 'link_merchant' step will be resolved
+	// when the MC the account is connected.
+	const isGoogleAdsReady =
+		hasGoogleAdsConnection &&
+		hasAccess &&
+		[ '', 'billing', 'link_merchant' ].includes( step );
+
+	// MC is ready when we have a connection and preconditions are met.
+	// The `link_ads` step will be resolved when the Ads account is connected
+	// since these can be connected in any order.
+	const isGoogleMCReady =
+		isGMCPreconditionReady &&
+		( googleMCAccount?.status === 'connected' ||
+			( googleMCAccount?.status === 'incomplete' &&
+				googleMCAccount?.step === 'link_ads' ) );
+
+	const isContinueButtonDisabled = ! (
+		hasFinishedResolution &&
+		isGoogleAdsReady &&
+		isGoogleMCReady
+	);
 
 	return (
 		<StepContent>
@@ -129,6 +157,7 @@ const SetupAccounts = ( props ) => {
 				<VerticalGapLayout size="large">
 					<WPComAccountCard jetpack={ jetpack } />
 					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
+					<GoogleAdsAccountCard />
 				</VerticalGapLayout>
 			</Section>
 			<Section

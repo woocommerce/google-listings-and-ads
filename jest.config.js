@@ -41,19 +41,6 @@ module.exports = {
 		wcAdminFeatures: {
 			navigation: false,
 		},
-		glaData: {
-			slug: 'gla',
-			mcSetupComplete: true,
-			mcSupportedCountry: true,
-			mcSupportedLanguage: true,
-			adsSetupComplete: true,
-			enableReports: true,
-			dateFormat: 'F j, Y',
-			timeFormat: 'g:i a',
-			initialWpData: {
-				version: '1.2.3',
-			},
-		},
 	},
 	timers: 'fake',
 };

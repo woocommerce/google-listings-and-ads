@@ -329,6 +329,7 @@ class Middleware implements OptionsAwareInterface {
 
 				$billing_url = $response['invitationLink'] ?? '';
 				$ads->update_billing_url( $billing_url );
+				$ads->update_ocid_from_billing_url( $billing_url );
 
 				return [
 					'id'          => $id,

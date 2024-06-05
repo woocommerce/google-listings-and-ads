@@ -20,8 +20,6 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
-import ProductFeedStatusSection from './product-feed-status-section';
-import GoogleAdsAccountSection from './google-ads-account-section';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
@@ -163,16 +161,14 @@ export default function SetupPaidAds() {
 		<StepContent>
 			<StepContentHeader
 				title={ __(
-					'Complete your campaign with paid ads',
+					'Create a campaign to advertise your products',
 					'google-listings-and-ads'
 				) }
 				description={ __(
-					'As soon as your products are approved, your listings and ads will be live. In the meantime, let’s set up your ads.',
+					'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
 					'google-listings-and-ads'
 				) }
 			/>
-			<ProductFeedStatusSection />
-			<GoogleAdsAccountSection />
 			<PaidAdsFeaturesSection
 				hideBudgetContent={ ! hasGoogleAdsConnection }
 				hideFooterButtons={
@@ -185,7 +181,7 @@ export default function SetupPaidAds() {
 					<AppButton
 						isPrimary
 						text={ __(
-							'Create a paid ad campaign',
+							'Create campaign',
 							'google-listings-and-ads'
 						) }
 						disabled={ completing === ACTION_SKIP }

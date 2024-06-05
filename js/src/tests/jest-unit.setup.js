@@ -32,3 +32,21 @@ jest.mock( '.~/hooks/useDispatchCoreNotices', () =>
 		.mockName( 'useDispatchCoreNotices' )
 		.mockReturnValue( { createNotice: () => {} } )
 );
+
+// Mock the glaData here because the `globals` object in the jest config must
+// be JSON-serializable, which cannot preserve `undefined` values.
+global.glaData = {
+	slug: 'gla',
+	mcSetupComplete: true,
+	mcSupportedCountry: true,
+	mcSupportedLanguage: true,
+	adsSetupComplete: true,
+	enableReports: true,
+	dateFormat: 'F j, Y',
+	timeFormat: 'g:i a',
+	initialWpData: {
+		// Intentionally set `version` to undefined so that tests related to event
+		// tracking don't have to validate global event properties.
+		version: undefined,
+	},
+};
