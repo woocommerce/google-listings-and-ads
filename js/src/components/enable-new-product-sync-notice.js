@@ -35,7 +35,7 @@ const EnableNewProductSyncNotice = () => {
 		<Notice status="info" isDismissible={ false }>
 			{ createInterpolateElement(
 				__(
-					'Enable new product sync. <enableButton>Enable</enableButton>',
+					'We will soon transition to a new and improved method for synchronizing product data with Google. <enableButton>Get early access</enableButton>',
 					'google-listings-and-ads'
 				),
 				{
