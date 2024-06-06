@@ -78,11 +78,11 @@ class GLAChannel implements MarketingChannelInterface {
 	}
 
 	/**
-	 * Determines if the marketing channel campaigns is enabled.
+	 * Determines if the marketing channel campaigns types are enabled.
 	 *
 	 * @return bool
 	 */
-	protected function is_enable_campaign_types() {
+	protected function is_enable_campaign_types(): bool {
 		return apply_filters( 'woocommerce_gla_enable_mcm', false ) === true;
 	}
 
