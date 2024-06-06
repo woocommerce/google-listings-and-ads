@@ -9,6 +9,7 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
+use Automattic\Jetpack\Connection\Client;
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
@@ -81,6 +82,13 @@ class ConnectionTest implements Service, Registerable {
 	 * @var string
 	 */
 	protected $response = '';
+
+	/**
+	 * Store response from the integration status API request.
+	 *
+	 * @var string
+	 */
+	protected $integration_status_response = [];
 
 	/**
 	 * Add menu entries
@@ -682,6 +690,72 @@ class ConnectionTest implements Service, Registerable {
 								</p>
 							</td>
 						</tr>
+						<tr>
+							<th><label>API Pull Integration Status:</label></th>
+							<td>
+								<p>									
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'partner-integration-status' ], $url ), 'partner-integration-status' ) ); ?>">Get API Pull Integration Status</a>
+								</p>
+							</td>
+						</tr>
+						<?php if ( isset( $this->integration_status_response['site'] ) || isset( $this->integration_status_response['errors'] ) ) { ?>
+							<tr>
+								<th><label>Site:</label></th>
+								<td>
+									<p>
+										<code><?php echo $this->integration_status_response['site'] ?? ''; ?></code>
+									</p>
+								</td>
+							</tr>
+							<tr>
+								<th><label>Jetpack Connection Health:</label></th>
+								<td>
+									<p>
+										<code><?php echo isset( $this->integration_status_response['is_healthy'] ) && $this->integration_status_response['is_healthy'] === true ? 'Healthy' : 'Unhealthy'; ?></code>
+									</p>
+								</td>
+							</tr>	
+							<tr>
+								<th><label>Last Jetpack Contact:</label></th>
+								<td>
+									<p>
+										<code><?php echo isset( $this->integration_status_response['last_jetpack_contact'] ) ? date( 'Y-m-d H:i:s', $this->integration_status_response['last_jetpack_contact'] ) : '-'; ?></code>
+									</p>
+								</td>
+							</tr>
+							<tr>
+								<th><label>WC REST API Health:</label></th>
+								<td>
+									<p>
+										<code><?php echo isset( $this->integration_status_response['is_wc_rest_api_healthy'] ) && $this->integration_status_response['is_wc_rest_api_healthy'] === true ? 'Healthy' : 'Unhealthy'; ?></code>
+									</p>
+								</td>
+							</tr>
+							<tr>
+								<th><label>Google token health:</label></th>
+								<td>
+									<p>
+										<code><?php echo isset( $this->integration_status_response['is_partner_token_healthy'] ) && $this->integration_status_response['is_partner_token_healthy'] === true ? 'Connected' : 'Disconnected'; ?></code>
+									</p>
+								</td>
+							</tr>
+							<tr>
+								<th><label>Errors:</label></th>
+								<td>
+									<p>
+										<code><?php echo isset( $this->integration_status_response['errors'] ) ? wp_kses_post( json_encode( $this->integration_status_response['errors'] ) ) ?? '' : '-'; ?></code>
+									</p>
+								</td>
+							</tr>																																
+						<?php } ?>
+						<tr>
+							<th><label>Revoke WPCOM Partner Access:</label></th>
+							<td>
+								<p>									
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'revoke-wpcom-partner-access' ], $url ), 'revoke-wpcom-partner-access' ) ); ?>">Revoke WPCOM Partner Access</a>
+								</p>
+							</td>
+						</tr>
 					</table>
 					<?php wp_nonce_field( 'partner-notification' ); ?>
 					<input name="page" value="connection-test-admin-page" type="hidden" />
@@ -790,6 +864,47 @@ class ConnectionTest implements Service, Registerable {
 			}
 
 			return;
+		}
+
+		if ( 'partner-integration-status' === $_GET['action'] && check_admin_referer( 'partner-integration-status' ) ) {
+
+			$integration_status_args = [
+				'method'  => 'GET',
+				'timeout' => 30,
+				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/google/remote-site-status',
+				'user_id' => get_current_user_id(),
+			];
+
+			$integration_remote_request_response = Client::remote_request( $integration_status_args, null );
+
+			if ( is_wp_error( $integration_remote_request_response ) ) {
+				$this->response .= $integration_remote_request_response->get_error_message();
+			} else {
+				$this->integration_status_response = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [];
+
+				if ( json_last_error() || ! isset( $this->integration_status_response['site'] ) ) {
+					$this->response .= wp_remote_retrieve_body( $integration_remote_request_response );
+				}
+			}
+
+		}
+
+		if ( 'revoke-wpcom-partner-access' === $_GET['action'] && check_admin_referer( 'revoke-wpcom-partner-access' ) ) {
+
+			$revoke_args = [
+				'method'  => 'DELETE',
+				'timeout' => 30,
+				'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/google/revoke-token',
+				'user_id' => get_current_user_id(),
+			];
+
+			$revoke_response = Client::remote_request( $revoke_args, null );
+
+			if ( is_wp_error( $revoke_response ) ) {
+				$this->response .= $revoke_response->get_error_message();
+			} else {
+				$this->response .= wp_remote_retrieve_body( $revoke_response );
+			}
 		}
 
 		if ( 'disconnect-wp-api' === $_GET['action'] && check_admin_referer( 'disconnect-wp-api' ) ) {
