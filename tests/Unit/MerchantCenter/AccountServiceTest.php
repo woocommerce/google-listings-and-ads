@@ -850,7 +850,7 @@ class AccountServiceTest extends UnitTest {
 		$this->account->update_wpcom_api_authorization( $status, $nonce );
 	}
 
-	public function test_reset_wpcom_api_authorization() {
+	public function test_reset_wpcom_api_authorization_data() {
 		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
 			->withConsecutive(
@@ -858,6 +858,6 @@ class AccountServiceTest extends UnitTest {
 				[ OptionsInterface::WPCOM_REST_API_STATUS ],
 			);
 
-		$this->account->reset_wpcom_api_authorization();
+		$this->account->reset_wpcom_api_authorization_data();
 	}
 }

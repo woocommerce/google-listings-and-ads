@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
+use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -11,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -28,7 +30,8 @@ class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInte
 	use UtilitiesTrait;
 	use ContainerAwareTrait;
 
-	public const AUTH_URL      = 'https://public-api.wordpress.com/oauth2/authorize';
+	public const WPCOM_API_URL = 'https://public-api.wordpress.com';
+	public const AUTH_URL      = '/oauth2/authorize';
 	public const RESPONSE_TYPE = 'code';
 	public const SCOPE         = 'wc-partner-access';
 
@@ -95,11 +98,22 @@ class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInte
 					'scope'         => self::SCOPE,
 					'state'         => $state,
 				],
-				self::AUTH_URL
+				$this->get_wpcom_api_url( self::AUTH_URL )
 			)
 		);
 
 		return $auth_url;
+	}
+
+	/**
+	 * Get a WPCOM REST API URl concatenating the endpoint with the API Domain
+	 *
+	 * @param string $endpoint The endpoint to get the URL for
+	 *
+	 * @return string The WPCOM endpoint with the domain.
+	 */
+	protected function get_wpcom_api_url( string $endpoint ): string {
+		return self::WPCOM_API_URL . $endpoint;
 	}
 
 	/**
@@ -113,13 +127,36 @@ class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInte
 	protected function get_data_from_google(): array {
 		/** @var Middleware $middleware */
 		$middleware = $this->container->get( Middleware::class );
-		$response = $middleware->get_sdi_auth_params();
-		$nonce = $response['nonce'];
+		$response   = $middleware->get_sdi_auth_params();
+		$nonce      = $response['nonce'];
 		$this->options->update( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE, $nonce );
 		return [
 			'client_id'    => $response['clientId'],
-			'redirect_uri' => str_replace('WooCommerce', 'WOO_COMMERCE', $response['redirectUri']),
+			'redirect_uri' => $response['redirectUri'],
 			'nonce'        => $nonce,
 		];
+	}
+
+	/**
+	 * Perform a remote request for revoking OAuth access for the current user.
+	 *
+	 * @return string The body of the response
+	 * @throws Exception If the remote request fails.
+	 */
+	public function revoke_wpcom_api_auth(): string {
+		$args = [
+			'method'  => 'DELETE',
+			'timeout' => 30,
+			'url'     => $this->get_wpcom_api_url( '/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/google/revoke-token' ),
+			'user_id' => get_current_user_id(),
+		];
+
+		$response = Client::remote_request( $args );
+
+		if ( is_wp_error( $response ) ) {
+			throw new Exception( $response->get_error_message(), $response->get_error_code() );
+		} else {
+			return wp_remote_retrieve_body( $response );
+		}
 	}
 }
