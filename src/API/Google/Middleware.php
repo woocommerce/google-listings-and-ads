@@ -14,7 +14,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExceptionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Http\Client\ClientExceptionInterface;
 use DateTime;
 use Exception;
@@ -488,9 +490,9 @@ class Middleware implements OptionsAwareInterface {
 	 */
 	protected function get_sdi_auth_endpoint(): string {
 		return $this->container->get( 'connect_server_root' )
-		       . 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
-		       . $this->options->get_merchant_id()
-		       . '/oauth/redirect:generate';
+				. 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
+				. $this->options->get_merchant_id()
+				. '/oauth/redirect:generate';
 	}
 
 	/**
@@ -662,19 +664,27 @@ class Middleware implements OptionsAwareInterface {
 		return boolval( $is_subaccount );
 	}
 
+	/**
+	 * Performs a request to Google Shopping Data Integration (SDI) to get required information in order to form an auth URL.
+	 *
+	 * @return array An array with the JSON response from the WCS server.
+	 * @throws NotFoundExceptionInterface  When the container was not found.
+	 * @throws ContainerExceptionInterface When an error happens while retrieving the container.
+	 * @see google-sdi in google/services inside WCS
+	 */
 	public function get_sdi_auth_params() {
 		try {
 			/** @var Client $client */
-			$client = $this->container->get( Client::class );
-			$result = $client->get( $this->get_sdi_auth_endpoint() );
+			$client   = $this->container->get( Client::class );
+			$result   = $client->get( $this->get_sdi_auth_endpoint() );
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 !== $result->getStatusCode() ) {
 				do_action(
 					'woocommerce_gla_partner_app_auth_failure',
 					[
-						'error'       => 'response',
-						'response'    => $response,
+						'error'    => 'response',
+						'response' => $response,
 					]
 				);
 				do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
@@ -692,6 +702,5 @@ class Middleware implements OptionsAwareInterface {
 				$e->getCode()
 			);
 		}
-
 	}
 }
