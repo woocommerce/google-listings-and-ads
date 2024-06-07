@@ -488,7 +488,7 @@ class Middleware implements OptionsAwareInterface {
 	 *
 	 * @return string
 	 */
-	protected function get_sdi_auth_endpoint(): string {
+	public function get_sdi_auth_endpoint(): string {
 		return $this->container->get( 'connect_server_root' )
 				. 'google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/'
 				. $this->options->get_merchant_id()
