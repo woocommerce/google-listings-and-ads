@@ -470,16 +470,14 @@ class MiddlewareTest extends UnitTest {
 	}
 
 	public function test_get_sdi_auth_params() {
-
 		$expected_response = [
 			'clientId'    => self::TEST_MERCHANT_ID,
 			'redirectUri' => 'https://example.com',
-			'nonce'       => '123'
+			'nonce'       => '123',
 		];
 
 		$this->generate_request_mock( $expected_response );
 		$this->assertEquals( $this->middleware->get_sdi_auth_params(), $expected_response );
-
 	}
 
 	public function test_get_sdi_auth_params_no_success() {

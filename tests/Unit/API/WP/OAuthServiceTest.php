@@ -52,9 +52,9 @@ class OAuthServiceTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->container = new Container();
-		$this->middleware  = $this->createMock( Middleware::class );
-		$this->options     = $this->createMock( OptionsInterface::class );
+		$this->container  = new Container();
+		$this->middleware = $this->createMock( Middleware::class );
+		$this->options    = $this->createMock( OptionsInterface::class );
 
 		// Mock the Blog ID from Jetpack.
 		add_filter(
@@ -100,17 +100,16 @@ class OAuthServiceTest extends UnitTest {
 		$expected_response = [
 			'clientId'    => $client_id,
 			'redirectUri' => $redirect_uri,
-			'nonce'        => $nonce,
+			'nonce'       => $nonce,
 		];
 
 		$this->middleware->expects( $this->once() )
-		                 ->method( 'get_sdi_auth_params' )
-		                 ->willReturn( $expected_response );
+						->method( 'get_sdi_auth_params' )
+						->willReturn( $expected_response );
 
 		$this->options->expects( $this->once() )
-		              ->method( 'update' )
-		              ->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE, $nonce );
-
+						->method( 'update' )
+						->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE, $nonce );
 
 		$store_url          = "{$admin_url}admin.php?page=wc-admin&path={$path}";
 		$store_url_encoded  = urlencode_deep( $store_url );
