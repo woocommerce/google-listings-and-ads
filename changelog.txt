@@ -1,5 +1,14 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 2.7.2 - 2024-06-10 =
+* Add - Google Ads account invitation acceptance step to the connection process.
+* Fix - Show tracking snapshots in WPCLI.
+* Tweak - Adjust click event tracking when connecting, disconnecting, and opening billing setup for Google Ads account.
+* Tweak - Adjust event tracking for the creating and claim buttons of Google Ads account.
+* Tweak - WC 9.0 compatibility.
+* Update - Enable users to seamlessly set up conversion tracking, without having to set up merchant center first or requiring campaign creation.
+* Update - Move the Google Ads account connection process from step 4 to step 1 of the onboarding flow.
+
 = 2.7.1 - 2024-05-29 =
 * Dev - Add info about  Legacy Google Ads API Client Library  in Readme.
 * Fix - Prevent PHP Warning when Statistics is null.
