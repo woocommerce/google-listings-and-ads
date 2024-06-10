@@ -122,7 +122,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WC 8.9 compatibility.
 * Update - Update Google API to V16.
 
-= 2.6.9 - 2024-05-07 =
-* Tweak - Confirm issues are present when retrieving product status.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
