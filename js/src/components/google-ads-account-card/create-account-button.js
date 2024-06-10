@@ -9,7 +9,6 @@ import { useState } from '@wordpress/element';
  */
 import TermsModal from './terms-modal';
 import AppButton from '.~/components/app-button';
-import LoadingLabel from '.~/components/loading-label';
 
 /**
  * Renders a Google Ads account creaton button.
@@ -18,8 +17,7 @@ import LoadingLabel from '.~/components/loading-label';
  * @param {Object} props React props.
  * @param {Function} [props.onCreateAccount] Called after the user accept the terms agreement.
  */
-const CreateAccountButton = ( props ) => {
-	const { onCreateAccount, ...rest } = props;
+const CreateAccountButton = ( { onCreateAccount } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 
 	const handleButtonClick = () => {
@@ -32,18 +30,11 @@ const CreateAccountButton = ( props ) => {
 
 	return (
 		<>
-			{ rest.loading ? (
-				<LoadingLabel
-					text={ __( 'Creating…', 'google-listings-and-ads' ) }
-				/>
-			) : (
-				<AppButton
-					isSecondary
-					{ ...rest }
-					text={ __( 'Create account', 'google-listings-and-ads' ) }
-					onClick={ handleButtonClick }
-				/>
-			) }
+			<AppButton
+				isSecondary
+				text={ __( 'Create account', 'google-listings-and-ads' ) }
+				onClick={ handleButtonClick }
+			/>
 			{ isOpen && (
 				<TermsModal
 					onCreateAccount={ onCreateAccount }

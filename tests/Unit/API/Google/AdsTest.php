@@ -179,6 +179,30 @@ class AdsTest extends UnitTest {
 		$this->ads->accept_merchant_link( self::TEST_MERCHANT_ID );
 	}
 
+	public function test_accept_merchant_link_with_retry_get_merchant_link() {
+		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
+		$link = new ProductLinkInvitation();
+		$mc   = $this->createMock( MerchantCenterLinkInvitationIdentifier::class );
+
+		$mc
+			->expects( $this->exactly( 4 ) )
+			->method( 'getMerchantCenterId' )
+			->willReturnOnConsecutiveCalls(
+				self::TEST_MERCHANT_ID + 3,
+				self::TEST_MERCHANT_ID + 2,
+				self::TEST_MERCHANT_ID + 1,
+				self::TEST_MERCHANT_ID
+			);
+
+		$link->setStatus( ProductLinkInvitationStatus::PENDING_APPROVAL );
+		$link->setMerchantCenter( $mc );
+
+		$service = $this->generate_mc_link_mock( [ $link ] );
+		$service->expects( $this->once() )->method( 'updateProductLinkInvitation' );
+
+		$this->ads->accept_merchant_link( self::TEST_MERCHANT_ID );
+	}
+
 	public function test_accept_merchant_link() {
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
 		$link = new ProductLinkInvitation();

@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, FlexItem } from '@wordpress/components';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -32,12 +31,9 @@ const BenefitsCard = () => {
 						variant="title-medium"
 						className="gla-get-started-benefits-card__title"
 					>
-						{ createInterpolateElement(
-							__(
-								'Increase clicks by <strong>50%</strong>',
-								'google-listings-and-ads'
-							),
-							{ strong: <strong /> }
+						{ __(
+							'Reach your sales goals by creating a campaign',
+							'google-listings-and-ads'
 						) }
 					</Text>
 					<Text
@@ -45,13 +41,7 @@ const BenefitsCard = () => {
 						className="gla-get-started-benefits-card__description"
 					>
 						{ __(
-							'Using free listings and ads together increased clicks by 50% and doubled impressions. Small-to-medium merchants saw the largest share of the increases.',
-							'google-listings-and-ads'
-						) }
-					</Text>
-					<Text className="gla-get-started-benefits-card__hint">
-						{ __(
-							'Source: Google Internal Data, July 2020',
+							'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your products are included as soon as they’re approved.',
 							'google-listings-and-ads'
 						) }
 					</Text>

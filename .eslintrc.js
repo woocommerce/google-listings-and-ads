@@ -46,6 +46,10 @@ module.exports = {
 				additionalHooks: 'useSelect',
 			},
 		],
+		'jest/expect-expect': [
+			'warn',
+			{ assertFunctionNames: [ 'expect', 'expect[A-Z]\\w*' ] },
+		],
 	},
 	overrides: [
 		{
