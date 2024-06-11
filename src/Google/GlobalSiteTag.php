@@ -218,7 +218,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 				$this->register_js_for_fast_refresh_dev();
 				$this->assets_handler->enqueue( $gtag_events );
-				
+
 				if ( ! class_exists( '\WC_Google_Gtag_JS' ) && function_exists( 'wp_has_consent' ) ) {
 					$this->assets_handler->enqueue( $wp_consent_api );
 				}

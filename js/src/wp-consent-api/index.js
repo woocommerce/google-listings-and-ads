@@ -31,37 +31,31 @@ const setCurrentConsentState = () => {
 		}
 
 		if ( Object.keys( consentState ).length > 0 ) {
-			gtag( 'consent', 'update', consentState );
+			window.gtag( 'consent', 'update', consentState );
 		}
 	}
 };
 
 document.addEventListener( 'wp_listen_for_consent_change', ( event ) => {
-    const consentUpdate = {};
+	const consentUpdate = {};
 
-    const types = consentMap[ Object.keys( event.detail )[ 0 ] ];
-    const state =
-        Object.values( event.detail )[ 0 ] === 'allow'
-            ? 'granted'
-            : 'denied';
+	const types = consentMap[ Object.keys( event.detail )[ 0 ] ];
+	const state =
+		Object.values( event.detail )[ 0 ] === 'allow' ? 'granted' : 'denied';
 
-    if ( types !== undefined ) {
-        types.forEach( ( type ) => {
-            consentUpdate[ type ] = state;
-        } );
+	if ( types !== undefined ) {
+		types.forEach( ( type ) => {
+			consentUpdate[ type ] = state;
+		} );
 
-        if ( Object.keys( consentUpdate ).length > 0 ) {
-            gtag(
-                'consent',
-                'update',
-                consentUpdate
-            );
-        }
-    }
+		if ( Object.keys( consentUpdate ).length > 0 ) {
+			window.gtag( 'consent', 'update', consentUpdate );
+		}
+	}
 } );
 
 if ( document.readyState === 'loading' ) {
-    document.addEventListener( "DOMContentLoaded", setCurrentConsentState );
+	document.addEventListener( 'DOMContentLoaded', setCurrentConsentState );
 } else {
-    setCurrentConsentState();
+	setCurrentConsentState();
 }
