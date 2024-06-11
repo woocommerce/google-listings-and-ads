@@ -204,6 +204,16 @@ class GLAChannelTest extends UnitTest {
 		$this->assertEquals( [], $channel->get_supported_campaign_types() );
 	}
 
+	public function test_get_campaigns_returns_empty_if_filter_is_disabled() {
+		remove_filter( 'woocommerce_gla_enable_mcm', '__return_true' );
+		$this->ads->expects( $this->once() )->method( 'ads_id_exists' )->willReturn( true );
+		$this->ads_campaign
+			->expects( $this->never() )
+			->method( 'get_campaigns' );
+
+		$this->assertEmpty( $this->gla_channel->get_campaigns() );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
