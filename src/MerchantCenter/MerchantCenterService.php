@@ -132,9 +132,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * @since x.x.x
 	 */
 	public function should_push(): bool {
-		/** @var NotificationsService $notifications_service */
-		$notifications_service = $this->container->get( NotificationsService::class );
-		return $this->is_ready_for_syncing() && ! $notifications_service->is_ready();
+		return $this->is_ready_for_syncing();
 	}
 
 
