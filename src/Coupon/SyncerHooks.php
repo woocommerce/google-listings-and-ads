@@ -226,7 +226,6 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $coupon_id
 	 */
 	protected function handle_pre_delete_coupon( int $coupon_id ) {
-
 		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
 
 		if ( $coupon instanceof WC_Coupon &&

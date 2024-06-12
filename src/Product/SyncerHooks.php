@@ -340,7 +340,6 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_pre_delete_product( int $product_id ) {
-
 		$product = $this->wc->maybe_get_product( $product_id );
 
 		// each variation is passed to this method separately so we don't need to delete the variable product
