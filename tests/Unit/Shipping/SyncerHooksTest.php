@@ -217,7 +217,7 @@ class SyncerHooksTest extends UnitTest {
 		$this->shipping_notification_job->expects( $this->once() )
 			->method( 'schedule' );
 
-		$this->update_shipping_job->expects( $this->never() )
+		$this->update_shipping_job->expects( $this->once() )
 			->method( 'schedule' );
 
 		$zone = new WC_Shipping_Zone();

@@ -197,7 +197,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	public function test_create_coupon_triggers_notification_created() {
 		$this->set_mc_and_notifications( true, true );
-		$this->update_coupon_job->expects( $this->never() )
+		$this->update_coupon_job->expects( $this->exactly( 1 ) )
 			->method( 'schedule' );
 
 		/**
@@ -220,7 +220,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	public function test_update_coupon_triggers_notification_updated() {
 		$this->set_mc_and_notifications( true, true );
-		$this->update_coupon_job->expects( $this->never() )
+		$this->update_coupon_job->expects( $this->exactly( 1 ) )
 			->method( 'schedule' );
 		/**
 		 * @var WC_Coupon $coupon
