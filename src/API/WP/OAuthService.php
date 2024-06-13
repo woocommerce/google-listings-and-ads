@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
-use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -12,8 +12,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Jetpack;
 use Jetpack_Options;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -24,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WP
  */
-class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInterface {
+class OAuthService implements Service, OptionsAwareInterface, Deactivateable, ContainerAwareInterface {
 
 	use OptionsAwareTrait;
 	use UtilitiesTrait;
@@ -151,12 +153,22 @@ class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInte
 			'user_id' => get_current_user_id(),
 		];
 
-		$response = Client::remote_request( $args );
+		$response = $this->container->get( Jetpack::class )->remote_request( $args );
 
 		if ( is_wp_error( $response ) ) {
-			throw new Exception( $response->get_error_message(), $response->get_error_code() );
+			throw new Exception( $response->get_error_message() );
 		} else {
+			$this->container->get( AccountService::class )->reset_wpcom_api_authorization_data();
 			return wp_remote_retrieve_body( $response );
 		}
+	}
+
+	/**
+	 * Deactivate the service.
+	 *
+	 * Revoke token on deactivation.
+	 */
+	public function deactivate(): void {
+		$this->revoke_wpcom_api_auth();
 	}
 }
