@@ -183,7 +183,6 @@ class SyncerHooks implements Service, Registerable {
 
 		if ( $this->notifications_service->is_ready() ) {
 			$this->handle_update_coupon_notification( $coupon );
-			return;
 		}
 
 		// Schedule an update job if product sync is enabled.
@@ -227,10 +226,6 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $coupon_id
 	 */
 	protected function handle_pre_delete_coupon( int $coupon_id ) {
-		if ( $this->notifications_service->is_ready() ) {
-			return;
-		}
-
 		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
 
 		if ( $coupon instanceof WC_Coupon &&
@@ -271,7 +266,6 @@ class SyncerHooks implements Service, Registerable {
 	protected function handle_delete_coupon( int $coupon_id ) {
 		if ( $this->notifications_service->is_ready() ) {
 			$this->maybe_send_delete_notification( $coupon_id );
-			return;
 		}
 
 		if ( ! isset( $this->delete_requests_map[ $coupon_id ] ) ) {
