@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC as WCProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Jetpack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use wpdb;
 
@@ -32,6 +33,7 @@ class ProxyServiceProvider extends AbstractServiceProvider {
 		Tracks::class       => true,
 		GoogleGtagJs::class => true,
 		WP::class           => true,
+		Jetpack::class      => true,
 		WCProxy::class      => true,
 	];
 
