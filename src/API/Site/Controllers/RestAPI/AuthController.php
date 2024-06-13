@@ -118,7 +118,6 @@ class AuthController extends BaseController {
 		return function ( Request $request ) {
 			try {
 				$this->oauth_service->revoke_wpcom_api_auth();
-				$this->account_service->reset_wpcom_api_authorization_data();
 				return $this->prepare_item_for_response( [], $request );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
