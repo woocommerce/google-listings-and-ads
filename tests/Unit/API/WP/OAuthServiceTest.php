@@ -3,14 +3,18 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\WP;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Jetpack;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use PHPUnit\Framework\MockObject\MockObject;
+use WP_Error;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -43,6 +47,16 @@ class OAuthServiceTest extends UnitTest {
 	 */
 	protected $options;
 
+	/**
+	 * @var Jetpack|MockObject
+	 */
+	protected $jp;
+
+	/**
+	 * @var AccountService|MockObject
+	 */
+	protected $account_service;
+
 
 	protected const DUMMY_BLOG_ID   = '123';
 	protected const DUMMY_ADMIN_URL = 'https://admin-example.com/wp-admin/';
@@ -52,9 +66,11 @@ class OAuthServiceTest extends UnitTest {
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->container  = new Container();
-		$this->middleware = $this->createMock( Middleware::class );
-		$this->options    = $this->createMock( OptionsInterface::class );
+		$this->container       = new Container();
+		$this->middleware      = $this->createMock( Middleware::class );
+		$this->options         = $this->createMock( OptionsInterface::class );
+		$this->jp              = $this->createMock( Jetpack::class );
+		$this->account_service = $this->createMock( AccountService::class );
 
 		// Mock the Blog ID from Jetpack.
 		add_filter(
@@ -81,9 +97,37 @@ class OAuthServiceTest extends UnitTest {
 		);
 
 		$this->container->share( Middleware::class, $this->middleware );
+		$this->container->share( Jetpack::class, $this->jp );
+		$this->container->share( AccountService::class, $this->account_service );
 		$this->service = new OAuthService();
 		$this->service->set_options_object( $this->options );
 		$this->service->set_container( $this->container );
+	}
+
+	public function test_deactivation_ok() {
+		$this->assertInstanceOf( Deactivateable::class, $this->service );
+
+		$this->jp->expects( $this->once() )
+			->method( 'remote_request' )->willReturn( [ 'body' => '{"success":true}' ] );
+
+		$this->account_service->expects( $this->once() )
+			->method( 'reset_wpcom_api_authorization_data' );
+
+		$this->service->deactivate();
+	}
+
+	public function test_deactivation_with_wp_error() {
+		$this->assertInstanceOf( Deactivateable::class, $this->service );
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'error message' );
+
+		$this->jp->expects( $this->once() )
+			->method( 'remote_request' )->willReturn( new WP_Error( 'error', 'error message' ) );
+
+		$this->account_service->expects( $this->never() )
+			->method( 'reset_wpcom_api_authorization_data' );
+
+		$this->service->deactivate();
 	}
 
 	/**
