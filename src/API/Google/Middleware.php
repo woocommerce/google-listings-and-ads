@@ -670,6 +670,7 @@ class Middleware implements OptionsAwareInterface {
 	 * @return array An array with the JSON response from the WCS server.
 	 * @throws NotFoundExceptionInterface  When the container was not found.
 	 * @throws ContainerExceptionInterface When an error happens while retrieving the container.
+	 * @throws Exception When the response status is not successful
 	 * @see google-sdi in google/services inside WCS
 	 */
 	public function get_sdi_auth_params() {
