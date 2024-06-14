@@ -151,12 +151,18 @@ class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInte
 			'user_id' => get_current_user_id(),
 		];
 
+		/** @var \WP_HTTP_Requests_Response|\WP_Error $response */
 		$response = Client::remote_request( $args );
 
 		if ( is_wp_error( $response ) ) {
 			throw new Exception( $response->get_error_message(), $response->get_error_code() );
 		} else {
-			return wp_remote_retrieve_body( $response );
+			$body = wp_remote_retrieve_body( $response );
+			if ( 200 !== $response->get_status() ) {
+				throw new Exception( $body['message'] || 'Error revoking access to WPCOM.', $response->get_status() );
+			}
+
+			return $body;
 		}
 	}
 }

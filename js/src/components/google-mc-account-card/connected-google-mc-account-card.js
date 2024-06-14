@@ -226,7 +226,7 @@ const ConnectedGoogleMCAccountCard = ( {
 								'Disable product data fetch',
 								'google-listings-and-ads'
 							) }
-							eventName="gla_mc_account_disconnect_wpcom_rest_api"
+							eventName="gla_disable_product_sync_click"
 							onClick={ openDisableDataFetchModal }
 						/>
 					) }
