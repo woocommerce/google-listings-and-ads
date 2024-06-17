@@ -5,7 +5,7 @@
  * Description: Native integration with Google that allows merchants to easily display their products across Google’s network.
  * Version: 2.7.2
  * Author: WooCommerce
- * Author URI: https://woo.com/
+ * Author URI: https://woocommerce.com/
  * Text Domain: google-listings-and-ads
  * Requires at least: 5.9
  * Tested up to: 6.5
