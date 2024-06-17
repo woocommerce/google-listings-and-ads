@@ -156,7 +156,7 @@ class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInte
 		if ( is_wp_error( $request ) ) {
 			throw new Exception( $request->get_error_message(), $request->get_error_code() );
 		} else {
-			$body =  wp_remote_retrieve_body( $request );
+			$body   = wp_remote_retrieve_body( $request );
 			$status = wp_remote_retrieve_response_code( $request );
 			if ( 200 !== wp_remote_retrieve_response_code( $request ) ) {
 				$data = json_decode( $body, true );
