@@ -183,6 +183,12 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 						'value' => $this->shipping_time_query->get_all_shipping_times(),
 					];
 
+					$data[] = [
+						'id'    => 'language',
+						'label' => 'Store language',
+						'value' => get_locale(),
+					];
+
 					$response->set_data( array_values( $data ) );
 				}
 
