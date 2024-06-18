@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.7.3 - 2024-06-18 =
+* Fix - Fatal error when loading campaign in the marketing overview section.
+* Tweak -  Replace woo.com references with woocommerce.com.
+
 = 2.7.2 - 2024-06-10 =
 * Add - Google Ads account invitation acceptance step to the connection process.
 * Fix - Show tracking snapshots in WPCLI.
