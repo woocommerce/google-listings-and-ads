@@ -8,20 +8,20 @@
 
 A native integration with Google offering free listings and Performance Max ads to WooCommerce merchants.
 
--   [Woo.com product page](https://woo.com/products/google-listings-and-ads/)
+-   [WooCommerce.com product page](https://woocommerce.com/products/google-listings-and-ads/)
 -   [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)
--   [User documentation](https://woo.com/document/google-listings-and-ads/)
--   [Feature requests](https://woo.com/feature-requests/google-listings-and-ads/)
+-   [User documentation](https://woocommerce.com/document/google-listings-and-ads/)
+-   [Feature requests](https://woocommerce.com/feature-requests/google-listings-and-ads/)
 
 ## Support
 
 This repository is not suitable for support. Please don't use our issue tracker for support requests.
 
-For self help, start with our [user documentation](https://woo.com/document/google-listings-and-ads/).
+For self help, start with our [user documentation](https://woocommerce.com/document/google-listings-and-ads/).
 
 The best place to get support is the [WordPress.org Google Listings and Ads forum](https://wordpress.org/support/plugin/google-listings-and-ads/).
 
-If you have a Woo.com account, you can [start a chat or open a ticket on Woo.com](https://woo.com/my-account/contact-support/).
+If you have a WooCommerce.com account, you can [start a chat or open a ticket on WooCommerce.com](https://woocommerce.com/my-account/contact-support/).
 
 ## Prerequisites
 
@@ -197,6 +197,6 @@ Going forward, Google will always add the prefix "legacy-" for the branch suppor
 
 <p align="center">
 	<br/><br/>
-	Made with 💜 by <a href="https://woo.com/">Woo</a>.<br/>
-	<a href="https://woo.com/careers/">We're hiring</a>! Come work with us!
+	Made with 💜 by <a href="https://woocommerce.com/">Woo</a>.<br/>
+	<a href="https://woocommerce.com/careers/">We're hiring</a>! Come work with us!
 </p>
