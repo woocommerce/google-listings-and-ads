@@ -160,7 +160,7 @@ class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInte
 			$status = wp_remote_retrieve_response_code( $request );
 			if ( 200 !== wp_remote_retrieve_response_code( $request ) ) {
 				$data = json_decode( $body, true );
-				throw new Exception( $data['message'] ?? "Error revoking access to WPCOM.", $status );
+				throw new Exception( $data['message'] ?? 'Error revoking access to WPCOM.', $status );
 			}
 
 			return $body;
