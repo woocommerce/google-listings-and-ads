@@ -184,8 +184,8 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 					];
 
 					$data[] = [
-						'id'    => 'language',
-						'label' => 'Store language',
+						'id'    => 'gla_language',
+						'label' => 'Google Listings and Ads: Store language',
 						'value' => get_locale(),
 					];
 
