@@ -322,6 +322,8 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			}
 		}
 
+		$data['meta_data'] = array_values( $data['meta_data'] );
+
 		$response->set_data( $data );
 
 		return $response;
