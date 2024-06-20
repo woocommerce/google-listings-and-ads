@@ -91,6 +91,11 @@ const webpackConfig = {
 			'js/src/gtag-events',
 			'index.js'
 		),
+		'wp-consent-api': path.resolve(
+			process.cwd(),
+			'js/src/wp-consent-api',
+			'index.js'
+		),
 	} ),
 	output: {
 		...defaultConfig.output,

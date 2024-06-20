@@ -191,9 +191,23 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		$this->assets_handler->register( $gtag_events );
 
+		$wp_consent_api = new ScriptWithBuiltDependenciesAsset(
+			'gla-wp-consent-api',
+			'js/build/wp-consent-api',
+			"{$this->get_root_dir()}/js/build/wp-consent-api.asset.php",
+			new BuiltScriptDependencyArray(
+				[
+					'dependencies' => [ 'wp-consent-api' ],
+					'version'      => $this->get_version(),
+				]
+			)
+		);
+
+		$this->assets_handler->register( $wp_consent_api );
+
 		add_action(
 			'wp_footer',
-			function () use ( $gtag_events ) {
+			function () use ( $gtag_events, $wp_consent_api ) {
 				$gtag_events->add_localization(
 					'glaGtagData',
 					[
@@ -204,6 +218,10 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 				$this->register_js_for_fast_refresh_dev();
 				$this->assets_handler->enqueue( $gtag_events );
+
+				if ( ! class_exists( '\WC_Google_Gtag_JS' ) && function_exists( 'wp_has_consent' ) ) {
+					$this->assets_handler->enqueue( $wp_consent_api );
+				}
 			}
 		);
 	}
@@ -293,6 +311,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				ad_user_data: 'denied',
 				ad_personalization: 'denied',
 				region: ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS', 'IE', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'GB', 'CH'],
+				wait_for_update: 500,
 			} );";
 		/**
 		 * Filters the default gtag consent mode configuration.
