@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
@@ -37,6 +38,9 @@ class MerchantCenterServiceTest extends UnitTest {
 
 	/** @var MockObject|AddressUtility $address_utility */
 	protected $address_utility;
+
+	/** @var MockObject|AdsService $ads_service */
+	protected $ads_service;
 
 	/** @var MockObject|ContactInformation $contact_information */
 	protected $contact_information;
@@ -91,6 +95,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 		$this->address_utility        = $this->createMock( AddressUtility::class );
+		$this->ads_service            = $this->createMock( AdsService::class );
 		$this->contact_information    = $this->createMock( ContactInformation::class );
 		$this->google_helper          = $this->createMock( GoogleHelper::class );
 		$this->merchant               = $this->createMock( Merchant::class );
@@ -107,6 +112,7 @@ class MerchantCenterServiceTest extends UnitTest {
 
 		$this->container = new Container();
 		$this->container->share( AddressUtility::class, $this->address_utility );
+		$this->container->share( AdsService::class, $this->ads_service );
 		$this->container->share( ContactInformation::class, $this->contact_information );
 		$this->container->share( GoogleHelper::class, $this->google_helper );
 		$this->container->share( Merchant::class, $this->merchant );
@@ -404,6 +410,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	public function test_get_setup_status_step_product_listings() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
+		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
@@ -429,6 +436,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	public function test_get_setup_status_step_store_requirements() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
+		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
@@ -458,6 +466,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	public function test_get_setup_status_shipping_selected_rates() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
+		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],
@@ -501,6 +510,7 @@ class MerchantCenterServiceTest extends UnitTest {
 	public function test_get_setup_status_step_paid_ads() {
 		$this->options->method( 'get_merchant_id' )->willReturn( 1234 );
 		$this->merchant_account_state->method( 'last_incomplete_step' )->willReturn( '' );
+		$this->ads_service->method( 'connected_account' )->willReturn( true );
 		$this->options->method( 'get' )
 			->withConsecutive(
 				[ OptionsInterface::MC_SETUP_COMPLETED_AT, false ],

@@ -31,6 +31,7 @@ import {
 	fetchGoogleAdsAccount,
 	fetchGoogleAdsAccountBillingStatus,
 	fetchExistingGoogleAdsAccounts,
+	fetchGoogleAdsAccountStatus,
 	receiveGoogleMCContactInformation,
 	fetchTargetAudience,
 	fetchMCSetup,
@@ -519,3 +520,17 @@ export function* getTour( tourId ) {
 		);
 	}
 }
+
+export function* getGoogleAdsAccountStatus() {
+	yield fetchGoogleAdsAccountStatus();
+}
+
+/**
+ * Refresh account status if Google Ads account is updated.
+ *
+ * @param {Object} action The performed action
+ * @return {boolean} True if the action should be invalidated
+ */
+getGoogleAdsAccountStatus.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS;
+};

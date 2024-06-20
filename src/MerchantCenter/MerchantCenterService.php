@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
@@ -33,6 +34,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * ContainerAware used to access:
  * - AddressUtility
+ * - AdsService
  * - ContactInformation
  * - Merchant
  * - MerchantAccountState
@@ -225,7 +227,11 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		}
 
 		$step = 'accounts';
-		if ( $this->connected_account() ) {
+
+		if (
+			$this->connected_account() &&
+			$this->container->get( AdsService::class )->connected_account()
+		) {
 			$step = 'product_listings';
 
 			if ( $this->saved_target_audience() && $this->saved_shipping_and_tax_options() ) {

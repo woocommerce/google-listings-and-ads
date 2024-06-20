@@ -72,9 +72,18 @@ class GLAChannel implements MarketingChannelInterface {
 		$this->product_sync_stats = $product_sync_stats;
 		$this->campaign_types     = [];
 
-		if ( apply_filters( 'woocommerce_gla_enable_mcm', false ) === true ) {
+		if ( $this->is_mcm_enabled() ) {
 			$this->campaign_types = $this->generate_campaign_types();
 		}
+	}
+
+	/**
+	 * Determines if the multichannel marketing is enabled.
+	 *
+	 * @return bool
+	 */
+	protected function is_mcm_enabled(): bool {
+		return apply_filters( 'woocommerce_gla_enable_mcm', false ) === true;
 	}
 
 	/**
@@ -176,7 +185,7 @@ class GLAChannel implements MarketingChannelInterface {
 	 * @return MarketingCampaign[]
 	 */
 	public function get_campaigns(): array {
-		if ( ! $this->ads->ads_id_exists() ) {
+		if ( ! $this->ads->ads_id_exists() || ! $this->is_mcm_enabled() ) {
 			return [];
 		}
 

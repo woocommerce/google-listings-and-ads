@@ -62,4 +62,15 @@ class AdsService implements OptionsAwareInterface, Service {
 		$google_connected = boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) );
 		return $google_connected && $this->is_setup_complete();
 	}
+
+	/**
+	 * Determine whether the Ads account is connected, even when pending billing.
+	 *
+	 * @return bool
+	 */
+	public function connected_account(): bool {
+		$id        = $this->options->get_ads_id();
+		$last_step = $this->account_state->last_incomplete_step();
+		return $id && ( $last_step === '' || $last_step === 'billing' );
+	}
 }

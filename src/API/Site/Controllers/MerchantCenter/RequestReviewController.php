@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -33,12 +34,14 @@ class RequestReviewController extends BaseOptionsController {
 	 *
 	 * @param RESTServer            $server
 	 * @param Middleware            $middleware
+	 * @param Merchant              $merchant
 	 * @param RequestReviewStatuses $request_review_statuses
 	 * @param TransientsInterface   $transients
 	 */
-	public function __construct( RESTServer $server, Middleware $middleware, RequestReviewStatuses $request_review_statuses, TransientsInterface $transients ) {
+	public function __construct( RESTServer $server, Middleware $middleware, Merchant $merchant, RequestReviewStatuses $request_review_statuses, TransientsInterface $transients ) {
 		parent::__construct( $server );
 		$this->middleware              = $middleware;
+		$this->merchant                = $merchant;
 		$this->request_review_statuses = $request_review_statuses;
 		$this->transients              = $transients;
 	}
@@ -128,7 +131,7 @@ class RequestReviewController extends BaseOptionsController {
 					throw new Exception( __( 'Your account is not eligible for a new request review.', 'google-listings-and-ads' ), 400 );
 				}
 
-				$this->middleware->account_request_review( $account_review_status['reviewEligibleRegions'] );
+				$this->account_request_review( $account_review_status['reviewEligibleRegions'] );
 				return $this->set_under_review_status();
 
 			} catch ( Exception $e ) {
@@ -254,11 +257,80 @@ class RequestReviewController extends BaseOptionsController {
 		$review_status = $this->get_cached_review_status();
 
 		if ( is_null( $review_status ) ) {
-			$response      = $this->middleware->get_account_review_status();
+			$response      = $this->get_account_review_status();
 			$review_status = $this->request_review_statuses->get_statuses_from_response( $response );
 			$this->set_cached_review_status( $review_status );
 		}
 
 		return $review_status;
+	}
+
+	/**
+	 * Get Account Review Status
+	 *
+	 * @return array the response data
+	 * @throws Exception When there is an invalid response.
+	 */
+	public function get_account_review_status() {
+		try {
+			if ( ! $this->middleware->is_subaccount() ) {
+				return [];
+			}
+
+			$response = $this->merchant->get_account_review_status();
+			do_action( 'woocommerce_gla_request_review_response', $response );
+			return $response;
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+			throw new Exception(
+				$e->getMessage() ?? __( 'Error getting account review status.', 'google-listings-and-ads' ),
+				$e->getCode()
+			);
+		}
+	}
+
+
+	/**
+	 * Request a new account review
+	 *
+	 * @param array $regions Regions to request a review.
+	 * @return array With a successful message
+	 * @throws Exception When there is an invalid response.
+	 */
+	public function account_request_review( $regions ) {
+		try {
+
+			// For each region we request a new review
+			foreach ( $regions as $region_code => $region_types ) {
+
+				$result = $this->merchant->account_request_review( $region_code, $region_types );
+
+				if ( 200 !== $result->getStatusCode() ) {
+					do_action(
+						'woocommerce_gla_request_review_failure',
+						[
+							'error'       => 'response',
+							'region_code' => $region_code,
+							'response'    => $result,
+						]
+					);
+					do_action( 'woocommerce_gla_guzzle_invalid_response', $result, __METHOD__ );
+					$error = $response['message'] ?? __( 'Invalid response getting requesting a new review.', 'google-listings-and-ads' );
+					throw new Exception( $error, $result->getStatusCode() );
+				}
+			}
+
+			// Otherwise, return a successful message and update the account status
+			return [
+				'message' => __( 'A new review has been successfully requested', 'google-listings-and-ads' ),
+			];
+
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+			throw new Exception(
+				$e->getMessage() ?? __( 'Error requesting a new review.', 'google-listings-and-ads' ),
+				$e->getCode()
+			);
+		}
 	}
 }

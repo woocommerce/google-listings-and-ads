@@ -11,9 +11,12 @@ import { useState } from '@wordpress/element';
 import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
+import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
+	FILTER_ONBOARDING,
+	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
 
 /**
@@ -24,6 +27,11 @@ import {
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
+
+	useEventPropertiesFilter( FILTER_ONBOARDING, {
+		context: CONTEXT_ADS_ONBOARDING,
+		step,
+	} );
 
 	// Allow the users to go backward only, not forward.
 	// Users can only go forward by clicking on the Continue button.

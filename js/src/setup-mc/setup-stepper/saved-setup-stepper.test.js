@@ -47,7 +47,6 @@ import { recordEvent } from '@woocommerce/tracks';
  * Internal dependencies
  */
 import SavedSetupStepper from './saved-setup-stepper';
-import { addBaseEventProperties as withBaseProperties } from '.~/utils/tracks';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from '.~/components/free-listings/setup-free-listings';
 import StoreRequirements from './store-requirements';
@@ -94,30 +93,18 @@ describe( 'SavedSetupStepper', () => {
 			continueUntilStep4();
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 3 );
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				1,
-				'gla_setup_mc',
-				withBaseProperties( {
-					action: 'go-to-step2',
-					triggered_by: 'step1-continue-button',
-				} )
-			);
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				2,
-				'gla_setup_mc',
-				withBaseProperties( {
-					action: 'go-to-step3',
-					triggered_by: 'step2-continue-button',
-				} )
-			);
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				3,
-				'gla_setup_mc',
-				withBaseProperties( {
-					action: 'go-to-step4',
-					triggered_by: 'step3-continue-button',
-				} )
-			);
+			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_mc', {
+				action: 'go-to-step2',
+				triggered_by: 'step1-continue-button',
+			} );
+			expect( recordEvent ).toHaveBeenNthCalledWith( 2, 'gla_setup_mc', {
+				action: 'go-to-step3',
+				triggered_by: 'step2-continue-button',
+			} );
+			expect( recordEvent ).toHaveBeenNthCalledWith( 3, 'gla_setup_mc', {
+				action: 'go-to-step4',
+				triggered_by: 'step3-continue-button',
+			} );
 		} );
 
 		it( 'Should record events after clicking step navigation buttons', async () => {
@@ -133,30 +120,18 @@ describe( 'SavedSetupStepper', () => {
 			await userEvent.click( step1 );
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 3 );
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				1,
-				'gla_setup_mc',
-				withBaseProperties( {
-					action: 'go-to-step3',
-					triggered_by: 'stepper-step3-button',
-				} )
-			);
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				2,
-				'gla_setup_mc',
-				withBaseProperties( {
-					action: 'go-to-step2',
-					triggered_by: 'stepper-step2-button',
-				} )
-			);
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				3,
-				'gla_setup_mc',
-				withBaseProperties( {
-					action: 'go-to-step1',
-					triggered_by: 'stepper-step1-button',
-				} )
-			);
+			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_mc', {
+				action: 'go-to-step3',
+				triggered_by: 'stepper-step3-button',
+			} );
+			expect( recordEvent ).toHaveBeenNthCalledWith( 2, 'gla_setup_mc', {
+				action: 'go-to-step2',
+				triggered_by: 'stepper-step2-button',
+			} );
+			expect( recordEvent ).toHaveBeenNthCalledWith( 3, 'gla_setup_mc', {
+				action: 'go-to-step1',
+				triggered_by: 'stepper-step1-button',
+			} );
 
 			// Step 4 -> Step 2
 			continueUntilStep4();
@@ -166,14 +141,10 @@ describe( 'SavedSetupStepper', () => {
 			await userEvent.click( step2 );
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 1 );
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				1,
-				'gla_setup_mc',
-				withBaseProperties( {
-					action: 'go-to-step2',
-					triggered_by: 'stepper-step2-button',
-				} )
-			);
+			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_mc', {
+				action: 'go-to-step2',
+				triggered_by: 'stepper-step2-button',
+			} );
 		} );
 	} );
 } );
