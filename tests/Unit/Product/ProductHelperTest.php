@@ -1127,66 +1127,76 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		/**
 		 * @var WC_Product $product
 		 */
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
-		$this->assertTrue( $this->product_helper->is_ready_to_notify( $product ) );
+		$product    = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
+		$product_id = $product->get_id();
+
+		$this->assertTrue( $this->product_helper->is_ready_to_notify( $product_id ) );
 
 		$product->set_status( 'draft' );
 		$product->save();
-		$this->assertFalse( $this->product_helper->is_ready_to_notify( $product ) );
+		$this->assertFalse( $this->product_helper->is_ready_to_notify( $product_id ) );
 
 		$product->set_status( 'publish' );
 		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
 		$product->save();
-		$this->assertFalse( $this->product_helper->is_ready_to_notify( $product ) );
+		$this->assertFalse( $this->product_helper->is_ready_to_notify( $product_id ) );
 	}
 
 	public function test_should_trigger_create_notification() {
 		/**
 		 * @var WC_Product $product
 		 */
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
-		$this->assertTrue( $this->product_helper->should_trigger_create_notification( $product ) );
+		$product    = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
+		$product_id = $product->get_id();
+
+		$this->assertTrue( $this->product_helper->should_trigger_create_notification( $product_id ) );
 
 		$product->set_status( 'draft' );
 		$product->save();
-		$this->assertFalse( $this->product_helper->should_trigger_create_notification( $product ) );
+		$this->assertFalse( $this->product_helper->should_trigger_create_notification( $product_id ) );
 
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
+		$product    = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
+		$product_id = $product->get_id();
 		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
-		$this->assertFalse( $this->product_helper->should_trigger_create_notification( $product ) );
+		$this->assertFalse( $this->product_helper->should_trigger_create_notification( $product_id ) );
 	}
 
 	public function test_should_trigger_update_notification() {
 		/**
 		 * @var WC_Product $product
 		 */
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
+		$product    = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
+		$product_id = $product->get_id();
+
 		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
-		$this->assertTrue( $this->product_helper->should_trigger_update_notification( $product ) );
+		$this->assertTrue( $this->product_helper->should_trigger_update_notification( $product_id ) );
 
 		$product->set_status( 'draft' );
 		$product->save();
-		$this->assertFalse( $this->product_helper->should_trigger_update_notification( $product ) );
+		$this->assertFalse( $this->product_helper->should_trigger_update_notification( $product_id ) );
 
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
+		$product    = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
+		$product_id = $product->get_id();
 		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_DELETED );
-		$this->assertFalse( $this->product_helper->should_trigger_update_notification( $product ) );
+		$this->assertFalse( $this->product_helper->should_trigger_update_notification( $product_id ) );
 	}
 
 	public function test_should_trigger_delete_notification() {
 		/**
 		 * @var WC_Product $product
 		 */
-		$product = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
+		$product    = $this->get_notification_ready_product( WC_Helper_Product::create_simple_product() );
+		$product_id = $product->get_id();
+
 		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
-		$this->assertFalse( $this->product_helper->should_trigger_delete_notification( $product ) );
+		$this->assertFalse( $this->product_helper->should_trigger_delete_notification( $product_id ) );
 
 		$product->set_status( 'draft' );
 		$product->save();
-		$this->assertTrue( $this->product_helper->should_trigger_delete_notification( $product ) );
+		$this->assertTrue( $this->product_helper->should_trigger_delete_notification( $product_id ) );
 
 		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_DELETED );
-		$this->assertFalse( $this->product_helper->should_trigger_delete_notification( $product ) );
+		$this->assertFalse( $this->product_helper->should_trigger_delete_notification( $product_id ) );
 	}
 
 	/**

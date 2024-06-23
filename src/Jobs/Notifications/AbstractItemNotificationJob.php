@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 
 defined( 'ABSPATH' ) || exit;
@@ -48,7 +49,12 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 * @param string $status
 	 */
 	protected function set_status( int $item_id, string $status ): void {
-		$item = $this->get_item( $item_id );
+		try {
+			$item = $this->get_item( $item_id );
+		} catch ( InvalidValue $e ) {
+			return;
+		}
+
 		$this->get_helper()->set_notification_status( $item, $status );
 	}
 
@@ -78,14 +84,12 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 * @return bool
 	 */
 	protected function can_process( int $item_id, string $topic ): bool {
-		$item = $this->get_item( $item_id );
-
 		if ( $this->is_create_topic( $topic ) ) {
-			return $this->get_helper()->should_trigger_create_notification( $item );
+			return $this->get_helper()->should_trigger_create_notification( $item_id );
 		} elseif ( $this->is_delete_topic( $topic ) ) {
-			return $this->get_helper()->should_trigger_delete_notification( $item );
+			return $this->get_helper()->should_trigger_delete_notification( $item_id );
 		} else {
-			return $this->get_helper()->should_trigger_update_notification( $item );
+			return $this->get_helper()->should_trigger_update_notification( $item_id );
 		}
 	}
 
@@ -93,15 +97,21 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 * Handle the item after the notification.
 	 *
 	 * @param string $topic
-	 * @param int    $item
+	 * @param int    $item_id
 	 */
-	protected function handle_notified( string $topic, int $item ): void {
+	protected function handle_notified( string $topic, int $item_id ): void {
+		try {
+			$item = $this->get_item( $item_id );
+		} catch ( InvalidValue $e ) {
+			return;
+		}
+
 		if ( $this->is_delete_topic( $topic ) ) {
-			$this->get_helper()->mark_as_unsynced( $this->get_item( $item ) );
+			$this->get_helper()->mark_as_unsynced( $item );
 		}
 
 		if ( $this->is_create_topic( $topic ) ) {
-			$this->get_helper()->mark_as_notified( $this->get_item( $item ) );
+			$this->get_helper()->mark_as_notified( $item );
 		}
 	}
 

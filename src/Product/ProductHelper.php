@@ -388,11 +388,17 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	 * Indicates if a product is ready for sending Notifications.
 	 * A product is ready to send notifications if DONT_SYNC_AND_SHOW is not enabled and the post status is publish.
 	 *
-	 * @param WC_Product $product
+	 * @param int $product_id
 	 *
 	 * @return bool
 	 */
-	public function is_ready_to_notify( WC_Product $product ): bool {
+	public function is_ready_to_notify( int $product_id ): bool {
+		try {
+			$product = $this->get_wc_product( $product_id );
+		} catch ( InvalidValue $e ) {
+			return false;
+		}
+
 		$is_ready = ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_channel_visibility( $product ) &&
 			$product->get_status() === 'publish' &&
 			in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true );
@@ -412,47 +418,53 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	 * Indicates if a product is ready for sending a create Notification.
 	 * A product is ready to send create notifications if is ready to notify and has not sent create notification yet.
 	 *
-	 * @param WC_Product $product
+	 * @param int $product_id
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_create_notification( $product ): bool {
-		return $this->is_ready_to_notify( $product ) && ! $this->has_notified_creation( $product );
+	public function should_trigger_create_notification( int $product_id ): bool {
+		return $this->is_ready_to_notify( $product_id ) && ! $this->has_notified_creation( $product_id );
 	}
 
 	/**
 	 * Indicates if a product is ready for sending an update Notification.
 	 * A product is ready to send update notifications if is ready to notify and has sent create notification already.
 	 *
-	 * @param WC_Product $product
+	 * @param int $product_id
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_update_notification( $product ): bool {
-		return $this->is_ready_to_notify( $product ) && $this->has_notified_creation( $product );
+	public function should_trigger_update_notification( int $product_id ): bool {
+		return $this->is_ready_to_notify( $product_id ) && $this->has_notified_creation( $product_id );
 	}
 
 	/**
 	 * Indicates if a product is ready for sending a delete Notification.
 	 * A product is ready to send delete notifications if it is not ready to notify and has sent create notification already.
 	 *
-	 * @param WC_Product $product
+	 * @param int $product_id
 	 *
 	 * @return bool
 	 */
-	public function should_trigger_delete_notification( $product ): bool {
-		return ! $this->is_ready_to_notify( $product ) && $this->has_notified_creation( $product );
+	public function should_trigger_delete_notification( int $product_id ): bool {
+		return ! $this->is_ready_to_notify( $product_id ) && $this->has_notified_creation( $product_id );
 	}
 
 	/**
 	 * Indicates if a product was already notified about its creation.
 	 * Notice we consider synced products in MC as notified for creation.
 	 *
-	 * @param WC_Product $product
+	 * @param int $product_id
 	 *
 	 * @return bool
 	 */
-	public function has_notified_creation( WC_Product $product ): bool {
+	public function has_notified_creation( int $product_id ): bool {
+		try {
+			$product = $this->get_wc_product( $product_id );
+		} catch ( InvalidValue $e ) {
+			return true; // Sent true for forcing delete notification as the product doesn't exist anymore.
+		}
+
 		$valid_has_notified_creation_statuses = [
 			NotificationStatus::NOTIFICATION_CREATED,
 			NotificationStatus::NOTIFICATION_UPDATED,
