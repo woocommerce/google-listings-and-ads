@@ -193,7 +193,7 @@ Going forward, Google will always add the prefix "legacy-" for the branch suppor
 
 - [Usage Tracking](./src/Tracking/README.md)
 - [Hooks defined or used in GLA](./src/Hooks/README.md)
-- [gtag consent mode](./docs/gtag-consent-mode.md)
+- [gtag consent mode & cookie banners](./docs/gtag-consent-mode.md)
 
 <p align="center">
 	<br/><br/>
