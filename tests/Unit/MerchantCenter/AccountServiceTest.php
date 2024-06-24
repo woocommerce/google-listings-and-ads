@@ -118,20 +118,20 @@ class AccountServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->ads               = $this->createMock( Ads::class );
-		$this->cleanup_synced    = $this->createMock( CleanupSyncedProducts::class );
-		$this->merchant          = $this->createMock( Merchant::class );
-		$this->mc_service        = $this->createMock( MerchantCenterService::class );
-		$this->issue_table       = $this->createMock( MerchantIssueTable::class );
-		$this->merchant_statuses = $this->createMock( MerchantStatuses::class );
-		$this->middleware        = $this->createMock( Middleware::class );
-		$this->site_verification = $this->createMock( SiteVerification::class );
-		$this->rate_table        = $this->createMock( ShippingRateTable::class );
-		$this->time_table        = $this->createMock( ShippingTimeTable::class );
-		$this->state             = $this->createMock( MerchantAccountState::class );
-		$this->ads_state         = $this->createMock( AdsAccountState::class );
-		$this->options           = $this->createMock( OptionsInterface::class );
-		$this->transients        = $this->createMock( TransientsInterface::class );
+		$this->ads                   = $this->createMock( Ads::class );
+		$this->cleanup_synced        = $this->createMock( CleanupSyncedProducts::class );
+		$this->merchant              = $this->createMock( Merchant::class );
+		$this->mc_service            = $this->createMock( MerchantCenterService::class );
+		$this->issue_table           = $this->createMock( MerchantIssueTable::class );
+		$this->merchant_statuses     = $this->createMock( MerchantStatuses::class );
+		$this->middleware            = $this->createMock( Middleware::class );
+		$this->site_verification     = $this->createMock( SiteVerification::class );
+		$this->rate_table            = $this->createMock( ShippingRateTable::class );
+		$this->time_table            = $this->createMock( ShippingTimeTable::class );
+		$this->state                 = $this->createMock( MerchantAccountState::class );
+		$this->ads_state             = $this->createMock( AdsAccountState::class );
+		$this->options               = $this->createMock( OptionsInterface::class );
+		$this->transients            = $this->createMock( TransientsInterface::class );
 		$this->notifications_service = $this->createMock( NotificationsService::class );
 
 		$this->container = new Container();
