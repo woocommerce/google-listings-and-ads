@@ -25,6 +25,6 @@ class AdsAccountState extends AccountState {
 	 * @return string[]
 	 */
 	protected function account_creation_steps(): array {
-		return [ 'set_id', 'billing', 'link_merchant', 'conversion_action' ];
+		return [ 'set_id', 'account_access', 'conversion_action', 'link_merchant', 'billing' ];
 	}
 }

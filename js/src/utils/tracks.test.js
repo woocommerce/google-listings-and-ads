@@ -26,6 +26,11 @@ function updateAdsId( adsId ) {
 }
 
 describe( 'tracks', () => {
+	beforeAll( () => {
+		// Simulate that the version has been hydrated via the initialization of .~/data/index.js
+		dispatch( STORE_KEY ).hydratePrefetchedData( { version: '1.2.3' } );
+	} );
+
 	beforeEach( () => {
 		recordEvent.mockClear();
 		queueRecordEvent.mockClear();

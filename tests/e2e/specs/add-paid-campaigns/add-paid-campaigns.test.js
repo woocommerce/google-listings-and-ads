@@ -132,7 +132,7 @@ test.describe( 'Set up Ads account', () => {
 
 			await expect(
 				page.getByText(
-					'Connect with millions of shoppers who are searching for products like yours and drive sales with Google.'
+					'Required to set up conversion measurement and create campaigns.'
 				)
 			).toBeVisible();
 
@@ -165,34 +165,67 @@ test.describe( 'Set up Ads account', () => {
 			).toBeEnabled();
 		} );
 
-		test( 'Create Ads account', async () => {
-			//Intercept Ads connection request
+		test( 'Create an Ads account', async () => {
+			// Intercept Ads connection request.
 			const connectAdsAccountRequest =
 				setupAdsAccounts.registerConnectAdsAccountRequests();
 
-			await setupAdsAccounts.mockAdsAccountsResponse( [
-				ADS_ACCOUNTS[ 1 ],
-			] );
+			await setupAdsAccounts.mockAdsAccountsResponse( ADS_ACCOUNTS );
 
-			//Mock request to fulfill Ads connection
-			setupAdsAccounts.fulfillAdsConnection( {
-				id: ADS_ACCOUNTS[ 1 ].id,
-				currency: 'EUR',
-				symbol: '\u20ac',
-				status: 'connected',
+			// Mock request to fulfill Ads connection.
+			await setupAdsAccounts.fulfillAdsConnection( {
+				id: ADS_ACCOUNTS[ 0 ].id,
+				currency: 'USD',
+				symbol: '$',
+				status: 'incomplete',
+				step: 'account_access',
 			} );
+
+			await setupAdsAccounts.mockAdsStatusNotClaimed();
 
 			await setupAdsAccounts.getCreateAdsAccountButtonModal().click();
 
 			await connectAdsAccountRequest;
 
+			const modal = setupAdsAccounts.getAcceptAccountModal();
+			await expect( modal ).toBeVisible();
+		} );
+
+		test( 'Show Unclaimed Ads account', async () => {
+			await setupAdsAccounts.clickCloseAcceptAccountButtonFromModal();
+
+			const claimButton = setupAdsAccounts.getAdsClaimAccountButton();
+			const claimText = setupAdsAccounts.getAdsClaimAccountText();
+
+			await expect( claimButton ).toBeVisible();
+			await expect( claimText ).toBeVisible();
+
+			await expect( setupAdsAccounts.getContinueButton() ).toBeDisabled();
+		} );
+
+		test( 'Show Claimed Ads account', async () => {
+			// Intercept Ads connection request.
+			await setupAdsAccounts.fulfillAdsConnection( {
+				id: ADS_ACCOUNTS[ 0 ].id,
+				currency: 'USD',
+				symbol: '$',
+				status: 'connected',
+				step: '',
+			} );
+
+			await setupAdsAccounts.mockAdsStatusClaimed();
+
+			await page.reload();
+
 			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 
 			await expect(
 				page.getByRole( 'link', {
-					name: `Account ${ ADS_ACCOUNTS[ 1 ].id }`,
+					name: `Account ${ ADS_ACCOUNTS[ 0 ].id }`,
 				} )
 			).toBeVisible();
+
+			await expect( setupAdsAccounts.getContinueButton() ).toBeEnabled();
 		} );
 	} );
 
@@ -206,6 +239,7 @@ test.describe( 'Set up Ads account', () => {
 				symbol: '\u20ac',
 				status: 'disconnected',
 			} );
+
 			await page.reload();
 		} );
 
@@ -357,6 +391,11 @@ test.describe( 'Set up Ads account', () => {
 
 	test.describe( 'Set up billing', () => {
 		test.describe( 'Billing status is not approved', () => {
+			test.beforeAll( async () => {
+				await setupBudgetPage.fulfillBillingStatusRequest( {
+					status: 'pending',
+				} );
+			} );
 			test( 'It should say that the billing is not setup', async () => {
 				await page.getByRole( 'button', { name: 'Continue' } ).click();
 				await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
@@ -386,6 +425,7 @@ test.describe( 'Set up Ads account', () => {
 				await checkBillingAdsPopup( page );
 			} );
 		} );
+
 		test.describe( 'Billing status is approved', async () => {
 			test.beforeAll( async () => {
 				await setupBudgetPage.fulfillBillingStatusRequest( {

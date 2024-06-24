@@ -129,7 +129,7 @@ class Ads implements OptionsAwareInterface {
 	 * @throws Exception When a link is unavailable.
 	 */
 	public function accept_merchant_link( int $merchant_id ) {
-		$link        = $this->get_merchant_link( $merchant_id );
+		$link        = $this->get_merchant_link( $merchant_id, 3 );
 		$link_status = $link->getStatus();
 		if ( $link_status === ProductLinkInvitationStatus::ACCEPTED ) {
 			return;
@@ -267,6 +267,32 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Update the OCID for the account so that we can reference it later in order
+	 * to link to accept invite link or to send customer to conversion settings page
+	 * in their account.
+	 *
+	 * @param string $url Billing flow URL.
+	 *
+	 * @return bool
+	 */
+	public function update_ocid_from_billing_url( string $url ): bool {
+		$query_string = wp_parse_url( $url, PHP_URL_QUERY );
+
+		// Return if no params.
+		if ( empty( $query_string ) ) {
+			return false;
+		}
+
+		parse_str( $query_string, $params );
+
+		if ( empty( $params['ocid'] ) ) {
+			return false;
+		}
+
+		return $this->options->update( OptionsInterface::ADS_ACCOUNT_OCID, $params['ocid'] );
+	}
+
+	/**
 	 * Fetch the account details.
 	 * Returns null for any account that fails or is not the right type.
 	 *
@@ -299,12 +325,17 @@ class Ads implements OptionsAwareInterface {
 	/**
 	 * Get the link from a merchant account.
 	 *
+	 * The invitation link may not be available in Google Ads immediately after
+	 * the invitation is sent from Google Merchant Center, so this method offers
+	 * a parameter to specify the number of retries.
+	 *
 	 * @param int $merchant_id Merchant Center account id.
+	 * @param int $attempts_left The number of attempts left to get the link.
 	 *
 	 * @return ProductLinkInvitation
 	 * @throws Exception When the merchant link hasn't been created.
 	 */
-	private function get_merchant_link( int $merchant_id ): ProductLinkInvitation {
+	private function get_merchant_link( int $merchant_id, int $attempts_left = 0 ): ProductLinkInvitation {
 		$res = ( new AdsProductLinkInvitationQuery() )
 			->set_client( $this->client, $this->options->get_ads_id() )
 			->where( 'product_link_invitation.status', [ ProductLinkInvitationStatus::name( ProductLinkInvitationStatus::ACCEPTED ), ProductLinkInvitationStatus::name( ProductLinkInvitationStatus::PENDING_APPROVAL ) ], 'IN' )
@@ -317,6 +348,10 @@ class Ads implements OptionsAwareInterface {
 			if ( absint( $mc_id ) === $merchant_id ) {
 				return $link;
 			}
+		}
+
+		if ( $attempts_left > 0 ) {
+			return $this->get_merchant_link( $merchant_id, $attempts_left - 1 );
 		}
 
 		throw new Exception( __( 'Merchant link is not available to accept', 'google-listings-and-ads' ) );

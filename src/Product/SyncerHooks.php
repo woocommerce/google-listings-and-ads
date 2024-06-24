@@ -215,7 +215,6 @@ class SyncerHooks implements Service, Registerable {
 
 		if ( $this->notifications_service->is_ready() ) {
 			$this->handle_update_product_notification( $products[0] );
-			return;
 		}
 
 		foreach ( $products as $product ) {
@@ -304,7 +303,6 @@ class SyncerHooks implements Service, Registerable {
 	protected function handle_delete_product( int $product_id ) {
 		if ( $this->notifications_service->is_ready() ) {
 			$this->maybe_send_delete_notification( $product_id );
-			return;
 		}
 
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
@@ -342,10 +340,6 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_pre_delete_product( int $product_id ) {
-		if ( $this->notifications_service->is_ready() ) {
-			return;
-		}
-
 		$product = $this->wc->maybe_get_product( $product_id );
 
 		// each variation is passed to this method separately so we don't need to delete the variable product

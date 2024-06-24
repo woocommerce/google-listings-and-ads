@@ -11,12 +11,16 @@ import { createInterpolateElement, useState } from '@wordpress/element';
 import AppModal from '.~/components/app-modal';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
+import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
+import { FILTER_ONBOARDING } from '.~/utils/tracks';
 import './index.scss';
 
 /**
  * Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
  *
  * @event gla_ads_account_create_button_click
+ * @property {string} [context] Indicates the place where the button is located.
+ * @property {string} [step] Indicates the step in the onboarding process.
  */
 
 /**
@@ -34,6 +38,7 @@ const TermsModal = ( {
 	onRequestClose = () => {},
 } ) => {
 	const [ agree, setAgree ] = useState( false );
+	const getEventProps = useEventPropertiesFilter( FILTER_ONBOARDING );
 
 	const handleCreateAccountClick = () => {
 		onCreateAccount();
@@ -53,6 +58,7 @@ const TermsModal = ( {
 					isPrimary
 					disabled={ ! agree }
 					eventName="gla_ads_account_create_button_click"
+					eventProps={ getEventProps() }
 					onClick={ handleCreateAccountClick }
 				>
 					{ __( 'Create account', 'google-listings-and-ads' ) }

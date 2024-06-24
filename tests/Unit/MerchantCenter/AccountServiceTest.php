@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -16,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -36,6 +38,9 @@ defined( 'ABSPATH' ) || exit;
 class AccountServiceTest extends UnitTest {
 
 	use MerchantTrait;
+
+	/** @var MockObject|Ads $ads */
+	protected $ads;
 
 	/** @var MockObject|CleanupSyncedProducts $cleanup_synced */
 	protected $cleanup_synced;
@@ -70,6 +75,9 @@ class AccountServiceTest extends UnitTest {
 	/** @var MockObject|MerchantAccountState $state */
 	protected $state;
 
+	/** @var MockObject|AdsAccountState $ads_state */
+	protected $ads_state;
+
 	/** @var MockObject|TransientsInterface $transients */
 	protected $transients;
 
@@ -84,6 +92,7 @@ class AccountServiceTest extends UnitTest {
 
 	protected const TEST_ACCOUNT_ID     = 12345678;
 	protected const TEST_OLD_ACCOUNT_ID = 23456781;
+	protected const TEST_ADS_ID         = 1234567890;
 	protected const TEST_ACCOUNTS       = [
 		[
 			'id'         => self::TEST_ACCOUNT_ID,
@@ -109,21 +118,24 @@ class AccountServiceTest extends UnitTest {
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->cleanup_synced        = $this->createMock( CleanupSyncedProducts::class );
-		$this->merchant              = $this->createMock( Merchant::class );
-		$this->mc_service            = $this->createMock( MerchantCenterService::class );
-		$this->issue_table           = $this->createMock( MerchantIssueTable::class );
-		$this->merchant_statuses     = $this->createMock( MerchantStatuses::class );
-		$this->middleware            = $this->createMock( Middleware::class );
-		$this->site_verification     = $this->createMock( SiteVerification::class );
-		$this->rate_table            = $this->createMock( ShippingRateTable::class );
-		$this->time_table            = $this->createMock( ShippingTimeTable::class );
-		$this->state                 = $this->createMock( MerchantAccountState::class );
-		$this->options               = $this->createMock( OptionsInterface::class );
-		$this->transients            = $this->createMock( TransientsInterface::class );
+		$this->ads               = $this->createMock( Ads::class );
+		$this->cleanup_synced    = $this->createMock( CleanupSyncedProducts::class );
+		$this->merchant          = $this->createMock( Merchant::class );
+		$this->mc_service        = $this->createMock( MerchantCenterService::class );
+		$this->issue_table       = $this->createMock( MerchantIssueTable::class );
+		$this->merchant_statuses = $this->createMock( MerchantStatuses::class );
+		$this->middleware        = $this->createMock( Middleware::class );
+		$this->site_verification = $this->createMock( SiteVerification::class );
+		$this->rate_table        = $this->createMock( ShippingRateTable::class );
+		$this->time_table        = $this->createMock( ShippingTimeTable::class );
+		$this->state             = $this->createMock( MerchantAccountState::class );
+		$this->ads_state         = $this->createMock( AdsAccountState::class );
+		$this->options           = $this->createMock( OptionsInterface::class );
+		$this->transients        = $this->createMock( TransientsInterface::class );
 		$this->notifications_service = $this->createMock( NotificationsService::class );
 
 		$this->container = new Container();
+		$this->container->share( Ads::class, $this->ads );
 		$this->container->share( CleanupSyncedProducts::class, $this->cleanup_synced );
 		$this->container->share( Merchant::class, $this->merchant );
 		$this->container->share( MerchantCenterService::class, $this->mc_service );
@@ -134,6 +146,7 @@ class AccountServiceTest extends UnitTest {
 		$this->container->share( ShippingRateTable::class, $this->rate_table );
 		$this->container->share( ShippingTimeTable::class, $this->time_table );
 		$this->container->share( MerchantAccountState::class, $this->state );
+		$this->container->share( AdsAccountState::class, $this->ads_state );
 		$this->container->share( TransientsInterface::class, $this->transients );
 		$this->container->share( TransientsInterface::class, $this->transients );
 		$this->container->share( NotificationsService::class, $this->notifications_service );
@@ -596,6 +609,84 @@ class AccountServiceTest extends UnitTest {
 			->with( OptionsInterface::CLAIMED_URL_HASH );
 
 		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->switch_url( self::TEST_ACCOUNT_ID ) );
+	}
+
+	public function test_setup_account_step_link_ads() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ADS_ID );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->merchant->expects( $this->once() )
+			->method( 'link_ads_id' )
+			->with( self::TEST_ADS_ID );
+
+		$this->ads->expects( $this->once() )
+			->method( 'accept_merchant_link' )
+			->with( self::TEST_ACCOUNT_ID );
+
+		$this->assertEquals( self::TEST_ACCOUNT_DATA, $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+	}
+
+	public function test_setup_account_step_link_ads_without_ads() {
+		$mc_account_state = [
+			'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+		];
+
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( 0 );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn( $mc_account_state );
+
+		$this->state->expects( $this->once() )
+			->method( 'update' )
+			->with( $mc_account_state );
+
+		$this->middleware->expects( $this->never() )
+			->method( 'link_ads_account' );
+
+		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account( self::TEST_ACCOUNT_ID ) );
+	}
+
+	public function test_setup_account_step_link_ads_without_mc() {
+		$this->options->expects( $this->any() )
+			->method( 'get_ads_id' )
+			->willReturn( self::TEST_ADS_ID );
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( 0 );
+
+		$this->state->expects( $this->once() )
+			->method( 'get' )
+			->willReturn(
+				[
+					'link_ads' => [ 'status' => MerchantAccountState::STEP_PENDING ],
+				]
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'A Merchant Center account must be connected' );
+
+		$this->account->setup_account( self::TEST_ACCOUNT_ID );
 	}
 
 	public function test_switch_url_invalid() {
