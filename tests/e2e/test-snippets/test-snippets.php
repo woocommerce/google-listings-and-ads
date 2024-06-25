@@ -15,14 +15,18 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Snippets;
  */
 add_filter(
 	'woocommerce_gla_gtag_consent',
-	function( $old_config ) {
-		return "gtag( 'consent', 'default', {
-			analytics_storage: 'granted',
-			ad_storage: 'granted',
-			ad_user_data: 'granted',
-			ad_personalization: 'granted',
-		} );
-		";
+	function ( $old_config ) {
+		$status = 'granted';
+		// Optional: Set the default consent state for tests via the `consent_default` URL parameter.
+		if ( isset( $_GET['consent_default'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$status = sanitize_text_field( wp_unslash( $_GET['consent_default'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+		return sprintf( 'gtag( "consent", "default", {
+			analytics_storage: "%1$s",
+			ad_storage: "%1$s",
+			ad_user_data: "%1$s",
+			ad_personalization: "%1$s",
+		} );', $status);
 	}
 );
 
