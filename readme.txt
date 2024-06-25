@@ -111,6 +111,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.7.4 - 2024-06-25 =
+* Add - Integration with the WP Consent API plugin.
+* Dev - Add E2E tests for WP Consent API integration.
+* Tweak - Add docs note about WP Consent API integration.
+
 = 2.7.3 - 2024-06-18 =
 * Fix - Fatal error when loading campaign in the marketing overview section.
 * Tweak -  Replace woo.com references with woocommerce.com.
