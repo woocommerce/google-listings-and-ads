@@ -124,9 +124,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Enable users to seamlessly set up conversion tracking, without having to set up merchant center first or requiring campaign creation.
 * Update - Move the Google Ads account connection process from step 4 to step 1 of the onboarding flow.
 
-= 2.7.1 - 2024-05-29 =
-* Dev - Add info about  Legacy Google Ads API Client Library  in Readme.
-* Fix - Prevent PHP Warning when Statistics is null.
-* Update - Implement Account Request Review Requests in the extension.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
