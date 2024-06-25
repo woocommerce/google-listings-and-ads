@@ -109,7 +109,8 @@ const CreatePaidAdsCampaign = () => {
 			return;
 		}
 
-		getHistory().push( getDashboardUrl() );
+		// Add a query param `campaign=saved` to the dashboard URL to indicate that the campaign was successfully created and saved.
+		getHistory().push( getDashboardUrl( { campaign: 'saved' } ) );
 	};
 
 	if ( ! initialCountryCodes ) {
