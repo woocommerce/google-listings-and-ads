@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.5
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.7.4
+Stable tag: 2.7.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.7.5 - 2024-06-26 =
+* Add - Add an query parameter `campaign=saved` to the dashboard URL after the campaign was created.
+
 = 2.7.4 - 2024-06-25 =
 * Add - Integration with the WP Consent API plugin.
 * Dev - Add E2E tests for WP Consent API integration.
@@ -119,14 +122,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 = 2.7.3 - 2024-06-18 =
 * Fix - Fatal error when loading campaign in the marketing overview section.
 * Tweak -  Replace woo.com references with woocommerce.com.
-
-= 2.7.2 - 2024-06-10 =
-* Add - Google Ads account invitation acceptance step to the connection process.
-* Fix - Show tracking snapshots in WPCLI.
-* Tweak - Adjust click event tracking when connecting, disconnecting, and opening billing setup for Google Ads account.
-* Tweak - Adjust event tracking for the creating and claim buttons of Google Ads account.
-* Tweak - WC 9.0 compatibility.
-* Update - Enable users to seamlessly set up conversion tracking, without having to set up merchant center first or requiring campaign creation.
-* Update - Move the Google Ads account connection process from step 4 to step 1 of the onboarding flow.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
