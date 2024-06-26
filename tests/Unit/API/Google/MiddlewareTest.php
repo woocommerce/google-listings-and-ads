@@ -388,4 +388,41 @@ class MiddlewareTest extends UnitTest {
 		$this->assertFalse( $tos->accepted() );
 		$this->assertEquals( 'Please reconnect your Jetpack account.', $tos->message() );
 	}
+
+	public function test_get_sdi_auth_endpoint() {
+		$this->assertEquals(
+			$this->middleware->get_sdi_auth_endpoint(),
+			'https://connect-server.test/google/google-sdi/v1/credentials/partners/WOO_COMMERCE/merchants/example.org/oauth/redirect:generate?merchant_id=0'
+		);
+	}
+
+	public function test_get_sdi_auth_params() {
+		$expected_response = [
+			'clientId'    => self::TEST_MERCHANT_ID,
+			'redirectUri' => 'https://example.com',
+			'nonce'       => '123',
+		];
+
+		$this->generate_request_mock( $expected_response );
+		$this->assertEquals( $this->middleware->get_sdi_auth_params(), $expected_response );
+	}
+
+	public function test_get_sdi_auth_params_no_success() {
+		$this->generate_request_mock( [], 'get', 400 );
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Invalid response authenticating partner app.' );
+		$this->middleware->get_sdi_auth_params();
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_partner_app_auth_failure' ) );
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_guzzle_invalid_response' ) );
+	}
+
+	public function test_get_sdi_auth_params_exception() {
+		$this->generate_request_mock_exception( 'Some exception.' );
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 400 );
+		$this->expectExceptionMessage( 'Error authenticating Google Partner APP.' );
+		$this->middleware->get_sdi_auth_params();
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_guzzle_client_exception' ) );
+	}
 }

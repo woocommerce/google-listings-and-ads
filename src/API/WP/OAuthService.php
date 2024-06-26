@@ -3,11 +3,17 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
+use Automattic\Jetpack\Connection\Client;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -19,12 +25,14 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WP
  */
-class OAuthService implements Service, OptionsAwareInterface {
+class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInterface {
 
 	use OptionsAwareTrait;
 	use UtilitiesTrait;
+	use ContainerAwareTrait;
 
-	public const AUTH_URL      = 'https://public-api.wordpress.com/oauth2/authorize';
+	public const WPCOM_API_URL = 'https://public-api.wordpress.com';
+	public const AUTH_URL      = '/oauth2/authorize';
 	public const RESPONSE_TYPE = 'code';
 	public const SCOPE         = 'wc-partner-access';
 
@@ -66,6 +74,7 @@ class OAuthService implements Service, OptionsAwareInterface {
 	 * @param string $path A URL parameter for the path within GL&A page, which will be added in the merchant redirect URL.
 	 *
 	 * @return string Auth URL.
+	 * @throws ContainerExceptionInterface When get_data_from_google throws an exception.
 	 */
 	public function get_auth_url( string $path ): string {
 		$google_data = $this->get_data_from_google();
@@ -91,7 +100,7 @@ class OAuthService implements Service, OptionsAwareInterface {
 					'scope'         => self::SCOPE,
 					'state'         => $state,
 				],
-				self::AUTH_URL
+				$this->get_wpcom_api_url( self::AUTH_URL )
 			)
 		);
 
@@ -99,23 +108,65 @@ class OAuthService implements Service, OptionsAwareInterface {
 	}
 
 	/**
-	 * Calls an API by Google to get required information in order to form an auth URL.
+	 * Get a WPCOM REST API URl concatenating the endpoint with the API Domain
 	 *
-	 * TODO: Call an actual API by Google.
-	 * We'd probably need use WCS to communicate with the new API.
+	 * @param string $endpoint The endpoint to get the URL for
+	 *
+	 * @return string The WPCOM endpoint with the domain.
+	 */
+	protected function get_wpcom_api_url( string $endpoint ): string {
+		return self::WPCOM_API_URL . $endpoint;
+	}
+
+	/**
+	 * Calls an API by Google via WCS to get required information in order to form an auth URL.
 	 *
 	 * @return array{client_id: string, redirect_uri: string, nonce: string} An associative array contains required information that is retrived from Google.
 	 * client_id:    Google's WPCOM app client ID, will be used to form the authorization URL.
 	 * redirect_uri: A Google's URL that will be redirected to when the merchant approve the app access. Note that it needs to be matched with the Google WPCOM app client settings.
 	 * nonce:        A string returned by Google that we will put it in the auth URL and the redirect_uri. Google will use it to verify the call.
+	 * @throws ContainerExceptionInterface When get_sdi_auth_params throws an exception.
 	 */
 	protected function get_data_from_google(): array {
-		$nonce = 'nonce-123';
+		/** @var Middleware $middleware */
+		$middleware = $this->container->get( Middleware::class );
+		$response   = $middleware->get_sdi_auth_params();
+		$nonce      = $response['nonce'];
 		$this->options->update( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE, $nonce );
 		return [
-			'client_id'    => '91299',
-			'redirect_uri' => 'https://woo.com',
+			'client_id'    => $response['clientId'],
+			'redirect_uri' => $response['redirectUri'],
 			'nonce'        => $nonce,
 		];
+	}
+
+	/**
+	 * Perform a remote request for revoking OAuth access for the current user.
+	 *
+	 * @return string The body of the response
+	 * @throws Exception If the remote request fails.
+	 */
+	public function revoke_wpcom_api_auth(): string {
+		$args = [
+			'method'  => 'DELETE',
+			'timeout' => 30,
+			'url'     => $this->get_wpcom_api_url( '/wpcom/v2/sites/' . Jetpack_Options::get_option( 'id' ) . '/wc/partners/google/revoke-token' ),
+			'user_id' => get_current_user_id(),
+		];
+
+		$request = Client::remote_request( $args );
+
+		if ( is_wp_error( $request ) ) {
+			throw new Exception( $request->get_error_message(), 400 );
+		} else {
+			$body   = wp_remote_retrieve_body( $request );
+			$status = wp_remote_retrieve_response_code( $request );
+			if ( 200 !== wp_remote_retrieve_response_code( $request ) ) {
+				$data = json_decode( $body, true );
+				throw new Exception( $data['message'] ?? 'Error revoking access to WPCOM.', $status );
+			}
+
+			return $body;
+		}
 	}
 }

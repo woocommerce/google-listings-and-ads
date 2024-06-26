@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -21,16 +22,19 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
  */
 const EnableNewProductSyncButton = ( params ) => {
 	const { createNotice } = useDispatchCoreNotices();
-
+	const [ loading, setLoading ] = useState( false );
 	const nextPageName = glaData.mcSetupComplete ? 'settings' : 'setup-mc';
 	const query = { next_page_name: nextPageName };
 	const path = addQueryArgs( `${ API_NAMESPACE }/rest-api/authorize`, query );
 	const [ fetchRestAPIAuthorize ] = useApiFetchCallback( { path } );
 	const handleEnableClick = async () => {
 		try {
+			setLoading( true );
 			const d = await fetchRestAPIAuthorize();
+			setLoading( false );
 			window.location.href = d.auth_url;
 		} catch ( error ) {
+			setLoading( false );
 			createNotice(
 				'error',
 				__(
@@ -42,7 +46,12 @@ const EnableNewProductSyncButton = ( params ) => {
 	};
 
 	return (
-		<AppButton isSecondary onClick={ handleEnableClick } { ...params } />
+		<AppButton
+			isSecondary
+			loading={ loading }
+			onClick={ handleEnableClick }
+			{ ...params }
+		/>
 	);
 };
 

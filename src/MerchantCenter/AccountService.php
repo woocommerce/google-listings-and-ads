@@ -15,7 +15,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ApiNotReady;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -536,7 +535,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 *
 	 * @return bool
 	 */
-	public function reset_wpcom_api_authorization(): bool {
+	public function reset_wpcom_api_authorization_data(): bool {
 		$this->delete_wpcom_api_auth_nonce();
 		return $this->options->delete( OptionsInterface::WPCOM_REST_API_STATUS );
 	}
