@@ -64,8 +64,8 @@ export const getSetupMCUrl = () => {
 	return getNewPath( null, setupMCPath, null );
 };
 
-export const getDashboardUrl = () => {
-	return getNewPath( null, dashboardPath, null );
+export const getDashboardUrl = ( query = null ) => {
+	return getNewPath( query, dashboardPath, null );
 };
 
 /**
