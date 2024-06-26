@@ -111,6 +111,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.7.5 - 2024-06-26 =
+* Add - Add an query parameter `campaign=saved` to the dashboard URL after the campaign was created.
+
 = 2.7.4 - 2024-06-25 =
 * Add - Integration with the WP Consent API plugin.
 * Dev - Add E2E tests for WP Consent API integration.
