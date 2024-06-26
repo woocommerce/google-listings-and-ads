@@ -120,13 +120,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Fatal error when loading campaign in the marketing overview section.
 * Tweak -  Replace woo.com references with woocommerce.com.
 
-= 2.7.2 - 2024-06-10 =
-* Add - Google Ads account invitation acceptance step to the connection process.
-* Fix - Show tracking snapshots in WPCLI.
-* Tweak - Adjust click event tracking when connecting, disconnecting, and opening billing setup for Google Ads account.
-* Tweak - Adjust event tracking for the creating and claim buttons of Google Ads account.
-* Tweak - WC 9.0 compatibility.
-* Update - Enable users to seamlessly set up conversion tracking, without having to set up merchant center first or requiring campaign creation.
-* Update - Move the Google Ads account connection process from step 4 to step 1 of the onboarding flow.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
