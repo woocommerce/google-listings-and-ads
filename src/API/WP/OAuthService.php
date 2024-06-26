@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
 use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
@@ -73,6 +74,7 @@ class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInte
 	 * @param string $path A URL parameter for the path within GL&A page, which will be added in the merchant redirect URL.
 	 *
 	 * @return string Auth URL.
+	 * @throws ContainerExceptionInterface When get_data_from_google throws an exception.
 	 */
 	public function get_auth_url( string $path ): string {
 		$google_data = $this->get_data_from_google();
@@ -123,6 +125,7 @@ class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInte
 	 * client_id:    Google's WPCOM app client ID, will be used to form the authorization URL.
 	 * redirect_uri: A Google's URL that will be redirected to when the merchant approve the app access. Note that it needs to be matched with the Google WPCOM app client settings.
 	 * nonce:        A string returned by Google that we will put it in the auth URL and the redirect_uri. Google will use it to verify the call.
+	 * @throws ContainerExceptionInterface When get_sdi_auth_params throws an exception.
 	 */
 	protected function get_data_from_google(): array {
 		/** @var Middleware $middleware */
@@ -154,7 +157,7 @@ class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInte
 		$request = Client::remote_request( $args );
 
 		if ( is_wp_error( $request ) ) {
-			throw new Exception( $request->get_error_message(), $request->get_error_code() );
+			throw new Exception( $request->get_error_message(), 400 );
 		} else {
 			$body   = wp_remote_retrieve_body( $request );
 			$status = wp_remote_retrieve_response_code( $request );
