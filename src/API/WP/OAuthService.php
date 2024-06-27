@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\WP;
 
-use Automattic\Jetpack\Connection\Client;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities as UtilitiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -12,9 +12,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Exception;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Jetpack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
 use Jetpack_Options;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -25,7 +27,7 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WP
  */
-class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInterface {
+class OAuthService implements Service, OptionsAwareInterface, Deactivateable, ContainerAwareInterface {
 
 	use OptionsAwareTrait;
 	use UtilitiesTrait;
@@ -154,19 +156,30 @@ class OAuthService implements Service, OptionsAwareInterface, ContainerAwareInte
 			'user_id' => get_current_user_id(),
 		];
 
-		$request = Client::remote_request( $args );
+		$request = $this->container->get( Jetpack::class )->remote_request( $args );
 
 		if ( is_wp_error( $request ) ) {
 			throw new Exception( $request->get_error_message(), 400 );
 		} else {
 			$body   = wp_remote_retrieve_body( $request );
 			$status = wp_remote_retrieve_response_code( $request );
-			if ( 200 !== wp_remote_retrieve_response_code( $request ) ) {
+
+			if ( ! $status || $status !== 200 ) {
 				$data = json_decode( $body, true );
 				throw new Exception( $data['message'] ?? 'Error revoking access to WPCOM.', $status );
 			}
 
+			$this->container->get( AccountService::class )->reset_wpcom_api_authorization_data();
 			return $body;
 		}
+	}
+
+	/**
+	 * Deactivate the service.
+	 *
+	 * Revoke token on deactivation.
+	 */
+	public function deactivate(): void {
+		$this->revoke_wpcom_api_auth();
 	}
 }
