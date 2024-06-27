@@ -21,7 +21,6 @@ import { recordEvent } from '@woocommerce/tracks';
  * Internal dependencies
  */
 import AdsStepper from './';
-import { addBaseEventProperties as withBaseProperties } from '.~/utils/tracks';
 import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
@@ -60,22 +59,14 @@ describe( 'AdsStepper', () => {
 			continueUntilStep3();
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 2 );
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				1,
-				'gla_setup_ads',
-				withBaseProperties( {
-					action: 'go-to-step2',
-					triggered_by: 'step1-continue-button',
-				} )
-			);
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				2,
-				'gla_setup_ads',
-				withBaseProperties( {
-					action: 'go-to-step3',
-					triggered_by: 'step2-continue-button',
-				} )
-			);
+			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_ads', {
+				action: 'go-to-step2',
+				triggered_by: 'step1-continue-button',
+			} );
+			expect( recordEvent ).toHaveBeenNthCalledWith( 2, 'gla_setup_ads', {
+				action: 'go-to-step3',
+				triggered_by: 'step2-continue-button',
+			} );
 		} );
 
 		it( 'Should record events after clicking step navigation buttons', async () => {
@@ -93,22 +84,14 @@ describe( 'AdsStepper', () => {
 			await userEvent.click( step1 );
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 2 );
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				1,
-				'gla_setup_ads',
-				withBaseProperties( {
-					action: 'go-to-step2',
-					triggered_by: 'stepper-step2-button',
-				} )
-			);
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				2,
-				'gla_setup_ads',
-				withBaseProperties( {
-					action: 'go-to-step1',
-					triggered_by: 'stepper-step1-button',
-				} )
-			);
+			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_ads', {
+				action: 'go-to-step2',
+				triggered_by: 'stepper-step2-button',
+			} );
+			expect( recordEvent ).toHaveBeenNthCalledWith( 2, 'gla_setup_ads', {
+				action: 'go-to-step1',
+				triggered_by: 'stepper-step1-button',
+			} );
 
 			// Step 3 -> Step 1
 			continueUntilStep3();
@@ -118,14 +101,10 @@ describe( 'AdsStepper', () => {
 			await userEvent.click( step1 );
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 1 );
-			expect( recordEvent ).toHaveBeenNthCalledWith(
-				1,
-				'gla_setup_ads',
-				withBaseProperties( {
-					action: 'go-to-step1',
-					triggered_by: 'stepper-step1-button',
-				} )
-			);
+			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_ads', {
+				action: 'go-to-step1',
+				triggered_by: 'stepper-step1-button',
+			} );
 		} );
 	} );
 } );

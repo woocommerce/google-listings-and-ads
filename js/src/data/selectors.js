@@ -400,3 +400,13 @@ export const getStoreCategories = ( state ) => {
 export const getTour = ( state, tourId ) => {
 	return state.tours[ tourId ] || null;
 };
+
+/**
+ * Return object containing properties hasAccess, inviteLink and step for the Google Ads account.
+ *
+ * @param {Object} state The state
+ * @return {Object} The ads status containing the hasAccess, inviteLink and step properties.
+ */
+export const getGoogleAdsAccountStatus = ( state ) => {
+	return state.ads.accountStatus;
+};

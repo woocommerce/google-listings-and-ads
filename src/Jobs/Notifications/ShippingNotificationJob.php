@@ -30,6 +30,6 @@ class ShippingNotificationJob extends AbstractNotificationJob {
 	 * @param array $args Arguments for the notification
 	 */
 	protected function process_items( array $args ): void {
-		$this->notifications_service->notify( $this->notifications_service::TOPIC_SHIPPING_UPDATED );
+		$this->notifications_service->notify( $this->notifications_service::TOPIC_SHIPPING_UPDATED, null, $args );
 	}
 }

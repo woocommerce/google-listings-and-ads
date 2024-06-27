@@ -352,7 +352,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 				)
 			);
 
-		$this->update_products_job->expects( $this->never() )
+		$this->update_products_job->expects( $this->once() )
 			->method( 'schedule' );
 
 		$product->set_status( 'publish' );
@@ -363,7 +363,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$this->set_mc_and_notifications( true, true );
 
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
-		$this->update_products_job->expects( $this->never() )
+		$this->update_products_job->expects( $this->once() )
 			->method( 'schedule' );
 
 		$this->product_notification_job->expects( $this->once() )
@@ -380,10 +380,36 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product->save();
 	}
 
-	public function test_create_product_triggers_notification_delete() {
+	public function test_create_product_triggers_notification_delete_with_a_synced_product() {
 		$this->set_mc_and_notifications( true, true );
 
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_1' ) );
+
+		$this->delete_products_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->product_notification_job->expects( $this->once() )
+			->method( 'schedule' )->with(
+				$this->equalTo(
+					[
+						'item_id' => $product->get_id(),
+						'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
+					]
+				)
+			);
+		$product->set_status( 'publish' );
+		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
+		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
+		$product->save();
+	}
+
+	public function test_create_product_triggers_notification_delete_with_unsynced_product() {
+		$this->set_mc_and_notifications( true, true );
+
+		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+
+		// If the product was not previously synced, there's no need to schedule a delete job.
 		$this->delete_products_job->expects( $this->never() )
 			->method( 'schedule' );
 

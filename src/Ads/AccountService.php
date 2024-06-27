@@ -6,11 +6,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -27,7 +29,9 @@ defined( 'ABSPATH' ) || exit;
  * - Ads
  * - AdsAccountState
  * - AdsConversionAction
+ * - Connection
  * - Merchant
+ * - MerchantAccountState
  * - Middleware
  * - TransientsInterface
  *
@@ -160,12 +164,24 @@ class AccountService implements OptionsAwareInterface, Service {
 						$this->check_billing_status( $account );
 						break;
 
+					case 'conversion_action':
+						$this->create_conversion_action();
+						break;
+
 					case 'link_merchant':
+						// Continue to next step if the MC account is not connected yet.
+						if ( ! $this->options->get_merchant_id() ) {
+							// Save step as pending and continue the foreach loop with `continue 2`.
+							$state[ $name ]['status'] = AdsAccountState::STEP_PENDING;
+							$this->state->update( $state );
+							continue 2;
+						}
+
 						$this->link_merchant_account();
 						break;
 
-					case 'conversion_action':
-						$this->create_conversion_action();
+					case 'account_access':
+						$this->check_ads_account_has_access();
 						break;
 
 					default:
@@ -201,9 +217,83 @@ class AccountService implements OptionsAwareInterface, Service {
 			return [ 'status' => $status ];
 		}
 
+		$billing_url = $this->options->get( OptionsInterface::ADS_BILLING_URL );
+
+		// Check if user has provided the access and ocid is present.
+		$connection_status = $this->container->get( Connection::class )->get_status();
+		$email             = $connection_status['email'] ?? '';
+		$has_access        = $this->container->get( Ads::class )->has_access( $email );
+		$ocid              = $this->options->get( OptionsInterface::ADS_ACCOUNT_OCID, null );
+
+		// Link directly to the payment page if the customer already has access.
+		if ( $has_access ) {
+			$billing_url = add_query_arg(
+				[
+					'ocid' => $ocid ?: 0,
+				],
+				'https://ads.google.com/aw/signup/payment'
+			);
+		}
+
 		return [
 			'status'      => $status,
-			'billing_url' => $this->options->get( OptionsInterface::ADS_BILLING_URL ),
+			'billing_url' => $billing_url,
+		];
+	}
+
+	/**
+	 * Check if the Ads account has access.
+	 *
+	 * @throws ExceptionWithResponseData If the account doesn't have access.
+	 */
+	private function check_ads_account_has_access() {
+		$access_status = $this->get_ads_account_has_access();
+
+		if ( ! $access_status['has_access'] ) {
+			throw new ExceptionWithResponseData(
+				__( 'Account must be accepted before completing setup.', 'google-listings-and-ads' ),
+				428,
+				null,
+				$access_status
+			);
+		}
+	}
+
+	/**
+	 * Gets the Ads account access status.
+	 *
+	 * @return array {
+	 *     Returns the access status, last completed account setup step,
+	 *     and invite link if available.
+	 *
+	 *     @type bool   $has_access  Whether the customer has access to the account.
+	 *     @type string $step        The last completed setup step for the Ads account.
+	 *     @type string $invite_link The URL to the invite link.
+	 * }
+	 */
+	public function get_ads_account_has_access() {
+		$has_access = false;
+
+		// Check if an Ads ID is present.
+		if ( $this->options->get_ads_id() ) {
+			$connection_status = $this->container->get( Connection::class )->get_status();
+			$email             = $connection_status['email'] ?? '';
+		}
+
+		// If no email, means google account is not connected.
+		if ( ! empty( $email ) ) {
+			$has_access = $this->container->get( Ads::class )->has_access( $email );
+		}
+
+		// If we have access, complete the step so that it won't be called next time.
+		if ( $has_access ) {
+			$this->state->complete_step( 'account_access' );
+		}
+
+		return [
+			'has_access'  => $has_access,
+			'step'        => $this->state->last_incomplete_step(),
+			'invite_link' => $this->options->get( OptionsInterface::ADS_BILLING_URL, '' ),
 		];
 	}
 
@@ -212,6 +302,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 */
 	public function disconnect() {
 		$this->options->delete( OptionsInterface::ADS_ACCOUNT_CURRENCY );
+		$this->options->delete( OptionsInterface::ADS_ACCOUNT_OCID );
 		$this->options->delete( OptionsInterface::ADS_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::ADS_BILLING_URL );
 		$this->options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
@@ -252,20 +343,20 @@ class AccountService implements OptionsAwareInterface, Service {
 	/**
 	 * Get the callback function for linking a merchant account.
 	 *
-	 * @throws Exception When the merchant or ads account hasn't been set yet.
+	 * @throws Exception When the ads account hasn't been set yet.
 	 */
 	private function link_merchant_account() {
-		if ( ! $this->options->get_merchant_id() ) {
-			throw new Exception( 'A Merchant Center account must be connected' );
-		}
-
 		if ( ! $this->options->get_ads_id() ) {
 			throw new Exception( 'An Ads account must be connected' );
 		}
 
+		$mc_state = $this->container->get( MerchantAccountState::class );
+
 		// Create link for Merchant and accept it in Ads.
 		$this->container->get( Merchant::class )->link_ads_id( $this->options->get_ads_id() );
 		$this->container->get( Ads::class )->accept_merchant_link( $this->options->get_merchant_id() );
+
+		$mc_state->complete_step( 'link_ads' );
 	}
 
 	/**

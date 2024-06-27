@@ -98,9 +98,9 @@ class ConnectionTest implements Service, Registerable {
 			add_menu_page(
 				'Connection Test',
 				'Connection Test',
-				'manage_options',
+				'manage_woocommerce',
 				'connection-test-admin-page',
-				function() {
+				function () {
 					$this->render_admin_page();
 				}
 			);
@@ -109,9 +109,9 @@ class ConnectionTest implements Service, Registerable {
 				'',
 				'Connection Test',
 				'Connection Test',
-				'manage_options',
+				'manage_woocommerce',
 				'connection-test-admin-page',
-				function() {
+				function () {
 					$this->render_admin_page();
 				}
 			);

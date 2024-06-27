@@ -34,7 +34,7 @@ const HelpIconButton = ( props ) => {
 		<AppIconButton
 			icon={ <GridiconHelpOutline /> }
 			text={ __( 'Help', 'google-listings-and-ads' ) }
-			href="https://woo.com/document/google-listings-and-ads/"
+			href="https://woocommerce.com/document/google-listings-and-ads/"
 			target="_blank"
 			eventName="gla_help_click"
 			eventProps={ {
