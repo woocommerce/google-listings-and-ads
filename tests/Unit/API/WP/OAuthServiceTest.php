@@ -108,7 +108,12 @@ class OAuthServiceTest extends UnitTest {
 		$this->assertInstanceOf( Deactivateable::class, $this->service );
 
 		$this->jp->expects( $this->once() )
-			->method( 'remote_request' )->willReturn( [ 'body' => '{"success":true}' ] );
+			->method( 'remote_request' )->willReturn(
+				[
+					'body'     => '{"success":true}',
+					'response' => [ 'code' => 200 ],
+				]
+			);
 
 		$this->account_service->expects( $this->once() )
 			->method( 'reset_wpcom_api_authorization_data' );
