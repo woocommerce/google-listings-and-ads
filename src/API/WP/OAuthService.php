@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Jetpack;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerExceptionInterface;
 use Jetpack_Options;
 use Exception;
 
@@ -75,6 +76,7 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 	 * @param string $path A URL parameter for the path within GL&A page, which will be added in the merchant redirect URL.
 	 *
 	 * @return string Auth URL.
+	 * @throws ContainerExceptionInterface When get_data_from_google throws an exception.
 	 */
 	public function get_auth_url( string $path ): string {
 		$google_data = $this->get_data_from_google();
@@ -125,6 +127,7 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 	 * client_id:    Google's WPCOM app client ID, will be used to form the authorization URL.
 	 * redirect_uri: A Google's URL that will be redirected to when the merchant approve the app access. Note that it needs to be matched with the Google WPCOM app client settings.
 	 * nonce:        A string returned by Google that we will put it in the auth URL and the redirect_uri. Google will use it to verify the call.
+	 * @throws ContainerExceptionInterface When get_sdi_auth_params throws an exception.
 	 */
 	protected function get_data_from_google(): array {
 		/** @var Middleware $middleware */
@@ -153,13 +156,22 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 			'user_id' => get_current_user_id(),
 		];
 
-		$response = $this->container->get( Jetpack::class )->remote_request( $args );
+		$request = $this->container->get( Jetpack::class )->remote_request( $args );
 
-		if ( is_wp_error( $response ) ) {
-			throw new Exception( $response->get_error_message() );
+		if ( is_wp_error( $request ) ) {
+			throw new Exception( $request->get_error_message(), 400 );
 		} else {
-			$this->container->get( AccountService::class )->reset_wpcom_api_authorization_data();
-			return wp_remote_retrieve_body( $response );
+			$body   = wp_remote_retrieve_body( $request );
+			$status = wp_remote_retrieve_response_code( $request );
+
+			if ( ! $status || $status !== 200 ) {
+				$data = json_decode( $body, true );
+				throw new Exception( $data['message'] ?? 'Error revoking access to WPCOM.', $status );
+			} else {
+				$this->container->get( AccountService::class )->reset_wpcom_api_authorization_data();
+			}
+
+			return $body;
 		}
 	}
 
