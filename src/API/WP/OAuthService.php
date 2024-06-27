@@ -167,10 +167,9 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 			if ( ! $status || $status !== 200 ) {
 				$data = json_decode( $body, true );
 				throw new Exception( $data['message'] ?? 'Error revoking access to WPCOM.', $status );
-			} else {
-				$this->container->get( AccountService::class )->reset_wpcom_api_authorization_data();
 			}
 
+			$this->container->get( AccountService::class )->reset_wpcom_api_authorization_data();
 			return $body;
 		}
 	}
