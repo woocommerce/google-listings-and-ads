@@ -1,4 +1,4 @@
-# Google Listings & Ads
+# Google for WooCommerce
 
 [![PHP Unit Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-unit-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-unit-tests.yml)
 [![JavaScript Unit Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml)
@@ -19,7 +19,7 @@ This repository is not suitable for support. Please don't use our issue tracker 
 
 For self help, start with our [user documentation](https://woo.com/document/google-listings-and-ads/).
 
-The best place to get support is the [WordPress.org Google Listings and Ads forum](https://wordpress.org/support/plugin/google-listings-and-ads/).
+The best place to get support is the [WordPress.org Google for WooCommerce forum](https://wordpress.org/support/plugin/google-listings-and-ads/).
 
 If you have a Woo.com account, you can [start a chat or open a ticket on Woo.com](https://woo.com/my-account/contact-support/).
 

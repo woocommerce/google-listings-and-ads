@@ -10,7 +10,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
  */
 trait AttributesTrait {
 	/**
-	 * Return an array of WooCommerce product types that the Google Listings and Ads tab can be displayed for.
+	 * Return an array of WooCommerce product types that the Google for WooCommerce tab can be displayed for.
 	 *
 	 * @return array of WooCommerce product types (e.g. 'simple', 'variable', etc.)
 	 */

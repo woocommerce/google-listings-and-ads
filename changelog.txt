@@ -1,4 +1,4 @@
-*** WooCommerce Google Listings and Ads Changelog ***
+*** Google for WooCommerce Changelog ***
 
 = 2.7.0 - 2024-05-14 =
 * Fix - Convert `lbs` to `lb` when mapping WC products to Google products.

@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 
 /**
- * Tracks implementation for Google Listings and Ads.
+ * Tracks implementation for Google for WooCommerce.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */

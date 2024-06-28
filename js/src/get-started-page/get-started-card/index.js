@@ -42,7 +42,7 @@ const GetStartedCard = () => {
 					className="gla-get-started-card__title"
 				>
 					{ __(
-						'Get your products in front of more shoppers with Google Listings & Ads',
+						'Get your products in front of more shoppers with Google for WooCommerce',
 						'google-listings-and-ads'
 					) }
 				</Text>

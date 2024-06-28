@@ -53,11 +53,11 @@ const ProductFeed = () => {
 			{ canCESPromptOpen && (
 				<CustomerEffortScorePrompt
 					label={ __(
-						'How easy was it to set up Google Listings & Ads?',
+						'How easy was it to set up Google for WooCommerce?',
 						'google-listings-and-ads'
 					) }
 					secondLabel={ __(
-						'How easy was it to understand the requirements for the Google Listings & Ads setup?',
+						'How easy was it to understand the requirements for the Google for WooCommerce setup?',
 						'google-listings-and-ads'
 					) }
 					eventContext={ GUIDE_NAMES.SUBMISSION_SUCCESS }

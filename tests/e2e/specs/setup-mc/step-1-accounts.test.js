@@ -47,7 +47,7 @@ test.describe( 'Set up accounts', () => {
 
 		await expect(
 			page.getByText(
-				'Connect the accounts required to use Google Listings & Ads.'
+				'Connect the accounts required to use Google for WooCommerce.'
 			)
 		).toBeVisible();
 

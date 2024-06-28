@@ -75,7 +75,7 @@ addFilter(
 		}
 
 		initialBreadcrumbs.push(
-			__( 'Google Listings & Ads', 'google-listings-and-ads' )
+			__( 'Google for WooCommerce', 'google-listings-and-ads' )
 		);
 
 		const pluginAdminPages = [

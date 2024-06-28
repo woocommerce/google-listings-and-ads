@@ -35,8 +35,8 @@ jest.mock( '.~/utils/localStorage', () => {
 jest.mock( '.~/utils/isWCTracksEnabled', () => jest.fn() );
 
 const SUBMISSION_SUCCESS_GUIDE_TEXT =
-	'You’ve successfully set up Google Listings & Ads! 🎉';
-const CES_PROMPT_TEXT = 'How easy was it to set up Google Listings & Ads?';
+	'You’ve successfully set up Google for WooCommerce! 🎉';
+const CES_PROMPT_TEXT = 'How easy was it to set up Google for WooCommerce?';
 
 jest.mock( '.~/components/customer-effort-score-prompt', () => () => (
 	<div>{ CES_PROMPT_TEXT }</div>
