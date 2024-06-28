@@ -2,8 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
 import { TourKit } from '@woocommerce/components';
-import GridIconSpeaker from 'gridicons/dist/speaker';
 
 /**
  * Internal dependencies
@@ -32,16 +32,21 @@ export default function RebrandingTour() {
 				meta: {
 					heading: (
 						<div className="gla-rebranding-tour__heading">
-							<GridIconSpeaker />
-							{ __( 'Heads up', 'google-listings-and-ads' ) }
+							{ __(
+								'New name, same great solution',
+								'google-listings-and-ads'
+							) }
 						</div>
 					),
 					descriptions: {
 						desktop: (
 							<>
-								{ __(
-									'"Google Listings and Ads" is now "Google for WooCommerce".',
-									'google-listings-and-ads'
+								{ createInterpolateElement(
+									__(
+										'Google Listings & Ads is now <strong>Google for WooCommerce</strong>.',
+										'google-listings-and-ads'
+									),
+									{ strong: <strong /> }
 								) }
 							</>
 						),
