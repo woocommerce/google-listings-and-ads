@@ -27,7 +27,8 @@ export default function RebrandingTour() {
 		steps: [
 			{
 				referenceElements: {
-					desktop: '.toplevel_page_woocommerce-marketing .current',
+					desktop:
+						'.toplevel_page_woocommerce-marketing a[href*="google"]',
 				},
 				meta: {
 					heading: (
