@@ -8,11 +8,11 @@ import { screen, within, render } from '@testing-library/react';
  * Internal dependencies
  */
 import AllProgramsTableCard from './';
-import CampaignAssetsTour from './campaign-assets-tour';
+import CampaignAssetsTour from '.~/components/tours/campaign-assets-tour';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useAdsCurrency from '.~/hooks/useAdsCurrency';
 
-jest.mock( './campaign-assets-tour', () =>
+jest.mock( '.~/components/tours/campaign-assets-tour', () =>
 	jest
 		.fn()
 		.mockReturnValue( <div role="dialog" aria-label="tour" /> )

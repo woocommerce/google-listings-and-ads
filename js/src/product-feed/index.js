@@ -18,6 +18,7 @@ import './index.scss';
 import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
 import isWCTracksEnabled from '.~/utils/isWCTracksEnabled';
+import RebrandingTour from '.~/components/tours/rebranding-tour';
 
 const ProductFeed = () => {
 	const [ canCESPromptOpen, setCESPromptOpen ] = useState( false );
@@ -47,6 +48,7 @@ const ProductFeed = () => {
 	return (
 		<>
 			<NavigationClassic />
+			<RebrandingTour />
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
 			{ canCESPromptOpen && (
 				<CustomerEffortScorePrompt

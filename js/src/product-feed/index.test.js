@@ -1,8 +1,12 @@
+jest.mock( '.~/components/tours/rebranding-tour', () =>
+	jest.fn().mockReturnValue( null ).mockName( 'RebrandingTour' )
+);
+
 /**
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { getQuery } from '@woocommerce/navigation';
 
 /**
@@ -12,6 +16,7 @@ import ProductFeed from './index';
 import localStorage from '.~/utils/localStorage';
 import isWCTracksEnabled from '.~/utils/isWCTracksEnabled';
 import { GUIDE_NAMES } from '.~/constants';
+import RebrandingTour from '.~/components/tours/rebranding-tour';
 
 jest.mock( '@woocommerce/navigation', () => {
 	return {
@@ -175,6 +180,28 @@ describe( 'ProductFeed', () => {
 				const { queryByText } = render( <ProductFeed /> );
 				expect( queryByText( CES_PROMPT_TEXT ) ).toBeInTheDocument();
 			} );
+		} );
+	} );
+
+	describe( 'Rebranding Tour', () => {
+		test( 'Not rendered in UI', () => {
+			RebrandingTour.mockImplementation( () => {
+				return null;
+			} );
+
+			render( <ProductFeed /> );
+			const tour = screen.queryByRole( 'dialog', { name: 'tour' } );
+			expect( tour ).not.toBeInTheDocument();
+		} );
+
+		test( 'Rendered in UI', () => {
+			RebrandingTour.mockImplementation( () => {
+				return <div role="dialog" aria-label="tour" />;
+			} );
+
+			render( <ProductFeed /> );
+			const tour = screen.queryByRole( 'dialog', { name: 'tour' } );
+			expect( tour ).toBeInTheDocument();
 		} );
 	} );
 } );
