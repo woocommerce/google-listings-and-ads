@@ -338,7 +338,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		wp_delete_post( $post->ID, true );
 	}
 
-	public function test_create_product_triggers_notification_created() {
+	public function test_create_product_schedules_notification_created() {
 		$this->set_mc_and_notifications( true, true );
 
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
@@ -359,7 +359,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product->save();
 	}
 
-	public function test_create_product_triggers_notification_updated() {
+	public function test_updating_created_product_schedules_notification_updated() {
 		$this->set_mc_and_notifications( true, true );
 
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
@@ -380,7 +380,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product->save();
 	}
 
-	public function test_create_product_triggers_notification_delete_with_a_synced_product() {
+	public function test_unshow_created_product_schedules_notification_delete() {
 		$this->set_mc_and_notifications( true, true );
 
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
@@ -404,7 +404,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product->save();
 	}
 
-	public function test_create_product_triggers_notification_delete_with_unsynced_product() {
+	public function test_unshow_unsynced_created_product_triggers_notification_delete_but_not_delete_job() {
 		$this->set_mc_and_notifications( true, true );
 
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
@@ -426,6 +426,117 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
 		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
 		$product->save();
+	}
+
+	public function test_create_variable_product_triggers_notifications_for_variable_and_variations() {
+		$this->set_mc_and_notifications( true, true );
+		$variable_product = $this->create_variation_product();
+		$ids = array_merge( [ $variable_product->get_id() ], $variable_product->get_children() );
+		$matcher = $this->exactly(count($ids));
+		$this->product_notification_job->expects( $matcher )
+		                               ->method( 'schedule' )
+		                               ->with(
+				$this->callback( function($args) use ($ids, $matcher) {
+						$this->assertEquals( $args['item_id'], $ids[$matcher->getInvocationCount() - 1] );
+						$this->assertEquals( $args['topic'], NotificationsService::TOPIC_PRODUCT_CREATED );
+						return true;
+					}
+				)
+			);
+
+		$variable_product->set_status( 'publish' );
+		$variable_product->save();
+	}
+
+	public function test_update_variable_product_triggers_notifications_for_variable_and_variations() {
+		$this->set_mc_and_notifications( true, true );
+		$variable_product = $this->create_variation_product();
+		$ids = array_merge( [ $variable_product->get_id() ], $variable_product->get_children() );
+		$matcher = $this->exactly(count($ids));
+
+		// Set all the variations and the variables as Created
+		foreach ( $ids as $id ) {
+			$this->product_helper->set_notification_status( wc_get_product( $id ), NotificationStatus::NOTIFICATION_CREATED );
+		}
+
+		$this->product_notification_job->expects( $matcher )
+		                               ->method( 'schedule' )
+		                               ->with(
+			                               $this->callback( function($args) use ($ids, $matcher) {
+				                               $this->assertEquals( $args['item_id'], $ids[$matcher->getInvocationCount() - 1] );
+				                               $this->assertEquals( $args['topic'], NotificationsService::TOPIC_PRODUCT_DELETED );
+				                               return true;
+			                               }
+			                               )
+		                               );
+
+		$variable_product->set_status( 'publish' );
+		// Set the parent variable as DONT_SYNC_AND_SHOW
+		$variable_product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
+		$variable_product->save();
+	}
+
+	public function test_unsync_variable_product_triggers_notifications_for_variable_and_variations() {
+		$this->set_mc_and_notifications( true, true );
+		$variable_product = $this->create_variation_product();
+		$ids = array_merge( [ $variable_product->get_id() ], $variable_product->get_children() );
+		$matcher = $this->exactly(count($ids));
+
+		// Set all the variations and the variables as Created
+		foreach ( $ids as $id ) {
+			$this->product_helper->set_notification_status( wc_get_product( $id ), NotificationStatus::NOTIFICATION_CREATED );
+		}
+
+		$this->product_notification_job->expects( $matcher )
+		                               ->method( 'schedule' )
+		                               ->with(
+			                               $this->callback( function($args) use ($ids, $matcher) {
+				                               $this->assertEquals( $args['item_id'], $ids[$matcher->getInvocationCount() - 1] );
+				                               $this->assertEquals( $args['topic'], NotificationsService::TOPIC_PRODUCT_UPDATED );
+				                               return true;
+			                               }
+			                               )
+		                               );
+
+		$variable_product->set_status( 'publish' );
+		$variable_product->save();
+	}
+
+	public function test_trash_created_product_calls_notify_directly() {
+		$this->set_mc_and_notifications( true, true );
+		/** @var \WC_Product $product */
+		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
+
+		$this->notification_service->expects( $this->exactly(1) )
+		                               ->method( 'notify' )
+		                               ->with( NotificationsService::TOPIC_PRODUCT_DELETED, $product->get_id(), [ 'offer_id' => "gla_{$product->get_id()}"] );
+
+		$product->delete();
+	}
+
+	public function test_delete_created_product_calls_notify_directly() {
+		$this->set_mc_and_notifications( true, true );
+		/** @var \WC_Product $product */
+		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_CREATED );
+
+		$this->notification_service->expects( $this->exactly(1) )
+		                           ->method( 'notify' )
+		                           ->with( NotificationsService::TOPIC_PRODUCT_DELETED, $product->get_id(), [ 'offer_id' => "gla_{$product->get_id()}"] );
+
+		$product->delete( true );
+	}
+
+	public function test_delete_non_created_product_not_calling_notify() {
+		$this->set_mc_and_notifications( true, true );
+		/** @var \WC_Product $product */
+		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'draft' ] );
+		$this->notification_service->expects( $this->never() )
+		                           ->method( 'notify' );
+
+		$product->delete();
+		$product->delete( true );
 	}
 
 	public function test_actions_not_defined_when_mc_not_ready() {

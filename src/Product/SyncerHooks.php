@@ -216,7 +216,8 @@ class SyncerHooks implements Service, Registerable {
 		foreach ( $products as $product ) {
 			$product_id = $product->get_id();
 
-			if ( $this->notifications_service->is_ready() ) {
+			// Avoid to handle variations directly. We handle them from the parent.
+			if ( $this->notifications_service->is_ready() && ! $product instanceof \WC_Product_Variation ) {
 				$this->handle_update_product_notification( $product );
 			}
 
