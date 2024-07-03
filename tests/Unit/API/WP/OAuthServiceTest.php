@@ -132,6 +132,8 @@ class OAuthServiceTest extends UnitTest {
 
 		// The exception should be caught and ignored.
 		$this->service->deactivate();
+
+		$this->assertEquals( 1, did_action( 'woocommerce_gla_error' ) );
 	}
 
 	/**

@@ -183,8 +183,12 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 		// Try to revoke the token on deactivation. If no token is available, it will throw an exception which we can ignore.
 		try {
 			$this->revoke_wpcom_api_auth();
-		} catch ( Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-			// Do nothing.
+		} catch ( Exception $e ) {
+			do_action(
+				'woocommerce_gla_error',
+				sprintf( 'Error revoking the WPCOM token: %s', $e->getMessage() ),
+				__METHOD__
+			);
 		}
 	}
 }
