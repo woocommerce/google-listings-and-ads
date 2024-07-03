@@ -123,8 +123,6 @@ class OAuthServiceTest extends UnitTest {
 
 	public function test_deactivation_with_wp_error() {
 		$this->assertInstanceOf( Deactivateable::class, $this->service );
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'error message' );
 
 		$this->jp->expects( $this->once() )
 			->method( 'remote_request' )->willReturn( new WP_Error( 'error', 'error message' ) );
@@ -132,6 +130,7 @@ class OAuthServiceTest extends UnitTest {
 		$this->account_service->expects( $this->never() )
 			->method( 'reset_wpcom_api_authorization_data' );
 
+		// The exception should be caught and ignored.
 		$this->service->deactivate();
 	}
 
