@@ -55,7 +55,7 @@ class ProductNotificationJob extends AbstractItemNotificationJob {
 	 */
 	protected function process_items( $args ): void {
 		if ( isset( $args['topic'] ) && isset( $args['item_id'] ) && $this->is_delete_topic( $args['topic'] ) ) {
-			$args['data'] = [ 'offer_id' => WCProductAdapter::get_google_product_offer_id( $this->get_slug(), $args['item_id'] ) ];
+			$args['data'] = [ 'offer_id' => $this->helper->get_offer_id( $args['item_id'] ) ];
 		}
 
 		parent::process_items( $args );

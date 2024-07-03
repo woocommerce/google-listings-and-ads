@@ -213,12 +213,12 @@ class SyncerHooks implements Service, Registerable {
 		$products_to_update = [];
 		$products_to_delete = [];
 
-		if ( $this->notifications_service->is_ready() ) {
-			$this->handle_update_product_notification( $products[0] );
-		}
-
 		foreach ( $products as $product ) {
 			$product_id = $product->get_id();
+
+			if ( $this->notifications_service->is_ready() ) {
+				$this->handle_update_product_notification( $product );
+			}
 
 			// Bail if an event is already scheduled for this product in the current request
 			if ( $this->is_already_scheduled_to_update( $product_id ) ) {
@@ -285,13 +285,13 @@ class SyncerHooks implements Service, Registerable {
 				]
 			);
 		} elseif ( $this->product_helper->should_trigger_delete_notification( $product ) ) {
-			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-			$this->product_notification_job->schedule(
-				[
-					'item_id' => $product->get_id(),
-					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
-				]
-			);
+			$this->schedule_delete_notification( $product );
+		}
+
+		if ( $product instanceof WC_Product_Variable ) {
+			foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
+				$this->handle_update_product_notification( $variation );
+			}
 		}
 	}
 
@@ -315,22 +315,33 @@ class SyncerHooks implements Service, Registerable {
 	}
 
 	/**
-	 * Schedules a job to send the product deletion notification
+	 * Maybe send the product deletion notification
 	 *
 	 * @since x.x.x
 	 * @param int $product_id
 	 */
 	protected function maybe_send_delete_notification( int $product_id ) {
 		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product && $this->product_helper->should_trigger_delete_notification( $product ) ) {
-			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-			$this->product_notification_job->schedule(
-				[
-					'item_id' => $product->get_id(),
-					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
-				]
-			);
+
+		if ( $product instanceof WC_Product && $this->product_helper->has_notified_creation( $product ) ) {
+			$this->notifications_service->notify( NotificationsService::TOPIC_PRODUCT_DELETED, $product_id, [ 'offer_id' => $this->product_helper->get_offer_id( $product_id ) ] );
 		}
+	}
+
+	/**
+	 * Schedules a job to send the product deletion notification
+	 *
+	 * @since x.x.x
+	 * @param WC_Product $product
+	 */
+	protected function schedule_delete_notification( $product ) {
+		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
+		$this->product_notification_job->schedule(
+			[
+				'item_id' => $product->get_id(),
+				'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
+			]
+		);
 	}
 
 	/**
