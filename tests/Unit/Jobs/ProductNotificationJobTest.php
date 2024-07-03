@@ -38,17 +38,17 @@ class ProductNotificationJobTest extends AbstractItemNotificationJobTest {
 	}
 
 	public function test_sends_offer_id_on_delete() {
-		$item     = $this->create_item();
-		$id       = $item->get_id();
-		$topic    = $this->get_topic_name() . '.delete';
+		$item  = $this->create_item();
+		$id    = $item->get_id();
+		$topic = $this->get_topic_name() . '.delete';
 
 		$this->job->get_helper()->expects( $this->once() )
 					->method( 'should_trigger_delete_notification' )
 					->willReturn( true );
 
 		$this->job->get_helper()->expects( $this->once() )
-		          ->method( 'get_offer_id' )
-		          ->willReturn( "gla_{$id}" );
+					->method( 'get_offer_id' )
+					->willReturn( "gla_{$id}" );
 
 		$this->notification_service->expects( $this->once() )->method( 'notify' )->with(
 			$topic,

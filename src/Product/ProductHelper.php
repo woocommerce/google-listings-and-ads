@@ -398,7 +398,7 @@ class ProductHelper implements Service, HelperNotificationInterface {
 			in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true );
 
 		if ( $is_ready && $product instanceof WC_Product_Variation ) {
-			$parent = $this->maybe_swap_for_parent( $product );
+			$parent   = $this->maybe_swap_for_parent( $product );
 			$is_ready = $this->is_ready_to_notify( $parent );
 		}
 

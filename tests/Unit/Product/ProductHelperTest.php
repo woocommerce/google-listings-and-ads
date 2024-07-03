@@ -1191,11 +1191,10 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 
 	public function test_get_offer_id() {
-		$this->assertEquals( $this->product_helper->get_offer_id( 1 ), "gla_1" );
+		$this->assertEquals( $this->product_helper->get_offer_id( 1 ), 'gla_1' );
 	}
 
 	public function test_get_filtered_offer_id() {
-
 		add_filter(
 			'woocommerce_gla_get_google_product_offer_id',
 			function ( $value, $product_id ) {
@@ -1205,7 +1204,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 			2
 		);
 
-		$this->assertEquals( $this->product_helper->get_offer_id( 1 ), "custom_1" );
+		$this->assertEquals( $this->product_helper->get_offer_id( 1 ), 'custom_1' );
 
 		remove_filter(
 			'woocommerce_gla_get_google_product_offer_id',

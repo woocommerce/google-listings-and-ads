@@ -48,7 +48,6 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 				__METHOD__
 			);
 		}
-
 	}
 
 	/**
