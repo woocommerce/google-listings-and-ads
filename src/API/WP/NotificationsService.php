@@ -173,6 +173,6 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 * @return bool
 	 */
 	public function is_enabled(): bool {
-		return apply_filters( 'woocommerce_gla_notifications_enabled', false );
+		return apply_filters( 'woocommerce_gla_notifications_enabled', true );
 	}
 }
