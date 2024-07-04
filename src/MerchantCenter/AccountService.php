@@ -551,28 +551,56 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @throws ExceptionWithResponseData If the stored nonce / nonce from query param is not provided, or the nonces mismatch.
 	 */
 	public function update_wpcom_api_authorization( string $status, string $nonce ): bool {
-		$stored_nonce = $this->options->get( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
-		if ( empty( $stored_nonce ) ) {
-			throw $this->prepare_exception(
-				__( 'No stored nonce found in the database, skip updating auth status.', 'google-listings-and-ads' )
-			);
-		}
+		try {
+			$stored_nonce = $this->options->get( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
+			if ( empty( $stored_nonce ) ) {
+				throw $this->prepare_exception(
+					__( 'No stored nonce found in the database, skip updating auth status.', 'google-listings-and-ads' )
+				);
+			}
 
-		if ( empty( $nonce ) ) {
-			throw $this->prepare_exception(
-				__( 'Nonce is not provided, skip updating auth status.', 'google-listings-and-ads' )
-			);
-		}
+			if ( empty( $nonce ) ) {
+				throw $this->prepare_exception(
+					__( 'Nonce is not provided, skip updating auth status.', 'google-listings-and-ads' )
+				);
+			}
 
-		if ( $stored_nonce !== $nonce ) {
+			if ( $stored_nonce !== $nonce ) {
+				$this->delete_wpcom_api_auth_nonce();
+				throw $this->prepare_exception(
+					__( 'Nonces mismatch, skip updating auth status.', 'google-listings-and-ads' )
+				);
+			}
+
 			$this->delete_wpcom_api_auth_nonce();
-			throw $this->prepare_exception(
-				__( 'Nonces mismatch, skip updating auth status.', 'google-listings-and-ads' )
-			);
-		}
 
-		$this->delete_wpcom_api_auth_nonce();
-		return $this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $status );
+			/**
+			* @event update_wpcom_api_authorization
+			*/
+			do_action(
+				'woocommerce_gla_track_event',
+				'update_wpcom_api_authorization',
+				[
+					'status' => $status,
+				]
+			);
+
+			return $this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $status );
+		} catch ( ExceptionWithResponseData $e ) {
+
+			/**
+			* @event update_wpcom_api_authorization
+			*/
+			do_action(
+				'woocommerce_gla_track_event',
+				'update_wpcom_api_authorization',
+				[
+					'status' => $e->getMessage(),
+				]
+			);
+
+			throw $e;
+		}
 	}
 
 	/**
