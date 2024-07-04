@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Containe
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Jetpack;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\TrackingTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use WP_Error;
 use Exception;
@@ -25,6 +26,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class OAuthServiceTest extends UnitTest {
 
+	use TrackingTrait;
 	use UtilitiesTrait;
 
 	/**
@@ -201,5 +203,86 @@ class OAuthServiceTest extends UnitTest {
 			$store_url,
 			$parsed_state['store_url']
 		);
+	}
+
+	public function test_revoke_wpcom_api_auth() {
+		$this->jp->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => '{"success":true}',
+					'response' => [ 'code' => 200 ],
+				]
+			);
+
+		$this->account_service->expects( $this->once() )
+			->method( 'reset_wpcom_api_authorization_data' );
+
+		$this->account_service->expects( $this->once() )
+			->method( 'reset_wpcom_api_authorization_data' );
+
+		$this->expect_track_event(
+			'revoke_wpcom_api_auth',
+			[
+				'status' => 200,
+			]
+		);
+
+		$response = $this->service->revoke_wpcom_api_auth();
+
+		$this->assertEquals( '{"success":true}', $response );
+	}
+
+	public function test_revoke_wpcom_api_auth_wp_error() {
+		$this->jp->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				new WP_Error( 'error', 'error message' )
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'error message' );
+		$this->expectExceptionCode( 400 );
+
+		$this->account_service->expects( $this->never() )
+			->method( 'reset_wpcom_api_authorization_data' );
+
+		$this->expect_track_event(
+			'revoke_wpcom_api_auth',
+			[
+				'status' => 'error',
+				'error'  => 'error message',
+			]
+		);
+
+		$this->service->revoke_wpcom_api_auth();
+	}
+
+	public function test_revoke_wpcom_api_auth_status_error() {
+		$this->jp->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => '{"message":"error message"}',
+					'response' => [ 'code' => 400 ],
+				]
+			);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'error message' );
+		$this->expectExceptionCode( 400 );
+
+		$this->account_service->expects( $this->never() )
+			->method( 'reset_wpcom_api_authorization_data' );
+
+		$this->expect_track_event(
+			'revoke_wpcom_api_auth',
+			[
+				'status' => 400,
+				'error'  => 'error message',
+			]
+		);
+
+		$this->service->revoke_wpcom_api_auth();
 	}
 }
