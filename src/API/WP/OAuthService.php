@@ -159,15 +159,53 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 		$request = $this->container->get( Jetpack::class )->remote_request( $args );
 
 		if ( is_wp_error( $request ) ) {
+
+			/**
+			 * @event revoke_wpcom_api_auth
+			 */
+			do_action(
+				'woocommerce_gla_track_event',
+				'revoke_wpcom_api_auth',
+				[
+					'status' => 'error',
+					'error'  => $request->get_error_message(),
+				]
+			);
+
 			throw new Exception( $request->get_error_message(), 400 );
 		} else {
 			$body   = wp_remote_retrieve_body( $request );
 			$status = wp_remote_retrieve_response_code( $request );
 
 			if ( ! $status || $status !== 200 ) {
-				$data = json_decode( $body, true );
-				throw new Exception( $data['message'] ?? 'Error revoking access to WPCOM.', $status );
+				$data    = json_decode( $body, true );
+				$message = $data['message'] ?? 'Error revoking access to WPCOM.';
+
+				/**
+				 * @event revoke_wpcom_api_auth
+				 */
+				do_action(
+					'woocommerce_gla_track_event',
+					'revoke_wpcom_api_auth',
+					[
+						'status' => $status,
+						'error'  => $message,
+					]
+				);
+
+				throw new Exception( $message, $status );
 			}
+
+			/**
+			 * @event revoke_wpcom_api_auth
+			 */
+			do_action(
+				'woocommerce_gla_track_event',
+				'revoke_wpcom_api_auth',
+				[
+					'status' => 200,
+				]
+			);
 
 			$this->container->get( AccountService::class )->reset_wpcom_api_authorization_data();
 			return $body;
