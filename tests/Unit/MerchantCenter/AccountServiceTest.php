@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\TrackingTrait;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -37,6 +38,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class AccountServiceTest extends UnitTest {
 
+	use TrackingTrait;
 	use MerchantTrait;
 
 	/** @var MockObject|Ads $ads */
@@ -877,6 +879,13 @@ class AccountServiceTest extends UnitTest {
 			->method( 'delete' )
 			->with( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
 
+		$this->expect_track_event(
+			'update_wpcom_api_authorization',
+			[
+				'status' => 'approved',
+			]
+		);
+
 		$this->account->update_wpcom_api_authorization( $status, $nonce );
 	}
 
@@ -896,6 +905,13 @@ class AccountServiceTest extends UnitTest {
 
 		$this->expectException( ExceptionWithResponseData::class );
 		$this->expectExceptionMessage( 'Nonce is not provided, skip updating auth status.' );
+
+		$this->expect_track_event(
+			'update_wpcom_api_authorization',
+			[
+				'status' => 'Nonce is not provided, skip updating auth status.',
+			]
+		);
 
 		$this->account->update_wpcom_api_authorization( $status, $nonce );
 	}
@@ -917,6 +933,13 @@ class AccountServiceTest extends UnitTest {
 		$this->expectException( ExceptionWithResponseData::class );
 		$this->expectExceptionMessage( 'No stored nonce found in the database, skip updating auth status.' );
 
+		$this->expect_track_event(
+			'update_wpcom_api_authorization',
+			[
+				'status' => 'No stored nonce found in the database, skip updating auth status.',
+			]
+		);
+
 		$this->account->update_wpcom_api_authorization( $status, $nonce );
 	}
 
@@ -937,6 +960,13 @@ class AccountServiceTest extends UnitTest {
 
 		$this->expectException( ExceptionWithResponseData::class );
 		$this->expectExceptionMessage( 'Nonces mismatch, skip updating auth status.' );
+
+		$this->expect_track_event(
+			'update_wpcom_api_authorization',
+			[
+				'status' => 'Nonces mismatch, skip updating auth status.',
+			]
+		);
 
 		$this->account->update_wpcom_api_authorization( $status, $nonce );
 	}
