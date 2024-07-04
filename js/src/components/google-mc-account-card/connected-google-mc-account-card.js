@@ -146,10 +146,9 @@ const ConnectedGoogleMCAccountCard = ( {
 	const showErrorNotificationsNotice =
 		! hideNotificationService &&
 		googleMCAccount.wpcom_rest_api_status &&
+		googleMCAccount.notification_service_enabled &&
 		googleMCAccount.wpcom_rest_api_status !==
-			GOOGLE_WPCOM_APP_CONNECTED_STATUS.APPROVED &&
-		googleMCAccount.wpcom_rest_api_status !==
-			GOOGLE_WPCOM_APP_CONNECTED_STATUS.DISABLED;
+			GOOGLE_WPCOM_APP_CONNECTED_STATUS.APPROVED;
 
 	const showFooter = ! hideAccountSwitch || showDisconnectNotificationsButton;
 

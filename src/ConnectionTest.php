@@ -650,11 +650,30 @@ class ConnectionTest implements Service, Registerable {
 
 			<?php if ( $blog_token ) { ?>
 				<?php
-				  $wp_api_status = $this->container->get( OptionsInterface::class )->get( OptionsInterface::WPCOM_REST_API_STATUS );
+				  $options = $this->container->get( OptionsInterface::class );
+				  $wp_api_status = $options->get( OptionsInterface::WPCOM_REST_API_STATUS );
+				  $notification_service = new NotificationsService( $this->container->get( MerchantCenterService::class ) );
+				  $notification_service->set_options_object( $options );
 				?>
 				<h2 class="title">Partner API Pull Integration</h2>
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 					<table class="form-table" role="presentation">
+						<tr>
+							<th><label>Notification Service Enabled:</label></th>
+							<td>
+								<p>
+									<code><?php echo $notification_service->is_enabled() ? 'yes' : 'no' ?></code>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th><label>Notification Service Ready:</label></th>
+							<td>
+								<p>
+									<code><?php echo $notification_service->is_ready() ? 'yes' : 'no' ?></code>
+								</p>
+							</td>
+						</tr>
 						<tr>
 							<th><label>WPCOM REST API Status:</label></th>
 							<td>
@@ -693,7 +712,7 @@ class ConnectionTest implements Service, Registerable {
 						<tr>
 							<th><label>API Pull Integration Status:</label></th>
 							<td>
-								<p>									
+								<p>
 									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'partner-integration-status' ], $url ), 'partner-integration-status' ) ); ?>">Get API Pull Integration Status</a>
 								</p>
 							</td>
@@ -714,7 +733,7 @@ class ConnectionTest implements Service, Registerable {
 										<code><?php echo isset( $this->integration_status_response['is_healthy'] ) && $this->integration_status_response['is_healthy'] === true ? 'Healthy' : 'Unhealthy'; ?></code>
 									</p>
 								</td>
-							</tr>	
+							</tr>
 							<tr>
 								<th><label>Last Jetpack Contact:</label></th>
 								<td>
@@ -746,12 +765,12 @@ class ConnectionTest implements Service, Registerable {
 										<code><?php echo isset( $this->integration_status_response['errors'] ) ? wp_kses_post( json_encode( $this->integration_status_response['errors'] ) ) ?? '' : '-'; ?></code>
 									</p>
 								</td>
-							</tr>																																
+							</tr>
 						<?php } ?>
 						<tr>
 							<th><label>Revoke WPCOM Partner Access:</label></th>
 							<td>
-								<p>									
+								<p>
 									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'revoke-wpcom-partner-access' ], $url ), 'revoke-wpcom-partner-access' ) ); ?>">Revoke WPCOM Partner Access</a>
 								</p>
 							</td>

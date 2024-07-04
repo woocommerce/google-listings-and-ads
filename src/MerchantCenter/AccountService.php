@@ -227,9 +227,10 @@ class AccountService implements OptionsAwareInterface, Service {
 		$wpcom_rest_api_status = $this->options->get( OptionsInterface::WPCOM_REST_API_STATUS );
 
 		$status = [
-			'id'                    => $id,
-			'status'                => $id ? 'connected' : 'disconnected',
-			'wpcom_rest_api_status' => $notifications_service->is_enabled() ? $wpcom_rest_api_status : 'disabled',
+			'id'                           => $id,
+			'status'                       => $id ? 'connected' : 'disconnected',
+			'notification_service_enabled' => $notifications_service->is_enabled(),
+			'wpcom_rest_api_status'        => $wpcom_rest_api_status,
 		];
 
 		$incomplete = $this->state->last_incomplete_step();
