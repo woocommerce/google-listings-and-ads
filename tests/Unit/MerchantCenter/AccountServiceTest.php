@@ -765,9 +765,10 @@ class AccountServiceTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'                    => self::TEST_ACCOUNT_ID,
-				'status'                => 'connected',
-				'wpcom_rest_api_status' => 'approved',
+				'id'                           => self::TEST_ACCOUNT_ID,
+				'status'                       => 'connected',
+				'notification_service_enabled' => true,
+				'wpcom_rest_api_status'        => 'approved',
 			],
 			$this->account->get_connected_status()
 		);
@@ -788,9 +789,10 @@ class AccountServiceTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'                    => self::TEST_ACCOUNT_ID,
-				'status'                => 'connected',
-				'wpcom_rest_api_status' => 'disabled',
+				'id'                           => self::TEST_ACCOUNT_ID,
+				'status'                       => 'connected',
+				'notification_service_enabled' => false,
+				'wpcom_rest_api_status'        => 'approved',
 			],
 			$this->account->get_connected_status()
 		);
@@ -811,10 +813,11 @@ class AccountServiceTest extends UnitTest {
 
 		$this->assertEquals(
 			[
-				'id'                    => self::TEST_ACCOUNT_ID,
-				'status'                => 'incomplete',
-				'step'                  => 'verify',
-				'wpcom_rest_api_status' => null,
+				'id'                           => self::TEST_ACCOUNT_ID,
+				'status'                       => 'incomplete',
+				'step'                         => 'verify',
+				'notification_service_enabled' => true,
+				'wpcom_rest_api_status'        => null,
 			],
 			$this->account->get_connected_status()
 		);
