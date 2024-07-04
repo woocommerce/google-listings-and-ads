@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use Exception;
+use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -581,7 +582,8 @@ class AccountService implements OptionsAwareInterface, Service {
 				'woocommerce_gla_track_event',
 				'update_wpcom_api_authorization',
 				[
-					'status' => $status,
+					'status'  => $status,
+					'blog_id' => Jetpack_Options::get_option( 'id' ),
 				]
 			);
 
@@ -595,7 +597,8 @@ class AccountService implements OptionsAwareInterface, Service {
 				'woocommerce_gla_track_event',
 				'update_wpcom_api_authorization',
 				[
-					'status' => $e->getMessage(),
+					'status'  => $e->getMessage(),
+					'blog_id' => Jetpack_Options::get_option( 'id' ),
 				]
 			);
 

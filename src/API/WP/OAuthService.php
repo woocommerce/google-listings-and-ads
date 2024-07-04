@@ -167,8 +167,9 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 				'woocommerce_gla_track_event',
 				'revoke_wpcom_api_auth',
 				[
-					'status' => 'error',
-					'error'  => $request->get_error_message(),
+					'status'  => 'error',
+					'error'   => $request->get_error_message(),
+					'blog_id' => Jetpack_Options::get_option( 'id' ),
 				]
 			);
 
@@ -188,8 +189,9 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 					'woocommerce_gla_track_event',
 					'revoke_wpcom_api_auth',
 					[
-						'status' => $status,
-						'error'  => $message,
+						'status'  => $status,
+						'error'   => $message,
+						'blog_id' => Jetpack_Options::get_option( 'id' ),
 					]
 				);
 
@@ -203,7 +205,8 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 				'woocommerce_gla_track_event',
 				'revoke_wpcom_api_auth',
 				[
-					'status' => 200,
+					'status'  => 200,
+					'blog_id' => Jetpack_Options::get_option( 'id' ),
 				]
 			);
 

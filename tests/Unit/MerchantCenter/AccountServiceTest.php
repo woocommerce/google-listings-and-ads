@@ -27,6 +27,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Containe
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\TrackingTrait;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
+use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -882,7 +883,8 @@ class AccountServiceTest extends UnitTest {
 		$this->expect_track_event(
 			'update_wpcom_api_authorization',
 			[
-				'status' => 'approved',
+				'status'  => 'approved',
+				'blog_id' => Jetpack_Options::get_option( 'id' ),
 			]
 		);
 
@@ -909,7 +911,8 @@ class AccountServiceTest extends UnitTest {
 		$this->expect_track_event(
 			'update_wpcom_api_authorization',
 			[
-				'status' => 'Nonce is not provided, skip updating auth status.',
+				'status'  => 'Nonce is not provided, skip updating auth status.',
+				'blog_id' => Jetpack_Options::get_option( 'id' ),
 			]
 		);
 
@@ -936,7 +939,8 @@ class AccountServiceTest extends UnitTest {
 		$this->expect_track_event(
 			'update_wpcom_api_authorization',
 			[
-				'status' => 'No stored nonce found in the database, skip updating auth status.',
+				'status'  => 'No stored nonce found in the database, skip updating auth status.',
+				'blog_id' => Jetpack_Options::get_option( 'id' ),
 			]
 		);
 
@@ -964,7 +968,8 @@ class AccountServiceTest extends UnitTest {
 		$this->expect_track_event(
 			'update_wpcom_api_authorization',
 			[
-				'status' => 'Nonces mismatch, skip updating auth status.',
+				'status'  => 'Nonces mismatch, skip updating auth status.',
+				'blog_id' => Jetpack_Options::get_option( 'id' ),
 			]
 		);
 

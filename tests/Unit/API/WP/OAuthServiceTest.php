@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\Tracking
 use PHPUnit\Framework\MockObject\MockObject;
 use WP_Error;
 use Exception;
+use Jetpack_Options;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -224,7 +225,8 @@ class OAuthServiceTest extends UnitTest {
 		$this->expect_track_event(
 			'revoke_wpcom_api_auth',
 			[
-				'status' => 200,
+				'status'  => 200,
+				'blog_id' => Jetpack_Options::get_option( 'id' ),
 			]
 		);
 
@@ -250,8 +252,9 @@ class OAuthServiceTest extends UnitTest {
 		$this->expect_track_event(
 			'revoke_wpcom_api_auth',
 			[
-				'status' => 'error',
-				'error'  => 'error message',
+				'status'  => 'error',
+				'error'   => 'error message',
+				'blog_id' => Jetpack_Options::get_option( 'id' ),
 			]
 		);
 
@@ -278,8 +281,9 @@ class OAuthServiceTest extends UnitTest {
 		$this->expect_track_event(
 			'revoke_wpcom_api_auth',
 			[
-				'status' => 400,
-				'error'  => 'error message',
+				'status'  => 400,
+				'error'   => 'error message',
+				'blog_id' => Jetpack_Options::get_option( 'id' ),
 			]
 		);
 
