@@ -430,7 +430,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	public function test_create_variable_product_triggers_notifications_for_variable_and_variations() {
 		$this->set_mc_and_notifications( true, true );
-		$variable_product = $this->create_variation_product();
+		$variable_product = $this->create_variation_product(  null, [ 'status' => 'draft' ] );
 		$ids              = array_merge( [ $variable_product->get_id() ], $variable_product->get_children() );
 		$matcher          = $this->exactly( count( $ids ) );
 		$this->product_notification_job->expects( $matcher )
@@ -441,62 +441,6 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 																$this->assertEquals( $args['item_id'], $ids[ $matcher->getInvocationCount() - 1 ] );
 																$this->assertEquals( $args['topic'], NotificationsService::TOPIC_PRODUCT_CREATED );
 																return true;
-												}
-											)
-										);
-
-		$variable_product->set_status( 'publish' );
-		$variable_product->save();
-	}
-
-	public function test_update_variable_product_triggers_notifications_for_variable_and_variations() {
-		$this->set_mc_and_notifications( true, true );
-		$variable_product = $this->create_variation_product();
-		$ids              = array_merge( [ $variable_product->get_id() ], $variable_product->get_children() );
-		$matcher          = $this->exactly( count( $ids ) );
-
-		// Set all the variations and the variables as Created
-		foreach ( $ids as $id ) {
-			$this->product_helper->set_notification_status( wc_get_product( $id ), NotificationStatus::NOTIFICATION_CREATED );
-		}
-
-		$this->product_notification_job->expects( $matcher )
-										->method( 'schedule' )
-										->with(
-											$this->callback(
-												function ( $args ) use ( $ids, $matcher ) {
-													$this->assertEquals( $args['item_id'], $ids[ $matcher->getInvocationCount() - 1 ] );
-													$this->assertEquals( $args['topic'], NotificationsService::TOPIC_PRODUCT_DELETED );
-													return true;
-												}
-											)
-										);
-
-		$variable_product->set_status( 'publish' );
-		// Set the parent variable as DONT_SYNC_AND_SHOW
-		$variable_product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
-		$variable_product->save();
-	}
-
-	public function test_unsync_variable_product_triggers_notifications_for_variable_and_variations() {
-		$this->set_mc_and_notifications( true, true );
-		$variable_product = $this->create_variation_product();
-		$ids              = array_merge( [ $variable_product->get_id() ], $variable_product->get_children() );
-		$matcher          = $this->exactly( count( $ids ) );
-
-		// Set all the variations and the variables as Created
-		foreach ( $ids as $id ) {
-			$this->product_helper->set_notification_status( wc_get_product( $id ), NotificationStatus::NOTIFICATION_CREATED );
-		}
-
-		$this->product_notification_job->expects( $matcher )
-										->method( 'schedule' )
-										->with(
-											$this->callback(
-												function ( $args ) use ( $ids, $matcher ) {
-													$this->assertEquals( $args['item_id'], $ids[ $matcher->getInvocationCount() - 1 ] );
-													$this->assertEquals( $args['topic'], NotificationsService::TOPIC_PRODUCT_UPDATED );
-													return true;
 												}
 											)
 										);
@@ -529,6 +473,25 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 									->with( NotificationsService::TOPIC_PRODUCT_DELETED, $product->get_id(), [ 'offer_id' => "gla_{$product->get_id()}" ] );
 
 		$product->delete( true );
+	}
+
+	public function test_untrash_product_schedules_notify_create() {
+		$this->set_mc_and_notifications( true, true );
+		/** @var \WC_Product $product */
+		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'trash' ] );
+
+		$this->product_notification_job->expects( $this->once() )
+		                               ->method( 'schedule' )->with(
+				$this->equalTo(
+					[
+						'item_id' => $product->get_id(),
+						'topic'   => NotificationsService::TOPIC_PRODUCT_CREATED,
+					]
+				)
+			);
+
+		$product->set_status( 'publish' );
+		$product->save();
 	}
 
 	public function test_delete_non_created_product_not_calling_notify() {

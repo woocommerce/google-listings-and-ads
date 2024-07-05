@@ -206,10 +206,11 @@ class SyncerHooks implements Service, Registerable {
 	 * Handle updating of a product.
 	 *
 	 * @param WC_Product[] $products The products being saved.
+	 * @param bool         $notify If true. It will try to handle notifications.
 	 *
 	 * @return void
 	 */
-	protected function handle_update_products( array $products ) {
+	protected function handle_update_products( array $products, $notify = true ) {
 		$products_to_update = [];
 		$products_to_delete = [];
 
@@ -217,7 +218,7 @@ class SyncerHooks implements Service, Registerable {
 			$product_id = $product->get_id();
 
 			// Avoid to handle variations directly. We handle them from the parent.
-			if ( $this->notifications_service->is_ready() && ! $product instanceof \WC_Product_Variation ) {
+			if ( $this->notifications_service->is_ready() && $notify ) {
 				$this->handle_update_product_notification( $product );
 			}
 
@@ -228,8 +229,8 @@ class SyncerHooks implements Service, Registerable {
 
 			// If it's a variable product we handle each variation separately
 			if ( $product instanceof WC_Product_Variable ) {
-				$this->handle_update_products( $product->get_available_variations( 'objects' ) );
-
+				// This is only for MC Push mechanism. We don't handle notifications here.
+				$this->handle_update_products( $product->get_available_variations( 'objects' ), false );
 				continue;
 			}
 
@@ -277,6 +278,13 @@ class SyncerHooks implements Service, Registerable {
 					'topic'   => NotificationsService::TOPIC_PRODUCT_CREATED,
 				]
 			);
+
+			// Variations are not handled when the parent is created.
+			if ( $product instanceof WC_Product_Variable ) {
+				foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
+					$this->handle_update_product_notification( $variation );
+				}
+			}
 		} elseif ( $this->product_helper->should_trigger_update_notification( $product ) ) {
 			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_UPDATE );
 			$this->product_notification_job->schedule(
@@ -287,12 +295,6 @@ class SyncerHooks implements Service, Registerable {
 			);
 		} elseif ( $this->product_helper->should_trigger_delete_notification( $product ) ) {
 			$this->schedule_delete_notification( $product );
-		}
-
-		if ( $product instanceof WC_Product_Variable ) {
-			foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
-				$this->handle_update_product_notification( $variation );
-			}
 		}
 	}
 
