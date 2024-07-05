@@ -303,6 +303,10 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function handle_delete_product( int $product_id ) {
 		if ( $this->notifications_service->is_ready() ) {
+			/**
+			 * For deletions, we do send directly the notification instead of scheduling it.
+			 * This is because we want to avoid that the product is not in the database anymore when the scheduled action runs.
+			*/
 			$this->maybe_send_delete_notification( $product_id );
 		}
 
@@ -317,6 +321,7 @@ class SyncerHooks implements Service, Registerable {
 
 	/**
 	 * Maybe send the product deletion notification
+	 * and mark the product as un-synced after.
 	 *
 	 * @since x.x.x
 	 * @param int $product_id
@@ -325,7 +330,11 @@ class SyncerHooks implements Service, Registerable {
 		$product = wc_get_product( $product_id );
 
 		if ( $product instanceof WC_Product && $this->product_helper->has_notified_creation( $product ) ) {
-			$this->notifications_service->notify( NotificationsService::TOPIC_PRODUCT_DELETED, $product_id, [ 'offer_id' => $this->product_helper->get_offer_id( $product_id ) ] );
+			$result = $this->notifications_service->notify( NotificationsService::TOPIC_PRODUCT_DELETED, $product_id, [ 'offer_id' => $this->product_helper->get_offer_id( $product_id ) ] );
+			if ( $result ) {
+				$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_DELETED );
+				$this->product_helper->mark_as_unsynced( $product );
+			}
 		}
 	}
 
