@@ -765,7 +765,7 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	 *
 	 * @return string The offer id
 	 */
-	public function get_offer_id( $product_id ) {
+	public function get_offer_id( int $product_id ) {
 		return WCProductAdapter::get_google_product_offer_id( $this->get_slug(), $product_id );
 	}
 }
