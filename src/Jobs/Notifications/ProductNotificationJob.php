@@ -5,10 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -65,6 +65,8 @@ class ProductNotificationJob extends AbstractItemNotificationJob {
 	 * Get the product
 	 *
 	 * @param int $item_id
+	 * @throws InvalidValue If the given ID doesn't reference a valid product.
+	 *
 	 * @return \WC_Product
 	 */
 	protected function get_item( int $item_id ) {

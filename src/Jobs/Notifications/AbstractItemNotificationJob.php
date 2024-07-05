@@ -55,6 +55,7 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 *
 	 * @param int    $item_id
 	 * @param string $status
+	 * @throws InvalidValue If the given ID doesn't reference a valid product.
 	 */
 	protected function set_status( int $item_id, string $status ): void {
 		$item = $this->get_item( $item_id );
@@ -84,6 +85,7 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 *
 	 * @param int    $item_id
 	 * @param string $topic
+	 * @throws InvalidValue If the given ID doesn't reference a valid product.
 	 * @return bool
 	 */
 	protected function can_process( int $item_id, string $topic ): bool {
@@ -103,6 +105,7 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 *
 	 * @param string $topic
 	 * @param int    $item
+	 * @throws InvalidValue If the given ID doesn't reference a valid product.
 	 */
 	protected function handle_notified( string $topic, int $item ): void {
 		if ( $this->is_delete_topic( $topic ) ) {
