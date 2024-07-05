@@ -430,7 +430,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
 	public function test_create_variable_product_triggers_notifications_for_variable_and_variations() {
 		$this->set_mc_and_notifications( true, true );
-		$variable_product = $this->create_variation_product(  null, [ 'status' => 'draft' ] );
+		$variable_product = $this->create_variation_product( null, [ 'status' => 'draft' ] );
 		$ids              = array_merge( [ $variable_product->get_id() ], $variable_product->get_children() );
 		$matcher          = $this->exactly( count( $ids ) );
 		$this->product_notification_job->expects( $matcher )
@@ -481,14 +481,14 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product = WC_Helper_Product::create_simple_product( true, [ 'status' => 'trash' ] );
 
 		$this->product_notification_job->expects( $this->once() )
-		                               ->method( 'schedule' )->with(
-				$this->equalTo(
-					[
-						'item_id' => $product->get_id(),
-						'topic'   => NotificationsService::TOPIC_PRODUCT_CREATED,
-					]
-				)
-			);
+										->method( 'schedule' )->with(
+											$this->equalTo(
+												[
+													'item_id' => $product->get_id(),
+													'topic'   => NotificationsService::TOPIC_PRODUCT_CREATED,
+												]
+											)
+										);
 
 		$product->set_status( 'publish' );
 		$product->save();
