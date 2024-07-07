@@ -576,7 +576,11 @@ class AccountService implements OptionsAwareInterface, Service {
 			$this->delete_wpcom_api_auth_nonce();
 
 			/**
+			* When the WPCOM Authorization status has been updated.
+			*
 			* @event update_wpcom_api_authorization
+			* @property string status The status of the request.
+			* @property string blog_id The blog ID.
 			*/
 			do_action(
 				'woocommerce_gla_track_event',
@@ -591,7 +595,11 @@ class AccountService implements OptionsAwareInterface, Service {
 		} catch ( ExceptionWithResponseData $e ) {
 
 			/**
+			* When the WPCOM Authorization status has been updated with errors.
+			*
 			* @event update_wpcom_api_authorization
+			* @property string status The status of the request.
+			* @property string blog_id The blog ID.
 			*/
 			do_action(
 				'woocommerce_gla_track_event',

@@ -223,7 +223,7 @@ class OAuthServiceTest extends UnitTest {
 			->method( 'reset_wpcom_api_authorization_data' );
 
 		$this->expect_track_event(
-			'revoke_wpcom_api_auth',
+			'revoke_wpcom_api_authorization',
 			[
 				'status'  => 200,
 				'blog_id' => Jetpack_Options::get_option( 'id' ),
@@ -250,7 +250,7 @@ class OAuthServiceTest extends UnitTest {
 			->method( 'reset_wpcom_api_authorization_data' );
 
 		$this->expect_track_event(
-			'revoke_wpcom_api_auth',
+			'revoke_wpcom_api_authorization',
 			[
 				'status'  => 'error',
 				'error'   => 'error message',
@@ -279,7 +279,7 @@ class OAuthServiceTest extends UnitTest {
 			->method( 'reset_wpcom_api_authorization_data' );
 
 		$this->expect_track_event(
-			'revoke_wpcom_api_auth',
+			'revoke_wpcom_api_authorization',
 			[
 				'status'  => 400,
 				'error'   => 'error message',

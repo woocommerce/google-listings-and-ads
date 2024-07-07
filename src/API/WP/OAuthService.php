@@ -161,11 +161,16 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 		if ( is_wp_error( $request ) ) {
 
 			/**
-			 * @event revoke_wpcom_api_auth
+			 * When the WPCOM token has been revoked with errors.
+			 *
+			 * @event revoke_wpcom_api_authorization
+			 * @property string status The status of the request.
+			 * @property string error The error message.
+			 * @property mixed blog_id The blog ID.
 			 */
 			do_action(
 				'woocommerce_gla_track_event',
-				'revoke_wpcom_api_auth',
+				'revoke_wpcom_api_authorization',
 				[
 					'status'  => 'error',
 					'error'   => $request->get_error_message(),
@@ -183,11 +188,17 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 				$message = $data['message'] ?? 'Error revoking access to WPCOM.';
 
 				/**
-				 * @event revoke_wpcom_api_auth
+				*
+				* When the WPCOM token has been revoked with errors.
+				*
+				* @event revoke_wpcom_api_authorization
+				* @property string status The status of the request.
+				* @property string error The error message.
+				* @property mixed blog_id The blog ID.
 				 */
 				do_action(
 					'woocommerce_gla_track_event',
-					'revoke_wpcom_api_auth',
+					'revoke_wpcom_api_authorization',
 					[
 						'status'  => $status,
 						'error'   => $message,
@@ -199,11 +210,16 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 			}
 
 			/**
-			 * @event revoke_wpcom_api_auth
+			* When the WPCOM token has been revoked successfully.
+			*
+			* @event revoke_wpcom_api_authorization
+			* @property string status The status of the request.
+			* @property string error The error message.
+			* @property mixed blog_id The blog ID.
 			 */
 			do_action(
 				'woocommerce_gla_track_event',
-				'revoke_wpcom_api_auth',
+				'revoke_wpcom_api_authorization',
 				[
 					'status'  => 200,
 					'blog_id' => Jetpack_Options::get_option( 'id' ),
