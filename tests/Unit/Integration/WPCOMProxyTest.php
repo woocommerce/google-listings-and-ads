@@ -123,6 +123,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->assertEquals( $product_1->get_id(), $response->get_data()[0]['id'] );
 		$this->assertEquals( $expected_metadata, $this->format_metadata( $response->get_data()[0]['meta_data'] ) );
 		$this->assertArrayHasKey( 'gla_attributes', $response->get_data()[0] );
+		$this->assertEquals( 'object', gettype( $response->get_data()[0]['gla_attributes'] ) );
 	}
 
 	public function test_get_products_with_gla_syncable_false() {
@@ -167,6 +168,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->assertEquals( $product_2->get_id(), $response->get_data()[0]['id'] );
 		$this->assertEquals( $expected_metadata, $this->format_metadata( $response->get_data()[0]['meta_data'] ) );
 		$this->assertArrayHasKey( 'gla_attributes', $response->get_data()[0] );
+		$this->assertEquals( 'object', gettype( $response->get_data()[0]['gla_attributes'] ) );
 	}
 
 	public function test_get_product_without_gla_visibility_metadata() {
@@ -248,6 +250,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 			$this->assertArrayHasKey( $variation['variation_id'], $response_mapped );
 			$this->assertEquals( $expected_metadata, $this->format_metadata( $response_mapped[ $variation['variation_id'] ]['meta_data'] ) );
 			$this->assertArrayHasKey( 'gla_attributes', $response->get_data()[0] );
+			$this->assertEquals( 'object', gettype( $response->get_data()[0]['gla_attributes'] ) );
 		}
 	}
 
@@ -295,6 +298,7 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$this->assertEquals( $expected_metadata, $this->format_metadata( $response->get_data()['meta_data'] ) );
 		$this->assertArrayHasKey( 'gla_attributes', $response->get_data() );
+		$this->assertEquals( 'object', gettype( $response->get_data()['gla_attributes'] ) );
 	}
 
 	public function test_get_specific_variation_without_gla_syncable() {
