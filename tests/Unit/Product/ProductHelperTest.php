@@ -1189,6 +1189,31 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertFalse( $this->product_helper->should_trigger_delete_notification( $product ) );
 	}
 
+
+	public function test_get_offer_id() {
+		$this->assertEquals( $this->product_helper->get_offer_id( 1 ), 'gla_1' );
+	}
+
+	public function test_get_filtered_offer_id() {
+		add_filter(
+			'woocommerce_gla_get_google_product_offer_id',
+			function ( $value, $product_id ) {
+				return "custom_{$product_id}";
+			},
+			10,
+			2
+		);
+
+		$this->assertEquals( $this->product_helper->get_offer_id( 1 ), 'custom_1' );
+
+		remove_filter(
+			'woocommerce_gla_get_google_product_offer_id',
+			function ( $value, $product_id ) {
+				return "custom_{$product_id}";
+			}
+		);
+	}
+
 	/**
 	 * Set and save product to make it Notification Ready
 	 *

@@ -169,9 +169,7 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	public function update_by_id( int $product_id ) {
 		$product = $this->wc->maybe_get_product( $product_id );
-		if ( $product instanceof WC_Product ) {
-			$this->handle_update_products( [ $product ] );
-		}
+		$this->handle_update_products( [ $product ] );
 	}
 
 	/**
@@ -206,19 +204,26 @@ class SyncerHooks implements Service, Registerable {
 	 * Handle updating of a product.
 	 *
 	 * @param WC_Product[] $products The products being saved.
+	 * @param bool         $notify If true. It will try to handle notifications.
 	 *
 	 * @return void
 	 */
-	protected function handle_update_products( array $products ) {
+	protected function handle_update_products( array $products, $notify = true ) {
 		$products_to_update = [];
 		$products_to_delete = [];
 
-		if ( $this->notifications_service->is_ready() ) {
-			$this->handle_update_product_notification( $products[0] );
-		}
-
 		foreach ( $products as $product ) {
+
+			if ( ! $product instanceof WC_Product ) {
+				continue;
+			}
+
 			$product_id = $product->get_id();
+
+			// Avoid to handle variations directly. We handle them from the parent.
+			if ( $this->notifications_service->is_ready() && $notify ) {
+				$this->handle_update_product_notification( $product );
+			}
 
 			// Bail if an event is already scheduled for this product in the current request
 			if ( $this->is_already_scheduled_to_update( $product_id ) ) {
@@ -227,8 +232,8 @@ class SyncerHooks implements Service, Registerable {
 
 			// If it's a variable product we handle each variation separately
 			if ( $product instanceof WC_Product_Variable ) {
-				$this->handle_update_products( $product->get_available_variations( 'objects' ) );
-
+				// This is only for MC Push mechanism. We don't handle notifications here.
+				$this->handle_update_products( $product->get_available_variations( 'objects' ), false );
 				continue;
 			}
 
@@ -276,6 +281,13 @@ class SyncerHooks implements Service, Registerable {
 					'topic'   => NotificationsService::TOPIC_PRODUCT_CREATED,
 				]
 			);
+
+			// Variations are not handled when the parent is created.
+			if ( $product instanceof WC_Product_Variable ) {
+				foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
+					$this->handle_update_product_notification( $variation );
+				}
+			}
 		} elseif ( $this->product_helper->should_trigger_update_notification( $product ) ) {
 			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_UPDATE );
 			$this->product_notification_job->schedule(
@@ -285,13 +297,7 @@ class SyncerHooks implements Service, Registerable {
 				]
 			);
 		} elseif ( $this->product_helper->should_trigger_delete_notification( $product ) ) {
-			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-			$this->product_notification_job->schedule(
-				[
-					'item_id' => $product->get_id(),
-					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
-				]
-			);
+			$this->schedule_delete_notification( $product );
 		}
 	}
 
@@ -302,6 +308,10 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function handle_delete_product( int $product_id ) {
 		if ( $this->notifications_service->is_ready() ) {
+			/**
+			 * For deletions, we do send directly the notification instead of scheduling it.
+			 * This is because we want to avoid that the product is not in the database anymore when the scheduled action runs.
+			*/
 			$this->maybe_send_delete_notification( $product_id );
 		}
 
@@ -315,22 +325,38 @@ class SyncerHooks implements Service, Registerable {
 	}
 
 	/**
-	 * Schedules a job to send the product deletion notification
+	 * Maybe send the product deletion notification
+	 * and mark the product as un-synced after.
 	 *
 	 * @since x.x.x
 	 * @param int $product_id
 	 */
 	protected function maybe_send_delete_notification( int $product_id ) {
 		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product && $this->product_helper->should_trigger_delete_notification( $product ) ) {
-			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
-			$this->product_notification_job->schedule(
-				[
-					'item_id' => $product->get_id(),
-					'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
-				]
-			);
+
+		if ( $product instanceof WC_Product && $this->product_helper->has_notified_creation( $product ) ) {
+			$result = $this->notifications_service->notify( NotificationsService::TOPIC_PRODUCT_DELETED, $product_id, [ 'offer_id' => $this->product_helper->get_offer_id( $product_id ) ] );
+			if ( $result ) {
+				$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_DELETED );
+				$this->product_helper->mark_as_unsynced( $product );
+			}
 		}
+	}
+
+	/**
+	 * Schedules a job to send the product deletion notification
+	 *
+	 * @since x.x.x
+	 * @param WC_Product $product
+	 */
+	protected function schedule_delete_notification( $product ) {
+		$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_DELETE );
+		$this->product_notification_job->schedule(
+			[
+				'item_id' => $product->get_id(),
+				'topic'   => NotificationsService::TOPIC_PRODUCT_DELETED,
+			]
+		);
 	}
 
 	/**

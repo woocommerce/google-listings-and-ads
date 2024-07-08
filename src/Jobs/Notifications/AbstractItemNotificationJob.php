@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 
 defined( 'ABSPATH' ) || exit;
@@ -35,9 +36,17 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 		$topic = $args['topic'];
 		$data  = $args['data'] ?? [];
 
-		if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $topic, $item, $data ) ) {
-			$this->set_status( $item, $this->get_after_notification_status( $topic ) );
-			$this->handle_notified( $topic, $item );
+		try {
+			if ( $this->can_process( $item, $topic ) && $this->notifications_service->notify( $topic, $item, $data ) ) {
+				$this->set_status( $item, $this->get_after_notification_status( $topic ) );
+				$this->handle_notified( $topic, $item );
+			}
+		} catch ( InvalidValue $e ) {
+			do_action(
+				'woocommerce_gla_error',
+				sprintf( 'Error sending Notification for - Item ID: %s - Topic: %s - Data %s. Product was deleted from the database before the notification was sent.', $item, $topic, json_encode( $data ) ),
+				__METHOD__
+			);
 		}
 	}
 
@@ -46,6 +55,7 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 *
 	 * @param int    $item_id
 	 * @param string $status
+	 * @throws InvalidValue If the given ID doesn't reference a valid product.
 	 */
 	protected function set_status( int $item_id, string $status ): void {
 		$item = $this->get_item( $item_id );
@@ -75,6 +85,7 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 *
 	 * @param int    $item_id
 	 * @param string $topic
+	 * @throws InvalidValue If the given ID doesn't reference a valid product.
 	 * @return bool
 	 */
 	protected function can_process( int $item_id, string $topic ): bool {
@@ -94,6 +105,7 @@ abstract class AbstractItemNotificationJob extends AbstractNotificationJob {
 	 *
 	 * @param string $topic
 	 * @param int    $item
+	 * @throws InvalidValue If the given ID doesn't reference a valid product.
 	 */
 	protected function handle_notified( string $topic, int $item ): void {
 		if ( $this->is_delete_topic( $topic ) ) {

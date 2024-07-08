@@ -46,6 +46,10 @@ class ProductNotificationJobTest extends AbstractItemNotificationJobTest {
 					->method( 'should_trigger_delete_notification' )
 					->willReturn( true );
 
+		$this->job->get_helper()->expects( $this->once() )
+					->method( 'get_offer_id' )
+					->willReturn( "gla_{$id}" );
+
 		$this->notification_service->expects( $this->once() )->method( 'notify' )->with(
 			$topic,
 			$id,
@@ -57,45 +61,6 @@ class ProductNotificationJobTest extends AbstractItemNotificationJobTest {
 				'item_id' => $id,
 				'topic'   => $topic,
 			]
-		);
-	}
-
-	public function test_sends_filtered_offer_id_on_delete() {
-		$item  = $this->create_item();
-		$id    = $item->get_id();
-		$topic = $this->get_topic_name() . '.delete';
-
-		add_filter(
-			'woocommerce_gla_get_google_product_offer_id',
-			function ( $value, $product_id ) {
-				return "custom_{$product_id}";
-			},
-			10,
-			2
-		);
-
-		$this->job->get_helper()->expects( $this->once() )
-					->method( 'should_trigger_delete_notification' )
-					->willReturn( true );
-
-		$this->notification_service->expects( $this->once() )->method( 'notify' )->with(
-			$topic,
-			$id,
-			[ 'offer_id' => "custom_{$id}" ]
-		)->willReturn( true );
-
-		$this->job->handle_process_items_action(
-			[
-				'item_id' => $id,
-				'topic'   => $topic,
-			]
-		);
-
-		remove_filter(
-			'woocommerce_gla_get_google_product_offer_id',
-			function ( $value, $product_id ) {
-				return "custom_{$product_id}";
-			}
 		);
 	}
 }

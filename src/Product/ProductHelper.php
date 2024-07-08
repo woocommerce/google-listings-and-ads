@@ -397,6 +397,11 @@ class ProductHelper implements Service, HelperNotificationInterface {
 			$product->get_status() === 'publish' &&
 			in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true );
 
+		if ( $is_ready && $product instanceof WC_Product_Variation ) {
+			$parent   = $this->maybe_swap_for_parent( $product );
+			$is_ready = $this->is_ready_to_notify( $parent );
+		}
+
 		/**
 		 * Allow users to filter if a product is ready to notify.
 		 *
@@ -750,5 +755,17 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	public function get_categories( WC_Product $product ): array {
 		$terms = get_the_terms( $product->get_id(), 'product_cat' );
 		return ( empty( $terms ) || is_wp_error( $terms ) ) ? [] : wp_list_pluck( $terms, 'name' );
+	}
+
+	/**
+	 * Get the offer id for a product
+	 *
+	 * @since x.x.x
+	 * @param int $product_id The product id to get the offer id.
+	 *
+	 * @return string The offer id
+	 */
+	public function get_offer_id( int $product_id ) {
+		return WCProductAdapter::get_google_product_offer_id( $this->get_slug(), $product_id );
 	}
 }
