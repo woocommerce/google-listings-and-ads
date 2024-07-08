@@ -291,8 +291,8 @@ export function getProductBlockEditorUtils( page ) {
 	const locators = {
 		getTab( tabName ) {
 			return page
-				.getByRole( 'tablist' )
-				.getByRole( 'button', { name: tabName } );
+				.locator( '.woocommerce-product-tabs' )
+				.getByRole( 'tab', { name: tabName } );
 		},
 
 		getPluginTab() {
