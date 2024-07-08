@@ -507,17 +507,20 @@ export function getProductBlockEditorUtils( page ) {
 	};
 
 	const assertions = {
-		async assertUnableSave() {
+		async assertUnableSave( message = 'Please enter a valid value.' ) {
 			await this.clickSave();
 
 			const failureNotice = page
-				.getByRole( 'button' )
-				.filter( { hasText: 'Failed to save product' } );
+				.locator( '.components-snackbar__content' )
+				.filter( { hasText: new RegExp( message ) } );
+
+			const failureNoticeDismissButton = failureNotice
+				.getByRole( 'button' );
 
 			await expect( failureNotice ).toBeVisible();
 
 			// Dismiss the notice.
-			await failureNotice.click();
+			await failureNoticeDismissButton.click();
 			await expect( failureNotice ).toHaveCount( 0 );
 		},
 	};

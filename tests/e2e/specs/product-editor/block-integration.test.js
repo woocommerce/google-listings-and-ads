@@ -529,7 +529,7 @@ test.describe( 'Product Block Editor integration', () => {
 
 		await input.fill( '-1' );
 
-		await editorUtils.assertUnableSave();
+		await editorUtils.assertUnableSave( 'The minimum value of the field is 0' );
 		await expect( help ).toBeVisible();
 		await expect( help ).toHaveText(
 			await editorUtils.evaluateValidationMessage( input )
