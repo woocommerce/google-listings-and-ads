@@ -252,7 +252,7 @@ class OAuthServiceTest extends UnitTest {
 		$this->expect_track_event(
 			'revoke_wpcom_api_authorization',
 			[
-				'status'  => 'error',
+				'status'  => 400,
 				'error'   => 'error message',
 				'blog_id' => Jetpack_Options::get_option( 'id' ),
 			]

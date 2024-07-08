@@ -580,7 +580,7 @@ class AccountService implements OptionsAwareInterface, Service {
 			*
 			* @event update_wpcom_api_authorization
 			* @property string status The status of the request.
-			* @property string blog_id The blog ID.
+			* @property int|null blog_id The blog ID.
 			*/
 			do_action(
 				'woocommerce_gla_track_event',
@@ -599,7 +599,7 @@ class AccountService implements OptionsAwareInterface, Service {
 			*
 			* @event update_wpcom_api_authorization
 			* @property string status The status of the request.
-			* @property string blog_id The blog ID.
+			* @property int|null blog_id The blog ID.
 			*/
 			do_action(
 				'woocommerce_gla_track_event',
