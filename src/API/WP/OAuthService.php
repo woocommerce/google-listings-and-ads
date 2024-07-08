@@ -159,15 +159,71 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 		$request = $this->container->get( Jetpack::class )->remote_request( $args );
 
 		if ( is_wp_error( $request ) ) {
+
+			/**
+			 * When the WPCOM token has been revoked with errors.
+			 *
+			 * @event revoke_wpcom_api_authorization
+			 * @property int status The status of the request.
+			 * @property string error The error message.
+			 * @property int|null blog_id The blog ID.
+			 */
+			do_action(
+				'woocommerce_gla_track_event',
+				'revoke_wpcom_api_authorization',
+				[
+					'status'  => 400,
+					'error'   => $request->get_error_message(),
+					'blog_id' => Jetpack_Options::get_option( 'id' ),
+				]
+			);
+
 			throw new Exception( $request->get_error_message(), 400 );
 		} else {
 			$body   = wp_remote_retrieve_body( $request );
 			$status = wp_remote_retrieve_response_code( $request );
 
 			if ( ! $status || $status !== 200 ) {
-				$data = json_decode( $body, true );
-				throw new Exception( $data['message'] ?? 'Error revoking access to WPCOM.', $status );
+				$data    = json_decode( $body, true );
+				$message = $data['message'] ?? 'Error revoking access to WPCOM.';
+
+				/**
+				*
+				* When the WPCOM token has been revoked with errors.
+				*
+				* @event revoke_wpcom_api_authorization
+				* @property int status The status of the request.
+				* @property string error The error message.
+				* @property int|null blog_id The blog ID.
+				 */
+				do_action(
+					'woocommerce_gla_track_event',
+					'revoke_wpcom_api_authorization',
+					[
+						'status'  => $status,
+						'error'   => $message,
+						'blog_id' => Jetpack_Options::get_option( 'id' ),
+					]
+				);
+
+				throw new Exception( $message, $status );
 			}
+
+			/**
+			* When the WPCOM token has been revoked successfully.
+			*
+			* @event revoke_wpcom_api_authorization
+			* @property int status The status of the request.
+			* @property int|null blog_id The blog ID.
+			 */
+			do_action(
+				'woocommerce_gla_track_event',
+				'revoke_wpcom_api_authorization',
+				[
+					'status'  => 200,
+					'blog_id' => Jetpack_Options::get_option( 'id' ),
+				]
+			);
 
 			$this->container->get( AccountService::class )->reset_wpcom_api_authorization_data();
 			return $body;
