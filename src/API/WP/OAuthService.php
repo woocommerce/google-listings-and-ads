@@ -213,7 +213,7 @@ class OAuthService implements Service, OptionsAwareInterface, Deactivateable, Co
 			* When the WPCOM token has been revoked successfully.
 			*
 			* @event revoke_wpcom_api_authorization
-			* @property string status The status of the request.
+			* @property int status The status of the request.
 			* @property int|null blog_id The blog ID.
 			 */
 			do_action(
