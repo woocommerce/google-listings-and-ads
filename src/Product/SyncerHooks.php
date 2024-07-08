@@ -169,9 +169,7 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	public function update_by_id( int $product_id ) {
 		$product = $this->wc->maybe_get_product( $product_id );
-		if ( $product instanceof WC_Product ) {
-			$this->handle_update_products( [ $product ] );
-		}
+		$this->handle_update_products( [ $product ] );
 	}
 
 	/**
@@ -215,6 +213,11 @@ class SyncerHooks implements Service, Registerable {
 		$products_to_delete = [];
 
 		foreach ( $products as $product ) {
+
+			if ( ! $product instanceof WC_Product ) {
+				continue;
+			}
+
 			$product_id = $product->get_id();
 
 			// Avoid to handle variations directly. We handle them from the parent.
