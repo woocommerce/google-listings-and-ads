@@ -514,8 +514,8 @@ export function getProductBlockEditorUtils( page ) {
 				.locator( '.components-snackbar__content' )
 				.filter( { hasText: new RegExp( message ) } );
 
-			const failureNoticeDismissButton = failureNotice
-				.getByRole( 'button' );
+			const failureNoticeDismissButton =
+				failureNotice.getByRole( 'button' );
 
 			await expect( failureNotice ).toBeVisible();
 
