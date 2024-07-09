@@ -111,6 +111,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.7.6 - 2024-07-09 =
+* Dev - Update connect server URL in test proxy configuration.
+* Tweak - WC 9.1 compatibility.
+* Tweak - WP 6.6 compatibility.
+
 = 2.7.5 - 2024-06-26 =
 * Add - Add an query parameter `campaign=saved` to the dashboard URL after the campaign was created.
 
