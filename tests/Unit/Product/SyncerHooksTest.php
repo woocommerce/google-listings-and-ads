@@ -428,24 +428,45 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 		$product->save();
 	}
 
-	public function test_create_variable_product_triggers_notifications_for_variable_and_variations() {
+	public function test_create_variable_product_triggers_notifications_for_variable_only() {
+		$this->set_mc_and_notifications( true, true );
+		$variable_product = $this->create_variation_product( null, [ 'status' => 'draft' ] );
+		$this->product_notification_job->expects( $this->exactly( 1 ) )
+										->method( 'schedule' )
+										->with(
+											$this->equalTo(
+												[
+													'item_id' => $variable_product->get_id(),
+													'topic'   => NotificationsService::TOPIC_PRODUCT_CREATED,
+												]
+											)
+										);
+
+		$variable_product->set_status( 'publish' );
+		$variable_product->save();
+	}
+
+	public function test_unshow_variable_product_schedules_delete_notifications_for_parent_and_variations() {
 		$this->set_mc_and_notifications( true, true );
 		$variable_product = $this->create_variation_product( null, [ 'status' => 'draft' ] );
 		$ids              = array_merge( [ $variable_product->get_id() ], $variable_product->get_children() );
 		$matcher          = $this->exactly( count( $ids ) );
+		$this->product_helper->set_notification_status( $variable_product, NotificationStatus::NOTIFICATION_CREATED );
+
 		$this->product_notification_job->expects( $matcher )
 										->method( 'schedule' )
 										->with(
 											$this->callback(
 												function ( $args ) use ( $ids, $matcher ) {
-																$this->assertEquals( $args['item_id'], $ids[ $matcher->getInvocationCount() - 1 ] );
-																$this->assertEquals( $args['topic'], NotificationsService::TOPIC_PRODUCT_CREATED );
-																return true;
+													$this->assertEquals( $args['item_id'], $ids[ $matcher->getInvocationCount() - 1 ] );
+													$this->assertEquals( $args['topic'], NotificationsService::TOPIC_PRODUCT_DELETED );
+													return true;
 												}
 											)
 										);
 
 		$variable_product->set_status( 'publish' );
+		$variable_product->add_meta_data( '_wc_gla_visibility', ChannelVisibility::DONT_SYNC_AND_SHOW, true );
 		$variable_product->save();
 	}
 

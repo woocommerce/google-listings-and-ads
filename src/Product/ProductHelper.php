@@ -422,7 +422,7 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	 * @return bool
 	 */
 	public function should_trigger_create_notification( $product ): bool {
-		return $this->is_ready_to_notify( $product ) && ! $this->has_notified_creation( $product );
+		return ! $product instanceof WC_Product_Variation && $this->is_ready_to_notify( $product ) && ! $this->has_notified_creation( $product );
 	}
 
 	/**
@@ -434,7 +434,7 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	 * @return bool
 	 */
 	public function should_trigger_update_notification( $product ): bool {
-		return $this->is_ready_to_notify( $product ) && $this->has_notified_creation( $product );
+		return ! $product instanceof WC_Product_Variation && $this->is_ready_to_notify( $product ) && $this->has_notified_creation( $product );
 	}
 
 	/**
@@ -458,6 +458,10 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	 * @return bool
 	 */
 	public function has_notified_creation( WC_Product $product ): bool {
+		if ( $product instanceof WC_Product_Variation ) {
+			return $this->has_notified_creation( $this->maybe_swap_for_parent( $product ) );
+		}
+
 		$valid_has_notified_creation_statuses = [
 			NotificationStatus::NOTIFICATION_CREATED,
 			NotificationStatus::NOTIFICATION_UPDATED,
