@@ -2,10 +2,10 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
 Requires at least: 5.9
-Tested up to: 6.5
+Tested up to: 6.6
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.7.5
+Stable tag: 2.7.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.7.6 - 2024-07-09 =
+* Dev - Update connect server URL in test proxy configuration.
+* Tweak - WC 9.1 compatibility.
+* Tweak - WP 6.6 compatibility.
+
 = 2.7.5 - 2024-06-26 =
 * Add - Add an query parameter `campaign=saved` to the dashboard URL after the campaign was created.
 
@@ -118,9 +123,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Add - Integration with the WP Consent API plugin.
 * Dev - Add E2E tests for WP Consent API integration.
 * Tweak - Add docs note about WP Consent API integration.
-
-= 2.7.3 - 2024-06-18 =
-* Fix - Fatal error when loading campaign in the marketing overview section.
-* Tweak -  Replace woo.com references with woocommerce.com.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
