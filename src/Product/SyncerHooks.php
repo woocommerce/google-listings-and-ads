@@ -281,13 +281,6 @@ class SyncerHooks implements Service, Registerable {
 					'topic'   => NotificationsService::TOPIC_PRODUCT_CREATED,
 				]
 			);
-
-			// Variations are not handled when the parent is created.
-			if ( $product instanceof WC_Product_Variable ) {
-				foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
-					$this->handle_update_product_notification( $variation );
-				}
-			}
 		} elseif ( $this->product_helper->should_trigger_update_notification( $product ) ) {
 			$this->product_helper->set_notification_status( $product, NotificationStatus::NOTIFICATION_PENDING_UPDATE );
 			$this->product_notification_job->schedule(
@@ -298,6 +291,12 @@ class SyncerHooks implements Service, Registerable {
 			);
 		} elseif ( $this->product_helper->should_trigger_delete_notification( $product ) ) {
 			$this->schedule_delete_notification( $product );
+			// Schedule variation deletion when the parent is deleted.
+			if ( $product instanceof WC_Product_Variable ) {
+				foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
+					$this->handle_update_product_notification( $variation );
+				}
+			}
 		}
 	}
 
