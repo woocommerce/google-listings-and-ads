@@ -99,15 +99,16 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Returns a list of campaigns with targeted locations retrieved from campaign criterion.
 	 *
-	 * @param bool $exclude_removed Exclude removed campaigns (default true).
-	 * @param bool $fetch_criterion Combine the campaign data with criterion data (default true).
+	 * @param bool  $exclude_removed Exclude removed campaigns (default true).
+	 * @param bool  $fetch_criterion Combine the campaign data with criterion data (default true).
+	 * @param array $args Additional arguments.
 	 *
 	 * @return array
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_campaigns( bool $exclude_removed = true, bool $fetch_criterion = true ): array {
+	public function get_campaigns( bool $exclude_removed = true, bool $fetch_criterion = true, $args = [] ): array {
 		try {
-			$query = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() );
+			$query = ( new AdsCampaignQuery( $args ) )->set_client( $this->client, $this->options->get_ads_id() );
 
 			if ( $exclude_removed ) {
 				$query->where( 'campaign.status', 'REMOVED', '!=' );
@@ -117,7 +118,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$campaign_results    = $query->get_results();
 			$converted_campaigns = [];
 
-			foreach ( $campaign_results->iterateAllElements() as $row ) {
+			foreach ( $campaign_results->getPage()->getIterator()  as $row ) {
 				++$campaign_count;
 				$campaign                               = $this->convert_campaign( $row );
 				$converted_campaigns[ $campaign['id'] ] = $campaign;
@@ -161,14 +162,14 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function get_campaign( int $id ): array {
 		try {
-			$campaign_results = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() )
+			$campaign_results = ( new AdsCampaignQuery( [ 'per_page' => 1 ] ) )->set_client( $this->client, $this->options->get_ads_id() )
 				->where( 'campaign.id', $id, '=' )
 				->get_results();
 
 			$converted_campaigns = [];
 
 			// Get only the first element from campaign results
-			foreach ( $campaign_results->iterateAllElements() as $row ) {
+			foreach ( $campaign_results->getPage()->getIterator() as $row ) {
 				$campaign                               = $this->convert_campaign( $row );
 				$converted_campaigns[ $campaign['id'] ] = $campaign;
 				break;

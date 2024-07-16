@@ -91,8 +91,14 @@ abstract class AdsQuery extends Query {
 		}
 
 		$request = new SearchGoogleAdsRequest();
+
+		if ( ! empty( $this->search_args['pageSize'] ) ) {
+			$request->setPageSize( $this->search_args['pageSize'] );
+		}
+
 		$request->setQuery( $this->build_query() );
 		$request->setCustomerId( $this->id );
+
 		$this->results = $this->client->getGoogleAdsServiceClient()->search( $request );
 	}
 }
