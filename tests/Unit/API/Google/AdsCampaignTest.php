@@ -181,10 +181,13 @@ class AdsCampaignTest extends UnitTest {
 		->method( 'search' )
 		->willReturnCallback(
 			function ( $request ) use ( $matcher ) {
-				match ( $matcher->getInvocationCount() ) {
-					1 =>  $this->assertEquals( 2, $request->getPageSize() ), // get_campaigns
-					2 =>  $this->assertEquals( 0, $request->getPageSize() ), // criterion
-				};
+				if($matcher->getInvocationCount() === 1 ){
+					$this->assertEquals( 2, $request->getPageSize() ); // Campaigns
+				}
+
+				if($matcher->getInvocationCount() === 2 ){
+					$this->assertEquals( 0, $request->getPageSize() ); // Criterions
+				}				
 
 				return true;
 			}
