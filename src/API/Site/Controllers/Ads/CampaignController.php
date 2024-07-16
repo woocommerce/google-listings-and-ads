@@ -106,7 +106,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 						$data = $this->prepare_item_for_response( $campaign, $request );
 						return $this->prepare_response_for_collection( $data );
 					},
-					$this->ads_campaign->get_campaigns( $exclude_removed )
+					$this->ads_campaign->get_campaigns( $exclude_removed, true, $request->get_params() )
 				);
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
@@ -318,6 +318,14 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'description'       => __( 'Exclude removed campaigns.', 'google-listings-and-ads' ),
 				'type'              => 'boolean',
 				'default'           => true,
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'per_page'        => [
+				'description'       => __( 'Maximum number of rows to be returned in result data.', 'google-listings-and-ads' ),
+				'type'              => 'integer',
+				'minimum'           => 1,
+				'maximum'           => 1000,
+				'sanitize_callback' => 'absint',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
