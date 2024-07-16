@@ -152,6 +152,67 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_get_campaigns_with_args() {
+		$campaigns_data = [
+			[
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'name'               => 'Test Campaign',
+				'status'             => 'removed',
+				'type'               => 'shopping',
+				'amount'             => 10,
+				'country'            => 'US',
+				'targeted_locations' => [],
+			],
+			[
+				'id'                 => 5678901234,
+				'name'               => 'PMax: Test Campaign',
+				'status'             => 'enabled',
+				'type'               => 'performance_max',
+				'amount'             => 20,
+				'country'            => 'UK',
+				'targeted_locations' => [],
+			],
+		];
+
+		$expected = [
+			[
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'name'               => 'Test Campaign',
+				'status'             => 'removed',
+				'type'               => 'shopping',
+				'amount'             => 10,
+				'country'            => 'US',
+				'targeted_locations' => [],
+			],
+			[
+				'id'                 => 5678901234,
+				'name'               => 'PMax: Test Campaign',
+				'status'             => 'enabled',
+				'type'               => 'performance_max',
+				'amount'             => 20,
+				'country'            => 'UK',
+				'targeted_locations' => [],
+			],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'get_campaigns' )
+			->with(
+				true,
+				true,
+				[
+					'per_page'        => 2,
+					'exclude_removed' => true,
+				]
+			)
+			->willReturn( $campaigns_data );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET', [ 'per_page' => 2 ] );
+
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_get_campaigns_with_api_exception() {
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'get_campaigns' )

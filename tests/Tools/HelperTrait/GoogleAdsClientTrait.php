@@ -191,10 +191,16 @@ trait GoogleAdsClientTrait {
 		$campaign_criterion_row_mock = array_map( [ $this, 'generate_campaign_criterion_row_mock' ], $campaign_criterion_responses );
 
 		$list_response = $this->createMock( PagedListResponse::class );
-		$list_response->method( 'iterateAllElements' )->willReturnOnConsecutiveCalls(
+		$page          = $this->createMock( Page::class );
+		$page->method( 'getIterator' )->willReturn(
 			$campaigns_row_mock,
+		);
+
+		$list_response->method( 'iterateAllElements' )->willReturn(
 			$campaign_criterion_row_mock
 		);
+
+		$list_response->method( 'getPage' )->willReturn( $page );
 
 		$this->service_client
 			->method( 'search' )->willReturn( $list_response );
@@ -205,7 +211,9 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_ads_campaign_query_mock_with_no_campaigns() {
 		$list_response = $this->createMock( PagedListResponse::class );
-		$list_response->method( 'iterateAllElements' )->willReturn( [] );
+		$page          = $this->createMock( Page::class );
+		$page->method( 'getIterator' )->willReturn( [] );
+		$list_response->method( 'getPage' )->willReturn( $page );
 
 		// Method search() will only being called once by AdsCampaignQuery
 		// since there were no campaigns returned by AdsCampaignQuery, it
