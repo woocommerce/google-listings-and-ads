@@ -195,22 +195,36 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			],
 		];
 
-		$this->ads_campaign->expects( $this->once() )
+		$matcher = $this->exactly( 2 );
+		$this->ads_campaign->expects( $matcher ) // We will make two requests with different per_page values.
 			->method( 'get_campaigns' )
-			->with(
-				true,
-				true,
-				[
-					'per_page'        => 2,
-					'exclude_removed' => true,
-				]
-			)
-			->willReturn( $campaigns_data );
+			->willReturnCallback(
+				function ( $exclude_removed, $fetch_criterion, $args ) use ( $matcher ) {
+					$this->assertTrue( $exclude_removed );
+					$this->assertTrue( $fetch_criterion );
 
-		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET', [ 'per_page' => 2 ] );
+					if ( $matcher->getInvocationCount() === 1 ) {
+						$this->assertEquals( 2, $args['per_page'] ); // First request.
+					}
 
+					if ( $matcher->getInvocationCount() === 2 ) {
+						$this->assertEquals( 1, $args['per_page'] ); // Second request.
+					}
+
+					return true;
+				}
+			)->willReturnOnConsecutiveCalls( $campaigns_data, [ $campaigns_data[0] ] );
+
+		$response   = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET', [ 'per_page' => 2 ] );
+		$response_2 = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET', [ 'per_page' => 1 ] );
+
+		// First request.
 		$this->assertEquals( $expected, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
+
+		// Second request.
+		$this->assertEquals( [ $expected[0] ], $response_2->get_data() );
+		$this->assertEquals( 200, $response_2->get_status() );
 	}
 
 	public function test_get_campaigns_with_api_exception() {
