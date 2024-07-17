@@ -58,10 +58,14 @@ const BudgetSection = ( { formProps, disabled = false, children } ) => {
 			<Section
 				disabled={ disabled }
 				title={ __( 'Set your budget', 'google-listings-and-ads' ) }
-				description={ __(
-					'With Performance Max campaigns, you can set your own budget and Google’s Smart Bidding technology will serve the most appropriate ad, with the optimal bid, to maximize campaign performance. You only pay when people click on your ads, and you can start or stop your campaign whenever you want.',
-					'google-listings-and-ads'
-				) }
+				description={
+					<p>
+						{ __(
+							'With Performance Max campaigns, you can set your own budget and Google’s Smart Bidding technology will serve the most appropriate ad, with the optimal bid, to maximize campaign performance. You only pay when people click on your ads, and you can start or stop your campaign whenever you want.',
+							'google-listings-and-ads'
+						) }
+					</p>
+				}
 			>
 				<Section.Card>
 					<Section.Card.Body className="gla-budget-section__card-body">
