@@ -102,11 +102,12 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param bool  $exclude_removed Exclude removed campaigns (default true).
 	 * @param bool  $fetch_criterion Combine the campaign data with criterion data (default true).
 	 * @param array $args Arguments for the Ads Campaign Query for example: per_page for limiting the number of results.
+	 * @param bool  $return_pagination_params Whether to return pagination params (default false).
 	 *
 	 * @return array
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_campaigns( bool $exclude_removed = true, bool $fetch_criterion = true, $args = [] ): array {
+	public function get_campaigns( bool $exclude_removed = true, bool $fetch_criterion = true, $args = [], $return_pagination_params = false ): array {
 		try {
 			$query = ( new AdsCampaignQuery( $args ) )->set_client( $this->client, $this->options->get_ads_id() );
 
@@ -118,7 +119,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$campaign_results    = $query->get_results();
 			$converted_campaigns = [];
 
-			foreach ( $campaign_results->getPage()->getIterator()  as $row ) {
+			/** @var Page $page */
+			$page = $campaign_results->getPage();
+
+			foreach ( $page->getIterator()  as $row ) {
 				++$campaign_count;
 				$campaign                               = $this->convert_campaign( $row );
 				$converted_campaigns[ $campaign['id'] ] = $campaign;
@@ -137,6 +141,16 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$converted_campaigns = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
 			}
 
+			if ( $return_pagination_params ) {
+				// Total results across all pages.
+				$total_results   = $page->getResponseObject()->getTotalResultsCount();
+				$next_page_token = $page->getNextPageToken();
+				return [
+					'campaigns'       => array_values( $converted_campaigns ),
+					'total_results'   => $total_results,
+					'next_page_token' => $next_page_token,
+				];
+			}
 			return array_values( $converted_campaigns );
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
