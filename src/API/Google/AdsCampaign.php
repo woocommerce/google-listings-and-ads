@@ -101,7 +101,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * @param bool  $exclude_removed Exclude removed campaigns (default true).
 	 * @param bool  $fetch_criterion Combine the campaign data with criterion data (default true).
-	 * @param array $args Additional arguments.
+	 * @param array $args Arguments for the Ads Campaign Query for example: per_page for limiting the number of results.
 	 *
 	 * @return array
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
