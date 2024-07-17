@@ -173,7 +173,7 @@ class AdsCampaignTest extends UnitTest {
 			],
 		];
 
-		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
+		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data, true );
 
 		$matcher = $this->exactly( 2 );
 		$this->service_client
@@ -193,7 +193,14 @@ class AdsCampaignTest extends UnitTest {
 			}
 		);
 
-		$this->assertEquals( $campaigns_data, $this->campaign->get_campaigns( true, true, [ 'per_page' => 2 ] ) );
+		$this->assertEquals(
+			[
+				'campaigns'       => $campaigns_data,
+				'total_results'   => count( $campaigns_data ),
+				'next_page_token' => '',
+			],
+			$this->campaign->get_campaigns( true, true, [ 'per_page' => 2 ], true )
+		);
 	}
 
 	public function test_get_campaigns_with_nonexist_location_id() {

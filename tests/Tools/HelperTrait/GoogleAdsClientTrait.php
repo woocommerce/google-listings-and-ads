@@ -54,6 +54,7 @@ use Google\Ads\GoogleAds\V16\Services\MutateOperationResponse;
 use Google\Ads\GoogleAds\V16\Services\MutateOperation;
 use Google\Ads\GoogleAds\V16\Services\MutateAssetGroupResult;
 use Google\Ads\GoogleAds\V16\Services\MutateAssetResult;
+use Google\Ads\GoogleAds\V16\Services\SearchGoogleAdsResponse;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
@@ -185,13 +186,22 @@ trait GoogleAdsClientTrait {
 	 *
 	 * @param array $campaigns_responses Set of campaign data to convert.
 	 * @param array $campaign_criterion_responses Set of campaign criterion data to convert.
+	 * @param bool  $assert_pagination Whether to assert pagination.
 	 */
-	protected function generate_ads_campaign_query_mock( array $campaigns_responses, $campaign_criterion_responses ) {
+	protected function generate_ads_campaign_query_mock( array $campaigns_responses, $campaign_criterion_responses, $assert_pagination = false ) {
 		$campaigns_row_mock          = array_map( [ $this, 'generate_campaign_row_mock' ], $campaigns_responses );
 		$campaign_criterion_row_mock = array_map( [ $this, 'generate_campaign_criterion_row_mock' ], $campaign_criterion_responses );
 
 		$list_response = $this->createMock( PagedListResponse::class );
 		$page          = $this->createMock( Page::class );
+
+		if ( $assert_pagination ) {
+			$response_object = $this->createMock( SearchGoogleAdsResponse::class );
+			$response_object->expects( $this->exactly( 1 ) )->method( 'getTotalResultsCount' )->willReturn( count( $campaigns_responses ) );
+			$page->expects( $this->exactly( 1 ) )->method( 'getNextPageToken' )->willReturn( '' );
+			$page->method( 'getResponseObject' )->willReturn( $response_object );
+		}
+
 		$page->method( 'getIterator' )->willReturn(
 			$campaigns_row_mock,
 		);
