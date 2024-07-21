@@ -36,7 +36,7 @@ export default function CampaignPreviewCard() {
 	return (
 		<Section.Card className="gla-campaign-preview-card">
 			<Section.Card.Body>
-				<Flex align="start" gap={ 9 }>
+				<Flex align="start" gap={ 9 } direction={ [ 'column', 'row' ] }>
 					<FlexBlock>
 						<Section.Card.Title>
 							{ __(
