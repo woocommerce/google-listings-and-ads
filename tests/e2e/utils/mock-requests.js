@@ -545,11 +545,19 @@ export default class MockRequests {
 	 * Mock MC as connected.
 	 *
 	 * @param {number} id
+	 * @param {boolean} notificationServiceEnabled
+	 * @param {null|'approved'|'error'|'dissaproved'} wpcomRestApiStatus
 	 */
-	async mockMCConnected( id = 1234 ) {
+	async mockMCConnected(
+		id = 1234,
+		notificationServiceEnabled = false,
+		wpcomRestApiStatus = null
+	) {
 		await this.fulfillMCConnection( {
 			id,
 			status: 'connected',
+			notification_service_enabled: notificationServiceEnabled,
+			wpcom_rest_api_status: wpcomRestApiStatus,
 		} );
 	}
 
@@ -706,5 +714,21 @@ export default class MockRequests {
 			status: 'success',
 			message: 'Successfully synchronized settings with Google.',
 		} );
+	}
+
+	/**
+	 * Fulfill the REST API Authorize request.
+	 *
+	 * @param {Object} payload
+	 * @param {Array} methods
+	 * @return {Promise<void>}
+	 */
+	async fulfillRESTApiAuthorize( payload, methods = [] ) {
+		await this.fulfillRequest(
+			/\/wc\/gla\/rest-api\/authorize\b/,
+			payload,
+			200,
+			methods
+		);
 	}
 }
