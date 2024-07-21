@@ -15,7 +15,7 @@ test.use( { storageState: process.env.ADMINSTATE } );
 test.describe.configure( { mode: 'serial' } );
 
 /**
- * @type {import('../../utils/pages/settings.js').default } settingsPage
+ * @type {import('../utils/pages/settings.js').default } settingsPage
  */
 let settingsPage = null;
 
@@ -35,46 +35,6 @@ test.describe( 'Notifications Feature', () => {
 
 			// Mock google as connected.
 			settingsPage.mockGoogleConnected(),
-
-			// Mock Merchant Center as connected
-			settingsPage.mockMCConnected(),
-
-			// Mock Ads account as connected and claimed.
-			settingsPage.mockAdsAccountConnected(),
-			settingsPage.mockAdsStatusClaimed(),
-
-			// Mock that billing is pending.
-			settingsPage.fulfillBillingStatusRequest( {
-				status: 'pending',
-			} ),
-
-			// Mock MC step as paid_ads
-			settingsPage.mockMCSetup( 'complete' ),
-
-			// Mock MC target audience, only mocks GET method
-			settingsPage.fulfillTargetAudience(
-				{
-					location: 'selected',
-					countries: [ 'US', 'TW', 'GB' ],
-					locale: 'en_US',
-					language: 'English',
-				},
-				[ 'GET' ]
-			),
-
-			// Mock MC contact information
-			settingsPage.mockContactInformation( {
-				phoneNumber: '+18888888888',
-				phoneVerificationStatus: 'verified',
-				streetAddress: 'Calle Automata',
-				country: 'ES',
-				region: 'ES:ZA',
-				postalCode: 50007,
-				isMCAddressDifferent: false,
-			} ),
-
-			// The following mocks are requests will happen after completing the onboarding
-			settingsPage.mockSuccessfulSettingsSyncRequest(),
 		] );
 
 		settingsPage.goto();
