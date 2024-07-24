@@ -57,7 +57,7 @@ test.describe( 'Notifications Schedule', () => {
 		await page.close();
 	} );
 
-	test( 'When access is granted and Product is created - Notifications are scheduled', async () => {
+	test( 'When access is granted Notifications are scheduled', async () => {
 		await setNotificationsReady();
 		// Create a new fresh product
 		await productEditor.gotoAddProductPage();
