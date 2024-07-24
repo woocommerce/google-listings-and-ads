@@ -46,7 +46,7 @@ export default class MockRequests {
 	 */
 	async fulfillWCDefaultCountry( payload ) {
 		await this.fulfillRequest(
-			/wc-admin\/options\?options=woocommerce_default_country\b/,
+			/wc-admin\/options\?options=.*woocommerce_default_country\b/,
 			payload
 		);
 	}

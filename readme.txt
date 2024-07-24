@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.6
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.7.6
+Stable tag: 2.7.7
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.7.7 - 2024-07-24 =
+* Dev - Fix E2E tests failed with WC 9.1.
+* Tweak -   Make campaign preview card responsive.
+
 = 2.7.6 - 2024-07-09 =
 * Dev - Update connect server URL in test proxy configuration.
 * Tweak - WC 9.1 compatibility.
@@ -118,10 +122,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 = 2.7.5 - 2024-06-26 =
 * Add - Add an query parameter `campaign=saved` to the dashboard URL after the campaign was created.
-
-= 2.7.4 - 2024-06-25 =
-* Add - Integration with the WP Consent API plugin.
-* Dev - Add E2E tests for WP Consent API integration.
-* Tweak - Add docs note about WP Consent API integration.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
