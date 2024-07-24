@@ -112,3 +112,17 @@ export async function setOnboardedMerchant() {
 export async function clearOnboardedMerchant() {
 	await api().delete( 'gla-test/onboarded-merchant' );
 }
+
+/**
+ * Set Notifications Ready.
+ */
+export async function setNotificationsReady() {
+	await api().post( 'gla-test/notifications-ready' );
+}
+
+/**
+ * Clear Onboarded Merchant.
+ */
+export async function clearNotificationsReady() {
+	await api().delete( 'gla-test/notifications-ready' );
+}

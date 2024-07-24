@@ -6,16 +6,16 @@ import { expect, test } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import SettingsPage from '../utils/pages/settings';
-import { clearOnboardedMerchant, setOnboardedMerchant } from '../utils/api';
-import { LOAD_STATE } from '../utils/constants';
+import SettingsPage from '../../utils/pages/settings';
+import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
+import { LOAD_STATE } from '../../utils/constants';
 
 test.use( { storageState: process.env.ADMINSTATE } );
 
 test.describe.configure( { mode: 'serial' } );
 
 /**
- * @type {import('../utils/pages/settings.js').default } settingsPage
+ * @type {import('../../utils/pages/settings.js').default } settingsPage
  */
 let settingsPage = null;
 
@@ -24,7 +24,7 @@ let settingsPage = null;
  */
 let page = null;
 
-test.describe( 'Notifications Feature', () => {
+test.describe( 'Notifications Banner', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		settingsPage = new SettingsPage( page );
