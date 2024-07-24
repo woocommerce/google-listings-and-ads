@@ -111,6 +111,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.7.7 - 2024-07-24 =
+* Dev - Fix E2E tests failed with WC 9.1.
+* Tweak -   Make campaign preview card responsive.
+
 = 2.7.6 - 2024-07-09 =
 * Dev - Update connect server URL in test proxy configuration.
 * Tweak - WC 9.1 compatibility.
