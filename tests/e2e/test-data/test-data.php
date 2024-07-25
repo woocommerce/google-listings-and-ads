@@ -13,7 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 
 add_action( 'rest_api_init', __NAMESPACE__ . '\register_routes' );
-apply_filters( 'woocommerce_gla_notify', false); // avoid any request to google in the tests
+add_filter( 'woocommerce_gla_notify', '__return_false'); // avoid any request to google in the tests
 
 /**
  * Register routes for setting test data.

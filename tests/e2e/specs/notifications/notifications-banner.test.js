@@ -52,7 +52,7 @@ test.describe( 'Notifications Banner', () => {
 
 	test( 'Grant Access button is visible on Settings page when notifications service is enabled', async () => {
 		// Mock Merchant Center as connected
-		settingsPage.mockMCConnected( 1234, true );
+		await settingsPage.mockMCConnected( 1234, true );
 		const button = settingsPage.getGrantAccessBtn();
 
 		await expect( button ).toBeVisible();
@@ -61,8 +61,8 @@ test.describe( 'Notifications Banner', () => {
 	test( 'When click on Grant Access button redirect to Auth page', async () => {
 		const mockAuthURL = 'https://example.com';
 		// Mock Merchant Center as connected
-		settingsPage.mockMCConnected( 1234, true );
-		settingsPage.fulfillRESTApiAuthorize( { auth_url: mockAuthURL } );
+		await settingsPage.mockMCConnected( 1234, true );
+		await settingsPage.fulfillRESTApiAuthorize( { auth_url: mockAuthURL } );
 		const button = settingsPage.getGrantAccessBtn();
 
 		button.click();
@@ -72,8 +72,8 @@ test.describe( 'Notifications Banner', () => {
 	} );
 
 	test( 'When REST API is Approved it shows a success notice in MC and allows to disable it', async () => {
-		settingsPage.goto();
-		settingsPage.mockMCConnected( 1234, true, 'approved' );
+		await settingsPage.goto();
+		await settingsPage.mockMCConnected( 1234, true, 'approved' );
 		const grantedAccessMessage = page
 			.locator( '#woocommerce-layout__primary' )
 			.getByText(
@@ -99,24 +99,24 @@ test.describe( 'Notifications Banner', () => {
 		} );
 
 		await expect( disableDataFetchButton ).toBeVisible();
-		disableDataFetchButton.click();
+		await disableDataFetchButton.click();
 
 		await expect( modalConfirmBtn ).toBeDisabled();
 		await expect( modalDismissBtn ).toBeEnabled();
 		await expect( modalCheck ).toBeVisible();
-		modalCheck.check();
+		await modalCheck.check();
 		await expect( modalConfirmBtn ).toBeEnabled();
-		modalConfirmBtn.click();
+		await modalConfirmBtn.click();
 		await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 		await page.waitForURL( /path=%2Fgoogle%2Fsettings/ );
 		await expect( modalConfirmBtn ).not.toBeVisible();
 	} );
 
 	test( 'When REST API is Error it shows a waring notice in MC and allows to grant access', async () => {
-		settingsPage.goto();
-		settingsPage.mockMCConnected( 1234, true, 'error' );
+		await settingsPage.goto();
+		await settingsPage.mockMCConnected( 1234, true, 'error' );
 		const mockAuthURL = 'https://example.com';
-		settingsPage.fulfillRESTApiAuthorize( { auth_url: mockAuthURL } );
+		await settingsPage.fulfillRESTApiAuthorize( { auth_url: mockAuthURL } );
 		const errorAccessMessage = page
 			.locator( '#woocommerce-layout__primary' )
 			.getByText(
@@ -128,7 +128,7 @@ test.describe( 'Notifications Banner', () => {
 		} );
 		await expect( errorAccessMessage ).toBeVisible();
 		await expect( grantAccessBtn ).toBeVisible();
-		grantAccessBtn.click();
+		await grantAccessBtn.click();
 		await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 		await page.waitForURL( mockAuthURL );
 		expect( page.url() ).toMatch( mockAuthURL );

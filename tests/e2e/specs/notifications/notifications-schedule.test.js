@@ -12,6 +12,7 @@ import {
 	setNotificationsReady,
 	clearOnboardedMerchant,
 	setOnboardedMerchant,
+	clearNotificationsReady,
 } from '../../utils/api';
 
 test.use( { storageState: process.env.ADMINSTATE } );
@@ -41,24 +42,25 @@ test.describe( 'Notifications Schedule', () => {
 		page = await browser.newPage();
 		productEditor = getClassicProductEditorUtils( page );
 		mockRequests = new MockRequests( page );
-		await mockRequests.mockMCConnected( 1234, true, 'approved' );
 		await setOnboardedMerchant();
+		await setNotificationsReady();
 		await Promise.all( [
 			// Mock Jetpack as connected
 			mockRequests.mockJetpackConnected(),
 
 			// Mock google as connected.
 			mockRequests.mockGoogleConnected(),
+			mockRequests.mockMCConnected( 1234, true, 'approved' ),
 		] );
 	} );
 
 	test.afterAll( async () => {
 		await clearOnboardedMerchant();
+		await clearNotificationsReady();
 		await page.close();
 	} );
 
 	test( 'When access is granted Notifications are scheduled', async () => {
-		await setNotificationsReady();
 		// Create a new fresh product
 		await productEditor.gotoAddProductPage();
 		await productEditor.fillProductName();
