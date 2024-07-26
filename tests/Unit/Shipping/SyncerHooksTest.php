@@ -4,7 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ShippingNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\SyncerHooks;
@@ -27,8 +29,14 @@ class SyncerHooksTest extends UnitTest {
 	/** @var MockObject|GoogleSettings $google_settings */
 	protected $google_settings;
 
+	/** @var MockObject|NotificationsService $notification_service */
+	protected $notification_service;
+
 	/** @var MockObject|UpdateShippingSettings $update_shipping_job */
 	protected $update_shipping_job;
+
+	/** @var MockObject|ShippingNotificationJob $shipping_notification_job */
+	protected $shipping_notification_job;
 
 	/** @var MockObject|JobRepository $job_repository */
 	protected $job_repository;
@@ -185,6 +193,39 @@ class SyncerHooksTest extends UnitTest {
 		$zone->save();
 	}
 
+	public function test_saving_shipping_zone_doesnt_schedule_notifications_when_disabled() {
+		$this->mock_sync_ready_flags_and_register_hooks( true, true );
+
+		$this->notification_service->expects( $this->once() )
+			->method( 'is_ready' );
+
+		$this->shipping_notification_job->expects( $this->never() )
+			->method( 'schedule' );
+
+		$zone = new WC_Shipping_Zone();
+		$zone->set_zone_name( 'GB' );
+		$zone->add_location( 'GB', 'country' );
+		$zone->save();
+	}
+
+	public function test_saving_shipping_zone_doesnt_schedule_notifications_when_enabled() {
+		$this->mock_sync_ready_flags_and_register_hooks( true, true );
+
+		$this->notification_service->expects( $this->once() )
+			->method( 'is_ready' )->willReturn( true );
+
+		$this->shipping_notification_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$this->update_shipping_job->expects( $this->once() )
+			->method( 'schedule' );
+
+		$zone = new WC_Shipping_Zone();
+		$zone->set_zone_name( 'GB' );
+		$zone->add_location( 'GB', 'country' );
+		$zone->save();
+	}
+
 	/**
 	 * Mocks the validation methods that allow/disallow the shipping settings to be synced.
 	 *
@@ -226,18 +267,23 @@ class SyncerHooksTest extends UnitTest {
 			]
 		);
 
-		$this->merchant_center     = $this->createMock( MerchantCenterService::class );
-		$this->google_settings     = $this->createMock( GoogleSettings::class );
-		$this->update_shipping_job = $this->createMock( UpdateShippingSettings::class );
-		$this->job_repository      = $this->createMock( JobRepository::class );
+		$this->notification_service      = $this->createMock( NotificationsService::class );
+		$this->merchant_center           = $this->createMock( MerchantCenterService::class );
+		$this->google_settings           = $this->createMock( GoogleSettings::class );
+		$this->update_shipping_job       = $this->createMock( UpdateShippingSettings::class );
+		$this->shipping_notification_job = $this->createMock( ShippingNotificationJob::class );
+		$this->job_repository            = $this->createMock( JobRepository::class );
 		$this->job_repository->expects( $this->any() )
 			->method( 'get' )
 			->willReturnMap(
 				[
+					[ ShippingNotificationJob::class, $this->shipping_notification_job ],
 					[ UpdateShippingSettings::class, $this->update_shipping_job ],
 				]
 			);
 
-		$this->syncer_hooks = new SyncerHooks( $this->merchant_center, $this->google_settings, $this->job_repository );
+		add_filter( 'woocommerce_gla_notifications_enabled', '__return_false' );
+
+		$this->syncer_hooks = new SyncerHooks( $this->merchant_center, $this->google_settings, $this->job_repository, $this->notification_service );
 	}
 }

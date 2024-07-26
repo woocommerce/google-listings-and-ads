@@ -44,6 +44,9 @@ defined( 'ABSPATH' ) || exit;
  * @method update_mc_status( WC_Product $product, string $value )
  * @method delete_mc_status( WC_Product $product )
  * @method get_mc_status( WC_Product $product ): string|null
+ * @method update_notification_status( WC_Product $product, string $value )
+ * @method delete_notification_status( WC_Product $product )
+ * @method get_notification_status( WC_Product $product ): string|null
  */
 class ProductMetaHandler implements Service, Registerable {
 
@@ -58,6 +61,7 @@ class ProductMetaHandler implements Service, Registerable {
 	public const KEY_SYNC_FAILED_AT         = 'sync_failed_at';
 	public const KEY_SYNC_STATUS            = 'sync_status';
 	public const KEY_MC_STATUS              = 'mc_status';
+	public const KEY_NOTIFICATION_STATUS    = 'notification_status';
 
 	protected const TYPES = [
 		self::KEY_SYNCED_AT              => 'int',
@@ -69,6 +73,7 @@ class ProductMetaHandler implements Service, Registerable {
 		self::KEY_SYNC_FAILED_AT         => 'int',
 		self::KEY_SYNC_STATUS            => 'string',
 		self::KEY_MC_STATUS              => 'string',
+		self::KEY_NOTIFICATION_STATUS    => 'string',
 	];
 
 	/**

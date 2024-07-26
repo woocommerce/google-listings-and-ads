@@ -28,6 +28,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroupAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\OAuthService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
@@ -44,6 +45,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\RequestReviewStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -194,6 +196,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		PolicyComplianceCheck::class     => true,
 		ContactInformation::class        => true,
 		MerchantCenterService::class     => true,
+		NotificationsService::class      => true,
 		TargetAudience::class            => true,
 		MerchantAccountState::class      => true,
 		AdsAccountState::class           => true,
@@ -211,6 +214,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MerchantAccountService::class    => true,
 		AttributeMapping::class          => true,
 		MarketingChannelRegistrar::class => true,
+		OAuthService::class              => true,
 	];
 
 	/**
@@ -248,6 +252,13 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
+
+		// Set up Notifications service.
+		$this->share_with_tags( NotificationsService::class, MerchantCenterService::class );
+
+		// Set up OAuthService service.
+		$this->share_with_tags( OAuthService::class );
+
 		$this->getLeagueContainer()
 			->inflector( MerchantCenterAwareInterface::class )
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
@@ -320,7 +331,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class );
 
 		// Product attributes
-		$this->conditionally_share_with_tags( AttributeManager::class );
+		$this->conditionally_share_with_tags( AttributeManager::class, AttributeMappingRulesQuery::class, WC::class );
 		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 

@@ -12,7 +12,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeMana
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\IsBundle;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Size;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use WC_Helper_Product;
 
 /**
@@ -26,6 +29,12 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 
 	/** @var AttributeManager $attribute_manager */
 	protected $attribute_manager;
+
+	/** @var MockObject|AttributeMappingRulesQuery $attribute_mapping_rules_query */
+	protected $attribute_mapping_rules_query;
+
+	/** @var MockObject|WC $wc */
+	protected $wc;
 
 	public function test_update_throws_exception_if_attribute_inapplicable_to_product() {
 		$variable  = WC_Helper_Product::create_variation_product();
@@ -185,7 +194,7 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		// We need a new instance of AttributeManager because the attribute map created by `AttributeManager:map_attribute_types`
 		// is cached when called previously, which mean that it can not be modified by filters.
 		// Since we can not place the filters to run before `AttributeManager:map_attribute_types`, it's best to create a new instance of our class.
-		$attribute_manager = new AttributeManager();
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
 
 		$brand_id = Brand::get_id();
 		add_filter(
@@ -213,7 +222,7 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		// We need a new instance of AttributeManager because the attribute map created by `AttributeManager:map_attribute_types`
 		// is cached when called previously, which mean that it can not be modified by filters.
 		// Since we can not place the filters to run before `AttributeManager:map_attribute_types`, it's best to create a new instance of our class.
-		$attribute_manager = new AttributeManager();
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
 
 		add_filter(
 			'woocommerce_gla_product_attribute_types',
@@ -228,7 +237,7 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		// We need a new instance of AttributeManager because the attribute map created by `AttributeManager:map_attribute_types`
 		// is cached when called previously, which mean that it can not be modified by filters.
 		// Since we can not place the filters to run before `AttributeManager:map_attribute_types`, it's best to create a new instance of our class.
-		$attribute_manager = new AttributeManager();
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
 
 		add_filter(
 			'woocommerce_gla_product_attribute_types',
@@ -243,11 +252,91 @@ class AttributeManagerTest extends ContainerAwareUnitTest {
 		$attribute_manager->get_attribute_types_for_product_types( [ 'simple' ] );
 	}
 
+	public function test_get_all_aggregated_values_for_simple_product() {
+		$mapping_rules = [
+			[
+				'attribute'               => Size::get_id(),
+				'source'                  => 'product:name',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => GTIN::get_id(),
+				'source'                  => 'product:sku',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+
+		];
+
+		$product = WC_Helper_Product::create_simple_product();
+
+		$this->attribute_manager->update( $product, new Brand( 'Google' ) );
+		$this->attribute_manager->update( $product, new IsBundle( false ) );
+		$this->attribute_manager->update( $product, new GTIN( '12345678' ) );
+
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $mapping_rules );
+		$this->wc->expects( $this->exactly( 0 ) )->method( 'get_product' );
+
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+
+		$attributes = $attribute_manager->get_all_aggregated_values( $product );
+
+		$this->assertCount( 4, $attributes );
+		$this->assertEquals( 'Google', $attributes[ Brand::get_id() ] );
+		$this->assertEquals( false, $attributes[ IsBundle::get_id() ] );
+		$this->assertEquals( '12345678', $attributes[ GTIN::get_id() ] ); // Mapping rules should not override existing values.
+		$this->assertEquals( [ $product->get_name() ], $attributes['sizes'] );
+	}
+
+	public function test_get_all_aggregated_values_for_variable_product() {
+		$variable  = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $variable->get_children()[0] );
+
+		$mapping_rules = [
+			[
+				'attribute'               => Size::get_id(),
+				'source'                  => 'product:name',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+			[
+				'attribute'               => GTIN::get_id(),
+				'source'                  => 'product:sku',
+				'category_condition_type' => 'ALL',
+				'categories'              => '',
+			],
+
+		];
+
+		// Parent Product
+		$this->attribute_manager->update( $variable, new Brand( 'Google' ) );
+
+		$this->attribute_manager->update( $variation, new IsBundle( false ) );
+		$this->attribute_manager->update( $variation, new GTIN( '12345678' ) );
+
+		$this->attribute_mapping_rules_query->expects( $this->exactly( 1 ) )->method( 'get_results' )->willReturn( $mapping_rules );
+		$this->wc->expects( $this->exactly( 1 ) )->method( 'get_product' )->willReturn( $variable );
+
+		$attribute_manager = new AttributeManager( $this->attribute_mapping_rules_query, $this->wc );
+
+		$attributes = $attribute_manager->get_all_aggregated_values( $variation );
+
+		$this->assertCount( 4, $attributes );
+		$this->assertEquals( 'Google', $attributes[ Brand::get_id() ] );
+		$this->assertEquals( false, $attributes[ IsBundle::get_id() ] );
+		$this->assertEquals( '12345678', $attributes[ GTIN::get_id() ] ); // Mapping rules should not override existing values.
+		$this->assertEquals( [ $variation->get_name() ], $attributes['sizes'] );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */
 	public function setUp(): void {
 		parent::setUp();
-		$this->attribute_manager = $this->container->get( AttributeManager::class );
+
+		$this->attribute_mapping_rules_query = $this->createMock( AttributeMappingRulesQuery::class );
+		$this->wc                            = $this->createMock( WC::class );
+		$this->attribute_manager             = $this->container->get( AttributeManager::class );
 	}
 }

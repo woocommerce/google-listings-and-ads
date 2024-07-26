@@ -111,3 +111,10 @@ export const ASSET_FORM_KEY = {
 	...ASSET_KEY,
 	...ASSET_GROUP_KEY,
 };
+
+export const GOOGLE_WPCOM_APP_CONNECTED_STATUS = {
+	APPROVED: 'approved',
+	DISAPPROVED: 'disapproved',
+	ERROR: 'error',
+	DISABLED: 'disabled',
+};
