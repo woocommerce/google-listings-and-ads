@@ -6,6 +6,9 @@ wp-env run tests-cli wp theme activate twentytwentytwo
 echo -e 'Install WooCommerce \n'
 wp-env run tests-cli -- wp plugin install woocommerce --activate
 
+echo -e 'Install WP Consent API \n'
+wp-env run tests-cli -- wp plugin install wp-consent-api --activate
+
 echo -e 'Activate Google for WooCommerce \n'
 wp-env run tests-cli -- wp plugin activate google-listings-and-ads
 

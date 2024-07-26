@@ -1,7 +1,7 @@
 {
 	"name": "google-listings-and-ads",
 	"title": "Google for WooCommerce",
-	"version": "2.7.0",
+	"version": "2.7.7",
 	"description": "Google for WooCommerce",
 	"author": "Automattic",
 	"license": "GPL-3.0-or-later",
@@ -9,7 +9,7 @@
 		"WooCommerce",
 		"Google"
 	],
-	"homepage": "https://woo.com/products/google-listings-and-ads/",
+	"homepage": "https://woocommerce.com/products/google-listings-and-ads/",
 	"repository": {
 		"type": "git",
 		"url": "git@github.com:woocommerce/google-listings-and-ads.git"
