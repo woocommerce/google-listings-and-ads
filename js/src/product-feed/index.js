@@ -18,6 +18,7 @@ import './index.scss';
 import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
 import isWCTracksEnabled from '.~/utils/isWCTracksEnabled';
+import RebrandingTour from '.~/components/tours/rebranding-tour';
 
 const ProductFeed = () => {
 	const [ canCESPromptOpen, setCESPromptOpen ] = useState( false );
@@ -47,15 +48,16 @@ const ProductFeed = () => {
 	return (
 		<>
 			<NavigationClassic />
+			<RebrandingTour />
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
 			{ canCESPromptOpen && (
 				<CustomerEffortScorePrompt
 					label={ __(
-						'How easy was it to set up Google Listings & Ads?',
+						'How easy was it to set up Google for WooCommerce?',
 						'google-listings-and-ads'
 					) }
 					secondLabel={ __(
-						'How easy was it to understand the requirements for the Google Listings & Ads setup?',
+						'How easy was it to understand the requirements for the Google for WooCommerce setup?',
 						'google-listings-and-ads'
 					) }
 					eventContext={ GUIDE_NAMES.SUBMISSION_SUCCESS }

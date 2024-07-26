@@ -20,6 +20,7 @@ import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
 import EnableNewProductSyncNotice from '.~/components/enable-new-product-sync-notice';
 import NavigationClassic from '.~/components/navigation-classic';
+import RebrandingTour from '.~/components/tours/rebranding-tour';
 import './index.scss';
 
 const pageClassName = 'gla-settings';
@@ -65,6 +66,7 @@ const Settings = () => {
 		<div className={ pageClassName }>
 			<EnableNewProductSyncNotice />
 			<NavigationClassic />
+			<RebrandingTour />
 			<ContactInformationPreview />
 			<LinkedAccounts />
 		</div>

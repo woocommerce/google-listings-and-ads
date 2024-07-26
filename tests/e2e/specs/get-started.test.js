@@ -26,10 +26,10 @@ test( 'Merchant who is getting started clicks on the Marketing > GLA link, click
 
 	// the submenu is now opened, the GLA sub menu item is now visible to the user,
 	// we can call `click` now.
-	await page.getByRole( 'link', { name: 'Google Listings & Ads' } ).click();
+	await page.getByRole( 'link', { name: 'Google for WooCommerce' } ).click();
 	await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
-	await expect( page ).toHaveTitle( /Google Listings & Ads/ );
+	await expect( page ).toHaveTitle( /Google for WooCommerce/ );
 
 	// click on the call-to-action button.
 	await page.getByText( 'Start listing products →' ).first().click();
@@ -37,7 +37,7 @@ test( 'Merchant who is getting started clicks on the Marketing > GLA link, click
 
 	// Check we are in the Setup MC page.
 	await expect(
-		page.getByText( 'Get started with Google Listings & Ads' )
+		page.getByText( 'Get started with Google for WooCommerce' )
 	).toBeVisible();
 
 	// There are some API calls running in the page before the steps are displayed.

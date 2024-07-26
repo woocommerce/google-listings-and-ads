@@ -28,7 +28,7 @@ class ExtensionRequirementException extends RuntimeException implements GoogleLi
 		return new static(
 			sprintf(
 				/* translators: 1 the missing plugin name */
-				__( 'Google Listings and Ads requires %1$s to be enabled.', 'google-listings-and-ads' ),
+				__( 'Google for WooCommerce requires %1$s to be enabled.', 'google-listings-and-ads' ),
 				$plugin_name
 			)
 		);
@@ -45,7 +45,7 @@ class ExtensionRequirementException extends RuntimeException implements GoogleLi
 		return new static(
 			sprintf(
 				/* translators: 1 the incompatible plugin name */
-				__( 'Google Listings and Ads is incompatible with %1$s.', 'google-listings-and-ads' ),
+				__( 'Google for WooCommerce is incompatible with %1$s.', 'google-listings-and-ads' ),
 				$plugin_name
 			)
 		);

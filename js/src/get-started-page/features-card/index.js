@@ -60,7 +60,7 @@ const FeaturesCard = () => {
 					variant="body"
 				>
 					{ __(
-						'With Google Listings & Ads, connect with the right shoppers at the right moment when they’re looking to buy products like yours.',
+						'With Google for WooCommerce, connect with the right shoppers at the right moment when they’re looking to buy products like yours.',
 						'google-listings-and-ads'
 					) }
 				</Text>

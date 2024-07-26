@@ -17,7 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 /**
- * Include Google Listings and Ads data in the WC Tracker snapshot.
+ * Include Google for WooCommerce data in the WC Tracker snapshot.
  *
  * ContainerAware used to access:
  * - AdsService
