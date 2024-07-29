@@ -244,6 +244,17 @@ export function getClassicProductEditorUtils( page ) {
 			await this.waitForInteractionReady();
 		},
 
+		async unpublish() {
+			const btn = page.getByRole( 'button', { name: 'Edit status' } );
+
+			await btn.click();
+			await page
+				.getByLabel( 'Set status' )
+				.selectOption( { label: 'Draft' } );
+			await this.clickSave();
+			await this.waitForInteractionReady();
+		},
+
 		waitForInteractionReady() {
 			// Avoiding tests may start to operate the UI before jQuery interactions are initialized,
 			// leading to random failures.
@@ -286,6 +297,18 @@ export function getClassicProductEditorUtils( page ) {
 			// for these processes to complete to avoid some random race conditions.
 			await input.blur();
 			await expect( page.locator( '#sample-permalink' ) ).toBeVisible();
+		},
+
+		async setChannelVisibility( label = 'Sync and show' ) {
+			const channelVisibilityMetabox =
+				await locators.getChannelVisibility().selection;
+			await channelVisibilityMetabox.selectOption( { label } );
+		},
+
+		async setVisibility( visibility = 'Public' ) {
+			const btn = page.getByRole( 'button', { name: 'Edit visibility' } );
+			await btn.click();
+			await page.getByLabel( visibility ).check();
 		},
 
 		evaluateValidity( input ) {
