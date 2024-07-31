@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class AdsCampaignQuery
+ * Class AdsCampaignLabelQuery
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
@@ -14,10 +14,8 @@ class AdsCampaignLabelQuery extends AdsQuery {
 
 	/**
 	 * Query constructor.
-	 *
-	 * @param array $args Query arguments.
 	 */
-	public function __construct( $args = [] ) {
+	public function __construct() {
 		parent::__construct( 'label' );
 		$this->columns(
 			[
