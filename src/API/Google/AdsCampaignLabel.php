@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignLabelQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Ads\GoogleAds\Util\V16\ResourceNames;
@@ -15,8 +14,6 @@ use Google\Ads\GoogleAds\V16\Services\LabelOperation;
 use Google\Ads\GoogleAds\V16\Services\CampaignLabelOperation;
 use Google\Ads\GoogleAds\V16\Services\MutateOperation;
 use Google\Ads\GoogleAds\V16\Services\MutateGoogleAdsRequest;
-use Google\ApiCore\ApiException;
-
 
 /**
  * Class AdsCampaignLabel
@@ -29,7 +26,6 @@ use Google\ApiCore\ApiException;
 class AdsCampaignLabel implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
-	use ExceptionTrait;
 
 	/**
 	 * Temporary ID to use within a batch job.
@@ -62,36 +58,21 @@ class AdsCampaignLabel implements OptionsAwareInterface {
 	 * @param string $name The label name.
 	 *
 	 * @return null|int The label ID.
-	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 *
+	 * @throws ApiException When no results returned or an error occurs.
 	 */
 	protected function get_label_id_by_name( string $name ) {
-		try {
-			$query = new AdsCampaignLabelQuery();
-			$query->set_client( $this->client, $this->options->get_ads_id() );
-			$query->where( 'label.name', $name, '=' );
-			$label_results = $query->get_results();
-			$label_id      = null;
+		$query = new AdsCampaignLabelQuery();
+		$query->set_client( $this->client, $this->options->get_ads_id() );
+		$query->where( 'label.name', $name, '=' );
+		$label_results = $query->get_results();
+		$label_id      = null;
 
-			foreach ( $label_results->iterateAllElements() as $row ) {
-				return $row->getLabel()->getId();
-			}
-
-			return $label_id;
-		} catch ( ApiException $e ) {
-			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-
-			$errors = $this->get_exception_errors( $e );
-			throw new ExceptionWithResponseData(
-				/* translators: %s Error message */
-				sprintf( __( 'Error retrieving label: %s', 'google-listings-and-ads' ), reset( $errors ) ),
-				$this->map_grpc_code_to_http_status_code( $e ),
-				null,
-				[
-					'errors' => $errors,
-					'name'   => $name,
-				]
-			);
+		foreach ( $label_results->iterateAllElements() as $row ) {
+			return $row->getLabel()->getId();
 		}
+
+		return $label_id;
 	}
 
 	/**
