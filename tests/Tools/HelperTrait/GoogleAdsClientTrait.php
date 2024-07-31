@@ -27,6 +27,7 @@ use Google\Ads\GoogleAds\V16\Enums\TrackingCodePageFormatEnum\TrackingCodePageFo
 use Google\Ads\GoogleAds\V16\Enums\TrackingCodeTypeEnum\TrackingCodeType;
 use Google\Ads\GoogleAds\V16\Resources\BillingSetup;
 use Google\Ads\GoogleAds\V16\Resources\Campaign;
+use Google\Ads\GoogleAds\V16\Resources\Label;
 use Google\Ads\GoogleAds\V16\Resources\Asset;
 use Google\Ads\GoogleAds\V16\Resources\AssetGroup;
 use Google\Ads\GoogleAds\V16\Resources\AssetGroupAsset;
@@ -45,6 +46,7 @@ use Google\Ads\GoogleAds\V16\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V16\Services\Client\GoogleAdsServiceClient;
 use Google\Ads\GoogleAds\V16\Services\ListAccessibleCustomersResponse;
 use Google\Ads\GoogleAds\V16\Services\MutateCampaignResult;
+use Google\Ads\GoogleAds\V16\Services\MutateLabelResult;
 use Google\Ads\GoogleAds\V16\Services\MutateConversionActionResult;
 use Google\Ads\GoogleAds\V16\Services\MutateConversionActionsRequest;
 use Google\Ads\GoogleAds\V16\Services\MutateConversionActionsResponse;
@@ -198,6 +200,110 @@ trait GoogleAdsClientTrait {
 
 		$this->service_client
 			->method( 'search' )->willReturn( $list_response );
+	}
+
+	protected function generate_label_query_mock( array $label_responses ) {
+		$campaigns_row_mock = array_map( [ $this, 'generate_label_row_mock' ], $label_responses );
+
+		$list_response = $this->createMock( PagedListResponse::class );
+		$list_response->method( 'iterateAllElements' )->willReturnOnConsecutiveCalls(
+			$campaigns_row_mock
+		);
+
+		$this->service_client
+			->method( 'search' )->willReturn( $list_response );
+	}
+
+	/**
+	 * Converts campaign data to a mocked GoogleAdsRow.
+	 *
+	 * @param array $data Campaign data to convert.
+	 *
+	 * @return GoogleAdsRow
+	 */
+	protected function generate_label_row_mock( array $data ): GoogleAdsRow {
+		$label = $this->createMock( Label::class );
+		$label->method( 'getId' )->willReturn( $data['id'] );
+		$label->method( 'getName' )->willReturn( $data['name'] );
+
+		return ( new GoogleAdsRow() )
+			->setLabel( $label );
+	}
+
+	/**
+	 * Generates a mocked empty labels response.
+	 */
+	protected function generate_mock_label_query_with_no_existing_labels() {
+		$list_response = $this->createMock( PagedListResponse::class );
+		$list_response->method( 'iterateAllElements' )->willReturn( [] );
+
+		// Method search() will only being called once by AdsCampaignQuery
+		// since there were no campaigns returned by AdsCampaignQuery, it
+		// won't be calling AdsCampaignCriterionQuery then.
+		$this->service_client->expects( $this->once() )
+			->method( 'search' )->willReturn( $list_response );
+	}
+
+	/**
+	 * Generate a mocked mutate campaign label response.
+	 * Asserts that set of operations contains an operation with the expected type.
+	 *
+	 * @param int $campaign_id  Campaign ID we expect to see in the mutate result.
+	 * @param int $label_id     Label ID we expect to see in the mutate result.
+	 */
+	protected function generate_campaign_label_mutate_mock( int $campaign_id, int $label_id ) {
+		$label_result = $this->createMock( MutateLabelResult::class );
+		$label_result->method( 'getResourceName' )->willReturn(
+			ResourceNames::forLabel( $this->ads_id, $label_id )
+		);
+
+		$response = ( new MutateGoogleAdsResponse() )->setMutateOperationResponses(
+			[
+				( new MutateOperationResponse() )->setLabelResult( $label_result ),
+			]
+		);
+
+		return $this->service_client->expects( $this->once() )
+			->method( 'mutate' )
+			->willReturnCallback(
+				function ( MutateGoogleAdsRequest $request ) use ( $response, $label_id, $campaign_id ) {
+					$operations = $request->getMutateOperations();
+					$results    = [];
+
+					// Assert that the label operation is the right type (create).
+					foreach ( $operations as $operation ) {
+						$results[ $operation->getOperation() ] = $operation;
+					}
+
+					$this->assertArrayHasKey( 'campaign_label_operation', $results );
+
+					// If label ID is less than 0, means we are creating a new label. In this case, we expect 2 operations (create label and assign the label to the campaign).
+					if ( $label_id < 0 ) {
+						$this->assertEquals( 2, count( $operations ) );
+						$this->assertArrayHasKey( 'label_operation', $results );
+						$operation = $results['label_operation']->getLabelOperation();
+						$label     = $operation->getCreate();
+						$this->assertEquals( 'new-label', $label->getName() );
+						$resource_name_label = ResourceNames::forLabel( $this->ads_id, $label_id );
+						$this->assertEquals( $resource_name_label, $label->getResourceName() );
+
+						$operation      = $results['campaign_label_operation']->getCampaignLabelOperation();
+						$campaing_label = $operation->getCreate();
+						$this->assertEquals( $resource_name_label, $campaing_label->getLabel() );
+						$this->assertEquals( ResourceNames::forCampaign( $this->ads_id, $campaign_id ), $campaing_label->getCampaign() );
+
+					} else {
+						$this->assertEquals( 1, count( $operations ) );
+						$operation           = $results['campaign_label_operation']->getCampaignLabelOperation();
+						$campaing_label      = $operation->getCreate();
+						$resource_name_label = ResourceNames::forLabel( $this->ads_id, $label_id );
+						$this->assertEquals( $resource_name_label, $campaing_label->getLabel() );
+						$this->assertEquals( ResourceNames::forCampaign( $this->ads_id, $campaign_id ), $campaing_label->getCampaign() );
+					}
+
+					return $response;
+				}
+			);
 	}
 
 	/**
