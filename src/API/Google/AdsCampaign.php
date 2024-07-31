@@ -82,18 +82,25 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected $google_helper;
 
 	/**
+	 * @var AdsCampaignLabel $campaign_label
+	 */
+	protected $campaign_label;
+
+	/**
 	 * AdsCampaign constructor.
 	 *
 	 * @param GoogleAdsClient      $client
 	 * @param AdsCampaignBudget    $budget
 	 * @param AdsCampaignCriterion $criterion
 	 * @param GoogleHelper         $google_helper
+	 * @param AdsCampaignLabel     $campaign_label
 	 */
-	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget, AdsCampaignCriterion $criterion, GoogleHelper $google_helper ) {
-		$this->client        = $client;
-		$this->budget        = $budget;
-		$this->criterion     = $criterion;
-		$this->google_helper = $google_helper;
+	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget, AdsCampaignCriterion $criterion, GoogleHelper $google_helper, AdsCampaignLabel $campaign_label ) {
+		$this->client         = $client;
+		$this->budget         = $budget;
+		$this->criterion      = $criterion;
+		$this->google_helper  = $google_helper;
+		$this->campaign_label = $campaign_label;
 	}
 
 	/**
@@ -233,6 +240,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			);
 
 			$campaign_id = $this->mutate( $operations );
+
+			if ( isset( $params['label'] ) ) {
+				$this->campaign_label->assign_label_to_campaign_by_label_name( $campaign_id, $params['label'] );
+			}
 
 			// Clear cached campaign count.
 			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
