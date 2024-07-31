@@ -120,7 +120,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WC 9.1 compatibility.
 * Tweak - WP 6.6 compatibility.
 
-= 2.7.5 - 2024-06-26 =
-* Add - Add an query parameter `campaign=saved` to the dashboard URL after the campaign was created.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
