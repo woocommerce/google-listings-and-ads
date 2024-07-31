@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use PHPUnit\Framework\MockObject\MockObject;
+use Google\ApiCore\ApiException;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,7 +28,6 @@ class AdsCampaignLabelTest extends UnitTest {
 	protected $campaign_label;
 
 	protected const TEST_CAMPAIGN_ID = 1234567890;
-	protected const BASE_COUNTRY     = 'US';
 
 	/**
 	 * Runs before each test is executed.
@@ -65,5 +65,18 @@ class AdsCampaignLabelTest extends UnitTest {
 		);
 		$this->generate_campaign_label_mutate_mock( self::TEST_CAMPAIGN_ID, $label_id );
 		$this->campaign_label->assign_label_to_campaign_by_label_name( self::TEST_CAMPAIGN_ID, $name );
+	}
+
+	public function test_query_labels_exception() {
+		$name = 'wc-gla';
+		$this->generate_ads_query_mock_exception( new ApiException( 'No labels', 14, 'UNAVAILABLE' ) );
+
+		try {
+			$this->campaign_label->assign_label_to_campaign_by_label_name( self::TEST_CAMPAIGN_ID, $name );
+		} catch ( ApiException $e ) {
+
+			$this->assertEquals( 14, $e->getCode() );
+			$this->assertEquals( 'No labels', $e->getMessage() );
+		}
 	}
 }
