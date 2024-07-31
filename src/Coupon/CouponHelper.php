@@ -351,7 +351,7 @@ class CouponHelper implements Service, HelperNotificationInterface {
 		/**
 		 * Allow users to filter if a coupon is ready to notify.
 		 *
-		 * @since x.x.x
+		 * @since 2.8.0
 		 *
 		 * @param bool $value The current filter value.
 		 * @param WC_Coupon $coupon The coupon for the notification.

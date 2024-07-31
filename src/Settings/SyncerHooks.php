@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Settings
  *
- * @since x.x.x
+ * @since 2.8.0
  */
 class SyncerHooks implements Service, Registerable {
 

@@ -47,7 +47,7 @@ class ShippingTimeQuery extends Query {
 	/**
 	 * Get all shipping times.
 	 *
-	 * @since x.x.x
+	 * @since 2.8.0
 	 *
 	 * @return array
 	 */

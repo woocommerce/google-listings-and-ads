@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
  * Class SettingsNotificationJob
  * Class for the Settings Notifications
  *
- * @since x.x.x
+ * @since 2.8.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
  */
 class SettingsNotificationJob extends AbstractNotificationJob {

@@ -287,7 +287,7 @@ class SyncerHooks implements Service, Registerable {
 	/**
 	 * Send the notification for coupon deletion
 	 *
-	 * @since x.x.x
+	 * @since 2.8.0
 	 * @param int $coupon_id
 	 */
 	protected function maybe_send_delete_notification( int $coupon_id ): void {

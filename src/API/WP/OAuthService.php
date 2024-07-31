@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
  * Class OAuthService
  * This class implements a service to handle WordPress.com OAuth.
  *
- * @since x.x.x
+ * @since 2.8.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WP
  */
 class OAuthService implements Service, OptionsAwareInterface, Deactivateable, ContainerAwareInterface {

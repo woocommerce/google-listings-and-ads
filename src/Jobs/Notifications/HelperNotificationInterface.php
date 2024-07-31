@@ -8,7 +8,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Interface HelperNotificationInterface
  *
- * @since x.x.x
+ * @since 2.8.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
  */
 interface HelperNotificationInterface {

@@ -10,7 +10,7 @@ use Automattic\Jetpack\Connection\Client;
  *
  * This class provides proxy methods to wrap around Jetpack functions.
  *
- * @since x.x.x
+ * @since 2.8.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Proxies
  */

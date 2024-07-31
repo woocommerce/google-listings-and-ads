@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * Class AbstractNotificationJob
  * Generic class for the Notifications Jobs
  *
- * @since x.x.x
+ * @since 2.8.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
  */
 abstract class AbstractNotificationJob extends AbstractActionSchedulerJob implements JobInterface {
@@ -77,7 +77,7 @@ abstract class AbstractNotificationJob extends AbstractActionSchedulerJob implem
 		/**
 		 * Allow users to disable the notification job schedule.
 		 *
-		 * @since x.x.x
+		 * @since 2.8.0
 		 *
 		 * @param bool $value The current filter value. By default, it is the result of `$this->can_schedule` function.
 		 * @param string $job_name The current Job name.
