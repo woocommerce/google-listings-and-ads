@@ -43,4 +43,26 @@ class ShippingTimeQuery extends Query {
 
 		return $value;
 	}
+
+	/**
+	 * Get all shipping times.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @return array
+	 */
+	public function get_all_shipping_times() {
+		$times = $this->get_results();
+		$items = [];
+		foreach ( $times as $time ) {
+			$data = [
+				'country_code' => $time['country'],
+				'time'         => $time['time'],
+			];
+
+			$items[ $time['country'] ] = $data;
+		}
+
+		return $items;
+	}
 }

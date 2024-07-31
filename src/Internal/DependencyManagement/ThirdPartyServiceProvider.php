@@ -55,7 +55,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 				new RawArgument( 'connection' ),
 				[
 					'slug' => $jetpack_id->getValue(),
-					'name' => __( 'Google Listings and Ads', 'google-listings-and-ads' ),
+					'name' => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
 				],
 			]
 		);

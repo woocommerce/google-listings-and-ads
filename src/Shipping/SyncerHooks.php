@@ -4,9 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\ShippingNotificationJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateShippingSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 
@@ -46,16 +48,29 @@ class SyncerHooks implements Service, Registerable {
 	protected $update_shipping_job;
 
 	/**
+	 * @var NotificationsService $notifications_service
+	 */
+	protected $notifications_service;
+
+	/**
+	 * @var ShippingNotificationJob $shipping_notification_job
+	 */
+	protected $shipping_notification_job;
+
+	/**
 	 * SyncerHooks constructor.
 	 *
 	 * @param MerchantCenterService $merchant_center
 	 * @param GoogleSettings        $google_settings
 	 * @param JobRepository         $job_repository
+	 * @param NotificationsService  $notifications_service
 	 */
-	public function __construct( MerchantCenterService $merchant_center, GoogleSettings $google_settings, JobRepository $job_repository ) {
-		$this->google_settings     = $google_settings;
-		$this->merchant_center     = $merchant_center;
-		$this->update_shipping_job = $job_repository->get( UpdateShippingSettings::class );
+	public function __construct( MerchantCenterService $merchant_center, GoogleSettings $google_settings, JobRepository $job_repository, NotificationsService $notifications_service ) {
+		$this->google_settings           = $google_settings;
+		$this->merchant_center           = $merchant_center;
+		$this->update_shipping_job       = $job_repository->get( UpdateShippingSettings::class );
+		$this->shipping_notification_job = $job_repository->get( ShippingNotificationJob::class );
+		$this->notifications_service     = $notifications_service;
 	}
 
 	/**
@@ -128,7 +143,13 @@ class SyncerHooks implements Service, Registerable {
 		if ( $this->already_scheduled ) {
 			return;
 		}
+
+		if ( $this->notifications_service->is_ready() ) {
+			$this->shipping_notification_job->schedule( [ 'topic' => NotificationsService::TOPIC_SHIPPING_UPDATED ] );
+		}
+
 		$this->update_shipping_job->schedule();
+
 		$this->already_scheduled = true;
 	}
 }

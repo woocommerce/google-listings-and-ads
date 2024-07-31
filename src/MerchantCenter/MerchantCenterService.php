@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\WP\NotificationsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -123,6 +124,19 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		return 'yes' === $url_matches;
 	}
+
+	/**
+	 * Whether we should push data into MC. Only if:
+	 * - MC is ready for syncing {@see is_ready_for_syncing}
+	 * - Notifications Service is not enabled
+	 *
+	 * @return bool
+	 * @since 2.8.0
+	 */
+	public function should_push(): bool {
+		return $this->is_ready_for_syncing();
+	}
+
 
 	/**
 	 * Get whether the country is supported by the Merchant Center.

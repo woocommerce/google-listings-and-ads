@@ -80,7 +80,7 @@ class ReviewAfterConversions extends AbstractNote implements AdsAwareInterface {
 		$note = new NoteEntry();
 		$note->set_title( __( 'You got your first conversion on Google Ads! 🎉', 'google-listings-and-ads' ), );
 		$note->set_content(
-			__( 'Congratulations! Tell us what you think about Google Listings & Ads by leaving a review. Your feedback will help us make WooCommerce even better for you.', 'google-listings-and-ads' )
+			__( 'Congratulations! Tell us what you think about Google for WooCommerce by leaving a review. Your feedback will help us make WooCommerce even better for you.', 'google-listings-and-ads' )
 		);
 		$note->set_content_data( (object) [] );
 		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );

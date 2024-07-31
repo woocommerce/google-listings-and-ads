@@ -151,6 +151,11 @@ export function getClassicProductEditorUtils( page ) {
 			return page.locator( '.gla_attributes_multipack_field input' );
 		},
 
+		getPostID() {
+			const url = new URL( page.url() );
+			return url.searchParams.get( 'post' );
+		},
+
 		async getAvailableProductAttributesWithTestValues( locator = page ) {
 			return getAvailableProductAttributesWithTestValues(
 				locator,
@@ -162,6 +167,11 @@ export function getClassicProductEditorUtils( page ) {
 	const asyncActions = {
 		async gotoAddProductPage() {
 			await page.goto( '/wp-admin/post-new.php?post_type=product' );
+			await this.waitForInteractionReady();
+		},
+
+		async gotoEditProductPage( id ) {
+			await page.goto( `/wp-admin/post.php?post=${ id }&action=edit` );
 			await this.waitForInteractionReady();
 		},
 
@@ -182,7 +192,7 @@ export function getClassicProductEditorUtils( page ) {
 			await variation.getByRole( 'link', { name: 'Edit' } ).click();
 
 			return variation
-				.getByRole( 'heading', { name: 'Google Listings & Ads' } )
+				.getByRole( 'heading', { name: 'Google for WooCommerce' } )
 				.click();
 		},
 
@@ -207,6 +217,41 @@ export function getClassicProductEditorUtils( page ) {
 
 			await this.clickSave();
 			await observer;
+			await this.waitForInteractionReady();
+		},
+
+		clickPublish() {
+			return page
+				.getByRole( 'button', { name: 'Publish', exact: true } )
+				.click();
+		},
+
+		async publish() {
+			const observer = page.waitForResponse( ( response ) => {
+				const url = new URL( response.url() );
+
+				return (
+					url.pathname === '/wp-admin/post.php' &&
+					url.searchParams.has( 'post' ) &&
+					url.searchParams.has( 'action', 'edit' ) &&
+					response.ok() &&
+					response.request().method() === 'GET'
+				);
+			} );
+
+			await this.clickPublish();
+			await observer;
+			await this.waitForInteractionReady();
+		},
+
+		async unpublish() {
+			const btn = page.getByRole( 'button', { name: 'Edit status' } );
+
+			await btn.click();
+			await page
+				.getByLabel( 'Set status' )
+				.selectOption( { label: 'Draft' } );
+			await this.clickSave();
 			await this.waitForInteractionReady();
 		},
 
@@ -254,6 +299,18 @@ export function getClassicProductEditorUtils( page ) {
 			await expect( page.locator( '#sample-permalink' ) ).toBeVisible();
 		},
 
+		async setChannelVisibility( label = 'Sync and show' ) {
+			const channelVisibilityMetabox =
+				await locators.getChannelVisibility().selection;
+			await channelVisibilityMetabox.selectOption( { label } );
+		},
+
+		async setVisibility( visibility = 'Public' ) {
+			const btn = page.getByRole( 'button', { name: 'Edit visibility' } );
+			await btn.click();
+			await page.getByLabel( visibility ).check();
+		},
+
 		evaluateValidity( input ) {
 			return input.evaluate( ( element ) => element.validity.valid );
 		},
@@ -270,6 +327,16 @@ export function getClassicProductEditorUtils( page ) {
 				meta_data: [
 					{ key: '_wc_gla_sync_status', value: syncStatus },
 					{ key: '_wc_gla_errors', value: issues },
+				],
+			} );
+		},
+		async mockNotificationStatus( status ) {
+			const url = new URL( page.url() );
+			const productId = url.searchParams.get( 'post' );
+
+			await api.api().put( `products/${ productId }`, {
+				meta_data: [
+					{ key: '_wc_gla_notification_status', value: status },
 				],
 			} );
 		},
@@ -296,7 +363,7 @@ export function getProductBlockEditorUtils( page ) {
 		},
 
 		getPluginTab() {
-			return this.getTab( 'Google Listings & Ads' );
+			return this.getTab( 'Google for WooCommerce' );
 		},
 
 		getChannelVisibilityHeading() {

@@ -230,7 +230,7 @@ test.describe( 'Classic Product Editor integration', () => {
 		 */
 		await expect(
 			panel.getByText(
-				'As this is a variable product, you can add additional product attributes by going to Variations > Select one variation > Google Listings & Ads.'
+				'As this is a variable product, you can add additional product attributes by going to Variations > Select one variation > Google for WooCommerce.'
 			)
 		).toBeVisible();
 

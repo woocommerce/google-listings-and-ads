@@ -1,11 +1,11 @@
-=== Google Listings & Ads ===
+=== Google for WooCommerce ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, product feed, ads, listings
 Requires at least: 5.9
 Tested up to: 6.6
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.7.7
+Stable tag: 2.8.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -15,11 +15,11 @@ Native integration with Google that allows merchants to easily display their pro
 
 https://www.youtube.com/watch?v=lYCx7ZqA1uo
 
-Google Listings & Ads makes it simple to showcase your products to shoppers across Google. Whether you’re brand new to digital advertising or a marketing expert, you can expand your reach and grow your business, for free and with ads.
+Google for WooCommerce makes it simple to showcase your products to shoppers across Google. Whether you’re brand new to digital advertising or a marketing expert, you can expand your reach and grow your business, for free and with ads.
 
 Sync your store with Google to list products for free, run paid ads, and track performance straight from your store dashboard.
 
-With Google Listings & Ads:
+With Google for WooCommerce:
 - **Connect your store seamlessly** with Google Merchant Center.
 - **Reach online shoppers** with free listings.
 - **Boost store traffic and sales** with Performance Max Campaigns.
@@ -48,7 +48,7 @@ Connect your Google Ads account, choose a budget, and launch your campaign strai
 
 = Get $500 in Google Ads credit when you spend your first $500! =
 
-Create a new Google Ads account through Google Listings & Ads and a promotional code will be automatically applied to your account. You’ll have 60 days to spend $500 to qualify for the $500 ads credit. See full terms and conditions [here](https://www.google.com/ads/coupons/terms/).
+Create a new Google Ads account through Google for WooCommerce and a promotional code will be automatically applied to your account. You’ll have 60 days to spend $500 to qualify for the $500 ads credit. See full terms and conditions [here](https://www.google.com/ads/coupons/terms/).
 
 == Installation ==
 
@@ -66,7 +66,7 @@ Visit the [WooCommerce server requirements documentation](https://woocommerce.co
 
 Automatic installation is the easiest option as WordPress handles the file transfers itself and you don’t need to leave your web browser. To do an automatic install of this plugin, log in to your WordPress dashboard, navigate to the Plugins menu and click Add New.
 
-In the search field type “Google Listings and Ads” and click Search Plugins. Once you’ve found this plugin you can view details about it such as the point release, rating and description. Most importantly of course, you can install it by simply clicking “Install Now”.
+In the search field type “Google for WooCommerce” and click Search Plugins. Once you’ve found this plugin you can view details about it such as the point release, rating and description. Most importantly of course, you can install it by simply clicking “Install Now”.
 
 = Manual installation =
 
@@ -74,7 +74,7 @@ The manual installation method involves downloading the plugin and uploading it 
 
 = Where can I report bugs or contribute to the project? =
 
-Bugs should be reported in the [Google Listings and Ads GitHub repository](https://github.com/woocommerce/google-listings-and-ads/).
+Bugs should be reported in the [Google for WooCommerce GitHub repository](https://github.com/woocommerce/google-listings-and-ads/).
 
 = This is awesome! Can I contribute? =
 
@@ -87,7 +87,7 @@ Release and roadmap notes available on the [WooCommerce Developers Blog](https:/
 = What is Google Merchant Center? =
 The Google Merchant Center helps you sync your store and product data with Google and makes the information available for both free listings on the Shopping tab and Google Shopping Ads. That means everything about your stores and products is available to shoppers when they search on a Google property.
 
-= Which countries are available for Google Listings & Ads? =
+= Which countries are available for Google for WooCommerce? =
 Learn more about supported countries for Google free listings [here](https://support.google.com/merchants/answer/10033607?hl=en).
 
 Learn more about supported countries and currencies for Performance Max campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).
@@ -98,18 +98,22 @@ If you’re selling in the US, then eligible free listings can appear in search 
 If you’re running a Performance Max campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.
 
 = Will my deals and promotions display on Google? =
-To show your coupons and promotions on Google Shopping listings, make sure you’re using the latest version of Google Listings & Ads.  When you create or update a coupon in your WordPress dashboard under Marketing > Coupons, you’ll see a Channel Visibility settings box on the right: select “Show coupon on Google” to enable. This is currently available in the US only.
+To show your coupons and promotions on Google Shopping listings, make sure you’re using the latest version of Google for WooCommerce.  When you create or update a coupon in your WordPress dashboard under Marketing > Coupons, you’ll see a Channel Visibility settings box on the right: select “Show coupon on Google” to enable. This is currently available in the US only.
 
 = What are Performance Max campaigns? =
 Performance Max campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.
 
 = How much do Performance Max campaigns cost? =
-Performance Max campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google Listings & Ads but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.
+Performance Max campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google for WooCommerce but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.
 
 = Can I run both free listings and Performance Max campaigns at the same time? =
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.
 
 == Changelog ==
+
+= 2.8.0 - 2024-07-31 =
+* Add Google API Pull method.
+* Rebranding Google Listings and Ads with Google for WooCommerce.
 
 = 2.7.7 - 2024-07-24 =
 * Dev - Fix E2E tests failed with WC 9.1.
@@ -119,8 +123,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - Update connect server URL in test proxy configuration.
 * Tweak - WC 9.1 compatibility.
 * Tweak - WP 6.6 compatibility.
-
-= 2.7.5 - 2024-06-26 =
-* Add - Add an query parameter `campaign=saved` to the dashboard URL after the campaign was created.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

@@ -60,7 +60,7 @@ if ( $input_disabled ) {
 			[
 				'id'                => $field_id,
 				'value'             => $channel_visibility,
-				'label'             => __( 'Google Listing & Ads', 'google-listings-and-ads' ),
+				'label'             => __( 'Google for WooCommerce', 'google-listings-and-ads' ),
 				'description'       => $input_description,
 				'desc_tip'          => false,
 				'options'           => ChannelVisibility::get_value_options(),
@@ -89,7 +89,7 @@ if ( $input_disabled ) {
 			</div>
 		<?php endif; ?>
 	<?php else : ?>
-		<p><strong><?php esc_html_e( 'Google Listings & Ads', 'google-listings-and-ads' ); ?></strong></p>
+		<p><strong><?php esc_html_e( 'Google for WooCommerce', 'google-listings-and-ads' ); ?></strong></p>
 		<p><?php esc_html_e( 'Complete setup to get your products listed on Google for free.', 'google-listings-and-ads' ); ?></p>
 		<a href="<?php echo esc_attr( $get_started_url ); ?>"
 			class="button"><?php esc_html_e( 'Complete setup', 'google-listings-and-ads' ); ?></a>

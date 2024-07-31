@@ -146,7 +146,7 @@ class WCShippingSettingsAdapter extends AbstractShippingSettingsAdapter {
 		$country = $service_collection->get_country();
 		$name    = sprintf(
 		/* translators: %1 is a random 4-digit string, %2 is the country code  */
-			__( '[%1$s] Google Listings and Ads generated service - %2$s', 'google-listings-and-ads' ),
+			__( '[%1$s] Google for WooCommerce generated service - %2$s', 'google-listings-and-ads' ),
 			sprintf( '%04x', mt_rand( 0, 0xffff ) ),
 			$country
 		);

@@ -17,6 +17,7 @@ import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
 import ReportsNavigation from '../reports-navigation';
+import RebrandingTour from '.~/components/tours/rebranding-tour';
 
 /**
  * Available metrics and their human-readable labels.
@@ -103,6 +104,7 @@ const ProgramsReport = () => {
 		<>
 			<DifferentCurrencyNotice context={ trackEventId } />
 			<NavigationClassic />
+			<RebrandingTour />
 			<ReportsNavigation />
 			<ProgramsReportFilters
 				query={ getQuery() }

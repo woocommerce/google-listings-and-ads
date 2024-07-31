@@ -3,12 +3,16 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\AttributeMappingRulesQuery;
 use WC_Product;
+use WC_Product_Variation;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -45,6 +49,27 @@ class AttributeManager implements Service {
 	 * @var array Attribute types mapped to product types
 	 */
 	protected $attribute_types_map;
+
+	/**
+	 * @var AttributeMappingRulesQuery
+	 */
+	protected $attribute_mapping_rules_query;
+
+	/**
+	 * @var WC
+	 */
+	protected $wc;
+
+	/**
+	 * AttributeManager constructor.
+	 *
+	 * @param AttributeMappingRulesQuery $attribute_mapping_rules_query
+	 * @param WC                         $wc
+	 */
+	public function __construct( AttributeMappingRulesQuery $attribute_mapping_rules_query, WC $wc ) {
+		$this->attribute_mapping_rules_query = $attribute_mapping_rules_query;
+		$this->wc                            = $wc;
+	}
 
 	/**
 	 * @param WC_Product         $product
@@ -91,6 +116,54 @@ class AttributeManager implements Service {
 
 		$attribute_class = $this->get_attribute_types_for_product( $product )[ $attribute_id ];
 		return new $attribute_class( $value );
+	}
+
+	/**
+	 * Return all attribute values for the given product, after the mapping rules, GLA attributes, and filters have been applied.
+	 * GLA Attributes has priority over the product attributes.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return array of attribute values
+	 * @throws InvalidValue When the product does not exist.
+	 */
+	public function get_all_aggregated_values( WC_Product $product ) {
+		$attributes = $this->get_all_values( $product );
+
+		$parent_product = null;
+		// merge with parent's attributes if it's a variation product
+		if ( $product instanceof WC_Product_Variation ) {
+			$parent_product    = $this->wc->get_product( $product->get_parent_id() );
+			$parent_attributes = $this->get_all_values( $parent_product );
+			$attributes        = array_merge( $parent_attributes, $attributes );
+		}
+
+		$mapping_rules = $this->attribute_mapping_rules_query->get_results();
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'        => $product,
+				'parent_wc_product' => $parent_product,
+				'targetCountry'     => 'US', // targetCountry is required to create a new WCProductAdapter instance, but it's not used in the attributes context.
+				'gla_attributes'    => $attributes,
+				'mapping_rules'     => $mapping_rules,
+			]
+		);
+
+		foreach ( self::ATTRIBUTES as $attribute_class ) {
+			$attribute_id = $attribute_class::get_id();
+			if ( $attribute_id === 'size' ) {
+				$attribute_id = 'sizes';
+			}
+
+			if ( isset( $adapted_product->$attribute_id ) ) {
+				$attributes[ $attribute_id ] = $adapted_product->$attribute_id;
+			}
+		}
+
+		return $attributes;
 	}
 
 	/**

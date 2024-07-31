@@ -20,7 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerIn
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\NotFoundExceptionInterface;
 
 /**
- * PSR11 compliant dependency injection container for Google Listings and Ads.
+ * PSR11 compliant dependency injection container for Google for WooCommerce.
  *
  * Classes in the `src` directory should specify dependencies from that directory via constructor arguments
  * with type hints. If an instance of the container itself is needed, the type hint to use is

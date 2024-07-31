@@ -14,7 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerification
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 
 /**
- * Wire up the Google Listings and Ads events to Tracks.
+ * Wire up the Google for WooCommerce events to Tracks.
  * Add all new events to `$events`.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking

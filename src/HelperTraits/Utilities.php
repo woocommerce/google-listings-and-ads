@@ -78,4 +78,40 @@ trait Utilities {
 	protected function is_jetpack_connected(): bool {
 		return boolval( $this->options->get( OptionsInterface::JETPACK_CONNECTED, false ) );
 	}
+
+	/**
+	 * Encode data to Base64URL
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param string $data The string that will be base64 URL encoded.
+	 *
+	 * @return string
+	 */
+	protected function base64url_encode( $data ): string {
+		$b64 = base64_encode( $data );
+
+		// Convert Base64 to Base64URL by replacing "+" with "-" and "/" with "_"
+		$url = strtr( $b64, '+/', '-_' );
+
+		// Remove padding character from the end of line and return the Base64URL result
+		return rtrim( $url, '=' );
+	}
+
+	/**
+	 * Decode Base64URL string
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param string $data The data that will be base64 URL encoded.
+	 *
+	 * @return boolean|string
+	 */
+	protected function base64url_decode( $data ): string {
+		// Convert Base64URL to Base64 by replacing "-" with "+" and "_" with "/"
+		$b64 = strtr( $data, '-_', '+/' );
+
+		// Decode Base64 string and return the original data
+		return base64_decode( $b64 );
+	}
 }

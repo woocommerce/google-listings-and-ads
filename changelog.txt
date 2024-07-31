@@ -1,4 +1,8 @@
-*** WooCommerce Google Listings and Ads Changelog ***
+*** Google for WooCommerce Changelog ***
+
+= 2.8.0 - 2024-07-31 =
+* Add Google API Pull method.
+* Rebranding Google Listings and Ads with Google for WooCommerce.
 
 = 2.7.7 - 2024-07-24 =
 * Dev - Fix E2E tests failed with WC 9.1.
@@ -350,7 +354,7 @@
 * Add - Declare compatibility for High Performance Order Storage.
 * Dev - Selectively externalize bundled packages.
 * Fix - E2E Testing: Reduce the false positive rate and adjust the running events on GitHub Actions.
-* Fix - Move the order of Google Listings & Ads below the Coupons in the Marketing menu of WooCommerce admin page.
+* Fix - Move the order of Google Listings and Ads below the Coupons in the Marketing menu of WooCommerce admin page.
 * Fix - WC 6.9 compatibility: Shipping time settings should not appear after selecting the "complex" shipping option.
 * Fix - WC 6.9 compatibility: The free shipping threshold should be cleared after selecting the "No" free shipping option.
 * Fix - WC 6.9 compatibility: The selected free shipping option should be reset after setting all shipping rates to 0.
@@ -560,7 +564,7 @@
 = 1.12.0 - 2022-03-29 =
 * Add - Additional data points for tracker snapshot.
 * Add - Enables merchants to select multiple countries as their audience when creating a Google Ads campaign (Smart Shopping Campaign).
-* Add - Google Listings And Ads product attributes icon.
+* Add - Google Listings and Ads product attributes icon.
 * Add - Integration with WooCommerce Shipping Zone to automatically sync shipping settings to Merchant Center.
 * FIx - Show right link and message in Paid Campaigns report when there is no data available.
 * Fix - Cleanup synced products locally when disconnecting Merchant Center account.

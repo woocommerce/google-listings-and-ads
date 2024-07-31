@@ -30,7 +30,7 @@ class InvalidVersion extends RuntimeException implements GoogleListingsAndAdsExc
 		return new static(
 			sprintf(
 				/* translators: 1 is the required component, 2 is the minimum required version, 3 is the version in use on the site */
-				__( 'Google Listings and Ads requires %1$s version %2$s or higher. You are using version %3$s.', 'google-listings-and-ads' ),
+				__( 'Google for WooCommerce requires %1$s version %2$s or higher. You are using version %3$s.', 'google-listings-and-ads' ),
 				$requirement,
 				$minimum_version,
 				$found_version
@@ -50,7 +50,7 @@ class InvalidVersion extends RuntimeException implements GoogleListingsAndAdsExc
 		return new static(
 			sprintf(
 				/* translators: 1 is the required component, 2 is the minimum required version */
-				__( 'Google Listings and Ads requires %1$s version %2$s or higher.', 'google-listings-and-ads' ),
+				__( 'Google for WooCommerce requires %1$s version %2$s or higher.', 'google-listings-and-ads' ),
 				$requirement,
 				$minimum_version
 			)
@@ -65,7 +65,7 @@ class InvalidVersion extends RuntimeException implements GoogleListingsAndAdsExc
 	 */
 	public static function invalid_architecture(): InvalidVersion {
 		return new static(
-			__( 'Google Listings and Ads requires a 64 bit version of PHP.', 'google-listings-and-ads' )
+			__( 'Google for WooCommerce requires a 64 bit version of PHP.', 'google-listings-and-ads' )
 		);
 	}
 }

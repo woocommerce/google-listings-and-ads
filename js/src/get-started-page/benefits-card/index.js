@@ -19,7 +19,7 @@ const BenefitsCard = () => {
 					<img
 						src={ benefitsImageURL }
 						alt={ __(
-							'Google Listings & Ads Benefits',
+							'Google for WooCommerce Benefits',
 							'google-listings-and-ads'
 						) }
 						width="100%"

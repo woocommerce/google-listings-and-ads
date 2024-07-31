@@ -374,7 +374,7 @@ test.describe( 'Complete your campaign', () => {
 						.locator( '.components-modal__content' )
 						.filter( {
 							hasText:
-								'You’ve successfully set up Google Listings & Ads!',
+								'You’ve successfully set up Google for WooCommerce!',
 						} );
 					await expect( setupSuccessModal ).toBeVisible();
 				} );
@@ -396,7 +396,7 @@ test.describe( 'Complete your campaign', () => {
 				.locator( '.components-modal__content' )
 				.filter( {
 					hasText:
-						'You’ve successfully set up Google Listings & Ads!',
+						'You’ve successfully set up Google for WooCommerce!',
 				} );
 			await expect( setupSuccessModal ).toBeVisible();
 		} );
@@ -419,7 +419,7 @@ test.describe( 'Complete your campaign', () => {
 				.locator( '.components-modal__content' )
 				.filter( {
 					hasText:
-						'You’ve successfully set up Google Listings & Ads!',
+						'You’ve successfully set up Google for WooCommerce!',
 				} );
 			await expect( setupSuccessModal ).toBeVisible();
 		} );

@@ -94,7 +94,7 @@ class AttributesTab implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * Adds the Google Listing & Ads tab to the WooCommerce product data box.
+	 * Adds the Google for WooCommerce tab to the WooCommerce product data box.
 	 *
 	 * @param array $tabs The current product data tabs.
 	 *
@@ -102,7 +102,7 @@ class AttributesTab implements Service, Registerable, Conditional {
 	 */
 	private function add_tab( array $tabs ): array {
 		$tabs['gla_attributes'] = [
-			'label'  => 'Google Listings and Ads',
+			'label'  => 'Google for WooCommerce',
 			'class'  => 'gla',
 			'target' => 'gla_attributes',
 		];

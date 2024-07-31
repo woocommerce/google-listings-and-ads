@@ -8,7 +8,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\NotificationStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications\HelperNotificationInterface;
 use WC_Coupon;
 defined( 'ABSPATH' ) || exit();
 
@@ -17,7 +19,7 @@ defined( 'ABSPATH' ) || exit();
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Coupon
  */
-class CouponHelper implements Service {
+class CouponHelper implements Service, HelperNotificationInterface {
 
 	use PluginHelper;
 
@@ -57,6 +59,19 @@ class CouponHelper implements Service {
 	}
 
 	/**
+	 * Mark the item as notified.
+	 *
+	 * @param WC_Coupon $coupon
+	 *
+	 * @return void
+	 */
+	public function mark_as_notified( $coupon ): void {
+		$this->meta_handler->update_synced_at( $coupon, time() );
+		$this->meta_handler->update_sync_status( $coupon, SyncStatus::SYNCED );
+		$this->update_empty_visibility( $coupon );
+	}
+
+	/**
 	 * Mark a coupon as synced. This function accepts nullable $google_id,
 	 * which guarantees version compatibility for Alpha, Beta and stable verison promtoion APIs.
 	 *
@@ -91,7 +106,7 @@ class CouponHelper implements Service {
 	 *
 	 * @param WC_Coupon $coupon
 	 */
-	public function mark_as_unsynced( WC_Coupon $coupon ) {
+	public function mark_as_unsynced( $coupon ): void {
 		$this->meta_handler->delete_synced_at( $coupon );
 		$this->meta_handler->update_sync_status( $coupon, SyncStatus::NOT_SYNCED );
 		$this->meta_handler->delete_google_ids( $coupon );
@@ -320,5 +335,97 @@ class CouponHelper implements Service {
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * Indicates if a coupon is ready for sending Notifications.
+	 * A coupon is ready to send notifications if its sync ready and the post status is publish.
+	 *
+	 * @param WC_Coupon $coupon
+	 *
+	 * @return bool
+	 */
+	public function is_ready_to_notify( WC_Coupon $coupon ): bool {
+		$is_ready = $this->is_sync_ready( $coupon ) && $coupon->get_status() === 'publish';
+
+		/**
+		 * Allow users to filter if a coupon is ready to notify.
+		 *
+		 * @since 2.8.0
+		 *
+		 * @param bool $value The current filter value.
+		 * @param WC_Coupon $coupon The coupon for the notification.
+		 */
+		return apply_filters( 'woocommerce_gla_coupon_is_ready_to_notify', $is_ready, $coupon );
+	}
+
+
+	/**
+	 * Indicates if a coupon was already notified about its creation.
+	 * Notice we consider synced coupons in MC as notified for creation.
+	 *
+	 * @param WC_Coupon $coupon
+	 *
+	 * @return bool
+	 */
+	public function has_notified_creation( WC_Coupon $coupon ): bool {
+		$valid_has_notified_creation_statuses = [
+			NotificationStatus::NOTIFICATION_CREATED,
+			NotificationStatus::NOTIFICATION_UPDATED,
+			NotificationStatus::NOTIFICATION_PENDING_UPDATE,
+			NotificationStatus::NOTIFICATION_PENDING_DELETE,
+		];
+
+		return in_array(
+			$this->meta_handler->get_notification_status( $coupon ),
+			$valid_has_notified_creation_statuses,
+			true
+		) || $this->is_coupon_synced( $coupon );
+	}
+
+	/**
+	 * Set the notification status for a WooCommerce coupon.
+	 *
+	 * @param WC_Coupon $coupon
+	 * @param string    $status
+	 */
+	public function set_notification_status( $coupon, $status ): void {
+		$this->meta_handler->update_notification_status( $coupon, $status );
+	}
+
+	/**
+	 * Indicates if a coupon is ready for sending a create Notification.
+	 * A coupon is ready to send create notifications if is ready to notify and has not sent create notification yet.
+	 *
+	 * @param WC_Coupon $coupon
+	 *
+	 * @return bool
+	 */
+	public function should_trigger_create_notification( $coupon ): bool {
+		return $this->is_ready_to_notify( $coupon ) && ! $this->has_notified_creation( $coupon );
+	}
+
+	/**
+	 * Indicates if a coupon is ready for sending an update Notification.
+	 * A coupon is ready to send update notifications if is ready to notify and has sent create notification already.
+	 *
+	 * @param WC_Coupon $coupon
+	 *
+	 * @return bool
+	 */
+	public function should_trigger_update_notification( $coupon ): bool {
+		return $this->is_ready_to_notify( $coupon ) && $this->has_notified_creation( $coupon );
+	}
+
+	/**
+	 * Indicates if a coupon is ready for sending a delete Notification.
+	 * A coupon is ready to send delete notifications if it is not ready to notify and has sent create notification already.
+	 *
+	 * @param WC_Coupon $coupon
+	 *
+	 * @return bool
+	 */
+	public function should_trigger_delete_notification( $coupon ): bool {
+		return ! $this->is_ready_to_notify( $coupon ) && $this->has_notified_creation( $coupon );
 	}
 }

@@ -25,6 +25,7 @@ import EditPaidAdsCampaign from '.~/pages/edit-paid-ads-campaign';
 import CreatePaidAdsCampaign from '.~/pages/create-paid-ads-campaign';
 import { CTA_CREATE_ANOTHER_CAMPAIGN, CTA_CONFIRM } from './constants';
 import { recordGlaEvent } from '.~/utils/tracks';
+import RebrandingTour from '.~/components/tours/rebranding-tour';
 import './index.scss';
 
 /**
@@ -88,6 +89,7 @@ const Dashboard = () => {
 			<div className="gla-dashboard">
 				<DifferentCurrencyNotice context="dashboard" />
 				<NavigationClassic />
+				<RebrandingTour />
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker
 						trackEventReportId={ trackEventReportId }
