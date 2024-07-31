@@ -44,7 +44,7 @@ class AdsCampaignLabel implements OptionsAwareInterface {
 
 
 	/**
-	 * AdsCampaign constructor.
+	 * AdsCampaignLabel constructor.
 	 *
 	 * @param GoogleAdsClient $client
 	 */
@@ -80,6 +80,8 @@ class AdsCampaignLabel implements OptionsAwareInterface {
 	 *
 	 * @param int    $campaign_id The campaign ID.
 	 * @param string $label_name  The label name.
+	 *
+	 * @throws ApiException If searching for the label fails.
 	 */
 	public function assign_label_to_campaign_by_label_name( int $campaign_id, string $label_name ) {
 		$label_id   = $this->get_label_id_by_name( $label_name );
@@ -148,6 +150,8 @@ class AdsCampaignLabel implements OptionsAwareInterface {
 	 * Mutate the operations.
 	 *
 	 * @param array $operations The operations to mutate.
+	 *
+	 * @throws ApiException — Thrown if the API call fails.
 	 */
 	protected function mutate( array $operations ) {
 		$request = new MutateGoogleAdsRequest();
