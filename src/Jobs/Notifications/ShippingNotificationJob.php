@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
  * Class ShippingNotificationJob
  * Class for the Shipping Notifications
  *
- * @since x.x.x
+ * @since 2.8.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
  */
 class ShippingNotificationJob extends AbstractNotificationJob {

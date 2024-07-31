@@ -327,7 +327,7 @@ class SyncerHooks implements Service, Registerable {
 	 * Maybe send the product deletion notification
 	 * and mark the product as un-synced after.
 	 *
-	 * @since x.x.x
+	 * @since 2.8.0
 	 * @param int $product_id
 	 */
 	protected function maybe_send_delete_notification( int $product_id ) {
@@ -345,7 +345,7 @@ class SyncerHooks implements Service, Registerable {
 	/**
 	 * Schedules a job to send the product deletion notification
 	 *
-	 * @since x.x.x
+	 * @since 2.8.0
 	 * @param WC_Product $product
 	 */
 	protected function schedule_delete_notification( $product ) {

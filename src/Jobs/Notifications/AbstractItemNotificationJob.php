@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  * Class AbstractItemNotificationJob
  * Generic class for the Notification Jobs containing items
  *
- * @since x.x.x
+ * @since 2.8.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
  */
 abstract class AbstractItemNotificationJob extends AbstractNotificationJob {

@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  * Class NotificationsService
  * This class implements a service to Notify a partner about Shop Data Updates
  *
- * @since x.x.x
+ * @since 2.8.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\WP
  */
 class NotificationsService implements Service, OptionsAwareInterface {
@@ -84,7 +84,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 		/**
 		 * Allow users to disable the notification request.
 		 *
-		 * @since x.x.x
+		 * @since 2.8.0
 		 *
 		 * @param bool $value The current filter value. True by default.
 		 * @param int $item_id The item_id for the notification.

@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * Class CouponNotificationJob
  * Class for the Coupons Notifications Jobs
  *
- * @since x.x.x
+ * @since 2.8.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Notifications
  */
 class CouponNotificationJob extends AbstractItemNotificationJob {

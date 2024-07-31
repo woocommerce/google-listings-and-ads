@@ -131,7 +131,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * - Notifications Service is not enabled
 	 *
 	 * @return bool
-	 * @since x.x.x
+	 * @since 2.8.0
 	 */
 	public function should_push(): bool {
 		return $this->is_ready_for_syncing();
