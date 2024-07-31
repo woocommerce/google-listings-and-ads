@@ -59,7 +59,7 @@ class AdsCampaignLabel implements OptionsAwareInterface {
 	 *
 	 * @return null|int The label ID.
 	 *
-	 * @throws ApiException When no results returned or an error occurs.
+	 * @throws ApiException If the search call fails.
 	 */
 	protected function get_label_id_by_name( string $name ) {
 		$query = new AdsCampaignLabelQuery();
