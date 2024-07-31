@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\RestAPI
  *
- * @since x.x.x
+ * @since 2.8.0
  */
 class AuthController extends BaseController {
 

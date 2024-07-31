@@ -122,7 +122,7 @@ class AttributeManager implements Service {
 	 * Return all attribute values for the given product, after the mapping rules, GLA attributes, and filters have been applied.
 	 * GLA Attributes has priority over the product attributes.
 	 *
-	 * @since x.x.x
+	 * @since 2.8.0
 	 *
 	 * @param WC_Product $product
 	 *

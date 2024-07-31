@@ -82,7 +82,7 @@ trait Utilities {
 	/**
 	 * Encode data to Base64URL
 	 *
-	 * @since x.x.x
+	 * @since 2.8.0
 	 *
 	 * @param string $data The string that will be base64 URL encoded.
 	 *
@@ -101,7 +101,7 @@ trait Utilities {
 	/**
 	 * Decode Base64URL string
 	 *
-	 * @since x.x.x
+	 * @since 2.8.0
 	 *
 	 * @param string $data The data that will be base64 URL encoded.
 	 *

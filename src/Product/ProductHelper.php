@@ -405,7 +405,7 @@ class ProductHelper implements Service, HelperNotificationInterface {
 		/**
 		 * Allow users to filter if a product is ready to notify.
 		 *
-		 * @since x.x.x
+		 * @since 2.8.0
 		 *
 		 * @param bool $value The current filter value.
 		 * @param WC_Product $product The product for the notification.
@@ -764,7 +764,7 @@ class ProductHelper implements Service, HelperNotificationInterface {
 	/**
 	 * Get the offer id for a product
 	 *
-	 * @since x.x.x
+	 * @since 2.8.0
 	 * @param int $product_id The product id to get the offer id.
 	 *
 	 * @return string The offer id
