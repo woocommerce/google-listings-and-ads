@@ -66,13 +66,12 @@ class AdsCampaignLabel implements OptionsAwareInterface {
 		$query->set_client( $this->client, $this->options->get_ads_id() );
 		$query->where( 'label.name', $name, '=' );
 		$label_results = $query->get_results();
-		$label_id      = null;
 
 		foreach ( $label_results->iterateAllElements() as $row ) {
 			return $row->getLabel()->getId();
 		}
 
-		return $label_id;
+		return null;
 	}
 
 	/**
