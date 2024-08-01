@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignLabel;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -55,6 +56,9 @@ class AdsCampaignTest extends UnitTest {
 	/** @var GoogleHelper $google_helper */
 	protected $google_helper;
 
+	/** @var MockObject|AdsCampaignLabel $campaign_label */
+	protected $campaign_label;
+
 	/** @var WC $wc */
 	protected $wc;
 
@@ -69,11 +73,12 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->ads_client_setup();
 
-		$this->asset_group = $this->createMock( AdsAssetGroup::class );
-		$this->budget      = $this->createMock( AdsCampaignBudget::class );
-		$this->criterion   = new AdsCampaignCriterion();
-		$this->options     = $this->createMock( OptionsInterface::class );
-		$this->transients  = $this->createMock( TransientsInterface::class );
+		$this->asset_group    = $this->createMock( AdsAssetGroup::class );
+		$this->budget         = $this->createMock( AdsCampaignBudget::class );
+		$this->campaign_label = $this->createMock( AdsCampaignLabel::class );
+		$this->criterion      = new AdsCampaignCriterion();
+		$this->options        = $this->createMock( OptionsInterface::class );
+		$this->transients     = $this->createMock( TransientsInterface::class );
 
 		$this->wc            = $this->createMock( WC::class );
 		$this->google_helper = new GoogleHelper( $this->wc );
@@ -83,7 +88,7 @@ class AdsCampaignTest extends UnitTest {
 		$this->container->share( TransientsInterface::class, $this->transients );
 		$this->container->share( WC::class, $this->wc );
 
-		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->criterion, $this->google_helper );
+		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->criterion, $this->google_helper, $this->campaign_label );
 		$this->campaign->set_options_object( $this->options );
 		$this->campaign->set_container( $this->container );
 
@@ -627,5 +632,70 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->generate_ads_campaign_query_mock( $campaigns_data, [] );
 		$this->assertEquals( 'unconverted', $this->campaign->get_campaign_convert_status() );
+	}
+
+	public function test_create_campaign_with_label() {
+		$campaign_data = [
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US', 'GB' ],
+			'label'              => 'wc-gla',
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_base_country' )
+			->willReturn( self::BASE_COUNTRY );
+
+		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$expected = [
+			'id'      => self::TEST_CAMPAIGN_ID,
+			'status'  => 'enabled',
+			'type'    => 'performance_max',
+			'country' => self::BASE_COUNTRY,
+		] + $campaign_data;
+
+		$this->transients->expects( $this->once() )->method( 'delete' )->with( TransientsInterface::ADS_CAMPAIGN_COUNT );
+		$this->campaign_label->expects( $this->once() )
+			->method( 'assign_label_to_campaign_by_label_name' )
+			->with( self::TEST_CAMPAIGN_ID, 'wc-gla' );
+
+		$this->assertEquals(
+			$expected,
+			$this->campaign->create_campaign( $campaign_data )
+		);
+	}
+
+	public function test_create_campaign_throws_exception() {
+		$campaign_data = [
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US', 'GB' ],
+			'label'              => 'wc-gla',
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_base_country' )
+			->willReturn( self::BASE_COUNTRY );
+
+		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$this->transients->expects( $this->never() )->method( 'delete' );
+		$this->campaign_label->expects( $this->once() )
+			->method( 'assign_label_to_campaign_by_label_name' )
+			->willThrowException( new ApiException( 'label not found', 5, 'NOT_FOUND' ) );
+
+		try {
+			$this->campaign->create_campaign( $campaign_data );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals(
+				[
+					'message' => 'Error creating campaign: label not found',
+					'errors'  => [ 'NOT_FOUND' => 'label not found' ],
+				],
+				$e->get_response_data( true )
+			);
+			$this->assertEquals( 404, $e->getCode() );
+		}
 	}
 }

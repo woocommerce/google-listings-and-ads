@@ -384,6 +384,14 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 					'type' => 'string',
 				],
 			],
+			'label'              => [
+				'type'              => 'string',
+				'description'       => __( 'The name of the label to assign to the campaign.', 'google-listings-and-ads' ),
+				'context'           => [ 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => false,
+
+			],
 		];
 	}
 
