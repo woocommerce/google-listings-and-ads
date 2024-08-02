@@ -145,7 +145,7 @@ const faqItems = [
 							<AppDocumentationLink
 								context="faqs"
 								linkId="free-listings"
-								href="https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google"
+								href="https://woocommerce.com/document/google-for-woocommerce/get-started/product-feed-information-and-free-listings/#section-1"
 							/>
 						),
 					}
@@ -269,7 +269,7 @@ const faqItems = [
  * @fires gla_documentation_link_click with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
  * @fires gla_documentation_link_click with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#google-merchant-center-requirements' }`.
  * @fires gla_documentation_link_click with `{ context: 'faqs', linkId: 'performance-max', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns' }`.
- * @fires gla_documentation_link_click with `{ context: 'faqs', linkId: 'free-listings', href: 'https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google' }`.
+ * @fires gla_documentation_link_click with `{ context: 'faqs', linkId: 'free-listings', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/product-feed-information-and-free-listings/#section-1' }`.
  * @fires gla_documentation_link_click with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
  * @fires gla_documentation_link_click with `{ context: 'faqs', linkId: 'terms-and-conditions-of-google-ads-coupons', href: 'https://www.google.com/ads/coupons/terms/' }`.
  */
