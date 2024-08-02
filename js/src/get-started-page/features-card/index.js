@@ -40,7 +40,7 @@ const LearnMoreLink = ( { linkId, href } ) => {
 /*
  * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'get-started-features-free-listing-learn-more', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/product-feed-information-and-free-listings/#section-1' }`.
  * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'get-started-features-google-ads-learn-more', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns' }`.
- * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'get-started-features-dashboard-learn-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
+ * @fires gla_documentation_link_click with `{ context: 'get-started', linkId: 'get-started-features-dashboard-learn-more', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/campaign-analytics' }`.
  */
 const FeaturesCard = () => {
 	return (
@@ -162,7 +162,7 @@ const FeaturesCard = () => {
 					</Text>
 					<LearnMoreLink
 						linkId="get-started-features-dashboard-learn-more"
-						href="https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics"
+						href="https://woocommerce.com/document/google-for-woocommerce/get-started/campaign-analytics"
 					/>
 				</FlexBlock>
 			</Flex>
