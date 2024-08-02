@@ -229,7 +229,7 @@ test.describe( 'Confirm store requirements', () => {
 			await expect( link ).toBeVisible();
 			await expect( link ).toHaveAttribute(
 				'href',
-				'https://woocommerce.com/document/google-listings-and-ads/compliance-policy'
+				'https://woocommerce.com/document/google-for-woocommerce/compliance-policy-2'
 			);
 		} );
 
@@ -321,7 +321,7 @@ test.describe( 'Confirm store requirements', () => {
 					await expect( link1 ).toBeVisible();
 					await expect( link1 ).toHaveAttribute(
 						'href',
-						'https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#store-is-live'
+						'https://woocommerce.com/document/google-for-woocommerce/compliance-policy-2/#store-is-live'
 					);
 
 					const panel2 = await panels.nth( 1 );
@@ -329,7 +329,7 @@ test.describe( 'Confirm store requirements', () => {
 					await expect( link2 ).toBeVisible();
 					await expect( link2 ).toHaveAttribute(
 						'href',
-						'https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout'
+						'https://woocommerce.com/document/google-for-woocommerce/compliance-policy-2/#complete-checkout'
 					);
 
 					const panel3 = await panels.nth( 2 );
@@ -337,7 +337,7 @@ test.describe( 'Confirm store requirements', () => {
 					await expect( link3 ).toBeVisible();
 					await expect( link3 ).toHaveAttribute(
 						'href',
-						'https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#complete-checkout'
+						'https://woocommerce.com/document/google-for-woocommerce/compliance-policy-2/#complete-checkout'
 					);
 
 					const panel4 = await panels.nth( 3 );
@@ -345,7 +345,7 @@ test.describe( 'Confirm store requirements', () => {
 					await expect( link4 ).toBeVisible();
 					await expect( link4 ).toHaveAttribute(
 						'href',
-						'https://woocommerce.com/document/google-listings-and-ads/compliance-policy/#refund-and-terms'
+						'https://woocommerce.com/document/google-for-woocommerce/compliance-policy-2/#refund-and-terms'
 					);
 				} );
 
