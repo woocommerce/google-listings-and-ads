@@ -152,7 +152,7 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_documentation_url(): string {
-		return 'https://woocommerce.com/document/google-listings-and-ads/?utm_source=wordpress&utm_medium=all-plugins-page&utm_campaign=doc-link&utm_content=google-listings-and-ads';
+		return 'https://woocommerce.com/document/google-for-woocommerce/?utm_source=wordpress&utm_medium=all-plugins-page&utm_campaign=doc-link&utm_content=google-listings-and-ads';
 	}
 
 	/**
