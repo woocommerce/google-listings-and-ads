@@ -336,7 +336,7 @@ When a documentation link is clicked.
 - [`EditPhoneNumber`](../../js/src/settings/edit-phone-number.js#L29) with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information" }`
 - [`EditStoreAddress`](../../js/src/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information" }`
 - [`Faqs`](../../js/src/get-started-page/faqs/index.js#L276)
-	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#general-requirements' }`.
+	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
 	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-merchant-center-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'performance-max', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-performance-max-campaigns' }`.
