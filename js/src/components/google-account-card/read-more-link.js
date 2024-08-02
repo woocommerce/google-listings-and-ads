@@ -7,7 +7,7 @@ const readMoreLink = (
 	<AppDocumentationLink
 		context="setup-mc-accounts"
 		linkId="required-google-permissions"
-		href="https://woocommerce.com/document/google-listings-and-ads/#required-google-permissions"
+		href="https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements"
 	/>
 );
 

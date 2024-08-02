@@ -324,7 +324,7 @@ When a documentation link is clicked.
 - [`AppDocumentationLink`](../../js/src/components/app-documentation-link/index.js#L29)
 - [`ChooseAudienceSection`](../../js/src/components/free-listings/choose-audience-section/choose-audience-section.js#L29) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L42) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
-- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
+- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`
 - [`ContactInformation`](../../js/src/components/contact-information/index.js#L91)
 	- with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#contact-information' }`
 	- with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#contact-information' }`
@@ -354,7 +354,7 @@ When a documentation link is clicked.
 - [`IssuesTableDataModal`](../../js/src/product-feed/issues-table-card/issues-table-data-modal.js#L21) with { context: 'issues-data-table-modal' }
 - [`ProductStatusHelpPopover`](../../js/src/product-feed/product-statistics/product-status-help-popover/index.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L41) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
-- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
+- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`
 - [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L23)
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
