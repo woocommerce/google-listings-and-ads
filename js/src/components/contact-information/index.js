@@ -20,7 +20,7 @@ import usePhoneNumberCheckTrackEventEffect from './usePhoneNumberCheckTrackEvent
 
 const learnMoreLinkId = 'contact-information-read-more';
 const learnMoreUrl =
-	'https://woocommerce.com/document/google-listings-and-ads/#contact-information';
+	'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information';
 
 const description = (
 	<>
@@ -84,9 +84,9 @@ export function ContactInformationPreview() {
  *
  * @param {Object} props React props.
  * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified or has been verified.
- * @fires gla_documentation_link_click with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#contact-information' }`
- * @fires gla_documentation_link_click with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#contact-information' }`
- * @fires gla_documentation_link_click with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#contact-information' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information' }`
+ * @fires gla_documentation_link_click with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information' }`
+ * @fires gla_documentation_link_click with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information' }`
  */
 const ContactInformation = ( { onPhoneNumberVerified } ) => {
 	const { adapter } = useAdaptiveFormContext();

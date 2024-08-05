@@ -324,24 +324,24 @@ When a documentation link is clicked.
 - [`AppDocumentationLink`](../../js/src/components/app-documentation-link/index.js#L29)
 - [`ChooseAudienceSection`](../../js/src/components/free-listings/choose-audience-section/choose-audience-section.js#L29) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L42) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
-- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
+- [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`
 - [`ContactInformation`](../../js/src/components/contact-information/index.js#L91)
-	- with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#contact-information' }`
-	- with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#contact-information' }`
-	- with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-listings-and-ads/#contact-information' }`
+	- with `{ context: 'setup-mc-contact-information', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information' }`
+	- with `{ context: 'settings-no-phone-number-notice', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information' }`
+	- with `{ context: 'settings-no-store-address-notice', link_id: 'contact-information-read-more', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information' }`
 - [`DifferentCurrencyNotice`](../../js/src/components/different-currency-notice.js#L28)
 	- with `{ context: "dashboard", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-products", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
 	- with `{ context: "reports-programs", link_id: "setting-up-currency", href: "https://support.google.com/google-ads/answer/9841530" }`
-- [`EditPhoneNumber`](../../js/src/settings/edit-phone-number.js#L29) with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://woocommerce.com/document/google-listings-and-ads/#contact-information" }`
-- [`EditStoreAddress`](../../js/src/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://woocommerce.com/document/google-listings-and-ads/#contact-information" }`
+- [`EditPhoneNumber`](../../js/src/settings/edit-phone-number.js#L29) with `{ context: "settings-phone-number", link_id: "contact-information-read-more", href: "https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information" }`
+- [`EditStoreAddress`](../../js/src/settings/edit-store-address.js#L41) with `{ context: "settings-store-address", link_id: "contact-information-read-more", href: "https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#contact-information" }`
 - [`Faqs`](../../js/src/get-started-page/faqs/index.js#L276)
-	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#general-requirements' }`.
+	- with `{ context: 'faqs', linkId: 'general-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`.
 	- with `{ context: 'faqs', linkId: 'claiming-urls', href: 'https://support.google.com/merchants/answer/7527436' }`.
-	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-merchant-center-requirements' }`.
-	- with `{ context: 'faqs', linkId: 'performance-max', href: 'https://woocommerce.com/document/google-listings-and-ads/#google-performance-max-campaigns' }`.
-	- with `{ context: 'faqs', linkId: 'free-listings', href: 'https://woocommerce.com/document/google-listings-and-ads/#free-listings-on-google' }`.
-	- with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woocommerce.com/document/google-listings-and-ads/#getting-started-with-campaign-analytics' }`.
+	- with `{ context: 'faqs', linkId: 'google-merchant-center-requirements', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#google-merchant-center-requirements' }`.
+	- with `{ context: 'faqs', linkId: 'performance-max', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns' }`.
+	- with `{ context: 'faqs', linkId: 'free-listings', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/product-feed-information-and-free-listings/#section-1' }`.
+	- with `{ context: 'faqs', linkId: 'campaign-analytics', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/campaign-analytics' }`.
 	- with `{ context: 'faqs', linkId: 'terms-and-conditions-of-google-ads-coupons', href: 'https://www.google.com/ads/coupons/terms/' }`.
 - [`Faqs`](../../js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L68) with `{ context: 'faqs', link_id: 'find-a-partner', href: 'https://comparisonshoppingpartners.withgoogle.com/find_a_partner/' }`
 - [`FaqsSection`](../../js/src/components/paid-ads/asset-group/faqs-section.js#L73) with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
@@ -354,7 +354,7 @@ When a documentation link is clicked.
 - [`IssuesTableDataModal`](../../js/src/product-feed/issues-table-card/issues-table-data-modal.js#L21) with { context: 'issues-data-table-modal' }
 - [`ProductStatusHelpPopover`](../../js/src/product-feed/product-statistics/product-status-help-popover/index.js#L16) with `{ context: 'product-feed', link_id: 'product-sync-statuses', href: 'https://support.google.com/merchants/answer/160491' }`
 - [`ReclaimUrlCard`](../../js/src/components/google-mc-account-card/reclaim-url-card/index.js#L41) with `{ context: 'setup-mc', link_id: 'claim-url', href: 'https://support.google.com/merchants/answer/176793' }`
-- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
+- [`RequestFullAccessGoogleAccountCard`](../../js/src/components/google-account-card/request-full-access-google-account-card.js#L26) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/requirements/#general-requirements' }`
 - [`ShippingRateSection`](../../js/src/components/shipping-rate-section/shipping-rate-section.js#L23)
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
 	- with `{ context: 'setup-mc-shipping', link_id: 'shipping-manual', href: 'https://www.google.com/retail/solutions/merchant-center/' }`
@@ -565,10 +565,10 @@ Clicking on the button to connect an existing Google Merchant Center account.
 #### Emitters
 - [`ConnectMC`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L42)
 
-### [`gla_mc_account_connect_different_account_button_click`](../../js/src/components/google-mc-account-card/connected-google-mc-account-card.js#L21)
+### [`gla_mc_account_connect_different_account_button_click`](../../js/src/components/google-mc-account-card/connected-google-mc-account-card.js#L29)
 Clicking on the "connect to a different Google Merchant Center account" button.
 #### Emitters
-- [`ConnectedGoogleMCAccountCard`](../../js/src/components/google-mc-account-card/connected-google-mc-account-card.js#L36)
+- [`ConnectedGoogleMCAccountCard`](../../js/src/components/google-mc-account-card/connected-google-mc-account-card.js#L45)
 
 ### [`gla_mc_account_create_button_click`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L16)
 Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
@@ -629,7 +629,7 @@ A modal is closed.
 `action` | `string` | Indicates the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, generic "Cancel" button, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked    - `confirm` is used when the button "Confirm", "Save"  or similar generic "Accept" button is clicked
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
-- [`Dashboard`](../../js/src/dashboard/index.js#L33) when CES modal is closed.
+- [`Dashboard`](../../js/src/dashboard/index.js#L34) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L159) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
 
