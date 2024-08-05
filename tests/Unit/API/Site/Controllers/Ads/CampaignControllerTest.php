@@ -86,12 +86,23 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'get_campaigns' )
-			->willReturn( $campaigns_data );
+			->willReturn(
+				[
+					'campaigns'       => $campaigns_data,
+					'total_results'   => 2,
+					'next_page_token' => '',
+				]
+			);
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET' );
 
 		$this->assertEquals( $campaigns_data, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
+
+		$headers = $response->get_headers();
+		$this->assertEquals( 2, $headers['X-WP-Total'] );
+		$this->assertEquals( 1, $headers['X-WP-TotalPages'] );
+		$this->assertArrayNotHasKey( 'X-GLA-NextPageToken', $headers );
 	}
 
 	public function test_get_campaigns_converted_names() {
@@ -144,12 +155,133 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'get_campaigns' )
 			->with( false )
-			->willReturn( $campaigns_data );
+			->willReturn(
+				[
+					'campaigns'       => $campaigns_data,
+					'total_results'   => 2,
+					'next_page_token' => '',
+				]
+			);
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET', [ 'exclude_removed' => false ] );
 
 		$this->assertEquals( $expected, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
+
+		$headers = $response->get_headers();
+		$this->assertEquals( 2, $headers['X-WP-Total'] );
+		$this->assertEquals( 1, $headers['X-WP-TotalPages'] );
+		$this->assertArrayNotHasKey( 'X-GLA-NextPageToken', $headers );
+	}
+
+	public function test_get_campaigns_with_args() {
+		$campaigns_data = [
+			[
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'name'               => 'Test Campaign',
+				'status'             => 'removed',
+				'type'               => 'shopping',
+				'amount'             => 10,
+				'country'            => 'US',
+				'targeted_locations' => [],
+			],
+			[
+				'id'                 => 5678901234,
+				'name'               => 'PMax: Test Campaign',
+				'status'             => 'enabled',
+				'type'               => 'performance_max',
+				'amount'             => 20,
+				'country'            => 'UK',
+				'targeted_locations' => [],
+			],
+		];
+
+		$expected = [
+			[
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'name'               => 'Test Campaign',
+				'status'             => 'removed',
+				'type'               => 'shopping',
+				'amount'             => 10,
+				'country'            => 'US',
+				'targeted_locations' => [],
+			],
+			[
+				'id'                 => 5678901234,
+				'name'               => 'PMax: Test Campaign',
+				'status'             => 'enabled',
+				'type'               => 'performance_max',
+				'amount'             => 20,
+				'country'            => 'UK',
+				'targeted_locations' => [],
+			],
+		];
+
+		$matcher = $this->exactly( 3 );
+		$this->ads_campaign->expects( $matcher ) // We will make two requests with different per_page values.
+			->method( 'get_campaigns' )
+			->willReturnCallback(
+				function ( $exclude_removed, $fetch_criterion, $args ) use ( $matcher ) {
+					$this->assertTrue( $exclude_removed );
+					$this->assertTrue( $fetch_criterion );
+
+					if ( $matcher->getInvocationCount() === 1 ) {
+						$this->assertEquals( 2, $args['per_page'] ); // First request.
+					}
+
+					if ( $matcher->getInvocationCount() === 2 ) {
+						$this->assertEquals( 1, $args['per_page'] ); // Second request.
+					}
+
+					return true;
+				}
+			)->willReturnOnConsecutiveCalls(
+				[
+					'campaigns'       => $campaigns_data,
+					'total_results'   => 2,
+					'next_page_token' => '',
+				],
+				[
+					'campaigns'       => [ $campaigns_data[0] ],
+					'total_results'   => 3,
+					'next_page_token' => 'pageToken',
+				],
+				[
+					'campaigns'       => [],
+					'total_results'   => 0,
+					'next_page_token' => '',
+				]
+			);
+
+		// First request.
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET', [ 'per_page' => 2 ] );
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+
+		$headers = $response->get_headers();
+		$this->assertEquals( 2, $headers['X-WP-Total'] );
+		$this->assertEquals( 1, $headers['X-WP-TotalPages'] );
+		$this->assertArrayNotHasKey( 'X-GLA-NextPageToken', $headers );
+
+		// Second request.
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET', [ 'per_page' => 1 ] );
+		$this->assertEquals( [ $expected[0] ], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+
+		$headers = $response->get_headers();
+		$this->assertEquals( 3, $headers['X-WP-Total'] );
+		$this->assertEquals( 3, $headers['X-WP-TotalPages'] );
+		$this->assertEquals( 'pageToken', $headers['X-GLA-NextPageToken'] );
+
+		// Third request.
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET', [ 'per_page' => 1 ] );
+		$this->assertEquals( [], $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+
+		$headers = $response->get_headers();
+		$this->assertEquals( 0, $headers['X-WP-Total'] );
+		$this->assertEquals( 0, $headers['X-WP-TotalPages'] );
+		$this->assertArrayNotHasKey( 'X-GLA-NextPageToken', $headers );
 	}
 
 	public function test_get_campaigns_with_api_exception() {

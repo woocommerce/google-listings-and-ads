@@ -99,15 +99,33 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 	protected function get_campaigns_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				$exclude_removed = $request->get_param( 'exclude_removed' );
+				$exclude_removed          = $request->get_param( 'exclude_removed' );
+				$return_pagination_params = true;
+				$campaign_data            = $this->ads_campaign->get_campaigns( $exclude_removed, true, $request->get_params(), $return_pagination_params );
 
-				return array_map(
+				$campaigns = array_map(
 					function ( $campaign ) use ( $request ) {
 						$data = $this->prepare_item_for_response( $campaign, $request );
 						return $this->prepare_response_for_collection( $data );
 					},
-					$this->ads_campaign->get_campaigns( $exclude_removed )
+					$campaign_data['campaigns']
 				);
+
+				$response = rest_ensure_response( $campaigns );
+
+				$total_campaigns = (int) $campaign_data['total_results'];
+				$response->header( 'X-WP-Total', $total_campaigns );
+				// If per_page is not set, then set it to total number of campaigns.
+				$per_page  = $request->get_param( 'per_page' ) ?: $total_campaigns;
+				$max_pages = $per_page > 0 ? ceil( $total_campaigns / $per_page ) : 1;
+				$response->header( 'X-WP-TotalPages', (int) $max_pages );
+
+				if ( ! empty( $campaign_data['next_page_token'] ) ) {
+					$response->header( 'X-GLA-NextPageToken', $campaign_data['next_page_token'] );
+				}
+
+				return $response;
+
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
@@ -318,6 +336,14 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				'description'       => __( 'Exclude removed campaigns.', 'google-listings-and-ads' ),
 				'type'              => 'boolean',
 				'default'           => true,
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'per_page'        => [
+				'description'       => __( 'Maximum number of rows to be returned in result data.', 'google-listings-and-ads' ),
+				'type'              => 'integer',
+				'minimum'           => 1,
+				'maximum'           => 1000,
+				'sanitize_callback' => 'absint',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
