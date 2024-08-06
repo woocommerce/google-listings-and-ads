@@ -7,14 +7,14 @@ import CustomerQuotesCard from './customer-quotes-card';
 import Faqs from './faqs';
 import FeaturesCard from './features-card';
 import GetStartedCard from './get-started-card';
-import GetStartedWithVideoCard from './get-started-with-video-card';
+import GetStartedWithHeroCard from './get-started-with-hero-card';
 import UnsupportedNotices from './unsupported-notices';
 
 const GetStartedPage = () => {
 	return (
 		<div className="woocommerce-marketing-google-get-started-page">
 			<UnsupportedNotices />
-			<GetStartedWithVideoCard />
+			<GetStartedWithHeroCard />
 			<BenefitsCard />
 			<FeaturesCard />
 			<CustomerQuotesCard />

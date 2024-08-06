@@ -12,30 +12,36 @@ import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
 import Text from '.~/components/app-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import WistiaVideo from '.~/components/wistia-video';
 import { getSetupMCUrl } from '.~/utils/urls';
 import './index.scss';
+import heroUrl from './hero.png';
 
 /**
- * @fires gla_setup_mc with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started-with-video' }`.
- * @fires gla_documentation_link_click with `{ context: 'get-started-with-video', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
+ * @fires gla_setup_mc with `{ triggered_by: 'start-onboarding-button', action: 'go-to-onboarding', context: 'get-started-with-hero' }`.
+ * @fires gla_documentation_link_click with `{ context: 'get-started-with-hero', linkId: 'wp-terms-of-service', href: 'https://wordpress.com/tos/' }`.
  */
-const GetStartedWithVideoCard = () => {
+const GetStartedWithHeroCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;
 
 	return (
-		<Card className="gla-get-started-with-video-card" isBorderless>
-			<FlexBlock className="motivation-video">
-				<WistiaVideo
-					id="lpvgtsjwrg"
-					src="https://fast.wistia.net/embed/iframe/lpvgtsjwrg?seo=false&videoFoam=true"
-					title="WooCommerce-Google-Listings-Ads"
-				/>
+		<Card className="gla-get-started-with-hero-card" isBorderless>
+			<FlexBlock className="motivation">
+				<div className="gla-get-started-with-hero-card__image">
+					<img
+						src={ heroUrl }
+						alt={ __(
+							'Google for WooCommerce',
+							'google-listings-and-ads'
+						) }
+						width="100%"
+						height="100%"
+					/>
+				</div>
 			</FlexBlock>
 			<CardBody>
 				<Text
 					variant="caption"
-					className="gla-get-started-with-video-card__caption"
+					className="gla-get-started-with-hero-card__caption"
 				>
 					{ __(
 						'The official extension for WooCommerce, built in collaboration with Google',
@@ -44,24 +50,24 @@ const GetStartedWithVideoCard = () => {
 				</Text>
 				<Text
 					variant="title-medium"
-					className="gla-get-started-with-video-card__title"
+					className="gla-get-started-with-hero-card__title"
 				>
 					{ __(
-						'Reach millions of shoppers with product listings on Google',
+						'Connect your WooCommerce store and reach millions of shoppers on Google',
 						'google-listings-and-ads'
 					) }
 				</Text>
 				<Text
 					variant="body"
-					className="gla-get-started-with-video-card__description"
+					className="gla-get-started-with-hero-card__description"
 				>
 					{ __(
-						'Sync your products directly to Google, manage your product feed, and create Google Ad campaigns — all without leaving your WooCommerce dashboard.',
+						'Effortlessly sync your WooCommerce product feed across Google and be seen by millions of engaged shoppers with the Google for WooCommerce extension.',
 						'google-listings-and-ads'
 					) }
 				</Text>
 				<AppButton
-					className="gla-get-started-with-video-card__button"
+					className="gla-get-started-with-hero-card__button"
 					isPrimary
 					disabled={ disableNextStep }
 					href={ getSetupMCUrl() }
@@ -69,33 +75,33 @@ const GetStartedWithVideoCard = () => {
 					eventProps={ {
 						triggered_by: 'start-onboarding-button',
 						action: 'go-to-onboarding',
-						context: 'get-started-with-video',
+						context: 'get-started-with-hero',
 					} }
 				>
 					{ __(
-						'Start listing products →',
+						'Sell more on Google →',
 						'google-listings-and-ads'
 					) }
 				</AppButton>
-				<Text className="gla-get-started-with-video-card__hint">
+				<Text className="gla-get-started-with-hero-card__hint">
 					{ __(
-						'Estimated setup time: 15 min',
+						'Estimated setup time: 5 min',
 						'google-listings-and-ads'
 					) }
 				</Text>
 				<Text
-					className="gla-get-started-with-video-card__terms-notice"
+					className="gla-get-started-with-hero-card__terms-notice"
 					variant="body"
 				>
 					{ createInterpolateElement(
 						__(
-							'By clicking ‘Start listing products’, you agree to our <link>Terms of Service.</link>',
+							'By clicking ‘Sell more on Google’, you agree to our <link>Terms of Service.</link>',
 							'google-listings-and-ads'
 						),
 						{
 							link: (
 								<AppDocumentationLink
-									context="get-started-with-video"
+									context="get-started-with-hero"
 									linkId="wp-terms-of-service"
 									href="https://wordpress.com/tos/"
 								/>
@@ -114,4 +120,4 @@ const GetStartedWithVideoCard = () => {
 	);
 };
 
-export default GetStartedWithVideoCard;
+export default GetStartedWithHeroCard;
