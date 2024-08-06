@@ -111,6 +111,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.8.1 - 2024-08-06 =
+* Add - Enable labeling of Ads campaigns.
+* Tweak - Update doc links references.
+* Update - Enable Page Size Parameter in Campaigns Endpoint.
+
 = 2.8.0 - 2024-07-31 =
 * Add Google API Pull method.
 * Rebranding Google Listings and Ads with Google for WooCommerce.
