@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.6
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.8.0
+Stable tag: 2.8.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -111,6 +111,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 2.8.1 - 2024-08-06 =
+* Add - Enable labeling of Ads campaigns.
+* Tweak - Update doc links references.
+* Update - Enable Page Size Parameter in Campaigns Endpoint.
+
 = 2.8.0 - 2024-07-31 =
 * Add Google API Pull method.
 * Rebranding Google Listings and Ads with Google for WooCommerce.
@@ -118,10 +123,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 = 2.7.7 - 2024-07-24 =
 * Dev - Fix E2E tests failed with WC 9.1.
 * Tweak -   Make campaign preview card responsive.
-
-= 2.7.6 - 2024-07-09 =
-* Dev - Update connect server URL in test proxy configuration.
-* Tweak - WC 9.1 compatibility.
-* Tweak - WP 6.6 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

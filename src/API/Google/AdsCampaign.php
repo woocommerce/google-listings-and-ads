@@ -82,32 +82,41 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected $google_helper;
 
 	/**
+	 * @var AdsCampaignLabel $campaign_label
+	 */
+	protected $campaign_label;
+
+	/**
 	 * AdsCampaign constructor.
 	 *
 	 * @param GoogleAdsClient      $client
 	 * @param AdsCampaignBudget    $budget
 	 * @param AdsCampaignCriterion $criterion
 	 * @param GoogleHelper         $google_helper
+	 * @param AdsCampaignLabel     $campaign_label
 	 */
-	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget, AdsCampaignCriterion $criterion, GoogleHelper $google_helper ) {
-		$this->client        = $client;
-		$this->budget        = $budget;
-		$this->criterion     = $criterion;
-		$this->google_helper = $google_helper;
+	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget, AdsCampaignCriterion $criterion, GoogleHelper $google_helper, AdsCampaignLabel $campaign_label ) {
+		$this->client         = $client;
+		$this->budget         = $budget;
+		$this->criterion      = $criterion;
+		$this->google_helper  = $google_helper;
+		$this->campaign_label = $campaign_label;
 	}
 
 	/**
 	 * Returns a list of campaigns with targeted locations retrieved from campaign criterion.
 	 *
-	 * @param bool $exclude_removed Exclude removed campaigns (default true).
-	 * @param bool $fetch_criterion Combine the campaign data with criterion data (default true).
+	 * @param bool  $exclude_removed Exclude removed campaigns (default true).
+	 * @param bool  $fetch_criterion Combine the campaign data with criterion data (default true).
+	 * @param array $args Arguments for the Ads Campaign Query for example: per_page for limiting the number of results.
+	 * @param bool  $return_pagination_params Whether to return pagination params (default false).
 	 *
 	 * @return array
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_campaigns( bool $exclude_removed = true, bool $fetch_criterion = true ): array {
+	public function get_campaigns( bool $exclude_removed = true, bool $fetch_criterion = true, $args = [], $return_pagination_params = false ): array {
 		try {
-			$query = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() );
+			$query = ( new AdsCampaignQuery( $args ) )->set_client( $this->client, $this->options->get_ads_id() );
 
 			if ( $exclude_removed ) {
 				$query->where( 'campaign.status', 'REMOVED', '!=' );
@@ -117,7 +126,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$campaign_results    = $query->get_results();
 			$converted_campaigns = [];
 
-			foreach ( $campaign_results->iterateAllElements() as $row ) {
+			/** @var Page $page */
+			$page = $campaign_results->getPage();
+
+			foreach ( $page->getIterator()  as $row ) {
 				++$campaign_count;
 				$campaign                               = $this->convert_campaign( $row );
 				$converted_campaigns[ $campaign['id'] ] = $campaign;
@@ -136,6 +148,16 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$converted_campaigns = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
 			}
 
+			if ( $return_pagination_params ) {
+				// Total results across all pages.
+				$total_results   = $page->getResponseObject()->getTotalResultsCount();
+				$next_page_token = $page->getNextPageToken();
+				return [
+					'campaigns'       => array_values( $converted_campaigns ),
+					'total_results'   => $total_results,
+					'next_page_token' => $next_page_token,
+				];
+			}
 			return array_values( $converted_campaigns );
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
@@ -161,14 +183,14 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function get_campaign( int $id ): array {
 		try {
-			$campaign_results = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() )
+			$campaign_results = ( new AdsCampaignQuery( [ 'per_page' => 1 ] ) )->set_client( $this->client, $this->options->get_ads_id() )
 				->where( 'campaign.id', $id, '=' )
 				->get_results();
 
 			$converted_campaigns = [];
 
 			// Get only the first element from campaign results
-			foreach ( $campaign_results->iterateAllElements() as $row ) {
+			foreach ( $campaign_results->getPage()->getIterator() as $row ) {
 				$campaign                               = $this->convert_campaign( $row );
 				$converted_campaigns[ $campaign['id'] ] = $campaign;
 				break;
@@ -233,6 +255,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			);
 
 			$campaign_id = $this->mutate( $operations );
+
+			if ( isset( $params['label'] ) ) {
+				$this->campaign_label->assign_label_to_campaign_by_label_name( $campaign_id, $params['label'] );
+			}
 
 			// Clear cached campaign count.
 			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::ADS_CAMPAIGN_COUNT );
