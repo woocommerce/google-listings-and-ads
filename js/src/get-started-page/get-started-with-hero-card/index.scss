@@ -28,12 +28,13 @@
 
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__title {
+		max-width: $gla-width-medium-big;
 		margin-bottom: $grid-unit-20;
 	}
 
 	// Use more specific rules to make it higher priority to override <Text> component.
 	& &__description {
-		max-width: $gla-width-large;
+		max-width: $gla-width-medium-big;
 		margin-bottom: $grid-unit-30;
 	}
 
