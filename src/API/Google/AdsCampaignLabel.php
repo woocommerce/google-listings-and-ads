@@ -19,7 +19,7 @@ use Google\Ads\GoogleAds\V16\Services\MutateGoogleAdsRequest;
  * Class AdsCampaignLabel
  * https://developers.google.com/google-ads/api/docs/reporting/labels
  *
- * @since x.x.x
+ * @since 2.8.1
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
