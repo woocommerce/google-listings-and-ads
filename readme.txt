@@ -119,9 +119,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Dev - Fix E2E tests failed with WC 9.1.
 * Tweak -   Make campaign preview card responsive.
 
-= 2.7.6 - 2024-07-09 =
-* Dev - Update connect server URL in test proxy configuration.
-* Tweak - WC 9.1 compatibility.
-* Tweak - WP 6.6 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
