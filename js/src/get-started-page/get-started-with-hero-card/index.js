@@ -78,10 +78,7 @@ const GetStartedWithHeroCard = () => {
 						context: 'get-started-with-hero',
 					} }
 				>
-					{ __(
-						'Sell more on Google →',
-						'google-listings-and-ads'
-					) }
+					{ __( 'Sell more on Google →', 'google-listings-and-ads' ) }
 				</AppButton>
 				<Text className="gla-get-started-with-hero-card__hint">
 					{ __(

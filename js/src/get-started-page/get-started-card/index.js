@@ -57,15 +57,12 @@ const GetStartedCard = () => {
 						context: 'get-started',
 					} }
 				>
-					{ __(
-						'Start listing products →',
-						'google-listings-and-ads'
-					) }
+					{ __( 'Sell more on Google →', 'google-listings-and-ads' ) }
 				</AppButton>
 				<Text className="gla-get-started-card__terms-notice">
 					{ createInterpolateElement(
 						__(
-							'By clicking ‘Start listing products‘, you agree to our <link>Terms of Service.</link>',
+							'By clicking ‘Sell more on Google‘, you agree to our <link>Terms of Service.</link>',
 							'google-listings-and-ads'
 						),
 						{
