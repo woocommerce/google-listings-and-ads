@@ -52,12 +52,13 @@ const useUpsertAdsAccount = () => {
 			// and only display error message and exit this function for non-428 error.
 			if ( e.status !== 428 ) {
 				const body = await e.json();
-				const message = e.status === 406 ?
-					body.message :
-					__(
-						'Unable to create Google Ads account. Please try again later.',
-						'google-listings-and-ads'
-					);
+				const message =
+					e.status === 406
+						? body.message
+						: __(
+								'Unable to create Google Ads account. Please try again later.',
+								'google-listings-and-ads'
+						  );
 
 				createNotice( 'error', message );
 			}
