@@ -10,6 +10,7 @@ import {
 	useValidation,
 } from '@woocommerce/product-editor';
 import { Flex, FlexBlock } from '@wordpress/components';
+import { isWcVersion } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
 /**
  * Internal dependencies
@@ -21,11 +22,18 @@ import styles from './editor.module.scss';
  * @typedef {import('../types.js').ProductBasicAttributes} ProductBasicAttributes
  */
 
-async function resolveValidationMessage( inputRef ) {
+async function resolveValidationMessage( inputRef, context ) {
 	const input = inputRef.current;
 
 	if ( ! input.validity.valid ) {
-		return input.validationMessage;
+		if ( isWcVersion( '9.2.0', '>' ) ) {
+			return input.validationMessage;
+		}
+
+		return {
+			message: input.validationMessage,
+			context
+		};
 	}
 }
 
@@ -36,7 +44,7 @@ async function resolveValidationMessage( inputRef ) {
  * @param {ProductBasicAttributes} props.attributes
  * @param {ProductEditorBlockContext} props.context
  */
-export default function Edit( { attributes, context } ) {
+export default function Edit( { attributes, context, clientId } ) {
 	const { property } = attributes;
 	const blockProps = useWooBlockProps( attributes );
 	const [ value, setValue ] = useProductEntityProp( property, {
@@ -76,11 +84,11 @@ export default function Edit( { attributes, context } ) {
 	};
 
 	const dateValidation = useValidation( `${ property }-date`, () =>
-		resolveValidationMessage( dateInputRef )
+		resolveValidationMessage( dateInputRef, clientId )
 	);
 
 	const timeValidation = useValidation( `${ property }-time`, () =>
-		resolveValidationMessage( timeInputRef )
+		resolveValidationMessage( timeInputRef, clientId )
 	);
 
 	return (
