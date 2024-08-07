@@ -578,16 +578,13 @@ export function getProductBlockEditorUtils( page ) {
 			await this.clickSave();
 
 			const failureNotice = page
-				.locator( '.components-snackbar__content' )
-				.filter( { hasText: new RegExp( message ) } );
-
-			const failureNoticeDismissButton =
-				failureNotice.getByRole( 'button' );
+				.locator( '.components-snackbar__content' );
 
 			await expect( failureNotice ).toBeVisible();
+			await expect( failureNotice ).toHaveText( message );
 
-			// Dismiss the notice.
-			await failureNoticeDismissButton.click();
+			// // Dismiss the notice.
+			await failureNotice.click();
 			await expect( failureNotice ).toHaveCount( 0 );
 		},
 	};
