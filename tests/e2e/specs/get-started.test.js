@@ -32,7 +32,7 @@ test( 'Merchant who is getting started clicks on the Marketing > GLA link, click
 	await expect( page ).toHaveTitle( /Google for WooCommerce/ );
 
 	// click on the call-to-action button.
-	await page.getByText( 'Start listing products →' ).first().click();
+	await page.getByText( 'Sell more on Google →' ).first().click();
 	await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
 	// Check we are in the Setup MC page.
