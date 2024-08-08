@@ -39,6 +39,10 @@ module.exports = {
 		getComputedStyle: 'readonly',
 	},
 	rules: {
+		'@wordpress/i18n-text-domain': [
+			'error',
+			{ allowedTextDomain: 'google-listings-and-ads' },
+		],
 		'@wordpress/no-unsafe-wp-apis': 1,
 		'react/react-in-jsx-scope': 'off',
 		'react-hooks/exhaustive-deps': [
@@ -63,6 +67,24 @@ module.exports = {
 		'jsdoc/check-line-alignment': 'off',
 	},
 	overrides: [
+		{
+			files: [ 'js/src/external-components/woocommerce/**' ],
+			rules: {
+				'@wordpress/i18n-text-domain': [
+					'error',
+					{ allowedTextDomain: 'woocommerce' },
+				],
+			},
+		},
+		{
+			files: [ 'js/src/external-components/wordpress/**' ],
+			rules: {
+				'@wordpress/i18n-text-domain': [
+					'error',
+					{ allowedTextDomain: '' },
+				],
+			},
+		},
 		{
 			files: [ 'tests/e2e/**/*.js' ],
 			rules: {

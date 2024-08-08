@@ -62,7 +62,7 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 	return (
 		<AppModal
 			onRequestClose={ handleClose }
-			title={ __( 'Delete attribute rule?', ' google-listings-and-ads' ) }
+			title={ __( 'Delete attribute rule?', 'google-listings-and-ads' ) }
 			buttons={ [
 				<AppButton
 					disabled={ deleting }
