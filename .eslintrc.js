@@ -40,6 +40,7 @@ module.exports = {
 	},
 	rules: {
 		'@wordpress/no-unsafe-wp-apis': 1,
+		'react/react-in-jsx-scope': 'off',
 		'react-hooks/exhaustive-deps': [
 			'warn',
 			{
