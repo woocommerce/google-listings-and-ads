@@ -93,23 +93,18 @@ test.describe( 'Product Block Editor integration', () => {
 		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 9 );
 
 		/*
-		 * 8 <input type="text|date|time">:
+		 * 9 <input type="text|date|time">:
 		 * - GTIN
 		 * - MPN
 		 * - Size
 		 * - Color
 		 * - Material
 		 * - Pattern
+		 * - Multipack
 		 * - Availability date
 		 * - Availability time
 		 */
-		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 8 );
-
-		/*
-		 * 1 <input type="number">:
-		 * - Multipack
-		 */
-		await expect( panel.getByRole( 'spinbutton' ) ).toHaveCount( 1 );
+		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 9 );
 
 		/*
 		 * 16 pairs of <label> and help icon buttons:
@@ -243,16 +238,11 @@ test.describe( 'Product Block Editor integration', () => {
 		 * - Color
 		 * - Material
 		 * - Pattern
+		 * - Multipack
 		 * - Availability date
 		 * - Availability time
 		 */
-		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 8 );
-
-		/*
-		 * 1 <input type="number"> for variation product:
-		 * - Multipack
-		 */
-		await expect( panel.getByRole( 'spinbutton' ) ).toHaveCount( 1 );
+		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 9 );
 	} );
 
 	test( 'Channel visibility is disabled when hiding in product catalog', async () => {
@@ -534,7 +524,7 @@ test.describe( 'Product Block Editor integration', () => {
 		await input.fill( '-1' );
 
 		await editorUtils.assertUnableSave(
-			'The minimum value of the field is 0'
+			'Please enter a valid value.'
 		);
 		await expect( help ).toBeVisible();
 		await expect( help ).toHaveText(
