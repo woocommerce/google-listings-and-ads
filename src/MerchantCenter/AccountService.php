@@ -623,4 +623,13 @@ class AccountService implements OptionsAwareInterface, Service {
 	public function delete_wpcom_api_auth_nonce(): bool {
 		return $this->options->delete( OptionsInterface::GOOGLE_WPCOM_AUTH_NONCE );
 	}
+
+	/**
+	 * Check if the WPCOM API is approved.
+	 *
+	 * @return bool
+	 */
+	public function is_wpcom_api_approved(): bool {
+		return $this->options->get( OptionsInterface::WPCOM_REST_API_STATUS ) === 'approved';
+	}
 }
