@@ -805,6 +805,7 @@ export function* createAdsCampaign( amount, countryCodes ) {
 			data: {
 				amount,
 				targeted_locations: countryCodes,
+				label: 'wc-web',
 			},
 		} );
 
