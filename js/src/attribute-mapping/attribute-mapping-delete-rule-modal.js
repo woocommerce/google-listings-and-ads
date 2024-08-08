@@ -55,7 +55,9 @@ const AttributeMappingDeleteRuleModal = ( { onRequestClose = noop, rule } ) => {
 	};
 
 	const handleClose = () => {
-		if ( deleting ) return;
+		if ( deleting ) {
+			return;
+		}
 		onRequestClose( 'dismiss' );
 	};
 

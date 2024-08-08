@@ -161,7 +161,9 @@ const AttributeMappingRuleModal = ( { rule, onRequestClose = noop } ) => {
 	};
 
 	const handleClose = () => {
-		if ( saving ) return;
+		if ( saving ) {
+			return;
+		}
 		onRequestClose( 'dismiss' );
 	};
 

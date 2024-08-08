@@ -43,7 +43,7 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
 			],
 		}
      ],
- **/
+ */
 
 /**
  * @typedef {Object} CommonOption
@@ -190,7 +190,9 @@ const TreeSelectControl = ( {
 		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
 			const matchLength = matchPosition + filter.length;
 
-			if ( ! isSearching ) return optionLabel;
+			if ( ! isSearching ) {
+				return optionLabel;
+			}
 
 			return (
 				<span>
@@ -309,7 +311,9 @@ const TreeSelectControl = ( {
 	}, [ treeOptions, filter ] );
 
 	const onKeyDown = ( event ) => {
-		if ( disabled ) return;
+		if ( disabled ) {
+			return;
+		}
 
 		if ( ESCAPE === event.key ) {
 			setTreeVisible( false );
@@ -481,7 +485,9 @@ const TreeSelectControl = ( {
 					setTreeVisible( true );
 				} }
 				onControlClick={ () => {
-					if ( disabled ) return;
+					if ( disabled ) {
+						return;
+					}
 					setTreeVisible( true );
 				} }
 				instanceId={ instanceId }
