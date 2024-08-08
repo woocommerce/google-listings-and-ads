@@ -485,7 +485,7 @@ class AttributeInputCollectionTest extends UnitTest {
 					'property' => 'meta_data._wc_gla_multipack',
 					'label'    => 'Multipack',
 					'tooltip'  => 'The number of identical products in a multipack. Use this attribute to indicate that you\'ve grouped multiple identical products for sale as one item.',
-					'type'     => [ 'value' => 'number' ],
+					'pattern'  => [ 'value' => '\d+', 'message' => 'Please enter a valid value.' ],
 					'min'      => [ 'value' => 0 ],
 				],
 			],

@@ -108,7 +108,7 @@ class InputCollectionTest extends UnitTest {
 
 		$this->assertEquals( 'integer', $input->get_type() );
 		$this->assertEquals( 'woocommerce/product-text-field', $input->get_block_name() );
-		$this->assertEquals( [ 'value' => 'number' ], $input->get_block_attributes()['type'] );
+		$this->assertEquals( [ 'value' => '\d+', 'message' => 'Please enter a valid value.' ], $input->get_block_attributes()['pattern'] );
 	}
 
 	public function test_select() {
