@@ -32,7 +32,7 @@ async function resolveValidationMessage( inputRef, context ) {
 
 		return {
 			message: input.validationMessage,
-			context
+			context,
 		};
 	}
 }
@@ -43,6 +43,7 @@ async function resolveValidationMessage( inputRef, context ) {
  * @param {Object} props React props.
  * @param {ProductBasicAttributes} props.attributes
  * @param {ProductEditorBlockContext} props.context
+ * @param {string} props.clientId
  */
 export default function Edit( { attributes, context, clientId } ) {
 	const { property } = attributes;

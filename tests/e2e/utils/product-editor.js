@@ -577,8 +577,9 @@ export function getProductBlockEditorUtils( page ) {
 		async assertUnableSave( message = 'Please enter a valid value.' ) {
 			await this.clickSave();
 
-			const failureNotice = page
-				.locator( '.components-snackbar__content' );
+			const failureNotice = page.locator(
+				'.components-snackbar__content'
+			);
 
 			await expect( failureNotice ).toBeVisible();
 			await expect( failureNotice ).toHaveText( message );

@@ -455,7 +455,9 @@ test.describe( 'Product Block Editor integration', () => {
 		 */
 		await dateInput.pressSequentially( '9' );
 
-		await editorUtils.assertUnableSave( 'Please enter a valid value. The field is incomplete or has an invalid date.' );
+		await editorUtils.assertUnableSave(
+			'Please enter a valid value. The field is incomplete or has an invalid date.'
+		);
 		await expect( dateHelp ).toBeVisible();
 		await expect( dateHelp ).toHaveText(
 			await editorUtils.evaluateValidationMessage( dateInput )
@@ -465,7 +467,9 @@ test.describe( 'Product Block Editor integration', () => {
 
 		await timeInput.pressSequentially( '9' );
 
-		await editorUtils.assertUnableSave( 'Please enter a valid value. The field is incomplete or has an invalid date.' );
+		await editorUtils.assertUnableSave(
+			'Please enter a valid value. The field is incomplete or has an invalid date.'
+		);
 		await expect( timeHelp ).toBeVisible();
 		await expect( timeHelp ).toHaveText(
 			await editorUtils.evaluateValidationMessage( timeInput )
