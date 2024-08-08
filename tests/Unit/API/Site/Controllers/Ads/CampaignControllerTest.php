@@ -332,6 +332,99 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
+	public function test_create_campaign_with_label() {
+		$campaign_data = [
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US', 'GB', 'TW' ],
+			'label'              => 'wc-web',
+		];
+
+		$expected = [
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US', 'GB', 'TW' ],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( $campaign_data )
+			->willReturn( $expected );
+
+		$this->expect_track_event(
+			'created_campaign',
+			[
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'status'             => 'enabled',
+				'name'               => 'New Campaign',
+				'amount'             => 20,
+				'country'            => self::BASE_COUNTRY,
+				'targeted_locations' => 'US,GB,TW',
+			]
+		);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_with_mobile() {
+		$user_agents = [
+			'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 wc-ios/19.7.1',
+			'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36 wc-android/19.7.1',
+		];
+
+		$campaign_data = [
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US', 'GB', 'TW' ],
+		];
+
+		$expected = [
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US', 'GB', 'TW' ],
+		];
+
+		$matcher = $this->exactly( 2 );
+		$this->ads_campaign->expects( $matcher )
+			->method( 'create_campaign' )
+			->willReturnCallback(
+				function ( $data ) use ( $campaign_data, $matcher, $expected ) {
+					$invokation = $matcher->getInvocationCount();
+					if ( $invokation === 1 ) {
+						$this->assertEquals( $data, $campaign_data + [ 'label' => 'wc-ios' ] );
+					} else {
+						$this->assertEquals( $data, $campaign_data + [ 'label' => 'wc-android' ] );
+					}
+					return $expected;
+				}
+			);
+
+		foreach ( $user_agents as $user_agent ) {
+			$response = $this->do_request(
+				self::ROUTE_CAMPAIGNS,
+				'POST',
+				$campaign_data,
+				[
+					'User-Agent' => $user_agent,
+				]
+			);
+
+			$this->assertEquals( $expected, $response->get_data() );
+			$this->assertEquals( 200, $response->get_status() );
+		}
+	}
+
 	public function test_create_campaign_without_name() {
 		$campaign_data = [
 			'amount'             => 30,

@@ -76,10 +76,11 @@ abstract class RESTControllerUnitTest extends UnitTest {
 	 * @param string $endpoint Endpoint to hit.
 	 * @param string $type     Type of request e.g GET or POST.
 	 * @param array  $params   Request body or query.
+	 * @param array  $headers  Request headers in format key => value.
 	 *
 	 * @return Response
 	 */
-	protected function do_request( string $endpoint, string $type = 'GET', array $params = [] ): object {
+	protected function do_request( string $endpoint, string $type = 'GET', array $params = [], array $headers = [] ): object {
 		$request = new Request( $type, $endpoint );
 
 		if ( 'GET' === $type ) {
@@ -88,6 +89,10 @@ abstract class RESTControllerUnitTest extends UnitTest {
 			// Set the body as JSON encoded data.
 			$request->set_header( 'content-type', 'application/json' );
 			$request->set_body( wp_json_encode( $params ) );
+		}
+
+		foreach ( $headers as $key => $value ) {
+			$request->set_header( $key, $value );
 		}
 
 		return $this->server->dispatch_request( $request );
