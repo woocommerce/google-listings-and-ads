@@ -100,7 +100,7 @@ const CompareTableCard = ( {
 	];
 
 	/**
-	 * Creates an array of metric cells for {@link getRows},
+	 * Creates an array of metric cells for the `getRows` function,
 	 * for a given row.
 	 * Creates a cell for every ~metric item, displays `"Unavailable"`, when the data is `undefined`.
 	 *

@@ -37,7 +37,7 @@ const { CONNECTED, INCOMPLETE } = GOOGLE_ADS_ACCOUNT_STATUS;
  */
 
 /**
- * @fires disconnected_accounts
+ * @fires gla_disconnected_accounts
  */
 export default function LinkedAccounts() {
 	const adminUrl = useAdminUrl();

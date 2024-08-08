@@ -1,3 +1,4 @@
+const jsdocConfig = require( '@wordpress/eslint-plugin/configs/jsdoc' );
 const webpackConfig = require( './webpack.config' );
 
 const webpackResolver = {
@@ -65,6 +66,32 @@ module.exports = {
 		],
 		// Turn it off temporarily because it involves a lot of re-alignment. We can revisit it later.
 		'jsdoc/check-line-alignment': 'off',
+		// The JS package `tracking-jsdoc` changes the definition of the `@fires` tag.
+		// List shared `@event` names to avoid false alarms.
+		'jsdoc/no-undefined-types': [
+			'error',
+			{
+				definedTypes: [
+					...jsdocConfig.rules[ 'jsdoc/no-undefined-types' ][ 1 ]
+						.definedTypes,
+					'gla_datepicker_update',
+					'gla_documentation_link_click',
+					'gla_faq',
+					'gla_filter',
+					'gla_google_account_connect_button_click',
+					'gla_google_mc_link_click',
+					'gla_launch_paid_campaign_button_click',
+					'gla_mc_account_switch_account_button_click',
+					'gla_modal_closed',
+					'gla_modal_open',
+					'gla_paid_campaign_step',
+					'gla_setup_ads',
+					'gla_setup_mc',
+					'gla_table_go_to_page',
+					'gla_table_page_click',
+				],
+			},
+		],
 	},
 	overrides: [
 		{

@@ -10,9 +10,7 @@ import AppTooltip from '.~/components/app-tooltip';
 import './campaign-name-cell.scss';
 
 /**
- * Shows Tooltip {@link Notice}
- * providing information about the conversion status of PMax campaigns
- *
+ * Shows Tooltip providing information about the conversion status of PMax campaigns
  *
  * @param {Object} props React props.
  * @param {string} props.name Campaign Name
