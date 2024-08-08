@@ -51,6 +51,8 @@ module.exports = {
 			'warn',
 			{ assertFunctionNames: [ 'expect', 'expect[A-Z]\\w*' ] },
 		],
+		// Turn it off temporarily because it involves a lot of re-alignment. We can revisit it later.
+		'jsdoc/check-line-alignment': 'off',
 	},
 	overrides: [
 		{
