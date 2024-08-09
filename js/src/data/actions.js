@@ -992,7 +992,6 @@ export function* receiveMCSetup( mcSetup ) {
  * MC product statistics to wp-data store.
  *
  * @param {ProductStatistics} mcProductStatistics The received MC product statistics data.
- * @yield {Object} The wp-data action with data payload.
  */
 export function* receiveMCProductStatistics( mcProductStatistics ) {
 	return {
