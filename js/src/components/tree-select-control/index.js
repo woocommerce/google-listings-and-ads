@@ -381,26 +381,6 @@ const TreeSelectControl = ( {
 	};
 
 	/**
-	 * Handles a change on the Tree options. Could be a click on a parent option
-	 * or a child option
-	 *
-	 * @param {boolean} checked Indicates if the item should be checked
-	 * @param {InnerOption} option The option to change
-	 */
-	const handleOptionsChange = ( checked, option ) => {
-		if ( option.hasChildren ) {
-			handleParentChange( checked, option );
-		} else {
-			handleSingleChange( checked, option );
-		}
-
-		setInputControlValue( '' );
-		if ( ! nodesExpanded.includes( option.parent ) ) {
-			controlRef.current.focus();
-		}
-	};
-
-	/**
 	 * Handles a change of a child element.
 	 *
 	 * @param {boolean} checked Indicates if the item should be checked
@@ -436,6 +416,26 @@ const TreeSelectControl = ( {
 		}
 
 		onChange( newValue );
+	};
+
+	/**
+	 * Handles a change on the Tree options. Could be a click on a parent option
+	 * or a child option
+	 *
+	 * @param {boolean} checked Indicates if the item should be checked
+	 * @param {InnerOption} option The option to change
+	 */
+	const handleOptionsChange = ( checked, option ) => {
+		if ( option.hasChildren ) {
+			handleParentChange( checked, option );
+		} else {
+			handleSingleChange( checked, option );
+		}
+
+		setInputControlValue( '' );
+		if ( ! nodesExpanded.includes( option.parent ) ) {
+			controlRef.current.focus();
+		}
 	};
 
 	/**

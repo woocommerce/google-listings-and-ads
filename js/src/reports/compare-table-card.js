@@ -67,6 +67,52 @@ const CompareTableCard = ( {
 	}, [ metrics ] );
 
 	/**
+	 * Creates an array of metric cells for the `getRows` function,
+	 * for a given row.
+	 * Creates a cell for every ~metric item, displays `"Unavailable"`, when the data is `undefined`.
+	 *
+	 * @param {ReportData} row Row of data for data table.
+	 *
+	 * @return {Array<Object>} Single row for {@link module:@woocommerce/components#TableCard.Props.rows}.
+	 */
+	const renderMetricDataCells = ( row ) =>
+		metrics.map( ( metric ) => {
+			const value = row.subtotals[ metric.key ];
+			return {
+				display: metric.formatFn( value ),
+			};
+		} );
+
+	/**
+	 * Selects or unselects all rows (~selectedRows).
+	 *
+	 * @param {boolean} checked true if all should be selected.
+	 */
+	const selectAll = ( checked ) => {
+		if ( checked ) {
+			const allIds = data.map( ( el ) => el.id );
+			setSelectedRows( new Set( allIds ) );
+		} else {
+			setSelectedRows( new Set() );
+		}
+	};
+
+	/**
+	 * Selects given row, updates ~selectedRows.
+	 *
+	 * @param {number} rowId Id of the row to be selected.
+	 * @param {boolean} checked true if the row should be selected.
+	 */
+	const selectRow = ( rowId, checked ) => {
+		if ( checked ) {
+			setSelectedRows( new Set( [ ...selectedRows, rowId ] ) );
+		} else {
+			selectedRows.delete( rowId );
+			setSelectedRows( new Set( selectedRows ) );
+		}
+	};
+
+	/**
 	 * Provides headers configuration, for AppTableCard:
 	 * Interactive select all checkbox for compare; product/program title, and available metric headers.
 	 *
@@ -100,22 +146,6 @@ const CompareTableCard = ( {
 	];
 
 	/**
-	 * Creates an array of metric cells for the `getRows` function,
-	 * for a given row.
-	 * Creates a cell for every ~metric item, displays `"Unavailable"`, when the data is `undefined`.
-	 *
-	 * @param {ReportData} row Row of data for data table.
-	 *
-	 * @return {Array<Object>} Single row for {@link module:@woocommerce/components#TableCard.Props.rows}.
-	 */
-	const renderMetricDataCells = ( row ) =>
-		metrics.map( ( metric ) => {
-			const value = row.subtotals[ metric.key ];
-			return {
-				display: metric.formatFn( value ),
-			};
-		} );
-	/**
 	 * Provides a rows configuration, for AppTableCard.
 	 * Maps each data row to respective cell objects ({@link module:app-table-card.Props.rows}):
 	 * checkbox to compere, product/program title, and available metrics cells.
@@ -144,34 +174,6 @@ const CompareTableCard = ( {
 	const compareSelected = () => {
 		const ids = Array.from( selectedRows ).join( ',' );
 		onQueryChange( 'compare' )( compareBy, compareParam, ids );
-	};
-
-	/**
-	 * Selects or unselects all rows (~selectedRows).
-	 *
-	 * @param {boolean} checked true if all should be selected.
-	 */
-	const selectAll = ( checked ) => {
-		if ( checked ) {
-			const allIds = data.map( ( el ) => el.id );
-			setSelectedRows( new Set( allIds ) );
-		} else {
-			setSelectedRows( new Set() );
-		}
-	};
-	/**
-	 * Selects given row, updates ~selectedRows.
-	 *
-	 * @param {number} rowId Id of the row to be selected.
-	 * @param {boolean} checked true if the row should be selected.
-	 */
-	const selectRow = ( rowId, checked ) => {
-		if ( checked ) {
-			setSelectedRows( new Set( [ ...selectedRows, rowId ] ) );
-		} else {
-			selectedRows.delete( rowId );
-			setSelectedRows( new Set( selectedRows ) );
-		}
 	};
 
 	return (

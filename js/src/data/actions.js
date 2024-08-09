@@ -542,6 +542,13 @@ export function* disconnectAllAccounts() {
 	}
 }
 
+export function receiveGoogleAdsAccountBillingStatus( billingStatus ) {
+	return {
+		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS,
+		billingStatus,
+	};
+}
+
 export function* fetchGoogleAdsAccountBillingStatus() {
 	try {
 		const response = yield apiFetch( {
@@ -771,13 +778,6 @@ export function receiveAdsAccount( account ) {
 	};
 }
 
-export function receiveGoogleAdsAccountBillingStatus( billingStatus ) {
-	return {
-		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS,
-		billingStatus,
-	};
-}
-
 /**
  * Save the target audience countries.
  *
@@ -962,6 +962,13 @@ export function receiveReport( reportKey, data ) {
 	};
 }
 
+export function* receiveMCSetup( mcSetup ) {
+	return {
+		type: TYPES.RECEIVE_MC_SETUP,
+		mcSetup,
+	};
+}
+
 export function* fetchMCSetup() {
 	try {
 		const response = yield apiFetch( {
@@ -978,13 +985,6 @@ export function* fetchMCSetup() {
 			)
 		);
 	}
-}
-
-export function* receiveMCSetup( mcSetup ) {
-	return {
-		type: TYPES.RECEIVE_MC_SETUP,
-		mcSetup,
-	};
 }
 
 /**
