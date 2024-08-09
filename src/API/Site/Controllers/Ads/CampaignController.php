@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MobileTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
@@ -28,7 +27,6 @@ defined( 'ABSPATH' ) || exit;
 class CampaignController extends BaseController implements GoogleHelperAwareInterface, ISO3166AwareInterface {
 
 	use CountryCodeTrait;
-	use MobileTrait;
 
 	/**
 	 * @var AdsCampaign
@@ -152,14 +150,6 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 						__( 'Campaign %s', 'google-listings-and-ads' ),
 						$current_date_time
 					);
-				}
-
-				if ( $this->is_wc_mobile_app( $request ) ) {
-					if ( $this->is_wc_ios( $request ) ) {
-						$fields['label'] = 'wc-ios';
-					} else {
-						$fields['label'] = 'wc-android';
-					}
 				}
 
 				$campaign = $this->ads_campaign->create_campaign( $fields );
