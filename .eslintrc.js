@@ -47,6 +47,14 @@ module.exports = {
 				additionalHooks: 'useSelect',
 			},
 		],
+		// compatibility-code "WC < 7.6"
+		//
+		// Turn it off because:
+		// - `import { CurrencyFactory } from '@woocommerce/currency';`
+		//   It's supported only since WC 7.6.0
+		// - `import { userEvent } from '@testing-library/user-event';`
+		//   It works but the official documentation also recommends using the default export
+		'import/no-named-as-default': 'off',
 		'jest/expect-expect': [
 			'warn',
 			{ assertFunctionNames: [ 'expect', 'expect[A-Z]\\w*' ] },
