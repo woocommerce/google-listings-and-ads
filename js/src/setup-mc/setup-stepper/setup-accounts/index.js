@@ -101,6 +101,8 @@ const SetupAccounts = ( props ) => {
 	 * and the whole page would display this AppSpinner, which is not desired.
 	 */
 	const isLoadingJetpack = ! jetpack;
+	const isJetpackInactive = jetpack?.active !== 'yes';
+
 	const isLoadingGoogle = jetpack?.active === 'yes' && ! google;
 	const isLoadingGoogleMCAccount =
 		google?.active === 'yes' && scope.gmcRequired && ! googleMCAccount;
@@ -146,20 +148,27 @@ const SetupAccounts = ( props ) => {
 					'google-listings-and-ads'
 				) }
 			/>
-			<Section
-				className="gla-wp-google-accounts-section"
-				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
-				description={ __(
-					'The following accounts are required to use the Google for WooCommerce plugin.',
-					'google-listings-and-ads'
-				) }
-			>
-				<VerticalGapLayout size="large">
-					<WPComAccountCard jetpack={ jetpack } />
-					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
-					<GoogleAdsAccountCard />
-				</VerticalGapLayout>
-			</Section>
+			{ isJetpackInactive && (
+				<Section
+					className="gla-wp-google-accounts-section"
+					title={ __(
+						'Connect accounts',
+						'google-listings-and-ads'
+					) }
+					description={ __(
+						'The following accounts are required to use the Google for WooCommerce plugin.',
+						'google-listings-and-ads'
+					) }
+				>
+					<VerticalGapLayout size="large">
+						<WPComAccountCard jetpack={ jetpack } />
+						<GoogleAccountCard
+							disabled={ isGoogleAccountDisabled }
+						/>
+						<GoogleAdsAccountCard />
+					</VerticalGapLayout>
+				</Section>
+			) }
 			<Section
 				className="gla-google-mc-account-section"
 				description={ <GoogleMCDisclaimer /> }
