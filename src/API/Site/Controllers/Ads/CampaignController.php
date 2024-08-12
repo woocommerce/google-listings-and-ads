@@ -164,6 +164,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 				 * @property float  amount             Campaign budget.
 				 * @property string country            Base target country code.
 				 * @property string targeted_locations Additional target country codes.
+				 * @property string source             The source of the campaign creation.
 				 */
 				do_action(
 					'woocommerce_gla_track_event',
@@ -175,6 +176,7 @@ class CampaignController extends BaseController implements GoogleHelperAwareInte
 						'amount'             => $campaign['amount'],
 						'country'            => $campaign['country'],
 						'targeted_locations' => join( ',', $campaign['targeted_locations'] ),
+						'source'             => $fields['label'] ?? '',
 					]
 				);
 
