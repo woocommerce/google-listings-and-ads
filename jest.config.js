@@ -20,6 +20,9 @@ module.exports = {
 			'<rootDir>/js/src/tests/dependencies/woocommerce/settings',
 		'@automattic/calypso-config':
 			'<rootDir>/js/src/tests/dependencies/automattic/calypso-config',
+		// Force 'uuid' to resolve with the CommonJS entry point, because jest doesn't
+		// support `package.json.exports`.
+		'^uuid$': require.resolve( 'uuid' ),
 	},
 	// Exclude e2e tests from unit testing.
 	testPathIgnorePatterns: [
