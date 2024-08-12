@@ -300,6 +300,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'name'               => 'New Campaign',
 			'amount'             => 20,
 			'targeted_locations' => [ 'US', 'GB', 'TW' ],
+			'label'              => 'wc-web',
 		];
 
 		$expected = [
@@ -307,7 +308,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'status'  => 'enabled',
 			'type'    => 'performance_max',
 			'country' => self::BASE_COUNTRY,
-		] + $campaign_data;
+		] + array_diff_key( $campaign_data, [ 'label' => 'wc-web' ] );
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
@@ -323,6 +324,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'amount'             => 20,
 				'country'            => self::BASE_COUNTRY,
 				'targeted_locations' => 'US,GB,TW',
+				'source'             => 'wc-web',
 			]
 		);
 
@@ -337,7 +339,6 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'name'               => 'New Campaign',
 			'amount'             => 20,
 			'targeted_locations' => [ 'US', 'GB', 'TW' ],
-			'label'              => 'wc-web',
 		];
 
 		$expected = [
@@ -364,6 +365,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'amount'             => 20,
 				'country'            => self::BASE_COUNTRY,
 				'targeted_locations' => 'US,GB,TW',
+				'source'             => '',
 			]
 		);
 
