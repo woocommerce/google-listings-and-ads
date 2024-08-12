@@ -148,27 +148,22 @@ const SetupAccounts = ( props ) => {
 					'google-listings-and-ads'
 				) }
 			/>
-			{ isJetpackInactive && (
-				<Section
-					className="gla-wp-google-accounts-section"
-					title={ __(
-						'Connect accounts',
-						'google-listings-and-ads'
-					) }
-					description={ __(
-						'The following accounts are required to use the Google for WooCommerce plugin.',
-						'google-listings-and-ads'
-					) }
-				>
-					<VerticalGapLayout size="large">
+			<Section
+				className="gla-wp-google-accounts-section"
+				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
+				description={ __(
+					'The following accounts are required to use the Google for WooCommerce plugin.',
+					'google-listings-and-ads'
+				) }
+			>
+				<VerticalGapLayout size="large">
+					{ isJetpackInactive && (
 						<WPComAccountCard jetpack={ jetpack } />
-						<GoogleAccountCard
-							disabled={ isGoogleAccountDisabled }
-						/>
-						<GoogleAdsAccountCard />
-					</VerticalGapLayout>
-				</Section>
-			) }
+					) }
+					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
+					<GoogleAdsAccountCard />
+				</VerticalGapLayout>
+			</Section>
 			<Section
 				className="gla-google-mc-account-section"
 				description={ <GoogleMCDisclaimer /> }
