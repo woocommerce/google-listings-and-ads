@@ -69,7 +69,7 @@ describe( 'createAdsCampaign', () => {
 		} );
 	} );
 
-	it( 'If the user agent is set to wc-ios the label should be wc-android', async () => {
+	it( 'If the user agent is set to wc-android the label should be wc-android', async () => {
 		navigatorGetter.mockReturnValue(
 			'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 wc-android/19.7.1'
 		);
