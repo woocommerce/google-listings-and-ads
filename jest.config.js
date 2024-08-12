@@ -20,6 +20,10 @@ module.exports = {
 			'<rootDir>/js/src/tests/dependencies/woocommerce/settings',
 		'@automattic/calypso-config':
 			'<rootDir>/js/src/tests/dependencies/automattic/calypso-config',
+		// Ignore that 'qrcode.react' module is incorrectly listed in dev dependencies of '@automattic/components'.
+		// Ref: https://github.com/Automattic/wp-calypso/blob/%40automattic/components%402.1.1/packages/components/package.json#L72
+		'@automattic/components':
+			'<rootDir>/js/src/tests/dependencies/automattic/components',
 		// Fix `@woocommerce/components` still using incompatible `@woocommerce/currency`.
 		'@woocommerce/currency': require.resolve( '@woocommerce/currency' ),
 		// Force 'uuid' to resolve with the CommonJS entry point, because jest doesn't
