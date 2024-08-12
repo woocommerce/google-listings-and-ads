@@ -26,8 +26,8 @@ const EnableNewProductSyncNotice = () => {
 	// Do not render if already switch to new product sync.
 	if (
 		! hasGoogleMCAccountFinishedResolution ||
-		! googleMCAccount.notification_service_enabled ||
-		googleMCAccount.wpcom_rest_api_status
+		! googleMCAccount?.notification_service_enabled ||
+		googleMCAccount?.wpcom_rest_api_status
 	) {
 		return null;
 	}
