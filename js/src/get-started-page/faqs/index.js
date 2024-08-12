@@ -107,42 +107,40 @@ const faqItems = [
 						'google-listings-and-ads'
 					) }
 				</p>
-				<p>
-					<ul>
-						<li>
-							{ __(
-								'General product information',
-								'google-listings-and-ads'
-							) }
-						</li>
-						<li>
-							{ __(
-								'Unique product identifiers',
-								'google-listings-and-ads'
-							) }
-						</li>
-						<li>
-							{ __(
-								'Data requirements for specific categories (auto-assigned by Google):',
-								'google-listings-and-ads'
-							) }
-							<ul>
-								<li>
-									{ __(
-										'Apparel & Accessories',
-										'google-listings-and-ads'
-									) }
-								</li>
-								<li>
-									{ __( 'Media', 'google-listings-and-ads' ) }
-								</li>
-								<li>
-									{ __( 'Books', 'google-listings-and-ads' ) }
-								</li>
-							</ul>
-						</li>
-					</ul>
-				</p>
+				<ul>
+					<li>
+						{ __(
+							'General product information',
+							'google-listings-and-ads'
+						) }
+					</li>
+					<li>
+						{ __(
+							'Unique product identifiers',
+							'google-listings-and-ads'
+						) }
+					</li>
+					<li>
+						{ __(
+							'Data requirements for specific categories (auto-assigned by Google):',
+							'google-listings-and-ads'
+						) }
+						<ul>
+							<li>
+								{ __(
+									'Apparel & Accessories',
+									'google-listings-and-ads'
+								) }
+							</li>
+							<li>
+								{ __( 'Media', 'google-listings-and-ads' ) }
+							</li>
+							<li>
+								{ __( 'Books', 'google-listings-and-ads' ) }
+							</li>
+						</ul>
+					</li>
+				</ul>
 			</>
 		),
 	},
