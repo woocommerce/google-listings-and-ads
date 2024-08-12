@@ -45,7 +45,7 @@ test.describe( 'Set up accounts', () => {
 		await setUpAccountsPage.closePage();
 	} );
 
-	test( 'should see accounts step header, "Connect your WordPress.com account" & connect button', async () => {
+	test( 'JetpackDisconnected: should see accounts step header, "Connect your WordPress.com account" & connect button', async () => {
 		await setUpAccountsPage.goto();
 
 		await expect(
@@ -77,6 +77,28 @@ test.describe( 'Set up accounts', () => {
 
 		const continueButton = setUpAccountsPage.getContinueButton();
 		await expect( continueButton ).toBeDisabled();
+	} );
+
+	test( 'JetpackConnected: should verify that the Jetpack connect button is hidden if already connected', async () => {
+		await setUpAccountsPage.goto();
+
+		await expect(
+			page.getByRole( 'heading', { name: 'Set up your accounts' } )
+		).toBeVisible();
+
+		await expect(
+			page.getByText(
+				'Connect the accounts required to use Google for WooCommerce.'
+			)
+		).toBeVisible();
+
+		await expect(
+			page.getByRole( 'button', { name: 'Connect' } ).first()
+		).toBeEnabled();
+
+		const firstCard = setUpAccountsPage.getWPAccountCard();
+		await expect( firstCard ).toBeEnabled();
+		await expect( firstCard ).not.toContainText( 'WordPress.com' );
 	} );
 
 	test.describe( 'FAQ panels', () => {
