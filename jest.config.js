@@ -26,6 +26,9 @@ module.exports = {
 			'<rootDir>/js/src/tests/dependencies/automattic/components',
 		// Fix `@woocommerce/components` still using incompatible `@woocommerce/currency`.
 		'@woocommerce/currency': require.resolve( '@woocommerce/currency' ),
+		// Fix the React versioning conflicts between @wordpress/* and @woocommerce/*.
+		// It should be removed after they don't have versioning conflicts.
+		'^react$': require.resolve( 'react' ),
 		// Force 'uuid' to resolve with the CommonJS entry point, because jest doesn't
 		// support `package.json.exports`.
 		'^uuid$': require.resolve( 'uuid' ),
