@@ -20,6 +20,8 @@ module.exports = {
 			'<rootDir>/js/src/tests/dependencies/woocommerce/settings',
 		'@automattic/calypso-config':
 			'<rootDir>/js/src/tests/dependencies/automattic/calypso-config',
+		// Fix `@woocommerce/components` still using incompatible `@woocommerce/currency`.
+		'@woocommerce/currency': require.resolve( '@woocommerce/currency' ),
 		// Force 'uuid' to resolve with the CommonJS entry point, because jest doesn't
 		// support `package.json.exports`.
 		'^uuid$': require.resolve( 'uuid' ),
@@ -43,6 +45,17 @@ module.exports = {
 	globals: {
 		wcAdminFeatures: {
 			navigation: false,
+		},
+		wcSettings: {
+			currency: {
+				code: 'USD',
+				precision: 2,
+				symbol: '$',
+				symbolPosition: 'left',
+				decimalSeparator: '.',
+				priceFormat: '%1$s%2$s',
+				thousandSeparator: ',',
+			},
 		},
 	},
 	timers: 'fake',
