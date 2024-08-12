@@ -5,7 +5,7 @@
  *
  */
 const isWCIos = () => {
-	return window.navigator.userAgent.includes( 'wc-ios' );
+	return window.navigator.userAgent.toLowerCase().includes( 'wc-ios' );
 };
 
 /**
@@ -14,7 +14,7 @@ const isWCIos = () => {
  * @return {boolean} Whether the WC app is running on Android.
  */
 const isWCAndroid = () => {
-	return window.navigator.userAgent.includes( 'wc-android' );
+	return window.navigator.userAgent.toLowerCase().includes( 'wc-android' );
 };
 
 export { isWCIos, isWCAndroid };
