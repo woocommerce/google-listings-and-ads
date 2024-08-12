@@ -87,9 +87,10 @@ describe( 'Dashboard', () => {
 				).not.toBeInTheDocument();
 			} );
 
-			test( 'Should not render CustomerEffortScorePrompt when user clicks "Got it"', () => {
+			test( 'Should not render CustomerEffortScorePrompt when user clicks "Got it"', async () => {
+				const user = userEvent.setup();
 				const { queryByText } = render( <Dashboard /> );
-				userEvent.click( screen.getByText( 'Got it' ) );
+				await user.click( screen.getByText( 'Got it' ) );
 
 				expect(
 					queryByText( CES_PROMPT_TEXT )
@@ -115,9 +116,10 @@ describe( 'Dashboard', () => {
 				).not.toBeInTheDocument();
 			} );
 
-			test( 'Should render CustomerEffortScorePrompt when user clicks "Got it"', () => {
+			test( 'Should render CustomerEffortScorePrompt when user clicks "Got it"', async () => {
+				const user = userEvent.setup();
 				const { queryByText } = render( <Dashboard /> );
-				userEvent.click( screen.getByText( 'Got it' ) );
+				await user.click( screen.getByText( 'Got it' ) );
 
 				expect( queryByText( CES_PROMPT_TEXT ) ).toBeInTheDocument();
 			} );

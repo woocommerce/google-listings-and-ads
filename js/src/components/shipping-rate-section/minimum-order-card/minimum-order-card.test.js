@@ -58,13 +58,15 @@ describe( 'MinimumOrderCard', () => {
 		} );
 
 		test( 'When the new minimum order value is provided for a remaining country, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold` set to the given value', async () => {
+			const user = userEvent.setup();
+
 			// Open "Add another…" modal.
-			userEvent.click( rendered.getByRole( 'button', { name: /Add/ } ) );
+			await user.click( rendered.getByRole( 'button', { name: /Add/ } ) );
 			// Input some value.
 			const input = screen.getByRole( 'textbox' );
-			await userEvent.type( input, '30' );
+			await user.type( input, '30' );
 			// Confirm.
-			await userEvent.click(
+			await user.click(
 				screen.getByRole( 'button', {
 					name: /Add minimum order/,
 				} )
@@ -80,11 +82,13 @@ describe( 'MinimumOrderCard', () => {
 			} );
 		} );
 		test( 'When a minimum order value is changed for an existing group, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to the given value', async () => {
+			const user = userEvent.setup();
+
 			// Input some value.
 			const input = rendered.getByRole( 'textbox' );
-			await userEvent.type( input, '7' );
+			await user.type( input, '7' );
 			// Blur away.
-			await userEvent.tab();
+			await user.tab();
 
 			// Wait for Form component's onSubmit microtask.
 			await waitFor( () => {
@@ -98,8 +102,12 @@ describe( 'MinimumOrderCard', () => {
 			} );
 		} );
 		test( 'When a set of countries is changed for a minimum order value in an existing group, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to the given value for new countries, and `undefied` for old ones', async () => {
+			const user = userEvent.setup();
+
 			// Open group/"Edit" modal.
-			userEvent.click( rendered.getByRole( 'button', { name: /Edit/ } ) );
+			await user.click(
+				rendered.getByRole( 'button', { name: /Edit/ } )
+			);
 			// Input some value.
 			const countriesSelect = rendered.getByRole( 'combobox' );
 			await fireEvent.click( countriesSelect );
@@ -110,7 +118,7 @@ describe( 'MinimumOrderCard', () => {
 			fireEvent.change( countriesSelect, { target: { value: 'State' } } );
 			fireEvent.click( screen.queryByLabelText( 'United States' ) );
 			// Confirm.
-			await userEvent.click(
+			await user.click(
 				screen.getByRole( 'button', {
 					name: /Update/,
 				} )
@@ -129,8 +137,12 @@ describe( 'MinimumOrderCard', () => {
 			} );
 		} );
 		test( 'When a set of countries and threshold are changed for an existing group, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to the given value for new countries, and `undefied` for old ones', async () => {
+			const user = userEvent.setup();
+
 			// Open group/"Edit" modal.
-			userEvent.click( rendered.getByRole( 'button', { name: /Edit/ } ) );
+			await user.click(
+				rendered.getByRole( 'button', { name: /Edit/ } )
+			);
 			// Input some value.
 			const countriesSelect = rendered.getByRole( 'combobox' );
 			await fireEvent.click( countriesSelect );
@@ -142,9 +154,9 @@ describe( 'MinimumOrderCard', () => {
 			fireEvent.click( screen.queryByLabelText( 'United States' ) );
 			// Input some value.
 			const input = rendered.getByRole( 'textbox' );
-			await userEvent.type( input, '7' );
+			await user.type( input, '7' );
 			// Confirm.
-			await userEvent.click(
+			await user.click(
 				screen.getByRole( 'button', {
 					name: /Update/,
 				} )
@@ -166,11 +178,17 @@ describe( 'MinimumOrderCard', () => {
 		} );
 
 		test( 'When a minimum order value is removed for a group of countries, calls the `onChange` callback with the new value containing `shippingRate.options.free_shipping_threshold`s set to `undefined`', async () => {
+			const user = userEvent.setup();
+
 			// Open group/"Edit" modal.
-			userEvent.click( rendered.getByRole( 'button', { name: /Edit/ } ) );
+			await user.click(
+				rendered.getByRole( 'button', { name: /Edit/ } )
+			);
 			// Click delete.
-			userEvent.click( screen.getByRole( 'button', { name: /Delete/ } ) );
-			await userEvent.tab();
+			await user.click(
+				screen.getByRole( 'button', { name: /Delete/ } )
+			);
+			await user.tab();
 
 			// Wait for Form component's onSubmit microtask.
 			await waitFor( () => {

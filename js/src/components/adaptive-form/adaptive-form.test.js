@@ -191,6 +191,7 @@ describe( 'AdaptiveForm', () => {
 	} );
 
 	it( 'Should be able to accumulate and reset the validation request count and requested state', async () => {
+		const user = userEvent.setup();
 		const inspect = jest.fn();
 
 		render(
@@ -221,15 +222,15 @@ describe( 'AdaptiveForm', () => {
 
 		expect( inspect ).toHaveBeenLastCalledWith( false, 0 );
 
-		await userEvent.click( requestButton );
+		await user.click( requestButton );
 
 		expect( inspect ).toHaveBeenLastCalledWith( true, 1 );
 
-		await userEvent.click( requestButton );
+		await user.click( requestButton );
 
 		expect( inspect ).toHaveBeenLastCalledWith( true, 2 );
 
-		await userEvent.click( resetButton );
+		await user.click( resetButton );
 
 		expect( inspect ).toHaveBeenLastCalledWith( false, 0 );
 	} );

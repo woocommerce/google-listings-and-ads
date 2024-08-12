@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { screen, render, act } from '@testing-library/react';
+import { screen, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { parsePhoneNumberFromString as parsePhoneNumber } from 'libphonenumber-js';
 
@@ -184,7 +184,8 @@ describe( 'PhoneNumberCard', () => {
 		expect( screen.getByText( text ) ).toBeInTheDocument();
 	} );
 
-	it( 'When `onEditClick` is specified and the Edit button is clicked, should callback `onEditClick`', () => {
+	it( 'When `onEditClick` is specified and the Edit button is clicked, should callback `onEditClick`', async () => {
+		const user = userEvent.setup();
 		const onEditClick = jest.fn();
 		render(
 			<PhoneNumberCard
@@ -198,7 +199,7 @@ describe( 'PhoneNumberCard', () => {
 		expect( button ).toBeInTheDocument();
 		expect( onEditClick ).toHaveBeenCalledTimes( 0 );
 
-		userEvent.click( button );
+		await user.click( button );
 
 		expect( onEditClick ).toHaveBeenCalledTimes( 1 );
 	} );
@@ -231,6 +232,7 @@ describe( 'PhoneNumberCard', () => {
 		} );
 
 		it( 'When an unverified phone number is getting verified', async () => {
+			const user = userEvent.setup();
 			const onPhoneNumberVerified = jest.fn();
 			mockVerified( false );
 			render(
@@ -242,19 +244,16 @@ describe( 'PhoneNumberCard', () => {
 
 			expect( onPhoneNumberVerified ).toHaveBeenCalledTimes( 0 );
 
-			await act( async () => {
-				const button = screen.getByRole( 'button', { name: /Send/ } );
-				userEvent.click( button );
-			} );
+			await user.click( screen.getByRole( 'button', { name: /Send/ } ) );
 
-			screen.getAllByRole( 'textbox' ).forEach( ( codeInput, i ) => {
-				userEvent.type( codeInput, i.toString() );
-			} );
+			const codeInputs = screen.getAllByRole( 'textbox' );
+			for ( const [ i, codeInput ] of codeInputs.entries() ) {
+				await user.type( codeInput, i.toString() );
+			}
 
-			await act( async () => {
-				const button = screen.getByRole( 'button', { name: /Verify/ } );
-				userEvent.click( button );
-			} );
+			await user.click(
+				screen.getByRole( 'button', { name: /Verify/ } )
+			);
 
 			expect( onPhoneNumberVerified ).toHaveBeenCalledTimes( 1 );
 		} );

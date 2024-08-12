@@ -131,11 +131,13 @@ describe( 'BillingSetupCard', () => {
 	} );
 
 	it( 'should open the billing setup link in a pop-up window', async () => {
+		const user = userEvent.setup();
+
 		render( <BillingSetupCard billingUrl="https://example.com" /> );
 
 		expect( windowOpen ).toHaveBeenCalledTimes( 0 );
 
-		await userEvent.click( screen.getByRole( 'button' ) );
+		await user.click( screen.getByRole( 'button' ) );
 
 		expect( windowOpen ).toHaveBeenCalledTimes( 1 );
 		expect( windowOpen ).toHaveBeenCalledWith(
@@ -147,11 +149,13 @@ describe( 'BillingSetupCard', () => {
 	} );
 
 	it( 'should record click events and the `link_id` and `href` event properties for the billing setup button and link', async () => {
+		const user = userEvent.setup();
+
 		render( <BillingSetupCard billingUrl="https://test.com" /> );
 
 		expect( recordEvent ).toHaveBeenCalledTimes( 0 );
 
-		await userEvent.click( screen.getByRole( 'button' ) );
+		await user.click( screen.getByRole( 'button' ) );
 
 		expect( recordEvent ).toHaveBeenCalledTimes( 1 );
 		expect( recordEvent ).toHaveBeenNthCalledWith(
@@ -160,7 +164,7 @@ describe( 'BillingSetupCard', () => {
 			{ link_id: 'set-up-billing', href: 'https://test.com' }
 		);
 
-		await userEvent.click( screen.getByRole( 'link' ) );
+		await user.click( screen.getByRole( 'link' ) );
 
 		expect( recordEvent ).toHaveBeenCalledTimes( 2 );
 		expect( recordEvent ).toHaveBeenNthCalledWith(
@@ -173,10 +177,12 @@ describe( 'BillingSetupCard', () => {
 	it.each( [ 'button', 'link' ] )(
 		'should record click events for the billing setup %s and be aware of extra event properties from filters',
 		async ( role ) => {
+			const user = userEvent.setup();
+
 			await expectComponentToRecordEventWithFilteredProperties(
 				() => <BillingSetupCard billingUrl="https://test.com" />,
 				FILTER_ONBOARDING,
-				async () => await userEvent.click( screen.getByRole( role ) ),
+				async () => await user.click( screen.getByRole( role ) ),
 				'gla_ads_set_up_billing_click',
 				[
 					{ context: 'setup-mc', step: '1' },

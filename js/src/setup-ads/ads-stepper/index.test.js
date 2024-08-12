@@ -70,6 +70,8 @@ describe( 'AdsStepper', () => {
 		} );
 
 		it( 'Should record events after clicking step navigation buttons', async () => {
+			const user = userEvent.setup();
+
 			render( <AdsStepper /> );
 
 			const step1 = screen.getByRole( 'button', { name: /accounts/ } );
@@ -80,8 +82,8 @@ describe( 'AdsStepper', () => {
 			recordEvent.mockClear();
 			expect( recordEvent ).toHaveBeenCalledTimes( 0 );
 
-			await userEvent.click( step2 );
-			await userEvent.click( step1 );
+			await user.click( step2 );
+			await user.click( step1 );
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 2 );
 			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_ads', {
@@ -98,7 +100,7 @@ describe( 'AdsStepper', () => {
 			recordEvent.mockClear();
 			expect( recordEvent ).toHaveBeenCalledTimes( 0 );
 
-			await userEvent.click( step1 );
+			await user.click( step1 );
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 1 );
 			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_ads', {
