@@ -302,7 +302,7 @@ const faqItems = [
 						link: (
 							<AppDocumentationLink
 								context="faqs"
-								linkId="google-countrytable"
+								linkId="google-country-table"
 								href="https://support.google.com/merchants/answer/160637#countrytable"
 							/>
 						),
