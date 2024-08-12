@@ -109,6 +109,8 @@ describe( 'BillingSetupCard', () => {
 	} );
 
 	it( 'Should not call back `onSetupComplete` again by the next interval after billing is already approved', async () => {
+		jest.useFakeTimers();
+
 		const onSetupComplete = jest.fn();
 
 		await act( async () => {
@@ -123,6 +125,9 @@ describe( 'BillingSetupCard', () => {
 		} );
 
 		expect( onSetupComplete ).toHaveBeenCalledTimes( 1 );
+
+		jest.useRealTimers();
+		jest.clearAllTimers();
 	} );
 
 	it( 'should open the billing setup link in a pop-up window', async () => {

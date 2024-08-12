@@ -213,6 +213,11 @@ describe( 'VerifyPhoneNumberContent', () => {
 	} );
 
 	it( 'Should call back to `onVerificationStateChange` according to the state and result of `verifyPhoneNumber`', async () => {
+		jest.useFakeTimers();
+
+		const user = userEvent.setup( {
+			advanceTimers: jest.advanceTimersByTime,
+		} );
 		const onVerificationStateChange = jest
 			.fn()
 			.mockName( 'onVerificationStateChange' );
@@ -230,17 +235,18 @@ describe( 'VerifyPhoneNumberContent', () => {
 		} );
 
 		const button = getVerifyButton();
+		const codeInputs = screen.getAllByRole( 'textbox' );
 
-		screen.getAllByRole( 'textbox' ).forEach( ( codeInput, i ) => {
-			userEvent.type( codeInput, i.toString() );
-		} );
+		for ( const [ i, codeInput ] of codeInputs.entries() ) {
+			await user.type( codeInput, i.toString() );
+		}
 
 		// -----------------------------------------
 		// Failed `verifyPhoneNumber` calling result
 		// -----------------------------------------
 		expect( onVerificationStateChange ).toHaveBeenCalledTimes( 0 );
 
-		await userEvent.click( button );
+		await user.click( button );
 
 		// First callback for loading state:
 		// 1. isVerifying: true
@@ -283,7 +289,7 @@ describe( 'VerifyPhoneNumberContent', () => {
 
 		expect( onVerificationStateChange ).toHaveBeenCalledTimes( 0 );
 
-		await userEvent.click( button );
+		await user.click( button );
 
 		// First callback for loading state:
 		// 1. isVerifying: true
@@ -306,5 +312,8 @@ describe( 'VerifyPhoneNumberContent', () => {
 
 		// The verify button should keep disabled after successfully verified
 		expect( button ).toBeDisabled();
+
+		jest.useRealTimers();
+		jest.clearAllTimers();
 	} );
 } );

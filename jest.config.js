@@ -65,5 +65,4 @@ module.exports = {
 			},
 		},
 	},
-	timers: 'fake',
 };
