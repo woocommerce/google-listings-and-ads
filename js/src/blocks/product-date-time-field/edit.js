@@ -26,7 +26,8 @@ async function resolveValidationMessage( inputRef, context ) {
 	const input = inputRef.current;
 
 	if ( ! input.validity.valid ) {
-		if ( isWcVersion( '9.2.0', '>' ) ) {
+		// compatibility-code "WC < 9.2"
+		if ( isWcVersion( '9.2.0', '<' ) ) {
 			return input.validationMessage;
 		}
 
