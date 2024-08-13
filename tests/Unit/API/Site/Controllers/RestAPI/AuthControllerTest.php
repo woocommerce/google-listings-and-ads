@@ -126,4 +126,27 @@ class AuthControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'Invalid parameter(s): status', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
+
+	public function test_revoke_wpcom_token() {
+		$this->oauth_service->expects( $this->once() )->method( 'revoke_wpcom_api_auth' );
+
+		$response = $this->do_request(
+			self::ROUTE_AUTHORIZE,
+			'DELETE'
+		);
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_revoke_wpcom_token_with_error() {
+		$this->oauth_service->expects( $this->once() )->method( 'revoke_wpcom_api_auth' )->willThrowException( new Exception( 'No token found', 400 ) );
+
+		$response = $this->do_request(
+			self::ROUTE_AUTHORIZE,
+			'DELETE'
+		);
+
+		$this->assertEquals( [ 'message' => 'No token found' ], $response->get_data() );
+		$this->assertEquals( 400, $response->get_status() );
+	}
 }

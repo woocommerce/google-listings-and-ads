@@ -524,6 +524,13 @@ export function* disconnectAllAccounts() {
 			type: TYPES.DISCONNECT_ACCOUNTS_ALL,
 		};
 	} catch ( error ) {
+		// Skip any error related to revoking WPCOM token.
+		if ( error.errors[ `${ API_NAMESPACE }/rest-api/authorize` ] ) {
+			return {
+				type: TYPES.DISCONNECT_ACCOUNTS_ALL,
+			};
+		}
+
 		handleApiError(
 			error,
 			__(
