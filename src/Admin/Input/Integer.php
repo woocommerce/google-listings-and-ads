@@ -23,11 +23,7 @@ class Integer extends Input {
 		$this->set_block_attribute(
 			'pattern',
 			[
-				'value'   => '\d+',
-				// This error message is used in core so to avoid needing to translate
-				// the string a second time WooCommerce is supplied as the text domain.
-				// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
-				'message' => __( 'Please enter a valid value.', 'woocommerce' ),
+				'value' => '\d+',
 			]
 		);
 	}
