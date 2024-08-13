@@ -52,37 +52,6 @@ const ChooseAudienceSection = () => {
 					<Section.Card.Body>
 						<Subsection>
 							<Subsection.Title>
-								{ __( 'Language', 'google-listings-and-ads' ) }
-							</Subsection.Title>
-							<Subsection.HelperText className="gla-choose-audience-section__language-helper">
-								{ createInterpolateElement(
-									__(
-										'Listings can only be displayed in your site language. <link>Read more</link>',
-										'google-listings-and-ads'
-									),
-									{
-										link: (
-											<AppDocumentationLink
-												context="setup-mc-audience"
-												linkId="site-language"
-												href="https://support.google.com/merchants/answer/160637"
-											/>
-										),
-									}
-								) }
-							</Subsection.HelperText>
-							<RadioControl
-								selected={ locale }
-								options={ [
-									{
-										label: language,
-										value: locale,
-									},
-								] }
-							/>
-						</Subsection>
-						<Subsection>
-							<Subsection.Title>
 								{ __( 'Location', 'google-listings-and-ads' ) }
 							</Subsection.Title>
 							<Subsection.HelperText>
