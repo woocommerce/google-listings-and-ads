@@ -582,10 +582,18 @@ export function getProductBlockEditorUtils( page ) {
 			);
 
 			await expect( failureNotice ).toBeVisible();
-			await expect( failureNotice ).toHaveText( message );
+			await expect( failureNotice ).toContainText( message );
 
-			// // Dismiss the notice.
-			await failureNotice.click();
+			const failureNoticeButton = failureNotice.getByRole( 'button' );
+
+			// Dismiss the notice.
+			if ( await failureNoticeButton.isVisible() ) {
+				// compatibility-code "WC < 9.2" -- Dismiss by its inner close button.
+				await failureNoticeButton.click();
+			} else {
+				failureNotice.click();
+			}
+
 			await expect( failureNotice ).toHaveCount( 0 );
 		},
 	};
