@@ -486,8 +486,7 @@ class AttributeInputCollectionTest extends UnitTest {
 					'label'    => 'Multipack',
 					'tooltip'  => 'The number of identical products in a multipack. Use this attribute to indicate that you\'ve grouped multiple identical products for sale as one item.',
 					'pattern'  => [
-						'value'   => '\d+',
-						'message' => 'Please enter a valid value.',
+						'value' => '\d+',
 					],
 					'min'      => [ 'value' => 0 ],
 				],
