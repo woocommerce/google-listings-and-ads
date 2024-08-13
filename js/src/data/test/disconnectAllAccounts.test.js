@@ -35,7 +35,7 @@ describe( 'Disconnect All Accounts', () => {
 		} );
 	} );
 
-	it( 'Ignore the error if its because missing WPCOM token', async () => {
+	it( 'Ignore the error if its thrown from the authorize endpoint', async () => {
 		mockFetch.mockRejectedValue( {
 			errors: {
 				[ `${ API_NAMESPACE }/rest-api/authorize` ]: {
@@ -57,7 +57,7 @@ describe( 'Disconnect All Accounts', () => {
 		expect( response ).toEqual( { type: 'DISCONNECT_ACCOUNTS_ALL' } );
 	} );
 
-	it( 'Throw the error unless its related to a missing WPCOM token', async () => {
+	it( 'Throw the error if it is not related to the authorize endpoint', async () => {
 		mockFetch.mockRejectedValue( {
 			errors: {
 				[ `${ API_NAMESPACE }/ads/connection` ]: {

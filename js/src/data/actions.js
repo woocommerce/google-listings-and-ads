@@ -523,13 +523,8 @@ export function* disconnectAllAccounts() {
 			type: TYPES.DISCONNECT_ACCOUNTS_ALL,
 		};
 	} catch ( error ) {
-		if (
-			error.errors[
-				`${ API_NAMESPACE }/rest-api/authorize`
-			]?.message?.includes(
-				'No token found associated with the client ID and user'
-			)
-		) {
+		// Skip any error related to revoking WPCOM token.
+		if ( error.errors[ `${ API_NAMESPACE }/rest-api/authorize` ] ) {
 			return {
 				type: TYPES.DISCONNECT_ACCOUNTS_ALL,
 			};
