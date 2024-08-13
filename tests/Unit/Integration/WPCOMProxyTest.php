@@ -461,10 +461,10 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 	public function test_get_empty_data_as_object() {
 		// dummy data
 		$data = [
-			'foo' => 'bar',
-			'var' => array(),
-			'baz' => null,
-			'bool' => false
+			'foo'  => 'bar',
+			'var'  => [],
+			'baz'  => null,
+			'bool' => false,
 		];
 
 		$proxy = new WPCOMProxy(
@@ -472,12 +472,14 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 			$this->container->get( AttributeManager::class )
 		);
 
-		$this->assertEquals( [
-			'foo' => 'bar',
-			'var' => (object) array(),
-			'baz' => null,
-			'bool' => false
-		], $proxy->prepare_data( $data ) );
-
+		$this->assertEquals(
+			[
+				'foo'  => 'bar',
+				'var'  => (object) [],
+				'baz'  => null,
+				'bool' => false,
+			],
+			$proxy->prepare_data( $data )
+		);
 	}
 }
