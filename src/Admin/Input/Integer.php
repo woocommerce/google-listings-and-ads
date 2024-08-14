@@ -23,7 +23,7 @@ class Integer extends Input {
 		$this->set_block_attribute(
 			'pattern',
 			[
-				'value' => '\d+',
+				'value' => '0|[1-9]\d*',
 			]
 		);
 	}

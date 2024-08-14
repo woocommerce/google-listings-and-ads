@@ -521,6 +521,8 @@ test.describe( 'Product Block Editor integration', () => {
 		await expect( input ).toHaveValue( '' );
 		await expect( help ).toHaveCount( 0 );
 
+		// Assert invalid values
+
 		await input.fill( '-1' );
 
 		await editorUtils.assertUnableSave( 'Invalid value for the field.' );
@@ -537,6 +539,31 @@ test.describe( 'Product Block Editor integration', () => {
 			await editorUtils.evaluateValidationMessage( input )
 		);
 
+		await input.fill( '00' );
+
+		await editorUtils.assertUnableSave( 'Invalid value for the field.' );
+		await expect( help ).toBeVisible();
+		await expect( help ).toHaveText(
+			await editorUtils.evaluateValidationMessage( input )
+		);
+
+		await input.fill( '01' );
+
+		await editorUtils.assertUnableSave( 'Invalid value for the field.' );
+		await expect( help ).toBeVisible();
+		await expect( help ).toHaveText(
+			await editorUtils.evaluateValidationMessage( input )
+		);
+
+		await input.fill( '2e5' );
+
+		await editorUtils.assertUnableSave( 'Invalid value for the field.' );
+		await expect( help ).toBeVisible();
+		await expect( help ).toHaveText(
+			await editorUtils.evaluateValidationMessage( input )
+		);
+
+		// Assert valid values
 		await input.fill( '0' );
 		await editorUtils.save();
 

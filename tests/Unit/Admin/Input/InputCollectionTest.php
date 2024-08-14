@@ -110,7 +110,7 @@ class InputCollectionTest extends UnitTest {
 		$this->assertEquals( 'woocommerce/product-text-field', $input->get_block_name() );
 		$this->assertEquals(
 			[
-				'value' => '\d+',
+				'value' => '0|[1-9]\d*',
 			],
 			$input->get_block_attributes()['pattern']
 		);
