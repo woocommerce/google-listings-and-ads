@@ -1,16 +1,13 @@
 /**
  * External dependencies
  */
-import { RadioControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import AppRadioContentControl from '.~/components/app-radio-content-control';
-import AppDocumentationLink from '.~/components/app-documentation-link';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
@@ -28,11 +25,9 @@ import './choose-audience-section.scss';
  */
 const ChooseAudienceSection = () => {
 	const {
-		values,
 		getInputProps,
 		adapter: { renderRequestedValidation },
 	} = useAdaptiveFormContext();
-	const { locale, language } = values;
 
 	return (
 		<>
