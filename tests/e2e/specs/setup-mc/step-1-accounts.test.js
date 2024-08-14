@@ -79,28 +79,6 @@ test.describe( 'Set up accounts', () => {
 		await expect( continueButton ).toBeDisabled();
 	} );
 
-	test( 'JetpackConnected: should verify that the Jetpack connect button is hidden if already connected', async () => {
-		await setUpAccountsPage.goto();
-
-		await expect(
-			page.getByRole( 'heading', { name: 'Set up your accounts' } )
-		).toBeVisible();
-
-		await expect(
-			page.getByText(
-				'Connect the accounts required to use Google for WooCommerce.'
-			)
-		).toBeVisible();
-
-		await expect(
-			page.getByRole( 'button', { name: 'Connect' } ).first()
-		).toBeEnabled();
-
-		const firstCard = setUpAccountsPage.getWPAccountCard();
-		await expect( firstCard ).toBeEnabled();
-		await expect( firstCard ).not.toContainText( 'WordPress.com' );
-	} );
-
 	test.describe( 'FAQ panels', () => {
 		test( 'should see two questions in FAQ', async () => {
 			const faqTitles = getFAQPanelTitle( page );
@@ -138,6 +116,43 @@ test.describe( 'Set up accounts', () => {
 		} );
 	} );
 
+	test.describe( 'Connected WordPress.com account', async () => {
+		test.beforeAll( async () => {
+			// Mock Jetpack as connected
+			await setUpAccountsPage.mockJetpackConnected(
+				'Test user',
+				'jetpack@example.com'
+			);
+
+			// Mock google as not connected.
+			// When pending even WPORG will not render yet.
+			// If not mocked will fail and render nothing,
+			// as Jetpack is mocked only on the client-side.
+			await setUpAccountsPage.mockGoogleNotConnected();
+
+			await setUpAccountsPage.goto();
+		} );
+
+		test( 'should not show the WP.org connection card when already connected', async () => {
+			await expect(
+				page.getByRole( 'heading', { name: 'Set up your accounts' } )
+			).toBeVisible();
+
+			await expect(
+				page.getByText(
+					'Connect the accounts required to use Google for WooCommerce.'
+				)
+			).toBeVisible();
+
+			await expect(
+				page.getByRole( 'button', { name: 'Connect' } ).first()
+			).toBeEnabled();
+
+			const wpAccountCard = setUpAccountsPage.getWPAccountCard();
+			await expect( wpAccountCard ).not.toBeVisible();
+		} );
+	} );
+
 	test.describe( 'Connect Google account', () => {
 		test.beforeAll( async () => {
 			// Mock Jetpack as connected
@@ -156,13 +171,6 @@ test.describe( 'Set up accounts', () => {
 		} );
 
 		test( 'should see their WPORG email, "Google" title & connect button', async () => {
-			const jetpackDescriptionRow =
-				setUpAccountsPage.getJetpackDescriptionRow();
-
-			await expect( jetpackDescriptionRow ).toContainText(
-				'jetpack@example.com'
-			);
-
 			const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
 
 			await expect(
@@ -415,12 +423,6 @@ test.describe( 'Set up accounts', () => {
 			} );
 
 			test( 'should see their WPORG email, Google email, "Google Merchant Center" title & "Create account" button', async () => {
-				const jetpackDescriptionRow =
-					setUpAccountsPage.getJetpackDescriptionRow();
-				await expect( jetpackDescriptionRow ).toContainText(
-					'jetpack@example.com'
-				);
-
 				const googleDescriptionRow =
 					setUpAccountsPage.getGoogleDescriptionRow();
 				await expect( googleDescriptionRow ).toContainText(
