@@ -150,8 +150,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Add Google API Pull method.
 * Rebranding Google Listings and Ads with Google for WooCommerce.
 
-= 2.7.7 - 2024-07-24 =
-* Dev - Fix E2E tests failed with WC 9.1.
-* Tweak -   Make campaign preview card responsive.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
