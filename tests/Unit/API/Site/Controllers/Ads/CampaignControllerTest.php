@@ -300,6 +300,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'name'               => 'New Campaign',
 			'amount'             => 20,
 			'targeted_locations' => [ 'US', 'GB', 'TW' ],
+			'label'              => 'wc-web',
 		];
 
 		$expected = [
@@ -307,7 +308,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'status'  => 'enabled',
 			'type'    => 'performance_max',
 			'country' => self::BASE_COUNTRY,
-		] + $campaign_data;
+		] + array_diff_key( $campaign_data, [ 'label' => 'wc-web' ] );
 
 		$this->ads_campaign->expects( $this->once() )
 			->method( 'create_campaign' )
@@ -323,6 +324,48 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'amount'             => 20,
 				'country'            => self::BASE_COUNTRY,
 				'targeted_locations' => 'US,GB,TW',
+				'source'             => 'wc-web',
+			]
+		);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_with_label() {
+		$campaign_data = [
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US', 'GB', 'TW' ],
+		];
+
+		$expected = [
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'status'             => 'enabled',
+			'type'               => 'performance_max',
+			'country'            => self::BASE_COUNTRY,
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [ 'US', 'GB', 'TW' ],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( $campaign_data )
+			->willReturn( $expected );
+
+		$this->expect_track_event(
+			'created_campaign',
+			[
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'status'             => 'enabled',
+				'name'               => 'New Campaign',
+				'amount'             => 20,
+				'country'            => self::BASE_COUNTRY,
+				'targeted_locations' => 'US,GB,TW',
+				'source'             => '',
 			]
 		);
 

@@ -15,6 +15,7 @@ import {
 } from './constants';
 import { handleApiError } from '.~/utils/handleError';
 import { adaptAdsCampaign } from './adapters';
+import { isWCIos, isWCAndroid } from '.~/utils/isMobileApp';
 
 /**
  * @typedef {import('.~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
@@ -523,6 +524,13 @@ export function* disconnectAllAccounts() {
 			type: TYPES.DISCONNECT_ACCOUNTS_ALL,
 		};
 	} catch ( error ) {
+		// Skip any error related to revoking WPCOM token.
+		if ( error.errors[ `${ API_NAMESPACE }/rest-api/authorize` ] ) {
+			return {
+				type: TYPES.DISCONNECT_ACCOUNTS_ALL,
+			};
+		}
+
 		handleApiError(
 			error,
 			__(
@@ -798,6 +806,14 @@ export function* saveTargetAudience( targetAudience ) {
  * @throws { { message: string } } Will throw an error if the campaign creation fails.
  */
 export function* createAdsCampaign( amount, countryCodes ) {
+	let label = 'wc-web';
+
+	if ( isWCIos() ) {
+		label = 'wc-ios';
+	} else if ( isWCAndroid() ) {
+		label = 'wc-android';
+	}
+
 	try {
 		const createdCampaign = yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/campaigns`,
@@ -805,6 +821,7 @@ export function* createAdsCampaign( amount, countryCodes ) {
 			data: {
 				amount,
 				targeted_locations: countryCodes,
+				label,
 			},
 		} );
 

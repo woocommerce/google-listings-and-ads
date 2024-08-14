@@ -19,4 +19,9 @@
 			line-height: $gla-line-height-small;
 		}
 	}
+
+	ul {
+		padding: revert;
+		list-style: revert;
+	}
 }
