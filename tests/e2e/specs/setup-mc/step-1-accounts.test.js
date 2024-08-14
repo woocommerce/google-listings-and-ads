@@ -151,7 +151,6 @@ test.describe( 'Set up accounts', () => {
 			const wpAccountCard = setUpAccountsPage.getWPAccountCard();
 			await expect( wpAccountCard ).not.toBeVisible();
 		} );
-
 	} );
 
 	test.describe( 'Connect Google account', () => {
