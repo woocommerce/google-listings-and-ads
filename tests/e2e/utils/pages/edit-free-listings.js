@@ -42,7 +42,7 @@ export default class EditFreeListingsPage extends MockRequests {
 	async checkRecommendShippingSettings() {
 		return this.page
 			.locator(
-				'text=Recommended: Automatically sync my store’s shipping settings to Google.'
+				'text=Automatically sync my store’s shipping settings to Google.'
 			)
 			.check();
 	}
