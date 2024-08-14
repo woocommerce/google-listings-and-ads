@@ -125,7 +125,7 @@ class ZoneMethodsParser implements Service {
 		$flat_cost = 0;
 		$locale    = localeconv();
 		$decimals  = [ wc_get_price_decimal_separator(), $locale['decimal_point'], $locale['mon_decimal_point'], ',' ];
-		$cost      = str_replace( $decimals, '.', $method->get_option( 'cost' ) );
+		$cost      = str_replace( $decimals, '.', (string) $method->get_option( 'cost' ) );
 		// Check if the cost is a numeric value (and not null or a math expression).
 		if ( is_numeric( $cost ) ) {
 			$flat_cost = (float) $cost;
