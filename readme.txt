@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.6
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.8.1
+Stable tag: 2.8.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -141,6 +141,17 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 2.8.2 - 2024-08-14 =
+* Fix - Disconnecting all accounts when WPCOM connection is not granted.
+* Fix - Error when Google Merchant Center account is undefined while checking the notification service enabled property.
+* Tweak - Label campaigns for the web version and the WooCommerce Mobile app.
+* Tweak - Update FAQS in Getting Started page.
+* Tweak - Update WP.org plugin FAQs.
+* Tweak - Update WPORG plugin page header image.
+* Tweak - Update get started page.
+* Tweak - WC 9.2.0 compatibility.
+* Update - Block validation to support error context.
+
 = 2.8.1 - 2024-08-06 =
 * Add - Enable labeling of Ads campaigns.
 * Tweak - Update doc links references.
@@ -149,9 +160,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 = 2.8.0 - 2024-07-31 =
 * Add Google API Pull method.
 * Rebranding Google Listings and Ads with Google for WooCommerce.
-
-= 2.7.7 - 2024-07-24 =
-* Dev - Fix E2E tests failed with WC 9.1.
-* Tweak -   Make campaign preview card responsive.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
