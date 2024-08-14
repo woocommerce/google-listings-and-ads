@@ -20,6 +20,11 @@ class Integer extends Input {
 		// the text field block to work around it.
 		parent::__construct( 'integer', 'woocommerce/product-text-field' );
 
-		$this->set_block_attribute( 'type', [ 'value' => 'number' ] );
+		$this->set_block_attribute(
+			'pattern',
+			[
+				'value' => '0|[1-9]\d*',
+			]
+		);
 	}
 }
