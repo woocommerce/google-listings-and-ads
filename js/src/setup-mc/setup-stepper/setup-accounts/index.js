@@ -166,17 +166,22 @@ const SetupAccounts = ( props ) => {
 				disabledLeft={ ! isGMCPreconditionReady }
 			>
 				<GoogleMCAccountCard />
-				<Faqs />
 			</Section>
-			<StepContentFooter>
-				<AppButton
-					isPrimary
-					disabled={ isContinueButtonDisabled }
-					onClick={ onContinue }
-				>
-					{ __( 'Continue', 'google-listings-and-ads' ) }
-				</AppButton>
-			</StepContentFooter>
+
+			<Section>
+				<VerticalGapLayout size="large">
+					<StepContentFooter>
+						<AppButton
+							isPrimary
+							disabled={ isContinueButtonDisabled }
+							onClick={ onContinue }
+						>
+							{ __( 'Continue', 'google-listings-and-ads' ) }
+						</AppButton>
+					</StepContentFooter>
+					<Faqs />
+				</VerticalGapLayout>
+			</Section>
 		</StepContent>
 	);
 };
