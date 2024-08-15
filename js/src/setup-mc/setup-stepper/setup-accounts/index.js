@@ -26,6 +26,7 @@ import Faqs from './faqs';
 import './index.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 
 /**
  * Renders the disclaimer of Comparison Shopping Service (CSS).
@@ -168,20 +169,18 @@ const SetupAccounts = ( props ) => {
 				<GoogleMCAccountCard />
 			</Section>
 
-			<Section>
-				<VerticalGapLayout size="large">
-					<StepContentFooter>
-						<AppButton
-							isPrimary
-							disabled={ isContinueButtonDisabled }
-							onClick={ onContinue }
-						>
-							{ __( 'Continue', 'google-listings-and-ads' ) }
-						</AppButton>
-					</StepContentFooter>
-					<Faqs />
-				</VerticalGapLayout>
-			</Section>
+			<StepContentActions>
+				<StepContentFooter>
+					<AppButton
+						isPrimary
+						disabled={ isContinueButtonDisabled }
+						onClick={ onContinue }
+					>
+						{ __( 'Continue', 'google-listings-and-ads' ) }
+					</AppButton>
+				</StepContentFooter>
+				<Faqs />
+			</StepContentActions>
 		</StepContent>
 	);
 };
