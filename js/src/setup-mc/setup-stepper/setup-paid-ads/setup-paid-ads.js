@@ -17,6 +17,7 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
+import StepContentFooter from '.~/components/stepper/step-content-footer';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
@@ -24,7 +25,6 @@ import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
 import clientSession from './clientSession';
-import TmpStepContentActions from '.~/components/stepper/tmp-step-content-actions';
 import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
 
@@ -195,8 +195,8 @@ export default function SetupPaidAds() {
 				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
 			) }
 
-			<TmpStepContentActions>
-				<StepContentFooter hidden={ ! showPaidAdsSetup }>
+			<StepContentFooter>
+				<StepContentActions hidden={ ! showPaidAdsSetup }>
 					<Flex justify="right" gap={ 4 }>
 						{ createSkipButton(
 							__(
@@ -223,7 +223,7 @@ export default function SetupPaidAds() {
 					</Flex>
 				</StepContentActions>
 				<FaqsSection />
-			</TmpStepContentActions>
+			</StepContentFooter>
 		</StepContent>
 	);
 }

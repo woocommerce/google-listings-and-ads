@@ -10,12 +10,12 @@ import { ASSET_FORM_KEY } from '.~/constants';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
+import StepContentFooter from '.~/components/stepper/step-content-footer';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppButton from '.~/components/app-button';
 import AssetGroupSection from './asset-group-section';
 import FaqsSection from './faqs-section';
 import { recordGlaEvent } from '.~/utils/tracks';
-import TmpStepContentActions from '.~/components/stepper/tmp-step-content-actions';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
 export const ACTION_SUBMIT_CAMPAIGN_ONLY = 'submit-campaign-only';
@@ -116,7 +116,7 @@ export default function AssetGroup( { campaign } ) {
 			/>
 			<AssetGroupSection />
 
-			<TmpStepContentActions>
+			<StepContentFooter>
 				<StepContentActions>
 					{ ( isCreation || adapter.isEmptyAssetEntityGroup ) && (
 						// Currently, the PMax Assets feature in this extension doesn't offer the function
@@ -169,7 +169,7 @@ export default function AssetGroup( { campaign } ) {
 				</StepContentActions>
 
 				<FaqsSection />
-			</TmpStepContentActions>
+			</StepContentFooter>
 		</StepContent>
 	);
 }

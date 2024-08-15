@@ -14,6 +14,7 @@ import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
+import StepContentFooter from '.~/components/stepper/step-content-footer';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
@@ -26,7 +27,6 @@ import Faqs from './faqs';
 import './index.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAdsAccountStatus from '.~/hooks/useGoogleAdsAccountStatus';
-import TmpStepContentActions from '.~/components/stepper/tmp-step-content-actions';
 
 /**
  * Renders the disclaimer of Comparison Shopping Service (CSS).
@@ -169,7 +169,7 @@ const SetupAccounts = ( props ) => {
 				<GoogleMCAccountCard />
 			</Section>
 
-			<TmpStepContentActions>
+			<StepContentFooter>
 				<StepContentActions>
 					<AppButton
 						isPrimary
@@ -180,7 +180,7 @@ const SetupAccounts = ( props ) => {
 					</AppButton>
 				</StepContentActions>
 				<Faqs />
-			</TmpStepContentActions>
+			</StepContentFooter>
 		</StepContent>
 	);
 };

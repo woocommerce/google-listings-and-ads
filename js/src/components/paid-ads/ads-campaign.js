@@ -9,6 +9,7 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
+import StepContentFooter from '.~/components/stepper/step-content-footer';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
@@ -17,7 +18,6 @@ import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
 import { CampaignPreviewCard } from './campaign-preview';
 import FaqsSection from './faqs-section';
-import TmpStepContentActions from '.~/components/stepper/tmp-step-content-actions';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -99,7 +99,7 @@ export default function AdsCampaign( {
 				<CampaignPreviewCard />
 			</BudgetSection>
 
-			<TmpStepContentActions>
+			<StepContentFooter>
 				<StepContentActions>
 					<AppButton
 						isPrimary
@@ -110,7 +110,7 @@ export default function AdsCampaign( {
 					</AppButton>
 				</StepContentActions>
 				<FaqsSection />
-			</TmpStepContentActions>
+			</StepContentFooter>
 		</StepContent>
 	);
 }
