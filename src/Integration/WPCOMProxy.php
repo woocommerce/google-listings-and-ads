@@ -165,13 +165,13 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			 * @param WP_REST_Request                                   $request  The request object.
 			 */
 			function ( $response, $handler, $request ) {
-				if ( ! $this->is_gla_request( $request ) ) {
+				if ( ! $this->is_gla_request( $request ) || ! $response instanceof WP_REST_Response ) {
 					return $response;
 				}
 
 				$data = $response->get_data();
 
-				if ( $request->get_route() === '/wc/v3/settings/general' && $response instanceof WP_REST_Response ) {
+				if ( $request->get_route() === '/wc/v3/settings/general' ) {
 					$data[] = [
 						'id'    => 'gla_target_audience',
 						'label' => 'Google for WooCommerce: Target Audience',
@@ -194,7 +194,6 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 				}
 
 				$response->set_data( $this->prepare_data( $response->get_data() ) );
-
 				return $response;
 			},
 			10,
