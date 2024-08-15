@@ -16,7 +16,7 @@ import {
 	fallbackBillingUrl,
 } from '.~/components/paid-ads/billing-card';
 import BillingSavedCard from './billing-saved-card';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppButton from '.~/components/app-button';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
@@ -68,7 +68,7 @@ const SetupBilling = ( props ) => {
 				) }
 			</Section>
 			{ isApproved && (
-				<StepContentFooter>
+				<StepContentActions>
 					<AppButton
 						isPrimary
 						loading={ isSubmitting }
@@ -79,7 +79,7 @@ const SetupBilling = ( props ) => {
 							'google-listings-and-ads'
 						) }
 					</AppButton>
-				</StepContentFooter>
+				</StepContentActions>
 			) }
 		</StepContent>
 	);

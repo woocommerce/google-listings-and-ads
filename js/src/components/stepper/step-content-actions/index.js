@@ -3,15 +3,15 @@
  */
 import './index.scss';
 
-const StepContentFooter = ( props ) => {
+const StepContentActions = ( props ) => {
 	const { className = '', ...rest } = props;
 
 	return (
 		<div
-			className={ `gla-step-content-footer ${ className }` }
+			className={ `gla-step-content-actions ${ className }` }
 			{ ...rest }
 		/>
 	);
 };
 
-export default StepContentFooter;
+export default StepContentActions;

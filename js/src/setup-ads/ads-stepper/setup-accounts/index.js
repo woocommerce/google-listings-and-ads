@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import AppButton from '.~/components/app-button';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import { ConnectedGoogleAccountCard } from '.~/components/google-account-card';
 import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
@@ -74,7 +74,7 @@ const SetupAccounts = ( props ) => {
 					{ hasFreeAdCredit && <FreeAdCredit /> }
 				</VerticalGapLayout>
 			</Section>
-			<StepContentFooter>
+			<StepContentActions>
 				<AppButton
 					isPrimary
 					disabled={ isContinueButtonDisabled }
@@ -82,7 +82,7 @@ const SetupAccounts = ( props ) => {
 				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }
 				</AppButton>
-			</StepContentFooter>
+			</StepContentActions>
 		</StepContent>
 	);
 };

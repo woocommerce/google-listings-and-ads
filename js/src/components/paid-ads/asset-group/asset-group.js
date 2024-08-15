@@ -10,7 +10,7 @@ import { ASSET_FORM_KEY } from '.~/constants';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppButton from '.~/components/app-button';
 import AssetGroupSection from './asset-group-section';
 import FaqsSection from './faqs-section';
@@ -117,7 +117,7 @@ export default function AssetGroup( { campaign } ) {
 			<AssetGroupSection />
 
 			<TmpStepContentActions>
-				<StepContentFooter>
+				<StepContentActions>
 					{ ( isCreation || adapter.isEmptyAssetEntityGroup ) && (
 						// Currently, the PMax Assets feature in this extension doesn't offer the function
 						// to delete the asset entity group, so it needs to hide the skip button if the editing
@@ -166,7 +166,7 @@ export default function AssetGroup( { campaign } ) {
 							  )
 							: __( 'Save changes', 'google-listings-and-ads' ) }
 					</AppButton>
-				</StepContentFooter>
+				</StepContentActions>
 
 				<FaqsSection />
 			</TmpStepContentActions>

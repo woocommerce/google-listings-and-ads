@@ -14,7 +14,7 @@ import useSettings from '.~/components/free-listings/configure-product-listings/
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import AdaptiveForm from '.~/components/adaptive-form';
 import ValidationErrors from '.~/components/validation-errors';
 import ContactInformation from '.~/components/contact-information';
@@ -188,7 +188,7 @@ export default function StoreRequirements( { onContinue } ) {
 								}
 							/>
 							<PreLaunchChecklist />
-							<StepContentFooter>
+							<StepContentActions>
 								<AppButton
 									isPrimary
 									loading={ adapter.isSubmitting }
@@ -200,7 +200,7 @@ export default function StoreRequirements( { onContinue } ) {
 										'google-listings-and-ads'
 									) }
 								</AppButton>
-							</StepContentFooter>
+							</StepContentActions>
 						</>
 					);
 				} }

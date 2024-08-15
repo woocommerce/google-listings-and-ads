@@ -17,7 +17,7 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
@@ -221,7 +221,7 @@ export default function SetupPaidAds() {
 							} }
 						/>
 					</Flex>
-				</StepContentFooter>
+				</StepContentActions>
 				<FaqsSection />
 			</TmpStepContentActions>
 		</StepContent>

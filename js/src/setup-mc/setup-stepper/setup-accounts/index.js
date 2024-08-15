@@ -14,7 +14,7 @@ import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -170,7 +170,7 @@ const SetupAccounts = ( props ) => {
 			</Section>
 
 			<TmpStepContentActions>
-				<StepContentFooter>
+				<StepContentActions>
 					<AppButton
 						isPrimary
 						disabled={ isContinueButtonDisabled }
@@ -178,7 +178,7 @@ const SetupAccounts = ( props ) => {
 					>
 						{ __( 'Continue', 'google-listings-and-ads' ) }
 					</AppButton>
-				</StepContentFooter>
+				</StepContentActions>
 				<Faqs />
 			</TmpStepContentActions>
 		</StepContent>

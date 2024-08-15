@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 import ChooseAudienceSection from '.~/components/free-listings/choose-audience-section';
@@ -47,7 +47,7 @@ const FormContent = ( {
 			<ConditionalSection show={ shouldDisplayTaxRate }>
 				<TaxRate />
 			</ConditionalSection>
-			<StepContentFooter>
+			<StepContentActions>
 				<AppButton
 					isPrimary
 					loading={ adapter.isSubmitting }
@@ -55,7 +55,7 @@ const FormContent = ( {
 				>
 					{ submitLabel }
 				</AppButton>
-			</StepContentFooter>
+			</StepContentActions>
 		</StepContent>
 	);
 };

@@ -9,7 +9,7 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
@@ -100,7 +100,7 @@ export default function AdsCampaign( {
 			</BudgetSection>
 
 			<TmpStepContentActions>
-				<StepContentFooter>
+				<StepContentActions>
 					<AppButton
 						isPrimary
 						disabled={ ! isValidForm }
@@ -108,7 +108,7 @@ export default function AdsCampaign( {
 					>
 						{ __( 'Continue', 'google-listings-and-ads' ) }
 					</AppButton>
-				</StepContentFooter>
+				</StepContentActions>
 				<FaqsSection />
 			</TmpStepContentActions>
 		</StepContent>
