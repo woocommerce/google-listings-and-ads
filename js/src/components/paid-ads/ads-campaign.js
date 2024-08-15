@@ -17,8 +17,7 @@ import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
 import { CampaignPreviewCard } from './campaign-preview';
 import FaqsSection from './faqs-section';
-import Section from '.~/wcdl/section';
-import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -100,20 +99,18 @@ export default function AdsCampaign( {
 				<CampaignPreviewCard />
 			</BudgetSection>
 
-			<Section>
-				<VerticalGapLayout size="large">
-					<StepContentFooter>
-						<AppButton
-							isPrimary
-							disabled={ ! isValidForm }
-							onClick={ onContinue }
-						>
-							{ __( 'Continue', 'google-listings-and-ads' ) }
-						</AppButton>
-					</StepContentFooter>
-					<FaqsSection />
-				</VerticalGapLayout>
-			</Section>
+			<StepContentActions>
+				<StepContentFooter>
+					<AppButton
+						isPrimary
+						disabled={ ! isValidForm }
+						onClick={ onContinue }
+					>
+						{ __( 'Continue', 'google-listings-and-ads' ) }
+					</AppButton>
+				</StepContentFooter>
+				<FaqsSection />
+			</StepContentActions>
 		</StepContent>
 	);
 }

@@ -71,11 +71,7 @@ const faqItems = [
  * @fires gla_documentation_link_click with `{ context: 'assets-faq', linkId: 'assets-faq-about-ad-formats-available-in-different-campaign-types', href: 'https://support.google.com/google-ads/answer/1722124' }`.
  */
 const FaqsSection = () => {
-	return (
-		<Section>
-			<FaqsPanel context="campaign-management" faqItems={ faqItems } />
-		</Section>
-	);
+	return <FaqsPanel context="campaign-management" faqItems={ faqItems } />;
 };
 
 export default FaqsSection;
