@@ -7,7 +7,6 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import Section from '.~/wcdl/section';
 import FaqsPanel from '.~/components/faqs-panel';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 
