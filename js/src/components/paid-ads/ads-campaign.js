@@ -17,7 +17,7 @@ import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
 import { CampaignPreviewCard } from './campaign-preview';
 import FaqsSection from './faqs-section';
-import StepContentActions from '.~/components/stepper/step-content-actions';
+import TmpStepContentActions from '.~/components/stepper/tmp-step-content-actions';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -99,7 +99,7 @@ export default function AdsCampaign( {
 				<CampaignPreviewCard />
 			</BudgetSection>
 
-			<StepContentActions>
+			<TmpStepContentActions>
 				<StepContentFooter>
 					<AppButton
 						isPrimary
@@ -110,7 +110,7 @@ export default function AdsCampaign( {
 					</AppButton>
 				</StepContentFooter>
 				<FaqsSection />
-			</StepContentActions>
+			</TmpStepContentActions>
 		</StepContent>
 	);
 }

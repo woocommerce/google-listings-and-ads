@@ -24,7 +24,7 @@ import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
 import clientSession from './clientSession';
-import StepContentActions from '.~/components/stepper/step-content-actions';
+import TmpStepContentActions from '.~/components/stepper/tmp-step-content-actions';
 import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
 
@@ -195,7 +195,7 @@ export default function SetupPaidAds() {
 				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
 			) }
 
-			<StepContentActions>
+			<TmpStepContentActions>
 				<StepContentFooter hidden={ ! showPaidAdsSetup }>
 					<Flex justify="right" gap={ 4 }>
 						{ createSkipButton(
@@ -223,7 +223,7 @@ export default function SetupPaidAds() {
 					</Flex>
 				</StepContentFooter>
 				<FaqsSection />
-			</StepContentActions>
+			</TmpStepContentActions>
 		</StepContent>
 	);
 }

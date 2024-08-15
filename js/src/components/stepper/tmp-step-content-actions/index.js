@@ -4,7 +4,7 @@
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 
-const StepContentActions = ( { children } ) => {
+const TmpStepContentActions = ( { children } ) => {
 	return (
 		<Section className="gla-step-content-actions">
 			<VerticalGapLayout size="xlarge">{ children }</VerticalGapLayout>
@@ -12,4 +12,4 @@ const StepContentActions = ( { children } ) => {
 	);
 };
 
-export default StepContentActions;
+export default TmpStepContentActions;
