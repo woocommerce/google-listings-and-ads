@@ -24,6 +24,8 @@ import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
 import clientSession from './clientSession';
+import Section from '.~/wcdl/section';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
 
@@ -193,33 +195,39 @@ export default function SetupPaidAds() {
 			{ showPaidAdsSetup && (
 				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
 			) }
-			<FaqsSection />
-			<StepContentFooter hidden={ ! showPaidAdsSetup }>
-				<Flex justify="right" gap={ 4 }>
-					{ createSkipButton(
-						__(
-							'Skip paid ads creation',
-							'google-listings-and-ads'
-						)
-					) }
-					<AppButton
-						isPrimary
-						data-action={ ACTION_COMPLETE }
-						text={ __(
-							'Complete setup',
-							'google-listings-and-ads'
-						) }
-						loading={ completing === ACTION_COMPLETE }
-						disabled={ disabledComplete }
-						onClick={ handleCompleteClick }
-						eventName="gla_onboarding_complete_with_paid_ads_button_click"
-						eventProps={ {
-							budget: paidAds.amount,
-							audiences: paidAds.countryCodes?.join( ',' ),
-						} }
-					/>
-				</Flex>
-			</StepContentFooter>
+
+			<Section>
+				<VerticalGapLayout size="large">
+					<StepContentFooter hidden={ ! showPaidAdsSetup }>
+						<Flex justify="right" gap={ 4 }>
+							{ createSkipButton(
+								__(
+									'Skip paid ads creation',
+									'google-listings-and-ads'
+								)
+							) }
+							<AppButton
+								isPrimary
+								data-action={ ACTION_COMPLETE }
+								text={ __(
+									'Complete setup',
+									'google-listings-and-ads'
+								) }
+								loading={ completing === ACTION_COMPLETE }
+								disabled={ disabledComplete }
+								onClick={ handleCompleteClick }
+								eventName="gla_onboarding_complete_with_paid_ads_button_click"
+								eventProps={ {
+									budget: paidAds.amount,
+									audiences:
+										paidAds.countryCodes?.join( ',' ),
+								} }
+							/>
+						</Flex>
+					</StepContentFooter>
+					<FaqsSection />
+				</VerticalGapLayout>
+			</Section>
 		</StepContent>
 	);
 }
