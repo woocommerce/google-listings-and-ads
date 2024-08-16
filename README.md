@@ -63,8 +63,6 @@ Now you can build the files using one of these commands:
 
 Notice this repository has `engine-strict=true` directive set. That means you cannot install dependencies with other Node engines rather than the ones defined in the `engines` directive inside [package.json](./package.json). It's recommended to use [NVM](https://github.com/nvm-sh/nvm) and run `nvm use` before installing the dependencies to be sure you're using the recommended Node version.
 
-We added Node `^18` and npm `^9` to allow dependabot to update our dependencies. But these are not supported versions.
-
 ## Working with DEWP
 
 The Dependency Extraction Webpack Plugin makes working with frontend dependencies not so obvious, check [`Working with DEWP.md`](Working with DEWP.md) for more details.
