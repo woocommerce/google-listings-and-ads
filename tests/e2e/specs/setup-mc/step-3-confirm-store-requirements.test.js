@@ -81,13 +81,13 @@ test.describe( 'Confirm store requirements', () => {
 			);
 		} );
 
-		test( 'should see the "Send verfication code" button to be disabled', async () => {
+		test( 'should see the "Send verification code" button to be disabled', async () => {
 			const sendCodeButton =
 				storeRequirements.getSendVerificationCodeButton();
 			await expect( sendCodeButton ).toBeDisabled();
 		} );
 
-		test( 'should see the "Send verfication code" button to be disabled when enter a phone number with wrong format', async () => {
+		test( 'should see the "Send verification code" button to be disabled when enter a phone number with wrong format', async () => {
 			const sendCodeButton =
 				storeRequirements.getSendVerificationCodeButton();
 			await storeRequirements.selectCountryCodeOption(
@@ -98,7 +98,7 @@ test.describe( 'Confirm store requirements', () => {
 			await expect( sendCodeButton ).toBeDisabled();
 		} );
 
-		test( 'should see the "Send verfication code" button to be enabled when country code and phone number are entered', async () => {
+		test( 'should see the "Send verification code" button to be enabled when country code and phone number are entered', async () => {
 			const sendCodeButton =
 				storeRequirements.getSendVerificationCodeButton();
 			await storeRequirements.selectCountryCodeOption(
