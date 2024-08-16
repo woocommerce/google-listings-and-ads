@@ -65,30 +65,6 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
-	 * Get skip this step for now button.
-	 *
-	 * @return {import('@playwright/test').Locator} Get skip this step for now button.
-	 */
-	getSkipStepButton() {
-		return this.page.getByRole( 'button', {
-			name: 'Skip this step for now',
-			exact: true,
-		} );
-	}
-
-	/**
-	 * Get create a paid ad button.
-	 *
-	 * @return {import('@playwright/test').Locator} Get create a paid ad button.
-	 */
-	getCreatePaidAdButton() {
-		return this.page.getByRole( 'button', {
-			name: 'Create campaign',
-			exact: true,
-		} );
-	}
-
-	/**
 	 * Get complete setup button.
 	 *
 	 * @return {import('@playwright/test').Locator} Get complete setup button.
@@ -113,34 +89,12 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
-	 * Click skip this step for now button.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async clickSkipStepButton() {
-		const button = this.getSkipStepButton();
-		await button.click();
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	}
-
-	/**
 	 * Click skip paid ads creation button.
 	 *
 	 * @return {Promise<void>}
 	 */
 	async clickSkipPaidAdsCreationButon() {
 		const button = this.getSkipPaidAdsCreationButton();
-		await button.click();
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	}
-
-	/**
-	 * Click create a paid ad campaign button.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async clickCreatePaidAdButton() {
-		const button = this.getCreatePaidAdButton();
 		await button.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}

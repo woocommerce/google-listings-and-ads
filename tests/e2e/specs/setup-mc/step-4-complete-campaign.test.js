@@ -159,15 +159,6 @@ test.describe( 'Complete your campaign', () => {
 
 	test.describe( 'Set up paid ads', () => {
 		test.describe( 'Click "Create a paid ad campaign" button', () => {
-			test.beforeAll( async () => {
-				await completeCampaign.clickCreatePaidAdButton();
-			} );
-
-			test( 'should not see the "Create a paid ad campaign" button after this section is shown', async () => {
-				const button = completeCampaign.getCreatePaidAdButton();
-				await expect( button ).toBeHidden();
-			} );
-
 			test( 'should see "Complete setup" button is disabled', async () => {
 				const completeSetupButton =
 					completeCampaign.getCompleteSetupButton();
@@ -382,35 +373,10 @@ test.describe( 'Complete your campaign', () => {
 		} );
 	} );
 
-	test.describe( 'Complete onboarding by "Skip this step for now"', () => {
-		test.beforeAll( async () => {
-			// Reset the showing status for the "Set up paid ads" section.
-			await page.evaluate( () => window.sessionStorage.clear() );
-			await setupAdsAccountPage.mockAdsAccountIncomplete();
-			await completeCampaign.goto();
-			await completeCampaign.clickSkipStepButton();
-		} );
-
-		test( 'should see the setup success modal', async () => {
-			const setupSuccessModal = page
-				.locator( '.components-modal__content' )
-				.filter( {
-					hasText:
-						'You’ve successfully set up Google for WooCommerce!',
-				} );
-			await expect( setupSuccessModal ).toBeVisible();
-		} );
-
-		test( 'should see the url contains product-feed', async () => {
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
-		} );
-	} );
-
 	test.describe( 'Complete onboarding by "Skip paid ads creation"', () => {
 		test.beforeAll( async () => {
 			await setupAdsAccountPage.mockAdsAccountIncomplete();
 			await completeCampaign.goto();
-			await completeCampaign.clickCreatePaidAdButton();
 			await completeCampaign.clickSkipPaidAdsCreationButon();
 		} );
 
