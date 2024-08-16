@@ -23,7 +23,6 @@ import AppButton from '.~/components/app-button';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
-import clientSession from './clientSession';
 import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
 
@@ -71,16 +70,8 @@ export default function SetupPaidAds() {
 	const { createNotice } = useDispatchCoreNotices();
 	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( () =>
-		clientSession.getShowPaidAdsSetup( false )
-	);
 	const [ paidAds, setPaidAds ] = useState( {} );
 	const [ completing, setCompleting ] = useState( null );
-
-	const handleContinuePaidAdsSetupClick = () => {
-		setShowPaidAdsSetup( true );
-		clientSession.setShowPaidAdsSetup( true );
-	};
 
 	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
 		setCompleting( event.target.dataset.action );
@@ -129,16 +120,14 @@ export default function SetupPaidAds() {
 			campaign_form_validation: 'unknown',
 		};
 
-		if ( showPaidAdsSetup ) {
-			const selector = select( STORE_KEY );
-			const billing = selector.getGoogleAdsAccountBillingStatus();
+		const selector = select( STORE_KEY );
+		const billing = selector.getGoogleAdsAccountBillingStatus();
 
-			merge( eventProps, {
-				opened_paid_ads_setup: 'yes',
-				billing_method_status: billing?.status,
-				campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
-			} );
-		}
+		merge( eventProps, {
+			opened_paid_ads_setup: 'yes',
+			billing_method_status: billing?.status,
+			campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
+		} );
 
 		const disabledSkip =
 			completing === ACTION_COMPLETE || ! hasGoogleAdsConnection;
@@ -171,30 +160,10 @@ export default function SetupPaidAds() {
 			/>
 			<PaidAdsFeaturesSection
 				hideBudgetContent={ ! hasGoogleAdsConnection }
-				hideFooterButtons={
-					! hasGoogleAdsConnection || showPaidAdsSetup
-				}
-				skipButton={ createSkipButton(
-					__( 'Skip this step for now', 'google-listings-and-ads' )
-				) }
-				continueButton={
-					<AppButton
-						isPrimary
-						text={ __(
-							'Create campaign',
-							'google-listings-and-ads'
-						) }
-						disabled={ completing === ACTION_SKIP }
-						onClick={ handleContinuePaidAdsSetupClick }
-						eventName="gla_onboarding_open_paid_ads_setup_button_click"
-					/>
-				}
 			/>
-			{ showPaidAdsSetup && (
-				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
-			) }
+			<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
 			<FaqsSection />
-			<StepContentFooter hidden={ ! showPaidAdsSetup }>
+			<StepContentFooter>
 				<Flex justify="right" gap={ 4 }>
 					{ createSkipButton(
 						__(
