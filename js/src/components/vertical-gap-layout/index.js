@@ -26,7 +26,7 @@ const sizeClassName = {
  *     'normal': A normal gap.
  *     'medium': A medium gap.
  *     'large': A large gap.
- *     'xlarge': A extra large gap.
+ *     'xlarge': An extra large gap.
  *     'overlap': Overlap the back child on the front child with -1 pixel spacing.
  */
 const VerticalGapLayout = ( props ) => {
