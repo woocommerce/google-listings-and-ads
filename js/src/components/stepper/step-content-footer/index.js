@@ -6,7 +6,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 
 const StepContentFooter = ( { children } ) => {
 	return (
-		<Section className="gla-tmp-step-content-footer">
+		<Section className="gla-step-content-footer">
 			<VerticalGapLayout size="xlarge">{ children }</VerticalGapLayout>
 		</Section>
 	);
