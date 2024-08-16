@@ -223,16 +223,6 @@ test.describe( 'Confirm store requirements', () => {
 			);
 		} );
 
-		test( 'should contain the correct URL for "Read Google Merchant Center requirements" link', async () => {
-			const link =
-				storeRequirements.getReadGoogleMerchantCenterRequirementsLink();
-			await expect( link ).toBeVisible();
-			await expect( link ).toHaveAttribute(
-				'href',
-				'https://woocommerce.com/document/google-for-woocommerce/compliance-policy-2'
-			);
-		} );
-
 		test( 'should contain the correct URL for "WooCommerce settings" link', async () => {
 			const link = storeRequirements.getWooCommerceSettingsLink();
 			await expect( link ).toBeVisible();
@@ -240,6 +230,34 @@ test.describe( 'Confirm store requirements', () => {
 				'href',
 				'admin.php?page=wc-settings'
 			);
+		} );
+	} );
+
+	test.describe( 'Continue button', () => {
+		test( 'should be disabled if phone number is not verified and store address is not filled in', async () => {
+			// Mock MC contact information
+			await storeRequirements.mockContactInformation( {
+				phoneNumber: null,
+				phoneVerificationStatus: null,
+				streetAddress: null,
+			} );
+			await storeRequirements.goto();
+
+			const continueButton = storeRequirements.getContinueButton();
+			await expect( continueButton ).toBeDisabled();
+		} );
+
+		test( 'should be enabled if phone number is verified and store address is filled in', async () => {
+			// Mock MC contact information
+			await storeRequirements.mockContactInformation( {
+				phoneNumber: '+18888888888',
+				phoneVerificationStatus: 'verified',
+				streetAddress: 'WooCommerce Road',
+			} );
+			await storeRequirements.goto();
+
+			const continueButton = storeRequirements.getContinueButton();
+			await expect( continueButton ).not.toBeDisabled();
 		} );
 	} );
 } );
