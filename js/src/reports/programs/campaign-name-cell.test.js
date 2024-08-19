@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import { fireEvent, render, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
+import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -11,6 +11,7 @@ import CampaignNameCell from '.~/reports/programs/campaign-name-cell';
 
 describe( 'Notice Campaign Migration', () => {
 	it( 'Converted', async () => {
+		const user = userEvent.setup();
 		const row = {
 			isConverted: true,
 			name: 'shopping campaign',
@@ -24,7 +25,7 @@ describe( 'Notice Campaign Migration', () => {
 
 		expect( campaignName ).toBeTruthy();
 
-		fireEvent.mouseOver( campaignName );
+		await user.hover( campaignName );
 
 		const tooltip = await findByText(
 			'This campaign has been upgraded to Performance Max'
@@ -33,6 +34,7 @@ describe( 'Notice Campaign Migration', () => {
 		expect( tooltip ).toBeTruthy();
 	} );
 	it( 'PMax should not have tooltip', async () => {
+		const user = userEvent.setup();
 		const row = {
 			isConverted: false,
 			name: 'pmax campaign',
@@ -46,14 +48,10 @@ describe( 'Notice Campaign Migration', () => {
 
 		expect( campaignName ).toBeTruthy();
 
-		fireEvent.mouseOver( campaignName );
+		await user.hover( campaignName );
 
-		await waitFor( () => {
-			expect(
-				queryByText(
-					'This campaign has been upgraded to Performance Max'
-				)
-			).toBeFalsy();
-		} );
+		expect(
+			queryByText( 'This campaign has been upgraded to Performance Max' )
+		).toBeFalsy();
 	} );
 } );
