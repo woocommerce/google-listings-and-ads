@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from '@woocommerce/tracks';
@@ -71,16 +71,12 @@ describe( 'BillingSetupCard', () => {
 		const inspect = jest.fn();
 
 		let onSetupComplete = () => inspect();
-		let rerender;
 
 		// Initial with a not yet set up billing.
 		fetchBillingStatus.mockResolvedValueOnce( { status: 'unknown' } );
-		await act( async () => {
-			const result = render(
-				<BillingSetupCard onSetupComplete={ onSetupComplete } />
-			);
-			rerender = result.rerender;
-		} );
+		const { rerender } = render(
+			<BillingSetupCard onSetupComplete={ onSetupComplete } />
+		);
 
 		expect( fetchBillingStatus ).toHaveBeenCalledTimes( 1 );
 		expect( inspect ).toHaveBeenCalledTimes( 0 );
@@ -88,22 +84,16 @@ describe( 'BillingSetupCard', () => {
 		// Simulate document regains focus to trigger billing status check again.
 		useWindowFocus.mockReturnValueOnce( false );
 		rerender( <BillingSetupCard onSetupComplete={ onSetupComplete } /> );
-		await act( async () => {
-			rerender(
-				<BillingSetupCard onSetupComplete={ onSetupComplete } />
-			);
-		} );
+		rerender( <BillingSetupCard onSetupComplete={ onSetupComplete } /> );
 
 		expect( fetchBillingStatus ).toHaveBeenCalledTimes( 2 );
-		expect( inspect ).toHaveBeenCalledTimes( 1 );
+		await waitFor( async () => {
+			expect( inspect ).toHaveBeenCalledTimes( 1 );
+		} );
 
 		// Change the reference of callback.
 		onSetupComplete = () => inspect();
-		await act( async () => {
-			rerender(
-				<BillingSetupCard onSetupComplete={ onSetupComplete } />
-			);
-		} );
+		rerender( <BillingSetupCard onSetupComplete={ onSetupComplete } /> );
 
 		expect( inspect ).toHaveBeenCalledTimes( 1 );
 	} );
@@ -113,12 +103,12 @@ describe( 'BillingSetupCard', () => {
 
 		const onSetupComplete = jest.fn();
 
-		await act( async () => {
-			render( <BillingSetupCard onSetupComplete={ onSetupComplete } /> );
-		} );
+		render( <BillingSetupCard onSetupComplete={ onSetupComplete } /> );
 
 		expect( fetchBillingStatus ).toHaveBeenCalledTimes( 1 );
-		expect( onSetupComplete ).toHaveBeenCalledTimes( 1 );
+		await waitFor( async () => {
+			expect( onSetupComplete ).toHaveBeenCalledTimes( 1 );
+		} );
 
 		await act( async () => {
 			jest.runOnlyPendingTimers();

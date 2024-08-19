@@ -102,16 +102,14 @@ describe( 'VerifyPhoneNumberContent', () => {
 	it( 'When not yet entered 6-digit verification code, should disable the "Verify phone number" button', async () => {
 		const user = userEvent.setup();
 
-		await act( async () => {
-			render(
-				<VerifyPhoneNumberContent
-					verificationMethod="SMS"
-					country="US"
-					number="+12133734253"
-					display="+1 213 373 4253"
-				/>
-			);
-		} );
+		render(
+			<VerifyPhoneNumberContent
+				verificationMethod="SMS"
+				country="US"
+				number="+12133734253"
+				display="+1 213 373 4253"
+			/>
+		);
 
 		const button = getVerifyButton();
 		const codeInputs = screen.getAllByRole( 'textbox' );
@@ -193,17 +191,15 @@ describe( 'VerifyPhoneNumberContent', () => {
 	it( 'When clicking the "Verify phone number" button, should call `verifyPhoneNumber` with the verification id, code and method', async () => {
 		const user = userEvent.setup();
 
-		await act( async () => {
-			render(
-				<VerifyPhoneNumberContent
-					verificationMethod="SMS"
-					country="US"
-					number="+12133734253"
-					display="+1 213 373 4253"
-					onVerificationStateChange={ () => {} }
-				/>
-			);
-		} );
+		render(
+			<VerifyPhoneNumberContent
+				verificationMethod="SMS"
+				country="US"
+				number="+12133734253"
+				display="+1 213 373 4253"
+				onVerificationStateChange={ () => {} }
+			/>
+		);
 
 		const button = getVerifyButton();
 		const codeInputs = screen.getAllByRole( 'textbox' );
@@ -234,17 +230,15 @@ describe( 'VerifyPhoneNumberContent', () => {
 			.fn()
 			.mockName( 'onVerificationStateChange' );
 
-		await act( async () => {
-			render(
-				<VerifyPhoneNumberContent
-					verificationMethod="SMS"
-					country="US"
-					number="+12133734253"
-					display="+1 213 373 4253"
-					onVerificationStateChange={ onVerificationStateChange }
-				/>
-			);
-		} );
+		render(
+			<VerifyPhoneNumberContent
+				verificationMethod="SMS"
+				country="US"
+				number="+12133734253"
+				display="+1 213 373 4253"
+				onVerificationStateChange={ onVerificationStateChange }
+			/>
+		);
 
 		const button = getVerifyButton();
 		const codeInputs = screen.getAllByRole( 'textbox' );
