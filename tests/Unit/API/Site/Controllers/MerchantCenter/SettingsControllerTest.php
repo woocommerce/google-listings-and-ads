@@ -39,4 +39,11 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'destination', $response->get_data()['tax_rate'] );
 		$this->assertEquals( 200, $response->get_status() );
 	}
+
+	public function test_default_tax_rate_settings_post() {
+		$response = $this->do_request( self::ROUTE, 'POST', [] );
+
+		$this->assertEquals( 'destination', $response->get_data()['data']['tax_rate'] );
+		$this->assertEquals( 200, $response->get_status() );
+	}
 }
