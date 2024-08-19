@@ -18,6 +18,9 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 	/** @var SettingsController $controller */
 	protected $controller;
 
+	/** @var MockObject|OptionsInterface $options */
+	protected $options;
+
 	protected const ROUTE = '/wc/gla/mc/settings';
 
 	public function setUp(): void {
