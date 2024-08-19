@@ -129,7 +129,10 @@ describe( 'VerificationCodeControl component', () => {
 
 	test( 'typing Enter submits enclosing form', async () => {
 		const user = userEvent.setup();
-		const onSubmit = jest.fn().mockName( 'On form submit callback' );
+		const onSubmit = jest
+			.fn( ( e ) => e.preventDefault() )
+			.mockName( 'On form submit callback' );
+
 		render(
 			<form onSubmit={ onSubmit }>
 				<VerificationCodeControl onCodeChange={ () => {} } />
