@@ -188,34 +188,6 @@ class ZoneMethodsParserTest extends UnitTest {
 	/**
 	 * @param string $requires
 	 *
-	 * @dataProvider return_free_shipping_min_amount_requirements
-	 */
-	public function test_returns_free_shipping_methods_string_cost_with_commas( string $requires ) {
-		$free_shipping     = $this->createMock( WC_Shipping_Free_Shipping::class );
-		$free_shipping->id = ZoneMethodsParser::METHOD_FREE;
-		$free_shipping->expects( $this->any() )
-			->method( 'get_option' )
-			->willReturnMap(
-				[
-					[ 'requires', null, $requires ],
-					[ 'min_amount', null, '99,99' ],
-				]
-			);
-
-		$zone = $this->createMock( WC_Shipping_Zone::class );
-		$zone->expects( $this->any() )
-			->method( 'get_shipping_methods' )
-			->willReturn( [ $free_shipping ] );
-
-		$shipping_rates = $this->methods_parser->parse( $zone );
-		$this->assertCount( 1, $shipping_rates );
-		$this->assertEquals( 0, $shipping_rates[0]->get_rate() );
-		$this->assertEquals( 99.99, $shipping_rates[0]->get_min_order_amount() );
-	}
-
-	/**
-	 * @param string $requires
-	 *
 	 * @dataProvider return_free_shipping_coupon_requirements
 	 */
 	public function test_ignores_free_shipping_methods_if_they_require_coupons( string $requires ) {

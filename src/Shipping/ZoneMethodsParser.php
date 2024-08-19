@@ -91,7 +91,7 @@ class ZoneMethodsParser implements Service {
 				// Check if free shipping requires a minimum order amount.
 				$requires = $method->get_option( 'requires' );
 				if ( in_array( $requires, [ 'min_amount', 'either' ], true ) ) {
-					$shipping_rate->set_min_order_amount( (float) $this->convert_to_decimal_with_dot( (string) $method->get_option( 'min_amount' ) ) );
+					$shipping_rate->set_min_order_amount( (float) $method->get_option( 'min_amount' ) );
 				} elseif ( in_array( $requires, [ 'coupon', 'both' ], true ) ) {
 					// We can't sync this method if free shipping requires a coupon.
 					return [];
