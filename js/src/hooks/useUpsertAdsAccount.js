@@ -51,10 +51,12 @@ const useUpsertAdsAccount = () => {
 			// so we swallow the error for status code 428,
 			// and only display error message and exit this function for non-428 error.
 			if ( e.status !== 428 ) {
-				const body = await e.json();
 				const message =
 					e.status === 406
-						? body.message
+						? __(
+								'Error creating account: Account creation limit reached. Contact support for help.',
+								'google-listings-and-ads'
+						  )
 						: __(
 								'Unable to create Google Ads account. Please try again later.',
 								'google-listings-and-ads'
