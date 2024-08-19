@@ -130,6 +130,7 @@ class SettingsController extends BaseOptionsController {
 					'destination',
 					'manual',
 				],
+				'default'           => 'destination',
 			],
 			'website_live'            => [
 				'type'              => 'boolean',
