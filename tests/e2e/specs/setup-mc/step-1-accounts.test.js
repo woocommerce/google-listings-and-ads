@@ -61,6 +61,7 @@ test.describe( 'Set up accounts', () => {
 		const wpAccountCard = setUpAccountsPage.getWPAccountCard();
 		await expect( wpAccountCard ).toBeEnabled();
 		await expect( wpAccountCard ).toContainText( 'WordPress.com' );
+		await expect( wpAccountCard.getByRole( 'button' ) ).toBeEnabled();
 
 		const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
 		await expect( googleAccountCard.getByRole( 'button' ) ).toBeDisabled();
@@ -139,10 +140,6 @@ test.describe( 'Set up accounts', () => {
 					'Connect the accounts required to use Google for WooCommerce.'
 				)
 			).toBeVisible();
-
-			await expect(
-				page.getByRole( 'button', { name: 'Connect' } ).first()
-			).toBeEnabled();
 
 			const wpAccountCard = setUpAccountsPage.getWPAccountCard();
 			await expect( wpAccountCard ).not.toBeVisible();
