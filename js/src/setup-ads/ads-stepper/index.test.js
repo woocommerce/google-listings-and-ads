@@ -13,7 +13,7 @@ jest.mock( './setup-billing', () => jest.fn().mockName( 'SetupBilling' ) );
 /**
  * External dependencies
  */
-import { screen, render } from '@testing-library/react';
+import { screen, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from '@woocommerce/tracks';
 
@@ -47,16 +47,22 @@ describe( 'AdsStepper', () => {
 		jest.clearAllMocks();
 	} );
 
-	function continueUntilStep3() {
+	async function continueUntilStep3() {
 		continueToStep2();
+
+		// Wait for stepper content to be rendered.
+		await waitFor( () => {
+			expect( continueToStep3 ).toBeDefined();
+		} );
+
 		continueToStep3();
 	}
 
 	describe( 'tracks', () => {
-		it( 'Should record events after calling back to `onContinue`', () => {
+		it( 'Should record events after calling back to `onContinue`', async () => {
 			render( <AdsStepper /> );
 
-			continueUntilStep3();
+			await continueUntilStep3();
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 2 );
 			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_ads', {
@@ -78,7 +84,7 @@ describe( 'AdsStepper', () => {
 			const step2 = screen.getByRole( 'button', { name: /campaign/ } );
 
 			// Step 3 -> Step 2 -> Step 1
-			continueUntilStep3();
+			await continueUntilStep3();
 			recordEvent.mockClear();
 			expect( recordEvent ).toHaveBeenCalledTimes( 0 );
 
@@ -96,7 +102,7 @@ describe( 'AdsStepper', () => {
 			} );
 
 			// Step 3 -> Step 1
-			continueUntilStep3();
+			await continueUntilStep3();
 			recordEvent.mockClear();
 			expect( recordEvent ).toHaveBeenCalledTimes( 0 );
 
