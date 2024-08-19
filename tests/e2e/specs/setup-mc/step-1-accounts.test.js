@@ -58,10 +58,6 @@ test.describe( 'Set up accounts', () => {
 			)
 		).toBeVisible();
 
-		await expect(
-			page.getByRole( 'button', { name: 'Connect' } ).first()
-		).toBeEnabled();
-
 		const wpAccountCard = setUpAccountsPage.getWPAccountCard();
 		await expect( wpAccountCard ).toBeEnabled();
 		await expect( wpAccountCard ).toContainText( 'WordPress.com' );
@@ -178,9 +174,7 @@ test.describe( 'Set up accounts', () => {
 			).toBeVisible();
 
 			await expect(
-				googleAccountCard
-					.getByRole( 'button', { name: 'Connect' } )
-					.first()
+				googleAccountCard.getByRole( 'button', { name: 'Connect' } )
 			).toBeEnabled();
 
 			const mcAccountCard = setUpAccountsPage.getMCAccountCard();

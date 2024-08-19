@@ -70,17 +70,6 @@ export default class SetUpAccountsPage extends MockRequests {
 	}
 
 	/**
-	 * Get Jetpack description row.
-	 *
-	 * @return {import('@playwright/test').Locator} Get Jetpack description row.
-	 */
-	getJetpackDescriptionRow() {
-		return this.getWPAccountCard().locator(
-			'.gla-account-card__description'
-		);
-	}
-
-	/**
 	 * Get Google description row.
 	 *
 	 * @return {import('@playwright/test').Locator} Get Google description row.
@@ -99,17 +88,6 @@ export default class SetUpAccountsPage extends MockRequests {
 	getMCDescriptionRow() {
 		return this.getMCAccountCard().locator(
 			'.gla-account-card__description'
-		);
-	}
-
-	/**
-	 * Get Google Ads title.
-	 *
-	 * @return {import('@playwright/test').Locator} Get Google Ads title.
-	 */
-	getAdsTitleRow() {
-		return this.getGoogleAdsAccountCard().locator(
-			'.gla-account-card__title'
 		);
 	}
 
@@ -165,26 +143,6 @@ export default class SetUpAccountsPage extends MockRequests {
 	 */
 	getModalSecondaryButton() {
 		return this.getModal().locator( 'button.is-secondary' );
-	}
-
-	/**
-	 * Get Jetpack connected label.
-	 *
-	 * @return {import('@playwright/test').Locator} Get Jetpack connected label.
-	 */
-	getJetpackConnectedLabel() {
-		return this.getWPAccountCard().locator( '.gla-connected-icon-label' );
-	}
-
-	/**
-	 * Get Google connected label.
-	 *
-	 * @return {import('@playwright/test').Locator} Get Google connected label.
-	 */
-	getGoogleConnectedLabel() {
-		return this.getGoogleAccountCard().locator(
-			'.gla-connected-icon-label'
-		);
 	}
 
 	/**
