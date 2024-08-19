@@ -19,8 +19,8 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import StepContentActions from '.~/components/stepper/step-content-actions';
-import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
+import PaidAdsFaqsPanel from '.~/components/paid-ads/faqs-section';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
@@ -222,8 +222,9 @@ export default function SetupPaidAds() {
 						/>
 					</Flex>
 				</StepContentActions>
-				<FaqsSection />
 			</StepContentFooter>
 		</StepContent>
 	);
 }
+
+<PaidAdsFaqsPanel />

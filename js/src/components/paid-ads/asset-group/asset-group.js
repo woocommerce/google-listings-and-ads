@@ -13,8 +13,8 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppButton from '.~/components/app-button';
+import AssetGroupFaqsPanel from './faqs-section';
 import AssetGroupSection from './asset-group-section';
-import FaqsSection from './faqs-section';
 import { recordGlaEvent } from '.~/utils/tracks';
 
 export const ACTION_SUBMIT_CAMPAIGN_AND_ASSETS = 'submit-campaign-and-assets';
@@ -167,8 +167,7 @@ export default function AssetGroup( { campaign } ) {
 							: __( 'Save changes', 'google-listings-and-ads' ) }
 					</AppButton>
 				</StepContentActions>
-
-				<FaqsSection />
+				<AssetGroupFaqsPanel />
 			</StepContentFooter>
 		</StepContent>
 	);

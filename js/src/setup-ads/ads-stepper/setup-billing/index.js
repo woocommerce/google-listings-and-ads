@@ -17,6 +17,7 @@ import {
 } from '.~/components/paid-ads/billing-card';
 import BillingSavedCard from './billing-saved-card';
 import StepContentActions from '.~/components/stepper/step-content-actions';
+import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppButton from '.~/components/app-button';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
@@ -68,18 +69,20 @@ const SetupBilling = ( props ) => {
 				) }
 			</Section>
 			{ isApproved && (
-				<StepContentActions>
-					<AppButton
-						isPrimary
-						loading={ isSubmitting }
-						onClick={ handleSubmit }
-					>
-						{ __(
-							'Launch paid campaign',
-							'google-listings-and-ads'
-						) }
-					</AppButton>
-				</StepContentActions>
+				<StepContentFooter>
+					<StepContentActions>
+						<AppButton
+							isPrimary
+							loading={ isSubmitting }
+							onClick={ handleSubmit }
+						>
+							{ __(
+								'Launch paid campaign',
+								'google-listings-and-ads'
+							) }
+						</AppButton>
+					</StepContentActions>
+				</StepContentFooter>
 			) }
 		</StepContent>
 	);

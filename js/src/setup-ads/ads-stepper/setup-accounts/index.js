@@ -10,6 +10,7 @@ import AppButton from '.~/components/app-button';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentActions from '.~/components/stepper/step-content-actions';
+import StepContentFooter from '.~/components/stepper/step-content-footer';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import { ConnectedGoogleAccountCard } from '.~/components/google-account-card';
 import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
@@ -74,15 +75,17 @@ const SetupAccounts = ( props ) => {
 					{ hasFreeAdCredit && <FreeAdCredit /> }
 				</VerticalGapLayout>
 			</Section>
-			<StepContentActions>
-				<AppButton
-					isPrimary
-					disabled={ isContinueButtonDisabled }
-					onClick={ onContinue }
-				>
-					{ __( 'Continue', 'google-listings-and-ads' ) }
-				</AppButton>
-			</StepContentActions>
+			<StepContentFooter>
+				<StepContentActions>
+					<AppButton
+						isPrimary
+						disabled={ isContinueButtonDisabled }
+						onClick={ onContinue }
+					>
+						{ __( 'Continue', 'google-listings-and-ads' ) }
+					</AppButton>
+				</StepContentActions>
+			</StepContentFooter>
 		</StepContent>
 	);
 };

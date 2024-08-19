@@ -85,7 +85,7 @@ const faqItems = [
  *
  * @fires gla_setup_ads_faq
  */
-const FaqsSection = () => {
+const PaidAdsFaqsPanel = () => {
 	return (
 		<FaqsPanel
 			trackName="gla_setup_ads_faq"
@@ -95,4 +95,4 @@ const FaqsSection = () => {
 	);
 };
 
-export default FaqsSection;
+export default PaidAdsFaqsPanel;
