@@ -35,7 +35,7 @@ describe( 'ImagesSelector', () => {
 	const imageC = { id: urlC, url: urlC, alt: '' };
 
 	const getImgUrls = () =>
-		screen.getAllByRole( 'img' ).map( ( img ) => img.src );
+		screen.getAllByRole( 'presentation' ).map( ( img ) => img.src );
 
 	const getAddButton = () => screen.getByRole( 'button', { name: /add/i } );
 
