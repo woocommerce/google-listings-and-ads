@@ -13,7 +13,7 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import AppButton from '.~/components/app-button';
-import AssetGroupFaqsPanel from './faqs-section';
+import AssetGroupFaqsPanel from './faqs-panel';
 import AssetGroupSection from './asset-group-section';
 import { recordGlaEvent } from '.~/utils/tracks';
 
