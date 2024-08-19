@@ -18,6 +18,16 @@ import isWCTracksEnabled from '.~/utils/isWCTracksEnabled';
 import RebrandingTour from '.~/components/tours/rebranding-tour';
 import { GUIDE_NAMES } from '.~/constants';
 
+jest.mock( '.~/components/different-currency-notice', () =>
+	jest.fn().mockName( 'DifferentCurrencyNotice' )
+);
+
+jest.mock( './summary-section', () => jest.fn().mockName( 'SummarySection' ) );
+
+jest.mock( './all-programs-table-card', () =>
+	jest.fn().mockName( 'AllProgramsTableCard' )
+);
+
 jest.mock( '@woocommerce/settings', () => {
 	return {
 		getSetting: () => ( {
