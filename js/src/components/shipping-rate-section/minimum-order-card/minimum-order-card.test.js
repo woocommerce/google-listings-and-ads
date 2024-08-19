@@ -9,7 +9,6 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import MinimumOrderCard from './minimum-order-card.js';
-import { structuredClone } from '.~/utils/structuredClone.js';
 
 jest.mock( '.~/hooks/useAppSelectDispatch' );
 jest.mock( '.~/hooks/useCountryKeyNameMap' );
