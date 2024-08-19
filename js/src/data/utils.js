@@ -85,6 +85,18 @@ export function getReportQuery( category, type, query, dateReference ) {
 	return reportQuery;
 }
 
+function replacer( key, value ) {
+	if ( value ) {
+		if ( Array.isArray( value ) ) {
+			return [ ...value ].sort();
+		}
+		if ( typeof value === 'object' ) {
+			return Object.fromEntries( Object.entries( value ).sort() );
+		}
+	}
+	return value;
+}
+
 /**
  * Get a key for accessing report data from store state.
  *
@@ -95,7 +107,7 @@ export function getReportQuery( category, type, query, dateReference ) {
  * @return {string} The report key.
  */
 export function getReportKey( category, type, reportQuery ) {
-	const id = JSON.stringify( reportQuery, Object.keys( reportQuery ).sort() );
+	const id = JSON.stringify( reportQuery, replacer );
 	return `${ category }:${ type }:${ id }`;
 }
 
