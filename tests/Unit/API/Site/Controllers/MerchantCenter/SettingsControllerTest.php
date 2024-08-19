@@ -1,10 +1,10 @@
 <?php
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SettingsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\TrackingTrait;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -24,11 +24,14 @@ class SettingsControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		$this->controller = new SettingsController( $this->server );
+
+		$this->options = $this->createMock( OptionsInterface::class );
+		$this->controller->set_options_object( $this->options );
 		$this->controller->register();
 	}
 
 	public function test_default_tax_rate_settings() {
-		$response = $this->do_request( self::ROUTE, 'GET' );
+		$response = $this->do_request( self::ROUTE );
 
 		$this->assertEquals( 'destination', $response->get_data()['tax_rate'] );
 		$this->assertEquals( 200, $response->get_status() );
