@@ -198,4 +198,20 @@ trait PluginHelper {
 	protected function strip_url_protocol( string $url ): string {
 		return preg_replace( '#^https?://#', '', untrailingslashit( $url ) );
 	}
+
+	/**
+	 * Replace any decimal separators, like commas, with dots for decimal places.
+	 * This is useful with functions like is_numeric as it doesn't recognize commas as decimal separators.
+	 * Note: Using wc_format_decimal with a dot as the decimal separator (WC -> Settings -> General) will strip out commas but won’t replace them with dots.
+	 * For example, wc_format_decimal('2,4') will return 24 instead of 2.4.
+	 *
+	 * @param string $number The number to convert.
+	 *
+	 * @return string The number as a valid decimal.
+	 */
+	protected function convert_to_decimal_with_dot( string $number ) {
+		$locale   = localeconv();
+		$decimals = [ wc_get_price_decimal_separator(), $locale['decimal_point'], $locale['mon_decimal_point'], ',' ];
+		return str_replace( $decimals, '.', (string) $number );
+	}
 }
