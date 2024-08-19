@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use WC_Shipping_Method;
 use WC_Shipping_Zone;
 
@@ -18,6 +19,8 @@ defined( 'ABSPATH' ) || exit;
  * @since 2.1.0
  */
 class ZoneMethodsParser implements Service {
+
+	use PluginHelper;
 
 	public const METHOD_FLAT_RATE = 'flat_rate';
 	public const METHOD_FREE      = 'free_shipping';
@@ -88,7 +91,7 @@ class ZoneMethodsParser implements Service {
 				// Check if free shipping requires a minimum order amount.
 				$requires = $method->get_option( 'requires' );
 				if ( in_array( $requires, [ 'min_amount', 'either' ], true ) ) {
-					$shipping_rate->set_min_order_amount( (float) $method->get_option( 'min_amount' ) );
+					$shipping_rate->set_min_order_amount( (float) $this->convert_to_decimal_with_dot( (string) $method->get_option( 'min_amount' ) ) );
 				} elseif ( in_array( $requires, [ 'coupon', 'both' ], true ) ) {
 					// We can't sync this method if free shipping requires a coupon.
 					return [];
@@ -123,9 +126,7 @@ class ZoneMethodsParser implements Service {
 		$rate = null;
 
 		$flat_cost = 0;
-		$locale    = localeconv();
-		$decimals  = [ wc_get_price_decimal_separator(), $locale['decimal_point'], $locale['mon_decimal_point'], ',' ];
-		$cost      = str_replace( $decimals, '.', (string) $method->get_option( 'cost' ) );
+		$cost      = $this->convert_to_decimal_with_dot( (string) $method->get_option( 'cost' ) );
 		// Check if the cost is a numeric value (and not null or a math expression).
 		if ( is_numeric( $cost ) ) {
 			$flat_cost = (float) $cost;
@@ -133,7 +134,7 @@ class ZoneMethodsParser implements Service {
 		}
 
 		// Add the no class cost.
-		$no_class_cost = $method->get_option( 'no_class_cost' );
+		$no_class_cost = $this->convert_to_decimal_with_dot( (string) $method->get_option( 'no_class_cost' ) );
 		if ( is_numeric( $no_class_cost ) ) {
 			$rate = $flat_cost + (float) $no_class_cost;
 		}
@@ -157,7 +158,7 @@ class ZoneMethodsParser implements Service {
 		$class_rates = [];
 
 		$flat_cost = 0;
-		$cost      = $method->get_option( 'cost' );
+		$cost      = $this->convert_to_decimal_with_dot( (string) $method->get_option( 'cost' ) );
 		// Check if the cost is a numeric value (and not null or a math expression).
 		if ( is_numeric( $cost ) ) {
 			$flat_cost = (float) $cost;
@@ -166,7 +167,7 @@ class ZoneMethodsParser implements Service {
 		// Add shipping class costs.
 		$shipping_classes = $this->wc->get_shipping_classes();
 		foreach ( $shipping_classes as $shipping_class ) {
-			$shipping_class_cost = $method->get_option( 'class_cost_' . $shipping_class->term_id );
+			$shipping_class_cost = $this->convert_to_decimal_with_dot( (string) $method->get_option( 'class_cost_' . $shipping_class->term_id ) );
 			if ( is_numeric( $shipping_class_cost ) ) {
 				// Add the flat rate cost to the shipping class cost.
 				$class_rates[ $shipping_class->slug ] = [
