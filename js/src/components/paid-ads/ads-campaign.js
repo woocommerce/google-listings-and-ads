@@ -17,7 +17,7 @@ import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
 import { CampaignPreviewCard } from './campaign-preview';
-import FaqsSection from './faqs-section';
+import PaidAdsFaqsPanel from './faqs-panel';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -109,7 +109,7 @@ export default function AdsCampaign( {
 						{ __( 'Continue', 'google-listings-and-ads' ) }
 					</AppButton>
 				</StepContentActions>
-				<FaqsSection />
+				<PaidAdsFaqsPanel />
 			</StepContentFooter>
 		</StepContent>
 	);
