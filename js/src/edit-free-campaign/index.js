@@ -208,6 +208,7 @@ const EditFreeCampaign = () => {
 				settings={ settings }
 				onSettingsChange={ updateSettings }
 				shippingRates={ loadedShippingRates }
+				hideTaxRates={false}
 				onShippingRatesChange={ updateShippingRates }
 				shippingTimes={ loadedShippingTimes }
 				onShippingTimesChange={ updateShippingTimes }

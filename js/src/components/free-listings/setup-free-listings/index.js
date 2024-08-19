@@ -91,6 +91,7 @@ const SetupFreeListings = ( {
 	onContinue = noop,
 	submitLabel,
 	headerTitle,
+	hideTaxRates = false,
 } ) => {
 	const formRef = useRef();
 	const { code: storeCountryCode } = useStoreCountry();
@@ -231,7 +232,7 @@ const SetupFreeListings = ( {
 				validate={ handleValidate }
 				onSubmit={ onContinue }
 			>
-				<FormContent submitLabel={ submitLabel } />
+				<FormContent submitLabel={ submitLabel } hideTaxRates={ hideTaxRates } />
 			</AdaptiveForm>
 		</div>
 	);
