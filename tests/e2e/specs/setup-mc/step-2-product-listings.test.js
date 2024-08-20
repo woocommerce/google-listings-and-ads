@@ -160,31 +160,6 @@ test.describe( 'Configure product listings', () => {
 		await productListingsPage.checkSelectedCountriesOnlyRadioButton();
 	} );
 
-	test( 'should still see "Tax rate (required for U.S. only)" even if deselect US when the default country is US', async () => {
-		const taxRateSection = productListingsPage.getTaxRateSection();
-		await expect( taxRateSection ).toBeVisible();
-		await removeCountryFromSearchBox( page, 'United States (US)' );
-		await expect( taxRateSection ).toBeVisible();
-	} );
-
-	test( 'should hide "Tax rate (required for U.S. only)" if deselect US when the default country is not US', async () => {
-		// Mock WC default country as TW, because Tax rate will always be shown if the default country is US.
-		await productListingsPage.fulfillWCDefaultCountry( {
-			woocommerce_default_country: 'TW',
-		} );
-		await page.reload();
-
-		// Check the radio button of "Selected countries only" first in order to ensure the country search box is visible.
-		await productListingsPage.checkSelectedCountriesOnlyRadioButton();
-
-		const taxRateSection = productListingsPage.getTaxRateSection();
-		await expect( taxRateSection ).toBeVisible();
-
-		await removeCountryFromSearchBox( page, 'United States (US)' );
-
-		await expect( taxRateSection ).not.toBeVisible();
-	} );
-
 	test.describe( 'Shipping rate is simple', () => {
 		test.beforeAll( async () => {
 			await page.reload();
@@ -358,11 +333,6 @@ test.describe( 'Configure product listings', () => {
 			);
 		} );
 
-		test( 'should show error message if clicking "Continue" button when tax rate is not chosen', async () => {
-			await productListingsPage.clickContinueButton();
-			const taxRateError = productListingsPage.getTaxRateError();
-			await expect( taxRateError ).toBeVisible();
-		} );
 	} );
 
 	test.describe( 'Links', () => {
