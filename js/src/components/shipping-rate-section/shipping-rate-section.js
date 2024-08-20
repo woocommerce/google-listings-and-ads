@@ -32,9 +32,7 @@ const ShippingRateSection = () => {
 	const hideAutomatticShippingRate =
 		! settings?.shipping_rates_count &&
 		hasFinishedResolution &&
-		mcSetup?.status === 'incomplete'
-			? true
-			: false;
+		mcSetup?.status === 'incomplete';
 
 	return (
 		<Section
