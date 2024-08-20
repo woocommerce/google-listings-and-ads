@@ -431,6 +431,9 @@ export function getProductBlockEditorUtils( page ) {
 		},
 
 		async getAvailableProductAttributesWithTestValues() {
+			// Avoiding tests may start to get locators before they are rendered,
+			// leading to random failures.
+			await this.getProductAttributesHeading().waitFor();
 			return getAvailableProductAttributesWithTestValues(
 				page,
 				this.getDateAndTimeFields
