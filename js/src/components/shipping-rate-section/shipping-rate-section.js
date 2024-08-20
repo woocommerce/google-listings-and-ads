@@ -64,14 +64,9 @@ const ShippingRateSection = () => {
 							{ ! hideAutomatticShippingRate && (
 								<AppRadioContentControl
 									{ ...inputProps }
-									label={ createInterpolateElement(
-										__(
-											'Automatically sync my store’s shipping settings to Google.',
-											'google-listings-and-ads'
-										),
-										{
-											strong: <strong></strong>,
-										}
+									label={ __(
+										'Automatically sync my store’s shipping settings to Google.',
+										'google-listings-and-ads'
 									) }
 									value="automatic"
 									collapsible
