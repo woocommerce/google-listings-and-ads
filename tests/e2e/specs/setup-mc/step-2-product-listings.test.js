@@ -332,7 +332,6 @@ test.describe( 'Configure product listings', () => {
 				'Successfully added time for country: "US".'
 			);
 		} );
-
 	} );
 
 	test.describe( 'Links', () => {

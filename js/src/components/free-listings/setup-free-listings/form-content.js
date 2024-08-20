@@ -29,7 +29,8 @@ const FormContent = ( {
 } ) => {
 	const { values, isValidForm, handleSubmit, adapter } =
 		useAdaptiveFormContext();
-	const shouldDisplayTaxRate = !hideTaxRates && useDisplayTaxRate( adapter.audienceCountries );
+	const shouldDisplayTaxRate =
+		! hideTaxRates && useDisplayTaxRate( adapter.audienceCountries );
 	const shouldDisplayShippingTime = values.shipping_time === 'flat';
 
 	const handleSubmitClick = ( event ) => {
