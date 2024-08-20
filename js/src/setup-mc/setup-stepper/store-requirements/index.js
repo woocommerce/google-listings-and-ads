@@ -107,10 +107,6 @@ export default function StoreRequirements( { onContinue } ) {
 								<AppButton
 									isPrimary
 									loading={ adapter.isSubmitting }
-									disabled={
-										! address.isAddressFilled ||
-										! isPhoneNumberReady
-									}
 									onClick={ handleSubmitClick }
 								>
 									{ __(

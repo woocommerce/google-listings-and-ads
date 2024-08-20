@@ -232,32 +232,4 @@ test.describe( 'Confirm store requirements', () => {
 			);
 		} );
 	} );
-
-	test.describe( 'Continue button', () => {
-		test( 'should be disabled if phone number is not verified and store address is not filled in', async () => {
-			// Mock MC contact information
-			await storeRequirements.mockContactInformation( {
-				phoneNumber: null,
-				phoneVerificationStatus: null,
-				streetAddress: null,
-			} );
-			await storeRequirements.goto();
-
-			const continueButton = storeRequirements.getContinueButton();
-			await expect( continueButton ).toBeDisabled();
-		} );
-
-		test( 'should be enabled if phone number is verified and store address is filled in', async () => {
-			// Mock MC contact information
-			await storeRequirements.mockContactInformation( {
-				phoneNumber: '+18888888888',
-				phoneVerificationStatus: 'verified',
-				streetAddress: 'WooCommerce Road',
-			} );
-			await storeRequirements.goto();
-
-			const continueButton = storeRequirements.getContinueButton();
-			await expect( continueButton ).not.toBeDisabled();
-		} );
-	} );
 } );
