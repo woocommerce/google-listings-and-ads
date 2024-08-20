@@ -72,7 +72,7 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 * Class constructor
 	 *
 	 * @param MerchantCenterService $merchant_center
-	 * @param AccountService $account_service
+	 * @param AccountService        $account_service
 	 */
 	public function __construct( MerchantCenterService $merchant_center, AccountService $account_service ) {
 		$blog_id                = Jetpack_Options::get_option( 'id' );
