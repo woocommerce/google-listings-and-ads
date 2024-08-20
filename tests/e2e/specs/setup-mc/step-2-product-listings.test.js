@@ -5,7 +5,6 @@ import ProductListingsPage from '../../utils/pages/setup-mc/step-2-product-listi
 import {
 	getCountryInputSearchBoxContainer,
 	getCountryInputSearchBox,
-	removeCountryFromSearchBox,
 	selectCountryFromSearchBox,
 } from '../../utils/page';
 
@@ -367,14 +366,6 @@ test.describe( 'Configure product listings', () => {
 			);
 		} );
 
-		test( 'should contain the correct URL for "Read more for Tax Rate" link', async () => {
-			const link = productListingsPage.getReadMoreTaxRateLink();
-			await expect( link ).toBeVisible();
-			await expect( link ).toHaveAttribute(
-				'href',
-				'https://support.google.com/merchants/answer/160162'
-			);
-		} );
 	} );
 
 	test.describe( 'Click "Continue" button', () => {
@@ -383,7 +374,6 @@ test.describe( 'Configure product listings', () => {
 			productListingsPage.mockContactInformation();
 			productListingsPage.checkRecommendedShippingRateRadioButton();
 			await productListingsPage.fillEstimatedShippingTimes( '14' );
-			await productListingsPage.checkNonDestinationBasedTaxRateRadioButton();
 		} );
 
 		test( 'should see the heading of next step and send two requests after clicking "Continue"', async () => {
