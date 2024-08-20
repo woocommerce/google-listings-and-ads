@@ -365,7 +365,6 @@ test.describe( 'Configure product listings', () => {
 				'https://support.google.com/merchants/answer/7050921'
 			);
 		} );
-
 	} );
 
 	test.describe( 'Click "Continue" button', () => {
