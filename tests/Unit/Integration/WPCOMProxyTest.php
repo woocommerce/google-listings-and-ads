@@ -2,6 +2,8 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\RestApi\UnitTests\Helpers\CouponHelper;
 use Automattic\WooCommerce\RestApi\UnitTests\Helpers\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
@@ -454,5 +456,30 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$this->assertArrayHasKey( 'gla_target_audience', $response_mapped );
 		$this->assertArrayHasKey( 'gla_shipping_times', $response_mapped );
+	}
+
+	public function test_get_empty_data_as_object() {
+		// dummy data
+		$data = [
+			'foo'  => 'bar',
+			'var'  => [],
+			'baz'  => null,
+			'bool' => false,
+		];
+
+		$proxy = new WPCOMProxy(
+			$this->container->get( ShippingTimeQuery::class ),
+			$this->container->get( AttributeManager::class )
+		);
+
+		$this->assertEquals(
+			[
+				'foo'  => 'bar',
+				'var'  => (object) [],
+				'baz'  => null,
+				'bool' => false,
+			],
+			$proxy->prepare_data( $data )
+		);
 	}
 }
