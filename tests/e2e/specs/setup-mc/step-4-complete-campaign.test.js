@@ -11,13 +11,8 @@ import CompleteCampaign from '../../utils/pages/setup-mc/step-4-complete-campaig
 import SetupAdsAccountPage from '../../utils/pages/setup-ads/setup-ads-accounts';
 import {
 	checkFAQExpandable,
-	fillCountryInSearchBox,
-	getCountryInputSearchBoxContainer,
-	getCountryTagsFromInputSearchBoxContainer,
 	getFAQPanelTitle,
 	getFAQPanelRow,
-	getTreeSelectMenu,
-	removeCountryFromSearchBox,
 	checkBillingAdsPopup,
 } from '../../utils/page';
 
