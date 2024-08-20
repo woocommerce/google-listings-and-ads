@@ -6,7 +6,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { select } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
-import { noop, merge } from 'lodash';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -46,12 +46,10 @@ const ACTION_SKIP = 'skip-ads';
 /**
  * Clicking on the skip paid ads button to complete the onboarding flow.
  * The 'unknown' value of properties may means:
- * - the paid ads setup is not opened
  * - the final status has not yet been resolved when recording this event
  * - the status is not available, for example, the billing status is unknown if Google Ads account is not yet connected
  *
  * @event gla_onboarding_complete_button_click
- * @property {string} opened_paid_ads_setup Whether the paid ads setup is opened, e.g. 'yes', 'no'
  * @property {string} google_ads_account_status The connection status of merchant's Google Ads addcount, e.g. 'connected', 'disconnected', 'incomplete'
  * @property {string} billing_method_status aaa, The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
  * @property {string} campaign_form_validation Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
@@ -113,21 +111,14 @@ export default function SetupPaidAds() {
 	const disabledComplete = completing === ACTION_SKIP || ! paidAds.isReady;
 
 	function createSkipButton( text ) {
-		const eventProps = {
-			opened_paid_ads_setup: 'no',
-			google_ads_account_status: googleAdsAccount?.status,
-			billing_method_status: 'unknown',
-			campaign_form_validation: 'unknown',
-		};
-
 		const selector = select( STORE_KEY );
 		const billing = selector.getGoogleAdsAccountBillingStatus();
 
-		merge( eventProps, {
-			opened_paid_ads_setup: 'yes',
+		const eventProps = {
+			google_ads_account_status: googleAdsAccount?.status,
 			billing_method_status: billing?.status,
 			campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
-		} );
+		};
 
 		const disabledSkip =
 			completing === ACTION_COMPLETE || ! hasGoogleAdsConnection;
