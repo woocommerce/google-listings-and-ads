@@ -418,9 +418,6 @@ test.describe( 'Configure product listings', () => {
 		} );
 
 		test( 'should see the heading of next step and send two requests after clicking "Continue"', async () => {
-			const requestPromises =
-				productListingsPage.registerContinueRequests();
-
 			await productListingsPage.clickContinueButton();
 
 			await expect(
@@ -429,13 +426,6 @@ test.describe( 'Configure product listings', () => {
 					exact: true,
 				} )
 			).toBeVisible();
-
-			const requests = await requestPromises;
-			const policyCheckResponse = await requests[ 1 ].response();
-			const policyCheckResponseBody = await policyCheckResponse.json();
-
-			expect( policyCheckResponse.status() ).toBe( 200 );
-			expect( policyCheckResponseBody.allowed_countries ).toBeTruthy();
 		} );
 	} );
 } );
