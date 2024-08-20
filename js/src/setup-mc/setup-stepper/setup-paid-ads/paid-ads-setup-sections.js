@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
 
@@ -11,7 +10,6 @@ import { Form } from '@woocommerce/components';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
-import AudienceSection from '.~/components/paid-ads/audience-section';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
 import SpinnerCard from '.~/components/spinner-card';
@@ -45,23 +43,8 @@ const defaultPaidAds = {
  * @param {Array<CountryCode>} targetAudience Country codes of selected target audience.
  * @return {PaidAdsData} The resolved paid ads data.
  */
-function resolveInitialPaidAds( paidAds, targetAudience ) {
-	const nextPaidAds = { ...paidAds };
-
-	if ( targetAudience ) {
-		if ( nextPaidAds.countryCodes === defaultPaidAds.countryCodes ) {
-			// Replace the country codes with the loaded target audience only if the reference is
-			// the same as the default because the given country codes might be the restored ones.
-			nextPaidAds.countryCodes = targetAudience;
-		} else {
-			// The selected target audience may be changed back and forth during the onboarding flow.
-			// Remove countries if any don't exist in the latest state.
-			nextPaidAds.countryCodes = nextPaidAds.countryCodes.filter(
-				( code ) => targetAudience.includes( code )
-			);
-		}
-	}
-
+function resolveInitialPaidAds( paidAds, targetAudience = [] ) {
+	const nextPaidAds = { ...paidAds, countryCodes: targetAudience };
 	nextPaidAds.isValid = ! Object.keys( validateCampaign( nextPaidAds ) )
 		.length;
 
@@ -160,22 +143,12 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 					disabledAudience || countryCodes.length === 0;
 
 				return (
-					<>
-						<AudienceSection
-							formProps={ formProps }
-							disabled={ disabledAudience }
-							countrySelectHelperText={ __(
-								'You can only choose from countries you’ve selected during product listings configuration.',
-								'google-listings-and-ads'
-							) }
-						/>
-						<BudgetSection
-							formProps={ formProps }
-							disabled={ disabledBudget }
-						>
-							{ ! disabledBudget && <BillingCard /> }
-						</BudgetSection>
-					</>
+					<BudgetSection
+						formProps={ formProps }
+						disabled={ disabledBudget }
+					>
+						{ ! disabledBudget && <BillingCard /> }
+					</BudgetSection>
 				);
 			} }
 		</Form>

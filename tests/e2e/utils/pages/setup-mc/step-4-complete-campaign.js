@@ -47,15 +47,6 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
-	 * Get ads audience section.
-	 *
-	 * @return {import('@playwright/test').Locator} Get ads audience section.
-	 */
-	getAdsAudienceSection() {
-		return this.getSections().nth( 1 );
-	}
-
-	/**
 	 * Get budget section.
 	 *
 	 * @return {import('@playwright/test').Locator} Get budget section.
