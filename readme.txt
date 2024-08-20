@@ -29,7 +29,7 @@ Seamlessly integrate your WooCommerce store with Google and set yourself up for 
 
 - **Have your product listings automatically updated in real time** so your prices, promotions, inventories, and other product details stay accurate and synchronized across all your listings.
 
-- **Access all the tools and features you need** to manage your WooCommerce store and grow your business— centralized in one place.
+- **Access all the tools and features you need** to manage your WooCommerce store and grow your business — centralized in one place.
 
 **Find the right audiences and sell to high-intent customers with Google Ads**
 
