@@ -46,12 +46,12 @@ class PluginHelperTraitTest extends TestCase {
 	}
 
 	public function test_with_thousands_separator() {
-		$this->assertEquals( '1234.5', $this->trait->convert_to_standard_decimal( '1'.wc_get_price_thousand_separator().'234,5' ) );
+		$this->assertEquals( '1234.5', $this->trait->convert_to_standard_decimal( '1' . wc_get_price_thousand_separator() . '234,5' ) );
 	}
 
 	public function test_with_no_decimals() {
 		$this->assertEquals( '12345', $this->trait->convert_to_standard_decimal( '12345' ) );
-	}	
+	}
 
 	public function test_with_different_wc_decimal_separator() {
 		add_filter(
