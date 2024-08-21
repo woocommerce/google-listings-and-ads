@@ -38,18 +38,6 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get language radio row.
-	 *
-	 * @return {import('@playwright/test').Locator} Get language radio row.
-	 */
-	getLanguageRadioRow() {
-		return this.page.getByRole( 'radio', {
-			name: 'English',
-			exact: true,
-		} );
-	}
-
-	/**
 	 * Get selected countries only radio row.
 	 *
 	 * @return {import('@playwright/test').Locator} Get selected countries only radio row.
@@ -298,18 +286,6 @@ export default class ProductListingsPage extends MockRequests {
 	getContinueButton() {
 		return this.page.getByRole( 'button', {
 			name: 'Continue',
-			exact: true,
-		} );
-	}
-
-	/**
-	 * Get "Read more" for Language link.
-	 *
-	 * @return {import('@playwright/test').Locator} Get "Read more" for Language link.
-	 */
-	getReadMoreLanguageLink() {
-		return this.getAudienceCard().getByRole( 'link', {
-			name: 'Read more',
 			exact: true,
 		} );
 	}
