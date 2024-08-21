@@ -20,8 +20,6 @@ import './choose-audience-section.scss';
  *
  * To be used in onboarding and further editing.
  * Does not provide any save strategy, this is to be bound externaly.
- *
- * @fires gla_documentation_link_click with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
  */
 const ChooseAudienceSection = () => {
 	const {
