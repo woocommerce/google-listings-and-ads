@@ -126,7 +126,7 @@ class ZoneMethodsParser implements Service {
 		$rate = null;
 
 		$flat_cost = 0;
-		$cost      = $this->convert_to_decimal_with_dot( (string) $method->get_option( 'cost' ) );
+		$cost      = $this->convert_to_standard_decimal( (string) $method->get_option( 'cost' ) );
 		// Check if the cost is a numeric value (and not null or a math expression).
 		if ( is_numeric( $cost ) ) {
 			$flat_cost = (float) $cost;
@@ -134,7 +134,7 @@ class ZoneMethodsParser implements Service {
 		}
 
 		// Add the no class cost.
-		$no_class_cost = $this->convert_to_decimal_with_dot( (string) $method->get_option( 'no_class_cost' ) );
+		$no_class_cost = $this->convert_to_standard_decimal( (string) $method->get_option( 'no_class_cost' ) );
 		if ( is_numeric( $no_class_cost ) ) {
 			$rate = $flat_cost + (float) $no_class_cost;
 		}
@@ -158,7 +158,7 @@ class ZoneMethodsParser implements Service {
 		$class_rates = [];
 
 		$flat_cost = 0;
-		$cost      = $this->convert_to_decimal_with_dot( (string) $method->get_option( 'cost' ) );
+		$cost      = $this->convert_to_standard_decimal( (string) $method->get_option( 'cost' ) );
 		// Check if the cost is a numeric value (and not null or a math expression).
 		if ( is_numeric( $cost ) ) {
 			$flat_cost = (float) $cost;
@@ -167,7 +167,7 @@ class ZoneMethodsParser implements Service {
 		// Add shipping class costs.
 		$shipping_classes = $this->wc->get_shipping_classes();
 		foreach ( $shipping_classes as $shipping_class ) {
-			$shipping_class_cost = $this->convert_to_decimal_with_dot( (string) $method->get_option( 'class_cost_' . $shipping_class->term_id ) );
+			$shipping_class_cost = $this->convert_to_standard_decimal( (string) $method->get_option( 'class_cost_' . $shipping_class->term_id ) );
 			if ( is_numeric( $shipping_class_cost ) ) {
 				// Add the flat rate cost to the shipping class cost.
 				$class_rates[ $shipping_class->slug ] = [

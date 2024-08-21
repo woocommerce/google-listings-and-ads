@@ -200,18 +200,28 @@ trait PluginHelper {
 	}
 
 	/**
-	 * Replace any decimal separators, like commas, with dots for decimal places.
-	 * This is useful with functions like is_numeric as it doesn't recognize commas as decimal separators.
+	 * It tries to convert a string to a decimal number using the dot as the decimal separator.
+	 * This is useful with functions like is_numeric as it doesn't recognize commas as decimal separators or any thousands separator.
 	 * Note: Using wc_format_decimal with a dot as the decimal separator (WC -> Settings -> General) will strip out commas but won’t replace them with dots.
 	 * For example, wc_format_decimal('2,4') will return 24 instead of 2.4.
 	 *
-	 * @param string $number The number to convert.
+	 * @param string $numeric_string The number to convert.
 	 *
-	 * @return string The number as a valid decimal.
+	 * @return string The number as a standard decimal. 1.245,63 -> 1245.65
 	 */
-	protected function convert_to_decimal_with_dot( string $number ) {
-		$locale   = localeconv();
-		$decimals = [ wc_get_price_decimal_separator(), $locale['decimal_point'], $locale['mon_decimal_point'], ',' ];
-		return str_replace( $decimals, '.', (string) $number );
+	protected function convert_to_standard_decimal( string $numeric_string ): string {
+		$locale = localeconv();
+
+		$separators = [ wc_get_price_decimal_separator(), wc_get_price_thousand_separator(), $locale['thousands_sep'], $locale['mon_thousands_sep'], $locale['decimal_point'], $locale['mon_decimal_point'], ',' ];
+
+		if ( wc_get_price_decimals() > 0 ) {
+			// Replace all posible separators with dots.
+			$numeric_string = str_replace( $separators, '.', $numeric_string );
+			// Leave only the last dot that is the decimal separator.
+			return (string) preg_replace( '/\.(?=.*\.)/', '', $numeric_string );
+		} else {
+			// If no decimals remove all separators.
+			return str_replace( $separators, '', $numeric_string );
+		}
 	}
 }

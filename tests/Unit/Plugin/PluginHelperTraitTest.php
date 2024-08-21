@@ -27,23 +27,31 @@ class PluginHelperTraitTest extends TestCase {
 		// phpcs:ignore Universal.Classes.RequireAnonClassParentheses.Missing
 		$this->trait = new class {
 			use PluginHelper {
-				convert_to_decimal_with_dot as public;
+				convert_to_standard_decimal as public;
 			}
 		};
 	}
 
 
 	public function test_comma_decimals_gets_converted_to_dot_decimals() {
-		$this->assertEquals( '10.5', $this->trait->convert_to_decimal_with_dot( '10,5' ) );
+		$this->assertEquals( '10.5', $this->trait->convert_to_standard_decimal( '10,5' ) );
 	}
 
 	public function test_dot_decimals_remain_unchanged() {
-		$this->assertEquals( '10.5', $this->trait->convert_to_decimal_with_dot( '10.5' ) );
+		$this->assertEquals( '10.5', $this->trait->convert_to_standard_decimal( '10.5' ) );
 	}
 
 	public function test_invalid_numbers() {
-		$this->assertEquals( 'no valid. number', $this->trait->convert_to_decimal_with_dot( 'no valid, number' ) );
+		$this->assertEquals( 'no valid. number', $this->trait->convert_to_standard_decimal( 'no valid, number' ) );
 	}
+
+	public function test_with_thousands_separator() {
+		$this->assertEquals( '1234.5', $this->trait->convert_to_standard_decimal( '1'.wc_get_price_thousand_separator().'234,5' ) );
+	}
+
+	public function test_with_no_decimals() {
+		$this->assertEquals( '12345', $this->trait->convert_to_standard_decimal( '12345' ) );
+	}	
 
 	public function test_with_different_wc_decimal_separator() {
 		add_filter(
@@ -51,7 +59,7 @@ class PluginHelperTraitTest extends TestCase {
 			[ $this, 'callback_filter_decimal_separator' ]
 		);
 
-		$this->assertEquals( '10.5', $this->trait->convert_to_decimal_with_dot( '10-5' ) );
+		$this->assertEquals( '10.5', $this->trait->convert_to_standard_decimal( '10-5' ) );
 	}
 
 	public function callback_filter_decimal_separator() {
