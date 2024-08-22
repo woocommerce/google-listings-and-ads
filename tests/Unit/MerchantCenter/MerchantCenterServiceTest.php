@@ -524,13 +524,7 @@ class MerchantCenterServiceTest extends UnitTest {
 					'countries' => [ 'GB' ],
 				],
 				[],
-				[
-					'website_live'            => true,
-					'checkout_process_secure' => true,
-					'payment_methods_visible' => true,
-					'refund_tos_visible'      => true,
-					'contact_info_visible'    => true,
-				]
+				[]
 			);
 		$this->shipping_time_query->method( 'get_results' )
 			->willReturn(

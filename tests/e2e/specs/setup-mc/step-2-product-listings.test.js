@@ -65,11 +65,6 @@ test.describe( 'Configure product listings', () => {
 			productListingsPage.fulfillSettings(
 				{
 					shipping_rate: 'automatic',
-					website_live: false,
-					checkout_process_secure: false,
-					payment_methods_visible: false,
-					refund_tos_visible: false,
-					contact_info_visible: false,
 				},
 				200,
 				[ 'GET' ]
