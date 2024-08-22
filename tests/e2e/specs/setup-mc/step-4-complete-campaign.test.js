@@ -140,6 +140,27 @@ test.describe( 'Complete your campaign', () => {
 		).toBeVisible();
 	} );
 
+	test.describe( 'Free Ad Credit', () => {
+		test( 'shoud not see the Free Ad Credit section if the account is not eligible', async () => {
+			await expect(
+				page.getByText(
+					'Spend $500 to get $500 in Google Ads credits!'
+				)
+			).not.toBeVisible();
+		} );
+
+		test( 'should see the Free Ad Credit section if the account is eligible', async () => {
+			await setupAdsAccountPage.mockAdsSubAccountConnected();
+			await completeCampaign.goto();
+
+			await expect(
+				page.getByText(
+					'Spend $500 to get $500 in Google Ads credits!'
+				)
+			).toBeVisible();
+		} );
+	} );
+
 	test.describe( 'FAQ panels', () => {
 		test( 'should see five questions in FAQ', async () => {
 			const faqTitles = getFAQPanelTitle( page );

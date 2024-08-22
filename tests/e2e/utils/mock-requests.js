@@ -547,7 +547,7 @@ export default class MockRequests {
 	 * @param {number} [id=12345]
 	 * @return {Promise<void>}
 	 */
-	async mockAdsSubAccountConnected( id = 12345 ) {
+	async mockAdsSubAccountConnected( id = 123456 ) {
 		await this.fulfillAdsConnection( {
 			id,
 			sub_account: true,
