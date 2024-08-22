@@ -668,12 +668,6 @@ class AccountService implements OptionsAwareInterface, Service {
 			}
 
 			$status = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [];
-
-			if ( isset( $status['error'] ) ) {
-				$this->delete_wpcom_api_status_transient();
-				return false;
-			}
-
 			$transients->set( TransientsInterface::WPCOM_API_STATUS, $status, MINUTE_IN_SECONDS * 30 );
 		}
 

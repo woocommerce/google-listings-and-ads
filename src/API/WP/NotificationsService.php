@@ -171,10 +171,11 @@ class NotificationsService implements Service, OptionsAwareInterface {
 	 * If the Notifications are ready
 	 * This happens when the WPCOM API is Authorized and the feature is enabled.
 	 *
+	 * @param bool $with_health_check If true. Performs a remote request to WPCOM API to get the status.
 	 * @return bool
 	 */
-	public function is_ready(): bool {
-		return $this->options->is_wpcom_api_authorized() && $this->is_enabled() && $this->merchant_center->is_ready_for_syncing() && $this->account_service->is_wpcom_api_status_healthy();
+	public function is_ready( bool $with_health_check = true ): bool {
+		return $this->options->is_wpcom_api_authorized() && $this->is_enabled() && $this->merchant_center->is_ready_for_syncing() && ( $with_health_check === false || $this->account_service->is_wpcom_api_status_healthy() );
 	}
 
 	/**
