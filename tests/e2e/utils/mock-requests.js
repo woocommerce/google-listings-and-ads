@@ -542,6 +542,23 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mock Google Ads account as connected.
+	 *
+	 * @param {number} [id=12345]
+	 * @return {Promise<void>}
+	 */
+	async mockAdsSubAccountConnected( id = 12345 ) {
+		await this.fulfillAdsConnection( {
+			id,
+			sub_account: true,
+			created_timestamp: Date.now(),
+			currency: 'TWD',
+			symbol: 'NT$',
+			status: 'connected',
+		} );
+	}
+
+	/**
 	 * Mock MC as connected.
 	 *
 	 * @param {number} id

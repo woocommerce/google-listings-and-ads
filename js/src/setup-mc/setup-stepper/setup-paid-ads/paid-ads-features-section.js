@@ -13,6 +13,9 @@ import GridiconGift from 'gridicons/dist/gift';
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import CampaignPreview from '.~/components/paid-ads/campaign-preview';
+import FreeAdCredit from '.~/components/free-ad-credit';
+import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import './paid-ads-features-section.scss';
 
 function FeatureList( { hideBudgetContent } ) {
@@ -68,6 +71,8 @@ export default function PaidAdsFeaturesSection( {
 	skipButton,
 	continueButton,
 } ) {
+	const hasFreeAdCredit = useFreeAdCredit();
+
 	return (
 		<Section
 			className="gla-paid-ads-features-section"
@@ -103,32 +108,36 @@ export default function PaidAdsFeaturesSection( {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<Flex
-						className="gla-paid-ads-features-section__content"
-						align="center"
-						gap={ 9 }
-					>
-						<FlexBlock>
-							<Section.Card.Title>
-								{ __(
-									'Drive more sales with Performance Max',
-									'google-listings-and-ads'
-								) }
-							</Section.Card.Title>
-							<div className="gla-paid-ads-features-section__subtitle">
-								{ __(
-									'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your products are included as soon as they’re approved.',
-									'google-listings-and-ads'
-								) }
-							</div>
-							<FeatureList
-								hideBudgetContent={ hideBudgetContent }
-							/>
-						</FlexBlock>
-						<FlexItem>
-							<CampaignPreview />
-						</FlexItem>
-					</Flex>
+					<VerticalGapLayout size="medium">
+						<Flex
+							className="gla-paid-ads-features-section__content"
+							align="center"
+							gap={ 9 }
+						>
+							<FlexBlock>
+								<Section.Card.Title>
+									{ __(
+										'Drive more sales with Performance Max',
+										'google-listings-and-ads'
+									) }
+								</Section.Card.Title>
+								<div className="gla-paid-ads-features-section__subtitle">
+									{ __(
+										'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your products are included as soon as they’re approved.',
+										'google-listings-and-ads'
+									) }
+								</div>
+								<FeatureList
+									hideBudgetContent={ hideBudgetContent }
+								/>
+							</FlexBlock>
+							<FlexItem>
+								<CampaignPreview />
+							</FlexItem>
+						</Flex>
+
+						{ hasFreeAdCredit && <FreeAdCredit /> }
+					</VerticalGapLayout>
 				</Section.Card.Body>
 				<Section.Card.Footer hidden={ hideFooterButtons }>
 					{ skipButton }
