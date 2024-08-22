@@ -22,13 +22,12 @@ import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
+import SkipPaidAdsConfirmationModal from './skip-paid-ads-confirmation-modal';
 import { getProductFeedUrl } from '.~/utils/urls';
 import clientSession from './clientSession';
 import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
-
-const ACTION_COMPLETE = 'complete-ads';
-const ACTION_SKIP = 'skip-ads';
+import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
 
 /**
  * Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
@@ -76,6 +75,10 @@ export default function SetupPaidAds() {
 	);
 	const [ paidAds, setPaidAds ] = useState( {} );
 	const [ completing, setCompleting ] = useState( null );
+	const [
+		showSkipPaidAdsConfirmationModal,
+		setShowSkipPaidAdsConfirmationModal,
+	] = useState( false );
 
 	const handleContinuePaidAdsSetupClick = () => {
 		setShowPaidAdsSetup( true );
@@ -117,6 +120,14 @@ export default function SetupPaidAds() {
 		await finishOnboardingSetup( event, onBeforeFinish );
 	};
 
+	const handleSkipModal = () => {
+		setShowSkipPaidAdsConfirmationModal( true );
+	};
+
+	const handleCancelSkipConfirmationClick = () => {
+		setShowSkipPaidAdsConfirmationModal( false );
+	};
+
 	// The status check of Google Ads account connection is included in `paidAds.isReady`,
 	// because when there is no connected account, it will disable the budget section and set the `amount` to `undefined`.
 	const disabledComplete = completing === ACTION_SKIP || ! paidAds.isReady;
@@ -150,7 +161,10 @@ export default function SetupPaidAds() {
 				text={ text }
 				loading={ completing === ACTION_SKIP }
 				disabled={ disabledSkip }
-				onClick={ finishOnboardingSetup }
+				onClick={
+					// Show the skip modal only for the "Skip this step for now" button only.
+					showPaidAdsSetup ? finishOnboardingSetup : handleSkipModal
+				}
 				eventName="gla_onboarding_complete_button_click"
 				eventProps={ eventProps }
 			/>
@@ -194,6 +208,15 @@ export default function SetupPaidAds() {
 				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
 			) }
 			<FaqsSection />
+
+			{ showSkipPaidAdsConfirmationModal && (
+				<SkipPaidAdsConfirmationModal
+					onRequestClose={ handleCancelSkipConfirmationClick }
+					onSkipConfirmation={ handleCompleteClick }
+					isProcessing={ !! completing }
+				/>
+			) }
+
 			<StepContentFooter hidden={ ! showPaidAdsSetup }>
 				<Flex justify="right" gap={ 4 }>
 					{ createSkipButton(
