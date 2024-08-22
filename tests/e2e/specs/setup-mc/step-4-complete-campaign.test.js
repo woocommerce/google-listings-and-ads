@@ -302,9 +302,25 @@ test.describe( 'Complete your campaign', () => {
 						textAfterRemoveCountry
 					);
 				} );
+
+				test( 'should have the tip text "We recommend running campaigns at least 1 month so it can learn to optimize for your business."', async () => {
+					const tipText =
+						setupBudgetPage.getBudgetRecommendationTip();
+					await expect( tipText ).toContainText(
+						'We recommend running campaigns at least 1 month so it can learn to optimize for your business.'
+					);
+				} );
 			} );
 
 			test.describe( 'Set up budget', () => {
+				test( '"Daily average cost" input should have highest value set', async () => {
+					const dailyAverageCostInput =
+						setupBudgetPage.getBudgetInput();
+					await expect( dailyAverageCostInput ).toHaveValue(
+						'20.00'
+					);
+				} );
+
 				test( 'should see the low budget tip when the buget is set lower than the recommended value', async () => {
 					await setupBudgetPage.fillBudget( '1' );
 					const lowBudgetTip = setupBudgetPage.getLowerBudgetTip();

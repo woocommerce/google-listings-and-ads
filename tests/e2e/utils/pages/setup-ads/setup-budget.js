@@ -13,6 +13,15 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
+	 * Get budget recommendation tip section.
+	 *
+	 * @return {import('@playwright/test').Locator} The budget recommendation text row.
+	 */
+	getBudgetRecommendationTip() {
+		return this.page.locator( '.components-tip p' );
+	}
+
+	/**
 	 * Get budget recommendation text row.
 	 *
 	 * @return {import('@playwright/test').Locator} The budget recommendation text row.
