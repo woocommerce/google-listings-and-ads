@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.6
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.8.2
+Stable tag: 2.8.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,11 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 2.8.3 - 2024-08-20 =
+* Fix - Return empty array props as empty objects in WCOM Proxy responses.
+* Tweak - Display additional context in error message when Google Ads account limit reached.
+* Tweak - Upgrade readme details in WPORG.
+
 = 2.8.2 - 2024-08-14 =
 * Fix - Disconnecting all accounts when WPCOM connection is not granted.
 * Fix - Error when Google Merchant Center account is undefined while checking the notification service enabled property.
@@ -155,9 +160,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Add - Enable labeling of Ads campaigns.
 * Tweak - Update doc links references.
 * Update - Enable Page Size Parameter in Campaigns Endpoint.
-
-= 2.8.0 - 2024-07-31 =
-* Add Google API Pull method.
-* Rebranding Google Listings and Ads with Google for WooCommerce.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
