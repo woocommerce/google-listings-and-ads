@@ -14,15 +14,10 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import { ACTION_SKIP } from './constants';
 
 /**
- * Triggered when the request review is successful
+ * Triggered when the skip button is clicked
+ * // TODO: to review
  *
- * @event gla_request_review_success
- */
-
-/**
- * Triggered when the request review fails
- *
- * @event gla_request_review_failure
+ * @event gla_skip_paid_ads_modal_confirm_button_click
  */
 
 /**
@@ -39,10 +34,6 @@ const SkipPaidAdsConfirmationModal = ( {
 	onSkipConfirmation = noop,
 	isProcessing = false,
 } ) => {
-	const handleSkipConfirmationClick = ( event ) => {
-		onSkipConfirmation( event );
-	};
-
 	return (
 		<AppModal
 			className="gla-ads-skip-paid-ads-modal"
@@ -55,7 +46,7 @@ const SkipPaidAdsConfirmationModal = ( {
 					key="yes"
 					// TODO: confirm the eventName
 					eventName="gla_skip_paid_ads_modal_confirm_button_click"
-					onClick={ handleSkipConfirmationClick }
+					onClick={ onSkipConfirmation }
 					loading={ isProcessing }
 					data-action={ ACTION_SKIP }
 					isPrimary

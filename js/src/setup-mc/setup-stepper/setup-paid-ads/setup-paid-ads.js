@@ -120,11 +120,11 @@ export default function SetupPaidAds() {
 		await finishOnboardingSetup( event, onBeforeFinish );
 	};
 
-	const handleSkipModal = () => {
+	const handleShowSkipPaidAdsConfirmationModal = () => {
 		setShowSkipPaidAdsConfirmationModal( true );
 	};
 
-	const handleCancelSkipConfirmationClick = () => {
+	const handleCancelSkipPaidAdsClick = () => {
 		setShowSkipPaidAdsConfirmationModal( false );
 	};
 
@@ -163,8 +163,11 @@ export default function SetupPaidAds() {
 				disabled={ disabledSkip }
 				onClick={
 					// Show the skip modal only for the "Skip this step for now" button only.
-					showPaidAdsSetup ? finishOnboardingSetup : handleSkipModal
+					showPaidAdsSetup
+						? finishOnboardingSetup
+						: handleShowSkipPaidAdsConfirmationModal
 				}
+				// TODO: might want to review eventName and eventProps
 				eventName="gla_onboarding_complete_button_click"
 				eventProps={ eventProps }
 			/>
@@ -211,7 +214,7 @@ export default function SetupPaidAds() {
 
 			{ showSkipPaidAdsConfirmationModal && (
 				<SkipPaidAdsConfirmationModal
-					onRequestClose={ handleCancelSkipConfirmationClick }
+					onRequestClose={ handleCancelSkipPaidAdsClick }
 					onSkipConfirmation={ finishOnboardingSetup }
 					isProcessing={ !! completing }
 				/>
