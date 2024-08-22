@@ -101,15 +101,15 @@ const SetupAccounts = ( props ) => {
 	 * and the whole page would display this AppSpinner, which is not desired.
 	 */
 	const isLoadingJetpack = ! jetpack;
-	const isLoadingGoogle = jetpack?.active === 'yes' && ! google;
+	const isJetpackActive = jetpack?.active === 'yes';
+
+	const isLoadingGoogle = isJetpackActive && ! google;
 	const isLoadingGoogleMCAccount =
 		google?.active === 'yes' && scope.gmcRequired && ! googleMCAccount;
 
 	if ( isLoadingJetpack || isLoadingGoogle || isLoadingGoogleMCAccount ) {
 		return <AppSpinner />;
 	}
-
-	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
 
 	// Ads is ready when we have a connection and verified and verified access.
 	// Billing is not required, and the 'link_merchant' step will be resolved
@@ -155,8 +155,10 @@ const SetupAccounts = ( props ) => {
 				) }
 			>
 				<VerticalGapLayout size="large">
-					<WPComAccountCard jetpack={ jetpack } />
-					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
+					{ ! isJetpackActive && (
+						<WPComAccountCard jetpack={ jetpack } />
+					) }
+					<GoogleAccountCard disabled={ ! isJetpackActive } />
 					<GoogleAdsAccountCard />
 				</VerticalGapLayout>
 			</Section>
