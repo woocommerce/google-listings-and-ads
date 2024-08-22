@@ -33,11 +33,11 @@ import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
 const defaultPaidAds = {
 	amount: 0,
-	country: undefined,
 	countryCodes: [],
-	dailyBudget: 0,
+	recommendations: [],
 	isValid: false,
 	isReady: false,
+	recommendationData: {},
 };
 
 /*
@@ -101,7 +101,7 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 		useFetchBudgetRecommendationEffect( targetAudience );
 	const { recommendations } = recommendationData || {};
 
-	const { daily_budget: dailyBudget, country } =
+	const { daily_budget: dailyBudget } =
 		recommendations !== undefined
 			? getHighestBudget( recommendations )
 			: {};
@@ -158,12 +158,11 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 			currentPaidAds = {
 				...currentPaidAds,
 				amount: dailyBudget ? dailyBudget : currentPaidAds.amount,
-				country: country ? country : currentPaidAds.country,
-				dailyBudget,
+				recommendationData,
 			};
 			return resolveInitialPaidAds( currentPaidAds, targetAudience );
 		} );
-	}, [ targetAudience, dailyBudget, country ] );
+	}, [ targetAudience, dailyBudget, recommendationData ] );
 
 	if ( ! targetAudience || ! billingStatus ) {
 		return (
@@ -176,8 +175,7 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 	const initialValues = {
 		countryCodes: paidAds.countryCodes,
 		amount: paidAds.amount,
-		country: paidAds.country,
-		dailyBudget: paidAds.dailyBudget,
+		recommendationData: paidAds.recommendationData,
 	};
 
 	return (

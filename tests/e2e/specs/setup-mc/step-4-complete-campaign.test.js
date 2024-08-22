@@ -84,6 +84,24 @@ test.describe( 'Complete your campaign', () => {
 				[ 'GET' ]
 			),
 
+			completeCampaign.fulfillBudgetRecommendations( {
+				currency: 'USD',
+				recommendations: [
+					{
+						country: 'US',
+						daily_budget: 10,
+					},
+					{
+						country: 'TW',
+						daily_budget: 8,
+					},
+					{
+						country: 'GB',
+						daily_budget: 20,
+					},
+				],
+			} ),
+
 			// The following mocks are requests will happen after completing the onboarding
 			completeCampaign.mockSuccessfulSettingsSyncRequest(),
 
@@ -266,15 +284,10 @@ test.describe( 'Complete your campaign', () => {
 							textContent
 						);
 
-					const responsePromise =
-						setupBudgetPage.registerBudgetRecommendationResponse();
-
 					await removeCountryFromSearchBox(
 						page,
 						'United Kingdom (UK)'
 					);
-
-					await responsePromise;
 
 					textContent = await setupBudgetPage
 						.getBudgetRecommendationTextRow()
@@ -425,7 +438,9 @@ test.describe( 'Complete your campaign', () => {
 		} );
 
 		test( 'should also see the url contains product-feed', async () => {
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
+			await expect( page.url() ).toMatch(
+				/path=%2Fgoogle%2Fproduct-feed/
+			);
 		} );
 
 		test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
