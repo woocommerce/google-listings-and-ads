@@ -11,7 +11,7 @@ import { noop } from 'lodash';
 import AppModal from '.~/components/app-modal';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import { ACTION_COMPLETE } from './constants';
+import { ACTION_SKIP } from './constants';
 
 /**
  * Triggered when the request review is successful
@@ -53,10 +53,11 @@ const SkipPaidAdsConfirmationModal = ( {
 				</AppButton>,
 				<AppButton
 					key="yes"
+					// TODO: confirm the eventName
 					eventName="gla_skip_paid_ads_modal_confirm_button_click"
 					onClick={ handleSkipConfirmationClick }
 					loading={ isProcessing }
-					data-action={ ACTION_COMPLETE }
+					data-action={ ACTION_SKIP }
 					isPrimary
 				>
 					{ __( 'Yes', 'google-listings-and-ads' ) }
@@ -86,6 +87,7 @@ const SkipPaidAdsConfirmationModal = ( {
 						Link: (
 							<AppDocumentationLink
 								href="https://support.google.com/google-ads/answer/10724817"
+								// TODO: review context and linkId values
 								context="skip-paid-ads-modal"
 								linkId="skip-paid-ads-modal-learn-more-performance-max"
 							/>

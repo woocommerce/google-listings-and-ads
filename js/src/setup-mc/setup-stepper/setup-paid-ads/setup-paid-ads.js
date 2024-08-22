@@ -212,7 +212,7 @@ export default function SetupPaidAds() {
 			{ showSkipPaidAdsConfirmationModal && (
 				<SkipPaidAdsConfirmationModal
 					onRequestClose={ handleCancelSkipConfirmationClick }
-					onSkipConfirmation={ handleCompleteClick }
+					onSkipConfirmation={ finishOnboardingSetup }
 					isProcessing={ !! completing }
 				/>
 			) }
