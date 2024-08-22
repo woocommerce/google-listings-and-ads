@@ -30,7 +30,7 @@ const nonInteractableProps = {
  */
 const BudgetSection = ( { formProps, disabled = false, children } ) => {
 	const { getInputProps, setValue, values } = formProps;
-	const { countryCodes, amount } = values;
+	const { countryCodes, amount, country, dailyBudget } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
@@ -92,7 +92,10 @@ const BudgetSection = ( { formProps, disabled = false, children } ) => {
 						{ countryCodes.length > 0 && (
 							<BudgetRecommendation
 								countryCodes={ countryCodes }
-								dailyAverageCost={ amount }
+								{ ...getInputProps( 'amount' ) }
+								country={ country }
+								currency={ currency }
+								dailyBudget={ dailyBudget }
 							/>
 						) }
 					</Section.Card.Body>
