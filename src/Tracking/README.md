@@ -322,7 +322,6 @@ When a documentation link is clicked.
 `href` | `string` | link's URL
 #### Emitters
 - [`AppDocumentationLink`](../../js/src/components/app-documentation-link/index.js#L29)
-- [`ChooseAudienceSection`](../../js/src/components/free-listings/choose-audience-section/choose-audience-section.js#L29) with `{ context: 'setup-mc-audience', link_id: 'site-language', href: 'https://support.google.com/merchants/answer/160637' }`
 - [`ConnectAds`](../../js/src/components/google-ads-account-card/connect-ads/index.js#L42) with `{ context: 'setup-ads-connect-account', link_id: 'connect-sub-account', href: 'https://support.google.com/google-ads/answer/6139186' }`
 - [`ConnectGoogleAccountCard`](../../js/src/components/google-account-card/connect-google-account-card.js#L23) with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-listings-and-ads/#required-google-permissions' }`
 - [`ContactInformation`](../../js/src/components/contact-information/index.js#L91)
@@ -565,10 +564,10 @@ Clicking on the button to connect an existing Google Merchant Center account.
 #### Emitters
 - [`ConnectMC`](../../js/src/components/google-mc-account-card/connect-mc/index.js#L42)
 
-### [`gla_mc_account_connect_different_account_button_click`](../../js/src/components/google-mc-account-card/connected-google-mc-account-card.js#L21)
+### [`gla_mc_account_connect_different_account_button_click`](../../js/src/components/google-mc-account-card/connected-google-mc-account-card.js#L29)
 Clicking on the "connect to a different Google Merchant Center account" button.
 #### Emitters
-- [`ConnectedGoogleMCAccountCard`](../../js/src/components/google-mc-account-card/connected-google-mc-account-card.js#L36)
+- [`ConnectedGoogleMCAccountCard`](../../js/src/components/google-mc-account-card/connected-google-mc-account-card.js#L45)
 
 ### [`gla_mc_account_create_button_click`](../../js/src/components/google-mc-account-card/terms-modal/index.js#L16)
 Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
@@ -629,7 +628,7 @@ A modal is closed.
 `action` | `string` | Indicates the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, generic "Cancel" button, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked    - `confirm` is used when the button "Confirm", "Save"  or similar generic "Accept" button is clicked
 #### Emitters
 - [`AttributeMappingTable`](../../js/src/attribute-mapping/attribute-mapping-table.js#L59) When any of the modals is closed
-- [`Dashboard`](../../js/src/dashboard/index.js#L33) when CES modal is closed.
+- [`Dashboard`](../../js/src/dashboard/index.js#L34) when CES modal is closed.
 - [`ReviewRequest`](../../js/src/product-feed/review-request/index.js#L31) with `action: 'request-review-success' | 'maybe-later' | 'dismiss', context: REQUEST_REVIEW`
 - [`SubmissionSuccessGuide`](../../js/src/product-feed/submission-success-guide/index.js#L159) with `action: 'create-paid-campaign' | 'maybe-later' | 'view-product-feed' | 'dismiss'`
 
