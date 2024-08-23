@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 /**
  * Class AbstractAttributeTest
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product\Attributes
  */
 class AbstractAttributeTest extends UnitTest {
 	public function test_casts_value_based_on_value_type() {
