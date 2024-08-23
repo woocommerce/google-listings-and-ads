@@ -179,4 +179,72 @@ export default class CompleteCampaign extends MockRequests {
 			mcSettingsSyncRequestPromise,
 		] );
 	}
+
+	/**
+	 * Retrieves the "Yes" button from the skip paid ads creation modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the "Yes" button.
+	 */
+	getYesButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Yes',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Clicks the "Yes" button in the skip paid ads creation modal.
+	 *
+	 * @return {Promise<void>} Resolves when the click action is completed and the page has loaded.
+	 */
+	async clickYesButton() {
+		const button = this.getYesButton();
+		await button.click();
+		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+	}
+
+	/**
+	 * Retrieves the "No" button from the skip paid ads creation modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the "No" button.
+	 */
+	getNoButton() {
+		return this.page.getByRole( 'button', {
+			name: 'No',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Clicks the "No" button in the skip paid ads creation modal.
+	 *
+	 * @return {Promise<void>} Resolves when the click action is completed and the page has loaded.
+	 */
+	async clickNoButton() {
+		const button = this.getNoButton();
+		await button.click();
+		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+	}
+
+	/**
+	 * Retrieves the skip paid ads creation modal element.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the modal containing the text "Skip setting up ads?".
+	 */
+	getSkipPaidAdsCreationModal() {
+		return this.page.locator( '.components-modal__content' ).filter( {
+			hasText: 'Skip setting up ads?',
+		} );
+	}
+
+	/**
+	 * Retrieves the setup success modal element.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the modal containing the text "You’ve successfully set up Google for WooCommerce!".
+	 */
+	getSetupSuccessModal() {
+		return this.page.locator( '.components-modal__content' ).filter( {
+			hasText: 'You’ve successfully set up Google for WooCommerce!',
+		} );
+	}
 }
