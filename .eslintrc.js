@@ -66,8 +66,11 @@ module.exports = {
 		],
 		// Turn it off temporarily because it involves a lot of re-alignment. We can revisit it later.
 		'jsdoc/check-line-alignment': 'off',
-		// The JS package `tracking-jsdoc` changes the definition of the `@fires` tag.
-		// List shared `@event` names to avoid false alarms.
+		// Originally, `@fires` tag indicates that when a method is called, it fires
+		// a specified type of event that can be listened to, e.g. a native `CustomEvent`.
+		// The JS package `tracking-jsdoc` changes the definition of the `@fires` tag to
+		// be able to indicate a tracking event will be sent. Therefore, here we list
+		// shared `@event` names to avoid false alarms.
 		'jsdoc/no-undefined-types': [
 			'error',
 			{
