@@ -24,20 +24,6 @@ export const trackEvent = ( eventName, eventParams ) => {
 };
 
 /**
- * Track an add_to_cart event.
- *
- * @param {Product} product
- * @param {number} quantity
- */
-export const trackAddToCartEvent = ( product, quantity = 1 ) => {
-	trackEvent( 'add_to_cart', {
-		ecomm_pagetype: 'cart',
-		event_category: 'ecommerce',
-		items: [ getCartItemObject( product, quantity ) ],
-	} );
-};
-
-/**
  * Formats data into a cart Item object.
  *
  * @param {Product} product
@@ -66,6 +52,20 @@ export const getCartItemObject = ( product, quantity ) => {
 	}
 
 	return item;
+};
+
+/**
+ * Track an add_to_cart event.
+ *
+ * @param {Product} product
+ * @param {number} quantity
+ */
+export const trackAddToCartEvent = ( product, quantity = 1 ) => {
+	trackEvent( 'add_to_cart', {
+		ecomm_pagetype: 'cart',
+		event_category: 'ecommerce',
+		items: [ getCartItemObject( product, quantity ) ],
+	} );
 };
 
 /**

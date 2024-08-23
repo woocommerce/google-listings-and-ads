@@ -75,7 +75,7 @@ describe( 'ImagesSelector', () => {
 		render( <ImagesSelector imageConfig={ imageConfig } /> );
 		await userEvent.click( getAddButton() );
 
-		expect( openSelector ).toBeCalledWith( undefined );
+		expect( openSelector ).toHaveBeenCalledWith( undefined );
 	} );
 
 	it( 'When clicking on a replace image button, the `openSelector` should be called with the corresponding image ID.', async () => {
@@ -88,7 +88,7 @@ describe( 'ImagesSelector', () => {
 		const buttons = getReplaceButtons();
 		await userEvent.click( buttons.at( 0 ) );
 
-		expect( openSelector ).toBeCalledWith( urlA );
+		expect( openSelector ).toHaveBeenCalledWith( urlA );
 	} );
 
 	it( 'When clicking on a remove image button, the corresponding image should be removed.', async () => {
@@ -103,7 +103,7 @@ describe( 'ImagesSelector', () => {
 		await userEvent.click( buttons.at( 1 ) );
 
 		expect( getImgUrls() ).toEqual( [ urlA, urlC ] );
-		expect( onChange ).toBeCalledWith( [ urlA, urlC ] );
+		expect( onChange ).toHaveBeenCalledWith( [ urlA, urlC ] );
 	} );
 
 	it( 'When the number of images reaches the maximum limit, it should disable the add image button and vice versa.', async () => {
@@ -195,7 +195,7 @@ describe( 'ImagesSelector', () => {
 		await act( async () => onSelect( imageB ) );
 
 		expect( getImgUrls() ).toEqual( [ urlA, urlB ] );
-		expect( onChange ).toBeCalledWith( [ urlA, urlB ] );
+		expect( onChange ).toHaveBeenCalledWith( [ urlA, urlB ] );
 	} );
 
 	it( 'When an image is called back for deletion, the image with the same ID should be removed from the image list.', async () => {
@@ -209,7 +209,7 @@ describe( 'ImagesSelector', () => {
 		await act( async () => onDelete( imageB ) );
 
 		expect( getImgUrls() ).toEqual( [ urlA, urlC ] );
-		expect( onChange ).toBeCalledWith( [ urlA, urlC ] );
+		expect( onChange ).toHaveBeenCalledWith( [ urlA, urlC ] );
 	} );
 
 	it( 'When an image called back for addition already has one with the same ID in the image list, it should not be added.', async () => {
@@ -238,7 +238,7 @@ describe( 'ImagesSelector', () => {
 		await act( async () => onSelect( imageC ) );
 
 		expect( getImgUrls() ).toEqual( [ urlC, urlB ] );
-		expect( onChange ).toBeCalledWith( [ urlC, urlB ] );
+		expect( onChange ).toHaveBeenCalledWith( [ urlC, urlB ] );
 	} );
 
 	it( 'When an image is called back for replacement but the previously clicked image has been removed from the image list, it should be pushed to the image list.', async () => {

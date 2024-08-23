@@ -16,7 +16,6 @@ import './index.scss';
  * @param {Object} props
  * @param {string} props.programId Id of a program to be paused.
  * @param {Function} props.onRequestClose Callback to be performed once close action is requested.
- *
  */
 const PauseProgramModal = ( props ) => {
 	const { onPauseCampaign = () => {}, onRequestClose } = props;
