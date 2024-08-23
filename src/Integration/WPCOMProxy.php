@@ -212,9 +212,9 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			return $data;
 		}
 
-		foreach ( array_keys( $data ) as $key ) {
-			if ( is_array( $data[ $key ] ) && empty( $data[ $key ] ) ) {
-				$data[ $key ] = (object) $data[ $key ];
+		foreach ( $data as $key => $value ) {
+			if ( is_array( $data[ $key ] ) && isset( $data[ $key ]['settings'] ) ) {
+				$data[ $key ]['settings'] = (object) $data[ $key ]['settings'];
 			}
 		}
 
@@ -337,6 +337,10 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			$attr = $this->attribute_manager->get_all_aggregated_values( $item );
 			// In case of empty array, convert to object to keep the response consistent.
 			$data['gla_attributes'] = (object) $attr;
+		}
+
+		if ( isset( $data['settings'] ) ) {
+			$data['settings'] = (object) $data['settings'];
 		}
 
 		foreach ( $data['meta_data'] ?? [] as $key => $meta ) {

@@ -458,13 +458,17 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'gla_shipping_times', $response_mapped );
 	}
 
-	public function test_get_empty_data_as_object() {
+	public function test_get_empty_settings_as_object() {
 		// dummy data
 		$data = [
-			'foo'  => 'bar',
-			'var'  => [],
-			'baz'  => null,
-			'bool' => false,
+			[
+				'test'     => [],
+				'settings' => [],
+			],
+			[
+				'test'     => [ 'title' => 'foo' ],
+				'settings' => [ 'title' => 'foo' ],
+			],
 		];
 
 		$proxy = new WPCOMProxy(
@@ -474,10 +478,14 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$this->assertEquals(
 			[
-				'foo'  => 'bar',
-				'var'  => (object) [],
-				'baz'  => null,
-				'bool' => false,
+				[
+					'test'     => [],
+					'settings' => (object) [],
+				],
+				[
+					'test'     => [ 'title' => 'foo' ],
+					'settings' => (object) [ 'title' => 'foo' ],
+				],
 			],
 			$proxy->prepare_data( $data )
 		);
