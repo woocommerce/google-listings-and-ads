@@ -85,6 +85,29 @@ export function getReportQuery( category, type, query, dateReference ) {
 	return reportQuery;
 }
 
+/*
+ * This `replacer` is used with `JSON.stringify` to ensure that an object/array
+ * will be stringified to the same result regardless of the values' order when
+ * it has the same set of keys and values.
+ *
+ * For example, the following two inputs will both result in
+ * '{"a":"","b":["c","d"]}'
+ *
+ * - JSON.stringify( { a: '', b: [ 'c', 'd' ] }, replacer );
+ * - JSON.stringify( { b: [ 'd', 'c' ], a: '' }, replacer );
+ */
+function replacer( key, value ) {
+	if ( value ) {
+		if ( Array.isArray( value ) ) {
+			return [ ...value ].sort();
+		}
+		if ( typeof value === 'object' ) {
+			return Object.fromEntries( Object.entries( value ).sort() );
+		}
+	}
+	return value;
+}
+
 /**
  * Get a key for accessing report data from store state.
  *
@@ -95,7 +118,7 @@ export function getReportQuery( category, type, query, dateReference ) {
  * @return {string} The report key.
  */
 export function getReportKey( category, type, reportQuery ) {
-	const id = JSON.stringify( reportQuery, Object.keys( reportQuery ).sort() );
+	const id = JSON.stringify( reportQuery, replacer );
 	return `${ category }:${ type }:${ id }`;
 }
 

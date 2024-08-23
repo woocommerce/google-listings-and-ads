@@ -31,14 +31,17 @@ describe( 'AudienceSection with multiple countries selector', () => {
 	} );
 
 	test( 'If Audience section is disabled the country field should be disabled', async () => {
+		const user = userEvent.setup();
+
 		render( <AudienceSection { ...defaultProps } disabled={ true } /> );
 
 		const dropdown = await screen.findByRole( 'combobox' );
 		expect( dropdown ).toBeDisabled();
 
 		//Test that input is not editable
-		userEvent.clear( dropdown );
-		userEvent.type( dropdown, 'spa' );
+		expect( dropdown ).toHaveValue( '' );
+		await user.type( dropdown, 'spa' );
+		expect( dropdown ).toHaveValue( '' );
 
 		const options = screen.queryAllByRole( 'checkbox' );
 		expect( options.length ).toBe( 0 );
@@ -46,20 +49,23 @@ describe( 'AudienceSection with multiple countries selector', () => {
 	} );
 
 	test( 'If Audience section is enable the country field should be enable & editable', async () => {
+		const user = userEvent.setup();
+
 		render( <AudienceSection { ...defaultProps } disabled={ false } /> );
 
 		const dropdown = await screen.findByRole( 'combobox' );
 		expect( dropdown ).not.toBeDisabled();
 
 		//Test that input is editable
-		userEvent.clear( dropdown );
-		userEvent.type( dropdown, 'spa' );
+		expect( dropdown ).toHaveValue( '' );
+		await user.type( dropdown, 'spa' );
+		expect( dropdown ).toHaveValue( 'spa' );
 
 		const options = await screen.findAllByRole( 'checkbox' );
 		expect( options.length ).toBeGreaterThan( 0 );
 
 		const firstOption = options[ 0 ];
-		userEvent.click( firstOption );
+		await user.click( firstOption );
 		expect( onChange ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
@@ -96,11 +102,13 @@ describe( 'AudienceSection with single country selector', () => {
 		expect( dropdown ).not.toBeDisabled();
 	} );
 
-	test( 'When selecting another option, the country field should trigger `onChange` callback', () => {
+	test( 'When selecting another option, the country field should trigger `onChange` callback', async () => {
+		const user = userEvent.setup();
+
 		render( <AudienceSection { ...defaultProps } /> );
 
 		const dropdown = screen.queryByRole( 'combobox' );
-		userEvent.selectOptions( dropdown, 'GB' );
+		await user.selectOptions( dropdown, 'GB' );
 
 		expect( onChange ).toHaveBeenCalledTimes( 1 );
 	} );

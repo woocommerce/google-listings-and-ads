@@ -35,7 +35,7 @@ describe( 'ImagesSelector', () => {
 	const imageC = { id: urlC, url: urlC, alt: '' };
 
 	const getImgUrls = () =>
-		screen.getAllByRole( 'img' ).map( ( img ) => img.src );
+		screen.getAllByRole( 'presentation' ).map( ( img ) => img.src );
 
 	const getAddButton = () => screen.getByRole( 'button', { name: /add/i } );
 
@@ -72,13 +72,17 @@ describe( 'ImagesSelector', () => {
 	} );
 
 	it( 'When clicking on add image button, the `openSelector` should be called without an image ID.', async () => {
+		const user = userEvent.setup();
+
 		render( <ImagesSelector imageConfig={ imageConfig } /> );
-		await userEvent.click( getAddButton() );
+		await user.click( getAddButton() );
 
 		expect( openSelector ).toHaveBeenCalledWith( undefined );
 	} );
 
 	it( 'When clicking on a replace image button, the `openSelector` should be called with the corresponding image ID.', async () => {
+		const user = userEvent.setup();
+
 		render(
 			<ImagesSelector
 				imageConfig={ imageConfig }
@@ -86,12 +90,14 @@ describe( 'ImagesSelector', () => {
 			/>
 		);
 		const buttons = getReplaceButtons();
-		await userEvent.click( buttons.at( 0 ) );
+		await user.click( buttons.at( 0 ) );
 
 		expect( openSelector ).toHaveBeenCalledWith( urlA );
 	} );
 
 	it( 'When clicking on a remove image button, the corresponding image should be removed.', async () => {
+		const user = userEvent.setup();
+
 		render(
 			<ImagesSelector
 				imageConfig={ imageConfig }
@@ -100,7 +106,7 @@ describe( 'ImagesSelector', () => {
 			/>
 		);
 		const buttons = getRemoveButtons();
-		await userEvent.click( buttons.at( 1 ) );
+		await user.click( buttons.at( 1 ) );
 
 		expect( getImgUrls() ).toEqual( [ urlA, urlC ] );
 		expect( onChange ).toHaveBeenCalledWith( [ urlA, urlC ] );
@@ -184,6 +190,8 @@ describe( 'ImagesSelector', () => {
 	} );
 
 	it( 'When an image is called back for addition, it should be pushed to the image list.', async () => {
+		const user = userEvent.setup();
+
 		render(
 			<ImagesSelector
 				imageConfig={ imageConfig }
@@ -191,7 +199,7 @@ describe( 'ImagesSelector', () => {
 				onChange={ onChange }
 			/>
 		);
-		await userEvent.click( getAddButton() );
+		await user.click( getAddButton() );
 		await act( async () => onSelect( imageB ) );
 
 		expect( getImgUrls() ).toEqual( [ urlA, urlB ] );
@@ -213,19 +221,23 @@ describe( 'ImagesSelector', () => {
 	} );
 
 	it( 'When an image called back for addition already has one with the same ID in the image list, it should not be added.', async () => {
+		const user = userEvent.setup();
+
 		render(
 			<ImagesSelector
 				imageConfig={ imageConfig }
 				initialImageUrls={ [ urlA ] }
 			/>
 		);
-		await userEvent.click( getAddButton() );
+		await user.click( getAddButton() );
 		await act( async () => onSelect( imageA ) );
 
 		expect( getImgUrls() ).toEqual( [ urlA ] );
 	} );
 
 	it( 'When an image is called back for replacement, it should replace the previously clicked image in the image list.', async () => {
+		const user = userEvent.setup();
+
 		render(
 			<ImagesSelector
 				imageConfig={ imageConfig }
@@ -234,7 +246,7 @@ describe( 'ImagesSelector', () => {
 			/>
 		);
 		const buttons = getReplaceButtons();
-		await userEvent.click( buttons.at( 0 ) );
+		await user.click( buttons.at( 0 ) );
 		await act( async () => onSelect( imageC ) );
 
 		expect( getImgUrls() ).toEqual( [ urlC, urlB ] );
@@ -242,6 +254,8 @@ describe( 'ImagesSelector', () => {
 	} );
 
 	it( 'When an image is called back for replacement but the previously clicked image has been removed from the image list, it should be pushed to the image list.', async () => {
+		const user = userEvent.setup();
+
 		render(
 			<ImagesSelector
 				imageConfig={ imageConfig }
@@ -250,7 +264,7 @@ describe( 'ImagesSelector', () => {
 			/>
 		);
 		const buttons = getReplaceButtons();
-		await userEvent.click( buttons.at( 0 ) );
+		await user.click( buttons.at( 0 ) );
 		await act( async () => onDelete( imageA ) );
 		await act( async () => onSelect( imageC ) );
 
@@ -262,6 +276,8 @@ describe( 'ImagesSelector', () => {
 
 	describe( 'When an image called back for replacement already has one with the same ID in the image list', () => {
 		it( 'should swap their positions.', async () => {
+			const user = userEvent.setup();
+
 			render(
 				<ImagesSelector
 					imageConfig={ imageConfig }
@@ -273,7 +289,7 @@ describe( 'ImagesSelector', () => {
 
 			// Swap from front to back.
 			buttons = getReplaceButtons();
-			await userEvent.click( buttons.at( 0 ) );
+			await user.click( buttons.at( 0 ) );
 			await act( async () => onSelect( imageC ) );
 
 			expect( getImgUrls() ).toEqual( [ urlC, urlB, urlA ] );
@@ -282,7 +298,7 @@ describe( 'ImagesSelector', () => {
 
 			// Swap from back to front.
 			buttons = getReplaceButtons();
-			await userEvent.click( buttons.at( 2 ) );
+			await user.click( buttons.at( 2 ) );
 			await act( async () => onSelect( imageB ) );
 
 			expect( getImgUrls() ).toEqual( [ urlC, urlA, urlB ] );
@@ -291,6 +307,8 @@ describe( 'ImagesSelector', () => {
 		} );
 
 		it( 'and a deletion happened on an image other than the swapping ones, it should swap their positions.', async () => {
+			const user = userEvent.setup();
+
 			render(
 				<ImagesSelector
 					imageConfig={ imageConfig }
@@ -299,7 +317,7 @@ describe( 'ImagesSelector', () => {
 				/>
 			);
 			const buttons = getReplaceButtons();
-			await userEvent.click( buttons.at( 0 ) );
+			await user.click( buttons.at( 0 ) );
 			await act( async () => onDelete( imageB ) );
 			await act( async () => onSelect( imageC ) );
 
@@ -310,6 +328,8 @@ describe( 'ImagesSelector', () => {
 		} );
 
 		it( 'and the same ID one is also the previously clicked image, it should not be added.', async () => {
+			const user = userEvent.setup();
+
 			render(
 				<ImagesSelector
 					imageConfig={ imageConfig }
@@ -317,13 +337,15 @@ describe( 'ImagesSelector', () => {
 				/>
 			);
 			const buttons = getReplaceButtons();
-			await userEvent.click( buttons.at( 0 ) );
+			await user.click( buttons.at( 0 ) );
 			await act( async () => onSelect( imageA ) );
 
 			expect( getImgUrls() ).toEqual( [ urlA, urlB ] );
 		} );
 
 		it( 'but the previously clicked image has been removed from the image list, it should not be added.', async () => {
+			const user = userEvent.setup();
+
 			render(
 				<ImagesSelector
 					imageConfig={ imageConfig }
@@ -331,7 +353,7 @@ describe( 'ImagesSelector', () => {
 				/>
 			);
 			const buttons = getReplaceButtons();
-			await userEvent.click( buttons.at( 0 ) );
+			await user.click( buttons.at( 0 ) );
 			await act( async () => onDelete( imageA ) );
 			await act( async () => onSelect( imageB ) );
 
@@ -339,6 +361,8 @@ describe( 'ImagesSelector', () => {
 		} );
 
 		it( 'When an image is called back for replacement but the previously clicked image has been removed from the image list, it should be pushed to the image list.', async () => {
+			const user = userEvent.setup();
+
 			render(
 				<ImagesSelector
 					imageConfig={ imageConfig }
@@ -347,7 +371,7 @@ describe( 'ImagesSelector', () => {
 				/>
 			);
 			const buttons = getReplaceButtons();
-			await userEvent.click( buttons.at( 0 ) );
+			await user.click( buttons.at( 0 ) );
 			await act( async () => onDelete( imageA ) );
 			await act( async () => onSelect( imageC ) );
 

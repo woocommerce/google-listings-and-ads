@@ -22,7 +22,7 @@ const CampaignNameCell = ( { isConverted, name } ) => {
 		return (
 			<div className="gla-reports__tooltip-campaign-name">
 				<AppTooltip
-					position="top right"
+					placement="top-start"
 					text={ __(
 						'This campaign has been upgraded to Performance Max',
 						'google-listings-and-ads'
