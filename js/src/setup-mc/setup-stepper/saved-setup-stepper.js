@@ -36,7 +36,10 @@ import {
  * @fires gla_setup_mc with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button', 'step3-continue-button', action: 'go-to-step2' | 'go-to-step3' | 'go-to-step4' }`.
  * @fires gla_setup_mc with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button' | 'stepper-step3-button', action: 'go-to-step1' | 'go-to-step2' | 'go-to-step3' }`.
  */
-const SavedSetupStepper = ( { savedStep } ) => {
+const SavedSetupStepper = ( {
+	savedStep,
+	hasConfirmedStoreRequirements = false,
+} ) => {
 	const [ step, setStep ] = useState( savedStep );
 
 	const { settings } = useSettings();
@@ -102,7 +105,11 @@ const SavedSetupStepper = ( { savedStep } ) => {
 	};
 
 	const handleSetupListingsContinue = () => {
-		continueStep( stepNameKeyMap.store_requirements );
+		if ( hasConfirmedStoreRequirements ) {
+			continueStep( stepNameKeyMap.paid_ads );
+		} else {
+			continueStep( stepNameKeyMap.store_requirements );
+		}
 	};
 
 	const handleStoreRequirementsContinue = () => {
@@ -209,19 +216,25 @@ const SavedSetupStepper = ( { savedStep } ) => {
 					),
 					onClick: handleStepClick,
 				},
-				{
-					key: stepNameKeyMap.store_requirements,
-					label: __(
-						'Confirm store requirements',
-						'google-listings-and-ads'
-					),
-					content: (
-						<StoreRequirements
-							onContinue={ handleStoreRequirementsContinue }
-						/>
-					),
-					onClick: handleStepClick,
-				},
+				...( ! hasConfirmedStoreRequirements
+					? [
+							{
+								key: stepNameKeyMap.store_requirements,
+								label: __(
+									'Confirm store requirements',
+									'google-listings-and-ads'
+								),
+								content: (
+									<StoreRequirements
+										onContinue={
+											handleStoreRequirementsContinue
+										}
+									/>
+								),
+								onClick: handleStepClick,
+							},
+					  ]
+					: [] ),
 				{
 					key: stepNameKeyMap.paid_ads,
 					label: __( 'Create a campaign', 'google-listings-and-ads' ),
