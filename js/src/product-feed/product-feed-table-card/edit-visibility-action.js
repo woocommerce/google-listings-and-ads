@@ -62,7 +62,7 @@ export default function EditVisibilityAction( {
 	if ( selectedSize === 0 ) {
 		return (
 			<AppTooltip
-				position="top center"
+				placement="top"
 				text={ __(
 					'Select one or more products to bulk edit',
 					'google-listings-and-ads'
@@ -88,7 +88,7 @@ export default function EditVisibilityAction( {
 			/>
 			<ConditionalTooltip
 				withTooltip={ selectedVisible === null }
-				position="top center"
+				placement="top"
 				text={ tipText }
 			>
 				<AppButton

@@ -53,22 +53,25 @@ describe( 'ClaimAccountButton', () => {
 	} );
 
 	it( 'should forward onClick callback', async () => {
+		const user = userEvent.setup();
 		const onClick = jest.fn();
 		render( <ClaimAccountButton onClick={ onClick } /> );
 
 		expect( onClick ).toHaveBeenCalledTimes( 0 );
 
-		await userEvent.click( screen.getByRole( 'button' ) );
+		await user.click( screen.getByRole( 'button' ) );
 
 		expect( onClick ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'should open the invitation link in a pop-up window', async () => {
+		const user = userEvent.setup();
+
 		render( <ClaimAccountButton /> );
 
 		expect( windowOpen ).toHaveBeenCalledTimes( 0 );
 
-		await userEvent.click( screen.getByRole( 'button' ) );
+		await user.click( screen.getByRole( 'button' ) );
 
 		expect( windowOpen ).toHaveBeenCalledTimes( 1 );
 		expect( windowOpen ).toHaveBeenCalledWith(
@@ -80,10 +83,12 @@ describe( 'ClaimAccountButton', () => {
 	} );
 
 	it( 'should record click events and be aware of extra event properties from filters', async () => {
+		const user = userEvent.setup();
+
 		await expectComponentToRecordEventWithFilteredProperties(
 			ClaimAccountButton,
 			FILTER_ONBOARDING,
-			async () => await userEvent.click( screen.getByRole( 'button' ) ),
+			async () => await user.click( screen.getByRole( 'button' ) ),
 			'gla_open_ads_account_claim_invitation_button_click',
 			[
 				{ context: 'setup-mc', step: '1' },
