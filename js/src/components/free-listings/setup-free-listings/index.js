@@ -109,7 +109,8 @@ const SetupFreeListings = ( {
 			values,
 			shippingTimesData,
 			countries,
-			storeCountryCode
+			storeCountryCode,
+			hideTaxRates
 		);
 	};
 
