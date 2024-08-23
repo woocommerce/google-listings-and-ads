@@ -141,7 +141,8 @@ test.describe( 'Complete your campaign', () => {
 	} );
 
 	test.describe( 'Free Ad Credit', () => {
-		test( 'shoud not see the Free Ad Credit section if the account is not eligible', async () => {
+		test( 'should not see the Free Ad Credit section if the account is not eligible', async () => {
+			await completeCampaign.goto();
 			await expect(
 				page.getByText(
 					'Spend $500 to get $500 in Google Ads credits!'
