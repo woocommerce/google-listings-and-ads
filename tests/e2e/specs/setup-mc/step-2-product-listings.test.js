@@ -69,6 +69,7 @@ test.describe( 'Configure product listings', () => {
 					payment_methods_visible: false,
 					refund_tos_visible: false,
 					contact_info_visible: false,
+					tax_rate: 'destination',
 				},
 				200,
 				[ 'GET' ]
