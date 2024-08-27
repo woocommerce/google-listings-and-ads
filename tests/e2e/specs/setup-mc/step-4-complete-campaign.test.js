@@ -140,30 +140,6 @@ test.describe( 'Complete your campaign', () => {
 		).toBeVisible();
 	} );
 
-	test.describe( 'Free Ad Credit', () => {
-		test( 'should see the Free Ad Credit section if the account is eligible', async () => {
-			await setupAdsAccountPage.mockAdsAccountConnected();
-			await completeCampaign.goto();
-
-			await expect(
-				page.getByText(
-					'Spend $500 to get $500 in Google Ads credits!'
-				)
-			).toBeVisible();
-		} );
-
-		test( 'should not see the Free Ad Credit section if the account is not eligible', async () => {
-			await setupAdsAccountPage.mockAdsAccountDisconnected();
-			await completeCampaign.goto();
-
-			await expect(
-				page.getByText(
-					'Spend $500 to get $500 in Google Ads credits!'
-				)
-			).not.toBeVisible();
-		} );
-	} );
-
 	test.describe( 'FAQ panels', () => {
 		test( 'should see five questions in FAQ', async () => {
 			const faqTitles = getFAQPanelTitle( page );
@@ -465,6 +441,30 @@ test.describe( 'Complete your campaign', () => {
 				await expect( button ).toBeVisible();
 				await expect( button ).toBeEnabled();
 			}
+		} );
+	} );
+
+	test.describe( 'Free Ad Credit', () => {
+		test( 'should not see the Free Ad Credit section if the account is not eligible', async () => {
+			await setupAdsAccountPage.mockAdsAccountDisconnected();
+			await completeCampaign.goto();
+
+			await expect(
+				page.getByText(
+					'Spend $500 to get $500 in Google Ads credits!'
+				)
+			).not.toBeVisible();
+		} );
+
+		test( 'should see the Free Ad Credit section if the account is eligible', async () => {
+			await setupAdsAccountPage.mockAdsAccountConnected();
+			await completeCampaign.goto();
+
+			await expect(
+				page.getByText(
+					'Spend $500 to get $500 in Google Ads credits!'
+				)
+			).toBeVisible();
 		} );
 	} );
 } );
