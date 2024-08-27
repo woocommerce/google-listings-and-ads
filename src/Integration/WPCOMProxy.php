@@ -340,10 +340,6 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 			$data['gla_attributes'] = (object) $attr;
 		}
 
-		if ( isset( $data['settings'] ) ) {
-			$data['settings'] = (object) $data['settings'];
-		}
-
 		foreach ( $data['meta_data'] ?? [] as $key => $meta ) {
 			if ( str_starts_with( $meta->key, '_' ) && ! str_starts_with( $meta->key, '_wc_gla' ) ) {
 				unset( $data['meta_data'][ $key ] );
