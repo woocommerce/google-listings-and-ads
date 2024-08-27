@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useState, useMemo } from '@wordpress/element';
+import { isPlainObject } from 'lodash';
 
 /**
  * Internal dependencies
@@ -97,7 +98,9 @@ export default function CampaignAssetsForm( {
 			hasImportedAssets,
 			isValidAssetGroup: Object.keys( assetGroupErrors ).length === 0,
 			resetAssetGroup( assetGroup ) {
-				const nextAssetGroup = assetGroup || initialAssetGroup;
+				const nextAssetGroup = isPlainObject( assetGroup )
+					? assetGroup
+					: initialAssetGroup;
 				let hasNonEmptyAssets = false;
 
 				Object.keys( emptyAssetGroup ).forEach( ( key ) => {

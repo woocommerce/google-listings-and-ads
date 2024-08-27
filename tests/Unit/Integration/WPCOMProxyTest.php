@@ -1,6 +1,6 @@
 <?php
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
@@ -20,7 +20,7 @@ use WP_REST_Request;
 /**
  * Class WPCOMProxyTest
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration
  */
 class WPCOMProxyTest extends RESTControllerUnitTest {
 

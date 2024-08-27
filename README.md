@@ -63,7 +63,9 @@ Now you can build the files using one of these commands:
 
 Notice this repository has `engine-strict=true` directive set. That means you cannot install dependencies with other Node engines rather than the ones defined in the `engines` directive inside [package.json](./package.json). It's recommended to use [NVM](https://github.com/nvm-sh/nvm) and run `nvm use` before installing the dependencies to be sure you're using the recommended Node version.
 
-We added Node `^18` and npm `^9` to allow dependabot to update our dependencies. But these are not supported versions.
+The `engines` in package.json includes npm `^9` to allow dependabot to update our dependencies. However, it's not the version intended to be used in development.
+
+-   See https://github.com/dependabot/dependabot-core/issues/9277
 
 ## Working with DEWP
 

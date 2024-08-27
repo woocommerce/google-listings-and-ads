@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from '@woocommerce/tracks';
@@ -71,16 +71,12 @@ describe( 'BillingSetupCard', () => {
 		const inspect = jest.fn();
 
 		let onSetupComplete = () => inspect();
-		let rerender;
 
 		// Initial with a not yet set up billing.
 		fetchBillingStatus.mockResolvedValueOnce( { status: 'unknown' } );
-		await act( async () => {
-			const result = render(
-				<BillingSetupCard onSetupComplete={ onSetupComplete } />
-			);
-			rerender = result.rerender;
-		} );
+		const { rerender } = render(
+			<BillingSetupCard onSetupComplete={ onSetupComplete } />
+		);
 
 		expect( fetchBillingStatus ).toHaveBeenCalledTimes( 1 );
 		expect( inspect ).toHaveBeenCalledTimes( 0 );
@@ -88,49 +84,50 @@ describe( 'BillingSetupCard', () => {
 		// Simulate document regains focus to trigger billing status check again.
 		useWindowFocus.mockReturnValueOnce( false );
 		rerender( <BillingSetupCard onSetupComplete={ onSetupComplete } /> );
-		await act( async () => {
-			rerender(
-				<BillingSetupCard onSetupComplete={ onSetupComplete } />
-			);
-		} );
+		rerender( <BillingSetupCard onSetupComplete={ onSetupComplete } /> );
 
 		expect( fetchBillingStatus ).toHaveBeenCalledTimes( 2 );
-		expect( inspect ).toHaveBeenCalledTimes( 1 );
+		await waitFor( async () => {
+			expect( inspect ).toHaveBeenCalledTimes( 1 );
+		} );
 
 		// Change the reference of callback.
 		onSetupComplete = () => inspect();
-		await act( async () => {
-			rerender(
-				<BillingSetupCard onSetupComplete={ onSetupComplete } />
-			);
-		} );
+		rerender( <BillingSetupCard onSetupComplete={ onSetupComplete } /> );
 
 		expect( inspect ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'Should not call back `onSetupComplete` again by the next interval after billing is already approved', async () => {
+		jest.useFakeTimers();
+
 		const onSetupComplete = jest.fn();
 
-		await act( async () => {
-			render( <BillingSetupCard onSetupComplete={ onSetupComplete } /> );
-		} );
+		render( <BillingSetupCard onSetupComplete={ onSetupComplete } /> );
 
 		expect( fetchBillingStatus ).toHaveBeenCalledTimes( 1 );
-		expect( onSetupComplete ).toHaveBeenCalledTimes( 1 );
+		await waitFor( async () => {
+			expect( onSetupComplete ).toHaveBeenCalledTimes( 1 );
+		} );
 
 		await act( async () => {
 			jest.runOnlyPendingTimers();
 		} );
 
 		expect( onSetupComplete ).toHaveBeenCalledTimes( 1 );
+
+		jest.useRealTimers();
+		jest.clearAllTimers();
 	} );
 
 	it( 'should open the billing setup link in a pop-up window', async () => {
+		const user = userEvent.setup();
+
 		render( <BillingSetupCard billingUrl="https://example.com" /> );
 
 		expect( windowOpen ).toHaveBeenCalledTimes( 0 );
 
-		await userEvent.click( screen.getByRole( 'button' ) );
+		await user.click( screen.getByRole( 'button' ) );
 
 		expect( windowOpen ).toHaveBeenCalledTimes( 1 );
 		expect( windowOpen ).toHaveBeenCalledWith(
@@ -142,11 +139,13 @@ describe( 'BillingSetupCard', () => {
 	} );
 
 	it( 'should record click events and the `link_id` and `href` event properties for the billing setup button and link', async () => {
+		const user = userEvent.setup();
+
 		render( <BillingSetupCard billingUrl="https://test.com" /> );
 
 		expect( recordEvent ).toHaveBeenCalledTimes( 0 );
 
-		await userEvent.click( screen.getByRole( 'button' ) );
+		await user.click( screen.getByRole( 'button' ) );
 
 		expect( recordEvent ).toHaveBeenCalledTimes( 1 );
 		expect( recordEvent ).toHaveBeenNthCalledWith(
@@ -155,7 +154,7 @@ describe( 'BillingSetupCard', () => {
 			{ link_id: 'set-up-billing', href: 'https://test.com' }
 		);
 
-		await userEvent.click( screen.getByRole( 'link' ) );
+		await user.click( screen.getByRole( 'link' ) );
 
 		expect( recordEvent ).toHaveBeenCalledTimes( 2 );
 		expect( recordEvent ).toHaveBeenNthCalledWith(
@@ -168,10 +167,12 @@ describe( 'BillingSetupCard', () => {
 	it.each( [ 'button', 'link' ] )(
 		'should record click events for the billing setup %s and be aware of extra event properties from filters',
 		async ( role ) => {
+			const user = userEvent.setup();
+
 			await expectComponentToRecordEventWithFilteredProperties(
 				() => <BillingSetupCard billingUrl="https://test.com" />,
 				FILTER_ONBOARDING,
-				async () => await userEvent.click( screen.getByRole( role ) ),
+				async () => await user.click( screen.getByRole( role ) ),
 				'gla_ads_set_up_billing_click',
 				[
 					{ context: 'setup-mc', step: '1' },
