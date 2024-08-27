@@ -37,7 +37,7 @@ const defaultPaidAds = {
 	recommendations: [],
 	isValid: false,
 	isReady: false,
-	recommendationData: {},
+	recommendationData: null,
 };
 
 /*

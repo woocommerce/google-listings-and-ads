@@ -18,7 +18,9 @@ export default class SetupBudget extends MockRequests {
 	 * @return {import('@playwright/test').Locator} The budget recommendation text row.
 	 */
 	getBudgetRecommendationTip() {
-		return this.page.locator( '.components-tip p' );
+		return this.page.locator(
+			'.gla-budget-recommendation > .components-tip'
+		);
 	}
 
 	/**
