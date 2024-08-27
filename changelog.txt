@@ -1,5 +1,18 @@
 *** Google for WooCommerce Changelog ***
 
+= 2.8.4 - 2024-08-28 =
+* Dev - Align namespaces for unit tests.
+* Dev - Avoid accidentally using the event object to reset the asset group values in the CampaignAssetsForm component.
+* Dev - Migrate jest tests to use Node.js 20.
+* Dev - Rewrite the replacer of JSON.stringify in getReportKey to ensure it returns the same key regardless of the query keys' order.
+* Dev - Upgrade to use Node.js 20 and bump npm dependencies.
+* Dev - Use a fixed SKU number when testing product adapter.
+* Fix - issue with comma separators for Shipping Rates.
+* Tweak - Connect Test Page errors when WPCOM token is not connected.
+* Tweak - Make the Tooltip use the new placement prop when WordPress >= 6.4.
+* Tweak - Replace deprecated event.keyCode with event.code for the verification code inputs in the contact information setting.
+* Tweak - Update the copy in the "Linked accounts" of the accounts connection setting to include Google Ads account.
+
 = 2.8.3 - 2024-08-20 =
 * Fix - Return empty array props as empty objects in WCOM Proxy responses.
 * Tweak - Display additional context in error message when Google Ads account limit reached.

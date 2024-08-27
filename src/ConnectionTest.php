@@ -893,6 +893,11 @@ class ConnectionTest implements Service, Registerable {
 			} else {
 				$this->integration_status_response = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [];
 
+				// If the merchant isn't connected to the Google App, it's not necessary to display an error indicating that the partner token isn't associated.
+				if ( ! $this->integration_status_response['is_partner_token_healthy'] && isset( $this->integration_status_response['errors'] ['rest_api_partner_token']['error_code'] ) && $this->integration_status_response['errors'] ['rest_api_partner_token']['error_code'] === 'wpcom_partner_token_not_associated' ) {
+					unset( $this->integration_status_response['errors'] ['rest_api_partner_token'] );
+				}
+
 				if ( json_last_error() || ! isset( $this->integration_status_response['site'] ) ) {
 					$this->response .= wp_remote_retrieve_body( $integration_remote_request_response );
 				}

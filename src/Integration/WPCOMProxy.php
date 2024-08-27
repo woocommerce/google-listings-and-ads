@@ -193,7 +193,7 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 					$response->set_data( array_values( $data ) );
 				}
 
-				$response->set_data( $this->prepare_data( $response->get_data() ) );
+				$response->set_data( $this->prepare_data( $response->get_data(), $request ) );
 				return $response;
 			},
 			10,
@@ -204,17 +204,18 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 	/**
 	 * Prepares the data converting the empty arrays in objects for consistency.
 	 *
-	 * @param array $data The response data to parse
+	 * @param array           $data The response data to parse
+	 * @param WP_REST_Request $request The request object.
 	 * @return mixed
 	 */
-	public function prepare_data( $data ) {
+	public function prepare_data( $data, $request ) {
 		if ( ! is_array( $data ) ) {
 			return $data;
 		}
 
-		foreach ( array_keys( $data ) as $key ) {
-			if ( is_array( $data[ $key ] ) && empty( $data[ $key ] ) ) {
-				$data[ $key ] = (object) $data[ $key ];
+		foreach ( $data as $key => $value ) {
+			if ( preg_match( '/^\/wc\/v3\/shipping\/zones\/\d+\/methods/', $request->get_route() ) && isset( $value['settings'] ) && empty( $value['settings'] ) ) {
+				$data[ $key ]['settings'] = (object) $value['settings'];
 			}
 		}
 
