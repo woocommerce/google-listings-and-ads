@@ -141,17 +141,8 @@ test.describe( 'Complete your campaign', () => {
 	} );
 
 	test.describe( 'Free Ad Credit', () => {
-		test( 'should not see the Free Ad Credit section if the account is not eligible', async () => {
-			await completeCampaign.goto();
-			await expect(
-				page.getByText(
-					'Spend $500 to get $500 in Google Ads credits!'
-				)
-			).not.toBeVisible();
-		} );
-
 		test( 'should see the Free Ad Credit section if the account is eligible', async () => {
-			await setupAdsAccountPage.mockAdsSubAccountConnected();
+			await setupAdsAccountPage.mockAdsAccountConnected();
 			await completeCampaign.goto();
 
 			await expect(
@@ -159,6 +150,17 @@ test.describe( 'Complete your campaign', () => {
 					'Spend $500 to get $500 in Google Ads credits!'
 				)
 			).toBeVisible();
+		} );
+
+		test( 'should not see the Free Ad Credit section if the account is not eligible', async () => {
+			await setupAdsAccountPage.mockAdsAccountDisconnected();
+			await completeCampaign.goto();
+
+			await expect(
+				page.getByText(
+					'Spend $500 to get $500 in Google Ads credits!'
+				)
+			).not.toBeVisible();
 		} );
 	} );
 

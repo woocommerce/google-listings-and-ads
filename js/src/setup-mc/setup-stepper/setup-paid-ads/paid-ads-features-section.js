@@ -5,7 +5,6 @@ import { __ } from '@wordpress/i18n';
 import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
 import { Pill } from '@woocommerce/components';
 import GridiconCheckmark from 'gridicons/dist/checkmark';
-import GridiconGift from 'gridicons/dist/gift';
 
 /**
  * Internal dependencies
@@ -14,11 +13,10 @@ import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import CampaignPreview from '.~/components/paid-ads/campaign-preview';
 import FreeAdCredit from '.~/components/free-ad-credit';
-import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import './paid-ads-features-section.scss';
 
-function FeatureList( { hideBudgetContent } ) {
+function FeatureList() {
 	const featuresItems = [
 		{
 			Icon: GridiconCheckmark,
@@ -28,16 +26,6 @@ function FeatureList( { hideBudgetContent } ) {
 			),
 		},
 	];
-
-	if ( ! hideBudgetContent ) {
-		featuresItems.push( {
-			Icon: GridiconGift,
-			content: __(
-				'Claim $500 in ads credit when you spend your first $500 with Google Ads. Terms and conditions apply.',
-				'google-listings-and-ads'
-			),
-		} );
-	}
 
 	return (
 		<div className="gla-paid-ads-features-section__feature-list">
@@ -71,8 +59,6 @@ export default function PaidAdsFeaturesSection( {
 	skipButton,
 	continueButton,
 } ) {
-	const hasFreeAdCredit = useFreeAdCredit();
-
 	return (
 		<Section
 			className="gla-paid-ads-features-section"
@@ -127,16 +113,14 @@ export default function PaidAdsFeaturesSection( {
 										'google-listings-and-ads'
 									) }
 								</div>
-								<FeatureList
-									hideBudgetContent={ hideBudgetContent }
-								/>
+								<FeatureList />
 							</FlexBlock>
 							<FlexItem>
 								<CampaignPreview />
 							</FlexItem>
 						</Flex>
 
-						{ hasFreeAdCredit && <FreeAdCredit /> }
+						{ ! hideBudgetContent && <FreeAdCredit /> }
 					</VerticalGapLayout>
 				</Section.Card.Body>
 				<Section.Card.Footer hidden={ hideFooterButtons }>
