@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use WC_Meta_Data;
 use WP_REST_Response;
+use WP_REST_Request;
 
 
 /**
@@ -458,16 +459,14 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'gla_shipping_times', $response_mapped );
 	}
 
-	public function test_get_empty_settings_as_object() {
+	public function test_get_empty_settings_for_shipping_zone_methods_as_object() {
+		$request = new WP_REST_Request( 'GET', '/wc/v3/shipping/zones/4/methods' );
+
 		// dummy data
 		$data = [
 			[
-				'test'     => [],
-				'settings' => [],
-			],
-			[
-				'test'     => [ 'title' => 'foo' ],
-				'settings' => [ 'title' => 'foo' ],
+				'method_id' => 'flat_rate',
+				'settings'  => [],
 			],
 		];
 
@@ -479,15 +478,11 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->assertEquals(
 			[
 				[
-					'test'     => [],
-					'settings' => (object) [],
-				],
-				[
-					'test'     => [ 'title' => 'foo' ],
-					'settings' => (object) [ 'title' => 'foo' ],
+					'method_id' => 'flat_rate',
+					'settings'  => (object) [],
 				],
 			],
-			$proxy->prepare_data( $data )
+			$proxy->prepare_data( $data, $request )
 		);
 	}
 }
