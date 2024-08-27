@@ -465,8 +465,8 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		// dummy data
 		$data = [
 			[
-				'method_id' => 'flat_rate',
-				'settings'  => [],
+				'id'       => '1',
+				'settings' => [],
 			],
 		];
 
@@ -478,8 +478,21 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->assertEquals(
 			[
 				[
-					'method_id' => 'flat_rate',
-					'settings'  => (object) [],
+					'id'       => '1',
+					'settings' => (object) [],
+				],
+			],
+			$proxy->prepare_data( $data, $request )
+		);
+
+		// If the request is not for shipping zone methods, the data should not be modified.
+		$request = new WP_REST_Request( 'GET', '/wc/v3/products' );
+
+		$this->assertEquals(
+			[
+				[
+					'id'       => '1',
+					'settings' => [],
 				],
 			],
 			$proxy->prepare_data( $data, $request )
