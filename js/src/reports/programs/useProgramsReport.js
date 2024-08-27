@@ -38,6 +38,46 @@ const emptyReport = {
 };
 
 /**
+ * Gets `free` or `paid` report, or both.
+ * Fetches according to queried params.
+ * Returns uniform structure of `{free, paid}` reports, with dummy ones if applicable.
+ *
+ * @param  {Function} getReport Report selector.
+ * @param  {Object} query Query parameters in the URL.
+ * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
+ *
+ * @return {{free: ProgramsReportSchema, paid: ProgramsReportSchema}} The fetched programs reports, and a flag whether both were expected..
+ */
+function getReports( getReport, query, dateReference ) {
+	const queriedPrograms = getIdsFromQuery( query[ REPORT_PROGRAM_PARAM ] );
+	const containsFree =
+		queriedPrograms.length === 0 ||
+		queriedPrograms.includes( FREE_LISTINGS_PROGRAM_ID );
+
+	const containsPaid =
+		queriedPrograms.length === 0 ||
+		queriedPrograms.some( ( id ) => id !== FREE_LISTINGS_PROGRAM_ID );
+
+	// TODO: ideally adsSetupComplete should be retrieved from API endpoint
+	// and then put into wp-data.
+	// With that in place, then we don't need to depend on glaData
+	// which requires force reload using window.location.href.
+	const shouldFetchPaid = containsPaid && glaData.adsSetupComplete;
+
+	const result = {
+		free:
+			( containsFree &&
+				getReport( category, 'free', query, dateReference ) ) ||
+			emptyReport,
+		paid:
+			( shouldFetchPaid &&
+				getReport( category, 'paid', query, dateReference ) ) ||
+			emptyReport,
+	};
+	return result;
+}
+
+/**
  * @typedef { import(".~/data/utils").ReportFieldsSchema } ReportFieldsSchema
  * @typedef { import(".~/data/utils").PerformanceData } PerformanceData
  * @typedef { import("../index.js").ProgramsReportData } ProgramsReportData
@@ -154,44 +194,4 @@ export function usePerformanceReport( totals ) {
 		loaded,
 		data: performance,
 	};
-}
-
-/**
- * Gets `free` or `paid` report, or both.
- * Fetches according to queried params.
- * Returns uniform structure of `{free, paid}` reports, with dummy ones if applicable.
- *
- * @param  {Function} getReport Report selector.
- * @param  {Object} query Query parameters in the URL.
- * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
- *
- * @return {{free: ProgramsReportSchema, paid: ProgramsReportSchema}} The fetched programs reports, and a flag whether both were expected..
- */
-function getReports( getReport, query, dateReference ) {
-	const queriedPrograms = getIdsFromQuery( query[ REPORT_PROGRAM_PARAM ] );
-	const containsFree =
-		queriedPrograms.length === 0 ||
-		queriedPrograms.includes( FREE_LISTINGS_PROGRAM_ID );
-
-	const containsPaid =
-		queriedPrograms.length === 0 ||
-		queriedPrograms.some( ( id ) => id !== FREE_LISTINGS_PROGRAM_ID );
-
-	// TODO: ideally adsSetupComplete should be retrieved from API endpoint
-	// and then put into wp-data.
-	// With that in place, then we don't need to depend on glaData
-	// which requires force reload using window.location.href.
-	const shouldFetchPaid = containsPaid && glaData.adsSetupComplete;
-
-	const result = {
-		free:
-			( containsFree &&
-				getReport( category, 'free', query, dateReference ) ) ||
-			emptyReport,
-		paid:
-			( shouldFetchPaid &&
-				getReport( category, 'paid', query, dateReference ) ) ||
-			emptyReport,
-	};
-	return result;
 }

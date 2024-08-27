@@ -104,33 +104,37 @@ describe( 'ConnectAds', () => {
 	} );
 
 	it( 'should call back to onCreateNew when clicking the button to switch to account creation', async () => {
+		const user = userEvent.setup();
 		const onCreateNew = jest.fn().mockName( 'onCreateNew' );
 		render( <ConnectAds accounts={ [] } onCreateNew={ onCreateNew } /> );
 
 		expect( onCreateNew ).toHaveBeenCalledTimes( 0 );
 
-		await userEvent.click( getCreateAccountButton() );
+		await user.click( getCreateAccountButton() );
 
 		expect( onCreateNew ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'should disable the "Connect" button when no account is selected', async () => {
+		const user = userEvent.setup();
+
 		render( <ConnectAds accounts={ accounts } /> );
 		const combobox = screen.getByRole( 'combobox' );
 		const button = getConnectButton();
 
 		expect( button ).toBeDisabled();
 
-		await userEvent.selectOptions( combobox, '1' );
+		await user.selectOptions( combobox, '1' );
 
 		expect( button ).toBeEnabled();
 
-		await userEvent.selectOptions( combobox, '' );
+		await user.selectOptions( combobox, '' );
 
 		expect( button ).toBeDisabled();
 	} );
 
 	it( 'should render a connecting state and disable the button to switch to account creation after clicking the "Connect" button', async () => {
+		const user = userEvent.setup();
 		let resolve;
 
 		fetchGoogleAdsAccountStatus.mockReturnValue(
@@ -143,8 +147,8 @@ describe( 'ConnectAds', () => {
 
 		expect( getCreateAccountButton() ).toBeEnabled();
 
-		await userEvent.selectOptions( screen.getByRole( 'combobox' ), '1' );
-		await userEvent.click( getConnectButton() );
+		await user.selectOptions( screen.getByRole( 'combobox' ), '1' );
+		await user.click( getConnectButton() );
 
 		expect( getCreateAccountButton() ).toBeDisabled();
 		expect( screen.getByText( 'Connecting…' ) ).toBeInTheDocument();
@@ -156,6 +160,7 @@ describe( 'ConnectAds', () => {
 	} );
 
 	it( 'should resume to a state where it can retry the connection after a failed connection', async () => {
+		const user = userEvent.setup();
 		let reject;
 
 		fetchGoogleAdsAccountStatus.mockReturnValue(
@@ -166,8 +171,8 @@ describe( 'ConnectAds', () => {
 
 		render( <ConnectAds accounts={ accounts } /> );
 
-		await userEvent.selectOptions( screen.getByRole( 'combobox' ), '1' );
-		await act( async () => await userEvent.click( getConnectButton() ) );
+		await user.selectOptions( screen.getByRole( 'combobox' ), '1' );
+		await user.click( getConnectButton() );
 
 		expect( screen.getByText( 'Connecting…' ) ).toBeInTheDocument();
 		expect( getCreateAccountButton() ).toBeDisabled();
@@ -179,6 +184,8 @@ describe( 'ConnectAds', () => {
 	} );
 
 	it( 'should record click events and the `id` event property for the "Connect" button', async () => {
+		const user = userEvent.setup();
+
 		// Prevent the component from locking in the connecting state
 		fetchGoogleAdsAccountStatus.mockRejectedValue();
 		render( <ConnectAds accounts={ accounts } /> );
@@ -186,8 +193,8 @@ describe( 'ConnectAds', () => {
 
 		expect( recordEvent ).toHaveBeenCalledTimes( 0 );
 
-		await userEvent.selectOptions( combobox, '2' );
-		await act( async () => await userEvent.click( getConnectButton() ) );
+		await user.selectOptions( combobox, '2' );
+		await user.click( getConnectButton() );
 
 		expect( recordEvent ).toHaveBeenCalledTimes( 1 );
 		expect( recordEvent ).toHaveBeenNthCalledWith(
@@ -196,8 +203,8 @@ describe( 'ConnectAds', () => {
 			{ id: 2 }
 		);
 
-		await userEvent.selectOptions( combobox, '1' );
-		await act( async () => await userEvent.click( getConnectButton() ) );
+		await user.selectOptions( combobox, '1' );
+		await user.click( getConnectButton() );
 
 		expect( recordEvent ).toHaveBeenCalledTimes( 2 );
 		expect( recordEvent ).toHaveBeenNthCalledWith(
@@ -208,6 +215,8 @@ describe( 'ConnectAds', () => {
 	} );
 
 	it( 'should record click events for the "Connect" button and be aware of extra event properties from filters', async () => {
+		const user = userEvent.setup();
+
 		// Prevent the component from locking in the connecting state
 		fetchGoogleAdsAccountStatus.mockRejectedValue();
 
@@ -216,8 +225,8 @@ describe( 'ConnectAds', () => {
 			FILTER_ONBOARDING,
 			async () => {
 				const combobox = screen.getByRole( 'combobox' );
-				await userEvent.selectOptions( combobox, '1' );
-				await userEvent.click( getConnectButton() );
+				await user.selectOptions( combobox, '1' );
+				await user.click( getConnectButton() );
 			},
 			'gla_ads_account_connect_button_click',
 			[

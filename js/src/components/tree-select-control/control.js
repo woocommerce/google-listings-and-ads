@@ -51,7 +51,9 @@ const Control = forwardRef(
 
 		const handleKeydown = ( event ) => {
 			if ( BACKSPACE === event.key ) {
-				if ( value ) return;
+				if ( value ) {
+					return;
+				}
 				onTagsChange( tags.slice( 0, -1 ) );
 				event.preventDefault();
 			}

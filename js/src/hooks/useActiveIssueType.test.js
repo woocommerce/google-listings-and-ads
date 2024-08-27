@@ -5,7 +5,7 @@ jest.mock( '.~/hooks/useMCIssuesTotals' );
  * External dependencies
  */
 import { getQuery } from '@woocommerce/navigation';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 
 /**
  * Internal dependencies
