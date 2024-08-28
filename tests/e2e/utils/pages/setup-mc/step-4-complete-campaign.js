@@ -181,47 +181,47 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
-	 * Retrieves the "Yes" button from the skip paid ads creation modal.
+	 * Retrieves the "Complete setup" button from the skip paid ads creation modal.
 	 *
-	 * @return {import('@playwright/test').Locator} Locator for the "Yes" button.
+	 * @return {import('@playwright/test').Locator} Locator for the "Complete setup" button.
 	 */
-	getYesButton() {
+	getCompleteSetuModalButton() {
 		return this.page.getByRole( 'button', {
-			name: 'Yes',
+			name: 'Complete setup',
 			exact: true,
 		} );
 	}
 
 	/**
-	 * Clicks the "Yes" button in the skip paid ads creation modal.
+	 * Clicks the "Complete setup" button in the skip paid ads creation modal.
 	 *
 	 * @return {Promise<void>} Resolves when the click action is completed and the page has loaded.
 	 */
-	async clickYesButton() {
-		const button = this.getYesButton();
+	async clickCompleteSetupModalButton() {
+		const button = this.getCompleteSetuModalButton();
 		await button.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
 
 	/**
-	 * Retrieves the "No" button from the skip paid ads creation modal.
+	 * Retrieves the "Cancel" button from the skip paid ads creation modal.
 	 *
-	 * @return {import('@playwright/test').Locator} Locator for the "No" button.
+	 * @return {import('@playwright/test').Locator} Locator for the "Cancel" button.
 	 */
-	getNoButton() {
+	getCancelModalButton() {
 		return this.page.getByRole( 'button', {
-			name: 'No',
+			name: 'Cancel',
 			exact: true,
 		} );
 	}
 
 	/**
-	 * Clicks the "No" button in the skip paid ads creation modal.
+	 * Clicks the "Cancel" button in the skip paid ads creation modal.
 	 *
 	 * @return {Promise<void>} Resolves when the click action is completed and the page has loaded.
 	 */
-	async clickNoButton() {
-		const button = this.getNoButton();
+	async clickCancelModalButton() {
+		const button = this.getCancelModalButton();
 		await button.click();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}

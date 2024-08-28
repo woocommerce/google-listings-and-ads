@@ -161,13 +161,9 @@ export default function SetupPaidAds() {
 				text={ text }
 				loading={ completing === ACTION_SKIP }
 				disabled={ disabledSkip }
-				onClick={
-					// Show the skip modal only for the "Skip this step for now" button only.
-					showPaidAdsSetup
-						? finishOnboardingSetup
-						: handleShowSkipPaidAdsConfirmationModal
-				}
-				// TODO: might want to review eventName and eventProps
+				onClick={ handleShowSkipPaidAdsConfirmationModal }
+				// TODO: Review eventName and eventProps
+				// The same eventName and eventProps has been copied over to the "Confirm" button in the SkipPaidAdsConfirmationModal component.
 				eventName="gla_onboarding_complete_button_click"
 				eventProps={ eventProps }
 			/>
@@ -217,6 +213,8 @@ export default function SetupPaidAds() {
 					onRequestClose={ handleCancelSkipPaidAdsClick }
 					onSkipConfirmation={ finishOnboardingSetup }
 					isProcessing={ !! completing }
+					showPaidAdsSetup={ showPaidAdsSetup }
+					paidAds={ paidAds }
 				/>
 			) }
 

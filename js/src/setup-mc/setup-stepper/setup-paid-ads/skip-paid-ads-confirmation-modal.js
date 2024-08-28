@@ -2,8 +2,9 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { select } from '@wordpress/data';
 import { createInterpolateElement } from '@wordpress/element';
-import { noop } from 'lodash';
+import { noop, merge } from 'lodash';
 
 /**
  * Internal dependencies
@@ -11,13 +12,15 @@ import { noop } from 'lodash';
 import AppModal from '.~/components/app-modal';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import { ACTION_SKIP } from './constants';
+import { STORE_KEY } from '.~/data/constants';
 
 /**
  * Triggered when the skip button is clicked
  * // TODO: to review
  *
- * @event gla_skip_paid_ads_modal_confirm_button_click
+ * @event gla_onboarding_complete_button_click
  */
 
 /**
@@ -28,30 +31,56 @@ import { ACTION_SKIP } from './constants';
  * @param {Function} props.onRequestClose Function to be called when the modal should be closed. Defaults to a no-op function.
  * @param {Function} props.onSkipConfirmation Function to be called when the user confirms skipping the paid ads setup. Defaults to a no-op function.
  * @param {boolean} [props.isProcessing=false] Indicates whether a process is currently running (e.g., the confirmation is being processed). If true, the confirmation button will show a loading state.
+ * @param {boolean} [props.showPaidAdsSetup=false] Indicates whether the paid ads setup is currently shown. If true, additional event properties will be included in the eventProps.
+ * @param {Object} [props.paidAds={}] The paid ads data, including the campaign form data and validation status.
  */
 const SkipPaidAdsConfirmationModal = ( {
 	onRequestClose = noop,
 	onSkipConfirmation = noop,
 	isProcessing = false,
+	showPaidAdsSetup = false,
+	paidAds = {},
 } ) => {
+	const { googleAdsAccount } = useGoogleAdsAccount();
+
+	const eventProps = {
+		opened_paid_ads_setup: 'no',
+		google_ads_account_status: googleAdsAccount?.status,
+		billing_method_status: 'unknown',
+		campaign_form_validation: 'unknown',
+	};
+
+	// TODO: Review once https://github.com/woocommerce/google-listings-and-ads/issues/2500 is merged
+	if ( showPaidAdsSetup ) {
+		const selector = select( STORE_KEY );
+		const billing = selector.getGoogleAdsAccountBillingStatus();
+
+		merge( eventProps, {
+			opened_paid_ads_setup: 'yes',
+			billing_method_status: billing?.status,
+			campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
+		} );
+	}
+
 	return (
 		<AppModal
 			className="gla-ads-skip-paid-ads-modal"
 			title={ __( 'Skip setting up ads?', 'google-listings-and-ads' ) }
 			buttons={ [
-				<AppButton key="no" isSecondary onClick={ onRequestClose }>
-					{ __( 'No', 'google-listings-and-ads' ) }
+				<AppButton key="cancel" isSecondary onClick={ onRequestClose }>
+					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
-					key="yes"
+					key="complete-setup"
 					// TODO: confirm the eventName
-					eventName="gla_skip_paid_ads_modal_confirm_button_click"
+					eventName="gla_onboarding_complete_button_click"
 					onClick={ onSkipConfirmation }
 					loading={ isProcessing }
 					data-action={ ACTION_SKIP }
+					eventProps={ eventProps }
 					isPrimary
 				>
-					{ __( 'Yes', 'google-listings-and-ads' ) }
+					{ __( 'Complete setup', 'google-listings-and-ads' ) }
 				</AppButton>,
 			] }
 			onRequestClose={ onRequestClose }
