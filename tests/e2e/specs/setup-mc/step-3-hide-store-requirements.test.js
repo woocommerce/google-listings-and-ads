@@ -62,6 +62,7 @@ test.describe( 'Hide Store Requirements Step', () => {
 		await setUpAccountsPage.goto();
 
 		// TODO: Mock email is verified & address is filled
+		setUpAccountsPage.mockMCSetup( 'complete', 'accounts' );
 
 		// 1. Assert there are 3 steps
 		const steps = await page.locator( '.woocommerce-stepper__step' );
