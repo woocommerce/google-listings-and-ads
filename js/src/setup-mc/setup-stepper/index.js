@@ -12,7 +12,6 @@ import useMCSetup from '.~/hooks/useMCSetup';
 import useStoreAddress from '.~/hooks/useStoreAddress';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import stepNameKeyMap from './stepNameKeyMap';
-import { has } from 'lodash';
 
 const SetupStepper = () => {
 	const { hasFinishedResolution, data: mcSetup } = useMCSetup();
