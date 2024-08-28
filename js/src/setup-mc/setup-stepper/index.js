@@ -12,6 +12,7 @@ import useMCSetup from '.~/hooks/useMCSetup';
 import useStoreAddress from '.~/hooks/useStoreAddress';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import stepNameKeyMap from './stepNameKeyMap';
+import { has } from 'lodash';
 
 const SetupStepper = () => {
 	const { hasFinishedResolution, data: mcSetup } = useMCSetup();
@@ -43,14 +44,15 @@ const SetupStepper = () => {
 	}
 
 	const { status } = mcSetup;
-	let { step } = mcSetup;
+	const { step } = mcSetup;
 
 	// If the user has already completed the store requirements, but is currently still on the
 	// store requirements step, we should skip the store requirements step and go to the paid ads step.
 	// else they will get stuck on a non-existent step #3
-	if ( step === 'store_requirements' && hasConfirmedStoreRequirements ) {
-		step = 'paid_ads';
-	}
+	const currentStep =
+		step === 'store_requirements' && hasConfirmedStoreRequirements
+			? 'paid_ads'
+			: step;
 
 	if ( status === 'complete' ) {
 		getHistory().replace( getNewPath( {}, '/google/dashboard' ) );
@@ -59,7 +61,7 @@ const SetupStepper = () => {
 
 	return (
 		<SavedSetupStepper
-			savedStep={ stepNameKeyMap[ step ] }
+			savedStep={ stepNameKeyMap[ currentStep ] }
 			hasConfirmedStoreRequirements={ hasConfirmedStoreRequirements }
 		/>
 	);
