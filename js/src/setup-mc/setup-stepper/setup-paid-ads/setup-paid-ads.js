@@ -222,9 +222,8 @@ export default function SetupPaidAds() {
 						/>
 					</Flex>
 				</StepContentActions>
+				<PaidAdsFaqsPanel />
 			</StepContentFooter>
 		</StepContent>
 	);
 }
-
-<PaidAdsFaqsPanel />;
