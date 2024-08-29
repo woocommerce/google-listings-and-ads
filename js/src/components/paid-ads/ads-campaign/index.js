@@ -13,10 +13,10 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
-import AudienceSection from './audience-section';
-import BudgetSection from './budget-section';
-import { CampaignPreviewCard } from './campaign-preview';
-import FaqsSection from './faqs-section';
+import AudienceSection from '../audience-section';
+import BudgetSection from '../budget-section';
+import { CampaignPreviewCard } from '../campaign-preview';
+import FaqsSection from '../faqs-section';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign

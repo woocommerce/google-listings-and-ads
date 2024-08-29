@@ -20,10 +20,10 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
-import PaidAdsFeaturesSection from './paid-ads-features-section';
-import PaidAdsSetupSections from './paid-ads-setup-sections';
+import PaidAdsFeaturesSection from '.~/components/paid-ads/ads-campaign/paid-ads-features-section';
+import PaidAdsSetupSections from '.~/components/paid-ads/ads-campaign/paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
-import clientSession from './clientSession';
+import clientSession from '.~/components/paid-ads/ads-campaign/clientSession';
 import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
 
