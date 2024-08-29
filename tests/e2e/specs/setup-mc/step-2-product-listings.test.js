@@ -417,7 +417,9 @@ test.describe( 'Configure product listings', () => {
 			await productListingsPage.checkNonDestinationBasedTaxRateRadioButton();
 		} );
 
-		test( 'should see the heading of next step and send two requests after clicking "Continue"', async () => {
+		test( 'should see the heading of next step and request for the contact information after clicking "Continue"', async () => {
+			const requestPromise =
+				productListingsPage.registerContinueRequest();
 			await productListingsPage.clickContinueButton();
 
 			await expect(
@@ -426,6 +428,16 @@ test.describe( 'Configure product listings', () => {
 					exact: true,
 				} )
 			).toBeVisible();
+
+			const request = await requestPromise;
+			const response = await request.response();
+			const responseBody = await response.json();
+
+			expect( response.status() ).toBe( 200 );
+
+			expect( responseBody.wc_address.street_address ).toBe(
+				'Automata Road'
+			);
 		} );
 	} );
 } );

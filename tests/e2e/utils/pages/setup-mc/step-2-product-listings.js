@@ -355,7 +355,7 @@ export default class ProductListingsPage extends MockRequests {
 	 *
 	 * @return {Promise<import('@playwright/test').Request[]>} The requests.
 	 */
-	registerContinueRequests() {
+	registerContinueRequest() {
 		return this.page.waitForRequest(
 			( request ) =>
 				request.url().includes( '/gla/mc/contact-information' ) &&
