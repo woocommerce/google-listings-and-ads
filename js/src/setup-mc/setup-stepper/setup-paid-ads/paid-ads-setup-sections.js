@@ -34,10 +34,9 @@ import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 const defaultPaidAds = {
 	amount: 0,
 	countryCodes: [],
-	recommendations: [],
 	isValid: false,
 	isReady: false,
-	recommendationData: null,
+	recommendationData: undefined,
 };
 
 /*
@@ -154,17 +153,27 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 	  - https://github.com/woocommerce/google-listings-and-ads/blob/5b6522ca10ad75556e6b2de7c120cc712aab70b1/js/src/components/free-listings/setup-free-listings/index.js#L172-L186
 	*/
 	useEffect( () => {
-		setPaidAds( ( currentPaidAds ) => {
-			currentPaidAds = {
-				...currentPaidAds,
-				amount: dailyBudget ? dailyBudget : currentPaidAds.amount,
-				recommendationData,
-			};
-			return resolveInitialPaidAds( currentPaidAds, targetAudience );
-		} );
-	}, [ targetAudience, dailyBudget, recommendationData ] );
+		if ( dailyBudget !== undefined ) {
+			// If the amount is already set in session, use that one.
+			const sessionData = clientSession.getCampaign();
+			const { amount: sessionAmount } = sessionData;
 
-	if ( ! targetAudience || ! billingStatus ) {
+			setPaidAds( ( currentPaidAds ) => {
+				currentPaidAds = {
+					...currentPaidAds,
+					amount: sessionAmount || dailyBudget,
+					recommendationData,
+				};
+				return resolveInitialPaidAds( currentPaidAds, targetAudience );
+			} );
+		}
+	}, [ dailyBudget, targetAudience, recommendationData ] );
+
+	if (
+		! targetAudience ||
+		! billingStatus ||
+		paidAds.recommendationData === undefined
+	) {
 		return (
 			<Section>
 				<SpinnerCard />
