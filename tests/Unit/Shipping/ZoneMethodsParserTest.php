@@ -88,6 +88,27 @@ class ZoneMethodsParserTest extends UnitTest {
 		$this->assertEquals( 10.6, $shipping_rates[0]->get_rate() );
 	}
 
+	public function test_returns_flat_rate_methods_with_more_than_two_decimals() {
+		$flat_rate     = $this->createMock( WC_Shipping_Flat_Rate::class );
+		$flat_rate->id = ZoneMethodsParser::METHOD_FLAT_RATE;
+		$flat_rate->expects( $this->any() )
+			->method( 'get_option' )
+			->willReturnMap(
+				[
+					[ 'cost', null, '10.6123' ],
+				]
+			);
+
+		$zone = $this->createMock( WC_Shipping_Zone::class );
+		$zone->expects( $this->any() )
+			->method( 'get_shipping_methods' )
+			->willReturn( [ $flat_rate ] );
+
+		$shipping_rates = $this->methods_parser->parse( $zone );
+		$this->assertCount( 1, $shipping_rates );
+		$this->assertEquals( 10.61, $shipping_rates[0]->get_rate() );
+	}
+
 	public function test_returns_flat_rate_methods_including_shipping_classes() {
 		// Return three sample shipping classes.
 		$light_class          = new \stdClass();
