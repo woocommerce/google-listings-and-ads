@@ -6,7 +6,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Section from '.~/wcdl/section';
 import FaqsPanel from '.~/components/faqs-panel';
 
 const faqItems = [
@@ -86,16 +85,14 @@ const faqItems = [
  *
  * @fires gla_setup_ads_faq
  */
-const FaqsSection = () => {
+const PaidAdsFaqsPanel = () => {
 	return (
-		<Section>
-			<FaqsPanel
-				trackName="gla_setup_ads_faq"
-				context="setup-ads"
-				faqItems={ faqItems }
-			/>
-		</Section>
+		<FaqsPanel
+			trackName="gla_setup_ads_faq"
+			context="setup-ads"
+			faqItems={ faqItems }
+		/>
 	);
 };
 
-export default FaqsSection;
+export default PaidAdsFaqsPanel;
