@@ -51,7 +51,7 @@ const ACTION_SKIP = 'skip-ads';
  *
  * @event gla_onboarding_complete_button_click
  * @property {string} google_ads_account_status The connection status of merchant's Google Ads addcount, e.g. 'connected', 'disconnected', 'incomplete'
- * @property {string} billing_method_status aaa, The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
+ * @property {string} billing_method_status The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
  * @property {string} campaign_form_validation Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
  */
 
@@ -116,7 +116,7 @@ export default function SetupPaidAds() {
 
 		const eventProps = {
 			google_ads_account_status: googleAdsAccount?.status,
-			billing_method_status: billing?.status,
+			billing_method_status: billing?.status ?? 'unknown',
 			campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
 		};
 
