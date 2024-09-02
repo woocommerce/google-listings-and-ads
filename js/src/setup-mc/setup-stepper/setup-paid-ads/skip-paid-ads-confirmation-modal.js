@@ -80,7 +80,10 @@ const SkipPaidAdsConfirmationModal = ( {
 					eventProps={ eventProps }
 					isPrimary
 				>
-					{ __( 'Complete setup', 'google-listings-and-ads' ) }
+					{ __(
+						'Complete setup without setting up ads',
+						'google-listings-and-ads'
+					) }
 				</AppButton>,
 			] }
 			onRequestClose={ onRequestClose }
