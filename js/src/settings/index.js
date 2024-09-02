@@ -19,7 +19,7 @@ import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
 import EnableNewProductSyncNotice from '.~/components/enable-new-product-sync-notice';
-import NavigationClassic from '.~/components/navigation-classic';
+import MainTabNav from '.~/components/main-tab-nav';
 import RebrandingTour from '.~/components/tours/rebranding-tour';
 import './index.scss';
 
@@ -65,7 +65,7 @@ const Settings = () => {
 	return (
 		<div className={ pageClassName }>
 			<EnableNewProductSyncNotice />
-			<NavigationClassic />
+			<MainTabNav />
 			<RebrandingTour />
 			<ContactInformationPreview />
 			<LinkedAccounts />
