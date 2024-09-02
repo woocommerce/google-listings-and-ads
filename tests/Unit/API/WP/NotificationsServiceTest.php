@@ -223,6 +223,11 @@ class NotificationsServiceTest extends UnitTest {
 		$this->assertEquals( did_action( 'woocommerce_gla_error' ), 1 );
 	}
 
+	public function test_is_ready_not_calling_status_api_if_with_health_check_is_false() {
+		$this->service = $this->get_mock( true, true, false );
+		$this->account->expects( $this->never() )->method( 'is_wpcom_api_status_healthy' );
+		$this->assertTrue( $this->service->is_ready( false ) );
+	}
 
 	/**
 	 * Mocks the service
