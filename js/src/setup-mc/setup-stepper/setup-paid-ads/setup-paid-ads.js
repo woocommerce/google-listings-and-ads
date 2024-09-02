@@ -169,6 +169,7 @@ export default function SetupPaidAds() {
 					'google-listings-and-ads'
 				) }
 			/>
+
 			<PaidAdsFeaturesSection
 				hideBudgetContent={ ! hasGoogleAdsConnection }
 				hideFooterButtons={
@@ -193,6 +194,7 @@ export default function SetupPaidAds() {
 			{ showPaidAdsSetup && (
 				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
 			) }
+
 			<FaqsSection />
 			<StepContentFooter hidden={ ! showPaidAdsSetup }>
 				<Flex justify="right" gap={ 4 }>

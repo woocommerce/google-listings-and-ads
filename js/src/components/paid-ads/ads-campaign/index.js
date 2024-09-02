@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -16,7 +16,10 @@ import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import AudienceSection from '../audience-section';
 import BudgetSection from '../budget-section';
 import { CampaignPreviewCard } from '../campaign-preview';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import FaqsSection from '../faqs-section';
+import PaidAdsFeaturesSection from './paid-ads-features-section';
+import PaidAdsSetupSections from './paid-ads-setup-sections';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -29,7 +32,6 @@ import FaqsSection from '../faqs-section';
  * so it expects a `CampaignAssetsForm` to existing in its parents.
  *
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
- *
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {() => void} props.onContinue Callback called once continue button is clicked.
@@ -42,7 +44,12 @@ export default function AdsCampaign( {
 } ) {
 	const isCreation = ! campaign;
 	const formContext = useAdaptiveFormContext();
-	const { isValidForm } = formContext;
+	const { isValidForm, setValue } = formContext;
+	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
+	const handleOnStatesReceived = ( { amount, countryCodes } ) => {
+		setValue( 'amount', amount );
+		setValue( 'countryCodes', countryCodes );
+	};
 
 	const disabledBudgetSection = ! formContext.values.countryCodes.length;
 	const helperText = isCreation
@@ -85,7 +92,7 @@ export default function AdsCampaign( {
 					}
 				) }
 			/>
-			<AudienceSection
+			{ /* <AudienceSection
 				disabled={ ! isCreation }
 				multiple={ isCreation || campaign.allowMultiple }
 				countrySelectHelperText={ helperText }
@@ -97,6 +104,15 @@ export default function AdsCampaign( {
 			>
 				<CampaignPreviewCard />
 			</BudgetSection>
+			<hr /> */ }
+
+			<PaidAdsFeaturesSection
+				hideBudgetContent={ ! hasGoogleAdsConnection }
+				hideFooterButtons
+			/>
+			{ /* TODO: Add disabled={ ! isCreation } for AudienceSection */ }
+			<PaidAdsSetupSections onStatesReceived={ handleOnStatesReceived } />
+
 			<FaqsSection />
 			<StepContentFooter>
 				<AppButton

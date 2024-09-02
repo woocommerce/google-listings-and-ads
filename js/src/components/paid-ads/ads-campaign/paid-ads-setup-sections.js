@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useRef, useEffect } from '@wordpress/element';
-import { Form } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -18,6 +17,7 @@ import SpinnerCard from '.~/components/spinner-card';
 import Section from '.~/wcdl/section';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import clientSession from './clientSession';
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
 /**
@@ -75,6 +75,7 @@ function resolveInitialPaidAds( paidAds, targetAudience ) {
  * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the audience, budget, and billing are updated.
  */
 export default function PaidAdsSetupSections( { onStatesReceived } ) {
+	const formProps = useAdaptiveFormContext();
 	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
@@ -140,44 +141,23 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 		);
 	}
 
-	const initialValues = {
-		countryCodes: paidAds.countryCodes,
-		amount: paidAds.amount,
-	};
+	const { countryCodes } = formProps.values;
+	const disabledAudience = ! hasGoogleAdsConnection;
+	const disabledBudget = disabledAudience || countryCodes.length === 0;
 
 	return (
-		<Form
-			initialValues={ initialValues }
-			onChange={ ( _, values, isValid ) => {
-				setPaidAds( { ...paidAds, ...values, isValid } );
-			} }
-			validate={ validateCampaign }
-		>
-			{ ( formProps ) => {
-				const { countryCodes } = formProps.values;
-				const disabledAudience = ! hasGoogleAdsConnection;
-				const disabledBudget =
-					disabledAudience || countryCodes.length === 0;
-
-				return (
-					<>
-						<AudienceSection
-							formProps={ formProps }
-							disabled={ disabledAudience }
-							countrySelectHelperText={ __(
-								'You can only choose from countries you’ve selected during product listings configuration.',
-								'google-listings-and-ads'
-							) }
-						/>
-						<BudgetSection
-							formProps={ formProps }
-							disabled={ disabledBudget }
-						>
-							{ ! disabledBudget && <BillingCard /> }
-						</BudgetSection>
-					</>
-				);
-			} }
-		</Form>
+		<>
+			<AudienceSection
+				formProps={ formProps }
+				disabled={ disabledAudience }
+				countrySelectHelperText={ __(
+					'You can only choose from countries you’ve selected during product listings configuration.',
+					'google-listings-and-ads'
+				) }
+			/>
+			<BudgetSection formProps={ formProps } disabled={ disabledBudget }>
+				{ ! disabledBudget && <BillingCard /> }
+			</BudgetSection>
+		</>
 	);
 }

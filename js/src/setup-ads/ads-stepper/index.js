@@ -26,7 +26,7 @@ import {
  * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
  */
 const AdsStepper = ( { formProps } ) => {
-	const [ step, setStep ] = useState( '1' );
+	const [ step, setStep ] = useState( '2' );
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
