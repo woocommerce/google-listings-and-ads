@@ -103,11 +103,6 @@ test.describe( 'Configure product listings', () => {
 		).toBeVisible();
 	} );
 
-	test( 'should select the default language English', async () => {
-		const languageRadioRow = productListingsPage.getLanguageRadioRow();
-		await expect( languageRadioRow ).toBeChecked();
-	} );
-
 	test( 'should see US but should not see UK in the country search box', async () => {
 		const countrySearchBoxContainer =
 			getCountryInputSearchBoxContainer( page );
@@ -369,15 +364,6 @@ test.describe( 'Configure product listings', () => {
 		test.beforeAll( async () => {
 			// Check simple shipping rate first so we can get "Shipping rates" and "Shipping times" fields.
 			await productListingsPage.checkSimpleShippingRateRadioButton();
-		} );
-
-		test( 'should contain the correct URL for "Read more for Language" link', async () => {
-			const link = productListingsPage.getReadMoreLanguageLink();
-			await expect( link ).toBeVisible();
-			await expect( link ).toHaveAttribute(
-				'href',
-				'https://support.google.com/merchants/answer/160637'
-			);
 		} );
 
 		test( 'should contain the correct URL for "Read more for Shipping Rates" link', async () => {

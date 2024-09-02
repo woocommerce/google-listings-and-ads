@@ -12,6 +12,7 @@ import useStoreAddress from '.~/hooks/useStoreAddress';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
+import StepContentActions from '.~/components/stepper/step-content-actions';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AdaptiveForm from '.~/components/adaptive-form';
 import ValidationErrors from '.~/components/validation-errors';
@@ -104,16 +105,18 @@ export default function StoreRequirements( { onContinue } ) {
 							/>
 
 							<StepContentFooter>
-								<AppButton
-									isPrimary
-									loading={ adapter.isSubmitting }
-									onClick={ handleSubmitClick }
-								>
-									{ __(
-										'Continue',
-										'google-listings-and-ads'
-									) }
-								</AppButton>
+								<StepContentActions>
+									<AppButton
+										isPrimary
+										loading={ adapter.isSubmitting }
+										onClick={ handleSubmitClick }
+									>
+										{ __(
+											'Continue',
+											'google-listings-and-ads'
+										) }
+									</AppButton>
+								</StepContentActions>
 							</StepContentFooter>
 						</>
 					);
