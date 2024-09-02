@@ -229,6 +229,12 @@ class NotificationsServiceTest extends UnitTest {
 		$this->assertTrue( $this->service->is_ready( false ) );
 	}
 
+	public function test_is_ready_calling_status_api_if_with_health_check_is_true() {
+		$this->service = $this->get_mock( true, true, true );
+		$this->account->expects( $this->once() )->method( 'is_wpcom_api_status_healthy' );
+		$this->assertTrue( $this->service->is_ready() );
+	}
+
 	/**
 	 * Mocks the service
 	 *
