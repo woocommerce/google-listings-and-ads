@@ -232,6 +232,7 @@ class AccountService implements OptionsAwareInterface, Service {
 		// If token is revoked outside the extension. Set the status as error to force the merchant to grant access again.
 		if ( $wpcom_rest_api_status === 'approved' && ! $this->is_wpcom_api_status_healthy() ) {
 			$wpcom_rest_api_status = OAuthService::STATUS_ERROR;
+			$this->options->update( OptionsInterface::WPCOM_REST_API_STATUS, $wpcom_rest_api_status );
 		}
 
 		$status = [
@@ -663,11 +664,11 @@ class AccountService implements OptionsAwareInterface, Service {
 			$integration_remote_request_response = Client::remote_request( $integration_status_args, null );
 
 			if ( is_wp_error( $integration_remote_request_response ) ) {
-				$this->delete_wpcom_api_status_transient();
-				return false;
+				$status = [ 'is_healthy' => false ];
+			} else {
+				$status = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [ 'is_healthy' => false ];
 			}
 
-			$status = json_decode( wp_remote_retrieve_body( $integration_remote_request_response ), true ) ?? [];
 			$transients->set( TransientsInterface::WPCOM_API_STATUS, $status, MINUTE_IN_SECONDS * 30 );
 		}
 
