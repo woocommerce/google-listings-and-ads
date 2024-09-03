@@ -139,6 +139,7 @@ export default function AdsCampaign( {
 				<PaidAdsSetupSections
 					onStatesReceived={ handleOnStatesReceived }
 					isCreation={ isCreation }
+					campaign={ campaign }
 				/>
 			) }
 

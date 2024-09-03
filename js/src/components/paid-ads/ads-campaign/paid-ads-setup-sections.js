@@ -74,10 +74,12 @@ function resolveInitialPaidAds( paidAds, targetAudience ) {
  * @param {Object} props React props.
  * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the audience, budget, and billing are updated.
  * @param props.isCreation
+ * @param props.campaign
  */
 export default function PaidAdsSetupSections( {
 	onStatesReceived,
 	isCreation = false,
+	campaign,
 } ) {
 	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
@@ -154,10 +156,17 @@ export default function PaidAdsSetupSections( {
 				'google-listings-and-ads'
 		  );
 
-	const initialValues = {
+	let initialValues = {
 		countryCodes: paidAds.countryCodes,
 		amount: paidAds.amount,
 	};
+
+	if ( campaign ) {
+		initialValues = {
+			amount: campaign.amount,
+			countryCodes: campaign.displayCountries,
+		};
+	}
 
 	return (
 		<Form
