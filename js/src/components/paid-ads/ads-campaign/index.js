@@ -3,23 +3,24 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
+import { useAdaptiveFormContext } from '.~/components/adaptive-form';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
-import { useAdaptiveFormContext } from '.~/components/adaptive-form';
-import AudienceSection from '../audience-section';
-import BudgetSection from '../budget-section';
-import { CampaignPreviewCard } from '../campaign-preview';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import FaqsSection from '../faqs-section';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
+import SkipButton from './skip-button';
+import clientSession from './clientSession';
+import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
+import { useEffect } from 'react';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -35,47 +36,92 @@ import PaidAdsSetupSections from './paid-ads-setup-sections';
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {() => void} props.onContinue Callback called once continue button is clicked.
+ * @param props.headerTitle
+ * @param props.hideFooterButtons
+ * @param props.paidAdsFeaturesSectionButtons
+ * @param props.showPaidAdsSetupSections
+ * @param props.buttons
+ * @param props.skipButton
+ * @param props.continueButtonProps
+ * @param props.onSkip
+ * @param props.onSkipClick
+ * @param props.continueButtonText
+ * @param props.hidePaidAdsSetupFooterButtons
+ * @param props.onboardingSetup
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {
 	campaign,
-	onContinue,
 	trackingContext,
+	headerTitle,
+	onContinue = noop,
+	onSkip = noop,
+	onboardingSetup = false,
 } ) {
-	const isCreation = ! campaign;
 	const formContext = useAdaptiveFormContext();
 	const { isValidForm, setValue } = formContext;
-	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
-	const handleOnStatesReceived = ( { amount, countryCodes } ) => {
+	console.log( formContext );
+	const [ completing, setCompleting ] = useState( null );
+	const [ paidAds, setPaidAds ] = useState( {} );
+	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( () =>
+		clientSession.getShowPaidAdsSetup( false )
+	);
+
+	const isCreation = ! campaign;
+
+	const handleOnStatesReceived = ( paidAdsValues ) => {
+		setPaidAds( paidAdsValues );
+
+		const { amount, countryCodes } = paidAdsValues;
 		setValue( 'amount', amount );
 		setValue( 'countryCodes', countryCodes );
 	};
 
-	const disabledBudgetSection = ! formContext.values.countryCodes.length;
-	const helperText = isCreation
-		? __(
-				'You can only choose from countries you’ve selected during product listings configuration.',
-				'google-listings-and-ads'
-		  )
-		: __(
-				'Once a campaign has been created, you cannot change the target country(s).',
-				'google-listings-and-ads'
-		  );
+	const handleCreateCampaignClick = ( event ) => {
+		setCompleting( event.target.dataset.action );
+		setShowPaidAdsSetup( true );
+
+		clientSession.setShowPaidAdsSetup( true );
+	};
+
+	const handleSkipClick = ( event ) => {
+		setCompleting( event.target.dataset.action );
+
+		onSkip( event );
+	};
+
+	const handleCompleteClick = ( event ) => {
+		setCompleting( event.target.dataset.action );
+
+		onContinue( event, paidAds );
+	};
+
+	// The status check of Google Ads account connection is included in `paidAds.isReady`,
+	// because when there is no connected account, it will disable the budget section and set the `amount` to `undefined`.
+	const disabledComplete =
+		completing === ACTION_SKIP || ! paidAds.isReady || ! isValidForm;
+	const shouldShowPaidAdsSetup = onboardingSetup || showPaidAdsSetup;
+
+	let continueButtonProps = {
+		text: __( 'Continue', 'google-listings-and-ads' ),
+	};
+
+	if ( onboardingSetup ) {
+		continueButtonProps = {
+			'data-action': ACTION_COMPLETE,
+			text: __( 'Complete setup', 'google-listings-and-ads' ),
+			eventName: 'gla_onboarding_complete_with_paid_ads_button_click',
+			eventProps: {
+				budget: paidAds.amount,
+				audiences: paidAds.countryCodes?.join( ',' ),
+			},
+		};
+	}
 
 	return (
 		<StepContent>
 			<StepContentHeader
-				title={
-					isCreation
-						? __(
-								'Create your paid campaign',
-								'google-listings-and-ads'
-						  )
-						: __(
-								'Edit your paid campaign',
-								'google-listings-and-ads'
-						  )
-				}
+				title={ headerTitle }
 				description={ createInterpolateElement(
 					__(
 						'Paid Performance Max campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
@@ -92,37 +138,44 @@ export default function AdsCampaign( {
 					}
 				) }
 			/>
-			{ /* <AudienceSection
-				disabled={ ! isCreation }
-				multiple={ isCreation || campaign.allowMultiple }
-				countrySelectHelperText={ helperText }
-				formProps={ formContext }
-			/>
-			<BudgetSection
-				formProps={ formContext }
-				disabled={ disabledBudgetSection }
-			>
-				<CampaignPreviewCard />
-			</BudgetSection>
-			<hr /> */ }
 
 			<PaidAdsFeaturesSection
-				hideBudgetContent={ ! hasGoogleAdsConnection }
-				hideFooterButtons
+				hidePaidAdsSetupFooterButtons={ shouldShowPaidAdsSetup }
+				onSkipClick={ handleSkipClick }
+				onCreateCampaignClick={ handleCreateCampaignClick }
+				disableCreateButton={ completing === ACTION_SKIP }
 			/>
-			{ /* TODO: Add disabled={ ! isCreation } for AudienceSection */ }
-			<PaidAdsSetupSections onStatesReceived={ handleOnStatesReceived } />
+
+			{ shouldShowPaidAdsSetup && (
+				<PaidAdsSetupSections
+					onStatesReceived={ handleOnStatesReceived }
+					isCreation={ isCreation }
+				/>
+			) }
 
 			<FaqsSection />
-			<StepContentFooter>
-				<AppButton
-					isPrimary
-					disabled={ ! isValidForm }
-					onClick={ onContinue }
-				>
-					{ __( 'Continue', 'google-listings-and-ads' ) }
-				</AppButton>
-			</StepContentFooter>
+
+			{ shouldShowPaidAdsSetup && (
+				<StepContentFooter>
+					{ onboardingSetup && (
+						<SkipButton
+							text={ __(
+								'Skip paid ads creation',
+								'google-listings-and-ads'
+							) }
+							onClick={ handleSkipClick }
+						/>
+					) }
+
+					<AppButton
+						isPrimary
+						disabled={ disabledComplete }
+						onClick={ handleCompleteClick }
+						loading={ completing === ACTION_COMPLETE }
+						{ ...continueButtonProps }
+					/>
+				</StepContentFooter>
+			) }
 		</StepContent>
 	);
 }

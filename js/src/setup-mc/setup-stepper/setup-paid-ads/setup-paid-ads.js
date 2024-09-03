@@ -26,6 +26,7 @@ import { getProductFeedUrl } from '.~/utils/urls';
 import clientSession from '.~/components/paid-ads/ads-campaign/clientSession';
 import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
+import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 
 const ACTION_COMPLETE = 'complete-ads';
 const ACTION_SKIP = 'skip-ads';
@@ -74,17 +75,9 @@ export default function SetupPaidAds() {
 	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( () =>
 		clientSession.getShowPaidAdsSetup( false )
 	);
-	const [ paidAds, setPaidAds ] = useState( {} );
 	const [ completing, setCompleting ] = useState( null );
 
-	const handleContinuePaidAdsSetupClick = () => {
-		setShowPaidAdsSetup( true );
-		clientSession.setShowPaidAdsSetup( true );
-	};
-
 	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
-		setCompleting( event.target.dataset.action );
-
 		try {
 			await onBeforeFinish();
 			await apiFetch( {
@@ -92,7 +85,7 @@ export default function SetupPaidAds() {
 				method: 'POST',
 			} );
 		} catch ( e ) {
-			setCompleting( null );
+			// setCompleting( null );
 
 			createNotice(
 				'error',
@@ -108,7 +101,7 @@ export default function SetupPaidAds() {
 		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
-	const handleCompleteClick = async ( event ) => {
+	const handleCompleteClick = async ( event, paidAds ) => {
 		const onBeforeFinish = handleSetupComplete.bind(
 			null,
 			paidAds.amount,
@@ -117,111 +110,84 @@ export default function SetupPaidAds() {
 		await finishOnboardingSetup( event, onBeforeFinish );
 	};
 
-	// The status check of Google Ads account connection is included in `paidAds.isReady`,
-	// because when there is no connected account, it will disable the budget section and set the `amount` to `undefined`.
-	const disabledComplete = completing === ACTION_SKIP || ! paidAds.isReady;
-
-	function createSkipButton( text ) {
-		const eventProps = {
-			opened_paid_ads_setup: 'no',
-			google_ads_account_status: googleAdsAccount?.status,
-			billing_method_status: 'unknown',
-			campaign_form_validation: 'unknown',
-		};
-
-		if ( showPaidAdsSetup ) {
-			const selector = select( STORE_KEY );
-			const billing = selector.getGoogleAdsAccountBillingStatus();
-
-			merge( eventProps, {
-				opened_paid_ads_setup: 'yes',
-				billing_method_status: billing?.status,
-				campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
-			} );
-		}
-
-		const disabledSkip =
-			completing === ACTION_COMPLETE || ! hasGoogleAdsConnection;
-
-		return (
-			<AppButton
-				isTertiary
-				data-action={ ACTION_SKIP }
-				text={ text }
-				loading={ completing === ACTION_SKIP }
-				disabled={ disabledSkip }
-				onClick={ finishOnboardingSetup }
-				eventName="gla_onboarding_complete_button_click"
-				eventProps={ eventProps }
-			/>
-		);
-	}
-
 	return (
-		<StepContent>
-			<StepContentHeader
-				title={ __(
-					'Create a campaign to advertise your products',
-					'google-listings-and-ads'
-				) }
-				description={ __(
-					'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
-					'google-listings-and-ads'
-				) }
-			/>
-
-			<PaidAdsFeaturesSection
-				hideBudgetContent={ ! hasGoogleAdsConnection }
-				hideFooterButtons={
-					! hasGoogleAdsConnection || showPaidAdsSetup
-				}
-				skipButton={ createSkipButton(
-					__( 'Skip this step for now', 'google-listings-and-ads' )
-				) }
-				continueButton={
-					<AppButton
-						isPrimary
-						text={ __(
-							'Create campaign',
-							'google-listings-and-ads'
-						) }
-						disabled={ completing === ACTION_SKIP }
-						onClick={ handleContinuePaidAdsSetupClick }
-						eventName="gla_onboarding_open_paid_ads_setup_button_click"
-					/>
-				}
-			/>
-			{ showPaidAdsSetup && (
-				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
+		<AdsCampaign
+			headerTitle={ __(
+				'Create a campaign to advertise your products',
+				'google-listings-and-ads'
 			) }
-
-			<FaqsSection />
-			<StepContentFooter hidden={ ! showPaidAdsSetup }>
-				<Flex justify="right" gap={ 4 }>
-					{ createSkipButton(
-						__(
-							'Skip paid ads creation',
-							'google-listings-and-ads'
-						)
-					) }
-					<AppButton
-						isPrimary
-						data-action={ ACTION_COMPLETE }
-						text={ __(
-							'Complete setup',
-							'google-listings-and-ads'
-						) }
-						loading={ completing === ACTION_COMPLETE }
-						disabled={ disabledComplete }
-						onClick={ handleCompleteClick }
-						eventName="gla_onboarding_complete_with_paid_ads_button_click"
-						eventProps={ {
-							budget: paidAds.amount,
-							audiences: paidAds.countryCodes?.join( ',' ),
-						} }
-					/>
-				</Flex>
-			</StepContentFooter>
-		</StepContent>
+			onSkip={ finishOnboardingSetup }
+			onContinue={ handleCompleteClick }
+			onboardingSetup
+		/>
 	);
+
+	// return (
+	// 	<StepContent>
+	// 		<StepContentHeader
+	// 			title={ __(
+	// 				'Create a campaign to advertise your products',
+	// 				'google-listings-and-ads'
+	// 			) }
+	// 			description={ __(
+	// 				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
+	// 				'google-listings-and-ads'
+	// 			) }
+	// 		/>
+
+	// 		<PaidAdsFeaturesSection
+	// 			hideBudgetContent={ ! hasGoogleAdsConnection }
+	// 			hideFooterButtons={
+	// 				! hasGoogleAdsConnection || showPaidAdsSetup
+	// 			}
+	// 			skipButton={ createSkipButton(
+	// 				__( 'Skip this step for now', 'google-listings-and-ads' )
+	// 			) }
+	// 			continueButton={
+	// 				<AppButton
+	// 					isPrimary
+	// 					text={ __(
+	// 						'Create campaign',
+	// 						'google-listings-and-ads'
+	// 					) }
+	// 					disabled={ completing === ACTION_SKIP }
+	// 					onClick={ handleContinuePaidAdsSetupClick }
+	// 					eventName="gla_onboarding_open_paid_ads_setup_button_click"
+	// 				/>
+	// 			}
+	// 		/>
+	// 		{ showPaidAdsSetup && (
+	// 			<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
+	// 		) }
+
+	// 		<FaqsSection />
+
+	// 		<StepContentFooter hidden={ ! showPaidAdsSetup }>
+	// 			<Flex justify="right" gap={ 4 }>
+	// 				{ createSkipButton(
+	// 					__(
+	// 						'Skip paid ads creation',
+	// 						'google-listings-and-ads'
+	// 					)
+	// 				) }
+	// 				<AppButton
+	// 					isPrimary
+	// 					data-action={ ACTION_COMPLETE }
+	// 					text={ __(
+	// 						'Complete setup',
+	// 						'google-listings-and-ads'
+	// 					) }
+	// 					loading={ completing === ACTION_COMPLETE }
+	// 					disabled={ disabledComplete }
+	// 					onClick={ handleCompleteClick }
+	// 					eventName="gla_onboarding_complete_with_paid_ads_button_click"
+	// 					eventProps={ {
+	// 						budget: paidAds.amount,
+	// 						audiences: paidAds.countryCodes?.join( ',' ),
+	// 					} }
+	// 				/>
+	// 			</Flex>
+	// 		</StepContentFooter>
+	// 	</StepContent>
+	// );
 }

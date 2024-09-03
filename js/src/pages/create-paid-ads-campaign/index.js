@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Stepper } from '@woocommerce/components';
-import { useState, useRef } from '@wordpress/element';
+import { useState, useRef, createInterpolateElement } from '@wordpress/element';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -20,6 +20,8 @@ import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
+import AppDocumentationLink from '.~/components/app-documentation-link';
+import AppButton from '.~/components/app-button';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '.~/components/paid-ads/asset-group';
@@ -145,10 +147,17 @@ const CreatePaidAdsCampaign = () => {
 							),
 							content: (
 								<AdsCampaign
+									headerTitle={ __(
+										'Create your paid campaign',
+										'google-listings-and-ads'
+									) }
 									trackingContext={ eventContext }
 									onContinue={ () =>
 										handleContinueClick( STEP.ASSET_GROUP )
 									}
+									onClick={ () => {
+										handleContinueClick( STEP.ASSET_GROUP );
+									} }
 								/>
 							),
 							onClick: handleStepperClick,

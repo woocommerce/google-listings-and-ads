@@ -3,7 +3,7 @@
  */
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,6 +12,8 @@ import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
+import AppDocumentationLink from '.~/components/app-documentation-link';
+import AppButton from '.~/components/app-button';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -27,6 +29,7 @@ import {
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '2' );
+	const { isValidForm } = formProps;
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
@@ -91,6 +94,10 @@ const AdsStepper = ( { formProps } ) => {
 					),
 					content: (
 						<AdsCampaign
+							headerTitle={ __(
+								'Create your paid campaign',
+								'google-listings-and-ads'
+							) }
 							trackingContext="setup-ads"
 							onContinue={ handleCreateCampaignContinue }
 						/>

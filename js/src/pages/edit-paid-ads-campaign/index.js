@@ -4,7 +4,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { Stepper } from '@woocommerce/components';
 import { getQuery, getHistory, getNewPath } from '@woocommerce/navigation';
-import { useEffect } from '@wordpress/element';
+import { useEffect, createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -20,6 +20,8 @@ import HelpIconButton from '.~/components/help-icon-button';
 import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import AppSpinner from '.~/components/app-spinner';
+import AppDocumentationLink from '.~/components/app-documentation-link';
+import AppButton from '.~/components/app-button';
 import AssetGroup, {
 	ACTION_SUBMIT_CAMPAIGN_AND_ASSETS,
 } from '.~/components/paid-ads/asset-group';
@@ -200,6 +202,13 @@ const EditPaidAdsCampaign = () => {
 									onContinue={ () =>
 										handleContinueClick( STEP.ASSET_GROUP )
 									}
+									headerTitle={ __(
+										'Edit your paid campaign',
+										'google-listings-and-ads'
+									) }
+									onClick={ () => {
+										handleContinueClick( STEP.ASSET_GROUP );
+									} }
 								/>
 							),
 							onClick: handleStepperClick,

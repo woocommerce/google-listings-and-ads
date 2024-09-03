@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
 import { Pill } from '@woocommerce/components';
+import { noop } from 'lodash';
 import GridiconCheckmark from 'gridicons/dist/checkmark';
 import GridiconGift from 'gridicons/dist/gift';
 
@@ -13,6 +14,9 @@ import GridiconGift from 'gridicons/dist/gift';
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import CampaignPreview from '.~/components/paid-ads/campaign-preview';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import AppButton from '.~/components/app-button';
+import SkipButton from './skip-button';
 import './paid-ads-features-section.scss';
 
 function FeatureList( { hideBudgetContent } ) {
@@ -57,17 +61,27 @@ function FeatureList( { hideBudgetContent } ) {
  * for the next actions: skip or continue the paid ads setup.
  *
  * @param {Object} props React props.
- * @param {boolean} props.hideBudgetContent Whether to hide the content about the ad budget.
  * @param {boolean} props.hideFooterButtons Whether to hide the buttons at the card footer.
  * @param {JSX.Element} props.skipButton Button to skip paid ads setup.
  * @param {JSX.Element} props.continueButton Button to continue paid ads setup.
+ * @param props.buttons
+ * @param props.onSkipClick
+ * @param props.onCreateCampaignClick
+ * @param props.disableCreateButton
+ * @param props.hidePaidAdsSetupFooterButtons
  */
 export default function PaidAdsFeaturesSection( {
-	hideBudgetContent,
-	hideFooterButtons,
-	skipButton,
-	continueButton,
+	hidePaidAdsSetupFooterButtons,
+	onSkipClick = noop,
+	onCreateCampaignClick = noop,
+	disableCreateButton = false,
 } ) {
+	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
+
+	const hideBudgetContent = ! hasGoogleAdsConnection;
+	const hideFooterButtons =
+		! hasGoogleAdsConnection || hidePaidAdsSetupFooterButtons;
+
 	return (
 		<Section
 			className="gla-paid-ads-features-section"
@@ -131,8 +145,24 @@ export default function PaidAdsFeaturesSection( {
 					</Flex>
 				</Section.Card.Body>
 				<Section.Card.Footer hidden={ hideFooterButtons }>
-					{ skipButton }
-					{ continueButton }
+					<SkipButton
+						text={ __(
+							'Skip this step for now',
+							'google-listings-and-ads'
+						) }
+						onClick={ onSkipClick }
+					/>
+
+					<AppButton
+						isPrimary
+						text={ __(
+							'Create campaign',
+							'google-listings-and-ads'
+						) }
+						disabled={ disableCreateButton }
+						onClick={ onCreateCampaignClick }
+						eventName="gla_onboarding_open_paid_ads_setup_button_click"
+					/>
 				</Section.Card.Footer>
 			</Section.Card>
 		</Section>
