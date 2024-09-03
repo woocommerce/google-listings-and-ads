@@ -20,7 +20,6 @@ import PaidAdsSetupSections from './paid-ads-setup-sections';
 import SkipButton from './skip-button';
 import clientSession from './clientSession';
 import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
-import { useEffect } from 'react';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -37,16 +36,7 @@ import { useEffect } from 'react';
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {() => void} props.onContinue Callback called once continue button is clicked.
  * @param props.headerTitle
- * @param props.hideFooterButtons
- * @param props.paidAdsFeaturesSectionButtons
- * @param props.showPaidAdsSetupSections
- * @param props.buttons
- * @param props.skipButton
- * @param props.continueButtonProps
  * @param props.onSkip
- * @param props.onSkipClick
- * @param props.continueButtonText
- * @param props.hidePaidAdsSetupFooterButtons
  * @param props.onboardingSetup
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
@@ -60,7 +50,6 @@ export default function AdsCampaign( {
 } ) {
 	const formContext = useAdaptiveFormContext();
 	const { isValidForm, setValue } = formContext;
-	console.log( formContext );
 	const [ completing, setCompleting ] = useState( null );
 	const [ paidAds, setPaidAds ] = useState( {} );
 	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( () =>

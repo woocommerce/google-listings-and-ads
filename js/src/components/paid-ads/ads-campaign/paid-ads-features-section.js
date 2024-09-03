@@ -64,11 +64,10 @@ function FeatureList( { hideBudgetContent } ) {
  * @param {boolean} props.hideFooterButtons Whether to hide the buttons at the card footer.
  * @param {JSX.Element} props.skipButton Button to skip paid ads setup.
  * @param {JSX.Element} props.continueButton Button to continue paid ads setup.
- * @param props.buttons
+ * @param props.hidePaidAdsSetupFooterButtons
  * @param props.onSkipClick
  * @param props.onCreateCampaignClick
  * @param props.disableCreateButton
- * @param props.hidePaidAdsSetupFooterButtons
  */
 export default function PaidAdsFeaturesSection( {
 	hidePaidAdsSetupFooterButtons,
