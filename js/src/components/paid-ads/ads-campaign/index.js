@@ -89,7 +89,7 @@ export default function AdsCampaign( {
 	// because when there is no connected account, it will disable the budget section and set the `amount` to `undefined`.
 	const disabledComplete =
 		completing === ACTION_SKIP || ! paidAds.isReady || ! isValidForm;
-	const shouldShowPaidAdsSetup = onboardingSetup || showPaidAdsSetup;
+	const shouldShowPaidAdsSetup = ! onboardingSetup || showPaidAdsSetup;
 
 	let continueButtonProps = {
 		text: __( 'Continue', 'google-listings-and-ads' ),
