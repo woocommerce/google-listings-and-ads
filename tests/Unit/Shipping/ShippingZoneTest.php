@@ -152,6 +152,50 @@ class ShippingZoneTest extends UnitTest {
 		$this->assertEmpty( $this->shipping_zone->get_shipping_countries() );
 	}
 
+	public function test_get_shipping_rates_count() {
+		$this->wc->expects( $this->exactly( 1 ) )
+			->method( 'get_shipping_zones' )
+			->willReturn( [ [ 'zone_id' => 1 ] ] );
+
+			$this->locations_parser->expects( $this->once() )
+			->method( 'parse' )
+			->willReturn(
+				[
+					new ShippingLocation( 21137, 'US', 'CA' ),
+				]
+			);
+		$this->methods_parser->expects( $this->once() )
+			->method( 'parse' )
+			->willReturn(
+				[
+					new ShippingRate( 10 ),
+				]
+			);
+
+		$this->assertEquals( 1, $this->shipping_zone->get_shipping_rates_count() );
+	}
+
+	public function test_get_shipping_rates_count_with_no_rates() {
+		$this->wc->expects( $this->exactly( 1 ) )
+			->method( 'get_shipping_zones' )
+			->willReturn( [ [ 'zone_id' => 1 ] ] );
+
+			$this->locations_parser->expects( $this->once() )
+			->method( 'parse' )
+			->willReturn(
+				[
+					new ShippingLocation( 21137, 'US', 'CA' ),
+				]
+			);
+		$this->methods_parser->expects( $this->once() )
+			->method( 'parse' )
+			->willReturn(
+				[]
+			);
+
+		$this->assertEquals( 0, $this->shipping_zone->get_shipping_rates_count() );
+	}
+
 	/**
 	 * Runs before each test is executed.
 	 */

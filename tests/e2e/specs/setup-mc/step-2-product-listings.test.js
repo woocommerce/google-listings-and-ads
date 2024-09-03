@@ -64,12 +64,13 @@ test.describe( 'Configure product listings', () => {
 			// Mock MC settings
 			productListingsPage.fulfillSettings(
 				{
-					shipping_rate: 'automatic',
+					shipping_rate: 'flat',
 					website_live: false,
 					checkout_process_secure: false,
 					payment_methods_visible: false,
 					refund_tos_visible: false,
 					contact_info_visible: false,
+					shipping_rates_count: 0,
 				},
 				200,
 				[ 'GET' ]
@@ -185,12 +186,24 @@ test.describe( 'Configure product listings', () => {
 		await expect( taxRateSection ).not.toBeVisible();
 	} );
 
+	test.describe( 'Automatic rate', () => {
+		test.beforeAll( async () => {
+			await page.reload();
+		} );
+
+		test( 'shouldnt display automatic rate if no shipping methods are set up, shipping_rates_count = 0', async () => {
+			await expect(
+				productListingsPage.getRecommendedShippingRateRadioRow()
+			).toHaveCount( 0 );
+		} );
+	} );
+
 	test.describe( 'Shipping rate is simple', () => {
 		test.beforeAll( async () => {
 			await page.reload();
 
 			// Check another shipping rate first in case the simple shipping rate radio button is already checked.
-			await productListingsPage.checkRecommendedShippingRateRadioButton();
+			await productListingsPage.checkComplexShippingRateRadioButton();
 		} );
 
 		test( 'should send settings POST request after checking simple shipping rate radio button', async () => {
@@ -267,9 +280,6 @@ test.describe( 'Configure product listings', () => {
 				productListingsPage.getEstimatedShippingRatesCard();
 			estimatedTimesCard =
 				productListingsPage.getEstimatedShippingTimesCard();
-
-			// Check another shipping rate first in case the complex shipping rate radio button is already checked.
-			await productListingsPage.checkRecommendedShippingRateRadioButton();
 		} );
 
 		test( 'should send settings POST request after checking complex shipping rate radio button', async () => {
@@ -306,6 +316,21 @@ test.describe( 'Configure product listings', () => {
 
 	test.describe( 'Shipping rate is recommended', () => {
 		test.beforeAll( async () => {
+			productListingsPage.fulfillSettings(
+				{
+					shipping_rate: 'flat',
+					website_live: false,
+					checkout_process_secure: false,
+					payment_methods_visible: false,
+					refund_tos_visible: false,
+					contact_info_visible: false,
+					shipping_rates_count: 1, // Set shipping rates count to 1 to show the recommended shipping rate radio button.
+				},
+				200,
+				[ 'GET' ]
+			);
+
+			await page.reload();
 			// Check another shipping rate first in case the recommended shipping rate radio button is already checked.
 			await productListingsPage.checkSimpleShippingRateRadioButton();
 		} );

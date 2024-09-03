@@ -14,6 +14,8 @@ import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
+import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
+import useMCSetup from '.~/hooks/useMCSetup';
 
 /**
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-shipping', link_id: 'shipping-read-more', href: 'https://support.google.com/merchants/answer/7050921' }`
@@ -22,7 +24,15 @@ import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
 
 const ShippingRateSection = () => {
 	const { getInputProps, values } = useAdaptiveFormContext();
+	const { settings } = useSettings();
+	const { hasFinishedResolution, data: mcSetup } = useMCSetup();
 	const inputProps = getInputProps( 'shipping_rate' );
+
+	// Hide the automatic shipping rate option if there are no shipping rates and the merchant is onboarding.
+	const hideAutomatticShippingRate =
+		! settings?.shipping_rates_count &&
+		hasFinishedResolution &&
+		mcSetup?.status === 'incomplete';
 
 	return (
 		<Section
@@ -51,27 +61,24 @@ const ShippingRateSection = () => {
 				<Section.Card>
 					<Section.Card.Body>
 						<VerticalGapLayout size="large">
-							<AppRadioContentControl
-								{ ...inputProps }
-								label={ createInterpolateElement(
-									__(
-										'<strong>Recommended:</strong> Automatically sync my store’s shipping settings to Google.',
-										'google-listings-and-ads'
-									),
-									{
-										strong: <strong></strong>,
-									}
-								) }
-								value="automatic"
-								collapsible
-							>
-								<RadioHelperText>
-									{ __(
-										'My current settings and any future changes to my store’s shipping rates and classes will be automatically synced to Google Merchant Center.',
+							{ ! hideAutomatticShippingRate && (
+								<AppRadioContentControl
+									{ ...inputProps }
+									label={ __(
+										'Automatically sync my store’s shipping settings to Google.',
 										'google-listings-and-ads'
 									) }
-								</RadioHelperText>
-							</AppRadioContentControl>
+									value="automatic"
+									collapsible
+								>
+									<RadioHelperText>
+										{ __(
+											'My current settings and any future changes to my store’s shipping rates and classes will be automatically synced to Google Merchant Center.',
+											'google-listings-and-ads'
+										) }
+									</RadioHelperText>
+								</AppRadioContentControl>
+							) }
 							<AppRadioContentControl
 								{ ...inputProps }
 								label={ __(

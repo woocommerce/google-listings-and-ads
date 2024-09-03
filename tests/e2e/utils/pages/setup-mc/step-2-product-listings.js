@@ -80,7 +80,7 @@ export default class ProductListingsPage extends MockRequests {
 	 */
 	getRecommendedShippingRateRadioRow() {
 		return this.page.getByRole( 'radio', {
-			name: 'Recommended: Automatically sync my store’s shipping settings to Google.',
+			name: 'Automatically sync my store’s shipping settings to Google.',
 			exact: true,
 		} );
 	}

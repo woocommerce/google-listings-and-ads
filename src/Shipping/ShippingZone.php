@@ -78,6 +78,16 @@ class ShippingZone implements Service {
 	}
 
 	/**
+	 * Get the number of shipping rates enable in WooCommerce.
+	 *
+	 * @return int
+	 */
+	public function get_shipping_rates_count(): int {
+		$this->parse_shipping_zones();
+		return count( $this->location_rates ?? [] );
+	}
+
+	/**
 	 * Returns the available shipping rates for a country and its subdivisions.
 	 *
 	 * @param string $country_code

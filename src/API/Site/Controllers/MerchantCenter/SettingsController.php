@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,6 +18,22 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class SettingsController extends BaseOptionsController {
+
+	/**
+	 * @var ShippingZone
+	 */
+	protected $shipping_zone;
+
+	/**
+	 * SettingsController constructor.
+	 *
+	 * @param RESTServer   $server
+	 * @param ShippingZone $shipping_zone
+	 */
+	public function __construct( RESTServer $server, ShippingZone $shipping_zone ) {
+		parent::__construct( $server );
+		$this->shipping_zone = $shipping_zone;
+	}
 
 	/**
 	 * Register rest routes with WordPress.
@@ -46,9 +64,10 @@ class SettingsController extends BaseOptionsController {
 	 */
 	protected function get_settings_endpoint_read_callback(): callable {
 		return function () {
-			$data   = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-			$schema = $this->get_schema_properties();
-			$items  = [];
+			$data                         = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+			$data['shipping_rates_count'] = $this->shipping_zone->get_shipping_rates_count();
+			$schema                       = $this->get_schema_properties();
+			$items                        = [];
 			foreach ( $schema as $key => $property ) {
 				$items[ $key ] = $data[ $key ] ?? $property['default'] ?? null;
 			}
@@ -71,6 +90,9 @@ class SettingsController extends BaseOptionsController {
 			}
 
 			foreach ( $schema as $key => $property ) {
+				if ( ! in_array( 'edit', $property['context'] ?? [], true ) ) {
+					continue;
+				}
 				$options[ $key ] = $request->get_param( $key ) ?? $options[ $key ] ?? $property['default'] ?? null;
 			}
 
@@ -177,6 +199,16 @@ class SettingsController extends BaseOptionsController {
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'default'           => false,
+			],
+			'shipping_rates_count'    => [
+				'type'              => 'number',
+				'description'       => __(
+					'The number of shipping rates in WC ready to be used in the Merchant Center.',
+					'google-listings-and-ads'
+				),
+				'context'           => [ 'view' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'default'           => 0,
 			],
 		];
 	}
