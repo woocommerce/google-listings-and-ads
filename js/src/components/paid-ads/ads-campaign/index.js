@@ -35,9 +35,9 @@ import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {() => void} props.onContinue Callback called once continue button is clicked.
- * @param props.headerTitle
- * @param props.onSkip
- * @param props.onboardingSetup
+ * @param {string} props.headerTitle The title of the step.
+ * @param {() => void} props.onSkip Callback called once skip button is clicked.
+ * @param {boolean} [props.onboardingSetup=false] Whether this component is used in onboarding setup.
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {

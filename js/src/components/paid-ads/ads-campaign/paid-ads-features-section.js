@@ -61,13 +61,10 @@ function FeatureList( { hideBudgetContent } ) {
  * for the next actions: skip or continue the paid ads setup.
  *
  * @param {Object} props React props.
- * @param {boolean} props.hideFooterButtons Whether to hide the buttons at the card footer.
- * @param {JSX.Element} props.skipButton Button to skip paid ads setup.
- * @param {JSX.Element} props.continueButton Button to continue paid ads setup.
- * @param props.hidePaidAdsSetupFooterButtons
- * @param props.onSkipClick
- * @param props.onCreateCampaignClick
- * @param props.disableCreateButton
+ * @param {boolean} props.hidePaidAdsSetupFooterButtons Whether to hide the buttons at the section footer.
+ * @param {() => void} props.onSkipClick Callback called when the skip button is clicked.
+ * @param {() => void} props.onCreateCampaignClick Callback called when the create campaign button is clicked.
+ * @param {boolean} [props.disableCreateButton=false] Whether to disable the create campaign button.
  */
 export default function PaidAdsFeaturesSection( {
 	hidePaidAdsSetupFooterButtons,

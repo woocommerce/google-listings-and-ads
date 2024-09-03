@@ -21,6 +21,10 @@ import clientSession from './clientSession';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
 /**
+ * @typedef {import('.~/data/actions').Campaign} Campaign
+ */
+
+/**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  *
  * @typedef {Object} PaidAdsData
@@ -73,8 +77,8 @@ function resolveInitialPaidAds( paidAds, targetAudience ) {
  *
  * @param {Object} props React props.
  * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the audience, budget, and billing are updated.
- * @param props.isCreation
- * @param props.campaign
+ * @param {boolean} [props.isCreation=false] Whether the paid ads setup is for creating a new campaign.
+ * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  */
 export default function PaidAdsSetupSections( {
 	onStatesReceived,
