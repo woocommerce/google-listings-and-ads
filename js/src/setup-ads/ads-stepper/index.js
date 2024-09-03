@@ -3,7 +3,7 @@
  */
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
-import { useState, createInterpolateElement } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,8 +12,6 @@ import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
-import AppDocumentationLink from '.~/components/app-documentation-link';
-import AppButton from '.~/components/app-button';
 import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
@@ -28,8 +26,7 @@ import {
  * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
  */
 const AdsStepper = ( { formProps } ) => {
-	const [ step, setStep ] = useState( '2' );
-	const { isValidForm } = formProps;
+	const [ step, setStep ] = useState( '1' );
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
