@@ -39,7 +39,6 @@ import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
  * @param {string} [props.headerDescription] The description of the step.
  * @param {() => void} props.onSkip Callback called once skip button is clicked.
  * @param {boolean} [props.onboardingSetup=false] Whether this component is used in onboarding setup.
- * @param props.headerDescription
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {
