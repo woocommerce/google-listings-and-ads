@@ -36,14 +36,17 @@ import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {() => void} props.onContinue Callback called once continue button is clicked.
  * @param {string} props.headerTitle The title of the step.
+ * @param {string} [props.headerDescription] The description of the step.
  * @param {() => void} props.onSkip Callback called once skip button is clicked.
  * @param {boolean} [props.onboardingSetup=false] Whether this component is used in onboarding setup.
+ * @param props.headerDescription
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {
 	campaign,
 	trackingContext,
 	headerTitle,
+	headerDescription,
 	onContinue = noop,
 	onSkip = noop,
 	onboardingSetup = false,
@@ -107,25 +110,29 @@ export default function AdsCampaign( {
 		};
 	}
 
+	const description =
+		headerDescription ||
+		createInterpolateElement(
+			__(
+				'Paid Performance Max campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
+				'google-listings-and-ads'
+			),
+			{
+				link: (
+					<AppDocumentationLink
+						context={ trackingContext }
+						linkId="see-what-ads-look-like"
+						href="https://support.google.com/google-ads/answer/6275294"
+					/>
+				),
+			}
+		);
+
 	return (
 		<StepContent>
 			<StepContentHeader
 				title={ headerTitle }
-				description={ createInterpolateElement(
-					__(
-						'Paid Performance Max campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
-						'google-listings-and-ads'
-					),
-					{
-						link: (
-							<AppDocumentationLink
-								context={ trackingContext }
-								linkId="see-what-ads-look-like"
-								href="https://support.google.com/google-ads/answer/6275294"
-							/>
-						),
-					}
-				) }
+				description={ description }
 			/>
 
 			<PaidAdsFeaturesSection

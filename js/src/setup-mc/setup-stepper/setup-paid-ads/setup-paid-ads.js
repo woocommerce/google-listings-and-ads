@@ -96,6 +96,10 @@ export default function SetupPaidAds() {
 				'Create a campaign to advertise your products',
 				'google-listings-and-ads'
 			) }
+			headerDescription={ __(
+				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
+				'google-listings-and-ads'
+			) }
 			onSkip={ finishOnboardingSetup }
 			onContinue={ handleCompleteClick }
 			onboardingSetup
