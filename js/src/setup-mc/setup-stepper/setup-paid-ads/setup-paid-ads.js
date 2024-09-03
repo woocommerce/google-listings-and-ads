@@ -3,33 +3,18 @@
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { select } from '@wordpress/data';
-import { useState } from '@wordpress/element';
-import { Flex } from '@wordpress/components';
-import { noop, merge } from 'lodash';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
-import StepContent from '.~/components/stepper/step-content';
-import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
-import FaqsSection from '.~/components/paid-ads/faqs-section';
-import AppButton from '.~/components/app-button';
-import PaidAdsFeaturesSection from '.~/components/paid-ads/ads-campaign/paid-ads-features-section';
-import PaidAdsSetupSections from '.~/components/paid-ads/ads-campaign/paid-ads-setup-sections';
 import { getProductFeedUrl } from '.~/utils/urls';
-import clientSession from '.~/components/paid-ads/ads-campaign/clientSession';
-import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
+import { API_NAMESPACE } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
-
-const ACTION_COMPLETE = 'complete-ads';
-const ACTION_SKIP = 'skip-ads';
 
 /**
  * Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
@@ -70,12 +55,7 @@ const ACTION_SKIP = 'skip-ads';
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
 	const { createNotice } = useDispatchCoreNotices();
-	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( () =>
-		clientSession.getShowPaidAdsSetup( false )
-	);
-	const [ completing, setCompleting ] = useState( null );
 
 	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
 		try {
@@ -121,73 +101,4 @@ export default function SetupPaidAds() {
 			onboardingSetup
 		/>
 	);
-
-	// return (
-	// 	<StepContent>
-	// 		<StepContentHeader
-	// 			title={ __(
-	// 				'Create a campaign to advertise your products',
-	// 				'google-listings-and-ads'
-	// 			) }
-	// 			description={ __(
-	// 				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
-	// 				'google-listings-and-ads'
-	// 			) }
-	// 		/>
-
-	// 		<PaidAdsFeaturesSection
-	// 			hideBudgetContent={ ! hasGoogleAdsConnection }
-	// 			hideFooterButtons={
-	// 				! hasGoogleAdsConnection || showPaidAdsSetup
-	// 			}
-	// 			skipButton={ createSkipButton(
-	// 				__( 'Skip this step for now', 'google-listings-and-ads' )
-	// 			) }
-	// 			continueButton={
-	// 				<AppButton
-	// 					isPrimary
-	// 					text={ __(
-	// 						'Create campaign',
-	// 						'google-listings-and-ads'
-	// 					) }
-	// 					disabled={ completing === ACTION_SKIP }
-	// 					onClick={ handleContinuePaidAdsSetupClick }
-	// 					eventName="gla_onboarding_open_paid_ads_setup_button_click"
-	// 				/>
-	// 			}
-	// 		/>
-	// 		{ showPaidAdsSetup && (
-	// 			<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
-	// 		) }
-
-	// 		<FaqsSection />
-
-	// 		<StepContentFooter hidden={ ! showPaidAdsSetup }>
-	// 			<Flex justify="right" gap={ 4 }>
-	// 				{ createSkipButton(
-	// 					__(
-	// 						'Skip paid ads creation',
-	// 						'google-listings-and-ads'
-	// 					)
-	// 				) }
-	// 				<AppButton
-	// 					isPrimary
-	// 					data-action={ ACTION_COMPLETE }
-	// 					text={ __(
-	// 						'Complete setup',
-	// 						'google-listings-and-ads'
-	// 					) }
-	// 					loading={ completing === ACTION_COMPLETE }
-	// 					disabled={ disabledComplete }
-	// 					onClick={ handleCompleteClick }
-	// 					eventName="gla_onboarding_complete_with_paid_ads_button_click"
-	// 					eventProps={ {
-	// 						budget: paidAds.amount,
-	// 						audiences: paidAds.countryCodes?.join( ',' ),
-	// 					} }
-	// 				/>
-	// 			</Flex>
-	// 		</StepContentFooter>
-	// 	</StepContent>
-	// );
 }
