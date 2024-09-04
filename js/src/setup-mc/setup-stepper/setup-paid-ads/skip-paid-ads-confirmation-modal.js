@@ -12,13 +12,6 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import { ACTION_SKIP } from './constants';
 
 /**
- * Triggered when the skip button is clicked
- * // TODO: to review
- *
- * @event gla_onboarding_complete_button_click
- */
-
-/**
  * @fires gla_documentation_link_click with `{ context: 'skip-paid-ads-modal', link_id: 'paid-ads-with-performance-max-campaigns-learn-more', href: 'https://support.google.com/google-ads/answer/10724817' }`
  */
 
