@@ -16,7 +16,6 @@ import {
 	getFAQPanelTitle,
 	getFAQPanelRow,
 	checkFAQExpandable,
-	checkBillingAdsPopup,
 } from '../../utils/page';
 
 const ADS_ACCOUNTS = [
@@ -281,7 +280,7 @@ test.describe( 'Set up Ads account', () => {
 
 	test.describe( 'Create your paid campaign', () => {
 		const launchPaidCampaignButton = page.getByRole( 'button', {
-			name: 'Launch paid campaign' 
+			name: 'Launch paid campaign',
 		} );
 
 		test.beforeAll( async () => {
@@ -306,9 +305,7 @@ test.describe( 'Set up Ads account', () => {
 				page.getByRole( 'heading', { name: 'Set your budget' } )
 			).toBeVisible();
 
-			await expect(
-				launchPaidCampaignButton
-			).toBeDisabled();
+			await expect( launchPaidCampaignButton ).toBeDisabled();
 
 			await expect(
 				page.getByRole( 'link', {
@@ -374,16 +371,12 @@ test.describe( 'Set up Ads account', () => {
 			budget = '0';
 			await setupBudgetPage.fillBudget( budget );
 
-			await expect(
-				launchPaidCampaignButton
-			).toBeDisabled();
+			await expect( launchPaidCampaignButton ).toBeDisabled();
 
 			budget = '1';
 			await setupBudgetPage.fillBudget( budget );
 
-			await expect(
-				launchPaidCampaignButton
-			).toBeEnabled();
+			await expect( launchPaidCampaignButton ).toBeEnabled();
 		} );
 
 		test( 'Budget Recommendation', async () => {
