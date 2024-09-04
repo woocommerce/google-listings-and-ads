@@ -10,7 +10,6 @@ import { useState } from '@wordpress/element';
  */
 import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
-import SetupBilling from './setup-billing';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
 import {
 	recordStepperChangeEvent,
@@ -58,10 +57,6 @@ const AdsStepper = ( { formProps } ) => {
 		continueStep( '2' );
 	};
 
-	const handleCreateCampaignContinue = () => {
-		continueStep( '3' );
-	};
-
 	return (
 		// This Stepper with this class name
 		// should be refactored into separate shared component.
@@ -92,15 +87,9 @@ const AdsStepper = ( { formProps } ) => {
 					content: (
 						<AdsCampaign
 							trackingContext="setup-ads"
-							onContinue={ handleCreateCampaignContinue }
+							formProps={ formProps }
 						/>
 					),
-					onClick: handleStepClick,
-				},
-				{
-					key: '3',
-					label: __( 'Set up billing', 'google-listings-and-ads' ),
-					content: <SetupBilling formProps={ formProps } />,
 					onClick: handleStepClick,
 				},
 			] }
