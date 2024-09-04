@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useEffect, useRef } from '@wordpress/element';
+import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
 
 /**
@@ -39,9 +39,11 @@ export default function VerificationCodeControl( {
 } ) {
 	const inputsRef = useRef( [] );
 	const cursorRef = useRef( 0 );
-	const onCodeChangeRef = useRef();
 	const [ digits, setDigits ] = useState( initDigits );
+	const [ focus, setFocus ] = useState( 0 );
 
+	// prevent potential undesired re-renders
+	const onCodeChangeRef = useRef( null );
 	onCodeChangeRef.current = onCodeChange;
 
 	/**
@@ -51,10 +53,23 @@ export default function VerificationCodeControl( {
 	 * @param {number} targetIdx Index of the node to move the focus to.
 	 */
 	const maybeMoveFocus = ( targetIdx ) => {
+		// prevent index overflow
+		targetIdx = Math.min( targetIdx, DIGIT_LENGTH - 1 );
+
 		const node = inputsRef.current[ targetIdx ];
 		if ( node ) {
 			node.focus();
 		}
+	};
+
+	const getEventData = ( e ) => {
+		const { value, dataset } = e.target;
+		const idx = Number( dataset.idx );
+
+		return {
+			idx,
+			value: e.clipboardData?.getData( 'text/plain' ) ?? value,
+		};
 	};
 
 	const handleKeyDown = ( e ) => {
@@ -77,42 +92,77 @@ export default function VerificationCodeControl( {
 		}
 	};
 
+	const updateState = useCallback(
+		( nextDigits ) => {
+			setDigits( nextDigits );
+			onCodeChangeRef.current( toCallbackData( nextDigits ) );
+		},
+		[ onCodeChangeRef ]
+	);
+
 	// Track the cursor's position.
 	const handleBeforeInput = ( e ) => {
 		cursorRef.current = e.target.selectionStart;
 	};
 
-	const handleInput = ( e ) => {
-		const { value, dataset } = e.target;
-		const idx = Number( dataset.idx );
+	const handleUpdate = ( e ) => {
+		e.preventDefault();
 
+		const { nextDigits, nextFocusIdx } = e.clipboardData
+			? handlePaste( e )
+			: handleInput( e );
+
+		setFocus( nextFocusIdx );
+
+		if ( nextDigits.toString() !== digits.toString() ) {
+			updateState( nextDigits );
+		}
+	};
+
+	const handleInput = ( e ) => {
+		const { value, idx } = getEventData( e );
 		// Only keep the first entered char from the starting position of key cursor.
-		// If that char is not a digit, then clear the input to empty.
 		const digit = value.substr( cursorRef.current, 1 ).replace( /\D/, '' );
+
+		// If that char is not a digit, then clear the input to empty.
 		if ( digit !== value ) {
 			e.target.value = digit;
 		}
 
-		if ( digit ) {
-			maybeMoveFocus( idx + 1 );
-		}
+		const nextDigits = [ ...digits ];
+		nextDigits[ idx ] = digit;
 
-		if ( digit !== digits[ idx ] ) {
-			const nextDigits = [ ...digits ];
-			nextDigits[ idx ] = digit;
-			setDigits( nextDigits );
-
-			onCodeChange( toCallbackData( nextDigits ) );
-		}
+		// always increase focus index by one except for digit deletions
+		return { nextDigits, nextFocusIdx: digit ? idx + 1 : idx };
 	};
 
-	// Update the inputs' values.
-	useEffect( () => {
-		inputsRef.current.forEach( ( el ) => ( el.value = '' ) );
+	const handlePaste = ( e ) => {
+		const { idx, value } = getEventData( e );
 
-		setDigits( initDigits );
-		onCodeChangeRef.current( toCallbackData( initDigits ) );
-	}, [ resetNeedle ] );
+		// only allow n digits, from the current idx position until the end
+		const newDigits = [
+			...value.replace( /\D/g, '' ).substr( 0, DIGIT_LENGTH - idx ),
+		];
+
+		// edge case: blur when pasting on last item
+		if (
+			newDigits.length === 1 &&
+			newDigits[ 0 ] !== digits[ idx ] &&
+			idx === DIGIT_LENGTH - 1
+		) {
+			e.target.blur();
+		}
+
+		const nextDigits = [ ...digits ];
+		newDigits.forEach(
+			( digit, i ) => ( nextDigits[ i + idx ] = newDigits[ i ] )
+		);
+
+		return {
+			nextDigits,
+			nextFocusIdx: newDigits.length + idx,
+		};
+	};
 
 	/**
 	 * Set the focus to the first input if the control's value is (back) at the initial state.
@@ -131,13 +181,19 @@ export default function VerificationCodeControl( {
 	 * So here we await the `digits` is reset back to `initDigits` by above useEffect and sync to internal value,
 	 * then move the focus calling after the synchronization tick finished.
 	 *
+	 * Note the above also impacts in the state updates for the focused element...
+	 * That's why we need setFocus state in order to sync these internal values.
+	 *
 	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/input-control/input-field.js#L73-L90
 	 */
 	useEffect( () => {
-		if ( digits === initDigits ) {
-			maybeMoveFocus( 0 );
-		}
-	}, [ resetNeedle, digits ] );
+		updateState( initDigits );
+		setFocus( 0 );
+	}, [ resetNeedle, updateState ] );
+
+	useEffect( () => {
+		maybeMoveFocus( focus );
+	}, [ digits, resetNeedle, focus ] );
 
 	return (
 		<Flex
@@ -154,7 +210,8 @@ export default function VerificationCodeControl( {
 						value={ value }
 						onKeyDown={ handleKeyDown }
 						onBeforeInput={ handleBeforeInput }
-						onInput={ handleInput }
+						onInput={ handleUpdate }
+						onPaste={ handleUpdate }
 						autoComplete="off"
 					/>
 				);
