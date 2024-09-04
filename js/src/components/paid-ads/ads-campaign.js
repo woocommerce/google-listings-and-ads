@@ -25,15 +25,15 @@ import FaqsSection from './faqs-section';
 /**
  * Renders the container of the form content for campaign management.
  *
- * Please note that this component relies on an CampaignAssetsForm's context and custom adapter,
- * so it expects a `CampaignAssetsForm` to existing in its parents.
+ * Please note that this component relies on a CampaignAssetsForm's context and custom adapter,
+ * so it expects a `CampaignAssetsForm` to exist in its parents.
  *
  * @fires gla_documentation_link_click with `{ context: 'create-ads' | 'edit-ads' | 'setup-ads', link_id: 'see-what-ads-look-like', href: 'https://support.google.com/google-ads/answer/6275294' }`
  *
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
- * @param {Object} props.formProps.isSubmitting Callback to display loading till Ads campaign is created.
- * @param {Object} props.formProps.handleSubmit Callback to handle campaign creation.
+ * @param {Function} props.formProps.isSubmitting Callback to display loading till Ads campaign is created.
+ * @param {Function} props.formProps.handleSubmit Callback to handle campaign creation.
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {
