@@ -181,19 +181,19 @@ export default class CompleteCampaign extends MockRequests {
 	}
 
 	/**
-	 * Retrieves the "Complete setup" button from the skip paid ads creation modal.
+	 * Retrieves the "Complete setup without setting up ads" button from the skip paid ads creation modal.
 	 *
-	 * @return {import('@playwright/test').Locator} Locator for the "Complete setup" button.
+	 * @return {import('@playwright/test').Locator} Locator for the "Complete setup without setting up ads" button.
 	 */
 	getCompleteSetuModalButton() {
 		return this.page.getByRole( 'button', {
-			name: 'Complete setup',
+			name: 'Complete setup without setting up ads',
 			exact: true,
 		} );
 	}
 
 	/**
-	 * Clicks the "Complete setup" button in the skip paid ads creation modal.
+	 * Clicks the "Complete setup without setting up ads" button in the skip paid ads creation modal.
 	 *
 	 * @return {Promise<void>} Resolves when the click action is completed and the page has loaded.
 	 */

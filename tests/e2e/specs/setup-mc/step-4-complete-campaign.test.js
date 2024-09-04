@@ -397,7 +397,7 @@ test.describe( 'Complete your campaign', () => {
 				} );
 
 				test( 'should see the url contains product-feed if the user skips', async () => {
-					await completeCampaign.clickCompleteSetupButton();
+					await completeCampaign.clickCompleteSetupModalButton();
 					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
 					expect( page.url() ).toMatch(
 						/path=%2Fgoogle%2Fproduct-feed/
