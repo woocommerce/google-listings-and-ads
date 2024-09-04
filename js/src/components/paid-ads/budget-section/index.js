@@ -12,6 +12,7 @@ import getMonthlyMaxEstimated from './getMonthlyMaxEstimated';
 import './index.scss';
 import BudgetRecommendation from './budget-recommendation';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 
 const nonInteractableProps = {
@@ -30,7 +31,8 @@ const nonInteractableProps = {
  */
 const BudgetSection = ( { formProps, disabled = false, children } ) => {
 	const { getInputProps, setValue, values } = formProps;
-	const { countryCodes, amount } = values;
+	const { amount } = values;
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
