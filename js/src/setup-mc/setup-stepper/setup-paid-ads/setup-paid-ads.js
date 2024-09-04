@@ -116,7 +116,7 @@ export default function SetupPaidAds() {
 
 		const eventProps = {
 			google_ads_account_status: googleAdsAccount?.status,
-			billing_method_status: billing?.status ?? 'unknown',
+			billing_method_status: billing?.status || 'unknown',
 			campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
 		};
 
