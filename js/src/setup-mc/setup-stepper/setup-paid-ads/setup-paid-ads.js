@@ -28,6 +28,7 @@ import clientSession from './clientSession';
 import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
@@ -120,6 +121,33 @@ export default function SetupPaidAds() {
 		await finishOnboardingSetup( event, onBeforeFinish );
 	};
 
+	const handleSkipCreatePaidAds = async ( event ) => {
+		setShowSkipPaidAdsConfirmationModal( false );
+
+		const eventProps = {
+			opened_paid_ads_setup: 'no',
+			google_ads_account_status: googleAdsAccount?.status,
+			billing_method_status: 'unknown',
+			campaign_form_validation: 'unknown',
+		};
+
+		// TODO: Review once https://github.com/woocommerce/google-listings-and-ads/issues/2500 is merged
+		if ( showPaidAdsSetup ) {
+			const selector = select( STORE_KEY );
+			const billing = selector.getGoogleAdsAccountBillingStatus();
+
+			merge( eventProps, {
+				opened_paid_ads_setup: 'yes',
+				billing_method_status: billing?.status,
+				campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
+			} );
+		}
+
+		recordGlaEvent( 'gla_onboarding_complete_button_click', eventProps );
+
+		await finishOnboardingSetup( event );
+	};
+
 	const handleShowSkipPaidAdsConfirmationModal = () => {
 		setShowSkipPaidAdsConfirmationModal( true );
 	};
@@ -133,24 +161,6 @@ export default function SetupPaidAds() {
 	const disabledComplete = completing === ACTION_SKIP || ! paidAds.isReady;
 
 	function createSkipButton( text ) {
-		const eventProps = {
-			opened_paid_ads_setup: 'no',
-			google_ads_account_status: googleAdsAccount?.status,
-			billing_method_status: 'unknown',
-			campaign_form_validation: 'unknown',
-		};
-
-		if ( showPaidAdsSetup ) {
-			const selector = select( STORE_KEY );
-			const billing = selector.getGoogleAdsAccountBillingStatus();
-
-			merge( eventProps, {
-				opened_paid_ads_setup: 'yes',
-				billing_method_status: billing?.status,
-				campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
-			} );
-		}
-
 		const disabledSkip =
 			completing === ACTION_COMPLETE || ! hasGoogleAdsConnection;
 
@@ -162,10 +172,6 @@ export default function SetupPaidAds() {
 				loading={ completing === ACTION_SKIP }
 				disabled={ disabledSkip }
 				onClick={ handleShowSkipPaidAdsConfirmationModal }
-				// TODO: Review eventName and eventProps
-				// The same eventName and eventProps has been copied over to the "Confirm" button in the SkipPaidAdsConfirmationModal component.
-				eventName="gla_onboarding_complete_button_click"
-				eventProps={ eventProps }
 			/>
 		);
 	}
@@ -211,10 +217,7 @@ export default function SetupPaidAds() {
 			{ showSkipPaidAdsConfirmationModal && (
 				<SkipPaidAdsConfirmationModal
 					onRequestClose={ handleCancelSkipPaidAdsClick }
-					onSkipConfirmation={ finishOnboardingSetup }
-					isProcessing={ !! completing }
-					showPaidAdsSetup={ showPaidAdsSetup }
-					paidAds={ paidAds }
+					onSkipCreatePaidAds={ handleSkipCreatePaidAds }
 				/>
 			) }
 
