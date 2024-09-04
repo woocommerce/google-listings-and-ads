@@ -15,7 +15,6 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentActions from '.~/components/stepper/step-content-actions';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AdaptiveForm from '.~/components/adaptive-form';
-import ValidationErrors from '.~/components/validation-errors';
 import ContactInformation from '.~/components/contact-information';
 import AppButton from '.~/components/app-button';
 
@@ -51,21 +50,6 @@ export default function StoreRequirements( { onContinue } ) {
 		}
 	};
 
-	const extendAdapter = ( formContext ) => {
-		return {
-			renderRequestedValidation( key ) {
-				if ( formContext.adapter.requestedShowValidation ) {
-					return (
-						<ValidationErrors
-							messages={ formContext.errors[ key ] }
-						/>
-					);
-				}
-				return null;
-			},
-		};
-	};
-
 	return (
 		<StepContent>
 			<StepContentHeader
@@ -78,10 +62,7 @@ export default function StoreRequirements( { onContinue } ) {
 					'google-listings-and-ads'
 				) }
 			/>
-			<AdaptiveForm
-				extendAdapter={ extendAdapter }
-				onSubmit={ handleSubmitCallback }
-			>
+			<AdaptiveForm onSubmit={ handleSubmitCallback }>
 				{ ( formContext ) => {
 					const { handleSubmit, adapter } = formContext;
 
