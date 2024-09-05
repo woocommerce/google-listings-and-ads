@@ -30,7 +30,7 @@ const CountriesTimeInput = ( {
 	onChange,
 	onDelete,
 } ) => {
-	const { countries, time } = value;
+	const { countries, time, maxTime } = value;
 
 	if ( ! audienceCountries ) {
 		return <AppSpinner />;
@@ -66,7 +66,8 @@ const CountriesTimeInput = ( {
 								onChange={ onChange }
 								onDelete={ onDelete }
 								handleBlur={ handleBlur }
-								value={ value }
+								countries={ countries }
+								time={ time }
 							/>
 						</div>
 					</FlexItem>
@@ -79,7 +80,8 @@ const CountriesTimeInput = ( {
 								onChange={ onChange }
 								onDelete={ onDelete }
 								handleBlur={ handleBlur }
-								value={ value }
+								countries={ countries }
+								time={ maxTime }
 							/>
 						</div>
 					</FlexItem>

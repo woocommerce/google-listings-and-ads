@@ -45,10 +45,17 @@ const getDeletedCountryCodes = ( newShippingTimes, oldShippingTimes ) => {
  */
 const getShippingTimesGroups = ( shippingTimes ) => {
 	const timeGroupMap = new Map();
-	shippingTimes.forEach( ( { countryCode, time } ) => {
+	shippingTimes.forEach( ( { countryCode, time, maxTime } ) => {
 		// Empty time is considered as 0 or Same day delivery.
 		time = time === FREE_LISTINGS_SAME_DAY_DELIVERY_STRING ? 0 : time;
-		const group = timeGroupMap.get( time ) || { countryCodes: [], time };
+		maxTime =
+			maxTime === FREE_LISTINGS_SAME_DAY_DELIVERY_STRING ? 0 : maxTime;
+		const mapKey = `${ time }-${ maxTime }`;
+		const group = timeGroupMap.get( mapKey ) || {
+			countryCodes: [],
+			time,
+			maxTime,
+		};
 		group.countryCodes.push( countryCode );
 		timeGroupMap.set( time, group );
 	} );

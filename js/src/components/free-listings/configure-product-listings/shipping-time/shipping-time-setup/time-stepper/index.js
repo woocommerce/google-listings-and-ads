@@ -18,11 +18,10 @@ const Stepper = ( {
 	min = 0,
 	max = 250, // 250 days is the maximum allowed by Google
 	onChange,
-	value: savedValue,
+	countries,
+	time,
 	handleBlur,
 } ) => {
-	const { countries, time } = savedValue;
-
 	const [ value, setValue ] = useState(
 		FREE_LISTINGS_SAME_DAY_DELIVERY_STRING
 	);
