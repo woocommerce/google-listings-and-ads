@@ -31,11 +31,7 @@ const targetAudienceFields = [ 'locale', 'language', 'location', 'countries' ];
  *
  * If we are adding a new settings field, it should be added into this array.
  */
-const settingsFieldNames = [
-	'shipping_rate',
-	'shipping_time',
-	'tax_rate',
-];
+const settingsFieldNames = [ 'shipping_rate', 'shipping_time', 'tax_rate' ];
 
 /**
  * Get settings object from Form values.
