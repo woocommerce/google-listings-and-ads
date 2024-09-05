@@ -48,7 +48,7 @@ const CountriesTimeInput = ( {
 	};
 
 	return (
-		<>
+		<Flex direction="column" className="gla-countries-time-input-container">
 			<div className="label">
 				<ShippingTimeInputControlLabelText countries={ countries } />
 				<EditTimeButton
@@ -58,30 +58,34 @@ const CountriesTimeInput = ( {
 					time={ value }
 				/>
 			</div>
-			<Flex justify="start">
-				<FlexItem>
-					<div className="gla-countries-time-input">
-						<Stepper
-							onChange={ onChange }
-							onDelete={ onDelete }
-							handleBlur={ handleBlur }
-							value={ value }
-						/>
-					</div>
-				</FlexItem>
-				<FlexItem>{ __( 'to', 'google-listings-and-ads' ) }</FlexItem>
-				<FlexItem>
-					<div className="gla-countries-time-input">
-						<Stepper
-							onChange={ onChange }
-							onDelete={ onDelete }
-							handleBlur={ handleBlur }
-							value={ value }
-						/>
-					</div>
-				</FlexItem>
-			</Flex>
-		</>
+			<FlexItem>
+				<Flex justify="space-evenly" gap="4">
+					<FlexItem>
+						<div className="gla-countries-time-input">
+							<Stepper
+								onChange={ onChange }
+								onDelete={ onDelete }
+								handleBlur={ handleBlur }
+								value={ value }
+							/>
+						</div>
+					</FlexItem>
+					<FlexItem>
+						<span>{ __( 'to', 'google-listings-and-ads' ) }</span>
+					</FlexItem>
+					<FlexItem>
+						<div className="gla-countries-time-input">
+							<Stepper
+								onChange={ onChange }
+								onDelete={ onDelete }
+								handleBlur={ handleBlur }
+								value={ value }
+							/>
+						</div>
+					</FlexItem>
+				</Flex>
+			</FlexItem>
+		</Flex>
 	);
 };
 
