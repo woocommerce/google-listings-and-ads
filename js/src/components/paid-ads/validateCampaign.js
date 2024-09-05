@@ -30,6 +30,22 @@ const validateCampaign = ( values ) => {
 		);
 	}
 
+	if (
+		Number.isFinite( values.amount ) &&
+		Number.isFinite( values.budget?.daily_budget )
+	) {
+		const { budget, budgetMin, amount } = values;
+		const { daily_budget: dailyBudget } = budget;
+		const minAmount = Math.round( dailyBudget * budgetMin, 2 );
+
+		if ( amount < minAmount ) {
+			errors.amount = __(
+				`Please make sure daily average cost is atleast ${ minAmount }.`,
+				'google-listings-and-ads'
+			);
+		}
+	}
+
 	return errors;
 };
 
