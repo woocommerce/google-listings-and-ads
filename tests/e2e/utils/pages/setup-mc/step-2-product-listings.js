@@ -136,18 +136,6 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get non-destination-based tax rate radio row.
-	 *
-	 * @return {import('@playwright/test').Locator} Get non-destination-based tax rate radio row.
-	 */
-	getNonDestinationBasedTaxRateRadioRow() {
-		return this.page.getByRole( 'radio', {
-			name: 'My store does not use destination-based tax rates.',
-			exact: true,
-		} );
-	}
-
-	/**
 	 * Get shipping rates section.
 	 *
 	 * @return {import('@playwright/test').Locator} Get shipping rates section.
