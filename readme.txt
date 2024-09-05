@@ -158,15 +158,4 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Tweak - Display additional context in error message when Google Ads account limit reached.
 * Tweak - Upgrade readme details in WPORG.
 
-= 2.8.2 - 2024-08-14 =
-* Fix - Disconnecting all accounts when WPCOM connection is not granted.
-* Fix - Error when Google Merchant Center account is undefined while checking the notification service enabled property.
-* Tweak - Label campaigns for the web version and the WooCommerce Mobile app.
-* Tweak - Update FAQS in Getting Started page.
-* Tweak - Update WP.org plugin FAQs.
-* Tweak - Update WPORG plugin page header image.
-* Tweak - Update get started page.
-* Tweak - WC 9.2.0 compatibility.
-* Update - Block validation to support error context.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
