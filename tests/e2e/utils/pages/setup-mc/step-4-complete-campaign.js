@@ -218,12 +218,11 @@ export default class CompleteCampaign extends MockRequests {
 	/**
 	 * Clicks the "Cancel" button in the skip paid ads creation modal.
 	 *
-	 * @return {Promise<void>} Resolves when the click action is completed and the page has loaded.
+	 * @return {Promise<void>} Resolves when the click action is completed.
 	 */
 	async clickCancelModalButton() {
 		const button = this.getCancelModalButton();
 		await button.click();
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}
 
 	/**

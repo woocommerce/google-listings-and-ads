@@ -167,7 +167,6 @@ export default function SetupPaidAds() {
 		return (
 			<AppButton
 				isTertiary
-				data-action={ ACTION_SKIP }
 				text={ text }
 				loading={ completing === ACTION_SKIP }
 				disabled={ disabledSkip }
