@@ -112,7 +112,7 @@ class AttributeMappingWCProductAdapterTest extends UnitTest {
 		$adapted_product   = $this->generate_attribute_mapping_adapted_product( $rules );
 		$adapted_variation = $this->generate_attribute_mapping_adapted_product_variant( $rules );
 
-		$this->assertEquals( 'DUMMY SKU', $adapted_product->getGtin() );
+		$this->assertEquals( 'Mapped Product SKU', $adapted_product->getGtin() );
 		$this->assertEquals( 'DUMMY SKU VARIABLE HUGE BLUE ANY NUMBER', $adapted_variation->getGtin() );
 	}
 

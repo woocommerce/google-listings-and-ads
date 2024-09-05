@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.6
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.8.1
+Stable tag: 2.8.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -13,40 +13,39 @@ Native integration with Google that allows merchants to easily display their pro
 
 == Description ==
 
-Google for WooCommerce makes it simple to showcase your products to shoppers across Google. Whether you’re brand new to digital advertising or a marketing expert, you can expand your reach and grow your business, for free and with ads.
+Effortlessly sync your WooCommerce product feed across Google and be seen by millions of engaged shoppers with the Google for WooCommerce extension. Download and setup takes just five minutes.
 
-Sync your store with Google to list products for free, run paid ads, and track performance straight from your store dashboard.
+**Grow your business with $500 in Google Ads credit**
 
-With Google for WooCommerce:
-- **Connect your store seamlessly** with Google Merchant Center.
-- **Reach online shoppers** with free listings.
-- **Boost store traffic and sales** with Performance Max Campaigns.
+To help you get started running campaigns, you can get $500 in ad credit when you spend your first $500 on Google Ads within 60 days.
 
-= Connect your store seamlessly =
+*Terms and conditions apply.*
 
-Integrate with Google Merchant Center to upload relevant store and product data to Google. Your products will sync automatically to make the information available for free listings, Google Ads, and other Google services.
+**Sync your WooCommerce product feed to Google Merchant Center**
 
-Create a new Merchant Center account or link an existing one to connect your store and list products across Google for free and  with ads.
+Seamlessly integrate your WooCommerce store with Google and set yourself up for success.
 
-= Reach online shoppers with free listings =
+- **Sync your WooCommerce product feed to Google Merchant Center** in just a few clicks. With our API-integrated Product Sync feature, all the data and functionalities from your WooCommerce store will be linked to Google with seamless server-to-server connection.
 
-Showcase eligible products to shoppers looking for what you offer and drive traffic to your store with Google’s free listings on the Shopping tab.
+- **Have your product listings automatically updated in real time** so your prices, promotions, inventories, and other product details stay accurate and synchronized across all your listings.
 
-Your products can also appear on Google Search, Google Images, and Gmail if you’re selling in the United States.
+- **Access all the tools and features you need** to manage your WooCommerce store and grow your business — centralized in one place.
 
-*Learn more about supported countries for Google free listings [here](https://support.google.com/merchants/answer/10033607?hl=en).*
+**Find the right audiences and sell to high-intent customers with Google Ads**
 
-= Boost store traffic and sales with Google Ads =
+Now your WooCommerce store is discoverable on Google – and you’re ready to **launch a Google Ads campaign!**
 
-Grow your business with Performance Max campaigns. Create an ad campaign to promote your products across Google Search, Shopping, YouTube, Gmail, and the Display Network.
+- **Put Google AI to work for you** by launching a Google Ads Performance Max campaign. Combined with your unique business insight, Performance Max can help you reach high-value customers using optimized placements, bidding, and more – all aligned with your budget and specific goals.
+- **Showcase your products across Google Shopping, Search, YouTube, Gmail, Maps, Display, and Discover** – from a single campaign. Manage all your Google Ads campaigns from your WooCommerce dashboard and on the WooCommerce Mobile App.
+- **Save time and effort** by using Google AI to help scale your asset creation. Performance Max will not only create additional copy and images based on the creative you upload, but also mix and match them for the best performing ad combinations.
 
-Connect your Google Ads account, choose a budget, and launch your campaign straight from your WooCommerce dashboard. You can also review campaign analytics and access automated reports to easily see how your ads are performing.
+**Get custom insights and improve your conversions using Google tag**
 
-*Learn more about supported countries and currencies for Performance Max campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).*
+Once you’re running Google Ads campaigns, the Google tag feature in the extension enables conversion tracking to give you insights — so you can test and learn what works, and fine-tune your strategy.
 
-= Get $500 in Google Ads credit when you spend your first $500! =
-
-Create a new Google Ads account through Google for WooCommerce and a promotional code will be automatically applied to your account. You’ll have 60 days to spend $500 to qualify for the $500 ads credit. See full terms and conditions [here](https://www.google.com/ads/coupons/terms/).
+- **Easily adjust your product listings in real time** to reflect your learnings and business expertise. While the extension maps product attributes by default, it’s simple to modify if you’d like more control.
+- **Leverage automatic Google tagging and conversion tracking to measure what’s working and what’s not.** With insight into your customers’ purchase journey, you’ll be able to pinpoint how effectively your ads translate into valuable customer activity.
+- **Take your conversion tracking further with enhanced conversions** — a feature designed to improve your measurement accuracy by collecting privacy-conscious data without the need for third-party cookies. So you have the right data to help make your campaign more effective.
 
 == Installation ==
 
@@ -102,7 +101,7 @@ Product Sync is a feature fully integrated into WooCommerce’s management platf
 	* Books
 
 = Where do I manage my product feed and my Google Ads campaigns? =
-You can manage and edit all of your products and your Google Ads campaigns right from your WooCommerce dashboard and on the WooCommerce Mobile App. 
+You can manage and edit all of your products and your Google Ads campaigns right from your WooCommerce dashboard and on the WooCommerce Mobile App.
 
 = Where will my products appear? =
 Once you start running a [Performance Max campaign](https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/), your approved products will reach more shoppers to help grow your business by being shown on Google Search, Google Maps, the Shopping tab, Gmail, Youtube, the Google Display Network, and Discover feed.
@@ -114,10 +113,10 @@ Once you start running a [Performance Max campaign](https://woocommerce.com/docu
 [Performance Max campaigns](https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/) are pay-per-click, meaning you only pay when someone clicks on your ads. To get the best results and ensure your products reach the right customers, we recommend starting with the suggested Google for WooCommerce minimum daily budget for your [Performance Max campaign](https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/). This helps jumpstart your campaign and drive early conversions. You can always adjust your budget later as you see what works best for your business.
 
 = Can I sync my products and run Performance Max campaigns on Google for WooCommerce at the  same time? =
-Yes, you can run both at the same time, and we recommend you do! Once you sync your store it’s automatically listed on Google, so you can choose to run a paid [Performance Max campaign](https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/) as soon as you’d like. In the US, advertisers who sync their products to Google and run Google Ads [Performance Max campaigns](https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/) have seen an average of over 50% increase in clicks and over 100% increase in impressions in both their product listings and their ads on the Shopping tab. 
+Yes, you can run both at the same time, and we recommend you do! Once you sync your store it’s automatically listed on Google, so you can choose to run a paid [Performance Max campaign](https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/) as soon as you’d like. In the US, advertisers who sync their products to Google and run Google Ads [Performance Max campaigns](https://woocommerce.com/document/google-for-woocommerce/get-started/google-performance-max-campaigns/) have seen an average of over 50% increase in clicks and over 100% increase in impressions in both their product listings and their ads on the Shopping tab.
 
 = How does Google for WooCommerce help me drive sales? =
-With Google for WooCommerce, you can serve the best-performing ads more often, by using Google AI to pull headlines, images, product details, and more from your product feed and find more relevant customers. Your campaigns will learn and optimize in real time – to help deliver better performance and boost your ROI. 
+With Google for WooCommerce, you can serve the best-performing ads more often, by using Google AI to pull headlines, images, product details, and more from your product feed and find more relevant customers. Your campaigns will learn and optimize in real time – to help deliver better performance and boost your ROI.
 
 = What are Enhanced conversions? =
 Enhanced conversions is a feature that can improve the accuracy of your conversion measurement and unlock more powerful bidding. It supplements your existing conversion tags by sending hashed first-party conversion data from your website to Google in a privacy-safe way.
@@ -141,17 +140,33 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
-= 2.8.1 - 2024-08-06 =
-* Add - Enable labeling of Ads campaigns.
-* Tweak - Update doc links references.
-* Update - Enable Page Size Parameter in Campaigns Endpoint.
+= 2.8.4 - 2024-08-28 =
+* Dev - Align namespaces for unit tests.
+* Dev - Avoid accidentally using the event object to reset the asset group values in the CampaignAssetsForm component.
+* Dev - Migrate jest tests to use Node.js 20.
+* Dev - Rewrite the replacer of JSON.stringify in getReportKey to ensure it returns the same key regardless of the query keys' order.
+* Dev - Upgrade to use Node.js 20 and bump npm dependencies.
+* Dev - Use a fixed SKU number when testing product adapter.
+* Fix - issue with comma separators for Shipping Rates.
+* Tweak - Connect Test Page errors when WPCOM token is not connected.
+* Tweak - Make the Tooltip use the new placement prop when WordPress >= 6.4.
+* Tweak - Replace deprecated event.keyCode with event.code for the verification code inputs in the contact information setting.
+* Tweak - Update the copy in the "Linked accounts" of the accounts connection setting to include Google Ads account.
 
-= 2.8.0 - 2024-07-31 =
-* Add Google API Pull method.
-* Rebranding Google Listings and Ads with Google for WooCommerce.
+= 2.8.3 - 2024-08-20 =
+* Fix - Return empty array props as empty objects in WCOM Proxy responses.
+* Tweak - Display additional context in error message when Google Ads account limit reached.
+* Tweak - Upgrade readme details in WPORG.
 
-= 2.7.7 - 2024-07-24 =
-* Dev - Fix E2E tests failed with WC 9.1.
-* Tweak -   Make campaign preview card responsive.
+= 2.8.2 - 2024-08-14 =
+* Fix - Disconnecting all accounts when WPCOM connection is not granted.
+* Fix - Error when Google Merchant Center account is undefined while checking the notification service enabled property.
+* Tweak - Label campaigns for the web version and the WooCommerce Mobile app.
+* Tweak - Update FAQS in Getting Started page.
+* Tweak - Update WP.org plugin FAQs.
+* Tweak - Update WPORG plugin page header image.
+* Tweak - Update get started page.
+* Tweak - WC 9.2.0 compatibility.
+* Update - Block validation to support error context.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

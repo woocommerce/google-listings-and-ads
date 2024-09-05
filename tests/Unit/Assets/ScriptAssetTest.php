@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Assets;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\ScriptAsset;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidAsset;
 use PHPUnit\Framework\TestCase;
 
 class ScriptAssetTest extends TestCase {

@@ -158,45 +158,68 @@ class WPCOMProxy implements Service, Registerable, OptionsAwareInterface {
 		add_filter(
 			'rest_request_after_callbacks',
 			/**
-			 * Add the Google Listings and Ads settings to the settings/general response.
+			 * Add the Google for WooCommerce and Ads settings to the settings/general response.
 			 *
 			 * @param WP_REST_Response|WP_HTTP_Response|WP_Error|mixed $response The response object.
 			 * @param mixed                                             $handler  The handler.
 			 * @param WP_REST_Request                                   $request  The request object.
 			 */
 			function ( $response, $handler, $request ) {
-				if ( ! $this->is_gla_request( $request ) ) {
+				if ( ! $this->is_gla_request( $request ) || ! $response instanceof WP_REST_Response ) {
 					return $response;
 				}
 
-				if ( $request->get_route() === '/wc/v3/settings/general' && $response instanceof WP_REST_Response ) {
-					$data   = $response->get_data();
+				$data = $response->get_data();
+
+				if ( $request->get_route() === '/wc/v3/settings/general' ) {
 					$data[] = [
 						'id'    => 'gla_target_audience',
-						'label' => 'Google Listings and Ads: Target Audience',
+						'label' => 'Google for WooCommerce: Target Audience',
 						'value' => $this->options->get( OptionsInterface::TARGET_AUDIENCE, [] ),
 					];
 
 					$data[] = [
 						'id'    => 'gla_shipping_times',
-						'label' => 'Google Listings and Ads: Shipping Times',
+						'label' => 'Google for WooCommerce: Shipping Times',
 						'value' => $this->shipping_time_query->get_all_shipping_times(),
 					];
 
 					$data[] = [
 						'id'    => 'gla_language',
-						'label' => 'Google Listings and Ads: Store language',
+						'label' => 'Google for WooCommerce: Store language',
 						'value' => get_locale(),
 					];
 
 					$response->set_data( array_values( $data ) );
 				}
 
+				$response->set_data( $this->prepare_data( $response->get_data(), $request ) );
 				return $response;
 			},
 			10,
 			3
 		);
+	}
+
+	/**
+	 * Prepares the data converting the empty arrays in objects for consistency.
+	 *
+	 * @param array           $data The response data to parse
+	 * @param WP_REST_Request $request The request object.
+	 * @return mixed
+	 */
+	public function prepare_data( $data, $request ) {
+		if ( ! is_array( $data ) ) {
+			return $data;
+		}
+
+		foreach ( $data as $key => $value ) {
+			if ( preg_match( '/^\/wc\/v3\/shipping\/zones\/\d+\/methods/', $request->get_route() ) && isset( $value['settings'] ) && empty( $value['settings'] ) ) {
+				$data[ $key ]['settings'] = (object) $value['settings'];
+			}
+		}
+
+		return $data;
 	}
 
 	/**

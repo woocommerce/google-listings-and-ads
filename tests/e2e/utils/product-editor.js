@@ -431,6 +431,9 @@ export function getProductBlockEditorUtils( page ) {
 		},
 
 		async getAvailableProductAttributesWithTestValues() {
+			// Avoiding tests may start to get locators before they are rendered,
+			// leading to random failures.
+			await this.getProductAttributesHeading().waitFor();
 			return getAvailableProductAttributesWithTestValues(
 				page,
 				this.getDateAndTimeFields
@@ -577,17 +580,23 @@ export function getProductBlockEditorUtils( page ) {
 		async assertUnableSave( message = 'Please enter a valid value.' ) {
 			await this.clickSave();
 
-			const failureNotice = page
-				.locator( '.components-snackbar__content' )
-				.filter( { hasText: new RegExp( message ) } );
-
-			const failureNoticeDismissButton =
-				failureNotice.getByRole( 'button' );
+			const failureNotice = page.locator(
+				'.components-snackbar__content'
+			);
 
 			await expect( failureNotice ).toBeVisible();
+			await expect( failureNotice ).toContainText( message );
+
+			const failureNoticeButton = failureNotice.getByRole( 'button' );
 
 			// Dismiss the notice.
-			await failureNoticeDismissButton.click();
+			if ( await failureNoticeButton.isVisible() ) {
+				// compatibility-code "WC < 9.2" -- Dismiss by its inner close button.
+				await failureNoticeButton.click();
+			} else {
+				failureNotice.click();
+			}
+
 			await expect( failureNotice ).toHaveCount( 0 );
 		},
 	};

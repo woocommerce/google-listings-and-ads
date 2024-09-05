@@ -93,23 +93,18 @@ test.describe( 'Product Block Editor integration', () => {
 		await expect( panel.getByRole( 'combobox' ) ).toHaveCount( 9 );
 
 		/*
-		 * 8 <input type="text|date|time">:
+		 * 9 <input type="text|date|time">:
 		 * - GTIN
 		 * - MPN
 		 * - Size
 		 * - Color
 		 * - Material
 		 * - Pattern
+		 * - Multipack
 		 * - Availability date
 		 * - Availability time
 		 */
-		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 8 );
-
-		/*
-		 * 1 <input type="number">:
-		 * - Multipack
-		 */
-		await expect( panel.getByRole( 'spinbutton' ) ).toHaveCount( 1 );
+		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 9 );
 
 		/*
 		 * 16 pairs of <label> and help icon buttons:
@@ -243,16 +238,11 @@ test.describe( 'Product Block Editor integration', () => {
 		 * - Color
 		 * - Material
 		 * - Pattern
+		 * - Multipack
 		 * - Availability date
 		 * - Availability time
 		 */
-		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 8 );
-
-		/*
-		 * 1 <input type="number"> for variation product:
-		 * - Multipack
-		 */
-		await expect( panel.getByRole( 'spinbutton' ) ).toHaveCount( 1 );
+		await expect( panel.getByRole( 'textbox' ) ).toHaveCount( 9 );
 	} );
 
 	test( 'Channel visibility is disabled when hiding in product catalog', async () => {
@@ -455,7 +445,9 @@ test.describe( 'Product Block Editor integration', () => {
 		 */
 		await dateInput.pressSequentially( '9' );
 
-		await editorUtils.assertUnableSave();
+		await editorUtils.assertUnableSave(
+			'Please enter a valid value. The field is incomplete or has an invalid date.'
+		);
 		await expect( dateHelp ).toBeVisible();
 		await expect( dateHelp ).toHaveText(
 			await editorUtils.evaluateValidationMessage( dateInput )
@@ -465,7 +457,9 @@ test.describe( 'Product Block Editor integration', () => {
 
 		await timeInput.pressSequentially( '9' );
 
-		await editorUtils.assertUnableSave();
+		await editorUtils.assertUnableSave(
+			'Please enter a valid value. The field is incomplete or has an invalid date.'
+		);
 		await expect( timeHelp ).toBeVisible();
 		await expect( timeHelp ).toHaveText(
 			await editorUtils.evaluateValidationMessage( timeInput )
@@ -527,11 +521,11 @@ test.describe( 'Product Block Editor integration', () => {
 		await expect( input ).toHaveValue( '' );
 		await expect( help ).toHaveCount( 0 );
 
+		// Assert invalid values
+
 		await input.fill( '-1' );
 
-		await editorUtils.assertUnableSave(
-			'The minimum value of the field is 0'
-		);
+		await editorUtils.assertUnableSave( 'Invalid value for the field.' );
 		await expect( help ).toBeVisible();
 		await expect( help ).toHaveText(
 			await editorUtils.evaluateValidationMessage( input )
@@ -539,12 +533,37 @@ test.describe( 'Product Block Editor integration', () => {
 
 		await input.fill( '9.5' );
 
-		await editorUtils.assertUnableSave();
+		await editorUtils.assertUnableSave( 'Invalid value for the field.' );
 		await expect( help ).toBeVisible();
 		await expect( help ).toHaveText(
 			await editorUtils.evaluateValidationMessage( input )
 		);
 
+		await input.fill( '00' );
+
+		await editorUtils.assertUnableSave( 'Invalid value for the field.' );
+		await expect( help ).toBeVisible();
+		await expect( help ).toHaveText(
+			await editorUtils.evaluateValidationMessage( input )
+		);
+
+		await input.fill( '01' );
+
+		await editorUtils.assertUnableSave( 'Invalid value for the field.' );
+		await expect( help ).toBeVisible();
+		await expect( help ).toHaveText(
+			await editorUtils.evaluateValidationMessage( input )
+		);
+
+		await input.fill( '2e5' );
+
+		await editorUtils.assertUnableSave( 'Invalid value for the field.' );
+		await expect( help ).toBeVisible();
+		await expect( help ).toHaveText(
+			await editorUtils.evaluateValidationMessage( input )
+		);
+
+		// Assert valid values
 		await input.fill( '0' );
 		await editorUtils.save();
 
