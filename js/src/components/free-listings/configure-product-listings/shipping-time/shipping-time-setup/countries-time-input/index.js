@@ -1,15 +1,16 @@
 /**
  * External dependencies
  */
+import { Flex, FlexItem } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import AppInputNumberControl from '.~/components/app-input-number-control';
 import AppSpinner from '.~/components/app-spinner';
 import ShippingTimeInputControlLabelText from '.~/components/shipping-time-input-control-label-text';
 import EditTimeButton from './edit-time-button';
+import Stepper from '../time-stepper';
 import './index.scss';
 
 /**
@@ -47,26 +48,40 @@ const CountriesTimeInput = ( {
 	};
 
 	return (
-		<div className="gla-countries-time-input">
-			<AppInputNumberControl
-				label={
-					<div className="label">
-						<ShippingTimeInputControlLabelText
-							countries={ countries }
-						/>
-						<EditTimeButton
-							audienceCountries={ audienceCountries }
+		<>
+			<div className="label">
+				<ShippingTimeInputControlLabelText countries={ countries } />
+				<EditTimeButton
+					audienceCountries={ audienceCountries }
+					onChange={ onChange }
+					onDelete={ onDelete }
+					time={ value }
+				/>
+			</div>
+			<Flex justify="start">
+				<FlexItem>
+					<div className="gla-countries-time-input">
+						<Stepper
 							onChange={ onChange }
 							onDelete={ onDelete }
-							time={ value }
+							handleBlur={ handleBlur }
+							value={ value }
 						/>
 					</div>
-				}
-				suffix={ __( 'days', 'google-listings-and-ads' ) }
-				value={ time }
-				onBlur={ handleBlur }
-			/>
-		</div>
+				</FlexItem>
+				<FlexItem>{ __( 'to', 'google-listings-and-ads' ) }</FlexItem>
+				<FlexItem>
+					<div className="gla-countries-time-input">
+						<Stepper
+							onChange={ onChange }
+							onDelete={ onDelete }
+							handleBlur={ handleBlur }
+							value={ value }
+						/>
+					</div>
+				</FlexItem>
+			</Flex>
+		</>
 	);
 };
 

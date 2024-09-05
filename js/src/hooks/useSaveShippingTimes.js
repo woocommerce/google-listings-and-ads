@@ -10,6 +10,7 @@ import { useAppDispatch } from '.~/data';
 import useShippingTimes from './useShippingTimes';
 import getDeletedShippingTimes from '.~/utils/getDeletedShippingTimes';
 import getDifferentShippingTimes from '.~/utils/getDifferentShippingTimes';
+import { FREE_LISTINGS_SAME_DAY_DELIVERY_STRING } from '.~/constants';
 
 /**
  * @typedef { import(".~/data/actions").ShippingTime } ShippingTime
@@ -45,6 +46,8 @@ const getDeletedCountryCodes = ( newShippingTimes, oldShippingTimes ) => {
 const getShippingTimesGroups = ( shippingTimes ) => {
 	const timeGroupMap = new Map();
 	shippingTimes.forEach( ( { countryCode, time } ) => {
+		// Empty time is considered as 0 or Same day delivery.
+		time = time === FREE_LISTINGS_SAME_DAY_DELIVERY_STRING ? 0 : time;
 		const group = timeGroupMap.get( time ) || { countryCodes: [], time };
 		group.countryCodes.push( countryCode );
 		timeGroupMap.set( time, group );
