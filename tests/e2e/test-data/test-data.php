@@ -140,6 +140,14 @@ function set_notifications_ready() {
 	$options    = woogle_get_container()->get( OptionsInterface::class );
 	$transients = woogle_get_container()->get( TransientsInterface::class );
 	$transients->set( TransientsInterface::URL_MATCHES, 'yes' );
+	$transients->set(
+		TransientsInterface::WPCOM_API_STATUS,
+		array(
+			'is_healthy'               => true,
+			'is_wc_rest_api_healthy'   => true,
+			'is_partner_token_healthy' => true
+		)
+	);
 	$options->update(
 		OptionsInterface::WPCOM_REST_API_STATUS, 'approved'
 	);
