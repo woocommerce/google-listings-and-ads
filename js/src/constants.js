@@ -6,6 +6,7 @@ export const glaData = window.glaData;
 export const glaProductData = window.glaProductData;
 
 export const FREE_LISTINGS_PROGRAM_ID = 0;
+export const FREE_LISTINGS_SAME_DAY_DELIVERY_STRING = '';
 
 // Products report related
 export const REPORT_SOURCE_PARAM = 'report-source';
