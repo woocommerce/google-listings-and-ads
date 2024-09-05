@@ -5,7 +5,7 @@ Requires at least: 5.9
 Tested up to: 6.6
 Requires PHP: 7.4
 Requires PHP Architecture: 64 Bits
-Stable tag: 2.8.4
+Stable tag: 2.8.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -140,6 +140,13 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 
 == Changelog ==
 
+= 2.8.5 - 2024-09-05 =
+* Break - Remove WooCommerce Navigation integration.
+* Fix - Issue with syncing shipping rates with more than two decimals.
+* Fix - Log exceptions triggered by assets being enqueued before being registered.
+* Tweak - Use remote-site-status to check the WPCOM Auth status.
+* Tweak - WC 9.3.0 compatibility.
+
 = 2.8.4 - 2024-08-28 =
 * Dev - Align namespaces for unit tests.
 * Dev - Avoid accidentally using the event object to reset the asset group values in the CampaignAssetsForm component.
@@ -157,16 +164,5 @@ To allow your products to appear in all relevant locations, make sure you’ve c
 * Fix - Return empty array props as empty objects in WCOM Proxy responses.
 * Tweak - Display additional context in error message when Google Ads account limit reached.
 * Tweak - Upgrade readme details in WPORG.
-
-= 2.8.2 - 2024-08-14 =
-* Fix - Disconnecting all accounts when WPCOM connection is not granted.
-* Fix - Error when Google Merchant Center account is undefined while checking the notification service enabled property.
-* Tweak - Label campaigns for the web version and the WooCommerce Mobile app.
-* Tweak - Update FAQS in Getting Started page.
-* Tweak - Update WP.org plugin FAQs.
-* Tweak - Update WPORG plugin page header image.
-* Tweak - Update get started page.
-* Tweak - WC 9.2.0 compatibility.
-* Update - Block validation to support error context.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
