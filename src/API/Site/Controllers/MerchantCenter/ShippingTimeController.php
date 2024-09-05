@@ -100,6 +100,7 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 					[
 						'country_code' => $time['country'],
 						'time'         => $time['time'],
+						'max_time'     => $time['max_time'],
 					],
 					$request
 				);
@@ -134,6 +135,7 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 				[
 					'country_code' => $time[0]['country'],
 					'time'         => $time[0]['time'],
+					'max_time'     => $time[0]['max_time'],
 				],
 				$request
 			);
@@ -153,8 +155,9 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 
 			try {
 				$data = [
-					'country' => $country_code,
-					'time'    => $request->get_param( 'time' ),
+					'country'  => $country_code,
+					'time'     => $request->get_param( 'time' ),
+					'max_time' => $request->get_param( 'max_time' ),
 				];
 				if ( $existing ) {
 					$query->update(
@@ -265,7 +268,13 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 			],
 			'time'         => [
 				'type'              => 'integer',
-				'description'       => __( 'The shipping time in days.', 'google-listings-and-ads' ),
+				'description'       => __( 'The minimum shipping time in days.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'max_time'     => [
+				'type'              => 'integer',
+				'description'       => __( 'The maximum shipping time in days.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
