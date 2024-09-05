@@ -29,15 +29,15 @@ const nonInteractableProps = {
  *
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
+ * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations for.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
- * @param {Array<CountryCode>} [props.countryCodes] Country codes to fetch budget recommendations for.
  */
 const BudgetSection = ( {
 	formProps,
+	countryCodes,
 	disabled = false,
 	children,
-	countryCodes,
 } ) => {
 	const { getInputProps, setValue, values } = formProps;
 	const { amount } = values;
