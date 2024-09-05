@@ -64,6 +64,7 @@ class ShippingTimeBatchControllerTest extends RESTControllerUnitTest {
 		$payload = [
 			'country_codes' => [ 'US', 'GB' ],
 			'time'          => 5,
+			'max_time'      => 10,
 		];
 
 		$response = $this->do_request( self::ROUTE_SHIPPING_TIME_BATCH, 'POST', $payload );
