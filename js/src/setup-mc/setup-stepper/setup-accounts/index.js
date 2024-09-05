@@ -160,15 +160,7 @@ const SetupAccounts = ( props ) => {
 						<WPComAccountCard jetpack={ jetpack } />
 					) }
 					<GoogleAccountCard disabled={ ! isJetpackActive } />
-					<GoogleAdsAccountCard />
 				</VerticalGapLayout>
-			</Section>
-			<Section
-				className="gla-google-mc-account-section"
-				description={ <GoogleMCDisclaimer /> }
-				disabledLeft={ ! isGMCPreconditionReady }
-			>
-				<GoogleMCAccountCard />
 			</Section>
 
 			<StepContentFooter>
@@ -181,8 +173,14 @@ const SetupAccounts = ( props ) => {
 						{ __( 'Continue', 'google-listings-and-ads' ) }
 					</AppButton>
 				</StepContentActions>
-				<Faqs />
 			</StepContentFooter>
+			<Section
+				className="gla-google-mc-account-section"
+				description={ <GoogleMCDisclaimer /> }
+				disabledLeft={ ! isGMCPreconditionReady }
+			>
+				<Faqs />
+			</Section>
 		</StepContent>
 	);
 };
