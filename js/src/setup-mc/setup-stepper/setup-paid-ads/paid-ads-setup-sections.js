@@ -11,6 +11,7 @@ import { Form } from '@woocommerce/components';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
+import useFetchBudgetRecommendationEffect from '.~/components/paid-ads/budget-section/budget-recommendation/useFetchBudgetRecommendationEffect';
 import AudienceSection from '.~/components/paid-ads/audience-section';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
@@ -19,6 +20,7 @@ import Section from '.~/wcdl/section';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import clientSession from './clientSession';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
+import getHighestBudget from '.~/utils/getHighestBudget';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -91,6 +93,11 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 		return resolveInitialPaidAds( startingPaidAds, targetAudience );
 	} );
 
+	const { data: budgetData } = useFetchBudgetRecommendationEffect(
+		paidAds.countryCodes
+	);
+	const budget = getHighestBudget( budgetData?.recommendations );
+
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
@@ -143,6 +150,8 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 	const initialValues = {
 		countryCodes: paidAds.countryCodes,
 		amount: paidAds.amount,
+		budget: budget,
+		budgetMin: 0.3,
 	};
 
 	return (
