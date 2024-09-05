@@ -81,4 +81,28 @@ describe( 'validateCampaign', () => {
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
 	} );
+
+	it( 'When a budget is provided and the amount is less than the minimum, should not pass', () => {
+		values.amount = 10;
+		values.budget = {
+			daily_budget: 100,
+		};
+		values.budgetMin = 0.3;
+
+		const errors = validateCampaign( values );
+
+		expect( errors ).toHaveProperty( 'amount' );
+		expect( errors.amount ).toContain( 'atleast 30' );
+	} );
+
+	it( 'When a budget is provided and the amount is greater than the minimum, should pass', () => {
+		values.amount = 35;
+		values.budget = {
+			daily_budget: 100,
+		};
+		values.budgetMin = 0.3;
+
+		const errors = validateCampaign( values );
+		expect( errors ).not.toHaveProperty( 'amount' );
+	} );
 } );
