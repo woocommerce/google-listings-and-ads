@@ -1,5 +1,12 @@
 *** Google for WooCommerce Changelog ***
 
+= 2.8.5 - 2024-09-05 =
+* Break - Remove WooCommerce Navigation integration.
+* Fix - Issue with syncing shipping rates with more than two decimals.
+* Fix - Log exceptions triggered by assets being enqueued before being registered.
+* Tweak - Use remote-site-status to check the WPCOM Auth status.
+* Tweak - WC 9.3.0 compatibility.
+
 = 2.8.4 - 2024-08-28 =
 * Dev - Align namespaces for unit tests.
 * Dev - Avoid accidentally using the event object to reset the asset group values in the CampaignAssetsForm component.

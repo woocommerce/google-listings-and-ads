@@ -11,7 +11,7 @@ import { getNewPath, getQuery, getHistory } from '@woocommerce/navigation';
  */
 import AppButton from '.~/components/app-button';
 import DifferentCurrencyNotice from '.~/components/different-currency-notice';
-import NavigationClassic from '.~/components/navigation-classic';
+import MainTabNav from '.~/components/main-tab-nav';
 import CustomerEffortScorePrompt from '.~/components/customer-effort-score-prompt';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummarySection from './summary-section';
@@ -88,7 +88,7 @@ const Dashboard = () => {
 		<>
 			<div className="gla-dashboard">
 				<DifferentCurrencyNotice context="dashboard" />
-				<NavigationClassic />
+				<MainTabNav />
 				<RebrandingTour />
 				<div className="gla-dashboard__filter">
 					<AppDateRangeFilterPicker

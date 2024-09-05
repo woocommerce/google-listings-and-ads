@@ -50,9 +50,6 @@ module.exports = {
 		'<rootDir>/js/build-dev',
 	],
 	globals: {
-		wcAdminFeatures: {
-			navigation: false,
-		},
 		wcSettings: {
 			currency: {
 				code: 'USD',
