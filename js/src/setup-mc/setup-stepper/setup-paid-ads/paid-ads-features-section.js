@@ -14,6 +14,7 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import CampaignPreview from '.~/components/paid-ads/campaign-preview';
 import FreeAdCredit from '.~/components/free-ad-credit';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
 import './paid-ads-features-section.scss';
 
 function FeatureList() {
@@ -48,17 +49,17 @@ function FeatureList() {
  * for the next actions: skip or continue the paid ads setup.
  *
  * @param {Object} props React props.
- * @param {boolean} props.hideBudgetContent Whether to hide the content about the ad budget.
  * @param {boolean} props.hideFooterButtons Whether to hide the buttons at the card footer.
  * @param {JSX.Element} props.skipButton Button to skip paid ads setup.
  * @param {JSX.Element} props.continueButton Button to continue paid ads setup.
  */
 export default function PaidAdsFeaturesSection( {
-	hideBudgetContent,
 	hideFooterButtons,
 	skipButton,
 	continueButton,
 } ) {
+	const hasFreeAdCredit = useFreeAdCredit();
+
 	return (
 		<Section
 			className="gla-paid-ads-features-section"
@@ -120,7 +121,7 @@ export default function PaidAdsFeaturesSection( {
 							</FlexItem>
 						</Flex>
 
-						{ ! hideBudgetContent && <FreeAdCredit /> }
+						{ hasFreeAdCredit && <FreeAdCredit /> }
 					</VerticalGapLayout>
 				</Section.Card.Body>
 				<Section.Card.Footer hidden={ hideFooterButtons }>

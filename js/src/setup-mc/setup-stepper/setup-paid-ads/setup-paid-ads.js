@@ -170,7 +170,6 @@ export default function SetupPaidAds() {
 				) }
 			/>
 			<PaidAdsFeaturesSection
-				hideBudgetContent={ ! hasGoogleAdsConnection }
 				hideFooterButtons={
 					! hasGoogleAdsConnection || showPaidAdsSetup
 				}
