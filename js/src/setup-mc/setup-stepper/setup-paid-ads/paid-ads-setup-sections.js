@@ -17,6 +17,10 @@ import clientSession from './clientSession';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
 /**
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
+
+/**
  * @typedef {Object} PaidAdsData
  * @property {number|undefined} amount Daily average cost of the paid ads campaign.
  * @property {boolean} isValid Whether the campaign data are valid values.
@@ -49,8 +53,12 @@ function resolveInitialPaidAds( paidAds ) {
  *
  * @param {Object} props React props.
  * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the budget and billing are updated.
+ * @param {Array<CountryCode>} [props.countryCodes] Country codes for the campaign.
  */
-export default function PaidAdsSetupSections( { onStatesReceived } ) {
+export default function PaidAdsSetupSections( {
+	onStatesReceived,
+	countryCodes,
+} ) {
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
 	const onStatesReceivedRef = useRef();
@@ -113,7 +121,10 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 		>
 			{ ( formProps ) => {
 				return (
-					<BudgetSection formProps={ formProps }>
+					<BudgetSection
+						formProps={ formProps }
+						countryCodes={ countryCodes }
+					>
 						<BillingCard />
 					</BudgetSection>
 				);

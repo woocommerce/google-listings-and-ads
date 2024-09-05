@@ -12,8 +12,11 @@ import getMonthlyMaxEstimated from './getMonthlyMaxEstimated';
 import './index.scss';
 import BudgetRecommendation from './budget-recommendation';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AppInputPriceControl from '.~/components/app-input-price-control';
+
+/**
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
 
 const nonInteractableProps = {
 	noPointerEvents: true,
@@ -28,11 +31,16 @@ const nonInteractableProps = {
  * @param {Object} props.formProps Form props forwarded from `Form` component.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
+ * @param {Array<CountryCode>} [props.countryCodes] Country codes to fetch budget recommendations for.
  */
-const BudgetSection = ( { formProps, disabled = false, children } ) => {
+const BudgetSection = ( {
+	formProps,
+	disabled = false,
+	children,
+	countryCodes,
+} ) => {
 	const { getInputProps, setValue, values } = formProps;
 	const { amount } = values;
-	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.

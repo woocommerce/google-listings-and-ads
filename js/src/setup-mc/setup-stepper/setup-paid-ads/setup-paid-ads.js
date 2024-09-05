@@ -193,7 +193,10 @@ export default function SetupPaidAds() {
 				}
 			/>
 			{ showPaidAdsSetup && (
-				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
+				<PaidAdsSetupSections
+					onStatesReceived={ setPaidAds }
+					countryCodes={ countryCodes }
+				/>
 			) }
 			<FaqsSection />
 			<StepContentFooter hidden={ ! showPaidAdsSetup }>
