@@ -26,7 +26,7 @@ import ConditionalSection from '.~/components/conditional-section';
  */
 const FormContent = ( {
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
-	hideTaxRates = false,
+	hideTaxRates,
 } ) => {
 	const { values, isValidForm, handleSubmit, adapter } =
 		useAdaptiveFormContext();
