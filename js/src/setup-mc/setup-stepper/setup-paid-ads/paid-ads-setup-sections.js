@@ -150,7 +150,7 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 	const initialValues = {
 		countryCodes: paidAds.countryCodes,
 		amount: paidAds.amount,
-		budget: budget,
+		budget,
 		budgetMin: 0.3,
 	};
 

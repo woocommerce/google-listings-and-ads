@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * @typedef {import('.~/components/types.js').CampaignFormValues} CampaignFormValues
@@ -39,9 +39,13 @@ const validateCampaign = ( values ) => {
 		const minAmount = Math.round( dailyBudget * budgetMin, 2 );
 
 		if ( amount < minAmount ) {
-			errors.amount = __(
-				`Please make sure daily average cost is atleast ${ minAmount }.`,
-				'google-listings-and-ads'
+			errors.amount = sprintf(
+				/* translators: %s: minimum daily budget */
+				__(
+					'Please make sure daily average cost is at least %s.',
+					'google-listings-and-ads'
+				),
+				minAmount
 			);
 		}
 	}
