@@ -16,7 +16,7 @@ import './index.scss';
 const Stepper = ( {
 	step = 1,
 	min = 0,
-	max = Infinity,
+	max = 250, // 250 days is the maximum allowed by Google
 	onChange,
 	value: savedValue,
 	handleBlur,
