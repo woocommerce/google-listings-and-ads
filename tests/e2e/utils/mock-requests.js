@@ -287,16 +287,6 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Fulfill policy check request.
-	 *
-	 * @param {Object} payload
-	 * @return {Promise<void>}
-	 */
-	async fulfillPolicyCheckRequest( payload ) {
-		await this.fulfillRequest( /\/wc\/gla\/mc\/policy_check\b/, payload );
-	}
-
-	/**
 	 * Fulfill the MC account issues request.
 	 *
 	 * @param {Object} payload

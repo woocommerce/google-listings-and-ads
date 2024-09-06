@@ -65,11 +65,6 @@ test.describe( 'Configure product listings', () => {
 			productListingsPage.fulfillSettings(
 				{
 					shipping_rate: 'automatic',
-					website_live: false,
-					checkout_process_secure: false,
-					payment_methods_visible: false,
-					refund_tos_visible: false,
-					contact_info_visible: false,
 				},
 				200,
 				[ 'GET' ]
@@ -403,10 +398,9 @@ test.describe( 'Configure product listings', () => {
 			await productListingsPage.checkNonDestinationBasedTaxRateRadioButton();
 		} );
 
-		test( 'should see the heading of next step and send two requests after clicking "Continue"', async () => {
-			const requestPromises =
-				productListingsPage.registerContinueRequests();
-
+		test( 'should see the heading of next step and request for the contact information after clicking "Continue"', async () => {
+			const requestPromise =
+				productListingsPage.registerContinueRequest();
 			await productListingsPage.clickContinueButton();
 
 			await expect(
@@ -416,12 +410,15 @@ test.describe( 'Configure product listings', () => {
 				} )
 			).toBeVisible();
 
-			const requests = await requestPromises;
-			const policyCheckResponse = await requests[ 1 ].response();
-			const policyCheckResponseBody = await policyCheckResponse.json();
+			const request = await requestPromise;
+			const response = await request.response();
+			const responseBody = await response.json();
 
-			expect( policyCheckResponse.status() ).toBe( 200 );
-			expect( policyCheckResponseBody.allowed_countries ).toBeTruthy();
+			expect( response.status() ).toBe( 200 );
+
+			expect( responseBody.wc_address.street_address ).toBe(
+				'Automata Road'
+			);
 		} );
 	} );
 } );

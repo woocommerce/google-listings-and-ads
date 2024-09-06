@@ -331,23 +331,12 @@ export default class ProductListingsPage extends MockRequests {
 	 *
 	 * @return {Promise<import('@playwright/test').Request[]>} The requests.
 	 */
-	registerContinueRequests() {
-		const contactInfoRequestPromise = this.page.waitForRequest(
+	registerContinueRequest() {
+		return this.page.waitForRequest(
 			( request ) =>
 				request.url().includes( '/gla/mc/contact-information' ) &&
 				request.method() === 'GET'
 		);
-
-		const policyCheckRequestPromise = this.page.waitForRequest(
-			( request ) =>
-				request.url().includes( '/gla/mc/policy_check' ) &&
-				request.method() === 'GET'
-		);
-
-		return Promise.all( [
-			contactInfoRequestPromise,
-			policyCheckRequestPromise,
-		] );
 	}
 
 	/**
