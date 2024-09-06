@@ -18,7 +18,7 @@ import useMetricsWithFormatter from '../useMetricsWithFormatter';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
 import DifferentCurrencyNotice from '.~/components/different-currency-notice';
-import NavigationClassic from '.~/components/navigation-classic';
+import MainTabNav from '.~/components/main-tab-nav';
 import ProductsReportFilters from './products-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
@@ -123,7 +123,7 @@ const ProductsReportPage = () => {
 	return (
 		<>
 			<DifferentCurrencyNotice context="reports-products" />
-			<NavigationClassic />
+			<MainTabNav />
 			<RebrandingTour />
 			<ReportsNavigation />
 			{ loaded ? (

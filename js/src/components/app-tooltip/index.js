@@ -3,11 +3,33 @@
  */
 import { Tooltip } from '@wordpress/components';
 import { Children } from '@wordpress/element';
+import { isWpVersion } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
 
 /**
  * Internal dependencies
  */
 import './index.scss';
+
+// It's an inverse map of the following reference and contains only the values used in this repo.
+// Ref: https://github.com/WordPress/gutenberg/blob/wp/6.4/packages/components/src/popover/utils.ts#L17-L71
+const PLACEMENT_TO_POSITION = {
+	'top-start': 'top right',
+	top: 'top center',
+};
+
+// compatibility-code "WP < 6.4" -- `position` prop in Tooltip is deprecated since WP 6.4
+function mapPlacementToPosition( props ) {
+	if ( isWpVersion( '6.4', '<' ) ) {
+		const { placement, ...restProps } = props;
+		const position = PLACEMENT_TO_POSITION[ placement ];
+
+		if ( position ) {
+			return { ...restProps, position };
+		}
+	}
+
+	return props;
+}
 
 /**
  * A convenient wrapper around Tooltip component, so that you don't need to specify your own children span or div.
@@ -42,7 +64,7 @@ const AppTooltip = ( props ) => {
 	}
 
 	return (
-		<Tooltip { ...rest }>
+		<Tooltip { ...mapPlacementToPosition( rest ) }>
 			{ /*
 			This inline-block div is needed for the tooltip to show up correctly.
 			If we use span, the tooltip will not wrap ToggleControl nicely.

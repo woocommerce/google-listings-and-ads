@@ -762,6 +762,17 @@ class AccountServiceTest extends UnitTest {
 			->method( 'is_enabled' )
 			->willReturn( true );
 
+		$this->transients->expects( $this->exactly( 1 ) )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn(
+				[
+					'is_healthy'               => true,
+					'is_wc_rest_api_healthy'   => true,
+					'is_partner_token_healthy' => true,
+				]
+			);
+
 		$this->options->method( 'get' )
 			->with( OptionsInterface::WPCOM_REST_API_STATUS )
 			->willReturn( 'approved' );
@@ -785,6 +796,17 @@ class AccountServiceTest extends UnitTest {
 		$this->notifications_service->expects( $this->once() )
 			->method( 'is_enabled' )
 			->willReturn( false );
+
+		$this->transients->expects( $this->exactly( 1 ) )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn(
+				[
+					'is_healthy'               => true,
+					'is_wc_rest_api_healthy'   => true,
+					'is_partner_token_healthy' => true,
+				]
+			);
 
 		$this->options->method( 'get' )
 			->with( OptionsInterface::WPCOM_REST_API_STATUS )
@@ -825,6 +847,42 @@ class AccountServiceTest extends UnitTest {
 			$this->account->get_connected_status()
 		);
 	}
+
+	public function test_get_connected_status_not_healthy() {
+		$this->options->expects( $this->once() )
+			->method( 'get_merchant_id' )
+			->willReturn( self::TEST_ACCOUNT_ID );
+
+		$this->notifications_service->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$this->transients->expects( $this->exactly( 1 ) )
+			->method( 'get' )
+			->with( TransientsInterface::WPCOM_API_STATUS )
+			->willReturn(
+				[
+					'is_healthy'               => true,
+					'is_wc_rest_api_healthy'   => true,
+					'is_partner_token_healthy' => false,
+				]
+			);
+
+		$this->options->method( 'get' )
+			->with( OptionsInterface::WPCOM_REST_API_STATUS )
+			->willReturn( 'approved' );
+
+		$this->assertEquals(
+			[
+				'id'                           => self::TEST_ACCOUNT_ID,
+				'status'                       => 'connected',
+				'notification_service_enabled' => true,
+				'wpcom_rest_api_status'        => 'error',
+			],
+			$this->account->get_connected_status()
+		);
+	}
+
 
 	public function test_get_setup_status() {
 		$this->mc_service->expects( $this->once() )
