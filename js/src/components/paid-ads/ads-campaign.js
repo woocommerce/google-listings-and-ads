@@ -34,7 +34,7 @@ import FaqsSection from './faqs-section';
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
  * @param {() => void} props.onContinue Callback called once continue button is clicked.
  * @param {() => void} props.isLoading Callback called once continue button is clicked.
- * @param {String} submitButtonText Text to display on .
+ * @param {string} props.submitButtonText Text to display on submit button.
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {
