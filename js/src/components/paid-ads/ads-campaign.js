@@ -32,19 +32,22 @@ import FaqsSection from './faqs-section';
  *
  * @param {Object} props React props.
  * @param {Campaign} [props.campaign] Campaign data to be edited. If not provided, this component will show campaign creation UI.
- * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {Function} props.formProps.isSubmitting Callback to display loading till Ads campaign is created.
- * @param {Function} props.formProps.handleSubmit Callback to handle campaign creation.
+ * @param {() => void} props.onContinue Callback called once continue button is clicked.
+ * @param {() => void} props.isLoading Callback called once continue button is clicked.
+ * @param {String} submitButtonText Text to display on .
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
 export default function AdsCampaign( {
 	campaign,
-	formProps: { isSubmitting, handleSubmit },
+	onContinue,
+	isLoading,
+	submitButtonText,
 	trackingContext,
 } ) {
 	const isCreation = ! campaign;
 	const formContext = useAdaptiveFormContext();
 	const { isValidForm } = formContext;
+	const continueButtonText = submitButtonText || __( 'Continue', 'google-listings-and-ads' );  
 
 	const disabledBudgetSection = ! formContext.values.countryCodes.length;
 	const helperText = isCreation
@@ -104,10 +107,10 @@ export default function AdsCampaign( {
 				<AppButton
 					isPrimary
 					disabled={ ! isValidForm }
-					loading={ isSubmitting }
-					onClick={ handleSubmit }
+					loading={ isLoading }
+					onClick={ onContinue }
 				>
-					{ __( 'Launch paid campaign', 'google-listings-and-ads' ) }
+					{ continueButtonText }
 				</AppButton>
 			</StepContentFooter>
 		</StepContent>

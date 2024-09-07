@@ -87,7 +87,9 @@ const AdsStepper = ( { formProps } ) => {
 					content: (
 						<AdsCampaign
 							trackingContext="setup-ads"
-							formProps={ formProps }
+							onContinue={formProps.handleSubmit}
+							isLoading={formProps.isSubmitting}
+							submitButtonText={ __( 'Launch paid campaign', 'google-listings-and-ads' ) }
 						/>
 					),
 					onClick: handleStepClick,
