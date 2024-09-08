@@ -106,6 +106,16 @@ const checkErrors = (
 		);
 	}
 
+	if (
+		values.shipping_time === 'flat' &&
+		shippingTimes.some( ( el ) => el.time > el.maxTime )
+	) {
+		errors.shipping_country_times = __(
+			'The minimum shipping time must not be less than the maximum shipping time.',
+			'google-listings-and-ads'
+		);
+	}
+
 	/**
 	 * Check tax rate (required for U.S. only).
 	 */
