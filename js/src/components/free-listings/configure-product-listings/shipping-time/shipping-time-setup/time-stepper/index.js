@@ -21,7 +21,7 @@ const Stepper = ( {
 	handleIncrement,
 	field = 'time',
 } ) => {
-	const [ value, setValue ] = useState( '' );
+	const [ value, setValue ] = useState( time );
 
 	useEffect( () => {
 		// If the time is 0, we want to display an empty string to show the "Same Day" delivery placeholder.
@@ -46,7 +46,7 @@ const Stepper = ( {
 			step={ step }
 			placeholder={
 				// When onboarding, the time is null, and we don't want to show the placeholder because we need the user to enter a value for us to store.
-				time !== null && __( 'Same Day', 'google-listings-and-ads' )
+				time === null ? '' : __( 'Same Day', 'google-listings-and-ads' )
 			}
 			suffix={
 				<>
