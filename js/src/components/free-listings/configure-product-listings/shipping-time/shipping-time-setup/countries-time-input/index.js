@@ -36,38 +36,50 @@ const CountriesTimeInput = ( {
 		return <AppSpinner />;
 	}
 
-	const handleBlur = ( e, numberValue ) => {
+	const handleBlur = ( e, numberValue, field ) => {
 		if ( time === numberValue ) {
 			return;
 		}
 
 		onChange( {
-			countries,
-			time: numberValue,
+			...value,
+			[ field ]: numberValue,
+		} );
+	};
+
+	const handleIncrement = ( numberValue, field ) => {
+		onChange( {
+			...value,
+			[ field ]: numberValue,
 		} );
 	};
 
 	return (
 		<Flex direction="column" className="gla-countries-time-input-container">
-			<div className="label">
-				<ShippingTimeInputControlLabelText countries={ countries } />
-				<EditTimeButton
-					audienceCountries={ audienceCountries }
-					onChange={ onChange }
-					onDelete={ onDelete }
-					time={ value }
-				/>
-			</div>
 			<FlexItem>
-				<Flex justify="space-evenly" gap="4">
+				<div className="label">
+					<ShippingTimeInputControlLabelText
+						countries={ countries }
+					/>
+					<EditTimeButton
+						audienceCountries={ audienceCountries }
+						onChange={ onChange }
+						onDelete={ onDelete }
+						time={ value }
+					/>
+				</div>
+			</FlexItem>
+
+			<FlexItem>
+				<Flex justify="space-between" gap="4">
 					<FlexItem>
 						<div className="gla-countries-time-input">
 							<Stepper
-								onChange={ onChange }
 								onDelete={ onDelete }
 								handleBlur={ handleBlur }
-								countries={ countries }
 								time={ time }
+								handleIncrement={ handleIncrement }
+								field="time"
 							/>
 						</div>
 					</FlexItem>
@@ -77,11 +89,11 @@ const CountriesTimeInput = ( {
 					<FlexItem>
 						<div className="gla-countries-time-input">
 							<Stepper
-								onChange={ onChange }
 								onDelete={ onDelete }
 								handleBlur={ handleBlur }
-								countries={ countries }
+								handleIncrement={ handleIncrement }
 								time={ maxTime }
+								field="maxTime"
 							/>
 						</div>
 					</FlexItem>

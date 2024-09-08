@@ -10,47 +10,44 @@ import { plus, reset } from '@wordpress/icons';
  * Internal dependencies
  */
 import AppInputNumberControl from '.~/components/app-input-number-control';
-import { FREE_LISTINGS_SAME_DAY_DELIVERY_STRING } from '.~/constants';
 import './index.scss';
 
 const Stepper = ( {
 	step = 1,
 	min = 0,
-	max = 250, // 250 days is the maximum allowed by Google
-	onChange,
-	countries,
+	max = 250, // Google's UI in the MC shows a maximum limit of 250 days, though the API doesn’t appear to have any such restriction.
 	time,
 	handleBlur,
+	handleIncrement,
+	field = 'time',
 } ) => {
-	const [ value, setValue ] = useState(
-		FREE_LISTINGS_SAME_DAY_DELIVERY_STRING
-	);
+	const [ value, setValue ] = useState( '' );
 
 	useEffect( () => {
-		setValue( time === 0 ? FREE_LISTINGS_SAME_DAY_DELIVERY_STRING : time );
+		// If the time is 0, we want to display an empty string to show the "Same Day" delivery placeholder.
+		setValue( time === 0 ? '' : time );
 	}, [ time ] );
 
-	function handleIncrement( thisStep = step ) {
-		const newValue = parseFloat( value || '0' ) + thisStep;
+	function onIncrement( increment ) {
+		const newValue = parseFloat( value || 0 ) + increment;
 
 		if ( newValue >= min && newValue <= max ) {
-			const newValueString =
-				newValue === 0
-					? FREE_LISTINGS_SAME_DAY_DELIVERY_STRING
-					: String( newValue );
-			onChange( {
-				countries,
-				time: newValueString,
-			} );
-
-			setValue( newValueString );
+			handleIncrement( newValue, field );
+			setValue( newValue );
 		}
 	}
+
+	const onBlur = ( e, numberValue ) => {
+		handleBlur( e, numberValue, field );
+	};
 
 	return (
 		<AppInputNumberControl
 			step={ step }
-			placeholder={ 'Same day' }
+			placeholder={
+				// When onboarding, the time is null, and we don't want to show the placeholder because we need the user to enter a value for us to store.
+				time !== null && __( 'Same Day', 'google-listings-and-ads' )
+			}
 			suffix={
 				<>
 					{ parseInt( value, 10 ) >= 1 && (
@@ -69,7 +66,7 @@ const Stepper = ( {
 							className="woocommerce-number-control__increment"
 							icon={ plus }
 							isSmall
-							onMouseDown={ () => handleIncrement( step ) }
+							onMouseDown={ () => onIncrement( step ) }
 							aria-label={ __(
 								'Increment',
 								'google-listings-and-ads'
@@ -80,7 +77,7 @@ const Stepper = ( {
 							icon={ reset }
 							className="woocommerce-number-control__decrement"
 							isSmall
-							onMouseDown={ () => handleIncrement( -step ) }
+							onMouseDown={ () => onIncrement( -step ) }
 							aria-label={ __(
 								'Decrement',
 								'google-listings-and-ads'
@@ -91,7 +88,7 @@ const Stepper = ( {
 				</>
 			}
 			value={ value }
-			onBlur={ handleBlur }
+			onBlur={ onBlur }
 			className="gla-countries-time-stepper"
 		/>
 	);
