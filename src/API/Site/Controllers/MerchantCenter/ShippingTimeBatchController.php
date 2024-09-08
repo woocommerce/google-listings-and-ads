@@ -53,6 +53,7 @@ class ShippingTimeBatchController extends ShippingTimeController {
 		return function ( Request $request ) {
 			$country_codes = $request->get_param( 'country_codes' );
 			$time          = $request->get_param( 'time' );
+			$max_time      = $request->get_param( 'max_time' );
 
 			$responses = [];
 			$errors    = [];
@@ -62,6 +63,7 @@ class ShippingTimeBatchController extends ShippingTimeController {
 					[
 						'country_code' => $country_code,
 						'time'         => $time,
+						'max_time'     => $max_time,
 					]
 				);
 
