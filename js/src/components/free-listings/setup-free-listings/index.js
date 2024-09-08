@@ -142,7 +142,14 @@ const SetupFreeListings = ( {
 				setValue( 'shipping_country_rates', nextValue );
 			}
 		} else if ( change.name === 'shipping_country_times' ) {
-			onShippingTimesChange( values.shipping_country_times );
+			// Skip the call of `onShippingTimesChange` if there are incomplete shipping times.
+			// This should only happen during onboarding when the shipping times haven't been stored yet.
+			const shippingIsIncomplete = values.shipping_country_times.some(
+				( item ) => item.time === null || item.maxTime === null
+			);
+			if ( ! shippingIsIncomplete ) {
+				onShippingTimesChange( values.shipping_country_times );
+			}
 		} else if ( settingsFieldNames.includes( change.name ) ) {
 			// The value of `shipping_time` option is determined by the value of `shipping_rate` option.
 			// So if the current form change is considered it needs to change `shipping_time` as well,
