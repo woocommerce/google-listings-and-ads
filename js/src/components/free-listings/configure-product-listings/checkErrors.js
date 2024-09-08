@@ -98,7 +98,7 @@ const checkErrors = (
 	if (
 		values.shipping_time === 'flat' &&
 		( shippingTimes.length < finalCountryCodes.length ||
-			shippingTimes.some( ( el ) => el.time < 0 ) )
+			shippingTimes.some( ( el ) => el.time < 0 || el.maxTime < 0 ) )
 	) {
 		errors.shipping_country_times = __(
 			'Please specify estimated shipping times for all the countries, and the time cannot be less than 0.',

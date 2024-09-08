@@ -15,9 +15,10 @@ function toRates( ...tuples ) {
 }
 
 function toTimes( ...tuples ) {
-	return tuples.map( ( [ countryCode, time ] ) => ( {
+	return tuples.map( ( [ countryCode, time, maxTime ] ) => ( {
 		countryCode,
 		time,
+		maxTime,
 	} ) );
 }
 
@@ -44,7 +45,7 @@ describe( 'checkErrors', () => {
 			shipping_country_rates: toRates( [ 'US', 10 ], [ 'JP', 30, 88 ] ),
 			offer_free_shipping: true,
 		};
-		const times = toTimes( [ 'US', 3 ], [ 'JP', 10 ] );
+		const times = toTimes( [ 'US', 3, 3 ], [ 'JP', 10, 10 ] );
 		const codes = [ 'US', 'JP' ];
 
 		const errors = checkErrors( values, times, codes );
@@ -381,7 +382,7 @@ describe( 'checkErrors', () => {
 
 		describe( 'For flat type', () => {
 			it( `When there are any selected countries' shipping times is not set, should not pass`, () => {
-				const times = toTimes( [ 'US', 7 ], [ 'FR', 16 ] );
+				const times = toTimes( [ 'US', 7, 7 ], [ 'FR', 16, 16 ] );
 				const codes = [ 'US', 'JP', 'FR' ];
 
 				const errors = checkErrors( flatShipping, times, codes );
@@ -391,7 +392,7 @@ describe( 'checkErrors', () => {
 			} );
 
 			it( `When all selected countries' shipping times are set, should pass`, () => {
-				const times = toTimes( [ 'US', 7 ], [ 'FR', 16 ] );
+				const times = toTimes( [ 'US', 7, 7 ], [ 'FR', 16, 16 ] );
 				const codes = [ 'US', 'FR' ];
 
 				const errors = checkErrors( flatShipping, times, codes );
@@ -400,7 +401,7 @@ describe( 'checkErrors', () => {
 			} );
 
 			it( `When there are any shipping times is < 0, should not pass`, () => {
-				const times = toTimes( [ 'US', 10 ], [ 'JP', -1 ] );
+				const times = toTimes( [ 'US', 10, 10 ], [ 'JP', -1, -1 ] );
 				const codes = [ 'US', 'JP' ];
 
 				const errors = checkErrors( flatShipping, times, codes );
@@ -410,12 +411,22 @@ describe( 'checkErrors', () => {
 			} );
 
 			it( `When all shipping times are ≥ 0, should pass`, () => {
-				const times = toTimes( [ 'US', 1 ], [ 'JP', 0 ] );
+				const times = toTimes( [ 'US', 1, 1 ], [ 'JP', 0, 0 ] );
 				const codes = [ 'US', 'JP' ];
 
 				const errors = checkErrors( flatShipping, times, codes );
 
 				expect( errors ).not.toHaveProperty( 'shipping_time' );
+			} );
+
+			it( `shouldnt pass if min time is bigger than max time`, () => {
+				const times = toTimes( [ 'US', 1, 0 ], [ 'JP', 1, 1 ] );
+				const codes = [ 'US', 'JP' ];
+
+				const errors = checkErrors( flatShipping, times, codes );
+
+				expect( errors ).toHaveProperty( 'shipping_country_times' );
+				expect( errors.shipping_country_times ).toMatchSnapshot();
 			} );
 		} );
 	} );
