@@ -8,7 +8,6 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
@@ -54,12 +53,8 @@ const AdsStepper = ( { formProps } ) => {
 		setStep( to );
 	};
 
-	const handleSetupAccountsContinue = () => {
-		continueStep( '2' );
-	};
-
 	const handleCreateCampaignContinue = () => {
-		continueStep( '3' );
+		continueStep( '2' );
 	};
 
 	return (
@@ -73,19 +68,6 @@ const AdsStepper = ( { formProps } ) => {
 				{
 					key: '1',
 					label: __(
-						'Set up your accounts',
-						'google-listings-and-ads'
-					),
-					content: (
-						<SetupAccounts
-							onContinue={ handleSetupAccountsContinue }
-						/>
-					),
-					onClick: handleStepClick,
-				},
-				{
-					key: '2',
-					label: __(
 						'Create your paid campaign',
 						'google-listings-and-ads'
 					),
@@ -98,7 +80,7 @@ const AdsStepper = ( { formProps } ) => {
 					onClick: handleStepClick,
 				},
 				{
-					key: '3',
+					key: '2',
 					label: __( 'Set up billing', 'google-listings-and-ads' ),
 					content: <SetupBilling formProps={ formProps } />,
 					onClick: handleStepClick,
