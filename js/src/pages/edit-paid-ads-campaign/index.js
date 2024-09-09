@@ -204,9 +204,6 @@ const EditPaidAdsCampaign = () => {
 										'Edit your paid campaign',
 										'google-listings-and-ads'
 									) }
-									onClick={ () => {
-										handleContinueClick( STEP.ASSET_GROUP );
-									} }
 								/>
 							),
 							onClick: handleStepperClick,

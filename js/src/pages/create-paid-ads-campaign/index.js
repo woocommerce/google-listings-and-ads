@@ -153,9 +153,6 @@ const CreatePaidAdsCampaign = () => {
 									onContinue={ () =>
 										handleContinueClick( STEP.ASSET_GROUP )
 									}
-									onClick={ () => {
-										handleContinueClick( STEP.ASSET_GROUP );
-									} }
 								/>
 							),
 							onClick: handleStepperClick,
