@@ -70,8 +70,6 @@ export default function AdsCampaign( {
 		}
 	}, [ error ] );
 
-	const isCreation = ! campaign;
-
 	const handleOnStatesReceived = ( paidAdsValues ) => {
 		setPaidAds( paidAdsValues );
 
@@ -157,7 +155,6 @@ export default function AdsCampaign( {
 			{ shouldShowPaidAdsSetup && (
 				<PaidAdsSetupSections
 					onStatesReceived={ handleOnStatesReceived }
-					isCreation={ isCreation }
 					campaign={ campaign }
 				/>
 			) }
