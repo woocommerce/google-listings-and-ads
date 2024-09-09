@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import { useState } from '@wordpress/element';
 import { noop } from 'lodash';
 
 /**
@@ -56,8 +57,11 @@ export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
 	const { createNotice } = useDispatchCoreNotices();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
+	const [ error, setError ] = useState( false );
 
-	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
+	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
+		setError( false );
+
 		try {
 			await onBeforeFinish();
 			await apiFetch( {
@@ -65,7 +69,7 @@ export default function SetupPaidAds() {
 				method: 'POST',
 			} );
 		} catch ( e ) {
-			// setCompleting( null );
+			setError( true );
 
 			createNotice(
 				'error',
@@ -81,13 +85,13 @@ export default function SetupPaidAds() {
 		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
-	const handleCompleteClick = async ( event, paidAds ) => {
+	const handleCompleteClick = async ( paidAds ) => {
 		const onBeforeFinish = handleSetupComplete.bind(
 			null,
 			paidAds.amount,
 			paidAds.countryCodes
 		);
-		await finishOnboardingSetup( event, onBeforeFinish );
+		await finishOnboardingSetup( onBeforeFinish );
 	};
 
 	return (
@@ -102,6 +106,7 @@ export default function SetupPaidAds() {
 			) }
 			onSkip={ finishOnboardingSetup }
 			onContinue={ handleCompleteClick }
+			error={ error }
 			onboardingSetup
 		/>
 	);

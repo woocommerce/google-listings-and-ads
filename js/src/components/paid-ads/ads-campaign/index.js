@@ -2,7 +2,11 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement, useState } from '@wordpress/element';
+import {
+	createInterpolateElement,
+	useState,
+	useEffect,
+} from '@wordpress/element';
 import { noop } from 'lodash';
 
 /**
@@ -38,6 +42,7 @@ import { ACTION_SKIP, ACTION_COMPLETE } from './constants';
  * @param {string} props.headerTitle The title of the step.
  * @param {string} [props.headerDescription] The description of the step.
  * @param {() => void} props.onSkip Callback called once skip button is clicked.
+ * @param {boolean} [props.error=false] Whether there's an error to reset the complete state.
  * @param {boolean} [props.onboardingSetup=false] Whether this component is used in onboarding setup.
  * @param {'create-ads'|'edit-ads'|'setup-ads'} props.trackingContext A context indicating which page this component is used on. This will be the value of `context` in the track event properties.
  */
@@ -48,6 +53,7 @@ export default function AdsCampaign( {
 	headerDescription,
 	onContinue = noop,
 	onSkip = noop,
+	error = false,
 	onboardingSetup = false,
 } ) {
 	const formContext = useAdaptiveFormContext();
@@ -57,6 +63,12 @@ export default function AdsCampaign( {
 	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( () =>
 		clientSession.getShowPaidAdsSetup( false )
 	);
+
+	useEffect( () => {
+		if ( error ) {
+			setCompleting( null );
+		}
+	}, [ error ] );
 
 	const isCreation = ! campaign;
 
@@ -68,8 +80,7 @@ export default function AdsCampaign( {
 		setValue( 'countryCodes', countryCodes );
 	};
 
-	const handleCreateCampaignClick = ( event ) => {
-		setCompleting( event.target.dataset.action );
+	const handleCreateCampaignClick = () => {
 		setShowPaidAdsSetup( true );
 
 		clientSession.setShowPaidAdsSetup( true );
@@ -78,13 +89,13 @@ export default function AdsCampaign( {
 	const handleSkipClick = ( event ) => {
 		setCompleting( event.target.dataset.action );
 
-		onSkip( event );
+		onSkip();
 	};
 
 	const handleCompleteClick = ( event ) => {
 		setCompleting( event.target.dataset.action );
 
-		onContinue( event, paidAds );
+		onContinue( paidAds );
 	};
 
 	// The status check of Google Ads account connection is included in `paidAds.isReady`,
@@ -134,7 +145,7 @@ export default function AdsCampaign( {
 				description={ description }
 			/>
 
-			{ isCreation && (
+			{ onboardingSetup && (
 				<PaidAdsFeaturesSection
 					hidePaidAdsSetupFooterButtons={ shouldShowPaidAdsSetup }
 					onSkipClick={ handleSkipClick }
