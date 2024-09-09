@@ -47,7 +47,8 @@ export default function AdsCampaign( {
 	const isCreation = ! campaign;
 	const formContext = useAdaptiveFormContext();
 	const { isValidForm } = formContext;
-	const continueButtonText = submitButtonText || __( 'Continue', 'google-listings-and-ads' );  
+	const continueButtonText =
+		submitButtonText || __( 'Continue', 'google-listings-and-ads' );
 
 	const disabledBudgetSection = ! formContext.values.countryCodes.length;
 	const helperText = isCreation

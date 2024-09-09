@@ -90,8 +90,8 @@ const AdsStepper = ( { formProps } ) => {
 							onContinue={ formProps.handleSubmit }
 							isLoading={ formProps.isSubmitting }
 							submitButtonText={ __(
-								'Launch paid campaign', 
-								'google-listings-and-ads' 
+								'Launch paid campaign',
+								'google-listings-and-ads'
 							) }
 						/>
 					),
