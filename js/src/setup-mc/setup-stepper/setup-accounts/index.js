@@ -21,8 +21,6 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import WPComAccountCard from '.~/components/wpcom-account-card';
 import GoogleAccountCard from '.~/components/google-account-card';
-import GoogleMCAccountCard from '.~/components/google-mc-account-card';
-import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
 import Faqs from './faqs';
 import './index.scss';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
@@ -160,15 +158,7 @@ const SetupAccounts = ( props ) => {
 						<WPComAccountCard jetpack={ jetpack } />
 					) }
 					<GoogleAccountCard disabled={ ! isJetpackActive } />
-					<GoogleAdsAccountCard />
 				</VerticalGapLayout>
-			</Section>
-			<Section
-				className="gla-google-mc-account-section"
-				description={ <GoogleMCDisclaimer /> }
-				disabledLeft={ ! isGMCPreconditionReady }
-			>
-				<GoogleMCAccountCard />
 			</Section>
 
 			<StepContentFooter>
@@ -181,8 +171,14 @@ const SetupAccounts = ( props ) => {
 						{ __( 'Continue', 'google-listings-and-ads' ) }
 					</AppButton>
 				</StepContentActions>
-				<Faqs />
 			</StepContentFooter>
+			<Section
+				className="gla-google-mc-account-section"
+				description={ <GoogleMCDisclaimer /> }
+				disabledLeft={ ! isGMCPreconditionReady }
+			>
+				<Faqs />
+			</Section>
 		</StepContent>
 	);
 };
