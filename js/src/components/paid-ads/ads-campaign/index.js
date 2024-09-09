@@ -134,12 +134,14 @@ export default function AdsCampaign( {
 				description={ description }
 			/>
 
-			<PaidAdsFeaturesSection
-				hidePaidAdsSetupFooterButtons={ shouldShowPaidAdsSetup }
-				onSkipClick={ handleSkipClick }
-				onCreateCampaignClick={ handleCreateCampaignClick }
-				disableCreateButton={ completing === ACTION_SKIP }
-			/>
+			{ isCreation && (
+				<PaidAdsFeaturesSection
+					hidePaidAdsSetupFooterButtons={ shouldShowPaidAdsSetup }
+					onSkipClick={ handleSkipClick }
+					onCreateCampaignClick={ handleCreateCampaignClick }
+					disableCreateButton={ completing === ACTION_SKIP }
+				/>
+			) }
 
 			{ shouldShowPaidAdsSetup && (
 				<PaidAdsSetupSections
