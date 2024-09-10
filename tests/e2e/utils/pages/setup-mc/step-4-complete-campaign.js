@@ -170,4 +170,71 @@ export default class CompleteCampaign extends MockRequests {
 			mcSettingsSyncRequestPromise,
 		] );
 	}
+
+	/**
+	 * Retrieves the "Complete setup without setting up ads" button from the skip paid ads creation modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the "Complete setup without setting up ads" button.
+	 */
+	getCompleteSetuModalButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Complete setup without setting up ads',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Clicks the "Complete setup without setting up ads" button in the skip paid ads creation modal.
+	 *
+	 * @return {Promise<void>} Resolves when the click action is completed and the page has loaded.
+	 */
+	async clickCompleteSetupModalButton() {
+		const button = this.getCompleteSetuModalButton();
+		await button.click();
+		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
+	}
+
+	/**
+	 * Retrieves the "Cancel" button from the skip paid ads creation modal.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the "Cancel" button.
+	 */
+	getCancelModalButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Cancel',
+			exact: true,
+		} );
+	}
+
+	/**
+	 * Clicks the "Cancel" button in the skip paid ads creation modal.
+	 *
+	 * @return {Promise<void>} Resolves when the click action is completed.
+	 */
+	async clickCancelModalButton() {
+		const button = this.getCancelModalButton();
+		await button.click();
+	}
+
+	/**
+	 * Retrieves the skip paid ads creation modal element.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the modal containing the text "Skip setting up ads?".
+	 */
+	getSkipPaidAdsCreationModal() {
+		return this.page.locator( '.components-modal__content' ).filter( {
+			hasText: 'Skip setting up ads?',
+		} );
+	}
+
+	/**
+	 * Retrieves the setup success modal element.
+	 *
+	 * @return {import('@playwright/test').Locator} Locator for the modal containing the text "You’ve successfully set up Google for WooCommerce!".
+	 */
+	getSetupSuccessModal() {
+		return this.page.locator( '.components-modal__content' ).filter( {
+			hasText: 'You’ve successfully set up Google for WooCommerce!',
+		} );
+	}
 }

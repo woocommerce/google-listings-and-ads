@@ -282,77 +282,106 @@ test.describe( 'Complete your campaign', () => {
 					await completeCampaign.clickCompleteSetupButton();
 					await requestsPromises;
 
-					const setupSuccessModal = page
-						.locator( '.components-modal__content' )
-						.filter( {
-							hasText:
-								'You’ve successfully set up Google for WooCommerce!',
-						} );
+					const setupSuccessModal =
+						completeCampaign.getSetupSuccessModal();
 					await expect( setupSuccessModal ).toBeVisible();
 				} );
 			} );
 		} );
 	} );
 
-	test.describe( 'Complete onboarding by "Skip this step for now"', () => {
-		test.beforeAll( async () => {
-			// Reset the showing status for the "Set up paid ads" section.
-			await page.evaluate( () => window.sessionStorage.clear() );
-			await setupAdsAccountPage.mockAdsAccountIncomplete();
-			await completeCampaign.goto();
-			await completeCampaign.clickSkipStepButton();
-		} );
-
-		test( 'should see the setup success modal', async () => {
-			const setupSuccessModal = page
-				.locator( '.components-modal__content' )
-				.filter( {
-					hasText:
-						'You’ve successfully set up Google for WooCommerce!',
+	test.describe(
+		'Ask user for confirmation when clicking "Skip this step for now"',
+		() => {
+			test.describe( 'User skips paid ads creation', () => {
+				test.beforeAll( async () => {
+					// Reset the showing status for the "Set up paid ads" section.
+					await page.evaluate( () => window.sessionStorage.clear() );
+					await setupAdsAccountPage.mockAdsAccountIncomplete();
+					await completeCampaign.goto();
+					await completeCampaign.clickSkipStepButton();
 				} );
-			await expect( setupSuccessModal ).toBeVisible();
-		} );
 
-		test( 'should see the url contains product-feed', async () => {
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
-		} );
-	} );
-
-	test.describe( 'Complete onboarding by "Skip paid ads creation"', () => {
-		test.beforeAll( async () => {
-			await setupAdsAccountPage.mockAdsAccountIncomplete();
-			await completeCampaign.goto();
-			await completeCampaign.clickCreatePaidAdButton();
-			await completeCampaign.clickSkipPaidAdsCreationButon();
-		} );
-
-		test( 'should also see the setup success modal', async () => {
-			const setupSuccessModal = page
-				.locator( '.components-modal__content' )
-				.filter( {
-					hasText:
-						'You’ve successfully set up Google for WooCommerce!',
+				test( 'should see the modal', async () => {
+					const skipPaidAdsModal =
+						completeCampaign.getSkipPaidAdsCreationModal();
+					await expect( skipPaidAdsModal ).toBeVisible();
 				} );
-			await expect( setupSuccessModal ).toBeVisible();
-		} );
 
-		test( 'should also see the url contains product-feed', async () => {
-			expect( page.url() ).toMatch( /path=%2Fgoogle%2Fproduct-feed/ );
-		} );
+				test( 'should see the url contains product-feed if the user skips', async () => {
+					await completeCampaign.clickCompleteSetupModalButton();
+					await page.waitForURL( /path=%2Fgoogle%2Fproduct-feed/ );
+					expect( page.url() ).toMatch(
+						/path=%2Fgoogle%2Fproduct-feed/
+					);
+				} );
 
-		test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
-			await page.keyboard.press( 'Escape' );
-			await page.getByRole( 'tab', { name: 'Dashboard' } ).click();
+				test( 'should see the setup success modal', async () => {
+					const setupSuccessModal =
+						completeCampaign.getSetupSuccessModal();
+					await expect( setupSuccessModal ).toBeVisible();
+				} );
 
-			const buttons = page.getByRole( 'button', {
-				name: 'Add paid campaign',
+				test( 'should see buttons on Dashboard for Google Ads onboarding', async () => {
+					await page.keyboard.press( 'Escape' );
+					await page
+						.getByRole( 'tab', { name: 'Dashboard' } )
+						.click();
+
+					const buttons = page.getByRole( 'button', {
+						name: 'Add paid campaign',
+					} );
+
+					await expect( buttons ).toHaveCount( 2 );
+					for ( const button of await buttons.all() ) {
+						await expect( button ).toBeVisible();
+						await expect( button ).toBeEnabled();
+					}
+				} );
 			} );
 
-			await expect( buttons ).toHaveCount( 2 );
-			for ( const button of await buttons.all() ) {
-				await expect( button ).toBeVisible();
-				await expect( button ).toBeEnabled();
-			}
-		} );
-	} );
+			test.describe( 'User does not skip paid ads creation', () => {
+				test.beforeAll( async () => {
+					// Reset the showing status for the "Set up paid ads" section.
+					await page.evaluate( () => window.sessionStorage.clear() );
+					await setupAdsAccountPage.mockAdsAccountIncomplete();
+					await completeCampaign.goto();
+					await completeCampaign.clickSkipStepButton();
+				} );
+
+				test( 'should no longer see the confirmation modal', async () => {
+					await completeCampaign.clickCancelModalButton();
+
+					const skipPaidAdsModal =
+						completeCampaign.getSkipPaidAdsCreationModal();
+					await expect( skipPaidAdsModal ).not.toBeVisible();
+				} );
+
+				test( 'user should stay on the same page', async () => {
+					await expect( page.url() ).toMatch(
+						/path=%2Fgoogle%2Fsetup-mc&google-mc=connected/
+					);
+				} );
+			} );
+		}
+	);
+
+	// TODO: Should no longer be needed once https://github.com/woocommerce/google-listings-and-ads/issues/2500 is merged.
+	test.describe(
+		'Ask user for confirmation when clicking the "Skip paid ads creation"',
+		() => {
+			test.beforeAll( async () => {
+				await setupAdsAccountPage.mockAdsAccountIncomplete();
+				await completeCampaign.goto();
+				await completeCampaign.clickCreatePaidAdButton();
+				await completeCampaign.clickSkipPaidAdsCreationButon();
+			} );
+
+			test( 'should see the confirmation modal', async () => {
+				const skipPaidAdsModal =
+					completeCampaign.getSkipPaidAdsCreationModal();
+				await expect( skipPaidAdsModal ).toBeVisible();
+			} );
+		}
+	);
 } );
