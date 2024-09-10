@@ -53,7 +53,7 @@ function resolveInitialPaidAds( paidAds ) {
  *
  * @param {Object} props React props.
  * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the budget and billing are updated.
- * @param {Array<CountryCode>} props.countryCodes Country codes for the campaign.
+ * @param {Array<CountryCode>|undefined} props.countryCodes Country codes for the campaign.
  */
 export default function PaidAdsSetupSections( {
 	onStatesReceived,
