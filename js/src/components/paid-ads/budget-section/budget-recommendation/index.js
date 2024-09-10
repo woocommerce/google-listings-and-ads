@@ -13,7 +13,6 @@ import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import './index.scss';
 import useFetchBudgetRecommendationEffect from '.~/hooks/useFetchBudgetRecommendationEffect';
 import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
-import { useCallback } from 'react';
 
 /*
  * If a merchant selects more than one country, the budget recommendation
@@ -71,11 +70,8 @@ const BudgetRecommendation = ( props ) => {
 	const recommendationsLoaded = ! loading;
 
 	const { currency, recommendations = [] } = data || {};
-	const { daily_budget: dailyBudget, country } = getHighestBudget(
-		recommendations.filter( ( recommendation ) =>
-			countryCodes.includes( recommendation.country )
-		)
-	);
+	const { daily_budget: dailyBudget, country } =
+		getHighestBudget( recommendations );
 
 	useEffect( () => {
 		if ( recommendationsLoaded ) {
