@@ -34,7 +34,7 @@ const defaultPaidAds = {
 };
 
 /**
- * Resolve the initial paid ads data from the given paid ads data with the loaded target audience.
+ * Resolve the initial paid ads data from the given paid ads data.
  * Parts of the resolved data are used in the `initialValues` prop of `Form` component.
  *
  * @param {PaidAdsData} paidAds The paid ads data as the base to be resolved with other states.

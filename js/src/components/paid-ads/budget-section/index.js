@@ -29,7 +29,7 @@ const nonInteractableProps = {
  *
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations for.
+ * @param {Array<CountryCode>|undefined} props.countryCodes Country codes to fetch budget recommendations for.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
@@ -99,7 +99,7 @@ const BudgetSection = ( {
 								value={ monthlyMaxEstimated }
 							/>
 						</div>
-						{ countryCodes.length > 0 && (
+						{ countryCodes?.length > 0 && (
 							<BudgetRecommendation
 								countryCodes={ countryCodes }
 								dailyAverageCost={ amount }
