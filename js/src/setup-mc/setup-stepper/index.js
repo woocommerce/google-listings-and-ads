@@ -26,12 +26,12 @@ const SetupStepper = () => {
 
 	const { status, step } = mcSetup;
 
-	// if ( status === 'complete' ) {
-	// 	getHistory().replace( getNewPath( {}, '/google/dashboard' ) );
-	// 	return null;
-	// }
+	if ( status === 'complete' ) {
+		getHistory().replace( getNewPath( {}, '/google/dashboard' ) );
+		return null;
+	}
 
-	return <SavedSetupStepper savedStep={ stepNameKeyMap.paid_ads } />;
+	return <SavedSetupStepper savedStep={ stepNameKeyMap[ step ] } />;
 };
 
 export default SetupStepper;
