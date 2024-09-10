@@ -3,7 +3,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,7 +18,6 @@ import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
 import { CampaignPreviewCard } from './campaign-preview';
 import FaqsSection from './faqs-section';
-import { useEffect } from 'react';
 import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
 
 /**
