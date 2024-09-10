@@ -114,7 +114,6 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 			isReady: paidAds.isValid && isBillingCompleted,
 		};
 		onStatesReceivedRef.current( nextPaidAds );
-		// clientSession.setCampaign( nextPaidAds );
 	}, [ paidAds, isBillingCompleted ] );
 
 	/*
