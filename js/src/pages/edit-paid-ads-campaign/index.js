@@ -135,10 +135,10 @@ const EditPaidAdsCampaign = () => {
 
 	const handleSubmit = async ( values, enhancer ) => {
 		const { action } = enhancer.submitter.dataset;
-		const { amount, countryCodes } = values;
+		const { amount } = values;
 
 		try {
-			await updateAdsCampaign( campaign.id, { amount, countryCodes } );
+			await updateAdsCampaign( campaign.id, { amount } );
 
 			if ( action === ACTION_SUBMIT_CAMPAIGN_AND_ASSETS ) {
 				let existingAssetEntityGroup = assetEntityGroup;
