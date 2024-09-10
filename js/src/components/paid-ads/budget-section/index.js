@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -13,6 +13,7 @@ import './index.scss';
 import BudgetRecommendation from './budget-recommendation';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '.~/components/app-input-price-control';
+import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
 
 const nonInteractableProps = {
 	noPointerEvents: true,
@@ -30,7 +31,7 @@ const nonInteractableProps = {
  */
 const BudgetSection = ( { formProps, disabled = false, children } ) => {
 	const { getInputProps, setValue, values } = formProps;
-	const { countryCodes, amount, recommendationData } = values;
+	const { countryCodes, amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
@@ -42,16 +43,40 @@ const BudgetSection = ( { formProps, disabled = false, children } ) => {
 	const setValueRef = useRef();
 	setValueRef.current = setValue;
 
-	/**
-	 * In addition to the initial value setting during initialization, when `disabled` changes
-	 * - from false to true, then clear filled amount to `undefined` for showing a blank <input>.
-	 * - from true to false, then reset amount to the initial value passed from the consumer side.
-	 */
-	const initialAmountRef = useRef( amount );
+	const [ recommendedBudget, setRecommendedBudget ] = useState( null );
+	const [ recommendationsLoaded, setRecommendationsLoaded ] =
+		useState( false );
+
 	useEffect( () => {
-		const nextAmount = disabled ? undefined : initialAmountRef.current;
-		setValueRef.current( 'amount', nextAmount );
-	}, [ disabled ] );
+		if ( ! recommendationsLoaded || recommendedBudget === null ) {
+			return;
+		}
+
+		const sessionData = clientSession.getCampaign();
+
+		let sessionAmount;
+		if ( sessionData?.amount === undefined ) {
+			sessionAmount = recommendedBudget;
+		} else {
+			sessionAmount = amount;
+		}
+
+		if ( disabled ) {
+			sessionAmount = undefined;
+		}
+
+		clientSession.setCampaign( {
+			amount: sessionAmount,
+			countryCodes,
+		} );
+		setValueRef.current( 'amount', sessionAmount );
+	}, [
+		amount,
+		countryCodes,
+		disabled,
+		recommendationsLoaded,
+		recommendedBudget,
+	] );
 
 	return (
 		<div className="gla-budget-section">
@@ -93,8 +118,10 @@ const BudgetSection = ( { formProps, disabled = false, children } ) => {
 							<BudgetRecommendation
 								countryCodes={ countryCodes }
 								dailyAverageCost={ amount }
-								currency={ currency }
-								data={ recommendationData }
+								setRecommendedBudget={ setRecommendedBudget }
+								setRecommendationsLoaded={
+									setRecommendationsLoaded
+								}
 							/>
 						) }
 					</Section.Card.Body>

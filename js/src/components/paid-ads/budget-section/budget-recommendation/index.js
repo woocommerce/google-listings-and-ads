@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useEffect } from '@wordpress/element';
 import { Tip } from '@wordpress/components';
 import GridiconNoticeOutline from 'gridicons/dist/notice-outline';
 
@@ -11,6 +11,9 @@ import GridiconNoticeOutline from 'gridicons/dist/notice-outline';
  */
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import './index.scss';
+import useFetchBudgetRecommendationEffect from '.~/hooks/useFetchBudgetRecommendationEffect';
+import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
+import { useCallback } from 'react';
 
 /*
  * If a merchant selects more than one country, the budget recommendation
@@ -20,12 +23,17 @@ import './index.scss';
  * then the budget recommendation should be (20 USD).
  */
 function getHighestBudget( recommendations ) {
-	return recommendations.reduce( ( defender, challenger ) => {
-		if ( challenger.daily_budget > defender.daily_budget ) {
-			return challenger;
+	return recommendations.reduce(
+		( defender, challenger ) => {
+			if ( challenger.daily_budget > defender.daily_budget ) {
+				return challenger;
+			}
+			return defender;
+		},
+		{
+			daily_budget: 0,
 		}
-		return defender;
-	} );
+	);
 }
 
 function toRecommendationRange( isMultiple, ...values ) {
@@ -49,19 +57,44 @@ function toRecommendationRange( isMultiple, ...values ) {
 }
 
 const BudgetRecommendation = ( props ) => {
-	const { countryCodes, dailyAverageCost = Infinity, data } = props;
+	const {
+		countryCodes,
+		dailyAverageCost = Infinity,
+		setRecommendedBudget,
+		setRecommendationsLoaded,
+	} = props;
+
 	const map = useCountryKeyNameMap();
+	const { data, loading } =
+		useFetchBudgetRecommendationEffect( countryCodes );
 
-	if ( ! data ) {
-		return null;
-	}
+	const recommendationsLoaded = ! loading;
 
-	const { currency, recommendations } = data;
+	const { currency, recommendations = [] } = data || {};
 	const { daily_budget: dailyBudget, country } = getHighestBudget(
 		recommendations.filter( ( recommendation ) =>
 			countryCodes.includes( recommendation.country )
 		)
 	);
+
+	useEffect( () => {
+		if ( recommendationsLoaded ) {
+			const sessionData = clientSession.getCampaign();
+			const sessionAmount =
+				sessionData?.amount !== undefined
+					? dailyAverageCost
+					: dailyBudget;
+
+			setRecommendationsLoaded( true );
+			setRecommendedBudget( sessionAmount );
+		}
+	}, [
+		dailyAverageCost,
+		dailyBudget,
+		recommendationsLoaded,
+		setRecommendationsLoaded,
+		setRecommendedBudget,
+	] );
 
 	const countryName = map[ country ];
 	const recommendationRange = toRecommendationRange(

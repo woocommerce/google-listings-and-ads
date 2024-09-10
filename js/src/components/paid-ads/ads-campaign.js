@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /**
  * External dependencies
  */
@@ -17,6 +18,8 @@ import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
 import { CampaignPreviewCard } from './campaign-preview';
 import FaqsSection from './faqs-section';
+import { useEffect } from 'react';
+import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -54,6 +57,14 @@ export default function AdsCampaign( {
 				'Once a campaign has been created, you cannot change the target country(s).',
 				'google-listings-and-ads'
 		  );
+
+	// Set the amount from client session if it is available.
+	useEffect( () => {
+		const sessionData = clientSession.getCampaign();
+		if ( sessionData?.amount !== undefined ) {
+			formContext.setValue( 'amount', sessionData.amount );
+		}
+	}, [] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	return (
 		<StepContent>

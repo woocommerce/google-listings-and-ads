@@ -11,7 +11,6 @@ import { Form } from '@woocommerce/components';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
-import useFetchBudgetRecommendationEffect from '.~/components/paid-ads/budget-section/budget-recommendation/useFetchBudgetRecommendationEffect';
 import AudienceSection from '.~/components/paid-ads/audience-section';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
@@ -36,24 +35,7 @@ const defaultPaidAds = {
 	countryCodes: [],
 	isValid: false,
 	isReady: false,
-	recommendationData: undefined,
 };
-
-/*
- * If a merchant selects more than one country, the budget recommendation
- * takes the highest country out from the selected countries.
- *
- * For example, a merchant selected Brunei (20 USD) and Croatia (15 USD),
- * then the budget recommendation should be (20 USD).
- */
-function getHighestBudget( recommendations ) {
-	return recommendations.reduce( ( defender, challenger ) => {
-		if ( challenger.daily_budget > defender.daily_budget ) {
-			return challenger;
-		}
-		return defender;
-	} );
-}
 
 /**
  * Resolve the initial paid ads data from the given paid ads data with the loaded target audience.
@@ -96,14 +78,6 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const { data: recommendationData } =
-		useFetchBudgetRecommendationEffect( targetAudience );
-	const { recommendations } = recommendationData || {};
-
-	const { daily_budget: dailyBudget } =
-		recommendations !== undefined
-			? getHighestBudget( recommendations )
-			: {};
 
 	const onStatesReceivedRef = useRef();
 	onStatesReceivedRef.current = onStatesReceived;
@@ -140,7 +114,7 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 			isReady: paidAds.isValid && isBillingCompleted,
 		};
 		onStatesReceivedRef.current( nextPaidAds );
-		clientSession.setCampaign( nextPaidAds );
+		// clientSession.setCampaign( nextPaidAds );
 	}, [ paidAds, isBillingCompleted ] );
 
 	/*
@@ -153,27 +127,12 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 	  - https://github.com/woocommerce/google-listings-and-ads/blob/5b6522ca10ad75556e6b2de7c120cc712aab70b1/js/src/components/free-listings/setup-free-listings/index.js#L172-L186
 	*/
 	useEffect( () => {
-		if ( dailyBudget !== undefined ) {
-			// If the amount is already set in session, use that one.
-			const sessionData = clientSession.getCampaign();
-			const { amount: sessionAmount } = sessionData;
+		setPaidAds( ( currentPaidAds ) =>
+			resolveInitialPaidAds( currentPaidAds, targetAudience )
+		);
+	}, [ targetAudience ] );
 
-			setPaidAds( ( currentPaidAds ) => {
-				currentPaidAds = {
-					...currentPaidAds,
-					amount: sessionAmount || dailyBudget,
-					recommendationData,
-				};
-				return resolveInitialPaidAds( currentPaidAds, targetAudience );
-			} );
-		}
-	}, [ dailyBudget, targetAudience, recommendationData ] );
-
-	if (
-		! targetAudience ||
-		! billingStatus ||
-		paidAds.recommendationData === undefined
-	) {
+	if ( ! targetAudience || ! billingStatus ) {
 		return (
 			<Section>
 				<SpinnerCard />
@@ -184,7 +143,6 @@ export default function PaidAdsSetupSections( { onStatesReceived } ) {
 	const initialValues = {
 		countryCodes: paidAds.countryCodes,
 		amount: paidAds.amount,
-		recommendationData: paidAds.recommendationData,
 	};
 
 	return (
