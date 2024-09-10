@@ -159,15 +159,6 @@ test.describe( 'Complete your campaign', () => {
 
 	test.describe( 'Set up paid ads', () => {
 		test.describe( 'Click "Create a paid ad campaign" button', () => {
-			test.beforeAll( async () => {
-				await completeCampaign.clickCreatePaidAdButton();
-			} );
-
-			test( 'should not see the "Create a paid ad campaign" button after this section is shown', async () => {
-				const button = completeCampaign.getCreatePaidAdButton();
-				await expect( button ).toBeHidden();
-			} );
-
 			test( 'should see "Complete setup" button is disabled', async () => {
 				const completeSetupButton =
 					completeCampaign.getCompleteSetupButton();
@@ -387,7 +378,7 @@ test.describe( 'Complete your campaign', () => {
 					await page.evaluate( () => window.sessionStorage.clear() );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await completeCampaign.goto();
-					await completeCampaign.clickSkipStepButton();
+					await completeCampaign.clickSkipPaidAdsCreationButton();
 				} );
 
 				test( 'should see the modal', async () => {
@@ -434,7 +425,7 @@ test.describe( 'Complete your campaign', () => {
 					await page.evaluate( () => window.sessionStorage.clear() );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await completeCampaign.goto();
-					await completeCampaign.clickSkipStepButton();
+					await completeCampaign.clickSkipPaidAdsCreationButton();
 				} );
 
 				test( 'should no longer see the confirmation modal', async () => {
@@ -450,25 +441,6 @@ test.describe( 'Complete your campaign', () => {
 						/path=%2Fgoogle%2Fsetup-mc&google-mc=connected/
 					);
 				} );
-			} );
-		}
-	);
-
-	// TODO: Should no longer be needed once https://github.com/woocommerce/google-listings-and-ads/issues/2500 is merged.
-	test.describe(
-		'Ask user for confirmation when clicking the "Skip paid ads creation"',
-		() => {
-			test.beforeAll( async () => {
-				await setupAdsAccountPage.mockAdsAccountIncomplete();
-				await completeCampaign.goto();
-				await completeCampaign.clickCreatePaidAdButton();
-				await completeCampaign.clickSkipPaidAdsCreationButon();
-			} );
-
-			test( 'should see the confirmation modal', async () => {
-				const skipPaidAdsModal =
-					completeCampaign.getSkipPaidAdsCreationModal();
-				await expect( skipPaidAdsModal ).toBeVisible();
 			} );
 		}
 	);
