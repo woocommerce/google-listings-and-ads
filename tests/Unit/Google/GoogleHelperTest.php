@@ -11,7 +11,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 /**
  * Class GoogleHelperTest
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Google
  */
 class GoogleHelperTest extends UnitTest {
 

@@ -182,6 +182,7 @@ describe( 'Attribute Mapping', () => {
 	} );
 
 	test( 'Add new Attribute mapping - Enum', async () => {
+		const user = userEvent.setup();
 		const { queryByText, findByRole } = render( <AttributeMapping /> );
 
 		// Modal is open when clicking th button
@@ -198,11 +199,11 @@ describe( 'Attribute Mapping', () => {
 		expect( buttonSave ).toBeTruthy();
 		expect( buttonSave ).toBeDisabled();
 
-		userEvent.selectOptions( select, 'adult' );
+		await user.selectOptions( select, 'adult' );
 		const enumSelect = await findByRole( 'combobox', {
 			name: 'Select default value',
 		} );
-		userEvent.selectOptions( enumSelect, 'no' );
+		await user.selectOptions( enumSelect, 'no' );
 
 		expect( buttonSave ).toBeEnabled();
 		fireEvent.click( buttonSave );
@@ -216,6 +217,7 @@ describe( 'Attribute Mapping', () => {
 	} );
 
 	test( 'Add new Attribute mapping - Field / Fixed value', async () => {
+		const user = userEvent.setup();
 		const { queryByText, findByRole } = render( <AttributeMapping /> );
 
 		// Modal is open when clicking th button
@@ -226,26 +228,27 @@ describe( 'Attribute Mapping', () => {
 		const select = await findByRole( 'combobox', {
 			name: 'Select a Google attribute that you want to manage',
 		} );
-		userEvent.selectOptions( select, 'brands' );
+		await user.selectOptions( select, 'brands' );
 
 		// Show fixed value when we check "Set a fixed value" radio
 		const setFixedRadio = await findByRole( 'radio', {
 			name: 'Set a fixed value',
 		} );
-		userEvent.click( setFixedRadio );
+		await user.click( setFixedRadio );
 		await findByRole( 'textbox' );
 
 		// Show selector value when we check "Use value from existing product field" radio
 		const setFieldRadio = await findByRole( 'radio', {
 			name: 'Use value from existing product field',
 		} );
-		userEvent.click( setFieldRadio );
+		await user.click( setFieldRadio );
 		await findByRole( 'combobox', {
 			name: 'Use value from existing product field',
 		} );
 	} );
 
 	test( 'Update Attribute mapping Rule', async () => {
+		const user = userEvent.setup();
 		const { queryAllByText, queryByText, findByRole } = render(
 			<AttributeMapping />
 		);
@@ -260,7 +263,7 @@ describe( 'Attribute Mapping', () => {
 
 		const buttonSave = queryByText( 'Save rule' );
 		expect( buttonSave ).toBeDisabled();
-		userEvent.selectOptions( enumSelect, 'no' );
+		await user.selectOptions( enumSelect, 'no' );
 		expect( buttonSave ).toBeEnabled();
 		fireEvent.click( buttonSave );
 
@@ -304,6 +307,7 @@ describe( 'Attribute Mapping', () => {
 	} );
 
 	test( 'Renders categories helper', async () => {
+		const user = userEvent.setup();
 		const { queryByText, findByText } = render(
 			<AttributeMappingTableCategories
 				categories={ '1' }
@@ -313,11 +317,12 @@ describe( 'Attribute Mapping', () => {
 		expect( queryByText( 'All except' ) ).toBeTruthy();
 		const category = queryByText( '1 category' );
 		expect( category ).toBeTruthy();
-		userEvent.hover( category );
+		await user.hover( category );
 		await findByText( 'Category 1' );
 	} );
 
 	test( 'Renders categories helper with tons of categories', async () => {
+		const user = userEvent.setup();
 		const { queryByText, findByText } = render(
 			<AttributeMappingTableCategories
 				categories={ '1,2,3,1,2,3,1,2,3,1,2,3' }
@@ -328,7 +333,7 @@ describe( 'Attribute Mapping', () => {
 		expect( queryByText( 'Only in' ) ).toBeTruthy();
 		const categories = queryByText( '12 categories' );
 		expect( categories ).toBeTruthy();
-		userEvent.hover( categories );
+		await user.hover( categories );
 		await findByText(
 			'Category 1, Category 2, Category 3, Category 1, Category 2'
 		);
@@ -336,6 +341,7 @@ describe( 'Attribute Mapping', () => {
 	} );
 
 	test( 'Shows deleted categories', async () => {
+		const user = userEvent.setup();
 		const { queryByText, findByText } = render(
 			<AttributeMappingTableCategories
 				categories={ '1,6' }
@@ -346,7 +352,7 @@ describe( 'Attribute Mapping', () => {
 		expect( queryByText( 'Only in' ) ).toBeTruthy();
 		const categories = queryByText( '2 categories' );
 		expect( categories ).toBeTruthy();
-		userEvent.hover( categories );
+		await user.hover( categories );
 		await findByText( 'Category 1, Category ID 6 (deleted)' );
 	} );
 

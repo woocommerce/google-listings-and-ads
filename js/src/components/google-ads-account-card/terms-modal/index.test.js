@@ -25,6 +25,8 @@ describe( 'TermsModal', () => {
 	} );
 
 	it( 'should enable the "Create account" button after accepting the terms, and vice versa', async () => {
+		const user = userEvent.setup();
+
 		render( <TermsModal /> );
 
 		const checkbox = screen.getByRole( 'checkbox' );
@@ -32,16 +34,17 @@ describe( 'TermsModal', () => {
 
 		expect( button ).toBeDisabled();
 
-		await userEvent.click( checkbox );
+		await user.click( checkbox );
 
 		expect( button ).toBeEnabled();
 
-		await userEvent.click( checkbox );
+		await user.click( checkbox );
 
 		expect( button ).toBeDisabled();
 	} );
 
 	it( 'should callback to onCreateAccount and onRequestClose when clicking on the "Create account" button', async () => {
+		const user = userEvent.setup();
 		const onCreateAccount = jest.fn();
 		const onRequestClose = jest.fn();
 
@@ -55,8 +58,8 @@ describe( 'TermsModal', () => {
 		expect( onCreateAccount ).toHaveBeenCalledTimes( 0 );
 		expect( onRequestClose ).toHaveBeenCalledTimes( 0 );
 
-		await userEvent.click( screen.getByRole( 'checkbox' ) );
-		await userEvent.click(
+		await user.click( screen.getByRole( 'checkbox' ) );
+		await user.click(
 			screen.getByRole( 'button', { name: 'Create account' } )
 		);
 
@@ -65,16 +68,18 @@ describe( 'TermsModal', () => {
 	} );
 
 	it( 'should record click events for the "Create account" button and be aware of extra event properties from filters', async () => {
+		const user = userEvent.setup();
+
 		await expectComponentToRecordEventWithFilteredProperties(
 			TermsModal,
 			FILTER_ONBOARDING,
 			async () => {
 				const checkbox = screen.getByRole( 'checkbox' );
 				if ( ! checkbox.checked ) {
-					await userEvent.click( screen.getByRole( 'checkbox' ) );
+					await user.click( screen.getByRole( 'checkbox' ) );
 				}
 
-				await userEvent.click(
+				await user.click(
 					screen.getByRole( 'button', { name: 'Create account' } )
 				);
 			},

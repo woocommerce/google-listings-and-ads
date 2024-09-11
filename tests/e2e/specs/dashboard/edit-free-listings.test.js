@@ -84,7 +84,7 @@ test.describe( 'Edit Free Listings', () => {
 		const requests = await awaitForRequests;
 		const settingsResponse = await (
 			await requests[ 0 ].response()
-		 ).json();
+		).json();
 
 		expect( settingsResponse.status ).toBe( 'success' );
 		expect( settingsResponse.message ).toBe(

@@ -103,11 +103,6 @@ test.describe( 'Configure product listings', () => {
 		).toBeVisible();
 	} );
 
-	test( 'should select the default language English', async () => {
-		const languageRadioRow = productListingsPage.getLanguageRadioRow();
-		await expect( languageRadioRow ).toBeChecked();
-	} );
-
 	test( 'should see US but should not see UK in the country search box', async () => {
 		const countrySearchBoxContainer =
 			getCountryInputSearchBoxContainer( page );
@@ -340,15 +335,6 @@ test.describe( 'Configure product listings', () => {
 			await productListingsPage.checkSimpleShippingRateRadioButton();
 		} );
 
-		test( 'should contain the correct URL for "Read more for Language" link', async () => {
-			const link = productListingsPage.getReadMoreLanguageLink();
-			await expect( link ).toBeVisible();
-			await expect( link ).toHaveAttribute(
-				'href',
-				'https://support.google.com/merchants/answer/160637'
-			);
-		} );
-
 		test( 'should contain the correct URL for "Read more for Shipping Rates" link', async () => {
 			const link = productListingsPage.getReadMoreShippingRatesLink();
 			await expect( link ).toBeVisible();
@@ -376,10 +362,9 @@ test.describe( 'Configure product listings', () => {
 			await productListingsPage.fillEstimatedShippingTimes( '14' );
 		} );
 
-		test( 'should see the heading of next step and send two requests after clicking "Continue"', async () => {
-			const requestPromises =
-				productListingsPage.registerContinueRequests();
-
+		test( 'should see the heading of next step and request for the contact information after clicking "Continue"', async () => {
+			const requestPromise =
+				productListingsPage.registerContinueRequest();
 			await productListingsPage.clickContinueButton();
 
 			await expect(
@@ -389,12 +374,15 @@ test.describe( 'Configure product listings', () => {
 				} )
 			).toBeVisible();
 
-			const requests = await requestPromises;
-			const policyCheckResponse = await requests[ 1 ].response();
-			const policyCheckResponseBody = await policyCheckResponse.json();
+			const request = await requestPromise;
+			const response = await request.response();
+			const responseBody = await response.json();
 
-			expect( policyCheckResponse.status() ).toBe( 200 );
-			expect( policyCheckResponseBody.allowed_countries ).toBeTruthy();
+			expect( response.status() ).toBe( 200 );
+
+			expect( responseBody.wc_address.street_address ).toBe(
+				'Automata Road'
+			);
 		} );
 	} );
 } );

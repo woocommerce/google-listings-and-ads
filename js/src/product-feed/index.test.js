@@ -43,7 +43,7 @@ jest.mock( '.~/components/customer-effort-score-prompt', () => () => (
 ) );
 
 beforeAll( () => {
-	// Used in the js/src/hooks/useLegacyMenuEffect.js dependency
+	// Used in the js/src/hooks/useMenuEffect.js dependency
 	window.wpNavMenuClassChange = jest.fn();
 } );
 

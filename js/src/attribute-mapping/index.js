@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import Section from '.~/wcdl/section';
 import AttributeMappingDescription from './attribute-mapping-description';
 import AttributeMappingTable from './attribute-mapping-table';
-import NavigationClassic from '.~/components/navigation-classic';
+import MainTabNav from '.~/components/main-tab-nav';
 import RebrandingTour from '.~/components/tours/rebranding-tour';
 import './index.scss';
 
@@ -21,7 +21,7 @@ import './index.scss';
 const AttributeMapping = () => {
 	return (
 		<div className="gla-attribute-mapping">
-			<NavigationClassic />
+			<MainTabNav />
 			<RebrandingTour />
 			<Section
 				title={ __( 'Manage attributes', 'google-listings-and-ads' ) }

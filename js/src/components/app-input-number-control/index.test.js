@@ -51,16 +51,17 @@ describe( 'AppInputNumberControl', () => {
 		};
 	} );
 
-	it( 'Should format the number according to the setting', () => {
+	it( 'Should format the number according to the setting', async () => {
+		const user = userEvent.setup();
 		const { rerender } = render(
 			<ControlledInput numberSettings={ { precision: 2 } } />
 		);
 
 		expect( getInput().value ).toBe( '1.00' );
 
-		userEvent.clear( getInput() );
-		userEvent.type( getInput(), '1234.56789' );
-		userEvent.click( document.body );
+		await user.clear( getInput() );
+		await user.type( getInput(), '1234.56789' );
+		await user.click( document.body );
 
 		expect( getInput().value ).toBe( '1,234.57' );
 
@@ -76,23 +77,25 @@ describe( 'AppInputNumberControl', () => {
 
 		expect( getInput().value ).toBe( '1.234,5700' );
 
-		userEvent.clear( getInput() );
-		userEvent.type( getInput(), '9876,54321' );
-		userEvent.click( document.body );
+		await user.clear( getInput() );
+		await user.type( getInput(), '9876,54321' );
+		await user.click( document.body );
 
 		expect( getInput().value ).toBe( '9.876,5432' );
 	} );
 
-	it( 'Should callback the value as a number type', () => {
+	it( 'Should callback the value as a number type', async () => {
+		const user = userEvent.setup();
+
 		render( <ControlledInput numberSettings={ { precision: 2 } } /> );
 
-		userEvent.clear( getInput() );
+		await user.clear( getInput() );
 
 		expect( onChange ).toHaveBeenCalledTimes( 1 );
 		expect( onChange ).toHaveBeenLastCalledWith( 0 );
 		expect( onBlur ).toHaveBeenCalledTimes( 0 );
 
-		userEvent.type( getInput(), '123' );
+		await user.type( getInput(), '123' );
 
 		expect( onChange ).toHaveBeenCalledTimes( 4 );
 		expect( onChange ).toHaveBeenCalledWith( 1 );
@@ -100,13 +103,13 @@ describe( 'AppInputNumberControl', () => {
 		expect( onChange ).toHaveBeenLastCalledWith( 123 );
 		expect( onBlur ).toHaveBeenCalledTimes( 0 );
 
-		userEvent.type( getInput(), '4' );
+		await user.type( getInput(), '4' );
 
 		expect( onChange ).toHaveBeenCalledTimes( 5 );
 		expect( onChange ).toHaveBeenLastCalledWith( 1234 );
 		expect( onBlur ).toHaveBeenCalledTimes( 0 );
 
-		userEvent.type( getInput(), '.567' );
+		await user.type( getInput(), '.567' );
 
 		expect( onChange ).toHaveBeenCalledTimes( 9 );
 		expect( onChange ).toHaveBeenCalledWith( 1234 );
@@ -115,33 +118,35 @@ describe( 'AppInputNumberControl', () => {
 		expect( onChange ).toHaveBeenLastCalledWith( 1234.57 );
 		expect( onBlur ).toHaveBeenCalledTimes( 0 );
 
-		userEvent.click( document.body );
+		await user.click( document.body );
 
 		expect( onChange ).toHaveBeenCalledTimes( 9 );
 		expect( onBlur ).toHaveBeenCalledTimes( 1 );
 		expect( onBlur ).toHaveBeenCalledWith( expect.any( Object ), 1234.57 );
 	} );
 
-	it( 'Should treat the cleared input value as number 0 after losing focus', () => {
+	it( 'Should treat the cleared input value as number 0 after losing focus', async () => {
+		const user = userEvent.setup();
+
 		render( <ControlledInput numberSettings={ { precision: 3 } } /> );
 
 		expect( getInput().value ).toBe( '1.000' );
 
-		userEvent.clear( getInput() );
+		await user.clear( getInput() );
 
 		expect( getInput().value ).toBe( '' );
 
-		userEvent.click( document.body );
+		await user.click( document.body );
 
 		expect( getInput().value ).toBe( '0.000' );
 
 		// Clear again to test the case that it resumes the displayed value to '0.000'
 		// after leaving a string value equivalent to number 0.
-		userEvent.clear( getInput() );
+		await user.clear( getInput() );
 
 		expect( getInput().value ).toBe( '' );
 
-		userEvent.click( document.body );
+		await user.click( document.body );
 
 		expect( getInput().value ).toBe( '0.000' );
 	} );

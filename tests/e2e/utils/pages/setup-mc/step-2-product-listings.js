@@ -38,18 +38,6 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get language radio row.
-	 *
-	 * @return {import('@playwright/test').Locator} Get language radio row.
-	 */
-	getLanguageRadioRow() {
-		return this.page.getByRole( 'radio', {
-			name: 'English',
-			exact: true,
-		} );
-	}
-
-	/**
 	 * Get selected countries only radio row.
 	 *
 	 * @return {import('@playwright/test').Locator} Get selected countries only radio row.
@@ -269,18 +257,6 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get "Read more" for Language link.
-	 *
-	 * @return {import('@playwright/test').Locator} Get "Read more" for Language link.
-	 */
-	getReadMoreLanguageLink() {
-		return this.getAudienceCard().getByRole( 'link', {
-			name: 'Read more',
-			exact: true,
-		} );
-	}
-
-	/**
 	 * Get "Read more" for Shipping rates link.
 	 *
 	 * @return {import('@playwright/test').Locator} Get "Read more" for Shipping rates link.
@@ -309,23 +285,12 @@ export default class ProductListingsPage extends MockRequests {
 	 *
 	 * @return {Promise<import('@playwright/test').Request[]>} The requests.
 	 */
-	registerContinueRequests() {
-		const contactInfoRequestPromise = this.page.waitForRequest(
+	registerContinueRequest() {
+		return this.page.waitForRequest(
 			( request ) =>
 				request.url().includes( '/gla/mc/contact-information' ) &&
 				request.method() === 'GET'
 		);
-
-		const policyCheckRequestPromise = this.page.waitForRequest(
-			( request ) =>
-				request.url().includes( '/gla/mc/policy_check' ) &&
-				request.method() === 'GET'
-		);
-
-		return Promise.all( [
-			contactInfoRequestPromise,
-			policyCheckRequestPromise,
-		] );
 	}
 
 	/**

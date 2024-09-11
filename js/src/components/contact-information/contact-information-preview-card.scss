@@ -13,9 +13,9 @@
 	}
 
 	&__placeholder {
-		@include placeholder;
-
 		display: inline-block;
 		width: 18em;
+
+		@include placeholder;
 	}
 }

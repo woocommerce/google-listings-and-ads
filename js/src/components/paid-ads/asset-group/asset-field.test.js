@@ -117,15 +117,17 @@ describe( 'AssetField', () => {
 	} );
 
 	it( 'When clicking on the toggle button, it should toggle to show or hide the children', async () => {
+		const user = userEvent.setup();
+
 		render( <AssetField>Children</AssetField> );
 
 		expect( screen.queryByText( 'Children' ) ).not.toBeVisible();
 
-		await userEvent.click( getToggleButton() );
+		await user.click( getToggleButton() );
 
 		expect( screen.getByText( 'Children' ) ).toBeVisible();
 
-		await userEvent.click( getToggleButton() );
+		await user.click( getToggleButton() );
 
 		expect( screen.queryByText( 'Children' ) ).not.toBeVisible();
 	} );

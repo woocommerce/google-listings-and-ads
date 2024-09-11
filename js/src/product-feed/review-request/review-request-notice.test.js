@@ -34,7 +34,7 @@ describe( 'Request Review Notice', () => {
 			expect( button ).toBeTruthy();
 
 			fireEvent.click( button );
-			expect( onRequestReviewClick ).toBeCalledTimes( 1 );
+			expect( onRequestReviewClick ).toHaveBeenCalledTimes( 1 );
 		}
 	);
 
@@ -65,7 +65,7 @@ describe( 'Request Review Notice', () => {
 		expect( button ).toBeTruthy();
 
 		fireEvent.click( button );
-		expect( onRequestReviewClick ).not.toBeCalled();
+		expect( onRequestReviewClick ).not.toHaveBeenCalled();
 	} );
 
 	it( 'Doesnt render button if no regions are available and there is no cooldown', () => {

@@ -30,8 +30,8 @@ export default function useLayout( layoutName ) {
 
 		const bodyClassList = document.body.classList;
 		/**
-		 * For WC Navigation, it already has classes applied, for example, "is-wp-toolbar-disabled".
-		 * Here filter existing classes out to avoid them being removed in the cleanup function.
+		 * Here filter potentially already applied classes out
+		 * to avoid them being removed in the cleanup function.
 		 */
 		const classNames = classNameDict[ layoutName ].filter(
 			( name ) => ! bodyClassList.contains( name )

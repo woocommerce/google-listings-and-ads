@@ -11,7 +11,7 @@ import { getQuery } from '@woocommerce/navigation';
 import useProgramsReport, { usePerformanceReport } from './useProgramsReport';
 import useMetricsWithFormatter from '../useMetricsWithFormatter';
 import DifferentCurrencyNotice from '.~/components/different-currency-notice';
-import NavigationClassic from '.~/components/navigation-classic';
+import MainTabNav from '.~/components/main-tab-nav';
 import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
@@ -103,7 +103,7 @@ const ProgramsReport = () => {
 	return (
 		<>
 			<DifferentCurrencyNotice context={ trackEventId } />
-			<NavigationClassic />
+			<MainTabNav />
 			<RebrandingTour />
 			<ReportsNavigation />
 			<ProgramsReportFilters

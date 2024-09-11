@@ -17,7 +17,8 @@ describe( 'TreeSelectControl - Control Component', () => {
 		},
 	};
 
-	it( 'Renders the tags and calls onTagsChange when they change', () => {
+	it( 'Renders the tags and calls onTagsChange when they change', async () => {
+		const user = userEvent.setup();
 		const { queryByText, queryByLabelText, rerender } = render(
 			<Control
 				ref={ ref }
@@ -27,7 +28,7 @@ describe( 'TreeSelectControl - Control Component', () => {
 		);
 
 		expect( queryByText( 'Spain (1 of 1)' ) ).toBeTruthy();
-		userEvent.click( queryByLabelText( 'Remove Spain' ) );
+		await user.click( queryByLabelText( 'Remove Spain' ) );
 		expect( onTagsChange ).toHaveBeenCalledTimes( 1 );
 		expect( onTagsChange ).toHaveBeenCalledWith( [] );
 
@@ -41,11 +42,12 @@ describe( 'TreeSelectControl - Control Component', () => {
 		);
 
 		expect( screen.queryByText( 'Spain (1 of 1)' ) ).toBeTruthy();
-		userEvent.click( screen.queryByLabelText( 'Remove Spain' ) );
+		await user.click( screen.queryByLabelText( 'Remove Spain' ) );
 		expect( onTagsChange ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'Calls onInputChange when typing', () => {
+	it( 'Calls onInputChange when typing', async () => {
+		const user = userEvent.setup();
 		const onInputChange = jest
 			.fn()
 			.mockName( 'onInputChange' )
@@ -57,7 +59,7 @@ describe( 'TreeSelectControl - Control Component', () => {
 		const input = queryByRole( 'combobox' );
 		expect( input ).toBeTruthy();
 		expect( input.hasAttribute( 'disabled' ) ).toBeFalsy();
-		userEvent.type( input, 'a' );
+		await user.type( input, 'a' );
 		expect( onInputChange ).toHaveBeenCalledTimes( 1 );
 		expect( onInputChange ).toHaveNthReturnedWith( 1, 'a' );
 		fireEvent.change( input, { target: { value: 'test' } } );
@@ -65,7 +67,8 @@ describe( 'TreeSelectControl - Control Component', () => {
 		expect( onInputChange ).toHaveNthReturnedWith( 2, 'test' );
 	} );
 
-	it( 'Allows disabled input', () => {
+	it( 'Allows disabled input', async () => {
+		const user = userEvent.setup();
 		const onInputChange = jest.fn().mockName( 'onInputChange' );
 		const { queryByRole } = render(
 			<Control disabled={ true } onInputChange={ onInputChange } />
@@ -74,16 +77,17 @@ describe( 'TreeSelectControl - Control Component', () => {
 		const input = queryByRole( 'combobox' );
 		expect( input ).toBeTruthy();
 		expect( input.hasAttribute( 'disabled' ) ).toBeTruthy();
-		userEvent.type( input, 'a' );
+		await user.type( input, 'a' );
 		expect( onInputChange ).not.toHaveBeenCalled();
 	} );
 
-	it( 'Calls onFocus callback when it is focused', () => {
+	it( 'Calls onFocus callback when it is focused', async () => {
+		const user = userEvent.setup();
 		const onFocus = jest.fn().mockName( 'onFocus' );
 		const { queryByRole } = render(
 			<Control ref={ ref } onFocus={ onFocus } />
 		);
-		userEvent.click( queryByRole( 'combobox' ) );
+		await user.click( queryByRole( 'combobox' ) );
 		expect( onFocus ).toHaveBeenCalled();
 	} );
 

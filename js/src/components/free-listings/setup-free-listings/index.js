@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useRef } from '@wordpress/element';
+import { Form } from '@woocommerce/components';
 import { pick, noop } from 'lodash';
 
 /**
@@ -31,16 +32,7 @@ const targetAudienceFields = [ 'locale', 'language', 'location', 'countries' ];
  *
  * If we are adding a new settings field, it should be added into this array.
  */
-const settingsFieldNames = [
-	'shipping_rate',
-	'shipping_time',
-	'tax_rate',
-	'website_live',
-	'checkout_process_secure',
-	'payment_methods_visible',
-	'refund_tos_visible',
-	'contact_info_visible',
-];
+const settingsFieldNames = [ 'shipping_rate', 'shipping_time', 'tax_rate' ];
 
 /**
  * Get settings object from Form values.
@@ -217,11 +209,6 @@ const SetupFreeListings = ( {
 					shipping_rate: settings.shipping_rate,
 					shipping_time: settings.shipping_time,
 					tax_rate: settings.tax_rate,
-					website_live: settings.website_live,
-					checkout_process_secure: settings.checkout_process_secure,
-					payment_methods_visible: settings.payment_methods_visible,
-					refund_tos_visible: settings.refund_tos_visible,
-					contact_info_visible: settings.contact_info_visible,
 					// This is used in UI only, not used in API.
 					offer_free_shipping:
 						getOfferFreeShippingInitialValue( shippingRates ),
