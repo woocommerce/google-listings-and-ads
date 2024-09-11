@@ -6,7 +6,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { select } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
-import { noop, merge } from 'lodash';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -25,7 +25,6 @@ import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
 import SkipPaidAdsConfirmationModal from './skip-paid-ads-confirmation-modal';
 import { getProductFeedUrl } from '.~/utils/urls';
-import clientSession from './clientSession';
 import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
 import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
@@ -48,14 +47,12 @@ import { recordGlaEvent } from '.~/utils/tracks';
 /**
  * Clicking on the skip paid ads button to complete the onboarding flow.
  * The 'unknown' value of properties may means:
- * - the paid ads setup is not opened
  * - the final status has not yet been resolved when recording this event
  * - the status is not available, for example, the billing status is unknown if Google Ads account is not yet connected
  *
  * @event gla_onboarding_complete_button_click
- * @property {string} opened_paid_ads_setup Whether the paid ads setup is opened, e.g. 'yes', 'no'
  * @property {string} google_ads_account_status The connection status of merchant's Google Ads addcount, e.g. 'connected', 'disconnected', 'incomplete'
- * @property {string} billing_method_status aaa, The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
+ * @property {string} billing_method_status The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
  * @property {string} campaign_form_validation Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
  */
 
@@ -73,20 +70,12 @@ export default function SetupPaidAds() {
 	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( () =>
-		clientSession.getShowPaidAdsSetup( false )
-	);
 	const [ paidAds, setPaidAds ] = useState( {} );
 	const [ completing, setCompleting ] = useState( null );
 	const [
 		showSkipPaidAdsConfirmationModal,
 		setShowSkipPaidAdsConfirmationModal,
 	] = useState( false );
-
-	const handleContinuePaidAdsSetupClick = () => {
-		setShowPaidAdsSetup( true );
-		clientSession.setShowPaidAdsSetup( true );
-	};
 
 	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
 		setCompleting( event.target.dataset.action );
@@ -124,26 +113,16 @@ export default function SetupPaidAds() {
 	};
 
 	const handleSkipCreatePaidAds = async ( event ) => {
+		const selector = select( STORE_KEY );
+		const billing = selector.getGoogleAdsAccountBillingStatus();
+
 		setShowSkipPaidAdsConfirmationModal( false );
 
 		const eventProps = {
-			opened_paid_ads_setup: 'no',
 			google_ads_account_status: googleAdsAccount?.status,
-			billing_method_status: 'unknown',
-			campaign_form_validation: 'unknown',
+			billing_method_status: billing?.status || 'unknown',
+			campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
 		};
-
-		// TODO: Review once https://github.com/woocommerce/google-listings-and-ads/issues/2500 is merged
-		if ( showPaidAdsSetup ) {
-			const selector = select( STORE_KEY );
-			const billing = selector.getGoogleAdsAccountBillingStatus();
-
-			merge( eventProps, {
-				opened_paid_ads_setup: 'yes',
-				billing_method_status: billing?.status,
-				campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
-			} );
-		}
 
 		recordGlaEvent( 'gla_onboarding_complete_button_click', eventProps );
 
@@ -191,31 +170,11 @@ export default function SetupPaidAds() {
 			/>
 			<PaidAdsFeaturesSection
 				hideBudgetContent={ ! hasGoogleAdsConnection }
-				hideFooterButtons={
-					! hasGoogleAdsConnection || showPaidAdsSetup
-				}
-				skipButton={ createSkipButton(
-					__( 'Skip this step for now', 'google-listings-and-ads' )
-				) }
-				continueButton={
-					<AppButton
-						isPrimary
-						text={ __(
-							'Create campaign',
-							'google-listings-and-ads'
-						) }
-						disabled={ completing === ACTION_SKIP }
-						onClick={ handleContinuePaidAdsSetupClick }
-						eventName="gla_onboarding_open_paid_ads_setup_button_click"
-					/>
-				}
 			/>
-			{ showPaidAdsSetup && (
-				<PaidAdsSetupSections
-					onStatesReceived={ setPaidAds }
-					countryCodes={ countryCodes }
-				/>
-			) }
+			<PaidAdsSetupSections
+				onStatesReceived={ setPaidAds }
+				countryCodes={ countryCodes }
+			/>
 			<FaqsSection />
 
 			{ showSkipPaidAdsConfirmationModal && (
@@ -225,7 +184,7 @@ export default function SetupPaidAds() {
 				/>
 			) }
 
-			<StepContentFooter hidden={ ! showPaidAdsSetup }>
+			<StepContentFooter>
 				<Flex justify="right" gap={ 4 }>
 					{ createSkipButton(
 						__(
