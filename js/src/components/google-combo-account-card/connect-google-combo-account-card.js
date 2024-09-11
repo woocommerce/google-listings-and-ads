@@ -39,15 +39,15 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 				linkMerchant: (
 					<AppDocumentationLink
 						context="setup-mc-accounts"
-						linkId="required-google-permissions"
-						href="https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions"
+						linkId="google-mc-terms-of-service"
+						href="https://support.google.com/merchants/answer/160173"
 					/>
 				),
 				linkAds: (
 					<AppDocumentationLink
 						context="setup-mc-accounts"
-						linkId="required-google-permissions"
-						href="https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions"
+						linkId="google-ads-terms-of-service"
+						href="https://support.google.com/adspolicy/answer/54818"
 					/>
 				),
 			}
