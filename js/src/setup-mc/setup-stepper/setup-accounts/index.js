@@ -20,7 +20,7 @@ import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import WPComAccountCard from '.~/components/wpcom-account-card';
-import GoogleAccountCard from '.~/components/google-account-card';
+import GoogleComboAccountCard from '.~/components/google-combo-account-card';
 import GoogleMCAccountCard from '.~/components/google-mc-account-card';
 import GoogleAdsAccountCard from '.~/components/google-ads-account-card';
 import Faqs from './faqs';
@@ -159,7 +159,7 @@ const SetupAccounts = ( props ) => {
 					{ ! isJetpackActive && (
 						<WPComAccountCard jetpack={ jetpack } />
 					) }
-					<GoogleAccountCard disabled={ ! isJetpackActive } />
+					<GoogleComboAccountCard disabled={ ! isJetpackActive } />
 					<GoogleAdsAccountCard />
 				</VerticalGapLayout>
 			</Section>
