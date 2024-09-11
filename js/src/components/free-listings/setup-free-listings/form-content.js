@@ -22,7 +22,7 @@ import ConditionalSection from '.~/components/conditional-section';
  *
  * @param {Object} props React props.
  * @param {string} [props.submitLabel="Complete setup"] Submit button label.
- * @param {boolean} [props.hideTaxRates=false] Whether to hide tax rate section.
+ * @param {boolean} [props.hideTaxRates] Whether to hide tax rate section.
  */
 const FormContent = ( {
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
