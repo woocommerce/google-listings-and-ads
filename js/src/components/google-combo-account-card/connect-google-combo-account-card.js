@@ -28,6 +28,7 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 		useGoogleConnectFlow( pageName );
 	const [ termsAccepted, setTermsAccepted ] = useState( false );
 
+	const checkboxId = 'gla-account-card-terms-conditions';
 	const CheckboxLabel = () => {
 		const label = createInterpolateElement(
 			__(
@@ -69,12 +70,12 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 					) }
 					<div>
 						<CheckboxControl
-							id="gla-account-card-terms-conditions"
+							id={ checkboxId }
 							checked={ termsAccepted }
 							onChange={ ( val ) => setTermsAccepted( !! val ) }
 							disabled={ disabled }
 						/>
-						<label htmlFor="gla-account-card-terms-conditions">
+						<label htmlFor={ checkboxId }>
 							<CheckboxLabel />
 						</label>
 					</div>
