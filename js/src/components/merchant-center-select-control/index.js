@@ -48,6 +48,7 @@ const MerchantCenterSelectControl = ( {
 	return (
 		<AppSelectControl
 			options={ options }
+			selectSingleValue={ true }
 			onChange={ onChange }
 			value={ value }
 			{ ...props }

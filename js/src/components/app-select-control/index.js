@@ -16,14 +16,29 @@ import './index.scss';
  * it will be added to the container div's `className`,
  * so that you can further control its style.
  *
- * @param {*} props
+ * @param {*} props The component props.
+ * @param {boolean} [props.selectSingleValue=false] Whether the select should show only one value.
  */
 const AppSelectControl = ( props ) => {
-	const { className, ...rest } = props;
+	const { className, options, selectSingleValue, ...rest } = props;
+	const showSingleValue = selectSingleValue && options?.length === 1;
+
+	const selectProps = showSingleValue ?
+		{
+			suffix: " ",
+			tabIndex: "-1",
+			style: {
+				pointerEvents: 'none',
+			},
+			readOnly: true,
+			options,
+			...rest,
+		}
+		: { options, ...rest };
 
 	return (
 		<div className={ classNames( 'app-select-control', className ) }>
-			<SelectControl { ...rest } />
+			<SelectControl { ...selectProps } />
 		</div>
 	);
 };
