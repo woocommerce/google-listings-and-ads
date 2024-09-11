@@ -21,8 +21,8 @@ import {
 /**
  * @param {Object} props React props
  * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button' | 'step2-continue-button' , action: 'go-to-step2' | 'go-to-step3' }`.
- * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button' | 'stepper-step2-button', action: 'go-to-step1' | 'go-to-step2' }`.
+ * @fires gla_setup_ads with `{ triggered_by: 'step1-continue-button', action: 'go-to-step2' }`.
+ * @fires gla_setup_ads with `{ triggered_by: 'stepper-step1-button', action: 'go-to-step1'}`.
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );

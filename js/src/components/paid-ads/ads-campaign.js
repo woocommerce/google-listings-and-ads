@@ -41,14 +41,12 @@ export default function AdsCampaign( {
 	campaign,
 	onContinue,
 	isLoading,
-	submitButtonText,
+	submitButtonText = __( 'Continue', 'google-listings-and-ads' ),
 	trackingContext,
 } ) {
 	const isCreation = ! campaign;
 	const formContext = useAdaptiveFormContext();
 	const { isValidForm } = formContext;
-	const continueButtonText =
-		submitButtonText || __( 'Continue', 'google-listings-and-ads' );
 
 	const disabledBudgetSection = ! formContext.values.countryCodes.length;
 	const helperText = isCreation
@@ -111,7 +109,7 @@ export default function AdsCampaign( {
 					loading={ isLoading }
 					onClick={ onContinue }
 				>
-					{ continueButtonText }
+					{ submitButtonText }
 				</AppButton>
 			</StepContentFooter>
 		</StepContent>
