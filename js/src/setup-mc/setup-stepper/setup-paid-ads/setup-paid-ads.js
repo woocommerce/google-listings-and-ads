@@ -15,6 +15,7 @@ import useAdminUrl from '.~/hooks/useAdminUrl';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
@@ -66,6 +67,7 @@ import { recordGlaEvent } from '.~/utils/tracks';
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
 	const { createNotice } = useDispatchCoreNotices();
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
 	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
 	const [ paidAds, setPaidAds ] = useState( {} );
@@ -105,7 +107,7 @@ export default function SetupPaidAds() {
 		const onBeforeFinish = handleSetupComplete.bind(
 			null,
 			paidAds.amount,
-			paidAds.countryCodes
+			countryCodes
 		);
 		await finishOnboardingSetup( event, onBeforeFinish );
 	};
@@ -169,7 +171,10 @@ export default function SetupPaidAds() {
 			<PaidAdsFeaturesSection
 				hideBudgetContent={ ! hasGoogleAdsConnection }
 			/>
-			<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
+			<PaidAdsSetupSections
+				onStatesReceived={ setPaidAds }
+				countryCodes={ countryCodes }
+			/>
 			<FaqsSection />
 
 			{ showSkipPaidAdsConfirmationModal && (
@@ -200,7 +205,7 @@ export default function SetupPaidAds() {
 						eventName="gla_onboarding_complete_with_paid_ads_button_click"
 						eventProps={ {
 							budget: paidAds.amount,
-							audiences: paidAds.countryCodes?.join( ',' ),
+							audiences: countryCodes?.join( ',' ),
 						} }
 					/>
 				</Flex>

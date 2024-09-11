@@ -94,6 +94,7 @@ export default function AdsCampaign( {
 			<BudgetSection
 				formProps={ formContext }
 				disabled={ disabledBudgetSection }
+				countryCodes={ formContext.values.countryCodes }
 			>
 				<CampaignPreviewCard />
 			</BudgetSection>

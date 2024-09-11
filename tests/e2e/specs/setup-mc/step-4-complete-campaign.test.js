@@ -11,13 +11,8 @@ import CompleteCampaign from '../../utils/pages/setup-mc/step-4-complete-campaig
 import SetupAdsAccountPage from '../../utils/pages/setup-ads/setup-ads-accounts';
 import {
 	checkFAQExpandable,
-	fillCountryInSearchBox,
-	getCountryInputSearchBoxContainer,
-	getCountryTagsFromInputSearchBoxContainer,
 	getFAQPanelTitle,
 	getFAQPanelRow,
-	getTreeSelectMenu,
-	removeCountryFromSearchBox,
 	checkBillingAdsPopup,
 } from '../../utils/page';
 
@@ -174,17 +169,6 @@ test.describe( 'Complete your campaign', () => {
 			} );
 
 			test.describe( 'Setup up ads to a Google Ads account', () => {
-				test( 'should see "Ads audience" section is enabled', async () => {
-					const adsAudienceSection =
-						completeCampaign.getAdsAudienceSection();
-					await expect( adsAudienceSection ).toBeVisible();
-
-					// Confirm that the section title contains the correct text.
-					await expect(
-						adsAudienceSection.locator( 'h1' )
-					).toContainText( 'Ads audience' );
-				} );
-
 				test( 'should see "Set your budget" section is enabled', async () => {
 					const budgetSection = completeCampaign.getBudgetSection();
 					await expect( budgetSection ).toBeVisible();
@@ -208,78 +192,6 @@ test.describe( 'Complete your campaign', () => {
 			test.beforeAll( async () => {
 				await setupAdsAccountPage.mockAdsAccountConnected();
 				await completeCampaign.goto();
-			} );
-
-			test.describe( 'Select audience', () => {
-				test( 'should see only three country tags in country input search box', async () => {
-					const countrySearchBoxContainer =
-						getCountryInputSearchBoxContainer( page );
-					const countryTags =
-						getCountryTagsFromInputSearchBoxContainer( page );
-					await expect( countryTags ).toHaveCount( 3 );
-					await expect( countrySearchBoxContainer ).toContainText(
-						'United States'
-					);
-					await expect( countrySearchBoxContainer ).toContainText(
-						'Taiwan'
-					);
-					await expect( countrySearchBoxContainer ).toContainText(
-						'United Kingdom'
-					);
-				} );
-
-				test( 'should only allow searching for the same set of the countries selected in step 2, which is returned by target audience API', async () => {
-					const treeSelectMenu = getTreeSelectMenu( page );
-
-					await fillCountryInSearchBox( page, 'United States' );
-					await expect( treeSelectMenu ).toBeVisible();
-
-					await fillCountryInSearchBox( page, 'United Kingdom' );
-					await expect( treeSelectMenu ).toBeVisible();
-
-					await fillCountryInSearchBox( page, 'Taiwan' );
-					await expect( treeSelectMenu ).toBeVisible();
-
-					await fillCountryInSearchBox( page, 'Japan' );
-					await expect( treeSelectMenu ).not.toBeVisible();
-
-					await fillCountryInSearchBox( page, 'Spain' );
-					await expect( treeSelectMenu ).not.toBeVisible();
-				} );
-
-				test( 'should see the budget recommendation value changed, and see the budget recommendation request is triggered when changing the ads audience', async () => {
-					let textContent = await setupBudgetPage
-						.getBudgetRecommendationTextRow()
-						.textContent();
-
-					const textBeforeRemoveCountry =
-						setupBudgetPage.extractBudgetRecommendationValue(
-							textContent
-						);
-
-					const responsePromise =
-						setupBudgetPage.registerBudgetRecommendationResponse();
-
-					await removeCountryFromSearchBox(
-						page,
-						'United Kingdom (UK)'
-					);
-
-					await responsePromise;
-
-					textContent = await setupBudgetPage
-						.getBudgetRecommendationTextRow()
-						.textContent();
-
-					const textAfterRemoveCountry =
-						setupBudgetPage.extractBudgetRecommendationValue(
-							textContent
-						);
-
-					await expect( textBeforeRemoveCountry ).not.toBe(
-						textAfterRemoveCountry
-					);
-				} );
 			} );
 
 			test.describe( 'Set up budget', () => {
