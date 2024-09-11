@@ -58,16 +58,8 @@ function FeatureList( { hideBudgetContent } ) {
  *
  * @param {Object} props React props.
  * @param {boolean} props.hideBudgetContent Whether to hide the content about the ad budget.
- * @param {boolean} props.hideFooterButtons Whether to hide the buttons at the card footer.
- * @param {JSX.Element} props.skipButton Button to skip paid ads setup.
- * @param {JSX.Element} props.continueButton Button to continue paid ads setup.
  */
-export default function PaidAdsFeaturesSection( {
-	hideBudgetContent,
-	hideFooterButtons,
-	skipButton,
-	continueButton,
-} ) {
+export default function PaidAdsFeaturesSection( { hideBudgetContent } ) {
 	return (
 		<Section
 			className="gla-paid-ads-features-section"
@@ -130,10 +122,6 @@ export default function PaidAdsFeaturesSection( {
 						</FlexItem>
 					</Flex>
 				</Section.Card.Body>
-				<Section.Card.Footer hidden={ hideFooterButtons }>
-					{ skipButton }
-					{ continueButton }
-				</Section.Card.Footer>
 			</Section.Card>
 		</Section>
 	);

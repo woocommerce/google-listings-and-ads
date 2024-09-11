@@ -6,7 +6,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { select } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
-import { noop, merge } from 'lodash';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -22,13 +22,12 @@ import FaqsSection from '.~/components/paid-ads/faqs-section';
 import AppButton from '.~/components/app-button';
 import PaidAdsFeaturesSection from './paid-ads-features-section';
 import PaidAdsSetupSections from './paid-ads-setup-sections';
+import SkipPaidAdsConfirmationModal from './skip-paid-ads-confirmation-modal';
 import { getProductFeedUrl } from '.~/utils/urls';
-import clientSession from './clientSession';
 import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
 import { GUIDE_NAMES } from '.~/constants';
-
-const ACTION_COMPLETE = 'complete-ads';
-const ACTION_SKIP = 'skip-ads';
+import { ACTION_COMPLETE, ACTION_SKIP } from './constants';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
@@ -47,14 +46,12 @@ const ACTION_SKIP = 'skip-ads';
 /**
  * Clicking on the skip paid ads button to complete the onboarding flow.
  * The 'unknown' value of properties may means:
- * - the paid ads setup is not opened
  * - the final status has not yet been resolved when recording this event
  * - the status is not available, for example, the billing status is unknown if Google Ads account is not yet connected
  *
  * @event gla_onboarding_complete_button_click
- * @property {string} opened_paid_ads_setup Whether the paid ads setup is opened, e.g. 'yes', 'no'
  * @property {string} google_ads_account_status The connection status of merchant's Google Ads addcount, e.g. 'connected', 'disconnected', 'incomplete'
- * @property {string} billing_method_status aaa, The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
+ * @property {string} billing_method_status The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
  * @property {string} campaign_form_validation Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
  */
 
@@ -71,16 +68,12 @@ export default function SetupPaidAds() {
 	const { createNotice } = useDispatchCoreNotices();
 	const { googleAdsAccount, hasGoogleAdsConnection } = useGoogleAdsAccount();
 	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
-	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( () =>
-		clientSession.getShowPaidAdsSetup( false )
-	);
 	const [ paidAds, setPaidAds ] = useState( {} );
 	const [ completing, setCompleting ] = useState( null );
-
-	const handleContinuePaidAdsSetupClick = () => {
-		setShowPaidAdsSetup( true );
-		clientSession.setShowPaidAdsSetup( true );
-	};
+	const [
+		showSkipPaidAdsConfirmationModal,
+		setShowSkipPaidAdsConfirmationModal,
+	] = useState( false );
 
 	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
 		setCompleting( event.target.dataset.action );
@@ -117,42 +110,46 @@ export default function SetupPaidAds() {
 		await finishOnboardingSetup( event, onBeforeFinish );
 	};
 
+	const handleSkipCreatePaidAds = async ( event ) => {
+		const selector = select( STORE_KEY );
+		const billing = selector.getGoogleAdsAccountBillingStatus();
+
+		setShowSkipPaidAdsConfirmationModal( false );
+
+		const eventProps = {
+			google_ads_account_status: googleAdsAccount?.status,
+			billing_method_status: billing?.status || 'unknown',
+			campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
+		};
+
+		recordGlaEvent( 'gla_onboarding_complete_button_click', eventProps );
+
+		await finishOnboardingSetup( event );
+	};
+
+	const handleShowSkipPaidAdsConfirmationModal = () => {
+		setShowSkipPaidAdsConfirmationModal( true );
+	};
+
+	const handleCancelSkipPaidAdsClick = () => {
+		setShowSkipPaidAdsConfirmationModal( false );
+	};
+
 	// The status check of Google Ads account connection is included in `paidAds.isReady`,
 	// because when there is no connected account, it will disable the budget section and set the `amount` to `undefined`.
 	const disabledComplete = completing === ACTION_SKIP || ! paidAds.isReady;
 
 	function createSkipButton( text ) {
-		const eventProps = {
-			opened_paid_ads_setup: 'no',
-			google_ads_account_status: googleAdsAccount?.status,
-			billing_method_status: 'unknown',
-			campaign_form_validation: 'unknown',
-		};
-
-		if ( showPaidAdsSetup ) {
-			const selector = select( STORE_KEY );
-			const billing = selector.getGoogleAdsAccountBillingStatus();
-
-			merge( eventProps, {
-				opened_paid_ads_setup: 'yes',
-				billing_method_status: billing?.status,
-				campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
-			} );
-		}
-
 		const disabledSkip =
 			completing === ACTION_COMPLETE || ! hasGoogleAdsConnection;
 
 		return (
 			<AppButton
 				isTertiary
-				data-action={ ACTION_SKIP }
 				text={ text }
 				loading={ completing === ACTION_SKIP }
 				disabled={ disabledSkip }
-				onClick={ finishOnboardingSetup }
-				eventName="gla_onboarding_complete_button_click"
-				eventProps={ eventProps }
+				onClick={ handleShowSkipPaidAdsConfirmationModal }
 			/>
 		);
 	}
@@ -171,30 +168,18 @@ export default function SetupPaidAds() {
 			/>
 			<PaidAdsFeaturesSection
 				hideBudgetContent={ ! hasGoogleAdsConnection }
-				hideFooterButtons={
-					! hasGoogleAdsConnection || showPaidAdsSetup
-				}
-				skipButton={ createSkipButton(
-					__( 'Skip this step for now', 'google-listings-and-ads' )
-				) }
-				continueButton={
-					<AppButton
-						isPrimary
-						text={ __(
-							'Create campaign',
-							'google-listings-and-ads'
-						) }
-						disabled={ completing === ACTION_SKIP }
-						onClick={ handleContinuePaidAdsSetupClick }
-						eventName="gla_onboarding_open_paid_ads_setup_button_click"
-					/>
-				}
 			/>
-			{ showPaidAdsSetup && (
-				<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
-			) }
+			<PaidAdsSetupSections onStatesReceived={ setPaidAds } />
 			<FaqsSection />
-			<StepContentFooter hidden={ ! showPaidAdsSetup }>
+
+			{ showSkipPaidAdsConfirmationModal && (
+				<SkipPaidAdsConfirmationModal
+					onRequestClose={ handleCancelSkipPaidAdsClick }
+					onSkipCreatePaidAds={ handleSkipCreatePaidAds }
+				/>
+			) }
+
+			<StepContentFooter>
 				<Flex justify="right" gap={ 4 }>
 					{ createSkipButton(
 						__(
