@@ -39,7 +39,7 @@ jest.mock( './setup-paid-ads', () => jest.fn().mockName( 'SetupPaidAds' ) );
 /**
  * External dependencies
  */
-import { screen, render } from '@testing-library/react';
+import { screen, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { recordEvent } from '@woocommerce/tracks';
 
@@ -80,17 +80,28 @@ describe( 'SavedSetupStepper', () => {
 		jest.clearAllMocks();
 	} );
 
-	function continueUntilStep4() {
+	async function continueUntilStep4() {
 		continueToStep2();
+
+		// Wait for stepper content to be rendered.
+		await waitFor( () => {
+			expect( continueToStep3 ).toBeDefined();
+		} );
+
 		continueToStep3();
+
+		await waitFor( () => {
+			expect( continueToStep4 ).toBeDefined();
+		} );
+
 		continueToStep4();
 	}
 
 	describe( 'tracks', () => {
-		it( 'Should record events after calling back to `onContinue`', () => {
+		it( 'Should record events after calling back to `onContinue`', async () => {
 			render( <SavedSetupStepper savedStep="1" /> );
 
-			continueUntilStep4();
+			await continueUntilStep4();
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 3 );
 			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_mc', {
@@ -108,6 +119,8 @@ describe( 'SavedSetupStepper', () => {
 		} );
 
 		it( 'Should record events after clicking step navigation buttons', async () => {
+			const user = userEvent.setup();
+
 			render( <SavedSetupStepper savedStep="4" /> );
 
 			const step1 = screen.getByRole( 'button', { name: /accounts/ } );
@@ -115,9 +128,9 @@ describe( 'SavedSetupStepper', () => {
 			const step3 = screen.getByRole( 'button', { name: /store/ } );
 
 			// Step 4 -> Step 3 -> Step 2 -> Step 1
-			await userEvent.click( step3 );
-			await userEvent.click( step2 );
-			await userEvent.click( step1 );
+			await user.click( step3 );
+			await user.click( step2 );
+			await user.click( step1 );
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 3 );
 			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_mc', {
@@ -134,11 +147,11 @@ describe( 'SavedSetupStepper', () => {
 			} );
 
 			// Step 4 -> Step 2
-			continueUntilStep4();
+			await continueUntilStep4();
 			recordEvent.mockClear();
 			expect( recordEvent ).toHaveBeenCalledTimes( 0 );
 
-			await userEvent.click( step2 );
+			await user.click( step2 );
 
 			expect( recordEvent ).toHaveBeenCalledTimes( 1 );
 			expect( recordEvent ).toHaveBeenNthCalledWith( 1, 'gla_setup_mc', {

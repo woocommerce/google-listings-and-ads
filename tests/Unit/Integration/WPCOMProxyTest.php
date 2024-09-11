@@ -1,6 +1,6 @@
 <?php
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
@@ -14,12 +14,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use WC_Meta_Data;
 use WP_REST_Response;
+use WP_REST_Request;
 
 
 /**
  * Class WPCOMProxyTest
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Integration
  */
 class WPCOMProxyTest extends RESTControllerUnitTest {
 
@@ -458,13 +459,15 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'gla_shipping_times', $response_mapped );
 	}
 
-	public function test_get_empty_data_as_object() {
+	public function test_get_empty_settings_for_shipping_zone_methods_as_object() {
+		$request = new WP_REST_Request( 'GET', '/wc/v3/shipping/zones/4/methods' );
+
 		// dummy data
 		$data = [
-			'foo'  => 'bar',
-			'var'  => [],
-			'baz'  => null,
-			'bool' => false,
+			[
+				'id'       => '1',
+				'settings' => [],
+			],
 		];
 
 		$proxy = new WPCOMProxy(
@@ -474,12 +477,25 @@ class WPCOMProxyTest extends RESTControllerUnitTest {
 
 		$this->assertEquals(
 			[
-				'foo'  => 'bar',
-				'var'  => (object) [],
-				'baz'  => null,
-				'bool' => false,
+				[
+					'id'       => '1',
+					'settings' => (object) [],
+				],
 			],
-			$proxy->prepare_data( $data )
+			$proxy->prepare_data( $data, $request )
+		);
+
+		// If the request is not for shipping zone methods, the data should not be modified.
+		$request = new WP_REST_Request( 'GET', '/wc/v3/products' );
+
+		$this->assertEquals(
+			[
+				[
+					'id'       => '1',
+					'settings' => [],
+				],
+			],
+			$proxy->prepare_data( $data, $request )
 		);
 	}
 }

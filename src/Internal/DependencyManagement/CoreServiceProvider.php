@@ -65,6 +65,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as MerchantAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
@@ -254,7 +255,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( MerchantCenterService::class );
 
 		// Set up Notifications service.
-		$this->share_with_tags( NotificationsService::class, MerchantCenterService::class );
+		$this->share_with_tags( NotificationsService::class, MerchantCenterService::class, AccountService::class );
 
 		// Set up OAuthService service.
 		$this->share_with_tags( OAuthService::class );

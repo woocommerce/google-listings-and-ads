@@ -487,7 +487,12 @@ trait ProductTrait {
 	 * @return WCProductAdapter The adapted products with the rules applied.
 	 */
 	protected function generate_attribute_mapping_adapted_product( $rules, $categories = [] ) {
-		$product = WC_Helper_Product::create_simple_product( false );
+		$product = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'sku' => 'Mapped Product SKU',
+			]
+		);
 
 		$attributes = [
 			WC_Helper_Product::create_product_attribute_object( 'size', [ 's', 'xs' ] ),
