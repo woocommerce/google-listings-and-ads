@@ -75,9 +75,12 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 							onChange={ ( val ) => setTermsAccepted( !! val ) }
 							disabled={ disabled }
 						/>
-						<label htmlFor={ checkboxId }>
-							<CheckboxLabel />
-						</label>
+						{
+							// eslint-disable-next-line jsx-a11y/label-has-associated-control
+							<label htmlFor={ checkboxId }>
+								<CheckboxLabel />
+							</label>
+						}
 					</div>
 					<p>
 						<em>
