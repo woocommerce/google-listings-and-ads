@@ -16,13 +16,6 @@ import { __, sprintf } from '@wordpress/i18n';
 const validateCampaign = ( values ) => {
 	const errors = {};
 
-	if ( values.countryCodes.length === 0 ) {
-		errors.countryCodes = __(
-			'Please select at least one country for your ads campaign.',
-			'google-listings-and-ads'
-		);
-	}
-
 	if ( ! Number.isFinite( values.amount ) || values.amount <= 0 ) {
 		errors.amount = __(
 			'Please make sure daily average cost is greater than 0.',
