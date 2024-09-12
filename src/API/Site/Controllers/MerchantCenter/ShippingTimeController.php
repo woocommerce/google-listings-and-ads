@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
+use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -61,7 +62,7 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_create_time_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_schema_properties(),
+					'args'                => $this->get_args_schema(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -270,16 +271,66 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 				'type'              => 'integer',
 				'description'       => __( 'The minimum shipping time in days.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
+				'validate_callback' => [ $this, 'validate_shipping_times' ],
 			],
 			'max_time'     => [
 				'type'              => 'integer',
 				'description'       => __( 'The maximum shipping time in days.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
+				'validate_callback' => [ $this, 'validate_shipping_times' ],
 			],
 		];
 	}
+
+	/**
+	 * Get the args schema for the controller.
+	 *
+	 * @return array
+	 */
+	protected function get_args_schema(): array {
+		$schema                         = $this->get_schema_properties();
+		$schema['time']['required']     = true;
+		$schema['max_time']['required'] = true;
+		return $schema;
+	}
+
+	/**
+	 * Validate the shipping times.
+	 *
+	 * @param mixed   $value
+	 * @param Request $request
+	 * @param string  $param
+	 *
+	 * @return WP_Error|true
+	 */
+	public function validate_shipping_times( $value, $request, $param ) {
+		$time     = $request->get_param( 'time' );
+		$max_time = $request->get_param( 'max_time' );
+
+		if ( rest_is_integer( $value ) === false ) {
+			return new WP_Error(
+				'rest_invalid_type',
+				/* translators: 1: Parameter, 2: Type name. */
+				sprintf( __( '%1$s is not of type %2$s.', 'google-listings-and-ads' ), $param, 'integer' ),
+				[ 'param' => $param ]
+			);
+		}
+
+		if ( ! $value ) {
+			return new WP_Error( 'invalid_shipping_times', __( 'Shipping times are required.', 'google-listings-and-ads' ), [ 'param' => $param ] );
+		}
+
+		if ( $value < 0 ) {
+			return new WP_Error( 'invalid_shipping_times', __( 'Shipping times cannot be negative.', 'google-listings-and-ads' ), [ 'param' => $param ] );
+		}
+
+		if ( $time > $max_time ) {
+			return new WP_Error( 'invalid_shipping_times', __( 'The minimum shipping time cannot be greater than the maximum shipping time.', 'google-listings-and-ads' ), [ 'param' => $param ] );
+		}
+
+		return true;
+	}
+
 
 	/**
 	 * Get the item schema name for the controller.

@@ -280,4 +280,50 @@ class ShippingTimeControllerTest extends RESTControllerUnitTest {
 			$this->assertEquals( 'error', $e->getMessage() );
 		}
 	}
+
+	public function test_missing_time_param() {
+		$payload = [
+			'country_code' => 'US',
+			'max_time'     => 10,
+		];
+
+		$response = $this->do_request( self::ROUTE_SHIPPING_TIMES, 'POST', $payload );
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 'Missing parameter(s): time', $response->get_data()['message'] );
+	}
+
+	public function test_missing_max_time_param() {
+		$payload = [
+			'country_code' => 'US',
+			'time'         => 10,
+		];
+
+		$response = $this->do_request( self::ROUTE_SHIPPING_TIMES, 'POST', $payload );
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 'Missing parameter(s): max_time', $response->get_data()['message'] );
+	}
+
+	public function test_negative_time_param() {
+		$payload = [
+			'country_code' => 'US',
+			'time'         => -1,
+			'max_time'     => 10,
+		];
+
+		$response = $this->do_request( self::ROUTE_SHIPPING_TIMES, 'POST', $payload );
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 'Shipping times cannot be negative.', $response->get_data()['data']['params']['time'] );
+	}
+
+	public function test_minimum_shipping_time_bigger_than_max_time_param() {
+		$payload = [
+			'country_code' => 'US',
+			'time'         => 20,
+			'max_time'     => 10,
+		];
+
+		$response = $this->do_request( self::ROUTE_SHIPPING_TIMES, 'POST', $payload );
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 'The minimum shipping time cannot be greater than the maximum shipping time.', $response->get_data()['data']['params']['time'] );
+	}
 }
