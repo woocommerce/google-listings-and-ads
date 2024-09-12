@@ -8,6 +8,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import SetupAccounts from './setup-accounts';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 import SetupBilling from './setup-billing';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
@@ -17,7 +18,7 @@ import {
 	FILTER_ONBOARDING,
 	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
-
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 /**
  * @param {Object} props React props
  * @param {Object} props.formProps Form props forwarded from `Form` component.
@@ -26,6 +27,7 @@ import {
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
+	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
@@ -53,8 +55,57 @@ const AdsStepper = ( { formProps } ) => {
 		setStep( to );
 	};
 
+	const handleSetupAccountsContinue = () => {
+		continueStep( hasGoogleAdsConnection ? '1' : '2' );
+	};
+
 	const handleCreateCampaignContinue = () => {
-		continueStep( '2' );
+		continueStep( hasGoogleAdsConnection ? '2' : '3' );
+	};
+
+	const getSteps = () => {
+		let steps = [
+			{
+				key: hasGoogleAdsConnection ? '1' : '2',
+				label: __(
+					'Create your paid campaign',
+					'google-listings-and-ads'
+				),
+				content: (
+					<AdsCampaign
+						trackingContext="setup-ads"
+						onContinue={ handleCreateCampaignContinue }
+					/>
+				),
+				onClick: handleStepClick,
+			},
+			{
+				key: hasGoogleAdsConnection ? '2' : '3',
+				label: __( 'Set up billing', 'google-listings-and-ads' ),
+				content: <SetupBilling formProps={ formProps } />,
+				onClick: handleStepClick,
+			},
+		];
+		if ( ! hasGoogleAdsConnection ) {
+			steps = [
+				{
+					key: '1',
+					label: __(
+						'Set up your accounts',
+						'google-listings-and-ads'
+					),
+					content: (
+						<SetupAccounts
+							onContinue={ handleSetupAccountsContinue }
+						/>
+					),
+					onClick: handleStepClick,
+				},
+				...steps,
+			];
+		}
+
+		return steps;
 	};
 
 	return (
@@ -64,28 +115,7 @@ const AdsStepper = ( { formProps } ) => {
 		<Stepper
 			className="gla-setup-stepper"
 			currentStep={ step }
-			steps={ [
-				{
-					key: '1',
-					label: __(
-						'Create your paid campaign',
-						'google-listings-and-ads'
-					),
-					content: (
-						<AdsCampaign
-							trackingContext="setup-ads"
-							onContinue={ handleCreateCampaignContinue }
-						/>
-					),
-					onClick: handleStepClick,
-				},
-				{
-					key: '2',
-					label: __( 'Set up billing', 'google-listings-and-ads' ),
-					content: <SetupBilling formProps={ formProps } />,
-					onClick: handleStepClick,
-				},
-			] }
+			steps={ getSteps() }
 		/>
 	);
 };
