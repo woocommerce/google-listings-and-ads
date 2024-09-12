@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef, useState } from '@wordpress/element';
+import { useRef, useEffect, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -13,7 +13,6 @@ import './index.scss';
 import BudgetRecommendation from './budget-recommendation';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -30,15 +29,21 @@ const nonInteractableProps = {
  *
  * @param {Object} props React props.
  * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {Array<CountryCode>|undefined} props.countryCodes Country codes to fetch budget recommendations for.
+ * @param {string} props.country Country code.
+ * @param {Array<CountryCode>} props.countryCodes Country codes to fetch budget recommendations for.
+ * @param {number} props.dailyBudget Daily budget.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
+ * @param {boolean} [props.isMultiple=false] Whether the campaign is targeting multiple countries.
  * @param {JSX.Element} [props.children] Extra content to be rendered under the card of budget inputs.
  */
 const BudgetSection = ( {
 	formProps,
+	country,
 	countryCodes,
+	dailyBudget,
 	disabled = false,
 	children,
+	isMultiple,
 } ) => {
 	const { getInputProps, setValue, values } = formProps;
 	const { amount } = values;
@@ -52,41 +57,6 @@ const BudgetSection = ( {
 	// `useEffect`.
 	const setValueRef = useRef();
 	setValueRef.current = setValue;
-
-	const [ recommendedBudget, setRecommendedBudget ] = useState( null );
-	const [ recommendationsLoaded, setRecommendationsLoaded ] =
-		useState( false );
-
-	useEffect( () => {
-		if ( ! recommendationsLoaded || recommendedBudget === null ) {
-			return;
-		}
-
-		const sessionData = clientSession.getCampaign();
-
-		let sessionAmount;
-		if ( sessionData?.amount === undefined ) {
-			sessionAmount = recommendedBudget;
-		} else {
-			sessionAmount = amount;
-		}
-
-		if ( disabled ) {
-			sessionAmount = undefined;
-		}
-
-		clientSession.setCampaign( {
-			amount: sessionAmount,
-			countryCodes,
-		} );
-		setValueRef.current( 'amount', sessionAmount );
-	}, [
-		amount,
-		countryCodes,
-		disabled,
-		recommendationsLoaded,
-		recommendedBudget,
-	] );
 
 	return (
 		<div className="gla-budget-section">
@@ -124,16 +94,14 @@ const BudgetSection = ( {
 								value={ monthlyMaxEstimated }
 							/>
 						</div>
-						{ countryCodes?.length > 0 && (
-							<BudgetRecommendation
-								countryCodes={ countryCodes }
-								dailyAverageCost={ amount }
-								setRecommendedBudget={ setRecommendedBudget }
-								setRecommendationsLoaded={
-									setRecommendationsLoaded
-								}
-							/>
-						) }
+						<BudgetRecommendation
+							countryCodes={ countryCodes }
+							dailyAverageCost={ amount }
+							dailyBudget={ dailyBudget }
+							country={ country }
+							currency={ currency }
+							isMultiple={ isMultiple }
+						/>
 					</Section.Card.Body>
 				</Section.Card>
 				{ children }

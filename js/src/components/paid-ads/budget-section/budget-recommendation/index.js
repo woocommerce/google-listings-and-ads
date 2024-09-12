@@ -57,44 +57,18 @@ function toRecommendationRange( isMultiple, ...values ) {
 
 const BudgetRecommendation = ( props ) => {
 	const {
-		countryCodes,
+		isMultiple,
 		dailyAverageCost = Infinity,
-		setRecommendedBudget,
-		setRecommendationsLoaded,
+		dailyBudget,
+		country,
+		currency,
 	} = props;
 
 	const map = useCountryKeyNameMap();
-	const { data, loading } =
-		useFetchBudgetRecommendationEffect( countryCodes );
-
-	const recommendationsLoaded = ! loading;
-
-	const { currency, recommendations = [] } = data || {};
-	const { daily_budget: dailyBudget, country } =
-		getHighestBudget( recommendations );
-
-	useEffect( () => {
-		if ( recommendationsLoaded ) {
-			const sessionData = clientSession.getCampaign();
-			const sessionAmount =
-				sessionData?.amount !== undefined
-					? dailyAverageCost
-					: dailyBudget;
-
-			setRecommendationsLoaded( true );
-			setRecommendedBudget( sessionAmount );
-		}
-	}, [
-		dailyAverageCost,
-		dailyBudget,
-		recommendationsLoaded,
-		setRecommendationsLoaded,
-		setRecommendedBudget,
-	] );
 
 	const countryName = map[ country ];
 	const recommendationRange = toRecommendationRange(
-		recommendations.length > 1,
+		isMultiple,
 		dailyBudget,
 		currency,
 		countryName

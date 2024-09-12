@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useRef, useEffect } from '@wordpress/element';
+import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
 
 /**
@@ -15,6 +15,8 @@ import Section from '.~/wcdl/section';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import clientSession from './clientSession';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
+import useFetchBudgetRecommendationEffect from '.~/hooks/useFetchBudgetRecommendationEffect';
+import getHighestBudget from '.~/utils/getHighestBudget';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -76,6 +78,13 @@ export default function PaidAdsSetupSections( {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
+	const { data: budgetData, loading } =
+		useFetchBudgetRecommendationEffect( countryCodes );
+	const { country = '', daily_budget: dailyBudget } = getHighestBudget(
+		budgetData?.recommendations || []
+	);
+	const multipleRecommendations = budgetData?.recommendations.length > 1;
+
 	/*
 	  If a merchant has not yet finished the billing setup, the billing status will be
 	  updated by `useAutoCheckBillingStatusEffect` hook in `BillingSetupCard` component
@@ -91,14 +100,22 @@ export default function PaidAdsSetupSections( {
 	  For example, refresh page during onboarding flow after the billing setup is finished.
 	*/
 	useEffect( () => {
-		const nextPaidAds = {
-			...paidAds,
-			isReady: paidAds.isValid && isBillingCompleted,
-		};
-		onStatesReceivedRef.current( nextPaidAds );
-	}, [ paidAds, isBillingCompleted ] );
+		if ( ! loading ) {
+			const sessionCampaign = clientSession.getCampaign();
+			const sessionAmount = sessionCampaign?.amount;
 
-	if ( ! billingStatus ) {
+			const nextPaidAds = {
+				...paidAds,
+				amount: sessionAmount || dailyBudget,
+				isReady: paidAds.isValid && isBillingCompleted,
+			};
+
+			onStatesReceivedRef.current( nextPaidAds );
+			clientSession.setCampaign( nextPaidAds );
+		}
+	}, [ dailyBudget, paidAds, isBillingCompleted, loading ] );
+
+	if ( ! billingStatus || loading ) {
 		return (
 			<Section>
 				<SpinnerCard />
@@ -107,7 +124,7 @@ export default function PaidAdsSetupSections( {
 	}
 
 	const initialValues = {
-		amount: paidAds.amount,
+		amount: clientSession.getCampaign()?.amount || dailyBudget,
 	};
 
 	return (
@@ -115,6 +132,10 @@ export default function PaidAdsSetupSections( {
 			initialValues={ initialValues }
 			onChange={ ( _, values, isValid ) => {
 				setPaidAds( { ...paidAds, ...values, isValid } );
+
+				if ( isValid ) {
+					clientSession.setCampaign( values );
+				}
 			} }
 			validate={ validateCampaign }
 		>
@@ -123,6 +144,9 @@ export default function PaidAdsSetupSections( {
 					<BudgetSection
 						formProps={ formProps }
 						countryCodes={ countryCodes }
+						dailyBudget={ dailyBudget }
+						country={ country }
+						isMultiple={ multipleRecommendations }
 					>
 						<BillingCard />
 					</BudgetSection>
