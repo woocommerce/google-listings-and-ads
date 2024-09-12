@@ -111,7 +111,7 @@ const checkErrors = (
 		shippingTimes.some( ( el ) => el.time > el.maxTime )
 	) {
 		errors.shipping_country_times = __(
-			'The minimum shipping time must not be less than the maximum shipping time.',
+			'The minimum shipping time must not be more than the maximum shipping time.',
 			'google-listings-and-ads'
 		);
 	}
