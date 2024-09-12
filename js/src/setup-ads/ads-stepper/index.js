@@ -19,6 +19,7 @@ import {
 	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import AppSpinner from '.~/components/app-spinner';
 /**
  * @param {Object} props React props
  * @param {Object} props.formProps Form props forwarded from `Form` component.
@@ -27,12 +28,17 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
-	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
+	const { hasFinishedResolution, hasGoogleAdsConnection } =
+		useGoogleAdsAccount();
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
 		step,
 	} );
+
+	if ( ! hasFinishedResolution && ! hasGoogleAdsConnection ) {
+		return <AppSpinner />;
+	}
 
 	// Allow the users to go backward only, not forward.
 	// Users can only go forward by clicking on the Continue button.
