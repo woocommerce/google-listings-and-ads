@@ -21,6 +21,8 @@ import AppDocumentationLink from '../app-documentation-link';
  * @fires gla_google_account_connect_button_click with `{ action: 'authorization', context: 'reconnect' }`
  * @fires gla_google_account_connect_button_click with `{ action: 'authorization', context: 'setup-mc' }`
  * @fires gla_documentation_link_click with `{ context: 'setup-mc-accounts', link_id: 'required-google-permissions', href: 'https://woocommerce.com/document/google-for-woocommerce/get-started/setup-and-configuration/#required-google-permissions' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-mc-accounts', link_id: 'google-mc-terms-of-service', href: 'https://support.google.com/merchants/answer/160173' }`
+ * @fires gla_documentation_link_click with `{ context: 'setup-ads', link_id: 'google-ads-terms-of-service', href: 'https://support.google.com/adspolicy/answer/54818' }`
  */
 const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
@@ -29,32 +31,6 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 	const [ termsAccepted, setTermsAccepted ] = useState( false );
 
 	const checkboxId = 'gla-account-card-terms-conditions';
-	const CheckboxLabel = () => {
-		const label = createInterpolateElement(
-			__(
-				'I accept the terms and conditions of <linkMerchant>Merchant Center</linkMerchant> and <linkAds>Google Ads</linkAds>',
-				'google-listings-and-ads'
-			),
-			{
-				linkMerchant: (
-					<AppDocumentationLink
-						context="setup-mc-accounts"
-						linkId="google-mc-terms-of-service"
-						href="https://support.google.com/merchants/answer/160173"
-					/>
-				),
-				linkAds: (
-					<AppDocumentationLink
-						context="setup-mc-accounts"
-						linkId="google-ads-terms-of-service"
-						href="https://support.google.com/adspolicy/answer/54818"
-					/>
-				),
-			}
-		);
-
-		return label;
-	};
 
 	return (
 		<AccountCard
@@ -78,7 +54,28 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 						{
 							// eslint-disable-next-line jsx-a11y/label-has-associated-control
 							<label htmlFor={ checkboxId }>
-								<CheckboxLabel />
+								{ createInterpolateElement(
+									__(
+										'I accept the terms and conditions of <linkMerchant>Merchant Center</linkMerchant> and <linkAds>Google Ads</linkAds>',
+										'google-listings-and-ads'
+									),
+									{
+										linkMerchant: (
+											<AppDocumentationLink
+												context="setup-mc-accounts"
+												linkId="google-mc-terms-of-service"
+												href="https://support.google.com/merchants/answer/160173"
+											/>
+										),
+										linkAds: (
+											<AppDocumentationLink
+												context="setup-ads"
+												linkId="google-ads-terms-of-service"
+												href="https://support.google.com/adspolicy/answer/54818"
+											/>
+										),
+									}
+								) }
 							</label>
 						}
 					</div>
