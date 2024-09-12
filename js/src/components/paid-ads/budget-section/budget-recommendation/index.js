@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { createInterpolateElement, useEffect } from '@wordpress/element';
+import { createInterpolateElement } from '@wordpress/element';
 import { Tip } from '@wordpress/components';
 import GridiconNoticeOutline from 'gridicons/dist/notice-outline';
 
@@ -11,29 +11,6 @@ import GridiconNoticeOutline from 'gridicons/dist/notice-outline';
  */
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import './index.scss';
-import useFetchBudgetRecommendationEffect from '.~/hooks/useFetchBudgetRecommendationEffect';
-import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
-
-/*
- * If a merchant selects more than one country, the budget recommendation
- * takes the highest country out from the selected countries.
- *
- * For example, a merchant selected Brunei (20 USD) and Croatia (15 USD),
- * then the budget recommendation should be (20 USD).
- */
-function getHighestBudget( recommendations ) {
-	return recommendations.reduce(
-		( defender, challenger ) => {
-			if ( challenger.daily_budget > defender.daily_budget ) {
-				return challenger;
-			}
-			return defender;
-		},
-		{
-			daily_budget: 0,
-		}
-	);
-}
 
 function toRecommendationRange( isMultiple, ...values ) {
 	const conversionMap = { strong: <strong />, em: <em />, br: <br /> };

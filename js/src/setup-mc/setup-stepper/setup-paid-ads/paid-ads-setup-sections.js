@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
+import { useState, useRef, useEffect } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
 
 /**

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useRef, useEffect, useState } from '@wordpress/element';
+import { useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
