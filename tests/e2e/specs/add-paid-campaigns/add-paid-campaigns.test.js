@@ -7,6 +7,7 @@ import { expect, test } from '@playwright/test';
  */
 import { clearOnboardedMerchant, setOnboardedMerchant } from '../../utils/api';
 import DashboardPage from '../../utils/pages/dashboard.js';
+import SetupAdsAccountsPage from '../../utils/pages/setup-ads/setup-ads-accounts.js';
 import SetupBudgetPage from '../../utils/pages/setup-ads/setup-budget';
 import { LOAD_STATE } from '../../utils/constants';
 import {
@@ -65,7 +66,9 @@ test.describe( 'Set up paid campaign', () => {
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
 		dashboardPage = new DashboardPage( page );
+		setupAdsAccounts = new SetupAdsAccountsPage( page );
 		await setOnboardedMerchant();
+		await setupAdsAccounts.mockAdsAccountsResponse( [] );
 		await dashboardPage.mockRequests();
 		await dashboardPage.goto();
 	} );
@@ -84,13 +87,6 @@ test.describe( 'Set up paid campaign', () => {
 		//Add page campaign in the programs section.
 		adsConnectionButton = dashboardPage.getAdsConnectionAllProgramsButton();
 		await expect( adsConnectionButton ).toBeEnabled();
-	} );
-
-	test.describe( 'Set up your accounts page', async () => {
-		test.beforeAll( async () => {
-
-		} );
-
 	} );
 
 	test.describe( 'Create your paid campaign', () => {
