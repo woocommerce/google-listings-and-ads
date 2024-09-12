@@ -400,7 +400,7 @@ describe( 'checkErrors', () => {
 				expect( errors ).not.toHaveProperty( 'shipping_time' );
 			} );
 
-			it( `When there are any shipping times is < 0, should not pass`, () => {
+			it( `When there are any shipping times are < 0, should not pass`, () => {
 				const times = toTimes( [ 'US', 10, 10 ], [ 'JP', -1, -1 ] );
 				const codes = [ 'US', 'JP' ];
 
@@ -409,6 +409,26 @@ describe( 'checkErrors', () => {
 				expect( errors ).toHaveProperty( 'shipping_country_times' );
 				expect( errors.shipping_country_times ).toMatchSnapshot();
 			} );
+
+			it( `When minimum times is < 0, should not pass`, () => {
+				const times = toTimes( [ 'US', 10, 10 ], [ 'JP', -1, 10 ] );
+				const codes = [ 'US', 'JP' ];
+
+				const errors = checkErrors( flatShipping, times, codes );
+
+				expect( errors ).toHaveProperty( 'shipping_country_times' );
+				expect( errors.shipping_country_times ).toMatchSnapshot();
+			} );
+			
+			it( `When minimum max_time is < 0, should not pass`, () => {
+				const times = toTimes( [ 'US', 10, 10 ], [ 'JP', 1, -10 ] );
+				const codes = [ 'US', 'JP' ];
+
+				const errors = checkErrors( flatShipping, times, codes );
+
+				expect( errors ).toHaveProperty( 'shipping_country_times' );
+				expect( errors.shipping_country_times ).toMatchSnapshot();
+			} );			
 
 			it( `When all shipping times are ≥ 0, should pass`, () => {
 				const times = toTimes( [ 'US', 1, 1 ], [ 'JP', 0, 0 ] );
