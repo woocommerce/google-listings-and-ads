@@ -393,6 +393,17 @@ export default class MockRequests {
 	}
 
 	/**
+	 * Mock Jetpack as connected.
+	 */
+	async mockJetpackNotConnected() {
+		await this.fulfillJetPackConnection( {
+			active: 'no',
+			displayName: '',
+			email: '',
+		} );
+	}
+
+	/**
 	 * Mock the request to connect Google.
 	 *
 	 * @param {string} url

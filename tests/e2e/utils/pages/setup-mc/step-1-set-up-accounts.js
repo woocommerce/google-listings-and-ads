@@ -367,4 +367,13 @@ export default class SetUpAccountsPage extends MockRequests {
 			'Conversion measurement has been set up. You can create a campaign later.'
 		);
 	}
+
+	/**
+	 * Get terms checkbox.
+	 *
+	 * @return {import('@playwright/test').Locator} Terms checkbox.
+	 */
+	getTermsCheckbox() {
+		return this.page.locator( '#gla-account-card-terms-conditions' );
+	}
 }

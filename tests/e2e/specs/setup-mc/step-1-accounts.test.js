@@ -147,7 +147,7 @@ test.describe( 'Set up accounts', () => {
 	} );
 
 	test.describe( 'Connect Google account', () => {
-		test.beforeAll( async () => {
+		test.beforeEach( async () => {
 			// Mock Jetpack as connected
 			await setUpAccountsPage.mockJetpackConnected(
 				'Test user',
@@ -178,6 +178,33 @@ test.describe( 'Set up accounts', () => {
 			await expect( continueButton ).toBeDisabled();
 		} );
 
+		test( 'should see the terms and conditions checkbox unchecked by default', async () => {
+			const termsCheckbox = setUpAccountsPage.getTermsCheckbox();
+			await expect( termsCheckbox ).not.toBeChecked();
+
+			// Also ensure that connect button is disabled.
+			const connectButton = setUpAccountsPage.getConnectButton();
+			await expect( connectButton ).toBeDisabled();
+		} );
+
+		test( 'should see the connect button and terms and conditions checkbox disabled when jetpack is not connected', async () => {
+			// Mock Jetpack as disconnected
+			await setUpAccountsPage.mockJetpackNotConnected();
+
+			await setUpAccountsPage.goto();
+
+			const connectButton = page
+				.getByRole( 'button', {
+					name: 'Connect',
+					exact: true,
+				} )
+				.nth( 1 );
+			await expect( connectButton ).toBeDisabled();
+
+			const termsCheckbox = setUpAccountsPage.getTermsCheckbox();
+			await expect( termsCheckbox ).toBeDisabled();
+		} );
+
 		test( 'after clicking the "Connect your Google account" button should send an API request to connect Google account, and redirect to the returned URL', async ( {
 			baseURL,
 		} ) => {
@@ -186,7 +213,7 @@ test.describe( 'Set up accounts', () => {
 				baseURL + 'google_auth'
 			);
 
-			await page.locator( '#gla-account-card-terms-conditions' ).check();
+			setUpAccountsPage.getTermsCheckbox().check();
 
 			// Click the enabled connect button
 			page.locator(
