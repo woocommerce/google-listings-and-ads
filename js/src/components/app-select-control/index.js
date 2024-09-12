@@ -23,17 +23,17 @@ const AppSelectControl = ( props ) => {
 	const { className, options, selectSingleValue, ...rest } = props;
 	const showSingleValue = selectSingleValue && options?.length === 1;
 
-	const selectProps = showSingleValue ?
-		{
-			suffix: " ",
-			tabIndex: "-1",
-			style: {
-				pointerEvents: 'none',
-			},
-			readOnly: true,
-			options,
-			...rest,
-		}
+	const selectProps = showSingleValue
+		? {
+				suffix: ' ',
+				tabIndex: '-1',
+				style: {
+					pointerEvents: 'none',
+				},
+				readOnly: true,
+				options,
+				...rest,
+		  }
 		: { options, ...rest };
 
 	return (

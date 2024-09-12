@@ -27,7 +27,13 @@ const AdsAccountSelectControl = ( props ) => {
 		} ) ),
 	];
 
-	return <AppSelectControl selecSingleValue={true} options={ options } { ...rest } />;
+	return (
+		<AppSelectControl
+			selecSingleValue={ true }
+			options={ options }
+			{ ...rest }
+		/>
+	);
 };
 
 export default AdsAccountSelectControl;
