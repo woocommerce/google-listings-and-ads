@@ -11,13 +11,8 @@ import CompleteCampaign from '../../utils/pages/setup-mc/step-4-complete-campaig
 import SetupAdsAccountPage from '../../utils/pages/setup-ads/setup-ads-accounts';
 import {
 	checkFAQExpandable,
-	fillCountryInSearchBox,
-	getCountryInputSearchBoxContainer,
-	getCountryTagsFromInputSearchBoxContainer,
 	getFAQPanelTitle,
 	getFAQPanelRow,
-	getTreeSelectMenu,
-	removeCountryFromSearchBox,
 	checkBillingAdsPopup,
 } from '../../utils/page';
 
@@ -177,15 +172,6 @@ test.describe( 'Complete your campaign', () => {
 
 	test.describe( 'Set up paid ads', () => {
 		test.describe( 'Click "Create a paid ad campaign" button', () => {
-			test.beforeAll( async () => {
-				await completeCampaign.clickCreatePaidAdButton();
-			} );
-
-			test( 'should not see the "Create a paid ad campaign" button after this section is shown', async () => {
-				const button = completeCampaign.getCreatePaidAdButton();
-				await expect( button ).toBeHidden();
-			} );
-
 			test( 'should see "Complete setup" button is disabled', async () => {
 				const completeSetupButton =
 					completeCampaign.getCompleteSetupButton();
@@ -201,17 +187,6 @@ test.describe( 'Complete your campaign', () => {
 			} );
 
 			test.describe( 'Setup up ads to a Google Ads account', () => {
-				test( 'should see "Ads audience" section is enabled', async () => {
-					const adsAudienceSection =
-						completeCampaign.getAdsAudienceSection();
-					await expect( adsAudienceSection ).toBeVisible();
-
-					// Confirm that the section title contains the correct text.
-					await expect(
-						adsAudienceSection.locator( 'h1' )
-					).toContainText( 'Ads audience' );
-				} );
-
 				test( 'should see "Set your budget" section is enabled', async () => {
 					const budgetSection = completeCampaign.getBudgetSection();
 					await expect( budgetSection ).toBeVisible();
@@ -235,98 +210,6 @@ test.describe( 'Complete your campaign', () => {
 			test.beforeAll( async () => {
 				await setupAdsAccountPage.mockAdsAccountConnected();
 				await completeCampaign.goto();
-			} );
-
-			test.describe( 'Select audience', () => {
-				test( 'should see only three country tags in country input search box', async () => {
-					const countrySearchBoxContainer =
-						getCountryInputSearchBoxContainer( page );
-					const countryTags =
-						getCountryTagsFromInputSearchBoxContainer( page );
-					await expect( countryTags ).toHaveCount( 3 );
-					await expect( countrySearchBoxContainer ).toContainText(
-						'United States'
-					);
-					await expect( countrySearchBoxContainer ).toContainText(
-						'Taiwan'
-					);
-					await expect( countrySearchBoxContainer ).toContainText(
-						'United Kingdom'
-					);
-				} );
-
-				test( 'should only allow searching for the same set of the countries selected in step 2, which is returned by target audience API', async () => {
-					const treeSelectMenu = getTreeSelectMenu( page );
-
-					await fillCountryInSearchBox( page, 'United States' );
-					await expect( treeSelectMenu ).toBeVisible();
-
-					await fillCountryInSearchBox( page, 'United Kingdom' );
-					await expect( treeSelectMenu ).toBeVisible();
-
-					await fillCountryInSearchBox( page, 'Taiwan' );
-					await expect( treeSelectMenu ).toBeVisible();
-
-					await fillCountryInSearchBox( page, 'Japan' );
-					await expect( treeSelectMenu ).not.toBeVisible();
-
-					await fillCountryInSearchBox( page, 'Spain' );
-					await expect( treeSelectMenu ).not.toBeVisible();
-				} );
-
-				test( 'should see the budget recommendation value changed when changing the ads audience', async () => {
-					let textContent = await setupBudgetPage
-						.getBudgetRecommendationTextRow()
-						.textContent();
-
-					const textBeforeRemoveCountry =
-						setupBudgetPage.extractBudgetRecommendationValue(
-							textContent
-						);
-
-					// Mock response when UK is removed from the target audience.
-					completeCampaign.fulfillBudgetRecommendations( {
-						currency: 'USD',
-						recommendations: [
-							{
-								country: 'US',
-								daily_budget: 10,
-							},
-							{
-								country: 'TW',
-								daily_budget: 8,
-							},
-						],
-					} );
-
-					await removeCountryFromSearchBox(
-						page,
-						'United Kingdom (UK)'
-					);
-
-					textContent = await setupBudgetPage
-						.getBudgetRecommendationTextRow()
-						.textContent();
-
-					const textAfterRemoveCountry =
-						setupBudgetPage.extractBudgetRecommendationValue(
-							textContent
-						);
-
-					await expect( textBeforeRemoveCountry ).not.toBe(
-						textAfterRemoveCountry
-					);
-
-					await expect( textAfterRemoveCountry ).toBe( '10' );
-				} );
-
-				test( 'should have the tip text "We recommend running campaigns at least 1 month so it can learn to optimize for your business."', async () => {
-					const tipText =
-						setupBudgetPage.getBudgetRecommendationTip();
-					await expect( tipText ).toContainText(
-						'We recommend running campaigns at least 1 month so it can learn to optimize for your business.'
-					);
-				} );
 			} );
 
 			test.describe( 'Set up budget', () => {
@@ -433,7 +316,7 @@ test.describe( 'Complete your campaign', () => {
 					await page.evaluate( () => window.sessionStorage.clear() );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await completeCampaign.goto();
-					await completeCampaign.clickSkipStepButton();
+					await completeCampaign.clickSkipPaidAdsCreationButton();
 				} );
 
 				test( 'should see the modal', async () => {
@@ -480,7 +363,7 @@ test.describe( 'Complete your campaign', () => {
 					await page.evaluate( () => window.sessionStorage.clear() );
 					await setupAdsAccountPage.mockAdsAccountIncomplete();
 					await completeCampaign.goto();
-					await completeCampaign.clickSkipStepButton();
+					await completeCampaign.clickSkipPaidAdsCreationButton();
 				} );
 
 				test( 'should no longer see the confirmation modal', async () => {
@@ -496,25 +379,6 @@ test.describe( 'Complete your campaign', () => {
 						/path=%2Fgoogle%2Fsetup-mc&google-mc=connected/
 					);
 				} );
-			} );
-		}
-	);
-
-	// TODO: Should no longer be needed once https://github.com/woocommerce/google-listings-and-ads/issues/2500 is merged.
-	test.describe(
-		'Ask user for confirmation when clicking the "Skip paid ads creation"',
-		() => {
-			test.beforeAll( async () => {
-				await setupAdsAccountPage.mockAdsAccountIncomplete();
-				await completeCampaign.goto();
-				await completeCampaign.clickCreatePaidAdButton();
-				await completeCampaign.clickSkipPaidAdsCreationButon();
-			} );
-
-			test( 'should see the confirmation modal', async () => {
-				const skipPaidAdsModal =
-					completeCampaign.getSkipPaidAdsCreationModal();
-				await expect( skipPaidAdsModal ).toBeVisible();
 			} );
 		}
 	);

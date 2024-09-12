@@ -96,36 +96,6 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
-	 * Extract budget recommendation value.
-	 *
-	 * @param {string} text
-	 *
-	 * @return {string} The budget recommendation value.
-	 */
-	extractBudgetRecommendationValue( text ) {
-		const match = text.match( /set a daily budget of (\d+)/ );
-		if ( match ) {
-			return match[ 1 ];
-		}
-		return '';
-	}
-
-	/**
-	 * Register the responses when removing an ads audience.
-	 *
-	 * @return {Promise<import('@playwright/test').Response>} The response.
-	 */
-	registerBudgetRecommendationResponse() {
-		return this.page.waitForResponse(
-			( response ) =>
-				response
-					.url()
-					.includes( '/gla/ads/campaigns/budget-recommendation' ) &&
-				response.status() === 200
-		);
-	}
-
-	/**
 	 * Fill the budget.
 	 *
 	 * @param {string} budget
