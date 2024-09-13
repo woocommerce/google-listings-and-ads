@@ -279,10 +279,6 @@ test.describe( 'Set up Ads account', () => {
 	} );
 
 	test.describe( 'Create your paid campaign', () => {
-		const launchPaidCampaignButton = page.getByRole( 'button', {
-			name: 'Launch paid campaign',
-		} );
-
 		test.beforeAll( async () => {
 			setupBudgetPage = new SetupBudgetPage( page );
 		} );
@@ -305,7 +301,9 @@ test.describe( 'Set up Ads account', () => {
 				page.getByRole( 'heading', { name: 'Set your budget' } )
 			).toBeVisible();
 
-			await expect( launchPaidCampaignButton ).toBeDisabled();
+			await expect(
+				setupBudgetPage.getLaunchPaidCampaignButton()
+			).toBeDisabled();
 
 			await expect(
 				page.getByRole( 'link', {
@@ -371,12 +369,16 @@ test.describe( 'Set up Ads account', () => {
 			budget = '0';
 			await setupBudgetPage.fillBudget( budget );
 
-			await expect( launchPaidCampaignButton ).toBeDisabled();
+			await expect(
+				setupBudgetPage.getLaunchPaidCampaignButton()
+			).toBeDisabled();
 
 			budget = '1';
 			await setupBudgetPage.fillBudget( budget );
 
-			await expect( launchPaidCampaignButton ).toBeEnabled();
+			await expect(
+				setupBudgetPage.getLaunchPaidCampaignButton()
+			).toBeEnabled();
 		} );
 
 		test( 'Budget Recommendation', async () => {
@@ -385,8 +387,8 @@ test.describe( 'Set up Ads account', () => {
 			).toBeVisible();
 		} );
 
-		test( 'Paid Campaign can be created', async () => {
-			launchPaidCampaignButton.click();
+		test( 'It should show the campaign creation success message', async () => {
+			setupBudgetPage.getLaunchPaidCampaignButton().click();
 
 			//It should redirect to the dashboard page
 			await page.waitForURL(
@@ -396,9 +398,7 @@ test.describe( 'Set up Ads account', () => {
 					waitUntil: LOAD_STATE.DOM_CONTENT_LOADED,
 				}
 			);
-		} );
 
-		test( 'It should show the campaign creation success message', async () => {
 			await expect(
 				page.getByRole( 'heading', {
 					name: "You've set up a paid Performance Max Campaign!",

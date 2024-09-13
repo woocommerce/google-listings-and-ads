@@ -85,6 +85,18 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
+	 * Get the Launch paid cmpaign button.
+	 *
+	 * @return {import('@playwright/test').Locator} Launch paid cmpaign button.
+	 */
+	getLaunchPaidCampaignButton() {
+		return this.page.getByRole( 'button', {
+			name: 'Launch paid campaign',
+			exact: true,
+		} );
+	}
+
+	/**
 	 * Extract budget recommendation value.
 	 *
 	 * @param {string} text
