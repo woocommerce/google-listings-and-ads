@@ -30,8 +30,6 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 		useGoogleConnectFlow( pageName );
 	const [ termsAccepted, setTermsAccepted ] = useState( false );
 
-	const checkboxId = 'gla-account-card-terms-conditions';
-
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
