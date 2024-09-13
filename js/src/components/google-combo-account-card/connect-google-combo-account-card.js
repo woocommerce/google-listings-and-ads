@@ -45,7 +45,6 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 						) }
 					</p>
 					<CheckboxControl
-						id={ checkboxId }
 						label={ createInterpolateElement(
 							__(
 								'I accept the terms and conditions of <linkMerchant>Merchant Center</linkMerchant> and <linkAds>Google Ads</linkAds>',
