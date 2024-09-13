@@ -75,9 +75,7 @@ export default function PaidAdsSetupSections( {
 		return resolveInitialPaidAds( startingPaidAds );
 	} );
 
-	const { data: budgetData } = useFetchBudgetRecommendationEffect(
-		paidAds.countryCodes
-	);
+	const { data: budgetData } = useFetchBudgetRecommendationEffect( countryCodes );
 	const budget = getHighestBudget( budgetData?.recommendations );
 
 	const isBillingCompleted =
@@ -116,6 +114,9 @@ export default function PaidAdsSetupSections( {
 
 	const initialValues = {
 		amount: paidAds.amount,
+	};
+
+	const formOpts = {
 		budget,
 		budgetMin: 0.3,
 	};
@@ -126,7 +127,7 @@ export default function PaidAdsSetupSections( {
 			onChange={ ( _, values, isValid ) => {
 				setPaidAds( { ...paidAds, ...values, isValid } );
 			} }
-			validate={ validateCampaign }
+			validate={ (formValues) => validateCampaign( formValues, formOpts ) }
 		>
 			{ ( formProps ) => {
 				return (
