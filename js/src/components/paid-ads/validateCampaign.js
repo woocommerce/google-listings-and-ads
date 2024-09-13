@@ -11,9 +11,10 @@ import { __, sprintf } from '@wordpress/i18n';
  * Validate campaign form. Accepts the form values object and returns errors object.
  *
  * @param {CampaignFormValues} values Campaign form values.
+ * @param {Object} opts Extra form options.
  * @return {Object} errors.
  */
-const validateCampaign = ( values ) => {
+const validateCampaign = ( values, opts ) => {
 	const errors = {};
 
 	if ( ! Number.isFinite( values.amount ) || values.amount <= 0 ) {
@@ -24,10 +25,11 @@ const validateCampaign = ( values ) => {
 	}
 
 	if (
-		Number.isFinite( values.amount ) &&
-		Number.isFinite( values.budget?.daily_budget )
+		Number.isFinite( values?.amount ) &&
+		Number.isFinite( opts?.budget?.daily_budget )
 	) {
-		const { budget, budgetMin, amount } = values;
+		const { amount } = values;
+		const { budget, budgetMin } = opts;
 		const { daily_budget: dailyBudget } = budget;
 		const minAmount = Math.round( dailyBudget * budgetMin, 2 );
 
