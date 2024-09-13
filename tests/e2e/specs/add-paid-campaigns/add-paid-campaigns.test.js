@@ -283,7 +283,7 @@ test.describe( 'Set up Ads account', () => {
 			setupBudgetPage = new SetupBudgetPage( page );
 		} );
 
-		test( 'Continue to create paid campaign and create ads', async () => {
+		test( 'Continue to create paid ad campaign', async () => {
 			await setupAdsAccounts.clickContinue();
 			await page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 
