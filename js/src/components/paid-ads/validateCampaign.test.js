@@ -99,7 +99,7 @@ describe( 'validateCampaign', () => {
 			budgetMin: 0.3,
 		};
 
-		const errors = validateCampaign( values );
+		const errors = validateCampaign( values, opts );
 		expect( errors ).not.toHaveProperty( 'amount' );
 	} );
 } );
