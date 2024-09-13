@@ -40,10 +40,12 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 			alignIcon="top"
 			description={
 				<>
-					{ __(
-						'Required to sync with Google Merchant Center and Google Ads.',
-						'google-listings-and-ads'
-					) }
+					<p>
+						{ __(
+							'Required to sync with Google Merchant Center and Google Ads.',
+							'google-listings-and-ads'
+						) }
+					</p>
 					<CheckboxControl
 						id={ checkboxId }
 						label={ createInterpolateElement(
@@ -72,7 +74,7 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 						onChange={ setTermsAccepted }
 						disabled={ disabled }
 					/>
-					<p>
+					<p className="google-combo-account-card-description">
 						<em>
 							{ createInterpolateElement(
 								__(
