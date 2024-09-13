@@ -35,7 +35,7 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
-			className={ 'google-combo-account-card' }
+			className="google-combo-account-card"
 			disabled={ disabled }
 			alignIcon="top"
 			description={
@@ -44,41 +44,34 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 						'Required to sync with Google Merchant Center and Google Ads.',
 						'google-listings-and-ads'
 					) }
-					<div>
-						<CheckboxControl
-							id={ checkboxId }
-							checked={ termsAccepted }
-							onChange={ ( val ) => setTermsAccepted( !! val ) }
-							disabled={ disabled }
-						/>
-						{
-							// eslint-disable-next-line jsx-a11y/label-has-associated-control
-							<label htmlFor={ checkboxId }>
-								{ createInterpolateElement(
-									__(
-										'I accept the terms and conditions of <linkMerchant>Merchant Center</linkMerchant> and <linkAds>Google Ads</linkAds>',
-										'google-listings-and-ads'
-									),
-									{
-										linkMerchant: (
-											<AppDocumentationLink
-												context="setup-mc-accounts"
-												linkId="google-mc-terms-of-service"
-												href="https://support.google.com/merchants/answer/160173"
-											/>
-										),
-										linkAds: (
-											<AppDocumentationLink
-												context="setup-ads"
-												linkId="google-ads-terms-of-service"
-												href="https://support.google.com/adspolicy/answer/54818"
-											/>
-										),
-									}
-								) }
-							</label>
-						}
-					</div>
+					<CheckboxControl
+						id={ checkboxId }
+						label={ createInterpolateElement(
+							__(
+								'I accept the terms and conditions of <linkMerchant>Merchant Center</linkMerchant> and <linkAds>Google Ads</linkAds>',
+								'google-listings-and-ads'
+							),
+							{
+								linkMerchant: (
+									<AppDocumentationLink
+										context="setup-mc-accounts"
+										linkId="google-mc-terms-of-service"
+										href="https://support.google.com/merchants/answer/160173"
+									/>
+								),
+								linkAds: (
+									<AppDocumentationLink
+										context="setup-ads"
+										linkId="google-ads-terms-of-service"
+										href="https://support.google.com/adspolicy/answer/54818"
+									/>
+								),
+							}
+						) }
+						checked={ termsAccepted }
+						onChange={ setTermsAccepted }
+						disabled={ disabled }
+					/>
 					<p>
 						<em>
 							{ createInterpolateElement(
