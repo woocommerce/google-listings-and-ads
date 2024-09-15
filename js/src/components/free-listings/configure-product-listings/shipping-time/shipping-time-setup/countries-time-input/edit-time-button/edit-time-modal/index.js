@@ -4,16 +4,17 @@
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
+import { Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import AppButton from '.~/components/app-button';
 import AppModal from '.~/components/app-modal';
-import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import SupportedCountrySelect from '.~/components/supported-country-select';
 import validateShippingTimeGroup from '.~/utils/validateShippingTimeGroup';
+import Stepper from '../../../time-stepper';
 
 /**
  *Form to edit time for selected country(-ies).
@@ -70,6 +71,7 @@ const EditTimeModal = ( {
 						overflow="visible"
 						shouldCloseOnEsc={ ! dropdownVisible }
 						shouldCloseOnClickOutside={ ! dropdownVisible }
+						className="gla-edit-time-modal"
 						title={ __(
 							'Estimate shipping time',
 							'google-listings-and-ads'
@@ -110,29 +112,71 @@ const EditTimeModal = ( {
 								{ ...getInputProps( 'countries' ) }
 							/>
 
-							<AppInputNumberControl
-								label={ __(
-									'Then the minimum estimated shipping time displayed in the product listing is',
+							<div className="label">
+								{ __(
+									'Then the estimated shipping times displayed in the product listing are:',
 									'google-listings-and-ads'
 								) }
-								suffix={ __(
-									'days',
-									'google-listings-and-ads'
-								) }
-								{ ...getInputProps( 'time' ) }
-							/>
+							</div>
 
-							<AppInputNumberControl
-								label={ __(
-									'And the maximum time is',
-									'google-listings-and-ads'
-								) }
-								suffix={ __(
-									'days',
-									'google-listings-and-ads'
-								) }
-								{ ...getInputProps( 'maxTime' ) }
-							/>
+							<Flex
+								direction="column"
+								className="gla-countries-time-input-container"
+							>
+								<FlexItem>
+									<Flex justify="space-between" gap="4">
+										<FlexItem>
+											<div className="gla-countries-time-input">
+												<Stepper
+													time={
+														getInputProps( 'time' )
+															.value
+													}
+													field="time"
+													handleBlur={
+														getInputProps( 'time' )
+															.onChange
+													}
+													handleIncrement={
+														getInputProps( 'time' )
+															.onChange
+													}
+												/>
+											</div>
+										</FlexItem>
+										<FlexItem>
+											<span>
+												{ __(
+													'to',
+													'google-listings-and-ads'
+												) }
+											</span>
+										</FlexItem>
+										<FlexItem>
+											<div className="gla-countries-time-input">
+												<Stepper
+													time={
+														getInputProps(
+															'maxTime'
+														).value
+													}
+													field="maxTime"
+													handleBlur={
+														getInputProps(
+															'maxTime'
+														).onChange
+													}
+													handleIncrement={
+														getInputProps(
+															'maxTime'
+														).onChange
+													}
+												/>
+											</div>
+										</FlexItem>
+									</Flex>
+								</FlexItem>
+							</Flex>
 						</VerticalGapLayout>
 					</AppModal>
 				);
