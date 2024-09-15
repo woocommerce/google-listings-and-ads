@@ -36,8 +36,14 @@ const CountriesTimeInput = ( {
 		return <AppSpinner />;
 	}
 
+	/**
+	 *
+	 * @param {Object} e The event object
+	 * @param {number} numberValue The string value of the input field converted to a number
+	 * @param {string} field The field name: time or maxTime
+	 */
 	const handleBlur = ( e, numberValue, field ) => {
-		if ( time === numberValue ) {
+		if ( value[ field ] === numberValue ) {
 			return;
 		}
 
@@ -47,6 +53,11 @@ const CountriesTimeInput = ( {
 		} );
 	};
 
+	/**
+	 *
+	 * @param {number} numberValue The string value of the input field converted to a number
+	 * @param {string} field The field name: time or maxTime
+	 */
 	const handleIncrement = ( numberValue, field ) => {
 		onChange( {
 			...value,

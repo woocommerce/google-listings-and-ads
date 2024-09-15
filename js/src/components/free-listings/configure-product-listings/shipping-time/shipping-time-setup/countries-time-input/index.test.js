@@ -96,4 +96,47 @@ describe( 'CountriesTimeInput', () => {
 			expect( onChange.mock.calls[ 3 ][ 0 ].maxTime ).toBe( 32 );
 		} );
 	} );
+
+	describe( 'Test handleBlur', () => {
+		it( 'Test onChange when handleBlur is called', async () => {
+			const onChange = jest.fn();
+			const onDelete = jest.fn();
+			const { queryAllByRole } = render(
+				<CountriesTimeInput
+					value={ { countries: [ 'ES' ], time: 1, maxTime: 32 } }
+					audienceCountries={ [ 'ES' ] }
+					onChange={ onChange }
+					onDelete={ onDelete }
+				/>
+			);
+
+			const inputs = queryAllByRole( 'textbox' );
+
+			expect( inputs ).toHaveLength( 2 );
+
+			const [ timeInput, maxTimeInput ] = inputs;
+
+			// The value is the same, so the onChange function shouldnt be called
+			fireEvent.blur( timeInput, { target: { value: '1' } } );
+			expect( onChange ).toHaveBeenCalledTimes( 0 );
+
+			// The value is different, so the onChange function should be called
+			fireEvent.blur( timeInput, { target: { value: '2' } } );
+			expect( onChange ).toHaveBeenCalledTimes( 1 );
+			// It should update the time property.
+			expect( onChange.mock.calls[ 0 ][ 0 ].time ).toBe( 2 );
+
+			onChange.mockClear();
+
+			// The value is the same, so the onChange function shouldnt be called
+			fireEvent.blur( maxTimeInput, { target: { value: '32' } } );
+			expect( onChange ).toHaveBeenCalledTimes( 0 );
+
+			// The value is different, so the onChange function should be called
+			fireEvent.blur( maxTimeInput, { target: { value: '10' } } );
+			expect( onChange ).toHaveBeenCalledTimes( 1 );
+			// It should update the maxTime property.
+			expect( onChange.mock.calls[ 0 ][ 0 ].maxTime ).toBe( 10 );
+		} );
+	} );
 } );
