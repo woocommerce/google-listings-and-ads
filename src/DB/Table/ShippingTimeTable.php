@@ -50,9 +50,10 @@ SQL;
 	 */
 	public function get_columns(): array {
 		return [
-			'id'      => true,
-			'country' => true,
-			'time'    => true,
+			'id'       => true,
+			'country'  => true,
+			'time'     => true,
+			'max_time' => true,
 		];
 	}
 }
