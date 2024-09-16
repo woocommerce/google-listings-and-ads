@@ -15,8 +15,6 @@ import Section from '.~/wcdl/section';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import clientSession from './clientSession';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
-import useFetchBudgetRecommendationEffect from '.~/hooks/useFetchBudgetRecommendationEffect';
-import getHighestBudget from '.~/utils/getHighestBudget';
 import useBudgetRecommendationData from '.~/hooks/useBudgetRecommendationData';
 
 /**
