@@ -38,7 +38,7 @@ const Stepper = ( {
 	}
 
 	const onBlur = ( e, numberValue ) => {
-		handleBlur( e, numberValue, field );
+		handleBlur( numberValue, field );
 	};
 
 	return (
