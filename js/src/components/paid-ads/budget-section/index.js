@@ -38,12 +38,10 @@ const nonInteractableProps = {
  */
 const BudgetSection = ( {
 	formProps,
-	country,
 	countryCodes,
-	dailyBudget,
 	disabled = false,
 	children,
-	isMultiple,
+	...recommendationProps
 } ) => {
 	const { getInputProps, setValue, values } = formProps;
 	const { amount } = values;
@@ -57,6 +55,8 @@ const BudgetSection = ( {
 	// `useEffect`.
 	const setValueRef = useRef();
 	setValueRef.current = setValue;
+
+	const { recommendations } = recommendationProps || {};
 
 	return (
 		<div className="gla-budget-section">
@@ -94,14 +94,14 @@ const BudgetSection = ( {
 								value={ monthlyMaxEstimated }
 							/>
 						</div>
-						<BudgetRecommendation
-							countryCodes={ countryCodes }
-							dailyAverageCost={ amount }
-							dailyBudget={ dailyBudget }
-							country={ country }
-							currency={ currency }
-							isMultiple={ isMultiple }
-						/>
+						{ recommendations?.length > 0 && (
+							<BudgetRecommendation
+								countryCodes={ countryCodes }
+								dailyAverageCost={ amount }
+								currency={ currency }
+								{ ...recommendationProps }
+							/>
+						) }
 					</Section.Card.Body>
 				</Section.Card>
 				{ children }

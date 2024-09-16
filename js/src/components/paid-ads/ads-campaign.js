@@ -18,11 +18,10 @@ import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
 import { CampaignPreviewCard } from './campaign-preview';
 import FaqsSection from './faqs-section';
-import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
-import useFetchBudgetRecommendationEffect from '.~/hooks/useFetchBudgetRecommendationEffect';
-import getHighestBudget from '.~/utils/getHighestBudget';
 import Section from '.~/wcdl/section';
 import SpinnerCard from '../spinner-card';
+import useBudgetRecommendationData from '.~/hooks/useBudgetRecommendationData';
+import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -61,17 +60,14 @@ export default function AdsCampaign( {
 				'google-listings-and-ads'
 		  );
 
-	const { data: budgetData, loading } = useFetchBudgetRecommendationEffect(
-		formContext.values.countryCodes
-	);
+	const {
+		country,
+		dailyBudget,
+		multipleRecommendations,
+		recommendations,
+		loading,
+	} = useBudgetRecommendationData( formContext.values.countryCodes );
 
-	const { country = '', daily_budget: dailyBudget } = getHighestBudget(
-		budgetData?.recommendations || []
-	);
-
-	const multipleRecommendations = budgetData?.recommendations.length > 1;
-
-	// Set the amount from client session if it is available.
 	useEffect( () => {
 		if ( ! loading ) {
 			const { amount } = clientSession.getCampaign() || {};
@@ -123,6 +119,7 @@ export default function AdsCampaign( {
 					country={ country }
 					dailyBudget={ dailyBudget }
 					isMultiple={ multipleRecommendations }
+					recommendations={ recommendations }
 				>
 					<CampaignPreviewCard />
 				</BudgetSection>

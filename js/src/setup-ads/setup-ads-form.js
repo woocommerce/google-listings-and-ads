@@ -17,6 +17,7 @@ import CampaignAssetsForm from '.~/components/paid-ads/campaign-assets-form';
 import AdsStepper from './ads-stepper';
 import SetupAdsTopBar from './top-bar';
 import { recordGlaEvent } from '.~/utils/tracks';
+import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
 
 /**
  * @fires gla_launch_paid_campaign_button_click on submit
@@ -67,13 +68,18 @@ const SetupAdsForm = () => {
 		} );
 	};
 
-	const handleChange = ( _, values ) => {
+	const handleChange = ( _, values, isValid ) => {
 		const args = [ initialValues, values ].map(
 			( { countryCodes, ...v } ) => {
 				v.countrySet = new Set( countryCodes );
 				return v;
 			}
 		);
+
+		// Set the amount in session storage.
+		if ( isValid && _?.name === 'amount' ) {
+			clientSession.setCampaign( { amount: _.value } );
+		}
 
 		setFormChanged( ! isEqual( ...args ) );
 	};

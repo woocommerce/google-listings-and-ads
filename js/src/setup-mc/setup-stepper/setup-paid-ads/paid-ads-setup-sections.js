@@ -17,6 +17,7 @@ import clientSession from './clientSession';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import useFetchBudgetRecommendationEffect from '.~/hooks/useFetchBudgetRecommendationEffect';
 import getHighestBudget from '.~/utils/getHighestBudget';
+import useBudgetRecommendationData from '.~/hooks/useBudgetRecommendationData';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -78,12 +79,8 @@ export default function PaidAdsSetupSections( {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	const { data: budgetData, loading } =
-		useFetchBudgetRecommendationEffect( countryCodes );
-	const { country = '', daily_budget: dailyBudget } = getHighestBudget(
-		budgetData?.recommendations || []
-	);
-	const multipleRecommendations = budgetData?.recommendations.length > 1;
+	const { country, dailyBudget, multipleRecommendations, loading } =
+		useBudgetRecommendationData( countryCodes );
 
 	/*
 	  If a merchant has not yet finished the billing setup, the billing status will be

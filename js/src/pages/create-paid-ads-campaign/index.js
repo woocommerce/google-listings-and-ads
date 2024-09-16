@@ -32,6 +32,7 @@ import {
 	recordStepperChangeEvent,
 	recordStepContinueEvent,
 } from '.~/utils/tracks';
+import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
 
 const eventName = 'gla_paid_campaign_step';
 const eventContext = 'create-ads';
@@ -133,6 +134,12 @@ const CreatePaidAdsCampaign = () => {
 					countryCodes: initialCountryCodes,
 				} }
 				onSubmit={ handleSubmit }
+				onChange={ ( _, values, isValid ) => {
+					// Set the amount in session storage.
+					if ( isValid && _?.name === 'amount' ) {
+						clientSession.setCampaign( { amount: _.value } );
+					}
+				} }
 			>
 				<Stepper
 					currentStep={ step }

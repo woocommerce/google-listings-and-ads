@@ -34,11 +34,11 @@ function toRecommendationRange( isMultiple, ...values ) {
 
 const BudgetRecommendation = ( props ) => {
 	const {
-		isMultiple,
 		dailyAverageCost = Infinity,
-		dailyBudget,
-		country,
 		currency,
+		country,
+		dailyBudget,
+		isMultiple,
 	} = props;
 
 	const map = useCountryKeyNameMap();
