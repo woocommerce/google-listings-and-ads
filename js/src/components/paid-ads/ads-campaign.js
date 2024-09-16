@@ -18,8 +18,6 @@ import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
 import { CampaignPreviewCard } from './campaign-preview';
 import FaqsSection from './faqs-section';
-import Section from '.~/wcdl/section';
-import SpinnerCard from '../spinner-card';
 import useBudgetRecommendationData from '.~/hooks/useBudgetRecommendationData';
 import clientSession from '.~/setup-mc/setup-stepper/setup-paid-ads/clientSession';
 
