@@ -77,10 +77,7 @@ describe( 'validateCampaign', () => {
 		values.amount = 10;
 
 		const opts = {
-			budget: {
-				daily_budget: 100,
-			},
-			budgetMin: 0.3,
+			dailyBudget: 100,
 		};
 
 		const errors = validateCampaign( values, opts );
@@ -93,10 +90,7 @@ describe( 'validateCampaign', () => {
 		values.amount = 35;
 
 		const opts = {
-			budget: {
-				daily_budget: 100,
-			},
-			budgetMin: 0.3,
+			dailyBudget: 100,
 		};
 
 		const errors = validateCampaign( values, opts );

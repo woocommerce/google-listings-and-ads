@@ -118,8 +118,7 @@ export default function PaidAdsSetupSections( {
 	};
 
 	const formOpts = {
-		budget,
-		budgetMin: 0.3,
+		dailyBudget: budget?.daily_budget,
 	};
 
 	return (

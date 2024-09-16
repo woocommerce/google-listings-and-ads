@@ -171,10 +171,14 @@ export default function SetupPaidAds() {
 			<PaidAdsFeaturesSection
 				hideBudgetContent={ ! hasGoogleAdsConnection }
 			/>
-			<PaidAdsSetupSections
-				onStatesReceived={ setPaidAds }
-				countryCodes={ countryCodes }
-			/>
+
+			{ countryCodes && (
+				<PaidAdsSetupSections
+					onStatesReceived={ setPaidAds }
+					countryCodes={ countryCodes }
+				/>
+			) }
+
 			<FaqsSection />
 
 			{ showSkipPaidAdsConfirmationModal && (
