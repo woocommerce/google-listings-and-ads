@@ -124,18 +124,6 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get non-destination-based tax rate radio row.
-	 *
-	 * @return {import('@playwright/test').Locator} Get non-destination-based tax rate radio row.
-	 */
-	getNonDestinationBasedTaxRateRadioRow() {
-		return this.page.getByRole( 'radio', {
-			name: 'My store does not use destination-based tax rates.',
-			exact: true,
-		} );
-	}
-
-	/**
 	 * Get shipping rates section.
 	 *
 	 * @return {import('@playwright/test').Locator} Get shipping rates section.
@@ -155,17 +143,6 @@ export default class ProductListingsPage extends MockRequests {
 		return this.page
 			.locator( 'section' )
 			.filter( { hasText: 'Shipping times' } );
-	}
-
-	/**
-	 * Get tax rate section.
-	 *
-	 * @return {import('@playwright/test').Locator} Get tax rate section.
-	 */
-	getTaxRateSection() {
-		return this.page
-			.locator( 'section' )
-			.filter( { hasText: 'Tax rate (required for U.S. only)' } );
 	}
 
 	/**
@@ -235,17 +212,6 @@ export default class ProductListingsPage extends MockRequests {
 	}
 
 	/**
-	 * Get tax rate error.
-	 *
-	 * @return {import('@playwright/test').Locator} Get tax rate error.
-	 */
-	getTaxRateError() {
-		return this.getTaxRateSection().getByText(
-			'Please specify tax rate option.'
-		);
-	}
-
-	/**
 	 * Get "Free shipping for all orders" tag.
 	 *
 	 * @return {import('@playwright/test').Locator} Get "Free shipping for all orders" tag.
@@ -309,18 +275,6 @@ export default class ProductListingsPage extends MockRequests {
 	 */
 	getReadMoreShippingTimesLink() {
 		return this.getShippingTimesSection().getByRole( 'link', {
-			name: 'Read more',
-			exact: true,
-		} );
-	}
-
-	/**
-	 * Get "Read more" for Tax rate link.
-	 *
-	 * @return {import('@playwright/test').Locator} Get "Read more" for Tax rate link.
-	 */
-	getReadMoreTaxRateLink() {
-		return this.getTaxRateSection().getByRole( 'link', {
 			name: 'Read more',
 			exact: true,
 		} );
@@ -444,17 +398,6 @@ export default class ProductListingsPage extends MockRequests {
 	 */
 	async checkDestinationBasedTaxRateRadioButton() {
 		const radio = this.getDestinationBasedTaxRateRadioRow();
-		await radio.check();
-		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
-	}
-
-	/**
-	 * Check non-destination-based tax rate radio button.
-	 *
-	 * @return {Promise<void>}
-	 */
-	async checkNonDestinationBasedTaxRateRadioButton() {
-		const radio = this.getNonDestinationBasedTaxRateRadioRow();
 		await radio.check();
 		await this.page.waitForLoadState( LOAD_STATE.DOM_CONTENT_LOADED );
 	}

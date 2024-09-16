@@ -23,13 +23,16 @@ import ConditionalSection from '.~/components/conditional-section';
  *
  * @param {Object} props React props.
  * @param {string} [props.submitLabel="Complete setup"] Submit button label.
+ * @param {boolean} [props.hideTaxRates] Whether to hide tax rate section.
  */
 const FormContent = ( {
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
+	hideTaxRates,
 } ) => {
 	const { values, isValidForm, handleSubmit, adapter } =
 		useAdaptiveFormContext();
-	const shouldDisplayTaxRate = useDisplayTaxRate( adapter.audienceCountries );
+	const displayTaxRate = useDisplayTaxRate( adapter.audienceCountries );
+	const shouldDisplayTaxRate = ! hideTaxRates && displayTaxRate;
 	const shouldDisplayShippingTime = values.shipping_time === 'flat';
 
 	const handleSubmitClick = ( event ) => {
