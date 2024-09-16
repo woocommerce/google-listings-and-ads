@@ -111,24 +111,17 @@ export default function AdsCampaign( {
 				countrySelectHelperText={ helperText }
 				formProps={ formContext }
 			/>
-			{ ! loading && (
-				<BudgetSection
-					formProps={ formContext }
-					disabled={ disabledBudgetSection }
-					countryCodes={ formContext.values.countryCodes }
-					country={ country }
-					dailyBudget={ dailyBudget }
-					isMultiple={ multipleRecommendations }
-					recommendations={ recommendations }
-				>
-					<CampaignPreviewCard />
-				</BudgetSection>
-			) }
-			{ loading && (
-				<Section>
-					<SpinnerCard />
-				</Section>
-			) }
+			<BudgetSection
+				formProps={ formContext }
+				disabled={ disabledBudgetSection }
+				countryCodes={ formContext.values.countryCodes }
+				country={ country }
+				dailyBudget={ dailyBudget }
+				isMultiple={ multipleRecommendations }
+				recommendations={ recommendations }
+			>
+				<CampaignPreviewCard />
+			</BudgetSection>
 			<FaqsSection />
 			<StepContentFooter>
 				<AppButton
