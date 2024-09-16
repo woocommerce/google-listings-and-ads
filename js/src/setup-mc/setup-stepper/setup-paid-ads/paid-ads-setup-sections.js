@@ -79,8 +79,13 @@ export default function PaidAdsSetupSections( {
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
 
-	const { country, dailyBudget, multipleRecommendations, loading } =
-		useBudgetRecommendationData( countryCodes );
+	const {
+		country,
+		dailyBudget,
+		recommendations,
+		multipleRecommendations,
+		loading,
+	} = useBudgetRecommendationData( countryCodes );
 
 	/*
 	  If a merchant has not yet finished the billing setup, the billing status will be
@@ -141,9 +146,10 @@ export default function PaidAdsSetupSections( {
 					<BudgetSection
 						formProps={ formProps }
 						countryCodes={ countryCodes }
-						dailyBudget={ dailyBudget }
 						country={ country }
+						dailyBudget={ dailyBudget }
 						isMultiple={ multipleRecommendations }
+						recommendations={ recommendations }
 					>
 						<BillingCard />
 					</BudgetSection>
