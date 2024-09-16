@@ -316,10 +316,6 @@ class ShippingTimeController extends BaseController implements ISO3166AwareInter
 			);
 		}
 
-		if ( ! $value ) {
-			return new WP_Error( 'invalid_shipping_times', __( 'Shipping times are required.', 'google-listings-and-ads' ), [ 'param' => $param ] );
-		}
-
 		if ( $value < 0 ) {
 			return new WP_Error( 'invalid_shipping_times', __( 'Shipping times cannot be negative.', 'google-listings-and-ads' ), [ 'param' => $param ] );
 		}

@@ -26,9 +26,15 @@ exports[`checkErrors Shipping rates When the type of shipping rate is an invalid
 
 exports[`checkErrors Shipping rates When the type of shipping rate is an invalid value or missing, should not pass 3`] = `"Please select a shipping rate option."`;
 
+exports[`checkErrors Shipping times For flat type When minimum max_time is < 0, should not pass 1`] = `"The minimum shipping time must not be more than the maximum shipping time."`;
+
+exports[`checkErrors Shipping times For flat type When minimum times is < 0, should not pass 1`] = `"Please specify estimated shipping times for all the countries, and the time cannot be less than 0."`;
+
 exports[`checkErrors Shipping times For flat type When there are any selected countries' shipping times is not set, should not pass 1`] = `"Please specify estimated shipping times for all the countries, and the time cannot be less than 0."`;
 
-exports[`checkErrors Shipping times For flat type When there are any shipping times is < 0, should not pass 1`] = `"Please specify estimated shipping times for all the countries, and the time cannot be less than 0."`;
+exports[`checkErrors Shipping times For flat type When there are any shipping times are < 0, should not pass 1`] = `"Please specify estimated shipping times for all the countries, and the time cannot be less than 0."`;
+
+exports[`checkErrors Shipping times For flat type shouldnt pass if min time is bigger than max time 1`] = `"The minimum shipping time must not be more than the maximum shipping time."`;
 
 exports[`checkErrors Shipping times When the type of shipping time is an invalid value or missing, should not pass 1`] = `"Please select a shipping time option."`;
 

@@ -36,6 +36,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 			initialValues={ {
 				countries,
 				time: 0,
+				maxTime: 0,
 			} }
 			validate={ validateShippingTimeGroup }
 			onSubmit={ handleSubmitCallback }
@@ -81,7 +82,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 							/>
 							<AppInputNumberControl
 								label={ __(
-									'Then the estimated shipping time displayed in the product listing is',
+									'Then the minimum estimated shipping time displayed in the product listing is',
 									'google-listings-and-ads'
 								) }
 								suffix={ __(
@@ -89,6 +90,17 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 									'google-listings-and-ads'
 								) }
 								{ ...getInputProps( 'time' ) }
+							/>
+							<AppInputNumberControl
+								label={ __(
+									'And the maximum time is',
+									'google-listings-and-ads'
+								) }
+								suffix={ __(
+									'days',
+									'google-listings-and-ads'
+								) }
+								{ ...getInputProps( 'maxTime' ) }
 							/>
 						</VerticalGapLayout>
 					</AppModal>

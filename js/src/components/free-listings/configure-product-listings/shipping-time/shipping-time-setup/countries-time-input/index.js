@@ -1,15 +1,16 @@
 /**
  * External dependencies
  */
+import { Flex, FlexItem } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import AppInputNumberControl from '.~/components/app-input-number-control';
 import AppSpinner from '.~/components/app-spinner';
 import ShippingTimeInputControlLabelText from '.~/components/shipping-time-input-control-label-text';
 import EditTimeButton from './edit-time-button';
+import Stepper from '../time-stepper';
 import './index.scss';
 
 /**
@@ -29,44 +30,85 @@ const CountriesTimeInput = ( {
 	onChange,
 	onDelete,
 } ) => {
-	const { countries, time } = value;
+	const { countries, time, maxTime } = value;
 
 	if ( ! audienceCountries ) {
 		return <AppSpinner />;
 	}
 
-	const handleBlur = ( e, numberValue ) => {
-		if ( time === numberValue ) {
+	/**
+	 *
+	 * @param {Object} e The event object
+	 * @param {number} numberValue The string value of the input field converted to a number
+	 * @param {string} field The field name: time or maxTime
+	 */
+	const handleBlur = ( e, numberValue, field ) => {
+		if ( value[ field ] === numberValue ) {
 			return;
 		}
 
 		onChange( {
-			countries,
-			time: numberValue,
+			...value,
+			[ field ]: numberValue,
+		} );
+	};
+
+	/**
+	 *
+	 * @param {number} numberValue The string value of the input field converted to a number
+	 * @param {string} field The field name: time or maxTime
+	 */
+	const handleIncrement = ( numberValue, field ) => {
+		onChange( {
+			...value,
+			[ field ]: numberValue,
 		} );
 	};
 
 	return (
-		<div className="gla-countries-time-input">
-			<AppInputNumberControl
-				label={
-					<div className="label">
-						<ShippingTimeInputControlLabelText
-							countries={ countries }
-						/>
-						<EditTimeButton
-							audienceCountries={ audienceCountries }
-							onChange={ onChange }
-							onDelete={ onDelete }
-							time={ value }
-						/>
-					</div>
-				}
-				suffix={ __( 'days', 'google-listings-and-ads' ) }
-				value={ time }
-				onBlur={ handleBlur }
-			/>
-		</div>
+		<Flex direction="column" className="gla-countries-time-input-container">
+			<FlexItem>
+				<div className="label">
+					<ShippingTimeInputControlLabelText
+						countries={ countries }
+					/>
+					<EditTimeButton
+						audienceCountries={ audienceCountries }
+						onChange={ onChange }
+						onDelete={ onDelete }
+						time={ value }
+					/>
+				</div>
+			</FlexItem>
+
+			<FlexItem>
+				<Flex justify="space-between" gap="4">
+					<FlexItem>
+						<div className="gla-countries-time-input">
+							<Stepper
+								handleBlur={ handleBlur }
+								time={ time }
+								handleIncrement={ handleIncrement }
+								field="time"
+							/>
+						</div>
+					</FlexItem>
+					<FlexItem>
+						<span>{ __( 'to', 'google-listings-and-ads' ) }</span>
+					</FlexItem>
+					<FlexItem>
+						<div className="gla-countries-time-input">
+							<Stepper
+								handleBlur={ handleBlur }
+								handleIncrement={ handleIncrement }
+								time={ maxTime }
+								field="maxTime"
+							/>
+						</div>
+					</FlexItem>
+				</Flex>
+			</FlexItem>
+		</Flex>
 	);
 };
 

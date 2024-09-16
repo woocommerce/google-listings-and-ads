@@ -43,6 +43,7 @@ export default function ShippingCountriesForm( {
 		countriesTimeArray.push( {
 			countries: audienceCountries,
 			time: null,
+			maxTime: null,
 		} );
 	}
 
@@ -57,16 +58,20 @@ export default function ShippingCountriesForm( {
 			)
 		);
 	}
-	function handleAdd( { countries, time } ) {
+	function handleAdd( { countries, time, maxTime } ) {
 		// Split aggregated time, to individial times per country.
 		const addedIndividualTimes = countries.map( ( countryCode ) => ( {
 			countryCode,
 			time,
+			maxTime,
 		} ) );
 
 		onChange( shippingTimes.concat( addedIndividualTimes ) );
 	}
-	function handleChange( { countries, time }, deletedCountries = [] ) {
+	function handleChange(
+		{ countries, time, maxTime },
+		deletedCountries = []
+	) {
 		deletedCountries.forEach( ( countryCode ) =>
 			actualCountries.delete( countryCode )
 		);
@@ -76,6 +81,7 @@ export default function ShippingCountriesForm( {
 			actualCountries.set( countryCode, {
 				countryCode,
 				time,
+				maxTime,
 			} );
 		} );
 		onChange( Array.from( actualCountries.values() ) );
