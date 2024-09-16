@@ -15,6 +15,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import SupportedCountrySelect from '.~/components/supported-country-select';
 import validateShippingTimeGroup from '.~/utils/validateShippingTimeGroup';
 import MinMaxShippingTimes from '../../min-max-inputs';
+import './index.scss';
 
 /**
  * Form to add a new time for selected country(-ies).
