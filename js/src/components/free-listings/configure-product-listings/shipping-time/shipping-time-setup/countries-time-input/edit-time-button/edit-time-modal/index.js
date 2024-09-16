@@ -14,7 +14,7 @@ import AppModal from '.~/components/app-modal';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import SupportedCountrySelect from '.~/components/supported-country-select';
 import validateShippingTimeGroup from '.~/utils/validateShippingTimeGroup';
-import Stepper from '../../../time-stepper';
+import MinMaxShippingTimes from '../../../min-max-inputs';
 
 /**
  *Form to edit time for selected country(-ies).
@@ -66,6 +66,10 @@ const EditTimeModal = ( {
 			{ ( formProps ) => {
 				const { getInputProps, isValidForm, handleSubmit } = formProps;
 
+				const handleIncrement = ( numberValue, field ) => {
+					getInputProps( field ).onChange( numberValue );
+				};
+
 				return (
 					<AppModal
 						overflow="visible"
@@ -114,7 +118,7 @@ const EditTimeModal = ( {
 
 							<div className="label">
 								{ __(
-									'Then the estimated shipping times displayed in the product listing are:',
+									'Then the estimated shipping times displayed in the product listing are',
 									'google-listings-and-ads'
 								) }
 							</div>
@@ -124,57 +128,14 @@ const EditTimeModal = ( {
 								className="gla-countries-time-input-container"
 							>
 								<FlexItem>
-									<Flex justify="space-between" gap="4">
-										<FlexItem>
-											<div className="gla-countries-time-input">
-												<Stepper
-													time={
-														getInputProps( 'time' )
-															.value
-													}
-													field="time"
-													handleBlur={
-														getInputProps( 'time' )
-															.onChange
-													}
-													handleIncrement={
-														getInputProps( 'time' )
-															.onChange
-													}
-												/>
-											</div>
-										</FlexItem>
-										<FlexItem>
-											<span>
-												{ __(
-													'to',
-													'google-listings-and-ads'
-												) }
-											</span>
-										</FlexItem>
-										<FlexItem>
-											<div className="gla-countries-time-input">
-												<Stepper
-													time={
-														getInputProps(
-															'maxTime'
-														).value
-													}
-													field="maxTime"
-													handleBlur={
-														getInputProps(
-															'maxTime'
-														).onChange
-													}
-													handleIncrement={
-														getInputProps(
-															'maxTime'
-														).onChange
-													}
-												/>
-											</div>
-										</FlexItem>
-									</Flex>
+									<MinMaxShippingTimes
+										time={ getInputProps( 'time' ).value }
+										maxTime={
+											getInputProps( 'maxTime' ).value
+										}
+										handleBlur={ handleIncrement }
+										handleIncrement={ handleIncrement }
+									/>
 								</FlexItem>
 							</Flex>
 						</VerticalGapLayout>
