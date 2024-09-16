@@ -65,7 +65,7 @@ const Stepper = ( {
 						<Button
 							className="woocommerce-number-control__increment"
 							icon={ plus }
-							isSmall
+							size="small"
 							onMouseDown={ () => onIncrement( step ) }
 							aria-label={ __(
 								'Increment',
@@ -76,7 +76,7 @@ const Stepper = ( {
 						<Button
 							icon={ reset }
 							className="woocommerce-number-control__decrement"
-							isSmall
+							size="small"
 							onMouseDown={ () => onIncrement( -step ) }
 							aria-label={ __(
 								'Decrement',

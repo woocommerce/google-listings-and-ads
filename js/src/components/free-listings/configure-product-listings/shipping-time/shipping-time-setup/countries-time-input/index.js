@@ -86,7 +86,6 @@ const CountriesTimeInput = ( {
 					<FlexItem>
 						<div className="gla-countries-time-input">
 							<Stepper
-								onDelete={ onDelete }
 								handleBlur={ handleBlur }
 								time={ time }
 								handleIncrement={ handleIncrement }
@@ -100,7 +99,6 @@ const CountriesTimeInput = ( {
 					<FlexItem>
 						<div className="gla-countries-time-input">
 							<Stepper
-								onDelete={ onDelete }
 								handleBlur={ handleBlur }
 								handleIncrement={ handleIncrement }
 								time={ maxTime }
