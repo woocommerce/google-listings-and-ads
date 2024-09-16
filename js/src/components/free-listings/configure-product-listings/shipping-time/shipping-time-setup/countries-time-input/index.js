@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 import AppSpinner from '.~/components/app-spinner';
 import ShippingTimeInputControlLabelText from '.~/components/shipping-time-input-control-label-text';
 import EditTimeButton from './edit-time-button';
-import Stepper from '../time-stepper';
+import MinMaxShippingTimes from '../min-max-inputs';
 import './index.scss';
 
 /**
@@ -80,31 +80,12 @@ const CountriesTimeInput = ( {
 			</FlexItem>
 
 			<FlexItem>
-				<Flex justify="space-between" gap="4">
-					<FlexItem>
-						<div className="gla-countries-time-input">
-							<Stepper
-								handleBlur={ handleBlur }
-								time={ time }
-								handleIncrement={ handleIncrement }
-								field="time"
-							/>
-						</div>
-					</FlexItem>
-					<FlexItem>
-						<span>{ __( 'to', 'google-listings-and-ads' ) }</span>
-					</FlexItem>
-					<FlexItem>
-						<div className="gla-countries-time-input">
-							<Stepper
-								handleBlur={ handleBlur }
-								handleIncrement={ handleIncrement }
-								time={ maxTime }
-								field="maxTime"
-							/>
-						</div>
-					</FlexItem>
-				</Flex>
+				<MinMaxShippingTimes
+					time={ time }
+					maxTime={ maxTime }
+					handleBlur={ handleBlur }
+					handleIncrement={ handleIncrement }
+				/>
 			</FlexItem>
 		</Flex>
 	);
