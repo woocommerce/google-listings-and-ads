@@ -7,7 +7,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * @typedef {import('.~/components/types.js').CampaignFormValues} CampaignFormValues
  */
 
-// Minimum budget percentage of daily budget.
+// Minimum percentage of the recommended daily budget.
 const BUDGET_MIN_PERCENT = 0.3;
 
 /**
@@ -29,20 +29,22 @@ const validateCampaign = ( values, opts ) => {
 
 	if (
 		Number.isFinite( values?.amount ) &&
-		Number.isFinite( opts?.dailyBudget )
+		Number.isFinite( opts?.dailyBudget ) &&
+		typeof opts?.formatNumber === 'function'
 	) {
 		const { amount } = values;
-		const { dailyBudget } = opts;
+		const { dailyBudget, currency, formatNumber } = opts;
 		const minAmount = Math.round( dailyBudget * BUDGET_MIN_PERCENT, 2 );
 
 		if ( amount < minAmount ) {
 			errors.amount = sprintf(
-				/* translators: %s: minimum daily budget */
+				/* translators: %1$s: minimum daily budget, %2$s: currency */
 				__(
-					'Please make sure daily average cost is greater than %s.',
+					'Please make sure daily average cost is greater than %1$s %2$s.',
 					'google-listings-and-ads'
 				),
-				minAmount
+				formatNumber( minAmount ),
+				currency
 			);
 		}
 	}

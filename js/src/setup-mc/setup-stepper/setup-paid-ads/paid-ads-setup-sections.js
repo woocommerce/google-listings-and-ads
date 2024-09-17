@@ -17,6 +17,7 @@ import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import clientSession from './clientSession';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 import getHighestBudget from '.~/utils/getHighestBudget';
+import useStoreCurrency from '.~/hooks/useStoreCurrency';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -62,6 +63,7 @@ export default function PaidAdsSetupSections( {
 	countryCodes,
 } ) {
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const { code: currency, formatNumber } = useStoreCurrency();
 
 	const onStatesReceivedRef = useRef();
 	onStatesReceivedRef.current = onStatesReceived;
@@ -119,6 +121,8 @@ export default function PaidAdsSetupSections( {
 
 	const formOpts = {
 		dailyBudget: budget?.daily_budget,
+		currency,
+		formatNumber,
 	};
 
 	return (
