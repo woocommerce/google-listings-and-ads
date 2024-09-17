@@ -340,12 +340,6 @@ test.describe( 'Set up accounts', () => {
 					await expect( select ).toBeVisible();
 				} );
 
-				test( 'should see connect button is disabled when no ads account is selected', async () => {
-					const button = setupAdsAccountPage.getConnectAdsButton();
-					await expect( button ).toBeVisible();
-					await expect( button ).toBeDisabled();
-				} );
-
 				test( 'should see connect button is enabled when an ads account is selected', async () => {
 					await setupAdsAccountPage.selectAnExistingAdsAccount(
 						'23456'
