@@ -15,6 +15,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import SupportedCountrySelect from '.~/components/supported-country-select';
 import validateShippingTimeGroup from '.~/utils/validateShippingTimeGroup';
 import MinMaxShippingTimes from '../../../min-max-inputs';
+import '../index.scss';
 
 /**
  *Form to edit time for selected country(-ies).
@@ -64,7 +65,8 @@ const EditTimeModal = ( {
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, isValidForm, handleSubmit } = formProps;
+				const { getInputProps, isValidForm, handleSubmit, errors } =
+					formProps;
 
 				const handleIncrement = ( numberValue, field ) => {
 					getInputProps( field ).onChange( numberValue );
@@ -136,6 +138,11 @@ const EditTimeModal = ( {
 										handleBlur={ handleIncrement }
 										handleIncrement={ handleIncrement }
 									/>
+									{ errors.time && (
+										<ul className="gla-validation-errors">
+											<li>{ errors.time }</li>
+										</ul>
+									) }
 								</FlexItem>
 							</Flex>
 						</VerticalGapLayout>
