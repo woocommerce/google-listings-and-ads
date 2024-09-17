@@ -38,7 +38,9 @@ const Stepper = ( {
 	}
 
 	const onBlur = ( e, numberValue ) => {
-		handleBlur( numberValue, field );
+		if ( numberValue >= min && numberValue <= max ) {
+			handleBlur( numberValue, field );
+		}
 	};
 
 	return (
