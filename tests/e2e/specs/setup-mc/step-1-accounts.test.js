@@ -612,11 +612,11 @@ test.describe( 'Set up accounts', () => {
 			} );
 
 			test.describe( 'connect to an existing account', () => {
-				test( 'should see "Select an existing account" title', async () => {
+				test( 'should see "Connect to an existing account" title', async () => {
 					const selectAccountTitle =
 						setUpAccountsPage.getSelectExistingMCAccountTitle();
 					await expect( selectAccountTitle ).toContainText(
-						'Select an existing account'
+						'Connect to an existing account'
 					);
 				} );
 

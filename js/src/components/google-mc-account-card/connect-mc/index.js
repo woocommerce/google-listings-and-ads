@@ -98,7 +98,7 @@ const ConnectMC = () => {
 			<Section.Card.Body>
 				<Subsection.Title>
 					{ __(
-						'Select an existing account',
+						'Connect to an existing account',
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
