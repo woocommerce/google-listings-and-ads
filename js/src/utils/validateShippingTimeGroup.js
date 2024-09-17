@@ -20,9 +20,16 @@ const validateShippingTimeGroup = ( values ) => {
 		);
 	}
 
-	if ( values.time < 0 ) {
+	if ( values.time < 0 || values.maxTime < 0 ) {
 		errors.time = __(
 			'The estimated shipping time cannot be less than 0.',
+			'google-listings-and-ads'
+		);
+	}
+
+	if ( values.time > values.maxTime ) {
+		errors.time = __(
+			'The minimum shipping time must not be more than the maximum shipping time.',
 			'google-listings-and-ads'
 		);
 	}
