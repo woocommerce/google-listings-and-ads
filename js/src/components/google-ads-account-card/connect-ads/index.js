@@ -120,7 +120,6 @@ const ConnectAds = ( props ) => {
 				) }
 				<ContentButtonLayout>
 					<AdsAccountSelectControl
-						accounts={ accounts }
 						value={ value }
 						onChange={ setValue }
 					/>
