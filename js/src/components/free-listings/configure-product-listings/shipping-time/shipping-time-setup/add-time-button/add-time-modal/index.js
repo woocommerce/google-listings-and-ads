@@ -44,7 +44,8 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, isValidForm, handleSubmit } = formProps;
+				const { getInputProps, isValidForm, handleSubmit, errors } =
+					formProps;
 
 				const handleIncrement = ( numberValue, field ) => {
 					getInputProps( field ).onChange( numberValue );
@@ -106,6 +107,11 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 										handleBlur={ handleIncrement }
 										handleIncrement={ handleIncrement }
 									/>
+									{ errors.time && (
+										<ul className="gla-validation-errors">
+											<li>{ errors.time }</li>
+										</ul>
+									) }
 								</FlexItem>
 							</Flex>
 						</VerticalGapLayout>
