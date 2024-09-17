@@ -219,6 +219,8 @@ test.describe( 'Complete your campaign', () => {
 							},
 						],
 					} );
+
+					await completeCampaign.goto();
 				} );
 
 				test( 'should see validation error if lower than the 30%', async () => {
