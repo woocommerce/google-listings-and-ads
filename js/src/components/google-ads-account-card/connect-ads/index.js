@@ -19,7 +19,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useEventPropertiesFilter from '.~/hooks/useEventPropertiesFilter';
-import AdsAccountSelectControl from './ads-account-select-control';
+import AdsAccountSelectControl from '.~/components/ads-account-select-control';
 import { useAppDispatch } from '.~/data';
 import { FILTER_ONBOARDING } from '.~/utils/tracks';
 import './index.scss';

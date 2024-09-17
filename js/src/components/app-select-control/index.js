@@ -20,24 +20,29 @@ import './index.scss';
  * @param {boolean} [props.selectSingleValue=false] Whether the select should show only one value.
  */
 const AppSelectControl = ( props ) => {
-	const { className, options, selectSingleValue, ...rest } = props;
+	const { className, options, selectSingleValue = false, ...rest } = props;
 	const showSingleValue = selectSingleValue && options?.length === 1;
 
-	const selectProps = showSingleValue
-		? {
-				suffix: ' ',
-				tabIndex: '-1',
-				style: {
-					pointerEvents: 'none',
-				},
-				readOnly: true,
-				options,
-				...rest,
-		  }
-		: { options, ...rest };
+	let selectProps = {
+		options,
+		...rest,
+	};
+
+	if ( showSingleValue ) {
+		selectProps = {
+			...selectProps,
+			suffix: ' ',
+			tabIndex: '-1',
+			readOnly: true,
+		};
+	}
 
 	return (
-		<div className={ classNames( 'app-select-control', className ) }>
+		<div
+			className={ classNames( 'app-select-control', className, {
+				'app-select-control--has-single-value': showSingleValue,
+			} ) }
+		>
 			<SelectControl { ...selectProps } />
 		</div>
 	);
