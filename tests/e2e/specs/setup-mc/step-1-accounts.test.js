@@ -193,12 +193,10 @@ test.describe( 'Set up accounts', () => {
 
 			await setUpAccountsPage.goto();
 
-			const connectButton = page
-				.getByRole( 'button', {
-					name: 'Connect',
-					exact: true,
-				} )
-				.nth( 1 );
+			const connectButton = setUpAccountsPage
+				.getGoogleAccountCard()
+				.getByRole( 'button', { name: 'Connect' } );
+
 			await expect( connectButton ).toBeDisabled();
 
 			const termsCheckbox = setUpAccountsPage.getTermsCheckbox();
@@ -213,7 +211,7 @@ test.describe( 'Set up accounts', () => {
 				baseURL + 'google_auth'
 			);
 
-			setUpAccountsPage.getTermsCheckbox().check();
+			await setUpAccountsPage.getTermsCheckbox().check();
 
 			// Click the enabled connect button
 			page.locator(

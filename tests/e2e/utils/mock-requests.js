@@ -393,7 +393,7 @@ export default class MockRequests {
 	}
 
 	/**
-	 * Mock Jetpack as connected.
+	 * Mock Jetpack as not connected.
 	 */
 	async mockJetpackNotConnected() {
 		await this.fulfillJetPackConnection( {

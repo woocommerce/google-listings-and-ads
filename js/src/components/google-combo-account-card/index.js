@@ -7,7 +7,6 @@ import AccountCard from '.~/components/account-card';
 import RequestFullAccessGoogleAccountCard from '../google-account-card/request-full-access-google-account-card';
 import { ConnectedGoogleAccountCard } from '../google-account-card';
 import ConnectGoogleComboAccountCard from './connect-google-combo-account-card';
-import './index.scss';
 
 export default function GoogleComboAccountCard( { disabled = false } ) {
 	const { google, scope, hasFinishedResolution } = useGoogleAccount();
