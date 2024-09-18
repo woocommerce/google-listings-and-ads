@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
 import { useEffect } from '@wordpress/element';
 
 /**
@@ -25,12 +24,7 @@ const AdsAccountSelectControl = ( {
 
 	const options = accounts.map( ( acc ) => ( {
 		value: acc.id,
-		label: sprintf(
-			// translators: 1: account name, 2: account ID.
-			__( '%1$s (%2$s)', 'google-listings-and-ads' ),
-			acc.name,
-			acc.id
-		),
+		label: `${ acc.name } (${ acc.id })`,
 	} ) );
 
 	useEffect( () => {
