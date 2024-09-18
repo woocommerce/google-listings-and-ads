@@ -31,8 +31,6 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 		useGoogleConnectFlow( pageName );
 	const [ termsAccepted, setTermsAccepted ] = useState( false );
 
-	const checkboxId = 'gla-account-card-terms-conditions';
-
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
@@ -48,7 +46,6 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 						) }
 					</p>
 					<CheckboxControl
-						id={ checkboxId }
 						label={ createInterpolateElement(
 							__(
 								'I accept the terms and conditions of <linkMerchant>Merchant Center</linkMerchant> and <linkAds>Google Ads</linkAds>',
