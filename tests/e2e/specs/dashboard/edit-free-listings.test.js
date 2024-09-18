@@ -70,7 +70,7 @@ test.describe( 'Edit Free Listings', () => {
 
 	test( 'Check recommended shipping settings', async () => {
 		await editFreeListingsPage.checkRecommendShippingSettings();
-		await editFreeListingsPage.fillCountriesShippingTimeInput( '5' );
+		await editFreeListingsPage.fillCountriesShippingTimeInput( '5', '10' );
 		await editFreeListingsPage.checkDestinationBasedTaxRates();
 		const saveChangesButton =
 			await editFreeListingsPage.getSaveChangesButton();
