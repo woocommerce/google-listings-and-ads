@@ -10,6 +10,34 @@ import userEvent from '@testing-library/user-event';
  */
 import CampaignAssetsForm from './campaign-assets-form';
 
+jest.mock( '@woocommerce/settings', () => ( {
+	getSetting: jest
+		.fn()
+		.mockName( "getSetting( 'currency' )" )
+		.mockReturnValue( {
+			code: 'EUR',
+			symbol: '€',
+			precision: 2,
+			decimalSeparator: '.',
+			thousandSeparator: ',',
+			priceFormat: '%1$s %2$s',
+		} ),
+} ) );
+
+jest.mock( '.~/hooks/useApiFetchCallback', () => ( {
+	__esModule: true,
+	default: jest.fn().mockImplementation( () => {
+		return [ jest.fn(), null ];
+	} ),
+} ) );
+
+jest.mock( '.~/hooks/useFetchBudgetRecommendationEffect', () => ( {
+	__esModule: true,
+	default: jest.fn().mockImplementation( () => {
+		return [ jest.fn(), null ];
+	} ),
+} ) );
+
 const alwaysValid = () => ( {} );
 
 describe( 'CampaignAssetsForm', () => {
