@@ -10,7 +10,7 @@ import GridiconNoticeOutline from 'gridicons/dist/notice-outline';
  * Internal dependencies
  */
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
-import useFetchBudgetRecommendationEffect from './useFetchBudgetRecommendationEffect';
+import useFetchBudgetRecommendationEffect from '.~/hooks/useFetchBudgetRecommendationEffect';
 import './index.scss';
 
 /*

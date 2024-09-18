@@ -8,7 +8,6 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
-import useFetchBudgetRecommendationEffect from '.~/components/paid-ads/budget-section/budget-recommendation/useFetchBudgetRecommendationEffect';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
 import SpinnerCard from '.~/components/spinner-card';
@@ -16,8 +15,7 @@ import Section from '.~/wcdl/section';
 import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import clientSession from './clientSession';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
-import getHighestBudget from '.~/utils/getHighestBudget';
-import useStoreCurrency from '.~/hooks/useStoreCurrency';
+import useValidateCampaignWithCountryCodes from '.~/hooks/useValidateCampaignWithCountryCodes';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -62,8 +60,9 @@ export default function PaidAdsSetupSections( {
 	onStatesReceived,
 	countryCodes,
 } ) {
+	const { validateCampaignWithCountryCodes } =
+		useValidateCampaignWithCountryCodes( countryCodes );
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const { code: currency, formatNumber } = useStoreCurrency();
 
 	const onStatesReceivedRef = useRef();
 	onStatesReceivedRef.current = onStatesReceived;
@@ -76,10 +75,6 @@ export default function PaidAdsSetupSections( {
 		};
 		return resolveInitialPaidAds( startingPaidAds );
 	} );
-
-	const { data: budgetData } =
-		useFetchBudgetRecommendationEffect( countryCodes );
-	const budget = getHighestBudget( budgetData?.recommendations );
 
 	const isBillingCompleted =
 		billingStatus?.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
@@ -119,21 +114,13 @@ export default function PaidAdsSetupSections( {
 		amount: paidAds.amount,
 	};
 
-	const formOpts = {
-		dailyBudget: budget?.daily_budget,
-		currency,
-		formatNumber,
-	};
-
 	return (
 		<Form
 			initialValues={ initialValues }
 			onChange={ ( _, values, isValid ) => {
 				setPaidAds( { ...paidAds, ...values, isValid } );
 			} }
-			validate={ ( formValues ) =>
-				validateCampaign( formValues, formOpts )
-			}
+			validate={ validateCampaignWithCountryCodes }
 		>
 			{ ( formProps ) => {
 				return (

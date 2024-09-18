@@ -8,8 +8,8 @@ import { useState, useMemo } from '@wordpress/element';
  */
 import { ASSET_GROUP_KEY, ASSET_FORM_KEY } from '.~/constants';
 import AdaptiveForm from '.~/components/adaptive-form';
-import validateCampaign from '.~/components/paid-ads/validateCampaign';
 import validateAssetGroup from '.~/components/paid-ads/validateAssetGroup';
+import useValidateCampaignWithCountryCodes from '.~/hooks/useValidateCampaignWithCountryCodes';
 
 /**
  * @typedef {import('.~/components/types.js').CampaignFormValues} CampaignFormValues
@@ -64,11 +64,13 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
  * @augments AdaptiveForm
  * @param {Object} props React props.
  * @param {CampaignFormValues} props.initialCampaign Initial campaign values.
+ * @param {Function} [props.onChange] Callback when the form values change.
  * @param {AssetEntityGroup} [props.assetEntityGroup] The asset entity group to be used in initializing the form values for editing.
  */
 export default function CampaignAssetsForm( {
 	initialCampaign,
 	assetEntityGroup,
+	onChange,
 	...adaptiveFormProps
 } ) {
 	const initialAssetGroup = useMemo( () => {
@@ -77,6 +79,14 @@ export default function CampaignAssetsForm( {
 
 	const [ baseAssetGroup, setBaseAssetGroup ] = useState( initialAssetGroup );
 	const [ hasImportedAssets, setHasImportedAssets ] = useState( false );
+	const [ countryCodes, setCountryCodes ] = useState( [] );
+	const { validateCampaignWithCountryCodes } =
+		useValidateCampaignWithCountryCodes( countryCodes );
+
+	const handleOnChange = ( _, values, arg ) => {
+		setCountryCodes( values.countryCodes );
+		onChange( _, values, arg );
+	};
 
 	const extendAdapter = ( formContext ) => {
 		const assetGroupErrors = validateAssetGroup( formContext.values );
@@ -120,8 +130,9 @@ export default function CampaignAssetsForm( {
 				...initialCampaign,
 				...initialAssetGroup,
 			} }
-			validate={ validateCampaign }
+			validate={ validateCampaignWithCountryCodes }
 			extendAdapter={ extendAdapter }
+			onChange={ handleOnChange }
 			{ ...adaptiveFormProps }
 		/>
 	);

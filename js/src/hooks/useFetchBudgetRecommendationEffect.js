@@ -7,7 +7,7 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import { API_NAMESPACE } from '.~/data/constants';
-import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
+import useApiFetchEffect from './useApiFetchEffect';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
