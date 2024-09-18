@@ -358,12 +358,10 @@ test.describe( 'Complete your campaign', () => {
 	);
 
 	test.describe( 'Free Ad Credit', () => {
-		test.beforeAll( async () => {
-			await setupAdsAccountPage.mockAdsAccountConnected();
-		} );
-
 		test( 'should not see the Free Ad Credit section if the account is not eligible', async () => {
+			await setupAdsAccountPage.mockAdsAccountConnected();
 			await completeCampaign.goto();
+			await setupAdsAccountPage.awaitAdsConnectionResponse();
 
 			// Check we are on the correct page.
 			await expect(
@@ -383,6 +381,7 @@ test.describe( 'Complete your campaign', () => {
 				created_timestamp: Math.floor( Date.now() / 1000 ),
 			} );
 			await completeCampaign.goto();
+			await setupAdsAccountPage.awaitAdsConnectionResponse();
 
 			await expect(
 				page.getByText(
