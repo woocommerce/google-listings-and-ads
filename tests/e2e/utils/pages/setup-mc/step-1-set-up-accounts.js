@@ -374,6 +374,6 @@ export default class SetUpAccountsPage extends MockRequests {
 	 * @return {import('@playwright/test').Locator} Terms checkbox.
 	 */
 	getTermsCheckbox() {
-		return this.page.locator( '#gla-account-card-terms-conditions' );
+		return this.page.getByLabel( /I accept the terms and conditions/ )
 	}
 }

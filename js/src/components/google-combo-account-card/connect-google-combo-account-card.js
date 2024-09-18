@@ -72,21 +72,17 @@ const ConnectGoogleComboAccountCard = ( { disabled } ) => {
 						onChange={ setTermsAccepted }
 						disabled={ disabled }
 					/>
-					<p className="gla-connect-google-combo-account-card-instruction">
-						<em>
-							{ createInterpolateElement(
-								__(
-									'You will be prompted to give WooCommerce access to your Google account. Please check all the checkboxes to give WooCommerce all required permissions. <link>Read more</link>',
-									'google-listings-and-ads'
-								),
-								{
-									link: readMoreLink,
-								}
-							) }
-						</em>
-					</p>
 				</>
 			}
+			helper={ createInterpolateElement(
+				__(
+					'You will be prompted to give WooCommerce access to your Google account. Please check all the checkboxes to give WooCommerce all required permissions. <link>Read more</link>',
+					'google-listings-and-ads'
+				),
+				{
+					link: readMoreLink,
+				}
+			) }
 			alignIndicator="top"
 			indicator={
 				<AppButton

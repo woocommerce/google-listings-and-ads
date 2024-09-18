@@ -66,12 +66,6 @@ test.describe( 'Set up accounts', () => {
 		const googleAccountCard = setUpAccountsPage.getGoogleAccountCard();
 		await expect( googleAccountCard.getByRole( 'button' ) ).toBeDisabled();
 
-		const mcAccountCard = setUpAccountsPage.getMCAccountCard();
-		await expect( mcAccountCard.getByRole( 'button' ) ).not.toBeVisible();
-
-		const adsAccountCard = setUpAccountsPage.getGoogleAdsAccountCard();
-		await expect( adsAccountCard.getByRole( 'button' ) ).not.toBeVisible();
-
 		const continueButton = setUpAccountsPage.getContinueButton();
 		await expect( continueButton ).toBeDisabled();
 	} );

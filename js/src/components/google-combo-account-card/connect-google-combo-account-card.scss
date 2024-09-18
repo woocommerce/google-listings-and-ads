@@ -1,6 +1,11 @@
 .gla-connect-google-combo-account-card {
 
-	.gla-connect-google-combo-account-card-instruction {
+	.gla-account-card__helper {
 		color: $gray-700;
+		font-size: $gla-font-base;
+
+		p {
+			margin-bottom: 0;
+		}
 	}
 }
