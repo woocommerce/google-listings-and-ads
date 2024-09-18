@@ -47,17 +47,8 @@ function FeatureList() {
 /**
  * Renders a section layout to elaborate on the features of paid ads and show the buttons
  * for the next actions: skip or continue the paid ads setup.
- *
- * @param {Object} props React props.
- * @param {boolean} props.hideFooterButtons Whether to hide the buttons at the card footer.
- * @param {JSX.Element} props.skipButton Button to skip paid ads setup.
- * @param {JSX.Element} props.continueButton Button to continue paid ads setup.
  */
-export default function PaidAdsFeaturesSection( {
-	hideFooterButtons,
-	skipButton,
-	continueButton,
-} ) {
+export default function PaidAdsFeaturesSection() {
 	const hasFreeAdCredit = useFreeAdCredit();
 
 	return (
@@ -124,10 +115,6 @@ export default function PaidAdsFeaturesSection( {
 						{ hasFreeAdCredit && <FreeAdCredit /> }
 					</VerticalGapLayout>
 				</Section.Card.Body>
-				<Section.Card.Footer hidden={ hideFooterButtons }>
-					{ skipButton }
-					{ continueButton }
-				</Section.Card.Footer>
 			</Section.Card>
 		</Section>
 	);
