@@ -13,10 +13,13 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import { useAdaptiveFormContext } from '.~/components/adaptive-form';
+import AppSpinner from '.~/components/app-spinner';
+import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
 import { CampaignPreviewCard } from './campaign-preview';
 import FaqsSection from './faqs-section';
+import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
 
 /**
  * @typedef {import('.~/data/actions').Campaign} Campaign
@@ -47,6 +50,17 @@ export default function AdsCampaign( {
 	const isCreation = ! campaign;
 	const formContext = useAdaptiveFormContext();
 	const { isValidForm } = formContext;
+	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	let enableContinue = isValidForm;
+
+	if ( trackingContext === 'setup-ads' ) {
+		if ( ! billingStatus ) {
+			return <AppSpinner />;
+		}
+		const isApproved =
+			billingStatus.status === GOOGLE_ADS_BILLING_STATUS.APPROVED;
+		enableContinue = enableContinue && isApproved;
+	}
 
 	const disabledBudgetSection = ! formContext.values.countryCodes.length;
 	const helperText = isCreation
@@ -105,7 +119,7 @@ export default function AdsCampaign( {
 			<StepContentFooter>
 				<AppButton
 					isPrimary
-					disabled={ ! isValidForm }
+					disabled={ ! enableContinue }
 					loading={ isLoading }
 					onClick={ onContinue }
 				>
