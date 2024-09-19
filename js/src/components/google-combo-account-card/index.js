@@ -12,15 +12,14 @@ import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 
 export default function GoogleComboAccountCard( { disabled = false } ) {
 	const { google, scope, hasFinishedResolution } = useGoogleAccount();
-	/* const { data: existingMCAccounts, isResolving: MCAccountsResolving } =
-		useExistingGoogleMCAccounts();
-	const {
-		existingAccounts: existingAdsAccount,
-		isResolving: AdsAccountsResolving,
-	} = useExistingGoogleAdsAccounts(); */
+	const { isResolving: MCAccountsResolving } = useExistingGoogleMCAccounts();
+	const { isResolving: AdsAccountsResolving } =
+		useExistingGoogleAdsAccounts();
 
 	if (
-		! hasFinishedResolution
+		! hasFinishedResolution ||
+		MCAccountsResolving ||
+		AdsAccountsResolving
 	) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
@@ -31,7 +30,7 @@ export default function GoogleComboAccountCard( { disabled = false } ) {
 		return (
 			<ConnectedGoogleComboAccountCard
 				googleAccount={ google }
-				MCAccount={ [] }
+				MCAccounts={ [] }
 				AdsAccounts={ [] }
 			/>
 		);

@@ -40,3 +40,7 @@ add_filter(
 		return $value_options;
 	}
 );
+
+add_filter( 'woocommerce_gla_ads_billing_setup_status', function( $status ) {
+	return 'approved';
+} );

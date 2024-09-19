@@ -18,8 +18,6 @@ const useCreateMCAccount = () => {
 		method: 'POST',
 	} );
 
-	console.log( 'result', result );
-
 	const handleCreateAccount = async () => {
 		try {
 			await fetchCreateMCAccount( {
