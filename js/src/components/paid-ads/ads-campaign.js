@@ -110,8 +110,9 @@ export default function AdsCampaign( {
 					isPrimary
 					disabled={
 						! isValidForm ||
-						billingStatus?.status !==
-							GOOGLE_ADS_BILLING_STATUS.APPROVED
+						( trackingContext === 'setup-ads' &&
+							billingStatus?.status !==
+								GOOGLE_ADS_BILLING_STATUS.APPROVED )
 					}
 					loading={ isLoading }
 					onClick={ onContinue }
