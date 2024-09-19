@@ -143,6 +143,8 @@ const useApiFetchCallback = ( options, initialState = defaultState ) => {
 					parse: false,
 				} );
 
+				console.log( 'useApiFetchCallback response', response );
+
 				const responseClone = response.clone();
 				const data =
 					responseClone.json && ( await responseClone.json() );

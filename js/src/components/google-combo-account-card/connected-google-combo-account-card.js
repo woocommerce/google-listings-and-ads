@@ -1,55 +1,51 @@
-
 /**
  * External dependencies
  */
+import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '../account-card';
-import AppButton from '../app-button';
-import ConnectedIconLabel from '../connected-icon-label';
-import Section from '../../wcdl/section';
-import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
-import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
+import CreateMCAdsAccounts from './create-mc-ads-accounts';
+
+/**
+ * Clicking on the "connect to a different Google account" button.
+ *
+ * @event gla_google_account_connect_different_account_button_click
+ */
 
 /**
  * Renders a Google account card UI with connected account information.
  * It will also kickoff Ads and Merchant Center account creation if the user does not have accounts.
  *
  * @param {Object} props React props.
- * @param {{ email: string }} props.googleAccount A data payload object containing the user's Google account email.
+ * @param {{ MCAccount: string }} props.MCAccount The Google Merchant Center account.
+ * @param {{ AdsAccounts: string }} props.AdsAccounts The Google Ads accounts.
  *
  * @fires gla_google_account_connect_different_account_button_click
  */
-const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
-    const { data: existingMCAccounts, isResolving: MCAccountsResolving } = useExistingGoogleMCAccounts();
-    const { existingAccounts: existingAdsAccount, isResolving: AdsAccountsResolving } = useExistingGoogleAdsAccounts();
-
-    console.log('MCAccountsResolving', MCAccountsResolving);
-    console.log('existingMCAccount', existingMCAccounts);
-    //console.log('AdsAccountsResolving', AdsAccountsResolving);
-    //console.log('existingAdsAccount', existingAdsAccount);
-
+const ConnectedGoogleComboAccountCard = ( { MCAccounts, AdsAccounts } ) => {
     return (
         <AccountCard
             appearance={ APPEARANCE.GOOGLE }
-            description={ googleAccount.email }
-            indicator={ <ConnectedIconLabel /> }
+            description={ __(
+                'You don’t have Merchant Center nor Google Ads accounts, so we’re creating them for you.',
+                'google-listings-and-ads'
+            ) }
+            helper={ createInterpolateElement(
+                __(
+                    '<p>Merchant Center is required to sync products so they show on Google. Google Ads is required to set up conversion measurement for your store.</p>',
+                    'google-listings-and-ads'
+                ),
+                {
+                    p: <p></p>,
+                }
+            ) }
+            indicator={ __( 'Creating…', 'google-listings-and-ads' ) }
         >
-            <Section.Card.Footer>
-                <AppButton
-                    isLink
-                    disabled={ MCAccountsResolving || AdsAccountsResolving }
-                    text={ __(
-                        'Or, connect to a different Google account',
-                        'google-listings-and-ads'
-                    ) }
-                    eventName="gla_google_account_connect_different_account_button_click"
-                    onClick={ () => {} }
-                />
-            </Section.Card.Footer>
+            { MCAccounts.length === 0 && AdsAccounts.length === 0 && <CreateMCAdsAccounts /> }
         </AccountCard>
     );
 };
