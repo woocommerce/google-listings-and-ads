@@ -17,7 +17,7 @@ import useStoreCurrency from './useStoreCurrency';
  */
 const useHighestBudgetRecommendation = ( countryCodes ) => {
 	const { code: currency, formatNumber } = useStoreCurrency();
-	const { data: budgetData } =
+	const { data: budgetData, loading } =
 		useFetchBudgetRecommendationEffect( countryCodes );
 	const budget = getHighestBudget( budgetData?.recommendations );
 
@@ -25,6 +25,7 @@ const useHighestBudgetRecommendation = ( countryCodes ) => {
 		dailyBudget: budget?.daily_budget,
 		currency,
 		formatNumber,
+		loading,
 	};
 };
 

@@ -21,10 +21,12 @@ const validateCampaign = ( values, opts ) => {
 	const errors = {};
 
 	if ( ! Number.isFinite( values.amount ) || values.amount <= 0 ) {
-		errors.amount = __(
-			'Please make sure daily average cost is greater than 0.',
-			'google-listings-and-ads'
-		);
+		return {
+			amount: __(
+				'Please make sure daily average cost is greater than 0.',
+				'google-listings-and-ads'
+			),
+		};
 	}
 
 	if (
@@ -37,15 +39,17 @@ const validateCampaign = ( values, opts ) => {
 		const minAmount = Math.round( dailyBudget * BUDGET_MIN_PERCENT, 2 );
 
 		if ( amount < minAmount ) {
-			errors.amount = sprintf(
-				/* translators: %1$s: minimum daily budget, %2$s: currency */
-				__(
-					'Please make sure daily average cost is greater than %1$s %2$s.',
-					'google-listings-and-ads'
+			return {
+				amount: sprintf(
+					/* translators: %1$s: minimum daily budget, %2$s: currency */
+					__(
+						'Please make sure daily average cost is greater than %1$s %2$s.',
+						'google-listings-and-ads'
+					),
+					formatNumber( minAmount ),
+					currency
 				),
-				formatNumber( minAmount ),
-				currency
-			);
+			};
 		}
 	}
 

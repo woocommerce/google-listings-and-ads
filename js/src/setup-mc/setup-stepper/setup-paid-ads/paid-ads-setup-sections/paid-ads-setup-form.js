@@ -10,12 +10,12 @@ import { Form } from '@woocommerce/components';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
-import SpinnerCard from '.~/components/spinner-card';
-import Section from '.~/wcdl/section';
-import validateCampaign from '.~/components/paid-ads/validateCampaign';
-import clientSession from './clientSession';
+import clientSession from '../clientSession';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
-import useValidateCampaignWithCountryCodes from '.~/hooks/useValidateCampaignWithCountryCodes';
+
+/**
+ * @typedef {import('.~/components/types.js').CampaignFormValues} CampaignFormValues
+ */
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -35,37 +35,36 @@ const defaultPaidAds = {
 };
 
 /**
- * Resolve the initial paid ads data from the given paid ads data.
- * Parts of the resolved data are used in the `initialValues` prop of `Form` component.
- *
- * @param {PaidAdsData} paidAds The paid ads data as the base to be resolved with other states.
- * @return {PaidAdsData} The resolved paid ads data.
- */
-function resolveInitialPaidAds( paidAds ) {
-	const nextPaidAds = { ...paidAds };
-	nextPaidAds.isValid = ! Object.keys( validateCampaign( nextPaidAds ) )
-		.length;
-
-	return nextPaidAds;
-}
-
-/**
  * Renders sections of Google Ads account, budget and billing for setting up the paid ads.
  *
  * @param {Object} props React props.
- * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the budget and billing are updated.
+ * @param {(onStatesReceived: PaidAdsData) => void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the budget and billing are updated.
  * @param {Array<CountryCode>|undefined} props.countryCodes Country codes for the campaign.
+ * @param {(values: CampaignFormValues) => Object} props.validateCampaign Function to validate campaign form values.
  */
-export default function PaidAdsSetupSections( {
+export default function PaidAdsSetupForm( {
 	onStatesReceived,
 	countryCodes,
+	validateCampaign,
 } ) {
-	const { validateCampaignWithCountryCodes } =
-		useValidateCampaignWithCountryCodes( countryCodes );
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-
 	const onStatesReceivedRef = useRef();
 	onStatesReceivedRef.current = onStatesReceived;
+
+	/**
+	 * Resolve the initial paid ads data from the given paid ads data.
+	 * Parts of the resolved data are used in the `initialValues` prop of `Form` component.
+	 *
+	 * @param {PaidAdsData} paidAds The paid ads data as the base to be resolved with other states.
+	 * @return {PaidAdsData} The resolved paid ads data.
+	 */
+	function resolveInitialPaidAds( paidAds ) {
+		const nextPaidAds = { ...paidAds };
+		nextPaidAds.isValid = ! Object.keys( validateCampaign( nextPaidAds ) )
+			.length;
+
+		return nextPaidAds;
+	}
 
 	const [ paidAds, setPaidAds ] = useState( () => {
 		// Resolve the starting paid ads data with the campaign data stored in the client session.
@@ -102,14 +101,6 @@ export default function PaidAdsSetupSections( {
 		clientSession.setCampaign( nextPaidAds );
 	}, [ paidAds, isBillingCompleted ] );
 
-	if ( ! billingStatus ) {
-		return (
-			<Section>
-				<SpinnerCard />
-			</Section>
-		);
-	}
-
 	const initialValues = {
 		amount: paidAds.amount,
 	};
@@ -120,7 +111,7 @@ export default function PaidAdsSetupSections( {
 			onChange={ ( _, values, isValid ) => {
 				setPaidAds( { ...paidAds, ...values, isValid } );
 			} }
-			validate={ validateCampaignWithCountryCodes }
+			validate={ validateCampaign }
 		>
 			{ ( formProps ) => {
 				return (

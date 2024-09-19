@@ -19,7 +19,7 @@ import validateCampaign from '.~/components/paid-ads/validateCampaign';
  * @return {Object} errors.
  */
 const useValidateCampaignWithCountryCodes = ( countryCodes ) => {
-	const { currency, dailyBudget, formatNumber } =
+	const { currency, dailyBudget, formatNumber, loading } =
 		useHighestBudgetRecommendation( countryCodes );
 
 	/**
@@ -36,7 +36,7 @@ const useValidateCampaignWithCountryCodes = ( countryCodes ) => {
 		} );
 	};
 
-	return { validateCampaignWithCountryCodes };
+	return { validateCampaignWithCountryCodes, loading };
 };
 
 export default useValidateCampaignWithCountryCodes;
