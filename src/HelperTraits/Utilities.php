@@ -69,6 +69,22 @@ trait Utilities {
 	}
 
 	/**
+	 * Test if the extension was installed after a specific date
+	 *
+	 * @param string $date Date to compare against the installation date
+	 * @return bool
+	 */
+	protected function gla_installed_after( $date ): bool {
+		$gla_installed = $this->options->get( OptionsInterface::INSTALL_TIMESTAMP, false );
+
+		if ( false === $gla_installed ) {
+			return false;
+		}
+
+		return ( $gla_installed >= strtotime( $date ) );
+	}
+
+	/**
 	 * Is Jetpack connected?
 	 *
 	 * @since 1.12.5
