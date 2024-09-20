@@ -52,6 +52,11 @@ class Input extends Form implements InputInterface {
 	protected $value;
 
 	/**
+	 * @var bool
+	 */
+	protected $is_disabled = false;
+
+	/**
 	 * Input constructor.
 	 *
 	 * @param string $type
@@ -143,6 +148,17 @@ class Input extends Form implements InputInterface {
 	}
 
 	/**
+	 * @param bool $disabled
+	 *
+	 * @return InputInterface
+	 */
+	public function set_disabled( $value = false ) {
+		$this->is_disabled = $value;
+
+		return $this;
+	}
+
+	/**
 	 * Return the data used for the input's view.
 	 *
 	 * @return array
@@ -156,6 +172,12 @@ class Input extends Form implements InputInterface {
 			'description' => $this->get_description(),
 			'desc_tip'    => true,
 		];
+
+		if ( $this->is_disabled ) {
+			$view_data['custom_attributes'] = array(
+				'disabled' => 'disabled',
+			);
+		}
 
 		return array_merge( parent::get_view_data(), $view_data );
 	}
