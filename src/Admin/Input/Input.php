@@ -202,9 +202,9 @@ class Input extends Form implements InputInterface {
 		];
 
 		if ( $this->is_readonly ) {
-			$view_data['custom_attributes'] = array(
+			$view_data['custom_attributes'] = [
 				'readonly' => 'readonly',
-			);
+			];
 		}
 
 		return array_merge( parent::get_view_data(), $view_data );
