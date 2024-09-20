@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
 class Input extends Form implements InputInterface {
 
 	use PluginHelper;
+	use Utilities;
 
 	/**
 	 * @var string
@@ -54,7 +57,7 @@ class Input extends Form implements InputInterface {
 	/**
 	 * @var bool
 	 */
-	protected $is_disabled = false;
+	protected $is_readonly = false;
 
 	/**
 	 * Input constructor.
@@ -65,6 +68,9 @@ class Input extends Form implements InputInterface {
 	public function __construct( string $type, string $block_name ) {
 		$this->type       = $type;
 		$this->block_name = $block_name;
+
+		$this->set_options_object( woogle_get_container()->get( OptionsInterface::class ) );
+
 		parent::__construct();
 	}
 
@@ -148,12 +154,12 @@ class Input extends Form implements InputInterface {
 	}
 
 	/**
-	 * @param bool $disabled
+	 * @param bool $value
 	 *
 	 * @return InputInterface
 	 */
-	public function set_disabled( $value = false ) {
-		$this->is_disabled = $value;
+	public function set_readonly( $value = false ) {
+		$this->is_readonly = $value;
 
 		return $this;
 	}
@@ -173,9 +179,9 @@ class Input extends Form implements InputInterface {
 			'desc_tip'    => true,
 		];
 
-		if ( $this->is_disabled ) {
+		if ( $this->is_readonly ) {
 			$view_data['custom_attributes'] = array(
-				'disabled' => 'disabled',
+				'readonly' => 'readonly',
 			);
 		}
 
