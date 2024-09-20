@@ -34,22 +34,20 @@ class GTINInput extends Text {
 	}
 
 	/**
-	 * If Google for WooCommerce was installed after $this->disabled_from then
-	 * this field will be disabled and not added to the product form.
-	 * 
-	 * If Google for WooCommerce was installed before $this->disabled_from and
-	 * WooCommerce version 9.2 or higher is installed then it will be readonly
+	 * If WooCommerce >= 9.2 is installed then the field will be:
+	 * - Disabled if GLA was installed after this feature was added
+	 * - Readonly if GLA was installed before this feature was added
 	 *
 	 * @since x.x.x
 	 * @return void
 	 */
 	public function conditionally_restrict(): void {
-		if ( $this->gla_installed_after( $this->disabled_from ) ) {
-			$this->set_disabled( true );
-			return;
-		}
-
 		if ( version_compare( WC_VERSION, '9.2', '>=' ) ) {
+			if ( $this->gla_installed_after( $this->disabled_from ) ) {
+				$this->set_disabled( true );
+				return;
+			}
+
 			$this->set_readonly( true );
 			$this->set_description( __( 'The Global Trade Item Number (GTIN) for your item can now be entered on the "Inventory" tab', 'google-listings-and-ads' ) );
 		}
