@@ -166,10 +166,13 @@ class AttributesForm extends Form {
 		$this->validate_interface( $input_type, InputInterface::class );
 
 		$attribute_input = self::init_input( new $input_type(), new $attribute_type() );
-		$this->add( $attribute_input );
 
-		$attribute_id                           = call_user_func( [ $attribute_type, 'get_id' ] );
-		$this->attribute_types[ $attribute_id ] = $attribute_type;
+		if ( ! $attribute_input->is_disabled() ) {
+			$this->add( $attribute_input );
+
+			$attribute_id                           = call_user_func( [ $attribute_type, 'get_id' ] );
+			$this->attribute_types[ $attribute_id ] = $attribute_type;
+		}
 
 		return $this;
 	}

@@ -60,6 +60,11 @@ class Input extends Form implements InputInterface {
 	protected $is_readonly = false;
 
 	/**
+	 * @var bool
+	 */
+	protected $is_disabled = false;
+
+	/**
 	 * Input constructor.
 	 *
 	 * @param string $type
@@ -162,6 +167,23 @@ class Input extends Form implements InputInterface {
 		$this->is_readonly = $value;
 
 		return $this;
+	}
+	/**
+	 * @param bool $value
+	 *
+	 * @return InputInterface
+	 */
+	public function set_disabled( $value = false ) {
+		$this->is_disabled = $value;
+
+		return $this;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function is_disabled(): bool {
+		return $this->is_disabled;
 	}
 
 	/**
