@@ -7,20 +7,11 @@ import AccountCard from '.~/components/account-card';
 import RequestFullAccessGoogleAccountCard from '../google-account-card/request-full-access-google-account-card';
 import ConnectGoogleComboAccountCard from './connect-google-combo-account-card';
 import ConnectedGoogleComboAccountCard from './connected-google-combo-account-card';
-import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
-import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 
 export default function GoogleComboAccountCard( { disabled = false } ) {
 	const { google, scope, hasFinishedResolution } = useGoogleAccount();
-	const { isResolving: MCAccountsResolving } = useExistingGoogleMCAccounts();
-	const { isResolving: AdsAccountsResolving } =
-		useExistingGoogleAdsAccounts();
 
-	if (
-		! hasFinishedResolution ||
-		MCAccountsResolving ||
-		AdsAccountsResolving
-	) {
+	if ( ! hasFinishedResolution ) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 

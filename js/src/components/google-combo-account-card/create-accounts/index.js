@@ -7,47 +7,34 @@ import { useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import useCreateMCAccount from '../../google-mc-account-card/useCreateMCAccount';
-import useUpsertAdsAccount from '../../../hooks/useUpsertAdsAccount';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useUpsertAdsAccount from '.~/hooks/useUpsertAdsAccount';
+import { receiveMCAccount } from '.~/data/actions';
 
 /**
  * Create MC and Ads accounts.
  */
-const CreateAccounts = ( { setAccounts } ) => {
-	const { googleAdsAccount } = useGoogleAdsAccount();
+const CreateAccounts = ( { setIsCreatingAccounts } ) => {
+	const [ handleCreateAccount, { data: account, response } ] =
+		useCreateMCAccount();
 
-	const [ handleCreateAccount, { loading, response } ] = useCreateMCAccount();
-	const [ , { loading: adsAccountsLoading } ] = useUpsertAdsAccount();
+	const [ upsertAdsAccount ] = useUpsertAdsAccount();
+
+	if ( response?.status === 200 ) {
+		receiveMCAccount( account );
+		setIsCreatingAccounts( false );
+	}
 
 	useEffect( () => {
-		console.log( 'googleAdsAccount', googleAdsAccount );
-		console.log( 'response', response );
+		setIsCreatingAccounts( true );
 
-		if (
-			! loading &&
-			! adsAccountsLoading &&
-			response &&
-			response.status === 200
-		) {
-			const createMCAccount = async () => {
-				await handleCreateAccount();
-			};
+		const createAccounts = async () => {
+			await handleCreateAccount();
+			await upsertAdsAccount();
+		};
 
-			createMCAccount();
-
-			setAccounts( {
-				MCAccounts: [ response.data ],
-				AdsAccounts: [ googleAdsAccount.id ],
-			} );
-		}
-	}, [
-		loading,
-		adsAccountsLoading,
-		response,
-		handleCreateAccount,
-		googleAdsAccount,
-		setAccounts,
-	] );
+		createAccounts();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [] );
 
 	return null;
 };
