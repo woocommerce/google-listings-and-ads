@@ -2,7 +2,7 @@
  * External dependencies
  */
 import '@testing-library/jest-dom';
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, waitFor } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -77,21 +77,27 @@ describe( 'CountriesTimeInput', () => {
 			expect( incrementButtons ).toHaveLength( 2 );
 			expect( decrementButtons ).toHaveLength( 2 );
 
+			//Increasing
 			for ( const button of incrementButtons ) {
 				fireEvent.mouseDown( button );
 			}
 
-			for ( const button of decrementButtons ) {
-				fireEvent.mouseDown( button );
-			}
+			await waitFor( () => {
+				expect( onChange ).toHaveBeenCalledTimes( 2 );
+			} );
 
-			expect( onChange ).toHaveBeenCalledTimes( 4 );
-
-			//Increasing
 			expect( onChange.mock.calls[ 0 ][ 0 ].time ).toBe( 2 );
 			expect( onChange.mock.calls[ 1 ][ 0 ].maxTime ).toBe( 33 );
 
 			//Decreasing
+			for ( const button of decrementButtons ) {
+				fireEvent.mouseDown( button );
+			}
+
+			await waitFor( () => {
+				expect( onChange ).toHaveBeenCalledTimes( 4 );
+			} );
+
 			expect( onChange.mock.calls[ 2 ][ 0 ].time ).toBe( 1 );
 			expect( onChange.mock.calls[ 3 ][ 0 ].maxTime ).toBe( 32 );
 		} );
