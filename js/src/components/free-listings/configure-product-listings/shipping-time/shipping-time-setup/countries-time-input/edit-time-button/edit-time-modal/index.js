@@ -138,11 +138,9 @@ const EditTimeModal = ( {
 										handleBlur={ handleIncrement }
 										handleIncrement={ handleIncrement }
 									/>
-									{ errors.time && (
-										<ul className="gla-validation-errors">
-											<li>{ errors.time }</li>
-										</ul>
-									) }
+									<ul className="gla-validation-errors">
+										<li>{ errors.time }</li>
+									</ul>
 								</FlexItem>
 							</Flex>
 						</VerticalGapLayout>
