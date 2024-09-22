@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __, _n } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { plus, reset } from '@wordpress/icons';
 
@@ -22,6 +22,8 @@ const Stepper = ( {
 	field = 'time',
 } ) => {
 	const [ value, setValue ] = useState( time );
+	const incrementTimeoutRef = useRef( null );
+	const debounceTime = 600;
 
 	useEffect( () => {
 		// If the time is 0, we want to display an empty string to show the "Same Day" delivery placeholder.
@@ -32,8 +34,16 @@ const Stepper = ( {
 		const newValue = parseFloat( value || 0 ) + increment;
 
 		if ( newValue >= min && newValue <= max ) {
-			handleIncrement( newValue, field );
 			setValue( newValue );
+
+			// Clear previous timeout
+			if ( incrementTimeoutRef.current ) {
+				clearTimeout( incrementTimeoutRef.current );
+			}
+
+			incrementTimeoutRef.current = setTimeout( () => {
+				handleIncrement( newValue, field );
+			}, debounceTime );
 		}
 	}
 
