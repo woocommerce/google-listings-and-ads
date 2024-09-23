@@ -404,4 +404,38 @@ test.describe( 'Complete your campaign', () => {
 			} );
 		}
 	);
+
+	test.describe( 'Free Ad Credit', () => {
+		test( 'should not see the Free Ad Credit section if the account is not eligible', async () => {
+			await setupAdsAccountPage.mockAdsAccountConnected();
+			await completeCampaign.goto();
+			await setupAdsAccountPage.awaitAdsConnectionResponse();
+
+			// Check we are on the correct page.
+			await expect(
+				page.getByText( 'Create a campaign to advertise your products' )
+			).toBeVisible();
+
+			await expect(
+				page.getByText(
+					'Spend $500 to get $500 in Google Ads credits!'
+				)
+			).not.toBeVisible();
+		} );
+
+		test( 'should see the Free Ad Credit section if the account is eligible', async () => {
+			await setupAdsAccountPage.mockAdsAccountConnected( 12345, {
+				sub_account: true,
+				created_timestamp: Math.floor( Date.now() / 1000 ),
+			} );
+			await completeCampaign.goto();
+			await setupAdsAccountPage.awaitAdsConnectionResponse();
+
+			await expect(
+				page.getByText(
+					'Spend $500 to get $500 in Google Ads credits!'
+				)
+			).toBeVisible();
+		} );
+	} );
 } );

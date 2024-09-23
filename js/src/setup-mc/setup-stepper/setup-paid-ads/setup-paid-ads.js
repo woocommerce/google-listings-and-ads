@@ -168,9 +168,7 @@ export default function SetupPaidAds() {
 					'google-listings-and-ads'
 				) }
 			/>
-			<PaidAdsFeaturesSection
-				hideBudgetContent={ ! hasGoogleAdsConnection }
-			/>
+			<PaidAdsFeaturesSection />
 			<PaidAdsSetupSections
 				onStatesReceived={ setPaidAds }
 				countryCodes={ countryCodes }
