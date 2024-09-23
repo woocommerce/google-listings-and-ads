@@ -109,6 +109,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$this->map_woocommerce_product();
 		$this->map_attribute_mapping_rules( $mapping_rules );
 		$this->map_gla_attributes( $gla_attributes );
+		$this->map_gtin();
 
 		// Allow users to override the product's attributes using a WordPress filter.
 		$this->override_attributes();
@@ -922,6 +923,28 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		// Size
 		if ( ! empty( $attributes['size'] ) ) {
 			$this->setSizes( [ $attributes['size'] ] );
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Map the WooCommerce core global unique ID (GTIN) value if it's available.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return $this
+	 */
+	protected function map_gtin(): WCProductAdapter {
+		// compatibility-code "WC < 9.2" -- Core global unique ID field was added in 9.2
+		if ( ! method_exists( $this->wc_product, 'get_global_unique_id' ) ) {
+			return $this;
+		}
+
+		$global_unique_id = $this->wc_product->get_global_unique_id();
+
+		if ( ! empty( $global_unique_id ) ) {
+			$this->setGtin( $global_unique_id );
 		}
 
 		return $this;
