@@ -15,8 +15,10 @@ import validateCampaign from '.~/components/paid-ads/validateCampaign';
 /**
  * Validate campaign form. Accepts the form values object and returns errors object.
  *
- * @param {Array<CountryCode>} countryCodes Country code array.
- * @return {Object} errors.
+ * @param {Array<CountryCode>} countryCodes Country code array. If not provided, the validate function will not take into account budget recommendations.
+ * @return {Object} An object containing the `validateCampaignWithCountryCodes` function and a `loading` state.
+ * @property {Function} validateCampaignWithCountryCodes A function to validate campaign form values.
+ * @property {boolean} loading A boolean indicating whether the budget recommendation data is being fetched.
  */
 const useValidateCampaignWithCountryCodes = ( countryCodes ) => {
 	const { dailyBudget, formatAmount, loading } =
