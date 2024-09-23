@@ -3,7 +3,7 @@
  */
 import useFetchBudgetRecommendationEffect from './useFetchBudgetRecommendationEffect';
 import getHighestBudget from '.~/utils/getHighestBudget';
-import useStoreCurrency from './useStoreCurrency';
+import useAdsCurrency from './useAdsCurrency';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -16,7 +16,8 @@ import useStoreCurrency from './useStoreCurrency';
  * @return {Object} Budget recommendation.
  */
 const useHighestBudgetRecommendation = ( countryCodes ) => {
-	const { code: currency, formatNumber } = useStoreCurrency();
+	const { adsCurrencyConfig } = useAdsCurrency();
+	const { code: currency } = adsCurrencyConfig;
 	const { data: budgetData, loading } =
 		useFetchBudgetRecommendationEffect( countryCodes );
 	const budget = getHighestBudget( budgetData?.recommendations );
@@ -24,8 +25,8 @@ const useHighestBudgetRecommendation = ( countryCodes ) => {
 	return {
 		dailyBudget: budget?.daily_budget,
 		currency,
-		formatNumber,
 		loading,
+		budgetData,
 	};
 };
 

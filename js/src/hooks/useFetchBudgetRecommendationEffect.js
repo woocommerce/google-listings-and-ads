@@ -16,8 +16,12 @@ import useApiFetchEffect from './useApiFetchEffect';
 /**
  * Fetch the budget recommendation for a country in a side effect.
  *
- * @param {Array<CountryCode>} countryCodes Country code array.
- * @return {Object} Budget recommendation.
+ * Although `countryCodes` is optional and defaults to an empty array,
+ * it eventually requires a non-empty array of country codes to return valid results.
+ * If `countryCodes` is empty, no fetch will be triggered, and undefined will be returned.
+ *
+ * @param {Array<CountryCode>} [countryCodes=[]] An array of country codes. If empty, the fetch will not be triggered.
+ * @return {Object} Budget recommendation, or `undefined` if no valid country codes are provided.
  */
 const useFetchBudgetRecommendationEffect = ( countryCodes = [] ) => {
 	let args;

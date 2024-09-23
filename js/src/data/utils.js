@@ -9,6 +9,10 @@ import { getCurrentDates } from '@woocommerce/date';
  */
 import round from '.~/utils/round';
 
+/**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ */
+
 export const freeFields = [ 'clicks', 'impressions' ];
 export const paidFields = [ 'sales', 'conversions', 'spend', ...freeFields ];
 /**
@@ -165,6 +169,21 @@ export function calculateDelta( value, base ) {
 	}
 
 	return delta;
+}
+
+/**
+ * Generates a unique key (slug) from an array of country codes.
+ *
+ * This function sorts the array of country codes alphabetically,
+ * joins them into a single string with underscore (`_`), and converts
+ * the result to lowercase.
+ *
+ * @param {Array<CountryCode>} countryCodes - An array of country code strings.
+ *
+ * @return {string} A underscore-separated, lowercase string representing the sorted country codes.
+ */
+export function getCountryCodesKey( countryCodes ) {
+	return countryCodes.sort().join( '_' ).toLowerCase();
 }
 
 /**

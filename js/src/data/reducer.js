@@ -70,6 +70,7 @@ const DEFAULT_STATE = {
 			inviteLink: null,
 			step: null,
 		},
+		budgetRecommendations: {},
 	},
 };
 
@@ -508,6 +509,19 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				.setIn( 'inviteLink', inviteLink )
 				.setIn( 'step', step )
 				.end();
+		}
+
+		case TYPES.RECEIVE_ADS_BUDGET_RECOMMENDATIONS: {
+			const { countryCodesKey, currency, recommendations } = action;
+
+			return setIn(
+				state,
+				[ 'ads', 'budgetRecommendations', countryCodesKey ],
+				{
+					currency,
+					recommendations,
+				}
+			);
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

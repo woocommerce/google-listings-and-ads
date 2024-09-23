@@ -9,6 +9,12 @@
  */
 
 /**
+ * @typedef {Object} ValidateCampaignOptions
+ * @property {string} Currency symbol to be used (e.g., 'USD').
+ * @property {number} dailyBudget Daily budget for the campaign.
+ */
+
+/**
  * @typedef {Object} AssetGroupFormValues
  * @property {string | null} final_url - The page URL on merchant's website that people reach when they click the ad.
  * @property {string | null} business_name - The business name or brand of merchant's website.

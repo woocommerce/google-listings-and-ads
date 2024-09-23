@@ -15,7 +15,7 @@ import {
 } from '.~/constants';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
-import { getReportKey } from './utils';
+import { getReportKey, getCountryCodesKey } from './utils';
 import { handleApiError } from '.~/utils/handleError';
 import { adaptAdsCampaign, adaptAssetGroup } from './adapters';
 import { fetchWithHeaders, awaitPromise } from './controls';
@@ -46,7 +46,14 @@ import {
 	receiveMappingRules,
 	receiveStoreCategories,
 	receiveTour,
+	receiveAdsBudgetRecommendations,
 } from './actions';
+
+/**
+ * CountryCode
+ *
+ * @typedef {string} CountryCode Two-letter country code in ISO 3166-1 alpha-2 format. Example: 'US'.
+ */
 
 export function* getShippingRates() {
 	yield fetchShippingRates();
@@ -534,3 +541,39 @@ export function* getGoogleAdsAccountStatus() {
 getGoogleAdsAccountStatus.shouldInvalidate = ( action ) => {
 	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS;
 };
+
+/**
+ * Fetch ad budget recommendations for the specified country codes.
+ *
+ * @param {Array<CountryCode>} countryCodes An array of country codes for which to fetch budget recommendations.
+ */
+export function* getAdsBudgetRecommendations( countryCodes ) {
+	if ( ! countryCodes || ! countryCodes.length ) {
+		return;
+	}
+
+	const countryCodesKey = getCountryCodesKey( countryCodes );
+	const endpoint = `${ API_NAMESPACE }/ads/campaigns/budget-recommendation`;
+	const query = { country_codes: countryCodes };
+	const path = addQueryArgs( endpoint, query );
+
+	try {
+		const response = yield apiFetch( {
+			path,
+		} );
+
+		yield receiveAdsBudgetRecommendations(
+			countryCodesKey,
+			response.currency,
+			response.recommendations
+		);
+	} catch ( error ) {
+		handleApiError(
+			error,
+			__(
+				'There was an error getting the budget recommendation.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}

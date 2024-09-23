@@ -8,14 +8,13 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
+import SpinnerCard from '.~/components/spinner-card';
+import Section from '.~/wcdl/section';
+import useValidateCampaignWithCountryCodes from '.~/hooks/useValidateCampaignWithCountryCodes';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import BillingCard from '.~/components/paid-ads/billing-card';
-import clientSession from '../clientSession';
+import clientSession from './clientSession';
 import { GOOGLE_ADS_BILLING_STATUS } from '.~/constants';
-
-/**
- * @typedef {import('.~/components/types.js').CampaignFormValues} CampaignFormValues
- */
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -36,18 +35,24 @@ const defaultPaidAds = {
 
 /**
  * Renders sections of Google Ads account, budget and billing for setting up the paid ads.
+ * Waits for the validate campaign with country codes to be loaded before rendering the form.
  *
  * @param {Object} props React props.
- * @param {(onStatesReceived: PaidAdsData) => void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the budget and billing are updated.
+ * @param {(onStatesReceived: PaidAdsData)=>void} props.onStatesReceived Callback to receive the data for setting up paid ads when initial and also when the budget and billing are updated.
  * @param {Array<CountryCode>|undefined} props.countryCodes Country codes for the campaign.
- * @param {(values: CampaignFormValues) => Object} props.validateCampaign Function to validate campaign form values.
  */
-export default function PaidAdsSetupForm( {
+export default function PaidAdsSetupSections( {
 	onStatesReceived,
 	countryCodes,
-	validateCampaign,
 } ) {
+	const {
+		loading: loadingValidateCampaignWithCountryCodes,
+		validateCampaignWithCountryCodes,
+		budgetData,
+	} = useValidateCampaignWithCountryCodes( countryCodes );
+	console.log( 'HELLO', useValidateCampaignWithCountryCodes( countryCodes ) );
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+
 	const onStatesReceivedRef = useRef();
 	onStatesReceivedRef.current = onStatesReceived;
 
@@ -60,8 +65,9 @@ export default function PaidAdsSetupForm( {
 	 */
 	function resolveInitialPaidAds( paidAds ) {
 		const nextPaidAds = { ...paidAds };
-		nextPaidAds.isValid = ! Object.keys( validateCampaign( nextPaidAds ) )
-			.length;
+		nextPaidAds.isValid = ! Object.keys(
+			validateCampaignWithCountryCodes( nextPaidAds )
+		).length;
 
 		return nextPaidAds;
 	}
@@ -101,6 +107,14 @@ export default function PaidAdsSetupForm( {
 		clientSession.setCampaign( nextPaidAds );
 	}, [ paidAds, isBillingCompleted ] );
 
+	if ( ! billingStatus || loadingValidateCampaignWithCountryCodes ) {
+		return (
+			<Section>
+				<SpinnerCard />
+			</Section>
+		);
+	}
+
 	const initialValues = {
 		amount: paidAds.amount,
 	};
@@ -111,13 +125,14 @@ export default function PaidAdsSetupForm( {
 			onChange={ ( _, values, isValid ) => {
 				setPaidAds( { ...paidAds, ...values, isValid } );
 			} }
-			validate={ validateCampaign }
+			validate={ validateCampaignWithCountryCodes }
 		>
 			{ ( formProps ) => {
 				return (
 					<BudgetSection
 						formProps={ formProps }
 						countryCodes={ countryCodes }
+						budgetData={ budgetData }
 					>
 						<BillingCard />
 					</BudgetSection>

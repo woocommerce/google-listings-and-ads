@@ -24,13 +24,6 @@ jest.mock( '@woocommerce/settings', () => ( {
 		} ),
 } ) );
 
-jest.mock( '.~/hooks/useApiFetchCallback', () => ( {
-	__esModule: true,
-	default: jest.fn().mockImplementation( () => {
-		return [ jest.fn(), null ];
-	} ),
-} ) );
-
 jest.mock( '.~/hooks/useFetchBudgetRecommendationEffect', () => ( {
 	__esModule: true,
 	default: jest.fn().mockImplementation( () => {
