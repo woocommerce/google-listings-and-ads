@@ -18,8 +18,8 @@ import {
 	FILTER_ONBOARDING,
 	CONTEXT_ADS_ONBOARDING,
 } from '.~/utils/tracks';
-import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import AppSpinner from '.~/components/app-spinner';
+import { glaData } from '.~/constants';
+
 /**
  * @param {Object} props React props
  * @param {Object} props.formProps Form props forwarded from `Form` component.
@@ -28,17 +28,12 @@ import AppSpinner from '.~/components/app-spinner';
  */
 const AdsStepper = ( { formProps } ) => {
 	const [ step, setStep ] = useState( '1' );
-	const { hasFinishedResolution, hasGoogleAdsConnection } =
-		useGoogleAdsAccount();
+	const hasGoogleAdsId = glaData.initialWpData.adsId;
 
 	useEventPropertiesFilter( FILTER_ONBOARDING, {
 		context: CONTEXT_ADS_ONBOARDING,
 		step,
 	} );
-
-	if ( ! hasFinishedResolution && ! hasGoogleAdsConnection ) {
-		return <AppSpinner />;
-	}
 
 	// Allow the users to go backward only, not forward.
 	// Users can only go forward by clicking on the Continue button.
@@ -62,17 +57,25 @@ const AdsStepper = ( { formProps } ) => {
 	};
 
 	const handleSetupAccountsContinue = () => {
-		continueStep( hasGoogleAdsConnection ? '1' : '2' );
+		continueStep( '2' );
 	};
 
 	const handleCreateCampaignContinue = () => {
-		continueStep( hasGoogleAdsConnection ? '2' : '3' );
+		continueStep( hasGoogleAdsId ? '2' : '3' );
 	};
 
 	const getSteps = () => {
 		let steps = [
 			{
-				key: hasGoogleAdsConnection ? '1' : '2',
+				key: '1',
+				label: __( 'Set up your accounts', 'google-listings-and-ads' ),
+				content: (
+					<SetupAccounts onContinue={ handleSetupAccountsContinue } />
+				),
+				onClick: handleStepClick,
+			},
+			{
+				key: '2',
 				label: __(
 					'Create your paid campaign',
 					'google-listings-and-ads'
@@ -86,29 +89,23 @@ const AdsStepper = ( { formProps } ) => {
 				onClick: handleStepClick,
 			},
 			{
-				key: hasGoogleAdsConnection ? '2' : '3',
+				key: '3',
 				label: __( 'Set up billing', 'google-listings-and-ads' ),
 				content: <SetupBilling formProps={ formProps } />,
 				onClick: handleStepClick,
 			},
 		];
-		if ( ! hasGoogleAdsConnection ) {
-			steps = [
-				{
-					key: '1',
-					label: __(
-						'Set up your accounts',
-						'google-listings-and-ads'
-					),
-					content: (
-						<SetupAccounts
-							onContinue={ handleSetupAccountsContinue }
-						/>
-					),
-					onClick: handleStepClick,
-				},
-				...steps,
-			];
+
+		if ( hasGoogleAdsId ) {
+			// Remove first step if there's an Ads account connected.
+			steps.shift();
+
+			steps = steps.map( ( singleStep ) => {
+				return {
+					...singleStep,
+					key: ( parseInt( singleStep.key, 10 ) - 1 ).toString(),
+				};
+			}, [] );
 		}
 
 		return steps;
