@@ -424,7 +424,7 @@ export const getGoogleAdsAccountStatus = ( state ) => {
  * @param {Array<CountryCode>} countryCodes - An array of country code strings used to generate a unique key.
  * @return {Object|null} The recommendations. It will be `null` if not yet fetched or fetched but doesn't exist.
  */
-export const getAdsBudgetRecommendations = ( state, countryCodes ) => {
+export const getAdsBudgetRecommendations = ( state, countryCodes = [] ) => {
 	const key = getCountryCodesKey( countryCodes );
 	return state.ads.budgetRecommendations[ key ] || null;
 };

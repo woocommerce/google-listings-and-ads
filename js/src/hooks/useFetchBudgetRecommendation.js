@@ -7,8 +7,6 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
-import getHighestBudget from '.~/utils/getHighestBudget';
-import useAdsCurrency from './useAdsCurrency';
 
 /**
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
@@ -17,24 +15,20 @@ import useAdsCurrency from './useAdsCurrency';
 /**
  * Fetch the highest budget recommendation for countries in a side effect.
  *
- * @param {Array<CountryCode>} countryCodes An array of country codes. If empty, the dailyBudget will be null.
+ * @param {Array<CountryCode>} countryCodes An array of country codes. If empty, the fetch will not be triggered.
  * @return {Object} Budget recommendation.
  */
-const useHighestBudgetRecommendation = ( countryCodes ) => {
-	const { formatAmount } = useAdsCurrency();
-
+const useFetchBudgetRecommendation = ( countryCodes ) => {
 	return useSelect( ( select ) => {
 		const { getAdsBudgetRecommendations, isResolving } =
 			select( STORE_KEY );
 
-		const budgetData = getAdsBudgetRecommendations( countryCodes );
-		const budget = getHighestBudget( budgetData?.recommendations );
+		const data = getAdsBudgetRecommendations( countryCodes );
 		return {
-			dailyBudget: budget?.daily_budget,
-			formatAmount,
 			loading: isResolving( 'getAdsBudgetRecommendations' ),
+			data,
 		};
 	} );
 };
 
-export default useHighestBudgetRecommendation;
+export default useFetchBudgetRecommendation;

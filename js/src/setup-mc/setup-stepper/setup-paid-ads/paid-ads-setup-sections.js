@@ -50,7 +50,6 @@ export default function PaidAdsSetupSections( {
 		validateCampaignWithCountryCodes,
 		budgetData,
 	} = useValidateCampaignWithCountryCodes( countryCodes );
-	console.log( 'HELLO', useValidateCampaignWithCountryCodes( countryCodes ) );
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 
 	const onStatesReceivedRef = useRef();

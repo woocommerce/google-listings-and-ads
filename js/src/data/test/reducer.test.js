@@ -73,6 +73,7 @@ describe( 'reducer', () => {
 					inviteLink: null,
 					step: null,
 				},
+				budgetRecommendations: {},
 			},
 		} );
 

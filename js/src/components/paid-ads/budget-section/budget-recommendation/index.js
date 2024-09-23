@@ -11,6 +11,7 @@ import GridiconNoticeOutline from 'gridicons/dist/notice-outline';
  */
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import useFetchBudgetRecommendationEffect from '.~/hooks/useFetchBudgetRecommendationEffect';
+import useFetchBudgetRecommendation from '.~/hooks/useFetchBudgetRecommendation';
 import './index.scss';
 
 /*
@@ -51,7 +52,7 @@ function toRecommendationRange( isMultiple, ...values ) {
 
 const BudgetRecommendation = ( props ) => {
 	const { countryCodes, dailyAverageCost = Infinity } = props;
-	const { data } = useFetchBudgetRecommendationEffect( countryCodes );
+	const { data } = useFetchBudgetRecommendation( countryCodes );
 	const map = useCountryKeyNameMap();
 
 	if ( ! data ) {

@@ -558,16 +558,24 @@ export function* getAdsBudgetRecommendations( countryCodes ) {
 	const path = addQueryArgs( endpoint, query );
 
 	try {
-		const response = yield apiFetch( {
+		const { data } = yield fetchWithHeaders( {
 			path,
 		} );
 
 		yield receiveAdsBudgetRecommendations(
 			countryCodesKey,
-			response.currency,
-			response.recommendations
+			data.currency,
+			data.recommendations
 		);
-	} catch ( error ) {
+	} catch ( response ) {
+		// Intentionally silence the specific in case the no budget recommendations are found from the API.
+		if ( response.status === 404 ) {
+			return;
+		}
+
+		const bodyPromise = response?.json() || response?.text();
+		const error = yield awaitPromise( bodyPromise );
+
 		handleApiError(
 			error,
 			__(

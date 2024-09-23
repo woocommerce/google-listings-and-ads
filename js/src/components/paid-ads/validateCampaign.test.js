@@ -74,29 +74,27 @@ describe( 'validateCampaign', () => {
 	} );
 
 	it( 'When a budget is provided and the amount is less than the minimum, should not pass', () => {
-		const mockFormatNumber = jest.fn().mockReturnValue( '30' );
+		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 30' );
 		values.amount = 10;
 
 		const opts = {
 			dailyBudget: 100,
-			formatNumber: mockFormatNumber,
-			currency: 'MUR',
+			formatAmount: mockFormatAmount,
 		};
 
 		const errors = validateCampaign( values, opts );
 
 		expect( errors ).toHaveProperty( 'amount' );
-		expect( errors.amount ).toContain( 'is greater than 30 MUR' );
+		expect( errors.amount ).toContain( 'is greater than Rs 30' );
 	} );
 
 	it( 'When a budget is provided and the amount is greater than the minimum, should pass', () => {
-		const mockFormatNumber = jest.fn().mockReturnValue( '35' );
+		const mockFormatAmount = jest.fn().mockReturnValue( 'Rs 35' );
 		values.amount = 35;
 
 		const opts = {
 			dailyBudget: 100,
-			formatNumber: mockFormatNumber,
-			currency: 'MUR',
+			formatAmount: mockFormatAmount,
 		};
 
 		const errors = validateCampaign( values, opts );

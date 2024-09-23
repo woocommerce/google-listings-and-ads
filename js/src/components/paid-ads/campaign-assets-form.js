@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useState, useMemo } from '@wordpress/element';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -70,7 +71,7 @@ function convertAssetEntityGroupToFormValues( assetEntityGroup = {} ) {
 export default function CampaignAssetsForm( {
 	initialCampaign,
 	assetEntityGroup,
-	onChange,
+	onChange = noop,
 	...adaptiveFormProps
 } ) {
 	const initialAssetGroup = useMemo( () => {
