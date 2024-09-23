@@ -64,52 +64,45 @@ const AdsStepper = ( { formProps } ) => {
 		continueStep( hasGoogleAdsId ? '2' : '3' );
 	};
 
-	const getSteps = () => {
-		let steps = [
-			{
-				key: '1',
-				label: __( 'Set up your accounts', 'google-listings-and-ads' ),
-				content: (
-					<SetupAccounts onContinue={ handleSetupAccountsContinue } />
-				),
-				onClick: handleStepClick,
-			},
-			{
-				key: '2',
-				label: __(
-					'Create your paid campaign',
-					'google-listings-and-ads'
-				),
-				content: (
-					<AdsCampaign
-						trackingContext="setup-ads"
-						onContinue={ handleCreateCampaignContinue }
-					/>
-				),
-				onClick: handleStepClick,
-			},
-			{
-				key: '3',
-				label: __( 'Set up billing', 'google-listings-and-ads' ),
-				content: <SetupBilling formProps={ formProps } />,
-				onClick: handleStepClick,
-			},
-		];
+	let steps = [
+		{
+			key: '1',
+			label: __( 'Set up your accounts', 'google-listings-and-ads' ),
+			content: (
+				<SetupAccounts onContinue={ handleSetupAccountsContinue } />
+			),
+			onClick: handleStepClick,
+		},
+		{
+			key: '2',
+			label: __( 'Create your paid campaign', 'google-listings-and-ads' ),
+			content: (
+				<AdsCampaign
+					trackingContext="setup-ads"
+					onContinue={ handleCreateCampaignContinue }
+				/>
+			),
+			onClick: handleStepClick,
+		},
+		{
+			key: '3',
+			label: __( 'Set up billing', 'google-listings-and-ads' ),
+			content: <SetupBilling formProps={ formProps } />,
+			onClick: handleStepClick,
+		},
+	];
 
-		if ( hasGoogleAdsId ) {
-			// Remove first step if there's an Ads account connected.
-			steps.shift();
+	if ( hasGoogleAdsId ) {
+		// Remove first step if there's an Ads account connected.
+		steps.shift();
 
-			steps = steps.map( ( singleStep ) => {
-				return {
-					...singleStep,
-					key: ( parseInt( singleStep.key, 10 ) - 1 ).toString(),
-				};
-			}, [] );
-		}
-
-		return steps;
-	};
+		steps = steps.map( ( singleStep ) => {
+			return {
+				...singleStep,
+				key: ( parseInt( singleStep.key, 10 ) - 1 ).toString(),
+			};
+		}, [] );
+	}
 
 	return (
 		// This Stepper with this class name
@@ -118,7 +111,7 @@ const AdsStepper = ( { formProps } ) => {
 		<Stepper
 			className="gla-setup-stepper"
 			currentStep={ step }
-			steps={ getSteps() }
+			steps={ steps }
 		/>
 	);
 };
