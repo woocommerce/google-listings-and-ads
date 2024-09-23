@@ -39,18 +39,26 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
 	} = useGoogleAdsAccount();
 
-	const { accountCreationResolved, isCreatingAccounts } = useCreateAccounts();
+	const { accountsCreated, accountCreationResolved, isCreatingAccounts } =
+		useCreateAccounts();
 
 	if (
-		! hasFinishedResolutionForCurrentMCAccount ||
-		! hasFinishedResolutionForCurrentAdsAccount ||
-		! accountCreationResolved
+		! accountsCreated &&
+		( ! hasFinishedResolutionForCurrentAdsAccount ||
+			! hasFinishedResolutionForCurrentMCAccount ||
+			! accountCreationResolved )
 	) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
+	const creatingAccounts =
+		isCreatingAccounts ||
+		( accountsCreated &&
+			( ! hasFinishedResolutionForCurrentMCAccount ||
+				! hasFinishedResolutionForCurrentAdsAccount ) );
+
 	const Description = () => {
-		if ( isCreatingAccounts ) {
+		if ( creatingAccounts ) {
 			return createInterpolateElement(
 				__(
 					'<p>You don’t have Merchant Center nor Google Ads accounts, so we’re creating them for you.</p>',
@@ -100,7 +108,7 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 					p: <p></p>,
 				}
 			) }
-			indicator={ isCreatingAccounts ? 'Creating...' : null }
+			indicator={ creatingAccounts ? 'Creating...' : null }
 		/>
 	);
 };

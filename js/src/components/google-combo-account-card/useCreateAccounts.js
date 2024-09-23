@@ -21,6 +21,7 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 const useCreateAccounts = () => {
 	const accountCreationResolvedRef = useRef( false );
 	const isCreatingAccountsRef = useRef( false );
+	const accountsCreatedRef = useRef( false );
 
 	const {
 		googleAdsAccount,
@@ -49,6 +50,7 @@ const useCreateAccounts = () => {
 			receiveMCAccount( account );
 			invalidateResolution( 'getExistingGoogleAdsAccounts' );
 			isCreatingAccountsRef.current = false;
+			accountsCreatedRef.current = true;
 		}
 	}, [ response, loading ] );
 
@@ -58,10 +60,14 @@ const useCreateAccounts = () => {
 			hasFinishedResolutionForExistingMCAccounts &&
 			isCreatingAccountsRef.current === false &&
 			accountCreationResolvedRef.current === false &&
-			account === undefined
+			account === undefined &&
+			! googleAdsAccount &&
+			! hasFinishedResolutionForExistingAdsccounts
 		) {
 			accountCreationResolvedRef.current = true;
-			const hasExistingAccounts = true;
+			const hasExistingAccounts =
+				existingMCAccounts?.length > 0 &&
+				existingAdsAccount?.length > 0;
 
 			if ( ! hasExistingAccounts ) {
 				const createAccounts = async () => {
@@ -70,6 +76,7 @@ const useCreateAccounts = () => {
 				};
 
 				isCreatingAccountsRef.current = true;
+				accountsCreatedRef.current = false;
 				createAccounts();
 			}
 		}
@@ -81,6 +88,7 @@ const useCreateAccounts = () => {
 	return {
 		isCreatingAccounts: isCreatingAccountsRef.current,
 		accountCreationResolved: accountCreationResolvedRef.current,
+		accountsCreated: accountsCreatedRef.current,
 	};
 };
 
