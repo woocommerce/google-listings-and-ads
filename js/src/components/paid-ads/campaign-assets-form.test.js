@@ -24,7 +24,7 @@ jest.mock( '@woocommerce/settings', () => ( {
 		} ),
 } ) );
 
-jest.mock( '.~/hooks/useFetchBudgetRecommendationEffect', () => ( {
+jest.mock( '.~/hooks/useFetchBudgetRecommendation', () => ( {
 	__esModule: true,
 	default: jest.fn().mockImplementation( () => {
 		return [ jest.fn(), null ];
