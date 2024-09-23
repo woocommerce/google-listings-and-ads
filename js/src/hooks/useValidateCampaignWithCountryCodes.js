@@ -28,7 +28,7 @@ const useValidateCampaignWithCountryCodes = ( countryCodes ) => {
 	 * Validate campaign form. Accepts the form values object and returns errors object.
 	 *
 	 * @param {CampaignFormValues} values Campaign form values.
-	 * @return {Object} errors.
+	 * @return {Object} An object containing any validation errors. If no errors, the object will be empty.
 	 */
 	const validateCampaignWithCountryCodes = ( values ) => {
 		return validateCampaign( values, {
