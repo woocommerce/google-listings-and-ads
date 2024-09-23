@@ -13,15 +13,6 @@ export default class SetupBudget extends MockRequests {
 	}
 
 	/**
-	 * Get budget recommendation text row.
-	 *
-	 * @return {import('@playwright/test').Locator} The budget recommendation text row.
-	 */
-	getBudgetRecommendationTextRow() {
-		return this.page.locator( '.components-tip p > em > strong' );
-	}
-
-	/**
 	 * Get budget input.
 	 *
 	 * @return {import('@playwright/test').Locator} The budget input box.
@@ -81,36 +72,6 @@ export default class SetupBudget extends MockRequests {
 	getBillingSetupSuccessSection() {
 		return this.page.locator(
 			'.gla-google-ads-billing-card__success-status'
-		);
-	}
-
-	/**
-	 * Extract budget recommendation value.
-	 *
-	 * @param {string} text
-	 *
-	 * @return {string} The budget recommendation value.
-	 */
-	extractBudgetRecommendationValue( text ) {
-		const match = text.match( /set a daily budget of (\d+)/ );
-		if ( match ) {
-			return match[ 1 ];
-		}
-		return '';
-	}
-
-	/**
-	 * Register the responses when removing an ads audience.
-	 *
-	 * @return {Promise<import('@playwright/test').Response>} The response.
-	 */
-	registerBudgetRecommendationResponse() {
-		return this.page.waitForResponse(
-			( response ) =>
-				response
-					.url()
-					.includes( '/gla/ads/campaigns/budget-recommendation' ) &&
-				response.status() === 200
 		);
 	}
 

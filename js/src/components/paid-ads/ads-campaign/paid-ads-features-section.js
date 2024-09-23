@@ -6,7 +6,6 @@ import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
 import { Pill } from '@woocommerce/components';
 import { noop } from 'lodash';
 import GridiconCheckmark from 'gridicons/dist/checkmark';
-import GridiconGift from 'gridicons/dist/gift';
 
 /**
  * Internal dependencies
@@ -17,9 +16,12 @@ import CampaignPreview from '.~/components/paid-ads/campaign-preview';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppButton from '.~/components/app-button';
 import SkipButton from './skip-button';
+import FreeAdCredit from '.~/components/free-ad-credit';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
 import './paid-ads-features-section.scss';
 
-function FeatureList( { hideBudgetContent } ) {
+function FeatureList() {
 	const featuresItems = [
 		{
 			Icon: GridiconCheckmark,
@@ -29,16 +31,6 @@ function FeatureList( { hideBudgetContent } ) {
 			),
 		},
 	];
-
-	if ( ! hideBudgetContent ) {
-		featuresItems.push( {
-			Icon: GridiconGift,
-			content: __(
-				'Claim $500 in ads credit when you spend your first $500 with Google Ads. Terms and conditions apply.',
-				'google-listings-and-ads'
-			),
-		} );
-	}
 
 	return (
 		<div className="gla-paid-ads-features-section__feature-list">
@@ -72,9 +64,8 @@ export default function PaidAdsFeaturesSection( {
 	onCreateCampaignClick = noop,
 	disableCreateButton = false,
 } ) {
+	const hasFreeAdCredit = useFreeAdCredit();
 	const { hasGoogleAdsConnection } = useGoogleAdsAccount();
-
-	const hideBudgetContent = ! hasGoogleAdsConnection;
 	const hideFooterButtons =
 		! hasGoogleAdsConnection || hidePaidAdsSetupFooterButtons;
 
@@ -113,32 +104,34 @@ export default function PaidAdsFeaturesSection( {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<Flex
-						className="gla-paid-ads-features-section__content"
-						align="center"
-						gap={ 9 }
-					>
-						<FlexBlock>
-							<Section.Card.Title>
-								{ __(
-									'Drive more sales with Performance Max',
-									'google-listings-and-ads'
-								) }
-							</Section.Card.Title>
-							<div className="gla-paid-ads-features-section__subtitle">
-								{ __(
-									'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your products are included as soon as they’re approved.',
-									'google-listings-and-ads'
-								) }
-							</div>
-							<FeatureList
-								hideBudgetContent={ hideBudgetContent }
-							/>
-						</FlexBlock>
-						<FlexItem>
-							<CampaignPreview />
-						</FlexItem>
-					</Flex>
+					<VerticalGapLayout size="medium">
+						<Flex
+							className="gla-paid-ads-features-section__content"
+							align="center"
+							gap={ 9 }
+						>
+							<FlexBlock>
+								<Section.Card.Title>
+									{ __(
+										'Drive more sales with Performance Max',
+										'google-listings-and-ads'
+									) }
+								</Section.Card.Title>
+								<div className="gla-paid-ads-features-section__subtitle">
+									{ __(
+										'Reach more customers by advertising your products across Google Ads channels like Search, YouTube and Discover. Set up your campaign now so your products are included as soon as they’re approved.',
+										'google-listings-and-ads'
+									) }
+								</div>
+								<FeatureList />
+							</FlexBlock>
+							<FlexItem>
+								<CampaignPreview />
+							</FlexItem>
+						</Flex>
+
+						{ hasFreeAdCredit && <FreeAdCredit /> }
+					</VerticalGapLayout>
 				</Section.Card.Body>
 				<Section.Card.Footer hidden={ hideFooterButtons }>
 					<SkipButton

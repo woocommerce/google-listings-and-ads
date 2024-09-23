@@ -60,9 +60,7 @@ export default function AdsCampaign( {
 	const { isValidForm, setValue } = formContext;
 	const [ completing, setCompleting ] = useState( null );
 	const [ paidAds, setPaidAds ] = useState( {} );
-	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( () =>
-		clientSession.getShowPaidAdsSetup( false )
-	);
+	const [ showPaidAdsSetup, setShowPaidAdsSetup ] = useState( true );
 
 	useEffect( () => {
 		if ( error ) {
@@ -87,7 +85,7 @@ export default function AdsCampaign( {
 	const handleSkipClick = ( event ) => {
 		setCompleting( event.target.dataset.action );
 
-		onSkip();
+		onSkip( paidAds );
 	};
 
 	const handleCompleteClick = ( event ) => {

@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { useState } from '@wordpress/element';
+import { select } from '@wordpress/data';
 import { noop } from 'lodash';
 
 /**
@@ -12,10 +13,14 @@ import { noop } from 'lodash';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useAdsSetupCompleteCallback from '.~/hooks/useAdsSetupCompleteCallback';
-import { getProductFeedUrl } from '.~/utils/urls';
-import { API_NAMESPACE } from '.~/data/constants';
-import { GUIDE_NAMES } from '.~/constants';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AdsCampaign from '.~/components/paid-ads/ads-campaign';
+import SkipPaidAdsConfirmationModal from './skip-paid-ads-confirmation-modal';
+import { getProductFeedUrl } from '.~/utils/urls';
+import { API_NAMESPACE, STORE_KEY } from '.~/data/constants';
+import { GUIDE_NAMES } from '.~/constants';
+import { recordGlaEvent } from '.~/utils/tracks';
 
 /**
  * Clicking on the "Create a paid ad campaign" button to open the paid ads setup in the onboarding flow.
@@ -34,14 +39,12 @@ import AdsCampaign from '.~/components/paid-ads/ads-campaign';
 /**
  * Clicking on the skip paid ads button to complete the onboarding flow.
  * The 'unknown' value of properties may means:
- * - the paid ads setup is not opened
  * - the final status has not yet been resolved when recording this event
  * - the status is not available, for example, the billing status is unknown if Google Ads account is not yet connected
  *
  * @event gla_onboarding_complete_button_click
- * @property {string} opened_paid_ads_setup Whether the paid ads setup is opened, e.g. 'yes', 'no'
  * @property {string} google_ads_account_status The connection status of merchant's Google Ads addcount, e.g. 'connected', 'disconnected', 'incomplete'
- * @property {string} billing_method_status aaa, The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
+ * @property {string} billing_method_status The status of billing method of merchant's Google Ads addcount e.g. 'unknown', 'pending', 'approved', 'cancelled'
  * @property {string} campaign_form_validation Whether the entered paid campaign form data are valid, e.g. 'unknown', 'valid', 'invalid'
  */
 
@@ -55,13 +58,18 @@ import AdsCampaign from '.~/components/paid-ads/ads-campaign';
  */
 export default function SetupPaidAds() {
 	const adminUrl = useAdminUrl();
-	const { createNotice } = useDispatchCoreNotices();
-	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
+	const { googleAdsAccount } = useGoogleAdsAccount();
+	const [ paidAds, setPaidAds ] = useState( {} );
 	const [ error, setError ] = useState( false );
+	const { createNotice } = useDispatchCoreNotices();
+	const { data: countryCodes } = useTargetAudienceFinalCountryCodes();
+	const [ handleSetupComplete ] = useAdsSetupCompleteCallback();
+	const [
+		showSkipPaidAdsConfirmationModal,
+		setShowSkipPaidAdsConfirmationModal,
+	] = useState( false );
 
-	const finishOnboardingSetup = async ( onBeforeFinish = noop ) => {
-		setError( false );
-
+	const finishOnboardingSetup = async ( event, onBeforeFinish = noop ) => {
 		try {
 			await onBeforeFinish();
 			await apiFetch( {
@@ -85,29 +93,63 @@ export default function SetupPaidAds() {
 		window.location.href = adminUrl + getProductFeedUrl( query );
 	};
 
-	const handleCompleteClick = async ( paidAds ) => {
+	const handleSkipCreatePaidAds = async ( event ) => {
+		const selector = select( STORE_KEY );
+		const billing = selector.getGoogleAdsAccountBillingStatus();
+
+		setShowSkipPaidAdsConfirmationModal( false );
+
+		const eventProps = {
+			google_ads_account_status: googleAdsAccount?.status,
+			billing_method_status: billing?.status || 'unknown',
+			campaign_form_validation: paidAds.isValid ? 'valid' : 'invalid',
+		};
+
+		recordGlaEvent( 'gla_onboarding_complete_button_click', eventProps );
+
+		await finishOnboardingSetup( event );
+	};
+
+	const handleShowSkipPaidAdsConfirmationModal = ( paidAdsData ) => {
+		setShowSkipPaidAdsConfirmationModal( true );
+		setPaidAds( paidAdsData );
+	};
+
+	const handleCancelSkipPaidAdsClick = () => {
+		setShowSkipPaidAdsConfirmationModal( false );
+	};
+
+	const handleCompleteClick = async ( paidAdsData ) => {
 		const onBeforeFinish = handleSetupComplete.bind(
 			null,
-			paidAds.amount,
-			paidAds.countryCodes
+			paidAdsData.amount,
+			countryCodes
 		);
 		await finishOnboardingSetup( onBeforeFinish );
 	};
 
 	return (
-		<AdsCampaign
-			headerTitle={ __(
-				'Create a campaign to advertise your products',
-				'google-listings-and-ads'
+		<>
+			<AdsCampaign
+				headerTitle={ __(
+					'Create a campaign to advertise your products',
+					'google-listings-and-ads'
+				) }
+				headerDescription={ __(
+					'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
+					'google-listings-and-ads'
+				) }
+				onSkip={ handleShowSkipPaidAdsConfirmationModal }
+				onContinue={ handleCompleteClick }
+				error={ error }
+				onboardingSetup
+			/>
+			{ showSkipPaidAdsConfirmationModal && (
+				<SkipPaidAdsConfirmationModal
+					onRequestClose={ handleCancelSkipPaidAdsClick }
+					onSkipCreatePaidAds={ handleSkipCreatePaidAds }
+				/>
 			) }
-			headerDescription={ __(
-				'You’re ready to set up a Performance Max campaign to drive more sales with ads. Your products will be included in the campaign after they’re approved.',
-				'google-listings-and-ads'
-			) }
-			onSkip={ finishOnboardingSetup }
-			onContinue={ handleCompleteClick }
-			error={ error }
-			onboardingSetup
-		/>
+		</>
 	);
 }
