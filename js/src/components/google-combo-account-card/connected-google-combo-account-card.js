@@ -1,19 +1,17 @@
 /**
  * External dependencies
  */
-import { createInterpolateElement, useState } from '@wordpress/element';
+import { createInterpolateElement } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '../account-card';
-import CreateAccounts from './create-accounts';
-import useExistingGoogleAdsAccounts from '.~/hooks/useExistingGoogleAdsAccounts';
-import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import AppSpinner from '../app-spinner';
+import useCreateAccounts from './useCreateAccounts';
 
 /**
  * Clicking on the "connect to a different Google account" button.
@@ -31,35 +29,25 @@ import AppSpinner from '../app-spinner';
  * @fires gla_google_account_connect_different_account_button_click
  */
 const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
-	const [ isCreatingAccounts, setIsCreatingAccounts ] = useState( false );
-
-	const {
-		data: existingMCAccounts,
-		hasFinishedResolution: hasFinishedResolutionForExistingMCAccounts,
-	} = useExistingGoogleMCAccounts();
-	const {
-		existingAccounts: existingAdsAccount,
-		isResolving: isResolvingExistingAdsAccount,
-	} = useExistingGoogleAdsAccounts();
-
 	const {
 		googleMCAccount,
 		hasFinishedResolution: hasFinishedResolutionForCurrentMCAccount,
 	} = useGoogleMCAccount();
+
 	const {
 		googleAdsAccount,
 		hasFinishedResolution: hasFinishedResolutionForCurrentAdsAccount,
 	} = useGoogleAdsAccount();
 
+	const { accountCreationResolved, isCreatingAccounts } = useCreateAccounts();
+
 	if (
-		! hasFinishedResolutionForExistingMCAccounts ||
-		isResolvingExistingAdsAccount
+		! hasFinishedResolutionForCurrentMCAccount ||
+		! hasFinishedResolutionForCurrentAdsAccount ||
+		! accountCreationResolved
 	) {
 		return <AccountCard description={ <AppSpinner /> } />;
 	}
-
-	const existingAccounts =
-		existingMCAccounts?.length || existingAdsAccount?.length;
 
 	const Description = () => {
 		if ( isCreatingAccounts ) {
@@ -101,6 +89,7 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
+			className="gla-connect-google-combo-account-card gla-connected-google-combo-account-card"
 			description={ <Description /> }
 			helper={ createInterpolateElement(
 				__(
@@ -112,13 +101,7 @@ const ConnectedGoogleComboAccountCard = ( { googleAccount } ) => {
 				}
 			) }
 			indicator={ isCreatingAccounts ? 'Creating...' : null }
-		>
-			{ ! existingAccounts && (
-				<CreateAccounts
-					setIsCreatingAccounts={ setIsCreatingAccounts }
-				/>
-			) }
-		</AccountCard>
+		/>
 	);
 };
 

@@ -3,4 +3,11 @@
 	.gla-account-card__helper {
 		font-size: $gla-font-base;
 	}
+
+	&.gla-connected-google-combo-account-card {
+
+		.gla-account-card__description {
+			gap: 0;
+		}
+	}
 }
