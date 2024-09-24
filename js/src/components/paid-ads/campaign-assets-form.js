@@ -89,8 +89,10 @@ export default function CampaignAssetsForm( {
 
 	// Grab the recommendations for the initial country codes.
 	useEffect( () => {
-		refreshCountryCodes( initialCampaign.countryCodes );
-	}, [ initialCampaign.countryCodes, refreshCountryCodes ] );
+		if ( initialCampaign?.countryCodes ) {
+			refreshCountryCodes( initialCampaign.countryCodes );
+		}
+	}, [ initialCampaign, refreshCountryCodes ] );
 
 	const handleOnChange = ( _, values, arg ) => {
 		onChange( _, values, arg );
