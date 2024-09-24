@@ -36,7 +36,7 @@ const validateCampaign = ( values, opts ) => {
 	) {
 		const { amount } = values;
 		const { dailyBudget, formatAmount } = opts;
-		const minAmount = Math.round( dailyBudget * BUDGET_MIN_PERCENT, 2 );
+		const minAmount = Math.round( dailyBudget * BUDGET_MIN_PERCENT );
 
 		if ( amount < minAmount ) {
 			return {
