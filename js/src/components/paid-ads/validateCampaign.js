@@ -21,18 +21,9 @@ const BUDGET_MIN_PERCENT = 0.3;
 const validateCampaign = ( values, opts ) => {
 	const errors = {};
 
-	if ( ! Number.isFinite( values.amount ) || values.amount <= 0 ) {
-		return {
-			amount: __(
-				'Please make sure daily average cost is greater than 0.',
-				'google-listings-and-ads'
-			),
-		};
-	}
-
 	if (
-		Number.isFinite( values?.amount ) &&
-		Number.isFinite( opts?.dailyBudget )
+		Number.isFinite( values.amount ) &&
+		Number.isFinite( opts.dailyBudget )
 	) {
 		const { amount } = values;
 		const { dailyBudget, formatAmount } = opts;
@@ -50,6 +41,15 @@ const validateCampaign = ( values, opts ) => {
 				),
 			};
 		}
+	}
+
+	if ( ! Number.isFinite( values.amount ) || values.amount <= 0 ) {
+		return {
+			amount: __(
+				'Please make sure daily average cost is greater than 0.',
+				'google-listings-and-ads'
+			),
+		};
 	}
 
 	return errors;
