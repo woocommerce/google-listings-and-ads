@@ -24,9 +24,7 @@ const useFetchBudgetRecommendation = ( countryCodes ) => {
 			const { getAdsBudgetRecommendations } = select( STORE_KEY );
 
 			const data = getAdsBudgetRecommendations( countryCodes );
-			return {
-				data,
-			};
+			return { data };
 		},
 		[ countryCodes ]
 	);

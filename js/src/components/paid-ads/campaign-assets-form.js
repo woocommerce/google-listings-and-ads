@@ -87,7 +87,8 @@ export default function CampaignAssetsForm( {
 		currencyCode,
 	} = useValidateCampaignWithCountryCodes();
 
-	// Grab the recommendations for the initial country codes.
+	// Grab the budget ecommendations for the initial country codes.
+	// refreshCountryCodes will trigger a new validation function with the new budget values.
 	useEffect( () => {
 		if ( initialCampaign?.countryCodes ) {
 			refreshCountryCodes( initialCampaign.countryCodes );
@@ -108,6 +109,7 @@ export default function CampaignAssetsForm( {
 		// If the validation function and values do not change, then the validation will not be triggerred since the `validate`
 		// function uses useCallback and will not be re-created.
 		setValue( 'dailyBudget', dailyBudget );
+
 		// Sometimes the currency code takes time to resolve and the budget data is already available.
 		setValue( 'currencyCode', currencyCode );
 	}, [ dailyBudget, currencyCode ] );

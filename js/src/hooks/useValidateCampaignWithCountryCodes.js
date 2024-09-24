@@ -23,14 +23,18 @@ import getHighestBudget from '.~/utils/getHighestBudget';
 /**
  * @typedef {Object} ValidateCampaignWithCountryCodesHook
  * @property {(values: CampaignFormValues) => Object} validateCampaignWithCountryCodes A function to validate campaign form values.
- * @property {boolean} hasFinishedResolution A boolean indicating whether the budget recommendation data has been resolved.
+ * @property {number | undefined} dailyBudget The daily budget recommendation.
+ * @property {(number: string | number) => string} formatAmount A function to format an amount according to the user's currency settings.
+ * @property {(countryCodes: Array<CountryCode>) => void} refreshCountryCodes A function to refresh the country codes.
+ * @property {string} currencyCode The currency code.
+ * @property {boolean} loaded A boolean indicating whether the budget recommendation data has been resolved and the code currency available.
  */
 
 /**
  * Validate campaign form. Accepts the form values object and returns errors object.
  *
  * @param {Array<CountryCode>} [initialCountryCodes] Country code array. If not provided, the validate function will not take into account budget recommendations.
- * @return {ValidateCampaignWithCountryCodesHook} An object containing the `validateCampaignWithCountryCodes` function and a `loading` state.
+ * @return {ValidateCampaignWithCountryCodesHook} The validate campaign with country codes hook.
  */
 const useValidateCampaignWithCountryCodes = ( initialCountryCodes ) => {
 	const {
@@ -53,7 +57,7 @@ const useValidateCampaignWithCountryCodes = ( initialCountryCodes ) => {
 					formatAmount,
 					refreshCountryCodes: setCountryCodes,
 					currencyCode: code,
-					hasFinishedResolution: true,
+					loaded: true,
 				};
 			}
 
@@ -81,7 +85,7 @@ const useValidateCampaignWithCountryCodes = ( initialCountryCodes ) => {
 				formatAmount,
 				refreshCountryCodes: setCountryCodes,
 				currencyCode: code,
-				hasFinishedResolution:
+				loaded:
 					hasFinishedResolution( 'getAdsBudgetRecommendations', [
 						countryCodes,
 					] ) && code,

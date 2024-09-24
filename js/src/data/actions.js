@@ -19,8 +19,13 @@ import { isWCIos, isWCAndroid } from '.~/utils/isMobileApp';
 
 /**
  * @typedef {import('.~/data/types.js').AssetEntityGroupUpdateBody} AssetEntityGroupUpdateBody
- * @typedef {import('.~/data/actions').CountryCode} CountryCode
  * @typedef {import('./selectors').Tour} Tour
+ */
+
+/**
+ * CountryCode
+ *
+ * @typedef {string} CountryCode Two-letter country code in ISO 3166-1 alpha-2 format. Example: 'US'.
  */
 
 /**

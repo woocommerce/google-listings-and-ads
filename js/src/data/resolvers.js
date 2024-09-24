@@ -49,9 +49,7 @@ import {
 } from './actions';
 
 /**
- * CountryCode
- *
- * @typedef {string} CountryCode Two-letter country code in ISO 3166-1 alpha-2 format. Example: 'US'.
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
 
 export function* getShippingRates() {
