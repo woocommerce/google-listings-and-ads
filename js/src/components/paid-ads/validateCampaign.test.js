@@ -9,6 +9,10 @@ import validateCampaign from './validateCampaign';
  */
 describe( 'validateCampaign', () => {
 	let values;
+	const validateCampaignOptions = {
+		dailyBudget: undefined,
+		formatAmount: jest.mock(),
+	};
 
 	beforeEach( () => {
 		// Initial values
@@ -16,15 +20,18 @@ describe( 'validateCampaign', () => {
 	} );
 
 	it( 'When all checks are passed, should return an empty object', () => {
-		const errors = validateCampaign( {
-			amount: 1,
-		} );
+		const errors = validateCampaign(
+			{
+				amount: 1,
+			},
+			validateCampaignOptions
+		);
 
 		expect( errors ).toStrictEqual( {} );
 	} );
 
 	it( 'should indicate multiple unpassed checks by setting properties in the returned object', () => {
-		const errors = validateCampaign( values );
+		const errors = validateCampaign( values, validateCampaignOptions );
 
 		expect( errors ).toHaveProperty( 'amount' );
 	} );
@@ -33,25 +40,25 @@ describe( 'validateCampaign', () => {
 		let errors;
 
 		values.amount = '';
-		errors = validateCampaign( values );
+		errors = validateCampaign( values, validateCampaignOptions );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
 
 		values.amount = undefined;
-		errors = validateCampaign( values );
+		errors = validateCampaign( values, validateCampaignOptions );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
 
 		values.amount = new Date();
-		errors = validateCampaign( values );
+		errors = validateCampaign( values, validateCampaignOptions );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
 
 		values.amount = NaN;
-		errors = validateCampaign( values );
+		errors = validateCampaign( values, validateCampaignOptions );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
@@ -61,13 +68,13 @@ describe( 'validateCampaign', () => {
 		let errors;
 
 		values.amount = 0;
-		errors = validateCampaign( values );
+		errors = validateCampaign( values, validateCampaignOptions );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
 
 		values.amount = -0.01;
-		errors = validateCampaign( values );
+		errors = validateCampaign( values, validateCampaignOptions );
 
 		expect( errors ).toHaveProperty( 'amount' );
 		expect( errors.amount ).toMatchSnapshot();
